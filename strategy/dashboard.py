@@ -226,6 +226,26 @@ def build_site(paper_dir: Path) -> str:
                        '<th>Verdict</th><th>SPI</th><th>Sharpe</th>'
                        '<th>Max DD</th><th>Race</th><th>Equity</th></tr>'
                        + "".join(r for r in rows) + "</table></section>")
+    race_html = ""
+    race_path = paper_dir / "challenger_report.md"
+    if race_path.exists():
+        race = race_path.read_text()
+        import re as _re2
+        m = _re2.search(r"Recommendation: (PROPOSE_REDEPLOY|KEEP_CHAMPION)", race)
+        rec = m.group(1) if m else "?"
+        rows = _re2.findall(
+            r"\| (Champion[^|]*|Challenger[^|]*)\| ([\d.-]+) \| ([\d.-]+) \| ([\d.-]+) \|",
+            race)
+        rows_html = "".join(
+            f"<tr><td>{_esc(a.strip())}</td><td>{b}%</td>"
+            f"<td>{c}</td><td>{d}%</td></tr>" for a, b, c, d in rows)
+        race_html = (f'<section><h2>Self-learning race: champion vs challenger</h2>'
+                     f'<p class="dim">The edge-seeker nominates a candidate each '
+                     f'night; it shadow-trades on the same real data. Current '
+                     f'verdict: <strong>{_esc(rec)}</strong>. Applying a proposal '
+                     f'is always a human-reviewed PR (Gate 3).</p>'
+                     f'<table><tr><th>Strategy</th><th>Return</th><th>Sharpe</th>'
+                     f'<th>Max DD</th></tr>{rows_html}</table></section>')
 
     def metric(label, value, sub=""):
         sub_html = f'<div class="sub">{_esc(sub)}</div>' if sub else ""
@@ -288,6 +308,7 @@ judged by evidence.</p>
 <section><h2>Paper-trading equity (mark-to-market, net of costs)</h2>
 {svg}</section>
 {journal_html}
+{race_html}
 <section><h2>How this works</h2>
 <p style="color:var(--dim);line-height:1.6">Every trading day after the US
 market close, this system fetches real bars for SPY, QQQ, IWM, XLF and XLE,
