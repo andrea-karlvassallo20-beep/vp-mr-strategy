@@ -76,7 +76,12 @@ processed = r3.run_session()
 check("restart consumes only 100 new bars", processed["SPY"] == 100)
 check("bounded trailing buffer restored at capacity",
       len(r3.strat._close["SPY"]) == 65)  # min_history(60) + 5, by design
-check("positions survive restart", r3.strat.position["SPY"] != 0.0)
+check("session-close flatten executed (positions flat)",
+      all(q == 0.0 for q in r3.strat.position.values()))
+check("flatten fills recorded in order log",
+      any(o.get("reason") == "SESSION_CLOSE_FLATTEN"
+          for o in r3.strat.order_log))
+check("no pending tickets left after session", not r3.strat._pending)
 
 # --- SPI gate on the combined session ---
 rep = r3.report()

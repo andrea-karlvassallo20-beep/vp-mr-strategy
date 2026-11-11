@@ -119,6 +119,9 @@ class PaperTradingRunner:
         """Consume all new bars for every instrument. Returns per-instrument
         bar counts processed this invocation."""
         processed = {}
+        last_close: Dict[str, float] = {}
+        self.strat.on_session_start()  # once per session, not per instrument:
+        # a daily kill-switch trip must not be reset by the next instrument
         for s in self.universe:
             csv_path = self.data_dir / f"{s.lower()}.csv"
             if not csv_path.exists():
@@ -127,7 +130,6 @@ class PaperTradingRunner:
             bars = load_bars(csv_path)
             new = [b for b in bars
                    if s not in self.last_date or b["date"] > self.last_date[s]]
-            self.strat.on_session_start()
             for i, b in enumerate(new):
                 self.strat.on_bar_close(s, b["date"], b["open"], b["high"],
                                         b["low"], b["close"], b["volume"])
@@ -135,8 +137,14 @@ class PaperTradingRunner:
                 if s in self.strat._pending:
                     self.strat.on_order_fill(s, b["close"])
                 self.last_date[s] = b["date"]
+                last_close[s] = b["close"]
             processed[s] = len(new)
         self.strat.on_session_end()
+        # execute the session-close flatten rule: fill pending flatten
+        # tickets at each instrument's last close (previously dropped)
+        for s, ticket in list(self.strat._pending.items()):
+            if s in last_close:
+                self.strat.on_order_fill(s, last_close[s])
         self._save_state()
         return processed
 
