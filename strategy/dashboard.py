@@ -718,18 +718,20 @@ def _avfi_pine_html() -> str:
 
 def _tradingview_embed(symbol: str = "NASDAQ:NQ1!",
                        interval: str = "W") -> str:
-    """Large live TradingView chart embed (advanced chart widget)."""
+    """Full-bleed live TradingView chart (advanced chart widget):
+    edge-to-edge across the whole browser window, 800px tall."""
     config = json.dumps({
         "symbol": symbol, "interval": interval, "theme": "dark",
-        "width": "100%", "height": "100%", "locale": "en",
+        "width": "100%", "height": 800, "locale": "en",
         "allow_symbol_change": True, "save_image": False,
         "calendar": False, "hide_side_toolbar": False,
+        "support_host": "https://www.tradingview.com",
     })
-    return ('<div class="tvwrap">'
+    return ('<div class="tvfull">'
             '<div class="tradingview-widget-container" '
-            'style="height:620px;">'
+            'style="height:800px;width:100%">'
             '<div class="tradingview-widget-container__widget" '
-            'style="height:100%;width:100%"></div>'
+            'style="height:800px;width:100%"></div>'
             '<script type="text/javascript" '
             'src="https://s3.tradingview.com/external-embedding/'
             'embed-widget-advanced-chart.js" async>'
@@ -989,7 +991,11 @@ details.doc pre {{ margin:0; padding:0 16px 14px; font-size:11px;
                   line-height:1.5; color:var(--dim); overflow-x:auto;
                   white-space:pre-wrap; }}
 code {{ color:var(--accent); font-size:12px; }}
-.tvwrap {{ background:var(--panel2); border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-top:10px; }}
+.tvfull {{ width:100vw; position:relative; left:50%;
+           right:50%; margin-left:-50vw; margin-right:-50vw;
+           background:var(--panel2); border-top:1px solid var(--line);
+           border-bottom:1px solid var(--line); }}
+.tvfull .tradingview-widget-container {{ margin:0; }}
 footer {{ color:var(--dim); font-size:12px; text-align:center;
           padding:28px; line-height:1.7; }}
 footer a {{ color:var(--accent); }}
