@@ -62,3 +62,11 @@ python3 generate_run_card.py     # regenerate run_card.json
   halts, regime shifts) is closed only by the >= 20-day paper-trading gate.
 - Adapter wiring was verified against a framework stub; run one smoke test
   against the installed nautilus_trader version before going live.
+
+## License
+MIT — see `LICENSE` in the repository root.
+
+## Lifecycle
+hypothesis -> gated strategy -> statistical validation -> engine adapter
+-> CI -> daily scheduled paper session -> performance report
+-> automated PROMOTE/HOLD promotion verdict.
