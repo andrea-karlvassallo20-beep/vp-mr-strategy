@@ -39,6 +39,9 @@ python3 test_challenger.py
 echo "=== 12 Session journal ==="
 python3 test_journal.py
 
+echo "=== 13 Incident alerts ==="
+python3 test_alert.py
+
 echo "=== Real-engine suites (skips if nautilus_trader missing) ==="
 python3 test_nautilus_engine.py
 python3 test_engine_parity.py
