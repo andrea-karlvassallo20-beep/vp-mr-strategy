@@ -33,6 +33,9 @@ python3 test_cross_asset.py
 echo "=== 7d AVFI replication (indicator math, throttle causality) ==="
 python3 test_avfi.py
 
+echo "=== 7e Tops-and-bottoms detectors (divergence, climax, event study) ==="
+python3 test_tops_bottoms.py
+
 echo "=== 8 Dashboard generation ==="
 python3 test_dashboard.py
 

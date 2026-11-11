@@ -812,6 +812,101 @@ def _avfi_html(paper_dir: Path) -> str:
             f'{_tradingview_embed()}')
 
 
+def _tb_chart_svg(ch: dict, width=520, height=170) -> str:
+    """Price chart with detected bottoms (green) and tops (red):
+    triangles = RSI divergence, squares = VSA climax."""
+    closes = ch["close"]
+    n = len(closes)
+    if n < 2:
+        return ""
+    lo, hi = min(closes), max(closes)
+    rng = (hi - lo) or 1.0
+    xs = [8 + (width - 16) * i / (n - 1) for i in range(n)]
+    ys = [8 + (height - 26) * (1 - (c - lo) / rng) for c in closes]
+    pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, ys))
+    marks = ""
+    for idx in ch.get("divergence_bottoms", []):
+        if idx < n:
+            marks += (f'<path d="M{xs[idx]:.1f},{ys[idx] - 6:.1f} '
+                      f'l6,10 l-12,0 z" fill="#3fb950">'
+                      f'<title>RSI divergence bottom '
+                      f'{ch["dates"][idx]}</title></path>')
+    for idx in ch.get("divergence_tops", []):
+        if idx < n:
+            marks += (f'<path d="M{xs[idx]:.1f},{ys[idx] + 6:.1f} '
+                      f'l6,-10 l-12,0 z" fill="#f85149">'
+                      f'<title>RSI divergence top '
+                      f'{ch["dates"][idx]}</title></path>')
+    for idx in ch.get("climax_bottoms", []):
+        if idx < n:
+            marks += (f'<rect x="{xs[idx] - 4:.1f}" '
+                      f'y="{ys[idx] - 4:.1f}" width="8" height="8" '
+                      f'fill="#3fb950" fill-opacity=".55" '
+                      f'stroke="#0d1117" stroke-width=".6">'
+                      f'<title>VSA climax bottom '
+                      f'{ch["dates"][idx]}</title></rect>')
+    for idx in ch.get("climax_tops", []):
+        if idx < n:
+            marks += (f'<rect x="{xs[idx] - 4:.1f}" '
+                      f'y="{ys[idx] - 4:.1f}" width="8" height="8" '
+                      f'fill="#f85149" fill-opacity=".55" '
+                      f'stroke="#0d1117" stroke-width=".6">'
+                      f'<title>VSA climax top '
+                      f'{ch["dates"][idx]}</title></rect>')
+    return (f'<svg width="{width}" height="{height}" role="img" '
+            f'aria-label="{_esc(ch["ticker"])} tops and bottoms" '
+            f'viewBox="0 0 {width} {height}">'
+            f'<polyline fill="none" stroke="#58a6ff" stroke-width="1.4" '
+            f'points="{pts}"/>{marks}'
+            f'<text x="8" y="12" font-size="10" fill="#8b949e">'
+            f'{_esc(ch["ticker"])}</text></svg>')
+
+
+def _tops_bottoms_html(paper_dir: Path) -> str:
+    """Tops-and-bottoms detection study: detector-marked charts plus
+    the confirmed-vs-unconfirmed event study."""
+    res_path = paper_dir / "research" / "tops_bottoms.json"
+    if not res_path.exists():
+        return ("<p class=\"dim\">Tops-and-bottoms research appears "
+                "here after the first nightly research pass.</p>")
+    r = json.load(open(res_path))
+    charts = r.get("charts", [])
+    svgs = "".join(f'<div class="pc">{_tb_chart_svg(ch)}</div>'
+                   for ch in charts)
+    fmt = lambda x: f"{x:+.4f}" if isinstance(x, (int, float)) else "-"
+    rows = ""
+    for row in r.get("rows", []):
+        dd_better = (row.get("long_confirmed_fwd") is not None
+                     and row.get("long_unconfirmed_fwd") is not None
+                     and row["long_confirmed_fwd"]
+                     > row["long_unconfirmed_fwd"])
+        rows += (f'<tr><td>{_esc(row["ticker"])}</td>'
+                 f'<td>{row["n_divergence_bottoms"]}</td>'
+                 f'<td>{row["n_divergence_tops"]}</td>'
+                 f'<td>{row["n_climax_bottoms"]}</td>'
+                 f'<td>{row["n_climax_tops"]}</td>'
+                 f'<td>{row["n_confirmed"]}</td>'
+                 f'<td>{fmt(row.get("long_confirmed_fwd"))}</td>'
+                 f'<td>{fmt(row.get("long_unconfirmed_fwd"))}</td>'
+                 f'<td class="{"good" if dd_better else "dim"}">'
+                 f'{"better" if dd_better else "no edge"}</td></tr>')
+    return (f'<p class="dim">Two strictly-trailing detectors hunt the '
+            f'turns: <strong>RSI divergence</strong> (price prints a '
+            f'new extreme, momentum refuses to confirm — triangles) '
+            f'and <strong>VSA volume climax</strong> (huge effort, '
+            f'reversed result — squares). Green = bottoms, red = tops. '
+            f'The event study asks the honest question: do detector-'
+            f'confirmed z-score entries forward-outperform unconfirmed '
+            f'ones (10-bar horizon)? Negative results are reported.'
+            f'</p>'
+            f'<div class="pgrid">{svgs}</div>'
+            '<table><tr><th>Ticker</th><th>div bot</th><th>div top</th>'
+            '<th>clim bot</th><th>clim top</th><th>confirmed</th>'
+            '<th>long fwd (conf)</th><th>long fwd (unconf)</th>'
+            '<th>verdict</th></tr>'
+            f'{rows}</table>')
+
+
 def build_site(paper_dir: Path) -> str:
     """Salient: the public one-page site (GitHub Pages, docs/index.html).
     Sections: overview, charts, race, knowledge, reports, journal,
@@ -895,7 +990,8 @@ def build_site(paper_dir: Path) -> str:
 
     nav = (" ".join(
         f'<a href="#{a}">{t}</a>' for a, t in
-        (("avfi", "AVFI"), ("overview", "Overview"),
+        (("avfi", "AVFI"), ("topsbottoms", "Tops & bottoms"),
+         ("overview", "Overview"),
          ("charts", "Charts"),
          ("race", "Self-learning"), ("crossasset", "Cross-asset"),
          ("knowledge", "Knowledge"),
@@ -1024,6 +1120,9 @@ financial gain.</p>
 </div>
 <section id="avfi"><h2>AVFI &mdash; the edge formula, iterating nightly</h2>
 {_avfi_html(paper_dir)}
+</section>
+<section id="topsbottoms"><h2>Tops &amp; bottoms detection</h2>
+{_tops_bottoms_html(paper_dir)}
 </section>
 <section id="charts"><h2>Performance</h2>
 <p class="legend"><span><i class="dot" style="background:#3fb950"></i>equity

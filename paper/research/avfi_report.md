@@ -12,9 +12,9 @@ Python replication of the Pine v5 'AVFI v3 vs v2 [spread axis]' indicator (Parki
 
 ## Iteration ledger
 
-Iteration 1 (2026-11-11) — params: {'vol_window': 20, 'pk_window': 10, 'ema_slow': 13, 'sp_z_window': 100, 'trigger': -1.5, 'throttle': 0.25, 'vol_estimator': 'parkinson', 'volume_mode': 'shares'}
+Iteration 1 (2026-11-11) — params: {'vol_window': 20, 'pk_window': 10, 'ema_slow': 13, 'sp_z_window': 100, 'trigger': -1.5, 'throttle': 0.25, 'vol_estimator': 'parkinson', 'volume_mode': 'shares', 'entry_mode': 'zscore'}
 OOS drawdown reduction: 4.43% at Sharpe delta -0.017
-Best candidate: {'params': {'vol_window': 20, 'pk_window': 10, 'ema_slow': 13, 'sp_z_window': 100, 'trigger': -1.5, 'throttle': 0.25, 'vol_estimator': 'parkinson', 'volume_mode': 'shares'}, 'oos_dd_reduction_pct': np.float64(4.43), 'oos_sharpe_delta': np.float64(-0.017)}
-Advanced: False -> next params: {'vol_window': 20, 'pk_window': 10, 'ema_slow': 13, 'sp_z_window': 100, 'trigger': -1.5, 'throttle': 0.25, 'vol_estimator': 'parkinson', 'volume_mode': 'shares'}
+Best candidate: {'params': {'vol_window': 20, 'pk_window': 10, 'ema_slow': 13, 'sp_z_window': 100, 'trigger': -1.5, 'throttle': 0.25, 'vol_estimator': 'parkinson', 'volume_mode': 'shares', 'entry_mode': 'detector'}, 'oos_dd_reduction_pct': np.float64(27.37), 'oos_sharpe_delta': np.float64(0.158)}
+Advanced: True -> next params: {'vol_window': 20, 'pk_window': 10, 'ema_slow': 13, 'sp_z_window': 100, 'trigger': -1.5, 'throttle': 0.25, 'vol_estimator': 'parkinson', 'volume_mode': 'shares', 'entry_mode': 'detector'}
 
 Per the AVFI-NQ programme (KNOWLEDGE (1).md): AVFI is a slow regime descriptor, not an entry timer; only the risk-throttle use is evaluated. Research parameters iterate nightly with train/OOS honesty; the deployed strategy stays frozen (Gate 3).
