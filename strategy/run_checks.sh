@@ -5,22 +5,31 @@
 set -e
 cd "$(dirname "$0")"
 
-echo "=== 1/6 Gate suite (G1-G4 + modules) ==="
+echo "=== 1/5 fast Gate suite (G1-G4 + modules) ==="
 python3 test_gates.py
 
-echo "=== 2/6 Adapter wiring (stubbed engine) ==="
+echo "=== 2/5 fast Adapter wiring (stubbed engine) ==="
 python3 test_adapter_wiring.py
 
-echo "=== 3/6 Paper-trading runner (persistence, idempotency, SPI) ==="
+echo "=== 3/5 fast Paper-trading runner (persistence, idempotency, SPI) ==="
 python3 test_runner.py
 
-echo "=== 4/6 Session report consistency ==="
+echo "=== 4/5 fast Session report consistency ==="
 python3 test_session_report.py
 
-echo "=== 5/6 Promotion gate (PROMOTE/HOLD verdicts) ==="
+echo "=== 5/8 Promotion gate (PROMOTE/HOLD verdicts) ==="
 python3 test_gate_check.py
 
-echo "=== 6/6 Real-engine suites (skips if nautilus_trader missing) ==="
+echo "=== 6/8 Fetcher hardening ==="
+python3 test_fetch.py
+
+echo "=== 7/8 Edge-seeker (honest walk-forward proposals) ==="
+python3 test_edge_seeker.py
+
+echo "=== 8/8 Dashboard generation ==="
+python3 test_dashboard.py
+
+echo "=== Real-engine suites (skips if nautilus_trader missing) ==="
 python3 test_nautilus_engine.py
 python3 test_engine_parity.py
 

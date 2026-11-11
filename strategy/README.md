@@ -54,8 +54,10 @@ python3 strategy/gate_check.py --data-dir ./paper/data --state-dir ./paper/state
 | 9 | Session reporting | done | 11/11: MTM equity, Sharpe, SPI, open risk |
 | 10 | Promotion gate | done | 9/9: PROMOTE/HOLD from run-card criteria |
 | 11 | Cross-engine parity | done | 7/7: signals byte-identical runner vs real engine |
-| 12 | Scheduled paper sessions | ready | activates on merge (cron 21:30 UTC Mon-Fri) |
-| 13 | >= 20 paper sessions on live data | pending | requires merge + calendar time |
+| 12 | Scheduled paper sessions | done | running on main; first real session: 2510 decisions, SPI 1.0 |
+| 15 | Edge-seeker research loop | done | nightly walk-forward proposals, Gate 3-safe |
+| 16 | Dashboard | done | self-contained HTML, regenerated each session |
+| 13 | >= 20 paper sessions on live data | in progress | 1/20 (real backfill session audited) |
 | 14 | PROMOTE verdict on live data | pending | automated by gate_check after 20 sessions |
 
 ## Files
@@ -79,6 +81,9 @@ python3 strategy/gate_check.py --data-dir ./paper/data --state-dir ./paper/state
 | `papertrading_runner.py` | Incremental paper-trading runner with state persistence |
 | `fetch_data.py` | Daily bar fetcher (yfinance / deterministic synthetic) |
 | `session_report.py` | Session performance report (MTM equity, Sharpe, open risk) |
+| `edge_seeker.py` | Autonomous nightly research trainer (walk-forward proposals, Gate 3-safe) |
+| `dashboard.py` | Self-contained HTML dashboard from committed artifacts |
+| `monitor.py` | One-command forward-test status |
 | `gate_check.py` | Forward-test promotion gate (PROMOTE/HOLD verdict) |
 | `generate_run_card.py`, `run_card.json` | Generated run card (single source of truth) |
 | `../.github/workflows/ci.yml` | CI: fast suites + determinism + run-card consistency + engine job |
