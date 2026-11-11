@@ -17,6 +17,7 @@ import numpy as np
 
 import sys
 sys.path.insert(0, str(Path(__file__).parent))
+from cross_asset import safe_name
 from monitor import summarize
 from papertrading_runner import load_bars
 
@@ -489,6 +490,71 @@ _REPO_MAP = [
 ]
 
 
+def _sparkline(csv_path: Path, width=130, height=34) -> str:
+    """Tiny close-price sparkline from a research CSV."""
+    raw = [l.split(",") for l in
+           csv_path.read_text().strip().splitlines()[1:]]
+    if len(raw) < 2:
+        return ""
+    closes = [float(r[4]) for r in raw]
+    lo, hi = min(closes), max(closes)
+    rng = (hi - lo) or 1.0
+    n = len(closes)
+    pts = " ".join(
+        f"{2 + (width - 4) * i / (n - 1):.1f},"
+        f"{2 + (height - 4) * (1 - (v - lo) / rng):.1f}"
+        for i, v in enumerate(closes))
+    up = closes[-1] >= closes[0]
+    color = "#3fb950" if up else "#f85149"
+    return (f'<svg width="{width}" height="{height}" role="img" '
+            f'aria-label="sparkline"><polyline fill="none" '
+            f'stroke="{color}" stroke-width="1.3" points="{pts}"/></svg>')
+
+
+def _cross_asset_html(paper_dir: Path) -> str:
+    """Cross-asset edge research table (crypto, indices, commodities)
+    with per-series sparklines, from the committed research JSON."""
+    res_path = paper_dir / "research" / "cross_asset.json"
+    if not res_path.exists():
+        return ("<p class=\"dim\">Cross-asset research appears here after "
+                "the first nightly research pass.</p>")
+    results = json.load(open(res_path))
+    data_dir = paper_dir / "research" / "data"
+    rows = ""
+    for r in sorted(results,
+                     key=lambda x: (x["asset_class"], x["ticker"])):
+        if r.get("status") != "OK":
+            rows += (f'<tr><td>{_esc(r["asset_class"])}</td>'
+                     f'<td>{_esc(r["ticker"])}</td><td colspan="5" '
+                     f'class="dim">no data ({_esc(r.get("error", ""))})'
+                     f"</td></tr>")
+            continue
+        spark = _sparkline(data_dir / f"{safe_name(r["ticker"]).lower()}.csv") \
+            if data_dir.exists() else ""
+        hl = r["half_life_bars"] if r["half_life_bars"] is not None \
+            else "none"
+        cls = "good" if r["mean_reverting"] else "dim"
+        verdict = "yes" if r["mean_reverting"] else "no"
+        rows += (f'<tr><td>{_esc(r["asset_class"])}</td>'
+                 f'<td>{_esc(r["ticker"])}</td><td>{spark}</td>'
+                 f'<td>{hl}</td><td>{r["mr_t_stat"]}</td>'
+                 f'<td>{r["mr_sharpe"]:+.2f}</td>'
+                 f'<td>{r["buy_hold_sharpe"]:+.2f}</td>'
+                 f'<td class="{cls}">{verdict}</td></tr>')
+    return ("<p class=\"dim\">The deployed champion stays frozen; this "
+            "pass asks whether the mean-reversion edge exists beyond "
+            "equity ETFs — in crypto (BTC, ETH), main indices (S&amp;P 500, "
+            "Nasdaq, Dow) and commodities (gold, crude, silver). Each "
+            "series gets an OU half-life estimate, a Dickey-Fuller-style "
+            "mean-reversion t-test, and a production-style z-score "
+            "backtest vs buy-and-hold. Honest by design: negative "
+            "results are reported.</p>"
+            '<table><tr><th>Class</th><th>Ticker</th><th>5y</th>'
+            '<th>OU half-life</th><th>MR t-stat</th><th>MR Sharpe</th>'
+            '<th>B&amp;H Sharpe</th><th>Reverting?</th></tr>'
+            f"{rows}</table>")
+
+
 def build_site(paper_dir: Path) -> str:
     """Salient: the public one-page site (GitHub Pages, docs/index.html).
     Sections: overview, charts, race, knowledge, reports, journal,
@@ -573,7 +639,8 @@ def build_site(paper_dir: Path) -> str:
     nav = (" ".join(
         f'<a href="#{a}">{t}</a>' for a, t in
         (("overview", "Overview"), ("charts", "Charts"),
-         ("race", "Self-learning"), ("knowledge", "Knowledge"),
+         ("race", "Self-learning"), ("crossasset", "Cross-asset"),
+         ("knowledge", "Knowledge"),
          ("reports", "Reports"), ("journal", "Journal"),
          ("buildlog", "Build log"), ("repo", "Repository"))))
 
@@ -679,6 +746,9 @@ footer a {{ color:var(--accent); }}
 US equity ETFs (SPY, QQQ, IWM, XLF, XLE), paper-trading autonomously,
 self-audited nightly, grounded in a growing research library, and
 promoted only by evidence.</p>
+<p class="tagline">A hobby research pursuit: this system will never trade
+live. The enjoyment comes from solving and finding the edge — not from
+financial gain.</p>
 </header>
 <main>
 <div id="overview">
@@ -705,6 +775,9 @@ the same real bars every night. Each curve is scaled to its own range.</p>
 {race_chart}
 {race_html}
 </section>
+<section id="crossasset"><h2>Cross-asset edge research</h2>
+{_cross_asset_html(paper_dir)}
+</section>
 <section id="knowledge"><h2>Knowledge base &rarr; strategy design</h2>
 {_knowledge_html()}
 </section>
@@ -720,7 +793,7 @@ the bugs the real market exposed and how they were fixed.</p>
 <section id="repo"><h2>Repository map</h2>
 <p class="dim">Everything on this page is generated from committed artifacts
 in <a href="https://github.com/andrea-karlvassallo20-beep/vp-mr-strategy"
-style="color:var(--accent)">andrea-karlvassallo20-beep/vp-mr-strategy</a>.</p>
+style="color:var(--accent)">the source repository on GitHub</a>.</p>
 <table>{repo_rows}</table>
 {_file_details("README — the project explained", (Path(__file__).resolve().parent.parent / "README.md"), open_=True)}
 {_file_details("DASHBOARD — the live status page", (Path(__file__).resolve().parent.parent / "DASHBOARD.md"))}

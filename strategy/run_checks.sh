@@ -27,6 +27,9 @@ python3 test_edge_seeker.py
 echo "=== 7b Knowledge variants (vol models, VSA filter) ==="
 python3 test_vol_models.py
 
+echo "=== 7c Cross-asset edge research (crypto, indices, commodities) ==="
+python3 test_cross_asset.py
+
 echo "=== 8 Dashboard generation ==="
 python3 test_dashboard.py
 

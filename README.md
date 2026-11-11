@@ -6,10 +6,14 @@ statistically validated, connected to a real execution engine, and currently
 **paper-trading itself against live market data every night** — auditing its
 own decisions, seeking a better edge, and reporting everything to a dashboard.
 
-**The goal:** earn promotion from paper trading to live deployment through
-evidence, not enthusiasm. The system must complete 20 forward paper-trading
-sessions with a Signal Parity Index >= 0.98, zero duplicate order fires, and
-zero risk-kill-switch trips — and it judges itself.
+**The goal:** find the edge, through evidence, not enthusiasm. This is a
+hobby research project — it will never trade live, and the enjoyment comes
+from solving, not financial gain. The promotion gate still matters: the
+system must complete 20 forward paper-trading sessions with a Signal Parity
+Index >= 0.98, zero duplicate order fires, and zero risk-kill-switch trips —
+and it judges itself. Beyond the deployed universe, a nightly cross-asset
+research pass hunts for mean-reversion structure in crypto (BTC, ETH), main
+indices (S&P 500, Nasdaq, Dow) and commodities (gold, crude, silver).
 
 ## The strategy in one paragraph
 Each trading day, after the US market close, the strategy computes a 100-day
