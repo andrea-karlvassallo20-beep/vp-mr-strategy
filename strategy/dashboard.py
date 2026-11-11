@@ -1059,6 +1059,38 @@ def _state_space_html(paper_dir: Path) -> str:
                 ("ZOF", "OJF", "CTF", "ZSF", "ZWF", "PLF", "CLF")]
     svgs = "".join(f'<div class="pc">{_state_space_svg(s)}</div>'
                    for s in etfs + top_comm)
+    study_html = ""
+    spath = paper_dir / "research" / "state_space_study.json"
+    if spath.exists():
+        study = json.load(open(spath))
+        rows = ""
+        for s, row in study.items():
+            br = row["bottom_region"]
+            mr_ = row["mid_region"]
+            holds = row.get("hypothesis_holds")
+            cls = "good" if holds else "dim"
+            rows += (f'<tr><td>{_esc(s)}</td>'
+                     f'<td>{br["n"]}</td>'
+                     f'<td>{br["fwd"] if br["fwd"] is not None else "-"}</td>'
+                     f'<td>{mr_["n"]}</td>'
+                     f'<td>{mr_["fwd"] if mr_["fwd"] is not None else "-"}</td>'
+                     f'<td class="{cls}">'
+                     f'{"supported" if holds else "unproven"}</td></tr>')
+        study_html = ('<h3 class="sub">The region hypothesis, tested'
+                      '</h3>'
+                      '<p class="dim">If bottoms are REGIONS of space, '
+                      'entries inside the bottom region (deep stretch '
+                      '+ fading flow + elevated vol) should forward-'
+                      'outperform partially-aligned entries. Honest '
+                      'verdict: unproven — the full region fires '
+                      'rarely (0-9 events per ETF) and the evidence is '
+                      'mixed. The study re-runs nightly; the buckets '
+                      'fill as data accumulates.</p>'
+                      '<table><tr><th>Ticker</th>'
+                      '<th>bottom-region n</th><th>fwd</th>'
+                      '<th>mid-region n</th><th>fwd</th>'
+                      '<th>verdict</th></tr>'
+                      f'{rows}</table>')
     return (f'<p class="dim">Every bar is a <strong>position in '
             f'space</strong>, and the strategy lives as a trajectory '
             f'through it: x = AVFI spread z (the regime axis), '
@@ -1071,7 +1103,8 @@ def _state_space_html(paper_dir: Path) -> str:
             f'green = detected bottoms, red = detected tops '
             f'(hover for dates). Deployed ETFs plus the strongest '
             f'mean-reverting commodities.</p>'
-            f'<div class="pgrid">{svgs}</div>')
+            f'<div class="pgrid">{svgs}</div>'
+            f'{study_html}')
 
 
 def _extended_detections_html(paper_dir: Path) -> str:

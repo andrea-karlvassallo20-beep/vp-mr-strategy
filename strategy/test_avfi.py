@@ -11,6 +11,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
 from avfi import (DEFAULT_PARAMS, VARIANT_GRID, avfi_state_space,
+                  state_space_event_study,
                   avfi_v2_series,
                   avfi_v3_series, ema, garman_klass_sigma,
                   parkinson_sigma_pk,
@@ -153,6 +154,17 @@ check("state space axes are bounded and causal-shaped",
       and all(0.0 <= x <= 1.0 for x in ss["vol_pct"][60:]))
 check("state space carries detector marks",
       all(k in ss for k in ("divergence_bottoms", "climax_tops")))
+
+# 11. state-space region study
+sss = state_space_event_study(data, universe=("SPY", "QQQ"))
+check("region study buckets entries and reports honestly",
+      all(all(k in row for k in
+              ("bottom_region", "mid_region", "elsewhere",
+               "hypothesis_holds"))
+          for row in sss.values()))
+check("region counts are non-negative integers",
+      all(row[r]["n"] >= 0 for row in sss.values()
+          for r in ("bottom_region", "mid_region", "elsewhere")))
 
 shutil.rmtree(tmp)
 print(f"\nRESULT: {PASS} passed, {FAIL} failed")
