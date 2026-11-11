@@ -9,7 +9,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 from fetch_data import fetch_synthetic, write_csv
 from papertrading_runner import PaperTradingRunner
 from dashboard import (build_html, build_site, drawdown_svg,
-                       price_charts_html, race_svg)
+                       price_charts_html, race_svg, _avfi_chart_svg,
+                       _avfi_html)
 
 PASS = FAIL = 0
 def check(name, cond):
@@ -52,6 +53,20 @@ shutil.copy(tmp / "state" / "session_state.json",
 race = race_svg(tmp)
 check("race chart overlays two curves",
       race.count("<polyline") == 2 and "Challenger" in race)
+
+avfi_chart = {"ticker": "SPY", "dates": ["d1", "d2", "d3", "d4"],
+              "close": [10.0, 10.5, 10.2, 10.8], "sp_z": [0.0, -0.5,
+              -1.5, -0.2], "trigger": -1.0, "throttle": 0.5,
+              "entries": [[1, 1], [3, -1]], "throttled_bars": 1}
+svg_avfi = _avfi_chart_svg(avfi_chart)
+check("AVFI chart renders price + spread panels",
+      svg_avfi.count("<polyline") == 2 and "spread z" in svg_avfi)
+check("AVFI chart marks trade entries with tooltips",
+      "long entry d2" in svg_avfi and "short entry d4" in svg_avfi)
+check("AVFI chart shades throttled zones",
+      svg_avfi.count("<rect") >= 1)
+check("AVFI section graceful without data",
+      "appears here after" in _avfi_html(tmp / "nonexistent"))
 
 empty = build_html(tmp / "nonexistent")
 check("empty state graceful", "no session data yet" in empty)
