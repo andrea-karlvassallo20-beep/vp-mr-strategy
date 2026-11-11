@@ -32,6 +32,9 @@ python3 test_vol_models.py
 echo "=== 8/8 Dashboard generation ==="
 python3 test_dashboard.py
 
+echo "=== 9 Nightly pre-flight (full session simulation) ==="
+python3 test_nightly_preflight.py
+
 echo "=== Real-engine suites (skips if nautilus_trader missing) ==="
 python3 test_nautilus_engine.py
 python3 test_engine_parity.py
