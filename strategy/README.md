@@ -20,6 +20,7 @@ AST-sandboxed core; the engine adapter is a thin event translator.
 | `test_gates.py` | 26-assertion gate suite (G1-G4 + modules) |
 | `nautilus_adapter.py` | NautilusTrader Strategy/config adapter |
 | `test_adapter_wiring.py` | 9-assertion stubbed-engine wiring suite |
+| `test_nautilus_engine.py` | 7-assertion real NautilusTrader BacktestEngine suite |
 | `backtest_study.py` | Hypothesis validation, robustness grid, cost stress |
 | `walkforward_study.py` | Walk-forward + 40-seed Monte Carlo significance |
 | `deployment_study.py` | Edge threshold + universe scaling envelope |
@@ -39,6 +40,7 @@ AST-sandboxed core; the engine adapter is a thin event translator.
 python3 vp_mr_strategy.py        # smoke validation (SPI, determinism)
 python3 test_gates.py            # gate suite
 python3 test_adapter_wiring.py   # adapter wiring (stubbed engine)
+python3 test_nautilus_engine.py  # adapter wiring (real engine, if installed)
 python3 backtest_study.py        # studies 1-3
 python3 walkforward_study.py     # studies 4-5
 python3 spi_monitor.py           # SPI audit demo
@@ -60,8 +62,10 @@ python3 generate_run_card.py     # regenerate run_card.json
 ## Caveats
 - Statistical evidence is on synthetic data; live-data behavior (real spreads,
   halts, regime shifts) is closed only by the >= 20-day paper-trading gate.
-- Adapter wiring was verified against a framework stub; run one smoke test
-  against the installed nautilus_trader version before going live.
+- Adapter wiring is verified two ways: a stubbed-engine suite in the fast CI
+  job, and a real nautilus_trader BacktestEngine suite in the dedicated
+  `engine` CI job (bars + quote ticks, real matching engine, fill and
+  rejection reconciliation into the core order state machine).
 
 ## License
 MIT — see `LICENSE` in the repository root.
