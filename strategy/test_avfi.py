@@ -115,8 +115,12 @@ check("chart data exported per instrument",
       len(chart) == 2 and all(
           k in chart[0] for k in ("ticker", "dates", "close", "sp_z",
                                   "entries", "trigger")))
+check("chart includes the PORTFOLIO equity entry",
+      any(ch["ticker"] == "PORTFOLIO" and len(ch["eq"]) > 2
+          for ch in chart))
 check("chart entries match the audited decision log",
-      all(len(ch["entries"]) > 0 for ch in chart))
+      all(len(ch["entries"]) > 0 for ch in chart
+          if ch["ticker"] != "PORTFOLIO"))
 rep = tmp / "avfi_report.md"
 write_report(r, rep)
 txt = rep.read_text()
