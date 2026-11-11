@@ -19,6 +19,7 @@ from typing import Dict, List
 
 from nautilus_trader.config import StrategyConfig
 from nautilus_trader.model.data import Bar
+from nautilus_trader.model.data import BarType
 from nautilus_trader.model.enums import OrderSide, TimeInForce
 from nautilus_trader.model.events import OrderFilled, OrderRejected
 from nautilus_trader.model.identifiers import InstrumentId
@@ -29,9 +30,10 @@ from vp_mr_strategy import StrategyParameters, VolatilityParityMeanReversionStra
 
 
 class VPMeanReversionConfig(StrategyConfig, frozen=True):
-    """Declarative config -> frozen StrategyParameters (Gate 3)."""
-    instrument_ids: List[str] = ["SPY", "QQQ"]
-    bar_spec: str = "1-DAY-BID"
+    """Declarative config -> frozen StrategyParameters (Gate 3).
+    instrument_ids uses a tuple default: msgspec forbids mutable defaults."""
+    instrument_ids: tuple = ("SPY", "QQQ")
+    bar_spec: str = "SPY.ARCA-1-DAY-BID-EXTERNAL"
     initial_equity: float = 1_000_000.0
     zscore_entry: float = 2.0
     zscore_exit: float = 0.25
@@ -81,7 +83,7 @@ class VPMeanReversionAdapter(Strategy):
     # ------------------------------------------------------------------
     def on_start(self) -> None:
         self.core.deploy()  # Gate 3 freeze
-        self.subscribe_bars(self._config.bar_spec)
+        self.subscribe_bars(BarType.from_str(self._config.bar_spec))
 
     def on_stop(self) -> None:
         self.close_all_positions()
@@ -90,23 +92,24 @@ class VPMeanReversionAdapter(Strategy):
     # Market data -> core (t-1 signal rule preserved end-to-end)
     # ------------------------------------------------------------------
     def on_bar(self, bar: Bar) -> None:
-        instrument = self._instrument_str(bar.instrument_id)
+        instrument = self._instrument_str(bar.bar_type.instrument_id)
         ts = int(bar.ts_event)
         self.core.on_bar_close(
             instrument, ts,
             float(bar.open), float(bar.high),
             float(bar.low), float(bar.close), float(bar.volume))
-        self._drain_pending_tickets(instrument, bar)
+        self._drain_pending_tickets(instrument)
 
     # ------------------------------------------------------------------
     # Core -> engine orders
     # ------------------------------------------------------------------
-    def _drain_pending_tickets(self, instrument: str, bar: Bar) -> None:
+    def _drain_pending_tickets(self, instrument: str) -> None:
         ticket = self.core._pending.get(instrument)
         if ticket is None:
             return
         instrument_id = InstrumentId.from_str(f"{instrument}.ARCA")
-        qty = Quantity(float(ticket.quantity))
+        size_prec = self.cache.instrument(instrument_id).size_precision
+        qty = Quantity(float(ticket.quantity), size_prec)
         side = OrderSide.BUY if ticket.side == "BUY" else OrderSide.SELL
         order = self.order_factory.market(
             instrument_id=instrument_id,
@@ -154,11 +157,12 @@ class VPMeanReversionAdapter(Strategy):
             if ticket is None:
                 continue
             instrument_id = InstrumentId.from_str(f"{instrument}.ARCA")
+            size_prec = self.cache.instrument(instrument_id).size_precision
             side = OrderSide.BUY if ticket.side == "BUY" else OrderSide.SELL
             order = self.order_factory.market(
                 instrument_id=instrument_id,
                 order_side=side,
-                quantity=Quantity(float(ticket.quantity)),
+                quantity=Quantity(float(ticket.quantity), size_prec),
                 time_in_force=TimeInForce.GTC)
             self._ticket_to_order[ticket.order_id] = order.client_order_id
             self._order_to_instrument[order.client_order_id] = instrument

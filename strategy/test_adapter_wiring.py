@@ -24,7 +24,7 @@ class InstrumentId:
     def __str__(self): return self.sym
 
 class Quantity:
-    def __init__(self, v): self.v = v
+    def __init__(self, v, precision=0): self.v = v; self.precision = precision
 
 class Price:
     def __init__(self, v): self.v = v
@@ -43,19 +43,30 @@ class OrderFactory:
 class _Log:
     def info(self, msg): self.last = msg
 
+class _Instrument:
+    size_precision = 0
+
+class _Cache:
+    def instrument(self, instrument_id): return _Instrument()
+
 class StrategyStub:
     """Mimics nautilus_trader.trading.strategy.Strategy."""
     def __init__(self, config):
         self.config = config
         self.order_factory = OrderFactory()
         self.log = _Log()
+        self.cache = _Cache()
         self.submitted = []
         self._bar_sub = None
     def subscribe_bars(self, spec): self._bar_sub = spec
     def submit_order(self, order): self.submitted.append(order)
 
-Bar = namedtuple("Bar", ["instrument_id", "ts_event", "open", "high",
+Bar = namedtuple("Bar", ["bar_type", "ts_event", "open", "high",
                          "low", "close", "volume"])
+class _BarType:
+    def __init__(self, instrument_id): self.instrument_id = instrument_id
+    @classmethod
+    def from_str(cls, s): return cls(s.split("-")[0])
 OrderFilled = namedtuple("OrderFilled", ["client_order_id", "last_px"])
 OrderRejected = namedtuple("OrderRejected", ["client_order_id", "reason"])
 
@@ -68,7 +79,7 @@ class StrategyConfigStub:
 nt = types.ModuleType("nautilus_trader")
 nt.config = types.SimpleNamespace(StrategyConfig=StrategyConfigStub)
 nt.model = types.SimpleNamespace(
-    data=types.SimpleNamespace(Bar=Bar),
+    data=types.SimpleNamespace(Bar=Bar, BarType=_BarType),
     enums=types.SimpleNamespace(OrderSide=OrderSide, TimeInForce=TimeInForce),
     events=types.SimpleNamespace(OrderFilled=OrderFilled,
                                  OrderRejected=OrderRejected),
@@ -98,24 +109,25 @@ def check(name, cond):
     if cond: PASS += 1; print(f"  PASS  {name}")
     else:    FAIL += 1; print(f"  FAIL  {name}")
 
-cfg = VPMeanReversionConfig()
-cfg.instrument_ids = ["SPY"]
-cfg.min_history_bars = 60
-cfg.lookback_zscore = 40
-cfg.vol_est_lookback = 30
+cfg = VPMeanReversionConfig(instrument_ids=("SPY",),
+                            bar_spec="SPY.ARCA-1-DAY-BID-EXTERNAL",
+                            min_history_bars=60,
+                            lookback_zscore=40,
+                            vol_est_lookback=30)
 adapter = VPMeanReversionAdapter(cfg)
 
 check("core constructed with frozen params",
       adapter.core.p.zscore_entry == 2.0)
 adapter.on_start()
 check("Gate 3 freeze engaged on start", adapter.core._deployed)
-check("bar subscription registered", adapter._bar_sub == "1-DAY-BID")
+check("bar subscription registered",
+      str(getattr(adapter._bar_sub, "instrument_id", "")).startswith("SPY"))
 
 prices = ou_prices(200, 77)
 fills = 0
 for t in range(200):
     c = float(prices[t])
-    adapter.on_bar(Bar("SPY.XNAS", t, c, c*1.002, c*0.998, c, 1e6))
+    adapter.on_bar(Bar(_BarType("SPY.XNAS"), t, c, c*1.002, c*0.998, c, 1e6))
     # engine executes submitted orders: simulate fill at next bar open
     if adapter.submitted:
         order = adapter.submitted.pop(0)
