@@ -41,7 +41,7 @@ check("extended universe covers crypto, indices, commodities",
       {c for c, _ in EXTENDED_UNIVERSE} == {"crypto", "index", "commodity"}
       and len(EXTENDED_UNIVERSE) == len(CRYPTO) + len(INDICES)
       + len(COMMODITIES) and len(CRYPTO) == 25
-      and len(COMMODITIES) >= 14)
+      and len(COMMODITIES) == 24)
 check("safe_name sanitizes ^ and =F and -",
       safe_name("^GSPC") == "GSPC" and safe_name("GC=F") == "GCF"
       and safe_name("BTC-USD") == "BTCUSD")

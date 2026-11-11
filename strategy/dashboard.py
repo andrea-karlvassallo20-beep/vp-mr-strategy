@@ -987,6 +987,132 @@ def _tops_bottoms_html(paper_dir: Path) -> str:
             f'{reg_html}')
 
 
+def _state_space_svg(ss: dict, width=520, height=340) -> str:
+    """3D AVFI state-space trajectory, isometric projection. Axes:
+    x = AVFI spread z (regime), y = price z (stretch), z = trailing vol
+    percentile (risk). Turns are regions of space; the trajectory shows
+    them as orbit changes."""
+    n = len(ss.get("sp_z", []))
+    if n < 50:
+        return ""
+    start = max(0, n - 400)
+    x = np.array(ss["sp_z"][start:])
+    y = np.array(ss["price_z"][start:])
+    z = np.array(ss["vol_pct"][start:])
+    # isometric projection
+    c30, s30 = 0.866, 0.5
+    u = (x - y) * c30
+    v = (x + y) * s30 - z
+    pad = 24
+    su = (width - 2 * pad) / (u.max() - u.min() or 1.0)
+    sv = (height - 2 * pad) / (v.max() - v.min() or 1.0)
+    s = min(su, sv)
+    ox = width / 2 - (u.max() + u.min()) / 2 * s
+    oy = height / 2 + (v.max() + v.min()) / 2 * s
+    px = lambda i: ox + u[i] * s
+    py = lambda i: oy - v[i] * s
+    pts = " ".join(f"{px(i):.1f},{py(i):.1f}"
+                   for i in range(len(u)))
+    marks = ""
+    for key, color, dy in (("divergence_bottoms", "#3fb950", -1),
+                           ("climax_bottoms", "#3fb950", 1),
+                           ("divergence_tops", "#f85149", 1),
+                           ("climax_tops", "#f85149", -1)):
+        for idx in ss.get(key, []):
+            i = idx - start
+            if 0 <= i < len(u):
+                marks += (f'<circle cx="{px(i):.1f}" cy="{py(i):.1f}" '
+                          f'r="3" fill="{color}" fill-opacity=".85">'
+                          f'<title>{key} {ss["dates"][idx]}</title>'
+                          f'</circle>')
+    # origin axes cross at the projected (0,0,0.5)
+    uo = (0 - 0) * c30
+    vo = (0 + 0) * s30 - 0.5
+    xo, yo = ox + uo * s, oy - vo * s
+    return (f'<svg width="{width}" height="{height}" role="img" '
+            f'aria-label="{_esc(ss["ticker"])} AVFI state space" '
+            f'viewBox="0 0 {width} {height}">'
+            f'<line x1="{xo:.1f}" y1="{yo:.1f}" '
+            f'x2="{width - pad}" y2="{yo:.1f}" '
+            f'stroke="rgba(128,128,128,.25)"/>'
+            f'<line x1="{xo:.1f}" y1="{yo:.1f}" x2="{xo:.1f}" '
+            f'y2="{pad}" stroke="rgba(128,128,128,.25)"/>'
+            f'<polyline fill="none" stroke="#a371f7" '
+            f'stroke-width="1.1" stroke-opacity=".8" '
+            f'points="{pts}"/>{marks}'
+            f'<text x="10" y="16" font-size="11" fill="#8b949e">'
+            f'{_esc(ss["ticker"])} — state space: x=spread z, '
+            f'y=price z, z=vol regime</text></svg>')
+
+
+def _state_space_html(paper_dir: Path) -> str:
+    """The 3D AVFI state-space section: trajectories for the deployed
+    ETFs and the strongest mean-reverting commodities."""
+    path = paper_dir / "research" / "avfi_state_space.json"
+    if not path.exists():
+        return ("<p class=\"dim\">State-space trajectories appear "
+                "here after the first nightly research pass.</p>")
+    series = json.load(open(path))
+    etfs = [s for s in series
+            if s["ticker"] in ("SPY", "QQQ", "IWM", "XLF", "XLE")]
+    top_comm = [s for s in series if s["ticker"] in
+                ("ZOF", "OJF", "CTF", "ZSF", "ZWF", "PLF", "CLF")]
+    svgs = "".join(f'<div class="pc">{_state_space_svg(s)}</div>'
+                   for s in etfs + top_comm)
+    return (f'<p class="dim">Every bar is a <strong>position in '
+            f'space</strong>, and the strategy lives as a trajectory '
+            f'through it: x = AVFI spread z (the regime axis), '
+            f'y = price z-score (the stretch axis), z = trailing vol '
+            f'percentile (the risk axis). Tops and bottoms are not '
+            f'points on a price chart — they are <strong>regions of '
+            f'this space</strong>: bottoms form in the deep-stretch, '
+            f'fading-flow, elevated-vol octant; tops in the mirror. '
+            f'Turns appear as orbit changes. Purple = trajectory, '
+            f'green = detected bottoms, red = detected tops '
+            f'(hover for dates). Deployed ETFs plus the strongest '
+            f'mean-reverting commodities.</p>'
+            f'<div class="pgrid">{svgs}</div>')
+
+
+def _extended_detections_html(paper_dir: Path) -> str:
+    """Tops-and-bottoms detections across the full commodity (and
+    extended) universe, on dailies."""
+    path = paper_dir / "research" / "tops_bottoms_extended.json"
+    if not path.exists():
+        return ("<p class=\"dim\">Extended-universe detections appear "
+                "here after the first nightly research pass.</p>")
+    r = json.load(open(path))
+    charts = r.get("charts", [])
+    comm = [c for c in charts if not c["ticker"].endswith("USD")]
+    svgs = "".join(f'<div class="pc">{_tb_chart_svg(c)}</div>'
+                   for c in comm)
+    rows = ""
+    for row in r.get("rows", []):
+        if row["ticker"].endswith("USD"):
+            continue
+        tb = row.get("topology_buckets", {})
+        lf = {int(k): v["long_fwd"] for k, v in tb.items()
+              if v.get("long_fwd") is not None}
+        holds = "yes" if (2 in lf and 3 in lf and lf[3] > lf[2]) \
+            else "no"
+        cls = "good" if holds == "yes" else "dim"
+        rows += (f'<tr><td>{_esc(row["ticker"])}</td>'
+                 f'<td>{row["n_divergence_bottoms"]}</td>'
+                 f'<td>{row["n_climax_bottoms"]}</td>'
+                 f'<td>{row["n_confirmed"]}</td>'
+                 f'<td class="{cls}">{holds}</td></tr>')
+    return (f'<p class="dim">Detected bottoms (green) and tops (red) '
+            f'across the full commodity universe — triangles = RSI '
+            f'divergence, squares = VSA climax, daily bars. The '
+            f'table asks whether the confluence regularity '
+            f'(score-3 &gt; score-2) holds in each commodity.</p>'
+            f'<div class="pgrid">{svgs}</div>'
+            '<table><tr><th>Commodity</th><th>div bottoms</th>'
+            '<th>climax bottoms</th><th>confirmed entries</th>'
+            '<th>confluence holds</th></tr>'
+            f'{rows}</table>')
+
+
 def build_site(paper_dir: Path) -> str:
     """Salient: the public one-page site (GitHub Pages, docs/index.html).
     Sections: overview, charts, race, knowledge, reports, journal,
@@ -1071,6 +1197,8 @@ def build_site(paper_dir: Path) -> str:
     nav = (" ".join(
         f'<a href="#{a}">{t}</a>' for a, t in
         (("avfi", "AVFI"), ("topsbottoms", "Tops & bottoms"),
+         ("statespace", "State space"),
+         ("commodities", "Commodities"),
          ("overview", "Overview"),
          ("charts", "Charts"),
          ("race", "Self-learning"), ("crossasset", "Cross-asset"),
@@ -1231,6 +1359,12 @@ the same real bars every night. Each curve is scaled to its own range.</p>
 </section>
 <section id="reports"><h2>Latest reports</h2>
 {reports}
+</section>
+<section id="statespace"><h2>AVFI state space &mdash; the 3D ideology</h2>
+{_state_space_html(paper_dir)}
+</section>
+<section id="commodities"><h2>Commodity detections (dailies)</h2>
+{_extended_detections_html(paper_dir)}
 </section>
 {journal_html}
 <section id="buildlog"><h2>Build log</h2>

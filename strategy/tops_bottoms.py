@@ -271,6 +271,9 @@ def run_study(data_dir: Path,
               universe=("SPY", "QQQ", "IWM", "XLF", "XLE")) -> dict:
     rows = []
     charts = []
+    if universe is None:
+        universe = sorted(f.stem.upper()
+                          for f in data_dir.glob("*.csv"))
     for s in universe:
         f = data_dir / f"{s.lower()}.csv"
         if not f.exists():
@@ -495,8 +498,15 @@ def main() -> None:
                     default=Path("paper/research"))
     args = ap.parse_args()
     r = run_study(args.data_dir)
-    rob = confluence_robustness(args.data_dir,
-                                args.data_dir.parent / "research" / "data")
+    ext_dir = args.data_dir.parent / "research" / "data"
+    if ext_dir.exists():
+        ext = run_study(ext_dir, universe=None)
+        (args.research_dir / "tops_bottoms_extended.json").write_text(
+            json.dumps(ext, indent=2))
+        print(f"extended detections -> "
+              f"{args.research_dir / 'tops_bottoms_extended.json'} "
+              f"({len(ext.get('rows', []))} series)")
+    rob = confluence_robustness(args.data_dir, ext_dir)
     r["robustness"] = rob
     r["regime"] = regime_conditional_confluence(args.data_dir)
     write_report(r, args.research_dir / "tops_bottoms_report.md")
