@@ -87,7 +87,10 @@ class PaperTradingRunner:
             for l in state["low_buf"][s]:
                 self.strat._low[s].append(l)
         self.strat.equity = state["equity"]
-        self.invocations = state.get("invocations", 0)
+        # legacy states predate the counter; a persisted state proves at
+        # least one session ran (the original backfill) — credit it, or
+        # re-saving would erase it and regress the gate to 0/20
+        self.invocations = state.get("invocations", 1)
         for s in state["universe"]:
             if state["entry_px"].get(s) is not None:
                 self.strat._entry_px[s] = state["entry_px"][s]
