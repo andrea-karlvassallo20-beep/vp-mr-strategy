@@ -27,6 +27,23 @@ jobs:
       - name: Paper-trading runner suite (persistence, idempotency, SPI)
         run: python3 strategy/test_runner.py
 
+      - name: Feed contract check (synthetic fetch -> runner consumption)
+        run: |
+          python3 strategy/fetch_data.py --data-dir /tmp/feeddata --synthetic --bars 120 --tickers SPY,QQQ
+          python3 - <<'PY'
+          import sys
+          sys.path.insert(0, "strategy")
+          from papertrading_runner import load_bars
+          from pathlib import Path
+          for f in Path("/tmp/feeddata").glob("*.csv"):
+              bars = load_bars(f)
+              assert len(bars) == 120, f
+              dates = [b["date"] for b in bars]
+              assert dates == sorted(dates), f"dates not monotonic: {f}"
+              assert all(b["close"] > 0 for b in bars), f
+              print(f"{f.name}: 120 bars, monotonic dates, valid closes")
+          PY
+
       - name: Smoke validation (SPI + determinism)
         run: |
           python3 strategy/vp_mr_strategy.py
