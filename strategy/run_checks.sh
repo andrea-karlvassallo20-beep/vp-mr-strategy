@@ -26,6 +26,9 @@ python3 test_fetch.py
 echo "=== 7/8 Edge-seeker (honest walk-forward proposals) ==="
 python3 test_edge_seeker.py
 
+echo "=== 8b Knowledge variants (vol models, VSA filter) ==="
+python3 test_vol_models.py
+
 echo "=== 8/8 Dashboard generation ==="
 python3 test_dashboard.py
 

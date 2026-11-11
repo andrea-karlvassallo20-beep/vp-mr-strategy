@@ -29,17 +29,34 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent))
 from papertrading_runner import load_bars
 from vp_mr_strategy import StrategyParameters, VolatilityParityMeanReversionStrategy
+from vol_models import VariantStrategy
 
-CANDIDATES = [(z, lb) for z in (1.5, 2.0, 2.5) for lb in (60, 100, 150)]
+# candidate space: (z_entry, lookback, vol_model, volume_filter)
+# vol_model: realized (production) | ewma (Levy/RiskMetrics) | garch (Levy)
+# volume_filter: VSA weak-effort entry filter (Williams)
+CANDIDATES = [
+    (z, lb, vm, vf)
+    for z in (1.5, 2.0, 2.5)
+    for lb in (60, 100, 150)
+    for vm in ("realized", "ewma", "garch")
+    for vf in (False, True)
+]
 MARGIN = 0.10   # candidate must beat production OOS Sharpe by this
 
 
 def run_equity(prices: Dict[str, np.ndarray],
-               params: StrategyParameters) -> tuple:
+               params: StrategyParameters,
+               variant: tuple = ("realized", False)) -> tuple:
     """Full-length backtest; returns (equity_curve, fills). Signals use only
-    trailing data throughout, so scoring any later window is leakage-free."""
-    strat = VolatilityParityMeanReversionStrategy(
-        params, list(prices.keys()), 1_000_000.0)
+    trailing data throughout, so scoring any later window is leakage-free.
+    variant: (vol_model, volume_filter) research extension."""
+    vm, vf = variant
+    if vm == "realized" and not vf:
+        strat = VolatilityParityMeanReversionStrategy(
+            params, list(prices.keys()), 1_000_000.0)
+    else:
+        strat = VariantStrategy(params, list(prices.keys()), 1_000_000.0,
+                                vol_model=vm, volume_filter=vf)
     strat.deploy()
     n = len(next(iter(prices.values())))
     pos_hist = {s: np.zeros(n) for s in prices}
@@ -97,19 +114,22 @@ def seek(data_dir: Path, universe: List[str]) -> dict:
     best = None
     grid_results = []
     equities = {}
-    for z, lb in CANDIDATES:
+    for cand in CANDIDATES:
+        z, lb, vm, vf = cand
         p = StrategyParameters(zscore_entry=z, lookback_zscore=lb)
-        eq, _ = run_equity(prices, p)
-        equities[(z, lb)] = eq
+        eq, _ = run_equity(prices, p, variant=(vm, vf))
+        equities[cand] = eq
         m = score_window(eq, 0, split)
         grid_results.append({"z_entry": z, "lookback": lb,
+                             "vol_model": vm, "volume_filter": vf,
                              "train_sharpe": m["sharpe"]})
-        if best is None or m["sharpe"] > best[2]:
-            best = (z, lb, m["sharpe"])
-    z_star, lb_star, train_sharpe = best
+        if best is None or m["sharpe"] > best[1]:
+            best = (cand, m["sharpe"])
+    (z_star, lb_star, vm_star, vf_star), train_sharpe = best
 
     # OOS evaluation on the untouched last 40%: selected vs production
-    oos_sel = score_window(equities[(z_star, lb_star)], split, n)
+    oos_sel = score_window(equities[(z_star, lb_star, vm_star, vf_star)],
+                           split, n)
     eq_prod, fills_prod = run_equity(prices, prod_params)
     oos_prod = score_window(eq_prod, split, n)
     oos_sel["fills"] = fills_prod  # fills reported from the full runs
@@ -120,6 +140,8 @@ def seek(data_dir: Path, universe: List[str]) -> dict:
         "status": "OK",
         "bars": n, "split": split,
         "selected_candidate": {"z_entry": z_star, "lookback": lb_star,
+                               "vol_model": vm_star,
+                               "volume_filter": vf_star,
                                "train_sharpe": train_sharpe},
         "oos_selected": oos_sel,
         "oos_production": oos_prod,
@@ -141,20 +163,23 @@ def to_markdown(r: dict) -> str:
     lines.append("")
     lines.append("## Out-of-sample comparison (last 40% of data)")
     lines.append("")
-    lines.append("| Variant | z_entry | lookback | OOS Sharpe | OOS Ann Ret % | OOS Max DD % | Fills |")
-    lines.append("|---|---|---|---|---|---|---|")
+    lines.append("| Variant | z_entry | lookback | vol model | VSA filter | OOS Sharpe | OOS Ann Ret % | OOS Max DD % | Fills |")
+    lines.append("|---|---|---|---|---|---|---|---|---|")
     c = r["selected_candidate"]
     o = r["oos_selected"]
     lines.append(f"| Selected candidate | {c['z_entry']} | {c['lookback']} | "
+                 f"{c['vol_model']} | {c['volume_filter']} | "
                  f"{o['sharpe']} | {o['ann_ret_pct']} | {o['max_dd_pct']} | {o['fills']} |")
     o = r["oos_production"]
     lines.append(f"| Production (frozen) | {StrategyParameters().zscore_entry} | "
                  f"{StrategyParameters().lookback_zscore} | {o['sharpe']} | "
                  f"{o['ann_ret_pct']} | {o['max_dd_pct']} | {o['fills']} |")
     lines += ["", "## Selection-window grid (train Sharpe)", "",
-              "| z_entry | lookback | train Sharpe |", "|---|---|---|"]
+              "| z_entry | lookback | vol model | VSA | train Sharpe |",
+              "|---|---|---|---|---|"]
     for g in r["grid"]:
-        lines.append(f"| {g['z_entry']} | {g['lookback']} | {g['train_sharpe']} |")
+        lines.append(f"| {g['z_entry']} | {g['lookback']} | {g['vol_model']} | "
+                     f"{g['volume_filter']} | {g['train_sharpe']} |")
     lines += ["", f"## Gate 3", "", r["gate3_note"]]
     return "\n".join(lines) + "\n"
 
