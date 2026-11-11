@@ -649,6 +649,61 @@ def _avfi_chart_svg(ch: dict, width=560, height=200) -> str:
             f'spread z (AVFI v3 vs v2)</text></svg>')
 
 
+def _avfi_equity_svg(ch: dict, width=1360, height=240) -> str:
+    """Portfolio equity of the AVFI-throttled bottom-long / top-short
+    strategy."""
+    eq = ch.get("eq", [])
+    if len(eq) < 2:
+        return ""
+    lo, hi = min(eq), max(eq)
+    rng = (hi - lo) or 1.0
+    n = len(eq)
+    xs = [10 + (width - 70) * i / (n - 1) for i in range(n)]
+    pts = " ".join(
+        f"{x:.1f},{10 + (height - 40) * (1 - (v - lo) / rng):.1f}"
+        for x, v in zip(xs, eq))
+    base_y = 10 + (height - 40) * (1 - (1.0 - lo) / rng)
+    color = "#3fb950" if eq[-1] >= 1.0 else "#f85149"
+    grid = ""
+    for frac in (1.0, 0.5, 0.0):
+        y = 10 + (height - 40) * (1 - frac)
+        v = lo + frac * rng
+        grid += (f'<line x1="10" y1="{y:.1f}" x2="{width - 70}" '
+                 f'y2="{y:.1f}" stroke="rgba(128,128,128,.16)"/>'
+                 f'<text x="{width - 64}" y="{y + 3.5:.1f}" '
+                 f'font-size="10" fill="#8b949e">{v:.2f}</text>')
+    total = (eq[-1] - 1.0) * 100.0
+    return (f'<svg width="{width}" height="{height}" role="img" '
+            f'aria-label="AVFI portfolio equity">'
+            f'<defs><linearGradient id="g-avfi-eq" x1="0" y1="0" '
+            f'x2="0" y2="1"><stop offset="0" stop-color="{color}" '
+            f'stop-opacity=".25"/><stop offset="1" '
+            f'stop-color="{color}" stop-opacity="0"/>'
+            f'</linearGradient></defs>{grid}'
+            f'<line x1="10" y1="{base_y:.1f}" x2="{width - 70}" '
+            f'y2="{base_y:.1f}" stroke="#8b949e" stroke-dasharray="4 4"/>'
+            f'<polygon fill="url(#g-avfi-eq)" points="10,{height - 30} '
+            f'{pts} {width - 70},{height - 30}"/>'
+            f'<polyline fill="none" stroke="{color}" '
+            f'stroke-width="2" points="{pts}"/>'
+            f'<text x="14" y="24" font-size="11" fill="{color}">'
+            f'equal-weight portfolio equity: {total:+.1f}% '
+            f'(longs at bottoms, shorts at tops, throttled by AVFI)'
+            f'</text></svg>')
+
+
+def _avfi_code_html() -> str:
+    """The annotated research code, shown so every bit is readable."""
+    src_path = Path(__file__).parent / "avfi.py"
+    if not src_path.exists():
+        return ""
+    code = _esc(src_path.read_text())
+    return ('<details class="doc" open><summary>The code, explained '
+            '<span class="dim">— strategy/avfi.py, every comment is '
+            'live from the source</span></summary>'
+            f'<pre>{code}</pre></details>')
+
+
 def _avfi_html(paper_dir: Path) -> str:
     """AVFI v3 risk-throttle research: per-instrument charts with
     trades and throttle zones, plus the iteration ledger."""
@@ -657,8 +712,12 @@ def _avfi_html(paper_dir: Path) -> str:
         return ("<p class=\"dim\">AVFI research appears here after "
                 "the first nightly research pass.</p>")
     charts = json.load(open(chart_path))
+    portfolio = next((c for c in charts if c["ticker"] == "PORTFOLIO"),
+                     None)
+    eq_svg = _avfi_equity_svg(portfolio) if portfolio else ""
     svgs = "".join(
-        f'<div class="pc">{_avfi_chart_svg(ch)}</div>' for ch in charts)
+        f'<div class="pc">{_avfi_chart_svg(ch)}</div>'
+        for ch in charts if ch["ticker"] != "PORTFOLIO")
     site_link = ""
     if (Path(__file__).resolve().parent.parent / "docs" / "avfi-nq.html") \
             .exists():
@@ -702,7 +761,12 @@ def _avfi_html(paper_dir: Path) -> str:
             f'trigger. Green up-triangles mark long entries, red '
             f'down-triangles short entries.</p>'
             f'{site_link}'
-            f'<div class="pgrid">{svgs}</div>{ledger_html}')
+            f'<h3 class="sub">Portfolio equity (throttled)</h3>'
+            f'{eq_svg}'
+            f'<h3 class="sub">Per-instrument: price, entries, '
+            f'spread z and throttle zones</h3>'
+            f'<div class="pgrid">{svgs}</div>{ledger_html}'
+            f'{_avfi_code_html()}')
 
 
 def build_site(paper_dir: Path) -> str:
@@ -788,8 +852,9 @@ def build_site(paper_dir: Path) -> str:
 
     nav = (" ".join(
         f'<a href="#{a}">{t}</a>' for a, t in
-        (("overview", "Overview"), ("charts", "Charts"),
-         ("race", "Self-learning"), ("crossasset", "Cross-asset"), ("avfi", "AVFI"),
+        (("avfi", "AVFI"), ("overview", "Overview"),
+         ("charts", "Charts"),
+         ("race", "Self-learning"), ("crossasset", "Cross-asset"),
          ("knowledge", "Knowledge"),
          ("reports", "Reports"), ("journal", "Journal"),
          ("buildlog", "Build log"), ("repo", "Repository"))))
@@ -909,6 +974,9 @@ financial gain.</p>
 <p class="pnote">{pct}% of the 20-session forward test toward promotion</p>
 <div class="metrics">{metrics}</div>
 </div>
+<section id="avfi"><h2>AVFI &mdash; the edge formula, iterating nightly</h2>
+{_avfi_html(paper_dir)}
+</section>
 <section id="charts"><h2>Performance</h2>
 <p class="legend"><span><i class="dot" style="background:#3fb950"></i>equity
 (mark-to-market, net of costs)</span>
@@ -930,9 +998,6 @@ the same real bars every night. Each curve is scaled to its own range.</p>
 </section>
 <section id="crossasset"><h2>Cross-asset edge research</h2>
 {_cross_asset_html(paper_dir)}
-</section>
-<section id="avfi"><h2>AVFI v3 &mdash; risk throttle research</h2>
-{_avfi_html(paper_dir)}
 </section>
 <section id="knowledge"><h2>Knowledge base &rarr; strategy design</h2>
 {_knowledge_html()}

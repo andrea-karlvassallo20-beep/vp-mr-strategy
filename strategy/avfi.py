@@ -65,6 +65,12 @@ VARIANT_GRID = [
 ]
 
 
+# --- the indicator, piece by piece ------------------------------------
+# Every window below is STRICTLY TRAILING: at bar t we only ever see
+# bars <= t. That is Gate 1 (zero lookahead) and it is what makes the
+# whole study honest.
+
+
 def trailing_mean(values: np.ndarray, window: int) -> np.ndarray:
     """Strictly trailing rolling mean: out[t] = mean(values up to t).
     Early bars (window not yet full) use the expanding mean."""
@@ -88,6 +94,9 @@ def ema(values: np.ndarray, span: int) -> np.ndarray:
 
 def parkinson_sigma_pk(high: np.ndarray, low: np.ndarray,
                        window: int) -> np.ndarray:
+    # sigmaPk: the "range-aware volatility floor" of AVFI v3. Parkinson
+    # showed the high-low range carries ~5x more volatility information
+    # per bar than the close; wide-range bars = high vol floor.
     """Parkinson-style per-bar vol floor from ln(H/L)^2, strictly
     trailing window."""
     rng = np.log(np.maximum(high, 1e-9) / np.maximum(low, 1e-9)) ** 2
@@ -96,6 +105,9 @@ def parkinson_sigma_pk(high: np.ndarray, low: np.ndarray,
 
 
 def avfi_v3_series(high, low, close, volume, vol_window, pk_window):
+    # AVFI v3 = signed price move x log-volume normalization (va) x the
+    # Parkinson vol floor. va > 1 means this bar's volume is above its
+    # trailing norm (real effort); va < 1 means weak effort.
     """Range-aware vol-floor flow with log-volume normalization (v3)."""
     sigma_pk = parkinson_sigma_pk(high, low, pk_window)
     with np.errstate(divide="ignore", invalid="ignore"):
@@ -124,6 +136,9 @@ def avfi_v2_series(close, volume, vol_window):
 
 
 def spread_axis(high, low, close, volume, params) -> np.ndarray:
+    # THE SPREAD AXIS: AVFI v3 minus a slow EMA of AVFI v2. When v3 runs
+    # above the slow v2 line, range-aware flow is expanding; below it,
+    # effort is fading — a slow regime descriptor.
     """spread = AVFI v3 - slow EMA of AVFI v2 (the spread axis)."""
     v3 = avfi_v3_series(high, low, close, volume,
                         params["vol_window"], params["pk_window"])
@@ -133,6 +148,9 @@ def spread_axis(high, low, close, volume, params) -> np.ndarray:
 
 
 def spread_z(spread: np.ndarray, window: int) -> np.ndarray:
+    # sigma-normalized histogram: how many trailing standard deviations
+    # the spread sits from its trailing mean. This z is what the
+    # throttle reads.
     """Trailing z-score of the spread (sigma-normalized histogram)."""
     z = np.zeros_like(spread)
     for t in range(window, len(spread)):
@@ -150,6 +168,13 @@ def throttle_backtest(high, low, close, volume,
     cuts exposure to `throttle` x when sp_z <= trigger. Strictly
     causal. Returns dict with metrics, equity curve, positions,
     entries and the sp_z series."""
+    # --- the strategy the throttle rides on --------------------------
+    # A plain z-score mean-reversion core: buy stretched bottoms
+    # (z <= -2), sell stretched tops (z >= +2), exit near the mean.
+    # The AVFI throttle then CUTS exposure when the spread z says the
+    # regime is distribution (effort without result) — risk-off, not
+    # entry timing. Equity therefore revolves around longs at bottoms
+    # and shorts at tops, throttled by AVFI.
     p = dict(DEFAULT_PARAMS if params is None else params)
     logp = np.log(close)
     n = len(close)
@@ -167,11 +192,13 @@ def throttle_backtest(high, low, close, volume,
             continue
         z = (logp[t] - mu) / sd
         if cur == 0.0 and abs(z) >= Z_ENTRY:
-            cur = -1.0 if z > 0 else 1.0
+            cur = -1.0 if z > 0 else 1.0   # short the top, long the bottom
             entries.append((t + 1, cur))
         elif cur != 0.0 and abs(z) <= Z_EXIT:
             cur = 0.0
         size = cur
+        # AVFI risk throttle: regime says distribution -> shrink the
+        # position instead of trusting the stretch
         if use_throttle and cur != 0.0 and sp_z[t] <= p["trigger"]:
             size = cur * p["throttle"]
             throttled += 1
@@ -227,6 +254,13 @@ def _save_params(research_dir: Path, params: dict) -> None:
 
 def run_iteration(data_dir: Path, research_dir: Path,
                   universe=("SPY", "QQQ", "IWM", "XLF", "XLE")) -> dict:
+    # --- one improvement iteration --------------------------------------
+    # 1. load the CURRENT research parameters (avfi_params.json)
+    # 2. evaluate them on the deployed universe
+    # 3. search the pre-committed 24-variant grid, scoring candidates on
+    #    the untouched last 40% of data (train/OOS honesty)
+    # 4. advance the parameters only if a candidate beats them OOS
+    # 5. append an honest record to the iteration ledger
     """One improvement iteration: evaluate current params, search the
     pre-committed grid with train/OOS honesty, advance params if a
     candidate wins out-of-sample, append to the ledger."""
@@ -323,7 +357,18 @@ def run_iteration(data_dir: Path, research_dir: Path,
             "throttle": params["throttle"],
             "entries": [[int(t), int(d)] for t, d in run["entries"]],
             "throttled_bars": run["throttled_bars"],
+            "eq": [round(float(x), 5) for x in run["eq"]],
         })
+    # portfolio equity: equal-weight blend of the throttled instrument
+    # equity curves — the bottom-line result of longs at bottoms and
+    # shorts at tops, throttled by AVFI
+    n_eq = min(len(ch["eq"]) for ch in chart)
+    portfolio_eq = [round(float(np.mean([ch["eq"][i] for ch in chart])),
+                          5) for i in range(n_eq)]
+    chart.insert(0, {"ticker": "PORTFOLIO", "dates":
+                     chart[0]["dates"][-len(portfolio_eq):],
+                     "eq": portfolio_eq, "trigger":
+                     params["trigger"]})
     (research_dir / "avfi_chart.json").write_text(json.dumps(chart))
 
     rows = []

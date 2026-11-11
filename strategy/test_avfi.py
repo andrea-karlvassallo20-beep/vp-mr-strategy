@@ -112,11 +112,15 @@ check("iteration ledger written with honest record",
       and "oos_dd_reduction_pct" in r["iteration"])
 chart = json.loads((tmp / "research" / "avfi_chart.json").read_text())
 check("chart data exported per instrument",
-      len(chart) == 2 and all(
-          k in chart[0] for k in ("ticker", "dates", "close", "sp_z",
-                                  "entries", "trigger")))
+      len(chart) == 3 and all(
+          k in chart[1] for k in ("ticker", "dates", "close", "sp_z",
+                                  "entries", "trigger", "eq")))
+check("chart includes the PORTFOLIO equity entry",
+      any(ch["ticker"] == "PORTFOLIO" and len(ch["eq"]) > 2
+          for ch in chart))
 check("chart entries match the audited decision log",
-      all(len(ch["entries"]) > 0 for ch in chart))
+      all(len(ch["entries"]) > 0 for ch in chart
+          if ch["ticker"] != "PORTFOLIO"))
 rep = tmp / "avfi_report.md"
 write_report(r, rep)
 txt = rep.read_text()
