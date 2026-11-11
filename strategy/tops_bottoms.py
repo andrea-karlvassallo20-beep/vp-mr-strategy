@@ -1,0 +1,272 @@
+"""Tops-and-bottoms detection: divergence and climax detectors.
+
+Two knowledge-grounded detectors for finding turns, both strictly
+trailing (Gate 1):
+
+1. RSI DIVERGENCE (Elliott Wave / classic timing layer):
+   a bottom when price prints a lower low but RSI prints a higher low
+   (momentum refuses to confirm the new price extreme); a top when
+   price prints a higher high but RSI prints a lower high.
+
+2. VSA CLIMAX (Master the Markets, "effort vs results"):
+   a bottom when volume >= 2x its trailing mean AND the bar's range is
+   wide AND the close recovers into the upper half of the bar after a
+   decline (effort huge, result reversed = selling exhaustion); a top
+   is the mirror after a rally.
+
+Evaluation is an honest event study: for every plain z-score entry
+(the production signal), compare forward returns when the entry IS vs
+IS NOT confirmed by a detector — and report the standalone detector
+hit rates. Negative results are reported.
+
+Usage (nightly):
+    python3 tops_bottoms.py --data-dir ./paper/data \
+        --research-dir ./paper/research
+"""
+import argparse
+import json
+import math
+from pathlib import Path
+
+import numpy as np
+
+import sys
+sys.path.insert(0, str(Path(__file__).parent))
+from papertrading_runner import load_bars
+
+RSI_WINDOW = 14
+DIVERGENCE_LOOKBACK = 20
+CLIMAX_VOL_MULT = 2.0
+CLIMAX_RANGE_MULT = 1.5
+Z_ENTRY = 2.0
+LOOKBACK = 100
+WARMUP = 110
+
+
+def rsi(close: np.ndarray, window: int = RSI_WINDOW) -> np.ndarray:
+    """Wilder's RSI, strictly trailing."""
+    delta = np.diff(close)
+    out = np.zeros(len(close))
+    gain = np.zeros(len(delta))
+    loss = np.zeros(len(delta))
+    gain[delta > 0] = delta[delta > 0]
+    loss[-delta > 0] = -delta[-delta > 0]
+    avg_g = np.zeros(len(delta))
+    avg_l = np.zeros(len(delta))
+    if len(delta) == 0:
+        return out
+    avg_g[window - 1] = gain[:window].mean()
+    avg_l[window - 1] = loss[:window].mean()
+    for t in range(window, len(delta)):
+        avg_g[t] = (avg_g[t - 1] * (window - 1) + gain[t]) / window
+        avg_l[t] = (avg_l[t - 1] * (window - 1) + loss[t]) / window
+    rs = np.where(avg_l > 0, avg_g / np.where(avg_l == 0, 1e-9, avg_l),
+                  np.inf)
+    val = 100.0 - 100.0 / (1.0 + rs)
+    out[window:] = val[window - 1:]
+    return out
+
+
+def detect_divergences(close: np.ndarray, rsi_arr: np.ndarray,
+                       lookback: int = DIVERGENCE_LOOKBACK):
+    """Bullish/bearish RSI divergences, strictly trailing. Returns
+    (bullish_idx, bearish_idx) arrays of bar indices where the
+    divergence is confirmed."""
+    bull, bear = [], []
+    n = len(close)
+    for t in range(lookback + 2, n):
+        ref = t - lookback
+        # bullish: price lower low, RSI higher low
+        if close[t] < close[ref] and rsi_arr[t] > rsi_arr[ref] \
+                and close[t] == close[max(t - 3, 0):t + 1].min() \
+                and rsi_arr[t] < 40:
+            bull.append(t)
+        # bearish: price higher high, RSI lower high
+        elif close[t] > close[ref] and rsi_arr[t] < rsi_arr[ref] \
+                and close[t] == close[max(t - 3, 0):t + 1].max() \
+                and rsi_arr[t] > 60:
+            bear.append(t)
+    return np.array(bull, dtype=int), np.array(bear, dtype=int)
+
+
+def detect_climaxes(high, low, close, volume,
+                   vol_mult: float = CLIMAX_VOL_MULT,
+                   range_mult: float = CLIMAX_RANGE_MULT):
+    """VSA climax bars: huge effort (volume AND range stretched vs
+    their trailing means) with a result that reverses the bar's own
+    direction. Returns (bottom_idx, top_idx)."""
+    n = len(close)
+    rng = (high - low) / np.maximum(close, 1e-9)
+    vol_avg = np.zeros(n)
+    rng_avg = np.zeros(n)
+    csum_v = np.cumsum(volume)
+    csum_r = np.cumsum(rng)
+    for t in range(n):
+        lo = max(0, t - 20)
+        cnt = t - lo + 1
+        vol_avg[t] = (csum_v[t] - (csum_v[lo - 1] if lo > 0 else 0)) / cnt
+        rng_avg[t] = (csum_r[t] - (csum_r[lo - 1] if lo > 0 else 0)) / cnt
+    up_half = (close - low) / np.maximum(high - low, 1e-9)
+    bottoms, tops = [], []
+    for t in range(30, n):
+        if volume[t] < vol_mult * vol_avg[t] or \
+                rng[t] < range_mult * rng_avg[t]:
+            continue
+        # the trend INTO the bar (excluding the reversal bar itself)
+        declined = close[t - 1] < close[max(t - 10, 0)]
+        rallied = close[t - 1] > close[max(t - 10, 0)]
+        if declined and up_half[t] >= 0.6:
+            bottoms.append(t)
+        elif rallied and up_half[t] <= 0.4:
+            tops.append(t)
+    return np.array(bottoms, dtype=int), np.array(tops, dtype=int)
+
+
+def z_entries(close: np.ndarray, lookback: int = LOOKBACK,
+              z_entry: float = Z_ENTRY):
+    """Plain z-score bottom-long / top-short signals (production)."""
+    logp = np.log(close)
+    entries = []
+    for t in range(lookback + 1, len(close)):
+        w = logp[t - lookback + 1:t + 1]
+        sd = w.std()
+        if sd <= 0:
+            continue
+        z = (logp[t] - w.mean()) / sd
+        if z <= -z_entry:
+            entries.append((t, 1))
+        elif z >= z_entry:
+            entries.append((t, -1))
+    return entries
+
+
+def forward_returns(close: np.ndarray, idx: int, horizon: int = 10):
+    """Forward return over `horizon` bars after idx (None at the end)."""
+    if idx + horizon >= len(close):
+        return None
+    return float(close[idx + horizon] / close[idx] - 1.0)
+
+
+def event_study(close, entries, confirm_idx) -> dict:
+    """Compare forward returns of confirmed vs unconfirmed entries.
+    confirm_idx: set of bar indices where ANY detector confirms."""
+    conf, unconf = [], []
+    for t, d in entries:
+        window = range(max(0, t - 3), t + 1)
+        r = forward_returns(close, t)
+        if r is None:
+            continue
+        (conf if any(i in confirm_idx for i in window) else
+         unconf).append((r, d))
+    def mean_side(vals, d):
+        side = [r for r, dd in vals if dd == d]
+        return float(np.mean(side)) if side else None
+    def hit_rate(vals, d):
+        side = [r for r, dd in vals if dd == d]
+        if not side:
+            return None
+        return float(np.mean([1.0 if (r > 0) == (d > 0) else 0.0
+                               for r in side]))
+    return {
+        "n_confirmed": len(conf), "n_unconfirmed": len(unconf),
+        "long_confirmed_fwd": mean_side(conf, 1),
+        "long_unconfirmed_fwd": mean_side(unconf, 1),
+        "short_confirmed_fwd": mean_side(conf, -1),
+        "short_unconfirmed_fwd": mean_side(unconf, -1),
+        "long_confirmed_hit": hit_rate(conf, 1),
+        "short_confirmed_hit": hit_rate(conf, -1),
+    }
+
+
+def run_study(data_dir: Path,
+              universe=("SPY", "QQQ", "IWM", "XLF", "XLE")) -> dict:
+    rows = []
+    charts = []
+    for s in universe:
+        f = data_dir / f"{s.lower()}.csv"
+        if not f.exists():
+            continue
+        bars = load_bars(f)
+        if len(bars) < WARMUP + 60:
+            continue
+        h = np.array([b["high"] for b in bars])
+        l = np.array([b["low"] for b in bars])
+        c = np.array([b["close"] for b in bars])
+        v = np.array([float(b["volume"]) for b in bars])
+        r = rsi(c)
+        bull, bear = detect_divergences(c, r)
+        cb, ct = detect_climaxes(h, l, c, v)
+        entries = z_entries(c)
+        confirm = set(bull.tolist()) | set(cb.tolist()) | \
+            set(bear.tolist()) | set(ct.tolist())
+        study = event_study(c, entries, confirm)
+        rows.append({
+            "ticker": s,
+            "n_divergence_bottoms": int(len(bull)),
+            "n_divergence_tops": int(len(bear)),
+            "n_climax_bottoms": int(len(cb)),
+            "n_climax_tops": int(len(ct)),
+            "n_z_entries": len(entries),
+            **{k: (round(x, 4) if isinstance(x, float) else x)
+               for k, x in study.items()},
+        })
+        charts.append({
+            "ticker": s,
+            "dates": [b["date"] for b in bars],
+            "close": [round(float(x), 2) for x in c],
+            "divergence_bottoms": bull.tolist(),
+            "divergence_tops": bear.tolist(),
+            "climax_bottoms": cb.tolist(),
+            "climax_tops": ct.tolist(),
+        })
+    return {"status": "OK" if rows else "NO_DATA", "rows": rows,
+            "charts": charts}
+
+
+def write_report(r: dict, markdown: Path) -> None:
+    lines = ["# Tops-and-bottoms detection study", "",
+             "Two strictly-trailing detectors — RSI divergence and VSA "
+             "volume climax — checked against the plain z-score entries: "
+             "do confirmed entries forward-perform better than "
+             "unconfirmed ones? Honest by design.", "",
+             "| Ticker | div bot | div top | clim bot | clim top | z "
+             "entries | confirmed | unconfirmed | long fwd (conf) | "
+             "long fwd (unconf) | short fwd (conf) | short fwd "
+             "(unconf) |", "|---|---|---|---|---|---|---|---|---|---|"
+             "---|---|"]
+    for row in r.get("rows", []):
+        fmt = lambda x: f"{x:+.4f}" if isinstance(x, float) else "-"
+        lines.append(
+            f"| {row['ticker']} | {row['n_divergence_bottoms']} | "
+            f"{row['n_divergence_tops']} | {row['n_climax_bottoms']} | "
+            f"{row['n_climax_tops']} | {row['n_z_entries']} | "
+            f"{row['n_confirmed']} | {row['n_unconfirmed']} | "
+            f"{fmt(row['long_confirmed_fwd'])} | "
+            f"{fmt(row['long_unconfirmed_fwd'])} | "
+            f"{fmt(row['short_confirmed_fwd'])} | "
+            f"{fmt(row['short_unconfirmed_fwd'])} |")
+    lines += ["", "Reading: a detector helps only if confirmed entries "
+              "forward-outperform unconfirmed ones on the correct side. "
+              "Anything else is reported as a null result."]
+    markdown.parent.mkdir(parents=True, exist_ok=True)
+    markdown.write_text("\n".join(lines) + "\n")
+    print(f"tops/bottoms report written -> {markdown}")
+
+
+def main() -> None:
+    ap = argparse.ArgumentParser(
+        description="Tops-and-bottoms detector study")
+    ap.add_argument("--data-dir", type=Path, default=Path("paper/data"))
+    ap.add_argument("--research-dir", type=Path,
+                    default=Path("paper/research"))
+    args = ap.parse_args()
+    r = run_study(args.data_dir)
+    write_report(r, args.research_dir / "tops_bottoms_report.md")
+    args.research_dir.mkdir(parents=True, exist_ok=True)
+    (args.research_dir / "tops_bottoms.json").write_text(
+        json.dumps(r, indent=2))
+    print(f"results written -> {args.research_dir / 'tops_bottoms.json'}")
+
+
+if __name__ == "__main__":
+    main()

@@ -55,6 +55,10 @@ DEFAULT_PARAMS = {
                                     #  high-low range wastes)
     "volume_mode": "shares",        # or "dollar" (volume x close —
                                     #  robust to splits/share counts)
+    "entry_mode": "zscore",         # or "detector": z-score entries
+                                    #  confirmed by the RSI-divergence /
+                                    #  VSA-climax tops-and-bottoms
+                                    #  detectors (tops_bottoms.py)
 }
 Z_ENTRY = 2.0
 Z_EXIT = 0.25
@@ -71,6 +75,14 @@ VARIANT_GRID = [
     for pk in (10, 20)
     for ve, vm in (("parkinson", "shares"), ("garman_klass", "shares"),
                    ("garman_klass", "dollar"))
+] + [
+    # detector-confirmed entries (tops/bottoms confirmation) at the
+    # pre-committed trigger/throttle anchors
+    {"trigger": tr, "throttle": th, "ema_slow": 13, "pk_window": 10,
+     "vol_estimator": "parkinson", "volume_mode": "shares",
+     "entry_mode": "detector"}
+    for tr in (-1.0, -1.5)
+    for th in (0.5, 0.25)
 ]
 
 
@@ -212,6 +224,14 @@ def throttle_backtest(high, low, close, volume,
     p = dict(DEFAULT_PARAMS if params is None else params)
     logp = np.log(close)
     n = len(close)
+    confirm = None
+    if p.get("entry_mode") == "detector":
+        from tops_bottoms import (detect_climaxes, detect_divergences,
+                                  rsi)
+        bull, bear = detect_divergences(close, rsi(close))
+        cb, ct = detect_climaxes(high, low, close, volume)
+        confirm = set(bull.tolist()) | set(bear.tolist()) | \
+            set(cb.tolist()) | set(ct.tolist())
     sp_z = (spread_z(spread_axis(high, low, close, volume, p,
                                   open_=open_), p["sp_z_window"])
             if use_throttle else np.zeros(n))
@@ -225,7 +245,9 @@ def throttle_backtest(high, low, close, volume,
         if sd <= 0:
             continue
         z = (logp[t] - mu) / sd
-        if cur == 0.0 and abs(z) >= Z_ENTRY:
+        confirmed = confirm is None or any(
+            i in confirm for i in range(max(0, t - 3), t + 1))
+        if cur == 0.0 and abs(z) >= Z_ENTRY and confirmed:
             cur = -1.0 if z > 0 else 1.0   # short the top, long the bottom
             entries.append((t + 1, cur))
         elif cur != 0.0 and abs(z) <= Z_EXIT:
