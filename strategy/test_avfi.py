@@ -11,7 +11,8 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
 from avfi import (DEFAULT_PARAMS, VARIANT_GRID, avfi_v2_series,
-                  avfi_v3_series, ema, parkinson_sigma_pk,
+                  avfi_v3_series, ema, garman_klass_sigma,
+                  parkinson_sigma_pk,
                   run_iteration, spread_axis, spread_z,
                   throttle_backtest, trailing_mean, write_report)
 
@@ -88,10 +89,19 @@ finally:
 check("throttle with no trigger reproduces the base run exactly",
       a["sharpe"] == b["sharpe"] and a["throttled_bars"] == 0)
 
+gk = garman_klass_sigma(l, h, l, c, DEFAULT_PARAMS["pk_window"])
+check("Garman-Klass sigma finite and positive on valid OHLC",
+      np.all(np.isfinite(gk[50:])) and np.all(gk[50:] > 0))
+check("dollar-volume mode changes the flow",
+      not np.allclose(
+          avfi_v3_series(h, l, c, v, 20, 20, volume_mode="dollar"),
+          avfi_v3_series(h, l, c, v, 20, 20, volume_mode="shares")))
 check("variant grid is pre-committed and non-trivial",
-      len(VARIANT_GRID) == 24
+      len(VARIANT_GRID) == 72
       and any(g["trigger"] != DEFAULT_PARAMS["trigger"]
-              for g in VARIANT_GRID))
+              for g in VARIANT_GRID)
+      and any(g["vol_estimator"] == "garman_klass" for g in VARIANT_GRID)
+      and any(g["volume_mode"] == "dollar" for g in VARIANT_GRID))
 
 tmp = Path(tempfile.mkdtemp())
 data = tmp / "data"

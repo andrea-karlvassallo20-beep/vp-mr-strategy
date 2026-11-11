@@ -719,19 +719,19 @@ def _avfi_pine_html() -> str:
 def _tradingview_embed(symbol: str = "NASDAQ:NQ1!",
                        interval: str = "W") -> str:
     """Full-bleed live TradingView chart (advanced chart widget):
-    edge-to-edge across the whole browser window, 800px tall."""
+    edge-to-edge across the whole browser window, 900px tall."""
     config = json.dumps({
         "symbol": symbol, "interval": interval, "theme": "dark",
-        "width": "100%", "height": 800, "locale": "en",
+        "width": "100%", "height": 900, "locale": "en",
         "allow_symbol_change": True, "save_image": False,
         "calendar": False, "hide_side_toolbar": False,
         "support_host": "https://www.tradingview.com",
     })
     return ('<div class="tvfull">'
             '<div class="tradingview-widget-container" '
-            'style="height:800px;width:100%">'
+            'style="height:900px;width:100%">'
             '<div class="tradingview-widget-container__widget" '
-            'style="height:800px;width:100%"></div>'
+            'style="height:900px;width:100%"></div>'
             '<script type="text/javascript" '
             'src="https://s3.tradingview.com/external-embedding/'
             'embed-widget-advanced-chart.js" async>'

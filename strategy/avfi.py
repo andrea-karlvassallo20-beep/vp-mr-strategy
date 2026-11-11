@@ -44,11 +44,17 @@ from papertrading_runner import load_bars
 
 DEFAULT_PARAMS = {
     "vol_window": 20,     # volume normalization window
-    "pk_window": 20,      # Parkinson vol floor window
+    "pk_window": 20,      # range-vol floor window
     "ema_slow": 26,       # slow EMA of AVFI v2 (spread axis)
     "sp_z_window": 100,   # trailing z-score window for the spread
     "trigger": -1.0,      # sp_z below this -> throttle on
     "throttle": 0.5,      # exposure multiplier while throttled
+    # formula variants (iteration grid searches these too):
+    "vol_estimator": "parkinson",   # or "garman_klass" (uses OHLC,
+                                    #  captures open->close info the
+                                    #  high-low range wastes)
+    "volume_mode": "shares",        # or "dollar" (volume x close —
+                                    #  robust to splits/share counts)
 }
 Z_ENTRY = 2.0
 Z_EXIT = 0.25
@@ -57,11 +63,14 @@ WARMUP = 110
 COST_BPS = 5.0
 
 VARIANT_GRID = [
-    {"trigger": tr, "throttle": th, "ema_slow": es, "pk_window": pk}
+    {"trigger": tr, "throttle": th, "ema_slow": es, "pk_window": pk,
+     "vol_estimator": ve, "volume_mode": vm}
     for tr in (-0.5, -1.0, -1.5)
     for th in (0.5, 0.25)
     for es in (13, 26)
     for pk in (10, 20)
+    for ve, vm in (("parkinson", "shares"), ("garman_klass", "shares"),
+                   ("garman_klass", "dollar"))
 ]
 
 
@@ -104,12 +113,32 @@ def parkinson_sigma_pk(high: np.ndarray, low: np.ndarray,
     return np.sqrt(trailing_mean(rng, window) * c)
 
 
-def avfi_v3_series(high, low, close, volume, vol_window, pk_window):
+def garman_klass_sigma(open_, high, low, close, window) -> np.ndarray:
+    # Garman-Klass OHLC estimator: everything Parkinson sees PLUS the
+    # open->close move (overnight/session gaps Parkinson wastes).
+    # ~2x more efficient than close-to-close, ~1.4x than Parkinson.
+    hl = 0.5 * np.log(np.maximum(high, 1e-9)
+                      / np.maximum(low, 1e-9)) ** 2
+    co = (2.0 * math.log(2.0) - 1.0) * \
+        np.log(np.maximum(close, 1e-9)
+               / np.maximum(open_, 1e-9)) ** 2
+    return np.sqrt(trailing_mean(np.maximum(hl - co, 0.0), window))
+
+
+def avfi_v3_series(high, low, close, volume, vol_window, pk_window,
+                   open_=None, vol_estimator="parkinson",
+                   volume_mode="shares"):
     # AVFI v3 = signed price move x log-volume normalization (va) x the
-    # Parkinson vol floor. va > 1 means this bar's volume is above its
-    # trailing norm (real effort); va < 1 means weak effort.
+    # range-aware vol floor. va > 1 means this bar's volume is above
+    # its trailing norm (real effort); va < 1 means weak effort.
     """Range-aware vol-floor flow with log-volume normalization (v3)."""
-    sigma_pk = parkinson_sigma_pk(high, low, pk_window)
+    if vol_estimator == "garman_klass" and open_ is not None:
+        sigma_pk = garman_klass_sigma(open_, high, low, close, pk_window)
+    else:
+        sigma_pk = parkinson_sigma_pk(high, low, pk_window)
+    if volume_mode == "dollar":
+        volume = np.asarray(volume, dtype=float) * np.asarray(close,
+                                                              dtype=float)
     with np.errstate(divide="ignore", invalid="ignore"):
         lv = np.log(np.maximum(volume, 1.0))
     lv[~np.isfinite(lv)] = 0.0
@@ -135,13 +164,18 @@ def avfi_v2_series(close, volume, vol_window):
     return ret * ratio
 
 
-def spread_axis(high, low, close, volume, params) -> np.ndarray:
+def spread_axis(high, low, close, volume, params,
+                open_=None) -> np.ndarray:
     # THE SPREAD AXIS: AVFI v3 minus a slow EMA of AVFI v2. When v3 runs
     # above the slow v2 line, range-aware flow is expanding; below it,
     # effort is fading — a slow regime descriptor.
     """spread = AVFI v3 - slow EMA of AVFI v2 (the spread axis)."""
     v3 = avfi_v3_series(high, low, close, volume,
-                        params["vol_window"], params["pk_window"])
+                        params["vol_window"], params["pk_window"],
+                        open_=open_,
+                        vol_estimator=params.get("vol_estimator",
+                                                 "parkinson"),
+                        volume_mode=params.get("volume_mode", "shares"))
     v2 = ema(avfi_v2_series(close, volume, params["vol_window"]),
              params["ema_slow"])
     return v3 - v2
@@ -163,7 +197,7 @@ def spread_z(spread: np.ndarray, window: int) -> np.ndarray:
 
 def throttle_backtest(high, low, close, volume,
                       use_throttle: bool = True,
-                      params: dict = None):
+                      params: dict = None, open_=None):
     """Production-style daily z-score MR backtest; the AVFI throttle
     cuts exposure to `throttle` x when sp_z <= trigger. Strictly
     causal. Returns dict with metrics, equity curve, positions,
@@ -178,9 +212,9 @@ def throttle_backtest(high, low, close, volume,
     p = dict(DEFAULT_PARAMS if params is None else params)
     logp = np.log(close)
     n = len(close)
-    sp_z = (spread_z(spread_axis(high, low, close, volume, p),
-                     p["sp_z_window"]) if use_throttle
-            else np.zeros(n))
+    sp_z = (spread_z(spread_axis(high, low, close, volume, p,
+                                  open_=open_), p["sp_z_window"])
+            if use_throttle else np.zeros(n))
     pos = np.zeros(n)
     cur = 0.0
     throttled = 0
@@ -277,20 +311,21 @@ def run_iteration(data_dir: Path, research_dir: Path,
                        np.array([b["low"] for b in bars]),
                        np.array([b["close"] for b in bars]),
                        np.array([float(b["volume"]) for b in bars]),
-                       [b["date"] for b in bars]))
+                       [b["date"] for b in bars],
+                       np.array([b["open"] for b in bars])))
     if not series:
         return {"status": "NO_DATA"}
 
     params = _load_params(research_dir)
-    split = int(min(len(c) for _, _, _, c, _, _ in series) * 0.6)
+    split = int(min(len(c) for _, _, _, c, _, _, _ in series) * 0.6)
 
     def portfolio(pp, use_throttle=True):
-        runs = [throttle_backtest(h, l, c, v, use_throttle, pp)
-                for _, h, l, c, v, _ in series]
+        runs = [throttle_backtest(h, l, c, v, use_throttle, pp, o)
+                for _, h, l, c, v, _, o in series]
         return runs
 
-    base_runs = [throttle_backtest(h, l, c, v, False, params)
-                 for _, h, l, c, v, _ in series]
+    base_runs = [throttle_backtest(h, l, c, v, False, params, o)
+                 for _, h, l, c, v, _, o in series]
     cur_runs = portfolio(params)
 
     def oos_score(runs):
@@ -347,7 +382,7 @@ def run_iteration(data_dir: Path, research_dir: Path,
     ledger_path.write_text(json.dumps(ledger, indent=2))
 
     chart = []
-    for (s, h, l, c, v, dates), run in zip(series, cur_runs):
+    for (s, h, l, c, v, dates, o), run in zip(series, cur_runs):
         chart.append({
             "ticker": s,
             "dates": dates,
@@ -372,7 +407,7 @@ def run_iteration(data_dir: Path, research_dir: Path,
     (research_dir / "avfi_chart.json").write_text(json.dumps(chart))
 
     rows = []
-    for (s, h, l, c, v, _), b, r in zip(series, base_runs, cur_runs):
+    for (s, h, l, c, v, _, o), b, r in zip(series, base_runs, cur_runs):
         rows.append({
             "ticker": s,
             "base": {"sharpe": round(b["sharpe"], 2),
