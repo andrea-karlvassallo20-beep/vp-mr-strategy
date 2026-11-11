@@ -362,6 +362,131 @@ def write_report(r: dict, markdown: Path) -> None:
     print(f"tops/bottoms report written -> {markdown}")
 
 
+EXTENDED_SAMPLE = ["gspc", "ixic", "dji", "rut", "gcf", "clf",
+                  "ctf", "zsf", "btcusd", "ethusd", "solusd"]
+
+
+def _buckets_for(h, l, c, v):
+    """Confluence buckets for one series (helper for robustness)."""
+    b_sc, t_sc = turn_topology(h, l, c, v)
+    entries = z_entries(c)
+    return topology_buckets(c, entries, b_sc, t_sc)
+
+
+def confluence_robustness(data_dir: Path, extended_dir: Path = None,
+                          universe=("SPY", "QQQ", "IWM", "XLF", "XLE")):
+    """Two honest stress tests of the confluence finding:
+    1. TIME-SPLIT — do score-3 entries beat score-2 in BOTH halves of
+       history, or only in one lucky period?
+    2. CROSS-ASSET — does the same regularity hold outside the deployed
+       ETFs (indices, commodities, crypto)? A structural market
+       property should generalize; an ETF quirk should not."""
+    time_split = {}
+    for s in universe:
+        f = data_dir / f"{s.lower()}.csv"
+        if not f.exists():
+            continue
+        bars = load_bars(f)
+        if len(bars) < 2 * (WARMUP + 60):
+            continue
+        h = np.array([b["high"] for b in bars])
+        l = np.array([b["low"] for b in bars])
+        c = np.array([b["close"] for b in bars])
+        v = np.array([float(b["volume"]) for b in bars])
+        mid = len(bars) // 2
+        halves = {}
+        for name, sl in (("first_half", slice(0, mid)),
+                         ("second_half", slice(mid, len(bars)))):
+            bk = _buckets_for(h[sl], l[sl], c[sl], v[sl])
+            lf = {int(k): x["long_fwd"] for k, x in bk.items()
+                  if x["long_fwd"] is not None}
+            halves[name] = lf
+        def beats(hal):
+            return (2 in hal and 3 in hal and hal[3] > hal[2])
+        time_split[s] = {
+            "first_half": halves["first_half"],
+            "second_half": halves["second_half"],
+            "holds_first": beats(halves["first_half"]),
+            "holds_second": beats(halves["second_half"]),
+        }
+    cross_asset = {}
+    if extended_dir and extended_dir.exists():
+        for name in EXTENDED_SAMPLE:
+            f = extended_dir / f"{name}.csv"
+            if not f.exists():
+                continue
+            bars = load_bars(f)
+            if len(bars) < WARMUP + 60:
+                continue
+            h = np.array([b["high"] for b in bars])
+            l = np.array([b["low"] for b in bars])
+            c = np.array([b["close"] for b in bars])
+            v = np.array([float(b["volume"]) for b in bars])
+            bk = _buckets_for(h, l, c, v)
+            lf = {int(k): x["long_fwd"] for k, x in bk.items()
+                  if x["long_fwd"] is not None}
+            cross_asset[name.upper()] = {
+                "buckets": lf,
+                "holds": bool(2 in lf and 3 in lf and lf[3] > lf[2]),
+            }
+    return {"time_split": time_split, "cross_asset": cross_asset}
+
+
+def regime_conditional_confluence(data_dir: Path,
+                                 universe=("SPY", "QQQ", "IWM",
+                                           "XLF", "XLE")) -> dict:
+    """Descriptive study: is the confluence edge regime-dependent?
+    Long entries are bucketed by trailing 20-bar realized volatility
+    tercile (low / mid / high; terciles from the full sample — this is
+    a DESCRIPTIVE study, not a live signal). If confluence only pays
+    in high-vol regimes, entries should be regime-gated. Mirrors the
+    programme's H6 finding that AVFI structure was regime-concentrated."""
+    out = {}
+    for s in universe:
+        f = data_dir / f"{s.lower()}.csv"
+        if not f.exists():
+            continue
+        bars = load_bars(f)
+        if len(bars) < WARMUP + 60:
+            continue
+        h = np.array([b["high"] for b in bars])
+        l = np.array([b["low"] for b in bars])
+        c = np.array([b["close"] for b in bars])
+        v = np.array([float(b["volume"]) for b in bars])
+        rets = np.diff(np.log(c))
+        vol20 = np.zeros(len(c))
+        windows = np.lib.stride_tricks.sliding_window_view(rets, 20)
+        vol20[20:] = windows.std(axis=1)
+        lo_t = np.quantile(vol20[20:], 1 / 3)
+        hi_t = np.quantile(vol20[20:], 2 / 3)
+        b_sc, t_sc = turn_topology(h, l, c, v)
+        entries = z_entries(c)
+        regimes = {"low_vol": [], "mid_vol": [], "high_vol": []}
+        for t_, d in entries:
+            if d != 1 or t_ + 10 >= len(c):
+                continue
+            regime = ("low_vol" if vol20[t_] < lo_t else
+                      "high_vol" if vol20[t_] > hi_t else "mid_vol")
+            regimes[regime].append(
+                (int(b_sc[t_]), float(c[t_ + 10] / c[t_] - 1.0)))
+        row = {}
+        for regime, vals in regimes.items():
+            if not vals:
+                row[regime] = {"n": 0}
+                continue
+            sc2 = [fr for sc, fr in vals if sc == 2]
+            sc3 = [fr for sc, fr in vals if sc >= 3]
+            row[regime] = {
+                "n": len(vals), "n2": len(sc2), "n3": len(sc3),
+                "fwd2": round(float(np.mean(sc2)), 4) if sc2 else None,
+                "fwd3": round(float(np.mean(sc3)), 4) if sc3 else None,
+                "holds": bool(sc2 and sc3
+                              and np.mean(sc3) > np.mean(sc2)),
+            }
+        out[s] = row
+    return out
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(
         description="Tops-and-bottoms detector study")
@@ -370,6 +495,10 @@ def main() -> None:
                     default=Path("paper/research"))
     args = ap.parse_args()
     r = run_study(args.data_dir)
+    rob = confluence_robustness(args.data_dir,
+                                args.data_dir.parent / "research" / "data")
+    r["robustness"] = rob
+    r["regime"] = regime_conditional_confluence(args.data_dir)
     write_report(r, args.research_dir / "tops_bottoms_report.md")
     args.research_dir.mkdir(parents=True, exist_ok=True)
     (args.research_dir / "tops_bottoms.json").write_text(
