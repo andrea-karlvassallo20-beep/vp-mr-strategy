@@ -122,6 +122,95 @@ def detect_climaxes(high, low, close, volume,
     return np.array(bottoms, dtype=int), np.array(tops, dtype=int)
 
 
+def turn_topology(high, low, close, volume,
+                  lookback: int = LOOKBACK, z_entry: float = Z_ENTRY):
+    """MULTI-DIMENSIONAL TURN TOPOLOGY. At every bar, five strictly
+    trailing dimensions are evaluated for a BOTTOM and a TOP:
+
+      1. PRICE   — z-score stretch in the turn direction (z <= -2 / >= +2)
+      2. MOMENTUM— RSI in turn territory (< 40 / > 60)
+      3. DIVERGE — RSI divergence confirmed within the last 3 bars
+      4. EFFORT  — VSA climax confirmed within the last 3 bars
+      5. REGIME  — the AVFI spread z is exhausted and turning (for a
+                   bottom: sp_z < 0 and rising over the last 3 bars —
+                   flow already washed out; mirror for tops)
+
+    Returns (bottom_score, top_score) integer arrays, 0..5 each. A turn
+    is "tradeable" when several dimensions ALIGN — confluence, not any
+    single indicator, is the hypothesis."""
+    from avfi import DEFAULT_PARAMS, spread_axis, spread_z
+    n = len(close)
+    r = rsi(close)
+    bull, bear = detect_divergences(close, r)
+    cb, ct = detect_climaxes(high, low, close, volume)
+    sp_z = spread_z(spread_axis(high, low, close, volume,
+                                dict(DEFAULT_PARAMS)),
+                    DEFAULT_PARAMS["sp_z_window"])
+    near = lambda idxs: {int(i) for i in idxs}
+
+    def recent(idxs, t, span=3):
+        return any(t - span <= i <= t for i in idxs)
+
+    bull_s, bear_s = near(bull), near(bear)
+    cb_s, ct_s = near(cb), near(ct)
+    logp = np.log(close)
+    bottom_score = np.zeros(n, dtype=int)
+    top_score = np.zeros(n, dtype=int)
+    for t_ in range(lookback + 1, n):
+        w = logp[t_ - lookback + 1:t_ + 1]
+        sd = w.std()
+        z = (logp[t_] - w.mean()) / sd if sd > 0 else 0.0
+        # dimension 1: price stretch
+        b1 = z <= -z_entry
+        t1 = z >= z_entry
+        # dimension 2: momentum territory
+        b2 = r[t_] < 40
+        t2 = r[t_] > 60
+        # dimension 3: divergence (recent)
+        b3 = recent(bull_s, t_)
+        t3 = recent(bear_s, t_)
+        # dimension 4: climax effort (recent)
+        b4 = recent(cb_s, t_)
+        t4 = recent(ct_s, t_)
+        # dimension 5: AVFI regime exhaustion turning
+        regime_turn_up = (sp_z[t_] < 0 and t_ >= 3
+                          and sp_z[t_] > sp_z[t_ - 3])
+        regime_turn_dn = (sp_z[t_] > 0 and t_ >= 3
+                          and sp_z[t_] < sp_z[t_ - 3])
+        # numpy bool_ + bool_ is logical OR, not addition — cast to int
+        bottom_score[t_] = (int(b1) + int(b2) + int(b3) + int(b4)
+                            + int(regime_turn_up))
+        top_score[t_] = (int(t1) + int(t2) + int(t3) + int(t4)
+                          + int(regime_turn_dn))
+    return bottom_score, top_score
+
+
+def topology_buckets(close, entries, bottom_score, top_score,
+                     horizon: int = 10):
+    """Forward returns of z-score entries bucketed by how many topology
+    dimensions align. Monotonicity across buckets is the honest test."""
+    buckets = {}
+    for t_, d in entries:
+        sc = int(bottom_score[t_]) if d == 1 else int(top_score[t_])
+        fr = forward_returns(close, t_, horizon)
+        if fr is None:
+            continue
+        buckets.setdefault(sc, []).append((fr, d))
+    out = {}
+    for sc, vals in sorted(buckets.items()):
+        longs = [fr for fr, dd in vals if dd == 1]
+        shorts = [fr for fr, dd in vals if dd == -1]
+        out[sc] = {
+            "n": len(vals),
+            "long_fwd": round(float(np.mean(longs)), 4) if longs else None,
+            "short_fwd": round(float(np.mean(shorts)), 4)
+            if shorts else None,
+            "short_fwd_neg": round(float(-np.mean(shorts)), 4)
+            if shorts else None,
+        }
+    return out
+
+
 def z_entries(close: np.ndarray, lookback: int = LOOKBACK,
               z_entry: float = Z_ENTRY):
     """Plain z-score bottom-long / top-short signals (production)."""
@@ -200,6 +289,8 @@ def run_study(data_dir: Path,
         confirm = set(bull.tolist()) | set(cb.tolist()) | \
             set(bear.tolist()) | set(ct.tolist())
         study = event_study(c, entries, confirm)
+        b_score, t_score = turn_topology(h, l, c, v)
+        buckets = topology_buckets(c, entries, b_score, t_score)
         rows.append({
             "ticker": s,
             "n_divergence_bottoms": int(len(bull)),
@@ -209,6 +300,7 @@ def run_study(data_dir: Path,
             "n_z_entries": len(entries),
             **{k: (round(x, 4) if isinstance(x, float) else x)
                for k, x in study.items()},
+            "topology_buckets": {str(k): v for k, v in buckets.items()},
         })
         charts.append({
             "ticker": s,
@@ -245,6 +337,23 @@ def write_report(r: dict, markdown: Path) -> None:
             f"{fmt(row['long_unconfirmed_fwd'])} | "
             f"{fmt(row['short_confirmed_fwd'])} | "
             f"{fmt(row['short_unconfirmed_fwd'])} |")
+    lines += ["", "## Multi-dimensional turn topology (confluence score)",
+              "",
+              "Forward returns by number of aligned dimensions "
+              "(price stretch, momentum, divergence, effort, AVFI regime)",
+              "at the entry bar. Monotonicity across buckets is the "
+              "honest test.", "",
+              "| Ticker | score | n | long fwd | short fwd (neg) |",
+              "|---|---|---|---|---|"]
+    for row in r.get("rows", []):
+        for sc, b in sorted(row.get("topology_buckets", {}).items(),
+                            key=lambda kv: int(kv[0])):
+            lf = b["long_fwd"]
+            sf = b["short_fwd_neg"]
+            lf_s = f"{lf:+.4f}" if lf is not None else "-"
+            sf_s = f"{sf:+.4f}" if sf is not None else "-"
+            lines.append(f"| {row['ticker']} | {sc} | {b['n']} | "
+                         f"{lf_s} | {sf_s} |")
     lines += ["", "Reading: a detector helps only if confirmed entries "
               "forward-outperform unconfirmed ones on the correct side. "
               "Anything else is reported as a null result."]
