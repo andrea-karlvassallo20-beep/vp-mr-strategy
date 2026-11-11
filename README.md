@@ -41,8 +41,11 @@ fetch real bars (SPY QQQ IWM XLF XLE)
 ```
 
 ## Website
-**Salient** — the live site: `docs/index.html`, served by GitHub Pages,
-regenerated after every paper-trading session.
+**Salient** — the live site: <https://andrea-karlvassallo20-beep.github.io/vp-mr-strategy/>
+(source: `docs/index.html`), served by GitHub Pages,
+regenerated after every paper-trading session. It shows the equity curve,
+drawdown curve, per-instrument price charts with trade entries, the
+champion-vs-challenger race, and the session journal.
 
 ## Current status
 See **[DASHBOARD.md](DASHBOARD.md)** — the live, GitHub-renderable dashboard.
