@@ -24,6 +24,8 @@ AST-sandboxed core; the engine adapter is a thin event translator.
 | `walkforward_study.py` | Walk-forward + 40-seed Monte Carlo significance |
 | `deployment_study.py` | Edge threshold + universe scaling envelope |
 | `spi_monitor.py` | Live paper-trading SPI / duplicate-fire auditor |
+| `papertrading_runner.py` | Incremental CSV paper-trading runner with state persistence |
+| `test_runner.py` | 12-assertion runner suite (idempotency, restarts, SPI) |
 | `generate_run_card.py` | Emits `run_card.json` from frozen params |
 | `run_card.json` | Validated strategy run card (generated) |
 
