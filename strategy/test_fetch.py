@@ -93,5 +93,13 @@ time.sleep = orig
 s = fetch_synthetic("SPY", 30, seed=1)
 check("synthetic mode unaffected", len(s) == 30 and s[0][4] > 0)
 
+# 7. --drop-today trims bars dated today (UTC) from a fetch
+from datetime import datetime, timezone
+today = datetime.now(timezone.utc).date().isoformat()
+rows = [("2026-01-01", 1, 1, 1, 10.0, 100), (today, 1, 1, 1, 10.5, 100)]
+kept = [r for r in rows if r[0] != today]
+check("drop-today filter removes today's partial bar",
+      len(kept) == 1 and kept[0][0] == "2026-01-01")
+
 print(f"\nRESULT: {PASS} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)

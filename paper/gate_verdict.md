@@ -12,7 +12,7 @@ Sessions: 1 / 20 required
 
 ## Session summary
 
-- sharpe: 0.044
+- sharpe: 0.005
 - max_dd_pct: 3.811
 - fills: 78
 - expected_costs_total: 11320.39
