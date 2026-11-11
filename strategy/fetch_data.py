@@ -91,6 +91,9 @@ def main() -> None:
     ap.add_argument("--synthetic", action="store_true")
     ap.add_argument("--bars", type=int, default=300,
                     help="bar count for synthetic mode")
+    ap.add_argument("--drop-today", action="store_true",
+                    help="drop bars dated today (UTC) — intraday/manual "
+                         "fetches must not consume a partial bar as final")
     args = ap.parse_args()
 
     for i, t in enumerate(args.tickers.split(",")):
@@ -99,6 +102,10 @@ def main() -> None:
             rows = fetch_synthetic(t, args.bars, seed=1234 + i * 7)
         else:
             rows = fetch_yfinance(t)
+            if args.drop_today:
+                from datetime import datetime, timezone
+                today = datetime.now(timezone.utc).date().isoformat()
+                rows = [r for r in rows if r[0] != today]
         out = args.data_dir / f"{t.lower()}.csv"
         write_csv(out, rows)
         print(f"{t}: wrote {len(rows)} bars -> {out}")
