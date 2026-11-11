@@ -571,6 +571,64 @@ def avfi_state_space(high, low, close, volume,
     }
 
 
+def state_space_event_study(data_dir: Path,
+                           universe=("SPY", "QQQ", "IWM", "XLF", "XLE"),
+                           horizon: int = 10) -> dict:
+    """The state-space hypothesis, tested: tops and bottoms are
+    REGIONS of the 3D space, not indicator crosses. Long z-score
+    entries are bucketed by which REGION of state space they occur in:
+
+      bottom-region:  price z <= -2 (deep stretch, by construction)
+        AND spread z < 0 (flow fading) AND vol percentile > 0.5
+        (elevated risk) — the hypothesis says these forward-outperform
+      mid-region:     partially aligned
+      elsewhere:      the rest
+
+    Honest question: does the bottom-region confluence of all three
+    axes pay more than stretch alone? Reported per instrument."""
+    from papertrading_runner import load_bars
+    out = {}
+    for s in universe:
+        f = data_dir / f"{s.lower()}.csv"
+        if not f.exists():
+            continue
+        bars = load_bars(f)
+        if len(bars) < 200:
+            continue
+        h = np.array([b["high"] for b in bars])
+        l = np.array([b["low"] for b in bars])
+        c = np.array([b["close"] for b in bars])
+        v = np.array([float(b["volume"]) for b in bars])
+        ss = avfi_state_space(h, l, c, v)
+        sp_z = np.array(ss["sp_z"])
+        price_z = np.array(ss["price_z"])
+        vol_pct = np.array(ss["vol_pct"])
+        regions = {"bottom_region": [], "mid_region": [],
+                   "elsewhere": []}
+        for t_ in range(110, len(c) - horizon):
+            if price_z[t_] > -2.0:
+                continue  # only long (bottom-side) entries
+            fr = float(c[t_ + horizon] / c[t_] - 1.0)
+            if sp_z[t_] < 0 and vol_pct[t_] > 0.5:
+                regions["bottom_region"].append(fr)
+            elif sp_z[t_] < 0 or vol_pct[t_] > 0.5:
+                regions["mid_region"].append(fr)
+            else:
+                regions["elsewhere"].append(fr)
+        row = {}
+        for reg, vals in regions.items():
+            row[reg] = {
+                "n": len(vals),
+                "fwd": round(float(np.mean(vals)), 4) if vals else None,
+            }
+        br, mr_ = row["bottom_region"], row["mid_region"]
+        row["hypothesis_holds"] = bool(
+            br["fwd"] is not None and mr_["fwd"] is not None
+            and br["n"] >= 10 and br["fwd"] > mr_["fwd"])
+        out[s] = row
+    return out
+
+
 def export_state_space(data_dir: Path, research_dir: Path,
                        universe=("SPY", "QQQ", "IWM", "XLF", "XLE"),
                        extended=None) -> None:
@@ -616,6 +674,11 @@ def main() -> None:
     r = run_iteration(args.data_dir, args.research_dir)
     export_state_space(args.data_dir, args.research_dir,
                        extended=args.data_dir.parent / "research" / "data")
+    ss_study = state_space_event_study(args.data_dir)
+    (args.research_dir / "state_space_study.json").write_text(
+        json.dumps(ss_study, indent=2))
+    print(f"state-space study -> "
+          f"{args.research_dir / 'state_space_study.json'}")
     write_report(r, args.markdown)
     print(f"status: {r['status']}, instruments: {len(r.get('rows', []))}, "
           f"iteration: {r.get('iteration', {}).get('iteration')}, "
