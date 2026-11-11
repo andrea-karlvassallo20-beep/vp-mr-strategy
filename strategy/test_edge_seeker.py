@@ -29,14 +29,16 @@ check("recommendation is a valid action",
 check("OOS windows actually scored (warm-up fix)",
       r["oos_selected"]["sharpe"] != 0.0 or r["oos_production"]["sharpe"] != 0.0)
 check("selected candidate comes from the grid",
-      (r["selected_candidate"]["z_entry"], r["selected_candidate"]["lookback"])
-      in CANDIDATES)
+      (r["selected_candidate"]["z_entry"], r["selected_candidate"]["lookback"],
+       r["selected_candidate"]["vol_model"],
+       r["selected_candidate"]["volume_filter"]) in CANDIDATES)
 
 md = to_markdown(r)
 check("markdown carries recommendation",
       r["recommendation"] in md)
 check("markdown carries Gate 3 freeze note", "frozen" in md)
-check("markdown carries the full grid table", md.count("| 1.5 |") >= 3)
+check("markdown carries the full grid table",
+      md.count("| 1.5 |") >= 3 and "vol model" in md)
 
 # empty data dir handled
 r2 = seek(tmp / "empty", ["SPY"])
