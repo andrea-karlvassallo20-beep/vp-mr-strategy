@@ -28,12 +28,16 @@ def parse_report(report_path: Path) -> dict:
     verdict = m.group(1) if m else "KEEP_CHAMPION"
     cand = {}
     mc = re.search(r"z=([\d.]+), lookback=(\d+), vol model=(\w+), "
-                   r"VSA filter=(True|False)", text)
+                   r"VSA filter=(True|False)(?:, exit z=(-?[\d.]+), "
+                   r"ATR mult=([\d.]+))?", text)
     if mc:
         cand = {"z_entry": float(mc.group(1)),
                 "lookback": int(mc.group(2)),
                 "vol_model": mc.group(3),
                 "volume_filter": mc.group(4) == "True"}
+        if mc.group(5) is not None:
+            cand["exit_z"] = float(mc.group(5))
+            cand["atr_mult"] = float(mc.group(6))
     rows = re.findall(
         r"\| (Champion[^|]*|Challenger[^|]*)\| ([\d.-]+) \| ([\d.-]+) \| "
         r"([\d.-]+) \|", text)
@@ -75,9 +79,10 @@ parameters and regenerates the run card.
 - Gate 3: this PR is the redeployment mechanism; merging it IS the human
   review. The forward-test session counter continues from the champion's.
 - Candidate vol model: {c.get('vol_model')}; VSA filter:
-  {c.get('volume_filter')}. If these differ from the champion's
-  (realized / off), they require manual implementation and are flagged
-  here only.
+  {c.get('volume_filter')}; exit z: {c.get('exit_z', 0.25)}; ATR mult:
+  {c.get('atr_mult', 3.0)}. If these differ from the champion's
+  (realized / off / 0.25 / 3.0), they require manual implementation and
+  are flagged here only.
 - CI runs the full verification program on this PR; merge only if green.
 
 Generated automatically by strategy/propose_redeploy.py from

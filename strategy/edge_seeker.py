@@ -31,32 +31,41 @@ from papertrading_runner import load_bars
 from vp_mr_strategy import StrategyParameters, VolatilityParityMeanReversionStrategy
 from vol_models import VariantStrategy
 
-# candidate space: (z_entry, lookback, vol_model, volume_filter)
+# candidate space: (z_entry, lookback, vol_model, volume_filter,
+#                   exit_z, atr_mult)
 # vol_model: realized (production) | ewma (Levy/RiskMetrics) | garch (Levy)
 # volume_filter: VSA weak-effort entry filter (Williams)
+# exit_z / atr_mult: holding-period variants — a deeper z-score exit and a
+# wider ATR trailing stop both lengthen the average hold
 CANDIDATES = [
-    (z, lb, vm, vf)
+    (z, lb, vm, vf, 0.25, 3.0)
     for z in (1.5, 2.0, 2.5)
     for lb in (60, 100, 150)
     for vm in ("realized", "ewma", "garch")
     for vf in (False, True)
-]
+] + [
+    (2.0, 100, "realized", False, ez, am)
+    for ez in (0.0, -0.5)
+    for am in (3.0, 5.0)
+] + [(2.0, 100, "realized", False, 0.25, 5.0)]
 MARGIN = 0.10   # candidate must beat production OOS Sharpe by this
 
 
 def run_equity(prices: Dict[str, np.ndarray],
                params: StrategyParameters,
-               variant: tuple = ("realized", False)) -> tuple:
+               variant: tuple = ("realized", False, 0.25, 3.0)) -> tuple:
     """Full-length backtest; returns (equity_curve, fills). Signals use only
     trailing data throughout, so scoring any later window is leakage-free.
-    variant: (vol_model, volume_filter) research extension."""
-    vm, vf = variant
-    if vm == "realized" and not vf:
+    variant: (vol_model, volume_filter, exit_z, atr_mult) research
+    extension; ("realized", False, 0.25, 3.0) is production."""
+    vm, vf, ez, am = variant
+    if vm == "realized" and not vf and ez == 0.25 and am == 3.0:
         strat = VolatilityParityMeanReversionStrategy(
             params, list(prices.keys()), 1_000_000.0)
     else:
         strat = VariantStrategy(params, list(prices.keys()), 1_000_000.0,
-                                vol_model=vm, volume_filter=vf)
+                                vol_model=vm, volume_filter=vf,
+                                exit_z=ez, atr_mult=am)
     strat.deploy()
     n = len(next(iter(prices.values())))
     pos_hist = {s: np.zeros(n) for s in prices}
@@ -115,21 +124,22 @@ def seek(data_dir: Path, universe: List[str]) -> dict:
     grid_results = []
     equities = {}
     for cand in CANDIDATES:
-        z, lb, vm, vf = cand
+        z, lb, vm, vf, ez, am = cand
         p = StrategyParameters(zscore_entry=z, lookback_zscore=lb)
-        eq, _ = run_equity(prices, p, variant=(vm, vf))
+        eq, _ = run_equity(prices, p, variant=(vm, vf, ez, am))
         equities[cand] = eq
         m = score_window(eq, 0, split)
         grid_results.append({"z_entry": z, "lookback": lb,
                              "vol_model": vm, "volume_filter": vf,
+                             "exit_z": ez, "atr_mult": am,
                              "train_sharpe": m["sharpe"]})
         if best is None or m["sharpe"] > best[1]:
             best = (cand, m["sharpe"])
-    (z_star, lb_star, vm_star, vf_star), train_sharpe = best
+    (z_star, lb_star, vm_star, vf_star, ez_star, am_star), train_sharpe = best
 
     # OOS evaluation on the untouched last 40%: selected vs production
-    oos_sel = score_window(equities[(z_star, lb_star, vm_star, vf_star)],
-                           split, n)
+    oos_sel = score_window(equities[(z_star, lb_star, vm_star, vf_star,
+                                     ez_star, am_star)], split, n)
     eq_prod, fills_prod = run_equity(prices, prod_params)
     oos_prod = score_window(eq_prod, split, n)
     oos_sel["fills"] = fills_prod  # fills reported from the full runs
@@ -142,6 +152,7 @@ def seek(data_dir: Path, universe: List[str]) -> dict:
         "selected_candidate": {"z_entry": z_star, "lookback": lb_star,
                                "vol_model": vm_star,
                                "volume_filter": vf_star,
+                               "exit_z": ez_star, "atr_mult": am_star,
                                "train_sharpe": train_sharpe},
         "oos_selected": oos_sel,
         "oos_production": oos_prod,
@@ -163,23 +174,30 @@ def to_markdown(r: dict) -> str:
     lines.append("")
     lines.append("## Out-of-sample comparison (last 40% of data)")
     lines.append("")
-    lines.append("| Variant | z_entry | lookback | vol model | VSA filter | OOS Sharpe | OOS Ann Ret % | OOS Max DD % | Fills |")
-    lines.append("|---|---|---|---|---|---|---|---|---|")
+    lines.append("| Variant | z_entry | lookback | vol model | VSA filter "
+                 "| exit z | ATR mult | OOS Sharpe | OOS Ann Ret % | "
+                 "OOS Max DD % | Fills |")
+    lines.append("|---|---|---|---|---|---|---|---|---|---|---|")
     c = r["selected_candidate"]
     o = r["oos_selected"]
     lines.append(f"| Selected candidate | {c['z_entry']} | {c['lookback']} | "
-                 f"{c['vol_model']} | {c['volume_filter']} | "
+                 f"{c['vol_model']} | {c['volume_filter']} | {c['exit_z']} | "
+                 f"{c['atr_mult']} | "
                  f"{o['sharpe']} | {o['ann_ret_pct']} | {o['max_dd_pct']} | {o['fills']} |")
     o = r["oos_production"]
-    lines.append(f"| Production (frozen) | {StrategyParameters().zscore_entry} | "
-                 f"{StrategyParameters().lookback_zscore} | {o['sharpe']} | "
-                 f"{o['ann_ret_pct']} | {o['max_dd_pct']} | {o['fills']} |")
+    pp = StrategyParameters()
+    lines.append(f"| Production (frozen) | {pp.zscore_entry} | "
+                 f"{pp.lookback_zscore} | realized | False | "
+                 f"{pp.zscore_exit} | {pp.atr_stop_multiple} | "
+                 f"{o['sharpe']} | {o['ann_ret_pct']} | {o['max_dd_pct']} | {o['fills']} |")
     lines += ["", "## Selection-window grid (train Sharpe)", "",
-              "| z_entry | lookback | vol model | VSA | train Sharpe |",
-              "|---|---|---|---|---|"]
+              "| z_entry | lookback | vol model | VSA | exit z | ATR mult "
+              "| train Sharpe |",
+              "|---|---|---|---|---|---|---|"]
     for g in r["grid"]:
         lines.append(f"| {g['z_entry']} | {g['lookback']} | {g['vol_model']} | "
-                     f"{g['volume_filter']} | {g['train_sharpe']} |")
+                     f"{g['volume_filter']} | {g['exit_z']} | "
+                     f"{g['atr_mult']} | {g['train_sharpe']} |")
     lines += ["", f"## Gate 3", "", r["gate3_note"]]
     return "\n".join(lines) + "\n"
 

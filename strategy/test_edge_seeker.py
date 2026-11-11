@@ -31,7 +31,12 @@ check("OOS windows actually scored (warm-up fix)",
 check("selected candidate comes from the grid",
       (r["selected_candidate"]["z_entry"], r["selected_candidate"]["lookback"],
        r["selected_candidate"]["vol_model"],
-       r["selected_candidate"]["volume_filter"]) in CANDIDATES)
+       r["selected_candidate"]["volume_filter"],
+       r["selected_candidate"]["exit_z"],
+       r["selected_candidate"]["atr_mult"]) in CANDIDATES)
+check("holding-period variants are in the grid",
+      any(g["exit_z"] != 0.25 or g["atr_mult"] != 3.0
+          for g in r["grid"]))
 
 md = to_markdown(r)
 check("markdown carries recommendation",
