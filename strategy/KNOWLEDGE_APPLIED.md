@@ -32,3 +32,12 @@ lookback=60, realized vol, no VSA filter; OOS Sharpe -0.52 vs production
 in the nightly research space — the edge-seeker will re-evaluate them as
 the live data window grows. Absence of immediate improvement is a result,
 not a failure: it is exactly how falsification is supposed to work.
+
+## AVFI programme (trading-research, KNOWLEDGE (1).md)
+
+| Knowledge layer | Concept | Where it lives in this system |
+|---|---|---|
+| AVFI v3 vs v2 spread axis (Pine v5 programme) | Parkinson-style sigmaPk vol floor, log-volume normalization, sigma-normalized spread z | `avfi.py`: faithful Python replication of the indicator, strictly trailing windows (a centered-convolution lookahead bug was caught by the causality test and fixed) |
+| Programme stage 4c verdict: "AVFI is a slow regime descriptor, not an entry timer" | Rule set A killed; entry-timing hypotheses unsupported | The system evaluates AVFI ONLY as a risk throttle (halve exposure at spread z <= -1) — never as an entry signal |
+| U2 result: throttle cut maxDD -21.5% -> -15.5% at preserved Sharpe | AVFI's measurable job is sizing/risk, not timing | Nightly `avfi_report.md`/`.json` compares base vs throttled daily backtests on the deployed ETF universe; first run: drawdown reduced on 4/5 instruments (XLE 34.6% -> 23.8%) |
+| White reality check (27-combo family fails, p=0.11) | Multiple-testing discipline | Mirrors our own MARGIN=0.10 race requirement and human-reviewed redeploy (Gate 3) |

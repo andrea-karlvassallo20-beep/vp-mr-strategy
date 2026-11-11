@@ -11,7 +11,8 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
-from cross_asset import (EXTENDED_UNIVERSE, analyze_series, ou_ar1_stats,
+from cross_asset import (CRYPTO, COMMODITIES, EXTENDED_UNIVERSE, INDICES,
+                         analyze_series, ou_ar1_stats,
                          ou_half_life, run_research, safe_name,
                          write_report, zscore_mr_backtest)
 
@@ -38,7 +39,9 @@ def rw_series(n, seed):
 
 check("extended universe covers crypto, indices, commodities",
       {c for c, _ in EXTENDED_UNIVERSE} == {"crypto", "index", "commodity"}
-      and len(EXTENDED_UNIVERSE) == 8)
+      and len(EXTENDED_UNIVERSE) == len(CRYPTO) + len(INDICES)
+      + len(COMMODITIES) and len(CRYPTO) == 25
+      and len(COMMODITIES) >= 14)
 check("safe_name sanitizes ^ and =F and -",
       safe_name("^GSPC") == "GSPC" and safe_name("GC=F") == "GCF"
       and safe_name("BTC-USD") == "BTCUSD")
@@ -80,7 +83,7 @@ for i, (cls, tic) in enumerate(EXTENDED_UNIVERSE[:3]):
     (data / f"{safe_name(tic).lower()}.csv").write_text(
         "date,open,high,low,close,volume\n" + "\n".join(out) + "\n")
 results = run_research(rdir, fetch=False)
-check("cached analysis without fetch", len(results) == 8)
+check("cached analysis without fetch", len(results) == len(EXTENDED_UNIVERSE))
 check("cached series analyzed OK",
       sum(r["status"] == "OK" for r in results) == 3)
 check("missing series reported as NO_DATA",
