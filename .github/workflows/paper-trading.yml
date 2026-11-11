@@ -1,0 +1,46 @@
+name: Paper trading session
+
+# Runs the paper-trading session after each US market close (M-F).
+# Fetches fresh daily bars, runs the strategy incrementally, commits the
+# updated state + SPI report back to the paper-trading branch.
+on:
+  schedule:
+    - cron: "30 21 * * 1-5"   # 21:30 UTC, after 16:00 ET close
+  workflow_dispatch:           # manual trigger for testing
+
+permissions:
+  contents: write
+
+jobs:
+  session:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install numpy yfinance
+
+      - name: Fetch daily bars
+        run: python3 strategy/fetch_data.py --data-dir ./paper/data --tickers SPY,QQQ,IWM,XLF,XLE
+
+      - name: Run paper-trading session
+        run: python3 strategy/papertrading_runner.py --data-dir ./paper/data --state-dir ./paper/state --report | tee ./paper/session_report.txt
+
+      - name: Generate session performance report
+        run: python3 strategy/session_report.py --data-dir ./paper/data --state-dir ./paper/state --markdown ./paper/performance_report.md
+
+      - name: Evaluate promotion gate
+        run: python3 strategy/gate_check.py --data-dir ./paper/data --state-dir ./paper/state --markdown ./paper/gate_verdict.md
+
+      - name: Commit session state
+        run: |
+          git config user.name "paper-trading-bot"
+          git config user.email "actions@github.com"
+          git add paper/
+          git diff --cached --quiet && echo "no changes" && exit 0
+          git commit -m "Paper-trading session $(date -u +%F) [skip ci]"
+          git push
