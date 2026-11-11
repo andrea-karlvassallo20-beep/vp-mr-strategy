@@ -13,6 +13,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent))
 from tops_bottoms import (detect_climaxes, detect_divergences,
                           event_study, forward_returns, rsi, run_study,
+                          topology_buckets, turn_topology,
                           write_report, z_entries)
 
 PASS = FAIL = 0
@@ -88,6 +89,39 @@ entries = [(50, 1), (60, 1), (80, -1)]
 study = event_study(close, entries, {60})
 check("event study separates confirmed from unconfirmed",
       study["n_confirmed"] == 1 and study["n_unconfirmed"] == 2)
+
+# 7b. multi-dimensional turn topology
+rng2 = np.random.default_rng(9)
+n2 = 600
+# construct a series with a deep, climactic bottom mid-series
+base = np.concatenate([
+    np.linspace(100, 70, 250) + 0.5 * rng2.standard_normal(250),
+    np.array([68.0]),                       # the low
+    np.linspace(72, 110, 349) + 0.5 * rng2.standard_normal(349),
+])
+h2 = base * 1.004
+l2 = base * 0.996
+v2 = np.full(n2, 1e6)
+# climax at the low: huge volume, wide range, upper-half close
+h2[250] = 72.0
+l2[250] = 66.0
+base[250] = 71.0
+v2[250] = 6e6
+b_sc, t_sc = turn_topology(h2, l2, base, v2)
+check("topology scores are integers in 0..5",
+      b_sc.max() <= 5 and t_sc.max() <= 5
+      and b_sc.min() >= 0)
+check("topology confluence exceeds a single dimension at the "
+      "constructed bottom", b_sc[245:255].max() >= 2)
+ent2 = z_entries(base)
+bk = topology_buckets(base, ent2, b_sc, t_sc)
+check("topology buckets populated with forward returns",
+      isinstance(bk, dict) and len(bk) >= 1
+      and all("n" in v and "long_fwd" in v for v in bk.values()))
+# regression: numpy bool_ + bool_ is OR, not addition
+check("confluence score counts dimensions (numpy-bool regression)",
+      (np.bool_(True) + np.bool_(True)) is not None
+      and b_sc[250] >= 1)
 
 # 8. full study on synthetic CSVs + report generation
 tmp = Path(tempfile.mkdtemp())

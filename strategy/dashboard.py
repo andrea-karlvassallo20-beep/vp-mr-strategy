@@ -890,6 +890,21 @@ def _tops_bottoms_html(paper_dir: Path) -> str:
                  f'<td>{fmt(row.get("long_unconfirmed_fwd"))}</td>'
                  f'<td class="{"good" if dd_better else "dim"}">'
                  f'{"better" if dd_better else "no edge"}</td></tr>')
+    tb_rows = ""
+    for row in r.get("rows", []):
+        buckets = row.get("topology_buckets", {})
+        for sc in sorted(buckets, key=int):
+            b = buckets[sc]
+            lf = b.get("long_fwd")
+            lf_s = f"{lf:+.4f}" if lf is not None else "-"
+            good = "good" if int(sc) >= 3 and lf is not None else "dim"
+            tb_rows += (f'<tr><td>{_esc(row["ticker"])}</td>'
+                        f'<td>{sc}</td><td>{b["n"]}</td>'
+                        f'<td class="{good}">{lf_s}</td></tr>')
+    if tb_rows:
+        tb_rows = ('<table><tr><th>Ticker</th><th>Aligned dims</th>'
+                   '<th>entries</th><th>long fwd (10 bars)</th></tr>'
+                   f'{tb_rows}</table>')
     return (f'<p class="dim">Two strictly-trailing detectors hunt the '
             f'turns: <strong>RSI divergence</strong> (price prints a '
             f'new extreme, momentum refuses to confirm — triangles) '
@@ -904,7 +919,14 @@ def _tops_bottoms_html(paper_dir: Path) -> str:
             '<th>clim bot</th><th>clim top</th><th>confirmed</th>'
             '<th>long fwd (conf)</th><th>long fwd (unconf)</th>'
             '<th>verdict</th></tr>'
-            f'{rows}</table>')
+            f'{rows}</table>'
+            '<h3 class="sub">Multi-dimensional turn topology '
+            '(confluence score)</h3>'
+            '<p class="dim">Five dimensions scored at every entry — '
+            'price stretch, momentum, divergence, effort, AVFI regime. '
+            'Forward returns bucketed by how many align. Monotonicity '
+            'across buckets is the honest test of confluence.</p>'
+            f'{tb_rows}')
 
 
 def build_site(paper_dir: Path) -> str:
