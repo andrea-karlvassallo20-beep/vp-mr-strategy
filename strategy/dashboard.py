@@ -406,7 +406,7 @@ def _knowledge_html() -> str:
     concept-to-design mapping table plus the studied-book library."""
     base = Path(__file__).parent
     applied = base / "KNOWLEDGE_APPLIED.md"
-    kb = base.parent / "KNOWLEDGE.md"
+    kb_files = sorted((base.parent).glob("KNOWLEDGE*.md"))
     rows = []
     if applied.exists():
         for line in applied.read_text().splitlines():
@@ -419,7 +419,7 @@ def _knowledge_html() -> str:
                     f'</div><div class="kconcept">{_esc(concept)}</div>'
                     f'<div class="kwhere">{_esc(where)}</div></div>')
     books = []
-    if kb.exists():
+    for kb in kb_files:
         in_notes = False
         for line in kb.read_text().splitlines():
             if line.startswith("## "):
@@ -451,18 +451,19 @@ def _knowledge_html() -> str:
              'research variants that the edge-seeker must beat honestly '
              '— the deployed parameters stay frozen (Gate 3).</p>')
     programme = ""
-    prog_path = base.parent / "KNOWLEDGE (1).md"
-    if prog_path.exists():
-        bullets = [l[2:].strip() for l in prog_path.read_text().splitlines()
-                   if l.startswith("- ")]
-        if bullets:
-            prog_cards = "".join(
-                f'<div class="book"><div class="bdesc dim">'
-                f'{_esc(b[:280])}{"..." if len(b) > 280 else ""}</div></div>'
-                for b in bullets)
-            programme = ('<h3 class="sub">Trading-research programme '
-                         '(AVFI-NQ weekly)</h3><div class="bgrid">'
-                         f'{prog_cards}</div>')
+    prog_bullets = []
+    for prog_path in kb_files:
+        prog_bullets += [
+            l[2:].strip() for l in prog_path.read_text().splitlines()
+            if l.startswith("- ") and "](" not in l[:60]]
+    if prog_bullets:
+        prog_cards = "".join(
+            f'<div class="book"><div class="bdesc dim">'
+            f'{_esc(b[:280])}{"..." if len(b) > 280 else ""}</div></div>'
+            for b in prog_bullets)
+        programme = ('<h3 class="sub">Trading-research programme '
+                     '(AVFI-NQ weekly)</h3><div class="bgrid">'
+                     f'{prog_cards}</div>')
     return (intro
             + '<div class="kgrid">' + "".join(rows) + "</div>"
             + f'<h3 class="sub">Studied library ({len(books)} books)'
@@ -658,6 +659,14 @@ def _avfi_html(paper_dir: Path) -> str:
     charts = json.load(open(chart_path))
     svgs = "".join(
         f'<div class="pc">{_avfi_chart_svg(ch)}</div>' for ch in charts)
+    site_link = ""
+    if (Path(__file__).resolve().parent.parent / "docs" / "avfi-nq.html") \
+            .exists():
+        site_link = ('<p><a href="avfi-nq.html" '
+                     'style="color:var(--accent)">Full AVFI-NQ weekly '
+                     'research programme site — the 9-stage validation '
+                     'pipeline, hypothesis registry, verdicts and the '
+                     '10 evidence-forced lessons</a></p>')
     ledger_html = ""
     led_path = paper_dir / "research" / "avfi_iterations.json"
     if led_path.exists():
@@ -692,6 +701,7 @@ def _avfi_html(paper_dir: Path) -> str:
             f'level (shaded zones) when the spread z breaches the '
             f'trigger. Green up-triangles mark long entries, red '
             f'down-triangles short entries.</p>'
+            f'{site_link}'
             f'<div class="pgrid">{svgs}</div>{ledger_html}')
 
 
