@@ -105,6 +105,24 @@ def build_html(paper_dir: Path) -> str:
     ]
 
     svg = equity_curve_svg(paper_dir)
+    # work log timeline
+    log_path = Path(__file__).parent / "WORKLOG.md"
+    log_rows = ""
+    if log_path.exists():
+        import re as _re
+        entries = []
+        for line in log_path.read_text().splitlines():
+            m = _re.match(r"- \*\*(.+?) — (.+?)\.\*\*(.*)", line)
+            if m:
+                entries.append((m.group(1), m.group(2), m.group(3)))
+            elif entries and line.startswith("  "):
+                entries[-1] = (entries[-1][0], entries[-1][1],
+                               entries[-1][2] + " " + line.strip())
+        log_rows = "".join(
+            f"<tr><td class='when'>{_esc(w)}</td>"
+            f"<td><strong>{_esc(t)}</strong> {_esc(d)}</td></tr>"
+            for w, t, d in reversed(entries))
+
     suites = [("Gate suite (G1-G4)", 26), ("Adapter wiring (stub)", 9),
                ("Runner suite", 16), ("Session report suite", 11),
                ("Promotion gate suite", 11), ("Fetcher hardening", 9),
@@ -149,6 +167,8 @@ autonomous paper trading with SPI audit and promotion gate</p></header>
 <section><h2>Verification program</h2>
 <table><tr><th>Suite</th><th>Assertions</th><th>Status</th></tr>
 {suite_rows}</table></section>
+<section><h2>Work log</h2>
+<table>{log_rows}</table></section>
 <section><h2>Autonomous loop</h2>
 <p>Nightly: fetch real bars &rarr; run persisted session &rarr; SPI audit
 &rarr; performance report &rarr; edge-seeker research proposal &rarr;

@@ -30,6 +30,7 @@ check("metric cards present", html.count('class="card"') == 8)
 check("equity curve SVG rendered", "<svg" in html and "polyline" in html)
 check("verification matrix present", "Cross-engine parity" in html)
 check("autonomous loop section present", "edge-seeker" in html)
+check("work log timeline present", "Work log" in html and "False PROMOTE" in html)
 check("no unescaped script injection", "<script" not in html)
 
 empty = build_html(tmp / "nonexistent")
