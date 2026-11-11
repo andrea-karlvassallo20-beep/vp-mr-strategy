@@ -114,6 +114,7 @@ class VolatilityParityMeanReversionStrategy:
             allowed = {"equity", "_day_start_equity", "_kill_switch",
                        "position", "_entry_px", "_trail_stop", "equity_curve",
                        "_next_oid", "_pending", "order_log", "decision_log"}
+            allowed |= getattr(self, "_EXTRA_RUNTIME_ALLOWED", frozenset())
             if name not in allowed:
                 raise AttributeError(f"'{name}' frozen post-deployment (Gate 3).")
         object.__setattr__(self, name, value)

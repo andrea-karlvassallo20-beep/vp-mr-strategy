@@ -60,6 +60,10 @@ class VariantStrategy(VolatilityParityMeanReversionStrategy):
     """Research variant: selectable vol model (for vol-parity sizing) and an
     optional VSA volume filter on entries. Strictly trailing state."""
 
+    # runtime-mutable variant config, declared to the Gate 3 freeze guard
+    _EXTRA_RUNTIME_ALLOWED = frozenset(
+        {"vol_model", "volume_filter", "_vol_buf"})
+
     def __init__(self, params: StrategyParameters, universe, initial_equity,
                  vol_model: str = "realized",
                  volume_filter: bool = False) -> None:
