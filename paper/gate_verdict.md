@@ -1,10 +1,10 @@
-# Forward-test gate verdict: PROMOTE
+# Forward-test gate verdict: HOLD
 
-Sessions: 502 / 20 required
+Sessions: 1 / 20 required
 
 | Criterion | Required | Observed | Pass |
 |---|---|---|---|
-| min_paper_trading_days | >= 20 | 502 | YES |
+| min_paper_trading_days | >= 20 | 1 | NO |
 | signal_parity_index | >= 0.98 | 1.0 | YES |
 | duplicate_fires | = 0 | 0 | YES |
 | kill_switch_events | <= 0 | 0 | YES |
@@ -18,4 +18,4 @@ Sessions: 502 / 20 required
 - expected_costs_total: 11320.39
 - audit_status: PASS
 
-All criteria met: strategy is eligible for live deployment review.
+Criteria not yet met: continue paper trading.

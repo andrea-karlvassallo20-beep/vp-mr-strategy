@@ -36,8 +36,11 @@ def evaluate(data_dir: Path, state_dir: Path,
     # historical backfill counts as ONE session, not 500
     state = json.load(open(state_dir / "session_state.json"))
     n_days = state.get("invocations")
-    if n_days is None:  # legacy state without the counter
-        n_days = len({rec["ts"] for rec in state["decision_log"]})
+    if n_days is None:
+        # legacy state without the counter: conservative fallback is ONE
+        # session (date-counting would treat a backfill as N sessions and
+        # reproduce the false-PROMOTE this fix exists to prevent)
+        n_days = 1
 
     criteria = [
         {"criterion": "min_paper_trading_days",
