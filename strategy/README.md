@@ -21,6 +21,7 @@ AST-sandboxed core; the engine adapter is a thin event translator.
 | `nautilus_adapter.py` | NautilusTrader Strategy/config adapter |
 | `test_adapter_wiring.py` | 9-assertion stubbed-engine wiring suite |
 | `test_nautilus_engine.py` | 7-assertion real NautilusTrader BacktestEngine suite |
+| `test_engine_parity.py` | 7-assertion cross-engine parity suite (runner vs real engine, identical data) |
 | `backtest_study.py` | Hypothesis validation, robustness grid, cost stress |
 | `walkforward_study.py` | Walk-forward + 40-seed Monte Carlo significance |
 | `deployment_study.py` | Edge threshold + universe scaling envelope |
