@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install numpy
+
+      - name: Gate suite (G1-G4 + modules)
+        run: python3 strategy/test_gates.py
+
+      - name: Adapter wiring suite (stubbed engine)
+        run: python3 strategy/test_adapter_wiring.py
+
+      - name: Smoke validation (SPI + determinism)
+        run: |
+          python3 strategy/vp_mr_strategy.py
+          A=$(python3 strategy/vp_mr_strategy.py | md5sum)
+          B=$(python3 strategy/vp_mr_strategy.py | md5sum)
+          [ "$A" = "$B" ] && echo "deterministic: OK" || { echo "non-deterministic"; exit 1; }
+
+      - name: Run card generation consistency
+        run: |
+          python3 strategy/generate_run_card.py > /dev/null
+          git diff --exit-code strategy/run_card.json
