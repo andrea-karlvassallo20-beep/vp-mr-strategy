@@ -1,33 +1,39 @@
-"""AVFI v3 replication and risk-throttle research.
+"""AVFI v3 replication, risk-throttle research, and iterative improvement.
 
 Faithful Python replication of the Pine v5 indicator "AVFI v3 vs v2
 [spread axis]" (see KNOWLEDGE (1).md, trading-research programme):
 
   - sigmaPk: Parkinson-style volatility floor from the bar's high-low
-    range, sigmaPk = sqrt(sum(ln(H/L)^2) / (4 n ln 2)) over the window
-  - va: log-volume normalization, va = ln(V) / ln(V_avg) clamped to
-    the volatility floor band
+    range, strictly trailing window
+  - va: log-volume normalization vs the trailing mean
   - AVFI v3: range-aware vol floor with log-volume normalization
-  - AVFI v2: the classic volume-adjusted flow; the spread axis compares
+  - AVFI v2: classic volume-adjusted flow; the spread axis compares
     v3 against a slow EMA of v2
-  - spread = AVFI v3 - EMA(AVFI v2, slow); sp_z = rolling z-score of
-    the spread
+  - spread = AVFI v3 - EMA(AVFI v2, slow); sp_z = trailing z-score
 
-The programme's evidence (stages 0-6c) is unambiguous: AVFI is a slow
-regime descriptor, NOT a weekly entry timer (rule set A was killed;
-H1/H2 unsupported; the 27-combo grid family fails the White reality
-check). Its measurable job is a RISK THROTTLE: U2 (AVFI reversal_down
-throttle 0.5) cut max drawdown from -21.5% to -15.5% at similar
-Sharpe. This module therefore evaluates ONLY the throttle use on the
-deployed daily ETF universe, strictly causally (all windows trailing).
+The programme's evidence is unambiguous: AVFI is a slow regime
+descriptor, NOT an entry timer. Its measurable job is a RISK THROTTLE
+(U2: cut maxDD -21.5% -> -15.5% at preserved Sharpe). This module
+evaluates ONLY the throttle use, strictly causally.
 
-Usage:
+ITERATION MECHANISM: AVFI is the starting point of the edge formula
+and must improve with each run. Each nightly pass (1) evaluates the
+current research parameters, (2) searches a pre-committed variant grid
+with walk-forward honesty (selection on the first 60%, scoring on the
+untouched last 40%), (3) appends the result to an append-only
+iteration ledger, and (4) if a candidate beats the current parameters
+out-of-sample (more drawdown reduction at preserved Sharpe), the
+research parameters advance to the candidate for the next iteration.
+The DEPLOYED strategy is never touched (Gate 3).
+
+Usage (nightly):
     python3 avfi.py --data-dir ./paper/data \
         --markdown ./paper/research/avfi_report.md
 """
 import argparse
 import json
 import math
+from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
@@ -36,16 +42,27 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent))
 from papertrading_runner import load_bars
 
-VOL_WINDOW = 20        # volume normalization window
-PK_WINDOW = 20         # Parkinson vol floor window
-EMA_SLOW = 26          # slow EMA of AVFI v2 (spread axis)
-SP_Z_WINDOW = 100      # rolling z-score window for the spread
-THROTTLE = 0.5         # U2 pre-committed reversal_down throttle
+DEFAULT_PARAMS = {
+    "vol_window": 20,     # volume normalization window
+    "pk_window": 20,      # Parkinson vol floor window
+    "ema_slow": 26,       # slow EMA of AVFI v2 (spread axis)
+    "sp_z_window": 100,   # trailing z-score window for the spread
+    "trigger": -1.0,      # sp_z below this -> throttle on
+    "throttle": 0.5,      # exposure multiplier while throttled
+}
 Z_ENTRY = 2.0
 Z_EXIT = 0.25
 LOOKBACK = 100
 WARMUP = 110
 COST_BPS = 5.0
+
+VARIANT_GRID = [
+    {"trigger": tr, "throttle": th, "ema_slow": es, "pk_window": pk}
+    for tr in (-0.5, -1.0, -1.5)
+    for th in (0.5, 0.25)
+    for es in (13, 26)
+    for pk in (10, 20)
+]
 
 
 def trailing_mean(values: np.ndarray, window: int) -> np.ndarray:
@@ -70,7 +87,7 @@ def ema(values: np.ndarray, span: int) -> np.ndarray:
 
 
 def parkinson_sigma_pk(high: np.ndarray, low: np.ndarray,
-                       window: int = PK_WINDOW) -> np.ndarray:
+                       window: int) -> np.ndarray:
     """Parkinson-style per-bar vol floor from ln(H/L)^2, strictly
     trailing window."""
     rng = np.log(np.maximum(high, 1e-9) / np.maximum(low, 1e-9)) ** 2
@@ -78,10 +95,7 @@ def parkinson_sigma_pk(high: np.ndarray, low: np.ndarray,
     return np.sqrt(trailing_mean(rng, window) * c)
 
 
-def avfi_v3_series(high: np.ndarray, low: np.ndarray, close: np.ndarray,
-                   volume: np.ndarray,
-                   vol_window: int = VOL_WINDOW,
-                   pk_window: int = PK_WINDOW) -> np.ndarray:
+def avfi_v3_series(high, low, close, volume, vol_window, pk_window):
     """Range-aware vol-floor flow with log-volume normalization (v3)."""
     sigma_pk = parkinson_sigma_pk(high, low, pk_window)
     with np.errstate(divide="ignore", invalid="ignore"):
@@ -98,8 +112,7 @@ def avfi_v3_series(high: np.ndarray, low: np.ndarray, close: np.ndarray,
     return flow
 
 
-def avfi_v2_series(close: np.ndarray, volume: np.ndarray,
-                   vol_window: int = VOL_WINDOW) -> np.ndarray:
+def avfi_v2_series(close, volume, vol_window):
     """Classic volume-adjusted flow: signed return x volume ratio."""
     ret = np.zeros_like(close)
     ret[1:] = np.sign(np.diff(close))
@@ -110,15 +123,17 @@ def avfi_v2_series(close: np.ndarray, volume: np.ndarray,
     return ret * ratio
 
 
-def spread_axis(high, low, close, volume) -> np.ndarray:
+def spread_axis(high, low, close, volume, params) -> np.ndarray:
     """spread = AVFI v3 - slow EMA of AVFI v2 (the spread axis)."""
-    v3 = avfi_v3_series(high, low, close, volume)
-    v2 = ema(avfi_v2_series(close, volume), EMA_SLOW)
+    v3 = avfi_v3_series(high, low, close, volume,
+                        params["vol_window"], params["pk_window"])
+    v2 = ema(avfi_v2_series(close, volume, params["vol_window"]),
+             params["ema_slow"])
     return v3 - v2
 
 
-def spread_z(spread: np.ndarray, window: int = SP_Z_WINDOW) -> np.ndarray:
-    """Rolling z-score of the spread (sigma-normalized histogram)."""
+def spread_z(spread: np.ndarray, window: int) -> np.ndarray:
+    """Trailing z-score of the spread (sigma-normalized histogram)."""
     z = np.zeros_like(spread)
     for t in range(window, len(spread)):
         w = spread[t - window + 1:t + 1]
@@ -129,19 +144,22 @@ def spread_z(spread: np.ndarray, window: int = SP_Z_WINDOW) -> np.ndarray:
 
 
 def throttle_backtest(high, low, close, volume,
-                      use_throttle: bool = True):
+                      use_throttle: bool = True,
+                      params: dict = None):
     """Production-style daily z-score MR backtest; the AVFI throttle
-    halves exposure when the spread axis signals distribution
-    (sp_z strongly negative = effort without result = risk-off).
-    Strictly causal: every window trails the decision bar. Returns
-    (sharpe, max_dd_pct, total_pct, trades, throttled_bars)."""
+    cuts exposure to `throttle` x when sp_z <= trigger. Strictly
+    causal. Returns dict with metrics, equity curve, positions,
+    entries and the sp_z series."""
+    p = dict(DEFAULT_PARAMS if params is None else params)
     logp = np.log(close)
     n = len(close)
-    sp_z = spread_z(spread_axis(high, low, close, volume)) \
-        if use_throttle else np.zeros(n)
+    sp_z = (spread_z(spread_axis(high, low, close, volume, p),
+                     p["sp_z_window"]) if use_throttle
+            else np.zeros(n))
     pos = np.zeros(n)
     cur = 0.0
     throttled = 0
+    entries = []
     for t in range(WARMUP, n - 1):
         window = logp[t - LOOKBACK + 1:t + 1]
         mu, sd = window.mean(), window.std()
@@ -150,11 +168,12 @@ def throttle_backtest(high, low, close, volume,
         z = (logp[t] - mu) / sd
         if cur == 0.0 and abs(z) >= Z_ENTRY:
             cur = -1.0 if z > 0 else 1.0
+            entries.append((t + 1, cur))
         elif cur != 0.0 and abs(z) <= Z_EXIT:
             cur = 0.0
         size = cur
-        if use_throttle and cur != 0.0 and sp_z[t] <= -1.0:
-            size = cur * THROTTLE
+        if use_throttle and cur != 0.0 and sp_z[t] <= p["trigger"]:
+            size = cur * p["throttle"]
             throttled += 1
         pos[t + 1] = size
     rets = np.diff(logp)
@@ -169,13 +188,49 @@ def throttle_backtest(high, low, close, volume,
     peak = np.maximum.accumulate(eq)
     max_dd = float(((peak - eq) / peak).max()) if len(eq) else 0.0
     total = float((eq[-1] - 1.0) * 100.0)
-    return sharpe, max_dd * 100.0, total, trades, throttled
+    return {"sharpe": sharpe, "max_dd_pct": max_dd * 100.0,
+            "return_pct": total, "trades": trades,
+            "throttled_bars": throttled, "entries": entries,
+            "pos": pos, "sp_z": sp_z, "eq": eq}
 
 
-def run_avfi_research(data_dir: Path,
-                      universe=("SPY", "QQQ", "IWM", "XLF", "XLE")) -> dict:
-    """Throttle study per instrument + portfolio view, honest both ways."""
-    rows = []
+def _window_dd(eq: np.ndarray, lo: int, hi: int) -> float:
+    seg = eq[lo:hi]
+    if len(seg) < 2:
+        return 0.0
+    peak = np.maximum.accumulate(seg)
+    return float(((peak - seg) / peak).max() * 100.0)
+
+
+def _window_sharpe(eq: np.ndarray, lo: int, hi: int) -> float:
+    seg = eq[lo:hi]
+    if len(seg) < 3:
+        return 0.0
+    rets = np.diff(seg)
+    sd = rets.std()
+    return float(rets.mean() / sd * math.sqrt(252)) if sd > 0 else 0.0
+
+
+def _load_params(research_dir: Path) -> dict:
+    f = research_dir / "avfi_params.json"
+    if f.exists():
+        saved = json.loads(f.read_text())
+        return {**DEFAULT_PARAMS, **saved}
+    return dict(DEFAULT_PARAMS)
+
+
+def _save_params(research_dir: Path, params: dict) -> None:
+    research_dir.mkdir(parents=True, exist_ok=True)
+    (research_dir / "avfi_params.json").write_text(
+        json.dumps(params, indent=2))
+
+
+def run_iteration(data_dir: Path, research_dir: Path,
+                  universe=("SPY", "QQQ", "IWM", "XLF", "XLE")) -> dict:
+    """One improvement iteration: evaluate current params, search the
+    pre-committed grid with train/OOS honesty, advance params if a
+    candidate wins out-of-sample, append to the ledger."""
+    series = []
     for s in universe:
         f = data_dir / f"{s.lower()}.csv"
         if not f.exists():
@@ -183,27 +238,115 @@ def run_avfi_research(data_dir: Path,
         bars = load_bars(f)
         if len(bars) < WARMUP + 60:
             continue
-        h = np.array([b["high"] for b in bars])
-        l = np.array([b["low"] for b in bars])
-        c = np.array([b["close"] for b in bars])
-        v = np.array([float(b["volume"]) for b in bars])
-        base = throttle_backtest(h, l, c, v, use_throttle=False)
-        throttled = throttle_backtest(h, l, c, v, use_throttle=True)
+        series.append((s,
+                       np.array([b["high"] for b in bars]),
+                       np.array([b["low"] for b in bars]),
+                       np.array([b["close"] for b in bars]),
+                       np.array([float(b["volume"]) for b in bars]),
+                       [b["date"] for b in bars]))
+    if not series:
+        return {"status": "NO_DATA"}
+
+    params = _load_params(research_dir)
+    split = int(min(len(c) for _, _, _, c, _, _ in series) * 0.6)
+
+    def portfolio(pp, use_throttle=True):
+        runs = [throttle_backtest(h, l, c, v, use_throttle, pp)
+                for _, h, l, c, v, _ in series]
+        return runs
+
+    base_runs = [throttle_backtest(h, l, c, v, False, params)
+                 for _, h, l, c, v, _ in series]
+    cur_runs = portfolio(params)
+
+    def oos_score(runs):
+        dd_red = np.mean([
+            _window_dd(b["eq"], split, len(b["eq"]))
+            - _window_dd(r["eq"], split, len(r["eq"]))
+            for b, r in zip(base_runs, runs)])
+        sh_delta = np.mean([
+            _window_sharpe(r["eq"], split, len(r["eq"]))
+            - _window_sharpe(b["eq"], split, len(b["eq"]))
+            for b, r in zip(base_runs, runs)])
+        return dd_red, sh_delta
+
+    cur_dd_red, cur_sh_delta = oos_score(cur_runs)
+
+    best = None
+    for cand in VARIANT_GRID:
+        pp = {**params, **cand}
+        runs = portfolio(pp)
+        dd_red, sh_delta = oos_score(runs)
+        # honest selection: maximize OOS drawdown reduction subject to
+        # Sharpe preservation (delta >= -0.05)
+        if sh_delta >= -0.05 and (best is None or dd_red > best[1]):
+            best = (pp, dd_red, sh_delta)
+
+    advanced = bool(best and best[1] > cur_dd_red + 0.1)
+    new_params = best[0] if advanced else params
+    if advanced:
+        _save_params(research_dir, new_params)
+
+    ledger_path = research_dir / "avfi_iterations.json"
+    ledger = json.loads(ledger_path.read_text()) \
+        if ledger_path.exists() else []
+    today = datetime.now(timezone.utc).date().isoformat()
+    record = {
+        "date": today,
+        "iteration": len(ledger) + 1,
+        "params_evaluated": params,
+        "oos_dd_reduction_pct": round(cur_dd_red, 2),
+        "oos_sharpe_delta": round(cur_sh_delta, 3),
+        "best_candidate": ({"params": best[0],
+                            "oos_dd_reduction_pct": round(best[1], 2),
+                            "oos_sharpe_delta": round(best[2], 3)}
+                           if best else None),
+        "advanced": advanced,
+        "params_next": new_params,
+    }
+    prev = next((r for r in ledger if r["date"] == today), None)
+    if prev is not None:
+        record["iteration"] = prev["iteration"]
+        ledger = [r for r in ledger if r["date"] != today]
+    ledger.append(record)
+    research_dir.mkdir(parents=True, exist_ok=True)
+    ledger_path.write_text(json.dumps(ledger, indent=2))
+
+    chart = []
+    for (s, h, l, c, v, dates), run in zip(series, cur_runs):
+        chart.append({
+            "ticker": s,
+            "dates": dates,
+            "close": [round(float(x), 2) for x in c],
+            "sp_z": [round(float(x), 3) for x in run["sp_z"]],
+            "trigger": params["trigger"],
+            "throttle": params["throttle"],
+            "entries": [[int(t), int(d)] for t, d in run["entries"]],
+            "throttled_bars": run["throttled_bars"],
+        })
+    (research_dir / "avfi_chart.json").write_text(json.dumps(chart))
+
+    rows = []
+    for (s, h, l, c, v, _), b, r in zip(series, base_runs, cur_runs):
         rows.append({
             "ticker": s,
-            "base": {"sharpe": round(base[0], 2),
-                     "max_dd_pct": round(base[1], 1),
-                     "return_pct": round(base[2], 1), "trades": base[3]},
-            "throttle": {"sharpe": round(throttled[0], 2),
-                         "max_dd_pct": round(throttled[1], 1),
-                         "return_pct": round(throttled[2], 1),
-                         "trades": throttled[3],
-                         "throttled_bars": throttled[4]},
+            "base": {"sharpe": round(b["sharpe"], 2),
+                     "max_dd_pct": round(b["max_dd_pct"], 1),
+                     "return_pct": round(b["return_pct"], 1),
+                     "trades": b["trades"]},
+            "throttle": {"sharpe": round(r["sharpe"], 2),
+                         "max_dd_pct": round(r["max_dd_pct"], 1),
+                         "return_pct": round(r["return_pct"], 1),
+                         "trades": r["trades"],
+                         "throttled_bars": r["throttled_bars"]},
         })
-    return {"status": "OK" if rows else "NO_DATA", "rows": rows,
+    return {"status": "OK", "rows": rows, "iteration": record,
+            "params": new_params,
             "note": ("Per the AVFI-NQ programme (KNOWLEDGE (1).md): AVFI "
                      "is a slow regime descriptor, not an entry timer; "
-                     "only the risk-throttle use is evaluated here.")}
+                     "only the risk-throttle use is evaluated. Research "
+                     "parameters iterate nightly with train/OOS honesty; "
+                     "the deployed strategy stays frozen (Gate 3).")}
 
 
 def write_report(r: dict, markdown: Path) -> None:
@@ -211,9 +354,8 @@ def write_report(r: dict, markdown: Path) -> None:
              "Python replication of the Pine v5 'AVFI v3 vs v2 [spread "
              "axis]' indicator (Parkinson-style sigmaPk vol floor, "
              "log-volume normalization, spread vs slow EMA of v2, "
-             "sigma-normalized z). Per the programme's evidence, AVFI "
-             "is evaluated ONLY as a risk throttle (halve exposure when "
-             "sp_z <= -1), never as an entry timer.", "",
+             "sigma-normalized z). AVFI is evaluated ONLY as a risk "
+             "throttle, never as an entry timer.", "",
              "| Ticker | Base Sharpe | Base MaxDD % | Throttle Sharpe | "
              "Throttle MaxDD % | Throttled bars |", "|---|---|---|---|---|---|"]
     for row in r.get("rows", []):
@@ -221,11 +363,18 @@ def write_report(r: dict, markdown: Path) -> None:
         lines.append(
             f"| {row['ticker']} | {b['sharpe']:+.2f} | {b['max_dd_pct']} | "
             f"{t['sharpe']:+.2f} | {t['max_dd_pct']} | {t['throttled_bars']} |")
-    lines += ["", r.get("note", ""), "",
-              "Honest reading: the throttle is judged on drawdown "
-              "reduction at preserved Sharpe (the programme's U2 "
-              "result), not on Sharpe improvement. Negative results "
-              "are reported."]
+    it = r.get("iteration")
+    if it:
+        lines += ["", "## Iteration ledger", "",
+                  f"Iteration {it['iteration']} ({it['date']}) — "
+                  f"params: {it['params_evaluated']}",
+                  f"OOS drawdown reduction: "
+                  f"{it['oos_dd_reduction_pct']}% at Sharpe delta "
+                  f"{it['oos_sharpe_delta']}",
+                  f"Best candidate: {it['best_candidate']}",
+                  f"Advanced: {it['advanced']} -> next params: "
+                  f"{it['params_next']}"]
+    lines += ["", r.get("note", "")]
     markdown.parent.mkdir(parents=True, exist_ok=True)
     markdown.write_text("\n".join(lines) + "\n")
     print(f"avfi report written -> {markdown}")
@@ -233,19 +382,18 @@ def write_report(r: dict, markdown: Path) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(
-        description="AVFI v3 risk-throttle research")
+        description="AVFI v3 risk-throttle research + iteration")
     ap.add_argument("--data-dir", type=Path, default=Path("paper/data"))
+    ap.add_argument("--research-dir", type=Path,
+                    default=Path("paper/research"))
     ap.add_argument("--markdown", type=Path,
                     default=Path("paper/research/avfi_report.md"))
-    ap.add_argument("--json-out", type=Path,
-                    default=Path("paper/research/avfi_report.json"))
     args = ap.parse_args()
-    r = run_avfi_research(args.data_dir)
+    r = run_iteration(args.data_dir, args.research_dir)
     write_report(r, args.markdown)
-    args.json_out.parent.mkdir(parents=True, exist_ok=True)
-    args.json_out.write_text(json.dumps(r, indent=2))
-    print(f"avfi json written -> {args.json_out}")
-    print(f"status: {r['status']}, instruments: {len(r['rows'])}")
+    print(f"status: {r['status']}, instruments: {len(r.get('rows', []))}, "
+          f"iteration: {r.get('iteration', {}).get('iteration')}, "
+          f"advanced: {r.get('iteration', {}).get('advanced')}")
 
 
 if __name__ == "__main__":

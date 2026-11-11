@@ -1,7 +1,7 @@
 """AVFI replication suite: indicator math on synthetic OHLCV with
-known structure, throttle causality, and report generation.
-Harness file."""
-import math
+known structure, throttle causality, iteration honesty, and chart-data
+generation. Harness file."""
+import json
 import shutil
 import sys
 import tempfile
@@ -10,9 +10,10 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
-from avfi import (EMA_SLOW, avfi_v2_series, avfi_v3_series, ema,
-                  parkinson_sigma_pk, run_avfi_research, spread_axis,
-                  spread_z, throttle_backtest, write_report)
+from avfi import (DEFAULT_PARAMS, VARIANT_GRID, avfi_v2_series,
+                  avfi_v3_series, ema, parkinson_sigma_pk,
+                  run_iteration, spread_axis, spread_z,
+                  throttle_backtest, trailing_mean, write_report)
 
 PASS = FAIL = 0
 def check(name, cond):
@@ -36,57 +37,61 @@ check("ema matches manual computation",
       abs(ema(np.array([1.0, 2.0, 3.0]), span=2)[1]
           - (2 / 3 * 2.0 + 1 / 3 * 1.0)) < 1e-12)
 
+vals = np.arange(10, dtype=float)
+check("trailing mean is strictly causal (out[t] uses only <= t)",
+      trailing_mean(vals, 3)[4] == np.mean(vals[2:5])
+      and trailing_mean(vals, 3)[0] == vals[0])
+
 h, l, c, v = synth_ohlcv(600, seed=5)
-pk = parkinson_sigma_pk(h, l)
+pk = parkinson_sigma_pk(h, l, DEFAULT_PARAMS["pk_window"])
 check("Parkinson sigmaPk positive and finite on valid OHLC",
       np.all(np.isfinite(pk[50:])) and np.all(pk[50:] > 0))
 
-v3 = avfi_v3_series(h, l, c, v)
-v2 = avfi_v2_series(c, v)
-check("AVFI v3 finite and centered near zero", np.isfinite(v3).all())
-check("AVFI v2 finite and non-negative-magnitude",
-      np.isfinite(v2).all())
+v3 = avfi_v3_series(h, l, c, v, DEFAULT_PARAMS["vol_window"],
+                    DEFAULT_PARAMS["pk_window"])
+v2 = avfi_v2_series(c, v, DEFAULT_PARAMS["vol_window"])
+check("AVFI v3 and v2 finite", np.isfinite(v3).all() and np.isfinite(v2).all())
 check("spread axis is v3 minus slow EMA of v2",
-      np.allclose(spread_axis(h, l, c, v),
-                  v3 - ema(v2, EMA_SLOW), atol=1e-9))
+      np.allclose(spread_axis(h, l, c, v, DEFAULT_PARAMS),
+                  v3 - ema(v2, DEFAULT_PARAMS["ema_slow"]), atol=1e-9))
 
-sp = spread_axis(h, l, c, v)
-z = spread_z(sp)
+sp = spread_axis(h, l, c, v, DEFAULT_PARAMS)
+z = spread_z(sp, DEFAULT_PARAMS["sp_z_window"])
 check("spread z is zero before the rolling window fills",
-      np.all(z[:100] == 0.0) and np.any(np.abs(z[150:]) > 0))
+      np.all(z[:DEFAULT_PARAMS["sp_z_window"]] == 0.0)
+      and np.any(np.abs(z[150:]) > 0))
 
-# causality: the z at t must not change when future bars change
-h2, l2, c2, v2b = synth_ohlcv(600, seed=6)
-z1 = spread_z(spread_axis(h, l, c, v))
 h_mod = h.copy()
 h_mod[-1] *= 1.5
-z2 = spread_z(spread_axis(h_mod, l, c, v))
+z2 = spread_z(spread_axis(h_mod, l, c, v, DEFAULT_PARAMS),
+              DEFAULT_PARAMS["sp_z_window"])
 check("spread z is strictly causal (future bar change does not "
-      "alter earlier z)", np.allclose(z1[:-1], z2[:-1]))
-
-import avfi as _avfi
-_orig_spread_z = _avfi.spread_z
-
-
-def _match_base():
-    _avfi.spread_z = lambda spread, window=100: np.zeros(
-        len(spread) if hasattr(spread, "__len__") else 0)
-    try:
-        a = throttle_backtest(h, l, c, v, use_throttle=True)
-        b = throttle_backtest(h, l, c, v, use_throttle=False)
-    finally:
-        _avfi.spread_z = _orig_spread_z
-    return a[:4] == b[:4] and a[4] == 0
-
+      "alter earlier z)", np.allclose(z[:-1], z2[:-1]))
 
 base = throttle_backtest(h, l, c, v, use_throttle=False)
 th = throttle_backtest(h, l, c, v, use_throttle=True)
-check("throttle backtest returns complete tuple",
-      len(base) == 5 and len(th) == 5)
+check("backtest returns full study dict",
+      all(k in base for k in ("sharpe", "max_dd_pct", "entries", "pos",
+                              "sp_z", "eq")))
+check("entries recorded with direction",
+      len(base["entries"]) > 0 and all(d in (-1, 1) for _, d in
+                                       base["entries"]))
+
+import avfi as _avfi
+_orig_spread_z = _avfi.spread_z
+_avfi.spread_z = lambda spread, window: np.zeros(len(spread))
+try:
+    a = throttle_backtest(h, l, c, v, use_throttle=True)
+    b = throttle_backtest(h, l, c, v, use_throttle=False)
+finally:
+    _avfi.spread_z = _orig_spread_z
 check("throttle with no trigger reproduces the base run exactly",
-      _match_base())
-check("throttled bars counted only when active",
-      th[4] >= 0 and base[4] == 0)
+      a["sharpe"] == b["sharpe"] and a["throttled_bars"] == 0)
+
+check("variant grid is pre-committed and non-trivial",
+      len(VARIANT_GRID) == 24
+      and any(g["trigger"] != DEFAULT_PARAMS["trigger"]
+              for g in VARIANT_GRID))
 
 tmp = Path(tempfile.mkdtemp())
 data = tmp / "data"
@@ -98,18 +103,30 @@ for i, t in enumerate(["SPY", "QQQ"]):
              lo[j], hi[j], lo[j], cl[j], int(vo[j]))
             for j in range(len(cl))]
     write_csv(data / f"{t.lower()}.csv", rows)
-r = run_avfi_research(data, universe=("SPY", "QQQ", "IWM"))
-check("research runs on cached CSVs", r["status"] == "OK"
+r = run_iteration(data, tmp / "research", universe=("SPY", "QQQ", "IWM"))
+check("iteration runs on cached CSVs", r["status"] == "OK"
       and len(r["rows"]) == 2)
-check("missing instrument skipped gracefully", all(
-      row["ticker"] in ("SPY", "QQQ") for row in r["rows"]))
+check("iteration ledger written with honest record",
+      (tmp / "research" / "avfi_iterations.json").exists()
+      and r["iteration"]["advanced"] in (True, False)
+      and "oos_dd_reduction_pct" in r["iteration"])
+chart = json.loads((tmp / "research" / "avfi_chart.json").read_text())
+check("chart data exported per instrument",
+      len(chart) == 2 and all(
+          k in chart[0] for k in ("ticker", "dates", "close", "sp_z",
+                                  "entries", "trigger")))
+check("chart entries match the audited decision log",
+      all(len(ch["entries"]) > 0 for ch in chart))
 rep = tmp / "avfi_report.md"
 write_report(r, rep)
 txt = rep.read_text()
-check("report carries throttle-vs-base table",
-      "Base Sharpe" in txt and "Throttled bars" in txt)
-check("report carries the programme note (throttle, not timer)",
-      "risk throttle" in txt and "entry timer" in txt)
+check("report carries throttle table + iteration ledger",
+      "Throttled bars" in txt and "Iteration ledger" in txt)
+
+r2 = run_iteration(data, tmp / "research", universe=("SPY", "QQQ"))
+ledger = json.loads((tmp / "research" / "avfi_iterations.json").read_text())
+check("same-day re-run is idempotent in the ledger",
+      len(ledger) == 1 and ledger[0]["iteration"] == 1)
 
 shutil.rmtree(tmp)
 print(f"\nRESULT: {PASS} passed, {FAIL} failed")

@@ -578,35 +578,121 @@ def _cross_asset_html(paper_dir: Path) -> str:
     return intro + "".join(sections)
 
 
+def _avfi_chart_svg(ch: dict, width=560, height=200) -> str:
+    """Per-instrument AVFI chart: price line with trade entries on
+    top, the sigma-normalized spread z below with the trigger line and
+    throttled zones shaded."""
+    closes = ch["close"]
+    sp_z = ch["sp_z"]
+    n = len(closes)
+    if n < 2:
+        return ""
+    top_h = int(height * 0.55)
+    bot_h = height - top_h
+    lo, hi = min(closes), max(closes)
+    rng = (hi - lo) or 1.0
+    xs = [8 + (width - 60) * i / (n - 1) for i in range(n)]
+    pts = " ".join(
+        f"{x:.1f},{6 + (top_h - 14) * (1 - (c - lo) / rng):.1f}"
+        for x, c in zip(xs, closes))
+    zmax = max(1.0, max(abs(z) for z in sp_z))
+    zpts = " ".join(
+        f"{x:.1f},{top_h + 6 + (bot_h - 16) * (1 - (z / zmax + 1) / 2):.1f}"
+        for x, z in zip(xs, sp_z))
+    marks = ""
+    for idx, d in ch["entries"]:
+        if idx >= n:
+            continue
+        x = xs[idx]
+        y = 6 + (top_h - 14) * (1 - (closes[idx] - lo) / rng)
+        if d > 0:
+            marks += (f'<path d="M{x:.1f},{y - 5:.1f} l5,8 l-10,0 z" '
+                      f'fill="#3fb950"><title>long entry '
+                      f'{ch["dates"][idx]}</title></path>')
+        else:
+            marks += (f'<path d="M{x:.1f},{y + 5:.1f} l5,-8 l-10,0 z" '
+                      f'fill="#f85149"><title>short entry '
+                      f'{ch["dates"][idx]}</title></path>')
+    trig = ch["trigger"]
+    trig_y = top_h + 6 + (bot_h - 16) * (1 - (trig / zmax + 1) / 2)
+    zones = ""
+    in_zone = False
+    for i, z in enumerate(sp_z):
+        if z <= trig and not in_zone:
+            x0 = xs[i]
+            in_zone = True
+        elif z > trig and in_zone:
+            zones += (f'<rect x="{x0:.1f}" y="{top_h + 6}" '
+                      f'width="{xs[i] - x0:.1f}" height="{bot_h - 16}" '
+                      f'fill="rgba(210,153,34,.15)"/>')
+            in_zone = False
+    if in_zone:
+        zones += (f'<rect x="{x0:.1f}" y="{top_h + 6}" '
+                  f'width="{xs[-1] - x0:.1f}" height="{bot_h - 16}" '
+                  f'fill="rgba(210,153,34,.15)"/>')
+    return (f'<svg width="{width}" height="{height}" role="img" '
+            f'aria-label="{_esc(ch["ticker"])} AVFI chart" '
+            f'viewBox="0 0 {width} {height}">'
+            f'<polyline fill="none" stroke="#58a6ff" stroke-width="1.4" '
+            f'points="{pts}"/>{marks}'
+            f'{zones}'
+            f'<line x1="8" y1="{trig_y:.1f}" x2="{width - 60}" '
+            f'y2="{trig_y:.1f}" stroke="#d29922" stroke-dasharray="4 4"/>'
+            f'<polyline fill="none" stroke="#a371f7" stroke-width="1.2" '
+            f'points="{zpts}"/>'
+            f'<text x="{width - 56}" y="{trig_y + 3:.1f}" font-size="9" '
+            f'fill="#d29922">trigger</text>'
+            f'<text x="8" y="12" font-size="10" fill="#8b949e">'
+            f'{_esc(ch["ticker"])} price + entries</text>'
+            f'<text x="8" y="{top_h + 16}" font-size="10" fill="#a371f7">'
+            f'spread z (AVFI v3 vs v2)</text></svg>')
+
+
 def _avfi_html(paper_dir: Path) -> str:
-    """AVFI v3 risk-throttle research table from the committed JSON."""
-    res_path = paper_dir / "research" / "avfi_report.json"
-    if not res_path.exists():
-        return ("<p class=\"dim\">AVFI throttle research appears here "
-                "after the first nightly research pass.</p>")
-    r = json.load(open(res_path))
-    rows = ""
-    for row in r.get("rows", []):
-        b, th = row["base"], row["throttle"]
-        dd_better = th["max_dd_pct"] < b["max_dd_pct"]
-        dd_cls = "good" if dd_better else "dim"
-        rows += (f'<tr><td>{_esc(row["ticker"])}</td>'
-                 f'<td>{b["sharpe"]:+.2f}</td><td>{b["max_dd_pct"]}%</td>'
-                 f'<td>{th["sharpe"]:+.2f}</td>'
-                 f'<td class="{dd_cls}">{th["max_dd_pct"]}%</td>'
-                 f'<td>{th["throttled_bars"]}</td></tr>')
-    return (f'<p class="dim">{_esc(r.get("note", ""))} Python replication '
-            'of the Pine v5 "AVFI v3 vs v2 [spread axis]" indicator '
-            '(Parkinson-style vol floor, log-volume normalization, '
-            'sigma-normalized spread z). The throttle halves exposure '
-            'when the spread z falls below -1; judged on drawdown '
-            'reduction at preserved Sharpe, per the research '
-            'programme\'s U2 result. Uncapped 1/vol sizing — the base '
-            'vs throttle comparison is relative.</p>'
-            '<table><tr><th>Ticker</th><th>Base Sharpe</th>'
-            '<th>Base MaxDD</th><th>Throttle Sharpe</th>'
-            '<th>Throttle MaxDD</th><th>Throttled bars</th></tr>'
-            f'{rows}</table>')
+    """AVFI v3 risk-throttle research: per-instrument charts with
+    trades and throttle zones, plus the iteration ledger."""
+    chart_path = paper_dir / "research" / "avfi_chart.json"
+    if not chart_path.exists():
+        return ("<p class=\"dim\">AVFI research appears here after "
+                "the first nightly research pass.</p>")
+    charts = json.load(open(chart_path))
+    svgs = "".join(
+        f'<div class="pc">{_avfi_chart_svg(ch)}</div>' for ch in charts)
+    ledger_html = ""
+    led_path = paper_dir / "research" / "avfi_iterations.json"
+    if led_path.exists():
+        ledger = json.loads(led_path.read_text())[-12:]
+        rows = "".join(
+            f'<tr><td>{r["iteration"]}</td><td>{r["date"]}</td>'
+            f'<td>{r["params_evaluated"].get("trigger")} / '
+            f'{r["params_evaluated"].get("throttle")}</td>'
+            f'<td>{r["oos_dd_reduction_pct"]}%</td>'
+            f'<td>{r["oos_sharpe_delta"]}</td>'
+            f'<td class="{"good" if r["advanced"] else "dim"}">'
+            f'{"advanced" if r["advanced"] else "kept"}</td></tr>'
+            for r in ledger)
+        ledger_html = ('<h3 class="sub">Iteration ledger (nightly '
+                      'self-improvement)</h3>'
+                      '<p class="dim">Each nightly pass evaluates the '
+                      'current AVFI research parameters, searches a '
+                      'pre-committed 24-variant grid with train/OOS '
+                      'honesty, and advances the parameters only when a '
+                      'candidate beats them out-of-sample (more drawdown '
+                      'reduction at preserved Sharpe). The deployed '
+                      'strategy stays frozen (Gate 3).</p>'
+                      '<table><tr><th>Iter</th><th>Date</th>'
+                      '<th>trigger / throttle</th><th>OOS DD red.</th>'
+                      '<th>OOS Sharpe delta</th><th>Outcome</th></tr>'
+                      f'{rows}</table>')
+    return (f'<p class="dim">Python replication of the Pine v5 '
+            f'"AVFI v3 vs v2 [spread axis]" indicator (Parkinson-style '
+            f'vol floor, log-volume normalization, sigma-normalized '
+            f'spread z). Per the research programme, AVFI is evaluated '
+            f'only as a risk throttle — exposure cut to the throttle '
+            f'level (shaded zones) when the spread z breaches the '
+            f'trigger. Green up-triangles mark long entries, red '
+            f'down-triangles short entries.</p>'
+            f'<div class="pgrid">{svgs}</div>{ledger_html}')
 
 
 def build_site(paper_dir: Path) -> str:
