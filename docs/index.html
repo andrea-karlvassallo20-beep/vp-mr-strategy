@@ -87,6 +87,7 @@ details.doc pre { margin:0; padding:0 16px 14px; font-size:11px;
                   line-height:1.5; color:var(--dim); overflow-x:auto;
                   white-space:pre-wrap; }
 code { color:var(--accent); font-size:12px; }
+.tvwrap { background:var(--panel2); border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-top:10px; }
 footer { color:var(--dim); font-size:12px; text-align:center;
           padding:28px; line-height:1.7; }
 footer a { color:var(--accent); }
@@ -559,7 +560,59 @@ def main() -&gt; None:
 
 if __name__ == "__main__":
     main()
-</pre></details>
+</pre></details><details class="doc" open><summary>AVFI v3.2 — Pine v5 source <span class="dim">— paste into a TradingView Pine editor; the Python twin is strategy/avfi.py</span></summary><pre>//@version=5
+// AVFI v3.2 vs v2 [spread axis] — Pine v5 replication for Salient
+// Python twin: strategy/avfi.py (both strictly trailing, Gate 1-safe)
+//
+// sigmaPk : Parkinson-style volatility floor from ln(H/L)^2 — the
+//           "range-aware vol floor" of v3 (wide-range bars = high floor)
+// va      : log-volume normalization vs the trailing mean — effort vs
+//           its norm (va &gt; 1 = real effort, va &lt; 1 = weak effort)
+// AVFI v3 : signed price move x va x sigmaPk
+// AVFI v2 : signed price move x volume ratio (classic flow)
+// spread  : v3 - slow EMA of v2 — THE SPREAD AXIS (regime descriptor)
+// sp_z    : trailing z-score of the spread (sigma-normalized histogram)
+// throttle: when sp_z &lt;= trigger the regime reads distribution
+//           (effort without result) -&gt; risk-off zone is shaded.
+//           Per the research programme: AVFI is NOT an entry timer.
+indicator("AVFI v3.2 vs v2 [spread axis]", overlay=false)
+
+volWindow = input.int(20,   "Volume normalization window", minval=2)
+pkWindow  = input.int(20,   "Parkinson vol floor window",  minval=2)
+emaSlow   = input.int(26,   "Slow EMA of AVFI v2",         minval=2)
+zWindow   = input.int(100,  "Spread z-score window",       minval=2)
+trigger   = input.float(-1.0, "Throttle trigger (spread z)")
+
+// --- sigmaPk: Parkinson-style volatility floor (strictly trailing) ---
+rngSq   = math.pow(math.log(math.max(high, 1e-9) / math.max(low, 1e-9)), 2)
+sigmaPk = math.sqrt(ta.sma(rngSq, pkWindow) / (4.0 * math.log(2.0)))
+
+// --- va: log-volume normalization vs the trailing mean ---
+lv = math.log(math.max(volume, 1.0))
+volAvg = ta.sma(lv, volWindow)
+va = volAvg &gt; 0 ? lv / volAvg : 1.0
+
+// --- AVFI v3: signed move x volume normalization x vol floor ---
+dir = ta.change(close) &gt; 0 ? 1.0 : ta.change(close) &lt; 0 ? -1.0 : 0.0
+avfiV3 = dir * va * sigmaPk
+
+// --- AVFI v2: signed move x volume ratio; slow EMA builds the axis ---
+volMean = ta.sma(volume, volWindow)
+avfiV2 = volMean &gt; 0 ? dir * (volume / volMean) : 0.0
+spread = avfiV3 - ta.ema(avfiV2, emaSlow)
+
+// --- sigma-normalized spread z (trailing window) ---
+spMean = ta.sma(spread, zWindow)
+spSd   = ta.stdev(spread, zWindow)
+spZ    = spSd &gt; 0 ? (spread - spMean) / spSd : 0.0
+
+// --- plots: the spread axis, its z, the trigger, throttle zones ---
+plot(spread, "spread (v3 − EMA v2)", color=color.new(#a371f7, 0), linewidth=2)
+plot(spZ,    "spread z",             color=color.new(#58a6ff, 40))
+hline(0.0, "zero line", color=color.new(#8b949e, 60))
+hline(trigger, "trigger", color=color.new(#d29922, 40), linestyle=hline.style_dashed)
+bgcolor(spZ &lt;= trigger ? color.new(#d29922, 82) : na, title="throttle zone (risk-off)")
+</pre></details><h3 class="sub">Live market — TradingView</h3><p class="dim">Interactive chart (NQ weekly, matching the AVFI-NQ research programme; switch symbols in the widget). Overlay the AVFI v3.2 source above in any TradingView Pine editor.</p><div class="tvwrap"><div class="tradingview-widget-container" style="height:620px;"><div class="tradingview-widget-container__widget" style="height:100%;width:100%"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>{"symbol": "NASDAQ:NQ1!", "interval": "W", "theme": "dark", "width": "100%", "height": "100%", "locale": "en", "allow_symbol_change": true, "save_image": false, "calendar": false, "hide_side_toolbar": false}</script></div></div>
 </section>
 <section id="charts"><h2>Performance</h2>
 <p class="legend"><span><i class="dot" style="background:#3fb950"></i>equity

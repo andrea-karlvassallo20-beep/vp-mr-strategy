@@ -1,0 +1,52 @@
+//@version=5
+// AVFI v3.2 vs v2 [spread axis] — Pine v5 replication for Salient
+// Python twin: strategy/avfi.py (both strictly trailing, Gate 1-safe)
+//
+// sigmaPk : Parkinson-style volatility floor from ln(H/L)^2 — the
+//           "range-aware vol floor" of v3 (wide-range bars = high floor)
+// va      : log-volume normalization vs the trailing mean — effort vs
+//           its norm (va > 1 = real effort, va < 1 = weak effort)
+// AVFI v3 : signed price move x va x sigmaPk
+// AVFI v2 : signed price move x volume ratio (classic flow)
+// spread  : v3 - slow EMA of v2 — THE SPREAD AXIS (regime descriptor)
+// sp_z    : trailing z-score of the spread (sigma-normalized histogram)
+// throttle: when sp_z <= trigger the regime reads distribution
+//           (effort without result) -> risk-off zone is shaded.
+//           Per the research programme: AVFI is NOT an entry timer.
+indicator("AVFI v3.2 vs v2 [spread axis]", overlay=false)
+
+volWindow = input.int(20,   "Volume normalization window", minval=2)
+pkWindow  = input.int(20,   "Parkinson vol floor window",  minval=2)
+emaSlow   = input.int(26,   "Slow EMA of AVFI v2",         minval=2)
+zWindow   = input.int(100,  "Spread z-score window",       minval=2)
+trigger   = input.float(-1.0, "Throttle trigger (spread z)")
+
+// --- sigmaPk: Parkinson-style volatility floor (strictly trailing) ---
+rngSq   = math.pow(math.log(math.max(high, 1e-9) / math.max(low, 1e-9)), 2)
+sigmaPk = math.sqrt(ta.sma(rngSq, pkWindow) / (4.0 * math.log(2.0)))
+
+// --- va: log-volume normalization vs the trailing mean ---
+lv = math.log(math.max(volume, 1.0))
+volAvg = ta.sma(lv, volWindow)
+va = volAvg > 0 ? lv / volAvg : 1.0
+
+// --- AVFI v3: signed move x volume normalization x vol floor ---
+dir = ta.change(close) > 0 ? 1.0 : ta.change(close) < 0 ? -1.0 : 0.0
+avfiV3 = dir * va * sigmaPk
+
+// --- AVFI v2: signed move x volume ratio; slow EMA builds the axis ---
+volMean = ta.sma(volume, volWindow)
+avfiV2 = volMean > 0 ? dir * (volume / volMean) : 0.0
+spread = avfiV3 - ta.ema(avfiV2, emaSlow)
+
+// --- sigma-normalized spread z (trailing window) ---
+spMean = ta.sma(spread, zWindow)
+spSd   = ta.stdev(spread, zWindow)
+spZ    = spSd > 0 ? (spread - spMean) / spSd : 0.0
+
+// --- plots: the spread axis, its z, the trigger, throttle zones ---
+plot(spread, "spread (v3 − EMA v2)", color=color.new(#a371f7, 0), linewidth=2)
+plot(spZ,    "spread z",             color=color.new(#58a6ff, 40))
+hline(0.0, "zero line", color=color.new(#8b949e, 60))
+hline(trigger, "trigger", color=color.new(#d29922, 40), linestyle=hline.style_dashed)
+bgcolor(spZ <= trigger ? color.new(#d29922, 82) : na, title="throttle zone (risk-off)")

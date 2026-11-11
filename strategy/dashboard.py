@@ -704,6 +704,39 @@ def _avfi_code_html() -> str:
             f'<pre>{code}</pre></details>')
 
 
+def _avfi_pine_html() -> str:
+    """The AVFI v3.2 Pine v5 source, displayed for TradingView."""
+    src_path = Path(__file__).parent / "avfi_v3_2.pine"
+    if not src_path.exists():
+        return ""
+    code = _esc(src_path.read_text())
+    return ('<details class="doc" open><summary>AVFI v3.2 — Pine v5 '
+            'source <span class="dim">— paste into a TradingView Pine '
+            'editor; the Python twin is strategy/avfi.py</span></summary>'
+            f'<pre>{code}</pre></details>')
+
+
+def _tradingview_embed(symbol: str = "NASDAQ:NQ1!",
+                       interval: str = "W") -> str:
+    """Large live TradingView chart embed (advanced chart widget)."""
+    config = json.dumps({
+        "symbol": symbol, "interval": interval, "theme": "dark",
+        "width": "100%", "height": "100%", "locale": "en",
+        "allow_symbol_change": True, "save_image": False,
+        "calendar": False, "hide_side_toolbar": False,
+    })
+    return ('<div class="tvwrap">'
+            '<div class="tradingview-widget-container" '
+            'style="height:620px;">'
+            '<div class="tradingview-widget-container__widget" '
+            'style="height:100%;width:100%"></div>'
+            '<script type="text/javascript" '
+            'src="https://s3.tradingview.com/external-embedding/'
+            'embed-widget-advanced-chart.js" async>'
+            f'{config}'
+            '</script></div></div>')
+
+
 def _avfi_html(paper_dir: Path) -> str:
     """AVFI v3 risk-throttle research: per-instrument charts with
     trades and throttle zones, plus the iteration ledger."""
@@ -766,7 +799,15 @@ def _avfi_html(paper_dir: Path) -> str:
             f'<h3 class="sub">Per-instrument: price, entries, '
             f'spread z and throttle zones</h3>'
             f'<div class="pgrid">{svgs}</div>{ledger_html}'
-            f'{_avfi_code_html()}')
+            f'{_avfi_code_html()}'
+            f'{_avfi_pine_html()}'
+            f'<h3 class="sub">Live market — TradingView</h3>'
+            f'<p class="dim">Interactive chart (NQ weekly, '
+            f'matching the AVFI-NQ research programme; switch '
+            f'symbols in the widget). Overlay the AVFI v3.2 '
+            f'source above in any TradingView Pine editor.'
+            f'</p>'
+            f'{_tradingview_embed()}')
 
 
 def build_site(paper_dir: Path) -> str:
@@ -948,6 +989,7 @@ details.doc pre {{ margin:0; padding:0 16px 14px; font-size:11px;
                   line-height:1.5; color:var(--dim); overflow-x:auto;
                   white-space:pre-wrap; }}
 code {{ color:var(--accent); font-size:12px; }}
+.tvwrap {{ background:var(--panel2); border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-top:10px; }}
 footer {{ color:var(--dim); font-size:12px; text-align:center;
           padding:28px; line-height:1.7; }}
 footer a {{ color:var(--accent); }}
