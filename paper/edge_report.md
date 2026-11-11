@@ -1,29 +1,74 @@
 # Edge-seeker research report
 
-Data: 502 bars (selection window 301, OOS 201)
+Data: 1255 bars (selection window 753, OOS 502)
 
 **Recommendation: PROPOSE_REDEPLOY**
 
 ## Out-of-sample comparison (last 40% of data)
 
-| Variant | z_entry | lookback | OOS Sharpe | OOS Ann Ret % | OOS Max DD % | Fills |
-|---|---|---|---|---|---|---|
-| Selected candidate | 1.5 | 60 | -0.517 | -4.53 | 7.79 | 95 |
-| Production (frozen) | 2.0 | 100 | -1.162 | -8.4 | 8.37 | 95 |
+| Variant | z_entry | lookback | vol model | VSA filter | OOS Sharpe | OOS Ann Ret % | OOS Max DD % | Fills |
+|---|---|---|---|---|---|---|---|---|
+| Selected candidate | 2.5 | 60 | garch | False | 0.471 | 2.12 | 4.95 | 128 |
+| Production (frozen) | 2.0 | 100 | -0.12 | -0.12 | 1.9 | 128 |
 
 ## Selection-window grid (train Sharpe)
 
-| z_entry | lookback | train Sharpe |
-|---|---|---|
-| 1.5 | 60 | 0.502 |
-| 1.5 | 100 | 0.477 |
-| 1.5 | 150 | -0.428 |
-| 2.0 | 60 | 0.306 |
-| 2.0 | 100 | -0.503 |
-| 2.0 | 150 | -0.558 |
-| 2.5 | 60 | -0.483 |
-| 2.5 | 100 | -0.568 |
-| 2.5 | 150 | -0.454 |
+| z_entry | lookback | vol model | VSA | train Sharpe |
+|---|---|---|---|---|
+| 1.5 | 60 | realized | False | -0.129 |
+| 1.5 | 60 | realized | True | 0.0 |
+| 1.5 | 60 | ewma | False | -0.214 |
+| 1.5 | 60 | ewma | True | 0.0 |
+| 1.5 | 60 | garch | False | -0.429 |
+| 1.5 | 60 | garch | True | 0.0 |
+| 1.5 | 100 | realized | False | -0.512 |
+| 1.5 | 100 | realized | True | 0.0 |
+| 1.5 | 100 | ewma | False | -0.493 |
+| 1.5 | 100 | ewma | True | 0.0 |
+| 1.5 | 100 | garch | False | -0.421 |
+| 1.5 | 100 | garch | True | 0.0 |
+| 1.5 | 150 | realized | False | -0.384 |
+| 1.5 | 150 | realized | True | 0.0 |
+| 1.5 | 150 | ewma | False | -0.314 |
+| 1.5 | 150 | ewma | True | 0.0 |
+| 1.5 | 150 | garch | False | -0.596 |
+| 1.5 | 150 | garch | True | 0.0 |
+| 2.0 | 60 | realized | False | 0.045 |
+| 2.0 | 60 | realized | True | 0.0 |
+| 2.0 | 60 | ewma | False | 0.067 |
+| 2.0 | 60 | ewma | True | 0.0 |
+| 2.0 | 60 | garch | False | 0.26 |
+| 2.0 | 60 | garch | True | 0.0 |
+| 2.0 | 100 | realized | False | 0.275 |
+| 2.0 | 100 | realized | True | 0.0 |
+| 2.0 | 100 | ewma | False | 0.271 |
+| 2.0 | 100 | ewma | True | 0.0 |
+| 2.0 | 100 | garch | False | 0.195 |
+| 2.0 | 100 | garch | True | 0.0 |
+| 2.0 | 150 | realized | False | -0.095 |
+| 2.0 | 150 | realized | True | 0.0 |
+| 2.0 | 150 | ewma | False | -0.086 |
+| 2.0 | 150 | ewma | True | 0.0 |
+| 2.0 | 150 | garch | False | -0.065 |
+| 2.0 | 150 | garch | True | 0.0 |
+| 2.5 | 60 | realized | False | 0.967 |
+| 2.5 | 60 | realized | True | 0.0 |
+| 2.5 | 60 | ewma | False | 0.98 |
+| 2.5 | 60 | ewma | True | 0.0 |
+| 2.5 | 60 | garch | False | 1.002 |
+| 2.5 | 60 | garch | True | 0.0 |
+| 2.5 | 100 | realized | False | 0.888 |
+| 2.5 | 100 | realized | True | 0.0 |
+| 2.5 | 100 | ewma | False | 0.874 |
+| 2.5 | 100 | ewma | True | 0.0 |
+| 2.5 | 100 | garch | False | 0.85 |
+| 2.5 | 100 | garch | True | 0.0 |
+| 2.5 | 150 | realized | False | -0.03 |
+| 2.5 | 150 | realized | True | 0.0 |
+| 2.5 | 150 | ewma | False | -0.047 |
+| 2.5 | 150 | ewma | True | 0.0 |
+| 2.5 | 150 | garch | False | -0.04 |
+| 2.5 | 150 | garch | True | 0.0 |
 
 ## Gate 3
 
