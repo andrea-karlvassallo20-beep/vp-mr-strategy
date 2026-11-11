@@ -1076,6 +1076,48 @@ def _state_space_html(paper_dir: Path) -> str:
                      f'<td>{mr_["fwd"] if mr_["fwd"] is not None else "-"}</td>'
                      f'<td class="{cls}">'
                      f'{"supported" if holds else "unproven"}</td></tr>')
+        pooled_html = ""
+        extpath = paper_dir / "research" / "state_space_study_extended.json"
+        if extpath.exists():
+            ext = json.load(open(extpath))
+            agg = ext.get("aggregate") or {}
+            br = agg.get("bottom_region") or {}
+            mr_ = agg.get("mid_region") or {}
+            holds = agg.get("hypothesis_holds")
+            cls = "good" if holds else "dim"
+            n_series = len(ext.get("series", {}))
+            pooled_html = (
+                '<h3 class="sub">Pooled across the full universe'
+                '</h3>'
+                '<p class="dim">The deployed ETFs fire the full '
+                'bottom region too rarely for a per-instrument '
+                'verdict, so the hypothesis is also tested POOLED '
+                f'across all {n_series} extended series (crypto, '
+                'indices, commodities). This is the accumulating '
+                'evidence base; the pooled verdict is the one that '
+                'matters.</p>'
+                '<table><tr><th>Scope</th>'
+                '<th>bottom-region n</th><th>fwd</th>'
+                '<th>mid-region n</th><th>fwd</th>'
+                '<th>beats (own scale)</th>'
+                '<th>verdict</th></tr>'
+                f'<tr><td>POOLED ({n_series} series)</td>'
+                f'<td>{br.get("n", 0)}</td>'
+                f'<td>{br.get("fwd") if br.get("fwd") is not None else "-"}</td>'
+                f'<td>{(mr_.get("n") or 0)}</td>'
+                f'<td>{mr_.get("fwd") if mr_.get("fwd") is not None else "-"}</td>'
+                f'<td>{agg.get("series_beats", 0)} / '
+                f'{agg.get("series_with_both", 0)}</td>'
+                f'<td class="{cls}">'
+                f'{"supported" if holds else "unproven"}</td></tr>'
+                '</table>'
+                '<p class="dim">The pooled forward returns mix '
+                'scales across very different assets, so the '
+                'scale-free beat count is the stronger evidence: '
+                'for the hypothesis to be supported it must win '
+                'the pooled return AND beat on its own scale in a '
+                'majority of series that have both regions '
+                'populated.</p>')
         study_html = ('<h3 class="sub">The region hypothesis, tested'
                       '</h3>'
                       '<p class="dim">If bottoms are REGIONS of space, '
@@ -1091,6 +1133,7 @@ def _state_space_html(paper_dir: Path) -> str:
                       '<th>mid-region n</th><th>fwd</th>'
                       '<th>verdict</th></tr>'
                       f'{rows}</table>')
+        study_html += pooled_html
     return (f'<p class="dim">Every bar is a <strong>position in '
             f'space</strong>, and the strategy lives as a trajectory '
             f'through it: x = AVFI spread z (the regime axis), '
