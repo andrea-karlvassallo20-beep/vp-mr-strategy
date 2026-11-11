@@ -46,17 +46,42 @@ def fetch_synthetic(ticker: str, bars: int, seed: int) -> List[tuple]:
     return rows
 
 
-def fetch_yfinance(ticker: str, period: str = "2y") -> List[tuple]:
-    """Daily bars from yfinance. Only run where network is available."""
+def fetch_yfinance(ticker: str, period: str = "5y",
+                    max_retries: int = 3, base_wait: float = 2.0) -> List[tuple]:
+    """Daily bars from yfinance. Only run where network is available.
+    Retries with exponential backoff (cloud IPs are often throttled) and
+    fails loudly on empty responses rather than writing a header-only CSV."""
+    import time
     import yfinance as yf
-    df = yf.Ticker(ticker).history(period=period, interval="1d")
-    rows = []
-    for idx, r in df.iterrows():
-        d = idx.date().isoformat()
-        rows.append((d, round(float(r["Open"]), 4), round(float(r["High"]), 4),
-                     round(float(r["Low"]), 4), round(float(r["Close"]), 4),
-                     int(r["Volume"])))
-    return rows
+    last_err = None
+    for attempt in range(max_retries):
+        try:
+            df = yf.Ticker(ticker).history(period=period, interval="1d")
+            if df is None or len(df) == 0:
+                last_err = RuntimeError(f"empty frame for {ticker}")
+            else:
+                # yfinance may return tz-aware index and/or MultiIndex columns
+                if isinstance(df.columns, __import__("pandas").MultiIndex):
+                    df.columns = df.columns.get_level_values(-1)
+                rows = []
+                for idx, r in df.iterrows():
+                    d = idx.date().isoformat()
+                    rows.append((d, round(float(r["Open"]), 4),
+                                 round(float(r["High"]), 4),
+                                 round(float(r["Low"]), 4),
+                                 round(float(r["Close"]), 4),
+                                 int(r["Volume"])))
+                return rows
+        except Exception as e:  # network/throttle/schema errors: retry
+            last_err = e
+        if attempt < max_retries - 1:
+            wait = base_wait * (2 ** attempt)
+            print(f"fetch {ticker}: attempt {attempt + 1} failed "
+                  f"({last_err}); retrying in {wait:.0f}s")
+            time.sleep(wait)
+    raise RuntimeError(
+        f"yfinance fetch failed for {ticker} after {max_retries} attempts: "
+        f"{last_err}")
 
 
 def main() -> None:

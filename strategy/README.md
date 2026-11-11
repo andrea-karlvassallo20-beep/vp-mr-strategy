@@ -71,6 +71,7 @@ python3 strategy/gate_check.py --data-dir ./paper/data --state-dir ./paper/state
 | `test_runner.py` | 12-assertion runner suite (idempotency, restarts, SPI) |
 | `test_session_report.py` | 11-assertion report consistency suite |
 | `test_gate_check.py` | 9-assertion promotion gate suite |
+| `test_fetch.py` | 9-assertion fetcher hardening suite (retry/backoff, empty frames, MultiIndex) |
 | `backtest_study.py` | Studies 1-3: hypothesis, robustness, cost stress |
 | `walkforward_study.py` | Studies 4-5: walk-forward + Monte Carlo |
 | `deployment_study.py` | Study 6: edge threshold + universe scaling |
