@@ -8,7 +8,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from fetch_data import fetch_synthetic, write_csv
 from papertrading_runner import PaperTradingRunner
-from dashboard import build_html
+from dashboard import (build_html, build_site, drawdown_svg,
+                       price_charts_html, race_svg)
 
 PASS = FAIL = 0
 def check(name, cond):
@@ -31,6 +32,26 @@ check("equity curve SVG rendered", "<svg" in html and "polyline" in html)
 check("verification matrix present", "Cross-engine parity" in html)
 check("autonomous loop section present", "edge-seeker" in html)
 check("no unescaped script injection", "<script" not in html)
+
+site = build_site(tmp)
+check("salient site generated", len(site) > 6000)
+check("equity chart in site", "aria-label=\"equity curve\"" in site)
+check("drawdown chart in site", drawdown_svg(tmp).startswith("<svg"))
+check("drawdown empty-state graceful",
+      "no session data yet" in drawdown_svg(tmp / "nonexistent"))
+prices = price_charts_html(tmp)
+check("per-instrument price charts", prices.count("<svg") == 2
+      and "SPY" in prices and "QQQ" in prices)
+check("trade entry markers rendered",
+      "long entry" in prices or "short entry" in prices)
+check("race chart without challenger is graceful",
+      "not yet" in race_svg(tmp))
+(tmp / "challenger").mkdir(exist_ok=True)
+shutil.copy(tmp / "state" / "session_state.json",
+            tmp / "challenger" / "session_state.json")
+race = race_svg(tmp)
+check("race chart overlays two curves",
+      race.count("<polyline") == 2 and "Challenger" in race)
 
 empty = build_html(tmp / "nonexistent")
 check("empty state graceful", "no session data yet" in empty)
