@@ -57,8 +57,12 @@ DEFAULT_PARAMS = {
                                     #  robust to splits/share counts)
     "entry_mode": "zscore",         # or "detector": z-score entries
                                     #  confirmed by the RSI-divergence /
-                                    #  VSA-climax tops-and-bottoms
-                                    #  detectors (tops_bottoms.py)
+                                    #  VSA-climax detectors
+                                    #  or "topology3": enter only when
+                                    #  >= 3 of the 5 turn-topology
+                                    #  dimensions align (the confluence
+                                    #  finding: score-3 entries beat
+                                    #  score-2 on all 5 ETFs)
 }
 Z_ENTRY = 2.0
 Z_EXIT = 0.25
@@ -80,7 +84,8 @@ VARIANT_GRID = [
     # pre-committed trigger/throttle anchors
     {"trigger": tr, "throttle": th, "ema_slow": 13, "pk_window": 10,
      "vol_estimator": "parkinson", "volume_mode": "shares",
-     "entry_mode": "detector"}
+     "entry_mode": em}
+    for em in ("detector", "topology3")
     for tr in (-1.0, -1.5)
     for th in (0.5, 0.25)
 ]
@@ -232,6 +237,11 @@ def throttle_backtest(high, low, close, volume,
         cb, ct = detect_climaxes(high, low, close, volume)
         confirm = set(bull.tolist()) | set(bear.tolist()) | \
             set(cb.tolist()) | set(ct.tolist())
+    elif p.get("entry_mode") == "topology3":
+        from tops_bottoms import turn_topology
+        b_score, t_score = turn_topology(high, low, close, volume)
+        confirm = ({int(i) for i in np.nonzero(b_score >= 3)[0]}
+                   | {int(i) for i in np.nonzero(t_score >= 3)[0]})
     sp_z = (spread_z(spread_axis(high, low, close, volume, p,
                                   open_=open_), p["sp_z_window"])
             if use_throttle else np.zeros(n))
@@ -350,16 +360,28 @@ def run_iteration(data_dir: Path, research_dir: Path,
                  for _, h, l, c, v, _, o in series]
     cur_runs = portfolio(params)
 
+    # DUAL-SPLIT ROBUSTNESS: a candidate must beat the current params
+    # on BOTH out-of-sample windows (last 40% and last 50%). A single
+    # window rewards selection luck — the 2026-11-11 lesson: the
+    # detector mode's 27.4% dd-reduction collapsed to 1.0% when the
+    # data window shifted by one bar. Advancement now requires
+    # stability, not a lucky window.
+    splits = [split, int(min(len(c) for _, _, _, c, _, _, _ in series)
+                          * 0.5)]
+
     def oos_score(runs):
-        dd_red = np.mean([
-            _window_dd(b["eq"], split, len(b["eq"]))
-            - _window_dd(r["eq"], split, len(r["eq"]))
-            for b, r in zip(base_runs, runs)])
-        sh_delta = np.mean([
-            _window_sharpe(r["eq"], split, len(r["eq"]))
-            - _window_sharpe(b["eq"], split, len(b["eq"]))
-            for b, r in zip(base_runs, runs)])
-        return dd_red, sh_delta
+        dd_reds, sh_deltas = [], []
+        for sp in splits:
+            dd_reds.append(np.mean([
+                _window_dd(b["eq"], sp, len(b["eq"]))
+                - _window_dd(r["eq"], sp, len(r["eq"]))
+                for b, r in zip(base_runs, runs)]))
+            sh_deltas.append(np.mean([
+                _window_sharpe(r["eq"], sp, len(r["eq"]))
+                - _window_sharpe(b["eq"], sp, len(r["eq"]))
+                for b, r in zip(base_runs, runs)]))
+        # the honest score is the WORSE of the two windows
+        return min(dd_reds), min(sh_deltas)
 
     cur_dd_red, cur_sh_delta = oos_score(cur_runs)
 
@@ -368,8 +390,8 @@ def run_iteration(data_dir: Path, research_dir: Path,
         pp = {**params, **cand}
         runs = portfolio(pp)
         dd_red, sh_delta = oos_score(runs)
-        # honest selection: maximize OOS drawdown reduction subject to
-        # Sharpe preservation (delta >= -0.05)
+        # honest selection: maximize the WORST-window OOS drawdown
+        # reduction subject to Sharpe preservation (delta >= -0.05)
         if sh_delta >= -0.05 and (best is None or dd_red > best[1]):
             best = (pp, dd_red, sh_delta)
 
