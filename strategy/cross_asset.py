@@ -23,16 +23,24 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent))
 from fetch_data import fetch_yfinance, write_csv
 
-EXTENDED_UNIVERSE = [
-    ("crypto", "BTC-USD"),
-    ("crypto", "ETH-USD"),
-    ("index", "^GSPC"),
-    ("index", "^IXIC"),
-    ("index", "^DJI"),
-    ("commodity", "GC=F"),
-    ("commodity", "CL=F"),
-    ("commodity", "SI=F"),
+CRYPTO = [
+    "BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD", "XRP-USD",
+    "ADA-USD", "DOGE-USD", "AVAX-USD", "LINK-USD", "DOT-USD",
+    "LTC-USD", "BCH-USD", "UNI-USD", "ATOM-USD", "XLM-USD",
+    "NEAR-USD", "APT-USD", "ARB-USD", "OP-USD", "FIL-USD",
+    "ETC-USD", "HBAR-USD", "ICP-USD", "ALGO-USD", "AAVE-USD",
 ]
+INDICES = ["^GSPC", "^IXIC", "^DJI", "^RUT"]
+COMMODITIES = [
+    "GC=F", "SI=F", "PL=F", "PA=F",            # precious metals
+    "CL=F", "NG=F", "BZ=F",                     # energy
+    "HG=F", "KC=F", "CC=F", "SB=F", "CT=F",   # softs / industrial
+    "ZC=F", "ZS=F", "ZW=F",                      # grains
+]
+EXTENDED_UNIVERSE = (
+    [("crypto", t) for t in CRYPTO]
+    + [("index", t) for t in INDICES]
+    + [("commodity", t) for t in COMMODITIES])
 
 WARMUP = 60
 Z_ENTRY = 2.0
@@ -133,12 +141,13 @@ def analyze_series(prices: np.ndarray) -> dict:
 
 
 def run_research(research_dir: Path, fetch: bool = True,
-                 period: str = "5y") -> list:
-    """Fetch (or reuse cached) extended-universe bars and analyze each."""
+                 period: str = "5y", fetch_pause: float = 1.0) -> list:
+    """Fetch (or reuse cached) extended-universe bars and analyze each.
+    A failed fetch never kills the pass — the series is reported NO_DATA."""
     data_dir = research_dir / "data"
     data_dir.mkdir(parents=True, exist_ok=True)
     results = []
-    for asset_class, ticker in EXTENDED_UNIVERSE:
+    for i, (asset_class, ticker) in enumerate(EXTENDED_UNIVERSE):
         name = safe_name(ticker)
         csv_path = data_dir / f"{name.lower()}.csv"
         prices = None
@@ -149,6 +158,9 @@ def run_research(research_dir: Path, fetch: bool = True,
                 write_csv(csv_path, rows)
             except Exception as e:
                 fetch_error = str(e)
+            if fetch_pause and i < len(EXTENDED_UNIVERSE) - 1:
+                import time
+                time.sleep(fetch_pause)
         if csv_path.exists():
             raw = [l.split(",") for l in
                    csv_path.read_text().strip().splitlines()[1:]]
@@ -175,22 +187,27 @@ def write_report(results: list, markdown: Path) -> None:
              "universe? Each series: OU half-life estimate and a",
              "production-style z-score backtest vs buy-and-hold.",
              "The deployed champion stays frozen (Gate 3); this is",
-             "research toward future challenger candidates.", "",
-             "| Class | Ticker | Bars | OU half-life | MR Sharpe | "
-             "MR trades | MR return | B&H Sharpe | Mean-reverting? |",
-             "|---|---|---|---|---|---|---|---|---|"]
-    for r in sorted(results, key=lambda x: (x["asset_class"], x["ticker"])):
-        if r["status"] != "OK":
-            lines.append(f"| {r['asset_class']} | {r['ticker']} | - | - | "
-                          f"- | - | - | - | NO DATA ({r['error']}) |")
-            continue
-        hl = r["half_life_bars"] if r["half_life_bars"] is not None \
-            else "none"
-        lines.append(
-            f"| {r['asset_class']} | {r['ticker']} | {r['bars']} | {hl} | "
-            f"{r['mr_sharpe']:+.2f} | {r['mr_trades']} | "
-            f"{r['mr_return_pct']:+.1f}% | {r['buy_hold_sharpe']:+.2f} | "
-            f"{'yes' if r['mean_reverting'] else 'no'} |")
+             "research toward future challenger candidates.", ""]
+    header = ("| Class | Ticker | Bars | OU half-life | MR Sharpe | "
+               "MR trades | MR return | B&H Sharpe | Mean-reverting? |")
+    for asset_class in sorted({r["asset_class"] for r in results}):
+        lines += [f"## {asset_class.title()}s", "", header,
+                  "|---|---|---|---|---|---|---|---|---|"]
+        for r in sorted(
+                (x for x in results if x["asset_class"] == asset_class),
+                key=lambda x: x["ticker"]):
+            if r["status"] != "OK":
+                lines.append(f"| {r['asset_class']} | {r['ticker']} | - | - | "
+                              f"- | - | - | - | NO DATA ({r['error']}) |")
+                continue
+            hl = r["half_life_bars"] if r["half_life_bars"] is not None \
+                else "none"
+            lines.append(
+                f"| {r['asset_class']} | {r['ticker']} | {r['bars']} | {hl} | "
+                f"{r['mr_sharpe']:+.2f} | {r['mr_trades']} | "
+                f"{r['mr_return_pct']:+.1f}% | {r['buy_hold_sharpe']:+.2f} | "
+                f"{'yes' if r['mean_reverting'] else 'no'} |")
+        lines.append("")
     if ok:
         best = max(ok, key=lambda r: r["mr_sharpe"])
         lines += ["", f"Best mean-reversion candidate: **{best['ticker']}** "

@@ -149,8 +149,8 @@ def drawdown_svg(paper_dir: Path, width=860, height=140, uid="dd") -> str:
             f'</text></svg>')
 
 
-def price_charts_html(paper_dir: Path, per_width=460,
-                      per_height=150) -> str:
+def price_charts_html(paper_dir: Path, per_width=520,
+                      per_height=170) -> str:
     """Per-instrument close-price charts with trade-entry markers.
     Green up-triangles mark long entries, red down-triangles short
     entries (position changes from the decision log)."""
@@ -450,11 +450,24 @@ def _knowledge_html() -> str:
              'to a concrete design decision; candidate improvements become '
              'research variants that the edge-seeker must beat honestly '
              '— the deployed parameters stay frozen (Gate 3).</p>')
+    programme = ""
+    prog_path = base.parent / "KNOWLEDGE (1).md"
+    if prog_path.exists():
+        bullets = [l[2:].strip() for l in prog_path.read_text().splitlines()
+                   if l.startswith("- ")]
+        if bullets:
+            prog_cards = "".join(
+                f'<div class="book"><div class="bdesc dim">'
+                f'{_esc(b[:280])}{"..." if len(b) > 280 else ""}</div></div>'
+                for b in bullets)
+            programme = ('<h3 class="sub">Trading-research programme '
+                         '(AVFI-NQ weekly)</h3><div class="bgrid">'
+                         f'{prog_cards}</div>')
     return (intro
             + '<div class="kgrid">' + "".join(rows) + "</div>"
             + f'<h3 class="sub">Studied library ({len(books)} books)'
-            f'</h3><div class="bgrid">{books_html}</div>{eval_html}')
-
+            f'</h3><div class="bgrid">{books_html}</div>'
+            + programme + eval_html)
 
 def _worklog_html() -> str:
     """Rendered work log: each entry as a timeline row."""
@@ -517,47 +530,83 @@ def _sparkline(csv_path: Path, width=130, height=34) -> str:
 
 
 def _cross_asset_html(paper_dir: Path) -> str:
-    """Cross-asset edge research table (crypto, indices, commodities)
-    with per-series sparklines, from the committed research JSON."""
+    """Cross-asset edge research, one section per asset class, with
+    per-series sparklines, from the committed research JSON."""
     res_path = paper_dir / "research" / "cross_asset.json"
     if not res_path.exists():
         return ("<p class=\"dim\">Cross-asset research appears here after "
                 "the first nightly research pass.</p>")
     results = json.load(open(res_path))
     data_dir = paper_dir / "research" / "data"
-    rows = ""
-    for r in sorted(results,
-                     key=lambda x: (x["asset_class"], x["ticker"])):
-        if r.get("status") != "OK":
-            rows += (f'<tr><td>{_esc(r["asset_class"])}</td>'
-                     f'<td>{_esc(r["ticker"])}</td><td colspan="5" '
-                     f'class="dim">no data ({_esc(r.get("error", ""))})'
-                     f"</td></tr>")
-            continue
-        spark = _sparkline(data_dir / f"{safe_name(r["ticker"]).lower()}.csv") \
-            if data_dir.exists() else ""
-        hl = r["half_life_bars"] if r["half_life_bars"] is not None \
-            else "none"
-        cls = "good" if r["mean_reverting"] else "dim"
-        verdict = "yes" if r["mean_reverting"] else "no"
-        rows += (f'<tr><td>{_esc(r["asset_class"])}</td>'
-                 f'<td>{_esc(r["ticker"])}</td><td>{spark}</td>'
-                 f'<td>{hl}</td><td>{r["mr_t_stat"]}</td>'
-                 f'<td>{r["mr_sharpe"]:+.2f}</td>'
-                 f'<td>{r["buy_hold_sharpe"]:+.2f}</td>'
-                 f'<td class="{cls}">{verdict}</td></tr>')
-    return ("<p class=\"dim\">The deployed champion stays frozen; this "
-            "pass asks whether the mean-reversion edge exists beyond "
-            "equity ETFs — in crypto (BTC, ETH), main indices (S&amp;P 500, "
-            "Nasdaq, Dow) and commodities (gold, crude, silver). Each "
-            "series gets an OU half-life estimate, a Dickey-Fuller-style "
-            "mean-reversion t-test, and a production-style z-score "
-            "backtest vs buy-and-hold. Honest by design: negative "
-            "results are reported.</p>"
-            '<table><tr><th>Class</th><th>Ticker</th><th>5y</th>'
+    intro = ("<p class=\"dim\">Does the mean-reversion edge exist beyond "
+             "equity ETFs? Each series gets an OU half-life estimate, a "
+             "Dickey-Fuller-style mean-reversion t-test, and a "
+             "production-style causal z-score backtest vs buy-and-hold. "
+             "The deployed champion stays frozen (Gate 3); honest null "
+             "results are reported.</p>")
+    sections = []
+    titles = {"crypto": "Cryptos", "index": "Indices",
+              "commodity": "Commodities"}
+    for asset_class in sorted({r["asset_class"] for r in results}):
+        rows = ""
+        for r in sorted((x for x in results
+                         if x["asset_class"] == asset_class),
+                        key=lambda x: x["ticker"]):
+            if r.get("status") != "OK":
+                rows += (f'<tr><td>{_esc(r["ticker"])}</td>'
+                         f'<td colspan="6" class="dim">no data '
+                         f'({_esc(r.get("error", ""))})</td></tr>')
+                continue
+            spark = _sparkline(
+                data_dir / f"{safe_name(r['ticker']).lower()}.csv") \
+                if data_dir.exists() else ""
+            hl = r["half_life_bars"] if r["half_life_bars"] is not None \
+                else "none"
+            cls = "good" if r["mean_reverting"] else "dim"
+            verdict = "yes" if r["mean_reverting"] else "no"
+            rows += (f'<tr><td>{_esc(r["ticker"])}</td><td>{spark}</td>'
+                     f'<td>{hl}</td><td>{r["mr_t_stat"]}</td>'
+                     f'<td>{r["mr_sharpe"]:+.2f}</td>'
+                     f'<td>{r["buy_hold_sharpe"]:+.2f}</td>'
+                     f'<td class="{cls}">{verdict}</td></tr>')
+        sections.append(
+            f'<h3 class="sub">{_esc(titles.get(asset_class, asset_class.title()))}</h3>'
+            '<table><tr><th>Ticker</th><th>5y</th>'
             '<th>OU half-life</th><th>MR t-stat</th><th>MR Sharpe</th>'
             '<th>B&amp;H Sharpe</th><th>Reverting?</th></tr>'
-            f"{rows}</table>")
+            f'{rows}</table>')
+    return intro + "".join(sections)
+
+
+def _avfi_html(paper_dir: Path) -> str:
+    """AVFI v3 risk-throttle research table from the committed JSON."""
+    res_path = paper_dir / "research" / "avfi_report.json"
+    if not res_path.exists():
+        return ("<p class=\"dim\">AVFI throttle research appears here "
+                "after the first nightly research pass.</p>")
+    r = json.load(open(res_path))
+    rows = ""
+    for row in r.get("rows", []):
+        b, th = row["base"], row["throttle"]
+        dd_better = th["max_dd_pct"] < b["max_dd_pct"]
+        dd_cls = "good" if dd_better else "dim"
+        rows += (f'<tr><td>{_esc(row["ticker"])}</td>'
+                 f'<td>{b["sharpe"]:+.2f}</td><td>{b["max_dd_pct"]}%</td>'
+                 f'<td>{th["sharpe"]:+.2f}</td>'
+                 f'<td class="{dd_cls}">{th["max_dd_pct"]}%</td>'
+                 f'<td>{th["throttled_bars"]}</td></tr>')
+    return (f'<p class="dim">{_esc(r.get("note", ""))} Python replication '
+            'of the Pine v5 "AVFI v3 vs v2 [spread axis]" indicator '
+            '(Parkinson-style vol floor, log-volume normalization, '
+            'sigma-normalized spread z). The throttle halves exposure '
+            'when the spread z falls below -1; judged on drawdown '
+            'reduction at preserved Sharpe, per the research '
+            'programme\'s U2 result. Uncapped 1/vol sizing — the base '
+            'vs throttle comparison is relative.</p>'
+            '<table><tr><th>Ticker</th><th>Base Sharpe</th>'
+            '<th>Base MaxDD</th><th>Throttle Sharpe</th>'
+            '<th>Throttle MaxDD</th><th>Throttled bars</th></tr>'
+            f'{rows}</table>')
 
 
 def build_site(paper_dir: Path) -> str:
@@ -573,10 +622,10 @@ def build_site(paper_dir: Path) -> str:
                       edge_path.read_text())
         if m:
             edge_rec = m.group(1)
-    svg = equity_curve_svg(paper_dir, width=900, height=300, uid="site-eq")
-    dd_svg = drawdown_svg(paper_dir, width=900, height=150, uid="site-dd")
+    svg = equity_curve_svg(paper_dir, width=1360, height=320, uid="site-eq")
+    dd_svg = drawdown_svg(paper_dir, width=1360, height=160, uid="site-dd")
     price_html = price_charts_html(paper_dir)
-    race_chart = race_svg(paper_dir, width=900, height=280, uid="site-race")
+    race_chart = race_svg(paper_dir, width=1360, height=300, uid="site-race")
     sessions = s.get("sessions_completed", 0)
     pct = min(100, int(100 * sessions / 20))
     journal_html = ""
@@ -644,7 +693,7 @@ def build_site(paper_dir: Path) -> str:
     nav = (" ".join(
         f'<a href="#{a}">{t}</a>' for a, t in
         (("overview", "Overview"), ("charts", "Charts"),
-         ("race", "Self-learning"), ("crossasset", "Cross-asset"),
+         ("race", "Self-learning"), ("crossasset", "Cross-asset"), ("avfi", "AVFI"),
          ("knowledge", "Knowledge"),
          ("reports", "Reports"), ("journal", "Journal"),
          ("buildlog", "Build log"), ("repo", "Repository"))))
@@ -662,24 +711,24 @@ body {{ background:var(--bg); color:var(--ink); margin:0;
        font-family:-apple-system,'Segoe UI',sans-serif; }}
 nav {{ position:sticky; top:0; z-index:10; background:rgba(10,13,19,.92);
       backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
-      padding:10px 32px; display:flex; gap:18px; align-items:center;
+      padding:10px 40px; display:flex; gap:22px; align-items:center;
       flex-wrap:wrap; }}
 nav .brand {{ font-weight:700; letter-spacing:-.3px; }}
 nav .brand span {{ color:var(--accent); }}
 nav a {{ color:var(--dim); text-decoration:none; font-size:13px; }}
 nav a:hover {{ color:var(--ink); }}
-header {{ padding:44px 32px 8px; max-width:1020px; margin:0 auto; }}
+header {{ padding:44px 40px 8px; max-width:1440px; margin:0 auto; }}
 h1 {{ font-size:38px; margin:0; letter-spacing:-1px; }}
 h1 span {{ color:var(--accent); }}
 .tagline {{ color:var(--dim); margin:8px 0 0; font-size:15px;
            max-width:640px; line-height:1.5; }}
-main {{ max-width:1020px; margin:0 auto; padding:16px 32px 48px; }}
+main {{ max-width:1440px; margin:0 auto; padding:16px 40px 48px; }}
 .progress {{ background:var(--panel); border-radius:10px; height:14px;
              margin:24px 0 26px; overflow:hidden; }}
 .bar {{ height:100%; width:{pct}%; background:linear-gradient(90deg,
         #1f6feb,#58a6ff); border-radius:10px; }}
 .pnote {{ font-size:12px; color:var(--dim); margin:-16px 0 24px; }}
-.metrics {{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }}
+.metrics {{ display:grid; grid-template-columns:repeat(8,1fr); gap:12px; }}
 .m {{ background:var(--panel); border-radius:12px; padding:16px 18px;
       border:1px solid var(--line); }}
 .ml {{ font-size:11px; text-transform:uppercase; letter-spacing:.6px;
@@ -696,7 +745,7 @@ h3.sub {{ font-size:14px; margin:22px 0 10px; color:var(--ink); }}
 .legend span {{ margin-right:16px; }}
 .dot {{ display:inline-block; width:9px; height:9px; border-radius:2px;
        margin-right:5px; vertical-align:middle; }}
-.pgrid {{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px;
+.pgrid {{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px;
           margin-top:14px; }}
 .pc {{ background:var(--panel2); border:1px solid var(--line);
        border-radius:10px; padding:12px 14px 8px; }}
@@ -711,12 +760,12 @@ td, th {{ padding:7px 10px; border-bottom:1px solid var(--line);
 th {{ color:var(--dim); font-weight:600; font-size:11px;
      text-transform:uppercase; letter-spacing:.5px; }}
 .kgrid {{ display:grid; gap:10px; margin-top:14px; }}
-.krow {{ display:grid; grid-template-columns:220px 1fr 1fr; gap:14px;
+.krow {{ display:grid; grid-template-columns:260px 1fr 1fr; gap:18px;
          background:var(--panel2); border:1px solid var(--line);
          border-radius:10px; padding:12px 14px; font-size:13px; }}
 .klayer {{ color:var(--accent); font-weight:600; }}
 .kconcept {{ color:var(--ink); }} .kwhere {{ color:var(--dim); }}
-.bgrid {{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }}
+.bgrid {{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }}
 .book {{ background:var(--panel2); border:1px solid var(--line);
          border-radius:10px; padding:10px 14px; font-size:12px; }}
 .btitle {{ font-weight:600; margin-bottom:2px; }}
@@ -741,7 +790,10 @@ code {{ color:var(--accent); font-size:12px; }}
 footer {{ color:var(--dim); font-size:12px; text-align:center;
           padding:28px; line-height:1.7; }}
 footer a {{ color:var(--accent); }}
-@media (max-width:800px) {{ .metrics,.pgrid,.bgrid {{ grid-template-columns:1fr; }}
+@media (max-width:1100px) {{ .metrics {{ grid-template-columns:repeat(4,1fr); }}
+  .pgrid {{ grid-template-columns:repeat(2,1fr); }}
+  .bgrid {{ grid-template-columns:1fr; }} }}
+@media (max-width:700px) {{ .metrics,.pgrid {{ grid-template-columns:1fr; }}
   .krow {{ grid-template-columns:1fr; }} .wl {{ grid-template-columns:1fr; }} }}
 </style></head><body>
 <nav><span class="brand">Salient<span>.</span></span>{nav}</nav>
@@ -782,6 +834,9 @@ the same real bars every night. Each curve is scaled to its own range.</p>
 </section>
 <section id="crossasset"><h2>Cross-asset edge research</h2>
 {_cross_asset_html(paper_dir)}
+</section>
+<section id="avfi"><h2>AVFI v3 &mdash; risk throttle research</h2>
+{_avfi_html(paper_dir)}
 </section>
 <section id="knowledge"><h2>Knowledge base &rarr; strategy design</h2>
 {_knowledge_html()}

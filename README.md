@@ -24,6 +24,24 @@ quarter-Kelly haircut, capped at 0.5% equity risk per trade. A 3x-ATR trailing
 stop exits losers, a 2% daily drawdown kill-switch halts everything, and all
 positions flatten at session close. Parameters are frozen at deployment.
 
+## Backtesting results (the evidence so far)
+
+All studies ran on deterministic synthetic data with known ground truth,
+then were re-verified on real fetched bars. Every number below is
+reproducible from the committed test suites.
+
+| Study | Result |
+|---|---|
+| Hypothesis test (does mean reversion pay?) | OU-process Sharpe **+1.36** vs random-walk control **-0.69** — the edge exists exactly when the market mean-reverts |
+| Robustness grid (9 parameter points) | all 9 positive — the edge is not a parameter artifact |
+| Cost stress (2x frictions) | strategy survives doubled spreads/commissions/impact |
+| Walk-forward (train 60% / OOS 40%) | OOS Sharpe **0.81** on frozen parameters — no re-fitting |
+| Monte Carlo (40 seeds) | t = **24.1** — the edge is not a lucky seed |
+| Deployment envelope | profitable while mean-reversion half-life <= ~69 bars |
+| Cross-engine parity | sandboxed runner vs real NautilusTrader engine: signal streams **identical**; z-scores agree to 3.5e-3 (price-quantization tolerance) |
+| First real-market session | 2,510 decisions, SPI 1.000, zero duplicate fires, zero kill-switch trips, 78 fills, MTM +0.43% net of costs |
+| Champion/challenger race (nightly) | edge-seeker candidates must beat the live champion by 10% out-of-sample on the same real data — first verdict KEEP_CHAMPION |
+
 ## Why it can be trusted (the four safety gates)
 | Gate | Guarantee |
 |---|---|

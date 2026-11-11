@@ -30,6 +30,9 @@ python3 test_vol_models.py
 echo "=== 7c Cross-asset edge research (crypto, indices, commodities) ==="
 python3 test_cross_asset.py
 
+echo "=== 7d AVFI replication (indicator math, throttle causality) ==="
+python3 test_avfi.py
+
 echo "=== 8 Dashboard generation ==="
 python3 test_dashboard.py
 
