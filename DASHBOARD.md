@@ -7,7 +7,7 @@ Volatility-parity mean reversion on US equity ETFs, paper-trading autonomously s
 | Sessions (forward) | 2 / 20 |
 | Gate verdict | **HOLD** |
 | SPI | 1.0 |
-| Sharpe (MTM, net of costs) | 0.044 |
+| Sharpe (MTM, net of costs) | 0.021 |
 | Max drawdown | 3.811% |
 | Fills | 78 (156 orders) |
 | Edge-seeker recommendation | PROPOSE_REDEPLOY |
