@@ -35,6 +35,9 @@ python3 test_dashboard.py
 echo "=== 10 Challenger (champion/challenger race) ==="
 python3 test_challenger.py
 
+echo "=== 11 Auto-redeploy proposal ==="
+python3 test_propose_redeploy.py
+
 echo "=== Real-engine suites (skips if nautilus_trader missing) ==="
 python3 test_nautilus_engine.py
 python3 test_engine_parity.py
