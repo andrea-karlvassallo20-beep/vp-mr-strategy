@@ -57,53 +57,90 @@ def mtm_equity(paper_dir: Path, state_path: Path = None):
     return dates, equity, state["initial_equity"]
 
 
-def equity_curve_svg(paper_dir: Path, width=860, height=220) -> str:
+def equity_curve_svg(paper_dir: Path, width=860, height=220, uid="eq") -> str:
     """Equity curve from decision-log positions x feed prices (MTM)."""
     res = mtm_equity(paper_dir)
     if res is None:
         return "<p>no session data yet</p>"
-    _, equity, initial = res
+    dates, equity, initial = res
     eq = np.array(equity)
     lo, hi = float(eq.min()), float(eq.max())
     rng = (hi - lo) or 1.0
-    pts = []
-    for i, v in enumerate(eq):
-        x = 10 + (width - 20) * i / max(len(eq) - 1, 1)
-        y = 10 + (height - 20) * (1 - (v - lo) / rng)
-        pts.append(f"{x:.1f},{y:.1f}")
-    poly = " ".join(pts)
-    base_y = 10 + (height - 20) * (1 - (initial - lo) / rng)
+    pad = rng * 0.08
+    lo, hi, rng = lo - pad, hi + pad, rng + 2 * pad
+    n = len(eq)
+    xs = [10 + (width - 70) * i / max(n - 1, 1) for i in range(n)]
+    ys = [10 + (height - 34) * (1 - (v - lo) / rng) for v in eq]
+    poly = " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, ys))
+    area = (f"{xs[0]:.1f},{height - 24} " + poly +
+            f" {xs[-1]:.1f},{height - 24}")
+    base_y = 10 + (height - 34) * (1 - (initial - lo) / rng)
     color = "#2e7d32" if eq[-1] >= initial else "#c62828"
+    grid = ""
+    for frac in (1.0, 0.75, 0.5, 0.25, 0.0):
+        v = lo + frac * rng
+        y = 10 + (height - 34) * (1 - frac)
+        grid += (f'<line x1="10" y1="{y:.1f}" x2="{width - 64}" '
+                 f'y2="{y:.1f}" stroke="rgba(128,128,128,.16)"/>'
+                 f'<text x="{width - 60}" y="{y + 3.5:.1f}" font-size="10" '
+                 f'fill="#8b949e">{v:,.0f}</text>')
+    dticks = ""
+    for frac, d in ((0.0, dates[0]), (0.5, dates[n // 2]), (1.0, dates[-1])):
+        x = 10 + (width - 70) * frac
+        dticks += (f'<text x="{x:.1f}" y="{height - 8}" font-size="10" '
+                   f'fill="#8b949e" text-anchor="start" '
+                   f'{"text-anchor=\"end\"" if frac == 1.0 else ""}>{d}</text>')
     return (f'<svg width="{width}" height="{height}" role="img" '
             f'aria-label="equity curve">'
-            f'<line x1="10" y1="{base_y:.1f}" x2="{width-10}" '
-            f'y2="{base_y:.1f}" stroke="#999" stroke-dasharray="4"/>'
+            f'<defs><linearGradient id="g-{uid}" x1="0" y1="0" x2="0" y2="1">'
+            f'<stop offset="0" stop-color="{color}" stop-opacity=".28"/>'
+            f'<stop offset="1" stop-color="{color}" stop-opacity="0"/>'
+            f'</linearGradient></defs>'
+            f'{grid}'
+            f'<polygon fill="url(#g-{uid})" points="{area}"/>'
+            f'<line x1="10" y1="{base_y:.1f}" x2="{width - 64}" '
+            f'y2="{base_y:.1f}" stroke="#8b949e" stroke-dasharray="4 4"/>'
             f'<polyline fill="none" stroke="{color}" stroke-width="2" '
-            f'points="{poly}"/></svg>')
+            f'stroke-linejoin="round" points="{poly}"/>'
+            f'{dticks}</svg>')
 
 
-def drawdown_svg(paper_dir: Path, width=860, height=140) -> str:
+def drawdown_svg(paper_dir: Path, width=860, height=140, uid="dd") -> str:
     """Underwater curve: percentage drawdown from the running peak."""
     res = mtm_equity(paper_dir)
     if res is None:
         return "<p>no session data yet</p>"
-    _, equity, _ = res
-    eq = np.maximum.accumulate(np.array(equity))
-    dd = (np.array(equity) - eq) / eq * 100.0
+    dates, equity, _ = res
+    peak = np.maximum.accumulate(np.array(equity))
+    dd = (np.array(equity) - peak) / peak * 100.0
     lo = float(dd.min())
     rng = (-lo) or 1.0
-    pts = []
-    for i, v in enumerate(dd):
-        x = 10 + (width - 20) * i / max(len(dd) - 1, 1)
-        y = 8 + (height - 16) * (-v / rng)
-        pts.append(f"{x:.1f},{y:.1f}")
-    poly = " ".join(pts)
-    area = f"10,{height - 8} " + poly + f" {width - 10},{height - 8}"
+    n = len(dd)
+    xs = [10 + (width - 70) * i / max(n - 1, 1) for i in range(n)]
+    ys = [10 + (height - 34) * (-v / rng) for v in dd]
+    poly = " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, ys))
+    area = f"{xs[0]:.1f},{height - 24} " + poly + f" {xs[-1]:.1f},{height - 24}"
+    grid = ""
+    for frac in (0.0, 0.5, 1.0):
+        v = -lo * frac
+        y = 10 + (height - 34) * frac
+        grid += (f'<line x1="10" y1="{y:.1f}" x2="{width - 64}" '
+                 f'y2="{y:.1f}" stroke="rgba(128,128,128,.16)"/>'
+                 f'<text x="{width - 60}" y="{y + 3.5:.1f}" font-size="10" '
+                 f'fill="#8b949e">{v:.1f}%</text>')
+    worst = f"max drawdown {lo:.2f}%"
     return (f'<svg width="{width}" height="{height}" role="img" '
             f'aria-label="drawdown curve">'
-            f'<polygon fill="rgba(248,81,73,.25)" points="{area}"/>'
+            f'<defs><linearGradient id="g-{uid}" x1="0" y1="0" x2="0" y2="1">'
+            f'<stop offset="0" stop-color="#f85149" stop-opacity=".05"/>'
+            f'<stop offset="1" stop-color="#f85149" stop-opacity=".3"/>'
+            f'</linearGradient></defs>'
+            f'{grid}'
+            f'<polygon fill="url(#g-{uid})" points="{area}"/>'
             f'<polyline fill="none" stroke="#f85149" stroke-width="1.5" '
-            f'points="{poly}"/></svg>')
+            f'points="{poly}"/>'
+            f'<text x="14" y="22" font-size="11" fill="#f85149">{worst}'
+            f'</text></svg>')
 
 
 def price_charts_html(paper_dir: Path, per_width=460,
@@ -134,39 +171,48 @@ def price_charts_html(paper_dir: Path, per_width=460,
         lo, hi = float(closes.min()), float(closes.max())
         rng = (hi - lo) or 1.0
         n = len(closes)
-        pts = []
-        for i, v in enumerate(closes):
-            x = 8 + (per_width - 16) * i / max(n - 1, 1)
-            y = 8 + (per_height - 24) * (1 - (v - lo) / rng)
-            pts.append(f"{x:.1f},{y:.1f}")
-        poly = " ".join(pts)
+        xs = [8 + (per_width - 16) * i / max(n - 1, 1) for i in range(n)]
+        ys = [8 + (per_height - 26) * (1 - (v - lo) / rng) for v in closes]
+        poly = " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, ys))
         marks = []
         for i, b in enumerate(bl):
             dpos = entries[s].get(b["date"])
             if not dpos:
                 continue
-            x = 8 + (per_width - 16) * i / max(n - 1, 1)
-            y = 8 + (per_height - 24) * (1 - (b["close"] - lo) / rng)
+            x, y = xs[i], ys[i]
             if dpos > 0:
-                marks.append(f'<path d="M{x:.1f},{y - 4:.1f} l4,7 l-8,0 z" '
-                             f'fill="#3fb950"/>'
-                             f'<title>{s} long entry</title>')
+                marks.append(f'<path d="M{x:.1f},{y - 5:.1f} l5,8 l-10,0 z" '
+                             f'fill="#3fb950" stroke="#0d1117" '
+                             f'stroke-width=".6">'
+                             f'<title>{s} long entry {b["date"]}</title></path>')
             else:
-                marks.append(f'<path d="M{x:.1f},{y + 4:.1f} l4,-7 l-8,0 z" '
-                             f'fill="#f85149"/>'
-                             f'<title>{s} short entry</title>')
+                marks.append(f'<path d="M{x:.1f},{y + 5:.1f} l5,-8 l-10,0 z" '
+                             f'fill="#f85149" stroke="#0d1117" '
+                             f'stroke-width=".6">'
+                             f'<title>{s} short entry {b["date"]}</title></path>')
+        first, last = bl[0]["date"], bl[-1]["date"]
         svgs.append(
-            f'<div class="pc"><h3>{_esc(s)}</h3>'
+            f'<div class="pc"><div class="pchead"><h3>{_esc(s)}</h3>'
+            f'<span class="pclast">{closes[-1]:.2f}</span></div>'
             f'<svg width="{per_width}" height="{per_height}" role="img" '
-            f'aria-label="{_esc(s)} price with entries">'
+            f'aria-label="{_esc(s)} price with entries" '
+            f'viewBox="0 0 {per_width} {per_height}">'
+            f'<line x1="8" y1="{8 + (per_height - 26) * .5:.1f}" '
+            f'x2="{per_width - 8}" '
+            f'y2="{8 + (per_height - 26) * .5:.1f}" '
+            f'stroke="rgba(128,128,128,.14)"/>'
             f'<polyline fill="none" stroke="#58a6ff" stroke-width="1.5" '
-            f'points="{poly}"/>' + "".join(marks) + "</svg></div>")
+            f'stroke-linejoin="round" points="{poly}"/>' + "".join(marks) +
+            f'<text x="8" y="{per_height - 3}" font-size="9" fill="#8b949e">'
+            f'{first}</text>'
+            f'<text x="{per_width - 8}" y="{per_height - 3}" font-size="9" '
+            f'fill="#8b949e" text-anchor="end">{last}</text></svg></div>')
     if not svgs:
         return "<p>no bars</p>"
     return ('<div class="pgrid">' + "".join(svgs) + "</div>")
 
 
-def race_svg(paper_dir: Path, width=900, height=260) -> str:
+def race_svg(paper_dir: Path, width=900, height=260, uid="race") -> str:
     """Champion vs challenger equity overlay from the two persisted
     shadow states."""
     champ = mtm_equity(paper_dir)
@@ -176,30 +222,37 @@ def race_svg(paper_dir: Path, width=900, height=260) -> str:
         return ("<p class=\"dim\">Challenger shadow state not yet "
                 "generated; the race chart appears after the first nightly "
                 "challenger session.</p>")
-    series = []
+    grid = ""
+    for frac in (1.0, 0.75, 0.5, 0.25, 0.0):
+        y = 10 + (height - 44) * (1 - frac)
+        grid += (f'<line x1="10" y1="{y:.1f}" x2="{width - 10}" '
+                 f'y2="{y:.1f}" stroke="rgba(128,128,128,.14)"/>')
+    lines = []
     for label, res, color in (("Challenger", chall, "#58a6ff"),
                               ("Champion", champ, "#3fb950")):
-        dates, equity, _ = res
+        _, equity, _ = res
         eq = np.array(equity, dtype=float)
         lo, hi = float(eq.min()), float(eq.max())
         rng = (hi - lo) or 1.0
         pts = []
         for i, v in enumerate(eq):
             x = 10 + (width - 20) * i / max(len(eq) - 1, 1)
-            y = 10 + (height - 30) * (1 - (v - lo) / rng)
+            y = 10 + (height - 44) * (1 - (v - lo) / rng)
             pts.append(f"{x:.1f},{y:.1f}")
-        series.append((label, color, " ".join(pts)))
-    lines = "".join(
+        lines.append((label, color, " ".join(pts),
+                      f"{(eq[-1] / eq[0] - 1) * 100:+.2f}%"))
+    polylines = "".join(
         f'<polyline fill="none" stroke="{c}" stroke-width="2" '
-        f'points="{p}"/>' for _, c, p in series)
+        f'stroke-linejoin="round" points="{p}"/>' for _, c, p, _ in lines)
     legend = "".join(
-        f'<rect x="{10 + i * 130}" y="4" width="10" height="10" '
-        f'fill="{c}"/><text x="{24 + i * 130}" y="13" '
-        f'fill="#8b949e" font-size="11">{l}</text>'
-        for i, (l, c, _) in enumerate(series))
+        f'<rect x="{10 + i * 150}" y="4" width="10" height="10" rx="2" '
+        f'fill="{c}"/><text x="{26 + i * 150}" y="13" fill="#8b949e" '
+        f'font-size="11">{l} {r}</text>'
+        for i, (l, c, _, r) in enumerate(lines))
     return (f'<svg width="{width}" height="{height}" role="img" '
-            f'aria-label="champion vs challenger equity">{legend}'
-            f'{lines}</svg>')
+            f'aria-label="champion vs challenger equity">{grid}'
+            f'{polylines}<g transform="translate(0,{height - 18})">'
+            f'{legend}</g></svg>')
 
 
 def build_html(paper_dir: Path) -> str:
@@ -236,9 +289,9 @@ def build_html(paper_dir: Path) -> str:
 
     svg = equity_curve_svg(paper_dir)
     suites = [("Gate suite (G1-G4)", 26), ("Adapter wiring (stub)", 9),
-               ("Runner suite", 16), ("Session report suite", 11),
-               ("Promotion gate suite", 11), ("Fetcher hardening", 9),
-               ("Real NautilusTrader engine", 7), ("Cross-engine parity", 7)]
+              ("Runner suite", 16), ("Session report suite", 11),
+              ("Promotion gate suite", 11), ("Fetcher hardening", 9),
+              ("Real NautilusTrader engine", 7), ("Cross-engine parity", 7)]
     suite_rows = "".join(
         f"<tr><td>{_esc(n)}</td><td>{c} passed</td><td>green</td></tr>"
         for n, c in suites)
@@ -331,9 +384,115 @@ def build_markdown(paper_dir: Path) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _file_details(title: str, path: Path, open_=False) -> str:
+    """Render a repo file as a collapsible section with escaped content."""
+    if not path.exists():
+        return ""
+    body = _esc(path.read_text().strip())
+    attr = " open" if open_ else ""
+    return (f'<details class="doc"{attr}><summary>{_esc(title)} '
+            f'<span class="dim">— {_esc(path.name)}</span></summary>'
+            f'<pre>{body}</pre></details>')
+
+
+def _knowledge_html() -> str:
+    """Structured view of the Market Studies knowledge base: the
+    concept-to-design mapping table plus the studied-book library."""
+    base = Path(__file__).parent
+    applied = base / "KNOWLEDGE_APPLIED.md"
+    kb = base.parent / "KNOWLEDGE.md"
+    rows = []
+    if applied.exists():
+        for line in applied.read_text().splitlines():
+            m = re.match(r"\| (.+?) \| (.+?) \| (.+?) \|", line)
+            if m and not set(m.group(1)) <= {"-", " "} and \
+                    "Knowledge layer" not in m.group(1):
+                layer, concept, where = (g.strip() for g in m.groups())
+                rows.append(
+                    f'<div class="krow"><div class="klayer">{_esc(layer)}'
+                    f'</div><div class="kconcept">{_esc(concept)}</div>'
+                    f'<div class="kwhere">{_esc(where)}</div></div>')
+    books = []
+    if kb.exists():
+        in_notes = False
+        for line in kb.read_text().splitlines():
+            if line.startswith("## "):
+                in_notes = "Study notes" in line
+                continue
+            if not in_notes or not line.startswith("- "):
+                continue
+            m = re.match(r"- \[([^\]]+)\]\([^)]*\)\s*[—-]\s*(.+?)(?:;|$)", line)
+            if m:
+                title, desc = m.group(1).strip(), m.group(2).strip()
+                if len(desc) > 110:
+                    desc = desc[:107] + "..."
+                books.append((title, desc))
+    eval_note = ""
+    if applied.exists():
+        txt = applied.read_text()
+        m = re.search(r"## First honest evaluation.*?\n(.+)", txt, re.S)
+        if m:
+            eval_note = " ".join(
+                l.strip() for l in m.group(1).splitlines() if l.strip())
+    books_html = "".join(
+        f'<div class="book"><div class="btitle">{_esc(t)}</div>'
+        f'<div class="bdesc dim">{_esc(d)}</div></div>' for t, d in books)
+    eval_html = (f'<div class="knote">{_esc(eval_note)}</div>'
+                 if eval_note else "")
+    intro = ('<p class="dim">The strategy is grounded in a '
+             f'{len(books)}-book study library. Each knowledge layer maps '
+             'to a concrete design decision; candidate improvements become '
+             'research variants that the edge-seeker must beat honestly '
+             '— the deployed parameters stay frozen (Gate 3).</p>')
+    return (intro
+            + '<div class="kgrid">' + "".join(rows) + "</div>"
+            + f'<h3 class="sub">Studied library ({len(books)} books)'
+            f'</h3><div class="bgrid">{books_html}</div>{eval_html}')
+
+
+def _worklog_html() -> str:
+    """Rendered work log: each entry as a timeline row."""
+    path = Path(__file__).parent / "WORKLOG.md"
+    if not path.exists():
+        return ""
+    items = []
+    for line in path.read_text().splitlines():
+        m = re.match(r"- \*\*(.+?)\*\* (.+)", line)
+        if m:
+            items.append(
+                f'<div class="wl"><div class="wldate">{_esc(m.group(1))}'
+                f'</div><div class="wlbody">{_esc(m.group(2))}</div></div>')
+    if not items:
+        return ""
+    return ('<div class="timeline">' + "".join(items) + "</div>")
+
+
+_REPO_MAP = [
+    ("strategy/vp_mr_strategy.py", "Core gated strategy (G1-G4 enforced)"),
+    ("strategy/nautilus_adapter.py", "NautilusTrader adapter"),
+    ("strategy/papertrading_runner.py", "Persisted paper-trading runner"),
+    ("strategy/edge_seeker.py", "Nightly research trainer (54 candidates)"),
+    ("strategy/vol_models.py", "Knowledge-grounded vol models + VSA filter"),
+    ("strategy/challenger.py", "Champion/challenger race"),
+    ("strategy/propose_redeploy.py", "Auto-redeploy proposal (opens a PR)"),
+    ("strategy/gate_check.py", "Promotion gate (PROMOTE/HOLD)"),
+    ("strategy/spi_monitor.py", "Signal Parity Index audit"),
+    ("strategy/journal.py", "Append-only session journal"),
+    ("strategy/alert.py", "Self-filed incident alerts (GitHub issues)"),
+    ("strategy/dashboard.py", "This site's generator"),
+    ("strategy/run_card.json", "Frozen strategy run card"),
+    ("paper/", "Session artifacts: state, reports, verdicts, journal"),
+    ("KNOWLEDGE.md", "The 13-book market-studies knowledge base"),
+    ("strategy/KNOWLEDGE_APPLIED.md", "Knowledge-to-design mapping"),
+    ("strategy/WORKLOG.md", "Full build log"),
+    ("test_*.py (16 suites)", "150+ assertions, all green in CI"),
+]
+
+
 def build_site(paper_dir: Path) -> str:
     """Salient: the public one-page site (GitHub Pages, docs/index.html).
-    Same data as the dashboard, branded, with auto-refresh."""
+    Sections: overview, charts, race, knowledge, reports, journal,
+    build log, repository."""
     s = summarize(paper_dir)
     verdict = s.get("verdict", "NOT_GENERATED")
     edge_path = paper_dir / "edge_report.md"
@@ -343,10 +502,10 @@ def build_site(paper_dir: Path) -> str:
                       edge_path.read_text())
         if m:
             edge_rec = m.group(1)
-    svg = equity_curve_svg(paper_dir, width=900, height=280)
-    dd_svg = drawdown_svg(paper_dir, width=900, height=130)
+    svg = equity_curve_svg(paper_dir, width=900, height=300, uid="site-eq")
+    dd_svg = drawdown_svg(paper_dir, width=900, height=150, uid="site-dd")
     price_html = price_charts_html(paper_dir)
-    race_chart = race_svg(paper_dir)
+    race_chart = race_svg(paper_dir, width=900, height=280, uid="site-race")
     sessions = s.get("sessions_completed", 0)
     pct = min(100, int(100 * sessions / 20))
     journal_html = ""
@@ -354,31 +513,32 @@ def build_site(paper_dir: Path) -> str:
     if journal_path.exists():
         rows = [l for l in journal_path.read_text().splitlines()
                 if l.startswith("| 20")][-10:]
-        journal_html = ('<section><h2>Session journal</h2>'
+        journal_html = ('<section id="journal"><h2>Session journal</h2>'
                        '<table><tr><th>Date</th><th>Sessions</th>'
                        '<th>Verdict</th><th>SPI</th><th>Sharpe</th>'
                        '<th>Max DD</th><th>Race</th><th>Equity</th></tr>'
-                       + "".join(r for r in rows) + "</table></section>")
+                       + "".join(rows) + "</table></section>")
     race_html = ""
     race_path = paper_dir / "challenger_report.md"
     if race_path.exists():
         race = race_path.read_text()
-        import re as _re2
-        m = _re2.search(r"Recommendation: (PROPOSE_REDEPLOY|KEEP_CHAMPION)", race)
+        m = re.search(r"Recommendation: (PROPOSE_REDEPLOY|KEEP_CHAMPION)", race)
         rec = m.group(1) if m else "?"
-        rows = _re2.findall(
+        rows = re.findall(
             r"\| (Champion[^|]*|Challenger[^|]*)\| ([\d.-]+) \| ([\d.-]+) \| ([\d.-]+) \|",
             race)
         rows_html = "".join(
             f"<tr><td>{_esc(a.strip())}</td><td>{b}%</td>"
             f"<td>{c}</td><td>{d}%</td></tr>" for a, b, c, d in rows)
-        race_html = (f'<section><h2>Self-learning race: champion vs challenger</h2>'
-                     f'<p class="dim">The edge-seeker nominates a candidate each '
-                     f'night; it shadow-trades on the same real data. Current '
-                     f'verdict: <strong>{_esc(rec)}</strong>. Applying a proposal '
-                     f'is always a human-reviewed PR (Gate 3).</p>'
-                     f'<table><tr><th>Strategy</th><th>Return</th><th>Sharpe</th>'
-                     f'<th>Max DD</th></tr>{rows_html}</table></section>')
+        race_html = (f'<p class="dim">The edge-seeker nominates a candidate '
+                     f'each night; it shadow-trades on the same real data. '
+                     f'Current verdict: <strong class="'
+                     f'{"good" if rec == "KEEP_CHAMPION" else "warn"}">'
+                     f'{_esc(rec)}</strong>. Applying a proposal is always a '
+                     f'human-reviewed PR (Gate 3).</p>'
+                     f'<table><tr><th>Strategy</th><th>Return</th>'
+                     f'<th>Sharpe</th><th>Max DD</th></tr>{rows_html}'
+                     f"</table>")
 
     def metric(label, value, sub=""):
         sub_html = f'<div class="sub">{_esc(sub)}</div>' if sub else ""
@@ -397,91 +557,180 @@ def build_site(paper_dir: Path) -> str:
                else _esc(s["positions"]), ""),
     ])
 
+    repo_rows = "".join(
+        f'<tr><td><code>{_esc(p)}</code></td><td class="dim">{_esc(d)}'
+        f"</td></tr>" for p, d in _REPO_MAP)
+    reports = (_file_details("Forward-test gate verdict",
+                            paper_dir / "gate_verdict.md", open_=True)
+               + _file_details("Edge-seeker research report",
+                               paper_dir / "edge_report.md")
+               + _file_details("Champion vs challenger race report",
+                               paper_dir / "challenger_report.md")
+               + _file_details("Session performance report",
+                               paper_dir / "performance_report.md")
+               + _file_details("Session log", paper_dir / "session_report.txt"))
+
+    nav = (" ".join(
+        f'<a href="#{a}">{t}</a>' for a, t in
+        (("overview", "Overview"), ("charts", "Charts"),
+         ("race", "Self-learning"), ("knowledge", "Knowledge"),
+         ("reports", "Reports"), ("journal", "Journal"),
+         ("buildlog", "Build log"), ("repo", "Repository"))))
+
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="refresh" content="300">
 <title>Salient — VP-MR-ETF-D1-001</title>
 <style>
-:root {{ --bg:#0d1117; --panel:#161b22; --ink:#e6edf3; --dim:#8b949e;
-        --accent:#58a6ff; --good:#3fb950; --bad:#f85149; }}
+:root {{ --bg:#0a0d13; --panel:#121721; --panel2:#0d1117; --ink:#e6edf3;
+        --dim:#8b949e; --accent:#58a6ff; --good:#3fb950; --bad:#f85149;
+        --warn:#d29922; --line:#21262d; }}
 body {{ background:var(--bg); color:var(--ink); margin:0;
        font-family:-apple-system,'Segoe UI',sans-serif; }}
-header {{ padding:40px 32px 8px; max-width:980px; margin:0 auto; }}
-h1 {{ font-size:34px; margin:0; letter-spacing:-0.5px; }}
+nav {{ position:sticky; top:0; z-index:10; background:rgba(10,13,19,.92);
+      backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
+      padding:10px 32px; display:flex; gap:18px; align-items:center;
+      flex-wrap:wrap; }}
+nav .brand {{ font-weight:700; letter-spacing:-.3px; }}
+nav .brand span {{ color:var(--accent); }}
+nav a {{ color:var(--dim); text-decoration:none; font-size:13px; }}
+nav a:hover {{ color:var(--ink); }}
+header {{ padding:44px 32px 8px; max-width:1020px; margin:0 auto; }}
+h1 {{ font-size:38px; margin:0; letter-spacing:-1px; }}
 h1 span {{ color:var(--accent); }}
-.tagline {{ color:var(--dim); margin:6px 0 0; font-size:14px; }}
-main {{ max-width:980px; margin:0 auto; padding:16px 32px 48px; }}
+.tagline {{ color:var(--dim); margin:8px 0 0; font-size:15px;
+           max-width:640px; line-height:1.5; }}
+main {{ max-width:1020px; margin:0 auto; padding:16px 32px 48px; }}
 .progress {{ background:var(--panel); border-radius:10px; height:14px;
-             margin:20px 0 28px; overflow:hidden; }}
+             margin:24px 0 26px; overflow:hidden; }}
 .bar {{ height:100%; width:{pct}%; background:linear-gradient(90deg,
         #1f6feb,#58a6ff); border-radius:10px; }}
+.pnote {{ font-size:12px; color:var(--dim); margin:-16px 0 24px; }}
 .metrics {{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }}
-.m {{ background:var(--panel); border-radius:10px; padding:16px; }}
+.m {{ background:var(--panel); border-radius:12px; padding:16px 18px;
+      border:1px solid var(--line); }}
 .ml {{ font-size:11px; text-transform:uppercase; letter-spacing:.6px;
        color:var(--dim); }}
 .mv {{ font-size:24px; font-weight:700; margin-top:4px; }}
 .sub {{ font-size:11px; color:var(--dim); margin-top:2px; }}
-section {{ background:var(--panel); border-radius:10px; padding:20px;
-           margin-top:20px; }}
-h2 {{ font-size:16px; margin:0 0 12px; color:var(--ink); }}
+section {{ background:var(--panel); border-radius:14px; padding:24px;
+           margin-top:22px; border:1px solid var(--line); }}
+h2 {{ font-size:18px; margin:0 0 12px; }}
+h3.sub {{ font-size:14px; margin:22px 0 10px; color:var(--ink); }}
 .dim {{ color:var(--dim); }}
-.pgrid {{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }}
-.pc {{ background:#0d1117; border:1px solid #21262d; border-radius:8px;
-       padding:10px 12px 6px; }}
-.pc h3 {{ margin:0 0 6px; font-size:13px; color:var(--dim); }}
-.pc svg {{ width:100%; height:auto; display:block; }}
-.legend {{ font-size:11px; color:var(--dim); margin:-6px 0 12px; }}
+.good {{ color:var(--good); }} .warn {{ color:var(--warn); }}
+.legend {{ font-size:12px; color:var(--dim); margin:-4px 0 10px; }}
 .legend span {{ margin-right:16px; }}
 .dot {{ display:inline-block; width:9px; height:9px; border-radius:2px;
-       margin-right:4px; vertical-align:middle; }}
+       margin-right:5px; vertical-align:middle; }}
+.pgrid {{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px;
+          margin-top:14px; }}
+.pc {{ background:var(--panel2); border:1px solid var(--line);
+       border-radius:10px; padding:12px 14px 8px; }}
+.pchead {{ display:flex; justify-content:space-between; align-items:baseline; }}
+.pc h3 {{ margin:0 0 4px; font-size:14px; color:var(--ink); }}
+.pclast {{ font-size:13px; color:var(--accent); font-weight:600; }}
+.pc svg {{ width:100%; height:auto; display:block; }}
+table {{ border-collapse:collapse; width:100%; font-size:13px;
+         margin-top:10px; }}
+td, th {{ padding:7px 10px; border-bottom:1px solid var(--line);
+          text-align:left; }}
+th {{ color:var(--dim); font-weight:600; font-size:11px;
+     text-transform:uppercase; letter-spacing:.5px; }}
+.kgrid {{ display:grid; gap:10px; margin-top:14px; }}
+.krow {{ display:grid; grid-template-columns:220px 1fr 1fr; gap:14px;
+         background:var(--panel2); border:1px solid var(--line);
+         border-radius:10px; padding:12px 14px; font-size:13px; }}
+.klayer {{ color:var(--accent); font-weight:600; }}
+.kconcept {{ color:var(--ink); }} .kwhere {{ color:var(--dim); }}
+.bgrid {{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }}
+.book {{ background:var(--panel2); border:1px solid var(--line);
+         border-radius:10px; padding:10px 14px; font-size:12px; }}
+.btitle {{ font-weight:600; margin-bottom:2px; }}
+.knote {{ margin-top:16px; background:var(--panel2);
+         border-left:3px solid var(--warn); border-radius:8px;
+         padding:12px 16px; font-size:13px; color:var(--dim); }}
+.timeline {{ margin-top:8px; }}
+.wl {{ display:grid; grid-template-columns:200px 1fr; gap:14px;
+      padding:10px 0; border-bottom:1px solid var(--line);
+      font-size:13px; }}
+.wl:last-child {{ border-bottom:none; }}
+.wldate {{ color:var(--accent); }}
+.wlbody {{ color:var(--dim); line-height:1.55; }}
+details.doc {{ background:var(--panel2); border:1px solid var(--line);
+              border-radius:10px; margin-top:10px; }}
+details.doc summary {{ cursor:pointer; padding:11px 16px; font-weight:600;
+                      font-size:13px; }}
+details.doc pre {{ margin:0; padding:0 16px 14px; font-size:11px;
+                  line-height:1.5; color:var(--dim); overflow-x:auto;
+                  white-space:pre-wrap; }}
+code {{ color:var(--accent); font-size:12px; }}
 footer {{ color:var(--dim); font-size:12px; text-align:center;
-          padding:24px; }}
-a {{ color:var(--accent); }}
+          padding:28px; line-height:1.7; }}
+footer a {{ color:var(--accent); }}
+@media (max-width:800px) {{ .metrics,.pgrid,.bgrid {{ grid-template-columns:1fr; }}
+  .krow {{ grid-template-columns:1fr; }} .wl {{ grid-template-columns:1fr; }} }}
 </style></head><body>
+<nav><span class="brand">Salient<span>.</span></span>{nav}</nav>
 <header>
-<h1>Salient<span>.</span></h1>
-<p class="tagline">VP-MR-ETF-D1-001 — volatility-parity mean reversion on US
-equity ETFs, paper-trading autonomously. Self-audited nightly; promotion
-judged by evidence.</p>
+<h1>An autonomous quantitative trading system<span>.</span></h1>
+<p class="tagline">VP-MR-ETF-D1-001 — volatility-parity mean reversion on
+US equity ETFs (SPY, QQQ, IWM, XLF, XLE), paper-trading autonomously,
+self-audited nightly, grounded in a growing research library, and
+promoted only by evidence.</p>
 </header>
 <main>
+<div id="overview">
 <div class="progress"><div class="bar"></div></div>
+<p class="pnote">{pct}% of the 20-session forward test toward promotion</p>
 <div class="metrics">{metrics}</div>
-<section><h2>Paper-trading equity (mark-to-market, net of costs)</h2>
-<p class="legend"><span><i class="dot" style="background:#3fb950"></i>equity</span>
+</div>
+<section id="charts"><h2>Performance</h2>
+<p class="legend"><span><i class="dot" style="background:#3fb950"></i>equity
+(mark-to-market, net of costs)</span>
 <span><i class="dot" style="background:#f85149"></i>drawdown from peak</span></p>
 {svg}
-<h2 style="margin-top:18px">Drawdown (underwater curve)</h2>
+<h3 class="sub">Drawdown (underwater curve)</h3>
 {dd_svg}
-</section>
-<section><h2>Instrument prices &amp; trade entries</h2>
+<h3 class="sub">Instrument prices &amp; trade entries</h3>
 <p class="dim">Green up-triangles mark long entries, red down-triangles
 short entries, from the audited decision log.</p>
 {price_html}
 </section>
-{journal_html}
-{race_html}
-<section><h2>Self-learning race: equity overlay</h2>
-<p class="dim">Champion (deployed, frozen) vs challenger (edge-seeker
-nominee, shadow-trading on the same real data). Each curve is scaled
-to its own range.</p>
+<section id="race"><h2>Self-learning: champion vs challenger</h2>
+<p class="dim">The deployed champion stays frozen so its forward test stays
+honest; the edge-seeker's best candidate shadow-trades as a challenger on
+the same real bars every night. Each curve is scaled to its own range.</p>
 {race_chart}
+{race_html}
 </section>
-<section><h2>How this works</h2>
-<p style="color:var(--dim);line-height:1.6">Every trading day after the US
-market close, this system fetches real bars for SPY, QQQ, IWM, XLF and XLE,
-runs its frozen strategy, audits every decision (SPI), writes a performance
-report, runs an edge-seeking research pass, re-evaluates its own promotion
-gate, and republishes this page. It never changes its own parameters —
-proposals are committed for human review.</p>
-<p style="color:var(--dim)"><a href="https://github.com/andrea-karlvassallo20-beep/vp-mr-strategy">Source, evidence and full work log on GitHub</a>
-&middot; bookmark this page:
-<a href="https://andrea-karlvassallo20-beep.github.io/vp-mr-strategy/">andrea-karlvassallo20-beep.github.io/vp-mr-strategy</a></p>
+<section id="knowledge"><h2>Knowledge base &rarr; strategy design</h2>
+{_knowledge_html()}
+</section>
+<section id="reports"><h2>Latest reports</h2>
+{reports}
+</section>
+{journal_html}
+<section id="buildlog"><h2>Build log</h2>
+<p class="dim">Every phase of building this system, newest last — including
+the bugs the real market exposed and how they were fixed.</p>
+{_worklog_html()}
+</section>
+<section id="repo"><h2>Repository map</h2>
+<p class="dim">Everything on this page is generated from committed artifacts
+in <a href="https://github.com/andrea-karlvassallo20-beep/vp-mr-strategy"
+style="color:var(--accent)">andrea-karlvassallo20-beep/vp-mr-strategy</a>.</p>
+<table>{repo_rows}</table>
+{_file_details("README — the project explained", (Path(__file__).resolve().parent.parent / "README.md"), open_=True)}
+{_file_details("DASHBOARD — the live status page", (Path(__file__).resolve().parent.parent / "DASHBOARD.md"))}
 </section>
 </main>
-<footer>Salient — regenerated automatically after each paper-trading
-session. Research system, not investment advice.</footer>
+<footer>Salient — regenerated automatically after every paper-trading
+session.<br>
+<a href="https://github.com/andrea-karlvassallo20-beep/vp-mr-strategy">Source,
+evidence and full work log on GitHub</a> &middot; research system, not
+investment advice.</footer>
 </body></html>"""
 
 
