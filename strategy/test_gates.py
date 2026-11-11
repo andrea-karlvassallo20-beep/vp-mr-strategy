@@ -1,6 +1,11 @@
 """Gate verification suite for VP-MR-ETF-D1-001. Run: python3 test_gates.py"""
 import math
 import numpy as np
+import os.path
+_HERE = os.path.dirname(os.path.abspath(__file__))
+import sys
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
 from vp_mr_strategy import (
     StrategyParameters, OrderState, OrderTicket,
     VolatilityParityMeanReversionStrategy,
@@ -99,7 +104,7 @@ check("future mutation does affect later decisions (sanity)",
 
 # --- G1: no negative shift / centered window patterns (source audit) ----------
 print("GATE 1: source pattern audit")
-src = open("vp_mr_strategy.py").read()
+src = open(os.path.join(_HERE, "vp_mr_strategy.py")).read()
 check("no shift(-1) lookahead", "shift(-1" not in src)
 check("no shift(-", "shift(-" not in src)
 check("no global scaler pattern", ".fit_transform" not in src and "StandardScaler" not in src)
