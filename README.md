@@ -1,4 +1,4 @@
-# VP-MR-ETF-D1-001 — an autonomous quantitative trading system
+# Salient — an autonomous quantitative trading system
 
 **What this is:** a complete, self-running quantitative trading pipeline — a
 mean-reversion strategy for US equity ETFs, wrapped in hard safety gates,

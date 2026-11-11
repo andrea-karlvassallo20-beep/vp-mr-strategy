@@ -216,6 +216,16 @@ def build_site(paper_dir: Path) -> str:
     svg = equity_curve_svg(paper_dir, width=900, height=280)
     sessions = s.get("sessions_completed", 0)
     pct = min(100, int(100 * sessions / 20))
+    journal_html = ""
+    journal_path = paper_dir / "journal.md"
+    if journal_path.exists():
+        rows = [l for l in journal_path.read_text().splitlines()
+                if l.startswith("| 20")][-10:]
+        journal_html = ('<section><h2>Session journal</h2>'
+                       '<table><tr><th>Date</th><th>Sessions</th>'
+                       '<th>Verdict</th><th>SPI</th><th>Sharpe</th>'
+                       '<th>Max DD</th><th>Race</th><th>Equity</th></tr>'
+                       + "".join(r for r in rows) + "</table></section>")
     race_html = ""
     race_path = paper_dir / "challenger_report.md"
     if race_path.exists():
@@ -297,6 +307,7 @@ judged by evidence.</p>
 <div class="metrics">{metrics}</div>
 <section><h2>Paper-trading equity (mark-to-market, net of costs)</h2>
 {svg}</section>
+{journal_html}
 {race_html}
 <section><h2>How this works</h2>
 <p style="color:var(--dim);line-height:1.6">Every trading day after the US
