@@ -166,6 +166,36 @@ check("region counts are non-negative integers",
       all(row[r]["n"] >= 0 for row in sss.values()
           for r in ("bottom_region", "mid_region", "elsewhere")))
 
+# 11b. pooled extended-universe study
+ext_dir = tmp / "ext"
+ext_dir.mkdir()
+for i, name in enumerate(("aaa", "bbb")):
+    hi, lo, cl, vo = synth_ohlcv(400, seed=30 + i)
+    rows = [(f"2024-{(j // 28) % 12 + 1:02d}-{j % 28 + 1:02d}",
+             lo[j], hi[j], lo[j], cl[j], int(vo[j]))
+            for j in range(len(cl))]
+    write_csv(ext_dir / f"{name}.csv", rows)
+from avfi import state_space_event_study_extended
+sse = state_space_event_study_extended(ext_dir)
+check("extended study pools series and aggregates honestly",
+      "series" in sse and "aggregate" in sse
+      and set(sse["series"]).issubset({"AAA", "BBB"})
+      and len(sse["series"]) >= 1)
+agg = sse["aggregate"]
+check("pooled aggregate n equals sum of series n",
+      agg["bottom_region"]["n"] == sum(
+          r["bottom_region"]["n"] for r in sse["series"].values())
+      and agg["mid_region"]["n"] == sum(
+          r["mid_region"]["n"] for r in sse["series"].values()))
+check("pooled hypothesis verdict is a bool",
+      isinstance(agg["hypothesis_holds"], bool))
+check("pooled beat counts are consistent",
+      0 <= agg["series_beats"] <= agg["series_with_both"]
+      <= len(sse["series"]))
+empty = state_space_event_study_extended(tmp / "missing")
+check("extended study handles missing dir",
+      empty["aggregate"] is None and empty["series"] == {})
+
 shutil.rmtree(tmp)
 print(f"\nRESULT: {PASS} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)
