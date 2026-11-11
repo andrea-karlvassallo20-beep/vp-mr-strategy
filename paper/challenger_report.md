@@ -6,10 +6,10 @@ Challenger candidate: z=2.5, lookback=60, vol model=garch, VSA filter=False, exi
 
 | | Return % | Sharpe | Max DD % |
 |---|---|---|---|
-| Champion (deployed, frozen) | -0.323 | 0.005 | 3.811 |
-| Challenger (shadow) | -0.118 | 0.024 | 5.876 |
+| Champion (deployed, frozen) | 0.0 | 0.021 | 3.811 |
+| Challenger (shadow) | 0.0 | 0.028 | 5.876 |
 
-Window: 1254 bars of live paper data.
+Window: 1255 bars of live paper data.
 
 ## Gate 3
 

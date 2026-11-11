@@ -1,10 +1,10 @@
 # Forward-test gate verdict: HOLD
 
-Sessions: 1 / 20 required
+Sessions: 2 / 20 required
 
 | Criterion | Required | Observed | Pass |
 |---|---|---|---|
-| min_paper_trading_days | >= 20 | 1 | NO |
+| min_paper_trading_days | >= 20 | 2 | NO |
 | signal_parity_index | >= 0.98 | 1.0 | YES |
 | duplicate_fires | = 0 | 0 | YES |
 | kill_switch_events | <= 0 | 0 | YES |
@@ -12,7 +12,7 @@ Sessions: 1 / 20 required
 
 ## Session summary
 
-- sharpe: 0.005
+- sharpe: 0.021
 - max_dd_pct: 3.811
 - fills: 78
 - expected_costs_total: 11320.39

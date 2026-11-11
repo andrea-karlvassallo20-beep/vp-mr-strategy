@@ -4,7 +4,7 @@ Volatility-parity mean reversion on US equity ETFs, paper-trading autonomously s
 
 | Metric | Value |
 |---|---|
-| Sessions (forward) | 1 / 20 |
+| Sessions (forward) | 2 / 20 |
 | Gate verdict | **HOLD** |
 | SPI | 1.0 |
 | Sharpe (MTM, net of costs) | 0.044 |
