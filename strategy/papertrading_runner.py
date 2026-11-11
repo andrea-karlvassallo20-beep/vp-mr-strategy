@@ -64,6 +64,7 @@ class PaperTradingRunner:
         self.strat = VolatilityParityMeanReversionStrategy(
             self.params, self.universe, initial_equity)
         self.last_date: Dict[str, str] = {}
+        self.invocations = 0
         self._load_state()
 
     # ---------------- persistence ----------------
@@ -86,6 +87,7 @@ class PaperTradingRunner:
             for l in state["low_buf"][s]:
                 self.strat._low[s].append(l)
         self.strat.equity = state["equity"]
+        self.invocations = state.get("invocations", 0)
         for s in state["universe"]:
             if state["entry_px"].get(s) is not None:
                 self.strat._entry_px[s] = state["entry_px"][s]
@@ -99,6 +101,7 @@ class PaperTradingRunner:
             "universe": self.universe,
             "initial_equity": self.strat.initial_equity,
             "equity": self.strat.equity,
+            "invocations": self.invocations,
             "positions": {s: self.strat.position[s] for s in self.universe},
             "last_date": dict(self.last_date),
             "close_buf": {s: list(self.strat._close[s]) for s in self.universe},
@@ -145,6 +148,8 @@ class PaperTradingRunner:
         for s, ticket in list(self.strat._pending.items()):
             if s in last_close:
                 self.strat.on_order_fill(s, last_close[s])
+        if any(v > 0 for v in processed.values()):
+            self.invocations += 1  # a forward session day, not a backfill bar
         self._save_state()
         return processed
 

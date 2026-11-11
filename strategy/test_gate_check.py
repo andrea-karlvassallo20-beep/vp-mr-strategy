@@ -33,7 +33,8 @@ def run_session(n_bars, seed, universe=("SPY", "QQQ")):
 tmp1, d1, s1 = run_session(10, 700)
 v1 = evaluate(d1, s1)
 check("10-day session verdict HOLD", v1["verdict"] == "HOLD")
-check("sessions counted = 10", v1["sessions_completed"] == 10)
+check("backfill of 10 bars counts as one session",
+      v1["sessions_completed"] == 1)
 check("sessions_required from run card = 20",
       v1["sessions_required"] == 20)
 check("SPI criterion passes even while HOLD",
@@ -41,12 +42,24 @@ check("SPI criterion passes even while HOLD",
           for c in v1["criteria"]))
 shutil.rmtree(tmp1)
 
-# --- mature session: 60 days, criteria should pass -> PROMOTE ---
+# --- backfill trap: 60 bars in ONE invocation must still HOLD ---
+# (the historical backfill is one session day, not 60)
 tmp2, d2, s2 = run_session(60, 800)
 v2 = evaluate(d2, s2)
-check("60-day session verdict PROMOTE", v2["verdict"] == "PROMOTE")
+check("60-bar backfill in one invocation verdict HOLD",
+      v2["verdict"] == "HOLD")
+check("backfill counted as one session", v2["sessions_completed"] == 1)
+
+# --- mature: 25 forward invocations -> PROMOTE ---
+import json
+state = json.load(open(s2 / "session_state.json"))
+state["invocations"] = 25
+json.dump(state, open(s2 / "session_state.json", "w"))
+v3 = evaluate(d2, s2)
+check("25 forward sessions verdict PROMOTE", v3["verdict"] == "PROMOTE")
 check("all criteria pass on mature session",
-      all(c["pass"] for c in v2["criteria"]))
+      all(c["pass"] for c in v3["criteria"]))
+v2 = v3
 check("SPI >= 0.98 on mature session",
       v2["report_summary"]["audit_status"] == "PASS")
 md = to_markdown(v2)
