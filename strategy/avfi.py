@@ -523,6 +523,87 @@ def write_report(r: dict, markdown: Path) -> None:
     print(f"avfi report written -> {markdown}")
 
 
+def avfi_state_space(high, low, close, volume,
+                     lookback: int = 100) -> dict:
+    """THE 3D AVFI STATE-SPACE IDEOLOGY. Every bar is a POSITION IN
+    SPACE, and the strategy's life is a TRAJECTORY through it:
+
+      x = AVFI spread z      (the regime axis: flow expanding/fading)
+      y = price z-score      (the stretch axis: distance from the mean)
+      z = trailing vol percentile (the risk axis: calm -> violent)
+
+    Tops and bottoms are not points on a chart — they are REGIONS of
+    this space: a bottom forms in the (low spread-z, deep negative
+    stretch, elevated vol) octant; a top in the mirror. Watching the
+    trajectory through the state space shows turns as ORBIT CHANGES,
+    not single-indicator crosses. Strictly trailing throughout."""
+    from tops_bottoms import detect_climaxes, detect_divergences, rsi
+    logp = np.log(close)
+    n = len(close)
+    sp_z = spread_z(spread_axis(high, low, close, volume,
+                               dict(DEFAULT_PARAMS)),
+                    DEFAULT_PARAMS["sp_z_window"])
+    price_z = np.zeros(n)
+    for t_ in range(lookback, n):
+        w = logp[t_ - lookback + 1:t_ + 1]
+        sd = w.std()
+        if sd > 0:
+            price_z[t_] = (logp[t_] - w.mean()) / sd
+    rets = np.diff(logp)
+    vol20 = np.zeros(n)
+    wins = np.lib.stride_tricks.sliding_window_view(rets, 20)
+    vol20[20:] = wins.std(axis=1)
+    vol_pct = np.zeros(n)
+    for t_ in range(40, n):
+        hist = vol20[20:t_ + 1]
+        if len(hist):
+            vol_pct[t_] = float(np.mean(hist <= vol20[t_]))
+    bull, bear = detect_divergences(close, rsi(close))
+    cb, ct = detect_climaxes(high, low, close, volume)
+    return {
+        "sp_z": [round(float(x), 3) for x in sp_z],
+        "price_z": [round(float(x), 3) for x in price_z],
+        "vol_pct": [round(float(x), 3) for x in vol_pct],
+        "divergence_bottoms": bull.tolist(),
+        "divergence_tops": bear.tolist(),
+        "climax_bottoms": cb.tolist(),
+        "climax_tops": ct.tolist(),
+    }
+
+
+def export_state_space(data_dir: Path, research_dir: Path,
+                       universe=("SPY", "QQQ", "IWM", "XLF", "XLE"),
+                       extended=None) -> None:
+    """Export the state-space trajectory per instrument (deployed ETFs
+    plus selected extended series) for the 3D visualization."""
+    from papertrading_runner import load_bars
+    out = []
+    names = [(s, data_dir) for s in universe]
+    if extended and extended.exists():
+        for f in sorted(extended.glob("*.csv")):
+            names.append((f.stem.upper(), extended))
+    for name, folder in names:
+        f = folder / f"{name.lower()}.csv"
+        if not f.exists():
+            continue
+        bars = load_bars(f)
+        if len(bars) < 200:
+            continue
+        h = np.array([b["high"] for b in bars])
+        l = np.array([b["low"] for b in bars])
+        c = np.array([b["close"] for b in bars])
+        v = np.array([float(b["volume"]) for b in bars])
+        ss = avfi_state_space(h, l, c, v)
+        ss["ticker"] = name
+        ss["dates"] = [b["date"] for b in bars]
+        out.append(ss)
+    research_dir.mkdir(parents=True, exist_ok=True)
+    (research_dir / "avfi_state_space.json").write_text(
+        json.dumps(out))
+    print(f"state space exported -> "
+          f"{research_dir / 'avfi_state_space.json'} ({len(out)} series)")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(
         description="AVFI v3 risk-throttle research + iteration")
@@ -533,6 +614,8 @@ def main() -> None:
                     default=Path("paper/research/avfi_report.md"))
     args = ap.parse_args()
     r = run_iteration(args.data_dir, args.research_dir)
+    export_state_space(args.data_dir, args.research_dir,
+                       extended=args.data_dir.parent / "research" / "data")
     write_report(r, args.markdown)
     print(f"status: {r['status']}, instruments: {len(r.get('rows', []))}, "
           f"iteration: {r.get('iteration', {}).get('iteration')}, "

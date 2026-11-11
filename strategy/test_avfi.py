@@ -10,7 +10,8 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
-from avfi import (DEFAULT_PARAMS, VARIANT_GRID, avfi_v2_series,
+from avfi import (DEFAULT_PARAMS, VARIANT_GRID, avfi_state_space,
+                  avfi_v2_series,
                   avfi_v3_series, ema, garman_klass_sigma,
                   parkinson_sigma_pk,
                   run_iteration, spread_axis, spread_z,
@@ -141,6 +142,17 @@ r2 = run_iteration(data, tmp / "research", universe=("SPY", "QQQ"))
 ledger = json.loads((tmp / "research" / "avfi_iterations.json").read_text())
 check("same-day re-run is idempotent in the ledger",
       len(ledger) == 1 and ledger[0]["iteration"] == 1)
+
+# 10. 3D AVFI state space
+ss = avfi_state_space(h, l, c, v)
+check("state space exports the three axes",
+      all(k in ss for k in ("sp_z", "price_z", "vol_pct"))
+      and len(ss["sp_z"]) == len(ss["price_z"]) == len(ss["vol_pct"]))
+check("state space axes are bounded and causal-shaped",
+      max(abs(x) for x in ss["price_z"]) > 0
+      and all(0.0 <= x <= 1.0 for x in ss["vol_pct"][60:]))
+check("state space carries detector marks",
+      all(k in ss for k in ("divergence_bottoms", "climax_tops")))
 
 shutil.rmtree(tmp)
 print(f"\nRESULT: {PASS} passed, {FAIL} failed")

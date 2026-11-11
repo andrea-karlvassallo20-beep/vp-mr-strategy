@@ -32,10 +32,18 @@ CRYPTO = [
 ]
 INDICES = ["^GSPC", "^IXIC", "^DJI", "^RUT"]
 COMMODITIES = [
-    "GC=F", "SI=F", "PL=F", "PA=F",            # precious metals
-    "CL=F", "NG=F", "BZ=F",                     # energy
-    "HG=F", "KC=F", "CC=F", "SB=F", "CT=F",   # softs / industrial
-    "ZC=F", "ZS=F", "ZW=F",                      # grains
+    # precious metals
+    "GC=F", "SI=F", "PL=F", "PA=F",
+    # energy
+    "CL=F", "BZ=F", "NG=F", "RB=F", "HO=F",
+    # industrial
+    "HG=F", "LBS=F",
+    # grains
+    "ZC=F", "ZS=F", "ZW=F", "ZO=F", "ZR=F",
+    # softs
+    "KC=F", "CC=F", "SB=F", "CT=F", "OJ=F",
+    # livestock
+    "LE=F", "GF=F", "HE=F",
 ]
 EXTENDED_UNIVERSE = (
     [("crypto", t) for t in CRYPTO]
