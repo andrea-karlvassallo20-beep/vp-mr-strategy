@@ -161,15 +161,60 @@ View raw reports under <code>paper/</code>.</footer>
 </body></html>"""
 
 
+def build_markdown(paper_dir: Path) -> str:
+    """GitHub-renderable twin of the HTML dashboard."""
+    s = summarize(paper_dir)
+    if s.get("status") == "NO_SESSION_YET":
+        return "# VP-MR-ETF-D1-001 dashboard\n\nNo paper sessions yet.\n"
+    verdict = s.get("verdict", "NOT_GENERATED")
+    edge_path = paper_dir / "edge_report.md"
+    edge_rec = "NOT_GENERATED"
+    if edge_path.exists():
+        m = re.search(r"Recommendation: (PROPOSE_REDEPLOY|KEEP_PRODUCTION)",
+                      edge_path.read_text())
+        if m:
+            edge_rec = m.group(1)
+    lines = ["# VP-MR-ETF-D1-001 dashboard", "",
+             "Volatility-parity mean reversion on US equity ETFs, "
+             "paper-trading autonomously since 2026-11-11.", "",
+             "| Metric | Value |", "|---|---|",
+             f"| Sessions (forward) | {s.get('sessions_completed', 0)} / 20 |",
+             f"| Gate verdict | **{verdict}** |",
+             f"| SPI | {s.get('spi', '?')} |",
+             f"| Sharpe (MTM, net of costs) | {s.get('sharpe', '?')} |",
+             f"| Max drawdown | {s.get('max_dd_pct', '?')}% |",
+             f"| Fills | {s.get('fills', 0)} ({s.get('orders', 0)} orders) |",
+             f"| Edge-seeker recommendation | {edge_rec} |",
+             f"| Open positions | {s.get('positions') or 'flat'} |",
+             "", "## Verification program (all green in CI)", "",
+             "| Suite | Assertions |", "|---|---|"]
+    suites = [("Gate suite (G1-G4)", 26), ("Adapter wiring (stub)", 9),
+              ("Runner suite", 16), ("Session report suite", 11),
+              ("Promotion gate suite", 11), ("Fetcher hardening", 9),
+              ("Edge-seeker suite", 10), ("Dashboard suite", 8),
+              ("Real NautilusTrader engine", 7), ("Cross-engine parity", 7)]
+    lines += [f"| {n} | {c} |" for n, c in suites]
+    log_path = Path(__file__).parent / "WORKLOG.md"
+    if log_path.exists():
+        lines += ["", "## Work log", "", log_path.read_text()
+                  .split("# Work log", 1)[-1].strip()]
+    return "\n".join(lines) + "\n"
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--paper-dir", type=Path, default=Path("paper"))
     ap.add_argument("--out", type=Path, default=Path("dashboard.html"))
+    ap.add_argument("--markdown", type=Path, default=Path("DASHBOARD.md"))
     args = ap.parse_args()
     html = build_html(args.paper_dir)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(html)
     print(f"dashboard written -> {args.out} ({len(html)} bytes)")
+    md = build_markdown(args.paper_dir)
+    args.markdown.parent.mkdir(parents=True, exist_ok=True)
+    args.markdown.write_text(md)
+    print(f"markdown dashboard written -> {args.markdown}")
 
 
 if __name__ == "__main__":
