@@ -61,6 +61,21 @@ eq_after_1 = r1.strat.equity
 log_after_1 = len(r1.strat.decision_log)
 check("state file created", (state_dir / "session_state.json").exists())
 
+# --- legacy state without the invocation counter gets credit for its
+# original backfill session, and a no-new-bars re-save preserves it ---
+import json as _json
+state_path = state_dir / "session_state.json"
+state = _json.load(open(state_path))
+del state["invocations"]
+_json.dump(state, open(state_path, "w"))
+r_legacy = PaperTradingRunner(data_dir, state_dir, params=params,
+                              universe=["SPY"])
+processed = r_legacy.run_session()
+check("legacy state credited with its backfill session",
+      r_legacy.invocations == 1)
+check("legacy credit preserved on re-save",
+      _json.load(open(state_path))["invocations"] == 1)
+
 # --- invocation 2: re-run same data (idempotency) ---
 r2 = PaperTradingRunner(data_dir, state_dir, params=params, universe=["SPY"])
 processed = r2.run_session()
