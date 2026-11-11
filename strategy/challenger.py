@@ -41,6 +41,8 @@ def run_challenger_session(data_dir: Path, state_dir: Path,
     lb = candidate["lookback"]
     vm = candidate["vol_model"]
     vf = candidate["volume_filter"]
+    ez = candidate.get("exit_z")
+    am = candidate.get("atr_mult")
     params = StrategyParameters(zscore_entry=z, lookback_zscore=lb)
 
     class ChallengerRunner(PaperTradingRunner):
@@ -52,6 +54,9 @@ def run_challenger_session(data_dir: Path, state_dir: Path,
             variant.__dict__.update(base.__dict__)
             variant.vol_model = vm
             variant.volume_filter = vf
+            variant.exit_z = (params.zscore_exit if ez is None else ez)
+            variant.atr_mult = (params.atr_stop_multiple
+                                if am is None else am)
             from collections import deque
             from vol_models import VOLUME_LOOKBACK
             variant._vol_buf = {s: deque(maxlen=VOLUME_LOOKBACK + 5)
@@ -135,7 +140,8 @@ def to_markdown(r: dict) -> str:
     lines = ["# Challenger report — champion vs shadow candidate", "",
              f"Challenger candidate: z={c['z_entry']}, lookback="
              f"{c['lookback']}, vol model={c['vol_model']}, VSA filter="
-             f"{c['volume_filter']}", "",
+             f"{c['volume_filter']}, exit z={c.get('exit_z', 0.25)}, "
+             f"ATR mult={c.get('atr_mult', 3.0)}", "",
              f"**Recommendation: {r['recommendation']}**", "",
              "| | Return % | Sharpe | Max DD % |", "|---|---|---|---|"]
     ch, cl = r["champion"], r["challenger"]

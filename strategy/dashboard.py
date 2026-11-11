@@ -44,6 +44,11 @@ def mtm_equity(paper_dir: Path, state_path: Path = None):
     pos = {s: {} for s in universe}
     for rec in state["decision_log"]:
         pos[rec["instrument"]][rec["ts"]] = rec["position"]
+    live = [d for d in dates
+            if any(pos[s].get(d) for s in universe)]
+    if live:
+        first = min(live)
+        dates = [d for d in dates if d >= first]
     equity = []
     for d in dates:
         pnl = 0.0

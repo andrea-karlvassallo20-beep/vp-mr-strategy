@@ -20,7 +20,7 @@ from fetch_data import fetch_synthetic, write_csv
 from papertrading_runner import PaperTradingRunner
 from session_report import build_report
 from gate_check import evaluate, to_markdown
-from edge_seeker import seek, to_markdown as edge_md
+from edge_seeker import CANDIDATES, seek, to_markdown as edge_md
 from dashboard import build_html, build_markdown, build_site
 from vp_mr_strategy import StrategyParameters
 
@@ -75,7 +75,7 @@ check("gate markdown renders", "HOLD" in to_markdown(v))
 
 r = seek(data_dir, ["SPY", "QQQ"])
 check("edge-seeker research pass completes on the grown window",
-      r["status"] == "OK" and len(r["grid"]) == 54)
+      r["status"] == "OK" and len(r["grid"]) == len(CANDIDATES))
 check("edge report renders", "Recommendation" in edge_md(r))
 
 html = build_html(state_dir and tmp)

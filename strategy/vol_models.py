@@ -62,14 +62,20 @@ class VariantStrategy(VolatilityParityMeanReversionStrategy):
 
     # runtime-mutable variant config, declared to the Gate 3 freeze guard
     _EXTRA_RUNTIME_ALLOWED = frozenset(
-        {"vol_model", "volume_filter", "_vol_buf"})
+        {"vol_model", "volume_filter", "_vol_buf", "exit_z", "atr_mult"})
 
     def __init__(self, params: StrategyParameters, universe, initial_equity,
                  vol_model: str = "realized",
-                 volume_filter: bool = False) -> None:
+                 volume_filter: bool = False,
+                 exit_z: float = None,
+                 atr_mult: float = None) -> None:
         super().__init__(params, universe, initial_equity)
         self.vol_model = vol_model
         self.volume_filter = volume_filter
+        self.exit_z = (params.zscore_exit if exit_z is None
+                       else float(exit_z))
+        self.atr_mult = (params.atr_stop_multiple if atr_mult is None
+                         else float(atr_mult))
         self._vol_buf: Dict[str, Deque[float]] = {
             s: deque(maxlen=VOLUME_LOOKBACK + 5) for s in universe}
 
@@ -83,11 +89,13 @@ class VariantStrategy(VolatilityParityMeanReversionStrategy):
         return super()._realized_vol_ann(s)
 
     def _signals(self, s: str):
-        if not self.volume_filter:
-            return super()._signals(s)
         z = self._zscore(s) if self._warm(s) else None
         le, se, lx, sx = super()._signals(s)
-        if z is None:
+        if z is not None and self.exit_z != self.p.zscore_exit:
+            pos = self.position[s]
+            lx = (pos > 0.0) and (z >= -self.exit_z)
+            sx = (pos < 0.0) and (z <= self.exit_z)
+        if not self.volume_filter:
             return le, se, lx, sx
         buf = self._vol_buf[s]
         # VSA effort check at decision time: the bar that produced the
@@ -99,6 +107,18 @@ class VariantStrategy(VolatilityParityMeanReversionStrategy):
             weak_effort = recent[-1] < baseline
             return (le and weak_effort, se and weak_effort, lx, sx)
         return le, se, lx, sx
+
+    def _update_trail(self, s: str, close: float, atr: float) -> None:
+        if self.atr_mult == self.p.atr_stop_multiple:
+            super()._update_trail(s, close, atr)
+            return
+        d = self.atr_mult * atr
+        if self.position[s] > 0:
+            t = close - d
+            self._trail_stop[s] = max(self._trail_stop.get(s, t), t)
+        elif self.position[s] < 0:
+            t = close + d
+            self._trail_stop[s] = min(self._trail_stop.get(s, t), t)
 
     def on_bar_close(self, s, ts, o, h, l, c, v):
         super().on_bar_close(s, ts, o, h, l, c, v)
