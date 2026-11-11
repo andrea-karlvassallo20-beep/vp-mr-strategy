@@ -78,8 +78,9 @@ class PaperTradingRunner:
             self.params, state["universe"], state["initial_equity"])
         self.strat.deploy()
         for s in state["universe"]:
-            self.strat.position[s] = state["positions"][s]
-            self.last_date[s] = state["last_date"][s]
+            self.strat.position[s] = state["positions"].get(s, 0.0)
+            if s in state["last_date"]:
+                self.last_date[s] = state["last_date"][s]
             for c in state["close_buf"][s]:
                 self.strat._close[s].append(c)
             for h in state["high_buf"][s]:
