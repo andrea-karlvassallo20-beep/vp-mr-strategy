@@ -40,6 +40,10 @@ fetch real bars (SPY QQQ IWM XLF XLE)
   -> commit everything to main
 ```
 
+## Website
+**Salient** — the live site: `docs/index.html`, served by GitHub Pages,
+regenerated after every paper-trading session.
+
 ## Current status
 See **[DASHBOARD.md](DASHBOARD.md)** — the live, GitHub-renderable dashboard.
 Raw artifacts accumulate under [`paper/`](paper/); every session commits its

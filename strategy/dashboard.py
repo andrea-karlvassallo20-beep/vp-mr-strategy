@@ -201,11 +201,104 @@ def build_markdown(paper_dir: Path) -> str:
     return "\n".join(lines) + "\n"
 
 
+def build_site(paper_dir: Path) -> str:
+    """Salient: the public one-page site (GitHub Pages, docs/index.html).
+    Same data as the dashboard, branded, with auto-refresh."""
+    s = summarize(paper_dir)
+    verdict = s.get("verdict", "NOT_GENERATED")
+    edge_path = paper_dir / "edge_report.md"
+    edge_rec = "NOT_GENERATED"
+    if edge_path.exists():
+        m = re.search(r"Recommendation: (PROPOSE_REDEPLOY|KEEP_PRODUCTION)",
+                      edge_path.read_text())
+        if m:
+            edge_rec = m.group(1)
+    svg = equity_curve_svg(paper_dir, width=900, height=280)
+    sessions = s.get("sessions_completed", 0)
+    pct = min(100, int(100 * sessions / 20))
+
+    def metric(label, value, sub=""):
+        sub_html = f'<div class="sub">{_esc(sub)}</div>' if sub else ""
+        return (f'<div class="m"><div class="ml">{_esc(label)}</div>'
+                f'<div class="mv">{_esc(value)}</div>{sub_html}</div>')
+
+    metrics = "".join([
+        metric("Forward sessions", f"{sessions} / 20", "to promotion"),
+        metric("Gate verdict", verdict, "self-judged"),
+        metric("SPI", s.get("spi", "?"), "signal parity index"),
+        metric("Sharpe", s.get("sharpe", "?"), "MTM, net of costs"),
+        metric("Max drawdown", f"{s.get('max_dd_pct', '?')}%", ""),
+        metric("Fills", s.get("fills", 0), f"{s.get('orders', 0)} orders"),
+        metric("Edge-seeker", edge_rec, "nightly research"),
+        metric("Positions", "flat" if not s.get("positions")
+               else _esc(s["positions"]), ""),
+    ])
+
+    return f"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="300">
+<title>Salient — VP-MR-ETF-D1-001</title>
+<style>
+:root {{ --bg:#0d1117; --panel:#161b22; --ink:#e6edf3; --dim:#8b949e;
+        --accent:#58a6ff; --good:#3fb950; --bad:#f85149; }}
+body {{ background:var(--bg); color:var(--ink); margin:0;
+       font-family:-apple-system,'Segoe UI',sans-serif; }}
+header {{ padding:40px 32px 8px; max-width:980px; margin:0 auto; }}
+h1 {{ font-size:34px; margin:0; letter-spacing:-0.5px; }}
+h1 span {{ color:var(--accent); }}
+.tagline {{ color:var(--dim); margin:6px 0 0; font-size:14px; }}
+main {{ max-width:980px; margin:0 auto; padding:16px 32px 48px; }}
+.progress {{ background:var(--panel); border-radius:10px; height:14px;
+             margin:20px 0 28px; overflow:hidden; }}
+.bar {{ height:100%; width:{pct}%; background:linear-gradient(90deg,
+        #1f6feb,#58a6ff); border-radius:10px; }}
+.metrics {{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }}
+.m {{ background:var(--panel); border-radius:10px; padding:16px; }}
+.ml {{ font-size:11px; text-transform:uppercase; letter-spacing:.6px;
+       color:var(--dim); }}
+.mv {{ font-size:24px; font-weight:700; margin-top:4px; }}
+.sub {{ font-size:11px; color:var(--dim); margin-top:2px; }}
+section {{ background:var(--panel); border-radius:10px; padding:20px;
+           margin-top:20px; }}
+h2 {{ font-size:16px; margin:0 0 12px; color:var(--ink); }}
+footer {{ color:var(--dim); font-size:12px; text-align:center;
+          padding:24px; }}
+a {{ color:var(--accent); }}
+</style></head><body>
+<header>
+<h1>Salient<span>.</span></h1>
+<p class="tagline">VP-MR-ETF-D1-001 — volatility-parity mean reversion on US
+equity ETFs, paper-trading autonomously. Self-audited nightly; promotion
+judged by evidence.</p>
+</header>
+<main>
+<div class="progress"><div class="bar"></div></div>
+<div class="metrics">{metrics}</div>
+<section><h2>Paper-trading equity (mark-to-market, net of costs)</h2>
+{svg}</section>
+<section><h2>How this works</h2>
+<p style="color:var(--dim);line-height:1.6">Every trading day after the US
+market close, this system fetches real bars for SPY, QQQ, IWM, XLF and XLE,
+runs its frozen strategy, audits every decision (SPI), writes a performance
+report, runs an edge-seeking research pass, re-evaluates its own promotion
+gate, and republishes this page. It never changes its own parameters —
+proposals are committed for human review.</p>
+<p style="color:var(--dim)"><a href="https://github.com/andrea-karlvassallo20-beep/vp-mr-strategy">Source, evidence and full work log on GitHub</a></p>
+</section>
+</main>
+<footer>Salient — regenerated automatically after each paper-trading
+session. Research system, not investment advice.</footer>
+</body></html>"""
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--paper-dir", type=Path, default=Path("paper"))
     ap.add_argument("--out", type=Path, default=Path("dashboard.html"))
     ap.add_argument("--markdown", type=Path, default=Path("DASHBOARD.md"))
+    ap.add_argument("--site", type=Path, default=None,
+                    help="also write the Salient site (GitHub Pages)")
     args = ap.parse_args()
     html = build_html(args.paper_dir)
     args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -215,6 +308,11 @@ def main() -> None:
     args.markdown.parent.mkdir(parents=True, exist_ok=True)
     args.markdown.write_text(md)
     print(f"markdown dashboard written -> {args.markdown}")
+    if args.site:
+        site = build_site(args.paper_dir)
+        args.site.parent.mkdir(parents=True, exist_ok=True)
+        args.site.write_text(site)
+        print(f"salient site written -> {args.site}")
 
 
 if __name__ == "__main__":
