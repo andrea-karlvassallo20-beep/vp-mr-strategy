@@ -97,7 +97,7 @@ check("dollar-volume mode changes the flow",
           avfi_v3_series(h, l, c, v, 20, 20, volume_mode="dollar"),
           avfi_v3_series(h, l, c, v, 20, 20, volume_mode="shares")))
 check("variant grid is pre-committed and non-trivial",
-      len(VARIANT_GRID) == 80
+      len(VARIANT_GRID) == 84
       and any(g["trigger"] != DEFAULT_PARAMS["trigger"]
               for g in VARIANT_GRID)
       and any(g["vol_estimator"] == "garman_klass" for g in VARIANT_GRID)
