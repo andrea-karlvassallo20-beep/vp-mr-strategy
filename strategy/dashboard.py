@@ -26,18 +26,19 @@ def _esc(s) -> str:
             .replace(">", "&gt;"))
 
 
-def equity_curve_svg(paper_dir: Path, width=860, height=220) -> str:
-    """Equity curve from decision-log positions x feed prices (MTM)."""
-    state_path = paper_dir / "state" / "session_state.json"
+def mtm_equity(paper_dir: Path, state_path: Path = None):
+    """Mark-to-market equity series from decision-log positions x feed
+    prices. Returns (dates, equity list, initial_equity) or None."""
+    state_path = state_path or (paper_dir / "state" / "session_state.json")
     if not state_path.exists():
-        return "<p>no session data yet</p>"
+        return None
     state = json.load(open(state_path))
     universe = state["universe"]
     bars = {s: load_bars(paper_dir / "data" / f"{s.lower()}.csv")
             for s in universe}
     dates = sorted({b["date"] for s in universe for b in bars[s]})
     if not dates:
-        return "<p>no bars</p>"
+        return None
     px = {s: {b["date"]: b["close"] for b in bars[s]} for s in universe}
     pos = {s: {} for s in universe}
     for rec in state["decision_log"]:
@@ -53,6 +54,15 @@ def equity_curve_svg(paper_dir: Path, width=860, height=220) -> str:
             if prev:
                 pnl += p * (px[s][d] - px[s][max(prev)])
         equity.append(state["initial_equity"] + pnl)
+    return dates, equity, state["initial_equity"]
+
+
+def equity_curve_svg(paper_dir: Path, width=860, height=220) -> str:
+    """Equity curve from decision-log positions x feed prices (MTM)."""
+    res = mtm_equity(paper_dir)
+    if res is None:
+        return "<p>no session data yet</p>"
+    _, equity, initial = res
     eq = np.array(equity)
     lo, hi = float(eq.min()), float(eq.max())
     rng = (hi - lo) or 1.0
@@ -62,14 +72,134 @@ def equity_curve_svg(paper_dir: Path, width=860, height=220) -> str:
         y = 10 + (height - 20) * (1 - (v - lo) / rng)
         pts.append(f"{x:.1f},{y:.1f}")
     poly = " ".join(pts)
-    base_y = 10 + (height - 20) * (1 - (state["initial_equity"] - lo) / rng)
-    color = "#2e7d32" if eq[-1] >= state["initial_equity"] else "#c62828"
+    base_y = 10 + (height - 20) * (1 - (initial - lo) / rng)
+    color = "#2e7d32" if eq[-1] >= initial else "#c62828"
     return (f'<svg width="{width}" height="{height}" role="img" '
             f'aria-label="equity curve">'
             f'<line x1="10" y1="{base_y:.1f}" x2="{width-10}" '
             f'y2="{base_y:.1f}" stroke="#999" stroke-dasharray="4"/>'
             f'<polyline fill="none" stroke="{color}" stroke-width="2" '
             f'points="{poly}"/></svg>')
+
+
+def drawdown_svg(paper_dir: Path, width=860, height=140) -> str:
+    """Underwater curve: percentage drawdown from the running peak."""
+    res = mtm_equity(paper_dir)
+    if res is None:
+        return "<p>no session data yet</p>"
+    _, equity, _ = res
+    eq = np.maximum.accumulate(np.array(equity))
+    dd = (np.array(equity) - eq) / eq * 100.0
+    lo = float(dd.min())
+    rng = (-lo) or 1.0
+    pts = []
+    for i, v in enumerate(dd):
+        x = 10 + (width - 20) * i / max(len(dd) - 1, 1)
+        y = 8 + (height - 16) * (-v / rng)
+        pts.append(f"{x:.1f},{y:.1f}")
+    poly = " ".join(pts)
+    area = f"10,{height - 8} " + poly + f" {width - 10},{height - 8}"
+    return (f'<svg width="{width}" height="{height}" role="img" '
+            f'aria-label="drawdown curve">'
+            f'<polygon fill="rgba(248,81,73,.25)" points="{area}"/>'
+            f'<polyline fill="none" stroke="#f85149" stroke-width="1.5" '
+            f'points="{poly}"/></svg>')
+
+
+def price_charts_html(paper_dir: Path, per_width=460,
+                      per_height=150) -> str:
+    """Per-instrument close-price charts with trade-entry markers.
+    Green up-triangles mark long entries, red down-triangles short
+    entries (position changes from the decision log)."""
+    state_path = paper_dir / "state" / "session_state.json"
+    if not state_path.exists():
+        return "<p>no session data yet</p>"
+    state = json.load(open(state_path))
+    universe = state["universe"]
+    bars = {s: load_bars(paper_dir / "data" / f"{s.lower()}.csv")
+            for s in universe}
+    entries = {s: {} for s in universe}
+    prev_pos = {s: 0.0 for s in universe}
+    for rec in state["decision_log"]:
+        s = rec["instrument"]
+        if rec["position"] != prev_pos[s]:
+            entries[s][rec["ts"]] = rec["position"] - prev_pos[s]
+            prev_pos[s] = rec["position"]
+    svgs = []
+    for s in universe:
+        bl = bars.get(s, [])
+        if not bl:
+            continue
+        closes = np.array([b["close"] for b in bl])
+        lo, hi = float(closes.min()), float(closes.max())
+        rng = (hi - lo) or 1.0
+        n = len(closes)
+        pts = []
+        for i, v in enumerate(closes):
+            x = 8 + (per_width - 16) * i / max(n - 1, 1)
+            y = 8 + (per_height - 24) * (1 - (v - lo) / rng)
+            pts.append(f"{x:.1f},{y:.1f}")
+        poly = " ".join(pts)
+        marks = []
+        for i, b in enumerate(bl):
+            dpos = entries[s].get(b["date"])
+            if not dpos:
+                continue
+            x = 8 + (per_width - 16) * i / max(n - 1, 1)
+            y = 8 + (per_height - 24) * (1 - (b["close"] - lo) / rng)
+            if dpos > 0:
+                marks.append(f'<path d="M{x:.1f},{y - 4:.1f} l4,7 l-8,0 z" '
+                             f'fill="#3fb950"/>'
+                             f'<title>{s} long entry</title>')
+            else:
+                marks.append(f'<path d="M{x:.1f},{y + 4:.1f} l4,-7 l-8,0 z" '
+                             f'fill="#f85149"/>'
+                             f'<title>{s} short entry</title>')
+        svgs.append(
+            f'<div class="pc"><h3>{_esc(s)}</h3>'
+            f'<svg width="{per_width}" height="{per_height}" role="img" '
+            f'aria-label="{_esc(s)} price with entries">'
+            f'<polyline fill="none" stroke="#58a6ff" stroke-width="1.5" '
+            f'points="{poly}"/>' + "".join(marks) + "</svg></div>")
+    if not svgs:
+        return "<p>no bars</p>"
+    return ('<div class="pgrid">' + "".join(svgs) + "</div>")
+
+
+def race_svg(paper_dir: Path, width=900, height=260) -> str:
+    """Champion vs challenger equity overlay from the two persisted
+    shadow states."""
+    champ = mtm_equity(paper_dir)
+    chall = mtm_equity(paper_dir,
+                       paper_dir / "challenger" / "session_state.json")
+    if chall is None:
+        return ("<p class=\"dim\">Challenger shadow state not yet "
+                "generated; the race chart appears after the first nightly "
+                "challenger session.</p>")
+    series = []
+    for label, res, color in (("Challenger", chall, "#58a6ff"),
+                              ("Champion", champ, "#3fb950")):
+        dates, equity, _ = res
+        eq = np.array(equity, dtype=float)
+        lo, hi = float(eq.min()), float(eq.max())
+        rng = (hi - lo) or 1.0
+        pts = []
+        for i, v in enumerate(eq):
+            x = 10 + (width - 20) * i / max(len(eq) - 1, 1)
+            y = 10 + (height - 30) * (1 - (v - lo) / rng)
+            pts.append(f"{x:.1f},{y:.1f}")
+        series.append((label, color, " ".join(pts)))
+    lines = "".join(
+        f'<polyline fill="none" stroke="{c}" stroke-width="2" '
+        f'points="{p}"/>' for _, c, p in series)
+    legend = "".join(
+        f'<rect x="{10 + i * 130}" y="4" width="10" height="10" '
+        f'fill="{c}"/><text x="{24 + i * 130}" y="13" '
+        f'fill="#8b949e" font-size="11">{l}</text>'
+        for i, (l, c, _) in enumerate(series))
+    return (f'<svg width="{width}" height="{height}" role="img" '
+            f'aria-label="champion vs challenger equity">{legend}'
+            f'{lines}</svg>')
 
 
 def build_html(paper_dir: Path) -> str:
@@ -214,6 +344,9 @@ def build_site(paper_dir: Path) -> str:
         if m:
             edge_rec = m.group(1)
     svg = equity_curve_svg(paper_dir, width=900, height=280)
+    dd_svg = drawdown_svg(paper_dir, width=900, height=130)
+    price_html = price_charts_html(paper_dir)
+    race_chart = race_svg(paper_dir)
     sessions = s.get("sessions_completed", 0)
     pct = min(100, int(100 * sessions / 20))
     journal_html = ""
@@ -292,6 +425,16 @@ main {{ max-width:980px; margin:0 auto; padding:16px 32px 48px; }}
 section {{ background:var(--panel); border-radius:10px; padding:20px;
            margin-top:20px; }}
 h2 {{ font-size:16px; margin:0 0 12px; color:var(--ink); }}
+.dim {{ color:var(--dim); }}
+.pgrid {{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }}
+.pc {{ background:#0d1117; border:1px solid #21262d; border-radius:8px;
+       padding:10px 12px 6px; }}
+.pc h3 {{ margin:0 0 6px; font-size:13px; color:var(--dim); }}
+.pc svg {{ width:100%; height:auto; display:block; }}
+.legend {{ font-size:11px; color:var(--dim); margin:-6px 0 12px; }}
+.legend span {{ margin-right:16px; }}
+.dot {{ display:inline-block; width:9px; height:9px; border-radius:2px;
+       margin-right:4px; vertical-align:middle; }}
 footer {{ color:var(--dim); font-size:12px; text-align:center;
           padding:24px; }}
 a {{ color:var(--accent); }}
@@ -306,9 +449,25 @@ judged by evidence.</p>
 <div class="progress"><div class="bar"></div></div>
 <div class="metrics">{metrics}</div>
 <section><h2>Paper-trading equity (mark-to-market, net of costs)</h2>
-{svg}</section>
+<p class="legend"><span><i class="dot" style="background:#3fb950"></i>equity</span>
+<span><i class="dot" style="background:#f85149"></i>drawdown from peak</span></p>
+{svg}
+<h2 style="margin-top:18px">Drawdown (underwater curve)</h2>
+{dd_svg}
+</section>
+<section><h2>Instrument prices &amp; trade entries</h2>
+<p class="dim">Green up-triangles mark long entries, red down-triangles
+short entries, from the audited decision log.</p>
+{price_html}
+</section>
 {journal_html}
 {race_html}
+<section><h2>Self-learning race: equity overlay</h2>
+<p class="dim">Champion (deployed, frozen) vs challenger (edge-seeker
+nominee, shadow-trading on the same real data). Each curve is scaled
+to its own range.</p>
+{race_chart}
+</section>
 <section><h2>How this works</h2>
 <p style="color:var(--dim);line-height:1.6">Every trading day after the US
 market close, this system fetches real bars for SPY, QQQ, IWM, XLF and XLE,
