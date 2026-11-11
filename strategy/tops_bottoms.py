@@ -362,6 +362,76 @@ def write_report(r: dict, markdown: Path) -> None:
     print(f"tops/bottoms report written -> {markdown}")
 
 
+EXTENDED_SAMPLE = ["gspc", "ixic", "dji", "rut", "gcf", "clf",
+                  "ctf", "zsf", "btcusd", "ethusd", "solusd"]
+
+
+def _buckets_for(h, l, c, v):
+    """Confluence buckets for one series (helper for robustness)."""
+    b_sc, t_sc = turn_topology(h, l, c, v)
+    entries = z_entries(c)
+    return topology_buckets(c, entries, b_sc, t_sc)
+
+
+def confluence_robustness(data_dir: Path, extended_dir: Path = None,
+                          universe=("SPY", "QQQ", "IWM", "XLF", "XLE")):
+    """Two honest stress tests of the confluence finding:
+    1. TIME-SPLIT — do score-3 entries beat score-2 in BOTH halves of
+       history, or only in one lucky period?
+    2. CROSS-ASSET — does the same regularity hold outside the deployed
+       ETFs (indices, commodities, crypto)? A structural market
+       property should generalize; an ETF quirk should not."""
+    time_split = {}
+    for s in universe:
+        f = data_dir / f"{s.lower()}.csv"
+        if not f.exists():
+            continue
+        bars = load_bars(f)
+        if len(bars) < 2 * (WARMUP + 60):
+            continue
+        h = np.array([b["high"] for b in bars])
+        l = np.array([b["low"] for b in bars])
+        c = np.array([b["close"] for b in bars])
+        v = np.array([float(b["volume"]) for b in bars])
+        mid = len(bars) // 2
+        halves = {}
+        for name, sl in (("first_half", slice(0, mid)),
+                         ("second_half", slice(mid, len(bars)))):
+            bk = _buckets_for(h[sl], l[sl], c[sl], v[sl])
+            lf = {int(k): x["long_fwd"] for k, x in bk.items()
+                  if x["long_fwd"] is not None}
+            halves[name] = lf
+        def beats(hal):
+            return (2 in hal and 3 in hal and hal[3] > hal[2])
+        time_split[s] = {
+            "first_half": halves["first_half"],
+            "second_half": halves["second_half"],
+            "holds_first": beats(halves["first_half"]),
+            "holds_second": beats(halves["second_half"]),
+        }
+    cross_asset = {}
+    if extended_dir and extended_dir.exists():
+        for name in EXTENDED_SAMPLE:
+            f = extended_dir / f"{name}.csv"
+            if not f.exists():
+                continue
+            bars = load_bars(f)
+            if len(bars) < WARMUP + 60:
+                continue
+            h = np.array([b["high"] for b in bars])
+            l = np.array([b["low"] for b in bars])
+            c = np.array([b["close"] for b in bars])
+            v = np.array([float(b["volume"]) for b in bars])
+            bk = _buckets_for(h, l, c, v)
+            lf = {int(k): x["long_fwd"] for k, x in bk.items()
+                  if x["long_fwd"] is not None}
+            cross_asset[name.upper()] = {
+                "buckets": lf,
+                "holds": bool(2 in lf and 3 in lf and lf[3] > lf[2]),
+            }
+    return {"time_split": time_split, "cross_asset": cross_asset}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(
         description="Tops-and-bottoms detector study")
@@ -370,6 +440,9 @@ def main() -> None:
                     default=Path("paper/research"))
     args = ap.parse_args()
     r = run_study(args.data_dir)
+    rob = confluence_robustness(args.data_dir,
+                                args.data_dir.parent / "research" / "data")
+    r["robustness"] = rob
     write_report(r, args.research_dir / "tops_bottoms_report.md")
     args.research_dir.mkdir(parents=True, exist_ok=True)
     (args.research_dir / "tops_bottoms.json").write_text(

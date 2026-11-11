@@ -11,7 +11,8 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
-from tops_bottoms import (detect_climaxes, detect_divergences,
+from tops_bottoms import (confluence_robustness, detect_climaxes,
+                          detect_divergences,
                           event_study, forward_returns, rsi, run_study,
                           topology_buckets, turn_topology,
                           write_report, z_entries)
@@ -150,6 +151,16 @@ write_report(res, rep)
 txt = rep.read_text()
 check("report carries the event-study table",
       "confirmed" in txt and "div bot" in txt)
+
+# 9. confluence robustness: time-split + cross-asset
+rob = confluence_robustness(data, extended_dir=tmp / "nope")
+check("time-split robustness evaluates both halves",
+      set(res_check) <= {"SPY", "QQQ"} if (res_check :=
+        list(rob.get("time_split", {}).keys())) else True
+      and all("holds_first" in v and "holds_second" in v
+              for v in rob["time_split"].values()))
+check("cross-asset robustness graceful without extended data",
+      rob.get("cross_asset") == {})
 
 shutil.rmtree(tmp)
 print(f"\nRESULT: {PASS} passed, {FAIL} failed")

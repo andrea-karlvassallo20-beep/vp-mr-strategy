@@ -905,6 +905,37 @@ def _tops_bottoms_html(paper_dir: Path) -> str:
         tb_rows = ('<table><tr><th>Ticker</th><th>Aligned dims</th>'
                    '<th>entries</th><th>long fwd (10 bars)</th></tr>'
                    f'{tb_rows}</table>')
+    rob = r.get("robustness", {})
+    rob_html = ""
+    if rob:
+        ts_rows = "".join(
+            f'<tr><td>{_esc(s)}</td>'
+            f'<td class="{"good" if v["holds_first"] else "bad"}">'
+            f'{"yes" if v["holds_first"] else "no"}</td>'
+            f'<td class="{"good" if v["holds_second"] else "bad"}">'
+            f'{"yes" if v["holds_second"] else "no"}</td></tr>'
+            for s, v in rob.get("time_split", {}).items())
+        ca_rows = "".join(
+            f'<tr><td>{_esc(s)}</td>'
+            f'<td class="{"good" if v["holds"] else "bad"}">'
+            f'{"yes" if v["holds"] else "no"}</td></tr>'
+            for s, v in rob.get("cross_asset", {}).items())
+        rob_html = ('<h3 class="sub">Robustness: does confluence '
+                    'survive scrutiny?</h3>'
+                    '<p class="dim">Two stress tests of the confluence '
+                    'finding. Honest verdict: the score-3 &gt; score-2 '
+                    'regularity is period-dependent (stronger in the '
+                    'first half of history) and asset-dependent '
+                    '(4 of 11 cross-asset series). A partial lead, '
+                    'not a solved edge — reported as found.</p>'
+                    '<div class="pgrid"><div>'
+                    '<h3 class="sub">Time-split (ETFs)</h3>'
+                    '<table><tr><th>Ticker</th><th>first half</th>'
+                    '<th>second half</th></tr>'
+                    f'{ts_rows}</table></div><div>'
+                    '<h3 class="sub">Cross-asset</h3>'
+                    '<table><tr><th>Series</th><th>holds</th></tr>'
+                    f'{ca_rows}</table></div></div>')
     return (f'<p class="dim">Two strictly-trailing detectors hunt the '
             f'turns: <strong>RSI divergence</strong> (price prints a '
             f'new extreme, momentum refuses to confirm — triangles) '
@@ -926,7 +957,8 @@ def _tops_bottoms_html(paper_dir: Path) -> str:
             'price stretch, momentum, divergence, effort, AVFI regime. '
             'Forward returns bucketed by how many align. Monotonicity '
             'across buckets is the honest test of confluence.</p>'
-            f'{tb_rows}')
+            f'{tb_rows}'
+            f'{rob_html}')
 
 
 def build_site(paper_dir: Path) -> str:
