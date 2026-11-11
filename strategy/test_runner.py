@@ -55,6 +55,7 @@ write_csv(data_dir / "spy.csv", bars)
 r1 = PaperTradingRunner(data_dir, state_dir, params=params, universe=["SPY"])
 processed = r1.run_session()
 check("first invocation processes 400 bars", processed["SPY"] == 400)
+check("backfill counts as ONE session invocation", r1.invocations == 1)
 pos_after_1 = dict(r1.strat.position)
 eq_after_1 = r1.strat.equity
 log_after_1 = len(r1.strat.decision_log)
@@ -74,6 +75,7 @@ write_csv(data_dir / "spy.csv", bars)
 r3 = PaperTradingRunner(data_dir, state_dir, params=params, universe=["SPY"])
 processed = r3.run_session()
 check("restart consumes only 100 new bars", processed["SPY"] == 100)
+check("second forward session increments invocations", r3.invocations == 2)
 check("bounded trailing buffer restored at capacity",
       len(r3.strat._close["SPY"]) == 65)  # min_history(60) + 5, by design
 check("session-close flatten executed (positions flat)",

@@ -31,9 +31,13 @@ def evaluate(data_dir: Path, state_dir: Path,
 
     rep = build_report(data_dir, state_dir)
 
-    # count distinct trading days with decisions (runner logs ISO dates)
+    # count forward session invocations (NOT backfill bars): the runner
+    # increments this only when a session consumed new bars, so a 500-bar
+    # historical backfill counts as ONE session, not 500
     state = json.load(open(state_dir / "session_state.json"))
-    n_days = len({rec["ts"] for rec in state["decision_log"]})
+    n_days = state.get("invocations")
+    if n_days is None:  # legacy state without the counter
+        n_days = len({rec["ts"] for rec in state["decision_log"]})
 
     criteria = [
         {"criterion": "min_paper_trading_days",
