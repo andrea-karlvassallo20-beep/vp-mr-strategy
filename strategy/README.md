@@ -27,6 +27,8 @@ AST-sandboxed core; the engine adapter is a thin event translator.
 | `papertrading_runner.py` | Incremental CSV paper-trading runner with state persistence |
 | `fetch_data.py` | Daily bar fetcher (yfinance real mode / deterministic synthetic mode) |
 | `session_report.py` | Session performance report (MTM equity, Sharpe, SPI, open risk) |
+| `gate_check.py` | Forward-test promotion gate (PROMOTE/HOLD verdict from run-card criteria) |
+| `test_gate_check.py` | 9-assertion promotion gate suite |
 | `test_session_report.py` | 11-assertion report consistency suite |
 | `test_runner.py` | 12-assertion runner suite (idempotency, restarts, SPI) |
 | `generate_run_card.py` | Emits `run_card.json` from frozen params |
