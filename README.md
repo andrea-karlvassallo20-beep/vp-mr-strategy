@@ -11,9 +11,12 @@ hobby research project — it will never trade live, and the enjoyment comes
 from solving, not financial gain. The promotion gate still matters: the
 system must complete 20 forward paper-trading sessions with a Signal Parity
 Index >= 0.98, zero duplicate order fires, and zero risk-kill-switch trips —
-and it judges itself. Beyond the deployed universe, a nightly cross-asset
-research pass hunts for mean-reversion structure in crypto (BTC, ETH), main
-indices (S&P 500, Nasdaq, Dow) and commodities (gold, crude, silver).
+and it judges itself. Beyond the deployed universe, a nightly research pass
+studies 188 series — 156 verified crypto spot pairs, 29 commodity futures and
+the main indices — hunting for mean-reversion structure, testing every
+hypothesis against control groups, dual out-of-sample windows, cost stress and
+the Deflated Sharpe Ratio, and reporting the falsifications as prominently as
+the findings.
 
 ## The strategy in one paragraph
 Each trading day, after the US market close, the strategy computes a 100-day
@@ -42,6 +45,31 @@ reproducible from the committed test suites.
 | First real-market session | 2,510 decisions, SPI 1.000, zero duplicate fires, zero kill-switch trips, 78 fills, MTM +0.43% net of costs |
 | Champion/challenger race (nightly) | edge-seeker candidates must beat the live champion by 10% out-of-sample on the same real data — first verdict KEEP_CHAMPION |
 
+## The current honest state (updated after the research battery)
+
+The method is the asset; the edge has not been found yet. What the accumulated
+studies have established — and killed:
+
+**Falsified, with the evidence committed:** the 3D state-space region
+hypothesis (322 pooled events, 17/40 own-scale beats); both single axes as
+entry filters; mid-vol regime gating (null when made causal); detector
+confirmation as a strategy improvement (−0.12 pooled premium across 174
+series — the forward-return tripling is real but unconditional, and the
+exit rule never collects it); and the commodity z-score edge (+0.37 pooled
+OOS, but it dies at 2x costs and its Deflated Sharpe at 32 trials is 0.38).
+
+**What stands:** deep stretch alone is the one supported entry signal, and
+deeper pays with no falling knife; the AVFI spread axis works as a risk
+throttle, never an entry timer (AVFI v4 Pine encodes exactly this); mean
+reversion needs an anchor — commodities have one, crypto does not (the same
+core: +0.37 pooled OOS on commodities vs −0.31 on crypto); and the live
+forward test is the only judge with zero selection bias.
+
+**The direction:** depth-first. One lead at a time, through every gate, and
+no new universes until a battery-passing edge exists. The ten evidence-
+forced lessons live in `strategy/lessons.py` and render on Salient, each tied
+to the data that forced it.
+
 ## Why it can be trusted (the four safety gates)
 | Gate | Guarantee |
 |---|---|
@@ -58,7 +86,11 @@ fetch real bars (SPY QQQ IWM XLF XLE)
   -> performance report (MTM equity, Sharpe, drawdown)
   -> edge-seeker research pass (walk-forward candidate proposals)
   -> promotion gate verdict (PROMOTE / HOLD vs run-card criteria)
-  -> regenerate dashboard + work log
+  -> cross-asset research (188 series: MR stats, detections, state space)
+  -> honesty studies (MR-coin control group, v4 confirmation premium,
+     commodity edge battery, stretch-depth, lessons synthesis)
+  -> ingest uploaded research PDFs (the alternative knowledge path)
+  -> regenerate dashboard + Salient site + work log
   -> commit everything to main
 ```
 
