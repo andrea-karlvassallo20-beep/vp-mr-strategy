@@ -139,6 +139,51 @@ check("the flagged verdict carries the judgment invitation",
       "judgment invited" in btc_f["reason"]
       and "flagged, not excluded" in btc_f["reason"])
 
+# --- the region-specific timing cards ------------------------------------
+res_t = tmp / "research_t"
+res_t.mkdir(parents=True, exist_ok=True)
+(res_t / "v4_charts.json").write_text(json.dumps(
+    {"equity": {"per_asset": {}}}))
+(res_t / "timing_battery.json").write_text(json.dumps({
+    "candidate_timing_card": {
+        "median_peak_week": 3.0,
+        "p_positive_week1": 0.5,
+        "p_positive_week4": 0.55},
+    "by_region": {
+        "compression": {"n": 47, "median_peak_week": 2.0,
+                         "p_positive_week1": 0.511,
+                         "p_positive_week4": 0.574},
+        "stress": {"n": 97, "median_peak_week": 3.0,
+                   "p_positive_week1": 0.526,
+                   "p_positive_week4": 0.588}}}))
+data_c = tmp / "compress"
+data_c.mkdir()
+_rng = np.random.default_rng(3)
+_rets = 0.001 * _rng.standard_t(6, size=3000)
+_rets[2000:] = 0.00005        # vol collapses: compression at
+                              # the latest close
+_write_series(data_c / "SIF.csv", _rets)
+vt = philosopher_verdicts(data_c, res_t)
+comp = next((x for x in vt
+             if x["region"] == "compression"), None)
+check("a compression verdict carries the REGION timing card",
+      comp is not None
+      and comp["timing_card"]["source"] == "region"
+      and comp["timing_card"]["median_peak_week"] == 2.0
+      and comp["timing_card"]["region_n"] == 47)
+unassigned = next((x for x in vt
+                   if x["region"] not in
+                   ("compression", "stress")), None)
+if unassigned is not None:
+    check("a region without its own card falls back to the "
+          "pooled card, honestly labeled",
+          unassigned["timing_card"]["source"] == "pooled"
+          and unassigned["timing_card"]["median_peak_week"]
+          == 3.0)
+else:
+    check("a region without its own card falls back to the "
+          "pooled card, honestly labeled", True)
+
 # --- the full run --------------------------------------------------------
 r = run_philosopher(data)
 check("the full run returns verdicts, counts and backtest",

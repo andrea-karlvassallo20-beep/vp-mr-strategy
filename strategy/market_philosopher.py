@@ -114,6 +114,7 @@ def philosopher_verdicts(data_dir: Path,
     # in-sample performance is blind-following in reverse)
     record = {}
     timing_card = {}
+    region_cards = {}
     if research_dir is not None:
         rp = research_dir / "v4_charts.json"
         if rp.exists():
@@ -128,6 +129,7 @@ def philosopher_verdicts(data_dir: Path,
             try:
                 tb = json.loads(tp.read_text())
                 timing_card = tb.get("candidate_timing_card", {})
+                region_cards = tb.get("by_region", {})
             except Exception:
                 timing_card = {}
     out = []
@@ -186,18 +188,29 @@ def philosopher_verdicts(data_dir: Path,
             verdict = "REFUSED"
             reason = (f"region {region}, weekly {wr:.3f}: no "
                       "measured long edge")
+        # the timing card rides REGION-SPECIFIC when the
+        # region has its own measured card (compression-at-
+        # crash peaks at week 2 vs pooled week 3), pooled
+        # otherwise; the region n is carried so the small
+        # sample stays visible (doctrine rule 5)
+        rc = region_cards.get(region)
+        card = {
+            "median_peak_week":
+                (rc or timing_card).get("median_peak_week"),
+            "p_positive_week1":
+                (rc or timing_card).get("p_positive_week1"),
+            "p_positive_week4":
+                (rc or timing_card).get("p_positive_week4"),
+            "source": ("region" if rc else "pooled"),
+            "region_n": (rc or {}).get("n"),
+        }
         out.append({
             "ticker": name,
             "verdict": verdict,
             "region": region,
             "weekly_return": round(wr, 4),
             "avfi_v4": read,
-            "timing_card": {
-                "median_peak_week":
-                    timing_card.get("median_peak_week"),
-                "p_positive_week1":
-                    timing_card.get("p_positive_week1"),
-            },
+            "timing_card": card,
             "reason": reason,
         })
     order = {"LONG_CANDIDATE": 0,
