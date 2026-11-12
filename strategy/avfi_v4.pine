@@ -1,0 +1,264 @@
+//@version=5
+// ============================================================================
+// AVFI v4 — "Stretch + Confirmation" — rewritten from scratch
+// ============================================================================
+// This version is not a remix of v3.2. Every component is here for a
+// measured reason, and the components the data falsified are gone.
+//
+// WHAT THE EVIDENCE KEPT (from the project's studies):
+//   1. The AVFI spread axis (v3 flow vs a slow EMA of v2 flow) is a
+//      slow REGIME DESCRIPTOR. Its measurable use is a RISK THROTTLE:
+//      when the sigma-normalized spread z collapses below a trigger,
+//      effort is fading without result (distribution) -> risk-off.
+//      It is NOT an entry timer. (Programme U2; replicated 2026-11-11.)
+//   2. Deep price stretch is the ONE supported entry signal. The
+//      stretch-depth curve (~4,800 events, 50 series): deeper stretch
+//      beats the shallow edge in a majority of series at every depth,
+//      and there is NO falling knife even beyond z = 4.
+//   3. Detector confirmation pays where mean reversion is measured:
+//      on statistically mean-reverting coins, deep stretches
+//      confirmed by RSI divergence or VSA climax roughly TRIPLE the
+//      median 10-day forward return (+0.89% vs +0.25%; n=269 vs 1533).
+//
+// WHAT THE EVIDENCE REMOVED (falsified — deliberately absent):
+//   - Vol-percentile regime gating: neither single state-space axis
+//     carries weight over stretch alone (axis attribution, 50 series).
+//   - Multi-axis "region" confluence: falsified pooled at n=322
+//     events (bottom region +1.27% vs mid +9.81% pooled; 17/40
+//     own-scale beats). Bottoms are not regions of (flow, stretch,
+//     vol) space.
+//   - Mid-volatility tercile gating: descriptive concentration that
+//     tested honestly NULL when made causal (dual-split gate).
+//
+// STRICT CAUSALITY: every window below is trailing. On realtime bars
+// the signal only finalizes on bar close (barstate.isconfirmed).
+// ============================================================================
+
+indicator("AVFI v4 — Stretch + Confirmation", shorttitle="AVFI v4",
+          overlay=true, max_labels_count=500)
+
+// ---------------------------------------------------------------------------
+// INPUTS — grouped by what they control
+// ---------------------------------------------------------------------------
+// The flow engine (unchanged core: Parkinson floor, log-volume, spread)
+flowLen   = input.int(20,   "Volume normalization window", minval=5,  group="Flow engine")
+pkLen     = input.int(10,   "sigmaPk range-vol window",     minval=5,  group="Flow engine")
+emaSlow   = input.int(13,   "Slow EMA of v2 (spread axis)", minval=5, group="Flow engine")
+spZLen    = input.int(100,  "Spread z-score window",        minval=20, group="Flow engine")
+
+// The risk throttle (the validated use of the spread axis)
+useThr    = input.bool(true, "Show throttle zones",                   group="Risk throttle")
+trigger   = input.float(-1.5, "Throttle trigger (spread z)", step=0.1, group="Risk throttle")
+
+// The stretch axis (the one supported entry signal)
+pzLen     = input.int(100,  "Price z-score window",          minval=20, group="Stretch")
+deepZ     = input.float(-2.0, "Deep stretch threshold (z)", step=0.25, group="Stretch")
+
+// Detector confirmation (the tripling filter)
+useDiv    = input.bool(true, "RSI divergence confirmation",           group="Confirmation")
+useClimax = input.bool(true, "VSA climax confirmation",               group="Confirmation")
+rsiLen    = input.int(14,   "RSI length",                     minval=2, group="Confirmation")
+divLb     = input.int(5,    "Divergence pivot lookback",      minval=2, group="Confirmation")
+confLb    = input.int(3,    "Confirmation window (bars)",     minval=1, group="Confirmation")
+
+// ---------------------------------------------------------------------------
+// 1. THE FLOW ENGINE — AVFI v3 vs slow AVFI v2 (unchanged, validated)
+// ---------------------------------------------------------------------------
+// sigmaPk: Parkinson-style per-bar volatility floor from ln(H/L)^2.
+// The high-low range carries ~5x more volatility information per bar
+// than the close; wide-range bars raise the floor. Trailing window.
+rngSq    = math.log(high / low) ** 2
+pkConst  = 1.0 / (4.0 * math.log(2.0))
+sigmaPk  = math.sqrt(ta.sma(rngSq, pkLen) * pkConst)
+
+// va: log-volume normalization vs its trailing mean. va > 1 means this
+// bar's volume is above its norm (real effort); va < 1 means weak effort.
+lv       = math.log(math.max(volume, 1.0))
+volAvg   = ta.sma(lv, flowLen)
+va       = volAvg > 0 ? lv / volAvg : 1.0
+
+// AVFI v3: signed price move x log-volume normalization x vol floor
+sgnRet   = ta.change(close)
+avfiV3   = sgnRet * va * sigmaPk
+
+// AVFI v2: classic signed return x volume ratio, then the slow EMA
+volAvgS  = ta.sma(volume, flowLen)
+ratio    = volAvgS > 0 ? volume / volAvgS : 1.0
+avfiV2   = sgnRet * ratio
+v2Slow   = ta.ema(avfiV2, emaSlow)
+
+// The spread axis and its sigma-normalized z (the regime descriptor)
+spread   = avfiV3 - v2Slow
+spMean   = ta.sma(spread, spZLen)
+spSd     = ta.stdev(spread, spZLen)
+spZ      = spSd > 0 ? (spread - spMean) / spSd : 0.0
+
+// The throttle: risk-off when the regime says distribution
+throttled = useThr and spZ <= trigger
+
+// ---------------------------------------------------------------------------
+// 2. THE STRETCH AXIS — the one supported entry signal
+// ---------------------------------------------------------------------------
+// Trailing z-score of log price. Deep stretch pays; deeper pays more;
+// no falling knife was found even beyond z = 4 (own-scale majority at
+// every depth). The threshold is the entry territory, not the signal
+// itself — confirmation decides.
+logP     = math.log(close)
+pMean    = ta.sma(logP, pzLen)
+pSd      = ta.stdev(logP, pzLen)
+priceZ   = pSd > 0 ? (logP - pMean) / pSd : 0.0
+
+// ---------------------------------------------------------------------------
+// 3. DETECTOR CONFIRMATION — the tripling filter
+// ---------------------------------------------------------------------------
+// A deep stretch ALONE is a coin flip in a trend. The measured filter:
+// stretch + confirmation within `confLb` bars roughly triples the
+// median forward return where mean reversion is actually measured.
+// Both detectors are strictly trailing (pivot detection costs
+// `divLb` bars of confirmation lag — that is the price of causality).
+
+rsiVal = ta.rsi(close, rsiLen)
+
+// --- RSI divergence: price prints a lower low, RSI prints a higher low
+// (momentum refuses to confirm the new price extreme). Mirror for tops.
+pLo = ta.pivotlow(low,  divLb, divLb)
+pHi = ta.pivothigh(high, divLb, divLb)
+var float lastPLoPrice = na
+var float lastPLoRsi   = na
+var int   lastPLoBar   = na
+var float lastPHiPrice = na
+var float lastPHiRsi   = na
+var int   lastPHiBar   = na
+bullDivNow = false
+bearDivNow = false
+if not na(pLo)
+    curRsi = rsiVal[divLb]
+    if not na(lastPLoPrice) and low[divLb] < lastPLoPrice and curRsi > lastPLoRsi and curRsi < 40
+        bullDivNow := true
+    lastPLoPrice := low[divLb]
+    lastPLoRsi   := curRsi
+    lastPLoBar   := bar_index - divLb
+if not na(pHi)
+    curRsi = rsiVal[divLb]
+    if not na(lastPHiPrice) and high[divLb] > lastPHiPrice and curRsi < lastPHiRsi and curRsi > 60
+        bearDivNow := true
+    lastPHiPrice := high[divLb]
+    lastPHiRsi   := curRsi
+    lastPHiBar   := bar_index - divLb
+
+// --- VSA climax: volume >= 2x trailing norm AND range >= 1.5x trailing
+// norm AND the close recovers into the opposite half of the bar after
+// a decline (bottom) / after a rally (top). Effort huge, result reversed.
+volNorm  = ta.sma(volume, flowLen)
+rangeNorm = ta.sma(high - low, flowLen)
+wideBar  = (high - low) >= 1.5 * rangeNorm
+hugeVol  = volume >= 2.0 * volNorm
+upHalf   = (close - low) / math.max(high - low, syminfo.mintick) >= 0.5
+dnHalf   = (high - close) / math.max(high - low, syminfo.mintick) >= 0.5
+decline  = close[1] < close[10]     // trend INTO the bar (trailing)
+rally    = close[1] > close[10]
+climaxBottom = hugeVol and wideBar and decline and upHalf
+climaxTop    = hugeVol and wideBar and rally   and dnHalf
+
+// Confirmation memory: a detector firing within confLb bars still
+// counts as confirming the current stretch.
+confBull = useDiv and (bullDivNow or climaxBottom or
+             bullDivNow[1] or climaxBottom[1] or
+             bullDivNow[2] or climaxBottom[2] or
+             bullDivNow[3] or climaxBottom[3]) or
+           useClimax and (climaxBottom or climaxBottom[1] or
+             climaxBottom[2] or climaxBottom[3])
+confBear = useDiv and (bearDivNow or climaxTop or
+             bearDivNow[1] or climaxTop[1] or
+             bearDivNow[2] or climaxTop[2] or
+             bearDivNow[3] or climaxTop[3]) or
+           useClimax and (climaxTop or climaxTop[1] or
+             climaxTop[2] or climaxTop[3])
+
+// ---------------------------------------------------------------------------
+// 4. THE V4 SIGNAL — deep stretch, confirmed
+// ---------------------------------------------------------------------------
+// Long: z <= deepZ AND confirmation within confLb bars.
+// Short: the mirror. The throttle does NOT gate entries (it is a
+// position-sizing regime, not a timer) — it shades the chart so the
+// trader knows when the regime argues for smaller size.
+confirmedBottom = priceZ <= deepZ and confBull
+confirmedTop    = priceZ >= -deepZ and confBear
+
+// Realtime honesty: finalize only on bar close (strict causality)
+sigBottom = barstate.isconfirmed and confirmedBottom
+sigTop    = barstate.isconfirmed and confirmedTop
+
+// ---------------------------------------------------------------------------
+// RENDERING
+// ---------------------------------------------------------------------------
+// Throttle zones: the validated risk-off regime shading
+bgcolor(throttled ? color.new(#f85149, 88) : na)
+
+// The v4 signals
+plotshape(sigBottom, title="Confirmed bottom (stretch + confirmation)",
+          style=shape.labelup, location=location.belowbar,
+          color=color.new(#3fb950, 20), textcolor=color.white,
+          text="B", size=size.tiny)
+plotshape(sigTop, title="Confirmed top (stretch + confirmation)",
+          style=shape.labeldown, location=location.abovebar,
+          color=color.new(#f85149, 20), textcolor=color.white,
+          text="S", size=size.tiny)
+
+// Detector marks (context, always visible)
+plotshape(bullDivNow, title="RSI divergence bottom",
+          style=shape.triangleup, location=location.belowbar,
+          color=color.new(#3fb950, 55), size=size.tiny)
+plotshape(bearDivNow, title="RSI divergence top",
+          style=shape.triangledown, location=location.abovebar,
+          color=color.new(#f85149, 55), size=size.tiny)
+plotshape(climaxBottom, title="VSA climax bottom",
+          style=shape.square, location=location.belowbar,
+          color=color.new(#3fb950, 55), size=size.tiny)
+plotshape(climaxTop, title="VSA climax top",
+          style=shape.square, location=location.abovebar,
+          color=color.new(#f85149, 55), size=size.tiny)
+
+// ---------------------------------------------------------------------------
+// DASHBOARD PANEL — the three axes and the verdict, at a glance
+// ---------------------------------------------------------------------------
+var table t = table.new(position.top_right, 2, 5, border_width=1)
+if barstate.islast
+    table.cell(t, 0, 0, "AVFI v4", bgcolor=color.new(#161b22, 10),
+               text_color=color.white, text_size=size.small)
+    table.cell(t, 1, 0, "stretch + confirmation",
+               bgcolor=color.new(#161b22, 10), text_color=color.gray,
+               text_size=size.tiny)
+    table.cell(t, 0, 1, "price z", text_color=color.gray,
+               text_size=size.tiny)
+    table.cell(t, 1, 1, str.tostring(priceZ, "#.##"),
+               text_color=priceZ <= deepZ ? #3fb950 : color.white,
+               text_size=size.small)
+    table.cell(t, 0, 2, "spread z", text_color=color.gray,
+               text_size=size.tiny)
+    table.cell(t, 1, 2, str.tostring(spZ, "#.##"),
+               text_color=throttled ? #f85149 : color.white,
+               text_size=size.small)
+    table.cell(t, 0, 3, "regime", text_color=color.gray,
+               text_size=size.tiny)
+    table.cell(t, 1, 3, throttled ? "THROTTLE" : "normal",
+               text_color=throttled ? #f85149 : #3fb950,
+               text_size=size.small)
+    table.cell(t, 0, 4, "v4 verdict", text_color=color.gray,
+               text_size=size.tiny)
+    verdictTxt = sigBottom ? "confirmed bottom" :
+                 sigTop ? "confirmed top" :
+                 priceZ <= deepZ ? "stretch, no confirm" : "—"
+    table.cell(t, 1, 4, verdictTxt,
+               text_color=sigBottom or sigTop ? #3fb950 : color.gray,
+               text_size=size.small)
+
+// ---------------------------------------------------------------------------
+// ALERTS
+// ---------------------------------------------------------------------------
+alertcondition(sigBottom, "AVFI v4 confirmed bottom",
+              "AVFI v4: deep stretch confirmed by detector — bottom signal")
+alertcondition(sigTop, "AVFI v4 confirmed top",
+              "AVFI v4: deep stretch confirmed by detector — top signal")
+alertcondition(throttled and not throttled[1], "AVFI v4 throttle ON",
+              "AVFI v4: spread z below trigger — regime risk-off")

@@ -730,15 +730,32 @@ def _avfi_code_html() -> str:
 
 
 def _avfi_pine_html() -> str:
-    """The AVFI v3.2 Pine v5 source, displayed for TradingView."""
-    src_path = Path(__file__).parent / "avfi_v3_2.pine"
-    if not src_path.exists():
-        return ""
-    code = _esc(src_path.read_text())
-    return ('<details class="doc" open><summary>AVFI v3.2 — Pine v5 '
-            'source <span class="dim">— paste into a TradingView Pine '
-            'editor; the Python twin is strategy/avfi.py</span></summary>'
-            f'<pre>{code}</pre></details>')
+    """The AVFI v4 Pine v5 source (evidence-rewritten) plus the
+    v3.2 original, displayed for TradingView."""
+    base = Path(__file__).parent
+    out = ""
+    v4 = base / "avfi_v4.pine"
+    if v4.exists():
+        out += ('<details class="doc" open><summary>AVFI v4 '
+                '&mdash; Stretch + Confirmation &mdash; Pine v5 '
+                'source <span class="dim">&mdash; rewritten from '
+                'scratch on the evidence: the flow engine and '
+                'throttle kept (validated), the price-stretch axis '
+                'and detector confirmation added (the one supported '
+                'entry signal and its tripling filter), the '
+                'falsified components (vol-percentile gating, '
+                'multi-axis region confluence, mid-vol terciles) '
+                'deliberately absent. Paste into a TradingView '
+                'Pine editor.</span></summary>'
+                f'<pre>{_esc(v4.read_text())}</pre></details>')
+    v32 = base / "avfi_v3_2.pine"
+    if v32.exists():
+        out += ('<details class="doc"><summary>AVFI v3.2 '
+                '&mdash; the original spread-axis indicator '
+                '<span class="dim">&mdash; kept for reference and '
+                'comparison</span></summary>'
+                f'<pre>{_esc(v32.read_text())}</pre></details>')
+    return out
 
 
 def _tradingview_embed(symbol: str = "NASDAQ:NQ1!",
@@ -841,7 +858,7 @@ def _avfi_html(paper_dir: Path) -> str:
             f'<h3 class="sub">Live market — TradingView</h3>'
             f'<p class="dim">Interactive chart (NQ weekly, '
             f'matching the AVFI-NQ research programme; switch '
-            f'symbols in the widget). Overlay the AVFI v3.2 '
+            f'symbols in the widget). Overlay the AVFI v4 '
             f'source above in any TradingView Pine editor.'
             f'</p>'
             f'{_tradingview_embed()}')
