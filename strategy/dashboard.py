@@ -1203,21 +1203,36 @@ def _state_space_html(paper_dir: Path) -> str:
                           f'{a.get("series", 0)}</td>'
                           f'<td class="{cls}">'
                           f'{"carries weight" if holds else "no"}</td></tr>')
+            sp_ax = axis.get("sp_z_neg") or {}
+            vol_ax = axis.get("vol_high") or {}
+            n_sp, n_vol = (sp_ax.get("series", 0),
+                           vol_ax.get("series", 0))
+            b_sp, b_vol = (sp_ax.get("beats", 0),
+                           vol_ax.get("beats", 0))
+            both = (sp_ax.get("carries_weight")
+                    and vol_ax.get("carries_weight"))
+            ax_verdict = (
+                'at the full-universe sample both axes show WEAK '
+                f'descriptive majorities (flow-fading {b_sp}/{n_sp}, '
+                f'elevated-vol {b_vol}/{n_vol}) and pooled edges - '
+                'but the causal test (the v4 study) already showed '
+                'axis-conditioned entries do not convert into a '
+                'strategy, and the pooled numbers are scale-'
+                'contaminated by high-drift crypto. Descriptive '
+                'weight is not an edge; at the earlier 50-series '
+                'sample both axes read as dead, which is itself a '
+                'lesson about sample size.'
+                if both else
+                'neither axis carries weight at this sample; deep '
+                'stretch alone is what the data supports.')
             study_html += (
                 '<h3 class="sub">Axis attribution: which single axis '
                 'pays?</h3>'
                 '<p class="dim">The region was falsified as a bundle, '
-                'so each axis was tested ALONE: among deep-stretch '
+                'so each axis is tested ALONE: among deep-stretch '
                 'long entries, do entries WITH the condition '
-                'forward-outperform entries WITHOUT it? Verdict: '
-                'neither axis carries weight. Flow-fading entries '
-                'actually underperform pooled (+1.88% vs +6.99%). '
-                'Elevated-vol entries look better pooled (+9.23% vs '
-                '+1.39%) but win on their own scale in only 20/50 '
-                'series \u2014 the pooled edge is scale contamination '
-                'from high-drift crypto, not signal. The region idea '
-                'is dead in its components, not just as a bundle; '
-                'deep stretch alone is what the data supports.</p>'
+                'forward-outperform entries WITHOUT it? Honest '
+                f'reading, regenerated live: {ax_verdict}</p>'
                 '<table><tr><th>Axis</th>'
                 '<th>with n</th><th>fwd</th>'
                 '<th>without n</th><th>fwd</th>'
@@ -1236,17 +1251,21 @@ def _state_space_html(paper_dir: Path) -> str:
                           f'{b.get("series", 0)}</td></tr>')
             deeper = depth.get("own_scale_deeper_pays")
             knife = depth.get("falling_knife")
+            bk = depth.get("buckets", {})
+            b1 = bk.get("z2.5-3.0", {})
+            b2 = bk.get("z3.0-4.0", {})
+            b3 = bk.get("z4.0+", {})
+            beat_txt = ", ".join(
+                f'{b.get("beats_shallow", 0)}/{b.get("series", 0)}'
+                for b in (b1, b2, b3) if b)
             study_html += (
                 '<h3 class="sub">The stretch-depth curve</h3>'
                 '<p class="dim">Deep stretch is the one supported '
                 'signal, so: does DEEPER stretch pay more, or is '
-                'there a falling-knife zone? Pooled forward returns '
-                'say deeper is worse \u2014 but that is the same '
-                'scale contamination again (the shallow bucket is '
-                'dominated by high-drift crypto). On each series\' '
+                'there a falling-knife zone? On each series\' '
                 'OWN SCALE, deeper stretch beats the shallow edge '
-                'in a majority of series at every depth '
-                '(28/50, 30/47, 18/25), and there is no falling '
+                f'in a majority of series at every depth '
+                f'({beat_txt}), and there is no falling '
                 'knife even beyond z 4. Own-scale verdict: '
                 f'<strong>{"deeper pays" if deeper else "inconclusive"}'
                 f'</strong>; falling knife: '

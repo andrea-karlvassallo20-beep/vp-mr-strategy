@@ -109,16 +109,21 @@ def build_lessons(paper_dir: Path) -> dict:
          "remedy": "Own-scale beat counting: a finding must win on "
          "each series' own scale in a majority of series, not just "
          "in a pooled average."},
-        {"lesson": "Beautiful hypotheses die by data. The 3D "
-         "state-space region ideology - bottoms as regions, not "
-         "crosses - was the most satisfying idea in the project. "
-         f"At {num('region_pooled_n')} pooled events it is "
-         f"falsified ({num('region_beats')} own-scale beats), and "
-         "the axis decomposition killed it in its components too.",
-         "forced_by": "the pooled region study and axis attribution",
+        {"lesson": "Beautiful hypotheses die by data - and small "
+         "samples lie in both directions. The 3D state-space region "
+         "ideology was the most satisfying idea in the project. At "
+         f"{num('region_pooled_n')} pooled events it is falsified "
+         f"({num('region_beats')} own-scale beats). The axis "
+         "decomposition read DEAD at the 50-series sample and WEAK "
+         "majorities at the 180-series one - a reminder that a "
+         "verdict is a property of the sample too - but the causal "
+         "test (the v4 study) is the one that counts, and it "
+         "failed: descriptive weight never converted.",
+         "forced_by": "the pooled region study, axis attribution at "
+         "two sample sizes, and the v4 causal study",
          "remedy": "Keep the visualization; retire the hypothesis. "
-         "Falsification at n=322 beats an eternity of hoping at "
-         "n=9."},
+         "Falsification at n=322+ beats an eternity of hoping at "
+         "n=9 - and only causal conversion can revive anything."},
         {"lesson": "Deep stretch alone is the one supported entry "
          "signal - and deeper pays. On each series' own scale, "
          "deeper stretch beats the shallow edge in a majority of "
