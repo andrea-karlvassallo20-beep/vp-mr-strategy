@@ -1172,6 +1172,39 @@ def _state_space_html(paper_dir: Path) -> str:
                 '<th>beats (own scale)</th>'
                 '<th>verdict</th></tr>'
                 f'{arows}</table>')
+        depthpath = paper_dir / "research" / "stretch_depth.json"
+        if depthpath.exists():
+            depth = json.load(open(depthpath))
+            drows = ""
+            for name, b in depth.get("buckets", {}).items():
+                drows += (f'<tr><td>price z {name}</td>'
+                          f'<td>{b.get("n", 0)}</td>'
+                          f'<td>{b.get("fwd") if b.get("fwd") is not None else "-"}</td>'
+                          f'<td>{b.get("beats_shallow", 0)} / '
+                          f'{b.get("series", 0)}</td></tr>')
+            deeper = depth.get("own_scale_deeper_pays")
+            knife = depth.get("falling_knife")
+            study_html += (
+                '<h3 class="sub">The stretch-depth curve</h3>'
+                '<p class="dim">Deep stretch is the one supported '
+                'signal, so: does DEEPER stretch pay more, or is '
+                'there a falling-knife zone? Pooled forward returns '
+                'say deeper is worse \u2014 but that is the same '
+                'scale contamination again (the shallow bucket is '
+                'dominated by high-drift crypto). On each series\' '
+                'OWN SCALE, deeper stretch beats the shallow edge '
+                'in a majority of series at every depth '
+                '(28/50, 30/47, 18/25), and there is no falling '
+                'knife even beyond z 4. Own-scale verdict: '
+                f'<strong>{"deeper pays" if deeper else "inconclusive"}'
+                f'</strong>; falling knife: '
+                f'<strong>{"real" if knife else "not found"}</strong>. '
+                'A descriptive lead for entry-threshold research \u2014 '
+                'not yet a causal, out-of-sample-tested variant.</p>'
+                '<table><tr><th>Depth bucket</th><th>n</th>'
+                '<th>pooled fwd</th><th>beats shallow (own scale)'
+                '</th></tr>'
+                f'{drows}</table>')
         study_html += pooled_html
     return (f'<p class="dim">Every bar is a <strong>position in '
             f'space</strong>, and the strategy lives as a trajectory '
