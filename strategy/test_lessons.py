@@ -23,7 +23,7 @@ check("empty paper dir synthesizes without crashing",
       isinstance(empty, dict) and empty["lessons"]
       and empty["inferences"]["universe_series"] == 0)
 check("empty paper dir still carries the lessons",
-      len(empty["lessons"]) >= 8)
+      len(empty["lessons"]) >= 10)
 
 # populated paper dir with the real artifact shapes
 paper = tmp / "paper"

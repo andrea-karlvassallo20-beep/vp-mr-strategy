@@ -1475,6 +1475,79 @@ def _v4_study_html(paper_dir: Path) -> str:
             f'<th>v4 OOS</th><th>premium</th></tr>{worst}</table>')
 
 
+def _commodity_edge_html(paper_dir: Path) -> str:
+    """The commodity edge through the full honesty battery - the
+    depth-first follow-up to the project's first positive result."""
+    path = paper_dir / "research" / "commodity_edge.json"
+    if not path.exists():
+        return ("<p class=\"dim\">The commodity edge battery appears "
+                "here after the first nightly research pass.</p>")
+    r = json.load(open(path))
+    b = r.get("battery", {})
+    verdict = r.get("verdict")
+    cls = "good" if verdict else "dim"
+    vtxt = ("battery passed - a candidate at last" if verdict else
+            "battery failed - the +0.37 was marginal, not an edge")
+    mrows = ""
+    for m in r.get("markets", [])[:32]:
+        oos = m.get("oos_40")
+        mrows += (f'<tr><td>{_esc(m["ticker"])}</td>'
+                  f'<td>{m["mr_t_stat"]}</td>'
+                  f'<td>{m["half_life"]}</td>'
+                  f'<td>{m["trades"]}</td>'
+                  f'<td>{m["full"]}</td>'
+                  f'<td>{m["first_half"]}</td>'
+                  f'<td>{m["second_half"]}</td>'
+                  f'<td class="{"good" if (oos or 0) > 0 else "dim"}">'
+                  f'{oos}</td></tr>')
+    dsr = b.get("deflated_sharpe") or {}
+    return (f'<p class="dim">The v4 study surfaced the project\'s '
+            f'first positive pooled result: plain z-score mean '
+            f'reversion on commodities, +0.37 OOS. The project\'s '
+            f'own lessons say a number like that is not believed '
+            f'until it survives conversion - so it went through '
+            f'the FULL battery: per-market attribution, dual-split, '
+            f'time-split, 2x cost stress, and the Deflated Sharpe '
+            f'context at {r.get("n_markets")} trials.</p>'
+            f'<div class="metrics">'
+            f'<div class="metric"><div class="mval">'
+            f'{b.get("pooled_oos_worse_window")}</div>'
+            f'<div class="mlabel">pooled OOS (worse window)</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{b.get("time_split_first_half")} &rarr; '
+            f'{b.get("time_split_second_half")}</div>'
+            f'<div class="mlabel">time-split Sharpe</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{b.get("cost_stress_2x_pooled_oos")}</div>'
+            f'<div class="mlabel">at 2x costs</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{b.get("positive_markets")}</div>'
+            f'<div class="mlabel">positive markets</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{dsr.get("dsr")}</div>'
+            f'<div class="mlabel">DSR at {dsr.get("n_trials")} '
+            f'trials</div></div>'
+            f'<div class="metric"><div class="mval" class="{cls}">'
+            f'{vtxt}</div>'
+            f'<div class="mlabel">honest verdict</div></div>'
+            f'</div>'
+            f'<p class="dim"><strong>What the battery said:</strong> '
+            f'the pooled OOS holds (+0.37) and both time-split '
+            f'halves are positive, but the edge DIES at 2x costs '
+            f'(-0.02) and the Deflated Sharpe ({dsr.get("dsr")}) '
+            f'is below the 0.5 bar - not separated from search '
+            f'luck at {dsr.get("n_trials")} trials. The +0.37 was '
+            f'marginal and execution-sensitive, not an edge. The '
+            f'direction is now depth-first: one lead at a time, '
+            f'through every gate, and no new universes until a '
+            f'battery-passing edge exists. The method is the '
+            f'asset; the edge has not been found yet.</p>'
+            f'<table><tr><th>Market</th><th>MR t</th>'
+            f'<th>half-life</th><th>trades</th><th>full</th>'
+            f'<th>1st half</th><th>2nd half</th><th>OOS</th></tr>'
+            f'{mrows}</table>')
+
+
 def _crypto_avfi_chart_svg(ch: dict, width=520, height=230) -> str:
     """Two-panel crypto chart: price with detected tops/bottoms on
     top, the AVFI spread z with the trigger line and throttle zone
@@ -1737,7 +1810,7 @@ def build_site(paper_dir: Path) -> str:
          ("statespace", "State space"),
          ("commodities", "Commodities"), ("crypto", "Crypto 150"),
          ("lessons", "Lessons"), ("mredge", "MR edge"),
-         ("v4study", "v4 study"),
+         ("v4study", "v4 study"), ("commedge", "Commodity edge"),
          ("overview", "Overview"),
          ("charts", "Charts"),
          ("race", "Self-learning"), ("crossasset", "Cross-asset"),
@@ -1916,6 +1989,9 @@ the same real bars every night. Each curve is scaled to its own range.</p>
 </section>
 <section id="v4study"><h2>v4 vs plain &mdash; the confirmation premium, tested</h2>
 {_v4_study_html(paper_dir)}
+</section>
+<section id="commedge"><h2>The commodity edge &mdash; through the full battery</h2>
+{_commodity_edge_html(paper_dir)}
 </section>
 {journal_html}
 <section id="buildlog"><h2>Build log</h2>

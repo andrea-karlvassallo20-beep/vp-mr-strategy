@@ -176,6 +176,16 @@ def build_lessons(paper_dir: Path) -> dict:
          "costs",
          "remedy": "Patience is part of the method: the gate "
          "demands 20 sessions and will take all 20."},
+        {"lesson": "Breadth generates leads; depth converts them - "
+         "and the battery said no. The first positive pooled "
+         "result (commodities, +0.37 OOS) went through the full "
+         "honesty battery and failed it: at 2x costs the edge is "
+         "zero, and deflated for 32 trials it is not separated "
+         "from search luck. The direction is now depth-first: no "
+         "new universes until a battery-passing edge exists.",
+         "forced_by": "the commodity edge battery, 2026-11-12",
+         "remedy": "One lead at a time, through every gate. The "
+         "method is the asset; the edge has not been found yet."},
     ]
     return {"generated_utc": datetime.now(timezone.utc).isoformat(
                 timespec="seconds"),
