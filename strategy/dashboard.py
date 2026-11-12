@@ -2190,6 +2190,21 @@ def _philosopher_html(paper_dir: Path) -> str:
         return ""
     counts = r.get("counts", {})
     bt = r.get("backtest", {})
+    tb_path = paper_dir / "research" / "timing_battery.json"
+    tb_line = ""
+    if tb_path.exists():
+        tb = json.load(open(tb_path))
+        pooled = tb.get("pooled", {})
+        if pooled.get("n"):
+            tb_line = (" The timing card, measured: median "
+                       "bounce peak at week "
+                       f"{pooled.get('median_peak_week')}, "
+                       "P(positive by week 1) "
+                       f"{pooled.get('p_positive_week1')}, "
+                       "by week 4 "
+                       f"{pooled.get('p_positive_week4')}; "
+                       "the WHEN prediction rides on every "
+                       "candidate.")
     cands = [x for x in r.get("verdicts", [])
              if x["verdict"] in ("LONG_CANDIDATE",
                                  "LONG_CANDIDATE_FLAGGED")]
@@ -2231,7 +2246,7 @@ def _philosopher_html(paper_dir: Path) -> str:
                if bt.get("dual_split_gate") else
                "fails the gate - refused")
             + "</span>. Flagged until forward-scored "
-            "(doctrine rule 5).</p>"
+            "(doctrine rule 5)." + tb_line + "</p>"
             + (f'<table><tr><th>Long candidate</th><th>Region'
                f'</th><th>weekly ret</th><th>AVFI v4 z</th>'
                f'<th>bull conf</th><th>context</th></tr>'
