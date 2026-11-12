@@ -61,7 +61,13 @@ CRYPTO = [
     "KNC-USD", "XRD-USD", "FLR-USD", "XVG-USD", "XDC-USD",
     "TRAC-USD",
 ]
-INDICES = ["^GSPC", "^IXIC", "^DJI", "^RUT"]
+INDICES = [
+    # the main global equity indexes: 15 majors across regions
+    "^GSPC", "^IXIC", "^DJI", "^RUT",          # US
+    "^STOXX50E", "^GDAXI", "^FCHI", "^FTSE",    # Europe
+    "^N225", "^HSI", "^KS11", "^TWII",           # Asia
+    "^AXJO", "^BVSP", "^NSEI",                    # Pacific / EM
+]
 COMMODITIES = [
     # every liquid commodity future the data source carries with
     # 5y daily history (verified fetch; micros, index and FX
