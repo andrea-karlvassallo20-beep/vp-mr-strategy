@@ -1,139 +1,256 @@
-# Salient — an autonomous quantitative trading system
+# Salient / vp-mr-strategy — A Falsification-First Market Research Programme
 
-**What this is:** a complete, self-running quantitative trading pipeline — a
-mean-reversion strategy for US equity ETFs, wrapped in hard safety gates,
-statistically validated, connected to a real execution engine, and currently
-**paper-trading itself against live market data every night** — auditing its
-own decisions, seeking a better edge, and reporting everything to a dashboard.
+**The one-line summary:** a research knowledge base and falsification lab for a
+single question — *can order-flow and liquidity structure predict WHEN and
+WHICH WAY a major price move happens?* — run under adversarial falsification:
+every claim is declared with its kill line before it is tested, and when a
+claim dies, the dead mechanism is named. Nothing here will ever trade live;
+the asset is the method.
 
-**The goal:** find the edge, through evidence, not enthusiasm. This is a
-hobby research project — it will never trade live, and the enjoyment comes
-from solving, not financial gain. The promotion gate still matters: the
-system must complete 20 forward paper-trading sessions with a Signal Parity
-Index >= 0.98, zero duplicate order fires, and zero risk-kill-switch trips —
-and it judges itself. Beyond the deployed universe, a nightly research pass
-studies 188 series — 156 verified crypto spot pairs, 29 commodity futures and
-the main indices — hunting for mean-reversion structure, testing every
-hypothesis against control groups, dual out-of-sample windows, cost stress and
-the Deflated Sharpe Ratio, and reporting the falsifications as prominently as
-the findings.
+**Status: FROZEN in a strict holding pattern.** The daily-resolution program
+is closed (its central claim was falsified). The next phase — C1 re-run at L2
+resolution on full-depth order-book data — is fully specified, kill lines
+pre-declared, and blocked solely on procurement of Tardis full-depth L2 data
+that must pass the verification gate. No further model code will be written
+until then.
 
-## The strategy in one paragraph
-Each trading day, after the US market close, the strategy computes a 100-day
-z-score of each ETF's price against its trailing window. When price stretches
-2 standard deviations below the rolling mean (and the market is mean-reverting),
-it buys; 2 above, it sells. Position size is volatility parity scaled by a
-quarter-Kelly haircut, capped at 0.5% equity risk per trade. A 3x-ATR trailing
-stop exits losers, a 2% daily drawdown kill-switch halts everything, and all
-positions flatten at session close. Parameters are frozen at deployment.
+---
 
-## Backtesting results (the evidence so far)
+## 1. The Salient Market Hypothesis (SMH)
 
-All studies ran on deterministic synthetic data with known ground truth,
-then were re-verified on real fetched bars. Every number below is
-reproducible from the committed test suites.
+The theoretical framework, named by Andrea, built and measured in public. It
+is a direct replacement for Elliott Wave: it keeps what Elliott got right
+(impulse/correction alternation, scale self-similarity, crowd footprints),
+discards what Elliott got wrong (the fixed 5-3 cage, Fibonacci targets,
+unfalsifiability), and adds the dimension Elliott never had: **time**.
+State instead of count. Clock instead of prophecy. Calibration instead of
+belief.
 
-| Study | Result |
-|---|---|
-| Hypothesis test (does mean reversion pay?) | OU-process Sharpe **+1.36** vs random-walk control **-0.69** — the edge exists exactly when the market mean-reverts |
-| Robustness grid (9 parameter points) | all 9 positive — the edge is not a parameter artifact |
-| Cost stress (2x frictions) | strategy survives doubled spreads/commissions/impact |
-| Walk-forward (train 60% / OOS 40%) | OOS Sharpe **0.81** on frozen parameters — no re-fitting |
-| Monte Carlo (40 seeds) | t = **24.1** — the edge is not a lucky seed |
-| Deployment envelope | profitable while mean-reversion half-life <= ~69 bars |
-| Cross-engine parity | sandboxed runner vs real NautilusTrader engine: signal streams **identical**; z-scores agree to 3.5e-3 (price-quantization tolerance) |
-| First real-market session | 2,510 decisions, SPI 1.000, zero duplicate fires, zero kill-switch trips, 78 fills, MTM +0.43% net of costs |
-| Champion/challenger race (nightly) | edge-seeker candidates must beat the live champion by 10% out-of-sample on the same real data — first verdict KEEP_CHAMPION |
+### The six axioms (the unconditional laws)
 
-## The current honest state (updated after the research battery)
+1. **Volatility persists, then mean-reverts** — the clock itself.
+2. **Tails are heavy** — thresholds live in sigma units, never points.
+3. **Autocorrelation has horizon structure** — a directional prior exists
+   only inside trend states.
+4. **Impact is concave in volume** — a significant event must be confirmed
+   by volume (effort vs result).
+5. **Events self-excite** — hazard is state-dependent, never constant.
+6. **Every edge decays** — every rule carries a forward score and a decay
+   watch.
 
-The method is the asset; the edge has not been found yet. What the accumulated
-studies have established — and killed:
+Not on the list, by measurement: the direction of the next impulse at a
+chosen time.
 
-**Falsified, with the evidence committed:** the 3D state-space region
-hypothesis (322 pooled events, 17/40 own-scale beats); both single axes as
-entry filters; mid-vol regime gating (null when made causal); detector
-confirmation as a strategy improvement (−0.12 pooled premium across 174
-series — the forward-return tripling is real but unconditional, and the
-exit rule never collects it); and the commodity z-score edge (+0.37 pooled
-OOS, but it dies at 2x costs and its Deflated Sharpe at 32 trials is 0.38).
+### The mechanism
 
-**What stands:** deep stretch alone is the one supported entry signal, and
-deeper pays with no falling knife; the AVFI spread axis works as a risk
-throttle, never an entry timer (AVFI v4 Pine encodes exactly this); mean
-reversion needs an anchor — commodities have one, crypto does not (the same
-core: +0.37 pooled OOS on commodities vs −0.31 on crypto); and the live
-forward test is the only judge with zero selection bias.
+The measurable core of SMH is the **salience gradient**: markets in a
+compressed, quiet state have a materially higher conditional probability of a
+significant move within a fixed horizon than the climatology. Measured
+(design-sample): compression entries read P(significant week within 12
+weeks) = 0.639 vs climatology 0.437, disjoint bands; the forecast carries
+pre-scored walk-forward Brier skill (0.2374 vs climatology 0.2642); the one
+measured long edge (the crash-zone cross: 206 episodes, median +1.69% over 4
+weeks, 57.3% positive) replicated on 11 global indexes the design never
+touched (+3.07% median, 71.4% positive). Every number carries the design-sample
+caveat; the forward calibration record (33 scoreboard rows logged in advance)
+is the only judge with zero selection bias.
 
-**The direction:** depth-first. One lead at a time, through every gate, and
-no new universes until a battery-passing edge exists. The ten evidence-
-forced lessons live in `strategy/lessons.py` and render on Salient, each tied
-to the data that forced it.
+### The Certainty-Timing-Direction Triangle
 
-## Why it can be trusted (the four safety gates)
-| Gate | Guarantee |
-|---|---|
-| **G1 zero-lookahead** | Signals at bar t use only data <= t-1. Verified by future-perturbation audit: mutating future bars cannot change past decisions. |
-| **G2 AST sandbox** | The strategy core imports only numpy/math/typing/dataclasses/enum. No OS, network, or eval — enforced by static analysis in CI. |
-| **G3 parameter freezing** | Hyperparameters are immutable after deployment; mid-run re-optimization raises an exception. The edge-seeker may *propose* changes; only a human can apply them. |
-| **G4 order state machine** | Every order walks an explicit state graph with illegal-transition guards and duplicate-fire protection. |
+A public rule that is certain, timed, AND directional cannot exist: anyone who
+sees it trades it, and the event no longer happens as forecast. So the claims
+are separated, and no single model may answer two:
 
-## The autonomous loop (runs nightly, 21:30 UTC Mon-Fri)
+- **CERTAINTY** lives at the distribution (the six laws).
+- **PROBABILITY** lives at the event (conditional rates by state).
+- **HAZARD** lives at the timing (the clock).
+- **DIRECTION** is refused by measurement: a study of n=15,386 directional
+  episodes found P(up) = 0.505 [0.497, 0.513] from price-derived features — a
+  coin flip. This boundary is binding on everything downstream: direction, if
+  it ever exists, must come from data that study did not use — order flow,
+  book dynamics, cancellations.
+
+---
+
+## 2. The Falsification Record
+
+The programme's discipline is that claims die in public, with the mechanism
+named. The record so far:
+
+**C1 (compression duration-dependence on daily data): tested-fail, and the
+death is the pivot point of this repository.**
+
+- CLAIM: after a compression state forms, time-in-state carries timing
+  information about the breakout (hazard rises as resting boundary liquidity
+  ages).
+- TEST: Cox proportional hazards with triple-barrier ATR-scaled labels on
+  BTC and ETH daily bars (1,826 days each, 2021-11 → 2026-11), purged 6-fold
+  CV, block-temporal placebo, and a scale-invariance whole-layer null — all
+  kill lines declared before running (`paper/research/orderflow_program.md`).
+- RESULT: all substantive kill lines fired, on both instruments, both specs
+  (k=1.0/h=28 and k=2.5/h=84):
+  1. **Vol-tautology (the decisive death):** after conditioning on the
+     realized-volatility level alone, the compression flag's hazard-ratio CI
+     included 1.0 in 4/4 cells. Compression was volatility wearing a costume.
+  2. **Block-temporal placebo:** a null that preserves volatility clustering
+     but destroys state-event alignment reproduced the entire "effect" in
+     4/4 cells.
+  3. **Scale-invariance null:** a synthetic series with volatility clustering
+     but no liquidity mechanism reproduced the observed gap within its 95%
+     band in 4/4 cells.
+- VERDICT (pre-declared, not post-hoc): the daily hazard layer is falsified
+  as a flow-duration theory and demoted to a **descriptive volatility clock**.
+  A volatility clock at RR ~1.4 is not a timing edge. The daily-resolution
+  program is CLOSED.
+- **Why the pivot to L2:** the daily null leaves one live alternative — the
+  effect may be a *resolution artifact*: daily aggregation destroys the
+  intra-bar sequence of order flow, exactly the mechanism the theory needs.
+  The deciding test is C1 re-run at L2 resolution: does the compression
+  effect exist when the state is measured from the book rather than from
+  daily bars? That is the next experiment, and it is fully specified.
+
+Also dead, recorded honestly: C2 (volume dry-up) — **dead by dependency**,
+never tested (it was an increment over the falsified base, on data with the
+same vol clustering); C3 (springs) and C4 (phase stratification) — closed
+with the daily program, never run; the short mirror (−0.02% median, a coin
+flip before costs); the commodity z-score edge (dies at 2× costs, DSR 0.38);
+the 3D state-space region hypothesis; detector confirmation as a strategy
+improvement.
+
+Blocked, unproxied: C5 (absorption asymmetry) and C6 (depth OFI) — they
+require full-depth incremental L2 and signed trades, which do not exist in
+this repository yet. No proxy substitution is permitted.
+
+---
+
+## 3. The Architecture
+
+The path from raw data to a hazard claim, each stage gated on the previous:
+
 ```
-fetch real bars (SPY QQQ IWM XLF XLE)
-  -> run the persisted paper session
-  -> SPI audit (decision-time signal parity)
-  -> performance report (MTM equity, Sharpe, drawdown)
-  -> edge-seeker research pass (walk-forward candidate proposals)
-  -> promotion gate verdict (PROMOTE / HOLD vs run-card criteria)
-  -> cross-asset research (188 series: MR stats, detections, state space)
-  -> honesty studies (MR-coin control group, v4 confirmation premium,
-     commodity edge battery, stretch-depth, lessons synthesis)
-  -> ingest uploaded research PDFs (the alternative knowledge path)
-  -> regenerate dashboard + Salient site + work log
-  -> commit everything to main
+data ingestion                     src/binance_ingest.py
+  raw Binance public archives (aggTrades; bookTicker when available) ->
+  normalized Parquet. Strict rules: UTC int64 microsecond timestamps
+  (exact ms*1000, no float intermediates, coercion failure kills the file),
+  binary int8 aggressor_buy flag, bid<=ask, monotone timestamps.
+
+verification gate (runs FIRST on any L2 data)   src/verify_l2_gate.py
+  reconstruct the book from sequence-numbered diffs (U/u/pu); a gap
+  (pu != last u) is logged to gaps.log and invalidates the book until
+  resync — never patched. Compare mid (one tick) and depth within 10bps
+  at 100 random timestamps against snapshots. FAILS LOUDLY (exit 1,
+  'GATE FAILED') if: sequence gap rate >= 0.01%, or mid agreement < 99%,
+  or depth agreement < 99%. Nothing downstream may run until it passes.
+
+event clock                       src/event_clock.py
+  state-change rows, not calendar rows: one row per BBBA change (or trade
+  state change on the free data). The clock self-thins dead sessions —
+  no events, no rows, no hazard estimated from frozen liquidity. Validated
+  on 8.8M real BTCUSDT trades: 914k-4.9M rows/day, 10-58x hourly spread.
+
+CPCV + embargo                     src/event_clock.py::purged_cpcv_splits
+  purged combinatorial cross-validation with purge on the LABEL horizon
+  (wall-clock) and embargo after the test window. Leakage-proven: on 6.8M
+  real event-clock rows, zero index intersections and zero label-window
+  overlaps across all splits (enforced by assert, not by convention).
+
+Cox hazard model                   src/c1_l2_test.py (harness, awaiting data)
+  competing-risks survival with time-varying covariates on the event
+  clock; labels are trade-touch triple barriers (quote flicker never
+  counts) with a spread-based noise floor; hour-of-day stratification is
+  a mandatory control. All kill lines are raising asserts.
 ```
 
-## Website
-**Salient** — the live site: <https://andrea-karlvassallo20-beep.github.io/vp-mr-strategy/>
-(source: `docs/index.html`), served by GitHub Pages,
-regenerated after every paper-trading session. It shows the equity curve,
-drawdown curve, per-instrument price charts with trade entries, the
-champion-vs-challenger race, and the session journal.
+Supporting machinery, already validated descriptively on real ticks
+(`src/features.py`, `src/dry_run.py`): VPIN on trade-count buckets, a
+2-dim (buy/sell trade) Hawkes estimator with bounded MLE and optimizer
+fallback, top-of-book OFI (Cont-Kukanov-Stoikov at the touch). Honest
+capability statement: the free Binance archives contain **no full-depth
+L2** — bookTicker is not publicly archived and bookDepth is 5-second
+band snapshots, which destroy the update sequence. The free data supports
+trade-flow analysis only; every book-based claim (C5/C6) stays blocked
+until the Tardis data passes the gate.
 
-## Current status
-See **[DASHBOARD.md](DASHBOARD.md)** — the live, GitHub-renderable dashboard.
-Raw artifacts accumulate under [`paper/`](paper/); every session commits its
-state, reports, and verdict. The engagement work log lives in
-[`strategy/WORKLOG.md`](strategy/WORKLOG.md).
+---
 
-## Repository layout
+## 4. The Pre-Declared Kill Lines for the L2 Test
+
+Public and immutable, declared in `paper/research/c1_l2_test_spec.md` and
+physically enforced as asserts in `src/c1_l2_test.py`. The test dies if:
+
+1. **Concordance floor:** pooled out-of-fold concordance <= 0.52.
+2. **Vol-tautology:** the compression hazard-ratio CI includes 1.0 in a
+   model containing only compression and the sigma_H level — compression
+   adds nothing beyond the volatility it was built from.
+3. **Constant-hazard null, powered folds only:** the LR test fails to
+   reject constant hazard in >= 30% of folds holding >= 50 events (folds
+   under 50 events are merged or flagged insufficient-power —
+   non-rejection in an underpowered fold is a power failure, not evidence).
+4. **Diurnal artifact check (L2-specific):** the compression effect dies
+   under hour-of-day stratification — it was session timing, not liquidity.
+5. **Scale-invariance whole-layer null:** a block bootstrap of
+   sigma-standardized mid returns (1h blocks, preserving diurnal structure)
+   reproduces the observed compression gap within its 95% band — the same
+   death as daily, and the resolution-artifact hypothesis is dead: the
+   absence is real at both resolutions.
+
+If all five pass, the bounded conclusion is pre-committed: a WHEN clock
+measured from the book, with measured hazard ratio, survival gap, and
+economic effect at the vertical barrier — no direction claimed (the 0.505
+boundary stands), C5/C6 next on the same single instrument. If any fires,
+the dead mechanism is named and no pivot to a nearby surviving claim is
+permitted.
+
+---
+
+## 5. The Macro Timeline
+
+`data/macro_timeline.csv` (schema in `docs/data_dictionary.md`; population
+checklist in `docs/macro_timeline_checklist.md`) is a hand-curated calendar
+of structural events: FOMC decisions, CPI releases, and crypto-specific
+events (ETF approvals, halvings, exchange failures, regulatory actions),
+each with UTC timestamps, an expected resolution time, and a confidence flag.
+
+Its role is **interpretive and structural, never predictive**: macro events
+define the regime context in which hazard estimates are read — event-window
+stratification (is the compression clock measuring liquidity aging, or is it
+accidentally measuring proximity to a scheduled announcement?), censoring
+decisions around known release times, and the honest separation of
+"endogenous market structure" from "scheduled information arrival." Two
+binding rules: times are UTC only, and the `surprise_note` field is filled
+AFTER the event — it is look-ahead by construction and can never be a model
+input.
+
+---
+
+## Repository Map
+
 | Path | What it is |
 |---|---|
-| `strategy/vp_mr_strategy.py` | The gated strategy core |
-| `strategy/nautilus_adapter.py` | NautilusTrader engine adapter |
-| `strategy/papertrading_runner.py` | Persisted paper-trading runner |
-| `strategy/edge_seeker.py` | Nightly research trainer (Gate 3-safe proposals) |
-| `strategy/gate_check.py` | Promotion gate (PROMOTE/HOLD verdict) |
-| `strategy/spi_monitor.py`, `strategy/session_report.py`, `strategy/monitor.py` | Audit and reporting |
-| `strategy/dashboard.py` | Generates `dashboard.html` and `DASHBOARD.md` |
-| `strategy/test_*.py` | 10 suites, 113+ assertions, all green in CI |
-| `strategy/backtest_study.py` etc. | The six statistical validation studies |
-| `paper/` | The live paper-trading journal (state, reports, verdicts) |
-| `.github/workflows/` | CI + the nightly session workflow |
+| `paper/research/orderflow_program.md` | The constitution: data inventory, claims ledger, kill lines, blocked-on-data record |
+| `paper/research/c1_hazard_report.md` | The C1 experiment and its verdict (FAILED, all kill lines) |
+| `paper/research/c1_l2_test_spec.md` | The next experiment, fully specified, not run |
+| `paper/research/l2_data_acquisition_spec.md` | Exactly what data must arrive and pass the gate |
+| `paper/research/LEARNING_NOTES.md` | Plain-language guide: the book knowledge base and the lab |
+| `KNOWLEDGE.md`, `KNOWLEDGE_SMH.md` | The Market Studies knowledge base (13 books studied; the source of the ideas) |
+| `src/` | Ingestion, verification gate, event clock, CPCV, feature calculators, C1-L2 harness |
+| `tests/` | 27 tests, all green, including failure-path tests (gap, leakage, kill lines) |
+| `docs/` | Data dictionary, macro checklist, the thesis presentation |
+| `strategy/`, `paper/` | The earlier Salient system: gated strategy core, nightly paper-trading loop, research batteries |
 
-## Quickstart
-```bash
-pip install numpy
-bash strategy/run_checks.sh        # full verification program
-```
+## The Epistemic Contract (why this can be trusted)
 
-## Honest caveats
-- All statistical evidence to date is on deterministic synthetic data plus one
-  real-market backfill; the forward paper sessions are the actual test.
-- The edge-seeker's proposals are research output — deployment changes are
-  human-reviewed PRs, always.
-- This is a research system, not investment advice.
+1. Never "prove" — every claim is a conditional probability with a
+   confidence interval and a sample size.
+2. WHEN / WHICH WAY / HOW MUCH are separate questions; no model answers two.
+3. Labels are computable at the decision moment from strictly earlier data.
+4. Direction never comes from price-derived features (the measured 0.505
+   boundary).
+5. Kill lines are declared before testing and never moved after.
+6. A failed test names the dead mechanism; no pivoting to a nearby survivor.
+7. If it cannot be tested with available data, say so and stop — no silent
+   proxy substitution.
+8. One instrument survives before any panel is attempted.
 
-## License
-MIT
+**Frozen pending data acquisition.** The next commit that touches the model
+should be the gate report on real Tardis data.
