@@ -75,6 +75,9 @@ python3 test_smh_gradient.py
 echo "=== 8m SMH precursor signature battery (open problem 3) ==="
 python3 test_smh_precursor.py
 
+echo "=== 8n SMH machine live position (status reading) ==="
+python3 test_smh_status.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 
