@@ -823,3 +823,50 @@ dual-split gate, per-asset breakdowns.
    exactly the cell small enough to flatter.
 
 Design-sample caveat, unchanged.
+
+## 20. Dated correction: the portfolio grid bug (12 November 2026, doctrine rule 6)
+
+The cap-sensitivity suite's synthetic universe caught a real
+bug in BOTH portfolio simulators (exit_battery.portfolio_sim
+and v4_charts.portfolio_equity): a position entered the pool
+only if its entry date happened to appear in another
+position's return window; positions with uncovered entry
+dates were SILENTLY DROPPED, and late-opened ones lost their
+early returns. The pool is now rebuilt each date from
+positions whose window covers the date, capped by entry
+order. Every portfolio number is re-measured:
+
+1. THE PRODUCTION BOOK, corrected: +76.2% total, CAGR
+   +10.5%, maxDD 43.1% (was +83.6%, +11.3%, 46.6%). The old
+   bug FLATTERED the book. The edge stands; the headline is
+   smaller and honest.
+2. THE PROFIT TAKE, corrected: -31.5% total (was -36.0%).
+   The verdict is UNCHANGED: cutting winners loses.
+3. THE CONCENTRATED BOOK, corrected - A VERDICT FLIPS: the
+   v4_confirmed book (27 trades) now reads CAGR +24.8% at
+   maxDD 27.5% against the production book's +10.5% at
+   43.1%. The earlier "starved exposure loses" verdict was
+   an artifact of the bug. The honest status: the
+   concentrated book EARNS ITS KEEP at this sample - and it
+   is a 27-trade cell, design-sample, seductive in exactly
+   the way doctrine rule 5 exists for. It keeps its flag
+   forever until forward-scored; the production rule is
+   unchanged.
+4. THE CAP LADDER, measured on the corrected grid: the edge
+   is cap-robust (every rung compounds positively; the
+   constraint never binds above 10 - the market never
+   offers more than 10 concurrent episodes); max drawdown is
+   cap-invariant.
+5. AN IMPLEMENTATION DISCREPANCY, flagged not hidden: the
+   v4_charts equity (entry range from bar 60, fixed cost
+   spread) reads +34.8% total, CAGR +4.9%, maxDD 50.1% - a
+   different window and cost convention than the exit
+   battery's (WARMUP=200 start). Both are now internally
+   consistent; the gap is a standing item on the record, and
+   the exit-battery convention (WARMUP-consistent with the
+   rest of the programme) is the reference.
+
+Corrections are part of the record. The bug was caught by a
+synthetic universe that refused to produce the flattered
+number - the ground-truth discipline doing exactly what it
+exists for.

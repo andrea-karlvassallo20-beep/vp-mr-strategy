@@ -172,15 +172,19 @@ def portfolio_equity(data_dir: Path) -> dict:
                         for d in p[2]})
     eq = 1.0
     curve = []
-    open_pool = []
     max_dd = 0.0
     peak = 1.0
     cost = 2 * COST_BPS / 1e4 / (WEEK * HOLD_WEEKS)
     for d in all_dates:
-        for p in positions:
-            if p[0] == d and len(open_pool) < MAX_CONCURRENT:
-                open_pool.append(p)
-        open_pool = [p for p in open_pool if p[1] > d]
+        # dated correction (12 Nov 2026, doctrine rule 6):
+        # the pool is rebuilt from positions whose window
+        # COVERS the date, capped by entry order - the old
+        # code silently dropped positions whose entry date was
+        # not covered by another position's window (caught by
+        # the cap-sensitivity suite; both simulators fixed;
+        # numbers re-measured and re-recorded)
+        active = [p for p in positions if p[0] <= d < p[1]]
+        open_pool = active[:MAX_CONCURRENT]
         rets = [p[2][d] for p in open_pool if d in p[2]]
         r = (float(np.mean(rets)) - cost) if rets else 0.0
         eq *= np.exp(r)

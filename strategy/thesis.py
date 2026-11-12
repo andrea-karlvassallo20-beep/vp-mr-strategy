@@ -43,6 +43,10 @@ def build_thesis(paper_dir: Path) -> str:
     phil = _load(paper_dir, "market_philosopher.json")
     timing = _load(paper_dir, "timing_battery.json")
     exitb = _load(paper_dir, "exit_battery.json")
+    pb = exitb.get("portfolio_block") or {}
+    pb_base = pb.get("baseline_4w") or {}
+    pb_pt = pb.get("pt_4pct") or {}
+    pb_v4 = pb.get("v4_confirmed_4w") or {}
     fwd = _load(paper_dir, "smh_forward.json")
     v4 = _load(paper_dir, "v4_charts.json")
     tb = _load(paper_dir, "tops_bottoms_backtest.json")
@@ -329,25 +333,26 @@ nav a:hover { color:var(--accent); }
         f"calendar-date grid, equal-weight concurrent "
         f"positions capped at 10, costs both sides: total "
         f"<span class=\"num\">"
-        f"{maybe(eq.get('total_return'), 0.818) * 100:+.1f}%"
+        f"{maybe(pb_base.get('total_return'), 0.762) * 100:+.1f}%"
         f"</span>, CAGR "
         f"<span class=\"num\">"
-        f"{maybe(eq.get('cagr'), 0.10) * 100:+.1f}%</span>, "
+        f"{maybe(pb_base.get('cagr'), 0.105) * 100:+.1f}%</span>, "
         f"max drawdown "
         f"<span class=\"num\">"
-        f"{maybe(eq.get('max_drawdown'), 0.435) * 100:.1f}%"
-        f"</span> over "
-        f"{maybe(eq.get('years'), '~20')} years. The per-asset "
-        f"breakdown is mandatory honesty: the edge is "
-        f"concentrated, and ETH/CLF are flagged negative "
-        f"cells forever.</p>"
+        f"{maybe(pb_base.get('max_drawdown'), 0.431) * 100:.1f}%"
+        f"</span> (the corrected grid, charter section 20). "
+        f"The per-asset breakdown is mandatory honesty: the "
+        f"edge is concentrated, and ETH/CLF are flagged "
+        f"negative cells forever.</p>"
         f"<p><span class=\"big\">The portfolio referee "
         f"(section 16):</span> the +4% profit take beats the "
         f"per-trade median and <span class=\"bad\">destroys "
-        f"the portfolio</span> (&minus;36% vs +83.6% total) "
-        f"&mdash; it truncates the right tail that does the "
-        f"compounding. <span class=\"big\">The median is not "
-        f"the portfolio.</span> The 4-week hold stands at "
+        f"the portfolio</span> "
+        f"({maybe(pb_pt.get('total_return'), -0.315) * 100:+.1f}%"
+        f" vs {maybe(pb_base.get('total_return'), 0.762) * 100:+.1f}%"
+        f" total) &mdash; it truncates the right tail that does "
+        f"the compounding. <span class=\"big\">The median is "
+        f"not the portfolio.</span> The 4-week hold stands at "
         f"every level.</p>"))
 
     s.append(slide(
@@ -393,12 +398,20 @@ nav a:hover { color:var(--accent); }
         f"verdict</th></tr>"
         f"<tr><td>profit take (+4%)</td><td>beats the per-trade "
         f"median, <span class=\"bad\">destroys the "
-        f"portfolio</span> (&minus;36% vs +83.6%) &mdash; "
-        f"<span class=\"big\">the median is not the "
-        f"portfolio</span></td></tr>"
+        f"portfolio</span> "
+        f"({maybe(pb_pt.get('total_return'), -0.315) * 100:+.1f}%"
+        f" vs {maybe(pb_base.get('total_return'), 0.762) * 100:+.1f}%"
+        f") &mdash; <span class=\"big\">the median is not "
+        f"the portfolio</span></td></tr>"
         f"<tr><td>v4-confirmed entries only</td><td>87% fewer "
-        f"trades, starved exposure compounds to &minus;16% "
-        f"&mdash; refused at portfolio level</td></tr>"
+        f"trades; the corrected grid reads CAGR "
+        f"{maybe(pb_v4.get('cagr'), 0.248) * 100:+.1f}% vs the "
+        f"production {maybe(pb_base.get('cagr'), 0.105) * 100:+.1f}%"
+        f" at lower drawdown &mdash; a 27-trade cell that "
+        f"<span class=\"big\">earns its keep at this sample "
+        f"and keeps its flag forever</span> (doctrine rule 5; "
+        f"the pre-correction refusal was a bug artifact, "
+        f"charter section 20)</td></tr>"
         f"<tr><td>AVFI stretch in the Cox model</td><td>OOF "
         f"concordance {maybe(oof3, 0.626)} vs the production "
         f"model's {maybe(oof2, 0.627)} &mdash; "
