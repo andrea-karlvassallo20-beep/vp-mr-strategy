@@ -10,7 +10,7 @@ from fetch_data import fetch_synthetic, write_csv
 from papertrading_runner import PaperTradingRunner
 from dashboard import (build_html, build_site, drawdown_svg,
                        price_charts_html, race_svg, _avfi_chart_svg,
-                       _avfi_html)
+                       _avfi_html, _avfi_pine_html)
 
 PASS = FAIL = 0
 def check(name, cond):
@@ -70,6 +70,23 @@ check("AVFI section graceful without data",
 
 empty = build_html(tmp / "nonexistent")
 check("empty state graceful", "no session data yet" in empty)
+
+# AVFI v4 Pine: rewritten from scratch on the evidence — must
+# render as the primary source, with the falsified components
+# explicitly documented as absent
+pine_html = _avfi_pine_html()
+check("AVFI v4 Pine renders as the primary source",
+      "AVFI v4" in pine_html and "Stretch + Confirmation" in pine_html
+      and "//@version=5" in pine_html)
+check("v4 documents its evidence decisions",
+      "falsified" in pine_html and "tripling filter" in pine_html
+      and "AVFI v3.2" in pine_html)
+_v4_code = "\n".join(
+    ln for ln in (Path(__file__).parent / "avfi_v4.pine").read_text()
+    .splitlines() if not ln.strip().startswith("//"))
+check("v4 excludes the falsified components in code",
+      all(k not in _v4_code for k in ("percentile", "percentrank",
+                                      "quantile")))
 
 shutil.rmtree(tmp)
 print(f"\nRESULT: {PASS} passed, {FAIL} failed")
