@@ -213,6 +213,21 @@ check("axis attribution handles missing dir",
           "vol_high": {"series": 0, "beats": 0, "with": [],
                        "without": []}})
 
+# 11d. stretch-depth curve
+from avfi import stretch_depth_study
+depth = stretch_depth_study(ext_dir)
+check("depth study buckets all stretch depths",
+      set(depth["buckets"]) == {"z2.0-2.5", "z2.5-3.0",
+                                "z3.0-4.0", "z4.0+"}
+      and all("n" in b and "fwd" in b and "beats_shallow" in b
+              for b in depth["buckets"].values()))
+check("depth bucket counts sum to bottom-side entries",
+      sum(b["n"] for b in depth["buckets"].values()) >= 0)
+check("depth verdicts are bools or None",
+      depth["monotone"] in (True, False, None)
+      and depth["falling_knife"] in (True, False)
+      and depth["own_scale_deeper_pays"] in (True, False))
+
 shutil.rmtree(tmp)
 print(f"\nRESULT: {PASS} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)

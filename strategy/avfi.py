@@ -753,6 +753,94 @@ def state_space_axis_attribution(extended_dir: Path,
     return out
 
 
+def stretch_depth_study(extended_dir: Path,
+                        horizon: int = 10) -> dict:
+    """THE STRETCH-DEPTH CURVE. Axis attribution left exactly one
+    supported signal: deep price stretch. The follow-up question
+    writes itself: does DEEPER stretch pay more, or is there a
+    falling-knife zone beyond which the stretch keeps stretching?
+    Bottom-side entries are bucketed by depth of price z:
+
+      [-2.0, -2.5)   the shallow edge of entry territory
+      [-2.5, -3.0)   the deployed entry depth neighborhood
+      [-3.0, -4.0)   deep
+      [-4.0, ...)    extreme — the knife test
+
+    Pooled forward returns plus the scale-free monotonicity check
+    (in how many series does each bucket beat the shallowest one on
+    its own scale). If the deepest bucket underperforms, the knife
+    is real and the entry threshold matters more than we thought."""
+    from papertrading_runner import load_bars
+    edges = [(-2.0, -2.5), (-2.5, -3.0), (-3.0, -4.0), (-4.0, None)]
+    names = ["z2.0-2.5", "z2.5-3.0", "z3.0-4.0", "z4.0+"]
+    buckets = {n: {"sum": 0.0, "n": 0, "beats_shallow": 0,
+                  "series": 0} for n in names}
+    if not extended_dir.exists():
+        return {"buckets": buckets, "monotone": None}
+    for f in sorted(extended_dir.glob("*.csv")):
+        bars = load_bars(f)
+        if len(bars) < 200:
+            continue
+        c = np.array([b["close"] for b in bars])
+        v = np.array([float(b["volume"]) for b in bars])
+        h = np.array([b["high"] for b in bars])
+        l = np.array([b["low"] for b in bars])
+        ss = avfi_state_space(h, l, c, v)
+        price_z = np.array(ss["price_z"])
+        per = {n: [] for n in names}
+        for t_ in range(110, len(c) - horizon):
+            z = price_z[t_]
+            if z > -2.0:
+                continue
+            fr = float(c[t_ + horizon] / c[t_] - 1.0)
+            for (lo, hi), n in zip(edges, names):
+                if z <= lo and (hi is None or z > hi):
+                    per[n].append(fr)
+                    break
+        shallow = per[names[0]]
+        if not shallow:
+            continue
+        shallow_m = float(np.mean(shallow))
+        for n in names:
+            if not per[n]:
+                continue
+            m = float(np.mean(per[n]))
+            b = buckets[n]
+            b["sum"] += m * len(per[n])
+            b["n"] += len(per[n])
+            b["series"] += 1
+            if n != names[0] and m > shallow_m:
+                b["beats_shallow"] += 1
+    out = {"buckets": {}, "monotone": None}
+    for n in names:
+        b = buckets[n]
+        out["buckets"][n] = {
+            "n": b["n"],
+            "fwd": round(b["sum"] / b["n"], 4) if b["n"] else None,
+            "beats_shallow": b["beats_shallow"],
+            "series": b["series"],
+        }
+    deep = out["buckets"][names[2]]
+    shallow_r = out["buckets"][names[0]]
+    out["monotone"] = bool(
+        deep["fwd"] is not None and shallow_r["fwd"] is not None
+        and deep["beats_shallow"] * 2 > deep["series"]
+        and deep["fwd"] > shallow_r["fwd"])
+    knife = out["buckets"][names[3]]
+    out["falling_knife"] = bool(
+        knife["fwd"] is not None and deep["fwd"] is not None
+        and knife["fwd"] < deep["fwd"])
+    # The pooled curve is scale-contaminated (the shallow bucket is
+    # dominated by high-drift crypto, so its pooled fwd is inflated).
+    # The trustworthy statistic is the own-scale beat count: does
+    # deeper stretch beat the shallow edge in a MAJORITY of series?
+    mid = out["buckets"][names[1]]
+    out["own_scale_deeper_pays"] = bool(
+        mid["beats_shallow"] * 2 > mid["series"]
+        and deep["beats_shallow"] * 2 > deep["series"])
+    return out
+
+
 def export_state_space(data_dir: Path, research_dir: Path,
                        universe=("SPY", "QQQ", "IWM", "XLF", "XLE"),
                        extended=None) -> None:
@@ -822,6 +910,14 @@ def main() -> None:
           f"/{axis.get('sp_z_neg', {}).get('series')} series, "
           f"vol_high: {axis.get('vol_high', {}).get('beats')}"
           f"/{axis.get('vol_high', {}).get('series')} series)")
+    depth = stretch_depth_study(
+        args.data_dir.parent / "research" / "data")
+    (args.research_dir / "stretch_depth.json").write_text(
+        json.dumps(depth, indent=2))
+    print(f"stretch depth -> "
+          f"{args.research_dir / 'stretch_depth.json'} "
+          f"(monotone: {depth.get('monotone')}, "
+          f"falling knife: {depth.get('falling_knife')}")
     write_report(r, args.markdown)
     print(f"status: {r['status']}, instruments: {len(r.get('rows', []))}, "
           f"iteration: {r.get('iteration', {}).get('iteration')}, "
