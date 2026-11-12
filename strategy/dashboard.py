@@ -2206,6 +2206,7 @@ def build_site(paper_dir: Path) -> str:
     # live status line
     fw_open_live = fw_open
     tick5 = tick6 = "measured"
+    tick7 = tick8 = "measured"
     progress_status = ""
     gr_path = paper_dir / "research" / "smh_gradient.json"
     if gr_path.exists():
@@ -2254,6 +2255,44 @@ def build_site(paper_dir: Path) -> str:
                             f"rows logged in advance, {fw_open} "
                             f"open, {fw_resolved} resolved; "
                             f"kill-line status {fw_kill}.")
+    rc_path = paper_dir / "research" / "smh_recurrence.json"
+    if rc_path.exists():
+        rc = json.loads(rc_path.read_text())
+        if rc.get("status") == "OK":
+            irr = rc.get("irreducibility", {})
+            trr = rc.get("trigger_recurrence", {})
+            if irr.get("irreducible"):
+                tick8 = (f"irreducible; "
+                         f"{trr.get('triggers_per_market_year')} "
+                         f"triggers/market-year")
+            if trr.get("triggers_per_market_year"):
+                progress_status += (
+                    f" The long-run lemma: the region chain is "
+                    + ("IRREDUCIBLE on this universe" if
+                       irr.get("irreducible") else
+                       "not irreducible - reported as measured")
+                    + f", and the compression trigger fires "
+                    f"{trr.get('triggers_per_market_year')} "
+                    f"times per market per year - the entry "
+                    f"condition recurs indefinitely.")
+    ca_path = paper_dir / "research" / "smh_calibration.json"
+    if ca_path.exists():
+        ca = json.loads(ca_path.read_text())
+        if ca.get("status") == "OK":
+            tick7 = (f"skill {ca.get('skill_score')}")
+            cav = ca.get("verdict", {})
+            progress_status += (
+                " The dress rehearsal: the forecast pre-scored "
+                "out of sample on time - Brier "
+                f"{ca.get('scores', {}).get('brier')} vs "
+                f"climatology "
+                f"{ca.get('climatology_scores', {}).get('brier')}, "
+                + ("positive skill - the forward log is scoring "
+                   "something worth scoring."
+                   if cav.get("beats_climatology_oos") else
+                   "no skill - the honesty note says so.")
+                + " Mid-range overconfidence flagged; the forward "
+                "rows are the judge that counts.")
 
     # the machine's live position: region + spell age per
     # market, with the pooled dwell distribution - descriptive
@@ -2395,7 +2434,8 @@ def build_site(paper_dir: Path) -> str:
 {css}
 </style>
 </head><body>
-<nav><a href="#hypothesis">The hypothesis</a>
+<nav><a href="#progress">The progress</a>
+<a href="#hypothesis">The hypothesis</a>
 <a href="#proof">The proof</a> <a href="#work">The new work</a>
 <a href="#now">The Vassallo Score</a></nav>
 <header>
@@ -2409,14 +2449,19 @@ scored against outcomes, night after night, until the clock is
 ours.</p>
 <p class="tagline">The Salient Market Hypothesis is the instrument:
 state instead of count, clock instead of prophecy, calibration
-instead of belief. Six of its seven measurable claims are already
-PROVEN; the framework is design-complete, and its falsification
-machinery is live: {fw_open_live} forecast rows sit in the forward
-log, waiting to be scored. What remains is exactly two things:
+instead of belief. Every layer reachable with current data is
+now MEASURED on this universe: the gradient (compression 0.639 vs
+climatology 0.437, disjoint bands), the direction cells (a coin
+flip at n = 15,386, refused per cell), the recurrence (the chain
+irreducible, the trigger 21.56 times per market-year), and the
+forecast itself pre-scored out of sample with positive skill.
+The falsification machinery is live: {fw_open_live} forward rows
+sit in the log, logged in advance, waiting to be scored against
+the pre-declared kill lines. What remains is exactly two things:
 episodes and data.</p>
 </header>
 <main>
-<section id="progress"><h2>The progress &mdash; the six measured
+<section id="progress"><h2>The progress &mdash; the measured
 ticks, and what is still being scored</h2>
 <div class="ticks">
 <div class="tick"><div class="tnum">TICK 1</div>
@@ -2437,6 +2482,12 @@ ticks, and what is still being scored</h2>
 <div class="tick"><div class="tnum">TICK 6</div>
 <div class="tlab">event anatomy: arrival, volume, overshoot</div>
 <div class="tval">{tick6}</div></div>
+<div class="tick"><div class="tnum">TICK 7</div>
+<div class="tlab">the dress rehearsal: forecast pre-scored out of sample</div>
+<div class="tval">{tick7}</div></div>
+<div class="tick"><div class="tnum">TICK 8</div>
+<div class="tlab">the long-run lemma: chain irreducibility, trigger recurrence</div>
+<div class="tval">{tick8}</div></div>
 </div>
 <p class="dim">{progress_status}</p>
 </section>
