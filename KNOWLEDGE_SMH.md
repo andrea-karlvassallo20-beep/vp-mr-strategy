@@ -771,3 +771,29 @@ incremental content is real at the CELL level (0.657 vs
 0.635, disjoint bands), but it is the clock's state doing
 the work, which is why it must be scored forward as its own
 row kind rather than folded into the Cox refinement.
+
+## 18. Law 4 at the entry grain: effort tilts, it does not gate (dated addition, 12 November 2026)
+
+The charter's law 4 (impact is concave in volume; a move
+without volume is a suspect move) was measured at the event
+grain in section 7: significant WEEKS come on 1.138x baseline
+volume. Instrument law4_battery.py now asks the layer-5
+question: does EFFORT AT ENTRY gate the crash-zone bounce?
+
+Measured on the 206 episode entries (effort = entry-bar
+volume vs trailing 60-bar median, 4-week holds, costs both
+sides, dual-split gate per cell, per-asset breakdowns
+mandatory):
+
+1. EFFORT TILTS, IT DOES NOT GATE: high-effort crashes read
+   median net 0.0178 (n=140), low-effort crashes 0.0120
+   (n=66) - BOTH cells pass the dual-split gate and both are
+   positive edges. The high-effort crash is the modestly
+   better buy, but the quiet crash is NOT a suspect move.
+2. THE ROLE, settled: the volume read stays a context tilt on
+   the philosopher's verdicts, never an entry condition.
+   The event-grain finding stands unchanged - significant
+   WEEKS come on volume; significant BUYS do not need it.
+   Flagged until forward-scored (doctrine rule 5).
+
+Design-sample caveat, unchanged.

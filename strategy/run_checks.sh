@@ -108,6 +108,9 @@ python3 test_timing_battery.py
 echo "=== 8y The exit battery (entry exits, fewer trades) ==="
 python3 test_exit_battery.py
 
+echo "=== 8ab Law-4 battery (effort vs result) ==="
+python3 test_law4_battery.py
+
 echo "=== 8aa Thesis presentation page ==="
 python3 test_thesis.py
 
