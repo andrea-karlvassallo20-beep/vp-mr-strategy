@@ -2254,6 +2254,77 @@ def _philosopher_html(paper_dir: Path) -> str:
                if cand_rows else ""))
 
 
+def _exit_battery_html(paper_dir: Path) -> str:
+    """The exit battery: entry exits and fewer trades, every
+    cell reported, verdicts honest either way."""
+    path = paper_dir / "research" / "exit_battery.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    b = r.get("baseline_4w") or {}
+    if "median_net" not in b:
+        return ""
+    ladder_rows = ""
+    for c in r.get("hold_ladder", []):
+        gate = ('<span class="good">pass</span>'
+                if c.get("dual_split_gate")
+                else '<span class="warn">fail</span>')
+        ladder_rows += (
+            f'<tr><td>{c["hold_weeks"]}w</td><td>{c["n"]}'
+            f'</td><td>{c.get("median_net")}</td>'
+            f'<td>{c.get("p_positive")}</td><td>{gate}</td>'
+            f'</tr>')
+    pt_rows = ""
+    for c in r.get("profit_take_cells", []):
+        gate = ('<span class="good">pass</span>'
+                if c.get("dual_split_gate")
+                else '<span class="warn">fail</span>')
+        pt_rows += (
+            f'<tr><td>+{c.get("profit_take") * 100:.0f}%'
+            f'</td><td>{c["n"]}</td>'
+            f'<td>{c.get("median_net")}</td>'
+            f'<td>{c.get("profit_take_hit_rate")}</td>'
+            f'<td>{gate}</td></tr>')
+    filt_rows = ""
+    for c in r.get("entry_filter_cells", []):
+        gate = ('<span class="good">pass</span>'
+                if c.get("dual_split_gate")
+                else '<span class="warn">fail</span>')
+        filt_rows += (
+            f'<tr><td>{_esc(c.get("entry_filter"))}'
+            f'</td><td>{c.get("n")}</td>'
+            f'<td>{c.get("median_net")}</td>'
+            f'<td>{c.get("p_positive")}</td><td>{gate}'
+            f'</td></tr>')
+    return (f'<h3 class="sub">The exit battery &mdash; entry '
+            f'exits and fewer trades, measured</h3>'
+            f'<p class="dim">Two questions on the same '
+            f'episode entries: does the timing curve justify '
+            f'an exit rule, and can fewer, better entries beat '
+            f'the production rule (the 4-week hold, '
+            f'{b["n"]} trades, median net '
+            f'{b["median_net"]})? Every cell reported, none '
+            f'cherry-picked, all design-sample.</p>'
+            f'<p class="dim"><strong>The hold ladder:</strong> '
+            f'{_esc(r.get("verdict", ""))}</p>'
+            f'<table><tr><th>hold</th><th>n</th>'
+            f'<th>median net</th><th>P(+)</th><th>gate'
+            f'</th></tr>{ladder_rows}</table>'
+            f'<p class="dim"><strong>The profit takes:</strong> '
+            f'{_esc(r.get("profit_take_verdict", ""))}</p>'
+            f'<table><tr><th>take</th><th>n</th>'
+            f'<th>median net</th><th>hit rate</th><th>gate'
+            f'</th></tr>{pt_rows}</table>'
+            f'<p class="dim"><strong>The entry filters:'
+            f'</strong> {_esc(r.get("entry_filter_verdict", ""))}'
+            f'</p>'
+            f'<table><tr><th>filter</th><th>n</th>'
+            f'<th>median net</th><th>P(+)</th><th>gate'
+            f'</th></tr>{filt_rows}</table>')
+
+
 def _charts_html(paper_dir: Path) -> str:
     """The charts, ON THE MAIN PAGE: the portfolio equity curve
     of the philosopher's long rule and every marked series in
@@ -2335,6 +2406,7 @@ def build_site(paper_dir: Path) -> str:
                    + _smh_calibration_html(paper_dir)
                    + _trade_inevitables_html(paper_dir)
                    + _philosopher_html(paper_dir)
+                   + _exit_battery_html(paper_dir)
                    + _smh_hazard_html(paper_dir))
     n_comp = n_mid = n_high = 0
     hz_rows = ""

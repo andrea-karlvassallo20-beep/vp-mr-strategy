@@ -102,6 +102,9 @@ python3 test_market_philosopher.py
 echo "=== 8x The timing battery (the WHEN prediction) ==="
 python3 test_timing_battery.py
 
+echo "=== 8y The exit battery (entry exits, fewer trades) ==="
+python3 test_exit_battery.py
+
 echo "=== 8v Full-universe tops/bottoms backtest ==="
 python3 test_tops_bottoms_backtest.py
 
