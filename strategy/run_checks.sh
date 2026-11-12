@@ -93,6 +93,12 @@ python3 test_smh_judgment.py
 echo "=== 8s SMH Bayesian forecaster (the blend, open problem 5) ==="
 python3 test_smh_bayes.py
 
+echo "=== 8t Trade inevitables (the rule additions, Layer 5) ==="
+python3 test_trade_inevitables.py
+
+echo "=== 8u The market philosopher (longs from measured rules) ==="
+python3 test_market_philosopher.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 

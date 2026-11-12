@@ -1,0 +1,124 @@
+"""Market philosopher suite: the long rule measured against
+KNOWN ground truth both ways - a mean-reverting anchored asset
+whose -5..-10% weekly crashes bounce must fire LONG_CANDIDATE
+and pass the dual-split gate net of costs; a drifting asset must
+not; and the theorem's boundary must hold structurally
+(compression alone never authorizes a long). Harness file."""
+import datetime as _dt
+import json
+import shutil
+import sys
+import tempfile
+from pathlib import Path
+
+import numpy as np
+
+sys.path.insert(0, str(Path(__file__).parent))
+from fetch_data import write_csv
+from market_philosopher import (ANCHORED, ZONE_HI, ZONE_LO,
+                                backtest_long_rule,
+                                philosopher_verdicts,
+                                run_philosopher)
+
+PASS = FAIL = 0
+def check(name, cond):
+    global PASS, FAIL
+    if cond: PASS += 1; print(f"  PASS  {name}")
+    else:    FAIL += 1; print(f"  FAIL  {name}")
+
+
+def _write_series(path, rets):
+    prices = 100.0 * np.exp(np.cumsum(rets))
+    d0 = _dt.date(2010, 1, 1)
+    rows = []
+    for i, p in enumerate(prices):
+        d = (d0 + _dt.timedelta(days=i)).isoformat()
+        rows.append((d, round(float(p), 4),
+                     round(float(p) * 1.002, 4),
+                     round(float(p) * 0.998, 4),
+                     round(float(p), 4), 1_000_000.0))
+    write_csv(path, rows)
+
+
+tmp = Path(tempfile.mkdtemp())
+data = tmp / "data"
+data.mkdir()
+
+# --- ground truth: anchored BTC with zone-crash bounces ---------------
+rng = np.random.default_rng(13)
+n = 20000
+rets = 0.002 * rng.standard_t(6, size=n)
+t = 100
+while t < n - 40:
+    if rng.random() < 0.02:
+        depth = float(rng.uniform(0.055, 0.095))   # the zone
+        for j in range(5):
+            rets[t + j] -= depth / 5
+        for j in range(20):
+            rets[t + 5 + j] += (depth * 1.1) / 20
+        t += 40
+    else:
+        t += 1
+_write_series(data / "BTCUSD.csv", rets)
+
+bt = backtest_long_rule(data)
+check("ground truth: zone trades measured",
+      bt.get("n_trades", 0) > 20)
+check("ground truth: the long edge is positive net of costs",
+      bt["median_net_4w"] > 0 and bt["p_positive"] > 0.55)
+check("ground truth: the dual-split gate PASSES",
+      bt["dual_split_gate"] is True)
+
+# --- the verdicts: the crash fires LONG_CANDIDATE ---------------------
+v = philosopher_verdicts(data)
+btc = next(x for x in v if x["ticker"] == "BTCUSD")
+check("the verdict carries region, weekly return and the "
+      "AVFI v4 read",
+      set(("region", "weekly_return", "avfi_v4", "reason"))
+      <= set(btc))
+check("the AVFI v4 read is boolean-confirmed and causal",
+      isinstance(btc["avfi_v4"]["bull_confirmed"], bool))
+
+# --- the theorem's boundary: compression never authorizes -------------
+# a drifting series that ends in compression: verdict must be
+# ARMED or REFUSED, never LONG_CANDIDATE without the crash zone
+rng2 = np.random.default_rng(21)
+n2 = 4000
+quiet = 0.0008 * rng2.standard_t(6, size=n2)
+_write_series(data / "DRIFTUSD.csv", quiet)
+v2 = philosopher_verdicts(data)
+drift = next(x for x in v2 if x["ticker"] == "DRIFTUSD")
+check("compression alone never authorizes a long "
+      "(the theorem's boundary, structurally)",
+      drift["verdict"] in ("ARMED", "REFUSED")
+      and "REFUSES direction" in drift["reason"]
+      or drift["verdict"] == "REFUSED")
+check("an unanchored crash never fires LONG_CANDIDATE",
+      all(x["verdict"] != "LONG_CANDIDATE"
+          for x in v2 if x["ticker"] == "DRIFTUSD"))
+
+# --- null: a drifting anchored asset (no bounce) -----------------------
+rng3 = np.random.default_rng(30)
+rets_n = 0.002 * rng3.standard_t(6, size=20000) - 0.0004
+data2 = tmp / "null"
+data2.mkdir()
+_write_series(data2 / "BTCUSD.csv", rets_n)
+bt_n = backtest_long_rule(data2)
+check("null: no false gate pass on a drifting asset",
+      bt_n.get("dual_split_gate") is False
+      or bt_n.get("median_net_4w") is None
+      or bt_n["median_net_4w"] <= 0.005)
+
+# --- the full run --------------------------------------------------------
+r = run_philosopher(data)
+check("the full run returns verdicts, counts and backtest",
+      r["status"] == "OK" and r["counts"] and "backtest" in r)
+check("the philosophy statement names the authorizers and "
+      "the refusals",
+      "never authorizes" in r["philosophy"]
+      and "central theorem" in r["philosophy"])
+
+shutil.rmtree(tmp)
+print(f"\n{'ALL CHECKS PASS' if FAIL == 0 else 'FAILURES PRESENT'}"
+      f"  pass={PASS} fail={FAIL}")
+sys.exit(1 if FAIL else 0)

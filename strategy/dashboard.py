@@ -2125,6 +2125,114 @@ def _smh_calibration_html(paper_dir: Path) -> str:
             f'</table>')
 
 
+def _trade_inevitables_html(paper_dir: Path) -> str:
+    """The trade-inevitables: the rule additions, measured -
+    including the negative results, which are rules too."""
+    path = paper_dir / "research" / "trade_inevitables.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    t1 = r.get("t1_armed_clock_drawdown", {})
+    t2 = r.get("t2_crash_depth_gradient", {})
+    t3 = r.get("t3_post_event_calm", {})
+    rows = "".join(
+        f'<tr><td>{_esc(b.get("depth", k))}</td><td>{b.get("n")}'
+        f'</td><td>{b.get("median_fwd_4w")}</td>'
+        f'<td>{b.get("p_positive")}</td></tr>'
+        for k, b in t2.get("buckets", {}).items()
+        if b.get("median_fwd_4w") is not None)
+    return (f'<h3 class="sub">The trade-inevitables &mdash; the '
+            f'rule additions, measured (charter section 15)</h3>'
+            f'<p class="dim">Layer 5 of the architecture: entry, '
+            f'invalidation and exposure from measured '
+            f'distributions. T1: the armed clock&rsquo;s waiting '
+            f'drawdown (median '
+            f'{t1.get("median_waiting_mae_sigma_bars")} '
+            f'sigma-bars) vs the event&rsquo;s own size ('
+            f'{t1.get("median_event_size_sigma_bars")}) &mdash; '
+            f'RR by construction '
+            f'{t1.get("rr_by_construction")}: '
+            + ("the clock is a timing instrument, not a "
+               "low-drawdown structure; the stop comes from the "
+               "exposure layer."
+               if "FOLKLORE" in t1.get("verdict", "") else
+               t1.get("verdict", ""))
+            + f" T3: the post-event calm reads "
+            f"p = {t3.get('p_next_week_quiet')} at the pooled "
+            "grain - no calm re-entry window at this grain "
+            "(a rule by refusal). The crash bounce on anchored "
+            "assets, by depth:</p>"
+            f'<table><tr><th>Weekly crash depth</th><th>n</th>'
+            f'<th>median fwd 4w</th><th>p(positive)</th></tr>'
+            f'{rows}</table>'
+            f'<p class="dim">The measured best-buy zone is the '
+            f'MODERATE weekly crash (-5% to -10%: +2.0%/+2.2% '
+            f'median, 60-62% positive); the nuclear-red '
+            f'(-15% and worse) reads lower - the -15% rule as '
+            f'stated is FOLKLORE on these assets, and the '
+            f'moderate-crash zone stays flagged until '
+            f'forward-scored (doctrine rule 5). Design-sample '
+            f'caveat on every number: the forward calibration '
+            f'record remains the test that matters.</p>')
+
+
+def _philosopher_html(paper_dir: Path) -> str:
+    """The market philosopher: longs from measured rules -
+    SMH as the strategy, AVFI v4 as the read, the verdicts
+    live."""
+    path = paper_dir / "research" / "market_philosopher.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    counts = r.get("counts", {})
+    bt = r.get("backtest", {})
+    cands = [x for x in r.get("verdicts", [])
+             if x["verdict"] == "LONG_CANDIDATE"]
+    cand_rows = ""
+    for x in cands[:10]:
+        conf = ("yes" if x["avfi_v4"].get("bull_confirmed")
+                else "")
+        cand_rows += (
+            '<tr><td>' + _esc(x["ticker"]) + '</td><td>'
+            + _esc(x["region"]) + '</td><td class="bad">'
+            + str(x["weekly_return"]) + '</td><td>'
+            + str(x["avfi_v4"].get("stretch_z"))
+            + '</td><td>' + conf + '</td></tr>')
+    gate = ("good" if bt.get("dual_split_gate") else "warn")
+    return (f'<h3 class="sub">The market philosopher &mdash; '
+            f'longs from measured rules, the verdicts live</h3>'
+            f'<p class="dim">One question at every close: is '
+            f'there a LONG the measured record justifies? '
+            f'The SMH clock arms but never authorizes (the '
+            f'central theorem refuses direction); AVFI v4 colors '
+            f'but never authorizes (no out-of-fold hazard '
+            f'gain); the ONLY measured long edge is the '
+            f'crash-zone entry on anchored assets. Right now: '
+            f'<strong>{counts.get("LONG_CANDIDATE", 0)} '
+            f'long candidate(s)</strong>, '
+            f'{counts.get("ARMED", 0)} armed (clock only, '
+            f'direction refused), {counts.get("REFUSED", 0)} '
+            f'refused. The rule, measured honestly: '
+            f'<span class="{gate}">'
+            + (f"PASSES the dual-split gate net of costs - "
+               f"{bt.get('n_trades')} trades, median "
+               f"+{bt.get('median_net_4w')}% over 4 weeks, "
+               f"{bt.get('p_positive')} positive, holding in "
+               f"both worse windows"
+               if bt.get("dual_split_gate") else
+               "fails the gate - refused")
+            + "</span>. Flagged until forward-scored "
+            "(doctrine rule 5).</p>"
+            + (f'<table><tr><th>Long candidate</th><th>Region'
+               f'</th><th>weekly ret</th><th>AVFI v4 z</th>'
+               f'<th>bull conf</th></tr>{cand_rows}</table>'
+               if cand_rows else ""))
+
+
 def build_site(paper_dir: Path) -> str:
     """Salient: the front page - the market hypothesis, the proof,
     the new work, and the live hazard instrument. The past (the
@@ -2136,6 +2244,8 @@ def build_site(paper_dir: Path) -> str:
                    + _smh_direction_html(paper_dir)
                    + _smh_recurrence_html(paper_dir)
                    + _smh_calibration_html(paper_dir)
+                   + _trade_inevitables_html(paper_dir)
+                   + _philosopher_html(paper_dir)
                    + _smh_hazard_html(paper_dir))
     n_comp = n_mid = n_high = 0
     hz_rows = ""

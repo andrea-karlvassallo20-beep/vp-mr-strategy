@@ -585,3 +585,42 @@ and data (the volume clock and Hawkes layer need the broker export;
 the event-structure unseen-ness test needs options term-structure
 data). The framework is finished being built. Now it waits to be
 scored.
+
+## 15. The trade-inevitables (added 12 November 2026, dated
+amendment per section 9 rule 3)
+
+The rule additions, oriented at trade construction (Layer 5 of
+the strategy architecture: entry, invalidation and exposure from
+measured distributions). Measured on the programme's pooled
+universe (188 series) and its anchored assets, with the honesty
+conventions throughout - including the negative results, which
+are rules too:
+
+1. THE ARMED CLOCK'S DRAWDOWN PROFILE: at the pooled daily grain
+   the waiting drawdown before the first significant week (median
+   0.89 sigma-bars, p75 1.40) is NOT a small fraction of the
+   event's own size (median 1.28 sigma-bars): RR by construction
+   1.44 - FOLKLORE. The armed clock is a TIMING instrument, not a
+   low-drawdown structure by itself; the stop must come from the
+   exposure layer, not from the clock.
+2. THE CRASH-DEPTH GRADIENT: on anchored assets the weekly-crash
+   bounce is real at every depth (all buckets positive median
+   forward 4 weeks), but the gradient is NOT monotone in depth.
+   The measured best-buy zone is the MODERATE weekly crash
+   (-5% to -10%: +2.0%/+2.2% median, 60-62% positive, n = 709);
+   the nuclear-red (-15% and worse) reads +1.1% at 54% (n = 96).
+   The -15% rule as stated is FOLKLORE on these assets; the
+   moderate crash is the entry condition the data supports -
+   and its n is small enough to stay flagged until forward-scored
+   (doctrine rule 5).
+3. THE POST-EVENT CALM: at the pooled grain the week after a
+   significant week is quieter than baseline only 51.8% of the
+   time - no measured calm re-entry window at this grain
+   (FOLKLORE). The charter's stress-decay-by-calm finding stands
+   on its own instrument; the daily-grain analogue does not
+   replicate pooled.
+
+Design-sample caveat, kept beside every number above: these are
+design-sample findings on historical data, not independently
+established live performance. The forward calibration record
+remains the test that matters.
