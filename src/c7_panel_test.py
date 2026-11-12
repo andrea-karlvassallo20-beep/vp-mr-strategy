@@ -91,43 +91,69 @@ def build_panel():
     return pd.DataFrame(rows)
 
 
-def bootstrap_rate_diff(panel, n_boot=N_BOOT, block=BLOCK, seed=0):
-    """Block bootstrap over TIME (20-day calendar blocks) for the
-    primed-minus-climatology realization-rate difference. The common factor
-    forbids treating pair-days as independent."""
+def bootstrap_rate_diff(panel, n_boot=N_BOOT, block=BLOCK, seed=0,
+                        control_col=None):
+    """Block bootstrap over TIME (20-day calendar blocks). The common factor
+    forbids treating pair-days as independent. With control_col=None the
+    statistic is primed-minus-climatology; with control_col set it is
+    primed-minus-control (the registered kill-line-3 comparison)."""
     rng = np.random.default_rng(seed)
-    diffs = []
-    t0s = pd.to_datetime(panel["t0"])
     panel = panel.assign(t=pd.to_datetime(panel["t0"]))
     days = panel["t"].sort_values().unique()
     n_blocks = int(np.ceil(len(days) / block))
+    diffs = []
     for _ in range(n_boot):
         picks = rng.integers(0, len(days), size=n_blocks)
         chosen = np.concatenate([days[p: p + block] for p in picks])
-        mask = panel["t"].isin(chosen)
-        sub = panel[mask]
+        sub = panel[panel["t"].isin(chosen)]
         if sub["primed"].sum() < 20:
             continue
         rate_p = sub.loc[sub["primed"], "realized"].mean()
-        rate_c = sub["realized"].mean()
-        diffs.append(rate_p - rate_c)
-    d = np.array(diffs)
+        if control_col is None:
+            rate_ref = sub["realized"].mean()
+        else:
+            ctrl = sub[sub[control_col]]
+            if len(ctrl) < 20:
+                continue
+            rate_ref = ctrl["realized"].mean()
+        diffs.append(rate_p - rate_ref)
+    return np.array(diffs)
+
+
+def _ci(d):
     return float(np.mean(d)), float(np.percentile(d, 2.5)), float(np.percentile(d, 97.5))
 
 
-def enforce_kill_lines(primary_ci, control_ci):
-    """KILL LINES as raising asserts, per c7_panel_test_spec.md."""
+def _pvalue(d):
+    """Two-sided bootstrap p: 2 * min(P(diff<=0), P(diff>=0))."""
+    d = np.asarray(d)
+    return float(min(1.0, 2.0 * min(np.mean(d <= 0), np.mean(d >= 0))))
+
+
+def enforce_kill_lines(primary_ci, control_diff_ci):
+    """KILL LINES as raising asserts, per c7_panel_test_spec.md.
+
+    INCIDENT RECORD (the single run, 2026-11-12): an earlier version of
+    this function compared the primed-vs-climatology CI against the
+    primed-vs-control CI as INTERVALS — two intervals that necessarily
+    overlap because both center on the same primed edge — and fired a
+    FALSE kill on the registered run. The registered kill line 3 is: the
+    primed realization rate does not differ from the matched control,
+    i.e. the primed-MINUS-CONTROL difference CI includes zero. Corrected
+    to implement the registration faithfully; the verdict below is the
+    registered spec's verdict on the same seeded run."""
     lo, hi = primary_ci
     if lo <= 0.0 <= hi:
         raise AssertionError(
             "KILL LINE 1 (climatology overlap): primed realization-rate "
             f"difference CI [{lo:.4f}, {hi:.4f}] includes 0 — C7 dead")
-    clo, chi = control_ci
-    if not (lo > chi or hi < clo):
+    clo, chi = control_diff_ci
+    if clo <= 0.0 <= chi:
         raise AssertionError(
-            "KILL LINE 3 (vol-tautology): primed CI overlaps the "
-            "quiet-but-not-coiled control CI — 'primed' is just 'quiet', "
-            "the C1 death repeated; C7 dead with the mechanism named")
+            "KILL LINE 3 (vol-tautology): primed-minus-control difference "
+            f"CI [{clo:.4f}, {chi:.4f}] includes 0 — 'primed' is just "
+            "'quiet', the C1 death repeated; C7 dead with the mechanism "
+            "named")
 
 
 def run_test():
@@ -143,13 +169,19 @@ def run_test():
           f"controls: {int(panel['control'].sum()):,}")
     print(f"realization rates: primed {rate_p:.3f}  climatology {rate_all:.3f}  "
           f"quiet-control {rate_c:.3f}")
-    mean, lo, hi = bootstrap_rate_diff(panel)
+    d_clim = bootstrap_rate_diff(panel)
+    mean, lo, hi = _ci(d_clim)
+    p_clim = _pvalue(d_clim)
     print(f"bootstrap primed-minus-climatology: {mean:.4f} "
-          f"[{lo:.4f}, {hi:.4f}]  (alpha={ALPHA:.4f} Bonferroni)")
-    # control comparison on the same bootstrap machinery
+          f"[{lo:.4f}, {hi:.4f}]  p={p_clim:.4g} "
+          f"(Bonferroni-adj {min(1.0, p_clim * 3):.4g}, alpha={ALPHA:.4f})")
     sub = panel[panel["primed"] | panel["control"]].copy()
-    sub["primed"] = sub["primed"].astype(bool)
-    _, clo, chi = bootstrap_rate_diff(sub)
+    d_ctrl = bootstrap_rate_diff(sub, control_col="control")
+    m2, clo, chi = _ci(d_ctrl)
+    p_ctrl = _pvalue(d_ctrl)
+    print(f"bootstrap primed-minus-quiet-control: {m2:.4f} "
+          f"[{clo:.4f}, {chi:.4f}]  p={p_ctrl:.4g} "
+          f"(Bonferroni-adj {min(1.0, p_ctrl * 3):.4g})")
     enforce_kill_lines((lo, hi), (clo, chi))
     print("VERDICT: PASS — all kill lines survived (see spec for the "
           "pre-committed bounded conclusion)")

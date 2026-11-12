@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from c7_panel_test import (
     is_primed, is_matched_control, realized, enforce_kill_lines,
-    bootstrap_rate_diff,
+    bootstrap_rate_diff, _ci, _pvalue,
 )
 
 
@@ -58,12 +58,20 @@ def test_kill_line_1_fires():
 
 
 def test_kill_line_3_fires():
+    # kill line 3 = the primed-minus-CONTROL difference CI includes zero
     with pytest.raises(AssertionError, match="KILL LINE 3"):
-        enforce_kill_lines((0.05, 0.15), (0.08, 0.12))
+        enforce_kill_lines((0.05, 0.15), (-0.02, 0.03))
+
+
+def test_kill_line_3_survives_when_control_diff_excludes_zero():
+    # the incident case: two diff CIs may overlap each other; what matters
+    # is that the primed-minus-control interval excludes zero
+    enforce_kill_lines((0.0637, 0.0932), (0.0561, 0.1004))
 
 
 def test_kill_lines_pass_case():
-    enforce_kill_lines((0.10, 0.20), (-0.02, 0.02))
+    # a true pass: BOTH the climatology diff and the control diff exclude 0
+    enforce_kill_lines((0.10, 0.20), (0.05, 0.15))
 
 
 def test_bootstrap_runs_on_synthetic_panel():
@@ -77,6 +85,19 @@ def test_bootstrap_runs_on_synthetic_panel():
             rows.append({"series": s, "t0": d, "t": d, "primed": primed,
                          "control": (s == "b"), "realized": realized_})
     panel = pd.DataFrame(rows)
-    mean, lo, hi = bootstrap_rate_diff(panel, n_boot=50, block=10)
+    # bootstrap_rate_diff returns an array of differences (climatology path)
+    d = bootstrap_rate_diff(panel, n_boot=50, block=10)
+    assert isinstance(d, np.ndarray) and len(d) > 0
+    mean, lo, hi = _ci(d)
     assert -1.0 <= lo <= mean <= hi <= 1.0
     assert np.isfinite(mean)
+    p = _pvalue(d)
+    assert 0.0 <= p <= 1.0
+    # exercise the control_col path (the kill-line-3 comparison)
+    d_ctrl = bootstrap_rate_diff(panel, n_boot=50, block=10,
+                                 control_col="control")
+    assert isinstance(d_ctrl, np.ndarray) and len(d_ctrl) > 0
+    m2, lo2, hi2 = _ci(d_ctrl)
+    assert -1.0 <= lo2 <= m2 <= hi2 <= 1.0
+    p2 = _pvalue(d_ctrl)
+    assert 0.0 <= p2 <= 1.0
