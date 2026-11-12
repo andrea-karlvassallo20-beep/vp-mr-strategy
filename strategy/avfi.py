@@ -687,6 +687,72 @@ def state_space_event_study_extended(extended_dir: Path,
     return {"aggregate": agg, "series": out}
 
 
+def state_space_axis_attribution(extended_dir: Path,
+                                horizon: int = 10) -> dict:
+    """AXIS ATTRIBUTION: the 3-axis bottom region was falsified as a
+    BUNDLE (pooled fwd +1.27% vs mid +9.81%, own-scale beats 17/40).
+    The correct follow-up: does any SINGLE axis carry weight over
+    deep stretch alone? For every bottom-side entry (price z <= -2)
+    across the extended universe, compare the forward return of
+    entries WITH each axis condition against entries WITHOUT it,
+    per series on its own scale (beats) and pooled. If no single
+    axis pays, the region idea is dead in its components, not
+    just as a bundle."""
+    from papertrading_runner import load_bars
+    conds = {"sp_z_neg": lambda s, p, v: s < 0,
+             "vol_high": lambda s, p, v: v > 0.5}
+    out = {name: {"series": 0, "beats": 0, "with": [], "without": []}
+           for name in conds}
+    if not extended_dir.exists():
+        return out
+    for f in sorted(extended_dir.glob("*.csv")):
+        bars = load_bars(f)
+        if len(bars) < 200:
+            continue
+        h = np.array([b["high"] for b in bars])
+        l = np.array([b["low"] for b in bars])
+        c = np.array([b["close"] for b in bars])
+        v = np.array([float(b["volume"]) for b in bars])
+        ss = avfi_state_space(h, l, c, v)
+        sp_z = np.array(ss["sp_z"])
+        price_z = np.array(ss["price_z"])
+        vol_pct = np.array(ss["vol_pct"])
+        for name, fn in conds.items():
+            with_, without = [], []
+            for t_ in range(110, len(c) - horizon):
+                if price_z[t_] > -2.0:
+                    continue
+                fr = float(c[t_ + horizon] / c[t_] - 1.0)
+                (with_ if fn(sp_z[t_], price_z[t_], vol_pct[t_])
+                 else without).append(fr)
+            if not with_ or not without:
+                continue
+            o = out[name]
+            o["series"] += 1
+            if float(np.mean(with_)) > float(np.mean(without)):
+                o["beats"] += 1
+            o["with"].append((float(np.mean(with_)), len(with_)))
+            o["without"].append((float(np.mean(without)),
+                                  len(without)))
+    for name, o in out.items():
+        n_w = sum(n for _, n in o["with"])
+        n_o = sum(n for _, n in o["without"])
+        o["pooled_with_fwd"] = (round(sum(m * n for m, n in o["with"])
+                                        / n_w, 4) if n_w else None)
+        o["pooled_without_fwd"] = (round(sum(m * n for m, n in o["without"])
+                                           / n_o, 4) if n_o else None)
+        o["n_with"] = n_w
+        o["n_without"] = n_o
+        o["carries_weight"] = bool(
+            o["pooled_with_fwd"] is not None
+            and o["pooled_without_fwd"] is not None
+            and o["beats"] * 2 > o["series"]
+            and o["pooled_with_fwd"] > o["pooled_without_fwd"])
+        o["with"] = len(o["with"])
+        o["without"] = len(o["without"])
+    return out
+
+
 def export_state_space(data_dir: Path, research_dir: Path,
                        universe=("SPY", "QQQ", "IWM", "XLF", "XLE"),
                        extended=None) -> None:
@@ -746,6 +812,16 @@ def main() -> None:
           f"{args.research_dir / 'state_space_study_extended.json'} "
           f"({len(ext.get('series', {}))} series, pooled n="
           f"{(a.get('bottom_region') or {}).get('n', 0)})")
+    axis = state_space_axis_attribution(
+        args.data_dir.parent / "research" / "data")
+    (args.research_dir / "state_space_axis.json").write_text(
+        json.dumps(axis, indent=2))
+    print(f"axis attribution -> "
+          f"{args.research_dir / 'state_space_axis.json'} "
+          f"(sp_z_neg: {axis.get('sp_z_neg', {}).get('beats')}"
+          f"/{axis.get('sp_z_neg', {}).get('series')} series, "
+          f"vol_high: {axis.get('vol_high', {}).get('beats')}"
+          f"/{axis.get('vol_high', {}).get('series')} series)")
     write_report(r, args.markdown)
     print(f"status: {r['status']}, instruments: {len(r.get('rows', []))}, "
           f"iteration: {r.get('iteration', {}).get('iteration')}, "

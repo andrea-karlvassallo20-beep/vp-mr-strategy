@@ -1133,6 +1133,45 @@ def _state_space_html(paper_dir: Path) -> str:
                       '<th>mid-region n</th><th>fwd</th>'
                       '<th>verdict</th></tr>'
                       f'{rows}</table>')
+        axispath = paper_dir / "research" / "state_space_axis.json"
+        if axispath.exists():
+            axis = json.load(open(axispath))
+            arows = ""
+            for name, a in axis.items():
+                holds = a.get("carries_weight")
+                cls = "good" if holds else "dim"
+                label = ("flow fading (spread z < 0)" if name == "sp_z_neg"
+                         else "elevated vol (percentile > 0.5)")
+                arows += (f'<tr><td>{label}</td>'
+                          f'<td>{a.get("n_with", 0)}</td>'
+                          f'<td>{a.get("pooled_with_fwd")}</td>'
+                          f'<td>{a.get("n_without", 0)}</td>'
+                          f'<td>{a.get("pooled_without_fwd")}</td>'
+                          f'<td>{a.get("beats", 0)} / '
+                          f'{a.get("series", 0)}</td>'
+                          f'<td class="{cls}">'
+                          f'{"carries weight" if holds else "no"}</td></tr>')
+            study_html += (
+                '<h3 class="sub">Axis attribution: which single axis '
+                'pays?</h3>'
+                '<p class="dim">The region was falsified as a bundle, '
+                'so each axis was tested ALONE: among deep-stretch '
+                'long entries, do entries WITH the condition '
+                'forward-outperform entries WITHOUT it? Verdict: '
+                'neither axis carries weight. Flow-fading entries '
+                'actually underperform pooled (+1.88% vs +6.99%). '
+                'Elevated-vol entries look better pooled (+9.23% vs '
+                '+1.39%) but win on their own scale in only 20/50 '
+                'series \u2014 the pooled edge is scale contamination '
+                'from high-drift crypto, not signal. The region idea '
+                'is dead in its components, not just as a bundle; '
+                'deep stretch alone is what the data supports.</p>'
+                '<table><tr><th>Axis</th>'
+                '<th>with n</th><th>fwd</th>'
+                '<th>without n</th><th>fwd</th>'
+                '<th>beats (own scale)</th>'
+                '<th>verdict</th></tr>'
+                f'{arows}</table>')
         study_html += pooled_html
     return (f'<p class="dim">Every bar is a <strong>position in '
             f'space</strong>, and the strategy lives as a trajectory '
