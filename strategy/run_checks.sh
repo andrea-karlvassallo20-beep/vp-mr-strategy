@@ -54,6 +54,9 @@ python3 test_mr_edge.py
 echo "=== 8f v4 confirmation premium (whole universe) ==="
 python3 test_v4_study.py
 
+echo "=== 8g Commodity edge battery ==="
+python3 test_commodity_edge.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 
