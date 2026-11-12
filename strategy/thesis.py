@@ -372,6 +372,59 @@ nav a:hover { color:var(--accent); }
         f"timing card rides region-specific on every "
         f"verdict.</p>"))
 
+    law4 = _load(paper_dir, "law4_battery.json")
+    hi_l4 = ((law4.get("high_effort") or {})
+             .get("median_net"))
+    lo_l4 = ((law4.get("low_effort") or {})
+             .get("median_net"))
+    oof3 = (((_load(paper_dir, "smh_hazard.json")
+              .get("stretch_oof") or {})
+             .get("with_stretch_3cov") or {}).get(
+        "c_index_oof"))
+    oof2 = (((_load(paper_dir, "smh_hazard.json")
+              .get("stretch_oof") or {})
+             .get("production_2cov") or {}).get(
+        "c_index_oof"))
+    s.append(slide(
+        "the refinements",
+        "Every seductive refinement, measured and honestly "
+        "placed",
+        f"<table><tr><th>refinement</th><th>measured "
+        f"verdict</th></tr>"
+        f"<tr><td>profit take (+4%)</td><td>beats the per-trade "
+        f"median, <span class=\"bad\">destroys the "
+        f"portfolio</span> (&minus;36% vs +83.6%) &mdash; "
+        f"<span class=\"big\">the median is not the "
+        f"portfolio</span></td></tr>"
+        f"<tr><td>v4-confirmed entries only</td><td>87% fewer "
+        f"trades, starved exposure compounds to &minus;16% "
+        f"&mdash; refused at portfolio level</td></tr>"
+        f"<tr><td>AVFI stretch in the Cox model</td><td>OOF "
+        f"concordance {maybe(oof3, 0.626)} vs the production "
+        f"model's {maybe(oof2, 0.627)} &mdash; "
+        f"<span class=\"big\">does not earn its slot</span>; "
+        f"the clock's own state does the work</td></tr>"
+        f"<tr><td>effort at entry (law 4)</td><td>high "
+        f"{maybe(hi_l4, 0.0178)} vs low "
+        f"{maybe(lo_l4, 0.012)}, both gate-passing &mdash; "
+        f"<span class=\"big\">tilts, does not gate</span>; "
+        f"the quiet crash is not a suspect move</td></tr>"
+        f"<tr><td>AVFI inside the clock (comp &times; "
+        f"stretch)</td><td><span class=\"num\">"
+        f"{maybe(incr_cell.get('cum_event_12w'), 0.657)}"
+        f"</span> vs the clock alone "
+        f"<span class=\"num\">"
+        f"{maybe(comp_cell.get('cum_event_12w'), 0.635)}"
+        f"</span>, disjoint bands &mdash; "
+        f"<span class=\"big\">real at the cell level, "
+        f"now forward-scored as its own row kind</span>"
+        f"</td></tr></table>"
+        f"<p>The pattern is the methodology: every refinement "
+        f"faces the same referees &mdash; the dual-split gate, "
+        f"the portfolio grid, the out-of-fold test, and "
+        f"finally the forward log. Nothing is promoted by "
+        f"telling a better story.</p>"))
+
     s.append(slide(
         "the scoreboard",
         "The falsification machinery &mdash; the thesis can "

@@ -43,6 +43,13 @@ res.mkdir(parents=True)
 (res / "smh_calibration.json").write_text(json.dumps({
     "temporal": {"brier": 0.2374,
                  "brier_climatology": 0.2642}}))
+(res / "law4_battery.json").write_text(json.dumps({
+    "high_effort": {"n": 140, "median_net": 0.0178},
+    "low_effort": {"n": 66, "median_net": 0.012}}))
+(res / "smh_hazard.json").write_text(json.dumps({
+    "stretch_oof": {
+        "production_2cov": {"c_index_oof": 0.627},
+        "with_stretch_3cov": {"c_index_oof": 0.626}}}))
 (res / "avfi_precursor.json").write_text(json.dumps({
     "cells": {
         "confirmed_bottom_recent": {
@@ -73,6 +80,11 @@ check("the clock numbers are data-driven",
 check("the AVFI incremental finding is on the read slide",
       "0.657" in html and "0.635" in html
       and "disjoint bands" in html)
+check("the refinements slide carries every honest verdict",
+      "the median is not the portfolio" in html
+      and "does not earn its slot" in html
+      and "tilts, does not gate" in html
+      and "0.627" in html and "0.0178" in html)
 check("the portfolio numbers are data-driven",
       "+81.8%" in html and "+10.0%" in html)
 check("the design-sample caveat rides every measured slide",
