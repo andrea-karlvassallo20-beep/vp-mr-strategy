@@ -657,6 +657,14 @@ reported, none cherry-picked.
    compression_at_entry and the falling-knife filter do NOT
    earn their trades (honest nulls; the latter never fires - the
    zone cross is always the first crash week in this sample).
+5. THE CONCENTRATED BOOK, AT PORTFOLIO LEVEL (same addition,
+   second referee run): the v4_confirmed book does NOT
+   compound better - 27 trades give -16.3% total (CAGR -10.1%)
+   against the full book's +83.6% (CAGR +11.3%). The slightly
+   better per-trade median (0.0182 vs 0.0169) was razor-thin and
+   does not survive the starved exposure. The unfiltered zone
+   cross stands at portfolio level, and the v4_confirmed cell
+   keeps its flag forever (doctrine rule 5).
 
 Design-sample caveat, unchanged: every number above is
 design-sample; the forward calibration record remains the test

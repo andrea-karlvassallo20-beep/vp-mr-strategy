@@ -2334,21 +2334,29 @@ def _exit_portfolio_block(r: dict) -> str:
     pt = pb.get("pt_4pct") or {}
     if base.get("status") != "OK" or pt.get("status") != "OK":
         return ""
+    v4 = pb.get("v4_confirmed_4w") or {}
     rows = ""
-    for label, v in (("4-week hold (production)", base),
-                     ("+4% profit take", pt)):
+    variants = [("4-week hold (production)", base),
+                ("+4% profit take", pt)]
+    if v4.get("status") == "OK":
+        variants.append(("v4_confirmed entries only", v4))
+    for label, v in variants:
         rows += (
             f'<tr><td>{label}</td><td>{v["n_trades"]}</td>'
             f'<td>{v["total_return"] * 100:+.1f}%</td>'
             f'<td>{v["cagr"] * 100:+.1f}%</td>'
             f'<td>{v["max_drawdown"] * 100:.1f}%</td></tr>')
+    v4_line = ("")
+    if v4.get("status") == "OK":
+        v4_line = (" The concentrated book too: "
+                    + _esc(pb.get("v4_confirmed_verdict", "")))
     return (f'<p class="dim"><strong>The portfolio referee:'
             f'</strong> {_esc(pb.get("verdict", ""))} The '
             f'mechanism, measured: the profit take lifts the '
             f'per-trade MEDIAN (0.0415 vs 0.0169) but cuts the '
             f'per-trade MEAN (0.0052 vs 0.0086) - it truncates '
             f'the right tail that does the compounding. The '
-            f'median is not the portfolio.</p>'
+            f'median is not the portfolio.' + v4_line + '</p>'
             f'<table><tr><th>exit rule</th><th>n</th>'
             f'<th>total</th><th>CAGR</th><th>maxDD</th></tr>'
             f'{rows}</table>')

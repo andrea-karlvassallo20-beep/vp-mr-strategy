@@ -127,14 +127,13 @@ def _cell_stats(trades):
 MAX_CONCURRENT = 10
 
 
-def portfolio_sim(data_dir: Path, profit_take=None) -> dict:
+def portfolio_sim(data_dir: Path, profit_take=None,
+                 entry_filter=None) -> dict:
     """The philosopher's long portfolio on the anchored set,
     on a CALENDAR-DATE grid (the honest simulation), under one
-    exit rule: the fixed 4-week hold (the production baseline,
-    profit_take=None) or the profit take (exit at the first
-    week clearing it, else the 4-week time exit). Entries are
-    IDENTICAL across variants (the cross with the 20-bar
-    cooldown); only the exits differ."""
+    exit rule (the fixed 4-week hold, or the profit take) and
+    optionally one entry filter (v4_confirmed). The referee
+    that per-trade medians must face."""
     from papertrading_runner import load_bars
     positions = []
     for f in sorted(Path(data_dir).glob("*.csv")):
@@ -147,8 +146,17 @@ def portfolio_sim(data_dir: Path, profit_take=None) -> dict:
         c = np.array([b["close"] for b in bars], dtype=float)
         dates = [b["date"] for b in bars]
         logc = np.log(c)
-        last_entry = -10 ** 9
+        bset = set()
+        if entry_filter == "v4_confirmed":
+            v = np.array([b["volume"] for b in bars],
+                         dtype=float)
+            _, _, bottoms, _ = detect_events(c, v)
+            bset = set(int(b) for b in bottoms)
         for t in _entries(logc, len(c), WEEK * HOLD_WEEKS):
+            if entry_filter == "v4_confirmed":
+                if not any(t - V4_WINDOW <= b <= t + V4_WINDOW
+                           for b in bset):
+                    continue
             exit_w = HOLD_WEEKS
             if profit_take is not None:
                 entry = float(logc[t])
@@ -204,6 +212,7 @@ def portfolio_sim(data_dir: Path, profit_take=None) -> dict:
         "equity_curve_monthly": monthly,
         "concurrent_cap": MAX_CONCURRENT,
         "profit_take": profit_take,
+        "entry_filter": entry_filter,
     }
 
 
@@ -411,6 +420,37 @@ def run_exit_battery(data_dir: Path) -> dict:
     else:
         port_verdict = "INSUFFICIENT_TRADES"
 
+    # the fewer-trades question at portfolio level: the
+    # v4_confirmed book (27 trades) vs the full book (206)
+    port_v4 = portfolio_sim(data_dir, None, "v4_confirmed")
+    if (port_base.get("status") == "OK"
+            and port_v4.get("status") == "OK"):
+        if ((port_v4.get("cagr") or -1)
+                > (port_base.get("cagr") or -1)
+                and port_v4.get("max_drawdown", 1)
+                <= port_base.get("max_drawdown", 1)):
+            v4_port_verdict = (
+                f"THE CONCENTRATED BOOK EARNS ITS KEEP, DESIGN "
+                f"SAMPLE: CAGR {port_v4['cagr']} vs "
+                f"{port_base['cagr']} at maxDD "
+                f"{port_v4['max_drawdown']} vs "
+                f"{port_base['max_drawdown']} - flagged, "
+                f"forward-scored or it stays folklore")
+        else:
+            v4_port_verdict = (
+                f"THE CONCENTRATED BOOK DOES NOT COMPOUND BETTER: "
+                f"the v4_confirmed filter's {port_v4['n_trades']} "
+                f"trades give CAGR {port_v4['cagr']} and total "
+                f"{port_v4['total_return']} against the full "
+                f"book's {port_base['n_trades']} trades, CAGR "
+                f"{port_base['cagr']}, total "
+                f"{port_base['total_return']} - the slightly "
+                f"better per-trade median does not survive the "
+                f"starved exposure. The unfiltered zone cross "
+                f"stands at portfolio level")
+    else:
+        v4_port_verdict = "INSUFFICIENT_TRADES"
+
     result = {
         "status": "OK",
         "generated_utc": datetime.now(timezone.utc).isoformat(
@@ -430,6 +470,8 @@ def run_exit_battery(data_dir: Path) -> dict:
             "baseline_4w": port_base,
             "pt_4pct": port_pt,
             "verdict": port_verdict,
+            "v4_confirmed_4w": port_v4,
+            "v4_confirmed_verdict": v4_port_verdict,
         },
         "note": "every cell reported, none cherry-picked; "
                 "winsorized medians, 5 bps costs both sides; "
