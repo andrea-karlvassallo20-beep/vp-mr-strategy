@@ -797,3 +797,29 @@ mandatory):
    Flagged until forward-scored (doctrine rule 5).
 
 Design-sample caveat, unchanged.
+
+## 19. The short mirror: the long-only philosophy is a measurement (dated addition, 12 November 2026)
+
+The mirror of the crash-zone long, asked honestly: does a
+SHORT at the cross into the moderate euphoria zone (+5% to
++10% weekly) earn its keep under the same machinery? Instrument: short_mirror.py; episode crosses, 4-week
+holds, 5 bps costs both sides, winsorized medians,
+dual-split gate, per-asset breakdowns.
+
+1. THE MIRROR IS NEGATIVE: the moderate euphoria short reads
+   median net -0.0002 (n=244, P(+) 0.500, gate FAILS) - a
+   coin flip before costs, refused. There is NO measured
+   short edge at the mirror of the best-buy zone. The
+   long-only philosophy is not a choice, it is a MEASUREMENT:
+   the market takes the stairs up and the elevator down, and
+   only the elevator side pays the philosopher.
+2. ONE SEDUCTIVE CELL, flagged beside it, never hidden: the
+   NUCLEAR euphoria short (+10..15% weekly, n=77) reads
+   +0.0057 median net through the gate - small sample,
+   seductive, carries its flag forever (doctrine rule 5)
+   until forward-scored. The asymmetry rhymes with the crash
+   side (where the moderate zone beat the nuclear-red); here
+   the nuclear cell is the only one that reads, and it is
+   exactly the cell small enough to flatter.
+
+Design-sample caveat, unchanged.
