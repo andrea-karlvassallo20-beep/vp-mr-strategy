@@ -1386,6 +1386,95 @@ def _mr_edge_html(paper_dir: Path) -> str:
             f'{rows}</table>')
 
 
+def _v4_study_html(paper_dir: Path) -> str:
+    """v4 stretch+confirmation vs plain stretch, measured across the
+    whole universe - with the honest verdict."""
+    path = paper_dir / "research" / "v4_study.json"
+    if not path.exists():
+        return ("<p class=\"dim\">The v4 study appears here after the "
+                "first nightly research pass.</p>")
+    r = json.load(open(path))
+    o = r.get("overall", {})
+    cls = r.get("by_class", {})
+    imp = o.get("improves")
+    cls_v = "good" if imp else "dim"
+    vtxt = ("confirmation improves the strategy" if imp else
+            "confirmation does NOT survive causal conversion")
+    srows = ""
+    for name, s in [("ALL SERIES", o)] + list(cls.items()):
+        if not s:
+            continue
+        c_imp = s.get("improves")
+        srows += (f'<tr><td>{name.upper()}</td>'
+                  f'<td>{s.get("series")}</td>'
+                  f'<td>{s.get("plain_pooled")}</td>'
+                  f'<td>{s.get("v4_pooled")}</td>'
+                  f'<td>{s.get("pooled_premium")}</td>'
+                  f'<td>{s.get("own_scale_beats")}</td>'
+                  f'<td class="{"good" if c_imp else "dim"}">'
+                  f'{"improves" if c_imp else "no"}</td></tr>')
+    best = "".join(
+        f'<tr><td>{_esc(x["ticker"])}</td><td>{x["plain_oos"]}</td>'
+        f'<td class="good">{x["v4_oos"]}</td>'
+        f'<td class="good">+{x["premium_worse_window"]}</td></tr>'
+        for x in r.get("best_series", [])[:10])
+    worst = "".join(
+        f'<tr><td>{_esc(x["ticker"])}</td><td>{x["plain_oos"]}</td>'
+        f'<td class="dim">{x["v4_oos"]}</td>'
+        f'<td class="dim">{x["premium_worse_window"]}</td></tr>'
+        for x in r.get("worst_series", [])[:10])
+    return (f'<p class="dim">AVFI v4\'s signal is deep stretch + '
+            f'detector confirmation. The forward-return study measured '
+            f'a tripling of the median 10-day payoff on confirmed '
+            f'stretches - so the honest question: does confirmation '
+            f'IMPROVE the tradable strategy? Both variants run the same '
+            f'causal z-score core (enter |z| &ge; 2, exit |z| &le; '
+            f'0.25, 5 bps both sides, winsorized), one with '
+            f'confirmed entries only, judged at the WORSE of two OOS '
+            f'windows across {o.get("series")} series.</p>'
+            f'<div class="metrics">'
+            f'<div class="metric"><div class="mval">'
+            f'{o.get("plain_pooled")}</div>'
+            f'<div class="mlabel">plain pooled OOS</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{o.get("v4_pooled")}</div>'
+            f'<div class="mlabel">v4 pooled OOS</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{o.get("pooled_premium")}</div>'
+            f'<div class="mlabel">pooled premium</div></div>'
+            f'<div class="metric"><div class="mval" class="{cls_v}">'
+            f'{vtxt}</div>'
+            f'<div class="mlabel">honest verdict</div></div>'
+            f'</div>'
+            f'<p class="dim"><strong>What the data says:</strong> '
+            f'confirmation does NOT survive causal conversion - the '
+            f'pooled premium is {o.get("pooled_premium")} with '
+            f'{o.get("own_scale_beats")} own-scale wins (a coin '
+            f'flip), and on commodities it is actively harmful '
+            f'(-0.54): confirmation biases entries toward climax '
+            f'bars, where the z-core\'s early exits and costs bite. '
+            f'The forward-return tripling was real but '
+            f'<em>unconditional</em>; the strategy\'s exit rule '
+            f'never collects it. The deeper finding: <strong>plain '
+            f'z-score mean reversion on COMMODITIES pooled OOS is '
+            f'+0.37 Sharpe - the first positive pooled strategy '
+            f'result in the project</strong> - while crypto\'s drift '
+            f'kills the same core (-0.31). The edge lives in the '
+            f'commodity complex, not crypto; v4 stays what the '
+            f'evidence supports - a visualization and risk-throttle '
+            f'tool, not an entry filter.</p>'
+            f'<table><tr><th>Scope</th><th>series</th>'
+            f'<th>plain pooled OOS</th><th>v4 pooled OOS</th>'
+            f'<th>premium</th><th>beats</th><th>verdict</th></tr>'
+            f'{srows}</table>'
+            f'<h3 class="sub">Where confirmation helped most</h3>'
+            f'<table><tr><th>Ticker</th><th>plain OOS</th>'
+            f'<th>v4 OOS</th><th>premium</th></tr>{best}</table>'
+            f'<h3 class="sub">Where it hurt most</h3>'
+            f'<table><tr><th>Ticker</th><th>plain OOS</th>'
+            f'<th>v4 OOS</th><th>premium</th></tr>{worst}</table>')
+
+
 def _crypto_avfi_chart_svg(ch: dict, width=520, height=230) -> str:
     """Two-panel crypto chart: price with detected tops/bottoms on
     top, the AVFI spread z with the trigger line and throttle zone
@@ -1648,6 +1737,7 @@ def build_site(paper_dir: Path) -> str:
          ("statespace", "State space"),
          ("commodities", "Commodities"), ("crypto", "Crypto 150"),
          ("lessons", "Lessons"), ("mredge", "MR edge"),
+         ("v4study", "v4 study"),
          ("overview", "Overview"),
          ("charts", "Charts"),
          ("race", "Self-learning"), ("crossasset", "Cross-asset"),
@@ -1823,6 +1913,9 @@ the same real bars every night. Each curve is scaled to its own range.</p>
 </section>
 <section id="mredge"><h2>The MR-coin edge &mdash; tested with a control group</h2>
 {_mr_edge_html(paper_dir)}
+</section>
+<section id="v4study"><h2>v4 vs plain &mdash; the confirmation premium, tested</h2>
+{_v4_study_html(paper_dir)}
 </section>
 {journal_html}
 <section id="buildlog"><h2>Build log</h2>
