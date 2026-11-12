@@ -1935,6 +1935,81 @@ def _extended_detections_html(paper_dir: Path) -> str:
             f'{rows}</table>')
 
 
+def _smh_gradient_html(paper_dir: Path) -> str:
+    """The salience gradient: all three region clocks plus the
+    climatology counterfactual, with Greenwood bands - the charter's
+    fifth and sixth measured ticks, measured on this programme's
+    own 188-series universe."""
+    path = paper_dir / "research" / "smh_gradient.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    g = r.get("gradient", {})
+    v = r.get("verdict", {})
+    an = r.get("event_anatomy", {})
+
+    def clock_row(label, c, note=""):
+        if not c:
+            return ""
+        return (f'<tr><td>{_esc(label)}</td>'
+                f'<td class="good">{c["cum_event_12w"]}</td>'
+                f'<td>[{c["ci95_lo"]}, {c["ci95_hi"]}]</td>'
+                f'<td>{c["n"]}</td><td class="dim">{_esc(note)}'
+                f'</td></tr>')
+
+    rows = (clock_row("compression entry", g.get("compression")).lstrip()
+            + clock_row("mid entry", g.get("mid")).lstrip()
+            + clock_row("any week (climatology)", g.get("climatology")).lstrip()
+            + clock_row("stress entry", g.get("stress_events")).lstrip())
+    disjoint = ("YES - the compression band is disjoint from "
+                "climatology" if v.get(
+                    "compression_disjoint_from_climatology")
+                else "no")
+    monotone = ("yes" if v.get("monotone_point_estimates")
+                else "not pooled (mid sits below climatology on "
+                "this universe - an honest finding, flagged)")
+    vol = an.get("volume", {}) if an else {}
+    arr = an.get("arrival_split", {}) if an else {}
+    anatomy_line = ""
+    if an and an.get("n_first_events"):
+        anatomy_line = (f'<p class="dim">The event anatomy on this '
+                        f'universe: of {an["n_first_events"]} first '
+                        f'events, {arr.get("in_spell", 0)} arrive '
+                        f'in-spell, {arr.get("escape_week", 0)} ARE '
+                        f'the escape week, {arr.get("post_escape", 0)} '
+                        f'arrive after the region escaped; the act '
+                        f'dissolved at spell end captures '
+                        f'{an.get("act_capture_at_spell_end")}. '
+                        f'Law 4 at the weekly grain: significant '
+                        f'weeks on median volume '
+                        f'{vol.get("median_event_ratio")}x their '
+                        f'trailing baseline (all weeks '
+                        f'{vol.get("median_all_bars_ratio")}x); '
+                        f'median overshoot '
+                        f'{an.get("overshoot_median")}x the '
+                        f'2.5-sigma bar.</p>')
+    return (f'<h3 class="sub">The salience gradient &mdash; the 12-week '
+            f'first-significant-week clock by entry region</h3>'
+            f'<p class="dim">The charter&rsquo;s fifth and sixth '
+            f'measured ticks, measured on this programme&rsquo;s own '
+            f'universe (188 series, the charter&rsquo;s frozen event: '
+            f'a significant week, |r1| &ge; 2.5&sigma;<sub>w</sub> at '
+            f'entry, within 12 weeks). Compression separates from '
+            f'doing nothing; salience is edge-local.</p>'
+            f'<table><tr><th>Entry</th><th>P(event &le; 12w)</th>'
+            f'<th>Greenwood 95%</th><th>n</th><th>note</th></tr>'
+            f'{rows}</table>'
+            f'<p class="dim">Compression disjoint from climatology: '
+            f'<strong>{disjoint}</strong>. Gradient monotone pooled: '
+            f'{monotone}. The mechanical-threshold caveat (the entry '
+            f'sigma is frozen at the decision close) is frozen beside '
+            f'these numbers, per the charter.</p>'
+            f'{anatomy_line}'
+            )
+
+
 def build_site(paper_dir: Path) -> str:
     """Salient: the front page - the market hypothesis, the proof,
     the new work, and the live hazard instrument. The past (the
@@ -1942,6 +2017,7 @@ def build_site(paper_dir: Path) -> str:
     lives in the repository's artifacts and DASHBOARD.md - not on
     this page. This page only faces forward."""
     proof_html = (_smh_proof_html(paper_dir)
+                   + _smh_gradient_html(paper_dir)
                    + _smh_hazard_html(paper_dir))
     n_comp = n_mid = n_high = 0
     hz_rows = ""

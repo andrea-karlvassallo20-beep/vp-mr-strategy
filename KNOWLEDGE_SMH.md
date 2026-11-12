@@ -1,18 +1,23 @@
-# The Salient Market Hypothesis (SMH) — charter v2
+# The Salient Market Hypothesis (SMH) — charter v3
 
 Named by Andrea, 12 November 2026: the framework was drafted as the
 State-Clock Framework and adopted its standing name the same day. Same
 object, same falsification rules; every future reference says SMH.
 
 AMENDMENT RECORD (per section 9, rule 3 — supersession happens by
-recorded, dated amendment only): this is charter v2, 12 November 2026
-(session 37). It supersedes charter v1 (12 sections, same day, earlier
-session), which is preserved unchanged in the git history. v2 adds: the
-supersession capability matrix (with its honesty note), the observer
-corollary, the corrected hazard layer v0 (KM off-by-one caught and
-corrected), the stress clock v0 with the quarter rule, the dwell and
-transition machine, the doctrine (section 12), and the entry condition
-set/theorem (section 14) with pre-declared kill lines. Design-complete.
+recorded, dated amendment only): this is charter v3, 12 November 2026.
+It supersedes charter v2 (same day, earlier session; preserved in the
+git history). v3 adds: the mid clock and the salience gradient (the
+fifth measured tick — mid 0.470 ~ climatology 0.441, stress suppresses
+0.273; salience is EDGE-LOCAL), the event's own anatomy (the sixth
+measured tick — in-spell/escape-week/post-escape split, the law-4
+volume signature at the weekly grain, the 1.41x overshoot, the up/down
+volume asymmetry), the four-line clock chart, the timeliness refinement
+in section 14.3 (act dissolved at spell end captures 0.439 vs the
+entry-anchored 0.634), section 14.8 (the salience gradient as the
+completed machine), and the updated design-complete declaration
+(20 checks; the priced-expectations benchmark; the event-structure
+unseen-ness test now needs options term-structure data).
 
 A theoretical framework for identifying, in advance, the significant
 events in a market. Written as a direct replacement for Elliott Wave:
@@ -269,6 +274,43 @@ occupancy: the state cycles while the clock ticks, neither forecasting
 the other. Full tables: the SMH transitions v0 document in the
 programme bundle.
 
+The clocks, drawn (pre-2021 design bookkeeping; the quarter rule is the
+crossing of the two upper curves at the right edge; the salience
+gradient is the vertical spread between the three event clocks at the
+12-week edge):
+
+```mermaid
+xychart-beta
+    title "The SMH's clocks (cumulative probability, percent)"
+    x-axis "weeks since entry" [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+    y-axis "cumulative probability" 0 --> 70
+    line "compression: first significant week" [4.9, 12.2, 19.5, 26.8, 34.1, 43.9, 48.8, 48.8, 51.2, 53.7, 58.5, 63.4]
+    line "stress: de-stress" [9.1, 21.2, 24.2, 27.3, 27.3, 33.3, 39.4, 51.5, 57.6, 63.6, 63.6, 63.6]
+    line "mid: first significant week" [0.0, 7.6, 15.2, 18.2, 19.6, 24.2, 29.3, 29.3, 31.0, 36.8, 43.8, 47.0]
+    line "stress: first significant week" [0.0, 3.0, 6.1, 15.2, 15.2, 15.2, 15.2, 18.2, 21.2, 21.2, 24.2, 27.3]
+```
+
+Mid clock v0 and the salience gradient (12 Nov 2026, the fifth measured
+tick, which completes the entry clocks): all three regions now carry
+the same entry-anchored first-event clock. Mid entries (crosses into
+mid, n = 66 pre-2021) produce a first significant week with cumulative
+probability 0.470 by week 12, Greenwood 95% [0.349, 0.590] -
+statistically indistinguishable from climatology (0.441 [0.411,
+0.471]), unlike the compression edge whose band is disjoint from it.
+Stress entries suppress the event clock (0.273 [0.121, 0.425]). The
+gradient is monotone in the point estimates: 0.634 > 0.470 > 0.441 >
+0.273. THE SALIENCE IS EDGE-LOCAL: the entry information lives only at
+the compression cross; mid is the machine's fast exchange and carries
+none of it; the stress edge's own clock is de-stress. A suggestive
+quiet handoff is flagged beside it: zero first-week events after mid
+and stress entries (0 of 99, climatology expects about 4.4; the
+mechanical threshold caveat is frozen beside the flag). Nothing
+conditions the mid clock (entered from compression 0.447 vs from
+stress 0.500, bands overlapping): only the compression edge carries
+entry-conditioned structure in this sample. Mid rows stay out of the
+forward log by design: the null is the statement. Full tables: the SMH
+mid clock v0 document in the programme bundle.
+
 The instrument reads the machine's live position against these tables:
 the status command reports the current clock region, the current
 spell's age in weeks against the measured dwell distribution (median,
@@ -295,6 +337,30 @@ says so in its own axioms (theorem, section 4). The Sornette
 log-periodic program is the canon's model of a precursor signature:
 pre-registered, ex-ante, with a public record of hits and misses. This
 framework adopts the pattern and refuses the certainty.
+
+The event's own anatomy, measured (12 Nov 2026, the sixth measured
+tick, pre-2021 design bookkeeping): the anticipated event has now been
+dissected, and the dissection resolved a real tension in the theorem.
+The forecast clock is entry-anchored (the logged row resolves at 12
+weeks regardless of the region, probability 0.634), but the act that
+dissolves at spell end is spell-anchored, and the two windows are not
+the same: of the 26 first events after compression entries, 7 arrive
+strictly in-spell, 11 ARE the escape week itself, and 8 arrive after
+the region already escaped. The spell most often dies OF its event (11
+of 26, the measured mechanism form of "expansion out of compression");
+an act dissolved at spell end captures 0.439, not 0.634, the 0.195 gap
+being the armed-clock mass that keeps running after the region read
+changes. The event also carries its law-4 signature at the weekly
+grain: significant weeks come on median volume 1.138 times their
+trailing baseline (all weeks 1.004), 70 percent above baseline versus
+51 percent, and zero thin-flagged event weeks - effort confirms
+result, measured. Size: the median first event overshoots its own
+2.5-sigma bar by 1.41x, so the anticipated change is concretely a
+~3.5-sigma week. One asymmetry flagged beside it: up events arrive on
+below-baseline volume (median 0.938), down events on nearly double
+(1.733) - the effort-vs-result relation's weekly shape, suggestive at
+n = 17/9, untrusted until forward-scored. Full tables: the SMH event
+anatomy v0 document in the programme bundle.
 
 ## 8. What the framework predicts, and what it refuses
 
@@ -463,7 +529,11 @@ ANTICIPATED EVENT (defined before the fact): a significant week, |r1|
    waiting 4 quiet weeks leaves 0.500; waiting 6 leaves 0.348. Waiting
    forfeits measured hazard mass and races the spell's own mortality
    (median dwell 4 weeks). Timeliness is not a felt skill; it is a
-   measured 0.634-versus-0.348.
+   measured 0.634-versus-0.348. One refinement, measured: an ACT
+   dissolved at spell end captures 0.439 (18 of 41), while the
+   FORECAST row stays entry-anchored (0.634); 8 of 26 events arrive
+   after the region already escaped, and the spell most often dies OF
+   its event (11 of 26).
 4. DIRECTION: REFUSED in v0. The up-split's 95% lower bound (0.443) is
    below one half, so the anticipated change is a significant MOVE,
    not a signed one. The seductive cells stay flagged until
@@ -477,6 +547,17 @@ ANTICIPATED EVENT (defined before the fact): a significant week, |r1|
 7. THE MIRROR: the stress trigger carries P(de-stress within 12
    weeks) = 0.636 [0.472, 0.801], median 6, no direction claim at all,
    decaying by calm, not crash.
+8. THE SALIENCE GRADIENT, the completed machine: all three regions
+   measured with the same entry-anchored clock, the 12-week
+   first-event cumulative is monotone in the entry region:
+   compression 0.634 [0.487, 0.782] > mid 0.470 [0.349, 0.590] ~
+   climatology 0.441 [0.411, 0.471] > stress 0.273 [0.121, 0.425].
+   Salience is EDGE-LOCAL: only the compression cross separates from
+   the do-nothing counterfactual; a mid entry is statistically
+   indistinguishable from picking a week at random; the stress edge
+   suppresses events, its own clock being de-stress. The hypothesis
+   earns its name locally, not globally, and the edge-local finding is
+   itself a claim the forward log can score.
 
 The long-run lemma closes the "inevitable" question with the only
 honesty markets permit: the measured region chain is irreducible (all
@@ -493,12 +574,14 @@ reachable with current data now has measured tables: the laws (the
 programme's prior results), the clock (both edge clocks, the dwell and
 transition machine, the quarter rule), the states (occupancy,
 transitions, joint table), the event (both KM clocks, all seductive
-cells flagged), the covariates (the Cox v0.1 null verdict), and the
-falsification machinery (forward protocol, drafting instrument,
-resolver and scorer, all selftested and wired into the verification
-chain, 18 checks). What remains is exactly two things, and neither is
-theory: episodes (the forward rows that only the market's future clock
-entries can produce) and data (the volume clock and Hawkes layer need
-the broker export; the unseen-ness test needs the priced-expectations
-benchmark). The framework is finished being built. Now it waits to be
+cells flagged, the anatomy dissected), the covariates (the Cox v0.1
+null verdict), the priced-expectations benchmark (the unseen-ness
+layer: level-cheap, mean-priced), and the falsification machinery
+(forward protocol, drafting instrument, resolver and scorer, all
+selftested and wired into the verification chain, 20 checks). What
+remains is exactly two things, and neither is theory: episodes (the
+forward rows that only the market's future clock entries can produce)
+and data (the volume clock and Hawkes layer need the broker export;
+the event-structure unseen-ness test needs options term-structure
+data). The framework is finished being built. Now it waits to be
 scored.
