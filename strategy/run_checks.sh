@@ -102,6 +102,9 @@ python3 test_market_philosopher.py
 echo "=== 8v Full-universe tops/bottoms backtest ==="
 python3 test_tops_bottoms_backtest.py
 
+echo "=== 8w V4 chart pages + portfolio equity ==="
+python3 test_v4_charts.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 

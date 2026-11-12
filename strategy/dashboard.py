@@ -2293,6 +2293,7 @@ def build_site(paper_dir: Path) -> str:
 
     fw_rows_logged = fw_open = fw_resolved = 0
     jd_line = ""
+    v4_line = ""
     fw_brier = "-"
     fw_kill = "waiting for the first clock entry"
     fw_path = paper_dir / "research" / "smh_forward.json"
@@ -2402,6 +2403,32 @@ def build_site(paper_dir: Path) -> str:
                            if sb.get("model_brier") is not None
                            else "the three-way scoreboard "
                                 "waits with the rows."))
+    v4_path = paper_dir / "research" / "v4_charts.json"
+    if v4_path.exists():
+        v4r = json.loads(v4_path.read_text())
+        if v4r.get("status") == "OK":
+            veq = v4r.get("equity", {})
+            if veq.get("status") == "OK":
+                neg = [k for k, x in veq.get("per_asset",
+                                             {}).items()
+                       if x.get("positive") is False]
+                v4_line = (
+                    f"The universe, marked: "
+                    f"<a href=\"v4_charts.html\">"
+                    f"{v4r.get('n_charts')} charts with AVFI v4 "
+                    f"confirmed tops and bottoms</a>. The "
+                    f"philosopher&rsquo;s long portfolio, "
+                    f"simulated honestly on a calendar grid: "
+                    f"{veq.get('n_trades')} trades over "
+                    f"{veq.get('years')} years, total "
+                    f"{veq.get('total_return') * 100:.1f}%, max "
+                    f"drawdown {veq.get('max_drawdown') * 100:.1f}%"
+                    f" - the pooled gate passed but the "
+                    f"portfolio construction exposes the "
+                    f"concentration"
+                    + (f"; negative cell(s) flagged: "
+                       f"{', '.join(neg)} - doctrine rule 5, "
+                       "forever" if neg else "."))
     rc_path = paper_dir / "research" / "smh_recurrence.json"
     if rc_path.exists():
         rc = json.loads(rc_path.read_text())
@@ -2584,7 +2611,8 @@ def build_site(paper_dir: Path) -> str:
 <nav><a href="#progress">The progress</a>
 <a href="#hypothesis">The hypothesis</a>
 <a href="#proof">The proof</a> <a href="#work">The new work</a>
-<a href="#now">The Vassallo Score</a></nav>
+<a href="#now">The Vassallo Score</a>
+<a href="v4_charts.html">The charts</a></nav>
 <header>
 <h1>Salient<span>.</span></h1>
 <p class="tagline"><strong>The aim:</strong> see the future event
@@ -2717,6 +2745,7 @@ the occurrence claim dies in public if, at 10/20/40/60 scored
 forward rows, the event count is at or below 3/8/19/31.
 Current status: {fw_kill}.</p>
 <p class="dim">{jd_line}</p>
+<p class="dim">{v4_line}</p>
 <h3 class="sub">The machine&rsquo;s live position &mdash; the status
 reading, the operational replacement for counting waves</h3>
 <p class="dim">Every market&rsquo;s current clock region and its current
