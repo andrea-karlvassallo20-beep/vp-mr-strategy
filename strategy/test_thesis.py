@@ -97,9 +97,14 @@ check("the portfolio numbers are data-driven",
       and "-31.5%" in html)
 check("the design-sample caveat rides every measured slide",
       html.count("Design-sample caveat") >= 10)
-check("the page links back to the front page and the charts",
-      'href="index.html"' in html
+check("the page links to the live instrument and the charts",
+      'href="instrument.html"' in html
       and 'href="v4_charts.html"' in html)
+check("the forward-progress slide carries the out-of-sample "
+      "evidence",
+      "pre-scored out-of-sample skill" in html
+      and "replicated on" in html
+      and "logged IN ADVANCE" in html)
 
 # graceful without any artifacts at all
 empty = Path(tempfile.mkdtemp())

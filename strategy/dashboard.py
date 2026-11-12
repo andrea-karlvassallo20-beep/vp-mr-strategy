@@ -2959,7 +2959,7 @@ def build_site(paper_dir: Path) -> str:
 <a href="#proof">The proof</a> <a href="#work">The new work</a>
 <a href="#now">The Vassallo Score</a>
 <a href="#charts">The charts</a>
-<a href="thesis.html">The thesis</a></nav>
+<a href="index.html">The thesis</a></nav>
 <header>
 <h1>Salient<span>.</span></h1>
 <p class="tagline"><strong>The aim:</strong> see the future event

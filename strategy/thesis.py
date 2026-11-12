@@ -147,8 +147,72 @@ nav a:hover { color:var(--accent); }
         '<p>State instead of count. Clock instead of prophecy. '
         'Calibration instead of belief. Named by Andrea; '
         'built, measured, and scored in public.</p>'
-        '<p><a href="index.html" style="color:var(--accent)">'
-        '&larr; the front page</a></p></section>')
+        '<p><a href="instrument.html" style="color:var(--accent)"'
+        '>&larr; the instrument, live: the forward log, the '
+        'Vassallo Score, the philosopher\'s verdicts, '
+        'updated nightly</a></p></section>')
+
+    # the forward-looking progress: the evidence that is NOT
+    # retrospective marking - pre-scored out-of-sample skill,
+    # replication on unseen data, and the live scoreboard
+    oos = (_load(paper_dir, "tops_bottoms_backtest.json")
+           .get("oos_holdout") or {})
+    s.append(slide(
+        "the progress, forward-looking",
+        "Not retrospective marking &mdash; real, scored, "
+        "out-of-sample progress",
+        f"<p>Four pieces of progress that do not look back:</p>"
+        f"<ul>"
+        f"<li><span class=\"big\">The forecast has "
+        f"pre-scored out-of-sample skill:</span> in the "
+        f"temporal dress rehearsal the model&rsquo;s Brier "
+        f"score is <span class=\"num\">"
+        f"{maybe(cal.get('brier'), 0.2374)}</span> vs "
+        f"climatology&rsquo;s "
+        f"<span class=\"num\">"
+        f"{maybe(cal.get('brier_climatology'), 0.2642)}"
+        f"</span> &mdash; skill "
+        f"<span class=\"num\">+{round((maybe(cal.get('brier_climatology'), 0.2642) - maybe(cal.get('brier'), 0.2374)) / maybe(cal.get('brier_climatology'), 0.2642), 3)}"
+        f"</span>, scored walk-forward on windows the model "
+        f"never saw. This is not curve-fitting; it is a "
+        f"forecast that beat the do-nothing baseline "
+        f"BEFORE the outcome.</li>"
+        f"<li><span class=\"big\">The edge replicated on "
+        f"data the design never touched:</span> the "
+        f"crash-zone long rule, built on the original "
+        f"universe, was then run on 11 global indexes "
+        f"added afterwards as a natural holdout &mdash; "
+        f"<span class=\"num\">"
+        f"{maybe(oos.get('n_trades'), 115)}</span> trades, "
+        f"median net "
+        f"<span class=\"num\">"
+        f"{maybe(oos.get('median_net_4w'), 0.0175)}</span>, "
+        f"<span class=\"num\">"
+        f"{maybe(oos.get('p_positive'), 0.652)}</span> "
+        f"positive. A rule that only knew its own history "
+        f"would not do this.</li>"
+        f"<li><span class=\"big\">The scoreboard is live "
+        f"and armed:</span> "
+        f"<span class=\"num\">"
+        f"{maybe(fw_rows.get('open'), 33)}</span> forecast "
+        f"rows logged IN ADVANCE at real clock entries, "
+        f"each with its probability stated before the "
+        f"outcome, kill lines pre-declared. Whatever the "
+        f"market does next, it will be scored in public "
+        f"&mdash; that machinery is itself the progress "
+        f"most research never builds.</li>"
+        f"<li><span class=\"big\">The instrument reads "
+        f"tonight&rsquo;s market, not history:</span> the "
+        f"Vassallo Score ranks the markets currently in "
+        f"compression RIGHT NOW, strictly causal, and the "
+        f"philosopher&rsquo;s verdicts are live at every "
+        f"close &mdash; <a href=\"instrument.html#now\" "
+        f"style=\"color:var(--accent)\">see tonight&rsquo;s "
+        f"coiled springs</a>.</li></ul>"
+        f"<p>The honest frame: the puzzle&rsquo;s impossible "
+        f"corner (certainty + date + direction) is provably "
+        f"unsolvable &mdash; and everything above is the "
+        f"solvable remainder, already solving.</p>"))
 
     s.append(slide(
         "the diagnosis",
@@ -479,8 +543,8 @@ nav a:hover { color:var(--accent); }
         "be right.</span></p>"
         "<p>The framework is finished being built. Now it "
         "waits to be scored.</p>"
-        "<p><a href=\"index.html\" style=\"color:var(--accent)"
-        "\">the front page</a> &middot; "
+        "<p><a href=\"instrument.html\" style=\"color:var(--accent)"
+        "\">the instrument, live</a> &middot; "
         "<a href=\"v4_charts.html\" style=\"color:var(--accent)"
         "\">the universe, marked</a></p>"))
 
@@ -491,10 +555,10 @@ nav a:hover { color:var(--accent); }
             "<title>Salient \u2014 the thesis</title>"
             "<style>" + css + "</style></head><body>"
             "<nav><a href=\"index.html\">Salient</a>"
-            "<a href=\"index.html#progress\">The progress</a>"
-            "<a href=\"index.html#proof\">The proof</a>"
+            "<a href=\"instrument.html#progress\">The progress</a>"
+            "<a href=\"instrument.html#proof\">The proof</a>"
             "<a href=\"v4_charts.html\">The charts</a>"
-            "<a href=\"index.html#now\">The Vassallo Score</a>"
+            "<a href=\"instrument.html#now\">The Vassallo Score</a>"
             "</nav>"
             + "".join(s) + "</body></html>")
     return html
@@ -510,11 +574,11 @@ def main() -> None:
     args = ap.parse_args()
     html = build_thesis(args.paper_dir)
     args.docs_dir.mkdir(parents=True, exist_ok=True)
-    out = args.docs_dir / "thesis.html"
+    out = args.docs_dir / "index.html"
     out.write_text(html)
     ts = datetime.now(timezone.utc).isoformat(
         timespec="seconds")
-    print(f"thesis page written -> {out} ({len(html)} "
+    print(f"thesis (main page) written -> {out} ({len(html)} "
           f"bytes, generated {ts})")
 
 
