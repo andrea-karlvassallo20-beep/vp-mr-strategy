@@ -36,7 +36,14 @@ check("no unescaped script injection", "<script" not in html)
 
 site = build_site(tmp)
 check("salient site generated", len(site) > 6000)
-check("equity chart in site", "aria-label=\"equity curve\"" in site)
+check("front page faces forward: hypothesis, proof, work, hazard",
+      all(k in site for k in ("The hypothesis",
+                             "certainty-timing-direction triangle",
+                             "The new work", "The hazard now")))
+check("front page carries no past sections",
+      all(k not in site for k in ("Build log", "Session journal",
+                                  "falsification archive",
+                                  "aria-label=\"equity curve\"")))
 check("drawdown chart in site", drawdown_svg(tmp).startswith("<svg"))
 check("drawdown empty-state graceful",
       "no session data yet" in drawdown_svg(tmp / "nonexistent"))
