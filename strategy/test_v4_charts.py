@@ -108,6 +108,18 @@ check("the page is written with the charts",
 check("the JSON artifact carries the equity block",
       r["equity"]["status"] == "OK"
       and r["equity"]["equity_curve_monthly"])
+check("the fragments artifact carries the chart SVGs for the "
+      "main page",
+      (res / "v4_chart_frags.json").exists()
+      and json.loads(
+          (res / "v4_chart_frags.json").read_text())
+      ["n_charts"] == r["n_charts"]
+      and len(json.loads(
+          (res / "v4_chart_frags.json").read_text())
+          ["charts"]) == r["n_charts"]
+      and all("<svg" in f for f in json.loads(
+          (res / "v4_chart_frags.json").read_text())
+          ["charts"]))
 # an oscillating anchored series must fire confirmed
 # detections so the page carries the v4 markers
 rng = np.random.default_rng(5)
