@@ -2182,6 +2182,7 @@ def build_site(paper_dir: Path) -> str:
                 for s in scores[:40])
 
     fw_rows_logged = fw_open = fw_resolved = 0
+    jd_line = ""
     fw_brier = "-"
     fw_kill = "waiting for the first clock entry"
     fw_path = paper_dir / "research" / "smh_forward.json"
@@ -2255,6 +2256,25 @@ def build_site(paper_dir: Path) -> str:
                             f"rows logged in advance, {fw_open} "
                             f"open, {fw_resolved} resolved; "
                             f"kill-line status {fw_kill}.")
+    jd_path = paper_dir / "research" / "smh_judgment.json"
+    if jd_path.exists():
+        jd = json.loads(jd_path.read_text())
+        n_j = len(jd.get("judgments", []))
+        scored = [j for j in jd.get("judgments", [])
+                  if j.get("outcome") is not None]
+        if scored:
+            jd_line = (f"The judgment log: {n_j} human priors "
+                       f"recorded in advance, {len(scored)} "
+                       f"scored; human Brier "
+                       f"{round(sum(j['brier_human'] for j in scored) / len(scored), 4)} "
+                       f"vs model Brier "
+                       f"{round(sum(j['brier_model'] for j in scored) / len(scored), 4)} "
+                       f"- the observer corollary&rsquo;s private "
+                       f"edge, compounding.")
+        elif n_j:
+            jd_line = (f"The judgment log: {n_j} human priors "
+                       f"recorded in advance, waiting to be "
+                       f"scored.")
     rc_path = paper_dir / "research" / "smh_recurrence.json"
     if rc_path.exists():
         rc = json.loads(rc_path.read_text())
@@ -2569,6 +2589,7 @@ resolved against outcomes, Brier-scored</h3>
 the occurrence claim dies in public if, at 10/20/40/60 scored
 forward rows, the event count is at or below 3/8/19/31.
 Current status: {fw_kill}.</p>
+<p class="dim">{jd_line}</p>
 <h3 class="sub">The machine&rsquo;s live position &mdash; the status
 reading, the operational replacement for counting waves</h3>
 <p class="dim">Every market&rsquo;s current clock region and its current
