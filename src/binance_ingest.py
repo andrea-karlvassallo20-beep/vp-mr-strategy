@@ -51,14 +51,17 @@ def _read_table(path: Path) -> pd.DataFrame:
             names = [n for n in zf.namelist() if n.lower().endswith(".csv")]
             if not names:
                 raise ValueError(f"{path}: zip contains no csv")
-            raw = zf.read(names[0])
+            first_line = zf.read(names[0])
+        head = first_line[: first_line.index(b"\n")].decode("utf-8", errors="replace").strip()
+        buf = io.BytesIO(first_line)
     else:
-        raw = path.read_bytes()
-    df = pd.read_csv(io.BytesIO(raw), header=None, dtype=str, low_memory=False)
-    first = df.iloc[0].astype(str).str.lower().tolist()
-    if "price" in first or "best_bid_price" in first:
-        df = pd.read_csv(io.BytesIO(raw), header=0, dtype=str, low_memory=False)
-        df.columns = [c.strip().lower() for c in df.columns]
+        data = path.read_bytes()
+        head = data[: data.index(b"\n")].decode("utf-8", errors="replace").strip()
+        buf = io.BytesIO(data)
+    has_header = "price" in head.lower() or "best_bid_price" in head.lower()
+    header = 0 if has_header else None
+    df = pd.read_csv(buf, header=header, low_memory=False)
+    df.columns = [str(c).strip().lower() for c in df.columns]
     return df
 
 
