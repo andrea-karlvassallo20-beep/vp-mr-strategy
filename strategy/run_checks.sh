@@ -60,6 +60,9 @@ python3 test_commodity_edge.py
 echo "=== 8h Structural inevitabilities ==="
 python3 test_inevitabilities.py
 
+echo "=== 8i SMH proof battery ==="
+python3 test_smh_proof.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 

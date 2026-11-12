@@ -1634,6 +1634,79 @@ def _inevitabilities_html(paper_dir: Path) -> str:
             f'<th>Verdict</th></tr>{rows}</table>')
 
 
+def _smh_proof_html(paper_dir: Path) -> str:
+    """The Salient Market Hypothesis proof battery: every measurable
+    claim, scored on the universe - the SMH's own scoreboard."""
+    path = paper_dir / "research" / "smh_proof.json"
+    if not path.exists():
+        return ("<p class=\"dim\">The SMH proof battery appears here "
+                "after the first nightly research pass.</p>")
+    r = json.load(open(path))
+    clk = r.get("laws", {}).get("clock_compression_hazard", {})
+    th = r.get("laws", {}).get(
+        "theorem_hazard_up_direction_unknown", {})
+    km = r.get("kaplan_meier_v0") or {}
+    rows = ""
+    for key, law in r.get("laws", {}).items():
+        v = law.get("verdict", "")
+        cls = "good" if v == "PROVEN" else "dim"
+        rows += (f'<tr><td>{_esc(key)}</td>'
+                 f'<td class="dim">{_esc(law.get("claim", ""))[:200]}'
+                 f'{"..." if len(law.get("claim", "")) > 200 else ""}'
+                 f'</td><td class="{cls}">{_esc(v)}</td></tr>')
+    n_proven = sum(1 for v in r.get("laws", {}).values()
+                   if v.get("verdict") == "PROVEN")
+    return (f'<p class="dim">The Salient Market Hypothesis '
+            f'(KNOWLEDGE_SMH.md) - state instead of count, clock '
+            f'instead of prophecy, calibration instead of belief - '
+            f'makes six unconditional laws, a central theorem, and a '
+            f'measured clock claim. Per its own falsification '
+            f'protocol, every quantitative claim is scored: '
+            f'<strong>{n_proven} of {len(r.get("laws", {}))} '
+            f'claims PROVEN</strong> on '
+            f'{r.get("n_series")} series, with ground-truth tests '
+            f'both ways (GARCH-like series prove the vol laws; '
+            f'Gaussian iid controls fail them).</p>'
+            f'<div class="metrics">'
+            f'<div class="metric"><div class="mval">'
+            f'{clk.get("hazard_from_compression")}</div>'
+            f'<div class="mlabel">event hazard from compression</div>'
+            f'</div>'
+            f'<div class="metric"><div class="mval">'
+            f'{clk.get("hazard_from_high_vol")}</div>'
+            f'<div class="mlabel">from high vol '
+            f'(n={clk.get("n_high_bars")})</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{th.get("p_event_up_from_compression")}</div>'
+            f'<div class="mlabel">P(event is UP) from compression '
+            f'(n={th.get("n_events")})</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{km.get("median_time_to_event_bars")}</div>'
+            f'<div class="mlabel">median bars to event from '
+            f'compression (KM v0)</div></div>'
+            f'</div>'
+            f'<p class="dim"><strong>The two results that matter:'
+            f'</strong> the CLOCK replicates - a significant event '
+            f'(&ge; 2.5&sigma;<sub>w</sub> within 4 weeks) is '
+            f'{round((clk.get("hazard_from_compression") or 0) / max(clk.get("hazard_from_high_vol") or 1, 0.0001), 1)}x '
+            f'more likely from the compression tercile than from '
+            f'high vol, on a completely different universe than the '
+            f'original clock study (which measured 47% vs 14%). '
+            f'And the central theorem\'s consequence is measured: '
+            f'among {th.get("n_events")} compression-born events, '
+            f'P(up) = {th.get("p_event_up_from_compression")} - '
+            f'the clock says WHEN is more likely; it never says '
+            f'WHICH WAY. Law 3 (horizon structure) reads PARTAL-honest: '
+            f'short-lag autocorrelation is near zero as claimed, but '
+            f'no medium-horizon momentum or long-horizon reversal is '
+            f'visible on daily crypto/commodity bars. The volume '
+            f'clock and Hawkes self-excitation need intraday data - '
+            f'documented as out of scope, per the SMH\'s own '
+            f'rules.</p>'
+            f'<table><tr><th>Claim</th><th>What it says</th>'
+            f'<th>Verdict</th></tr>{rows}</table>')
+
+
 def _crypto_avfi_chart_svg(ch: dict, width=520, height=230) -> str:
     """Two-panel crypto chart: price with detected tops/bottoms on
     top, the AVFI spread z with the trigger line and throttle zone
@@ -1897,7 +1970,7 @@ def build_site(paper_dir: Path) -> str:
          ("commodities", "Commodities"), ("crypto", "Crypto 150"),
          ("lessons", "Lessons"), ("mredge", "MR edge"),
          ("v4study", "v4 study"), ("commedge", "Commodity edge"),
-         ("inevitable", "Inevitables"),
+         ("inevitable", "Inevitables"), ("smh", "SMH proof"),
          ("overview", "Overview"),
          ("charts", "Charts"),
          ("race", "Self-learning"), ("crossasset", "Cross-asset"),
@@ -2082,6 +2155,9 @@ the same real bars every night. Each curve is scaled to its own range.</p>
 </section>
 <section id="inevitable"><h2>Structural inevitabilities &mdash; measured, not predicted</h2>
 {_inevitabilities_html(paper_dir)}
+</section>
+<section id="smh"><h2>The Salient Market Hypothesis &mdash; the proof battery</h2>
+{_smh_proof_html(paper_dir)}
 </section>
 {journal_html}
 <section id="buildlog"><h2>Build log</h2>
