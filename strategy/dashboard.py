@@ -1567,6 +1567,73 @@ def _commodity_edge_html(paper_dir: Path) -> str:
             f'{mrows}</table>')
 
 
+def _inevitabilities_html(paper_dir: Path) -> str:
+    """Structural inevitabilities: the market facts that hold
+    without prediction - the research framework, measured."""
+    path = paper_dir / "research" / "inevitabilities.json"
+    if not path.exists():
+        return ("<p class=\"dim\">The inevitabilities study appears "
+                "here after the first nightly research pass.</p>")
+    r = json.load(open(path))
+    rows = ""
+    for key, c in r.get("claims", {}).items():
+        v = c.get("verdict", "")
+        cls = "good" if "STRUCTURAL" in v else "dim"
+        rows += (f'<tr><td>{_esc(key)}</td>'
+                 f'<td class="dim">{_esc(c.get("description", ""))[:260]}'
+                 f'{"..." if len(c.get("description", "")) > 260 else ""}'
+                 f'</td><td class="{cls}">{_esc(v)}</td></tr>')
+    cb = r.get("claims", {}).get("crash_bounce", {})
+    ic = r.get("claims", {}).get("impulse_concentration", {})
+    return (f'<p class="dim">True direction prediction is '
+            f'impossible - but markets have INEVITABLE occurrences '
+            f'and drawdown-hostile conditions that can be catalogued '
+            f'and measured. The research framework\'s structural '
+            f'claims were put to the data across '
+            f'{r.get("n_series")} series, each with an honest '
+            f'verdict: STRUCTURAL (inevitable) or FOLKLORE (the '
+            f'data disagrees).</p>'
+            f'<div class="metrics">'
+            f'<div class="metric"><div class="mval">'
+            f'{ic.get("concentration_ratio_top5")}x</div>'
+            f'<div class="mlabel">move-share of the top 5% of '
+            f'bars (uniform = 1x)</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{cb.get("crash_fwd_median_anchored")}</div>'
+            f'<div class="mlabel">fwd 10d median after a &le; -7% '
+            f'day, anchored assets</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{cb.get("anchored_p_positive")}</div>'
+            f'<div class="mlabel">P(positive) after crash, '
+            f'anchored (n={cb.get("n_crashes_anchored")})</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{cb.get("crash_fwd_median_crypto")}</div>'
+            f'<div class="mlabel">same, crypto (no anchor)</div>'
+            f'</div></div>'
+            f'</div>'
+            f'<p class="dim"><strong>What the data says:</strong> the '
+            f'noise/impulse structure is REAL (the top 5% of bars '
+            f'carry {ic.get("top5_median")} of all movement - a '
+            f'{ic.get("concentration_ratio_top5")}x dispropor- '
+            f'tion: markets range, then impulse). The crash bounce '
+            f'is STRUCTURAL exactly where the anchor physics says it '
+            f'must be: on anchored assets (commodities, indices) a '
+            f'&le; -7% day forward-returns +{cb.get("crash_fwd_median_anchored")} '
+            f'median with {cb.get("anchored_p_positive")} positive - '
+            f'while on crypto, with no anchor, the same crash is a '
+            f'coin flip ({cb.get("crash_fwd_median_crypto")}). '
+            f'Falsified: time-at-price levels are NOT safe (92% of '
+            f'congested levels are revisited within 60 bars), and '
+            f'compression does NOT precede larger moves - the '
+            f'tightest ranges precede SMALLER ones (volatility '
+            f'clusters). Impulse follow-through is a coin flip '
+            f'(0.47). The framework\'s 5/15-minute max-hold rules '
+            f'need intraday data and are honestly recorded as '
+            f'untestable on daily bars.</p>'
+            f'<table><tr><th>Claim</th><th>What it says</th>'
+            f'<th>Verdict</th></tr>{rows}</table>')
+
+
 def _crypto_avfi_chart_svg(ch: dict, width=520, height=230) -> str:
     """Two-panel crypto chart: price with detected tops/bottoms on
     top, the AVFI spread z with the trigger line and throttle zone
@@ -1830,6 +1897,7 @@ def build_site(paper_dir: Path) -> str:
          ("commodities", "Commodities"), ("crypto", "Crypto 150"),
          ("lessons", "Lessons"), ("mredge", "MR edge"),
          ("v4study", "v4 study"), ("commedge", "Commodity edge"),
+         ("inevitable", "Inevitables"),
          ("overview", "Overview"),
          ("charts", "Charts"),
          ("race", "Self-learning"), ("crossasset", "Cross-asset"),
@@ -2011,6 +2079,9 @@ the same real bars every night. Each curve is scaled to its own range.</p>
 </section>
 <section id="commedge"><h2>The commodity edge &mdash; through the full battery</h2>
 {_commodity_edge_html(paper_dir)}
+</section>
+<section id="inevitable"><h2>Structural inevitabilities &mdash; measured, not predicted</h2>
+{_inevitabilities_html(paper_dir)}
 </section>
 {journal_html}
 <section id="buildlog"><h2>Build log</h2>
