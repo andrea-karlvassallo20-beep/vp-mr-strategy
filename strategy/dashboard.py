@@ -2275,6 +2275,23 @@ def build_site(paper_dir: Path) -> str:
             jd_line = (f"The judgment log: {n_j} human priors "
                        f"recorded in advance, waiting to be "
                        f"scored.")
+    by_path = paper_dir / "research" / "smh_bayes.json"
+    if by_path.exists() and jd_line:
+        by = json.loads(by_path.read_text())
+        if by.get("status") == "OK":
+            sb = by.get("scoreboard", {})
+            jd_line += (" The Bayesian blend (open problem 5): "
+                        f"human weight {by.get('human_weight')} "
+                        f"(earned by score, zero until "
+                        f"{by.get('min_scored')} scored "
+                        "judgments, capped at half); "
+                        + (f"model {sb.get('model_brier')}, "
+                           f"human {sb.get('human_brier')}, "
+                           f"blend {sb.get('blend_brier')} - "
+                           "the three-way scoreboard."
+                           if sb.get("model_brier") is not None
+                           else "the three-way scoreboard "
+                                "waits with the rows."))
     rc_path = paper_dir / "research" / "smh_recurrence.json"
     if rc_path.exists():
         rc = json.loads(rc_path.read_text())
