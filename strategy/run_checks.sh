@@ -72,6 +72,9 @@ python3 test_smh_forward.py
 echo "=== 8l SMH salience gradient + event anatomy (charter ticks 5 and 6) ==="
 python3 test_smh_gradient.py
 
+echo "=== 8z AVFI precursor battery (incremental information) ==="
+python3 test_avfi_precursor.py
+
 echo "=== 8m SMH precursor signature battery (open problem 3) ==="
 python3 test_smh_precursor.py
 
@@ -104,6 +107,9 @@ python3 test_timing_battery.py
 
 echo "=== 8y The exit battery (entry exits, fewer trades) ==="
 python3 test_exit_battery.py
+
+echo "=== 8aa Thesis presentation page ==="
+python3 test_thesis.py
 
 echo "=== 8v Full-universe tops/bottoms backtest ==="
 python3 test_tops_bottoms_backtest.py
