@@ -99,7 +99,8 @@ check("dollar-volume mode changes the flow",
           avfi_v3_series(h, l, c, v, 20, 20, volume_mode="dollar"),
           avfi_v3_series(h, l, c, v, 20, 20, volume_mode="shares")))
 check("variant grid is pre-committed and non-trivial",
-      len(VARIANT_GRID) == 84
+      len(VARIANT_GRID) == 88
+      and any(g.get("z_entry") == 2.5 for g in VARIANT_GRID)
       and any(g["trigger"] != DEFAULT_PARAMS["trigger"]
               for g in VARIANT_GRID)
       and any(g["vol_estimator"] == "garman_klass" for g in VARIANT_GRID)
@@ -121,7 +122,7 @@ check("iteration runs on cached CSVs", r["status"] == "OK"
 check("ledger records the deflated-Sharpe multiple-testing context",
       all(k in r["iteration"]["deflated_sharpe"]
           for k in ("sharpe", "n_trials", "dsr", "passes_95"))
-      and r["iteration"]["deflated_sharpe"]["n_trials"] == 84)
+      and r["iteration"]["deflated_sharpe"]["n_trials"] == 88)
 check("iteration ledger written with honest record",
       (tmp / "research" / "avfi_iterations.json").exists()
       and r["iteration"]["advanced"] in (True, False)

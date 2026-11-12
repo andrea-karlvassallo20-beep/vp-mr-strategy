@@ -88,6 +88,17 @@ VARIANT_GRID = [
     for em in ("detector", "topology3", "topology3_midvol")
     for tr in (-1.0, -1.5)
     for th in (0.5, 0.25)
+] + [
+    # DEEPER-ENTRY candidates: the stretch-depth curve (the one
+    # supported signal, ~22k events) says deeper stretch pays on
+    # its own scale at every depth with no falling knife - so the
+    # entry THRESHOLD itself goes to the dual-split gate, at the
+    # pre-committed anchor params
+    {"trigger": tr, "throttle": th, "ema_slow": 13, "pk_window": 10,
+     "vol_estimator": "parkinson", "volume_mode": "shares",
+     "z_entry": 2.5}
+    for tr in (-1.0, -1.5)
+    for th in (0.5, 0.25)
 ]
 
 
@@ -276,7 +287,8 @@ def throttle_backtest(high, low, close, volume,
         z = (logp[t] - mu) / sd
         confirmed = confirm is None or any(
             i in confirm for i in range(max(0, t - 3), t + 1))
-        if cur == 0.0 and abs(z) >= Z_ENTRY and confirmed:
+        z_entry = p.get("z_entry", Z_ENTRY)
+        if cur == 0.0 and abs(z) >= z_entry and confirmed:
             cur = -1.0 if z > 0 else 1.0   # short the top, long the bottom
             entries.append((t + 1, cur))
         elif cur != 0.0 and abs(z) <= Z_EXIT:
