@@ -2124,6 +2124,34 @@ def build_site(paper_dir: Path) -> str:
                 f"{c.get('concordance')}; deeper compression "
                 f"raises the event hazard ~1.45x per SD "
                 f"(z={c.get('z_stats', [0, 0])[1]})")
+    # the precursor card reads its verdict from the artifact -
+    # the honest answer to open problem 3, whatever it is
+    pr_path = paper_dir / "research" / "smh_precursor.json"
+    precursor_status = ("STATUS: open - the standing research "
+                        "question")
+    if pr_path.exists():
+        pr = json.loads(pr_path.read_text())
+        if pr.get("status") == "OK":
+            v = pr.get("verdict", {})
+            ds = pr.get("direction_split_first_events", {})
+            if v.get("precursor_beats_clock_oof"):
+                precursor_status = (
+                    "STATUS: a precursor beats the clock out of "
+                    "fold - see the proof section")
+            else:
+                precursor_status = (
+                    f"STATUS: MEASURED, NEGATIVE - on "
+                    f"{pr.get('n_episodes')} episodes no "
+                    f"weekly-observable footprint beats the "
+                    f"clock out of fold (full OOF "
+                    f"{v.get('full_oof_concordance')} vs "
+                    f"clock {v.get('clock_oof_concordance')}, "
+                    f"below the pre-declared margin); the "
+                    f"direction split is a coin flip: "
+                    f"p(up) = {ds.get('p_up')} "
+                    f"{ds.get('wilson_95')} at "
+                    f"n = {ds.get('n_events')} - the central "
+                    f"theorem's refusal, confirmed at scale")
     work_cards = "".join(
         f'<div class="book"><div class="btitle">{_esc(t)}</div>'
         f'<div class="bdesc dim">{_esc(d)}</div>'
@@ -2140,7 +2168,7 @@ def build_site(paper_dir: Path) -> str:
              "hazard above the tercile table? AVFI returns here - "
              "not as an inevitability, as a testable signature "
              "with a calibration score.",
-             "STATUS: open - the standing research question"),
+             precursor_status),
             ("The volume clock",
              "Clark's subordination: the efficient price evolves in "
              "trading time, clocked by volume. Needs finer data "
