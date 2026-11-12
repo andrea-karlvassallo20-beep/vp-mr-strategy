@@ -69,6 +69,24 @@ python3 test_smh_hazard.py
 echo "=== 8k SMH forward scoring protocol (draft, resolve, score, kill lines) ==="
 python3 test_smh_forward.py
 
+echo "=== 8l SMH salience gradient + event anatomy (charter ticks 5 and 6) ==="
+python3 test_smh_gradient.py
+
+echo "=== 8m SMH precursor signature battery (open problem 3) ==="
+python3 test_smh_precursor.py
+
+echo "=== 8n SMH machine live position (status reading) ==="
+python3 test_smh_status.py
+
+echo "=== 8o SMH conditional direction battery (law 3's cells) ==="
+python3 test_smh_direction.py
+
+echo "=== 8p SMH recurrence battery (the long-run lemma) ==="
+python3 test_smh_recurrence.py
+
+echo "=== 8q SMH temporal calibration (the forward log's dress rehearsal) ==="
+python3 test_smh_calibration.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 

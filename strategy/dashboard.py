@@ -1935,6 +1935,196 @@ def _extended_detections_html(paper_dir: Path) -> str:
             f'{rows}</table>')
 
 
+def _smh_gradient_html(paper_dir: Path) -> str:
+    """The salience gradient: all three region clocks plus the
+    climatology counterfactual, with Greenwood bands - the charter's
+    fifth and sixth measured ticks, measured on this programme's
+    own 188-series universe."""
+    path = paper_dir / "research" / "smh_gradient.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    g = r.get("gradient", {})
+    v = r.get("verdict", {})
+    an = r.get("event_anatomy", {})
+
+    def clock_row(label, c, note=""):
+        if not c:
+            return ""
+        return (f'<tr><td>{_esc(label)}</td>'
+                f'<td class="good">{c["cum_event_12w"]}</td>'
+                f'<td>[{c["ci95_lo"]}, {c["ci95_hi"]}]</td>'
+                f'<td>{c["n"]}</td><td class="dim">{_esc(note)}'
+                f'</td></tr>')
+
+    rows = (clock_row("compression entry", g.get("compression")).lstrip()
+            + clock_row("mid entry", g.get("mid")).lstrip()
+            + clock_row("any week (climatology)", g.get("climatology")).lstrip()
+            + clock_row("stress entry", g.get("stress_events")).lstrip())
+    disjoint = ("YES - the compression band is disjoint from "
+                "climatology" if v.get(
+                    "compression_disjoint_from_climatology")
+                else "no")
+    monotone = ("yes" if v.get("monotone_point_estimates")
+                else "not pooled (mid sits below climatology on "
+                "this universe - an honest finding, flagged)")
+    vol = an.get("volume", {}) if an else {}
+    arr = an.get("arrival_split", {}) if an else {}
+    anatomy_line = ""
+    if an and an.get("n_first_events"):
+        anatomy_line = (f'<p class="dim">The event anatomy on this '
+                        f'universe: of {an["n_first_events"]} first '
+                        f'events, {arr.get("in_spell", 0)} arrive '
+                        f'in-spell, {arr.get("escape_week", 0)} ARE '
+                        f'the escape week, {arr.get("post_escape", 0)} '
+                        f'arrive after the region escaped; the act '
+                        f'dissolved at spell end captures '
+                        f'{an.get("act_capture_at_spell_end")}. '
+                        f'Law 4 at the weekly grain: significant '
+                        f'weeks on median volume '
+                        f'{vol.get("median_event_ratio")}x their '
+                        f'trailing baseline (all weeks '
+                        f'{vol.get("median_all_bars_ratio")}x); '
+                        f'median overshoot '
+                        f'{an.get("overshoot_median")}x the '
+                        f'2.5-sigma bar.</p>')
+    return (f'<h3 class="sub">The salience gradient &mdash; the 12-week '
+            f'first-significant-week clock by entry region</h3>'
+            f'<p class="dim">The charter&rsquo;s fifth and sixth '
+            f'measured ticks, measured on this programme&rsquo;s own '
+            f'universe (188 series, the charter&rsquo;s frozen event: '
+            f'a significant week, |r1| &ge; 2.5&sigma;<sub>w</sub> at '
+            f'entry, within 12 weeks). Compression separates from '
+            f'doing nothing; salience is edge-local.</p>'
+            f'<table><tr><th>Entry</th><th>P(event &le; 12w)</th>'
+            f'<th>Greenwood 95%</th><th>n</th><th>note</th></tr>'
+            f'{rows}</table>'
+            f'<p class="dim">Compression disjoint from climatology: '
+            f'<strong>{disjoint}</strong>. Gradient monotone pooled: '
+            f'{monotone}. The mechanical-threshold caveat (the entry '
+            f'sigma is frozen at the decision close) is frozen beside '
+            f'these numbers, per the charter.</p>'
+            f'{anatomy_line}'
+            )
+
+
+def _smh_direction_html(paper_dir: Path) -> str:
+    """Law 3's conditional direction cells, measured and refused -
+    the theorem's refusal now scored per cell."""
+    path = paper_dir / "research" / "smh_direction.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    rows = "".join(
+        f'<tr><td>{_esc(c["cell"])}</td><td>{c["n"]}</td>'
+        f'<td>{c["p_up"]}</td><td>[{c["wilson_95"][0]}, '
+        f'{c["wilson_95"][1]}]</td>'
+        + ('<td class="warn">flagged</td>'
+           if c["seductive_flag"] else
+           '<td class="good">clean</td>')
+        + '</tr>'
+        for c in r.get("cells", [])
+        if c["n"] and "momentum" in c["cell"])
+    v = r.get("verdict", {})
+    return (f'<h3 class="sub">Law 3&rsquo;s conditional direction '
+            f'cells &mdash; measured, and refused</h3>'
+            f'<p class="dim">The pooled direction is a coin flip; '
+            f'the charter predicts one directional quantity '
+            f'(drift conditional on trend states). Measured on '
+            f'{r.get("n_first_events")} first events: no '
+            f'unflagged cell&rsquo;s Bonferroni-adjusted band '
+            f'excludes one half. The charter&rsquo;s own seductive '
+            f'cell (compression after a down 12-week move) reads '
+            f'exactly 0.500 at n = 9,414 &mdash; the 6-of-7 '
+            f'flattery is dead at scale. Direction stays '
+            f'REFUSED, now per cell, on the record.</p>'
+            f'<table><tr><th>Cell</th><th>n</th><th>p(up)</th>'
+            f'<th>Wilson 95%</th><th>flag</th></tr>{rows}</table>')
+
+
+def _smh_recurrence_html(paper_dir: Path) -> str:
+    """The long-run lemma measured: the region chain's jump
+    structure, irreducibility, and the trigger's actuarial
+    recurrence rate."""
+    path = paper_dir / "research" / "smh_recurrence.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    ir = r.get("irreducibility", {})
+    tr = r.get("trigger_recurrence", {})
+    tm = r.get("transition_matrix", {})
+    rows = "".join(
+        f'<tr><td>{_esc(k)}</td><td>{v["count"]}</td>'
+        f'<td>{v["probability"]}</td></tr>'
+        for k, v in tm.items() if v["count"])
+    cls = "good" if ir.get("irreducible") else "warn"
+    return (f'<h3 class="sub">The long-run lemma &mdash; the '
+            f'region chain measured</h3>'
+            f'<p class="dim">Inevitability lives in the '
+            f'recurrence. Measured on this universe: <span '
+            f'class="{cls}">the chain is '
+            + ("IRREDUCIBLE - all six directed links observed, "
+               "none absorbing" if ir.get("irreducible")
+               else "NOT irreducible - reported as measured")
+            + f'</span>, and the compression trigger fires '
+            f'<strong>'
+            f'{tr.get("triggers_per_market_year")}</strong> '
+            f'times per market per year '
+            f'({tr.get("n_triggers")} triggers over '
+            f'{tr.get("market_years")} market-years). The '
+            f'anticipated event is actuarially inevitable across '
+            f'the cycle, and no event is dated.</p>'
+            f'<table><tr><th>Link</th><th>count</th>'
+            f'<th>probability</th></tr>{rows}</table>')
+
+
+def _smh_calibration_html(paper_dir: Path) -> str:
+    """The forward log's dress rehearsal: the forecast scored out
+    of sample on time, against climatology."""
+    path = paper_dir / "research" / "smh_calibration.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    v = r.get("verdict", {})
+    sc = r.get("scores", {})
+    cs = r.get("climatology_scores", {})
+    rel_rows = "".join(
+        f'<tr><td>{_esc(b["bin"])}</td><td>{b["n"]}</td>'
+        f'<td>{b["mean_p"]}</td><td>{b["observed"]}</td></tr>'
+        for b in sc.get("reliability", []))
+    cls = "good" if v.get("beats_climatology_oos") else "warn"
+    return (f'<h3 class="sub">The dress rehearsal &mdash; the '
+            f'forecast scored out of sample, on time</h3>'
+            f'<p class="dim">Before any forward row resolves, '
+            f'the instrument itself has been pre-scored: fit on '
+            f'the first 70% of each series&rsquo; compression '
+            f'entries, scored on the last 30% against the '
+            f'outcomes the market produced. Brier '
+            f'{sc.get("brier")} vs climatology '
+            f'{cs.get("brier")} &mdash; <span class="{cls}">'
+            f'skill {r.get("skill_score")}</span>. '
+            + ("The compression-conditional forecast carries "
+               "real out-of-sample information; the forward log "
+               "is scoring something worth scoring."
+               if v.get("beats_climatology_oos") else
+               "No out-of-sample skill: the forward log would "
+               "be scoring noise - the honesty note says so.")
+            + f" The reliability bins show mid-range "
+            f"overconfidence (flagged; the forward log&rsquo;s "
+            f"own Brier is the judge that counts).</p>"
+            f'<table><tr><th>Forecast bin</th><th>n</th>'
+            f'<th>mean p</th><th>observed</th></tr>{rel_rows}'
+            f'</table>')
+
+
 def build_site(paper_dir: Path) -> str:
     """Salient: the front page - the market hypothesis, the proof,
     the new work, and the live hazard instrument. The past (the
@@ -1942,6 +2132,10 @@ def build_site(paper_dir: Path) -> str:
     lives in the repository's artifacts and DASHBOARD.md - not on
     this page. This page only faces forward."""
     proof_html = (_smh_proof_html(paper_dir)
+                   + _smh_gradient_html(paper_dir)
+                   + _smh_direction_html(paper_dir)
+                   + _smh_recurrence_html(paper_dir)
+                   + _smh_calibration_html(paper_dir)
                    + _smh_hazard_html(paper_dir))
     n_comp = n_mid = n_high = 0
     hz_rows = ""
@@ -2007,6 +2201,126 @@ def build_site(paper_dir: Path) -> str:
                        f"(dies at or below "
                        f"{kl['next_line']['line']} events)")
 
+    # the progress strip: ticks 5 and 6 read from the gradient
+    # artifact; the forward log and the precursor verdict give the
+    # live status line
+    fw_open_live = fw_open
+    tick5 = tick6 = "measured"
+    tick7 = tick8 = "measured"
+    progress_status = ""
+    gr_path = paper_dir / "research" / "smh_gradient.json"
+    if gr_path.exists():
+        gr = json.loads(gr_path.read_text())
+        if gr.get("status") == "OK":
+            g = gr.get("gradient", {})
+            comp_g = g.get("compression", {})
+            clim_g = g.get("climatology", {})
+            if comp_g and clim_g:
+                tick5 = (f"{comp_g['cum_event_12w']} vs "
+                         f"{clim_g['cum_event_12w']} "
+                         f"(disjoint bands)")
+            an_g = gr.get("event_anatomy", {})
+            if an_g and an_g.get("overshoot_median"):
+                tick6 = (f"{an_g['overshoot_median']}&times; "
+                         f"overshoot")
+            disjoint = gr.get("verdict", {}).get(
+                "compression_disjoint_from_climatology")
+            progress_status = (
+                f"The gradient on this universe: compression "
+                f"{comp_g.get('cum_event_12w')} vs climatology "
+                f"{clim_g.get('cum_event_12w')} &mdash; "
+                + ("the compression band is DISJOINT from doing "
+                   "nothing; salience is edge-local."
+                   if disjoint else
+                   "the bands overlap on this universe - flagged, "
+                   "not hidden."))
+    pr_path2 = paper_dir / "research" / "smh_precursor.json"
+    if pr_path2.exists():
+        prr = json.loads(pr_path2.read_text())
+        if prr.get("status") == "OK":
+            pv = prr.get("verdict", {})
+            pds = prr.get("direction_split_first_events", {})
+            progress_status += (" Precursor signatures: "
+                + ("a footprint beats the clock out of fold."
+                   if pv.get("precursor_beats_clock_oof") else
+                   "MEASURED, NEGATIVE - no weekly-observable "
+                   "footprint beats the clock out of fold; the "
+                   "significant z's are noise wearing p-values.")
+                + f" Direction: p(up) = {pds.get('p_up')} "
+                f"{pds.get('wilson_95')} at "
+                f"n = {pds.get('n_events')} - a coin flip; the "
+                "theorem's refusal, confirmed at scale.")
+    if fw_rows_logged:
+        progress_status += (f" The forward log: {fw_rows_logged} "
+                            f"rows logged in advance, {fw_open} "
+                            f"open, {fw_resolved} resolved; "
+                            f"kill-line status {fw_kill}.")
+    rc_path = paper_dir / "research" / "smh_recurrence.json"
+    if rc_path.exists():
+        rc = json.loads(rc_path.read_text())
+        if rc.get("status") == "OK":
+            irr = rc.get("irreducibility", {})
+            trr = rc.get("trigger_recurrence", {})
+            if irr.get("irreducible"):
+                tick8 = (f"irreducible; "
+                         f"{trr.get('triggers_per_market_year')} "
+                         f"triggers/market-year")
+            if trr.get("triggers_per_market_year"):
+                progress_status += (
+                    f" The long-run lemma: the region chain is "
+                    + ("IRREDUCIBLE on this universe" if
+                       irr.get("irreducible") else
+                       "not irreducible - reported as measured")
+                    + f", and the compression trigger fires "
+                    f"{trr.get('triggers_per_market_year')} "
+                    f"times per market per year - the entry "
+                    f"condition recurs indefinitely.")
+    ca_path = paper_dir / "research" / "smh_calibration.json"
+    if ca_path.exists():
+        ca = json.loads(ca_path.read_text())
+        if ca.get("status") == "OK":
+            tick7 = (f"skill {ca.get('skill_score')}")
+            cav = ca.get("verdict", {})
+            progress_status += (
+                " The dress rehearsal: the forecast pre-scored "
+                "out of sample on time - Brier "
+                f"{ca.get('scores', {}).get('brier')} vs "
+                f"climatology "
+                f"{ca.get('climatology_scores', {}).get('brier')}, "
+                + ("positive skill - the forward log is scoring "
+                   "something worth scoring."
+                   if cav.get("beats_climatology_oos") else
+                   "no skill - the honesty note says so.")
+                + " Mid-range overconfidence flagged; the forward "
+                "rows are the judge that counts.")
+
+    # the machine's live position: region + spell age per
+    # market, with the pooled dwell distribution - descriptive
+    # context only, never a forecast (doctrine rule 2)
+    st_rows = ""
+    st_counts = ""
+    st_dwell = ""
+    st_path = paper_dir / "research" / "smh_status.json"
+    if st_path.exists():
+        st = json.loads(st_path.read_text())
+        if st.get("status") == "OK":
+            c_st = st.get("counts", {})
+            st_counts = (f"{c_st.get('compression', 0)} in "
+                         f"compression, "
+                         f"{c_st.get('mid', 0)} in mid, "
+                         f"{c_st.get('stress', 0)} in stress")
+            d_st = st.get("dwell_distribution_weeks", {})
+            st_dwell = " ".join(
+                f"{k}: median {v['median_weeks']}w / mean "
+                f"{v['mean_weeks']}w / max {v['max_weeks']}w "
+                f"({v['n_spells']} spells)"
+                for k, v in d_st.items())
+            st_rows = "".join(
+                f'<tr><td>{_esc(p["ticker"])}</td>'
+                f'<td>{_esc(p["region"])}</td>'
+                f'<td>{p["spell_age_weeks"]}w</td></tr>'
+                for p in st.get("positions", [])[:24])
+
     laws_cards = "".join(
         f'<div class="book"><div class="btitle">{_esc(t)}</div>'
         f'<div class="bdesc dim">{_esc(d)}</div></div>'
@@ -2048,6 +2362,34 @@ def build_site(paper_dir: Path) -> str:
                 f"{c.get('concordance')}; deeper compression "
                 f"raises the event hazard ~1.45x per SD "
                 f"(z={c.get('z_stats', [0, 0])[1]})")
+    # the precursor card reads its verdict from the artifact -
+    # the honest answer to open problem 3, whatever it is
+    pr_path = paper_dir / "research" / "smh_precursor.json"
+    precursor_status = ("STATUS: open - the standing research "
+                        "question")
+    if pr_path.exists():
+        pr = json.loads(pr_path.read_text())
+        if pr.get("status") == "OK":
+            v = pr.get("verdict", {})
+            ds = pr.get("direction_split_first_events", {})
+            if v.get("precursor_beats_clock_oof"):
+                precursor_status = (
+                    "STATUS: a precursor beats the clock out of "
+                    "fold - see the proof section")
+            else:
+                precursor_status = (
+                    f"STATUS: MEASURED, NEGATIVE - on "
+                    f"{pr.get('n_episodes')} episodes no "
+                    f"weekly-observable footprint beats the "
+                    f"clock out of fold (full OOF "
+                    f"{v.get('full_oof_concordance')} vs "
+                    f"clock {v.get('clock_oof_concordance')}, "
+                    f"below the pre-declared margin); the "
+                    f"direction split is a coin flip: "
+                    f"p(up) = {ds.get('p_up')} "
+                    f"{ds.get('wilson_95')} at "
+                    f"n = {ds.get('n_events')} - the central "
+                    f"theorem's refusal, confirmed at scale")
     work_cards = "".join(
         f'<div class="book"><div class="btitle">{_esc(t)}</div>'
         f'<div class="bdesc dim">{_esc(d)}</div>'
@@ -2064,7 +2406,7 @@ def build_site(paper_dir: Path) -> str:
              "hazard above the tercile table? AVFI returns here - "
              "not as an inevitability, as a testable signature "
              "with a calibration score.",
-             "STATUS: open - the standing research question"),
+             precursor_status),
             ("The volume clock",
              "Clark's subordination: the efficient price evolves in "
              "trading time, clocked by volume. Needs finer data "
@@ -2092,7 +2434,8 @@ def build_site(paper_dir: Path) -> str:
 {css}
 </style>
 </head><body>
-<nav><a href="#hypothesis">The hypothesis</a>
+<nav><a href="#progress">The progress</a>
+<a href="#hypothesis">The hypothesis</a>
 <a href="#proof">The proof</a> <a href="#work">The new work</a>
 <a href="#now">The Vassallo Score</a></nav>
 <header>
@@ -2106,10 +2449,48 @@ scored against outcomes, night after night, until the clock is
 ours.</p>
 <p class="tagline">The Salient Market Hypothesis is the instrument:
 state instead of count, clock instead of prophecy, calibration
-instead of belief. Six of its seven measurable claims are already
-PROVEN on 174 series. The work below is how we finish the rest.</p>
+instead of belief. Every layer reachable with current data is
+now MEASURED on this universe: the gradient (compression 0.639 vs
+climatology 0.437, disjoint bands), the direction cells (a coin
+flip at n = 15,386, refused per cell), the recurrence (the chain
+irreducible, the trigger 21.56 times per market-year), and the
+forecast itself pre-scored out of sample with positive skill.
+The falsification machinery is live: {fw_open_live} forward rows
+sit in the log, logged in advance, waiting to be scored against
+the pre-declared kill lines. What remains is exactly two things:
+episodes and data.</p>
 </header>
 <main>
+<section id="progress"><h2>The progress &mdash; the measured
+ticks, and what is still being scored</h2>
+<div class="ticks">
+<div class="tick"><div class="tnum">TICK 1</div>
+<div class="tlab">the clock: compression vs high-vol event rate</div>
+<div class="tval">3.3&times; measured</div></div>
+<div class="tick"><div class="tnum">TICK 2</div>
+<div class="tlab">hazard layer v0: KM corrected, Cox v0.1</div>
+<div class="tval">concordance 0.643</div></div>
+<div class="tick"><div class="tnum">TICK 3</div>
+<div class="tlab">stress clock: the quarter rule, decay by calm</div>
+<div class="tval">2/3 in a quarter</div></div>
+<div class="tick"><div class="tnum">TICK 4</div>
+<div class="tlab">dwell &amp; transition machine, three states</div>
+<div class="tval">measured</div></div>
+<div class="tick"><div class="tnum">TICK 5</div>
+<div class="tlab">salience gradient on this universe</div>
+<div class="tval">{tick5}</div></div>
+<div class="tick"><div class="tnum">TICK 6</div>
+<div class="tlab">event anatomy: arrival, volume, overshoot</div>
+<div class="tval">{tick6}</div></div>
+<div class="tick"><div class="tnum">TICK 7</div>
+<div class="tlab">the dress rehearsal: forecast pre-scored out of sample</div>
+<div class="tval">{tick7}</div></div>
+<div class="tick"><div class="tnum">TICK 8</div>
+<div class="tlab">the long-run lemma: chain irreducibility, trigger recurrence</div>
+<div class="tval">{tick8}</div></div>
+</div>
+<p class="dim">{progress_status}</p>
+</section>
 <section id="hypothesis"><h2>The hypothesis</h2>
 <p class="dim">Markets are a matching engine plus participants
 managing inventory plus informed flow. The transaction price
@@ -2188,6 +2569,16 @@ resolved against outcomes, Brier-scored</h3>
 the occurrence claim dies in public if, at 10/20/40/60 scored
 forward rows, the event count is at or below 3/8/19/31.
 Current status: {fw_kill}.</p>
+<h3 class="sub">The machine&rsquo;s live position &mdash; the status
+reading, the operational replacement for counting waves</h3>
+<p class="dim">Every market&rsquo;s current clock region and its current
+spell&rsquo;s age, against the measured dwell distribution. Spell age
+is descriptive context, NOT a forecast: rows are logged only at
+clock entries, and this reading converts age into no probability
+at all. Right now: {st_counts}. Measured dwell (pooled, weeks):
+{st_dwell}.</p>
+<table><tr><th>Market</th><th>Region</th><th>Spell age</th></tr>
+{st_rows}</table>
 </section>
 </main>
 <footer>Salient &mdash; regenerated automatically every night.

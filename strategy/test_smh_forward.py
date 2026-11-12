@@ -12,8 +12,10 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent))
 from fetch_data import write_csv
-from smh_forward import (HORIZON, KILL_LINES, _tercile_states,
-                         _baseline_surv, build_stress_episodes,
+from smh_gradient import HORIZON, _tercile_states
+from smh_forward import (KILL_LINES, _baseline_surv,
+                         build_compression_episodes,
+                         build_stress_episodes,
                          draft_and_resolve)
 
 PASS = FAIL = 0
@@ -125,7 +127,8 @@ log["rows"].append({
     "momentum_20": 0.0, "sigma_pct": 0.1,
     "forecast_p": 0.634,
     "logged_utc": "2026-11-12T00:00:00+00:00",
-    "status": "open", "outcome": None,
+    "status": "open", "definition": "sigweek",
+    "outcome": None,
 })
 dest.write_text(json.dumps(log))
 r3 = draft_and_resolve(data_dir, res_dir)
