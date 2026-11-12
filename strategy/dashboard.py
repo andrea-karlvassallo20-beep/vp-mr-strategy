@@ -2125,6 +2125,59 @@ def _smh_calibration_html(paper_dir: Path) -> str:
             f'</table>')
 
 
+def _trade_inevitables_html(paper_dir: Path) -> str:
+    """The trade-inevitables: the rule additions, measured -
+    including the negative results, which are rules too."""
+    path = paper_dir / "research" / "trade_inevitables.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    t1 = r.get("t1_armed_clock_drawdown", {})
+    t2 = r.get("t2_crash_depth_gradient", {})
+    t3 = r.get("t3_post_event_calm", {})
+    rows = "".join(
+        f'<tr><td>{_esc(b.get("depth", k))}</td><td>{b.get("n")}'
+        f'</td><td>{b.get("median_fwd_4w")}</td>'
+        f'<td>{b.get("p_positive")}</td></tr>'
+        for k, b in t2.get("buckets", {}).items()
+        if b.get("median_fwd_4w") is not None)
+    return (f'<h3 class="sub">The trade-inevitables &mdash; the '
+            f'rule additions, measured (charter section 15)</h3>'
+            f'<p class="dim">Layer 5 of the architecture: entry, '
+            f'invalidation and exposure from measured '
+            f'distributions. T1: the armed clock&rsquo;s waiting '
+            f'drawdown (median '
+            f'{t1.get("median_waiting_mae_sigma_bars")} '
+            f'sigma-bars) vs the event&rsquo;s own size ('
+            f'{t1.get("median_event_size_sigma_bars")}) &mdash; '
+            f'RR by construction '
+            f'{t1.get("rr_by_construction")}: '
+            + ("the clock is a timing instrument, not a "
+               "low-drawdown structure; the stop comes from the "
+               "exposure layer."
+               if "FOLKLORE" in t1.get("verdict", "") else
+               t1.get("verdict", ""))
+            + f" T3: the post-event calm reads "
+            f"p = {t3.get('p_next_week_quiet')} at the pooled "
+            "grain - no calm re-entry window at this grain "
+            "(a rule by refusal). The crash bounce on anchored "
+            "assets, by depth:</p>"
+            f'<table><tr><th>Weekly crash depth</th><th>n</th>'
+            f'<th>median fwd 4w</th><th>p(positive)</th></tr>'
+            f'{rows}</table>'
+            f'<p class="dim">The measured best-buy zone is the '
+            f'MODERATE weekly crash (-5% to -10%: +2.0%/+2.2% '
+            f'median, 60-62% positive); the nuclear-red '
+            f'(-15% and worse) reads lower - the -15% rule as '
+            f'stated is FOLKLORE on these assets, and the '
+            f'moderate-crash zone stays flagged until '
+            f'forward-scored (doctrine rule 5). Design-sample '
+            f'caveat on every number: the forward calibration '
+            f'record remains the test that matters.</p>')
+
+
 def build_site(paper_dir: Path) -> str:
     """Salient: the front page - the market hypothesis, the proof,
     the new work, and the live hazard instrument. The past (the
@@ -2136,6 +2189,7 @@ def build_site(paper_dir: Path) -> str:
                    + _smh_direction_html(paper_dir)
                    + _smh_recurrence_html(paper_dir)
                    + _smh_calibration_html(paper_dir)
+                   + _trade_inevitables_html(paper_dir)
                    + _smh_hazard_html(paper_dir))
     n_comp = n_mid = n_high = 0
     hz_rows = ""
