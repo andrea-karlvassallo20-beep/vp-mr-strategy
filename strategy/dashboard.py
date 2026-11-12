@@ -2311,6 +2311,40 @@ def _avfi_precursor_html(paper_dir: Path) -> str:
             f'</th></tr>{rows}</table>')
 
 
+def _short_mirror_html(paper_dir: Path) -> str:
+    """The short mirror: is the long-only philosophy a
+    measurement?"""
+    path = paper_dir / "research" / "short_mirror.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    mod = r.get("moderate_euphoria_short", {})
+    nuc = r.get("nuclear_euphoria_short", {})
+    if "median_net" not in mod:
+        return ""
+    rows = ""
+    for label, c in (("moderate euphoria short "
+                      "(+5..10% weekly)", mod),
+                     ("nuclear euphoria short "
+                      "(+10..15% weekly)", nuc)):
+        gate = ('<span class="good">pass</span>'
+                if c.get("dual_split_gate")
+                else '<span class="warn">fail</span>')
+        rows += (f'<tr><td>{label}</td><td>{c.get("n")}'
+                 f'</td><td>{c.get("median_net")}</td>'
+                 f'<td>{c.get("p_positive")}</td><td>{gate}'
+                 f'</td></tr>')
+    return (f'<h3 class="sub">The short mirror &mdash; is the '
+            f'long-only philosophy a measurement?</h3>'
+            f'<p class="dim">{_esc(r.get("verdict", ""))}'
+            f'</p>'
+            f'<table><tr><th>cell</th><th>n</th>'
+            f'<th>median net</th><th>P(+)</th><th>gate</th>'
+            f'</tr>{rows}</table>')
+
+
 def _law4_battery_html(paper_dir: Path) -> str:
     """The law-4 battery: effort vs result at the crash-zone
     entry - does the volume read gate the bounce?"""
@@ -2539,6 +2573,7 @@ def build_site(paper_dir: Path) -> str:
                    + _trade_inevitables_html(paper_dir)
                    + _philosopher_html(paper_dir)
                    + _law4_battery_html(paper_dir)
+                   + _short_mirror_html(paper_dir)
                    + _exit_battery_html(paper_dir)
                    + _smh_hazard_html(paper_dir))
     n_comp = n_mid = n_high = 0
