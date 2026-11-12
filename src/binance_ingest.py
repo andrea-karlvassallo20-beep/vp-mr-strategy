@@ -9,10 +9,13 @@ docs/data_dictionary.md for what each feed can and cannot measure.
 
 import argparse
 import io
+import re
 import zipfile
 from pathlib import Path
 
 import pandas as pd
+
+_ALPHA = re.compile(r"[A-Za-z]")
 
 AGG_TRADES_COLUMNS = [
     "agg_trade_id",
@@ -58,7 +61,14 @@ def _read_table(path: Path) -> pd.DataFrame:
         data = path.read_bytes()
         head = data[: data.index(b"\n")].decode("utf-8", errors="replace").strip()
         buf = io.BytesIO(data)
-    has_header = "price" in head.lower() or "best_bid_price" in head.lower()
+    has_header = any(
+        k in head.lower()
+        for k in (
+            "price", "quantity", "agg_trade_id", "best_bid", "update_id",
+            "transact_time", "calc_time", "create_time", "symbol",
+            "timestamp", "notional",
+        )
+    )
     header = 0 if has_header else None
     df = pd.read_csv(buf, header=header, low_memory=False)
     df.columns = [str(c).strip().lower() for c in df.columns]
@@ -156,13 +166,74 @@ def load_book_ticker(path: Path) -> pd.DataFrame:
     return _require_monotonic(out, "ts_exchange_us", path)
 
 
+def load_funding_rate(path: Path) -> pd.DataFrame:
+    """Normalized schema (upstream-cause variable for C7):
+    ts_exchange_us  int64  UTC microseconds (calc_time, ms -> us)
+    interval_hours  int64  funding interval
+    funding_rate   float64  last_funding_rate (fractional, per interval)
+    """
+    df = _read_table(path)
+    cols = [str(c).strip().lower() for c in df.columns]
+    if "calc_time" not in cols:
+        raise ValueError(f"{path}: unexpected fundingRate schema {cols}")
+    out = pd.DataFrame({
+        "ts_exchange_us": _ms_to_us(df["calc_time"]),
+        "interval_hours": pd.to_numeric(df["funding_interval_hours"],
+                                        errors="raise").astype("int64"),
+        "funding_rate": pd.to_numeric(df["last_funding_rate"],
+                                      errors="raise").astype("float64"),
+    })
+    return _require_monotonic(out, "ts_exchange_us", path)
+
+
+METRICS_COLUMNS = [
+    "sum_open_interest",
+    "sum_open_interest_value",
+    "count_toptrader_long_short_ratio",
+    "sum_toptrader_long_short_ratio",
+    "count_long_short_ratio",
+    "sum_taker_long_short_vol_ratio",
+]
+
+
+def load_metrics(path: Path) -> pd.DataFrame:
+    """Normalized schema (upstream-cause variables for C7). FLAG: the
+    archive's create_time is a naive string; it is parsed as UTC per
+    Binance convention and this is stated rather than silently assumed.
+    ts_exchange_us  int64  UTC microseconds (create_time parsed as UTC)
+    six metric columns, float64, NaNs rejected
+    """
+    df = _read_table(path)
+    cols = [str(c).strip().lower() for c in df.columns]
+    if "create_time" not in cols or "sum_open_interest" not in cols:
+        raise ValueError(f"{path}: unexpected metrics schema {cols}")
+    ts = pd.to_datetime(df["create_time"], utc=True,
+                        errors="raise", format="mixed")
+    if ts.isna().any():
+        raise ValueError(f"{path}: unparseable create_time")
+    out = pd.DataFrame({
+        "ts_exchange_us": (ts.astype("int64") // 1000).astype("int64"),
+    })
+    for c in METRICS_COLUMNS:
+        v = pd.to_numeric(df[c], errors="raise").astype("float64")
+        if v.isna().any():
+            raise ValueError(f"{path}: NaN in {c}")
+        out[c] = v
+    return _require_monotonic(out, "ts_exchange_us", path)
+
+
 def _output_path(out_dir: Path, stem: str) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     return out_dir / f"{stem}.parquet"
 
 
 def convert_files(src_dir: Path, out_dir: Path, kind: str) -> int:
-    loader = {"aggtrades": load_agg_trades, "bookticker": load_book_ticker}[kind]
+    loader = {
+        "aggtrades": load_agg_trades,
+        "bookticker": load_book_ticker,
+        "fundingrate": load_funding_rate,
+        "metrics": load_metrics,
+    }[kind]
     paths = sorted(p for p in src_dir.rglob("*") if p.suffix in {".csv", ".zip"})
     if not paths:
         print(f"no .csv/.zip files under {src_dir}")
@@ -179,7 +250,7 @@ def convert_files(src_dir: Path, out_dir: Path, kind: str) -> int:
 
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("kind", choices=["aggtrades", "bookticker"])
+    ap.add_argument("kind", choices=["aggtrades", "bookticker", "fundingrate", "metrics"])
     ap.add_argument("--src", type=Path, required=True, help="raw archive dir")
     ap.add_argument("--out", type=Path, required=True, help="parquet out dir")
     args = ap.parse_args(argv)

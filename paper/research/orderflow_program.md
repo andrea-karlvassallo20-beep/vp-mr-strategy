@@ -1,5 +1,35 @@
 # Order-Flow / Liquidity Research Program — Falsification First
 
+## THE MAIN PREMISE (v2, Andrea's directive, Nov 2026)
+
+**Knowing WHAT will move is the primary question; WHEN is the supporting
+clock.** The premise of the Salient Market Hypothesis is restated: the object
+of prediction is not the timing of a move in a single instrument but the
+identification, across the whole universe of markets, of the one that has
+become structurally primed — the lion whose frustration has been building,
+not the lion's muscles one second before the strike. If the primed state is
+correctly identified, the significant move is actuarially inevitable across
+the cycle (the thesis's own life-table framing: no death dated, death
+certain), and the trade needs no daily probabilities — only the capital to
+survive the wait. This is why 99.9999% lose: they trade probabilities in
+everything, instead of inevitabilities in one thing.
+
+The premise in falsifiable form: cross-sectional priming (compression depth
++ effort-vs-result absorption + positioning extremes) raises the
+conditional probability of a significant move over a long horizon toward
+inevitability, and the cross-sectional RANKING carries more information than
+any single-market timing model. This is claim C7, below — now the primary
+claim of the program. The laboratory restates honestly: "surety" cannot be
+claimed (a surety claim cannot fail, and a claim that cannot fail is
+marketing); what CAN be claimed and measured is conditional probability
+approaching certainty as the horizon lengthens, cross-sectionally, with the
+drawdown constraint that inevitability-without-a-date imposes on the wait.
+Andrea's "look at EVERYTHING" directive is adopted with one binding
+constraint: the wider the clue-search, the harder the Deflated Sharpe
+correction — searching everything multiplies effective trials, and every
+variable admitted to the priming score must survive the vol-tautology
+check that killed C1.
+
 Status: PROGRAM DECLARATION, updated after C1 (see `c1_hazard_report.md` and
 `l2_data_acquisition_spec.md`). The daily-resolution program is CLOSED.
 
@@ -183,6 +213,37 @@ proxy) covariates. WHICH WAY and HOW MUCH are blocked, not merely unmodeled.
 - **WHAT IT CANNOT TELL YOU:** As above; no proxy substitution is permitted.
   Daily "OFI" proxies computed from close-to-close price and volume are
   explicitly refused — they measure neither orders nor flow.
+
+### C7 — cross-sectional priming (the WHAT claim) — THE PRIMARY CLAIM
+
+- **CLAIM:** Markets in the highest structural-pressure decile (compression
+  depth + effort-vs-result absorption + positioning extremes: funding rate,
+  open interest, long/short ratios, taker imbalance) realize a significant
+  move within a long horizon (12 weeks) at a rate materially above
+  climatology, and the cross-sectional ranking carries more information than
+  any single-market timing model.
+- **MECHANISM:** Unresolved pressure accumulates: absorbed flow (effort
+  without result), one-sided positioning (funding/OI extremes — the
+  market's version of the lion's unresolved grievance), and a tightening
+  coil. The pressure must express; the date is surrendered, the occurrence
+  is not.
+- **TEST:** The 156-pair panel + the wider series universe with the existing
+  machinery: group-aware purged CV (crypto pairs share a common factor;
+  treating them as independent leaks it across folds), climatology baseline,
+  Deflated Sharpe Ratio with effective-trials correction for the
+  everything-search, funding/OI/metrics ingested as upstream-cause variables
+  (free Binance archives: `fundingRate`, `metrics` — loaders built and
+  tested).
+- **KILL LINES (pre-declared):** (1) the primed-decile realization rate's CI
+  overlaps climatology; (2) the effect survives only on synthetic-volume
+  pairs; (3) the ranking's information vanishes once the volatility level
+  is conditioned on — the vol-tautology ghost, the exact lesson C1 died
+  from: is the "building beneath" real pressure, or just quiet markets
+  being quiet?
+- **STATUS:** untested.
+- **WHAT IT CANNOT TELL YOU:** direction, date, or surety — only measured
+  inevitability-conditional-on-state, with the drawdown constraint of the
+  undated wait.
 
 ### Direction (WHICH WAY) — pre-declared dead on current data
 

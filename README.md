@@ -1,11 +1,26 @@
 # Salient / vp-mr-strategy — A Falsification-First Market Research Programme
 
-**The one-line summary:** a research knowledge base and falsification lab for a
-single question — *can order-flow and liquidity structure predict WHEN and
-WHICH WAY a major price move happens?* — run under adversarial falsification:
-every claim is declared with its kill line before it is tested, and when a
-claim dies, the dead mechanism is named. Nothing here will ever trade live;
-the asset is the method.
+**The one-line summary:** a research knowledge base and falsification lab for
+one primary question — *out of the whole universe of markets, WHAT has become
+structurally primed to make the next significant move?* — with WHEN as the
+supporting clock and WHICH WAY explicitly refused by measurement. It is run
+under adversarial falsification: every claim is declared with its kill line
+before it is tested, and when a claim dies, the dead mechanism is named.
+Nothing here will ever trade live; the asset is the method.
+
+**The main premise (v2):** knowing WHAT will move is the primary object of
+prediction. If the primed state is correctly identified, the significant move
+is actuarially inevitable across the cycle — no death dated, death certain —
+and the trade needs no daily probabilities, only the capital to survive the
+wait. This is why 99.9999% lose: they trade probabilities in everything
+instead of inevitabilities in one thing. The premise is falsifiable as claim
+C7 (cross-sectional priming), the program's primary claim; "surety" itself
+cannot be claimed — what can be measured is conditional probability
+approaching certainty as the horizon lengthens, with the drawdown constraint
+that inevitability-without-a-date imposes. The "look at EVERYTHING" directive
+is adopted with one binding constraint: the wider the clue-search, the harder
+the Deflated Sharpe correction, and every variable admitted to the priming
+score must survive the vol-tautology check that killed C1.
 
 **Status: FROZEN in a strict holding pattern.** The daily-resolution program
 is closed (its central claim was falsified). The next phase — C1 re-run at L2
