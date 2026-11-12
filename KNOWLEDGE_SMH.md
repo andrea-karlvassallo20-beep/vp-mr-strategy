@@ -756,3 +756,18 @@ construction - they test different claims on the same
 episode, and each row says so in its own record. The
 incremental finding stops being design-sample the day its
 first rows resolve.
+
+Addendum to section 17.2 (12 November 2026, second addendum):
+the Cox layer asked the same question the forward log now
+scores. Adding the AVFI stretch-z as a third entry covariate
+to the hazard model does NOT earn its slot out of fold: OOF
+concordance 0.626 with stretch vs 0.627 for the two-covariate
+production model (duration alone = 0.5), stretch z = 1.88
+(below 1.96). The section-17 cell's hazard content rides the
+clock's own state - the compression cross itself - not an
+entry-time refinement of it. The two-covariate Vassallo Score
+stands, and the honest structure is now complete: the
+incremental content is real at the CELL level (0.657 vs
+0.635, disjoint bands), but it is the clock's state doing
+the work, which is why it must be scored forward as its own
+row kind rather than folded into the Cox refinement.

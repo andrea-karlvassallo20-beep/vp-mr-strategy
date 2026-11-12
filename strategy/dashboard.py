@@ -2527,6 +2527,7 @@ def build_site(paper_dir: Path) -> str:
     vs_top_score = vs_top_ticker = "-"
     vs_count = 0
     vs_mean = "-"
+    vs_stretch_line = ""
     vs_path = paper_dir / "research" / "smh_hazard.json"
     if vs_path.exists():
         vr = json.loads(vs_path.read_text())
@@ -2546,6 +2547,11 @@ def build_site(paper_dir: Path) -> str:
                 f'<td>{s["sigma_pct"]}</td>'
                 f'<td>{s["momentum_20"]}</td></tr>'
                 for s in scores[:40])
+        sv = vr.get("stretch_oof", {})
+        if sv.get("verdict"):
+            vs_stretch_line = (
+                " The section-17 covariate question, out of "
+                "fold: " + _esc(sv["verdict"]))
 
     fw_rows_logged = fw_open = fw_resolved = 0
     jd_line = ""
@@ -2980,7 +2986,7 @@ that into an ABSOLUTE probability of a significant event
 <strong>score = 1 &minus; S<sub>0</sub>(20)<sup>exp(&beta;&middot;z)</sup></strong>.
 Strictly causal, stated in advance, scored against outcomes every
 night &mdash; and never a direction, per the central theorem.
-This is the future event we see and can explain.</p>
+This is the future event we see and can explain.{vs_stretch_line}</p>
 <div class="metrics">
 <div class="metric"><div class="mval">{vs_top_score}</div>
 <div class="mlabel">highest Vassallo Score now ({vs_top_ticker})</div></div>
