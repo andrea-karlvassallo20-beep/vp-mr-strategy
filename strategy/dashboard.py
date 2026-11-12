@@ -2196,15 +2196,19 @@ def _philosopher_html(paper_dir: Path) -> str:
         tb = json.load(open(tb_path))
         pooled = tb.get("pooled", {})
         if pooled.get("n"):
-            tb_line = (" The timing card, measured: median "
-                       "bounce peak at week "
-                       f"{pooled.get('median_peak_week')}, "
-                       "P(positive by week 1) "
-                       f"{pooled.get('p_positive_week1')}, "
-                       "by week 4 "
-                       f"{pooled.get('p_positive_week4')}; "
-                       "the WHEN prediction rides on every "
-                       "candidate.")
+            tb_line = (" The timing card, measured, rides "
+                       "REGION-SPECIFIC on every verdict: "
+                       "compression-at-crash entries peak at "
+                       "week "
+                       f"{tb.get('by_region', {}).get('compression', {}).get('median_peak_week')} "
+                       "(n = "
+                       f"{tb.get('by_region', {}).get('compression', {}).get('n')}) "
+                       "vs the pooled week "
+                       f"{pooled.get('median_peak_week')}; "
+                       "P(positive by week 4) "
+                       f"{pooled.get('p_positive_week4')} "
+                       "pooled - the WHEN prediction, region "
+                       "by region, small samples carried.")
     cands = [x for x in r.get("verdicts", [])
              if x["verdict"] in ("LONG_CANDIDATE",
                                  "LONG_CANDIDATE_FLAGGED")]
