@@ -24,11 +24,42 @@ sys.path.insert(0, str(Path(__file__).parent))
 from fetch_data import fetch_yfinance, write_csv
 
 CRYPTO = [
-    "BTC-USD", "ETH-USD", "SOL-USD", "BNB-USD", "XRP-USD",
-    "ADA-USD", "DOGE-USD", "AVAX-USD", "LINK-USD", "DOT-USD",
-    "LTC-USD", "BCH-USD", "UNI-USD", "ATOM-USD", "XLM-USD",
-    "NEAR-USD", "APT-USD", "ARB-USD", "OP-USD", "FIL-USD",
-    "ETC-USD", "HBAR-USD", "ICP-USD", "ALGO-USD", "AAVE-USD",
+    # plain spot USD pairs (TradingView-style
+    # non-volume USD: BTCUSD, ETHUSD, ...), verified to
+    # resolve on the data source with the earliest daily
+    # history. Stablecoins excluded (no MR signal).
+    "BTC-USD", "ETH-USD", "SOL-USD", "XRP-USD", "BNB-USD",
+    "ADA-USD", "DOGE-USD", "TRX-USD", "AVAX-USD", "LINK-USD",
+    "DOT-USD", "TON-USD", "LTC-USD", "BCH-USD", "SHIB-USD",
+    "ATOM-USD", "XLM-USD", "NEAR-USD", "ETC-USD", "ARB-USD",
+    "OP-USD", "FIL-USD", "HBAR-USD", "ICP-USD", "ALGO-USD",
+    "AAVE-USD", "VET-USD", "INJ-USD", "SEI-USD", "TIA-USD",
+    "SAND-USD", "MANA-USD", "AXS-USD", "EGLD-USD", "THETA-USD",
+    "RUNE-USD", "MINA-USD", "FLOW-USD", "XTZ-USD", "CHZ-USD",
+    "ENJ-USD", "ROSE-USD", "CRV-USD", "SNX-USD", "SUSHI-USD",
+    "1INCH-USD", "YFI-USD", "MKR-USD", "LDO-USD", "DYDX-USD",
+    "PENDLE-USD", "JUP-USD", "PYTH-USD", "WIF-USD", "BONK-USD",
+    "FLOKI-USD", "ORDI-USD", "KAS-USD", "CFX-USD", "LPT-USD",
+    "AR-USD", "OCEAN-USD", "FET-USD", "WLD-USD", "NOT-USD",
+    "ZIL-USD", "QNT-USD", "CELO-USD", "AMP-USD", "XEC-USD",
+    "GNO-USD", "BAT-USD", "ZRX-USD", "KSM-USD", "ENS-USD",
+    "ANKR-USD", "CELR-USD", "STORJ-USD", "SKL-USD", "COTI-USD",
+    "ORBS-USD", "LSK-USD", "WAVES-USD", "ZEN-USD", "IOTA-USD",
+    "SXP-USD", "DGB-USD", "ARDR-USD", "KAVA-USD", "BAND-USD",
+    "RLC-USD", "TRB-USD", "NMR-USD", "BAL-USD", "YGG-USD",
+    "AUDIO-USD", "MTL-USD", "DENT-USD", "POWR-USD", "HIVE-USD",
+    "ARKM-USD", "ETHFI-USD", "STRK-USD", "MANTA-USD", "MUMU-USD",
+    "TURBO-USD", "MYRO-USD", "BOME-USD", "SLERF-USD", "APE-USD",
+    "GAS-USD", "CHRP-USD", "ILV-USD", "HIGH-USD", "RDNT-USD",
+    "JOE-USD", "PROM-USD", "PERP-USD", "PSG-USD", "SANTOS-USD",
+    "ASR-USD", "LAZIO-USD", "PORTO-USD", "OG-USD", "ATM-USD",
+    "BAR-USD", "JUV-USD", "RENDER-USD", "AKT-USD", "HNT-USD",
+    "MOBILE-USD", "IOTX-USD", "QKC-USD", "NKN-USD", "CSPR-USD",
+    "ONE-USD", "ZEC-USD", "DASH-USD", "DCR-USD", "PIVX-USD",
+    "VTC-USD", "BTG-USD", "RVN-USD", "KMD-USD", "SYS-USD",
+    "CAKE-USD", "TWT-USD", "OSMO-USD", "GLMR-USD", "MOVR-USD",
+    "KNC-USD", "XRD-USD", "FLR-USD", "XVG-USD", "XDC-USD",
+    "TRAC-USD",
 ]
 INDICES = ["^GSPC", "^IXIC", "^DJI", "^RUT"]
 COMMODITIES = [

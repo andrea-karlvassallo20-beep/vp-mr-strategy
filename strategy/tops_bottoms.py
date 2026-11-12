@@ -291,6 +291,13 @@ def run_study(data_dir: Path,
         entries = z_entries(c)
         confirm = set(bull.tolist()) | set(cb.tolist()) | \
             set(bear.tolist()) | set(ct.tolist())
+        # the AVFI spread-z axis rides along on every chart: the
+        # regime context (flow expanding or fading) behind each
+        # detected top and bottom
+        from avfi import (DEFAULT_PARAMS, spread_axis, spread_z)
+        sp_z = spread_z(spread_axis(h, l, c, v, dict(DEFAULT_PARAMS)),
+                        DEFAULT_PARAMS["sp_z_window"])
+        trigger = DEFAULT_PARAMS["trigger"]
         study = event_study(c, entries, confirm)
         b_score, t_score = turn_topology(h, l, c, v)
         buckets = topology_buckets(c, entries, b_score, t_score)
@@ -313,6 +320,8 @@ def run_study(data_dir: Path,
             "divergence_tops": bear.tolist(),
             "climax_bottoms": cb.tolist(),
             "climax_tops": ct.tolist(),
+            "sp_z": [round(float(x), 2) for x in sp_z],
+            "trigger": trigger,
         })
     return {"status": "OK" if rows else "NO_DATA", "rows": rows,
             "charts": charts}

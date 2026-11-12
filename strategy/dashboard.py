@@ -1257,6 +1257,142 @@ def _state_space_html(paper_dir: Path) -> str:
             f'{study_html}')
 
 
+def _crypto_avfi_chart_svg(ch: dict, width=520, height=230) -> str:
+    """Two-panel crypto chart: price with detected tops/bottoms on
+    top, the AVFI spread z with the trigger line and throttle zone
+    below — the regime context behind every detected turn."""
+    closes = ch["close"]
+    sp_z = ch.get("sp_z") or []
+    n = len(closes)
+    if n < 2 or len(sp_z) != n:
+        return _tb_chart_svg(ch, width, 170)
+    trigger = ch.get("trigger", -1.0)
+    p_h, z_h = 140, 62
+    lo, hi = min(closes), max(closes)
+    rng = (hi - lo) or 1.0
+    xs = [8 + (width - 16) * i / (n - 1) for i in range(n)]
+    ys = [8 + (p_h - 26) * (1 - (c - lo) / rng) for c in closes]
+    pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, ys))
+    marks = ""
+    for idx in ch.get("divergence_bottoms", []):
+        if idx < n:
+            marks += (f'<path d="M{xs[idx]:.1f},{ys[idx] - 6:.1f} '
+                      f'l6,10 l-12,0 z" fill="#3fb950">'
+                      f'<title>RSI divergence bottom '
+                      f'{ch["dates"][idx]}</title></path>')
+    for idx in ch.get("divergence_tops", []):
+        if idx < n:
+            marks += (f'<path d="M{xs[idx]:.1f},{ys[idx] + 6:.1f} '
+                      f'l6,-10 l-12,0 z" fill="#f85149">'
+                      f'<title>RSI divergence top '
+                      f'{ch["dates"][idx]}</title></path>')
+    for idx in ch.get("climax_bottoms", []):
+        if idx < n:
+            marks += (f'<rect x="{xs[idx] - 4:.1f}" '
+                      f'y="{ys[idx] - 4:.1f}" width="8" height="8" '
+                      f'fill="#3fb950" fill-opacity=".55">'
+                      f'<title>VSA climax bottom '
+                      f'{ch["dates"][idx]}</title></rect>')
+    for idx in ch.get("climax_tops", []):
+        if idx < n:
+            marks += (f'<rect x="{xs[idx] - 4:.1f}" '
+                      f'y="{ys[idx] - 4:.1f}" width="8" height="8" '
+                      f'fill="#f85149" fill-opacity=".55">'
+                      f'<title>VSA climax top '
+                      f'{ch["dates"][idx]}</title></rect>')
+    z_top = p_h + 18
+    zlo, zhi = min(min(sp_z), trigger), max(max(sp_z), trigger)
+    zr = (zhi - zlo) or 1.0
+    zy = [z_top + (z_h - 14) * (1 - (v - zlo) / zr) for v in sp_z]
+    zpts = " ".join(f"{x:.1f},{y:.1f}" for x, y in zip(xs, zy))
+    ty = z_top + (z_h - 14) * (1 - (trigger - zlo) / zr)
+    zones = ""
+    in_zone = False
+    for i, v in enumerate(sp_z):
+        if v <= trigger and not in_zone:
+            zones += (f'<path d="M{xs[i]:.1f},{z_top - 4:.1f} '
+                      f'L{xs[i]:.1f},{z_top + z_h - 10:.1f}"')
+            in_zone = True
+            start = xs[i]
+        elif v > trigger and in_zone:
+            zones += (f' stroke="none"/><rect x="{start:.1f}" '
+                      f'y="{z_top - 4:.1f}" width="{xs[i] - start:.1f}" '
+                      f'height="{z_h - 6:.1f}" fill="#f85149" '
+                      f'fill-opacity=".12"/>')
+            in_zone = False
+    if in_zone:
+        zones += (f' stroke="none"/><rect x="{start:.1f}" '
+                  f'y="{z_top - 4:.1f}" width="{xs[-1] - start:.1f}" '
+                  f'height="{z_h - 6:.1f}" fill="#f85149" '
+                  f'fill-opacity=".12"/>')
+    return (f'<svg width="{width}" height="{height}" role="img" '
+            f'aria-label="{_esc(ch["ticker"])} price, detections and '
+            f'AVFI spread z" viewBox="0 0 {width} {height}">'
+            f'<polyline fill="none" stroke="#58a6ff" stroke-width="1.4" '
+            f'points="{pts}"/>{marks}'
+            f'<line x1="8" y1="{p_h + 6:.1f}" x2="{width - 8}" '
+            f'y2="{p_h + 6:.1f}" stroke="#30363b" stroke-width="1"/>'
+            f'<text x="8" y="{z_top - 7:.0f}" class="axis">'
+            f'spread z (AVFI v3 vs v2)</text>'
+            f'{zones}'
+            f'<polyline fill="none" stroke="#d2a8ff" stroke-width="1.2" '
+            f'points="{zpts}"/>'
+            f'<line x1="8" y1="{ty:.1f}" x2="{width - 8}" y2="{ty:.1f}" '
+            f'stroke="#f85149" stroke-width=".8" stroke-dasharray="3 3"/>'
+            f'<text x="{width - 60}" y="{ty - 3:.1f}" class="axis">'
+            f'trigger {trigger:g}</text></svg>')
+
+
+def _crypto_detections_html(paper_dir: Path) -> str:
+    """Top-150 crypto: tops-and-bottoms detections on dailies WITH the
+    AVFI spread-z regime axis on every chart."""
+    path = paper_dir / "research" / "tops_bottoms_extended.json"
+    if not path.exists():
+        return ("<p class=\"dim\">Crypto detections appear here "
+                "after the first nightly research pass.</p>")
+    r = json.load(open(path))
+    charts = {c["ticker"]: c for c in r.get("charts", [])
+              if c["ticker"].endswith("USD")}
+    rows = [row for row in r.get("rows", [])
+            if row["ticker"].endswith("USD")]
+    if not rows:
+        return "<p class=\"dim\">No crypto series in the extended " \
+                "study yet.</p>"
+    by_confirm = sorted(rows, key=lambda x: -x.get("n_confirmed", 0))
+    top = by_confirm[:24]
+    svgs = "".join(
+        f'<div class="pc"><div class="dim" style="text-align:center">'
+        f'{_esc(row["ticker"])}</div>'
+        + _crypto_avfi_chart_svg(charts[row["ticker"]])
+        + "</div>"
+        for row in top if row["ticker"] in charts)
+    tbl = ""
+    for row in rows:
+        tb = row.get("topology_buckets", {})
+        lf = {int(k): v["long_fwd"] for k, v in tb.items()
+              if v.get("long_fwd") is not None}
+        holds = "yes" if (2 in lf and 3 in lf and lf[3] > lf[2]) \
+            else "no"
+        cls = "good" if holds == "yes" else "dim"
+        tbl += (f'<tr><td>{_esc(row["ticker"])}</td>'
+                f'<td>{row["n_divergence_bottoms"]}</td>'
+                f'<td>{row["n_climax_bottoms"]}</td>'
+                f'<td>{row["n_confirmed"]}</td>'
+                f'<td class="{cls}">{holds}</td></tr>')
+    return (f'<p class="dim">The top 150 liquid coins (plain spot '
+            f'USD pairs — the earliest daily history; stablecoins '
+            f'excluded): detected bottoms (green) and tops (red) '
+            f'on dailies, each chart carrying the AVFI spread z '
+            f'below the price — the regime axis behind every turn, '
+            f'throttle zones shaded. Charts show the 24 most-active '
+            f'series; the confluence table covers all '
+            f'{len(rows)}.</p>'
+            f'<div class="pgrid">{svgs}</div>'
+            f'<table><tr><th>Ticker</th><th>div bottoms</th>'
+            f'<th>climax bottoms</th><th>confirmed entries</th>'
+            f'<th>confluence holds</th></tr>{tbl}</table>')
+
+
 def _extended_detections_html(paper_dir: Path) -> str:
     """Tops-and-bottoms detections across the full commodity (and
     extended) universe, on dailies."""
@@ -1381,7 +1517,7 @@ def build_site(paper_dir: Path) -> str:
         f'<a href="#{a}">{t}</a>' for a, t in
         (("avfi", "AVFI"), ("topsbottoms", "Tops & bottoms"),
          ("statespace", "State space"),
-         ("commodities", "Commodities"),
+         ("commodities", "Commodities"), ("crypto", "Crypto 150"),
          ("overview", "Overview"),
          ("charts", "Charts"),
          ("race", "Self-learning"), ("crossasset", "Cross-asset"),
@@ -1548,6 +1684,9 @@ the same real bars every night. Each curve is scaled to its own range.</p>
 </section>
 <section id="commodities"><h2>Commodity detections (dailies)</h2>
 {_extended_detections_html(paper_dir)}
+</section>
+<section id="crypto"><h2>Crypto detections &mdash; top 150, with AVFI</h2>
+{_crypto_detections_html(paper_dir)}
 </section>
 {journal_html}
 <section id="buildlog"><h2>Build log</h2>
