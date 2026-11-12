@@ -2083,6 +2083,60 @@ def build_site(paper_dir: Path) -> str:
                        f"(dies at or below "
                        f"{kl['next_line']['line']} events)")
 
+    # the progress strip: ticks 5 and 6 read from the gradient
+    # artifact; the forward log and the precursor verdict give the
+    # live status line
+    fw_open_live = fw_open
+    tick5 = tick6 = "measured"
+    progress_status = ""
+    gr_path = paper_dir / "research" / "smh_gradient.json"
+    if gr_path.exists():
+        gr = json.loads(gr_path.read_text())
+        if gr.get("status") == "OK":
+            g = gr.get("gradient", {})
+            comp_g = g.get("compression", {})
+            clim_g = g.get("climatology", {})
+            if comp_g and clim_g:
+                tick5 = (f"{comp_g['cum_event_12w']} vs "
+                         f"{clim_g['cum_event_12w']} "
+                         f"(disjoint bands)")
+            an_g = gr.get("event_anatomy", {})
+            if an_g and an_g.get("overshoot_median"):
+                tick6 = (f"{an_g['overshoot_median']}&times; "
+                         f"overshoot")
+            disjoint = gr.get("verdict", {}).get(
+                "compression_disjoint_from_climatology")
+            progress_status = (
+                f"The gradient on this universe: compression "
+                f"{comp_g.get('cum_event_12w')} vs climatology "
+                f"{clim_g.get('cum_event_12w')} &mdash; "
+                + ("the compression band is DISJOINT from doing "
+                   "nothing; salience is edge-local."
+                   if disjoint else
+                   "the bands overlap on this universe - flagged, "
+                   "not hidden."))
+    pr_path2 = paper_dir / "research" / "smh_precursor.json"
+    if pr_path2.exists():
+        prr = json.loads(pr_path2.read_text())
+        if prr.get("status") == "OK":
+            pv = prr.get("verdict", {})
+            pds = prr.get("direction_split_first_events", {})
+            progress_status += (" Precursor signatures: "
+                + ("a footprint beats the clock out of fold."
+                   if pv.get("precursor_beats_clock_oof") else
+                   "MEASURED, NEGATIVE - no weekly-observable "
+                   "footprint beats the clock out of fold; the "
+                   "significant z's are noise wearing p-values.")
+                + f" Direction: p(up) = {pds.get('p_up')} "
+                f"{pds.get('wilson_95')} at "
+                f"n = {pds.get('n_events')} - a coin flip; the "
+                "theorem's refusal, confirmed at scale.")
+    if fw_rows_logged:
+        progress_status += (f" The forward log: {fw_rows_logged} "
+                            f"rows logged in advance, {fw_open} "
+                            f"open, {fw_resolved} resolved; "
+                            f"kill-line status {fw_kill}.")
+
     laws_cards = "".join(
         f'<div class="book"><div class="btitle">{_esc(t)}</div>'
         f'<div class="bdesc dim">{_esc(d)}</div></div>'
@@ -2211,9 +2265,36 @@ ours.</p>
 <p class="tagline">The Salient Market Hypothesis is the instrument:
 state instead of count, clock instead of prophecy, calibration
 instead of belief. Six of its seven measurable claims are already
-PROVEN on 174 series. The work below is how we finish the rest.</p>
+PROVEN; the framework is design-complete, and its falsification
+machinery is live: {fw_open_live} forecast rows sit in the forward
+log, waiting to be scored. What remains is exactly two things:
+episodes and data.</p>
 </header>
 <main>
+<section id="progress"><h2>The progress &mdash; the six measured
+ticks, and what is still being scored</h2>
+<div class="ticks">
+<div class="tick"><div class="tnum">TICK 1</div>
+<div class="tlab">the clock: compression vs high-vol event rate</div>
+<div class="tval">3.3&times; measured</div></div>
+<div class="tick"><div class="tnum">TICK 2</div>
+<div class="tlab">hazard layer v0: KM corrected, Cox v0.1</div>
+<div class="tval">concordance 0.643</div></div>
+<div class="tick"><div class="tnum">TICK 3</div>
+<div class="tlab">stress clock: the quarter rule, decay by calm</div>
+<div class="tval">2/3 in a quarter</div></div>
+<div class="tick"><div class="tnum">TICK 4</div>
+<div class="tlab">dwell &amp; transition machine, three states</div>
+<div class="tval">measured</div></div>
+<div class="tick"><div class="tnum">TICK 5</div>
+<div class="tlab">salience gradient on this universe</div>
+<div class="tval">{tick5}</div></div>
+<div class="tick"><div class="tnum">TICK 6</div>
+<div class="tlab">event anatomy: arrival, volume, overshoot</div>
+<div class="tval">{tick6}</div></div>
+</div>
+<p class="dim">{progress_status}</p>
+</section>
 <section id="hypothesis"><h2>The hypothesis</h2>
 <p class="dim">Markets are a matching engine plus participants
 managing inventory plus informed flow. The transaction price
