@@ -743,3 +743,16 @@ at crosses into the condition, the full 185-series universe.
 
 Design-sample caveat, unchanged: the forward calibration
 record remains the test that matters.
+
+Addendum to section 17.2 (12 November 2026, same day): the
+incremental claim is now INSIDE the falsification machinery.
+The forward protocol drafts a comp_stretch row at every
+compression cross where the causal stretch-z is <= -1 at
+entry, with the cell's measured baseline as the logged
+forecast (0.657 at drafting), resolved and Brier/log-scored
+against outcomes exactly like the clock's own rows. The rows
+are correlated with their compression-row twins by
+construction - they test different claims on the same
+episode, and each row says so in its own record. The
+incremental finding stops being design-sample the day its
+first rows resolve.

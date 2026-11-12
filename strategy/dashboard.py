@@ -2619,10 +2619,20 @@ def build_site(paper_dir: Path) -> str:
                 f"n = {pds.get('n_events')} - a coin flip; the "
                 "theorem's refusal, confirmed at scale.")
     if fw_rows_logged:
+        cs_open = sum(1 for r in fr.get("rows", [])
+                      if r.get("kind") == "comp_stretch"
+                      and r.get("status") == "open")
         progress_status += (f" The forward log: {fw_rows_logged} "
                             f"rows logged in advance, {fw_open} "
                             f"open, {fw_resolved} resolved; "
                             f"kill-line status {fw_kill}.")
+        if cs_open:
+            progress_status += (
+                f" The section-17 incremental claim is "
+                f"ON THE RECORD: {cs_open} comp_stretch rows "
+                f"logged at compression crosses with stretch-z "
+                f"&le; &minus;1, scored against the clock&rsquo;s "
+                f"own rows.")
     jd_path = paper_dir / "research" / "smh_judgment.json"
     if jd_path.exists():
         jd = json.loads(jd_path.read_text())
