@@ -23,6 +23,14 @@ DESCRIPTIVE ONLY. The multiplicity warning is binding and worse here than
 on the 160-pair panel: scanning 500 series for extremes finds extremes by
 construction. Nothing in this file tests a claim; C7's dataset is sealed
 and this scan does not touch it. Candidates, not evidence.
+
+GENESIS FILTER (directive, 2026-11-12): any asset with less than 90 days
+of true Binance listing history is EXCLUDED from the primed candidate
+list. The listing-pump artifact (63% of coins hold their ATH inside the
+first 90 days) invalidates the compression logic for new assets - a
+"coil" measured inside the launch window is the launch, not a coil.
+Short-history assets remain in the scan table (flagged) but can never
+appear as primed candidates.
 """
 
 import json
@@ -285,6 +293,14 @@ def main():
     print(f"scanned {len(scan)} series ({len(failures)} perps failed/short "
           f"history; {int(scan['stablecoin'].sum())} flagged stablecoins)")
     clean = scan[~scan["artifact_flag"] & ~scan["stablecoin"]]
+    # genesis filter: <90 days of true listing history is the launch
+    # window, not a coil - excluded from primed candidates (directive)
+    genesis_excluded = clean[clean["n_days"] < 90]
+    if len(genesis_excluded):
+        print(f"genesis filter: {len(genesis_excluded)} candidates excluded "
+              f"(<90 days listing history): "
+              f"{', '.join(genesis_excluded['series'])}")
+    clean = clean[clean["n_days"] >= 90]
     print("\n=== top-12 primed candidates (artifact-filtered) ===")
     cols = ["series", "rank", "venue", "primed_score",
             "comp_days", "rvol_pct", "range_pos", "vol_ratio", "ret30"]
