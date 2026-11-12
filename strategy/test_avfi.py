@@ -196,6 +196,23 @@ empty = state_space_event_study_extended(tmp / "missing")
 check("extended study handles missing dir",
       empty["aggregate"] is None and empty["series"] == {})
 
+# 11c. axis attribution (single-axis decomposition)
+from avfi import state_space_axis_attribution
+ax = state_space_axis_attribution(ext_dir)
+check("axis attribution covers both axes with pooled stats",
+      set(ax) == {"sp_z_neg", "vol_high"}
+      and all("pooled_with_fwd" in a and "beats" in a
+              and "series" in a and "carries_weight" in a
+              for a in ax.values()))
+check("axis beats are consistent with series counts",
+      all(0 <= a["beats"] <= a["series"] for a in ax.values()))
+check("axis attribution handles missing dir",
+      state_space_axis_attribution(tmp / "missing")
+      == {"sp_z_neg": {"series": 0, "beats": 0, "with": [],
+                       "without": []},
+          "vol_high": {"series": 0, "beats": 0, "with": [],
+                       "without": []}})
+
 shutil.rmtree(tmp)
 print(f"\nRESULT: {PASS} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)
