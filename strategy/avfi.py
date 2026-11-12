@@ -592,41 +592,99 @@ def state_space_event_study(data_dir: Path,
         f = data_dir / f"{s.lower()}.csv"
         if not f.exists():
             continue
-        bars = load_bars(f)
-        if len(bars) < 200:
-            continue
-        h = np.array([b["high"] for b in bars])
-        l = np.array([b["low"] for b in bars])
-        c = np.array([b["close"] for b in bars])
-        v = np.array([float(b["volume"]) for b in bars])
-        ss = avfi_state_space(h, l, c, v)
-        sp_z = np.array(ss["sp_z"])
-        price_z = np.array(ss["price_z"])
-        vol_pct = np.array(ss["vol_pct"])
-        regions = {"bottom_region": [], "mid_region": [],
-                   "elsewhere": []}
-        for t_ in range(110, len(c) - horizon):
-            if price_z[t_] > -2.0:
-                continue  # only long (bottom-side) entries
-            fr = float(c[t_ + horizon] / c[t_] - 1.0)
-            if sp_z[t_] < 0 and vol_pct[t_] > 0.5:
-                regions["bottom_region"].append(fr)
-            elif sp_z[t_] < 0 or vol_pct[t_] > 0.5:
-                regions["mid_region"].append(fr)
-            else:
-                regions["elsewhere"].append(fr)
-        row = {}
-        for reg, vals in regions.items():
-            row[reg] = {
-                "n": len(vals),
-                "fwd": round(float(np.mean(vals)), 4) if vals else None,
-            }
-        br, mr_ = row["bottom_region"], row["mid_region"]
-        row["hypothesis_holds"] = bool(
-            br["fwd"] is not None and mr_["fwd"] is not None
-            and br["n"] >= 10 and br["fwd"] > mr_["fwd"])
-        out[s] = row
+        row = _state_space_study_one(load_bars(f), horizon)
+        if row is not None:
+            out[s] = row
     return out
+
+
+def _state_space_study_one(bars, horizon: int):
+    """Region-bucket one instrument. Returns None when there is not
+    enough history (warm-up 200 bars) or no bottom-side entries."""
+    if len(bars) < 200:
+        return None
+    h = np.array([b["high"] for b in bars])
+    l = np.array([b["low"] for b in bars])
+    c = np.array([b["close"] for b in bars])
+    v = np.array([float(b["volume"]) for b in bars])
+    ss = avfi_state_space(h, l, c, v)
+    sp_z = np.array(ss["sp_z"])
+    price_z = np.array(ss["price_z"])
+    vol_pct = np.array(ss["vol_pct"])
+    regions = {"bottom_region": [], "mid_region": [],
+               "elsewhere": []}
+    for t_ in range(110, len(c) - horizon):
+        if price_z[t_] > -2.0:
+            continue  # only long (bottom-side) entries
+        fr = float(c[t_ + horizon] / c[t_] - 1.0)
+        if sp_z[t_] < 0 and vol_pct[t_] > 0.5:
+            regions["bottom_region"].append(fr)
+        elif sp_z[t_] < 0 or vol_pct[t_] > 0.5:
+            regions["mid_region"].append(fr)
+        else:
+            regions["elsewhere"].append(fr)
+    if not any(regions.values()):
+        return None
+    row = {}
+    for reg, vals in regions.items():
+        row[reg] = {
+            "n": len(vals),
+            "fwd": round(float(np.mean(vals)), 4) if vals else None,
+        }
+    br, mr_ = row["bottom_region"], row["mid_region"]
+    row["hypothesis_holds"] = bool(
+        br["fwd"] is not None and mr_["fwd"] is not None
+        and br["n"] >= 10 and br["fwd"] > mr_["fwd"])
+    return row
+
+
+def state_space_event_study_extended(extended_dir: Path,
+                                     horizon: int = 10) -> dict:
+    """The same region hypothesis across the FULL extended universe
+    (crypto, indices, commodities). The 5 deployed ETFs fire the
+    full bottom region only 0-9 times each, so per-instrument
+    verdicts may never reach n>=10; pooling across ~50 series is
+    the honest way to accumulate evidence. Reports per-series rows
+    plus an AGGREGATE row pooling every bottom-region event, and
+    the pooled verdict (bottom fwd > mid fwd with n>=10)."""
+    from papertrading_runner import load_bars
+    out = {}
+    pool = {"bottom_region": [], "mid_region": []}
+    if not extended_dir.exists():
+        return {"aggregate": None, "series": out}
+    for f in sorted(extended_dir.glob("*.csv")):
+        row = _state_space_study_one(load_bars(f), horizon)
+        if row is None:
+            continue
+        out[f.stem.upper()] = row
+        for reg in pool:
+            if row[reg]["fwd"] is not None:
+                # pool raw returns: fwd * n recovers their sum
+                pool[reg].append(row[reg]["fwd"] * row[reg]["n"])
+    agg = {}
+    for reg, sums in pool.items():
+        n = sum(r[reg]["n"] for r in out.values())
+        agg[reg] = {
+            "n": n,
+            "fwd": round(float(sum(sums) / n), 4) if n else None,
+        }
+    br, mr_ = agg["bottom_region"], agg["mid_region"]
+    # Pooled returns mix scales across very different assets (a
+    # 10-day crypto return is not an ETF return), so also count the
+    # scale-free per-series verdicts: in how many series does the
+    # bottom region beat the mid region on ITS OWN scale?
+    both = [r for r in out.values()
+            if r["bottom_region"]["fwd"] is not None
+            and r["mid_region"]["fwd"] is not None]
+    beats = sum(1 for r in both
+                if r["bottom_region"]["fwd"] > r["mid_region"]["fwd"])
+    agg["series_with_both"] = len(both)
+    agg["series_beats"] = beats
+    agg["hypothesis_holds"] = bool(
+        br["fwd"] is not None and mr_["fwd"] is not None
+        and br["n"] >= 10 and br["fwd"] > mr_["fwd"]
+        and beats * 2 > len(both))
+    return {"aggregate": agg, "series": out}
 
 
 def export_state_space(data_dir: Path, research_dir: Path,
@@ -679,6 +737,15 @@ def main() -> None:
         json.dumps(ss_study, indent=2))
     print(f"state-space study -> "
           f"{args.research_dir / 'state_space_study.json'}")
+    ext = state_space_event_study_extended(
+        args.data_dir.parent / "research" / "data")
+    (args.research_dir / "state_space_study_extended.json").write_text(
+        json.dumps(ext, indent=2))
+    a = ext.get("aggregate") or {}
+    print(f"state-space extended study -> "
+          f"{args.research_dir / 'state_space_study_extended.json'} "
+          f"({len(ext.get('series', {}))} series, pooled n="
+          f"{(a.get('bottom_region') or {}).get('n', 0)})")
     write_report(r, args.markdown)
     print(f"status: {r['status']}, instruments: {len(r.get('rows', []))}, "
           f"iteration: {r.get('iteration', {}).get('iteration')}, "
