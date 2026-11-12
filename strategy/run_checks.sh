@@ -99,6 +99,9 @@ python3 test_trade_inevitables.py
 echo "=== 8u The market philosopher (longs from measured rules) ==="
 python3 test_market_philosopher.py
 
+echo "=== 8v Full-universe tops/bottoms backtest ==="
+python3 test_tops_bottoms_backtest.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 
