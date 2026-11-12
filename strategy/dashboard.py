@@ -2084,6 +2084,47 @@ def _smh_recurrence_html(paper_dir: Path) -> str:
             f'<th>probability</th></tr>{rows}</table>')
 
 
+def _smh_calibration_html(paper_dir: Path) -> str:
+    """The forward log's dress rehearsal: the forecast scored out
+    of sample on time, against climatology."""
+    path = paper_dir / "research" / "smh_calibration.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    v = r.get("verdict", {})
+    sc = r.get("scores", {})
+    cs = r.get("climatology_scores", {})
+    rel_rows = "".join(
+        f'<tr><td>{_esc(b["bin"])}</td><td>{b["n"]}</td>'
+        f'<td>{b["mean_p"]}</td><td>{b["observed"]}</td></tr>'
+        for b in sc.get("reliability", []))
+    cls = "good" if v.get("beats_climatology_oos") else "warn"
+    return (f'<h3 class="sub">The dress rehearsal &mdash; the '
+            f'forecast scored out of sample, on time</h3>'
+            f'<p class="dim">Before any forward row resolves, '
+            f'the instrument itself has been pre-scored: fit on '
+            f'the first 70% of each series&rsquo; compression '
+            f'entries, scored on the last 30% against the '
+            f'outcomes the market produced. Brier '
+            f'{sc.get("brier")} vs climatology '
+            f'{cs.get("brier")} &mdash; <span class="{cls}">'
+            f'skill {r.get("skill_score")}</span>. '
+            + ("The compression-conditional forecast carries "
+               "real out-of-sample information; the forward log "
+               "is scoring something worth scoring."
+               if v.get("beats_climatology_oos") else
+               "No out-of-sample skill: the forward log would "
+               "be scoring noise - the honesty note says so.")
+            + f" The reliability bins show mid-range "
+            f"overconfidence (flagged; the forward log&rsquo;s "
+            f"own Brier is the judge that counts).</p>"
+            f'<table><tr><th>Forecast bin</th><th>n</th>'
+            f'<th>mean p</th><th>observed</th></tr>{rel_rows}'
+            f'</table>')
+
+
 def build_site(paper_dir: Path) -> str:
     """Salient: the front page - the market hypothesis, the proof,
     the new work, and the live hazard instrument. The past (the
@@ -2094,6 +2135,7 @@ def build_site(paper_dir: Path) -> str:
                    + _smh_gradient_html(paper_dir)
                    + _smh_direction_html(paper_dir)
                    + _smh_recurrence_html(paper_dir)
+                   + _smh_calibration_html(paper_dir)
                    + _smh_hazard_html(paper_dir))
     n_comp = n_mid = n_high = 0
     hz_rows = ""
