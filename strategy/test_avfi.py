@@ -118,6 +118,10 @@ for i, t in enumerate(["SPY", "QQQ"]):
 r = run_iteration(data, tmp / "research", universe=("SPY", "QQQ", "IWM"))
 check("iteration runs on cached CSVs", r["status"] == "OK"
       and len(r["rows"]) == 2)
+check("ledger records the deflated-Sharpe multiple-testing context",
+      all(k in r["iteration"]["deflated_sharpe"]
+          for k in ("sharpe", "n_trials", "dsr", "passes_95"))
+      and r["iteration"]["deflated_sharpe"]["n_trials"] == 84)
 check("iteration ledger written with honest record",
       (tmp / "research" / "avfi_iterations.json").exists()
       and r["iteration"]["advanced"] in (True, False)

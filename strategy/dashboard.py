@@ -464,11 +464,36 @@ def _knowledge_html() -> str:
         programme = ('<h3 class="sub">Trading-research programme '
                      '(AVFI-NQ weekly)</h3><div class="bgrid">'
                      f'{prog_cards}</div>')
+    articles_html = ""
+    reg_path = (base.parent / "paper" / "research" / "articles.json")
+    if reg_path.exists():
+        reg = json.loads(reg_path.read_text())
+        if reg:
+            cards = ""
+            for a in reg:
+                status = a.get("status", "")
+                meta = (f'{a.get("pages", 0)} pages, '
+                        f'{a.get("chars", 0)} chars, '
+                        f'{_esc(status)}')
+                digest = _esc(a.get("digest", "")[:900])
+                cards += (
+                    f'<div class="book"><div class="btitle">'
+                    f'{_esc(a["file"])}</div>'
+                    f'<div class="bdesc dim">{meta}</div>'
+                    f'<div class="bdesc">{digest}...</div></div>')
+            articles_html = (
+                '<h3 class="sub">Ingested research articles '
+                f'({len(reg)} PDFs)</h3>'
+                '<p class="dim">PDFs dropped into the repo root or '
+                'articles/ are extracted nightly (pypdf) and '
+                'registered here with their digests; full text '
+                'lands in paper/research/articles/.</p>'
+                f'<div class="bgrid">{cards}</div>')
     return (intro
             + '<div class="kgrid">' + "".join(rows) + "</div>"
             + f'<h3 class="sub">Studied library ({len(books)} books)'
             f'</h3><div class="bgrid">{books_html}</div>'
-            + programme + eval_html)
+            + programme + articles_html + eval_html)
 
 def _worklog_html() -> str:
     """Rendered work log: each entry as a timeline row."""
@@ -771,6 +796,7 @@ def _avfi_html(paper_dir: Path) -> str:
             f'{r["params_evaluated"].get("throttle")}</td>'
             f'<td>{r["oos_dd_reduction_pct"]}%</td>'
             f'<td>{r["oos_sharpe_delta"]}</td>'
+            f'<td>{(r.get("deflated_sharpe") or {}).get("dsr", "-")}</td>'
             f'<td class="{"good" if r["advanced"] else "dim"}">'
             f'{"advanced" if r["advanced"] else "kept"}</td></tr>'
             for r in ledger)
@@ -785,8 +811,17 @@ def _avfi_html(paper_dir: Path) -> str:
                       'strategy stays frozen (Gate 3).</p>'
                       '<table><tr><th>Iter</th><th>Date</th>'
                       '<th>trigger / throttle</th><th>OOS DD red.</th>'
-                      '<th>OOS Sharpe delta</th><th>Outcome</th></tr>'
-                      f'{rows}</table>')
+                      '<th>OOS Sharpe delta</th><th>DSR</th>'
+                      '<th>Outcome</th></tr>'
+                      f'{rows}</table>'
+                      '<p class="dim">DSR = Deflated Sharpe Ratio '
+                      '(Bailey & Lopez de Prado 2014): the OOS '
+                      'Sharpe judged against what the best of 84 '
+                      'zero-skill searches would manufacture by '
+                      'luck alone. Below 0.95 means the edge is not '
+                      'yet statistically separated from the search '
+                      'itself — the honest multiple-testing context '
+                      'for every number in this table.</p>')
     return (f'<p class="dim">Python replication of the Pine v5 '
             f'"AVFI v3 vs v2 [spread axis]" indicator (Parkinson-style '
             f'vol floor, log-volume normalization, sigma-normalized '

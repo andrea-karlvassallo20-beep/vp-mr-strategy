@@ -39,6 +39,12 @@ python3 test_tops_bottoms.py
 echo "=== 8 Dashboard generation ==="
 python3 test_dashboard.py
 
+echo "=== 8b PDF article ingestion ==="
+python3 test_pdf_ingest.py
+
+echo "=== 8c Overfitting statistics (DSR, PBO) ==="
+python3 test_overfit_stats.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 
