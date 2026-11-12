@@ -2137,6 +2137,33 @@ def build_site(paper_dir: Path) -> str:
                             f"open, {fw_resolved} resolved; "
                             f"kill-line status {fw_kill}.")
 
+    # the machine's live position: region + spell age per
+    # market, with the pooled dwell distribution - descriptive
+    # context only, never a forecast (doctrine rule 2)
+    st_rows = ""
+    st_counts = ""
+    st_dwell = ""
+    st_path = paper_dir / "research" / "smh_status.json"
+    if st_path.exists():
+        st = json.loads(st_path.read_text())
+        if st.get("status") == "OK":
+            c_st = st.get("counts", {})
+            st_counts = (f"{c_st.get('compression', 0)} in "
+                         f"compression, "
+                         f"{c_st.get('mid', 0)} in mid, "
+                         f"{c_st.get('stress', 0)} in stress")
+            d_st = st.get("dwell_distribution_weeks", {})
+            st_dwell = " ".join(
+                f"{k}: median {v['median_weeks']}w / mean "
+                f"{v['mean_weeks']}w / max {v['max_weeks']}w "
+                f"({v['n_spells']} spells)"
+                for k, v in d_st.items())
+            st_rows = "".join(
+                f'<tr><td>{_esc(p["ticker"])}</td>'
+                f'<td>{_esc(p["region"])}</td>'
+                f'<td>{p["spell_age_weeks"]}w</td></tr>'
+                for p in st.get("positions", [])[:24])
+
     laws_cards = "".join(
         f'<div class="book"><div class="btitle">{_esc(t)}</div>'
         f'<div class="bdesc dim">{_esc(d)}</div></div>'
@@ -2373,6 +2400,16 @@ resolved against outcomes, Brier-scored</h3>
 the occurrence claim dies in public if, at 10/20/40/60 scored
 forward rows, the event count is at or below 3/8/19/31.
 Current status: {fw_kill}.</p>
+<h3 class="sub">The machine&rsquo;s live position &mdash; the status
+reading, the operational replacement for counting waves</h3>
+<p class="dim">Every market&rsquo;s current clock region and its current
+spell&rsquo;s age, against the measured dwell distribution. Spell age
+is descriptive context, NOT a forecast: rows are logged only at
+clock entries, and this reading converts age into no probability
+at all. Right now: {st_counts}. Measured dwell (pooled, weeks):
+{st_dwell}.</p>
+<table><tr><th>Market</th><th>Region</th><th>Spell age</th></tr>
+{st_rows}</table>
 </section>
 </main>
 <footer>Salient &mdash; regenerated automatically every night.
