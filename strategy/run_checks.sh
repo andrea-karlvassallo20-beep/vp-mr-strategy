@@ -84,6 +84,9 @@ python3 test_smh_direction.py
 echo "=== 8p SMH recurrence battery (the long-run lemma) ==="
 python3 test_smh_recurrence.py
 
+echo "=== 8q SMH temporal calibration (the forward log's dress rehearsal) ==="
+python3 test_smh_calibration.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 
