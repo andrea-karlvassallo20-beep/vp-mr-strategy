@@ -73,6 +73,35 @@ def _weekly_sigma(logc: np.ndarray) -> np.ndarray:
     return sig
 
 
+def hazard_now(data_dir: Path) -> list:
+    """THE FORWARD-LOOKING INSTRUMENT: for every series, the CURRENT
+    vol-tercile state (expanding terciles, strictly causal at the
+    latest close) and the conditional hazard of a significant event
+    (>= 2.5 sigma_w within 4 weeks) from that state - the frozen
+    table this battery measured. This is the SMH's 'seeing the
+    future event': not a date, not a direction - a scored hazard,
+    stated in advance, on the record."""
+    out = []
+    for name, c, v in _series(data_dir):
+        logc = np.log(c)
+        sig = _weekly_sigma(logc)
+        t = len(c) - 1
+        hist = sig[WARMUP:t + 1][sig[WARMUP:t + 1] > 0]
+        if len(hist) < 60 or sig[t] <= 0:
+            continue
+        q1, q2 = np.quantile(hist, [1 / 3, 2 / 3])
+        state = ("compression" if sig[t] <= q1
+                 else "mid" if sig[t] <= q2 else "high")
+        out.append({
+            "ticker": name,
+            "state": state,
+            "sigma_w_pct": round(float(sig[t]) * 100, 2),
+            "last_close": round(float(c[-1]), 4),
+            "last_date": None,
+        })
+    return out
+
+
 def run_smh_proof(data_dir: Path) -> dict:
     laws = {}
 
@@ -301,6 +330,7 @@ def main() -> None:
                     default=Path("../paper/research"))
     args = ap.parse_args()
     r = run_smh_proof(args.data_dir)
+    r["hazard_now"] = hazard_now(args.data_dir)
     dest = args.research_dir / "smh_proof.json"
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(json.dumps(r, indent=2))

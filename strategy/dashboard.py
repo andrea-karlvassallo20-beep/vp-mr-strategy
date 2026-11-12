@@ -1883,315 +1883,184 @@ def _extended_detections_html(paper_dir: Path) -> str:
 
 
 def build_site(paper_dir: Path) -> str:
-    """Salient: the public one-page site (GitHub Pages, docs/index.html).
-    Sections: overview, charts, race, knowledge, reports, journal,
-    build log, repository."""
-    s = summarize(paper_dir)
-    verdict = s.get("verdict", "NOT_GENERATED")
-    edge_path = paper_dir / "edge_report.md"
-    edge_rec = "NOT_GENERATED"
-    if edge_path.exists():
-        m = re.search(r"Recommendation: (PROPOSE_REDEPLOY|KEEP_PRODUCTION)",
-                      edge_path.read_text())
-        if m:
-            edge_rec = m.group(1)
-    svg = equity_curve_svg(paper_dir, width=1360, height=320, uid="site-eq")
-    dd_svg = drawdown_svg(paper_dir, width=1360, height=160, uid="site-dd")
-    price_html = price_charts_html(paper_dir)
-    race_chart = race_svg(paper_dir, width=1360, height=300, uid="site-race")
-    sessions = s.get("sessions_completed", 0)
-    pct = min(100, int(100 * sessions / 20))
-    journal_html = ""
-    journal_path = paper_dir / "journal.md"
-    if journal_path.exists():
-        rows = [l for l in journal_path.read_text().splitlines()
-                if l.startswith("| 20")][-10:]
-        journal_html = ('<section id="journal"><h2>Session journal</h2>'
-                       '<table><tr><th>Date</th><th>Sessions</th>'
-                       '<th>Verdict</th><th>SPI</th><th>Sharpe</th>'
-                       '<th>Max DD</th><th>Race</th><th>Equity</th></tr>'
-                       + "".join(rows) + "</table></section>")
-    race_html = ""
-    race_path = paper_dir / "challenger_report.md"
-    if race_path.exists():
-        race = race_path.read_text()
-        m = re.search(r"Recommendation: (PROPOSE_REDEPLOY|KEEP_CHAMPION)", race)
-        rec = m.group(1) if m else "?"
-        rows = re.findall(
-            r"\| (Champion[^|]*|Challenger[^|]*)\| ([\d.-]+) \| ([\d.-]+) \| ([\d.-]+) \|",
-            race)
-        rows_html = "".join(
-            f"<tr><td>{_esc(a.strip())}</td><td>{b}%</td>"
-            f"<td>{c}</td><td>{d}%</td></tr>" for a, b, c, d in rows)
-        race_html = (f'<p class="dim">The edge-seeker nominates a candidate '
-                     f'each night; it shadow-trades on the same real data. '
-                     f'Current verdict: <strong class="'
-                     f'{"good" if rec == "KEEP_CHAMPION" else "warn"}">'
-                     f'{_esc(rec)}</strong>. Applying a proposal is always a '
-                     f'human-reviewed PR (Gate 3).</p>'
-                     f'<table><tr><th>Strategy</th><th>Return</th>'
-                     f'<th>Sharpe</th><th>Max DD</th></tr>{rows_html}'
-                     f"</table>")
+    """Salient: the front page - the market hypothesis, the proof,
+    the new work, and the live hazard instrument. The past (the
+    falsification archive, the strategy logs, the build history)
+    lives in the repository's artifacts and DASHBOARD.md - not on
+    this page. This page only faces forward."""
+    proof_html = _smh_proof_html(paper_dir)
+    n_comp = n_mid = n_high = 0
+    hz_rows = ""
+    hz_total = 0
+    path = paper_dir / "research" / "smh_proof.json"
+    if path.exists():
+        r = json.loads(path.read_text())
+        hz = r.get("hazard_now", [])
+        hz_total = len(hz)
+        n_comp = sum(1 for x in hz if x["state"] == "compression")
+        n_mid = sum(1 for x in hz if x["state"] == "mid")
+        n_high = sum(1 for x in hz if x["state"] == "high")
+        comp = sorted((x for x in hz if x["state"] == "compression"),
+                      key=lambda x: x["sigma_w_pct"])
+        hz_rows = "".join(
+            f'<tr><td>{_esc(x["ticker"])}</td>'
+            f'<td>{x["sigma_w_pct"]}%</td></tr>'
+            for x in comp[:40])
 
-    def metric(label, value, sub=""):
-        sub_html = f'<div class="sub">{_esc(sub)}</div>' if sub else ""
-        return (f'<div class="m"><div class="ml">{_esc(label)}</div>'
-                f'<div class="mv">{_esc(value)}</div>{sub_html}</div>')
+    laws_cards = "".join(
+        f'<div class="book"><div class="btitle">{_esc(t)}</div>'
+        f'<div class="bdesc dim">{_esc(d)}</div></div>'
+        for t, d in (
+            ("1. Volatility persists, then mean-reverts",
+             "High vol weeks follow high vol weeks; compressed vol "
+             "expands. This is the clock itself."),
+            ("2. Tails are heavy",
+             "Return distributions are non-Gaussian at every "
+             "horizon. All thresholds live in sigma units, never "
+             "in fixed points."),
+            ("3. Autocorrelation has horizon structure",
+             "Momentum at medium horizons, reversal at long ones, "
+             "near-zero at short ones. The directional prior - "
+             "valid only inside trend states."),
+            ("4. Impact is concave in volume",
+             "Big moves require big flow, and flow leaves "
+             "footprints. A move without volume is a suspect move."),
+            ("5. Events self-excite",
+             "Price changes cluster in time, mostly endogenous. "
+             "Hazard is state-dependent: timing forecasts are "
+             "conditional distributions, never constants."),
+            ("6. Every exploitable regularity decays",
+             "The market adapts to whoever uses it. Every rule "
+             "carries a forward calibration score and a decay "
+             "watch. Nothing is forever, by law."),
+        ))
+    work_cards = "".join(
+        f'<div class="book"><div class="btitle">{_esc(t)}</div>'
+        f'<div class="bdesc dim">{_esc(d)}</div>'
+        f'<div class="bdesc">{_esc(s)}</div></div>'
+        for t, d, s in (
+            ("The hazard model",
+             "Kaplan-Meier v0 exists (median 42 bars from "
+             "compression entry to event). Next: Cox covariates - "
+             "state, momentum, duration - the proper hazard "
+             "regression.",
+             "STATUS: first step done, Cox is next"),
+            ("Precursor signatures beyond volatility",
+             "Can any weekly-observable footprint raise the event "
+             "hazard above the tercile table? AVFI returns here - "
+             "not as an inevitability, as a testable signature "
+             "with a calibration score.",
+             "STATUS: open - the standing research question"),
+            ("The volume clock",
+             "Clark's subordination: the efficient price evolves in "
+             "trading time, clocked by volume. Needs finer data "
+             "than daily bars.",
+             "STATUS: blocked on intraday data"),
+            ("Self-excitation measurement",
+             "Hawkes estimation of endogenous reflexivity "
+             "(Filimonov-Sornette). Needs intraday data.",
+             "STATUS: blocked on intraday data"),
+            ("The calibrated Bayesian forecaster",
+             "Human prior times measured calibration - judgment "
+             "inside the protocol as a component to be scored, "
+             "not an oracle outside it.",
+             "STATUS: awaits the hazard model's score"),
+        ))
 
-    metrics = "".join([
-        metric("Forward sessions", f"{sessions} / 20", "to promotion"),
-        metric("Gate verdict", verdict, "self-judged"),
-        metric("SPI", s.get("spi", "?"), "signal parity index"),
-        metric("Sharpe", s.get("sharpe", "?"), "MTM, net of costs"),
-        metric("Max drawdown", f"{s.get('max_dd_pct', '?')}%", ""),
-        metric("Fills", s.get("fills", 0), f"{s.get('orders', 0)} orders"),
-        metric("Edge-seeker", edge_rec, "nightly research"),
-        metric("Positions", "flat" if not s.get("positions")
-               else _esc(s["positions"]), ""),
-    ])
-
-    repo_rows = "".join(
-        f'<tr><td><code>{_esc(p)}</code></td><td class="dim">{_esc(d)}'
-        f"</td></tr>" for p, d in _REPO_MAP)
-    reports = (_file_details("Forward-test gate verdict",
-                            paper_dir / "gate_verdict.md", open_=True)
-               + _file_details("Edge-seeker research report",
-                               paper_dir / "edge_report.md")
-               + _file_details("Champion vs challenger race report",
-                               paper_dir / "challenger_report.md")
-               + _file_details("Session performance report",
-                               paper_dir / "performance_report.md")
-               + _file_details("Session log", paper_dir / "session_report.txt"))
-
-    nav = (" ".join(
-        f'<a href="#{a}">{t}</a>' for a, t in
-        (("smh", "SMH proof"), ("inevitable", "Inevitables"),
-         ("avfi", "AVFI"), ("lessons", "Lessons"),
-         ("overview", "Overview"),
-         ("charts", "Charts"),
-         ("race", "Self-learning"), ("crossasset", "Cross-asset"),
-         ("archive", "Archive"),
-         ("knowledge", "Knowledge"),
-         ("reports", "Reports"), ("journal", "Journal"),
-         ("buildlog", "Build log"), ("repo", "Repository"))))
+    css = open(Path(__file__).parent / "salient_front.css").read()
 
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="refresh" content="300">
-<title>Salient — VP-MR-ETF-D1-001</title>
+<title>Salient — the market hypothesis</title>
 <style>
-:root {{ --bg:#0a0d13; --panel:#121721; --panel2:#0d1117; --ink:#e6edf3;
-        --dim:#8b949e; --accent:#58a6ff; --good:#3fb950; --bad:#f85149;
-        --warn:#d29922; --line:#21262d; }}
-body {{ background:var(--bg); color:var(--ink); margin:0;
-       font-family:-apple-system,'Segoe UI',sans-serif; }}
-nav {{ position:sticky; top:0; z-index:10; background:rgba(10,13,19,.92);
-      backdrop-filter:blur(8px); border-bottom:1px solid var(--line);
-      padding:10px 40px; display:flex; gap:22px; align-items:center;
-      flex-wrap:wrap; }}
-nav .brand {{ font-weight:700; letter-spacing:-.3px; }}
-nav .brand span {{ color:var(--accent); }}
-nav a {{ color:var(--dim); text-decoration:none; font-size:13px; }}
-nav a:hover {{ color:var(--ink); }}
-header {{ padding:44px 40px 8px; max-width:1440px; margin:0 auto; }}
-h1 {{ font-size:38px; margin:0; letter-spacing:-1px; }}
-h1 span {{ color:var(--accent); }}
-.tagline {{ color:var(--dim); margin:8px 0 0; font-size:15px;
-           max-width:640px; line-height:1.5; }}
-main {{ max-width:1440px; margin:0 auto; padding:16px 40px 48px; }}
-.progress {{ background:var(--panel); border-radius:10px; height:14px;
-             margin:24px 0 26px; overflow:hidden; }}
-.bar {{ height:100%; width:{pct}%; background:linear-gradient(90deg,
-        #1f6feb,#58a6ff); border-radius:10px; }}
-.pnote {{ font-size:12px; color:var(--dim); margin:-16px 0 24px; }}
-.metrics {{ display:grid; grid-template-columns:repeat(8,1fr); gap:12px; }}
-.m {{ background:var(--panel); border-radius:12px; padding:16px 18px;
-      border:1px solid var(--line); }}
-.ml {{ font-size:11px; text-transform:uppercase; letter-spacing:.6px;
-       color:var(--dim); }}
-.mv {{ font-size:24px; font-weight:700; margin-top:4px; }}
-.sub {{ font-size:11px; color:var(--dim); margin-top:2px; }}
-section {{ background:var(--panel); border-radius:14px; padding:24px;
-           margin-top:22px; border:1px solid var(--line); }}
-h2 {{ font-size:18px; margin:0 0 12px; }}
-h3.sub {{ font-size:14px; margin:22px 0 10px; color:var(--ink); }}
-.dim {{ color:var(--dim); }}
-.good {{ color:var(--good); }} .warn {{ color:var(--warn); }}
-.legend {{ font-size:12px; color:var(--dim); margin:-4px 0 10px; }}
-.legend span {{ margin-right:16px; }}
-.dot {{ display:inline-block; width:9px; height:9px; border-radius:2px;
-       margin-right:5px; vertical-align:middle; }}
-.pgrid {{ display:grid; grid-template-columns:repeat(5,1fr); gap:14px;
-          margin-top:14px; }}
-.pc {{ background:var(--panel2); border:1px solid var(--line);
-       border-radius:10px; padding:12px 14px 8px; }}
-.pchead {{ display:flex; justify-content:space-between; align-items:baseline; }}
-.pc h3 {{ margin:0 0 4px; font-size:14px; color:var(--ink); }}
-.pclast {{ font-size:13px; color:var(--accent); font-weight:600; }}
-.pc svg {{ width:100%; height:auto; display:block; }}
-table {{ border-collapse:collapse; width:100%; font-size:13px;
-         margin-top:10px; }}
-td, th {{ padding:7px 10px; border-bottom:1px solid var(--line);
-          text-align:left; }}
-th {{ color:var(--dim); font-weight:600; font-size:11px;
-     text-transform:uppercase; letter-spacing:.5px; }}
-.kgrid {{ display:grid; gap:10px; margin-top:14px; }}
-.krow {{ display:grid; grid-template-columns:260px 1fr 1fr; gap:18px;
-         background:var(--panel2); border:1px solid var(--line);
-         border-radius:10px; padding:12px 14px; font-size:13px; }}
-.klayer {{ color:var(--accent); font-weight:600; }}
-.kconcept {{ color:var(--ink); }} .kwhere {{ color:var(--dim); }}
-.bgrid {{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }}
-.book {{ background:var(--panel2); border:1px solid var(--line);
-         border-radius:10px; padding:10px 14px; font-size:12px; }}
-.btitle {{ font-weight:600; margin-bottom:2px; }}
-.knote {{ margin-top:16px; background:var(--panel2);
-         border-left:3px solid var(--warn); border-radius:8px;
-         padding:12px 16px; font-size:13px; color:var(--dim); }}
-.timeline {{ margin-top:8px; }}
-.wl {{ display:grid; grid-template-columns:200px 1fr; gap:14px;
-      padding:10px 0; border-bottom:1px solid var(--line);
-      font-size:13px; }}
-.wl:last-child {{ border-bottom:none; }}
-.wldate {{ color:var(--accent); }}
-.wlbody {{ color:var(--dim); line-height:1.55; }}
-details.doc {{ background:var(--panel2); border:1px solid var(--line);
-              border-radius:10px; margin-top:10px; }}
-details.doc summary {{ cursor:pointer; padding:11px 16px; font-weight:600;
-                      font-size:13px; }}
-details.doc pre {{ margin:0; padding:0 16px 14px; font-size:11px;
-                  line-height:1.5; color:var(--dim); overflow-x:auto;
-                  white-space:pre-wrap; }}
-code {{ color:var(--accent); font-size:12px; }}
-.tvfull {{ width:100vw; position:relative; left:50%;
-           right:50%; margin-left:-50vw; margin-right:-50vw;
-           background:var(--panel2); border-top:1px solid var(--line);
-           border-bottom:1px solid var(--line); }}
-.tvfull .tradingview-widget-container {{ margin:0; }}
-footer {{ color:var(--dim); font-size:12px; text-align:center;
-          padding:28px; line-height:1.7; }}
-footer a {{ color:var(--accent); }}
-@media (max-width:1100px) {{ .metrics {{ grid-template-columns:repeat(4,1fr); }}
-  .pgrid {{ grid-template-columns:repeat(2,1fr); }}
-  .bgrid {{ grid-template-columns:1fr; }} }}
-@media (max-width:700px) {{ .metrics,.pgrid {{ grid-template-columns:1fr; }}
-  .krow {{ grid-template-columns:1fr; }} .wl {{ grid-template-columns:1fr; }} }}
-</style></head><body>
-<nav><span class="brand">Salient<span>.</span></span>{nav}</nav>
+{css}
+</style>
+</head><body>
+<nav><a href="#hypothesis">The hypothesis</a>
+<a href="#proof">The proof</a> <a href="#work">The new work</a>
+<a href="#now">The hazard now</a></nav>
 <header>
 <h1>Salient<span>.</span></h1>
-<p class="tagline"><strong>The aim:</strong> solve what no one else has —
-a scored, falsifiable theory of market events. The
-<a href="#smh" style="color:var(--accent)">Salient Market Hypothesis</a>
-replaces wave counting with measured states, prophecy with a scored
-clock, and belief with calibration. Six of its seven measurable
-claims are now PROVEN on 174 series — including the clock itself
-(3.3&times; event hazard from compression) and the theorem that
-direction stays unknowable while timing becomes scoreable.</p>
-<p class="tagline"><strong>The frontier — what no one has solved yet:</strong>
-the hazard model (Kaplan-Meier v0 exists; Cox covariates &mdash; state,
-momentum, duration &mdash; are next), the volume clock (Clark's
-subordination, blocked only by intraday data), precursor signatures
-beyond volatility, Hawkes self-excitation, and the calibrated Bayesian
-forecaster.</p>
-<p class="tagline">A hobby research pursuit: this system will never trade
-live. The enjoyment comes from solving — not from financial gain.</p>
+<p class="tagline"><strong>The aim:</strong> see the future event
+&mdash; before it happens, on the record, with a public scoreboard.
+Not its direction (no honest theory can), but its <em>hazard</em>:
+which markets are coiled, when a significant move becomes likely,
+and by exactly how much &mdash; a probability stated in advance and
+scored against outcomes, night after night, until the clock is
+ours.</p>
+<p class="tagline">The Salient Market Hypothesis is the instrument:
+state instead of count, clock instead of prophecy, calibration
+instead of belief. Six of its seven measurable claims are already
+PROVEN on 174 series. The work below is how we finish the rest.</p>
 </header>
 <main>
-<div id="overview">
-<div class="progress"><div class="bar"></div></div>
-<p class="pnote">{pct}% of the 20-session forward test toward promotion</p>
-<div class="metrics">{metrics}</div>
+<section id="hypothesis"><h2>The hypothesis</h2>
+<p class="dim">Markets are a matching engine plus participants
+managing inventory plus informed flow. The transaction price
+oscillates around a latent efficient price that evolves in
+<em>trading time</em>, not calendar time. Structure exists, but it
+is statistical, not geometric. Six unconditional laws hold; the
+central theorem forbids what no public theory can honestly sell:</p>
+<p class="dim"><strong>The certainty-timing-direction triangle:</strong>
+a rule that identified an event as certain, timed, and directional
+would be traded until it stopped working &mdash; so it cannot exist
+publicly. CERTAINTY lives at the level of the distribution, PROBABILITY
+at the level of the event, HAZARD at the level of timing. Elliott
+Wave claimed all three and could never be wrong; this framework
+separates them so every claim can be scored &mdash; and can fail in
+public, which is the only way anything in markets can ever be
+right.</p>
+<div class="bgrid">{laws_cards}</div>
+<p class="dim">Four measured states replace wave counting &mdash;
+COMPRESSION (the event-prone state), TREND, EXPANSION, STRESS &mdash;
+and the primary clock is volatility: sigma_w, its tercile, and the
+frozen conditional tables give the hazard of a significant event
+(&ge; 2.5&sigma;<sub>w</sub> within 4 weeks) at every decision close.
+The full charter lives in the repository as
+KNOWLEDGE_SMH.md.</p>
+</section>
+<section id="proof"><h2>The proof</h2>
+{proof_html}
+</section>
+<section id="work"><h2>The new work &mdash; until the clock is ours</h2>
+<p class="dim">The frontier, in order. Each item is a genuine
+research problem with a scoreable end state &mdash; none is a
+lottery ticket.</p>
+<div class="bgrid">{work_cards}</div>
+</section>
+<section id="now"><h2>The hazard now &mdash; the future events we
+currently see</h2>
+<p class="dim">The live instrument: every market's current
+volatility state at the latest close (strictly causal, expanding
+terciles), and the conditional hazard the frozen tables assign to
+it. A significant event is <strong>3.3&times; more likely from
+compression</strong> than from high vol. This is the future event
+we see and can explain &mdash; a scored hazard, stated in advance,
+never a direction.</p>
+<div class="metrics">
+<div class="metric"><div class="mval">{n_comp}</div>
+<div class="mlabel">markets currently in COMPRESSION
+(of {hz_total})</div></div>
+<div class="metric"><div class="mval">{n_mid}</div>
+<div class="mlabel">in the mid tercile</div></div>
+<div class="metric"><div class="mval">{n_high}</div>
+<div class="mlabel">in high vol</div></div>
 </div>
-<section id="smh"><h2>The Salient Market Hypothesis &mdash; the proof battery</h2>
-{_smh_proof_html(paper_dir)}
-</section>
-<section id="inevitable"><h2>Structural inevitabilities &mdash; measured, not predicted</h2>
-{_inevitabilities_html(paper_dir)}
-</section>
-<section id="avfi"><h2>AVFI &mdash; the edge formula, iterating nightly</h2>
-{_avfi_html(paper_dir)}
-</section>
-<section id="lessons"><h2>Learning lessons &mdash; what the data forced</h2>
-{_lessons_html(paper_dir)}
-</section>
-<section id="charts"><h2>Performance</h2>
-<p class="legend"><span><i class="dot" style="background:#3fb950"></i>equity
-(mark-to-market, net of costs)</span>
-<span><i class="dot" style="background:#f85149"></i>drawdown from peak</span></p>
-{svg}
-<h3 class="sub">Drawdown (underwater curve)</h3>
-{dd_svg}
-<h3 class="sub">Instrument prices &amp; trade entries</h3>
-<p class="dim">Green up-triangles mark long entries, red down-triangles
-short entries, from the audited decision log.</p>
-{price_html}
-</section>
-<section id="race"><h2>Self-learning: champion vs challenger</h2>
-<p class="dim">The deployed champion stays frozen so its forward test stays
-honest; the edge-seeker's best candidate shadow-trades as a challenger on
-the same real bars every night. Each curve is scaled to its own range.</p>
-{race_chart}
-{race_html}
-</section>
-<section id="crossasset"><h2>Cross-asset edge research</h2>
-{_cross_asset_html(paper_dir)}
-</section>
-<section id="knowledge"><h2>Knowledge base &rarr; strategy design</h2>
-{_knowledge_html()}
-</section>
-<section id="reports"><h2>Latest reports</h2>
-{reports}
-</section>
-<details class="doc" id="archive"><summary>The falsification archive
-<span class="dim">&mdash; every hypothesis tested and killed, kept
-honest: tops &amp; bottoms, the 3D state space, crypto/commodity
-detections, the MR-coin edge, the v4 confirmation premium, the
-commodity battery</span></summary>
-<section id="topsbottoms"><h3>Tops &amp; bottoms detection</h3>
-{_tops_bottoms_html(paper_dir)}
-</section>
-<section id="statespace"><h3>AVFI state space &mdash; the 3D ideology</h3>
-{_state_space_html(paper_dir)}
-</section>
-<section id="commodities"><h3>Commodity detections (dailies)</h3>
-{_extended_detections_html(paper_dir)}
-</section>
-<section id="crypto"><h3>Crypto detections &mdash; top 150, with AVFI</h3>
-{_crypto_detections_html(paper_dir)}
-</section>
-<section id="mredge"><h3>The MR-coin edge &mdash; tested with a control group</h3>
-{_mr_edge_html(paper_dir)}
-</section>
-<section id="v4study"><h3>v4 vs plain &mdash; the confirmation premium, tested</h3>
-{_v4_study_html(paper_dir)}
-</section>
-<section id="commedge"><h3>The commodity edge &mdash; through the full battery</h3>
-{_commodity_edge_html(paper_dir)}
-</section>
-</details>
-{journal_html}
-<section id="buildlog"><h2>Build log</h2>
-<p class="dim">Every phase of building this system, newest last — including
-the bugs the real market exposed and how they were fixed.</p>
-{_worklog_html()}
-</section>
-<section id="repo"><h2>Repository map</h2>
-<p class="dim">Everything on this page is generated from committed artifacts
-in <a href="https://github.com/andrea-karlvassallo20-beep/vp-mr-strategy"
-style="color:var(--accent)">the source repository on GitHub</a>.</p>
-<table>{repo_rows}</table>
-{_file_details("README — the project explained", (Path(__file__).resolve().parent.parent / "README.md"), open_=True)}
-{_file_details("DASHBOARD — the live status page", (Path(__file__).resolve().parent.parent / "DASHBOARD.md"))}
+<h3 class="sub">Currently compressed (lowest sigma_w first
+&mdash; the coiled springs)</h3>
+<table><tr><th>Market</th><th>sigma_w %</th></tr>{hz_rows}</table>
 </section>
 </main>
-<footer>Salient — regenerated automatically after every paper-trading
-session.<br>
-<a href="https://github.com/andrea-karlvassallo20-beep/vp-mr-strategy">Source,
-evidence and full work log on GitHub</a> &middot; research system, not
-investment advice.</footer>
+<footer>Salient &mdash; regenerated automatically every night.
+The machine behind this page: an autonomous research pipeline that
+fetches real market data, scores every claim forward, and records
+every hit and miss in public.
+<a href="https://github.com/andrea-karlvassallo20-beep/vp-mr-strategy">Source, evidence and the full falsification record on GitHub</a>
+&middot; research system, not investment advice.</footer>
 </body></html>"""
+
 
 
 def main() -> None:
