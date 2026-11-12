@@ -78,6 +78,9 @@ python3 test_smh_precursor.py
 echo "=== 8n SMH machine live position (status reading) ==="
 python3 test_smh_status.py
 
+echo "=== 8o SMH conditional direction battery (law 3's cells) ==="
+python3 test_smh_direction.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 

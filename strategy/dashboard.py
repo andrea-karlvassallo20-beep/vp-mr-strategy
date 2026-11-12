@@ -2010,6 +2010,42 @@ def _smh_gradient_html(paper_dir: Path) -> str:
             )
 
 
+def _smh_direction_html(paper_dir: Path) -> str:
+    """Law 3's conditional direction cells, measured and refused -
+    the theorem's refusal now scored per cell."""
+    path = paper_dir / "research" / "smh_direction.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    rows = "".join(
+        f'<tr><td>{_esc(c["cell"])}</td><td>{c["n"]}</td>'
+        f'<td>{c["p_up"]}</td><td>[{c["wilson_95"][0]}, '
+        f'{c["wilson_95"][1]}]</td>'
+        + ('<td class="warn">flagged</td>'
+           if c["seductive_flag"] else
+           '<td class="good">clean</td>')
+        + '</tr>'
+        for c in r.get("cells", [])
+        if c["n"] and "momentum" in c["cell"])
+    v = r.get("verdict", {})
+    return (f'<h3 class="sub">Law 3&rsquo;s conditional direction '
+            f'cells &mdash; measured, and refused</h3>'
+            f'<p class="dim">The pooled direction is a coin flip; '
+            f'the charter predicts one directional quantity '
+            f'(drift conditional on trend states). Measured on '
+            f'{r.get("n_first_events")} first events: no '
+            f'unflagged cell&rsquo;s Bonferroni-adjusted band '
+            f'excludes one half. The charter&rsquo;s own seductive '
+            f'cell (compression after a down 12-week move) reads '
+            f'exactly 0.500 at n = 9,414 &mdash; the 6-of-7 '
+            f'flattery is dead at scale. Direction stays '
+            f'REFUSED, now per cell, on the record.</p>'
+            f'<table><tr><th>Cell</th><th>n</th><th>p(up)</th>'
+            f'<th>Wilson 95%</th><th>flag</th></tr>{rows}</table>')
+
+
 def build_site(paper_dir: Path) -> str:
     """Salient: the front page - the market hypothesis, the proof,
     the new work, and the live hazard instrument. The past (the
@@ -2018,6 +2054,7 @@ def build_site(paper_dir: Path) -> str:
     this page. This page only faces forward."""
     proof_html = (_smh_proof_html(paper_dir)
                    + _smh_gradient_html(paper_dir)
+                   + _smh_direction_html(paper_dir)
                    + _smh_hazard_html(paper_dir))
     n_comp = n_mid = n_high = 0
     hz_rows = ""
