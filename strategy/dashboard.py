@@ -2258,6 +2258,59 @@ def _philosopher_html(paper_dir: Path) -> str:
                if cand_rows else ""))
 
 
+def _avfi_precursor_html(paper_dir: Path) -> str:
+    """The AVFI precursor battery: the decisive layer-3 test
+    - does any AVFI configuration raise the event hazard
+    beyond the clock?"""
+    path = paper_dir / "research" / "avfi_precursor.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    cells = r.get("cells", {})
+    comp = cells.get("compression", {})
+    incr = cells.get("compression_and_stretch", {})
+    if "cum_event_12w" not in comp \
+            or "cum_event_12w" not in incr:
+        return ""
+    rows = ""
+    for key in ("deep_stretch_down", "deep_stretch_up",
+               "confirmed_bottom_recent",
+               "confirmed_top_recent", "z_flip_up",
+               "compression", "compression_and_stretch"):
+        c = cells.get(key, {})
+        if "cum_event_12w" not in c:
+            continue
+        rows += (f'<tr><td>{_esc(key)}</td><td>{c["n"]}'
+                 f'</td><td>{c["cum_event_12w"]}</td>'
+                 f'<td>[{c["ci95_lo"]}, {c["ci95_hi"]}]'
+                 f'</td></tr>')
+    clim = cells.get("climatology", {})
+    return (f'<h3 class="sub">The AVFI precursor battery '
+            f'&mdash; incremental information beyond the clock, '
+            f'the decisive test</h3>'
+            f'<p class="dim">Every AVFI v4 configuration, '
+            f'alone, reads at or below climatology '
+            f'({clim.get("cum_event_12w")}): the '
+            f'confirmed-bottom cell reads '
+            f'{cells.get("confirmed_bottom_recent", {}).get("cum_event_12w")} '
+            f'&mdash; after a confirmed bottom, the move '
+            f'already happened. But INSIDE the compression '
+            f'clock, stretch ADDS hazard: '
+            f'<strong>{incr["cum_event_12w"]} '
+            f'[{incr["ci95_lo"]}, {incr["ci95_hi"]}] vs '
+            f'the clock alone {comp["cum_event_12w"]} '
+            f'[{comp["ci95_lo"]}, {comp["ci95_hi"]}] '
+            f'&mdash; disjoint bands</strong>. Design-sample, '
+            f'flagged (doctrine rule 5); the forward log is '
+            f'the referee. {_esc(r.get("incremental_verdict", ""))}'
+            f'</p>'
+            f'<table><tr><th>configuration (at crosses)'
+            f'</th><th>n</th><th>cum 12w</th><th>95% band'
+            f'</th></tr>{rows}</table>')
+
+
 def _exit_battery_html(paper_dir: Path) -> str:
     """The exit battery: entry exits and fewer trades, every
     cell reported, verdicts honest either way."""
@@ -2442,6 +2495,7 @@ def build_site(paper_dir: Path) -> str:
     this page. This page only faces forward."""
     proof_html = (_smh_proof_html(paper_dir)
                    + _smh_gradient_html(paper_dir)
+                   + _avfi_precursor_html(paper_dir)
                    + _smh_direction_html(paper_dir)
                    + _smh_recurrence_html(paper_dir)
                    + _smh_calibration_html(paper_dir)
@@ -2815,7 +2869,8 @@ def build_site(paper_dir: Path) -> str:
 <a href="#hypothesis">The hypothesis</a>
 <a href="#proof">The proof</a> <a href="#work">The new work</a>
 <a href="#now">The Vassallo Score</a>
-<a href="#charts">The charts</a></nav>
+<a href="#charts">The charts</a>
+<a href="thesis.html">The thesis</a></nav>
 <header>
 <h1>Salient<span>.</span></h1>
 <p class="tagline"><strong>The aim:</strong> see the future event

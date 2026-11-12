@@ -669,3 +669,77 @@ reported, none cherry-picked.
 Design-sample caveat, unchanged: every number above is
 design-sample; the forward calibration record remains the test
 that matters.
+
+## 17. The AVFI causal map and the incremental-information verdict (dated addition, 12 November 2026)
+
+The layer-3 question asked the only way it can be answered:
+does any AVFI configuration raise the hazard of the charter's
+significant week BEYOND the SMH clock? Instrument:
+avfi_precursor.py; KM+Greenwood, the frozen event, all cells
+at crosses into the condition, the full 185-series universe.
+
+### 17.1 The causal map, variable by variable
+
+1. WEEKLY LOG RETURNS (r1): what a completed week moved.
+   Contains: the realized outcome. Does NOT measure: flow,
+   participation, or anything anticipatory. Contemporaneous
+   outcome. Hypothesis it can test: none (it IS the event
+   variable). A fresh price extreme is a DESCRIPTION, not a
+   warning.
+2. SIGMA_W (trailing 8-week weekly vol): the clock's hand.
+   Contains: the variance state. Does NOT measure: direction.
+   Contemporaneous context. Tests: the salience gradient
+   (measured, section 6). The one variable with proven
+   out-of-fold hazard content.
+3. TERCILE STATES (compression/mid/stress): the region layer.
+   Contains: where the market sits in the variance cycle.
+   Does NOT measure: the event's approach. Descriptive state,
+   but the state that ARMS the clock.
+4. CAUSAL STRETCH-Z (AVFI v4's core): the price distance from
+   its own recent regime, in vol units, strictly causal.
+   Contains: how extended price is vs its recent distribution.
+   Does NOT measure: aggressor flow, order-book imbalance, or
+   institutional positioning - it is OHLCV-derived, and the
+   v2-v3 spread is disagreement between two constructions,
+   NOT a buy/sell pressure measurement. Contemporaneous
+   extension. Tests: deep stretch as an event precursor.
+5. VOLUME BASELINE RATIO: participation proxy. Contains:
+   effort relative to habit. Does NOT measure: genuine
+   microstructure (no aggressor-side data). Contemporaneous.
+   Tests: law 4 confirmation (measured: significant weeks
+   come on 1.138x baseline volume, section 7 anatomy).
+6. CONFIRMED TOP/BOTTOM FLAGS (v4): deep stretch + bull/bear
+   confirmation within 3 bars. Contains: a marked candidate
+   turning point. Does NOT measure: what happens next. A
+   turning-point flag is a DESCRIPTION, not a signal - the
+   battery's verdict below is the proof.
+7. THE V2-V3 SPREAD: model disagreement. Descriptive only.
+
+### 17.2 The measured verdicts (design-sample, flagged)
+
+1. EVERY AVFI CONFIGURATION ALONE reads AT OR BELOW
+   climatology: deep_stretch_down 0.414 [0.399, 0.429],
+   confirmed_bottom_recent 0.399 [0.380, 0.418],
+   z_flip_up 0.299, vs climatology 0.435. The v4 bottom
+   configuration is NOT an event precursor - after a
+   confirmed bottom, a significant week within 12 weeks is
+   LESS likely than a random week (the move already happened).
+   The standing verdict is confirmed and sharpened: AVFI
+   describes regimes; alone it carries no event-hazard
+   information at all.
+2. THE INCREMENTAL FINDING: compression AND stretch-z <= -1
+   gives cum 0.657 [0.648, 0.665] vs the clock alone 0.635
+   [0.629, 0.641] - THE BANDS ARE DISJOINT. Inside the
+   compression clock, AVFI's stretch ADDS hazard content
+   (+0.022). Design-sample, flagged until forward-scored
+   (doctrine rule 5), with the same independence caveat the
+   clock study carries (entries within a series are
+   correlated; the forward log is the referee).
+3. THE ROLE, settled: AVFI is the READ that colors the clock's
+   armed state - never a trigger, never an authorizer. The
+   philosopher's verdicts carry it as context, and the
+   compression x stretch cell is now a standing candidate for
+   the forward log's conditional tables.
+
+Design-sample caveat, unchanged: the forward calibration
+record remains the test that matters.
