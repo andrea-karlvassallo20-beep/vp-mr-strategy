@@ -86,6 +86,63 @@ def scan_series(name, df):
     }
 
 
+INDEXES = {
+    "axjo", "bvsp", "dji", "fchi", "ftse", "gdaxi", "gspc", "hsi",
+    "ixic", "ks11", "n225", "nsei", "rut", "stoxx50e", "twii",
+    "spy", "qqq", "iwm", "xle", "xlf",
+}
+
+
+def classify(name):
+    n = name.lower()
+    if n in INDEXES or n.startswith("^"):
+        return "index"
+    if n.endswith("usd") or n.endswith("usdt") or n in {
+        "kef", "zlf", "zwf", "alif", "barusd",
+    }:
+        return "crypto"
+    return "commodity"
+
+
+def expansion_stats(df):
+    """EW-defying signature (descriptive): after a deep coil (>= 20 days in
+    the lowest vol tercile), how violent is the resolution? Reports the max
+    |10-day return| within 30 days of coil exit and whether it contained a
+    single day beyond 4 sigma. Causal: the window is measured AFTER the coil
+    is observable."""
+    close = df["close"].to_numpy(float)
+    ret = np.concatenate([[0.0], np.diff(np.log(close))])
+    rvol = pd.Series(ret).rolling(20).std().to_numpy()
+    hist = rvol[~np.isnan(rvol)]
+    if len(hist) < 100:
+        return None
+    thresh = np.nanpercentile(hist, 33)
+    events = []
+    i = 40
+    while i < len(close) - 40:
+        if rvol[i] is not None and not np.isnan(rvol[i]) and rvol[i] <= thresh:
+            j = i
+            while j < len(close) and not np.isnan(rvol[j]) and rvol[j] <= thresh:
+                j += 1
+            if j - i >= 20:
+                win = ret[j : min(j + 30, len(ret))]
+                if len(win) >= 10:
+                    fwd = close[min(j + 10, len(close) - 1)] / close[j] - 1.0
+                    sig = rvol[j] if not np.isnan(rvol[j]) else np.nanstd(ret[j - 20 : j])
+                    big = int(np.sum(np.abs(win) > 4 * sig)) if sig > 0 else 0
+                    events.append((abs(fwd), big))
+            i = j + 1
+        else:
+            i += 1
+    if not events:
+        return None
+    return {
+        "n_coil_exits": len(events),
+        "median_max10d": float(np.median([e[0] for e in events])),
+        "pct_with_4sigma_day": float(np.mean([e[1] > 0 for e in events])),
+    }
+
+
 def primed_score(r):
     """Descriptive only. Deep coil + absorption, no direction implied."""
     coil = min(r["comp_days"] / 30.0, 1.0)
@@ -99,15 +156,33 @@ def main():
     rows = [scan_series(n, df) for n, df in frames]
     df = pd.DataFrame(rows)
     df["primed_score"] = [primed_score(r) for r in rows]
+    df["class"] = [classify(n) for n, _ in frames]
+    exp = []
+    for n, raw in frames:
+        s = expansion_stats(raw)
+        exp.append(s or {})
+    df["n_coil_exits"] = [e.get("n_coil_exits", 0) for e in exp]
+    df["median_max10d"] = [e.get("median_max10d", np.nan) for e in exp]
+    df["pct_with_4sigma_day"] = [e.get("pct_with_4sigma_day", np.nan) for e in exp]
     df = df.sort_values("primed_score", ascending=False).reset_index(drop=True)
     OUT.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT / "clue_scan_table.csv", index=False)
     top = df.head(12)
-    print(top.to_string(index=False))
+    print(top[["series", "class", "primed_score", "comp_days", "rvol_pct",
+               "range_pos", "vol_ratio"]].to_string(index=False))
     n_coiled = int((df["comp_days"] >= 20).sum())
     print(f"\nseries with comp_days >= 20 (deep coil): {n_coiled} of {len(df)}")
     print(f"series in the bottom rvol tercile: "
           f"{int((df['rvol_pct'] <= 33).sum())} of {len(df)}")
+    print("\n=== per-class summary (the EW-defying question) ===")
+    for cls in ("crypto", "index", "commodity"):
+        sub = df[df["class"] == cls]
+        withexp = sub.dropna(subset=["median_max10d"])
+        print(f"[{cls}] n={len(sub)}  deep coils={int((sub['comp_days'] >= 20).sum())}  "
+              f"median coil-exit |10d move|="
+              f"{withexp['median_max10d'].median() if len(withexp) else float('nan'):.4f}  "
+              f"pct of exits with a >4-sigma day="
+              f"{withexp['pct_with_4sigma_day'].median() if len(withexp) else float('nan'):.3f}")
 
     try:
         import matplotlib
