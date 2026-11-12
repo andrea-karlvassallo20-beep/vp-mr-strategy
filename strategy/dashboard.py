@@ -922,7 +922,7 @@ def _tops_bottoms_html(paper_dir: Path) -> str:
         return ("<p class=\"dim\">Tops-and-bottoms research appears "
                 "here after the first nightly research pass.</p>")
     r = json.load(open(res_path))
-    charts = r.get("charts", [])
+    charts = r.get("charts", [])[:12]
     svgs = "".join(f'<div class="pc">{_tb_chart_svg(ch)}</div>'
                    for ch in charts)
     fmt = lambda x: f"{x:+.4f}" if isinstance(x, (int, float)) else "-"
@@ -1809,7 +1809,7 @@ def _crypto_detections_html(paper_dir: Path) -> str:
         return "<p class=\"dim\">No crypto series in the extended " \
                 "study yet.</p>"
     by_confirm = sorted(rows, key=lambda x: -x.get("n_confirmed", 0))
-    top = by_confirm[:24]
+    top = by_confirm[:12]
     svgs = "".join(
         f'<div class="pc"><div class="dim" style="text-align:center">'
         f'{_esc(row["ticker"])}</div>'
@@ -1965,15 +1965,12 @@ def build_site(paper_dir: Path) -> str:
 
     nav = (" ".join(
         f'<a href="#{a}">{t}</a>' for a, t in
-        (("avfi", "AVFI"), ("topsbottoms", "Tops & bottoms"),
-         ("statespace", "State space"),
-         ("commodities", "Commodities"), ("crypto", "Crypto 150"),
-         ("lessons", "Lessons"), ("mredge", "MR edge"),
-         ("v4study", "v4 study"), ("commedge", "Commodity edge"),
-         ("inevitable", "Inevitables"), ("smh", "SMH proof"),
+        (("smh", "SMH proof"), ("inevitable", "Inevitables"),
+         ("avfi", "AVFI"), ("lessons", "Lessons"),
          ("overview", "Overview"),
          ("charts", "Charts"),
          ("race", "Self-learning"), ("crossasset", "Cross-asset"),
+         ("archive", "Archive"),
          ("knowledge", "Knowledge"),
          ("reports", "Reports"), ("journal", "Journal"),
          ("buildlog", "Build log"), ("repo", "Repository"))))
@@ -2083,14 +2080,23 @@ footer a {{ color:var(--accent); }}
 </style></head><body>
 <nav><span class="brand">Salient<span>.</span></span>{nav}</nav>
 <header>
-<h1>An autonomous quantitative trading system<span>.</span></h1>
-<p class="tagline">VP-MR-ETF-D1-001 — volatility-parity mean reversion on
-US equity ETFs (SPY, QQQ, IWM, XLF, XLE), paper-trading autonomously,
-self-audited nightly, grounded in a growing research library, and
-promoted only by evidence.</p>
+<h1>Salient<span>.</span></h1>
+<p class="tagline"><strong>The aim:</strong> solve what no one else has —
+a scored, falsifiable theory of market events. The
+<a href="#smh" style="color:var(--accent)">Salient Market Hypothesis</a>
+replaces wave counting with measured states, prophecy with a scored
+clock, and belief with calibration. Six of its seven measurable
+claims are now PROVEN on 174 series — including the clock itself
+(3.3&times; event hazard from compression) and the theorem that
+direction stays unknowable while timing becomes scoreable.</p>
+<p class="tagline"><strong>The frontier — what no one has solved yet:</strong>
+the hazard model (Kaplan-Meier v0 exists; Cox covariates &mdash; state,
+momentum, duration &mdash; are next), the volume clock (Clark's
+subordination, blocked only by intraday data), precursor signatures
+beyond volatility, Hawkes self-excitation, and the calibrated Bayesian
+forecaster.</p>
 <p class="tagline">A hobby research pursuit: this system will never trade
-live. The enjoyment comes from solving and finding the edge — not from
-financial gain.</p>
+live. The enjoyment comes from solving — not from financial gain.</p>
 </header>
 <main>
 <div id="overview">
@@ -2098,11 +2104,17 @@ financial gain.</p>
 <p class="pnote">{pct}% of the 20-session forward test toward promotion</p>
 <div class="metrics">{metrics}</div>
 </div>
+<section id="smh"><h2>The Salient Market Hypothesis &mdash; the proof battery</h2>
+{_smh_proof_html(paper_dir)}
+</section>
+<section id="inevitable"><h2>Structural inevitabilities &mdash; measured, not predicted</h2>
+{_inevitabilities_html(paper_dir)}
+</section>
 <section id="avfi"><h2>AVFI &mdash; the edge formula, iterating nightly</h2>
 {_avfi_html(paper_dir)}
 </section>
-<section id="topsbottoms"><h2>Tops &amp; bottoms detection</h2>
-{_tops_bottoms_html(paper_dir)}
+<section id="lessons"><h2>Learning lessons &mdash; what the data forced</h2>
+{_lessons_html(paper_dir)}
 </section>
 <section id="charts"><h2>Performance</h2>
 <p class="legend"><span><i class="dot" style="background:#3fb950"></i>equity
@@ -2132,33 +2144,33 @@ the same real bars every night. Each curve is scaled to its own range.</p>
 <section id="reports"><h2>Latest reports</h2>
 {reports}
 </section>
-<section id="statespace"><h2>AVFI state space &mdash; the 3D ideology</h2>
+<details class="doc" id="archive"><summary>The falsification archive
+<span class="dim">&mdash; every hypothesis tested and killed, kept
+honest: tops &amp; bottoms, the 3D state space, crypto/commodity
+detections, the MR-coin edge, the v4 confirmation premium, the
+commodity battery</span></summary>
+<section id="topsbottoms"><h3>Tops &amp; bottoms detection</h3>
+{_tops_bottoms_html(paper_dir)}
+</section>
+<section id="statespace"><h3>AVFI state space &mdash; the 3D ideology</h3>
 {_state_space_html(paper_dir)}
 </section>
-<section id="commodities"><h2>Commodity detections (dailies)</h2>
+<section id="commodities"><h3>Commodity detections (dailies)</h3>
 {_extended_detections_html(paper_dir)}
 </section>
-<section id="crypto"><h2>Crypto detections &mdash; top 150, with AVFI</h2>
+<section id="crypto"><h3>Crypto detections &mdash; top 150, with AVFI</h3>
 {_crypto_detections_html(paper_dir)}
 </section>
-<section id="lessons"><h2>Learning lessons &mdash; what the data forced</h2>
-{_lessons_html(paper_dir)}
-</section>
-<section id="mredge"><h2>The MR-coin edge &mdash; tested with a control group</h2>
+<section id="mredge"><h3>The MR-coin edge &mdash; tested with a control group</h3>
 {_mr_edge_html(paper_dir)}
 </section>
-<section id="v4study"><h2>v4 vs plain &mdash; the confirmation premium, tested</h2>
+<section id="v4study"><h3>v4 vs plain &mdash; the confirmation premium, tested</h3>
 {_v4_study_html(paper_dir)}
 </section>
-<section id="commedge"><h2>The commodity edge &mdash; through the full battery</h2>
+<section id="commedge"><h3>The commodity edge &mdash; through the full battery</h3>
 {_commodity_edge_html(paper_dir)}
 </section>
-<section id="inevitable"><h2>Structural inevitabilities &mdash; measured, not predicted</h2>
-{_inevitabilities_html(paper_dir)}
-</section>
-<section id="smh"><h2>The Salient Market Hypothesis &mdash; the proof battery</h2>
-{_smh_proof_html(paper_dir)}
-</section>
+</details>
 {journal_html}
 <section id="buildlog"><h2>Build log</h2>
 <p class="dim">Every phase of building this system, newest last — including
