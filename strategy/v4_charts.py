@@ -307,6 +307,15 @@ def run(data_dir: Path, research_dir: Path,
     dest = research_dir / "v4_charts.json"
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(json.dumps(result, indent=2))
+
+    frags_dest = research_dir / "v4_chart_frags.json"
+    frags_dest.write_text(json.dumps({
+        "status": "OK",
+        "generated_utc": result["generated_utc"],
+        "n_charts": len(frags),
+        "per_class": counts,
+        "charts": frags,
+    }))
     return result
 
 

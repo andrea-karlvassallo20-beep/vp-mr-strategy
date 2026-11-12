@@ -1,5 +1,6 @@
 """Dashboard test: generation from a synthetic session + empty-state
 grace. Harness file."""
+import json
 import shutil
 import sys
 import tempfile
@@ -10,6 +11,7 @@ from fetch_data import fetch_synthetic, write_csv
 from papertrading_runner import PaperTradingRunner
 from dashboard import (build_html, build_site, drawdown_svg,
                        price_charts_html, race_svg, _avfi_chart_svg,
+                       _charts_html,
                        _avfi_html, _avfi_pine_html)
 
 PASS = FAIL = 0
@@ -34,6 +36,16 @@ check("verification matrix present", "Cross-engine parity" in html)
 check("autonomous loop section present", "edge-seeker" in html)
 check("no unescaped script injection", "<script" not in html)
 
+_fr_seed = tmp / "research"
+_fr_seed.mkdir(parents=True, exist_ok=True)
+(_fr_seed / "v4_chart_frags.json").write_text(json.dumps({
+    "status": "OK", "n_charts": 1, "per_class": {"index": 1},
+    "charts": ['<div class="chart"><svg></svg></div>']}))
+(_fr_seed / "v4_charts.json").write_text(json.dumps({"equity": {
+    "status": "OK", "n_trades": 3, "years": 1.0,
+    "total_return": 0.1, "cagr": 0.1, "max_drawdown": 0.05,
+    "concurrent_cap": 10,
+    "equity_curve_monthly": [1.0, 1.05, 1.1]}}))
 site = build_site(tmp)
 check("salient site generated", len(site) > 6000)
 check("front page faces forward: hypothesis, proof, work, score",
@@ -44,6 +56,28 @@ check("front page carries no past sections",
       all(k not in site for k in ("Build log", "Session journal",
                                   "falsification archive",
                                   "aria-label=\"equity curve\"")))
+check("charts section on the main page embeds the universe "
+      "and the equity curve",
+      'id="charts"' in site and 'class="cgrid"' in site
+      and 'class="chart"' in site and 'class="eqsvg"' in site)
+check("charts section is graceful when no fragments exist",
+      _charts_html(tmp / "nonexistent") == "")
+_fr_tmp = Path(tempfile.mkdtemp())
+_fr_res = _fr_tmp / "research"
+_fr_res.mkdir(parents=True)
+(_fr_res / "v4_chart_frags.json").write_text(json.dumps({
+    "status": "OK", "n_charts": 1, "per_class": {"index": 1},
+    "charts": ['<div class="chart"><svg></svg></div>']}))
+(_fr_res / "v4_charts.json").write_text(json.dumps({"equity": {
+    "status": "OK", "n_trades": 3, "years": 1.0,
+    "total_return": 0.1, "cagr": 0.1, "max_drawdown": 0.05,
+    "concurrent_cap": 10,
+    "equity_curve_monthly": [1.0, 1.05, 1.1]}}))
+_ch = _charts_html(_fr_tmp)
+check("charts section renders from the artifacts",
+      'id="charts"' in _ch and "<svg" in _ch
+      and "class=\"eqsvg\"" in _ch and "3 trades" in _ch)
+shutil.rmtree(_fr_tmp)
 check("drawdown chart in site", drawdown_svg(tmp).startswith("<svg"))
 check("drawdown empty-state graceful",
       "no session data yet" in drawdown_svg(tmp / "nonexistent"))

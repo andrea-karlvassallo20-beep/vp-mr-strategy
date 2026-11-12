@@ -2254,6 +2254,74 @@ def _philosopher_html(paper_dir: Path) -> str:
                if cand_rows else ""))
 
 
+def _charts_html(paper_dir: Path) -> str:
+    """The charts, ON THE MAIN PAGE: the portfolio equity curve
+    of the philosopher's long rule and every marked series in
+    the universe (AVFI v4 confirmed tops/bottoms, the causal
+    stretch-z sparkline). The full standalone page stays at
+    v4_charts.html."""
+    base = paper_dir / "research"
+    frags_path = base / "v4_chart_frags.json"
+    if not frags_path.exists():
+        return ""
+    fr = json.loads(frags_path.read_text())
+    charts = fr.get("charts", [])
+    if not charts:
+        return ""
+    counts = fr.get("per_class", {})
+    eq = {}
+    eq_path = base / "v4_charts.json"
+    if eq_path.exists():
+        eq = json.loads(eq_path.read_text()).get("equity", {})
+    eq_head = ""
+    eq_svg = ""
+    if eq.get("status") == "OK":
+        cagr = eq.get("cagr")
+        eq_head = (f'<p class="dim">The philosopher&rsquo;s long '
+                   f'rule on the anchored set, simulated honestly '
+                   f'on a calendar-date grid: '
+                   f'<strong>{eq["n_trades"]} trades over '
+                   f'{eq["years"]} years</strong>, total return '
+                   f'<strong>{eq["total_return"] * 100:+.1f}%'
+                   f'</strong>'
+                   + (f', CAGR <strong>{cagr * 100:+.1f}%</strong>'
+                      if cagr is not None else "")
+                   + f', max drawdown <strong>'
+                   f'{eq["max_drawdown"] * 100:.1f}%</strong>, '
+                   f'concurrent cap {eq["concurrent_cap"]}. '
+                   f'Design sample &mdash; forward-scored or it '
+                   f'stays flagged.</p>')
+        pts = eq.get("equity_curve_monthly", [])
+        if len(pts) >= 2:
+            lo, hi = min(pts), max(pts)
+            rng_ = (hi - lo) if hi > lo else 1.0
+            W, H = 900, 170
+            poly = " ".join(
+                f"{i * W / max(1, len(pts) - 1):.1f},"
+                f"{H - (p - lo) / rng_ * (H - 20) - 10:.1f}"
+                for i, p in enumerate(pts))
+            eq_svg = (f'<svg class="eqsvg" viewBox="0 0 {W} {H}" '
+                      f'xmlns="http://www.w3.org/2000/svg">'
+                      f'<polyline points="{poly}" fill="none" '
+                      f'stroke="#22d3ee" stroke-width="1.8"/>'
+                      f'</svg>')
+    counts_line = ", ".join(f"{k}: {v}"
+                            for k, v in counts.items())
+    return (f'<section id="charts"><h2>The charts &mdash; the '
+            f'universe, marked</h2>'
+            f'<p class="dim">AVFI v4 detection on every market '
+            f'with enough history: green marks CONFIRMED bottoms '
+            f'(deep stretch z &le; &minus;2 with bull-side '
+            f'confirmation within 3 bars), red marks CONFIRMED '
+            f'tops (z &ge; +2, bear-side); the cyan sparkline is '
+            f'the causal stretch-z. {len(charts)} charts '
+            f'({counts_line}). The full standalone page lives at '
+            f'<a href="v4_charts.html">v4_charts.html</a>.</p>'
+            + eq_head + eq_svg
+            + '<div class="cgrid">' + "".join(charts)
+            + '</div></section>')
+
+
 def build_site(paper_dir: Path) -> str:
     """Salient: the front page - the market hypothesis, the proof,
     the new work, and the live hazard instrument. The past (the
@@ -2618,6 +2686,7 @@ def build_site(paper_dir: Path) -> str:
              "STATUS: awaits the hazard model's score"),
         ))
 
+    charts_html = _charts_html(paper_dir)
     css = open(Path(__file__).parent / "salient_front.css").read()
 
     return f"""<!DOCTYPE html>
@@ -2633,7 +2702,7 @@ def build_site(paper_dir: Path) -> str:
 <a href="#hypothesis">The hypothesis</a>
 <a href="#proof">The proof</a> <a href="#work">The new work</a>
 <a href="#now">The Vassallo Score</a>
-<a href="v4_charts.html">The charts</a></nav>
+<a href="#charts">The charts</a></nav>
 <header>
 <h1>Salient<span>.</span></h1>
 <p class="tagline"><strong>The aim:</strong> see the future event
@@ -2715,6 +2784,7 @@ KNOWLEDGE_SMH.md.</p>
 <section id="proof"><h2>The proof</h2>
 {proof_html}
 </section>
+{charts_html}
 <section id="work"><h2>The new work &mdash; until the clock is ours</h2>
 <p class="dim">The frontier, in order. Each item is a genuine
 research problem with a scoreable end state &mdash; none is a
