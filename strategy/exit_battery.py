@@ -128,7 +128,8 @@ MAX_CONCURRENT = 10
 
 
 def portfolio_sim(data_dir: Path, profit_take=None,
-                 entry_filter=None) -> dict:
+                 entry_filter=None,
+                 max_concurrent=MAX_CONCURRENT) -> dict:
     """The philosopher's long portfolio on the anchored set,
     on a CALENDAR-DATE grid (the honest simulation), under one
     exit rule (the fixed 4-week hold, or the profit take) and
@@ -179,14 +180,21 @@ def portfolio_sim(data_dir: Path, profit_take=None,
     all_dates = sorted({d for p in positions for d in p[2]})
     eq = 1.0
     curve = []
-    open_pool = []
     max_dd = 0.0
     peak = 1.0
     for d in all_dates:
-        for p in positions:
-            if p[0] == d and len(open_pool) < MAX_CONCURRENT:
-                open_pool.append(p)
-        open_pool = [p for p in open_pool if p[1] > d]
+        # dated correction (12 Nov 2026, doctrine rule 6): the
+        # pool is rebuilt each date from positions whose window
+        # COVERS the date (entry <= d < exit), capped by entry
+        # order. The old code opened a position only if its
+        # entry date happened to appear in another position's
+        # return window - positions with uncovered entry dates
+        # were silently dropped, and late-opened ones lost
+        # their early returns. Caught by the cap-sensitivity
+        # suite's synthetic universe; both simulators fixed;
+        # numbers re-measured and re-recorded.
+        active = [p for p in positions if p[0] <= d < p[1]]
+        open_pool = active[:max_concurrent]
         rets = [p[2][d] for p in open_pool if d in p[2]]
         hold_days = max(1, int(np.mean(
             [len(p[2]) for p in open_pool])) \
@@ -210,7 +218,7 @@ def portfolio_sim(data_dir: Path, profit_take=None,
         "max_drawdown": round(float(max_dd), 4),
         "years": round(years, 2),
         "equity_curve_monthly": monthly,
-        "concurrent_cap": MAX_CONCURRENT,
+        "concurrent_cap": max_concurrent,
         "profit_take": profit_take,
         "entry_filter": entry_filter,
     }

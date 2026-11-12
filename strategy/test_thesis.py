@@ -37,7 +37,13 @@ res.mkdir(parents=True)
                "p_positive_week1": 0.515,
                "p_positive_week4": 0.578}}))
 (res / "exit_battery.json").write_text(json.dumps({
-    "baseline_4w": {"n": 206, "median_net": 0.0169}}))
+    "baseline_4w": {"n": 206, "median_net": 0.0169},
+    "portfolio_block": {
+        "baseline_4w": {"total_return": 0.762,
+                        "cagr": 0.105,
+                        "max_drawdown": 0.431},
+        "pt_4pct": {"total_return": -0.315},
+        "v4_confirmed_4w": {"cagr": 0.248}}}))
 (res / "smh_forward.json").write_text(json.dumps({
     "counts": {"open": 30}}))
 (res / "smh_calibration.json").write_text(json.dumps({
@@ -84,14 +90,21 @@ check("the refinements slide carries every honest verdict",
       "the median is not the portfolio" in html
       and "does not earn its slot" in html
       and "tilts, does not gate" in html
+      and "earns its keep at this sample" in html
       and "0.627" in html and "0.0178" in html)
 check("the portfolio numbers are data-driven",
-      "+81.8%" in html and "+10.0%" in html)
+      "+76.2%" in html and "+10.5%" in html
+      and "-31.5%" in html)
 check("the design-sample caveat rides every measured slide",
       html.count("Design-sample caveat") >= 10)
-check("the page links back to the front page and the charts",
-      'href="index.html"' in html
+check("the page links to the live instrument and the charts",
+      'href="instrument.html"' in html
       and 'href="v4_charts.html"' in html)
+check("the forward-progress slide carries the out-of-sample "
+      "evidence",
+      "pre-scored out-of-sample skill" in html
+      and "replicated on" in html
+      and "logged IN ADVANCE" in html)
 
 # graceful without any artifacts at all
 empty = Path(tempfile.mkdtemp())
