@@ -2046,6 +2046,44 @@ def _smh_direction_html(paper_dir: Path) -> str:
             f'<th>Wilson 95%</th><th>flag</th></tr>{rows}</table>')
 
 
+def _smh_recurrence_html(paper_dir: Path) -> str:
+    """The long-run lemma measured: the region chain's jump
+    structure, irreducibility, and the trigger's actuarial
+    recurrence rate."""
+    path = paper_dir / "research" / "smh_recurrence.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    ir = r.get("irreducibility", {})
+    tr = r.get("trigger_recurrence", {})
+    tm = r.get("transition_matrix", {})
+    rows = "".join(
+        f'<tr><td>{_esc(k)}</td><td>{v["count"]}</td>'
+        f'<td>{v["probability"]}</td></tr>'
+        for k, v in tm.items() if v["count"])
+    cls = "good" if ir.get("irreducible") else "warn"
+    return (f'<h3 class="sub">The long-run lemma &mdash; the '
+            f'region chain measured</h3>'
+            f'<p class="dim">Inevitability lives in the '
+            f'recurrence. Measured on this universe: <span '
+            f'class="{cls}">the chain is '
+            + ("IRREDUCIBLE - all six directed links observed, "
+               "none absorbing" if ir.get("irreducible")
+               else "NOT irreducible - reported as measured")
+            + f'</span>, and the compression trigger fires '
+            f'<strong>'
+            f'{tr.get("triggers_per_market_year")}</strong> '
+            f'times per market per year '
+            f'({tr.get("n_triggers")} triggers over '
+            f'{tr.get("market_years")} market-years). The '
+            f'anticipated event is actuarially inevitable across '
+            f'the cycle, and no event is dated.</p>'
+            f'<table><tr><th>Link</th><th>count</th>'
+            f'<th>probability</th></tr>{rows}</table>')
+
+
 def build_site(paper_dir: Path) -> str:
     """Salient: the front page - the market hypothesis, the proof,
     the new work, and the live hazard instrument. The past (the
@@ -2055,6 +2093,7 @@ def build_site(paper_dir: Path) -> str:
     proof_html = (_smh_proof_html(paper_dir)
                    + _smh_gradient_html(paper_dir)
                    + _smh_direction_html(paper_dir)
+                   + _smh_recurrence_html(paper_dir)
                    + _smh_hazard_html(paper_dir))
     n_comp = n_mid = n_high = 0
     hz_rows = ""

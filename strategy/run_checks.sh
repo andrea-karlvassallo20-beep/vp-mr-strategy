@@ -81,6 +81,9 @@ python3 test_smh_status.py
 echo "=== 8o SMH conditional direction battery (law 3's cells) ==="
 python3 test_smh_direction.py
 
+echo "=== 8p SMH recurrence battery (the long-run lemma) ==="
+python3 test_smh_recurrence.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 
