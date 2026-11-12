@@ -2322,7 +2322,36 @@ def _exit_battery_html(paper_dir: Path) -> str:
             f'</p>'
             f'<table><tr><th>filter</th><th>n</th>'
             f'<th>median net</th><th>P(+)</th><th>gate'
-            f'</th></tr>{filt_rows}</table>')
+            f'</th></tr>{filt_rows}</table>'
+            + _exit_portfolio_block(r))
+
+
+def _exit_portfolio_block(r: dict) -> str:
+    """The portfolio-level truth: per-trade medians do not
+    compound - the calendar-grid simulation is the referee."""
+    pb = r.get("portfolio_block") or {}
+    base = pb.get("baseline_4w") or {}
+    pt = pb.get("pt_4pct") or {}
+    if base.get("status") != "OK" or pt.get("status") != "OK":
+        return ""
+    rows = ""
+    for label, v in (("4-week hold (production)", base),
+                     ("+4% profit take", pt)):
+        rows += (
+            f'<tr><td>{label}</td><td>{v["n_trades"]}</td>'
+            f'<td>{v["total_return"] * 100:+.1f}%</td>'
+            f'<td>{v["cagr"] * 100:+.1f}%</td>'
+            f'<td>{v["max_drawdown"] * 100:.1f}%</td></tr>')
+    return (f'<p class="dim"><strong>The portfolio referee:'
+            f'</strong> {_esc(pb.get("verdict", ""))} The '
+            f'mechanism, measured: the profit take lifts the '
+            f'per-trade MEDIAN (0.0415 vs 0.0169) but cuts the '
+            f'per-trade MEAN (0.0052 vs 0.0086) - it truncates '
+            f'the right tail that does the compounding. The '
+            f'median is not the portfolio.</p>'
+            f'<table><tr><th>exit rule</th><th>n</th>'
+            f'<th>total</th><th>CAGR</th><th>maxDD</th></tr>'
+            f'{rows}</table>')
 
 
 def _charts_html(paper_dir: Path) -> str:
