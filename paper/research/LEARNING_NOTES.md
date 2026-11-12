@@ -13,6 +13,17 @@ A research knowledge base for one question:
 > Can order-flow and liquidity structure predict WHEN and WHICH WAY a major
 > price move happens — first in crypto, then possibly across a panel?
 
+It is built on TWO pillars:
+
+1. **The book knowledge base** ("Market Studies", `KNOWLEDGE.md`) — the
+   accumulated market research from the work sessions: 13 books studied
+   one at a time, from Elliott Wave as the base framework through the full
+   microstructure stack to the mathematical-finance core. This is where the
+   ideas come from.
+2. **The falsification lab** (`paper/research/`) — where those ideas are turned
+   into claims that can die, with kill lines declared before testing. This
+   is where the ideas face the data.
+
 It is run like a lab, not like a trading desk. The core discipline is
 **falsification**: every idea is written down as a claim that CAN fail, with
 the exact result that would kill it ("kill line") declared BEFORE it is
@@ -30,7 +41,12 @@ two of them:
 ## 2. The map — what lives where
 
 ```
-paper/research/                 <-- THE RESEARCH KNOWLEDGE BASE
+KNOWLEDGE.md, KNOWLEDGE_SMH.md   <-- THE BOOK KNOWLEDGE BASE ("Market Studies")
+   Study notes distilled book-by-book from Andrea's trading/markets book
+   collection: 13 books fully studied + 1 partial, with a reading queue.
+   The FOUNDATION of all market research in this repo (see section 2b).
+
+paper/research/                 <-- THE RESEARCH KNOWLEDGE BASE (the lab)
   orderflow_program.md          The constitution: data inventory, claims, kill
                                 lines, what is blocked and why
   c1_hazard_report.md           The C1 experiment and its verdict (FAILED)
@@ -45,9 +61,84 @@ paper/data/                     5 US ETFs, daily bars
 docs/, DASHBOARD.md             Presentation layer (thesis, live instrument)
 ```
 
-Reading order for a newcomer: `orderflow_program.md` (the rules and claims)
-→ `c1_hazard_report.md` (what was tested and what died) →
-`c1_l2_test_spec.md` (what happens next and why).
+Reading order for a newcomer: `KNOWLEDGE.md` (the accumulated book research) →
+`orderflow_program.md` (the rules and claims) → `c1_hazard_report.md` (what was
+tested and what died) → `c1_l2_test_spec.md` (what happens next and why).
+
+### 2b. The book knowledge base — the market research from the work sessions
+
+The market research did not start with the falsification program. It was
+built book by book, and every later decision rests on it. Current state:
+13 books fully studied and noted, 1 partial, with a queue behind them.
+
+**The base framework:** Elliott Wave Principle (Balan, 1989) — the founding
+layer that everything else links back to. Important honest caveat: in this
+lab, wave counts are treated as a descriptive language, NOT as evidence —
+directional claims from price patterns are bounded by the measured coin-flip
+result (P(up) = 0.505) and Elliott labels may only be used if they are given
+a deterministic, reproducible operationalization first.
+
+**The microstructure stack** (why order flow is the research frontier):
+
+| Book | Layer | The durable idea in one line |
+|---|---|---|
+| Harris, Trading and Exchanges (2002) | Microstructure | How the limit order book actually works: orders, queues, and who trades with whom |
+| Hasbrouck, Empirical Market Microstructure (2004) | Statistical | Prices as conditional expectations; how to measure what flow reveals (Roll, VAR) |
+| Biais, Glosten & Spatt survey (~2005) | Unified theory | One synthetic model unifying the classic microstructure papers |
+| Bouchaud et al., Trades, Quotes and Prices (2018) | Econophysics (PARTIAL — only Ch. 1–2.1.4 studied) | Bottom-up: queue models, Hawkes processes, price impact laws. Resume when full text uploaded |
+| Foucault, Pagano & Röell, Market Liquidity (2013) | Theory/policy | Kyle's lambda, PIN, liquidity measurement and market design |
+| Stoll survey (2002) | Founder's retrospective | The five sources of the spread and their time-series fingerprints |
+| Madhavan survey (2000) | Information economics | Information effects are permanent, inventory effects transitory; transparency redistributes |
+
+**The practitioner/indicator layer:** Tom Williams, Master the Markets
+(VSA, 2009) — the signal dictionary (tests, up-thrusts, climaxes, shake-outs,
+no demand, absorption) and "effort vs result". This is where the C2 and C3
+claims came from — and why they had to be operationalized (breach-and-recover
+with parameters) before they could even be declared as claims.
+
+**The history/model-risk layer:** Dark Pools and The Quants (Patterson) —
+how HFT and the quant era rose, the Flash Crash anatomy (quote withdrawal +
+feedback loops), 1987 and August 2007 as feedback-loop warnings, fat tails
+(Mandelbrot vindicated), and the Financial Modelers' Manifesto. These books
+are why the lab refuses untested models and demands kill lines.
+
+**The mathematical-finance core:** Björk, Arbitrage Theory in Continuous
+Time (complete: both Fundamental Theorems, Black-Scholes, martingale
+pricing, HJB/Merton, term structure, forward measures); Javaheri, Inside
+Volatility Arbitrage (the volatility-model zoo and the identification
+hierarchy — which parameters can actually be estimated at daily frequency:
+almost none of the noise ones); Levy, Computational Finance (numerical
+pricing and GARCH econometrics — the persistence condition, why fat tails
+appear even from Gaussian inputs, and the S&P 500 identification result).
+
+**The reading queue (still open):** Applied Quantitative Finance, then
+Analysis of Financial Time Series, Mathematics of Financial Markets, the
+algorithmic/HFT books, then Nonlinear Optimization. The end goal, set in
+Nov 2026: after all books are studied, use the accumulated knowledge to
+build a trading strategy and run the next research phase — which is exactly
+what the falsification program now is.
+
+**How the books connect to the claims ledger (the bridge):**
+
+- VSA "effort vs result" → operationalized as accumulated volume per unit
+  price change → became claim C2 (now dead by dependency).
+- VSA springs/up-thrusts → operationalized as breach-and-recover → C3
+  (closed with the daily program, never run).
+- Harris/Hasbrouck/Foucault order-flow economics (Kyle's lambda, PIN,
+  spread decomposition) → the entire L2 layer: C5 (absorption asymmetry)
+  and C6 (depth OFI), both blocked on the Tardis data.
+- Bouchaud's Hawkes-process chapters (unstudied yet) → the Hawkes
+  excitation matrix in Layer 2; the cancellation-fraction kill switch in
+  the acquisition spec exists because a book-frozen book makes Hawkes
+  meaningless.
+- The Quants/1987/2007 → the CVaR/drawdown constraint and the refusal to
+  size on a wide posterior (Layer 4), and the refusal to trust simulated
+  profitability.
+- Stoll/Madhavan "information effects are permanent, inventory effects
+  transitory" → the design rule that direction, if it ever exists, must
+  come from flow, not price.
+- Björk/Javaheri/Levy → the estimation discipline: knowing which parameters
+  are identifiable at which frequency is why the lab refuses to fit noise.
 
 ## 3. The claims ledger — a scoreboard where ideas die
 
@@ -134,3 +225,10 @@ state is measured from the order book instead of daily bars?) is fully
 specified with pre-declared kill lines and is waiting on one thing only:
 procurement of the Tardis.dev dataset and its verification. Nothing runs
 until that data passes the gate.
+
+In parallel, the book programme continues: Bouchaud is paused on a partial
+upload, and the queue (Applied Quantitative Finance, Analysis of Financial
+Time Series, the algorithmic/HFT books, Nonlinear Optimization) feeds the
+same lab — each new book is another candidate source of claims, and the
+Bouchaud Hawkes/queue chapters in particular are required reading before
+C5/C6 ever run.
