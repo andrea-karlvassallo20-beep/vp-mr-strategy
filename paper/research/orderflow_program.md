@@ -1,6 +1,29 @@
 # Order-Flow / Liquidity Research Program — Falsification First
 
-Status: PROGRAM DECLARATION. No claim below is tested unless marked otherwise.
+Status: PROGRAM DECLARATION, updated after C1 (see `c1_hazard_report.md` and
+`l2_data_acquisition_spec.md`). The daily-resolution program is CLOSED.
+
+CLOSURE RECORD (2026-11): C1 tested-fail on BTC and ETH daily, both specs, all
+substantive kill lines fired (vol-tautology 4/4, block-temporal placebo 4/4,
+scale-invariance whole-layer null 4/4). The daily hazard layer is demoted to a
+descriptive volatility clock; a vol clock at RR ~1.4 is not a timing edge.
+C2 is DEAD BY DEPENDENCY, not by its own test: it was conditioned on C1 being
+alive, and it is an increment over a base hazard that failed the vol-tautology
+test on data with the same vol clustering. Recorded as dead-by-dependency;
+never tested. C3/C4 were never run (they condition on the same dead base) and
+are closed with the daily program. C5/C6 remain blocked and unproxied. No
+further daily-resolution tests. If the demoted vol clock is ever cited as a
+descriptive finding, cite the STRATIFIED version (the pooled lrvol HR 0.68
+violates PH and averages two different clocks), with the PH violation stated.
+
+Methodological note carried forward to the L2 phase: the day-spell design does
+not carry forward. The L2-phase hazard must be on event clock (state-change
+rows), not daily rows, or the microstructure signal will be smoothed into the
+same artifact. First L2 test when data arrives and passes verification: C1
+re-run at L2 resolution — does the compression effect exist when the state is
+measured from the book rather than from daily bars? That decides whether the
+daily null was a resolution artifact or a real absence.
+
 Epistemic rule: no claim is "proven". Every claim is a conditional probability with
 a sample size and a kill line declared before testing.
 
