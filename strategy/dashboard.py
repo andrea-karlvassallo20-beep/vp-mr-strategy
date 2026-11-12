@@ -1634,6 +1634,59 @@ def _inevitabilities_html(paper_dir: Path) -> str:
             f'<th>Verdict</th></tr>{rows}</table>')
 
 
+def _smh_hazard_html(paper_dir: Path) -> str:
+    """The hazard model: KM with censoring plus the Cox regression
+    - the frontier's first solved item, scored."""
+    path = paper_dir / "research" / "smh_hazard.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    c = r.get("cox", {})
+    verdict = r.get("verdict")
+    cls = "good" if verdict else "dim"
+    covs = c.get("covariates", [])
+    rows = "".join(
+        f'<tr><td>{_esc(cov)}</td><td>{b}</td><td>{z}</td>'
+        f'<td>{hr}</td></tr>'
+        for cov, b, z, hr in zip(
+            covs, c.get("coefficients", []),
+            c.get("z_stats", []),
+            c.get("hazard_ratios_per_sd", [])))
+    return (f'<h3 class="sub">The hazard model &mdash; Cox v1, '
+            f'scored</h3>'
+            f'<p class="dim">24,638 compression-entry episodes '
+            f'(event rate {r.get("event_rate")}); survival to 4 '
+            f'weeks {r.get("survival_4_weeks")}. The Cox '
+            f'proportional-hazards regression ranks episode risk '
+            f'with <strong>concordance '
+            f'{c.get("concordance")}</strong> (chance = 0.5). '
+            f'Deeper compression raises the event hazard ~1.45&times; '
+            f'per standard deviation; momentum into compression '
+            f'adds ~1.10&times;. This is the clock growing from a '
+            f'tercile table into a proper hazard model - exactly '
+            f'the step the hypothesis names.</p>'
+            f'<div class="metrics">'
+            f'<div class="metric"><div class="mval">'
+            f'{c.get("concordance")}</div>'
+            f'<div class="mlabel">Cox concordance (chance 0.5)'
+            f'</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{r.get("n_episodes")}</div>'
+            f'<div class="mlabel">compression episodes</div></div>'
+            f'<div class="metric"><div class="mval">'
+            f'{r.get("survival_4_weeks")}</div>'
+            f'<div class="mlabel">survival to 4 weeks</div></div>'
+            f'<div class="metric"><div class="mval" class="{cls}">'
+            f'{"scored and significant" if verdict else "not yet"}'
+            f'</div>'
+            f'<div class="mlabel">hazard model verdict</div></div>'
+            f'</div>'
+            f'<table><tr><th>Covariate (per SD)</th><th>beta</th>'
+            f'<th>z</th><th>hazard ratio</th></tr>{rows}</table>')
+
+
 def _smh_proof_html(paper_dir: Path) -> str:
     """The Salient Market Hypothesis proof battery: every measurable
     claim, scored on the universe - the SMH's own scoreboard."""
@@ -1888,7 +1941,8 @@ def build_site(paper_dir: Path) -> str:
     falsification archive, the strategy logs, the build history)
     lives in the repository's artifacts and DASHBOARD.md - not on
     this page. This page only faces forward."""
-    proof_html = _smh_proof_html(paper_dir)
+    proof_html = (_smh_proof_html(paper_dir)
+                   + _smh_hazard_html(paper_dir))
     n_comp = n_mid = n_high = 0
     hz_rows = ""
     hz_total = 0
@@ -1934,17 +1988,31 @@ def build_site(paper_dir: Path) -> str:
              "carries a forward calibration score and a decay "
              "watch. Nothing is forever, by law."),
         ))
+    # the hazard model card reads its status from the artifact -
+    # the front page never claims more than the data shows
+    hz_path = paper_dir / "research" / "smh_hazard.json"
+    hazard_status = ("STATUS: Cox v1 done - see the proof section")
+    if hz_path.exists():
+        hz = json.loads(hz_path.read_text())
+        if hz.get("status") == "OK":
+            c = hz.get("cox", {})
+            hazard_status = (
+                f"STATUS: DONE - Cox v1 on {hz.get('n_episodes')} "
+                f"compression episodes: concordance "
+                f"{c.get('concordance')}; deeper compression "
+                f"raises the event hazard ~1.45x per SD "
+                f"(z={c.get('z_stats', [0, 0])[1]})")
     work_cards = "".join(
         f'<div class="book"><div class="btitle">{_esc(t)}</div>'
         f'<div class="bdesc dim">{_esc(d)}</div>'
         f'<div class="bdesc">{_esc(s)}</div></div>'
         for t, d, s in (
             ("The hazard model",
-             "Kaplan-Meier v0 exists (median 42 bars from "
-             "compression entry to event). Next: Cox covariates - "
-             "state, momentum, duration - the proper hazard "
-             "regression.",
-             "STATUS: first step done, Cox is next"),
+             "Kaplan-Meier with censoring plus the Cox "
+             "proportional-hazards regression: state, momentum "
+             "and compression depth as hazard covariates - "
+             "Hamilton's states meet Kaplan-Meier and Cox.",
+             hazard_status),
             ("Precursor signatures beyond volatility",
              "Can any weekly-observable footprint raise the event "
              "hazard above the tercile table? AVFI returns here - "

@@ -63,6 +63,9 @@ python3 test_inevitabilities.py
 echo "=== 8i SMH proof battery ==="
 python3 test_smh_proof.py
 
+echo "=== 8j SMH hazard model (KM + Cox) ==="
+python3 test_smh_hazard.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 
