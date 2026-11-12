@@ -94,12 +94,14 @@ INDEXES = {
 
 
 def classify(name):
+    """TVC USD pairs are crypto; short letter-codes (kef, zlf, zwf, zcf...)
+    are TradingView continuous FUTURES contracts - commodities. The earlier
+    version of this function misfiled them as crypto: the enemy was hiding
+    in the classifier, the last place anyone looks."""
     n = name.lower()
     if n in INDEXES or n.startswith("^"):
         return "index"
-    if n.endswith("usd") or n.endswith("usdt") or n in {
-        "kef", "zlf", "zwf", "alif", "barusd",
-    }:
+    if n.endswith("usd") or n.endswith("usdt"):
         return "crypto"
     return "commodity"
 
