@@ -389,7 +389,7 @@ def run_iteration(data_dir: Path, research_dir: Path,
                           * 0.5)]
 
     def oos_score(runs):
-        dd_reds, sh_deltas = [], []
+        dd_reds, sh_deltas, abs_shs = [], [], []
         for sp in splits:
             dd_reds.append(np.mean([
                 _window_dd(b["eq"], sp, len(b["eq"]))
@@ -399,20 +399,42 @@ def run_iteration(data_dir: Path, research_dir: Path,
                 _window_sharpe(r["eq"], sp, len(r["eq"]))
                 - _window_sharpe(b["eq"], sp, len(r["eq"]))
                 for b, r in zip(base_runs, runs)]))
-        # the honest score is the WORSE of the two windows
-        return min(dd_reds), min(sh_deltas)
+            abs_shs.append(np.mean([
+                _window_sharpe(r["eq"], sp, len(r["eq"]))
+                for r in runs]))
+        # the honest score is the WORSE of the two windows; the
+        # absolute Sharpe is taken at that same worse window
+        wi = int(np.argmin(dd_reds))
+        return min(dd_reds), min(sh_deltas), abs_shs[wi]
 
-    cur_dd_red, cur_sh_delta = oos_score(cur_runs)
+    cur_dd_red, cur_sh_delta, _ = oos_score(cur_runs)
 
     best = None
+    cand_sharpes = []
     for cand in VARIANT_GRID:
         pp = {**params, **cand}
         runs = portfolio(pp)
-        dd_red, sh_delta = oos_score(runs)
+        dd_red, sh_delta, abs_sh = oos_score(runs)
+        cand_sharpes.append(abs_sh)
         # honest selection: maximize the WORST-window OOS drawdown
         # reduction subject to Sharpe preservation (delta >= -0.05)
         if sh_delta >= -0.05 and (best is None or dd_red > best[1]):
             best = (pp, dd_red, sh_delta)
+
+    # DEFLATED SHARPE: the grid searches 84 configurations every
+    # night, and the best of 84 zero-skill searches still LOOKS
+    # good. The current params' out-of-sample portfolio returns
+    # are judged against the Sharpe that search luck alone would
+    # manufacture (Bailey & Lopez de Prado 2014). This does not
+    # gate advancement (the dual-split gate does); it is the
+    # honest multiple-testing context recorded in the ledger.
+    from overfit_stats import deflated_sharpe
+    n_eq = min(len(r["eq"]) for r in cur_runs)
+    oos_split = splits[0]  # the untouched last 40%
+    port_oos = np.mean([
+        np.diff(r["eq"][:n_eq])[oos_split - 1:]
+        for r in cur_runs], axis=0)
+    dsr = deflated_sharpe(port_oos, cand_sharpes)
 
     advanced = bool(best and best[1] > cur_dd_red + 0.1)
     new_params = best[0] if advanced else params
@@ -433,6 +455,7 @@ def run_iteration(data_dir: Path, research_dir: Path,
                             "oos_dd_reduction_pct": round(best[1], 2),
                             "oos_sharpe_delta": round(best[2], 3)}
                            if best else None),
+        "deflated_sharpe": dsr,
         "advanced": advanced,
         "params_next": new_params,
     }
