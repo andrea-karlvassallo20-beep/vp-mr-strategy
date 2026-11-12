@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salient — Data &amp; Machinery</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<nav>
+  <a href="index.html">Thesis</a>
+  <a href="falsification.html">Falsification record</a>
+  <a href="infrastructure.html" aria-current="page">Data &amp; machinery</a>
+  <a href="knowledge.html">Knowledge base</a>
+  <a href="instrument.html">The instrument (live)</a>
+  <a href="v4_charts.html">Charts</a>
+</nav>
+<main>
+
+<div class="kicker">The gated path &middot; built and validated before the data arrives</div>
+<h1>Data &amp; Machinery<span class="dot">.</span></h1>
+<p>Everything on this page is infrastructure: no predictive claim is tested
+here, no hazard model is run on the free data, and no C5/C6 proxy is
+substituted. The purpose of this phase is that the L2 test runs flawlessly on
+day one — so every stage is built, unit-tested, and dry-run on real ticks
+first.</p>
+
+<h2>The honest data inventory (verified, not assumed)</h2>
+<table>
+  <tr><th>Dataset</th><th>Resolution</th><th>Span</th><th>Provenance</th><th>Order-flow content</th></tr>
+  <tr><td>5 US ETFs (SPY, QQQ, IWM, XLE, XLF)</td><td>daily OHLCV</td>
+      <td>2021-11 → present</td><td>genuine volume</td><td>none</td></tr>
+  <tr><td>~156 crypto pairs (TradingView-contracted)</td><td>daily OHLCV</td>
+      <td>2021-11-12 → present (~326k rows)</td>
+      <td>volume frequently synthetic, unverifiable per pair — all volume
+      features flagged proxies</td><td>none</td></tr>
+  <tr><td>Binance USDT-M BTCUSDT aggTrades (free public archives)</td>
+      <td>tick, signed</td><td>Aug 3–5 2024 ingested (8.8M trades, incl. the
+      carry-unwind crash)</td><td>genuine exchange data</td>
+      <td>trade flow only: aggressor sign, intensity, imbalance</td></tr>
+  <tr><td>Binance bookDepth (free archives)</td><td>5s snapshots, ±1–5%
+      bands</td><td>Aug 5 2024</td><td>genuine</td>
+      <td class="bad">none — snapshots destroy the update sequence; syntax-check
+      use only</td></tr>
+  <tr><td>Full-depth incremental L2 + signed trades (Tardis)</td>
+      <td>event-level</td><td>pending procurement</td><td>—</td>
+      <td class="ref">the only data that unblocks Layers 0–2 and claims
+      C5/C6</td></tr>
+</table>
+<div class="caveat"><strong>Capability statement, declared up front:</strong>
+Binance does not publicly archive bookTicker, and bookDepth is 5-second band
+snapshots — it cannot distinguish a cancellation from a trade, cannot see
+depth, and cannot reconstruct a book. The free data supports trade-flow
+analysis only. Every book-based claim stays blocked until the Tardis data
+passes the verification gate, and any free-data result is labeled free-data /
+partial-book, never presented as a test of a book-based claim.</div>
+
+<h2>Stage 1 — Ingestion (<code>src/binance_ingest.py</code>)</h2>
+<p>Loads Binance public archives (CSV or zip, daily or monthly, header and
+headerless legacy files) into normalized Parquet. The strict rules, enforced
+by code and tested by 9 unit tests:</p>
+<ul>
+  <li><span class="big">Timestamps:</span> UTC epoch <em>microseconds</em>,
+  int64, exact ms×1000 — no float intermediates; a coercion failure or NaN
+  kills the file; out-of-order rows are stably sorted with a reported warning,
+  never silently dropped.</li>
+  <li><span class="big">Direction:</span> binary int8
+  <code>aggressor_buy</code> (1 = aggressor buys, 0 = sells), mapped from
+  <code>is_buyer_maker</code>; any non-binary literal rejects the file. No
+  third state, no NaN.</li>
+  <li><span class="big">Integrity:</span> price &gt; 0, qty ≥ 0, bid ≤ ask (a
+  crossed row rejects the file), monotone timestamps.</li>
+</ul>
+
+<h2>Stage 2 — The L2 verification gate (<code>src/verify_l2_gate.py</code>)</h2>
+<p>Runs <em>first</em> on any arriving L2 dataset. Fails loudly (exit 1,
+"GATE FAILED") if the data is corrupted; nothing downstream may run until it
+passes.</p>
+<ul>
+  <li><span class="big">Reconstruction:</span> the book is rebuilt from
+  sequence-numbered diffs (Binance U/u/pu or Tardis-style operation schema;
+  unknown schemas are refused, not guessed). A gap (<code>pu != last
+  u</code>) is logged to <code>gaps.log</code> with timestamps and sequence
+  ids, and the book is <em>invalid until the next resync</em> — never
+  patched.</li>
+  <li><span class="big">Comparison at 100 random timestamps:</span> mid within
+  one tick, and depth within 10bps of mid (per side, within 1% relative
+  tolerance), against exchange REST snapshots — or, if snapshots are
+  unavailable, a <em>flagged</em> fallback built from the diff stream itself
+  that validates internal sequence consistency only, not exchange
+  agreement.</li>
+  <li><span class="big">Gate criteria:</span> sequence gap rate &lt; 0.01%;
+  mid agreement ≥ 99%; depth agreement ≥ 99%.</li>
+</ul>
+<p>Failure paths are unit-tested: an injected sequence gap → gate fails and
+the gap is written to the log; a displaced snapshot sample → gate fails;
+unknown schema → refusal.</p>
+
+<h2>Stage 3 — The event clock (<code>src/event_clock.py</code>)</h2>
+<p>State-change rows, not calendar rows: one row per best-bid/ask change (or
+per trade state change on the free data). The clock <em>self-thins</em> dead
+sessions — no events, no rows, no hazard estimated from frozen liquidity.</p>
+<h3>Dry-run evidence on 8.8M real trades</h3>
+<table>
+  <tr><th>Day</th><th>Trades</th><th>Clock rows</th><th>% of trades</th>
+      <th>Rows/hour min (dead)</th><th>Rows/hour max (peak)</th></tr>
+  <tr><td>Aug 3 2024</td><td>1,306,613</td><td>914,590</td><td>70.0%</td>
+      <td>12,755 (07h)</td><td>128,726 (16h)</td></tr>
+  <tr><td>Aug 4 2024</td><td>1,405,551</td><td>1,005,975</td><td>71.6%</td>
+      <td>9,638 (06h)</td><td>167,915 (17h)</td></tr>
+  <tr><td>Aug 5 2024 (crash)</td><td>6,088,369</td><td>4,899,525</td>
+      <td>80.5%</td><td>60,589 (22h)</td><td>563,228 (06h)</td></tr>
+</table>
+<p>Kill line (≥ 10,000 rows/day): <span class="good">PASS</span> — two orders
+of magnitude above the floor, with a 10–58× hourly spread confirming
+self-thinning.</p>
+<figure>
+  <img src="assets/event_clock_hourly.png" alt="Event-clock rows by UTC hour across three days">
+  <figcaption>Event-clock rows by UTC hour, three days. The dead hours emit
+  almost nothing; the crash peak emits 563k rows/hour. The clock self-thins
+  by construction.</figcaption>
+</figure>
+
+<h2>Stage 4 — Purged combinatorial CV + embargo</h2>
+<p>Purge is on the <em>label</em> horizon (wall-clock), with an embargo after
+the test window — because the leak channel is the label. A training row is
+purged if its label window [t0, t0+H] intersects the test window extended by
+the embargo on both sides.</p>
+<h3>Zero-leakage proof on 6,820,090 real event-clock rows</h3>
+<table>
+  <tr><th>Split</th><th>Test rows</th><th>Train rows</th><th>Purged</th>
+      <th>Index intersections</th><th>Label-window overlaps</th></tr>
+  <tr><td>0</td><td>1,136,681</td><td>5,648,885</td><td>34,524</td>
+      <td class="good">0</td><td class="good">0</td></tr>
+  <tr><td>1</td><td>1,136,682</td><td>5,095,478</td><td>587,930</td>
+      <td class="good">0</td><td class="good">0</td></tr>
+  <tr><td>2</td><td>1,136,682</td><td>4,653,810</td><td>1,029,598</td>
+      <td class="good">0</td><td class="good">0</td></tr>
+  <tr><td>3</td><td>1,136,681</td><td>4,588,133</td><td>1,095,276</td>
+      <td class="good">0</td><td class="good">0</td></tr>
+  <tr><td>4</td><td>1,136,682</td><td>4,893,777</td><td>789,631</td>
+      <td class="good">0</td><td class="good">0</td></tr>
+  <tr><td>5</td><td>1,136,682</td><td>4,784,652</td><td>898,756</td>
+      <td class="good">0</td><td class="good">0</td></tr>
+</table>
+<p>The overlap check asserts the <em>exact complement</em> of the purge
+condition against the raw test bounds — not a weaker re-check. Purge counts
+behave correctly: near zero at chronological edges, up to 1.1M rows purged in
+interior splits where label horizons overlap the test window on both sides.</p>
+
+<h2>Stage 5 — Feature calculators (descriptive only, <code>src/features.py</code>)</h2>
+<p>Built and dry-run on real ticks to prove the math runs without crashing or
+NaNs. No hazard model consumes them yet; no predictive claim is tested.</p>
+
+<h3>VPIN on trade-count buckets</h3>
+<p>Per directive, buckets are trade-<em>count</em> sized (5,000 trades), EWMA-50
+over bucket imbalance |buy−sell|/total. All three days clean (zero NaNs). The
+crash day's distribution widens and drives a deep left tail (min 0.005 —
+near-one-sided buckets during the liquidation cascade).</p>
+<figure>
+  <img src="assets/vpin_BTCUSDT-aggTrades-2024-08-05.png"
+       alt="VPIN time series on the crash day">
+  <figcaption>VPIN (trade-count buckets), Aug 5 2024 — the carry-unwind day.
+  Descriptive only: no claim is tested on this.</figcaption>
+</figure>
+<table>
+  <tr><th>Day</th><th>Buckets</th><th>VPIN min</th><th>mean</th><th>max</th><th>NaN</th></tr>
+  <tr><td>Aug 3</td><td>261</td><td>0.123</td><td>0.184</td><td>0.262</td><td class="good">0</td></tr>
+  <tr><td>Aug 4</td><td>281</td><td>0.029</td><td>0.177</td><td>0.228</td><td class="good">0</td></tr>
+  <tr><td>Aug 5</td><td>1,217</td><td>0.005</td><td>0.178</td><td>0.259</td><td class="good">0</td></tr>
+</table>
+
+<h3>Multivariate Hawkes (2-dim: buy trades, sell trades)</h3>
+<p>Exponential-kernel Hawkes, exact log-likelihood via recursive R-sums, time
+in seconds, positive log-space parameters, branching ratio constrained &lt;
+ 0.95, L-BFGS-B with a Nelder-Mead fallback. The estimator needed three real
+fixes during the dry run — the spectral radius must be
+<code>max|eig|</code> (a complex-aware measure, not lexicographic max), the
+time axis must be seconds, and the parameters must be bounded — and the fixes
+are on the record:</p>
+<table>
+  <tr><th>Window</th><th>n events</th><th>Branching ratio</th>
+      <th>Excitation half-life</th><th>Optimizer</th></tr>
+  <tr><td>CALM Aug 4, 12:00–12:10 UTC</td><td>7,263</td><td>0.9500</td>
+      <td>0.347 s</td><td>Nelder-Mead fallback</td></tr>
+  <tr><td>CRASH Aug 5, 00:00–00:10 UTC</td><td>18,848</td><td>0.9500</td>
+      <td>0.347 s</td><td>Nelder-Mead fallback</td></tr>
+</table>
+<div class="caveat">Honest flags, not hidden: both estimates sit exactly at
+the 0.95 stationarity cap — the data wants more excitation than the
+constraint allows, so the branching ratio is boundary-constrained, not a free
+estimate. The half-life is ln2/β by construction (β fixed at 2.0/s) — a
+parameterization, not a measurement; estimating β jointly is a pre-declared
+future task. On the calm window, μ_buy hit its lower bound. These are
+diagnostics of the estimator's behavior on real ticks — exactly what the dry
+run exists to surface.</div>
+
+<h3>Top-of-book OFI, and the bookDepth syntax check</h3>
+<p>The Cont–Kukanov–Stoikov touch-level OFI is implemented and validated on
+synthetic bookTicker frames (correct signed response to every touch-move
+case, unit-tested). Because Binance publishes no bookTicker archive, the
+real-data run used the bookDepth band proxy strictly as a
+<span class="big">syntax check</span> — 28,800 snapshot rows → 2,879 diffs,
+no NaN, <em>not plotted as meaningful and not treated as OFI</em>: 5-second
+snapshots destroy the update sequence, and a snapshot stream cannot separate
+fills from cancels.</p>
+
+<h2>Stage 6 — The C1-L2 harness (<code>src/c1_l2_test.py</code>)</h2>
+<p>The hazard-model skeleton, implementing the exact agreed transition rules,
+with mock L2 data so it compiles and the machinery is mechanically exercised.
+Per directive, no run on mock data is reported as a result — the only legal
+run is on gated Tardis data. The rules, implemented literally:</p>
+<ol>
+  <li>Mid sampled at every BBBA change.</li>
+  <li>Compression = 4h realized range in σ_H units, percentile-ranked against
+  the trailing 5-day pool of the same hour-of-day bucket.</li>
+  <li>Trade-touch labels only, with a ≥ 10× median-spread noise floor on
+  barriers.</li>
+  <li>Purge/embargo on the wall-clock label horizon (reusing the
+  zero-leakage-proven CPCV).</li>
+  <li>Hour-of-day stratification as a mandatory control.</li>
+</ol>
+<p>All five kill lines are <span class="big">raising asserts</span> — the
+harness physically throws if a kill line fires, naming the dead mechanism.
+A unit test fires each of the five individually and confirms the pass-case
+passes.</p>
+
+<h2>The macro timeline (<code>data/macro_timeline.csv</code>)</h2>
+<p>A hand-curated calendar of structural events — FOMC (32 meetings 2021–2024
+with verified dates), CPI (month-level with exact dates copied from the BLS
+schedule, never from memory — a wrong CPI date poisons event-window censoring),
+and 22 crypto-specific events from the verified public record (ETF approvals,
+the halving, exchange failures, regulatory actions). Schema and population
+checklist in <code>docs/</code>.</p>
+<p>Its role is <span class="big">interpretive, never predictive</span>:
+event-window stratification (is the compression clock measuring liquidity
+aging, or proximity to a scheduled announcement?), censoring around known
+release times, and the honest separation of endogenous market structure from
+scheduled information arrival. Two binding rules: times are UTC only, and
+<code>surprise_note</code> is filled after the event — look-ahead by
+construction, and can never be a model input.</p>
+
+<h2>Test suite</h2>
+<p><span class="num">27</span> tests, all green, including deliberate
+failure-path tests: sequence-gap rejection, crossed-book rejection,
+mid-disagreement rejection, unknown-schema refusal, CPCV leakage assertions,
+and each kill line fired individually. The infrastructure is built to fail
+loudly, and the tests prove it does.</p>
+
+</main>
+<footer>
+Full dry-run output: <code>paper/research/dry_run_output.txt</code>.
+Acquisition spec: <code>paper/research/l2_data_acquisition_spec.md</code>.
+Data dictionary: <code>docs/data_dictionary.md</code>.
+</footer>
+</body>
+</html>
