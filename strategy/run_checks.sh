@@ -69,6 +69,9 @@ python3 test_smh_hazard.py
 echo "=== 8k SMH forward scoring protocol (draft, resolve, score, kill lines) ==="
 python3 test_smh_forward.py
 
+echo "=== 8l SMH salience gradient + event anatomy (charter ticks 5 and 6) ==="
+python3 test_smh_gradient.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 
