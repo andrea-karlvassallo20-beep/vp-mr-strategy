@@ -48,6 +48,9 @@ python3 test_overfit_stats.py
 echo "=== 8d Lessons synthesis (live inferences) ==="
 python3 test_lessons.py
 
+echo "=== 8e MR-coin edge study (control group) ==="
+python3 test_mr_edge.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 

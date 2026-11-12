@@ -1300,6 +1300,75 @@ def _lessons_html(paper_dir: Path) -> str:
             f'<div class="bgrid">{cards}</div>')
 
 
+def _mr_edge_html(paper_dir: Path) -> str:
+    """The MR-coin edge study: where the physics says the edge
+    should live - with its control group and the honest verdict."""
+    path = paper_dir / "research" / "mr_edge.json"
+    if not path.exists():
+        return ("<p class=\"dim\">The MR-coin edge study appears "
+                "here after the first nightly research pass.</p>")
+    r = json.load(open(path))
+    mr = r.get("mr_pooled_oos_sharpe")
+    ctl = r.get("control_pooled_oos_sharpe")
+    edge = r.get("edge_differential")
+    dsr = r.get("deflated_sharpe") or {}
+    conf = r.get("confirmed_fwd_median")
+    plain = r.get("plain_fwd_median")
+    verdict = r.get("verdict")
+    cls = "good" if verdict else "dim"
+    vtxt = ("edge holds" if verdict else
+            "no tradable edge yet - a real filter, not a strategy")
+    rows = ""
+    for x in sorted(r.get("mr_runs", []),
+                    key=lambda x: -(x.get("oos_sharpe") or 0))[:12]:
+        rows += (f'<tr><td>{_esc(x["ticker"])}</td>'
+                 f'<td>{x["t_stat"]}</td>'
+                 f'<td>{x["half_life"]}</td>'
+                 f'<td>{x["trades"]}</td>'
+                 f'<td>{x["full_sharpe"]}</td>'
+                 f'<td class="{"good" if (x.get("oos_sharpe") or 0) > 0 else "dim"}">'
+                 f'{x["oos_sharpe"]}</td></tr>')
+    return (f'<p class="dim">Mean reversion is measurable per coin, '
+            f'so the edge question writes itself: does a strictly '
+            f'causal z-score strategy on the strongest mean-reverting '
+            f'coins pay out-of-sample - and does it beat the CONTROL '
+            f'GROUP of coins that failed the same test? Dead coins '
+            f'(priced 1000x below peak) are excluded; returns are '
+            f'winsorized; forward stats are medians; every entry and '
+            f'exit pays 5 bps.</p>'
+            f'<div class="metrics">'
+            f'<div class="metric"><div class="mval">{mr}</div>'
+            f'<div class="mlabel">MR pooled OOS Sharpe</div></div>'
+            f'<div class="metric"><div class="mval">{ctl}</div>'
+            f'<div class="mlabel">control group OOS</div></div>'
+            f'<div class="metric"><div class="mval">{edge}</div>'
+            f'<div class="mlabel">edge differential</div></div>'
+            f'<div class="metric"><div class="mval">{conf}</div>'
+            f'<div class="mlabel">confirmed fwd median</div></div>'
+            f'<div class="metric"><div class="mval">{plain}</div>'
+            f'<div class="mlabel">plain fwd median</div></div>'
+            f'<div class="metric"><div class="mval">{dsr.get("dsr")}</div>'
+            f'<div class="mlabel">DSR at {dsr.get("n_trials")} trials'
+            f'</div></div>'
+            f'<div class="metric"><div class="mval" class="{cls}">{vtxt}'
+            f'</div>'
+            f'<div class="mlabel">honest verdict</div></div>'
+            f'</div>'
+            f'<p class="dim">The t-stat selection carries real ranking '
+            f'information (MR coins lose far less than the control '
+            f'group), but long-only z-score MR on crypto is net-'
+            f'negative OOS after costs in absolute terms. The one '
+            f'clean signal: detector-confirmed deep stretches in MR '
+            f'coins roughly TRIPLE the median forward return '
+            f'(+{conf}% vs +{plain}%) - confirmation is a filter '
+            f'worth having; it is not yet a strategy worth running.'
+            f'</p>'
+            f'<table><tr><th>Ticker</th><th>MR t-stat</th>'
+            f'<th>half-life (bars)</th><th>trades</th>'
+            f'<th>full Sharpe</th><th>OOS Sharpe</th></tr>'
+            f'{rows}</table>')
+
+
 def _crypto_avfi_chart_svg(ch: dict, width=520, height=230) -> str:
     """Two-panel crypto chart: price with detected tops/bottoms on
     top, the AVFI spread z with the trigger line and throttle zone
@@ -1561,7 +1630,7 @@ def build_site(paper_dir: Path) -> str:
         (("avfi", "AVFI"), ("topsbottoms", "Tops & bottoms"),
          ("statespace", "State space"),
          ("commodities", "Commodities"), ("crypto", "Crypto 150"),
-         ("lessons", "Lessons"),
+         ("lessons", "Lessons"), ("mredge", "MR edge"),
          ("overview", "Overview"),
          ("charts", "Charts"),
          ("race", "Self-learning"), ("crossasset", "Cross-asset"),
@@ -1734,6 +1803,9 @@ the same real bars every night. Each curve is scaled to its own range.</p>
 </section>
 <section id="lessons"><h2>Learning lessons &mdash; what the data forced</h2>
 {_lessons_html(paper_dir)}
+</section>
+<section id="mredge"><h2>The MR-coin edge &mdash; tested with a control group</h2>
+{_mr_edge_html(paper_dir)}
 </section>
 {journal_html}
 <section id="buildlog"><h2>Build log</h2>
