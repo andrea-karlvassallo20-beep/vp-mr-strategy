@@ -90,6 +90,9 @@ python3 test_smh_calibration.py
 echo "=== 8r SMH judgment log (the human inside the protocol) ==="
 python3 test_smh_judgment.py
 
+echo "=== 8s SMH Bayesian forecaster (the blend, open problem 5) ==="
+python3 test_smh_bayes.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 
