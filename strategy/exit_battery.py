@@ -124,6 +124,89 @@ def _cell_stats(trades):
     }
 
 
+MAX_CONCURRENT = 10
+
+
+def portfolio_sim(data_dir: Path, profit_take=None) -> dict:
+    """The philosopher's long portfolio on the anchored set,
+    on a CALENDAR-DATE grid (the honest simulation), under one
+    exit rule: the fixed 4-week hold (the production baseline,
+    profit_take=None) or the profit take (exit at the first
+    week clearing it, else the 4-week time exit). Entries are
+    IDENTICAL across variants (the cross with the 20-bar
+    cooldown); only the exits differ."""
+    from papertrading_runner import load_bars
+    positions = []
+    for f in sorted(Path(data_dir).glob("*.csv")):
+        name = f.stem.upper()
+        if name not in ANCHORED:
+            continue
+        bars = load_bars(f)
+        if len(bars) < WARMUP + WEEK * HOLD_WEEKS + 5:
+            continue
+        c = np.array([b["close"] for b in bars], dtype=float)
+        dates = [b["date"] for b in bars]
+        logc = np.log(c)
+        last_entry = -10 ** 9
+        for t in _entries(logc, len(c), WEEK * HOLD_WEEKS):
+            exit_w = HOLD_WEEKS
+            if profit_take is not None:
+                entry = float(logc[t])
+                for w in range(1, HOLD_WEEKS + 1):
+                    if float(logc[t + WEEK * w] - entry) \
+                            >= profit_take:
+                        exit_w = w
+                        break
+            daily = np.diff(
+                logc[t:t + WEEK * exit_w + 1])
+            per_date = {
+                dates[t + 1 + j]: float(daily[j])
+                for j in range(len(daily))}
+            positions.append((dates[t],
+                              dates[t + WEEK * exit_w],
+                              per_date, name))
+    if not positions:
+        return {"status": "NO_TRADES"}
+    positions.sort(key=lambda p: p[0])
+    all_dates = sorted({d for p in positions for d in p[2]})
+    eq = 1.0
+    curve = []
+    open_pool = []
+    max_dd = 0.0
+    peak = 1.0
+    for d in all_dates:
+        for p in positions:
+            if p[0] == d and len(open_pool) < MAX_CONCURRENT:
+                open_pool.append(p)
+        open_pool = [p for p in open_pool if p[1] > d]
+        rets = [p[2][d] for p in open_pool if d in p[2]]
+        hold_days = max(1, int(np.mean(
+            [len(p[2]) for p in open_pool])) \
+            if open_pool else 1)
+        cost = 2 * COST_BPS / 1e4 / hold_days
+        r = (float(np.mean(rets)) - cost) if rets else 0.0
+        eq *= np.exp(r)
+        peak = max(peak, eq)
+        max_dd = max(max_dd, (peak - eq) / peak)
+        curve.append(round(float(eq), 4))
+    monthly = curve[::21] if len(curve) > 42 else curve
+    years = len(all_dates) / 252.0
+    cagr = ((eq ** (1 / years) - 1)
+            if years > 0 and eq > 0 else None)
+    return {
+        "status": "OK",
+        "n_trades": len(positions),
+        "total_return": round(float(eq - 1.0), 4),
+        "cagr": round(float(cagr), 4) if cagr is not None
+        else None,
+        "max_drawdown": round(float(max_dd), 4),
+        "years": round(years, 2),
+        "equity_curve_monthly": monthly,
+        "concurrent_cap": MAX_CONCURRENT,
+        "profit_take": profit_take,
+    }
+
+
 def run_exit_battery(data_dir: Path) -> dict:
     """All cells, measured. The baseline is the production rule:
     4-week hold, no filter."""
@@ -287,6 +370,47 @@ def run_exit_battery(data_dir: Path) -> dict:
                 "median net through the gate - the unfiltered "
                 "zone cross stands")
 
+    # the portfolio question: does the profit take compound
+    # better on the calendar grid, or does cutting winners
+    # hurt more than the freed exposure helps?
+    port_base = portfolio_sim(data_dir, None)
+    port_pt = portfolio_sim(data_dir, 0.04)
+    if (port_base.get("status") == "OK"
+            and port_pt.get("status") == "OK"):
+        better = (port_pt.get("cagr") or -1) \
+            > (port_base.get("cagr") or -1)
+        dd_ok = port_pt.get("max_drawdown", 1) \
+            <= port_base.get("max_drawdown", 1)
+        if better and dd_ok:
+            port_verdict = (
+                f"THE PROFIT TAKE COMPOUNDS BETTER, DESIGN "
+                f"SAMPLE: CAGR {port_pt['cagr']} vs "
+                f"{port_base['cagr']}, max drawdown "
+                f"{port_pt['max_drawdown']} vs "
+                f"{port_base['max_drawdown']} - flagged, "
+                f"forward-scored or it stays folklore")
+        elif better:
+            port_verdict = (
+                f"MIXED: the profit take lifts CAGR "
+                f"({port_pt['cagr']} vs {port_base['cagr']}) "
+                f"but widens the drawdown "
+                f"({port_pt['max_drawdown']} vs "
+                f"{port_base['max_drawdown']}) - not "
+                f"promoted")
+        else:
+            port_verdict = (
+                f"CUTTING WINNERS LOSES: the profit take does "
+                f"NOT compound better on the calendar grid "
+                f"(CAGR {port_pt['cagr']} vs "
+                f"{port_base['cagr']}, total "
+                f"{port_pt['total_return']} vs "
+                f"{port_base['total_return']}) - the per-trade "
+                f"median gain does not survive compounding, "
+                f"and the 4-week hold stands at portfolio "
+                f"level too")
+    else:
+        port_verdict = "INSUFFICIENT_TRADES"
+
     result = {
         "status": "OK",
         "generated_utc": datetime.now(timezone.utc).isoformat(
@@ -302,6 +426,11 @@ def run_exit_battery(data_dir: Path) -> dict:
         "verdict": verdict_line(),
         "profit_take_verdict": pt_verdict_line(),
         "entry_filter_verdict": filter_verdict_line(),
+        "portfolio_block": {
+            "baseline_4w": port_base,
+            "pt_4pct": port_pt,
+            "verdict": port_verdict,
+        },
         "note": "every cell reported, none cherry-picked; "
                 "winsorized medians, 5 bps costs both sides; "
                 "design sample - forward-scored or it stays "

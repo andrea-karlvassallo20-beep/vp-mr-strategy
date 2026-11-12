@@ -624,3 +624,40 @@ Design-sample caveat, kept beside every number above: these are
 design-sample findings on historical data, not independently
 established live performance. The forward calibration record
 remains the test that matters.
+
+## 16. The exit rules, measured (dated addition, 12 November 2026)
+
+The layer-5 follow-up to the timing battery, on the same episode
+entries (the crash-zone cross, one entry per episode, 206 trades
+on the anchored set). Instrument: exit_battery.py; every cell
+reported, none cherry-picked.
+
+1. THE HOLD LADDER: no shorter hold earns its keep. The 1-week
+   hold fails the dual-split gate; 2w and 3w read below the
+   4-week baseline median; the 4-week hold stands. The timing
+   realization curve (~47% by week 2) does NOT license an early
+   time exit - the bounce keeps paying after week 2.
+2. THE PROFIT TAKE, PER TRADE: exiting at the first week
+   clearing +4% lifts the per-trade median (0.0415 vs 0.0169)
+   and passes the gate. Seductive - flagged.
+3. THE PROFIT TAKE, AT PORTFOLIO LEVEL: CUTTING WINNERS LOSES.
+   On the calendar-date grid, the same entries with the +4% take
+   compound to -36.0% total (CAGR -8.6%, maxDD 60.9%) against
+   the production hold's +83.6% (CAGR +11.3%, maxDD 46.6%). The
+   mechanism is measured: the take RAISES the median but CUTS
+   the mean (0.0052 vs 0.0086) because it truncates the right
+   tail (winners' mean 0.0797 to 0.062) while losers stay full.
+   THE MEDIAN IS NOT THE PORTFOLIO - a new doctrine-grade rule:
+   no exit rule is judged by per-trade medians; the calendar-grid
+   simulation is the referee.
+4. FEWER TRADES: the v4_confirmed filter (a v4 confirmed bottom
+   within +/-3 bars of the cross) cuts the book 87% (206 to 27)
+   with a gate-passing median - flagged, and its per-asset
+   breakdown shows BTC/ETH/GC negative inside the cell.
+   compression_at_entry and the falling-knife filter do NOT
+   earn their trades (honest nulls; the latter never fires - the
+   zone cross is always the first crash week in this sample).
+
+Design-sample caveat, unchanged: every number above is
+design-sample; the forward calibration record remains the test
+that matters.

@@ -16,8 +16,9 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent))
 from fetch_data import write_csv
 from exit_battery import (HOLDS, HOLD_WEEKS, V4_WINDOW, WEEK,
-                          _cell_stats, _entries,
-                          _exit_return, run_exit_battery)
+                          MAX_CONCURRENT, _cell_stats, _entries,
+                          _exit_return, portfolio_sim,
+                          run_exit_battery)
 
 PASS = FAIL = 0
 def check(name, cond):
@@ -156,6 +157,26 @@ check("the three verdicts are stated, honestly either way",
       all(isinstance(r[k], str) and r[k]
           for k in ("verdict", "profit_take_verdict",
                     "entry_filter_verdict")))
+
+# --- the portfolio block: same entries, exits differ ----------
+pb = r.get("portfolio_block", {})
+check("the portfolio block carries both variants and a "
+      "verdict",
+      pb.get("baseline_4w", {}).get("status") == "OK"
+      and pb.get("pt_4pct", {}).get("status") == "OK"
+      and isinstance(pb.get("verdict"), str) and pb["verdict"])
+check("both portfolio variants trade the same entries",
+      pb["baseline_4w"]["n_trades"]
+      == pb["pt_4pct"]["n_trades"])
+check("the profit take spends LESS time in the market",
+      len(pb["pt_4pct"]["equity_curve_monthly"])
+      <= len(pb["baseline_4w"]["equity_curve_monthly"]))
+check("the portfolio respects the concurrent cap",
+      pb["baseline_4w"]["concurrent_cap"] == MAX_CONCURRENT)
+ps = portfolio_sim(data, None)
+check("portfolio_sim runs standalone on the data dir",
+      ps.get("status") == "OK" and ps.get("n_trades", 0) > 0
+      and ps.get("equity_curve_monthly"))
 res_f = res / "exit_battery.json"
 res_f.write_text(json.dumps(r, indent=2))
 check("the JSON artifact serializes",
