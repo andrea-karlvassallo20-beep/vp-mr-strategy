@@ -1987,6 +1987,26 @@ def build_site(paper_dir: Path) -> str:
                 f'<td>{s["momentum_20"]}</td></tr>'
                 for s in scores[:40])
 
+    fw_rows_logged = fw_open = fw_resolved = 0
+    fw_brier = "-"
+    fw_kill = "waiting for the first clock entry"
+    fw_path = paper_dir / "research" / "smh_forward.json"
+    if fw_path.exists():
+        fr = json.loads(fw_path.read_text())
+        cnt = fr.get("counts", {})
+        fw_rows_logged = len(fr.get("rows", []))
+        fw_open = cnt.get("open", 0)
+        fw_resolved = cnt.get("resolved", 0)
+        sc = fr.get("scores", {})
+        if sc.get("brier") is not None:
+            fw_brier = sc["brier"]
+        kl = fr.get("kill_lines", {})
+        if kl.get("next_line"):
+            fw_kill = (f"{kl['status']} - next line at "
+                       f"{kl['next_line']['at_rows']} scored rows "
+                       f"(dies at or below "
+                       f"{kl['next_line']['line']} events)")
+
     laws_cards = "".join(
         f'<div class="book"><div class="btitle">{_esc(t)}</div>'
         f'<div class="bdesc dim">{_esc(d)}</div></div>'
@@ -2151,6 +2171,23 @@ springs, highest mathematical expectation first</h3>
 <table><tr><th>Market</th><th>Vassallo Score</th><th>rel. hazard</th>
 <th>sigma_w %</th><th>depth pct</th><th>momentum (20b)</th></tr>
 {vs_rows}</table>
+<h3 class="sub">The forward log &mdash; the scoreboard the charter
+declared: forecast rows logged in advance at every clock entry,
+resolved against outcomes, Brier-scored</h3>
+<div class="metrics">
+<div class="metric"><div class="mval">{fw_rows_logged}</div>
+<div class="mlabel">forecast rows logged in advance</div></div>
+<div class="metric"><div class="mval">{fw_open}</div>
+<div class="mlabel">open (windows still running)</div></div>
+<div class="metric"><div class="mval">{fw_resolved}</div>
+<div class="mlabel">resolved and scored</div></div>
+<div class="metric"><div class="mval">{fw_brier}</div>
+<div class="mlabel">Brier score (lower is sharper)</div></div>
+</div>
+<p class="dim">Kill lines, pre-declared (charter v2, section 14):
+the occurrence claim dies in public if, at 10/20/40/60 scored
+forward rows, the event count is at or below 3/8/19/31.
+Current status: {fw_kill}.</p>
 </section>
 </main>
 <footer>Salient &mdash; regenerated automatically every night.
