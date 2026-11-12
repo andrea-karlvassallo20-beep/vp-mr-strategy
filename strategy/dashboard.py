@@ -1961,6 +1961,52 @@ def build_site(paper_dir: Path) -> str:
             f'<td>{x["sigma_w_pct"]}%</td></tr>'
             for x in comp[:40])
 
+    # THE VASSALLO SCORE: the hazard model's per-market probability
+    # of a significant event within 4 weeks, ranked
+    vs_rows = ""
+    vs_top_score = vs_top_ticker = "-"
+    vs_count = 0
+    vs_mean = "-"
+    vs_path = paper_dir / "research" / "smh_hazard.json"
+    if vs_path.exists():
+        vr = json.loads(vs_path.read_text())
+        scores = vr.get("vassallo_scores", [])
+        vs_count = len(scores)
+        if scores:
+            vs_top = scores[0]
+            vs_top_score = f"{vs_top['vassallo_score']*100:.1f}%"
+            vs_top_ticker = vs_top["ticker"]
+            vs_mean = (f"{sum(s['vassallo_score'] for s in scores)
+                       / len(scores)*100:.1f}%")
+            vs_rows = "".join(
+                f'<tr><td>{_esc(s["ticker"])}</td>'
+                f'<td class="good">{s["vassallo_score"]}</td>'
+                f'<td>{s["relative_hazard"]}x</td>'
+                f'<td>{s["sigma_w_pct"]}%</td>'
+                f'<td>{s["sigma_pct"]}</td>'
+                f'<td>{s["momentum_20"]}</td></tr>'
+                for s in scores[:40])
+
+    fw_rows_logged = fw_open = fw_resolved = 0
+    fw_brier = "-"
+    fw_kill = "waiting for the first clock entry"
+    fw_path = paper_dir / "research" / "smh_forward.json"
+    if fw_path.exists():
+        fr = json.loads(fw_path.read_text())
+        cnt = fr.get("counts", {})
+        fw_rows_logged = len(fr.get("rows", []))
+        fw_open = cnt.get("open", 0)
+        fw_resolved = cnt.get("resolved", 0)
+        sc = fr.get("scores", {})
+        if sc.get("brier") is not None:
+            fw_brier = sc["brier"]
+        kl = fr.get("kill_lines", {})
+        if kl.get("next_line"):
+            fw_kill = (f"{kl['status']} - next line at "
+                       f"{kl['next_line']['at_rows']} scored rows "
+                       f"(dies at or below "
+                       f"{kl['next_line']['line']} events)")
+
     laws_cards = "".join(
         f'<div class="book"><div class="btitle">{_esc(t)}</div>'
         f'<div class="bdesc dim">{_esc(d)}</div></div>'
@@ -2048,7 +2094,7 @@ def build_site(paper_dir: Path) -> str:
 </head><body>
 <nav><a href="#hypothesis">The hypothesis</a>
 <a href="#proof">The proof</a> <a href="#work">The new work</a>
-<a href="#now">The hazard now</a></nav>
+<a href="#now">The Vassallo Score</a></nav>
 <header>
 <h1>Salient<span>.</span></h1>
 <p class="tagline"><strong>The aim:</strong> see the future event
@@ -2098,27 +2144,50 @@ research problem with a scoreable end state &mdash; none is a
 lottery ticket.</p>
 <div class="bgrid">{work_cards}</div>
 </section>
-<section id="now"><h2>The hazard now &mdash; the future events we
-currently see</h2>
-<p class="dim">The live instrument: every market's current
-volatility state at the latest close (strictly causal, expanding
-terciles), and the conditional hazard the frozen tables assign to
-it. A significant event is <strong>3.3&times; more likely from
-compression</strong> than from high vol. This is the future event
-we see and can explain &mdash; a scored hazard, stated in advance,
-never a direction.</p>
+<section id="now"><h2>The Vassallo Score &mdash; the likelihood
+of the event, expected mathematically</h2>
+<p class="dim">The live instrument, named for its author: for every
+market currently in the compression state, the Cox hazard model
+converts its covariates (momentum into compression, compression
+depth) into a RELATIVE hazard, and the Kaplan-Meier baseline turns
+that into an ABSOLUTE probability of a significant event
+(&ge; 2.5&sigma;<sub>w</sub> within 4 weeks) at the latest close:
+<strong>score = 1 &minus; S<sub>0</sub>(20)<sup>exp(&beta;&middot;z)</sup></strong>.
+Strictly causal, stated in advance, scored against outcomes every
+night &mdash; and never a direction, per the central theorem.
+This is the future event we see and can explain.</p>
 <div class="metrics">
+<div class="metric"><div class="mval">{vs_top_score}</div>
+<div class="mlabel">highest Vassallo Score now ({vs_top_ticker})</div></div>
+<div class="metric"><div class="mval">{vs_count}</div>
+<div class="mlabel">markets scored (in compression)</div></div>
+<div class="metric"><div class="mval">{vs_mean}</div>
+<div class="mlabel">mean score across compression</div></div>
 <div class="metric"><div class="mval">{n_comp}</div>
-<div class="mlabel">markets currently in COMPRESSION
-(of {hz_total})</div></div>
-<div class="metric"><div class="mval">{n_mid}</div>
-<div class="mlabel">in the mid tercile</div></div>
-<div class="metric"><div class="mval">{n_high}</div>
-<div class="mlabel">in high vol</div></div>
+<div class="mlabel">of {hz_total} markets in COMPRESSION</div></div>
 </div>
-<h3 class="sub">Currently compressed (lowest sigma_w first
-&mdash; the coiled springs)</h3>
-<table><tr><th>Market</th><th>sigma_w %</th></tr>{hz_rows}</table>
+<h3 class="sub">Ranked by the Vassallo Score &mdash; the coiled
+springs, highest mathematical expectation first</h3>
+<table><tr><th>Market</th><th>Vassallo Score</th><th>rel. hazard</th>
+<th>sigma_w %</th><th>depth pct</th><th>momentum (20b)</th></tr>
+{vs_rows}</table>
+<h3 class="sub">The forward log &mdash; the scoreboard the charter
+declared: forecast rows logged in advance at every clock entry,
+resolved against outcomes, Brier-scored</h3>
+<div class="metrics">
+<div class="metric"><div class="mval">{fw_rows_logged}</div>
+<div class="mlabel">forecast rows logged in advance</div></div>
+<div class="metric"><div class="mval">{fw_open}</div>
+<div class="mlabel">open (windows still running)</div></div>
+<div class="metric"><div class="mval">{fw_resolved}</div>
+<div class="mlabel">resolved and scored</div></div>
+<div class="metric"><div class="mval">{fw_brier}</div>
+<div class="mlabel">Brier score (lower is sharper)</div></div>
+</div>
+<p class="dim">Kill lines, pre-declared (charter v2, section 14):
+the occurrence claim dies in public if, at 10/20/40/60 scored
+forward rows, the event count is at or below 3/8/19/31.
+Current status: {fw_kill}.</p>
 </section>
 </main>
 <footer>Salient &mdash; regenerated automatically every night.

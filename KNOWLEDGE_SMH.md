@@ -1,8 +1,18 @@
-# The Salient Market Hypothesis (SMH)
+# The Salient Market Hypothesis (SMH) — charter v2
 
 Named by Andrea, 12 November 2026: the framework was drafted as the
 State-Clock Framework and adopted its standing name the same day. Same
 object, same falsification rules; every future reference says SMH.
+
+AMENDMENT RECORD (per section 9, rule 3 — supersession happens by
+recorded, dated amendment only): this is charter v2, 12 November 2026
+(session 37). It supersedes charter v1 (12 sections, same day, earlier
+session), which is preserved unchanged in the git history. v2 adds: the
+supersession capability matrix (with its honesty note), the observer
+corollary, the corrected hazard layer v0 (KM off-by-one caught and
+corrected), the stress clock v0 with the quarter rule, the dwell and
+transition machine, the doctrine (section 12), and the entry condition
+set/theorem (section 14) with pre-declared kill lines. Design-complete.
 
 A theoretical framework for identifying, in advance, the significant
 events in a market. Written as a direct replacement for Elliott Wave:
@@ -16,34 +26,53 @@ the AVFI programme's own measured results.
 
 What Elliott Wave got right, and why it survived a century:
 
-- Markets alternate between impulse and correction. TRUE, and now
-  measured: returns show horizon-structured autocorrelation,
-  persistence at weeks-to-months and reversal at multi-year horizons.
-  The alternation is real; the 5-3 cage around it is not.
-- The same structure appears at multiple scales. TRUE in the
-  volatility sense: volatility is multifractal, correlations aggregate
-  across heterogeneous trader horizons (Muller's HARCH, Bouchaud's
-  stylized facts). Self-similarity lives in the variance process, not
-  in a fixed price geometry.
-- Crowd psychology evolves in phases that leave footprints. TRUE:
-  herding, order-flow correlation, and the volume-price
-  effort-vs-result relation are documented stylized facts. VSA read
-  them verbally; order-flow research measures them.
+1. Markets alternate between impulse and correction. TRUE, and now
+   measured: returns show horizon-structured autocorrelation,
+   persistence at weeks-to-months and reversal at multi-year horizons.
+   The alternation is real; the 5-3 cage around it is not.
+2. The same structure appears at multiple scales. TRUE in the
+   volatility sense: volatility is multifractal, correlations
+   aggregate across heterogeneous trader horizons (Muller's HARCH,
+   Bouchaud's stylized facts). Self-similarity lives in the variance
+   process, not in a fixed price geometry.
+3. Crowd psychology evolves in phases that leave footprints. TRUE:
+   herding, order-flow correlation, and the volume-price
+   effort-vs-result relation are documented stylized facts. VSA read
+   them verbally; order-flow research measures them.
 
 What it got wrong:
 
-- The fixed 5-3 form. Copsey's own finding: every impulse can be
-  counted as a three. A form that cannot be counted wrong cannot be
-  counted right.
-- Fibonacci price ratios as targets. No statistical evidence anywhere
-  in the canon. Geometry licenses them as measurement tools only; a
-  ratio is a description, not a prediction.
-- Unfalsifiability. Any count can be recounted, any correction
-  extended. A theory that cannot fail predicts nothing.
+1. The fixed 5-3 form. Copsey's own finding: every impulse can be
+   counted as a three. A form that cannot be counted wrong cannot be
+   counted right.
+2. Fibonacci price ratios as targets. No statistical evidence anywhere
+   in the canon. Geometry licenses them as measurement tools only; a
+   ratio is a description, not a prediction.
+3. Unfalsifiability. Any count can be recounted, any correction
+   extended. A theory that cannot fail predicts nothing.
 
-What it never had, and correctly identified as the gap: time. Elliott
-says where, never when. Every "when" in wave practice is retro-fitted.
-This framework makes time a first-class dimension.
+What it never had, and you correctly identified as the gap: time.
+Elliott says where, never when. Every "when" in wave practice is
+retro-fitted. The framework below makes time a first-class dimension.
+
+### The supersession case, stated as a capability matrix
+
+| capability | Elliott Wave | the Salient Market Hypothesis |
+|---|---|---|
+| what it predicts | a fixed 5-3 price geometry | conditional hazards: a significant week within 4/12 weeks of a compression entry (0.268 / 0.634), de-stress within 4/12 weeks of a stress entry (0.273 / 0.636) |
+| what it says about time | nothing; every "when" is retro-fitted | the clock IS the theory: spell dwell, transition rates, the quarter rule |
+| can it fail in public | no: any count can be recounted | yes: every forecast row is logged in advance and Brier/log-scored as windows complete |
+| what it refuses | nothing: dates, targets, ratios all claimed | dates, targets, wave counts, Fibonacci ratios, direction at a chosen time |
+| the alternation claim | asserted as a fixed form | measured as the transition structure (13/13, 11/13) with unscheduled timing |
+| practitioner instruction | count the waves, apply the ratios | read the region, read the spell age, wait for a clock entry, log the row, take the score |
+| data requirements | a chart and belief | weekly OHLCV and the discipline of advance logging |
+| scoreboard | none possible, in a century of practice | empty by design today; filling from the first forward row onward |
+
+Honesty note, kept beside the table: the supersession is structural,
+not yet proven. Every capability on the right is a claim that CAN fail,
+which is precisely what Elliott Wave never had. The forward log is the
+test; it is empty until the market's next clock entry, and the matrix
+earns its last row only by accumulating score.
 
 ## 2. The ontology: what a market is
 
@@ -51,14 +80,14 @@ From Hasbrouck and the microstructure canon. A market is a matching
 engine plus participants managing inventory plus informed flow. There
 are two prices: a latent efficient price, moved by information and
 inventory pressure, and the transaction price, which oscillates around
-it. The transaction path equals the efficient path (near a random
-walk with drift) plus mean-reverting noise.
+it. The transaction path equals the efficient path (near a random walk
+with drift) plus mean-reverting noise.
 
-From Clark, Mandelbrot, and the VPIN wave: the efficient price does
-not evolve in calendar time. It evolves in trading time, clocked by
-volume and volatility. All "when" questions must be posed in the right
-clock. A week of calendar time can be an hour of trading time, or a
-month of it.
+From Clark, Mandelbrot, and the VPIN wave: the efficient price does not
+evolve in calendar time. It evolves in trading time, clocked by volume
+and volatility. All "when" questions must be posed in the right clock.
+A week of calendar time can be an hour of trading time, or a month of
+it.
 
 From Hamilton and Diebold-Inoue: the process switches regimes slowly,
 and what looks like long memory can be a sequence of breaks. Structure
@@ -68,37 +97,35 @@ exists, but it is statistical, not geometric.
 
 These are the inevitables, the axioms of the framework. Each is
 documented, each carries its evidence anchor, and each is stated with
-its use as a rule.
+its use as a rule. This is the honest list of things that happen
+unconditionally; note carefully what is not on it.
 
-1. **Volatility persists, then mean-reverts.** High vol weeks follow
-   high vol weeks; compressed vol expands. (Tsay's GARCH persistence;
-   the clock study's frozen tercile tables.) USE: this is the clock
-   itself.
-2. **Tails are heavy.** Return distributions are non-Gaussian at
-   every horizon. (Bouchaud's stylized facts; Student-t conditional
-   tails.) USE: all thresholds, stops, and event definitions live in
-   sigma units, never in fixed points.
-3. **Autocorrelation has horizon structure.** Momentum at medium
-   horizons, reversal at long ones, near-zero at short ones.
-   (Jegadeesh-Titman; De Bondt-Thaler; time-series momentum in all 58
-   contracts of the Moskowitz-Ooi-Pedersen study; the programme's own
-   rule set T, its only replicated effect.) USE: the directional
-   prior, valid only inside trend states and only at the right
-   horizons.
-4. **Impact is concave in volume.** Big moves require big flow, and
-   flow leaves footprints. (Kyle's lambda; the square-root law;
+1. Volatility persists, then mean-reverts. High vol weeks follow high
+   vol weeks; compressed vol expands. (Tsay's GARCH persistence; the
+   clock study's frozen tercile tables.) USE: this is the clock itself.
+2. Tails are heavy. Return distributions are non-Gaussian at every
+   horizon. (Bouchaud's stylized facts; Student-t conditional tails.)
+   USE: all thresholds, stops, and event definitions live in sigma
+   units, never in fixed points.
+3. Autocorrelation has horizon structure. Momentum at medium horizons,
+   reversal at long ones, near-zero at short ones. (Jegadeesh-Titman;
+   De Bondt-Thaler; time-series momentum in all 58 contracts of the
+   Moskowitz-Ooi-Pedersen study; the programme's own rule set T, its
+   only replicated effect.) USE: the directional prior, valid only
+   inside trend states and only at the right horizons.
+4. Impact is concave in volume. Big moves require big flow, and flow
+   leaves footprints. (Kyle's lambda; the square-root law;
    Cont-Kukanov-Stoikov's OFI.) USE: a significant event must be
    confirmed by volume, the formalized version of VSA's
    effort-vs-result. A move without volume is a suspect move.
-5. **Events self-excite.** Price changes cluster in time, mostly
+5. Events self-excite. Price changes cluster in time, mostly
    endogenous. (Hawkes processes; Filimonov-Sornette's reflexivity
-   measurements.) USE: hazard is state-dependent, so timing
-   forecasts are conditional distributions, never constants.
-6. **Every exploitable regularity decays.** The market adapts to
-   whoever uses it. (Lo's adaptive markets; the programme's own
-   holdout lesson.) USE: every rule in this framework carries a
-   forward calibration score and a decay watch. Nothing is forever,
-   by law.
+   measurements.) USE: hazard is state-dependent, so timing forecasts
+   are conditional distributions, never constants.
+6. Every exploitable regularity decays. The market adapts to whoever
+   uses it. (Lo's adaptive markets; the programme's own holdout
+   lesson.) USE: every rule in this framework carries a forward
+   calibration score and a decay watch. Nothing is forever, by law.
 
 Not on the list, and provably not on the list: the direction of the
 next impulse at a chosen time. That absence is the framework's central
@@ -122,38 +149,43 @@ So the claims must be distributed honestly:
 - HAZARD lives at the level of timing (the clock).
 
 Elliott Wave implicitly claimed all three and therefore made zero
-testable predictions. The State-Clock Framework claims them separated,
-and every separated claim is scoreable. That is the replacement in one
-sentence: Elliott had anatomy without a clock and without the
-possibility of being wrong; this framework gives the market a clock
-and a scoreboard.
+testable predictions. The Salient Market Hypothesis claims them
+separated, and every separated claim is scoreable. That is the
+replacement in one sentence: Elliott had anatomy without a clock and
+without the possibility of being wrong; this framework gives the
+market a clock and a scoreboard.
+
+The observer corollary (added 12 Nov 2026): the only forecast that
+cannot be priced away is the private one. Three forms exist:
+information others do not have (informed flow), speed others do not
+have (infrastructure), and a calibration record others have not
+measured (a forward-scored log). SMH can build only the third, and it
+is the right one for this programme: it cannot move the market because
+it is not public, it cannot be flattered because it is scored in
+advance, and it compounds, because every scored forecast sharpens the
+tables. The inevitable future in public, certain, timed, directional
+form is visible to no one; the private observer's honest maximum is a
+distribution, a clock, and a scoreboard. That is not a consolation
+prize. It is the whole difference between a belief and an instrument.
 
 ## 5. The state layer: what replaces wave counting
 
 States are defined by measured quantities, never by counting. Four
 states, on the instrument you trade, at the decision horizon:
 
-- COMPRESSION -> TREND: vol expands with directional persistence
-- COMPRESSION -> EXPANSION: vol expands, direction unresolved
-- TREND -> COMPRESSION: momentum fades, vol contracts
-- TREND -> STRESS: tail event against the state
-- EXPANSION -> TREND: volume confirms direction
-- EXPANSION -> STRESS: volume confirms reversal
-- STRESS -> COMPRESSION: vol mean-reverts
-- STRESS -> TREND: crash-scale overshoot resolves
-
-COMPRESSION: low volatility tercile. The event-prone state: the clock
-study measured a 47 percent rate of a significant 4-week move from
-this state, versus 14 percent from high vol.
-
-TREND: persistent directional drift. Law 3's prior is valid here and
-only here.
-
-EXPANSION: the event window, active while the significant move is in
-progress. Law 4 operates: confirmation requires the volume footprint.
-
-STRESS: the post-event tail regime. Law 2 operates: sizing cuts,
-expectations widen.
+- COMPRESSION: low volatility tercile. The event-prone state: the
+  clock study measured a 47 percent rate of a significant 4-week move
+  from this state, versus 14 percent from high vol. This is where the
+  anticipated event becomes likely, and it is the state Elliott's
+  "base" and Copsey's accumulation describe verbally.
+- TREND: persistent directional drift. Law 3's prior is valid here and
+  only here. Occupancy and persistence are measured, not asserted (the
+  programme's stage 2 event studies did exactly this).
+- EXPANSION: the event window, active while the significant move is
+  in progress. Law 4 operates: confirmation requires the volume
+  footprint.
+- STRESS: the post-event tail regime. Law 2 operates: sizing cuts,
+  expectations widen.
 
 What wave psychology called phases (optimism, disbelief, euphoria,
 denial) are not prophecies here; they are names for measured occupancy
@@ -164,10 +196,11 @@ description and divination.
 
 The primary clock is volatility. At each decision close: sigma_w
 (trailing 8-week weekly vol), its tercile, and the frozen conditional
-tables give the hazard of a significant event within the next 4
-weeks. The secondary clock is volume time (needs finer data than
-weekly OHLCV). The tertiary clock is self-excitation (needs intraday
-data; out of scope for now, documented as such).
+tables give the hazard of a significant event within the next 4 weeks.
+The secondary clock is volume time (needs finer data than weekly
+OHLCV; the broker/CME export standing item feeds exactly this). The
+tertiary clock is self-excitation (needs intraday data; out of scope
+for now, documented as such).
 
 Timing in this framework means: a conditional hazard function, updated
 at every decision close, scored against outcomes. Not a date. A date
@@ -177,25 +210,91 @@ the central theorem the moment anyone believed it. The hazard IS the
 logged in advance, Brier-scored, reliability-diagrammed. The 47 versus
 14 percent tercile spread is the first measured tick of this clock.
 
+Hazard layer v0, corrected (12 Nov 2026, the second measured tick):
+conditioning on compression ENTRIES (crosses into the low tercile,
+n = 41 pre-2021, design bookkeeping only), the discrete Kaplan-Meier
+hazard of the first significant 1-week event RISES with weeks since
+entry, through about 0.15 at week 6, cumulative event probability 0.63
+by week 12, median lag 5 weeks, and the compression state roughly
+doubles the weekly event rate (0.0969 vs 0.0448 unconditional). The
+direction split of first events shows the shape the hypothesis hunts,
+honestly flagged: compression entered after a down 12-week move
+resolved its first event up 6 of 7 times (n = 7, seductive cell,
+untrusted until forward-scored). The mathematics is survival analysis,
+the same spine as clinical time-to-event research: the medicine bridge
+is now measured, not just proposed. Cox layer v0.1 (same day):
+entry-condition covariates (momentum sign, AVFI state, compression
+depth) all point the predicted way but beat duration alone by only 1.4
+percent out of fold; the honest verdict is that the hazard content so
+far IS the clock, not the entry conditions. Correction note: the first
+frozen KM table carried an off-by-one in its risk set (caught by an
+independent person-week reconstruction, now a standing consistency
+check); corrected numbers here and in the bundle documents. Full
+frozen tables, caveats, and the forward protocol: the SMH hazard layer
+v0 and Cox layer v0.1 documents in the programme bundle.
+
+Stress clock v0, the mirror edge (12 Nov 2026, the third measured
+tick): the other side of the volatility cycle is now timed in the same
+survival form. Stress entries (crosses above the frozen high cut,
+n = 33 pre-2021) de-stress with cumulative probability 0.636 by week
+12, median lag 6, and a one-in-three tail that stays in stress a full
+quarter. The quarter rule: BOTH edges of the cycle resolve with nearly
+identical two-thirds probability within a quarter (0.634 vs 0.636),
+medians 5 and 6, as one mean-reverting variance machine predicts. Two
+quiet findings: stress decays by calm, not crash (20 of 21 de-stressed
+episodes saw NO significant week first; the de-stress week itself is
+quiet in 64 percent of cases, with an honest roll-off caveat), and
+NOTHING conditions the stress clock (no momentum split, no state cell,
+no seductive cell at all, unlike the compression side). The instrument
+now drafts forecast rows for both clock edges, and its selftest
+reproduces every frozen table from the raw data. Full tables and
+caveats: the SMH stress clock v0 document in the programme bundle.
+
+The dwell and transition machine (12 Nov 2026, the fourth measured
+tick, which completes the clock): the clock is a genuine three-state
+machine with measured dwell and jump structure. Stress dwells twice
+as long as compression (mean 13.3 vs 7.0 weeks, max 86 vs 29) and
+occupies the most calendar time; mid is the fast exchange (median 3
+weeks) splitting exits 0.56 back to compression and 0.44 up to stress;
+compression exits to mid 93 percent of the time, jumping directly to
+stress in only 3 of 41 exits (the no-warning event, rare and real).
+The state layer is measured in the same units: the alternation Elliott
+named is the TRANSITION structure (momentum_up hands to reversal_down
+in 13 of 13 spells; reversal_down hands back to momentum_up in 11 of
+13), while the TIMING carries no schedule (reversal_down dwells a
+median 11, mean 29.7 weeks), reversal_up occupied just 26 weeks in
+twenty years (the climax quota is an occupancy fact, not a sampling
+accident), and state and clock are nearly orthogonal in joint
+occupancy: the state cycles while the clock ticks, neither forecasting
+the other. Full tables: the SMH transitions v0 document in the
+programme bundle.
+
+The instrument reads the machine's live position against these tables:
+the status command reports the current clock region, the current
+spell's age in weeks against the measured dwell distribution (median,
+mean, max), and the current state spell's age - the operational
+replacement for counting waves. What it does NOT do is convert spell
+age into a forecast: age is descriptive context; rows are logged only
+at clock entries, per the protocol.
+
 ## 7. The event: what you anticipate, identified before it happens
 
 Definition, pre-registered: a significant event is a move of at least
 2.5 sigma_w within 4 completed weeks (the clock study's frozen
-threshold). Identification before it happens = the pre-event
-signature:
+threshold). Identification before it happens = the pre-event signature:
 
-- The clock: compression-state vol tercile (hazard elevated, 47
-  percent).
-- The state layer: which states are legal exits of compression, and
-  what the horizon structure says about direction inside each.
-- The flow layer: at finer horizons, the volume/OFI footprint that law
-  4 requires of any genuine impulse (needs finer data; documented).
+1. The clock: compression-state vol tercile (hazard elevated, 47
+   percent).
+2. The state layer: which states are legal exits of compression, and
+   what the horizon structure says about direction inside each.
+3. The flow layer: at finer horizons, the volume/OFI footprint that law
+   4 requires of any genuine impulse (needs finer data; documented).
 
 The signature raises probability. It never reaches 1, and the framework
-says so in its own axioms. The Sornette log-periodic program is the
-canon's model of a precursor signature: pre-registered, ex-ante, with
-a public record of hits and misses. This framework adopts the pattern
-and refuses the certainty.
+says so in its own axioms (theorem, section 4). The Sornette
+log-periodic program is the canon's model of a precursor signature:
+pre-registered, ex-ante, with a public record of hits and misses. This
+framework adopts the pattern and refuses the certainty.
 
 ## 8. What the framework predicts, and what it refuses
 
@@ -226,8 +325,9 @@ replacement rather than a repeat of Elliott:
 2. A claim that cannot be scored is not part of the framework.
 3. Supersession happens by recorded, dated amendment only; nothing is
    silently rewritten.
-4. The human forecaster is inside the protocol as a component to be
-   calibrated, not an oracle outside it.
+4. The human forecaster (your calls, the judgment log concept) is
+   inside the protocol as a component to be calibrated, not an oracle
+   outside it.
 5. Decay is watched by law 6: every rule's calibration record is its
    life expectancy.
 
@@ -255,25 +355,77 @@ AVFI programme discovered empirically, piece by piece:
 
 ## 11. Open problems: where the hunger goes next
 
-- **Hazard estimation.** Regime switching crossed with survival
-  analysis: Hamilton's states meet Kaplan-Meier and Cox. Time-to-
-  event methodology, identical in spine to clinical research. UPDATE
-  12 Nov 2026: the Kaplan-Meier v0 exists (hazard layer v0, bundle
-  document); Cox covariates (state, momentum, duration) are the next
-  step.
-- **The volume clock.** Clark's subordination measured on real NQ
-  data. Blocked only by data quality.
-- **Precursor signatures beyond volatility.** Can any weekly-
-  observable footprint raise the event hazard above the tercile
-  table? This is where AVFI returns honestly: not as an
-  inevitability, as a testable signature with a calibration score.
-- **Self-excitation measurement.** Hawkes estimation needs intraday
-  data; documented as out of scope until the data exists.
-- **The Bayesian forecaster.** Human prior times measured
-  calibration: the formal version of integrating judgment into the
-  hazard model once it has a score.
+Each is a genuine research problem, none is a lottery ticket, and the
+first is shared with medicine:
 
-## 12. The honest close
+1. Hazard estimation. Regime switching crossed with survival analysis:
+   Hamilton's states meet Kaplan-Meier and Cox. Time-to-event
+   methodology, identical in spine to clinical research. This is the
+   mathematics the clock layer needs to grow from tercile tables to a
+   proper hazard model. UPDATE 12 Nov 2026: Kaplan-Meier v0 exists
+   (hazard layer v0, corrected after an off-by-one caught by the
+   person-week reconstruction) and Cox v0.1 exists (covariate layer):
+   the covariates point the predicted way but do not yet beat duration
+   alone out of fold. Remaining: direction modeling of first events
+   (deferred, n = 26), and covariate review after forward episodes
+   accumulate.
+2. The volume clock. Clark's subordination measured on real NQ data.
+   Blocked only by data quality (the broker/CME export standing item).
+3. Precursor signatures beyond volatility. Can any weekly-observable
+   footprint raise the event hazard above the tercile table? This is
+   where AVFI returns honestly: not as an inevitability, as a testable
+   signature with a calibration score. The reversal_up 0.385 cell
+   (n=26) is the standing example of what a seductive cell looks like
+   before it has earned trust.
+4. Self-excitation measurement. Hawkes estimation needs intraday
+   data; documented as out of scope until the data exists.
+5. The Bayesian forecaster. Human prior times measured calibration:
+   the formal version of integrating your judgment (the judgment log)
+   into the hazard model once it has a score.
+
+## 12. The doctrine: how an SMH observer lives in the market
+
+The theory earns its name only as a practice. This is the ideology,
+stated as rules of life rather than rules of trade:
+
+1. THINK IN HAZARDS, NOT DATES. An SMH observer never asks when. The
+   observer asks: given this state, what is the hazard this week, and
+   how does it accumulate. A doctor does not tell a patient the date.
+   A doctor gives a survival curve and manages the case against it. The
+   market gets the same honesty: compression resolves into a first
+   significant week with about two thirds probability within a
+   quarter, median around 5 weeks, and one entry in three stays quiet.
+   That is the entire when, and it is enough to act on, because it is
+   scoreable.
+2. FORECAST IN ADVANCE OR NOT AT ALL. A view that was not logged
+   before the outcome does not exist. The instrument refuses noise by
+   design: rows exist only at clock entries, only on the decision
+   cadence, never twice for the same week, never revised after the
+   fact.
+3. TREAT CERTAINTY AS A DISTRIBUTION, DIRECTION AS A PROBABILITY,
+   TIMING AS A HAZARD. Never trade all three as one claim; the
+   triangle says such a rule cannot survive publicity. The private
+   edge is the calibration record: information and speed belong to
+   other people's infrastructure; the scored, compounding record
+   belongs to whoever keeps it.
+4. RESPECT THE QUIET FINDINGS. Stress decays by erosion, not
+   catharsis: after a vol spike the crowd braces for the flush, and
+   the measured record shows twenty of twenty-one de-stresses arriving
+   without any significant week at all. The market's drama is in its
+   events; its recovery is in its boredom. Trade the boredom where the
+   crowd prices the drama.
+5. SEDUCTIVE CELLS CARRY THEIR FLAGS FOREVER. Any conditional cell
+   small enough to flatter (the 6-of-7 compression-after-decline cell
+   above) stays flagged until forward scoring earns it silence. Nothing
+   gets promoted by telling a better story.
+6. CORRECTIONS ARE PART OF THE RECORD. The frozen tables have already
+   caught their own bugs (three in the hazard layer's first days),
+   because every table must survive an independent reconstruction
+   before it counts, and every failure is logged in place. A doctrine
+   that cannot admit error cannot keep score, and scorekeeping is the
+   whole doctrine.
+
+## 13. The honest close
 
 The inevitable, unconditional rules exist: the six laws. They were
 found, not invented, and they are the closest thing to market truth
@@ -284,3 +436,69 @@ Wave is this: state instead of count, clock instead of prophecy,
 calibration instead of belief. It is less romantic than waves, and it
 has one property no wave theory ever had: it can be wrong in public,
 which is the only way anything in markets can ever be right.
+
+## 14. The entry condition set: the theorem, boiled down
+
+Added 12 November 2026 (session 37). The whole framework compressed
+into one falsifiable machine (instrument: smh_theorem.py, theorem card
+and selftest; tables in the entry-theorem doc). The boiled-down form
+answers the founding question of this canvas, what conditions produce
+the anticipated change and the timely entry, without ever claiming the
+impossible corner of the triangle:
+
+THE TRIGGER (one condition, measurable at the decision close): sig_w
+crosses into compression (sig_w <= 0.01739 after being above it). THE
+ANTICIPATED EVENT (defined before the fact): a significant week, |r1|
+>= 2.5 sigma_w, within 12 weeks.
+
+1. OCCURRENCE: P(event within 12 weeks | trigger) = 0.634, Greenwood
+   95% [0.487, 0.782]. The counterfactual (the same clock started from
+   any week) is 0.441 [0.411, 0.471]. The bands do not overlap: even
+   the conservative lower bound of the entry condition beats the upper
+   bound of doing nothing. This is what salience means operationally,
+   and the weekly rate ratio is 2.16 [1.38, 3.39].
+2. TIMING: the hazard is front-loaded, median lag 5 weeks, cum 0.268
+   by week 4. The clock is the when.
+3. TIMELINESS: entering at the cross captures 0.634 of the window;
+   waiting 4 quiet weeks leaves 0.500; waiting 6 leaves 0.348. Waiting
+   forfeits measured hazard mass and races the spell's own mortality
+   (median dwell 4 weeks). Timeliness is not a felt skill; it is a
+   measured 0.634-versus-0.348.
+4. DIRECTION: REFUSED in v0. The up-split's 95% lower bound (0.443) is
+   below one half, so the anticipated change is a significant MOVE,
+   not a signed one. The seductive cells stay flagged until
+   forward-scored.
+5. ABORTS: the set dissolves when the spell ends without event, when
+   12 quiet weeks pass (a scored miss, 36.6% of the mass), or at
+   censoring.
+6. KILL LINES, pre-declared: the occurrence claim dies in public if,
+   at 10, 20, 40, 60 scored forward rows, the event count is at or
+   below 3, 8, 19, 31 respectively.
+7. THE MIRROR: the stress trigger carries P(de-stress within 12
+   weeks) = 0.636 [0.472, 0.801], median 6, no direction claim at all,
+   decaying by calm, not crash.
+
+The long-run lemma closes the "inevitable" question with the only
+honesty markets permit: the measured region chain is irreducible (all
+six directed links observed, none absorbing), so the trigger recurs
+indefinitely and the anticipated EVENT is actuarially inevitable across
+the cycle, exactly as a life table makes death inevitable and no death
+dated. Inevitability lives in the recurrence, probability in the
+entry, hazard in the timing; the date and the sign stay refused until
+forward rows earn them. That is the boiled-down theorem: one trigger,
+one event, one clock, bounded claims, public kill lines.
+
+Design-complete (12 Nov 2026): every layer of this framework
+reachable with current data now has measured tables: the laws (the
+programme's prior results), the clock (both edge clocks, the dwell and
+transition machine, the quarter rule), the states (occupancy,
+transitions, joint table), the event (both KM clocks, all seductive
+cells flagged), the covariates (the Cox v0.1 null verdict), and the
+falsification machinery (forward protocol, drafting instrument,
+resolver and scorer, all selftested and wired into the verification
+chain, 18 checks). What remains is exactly two things, and neither is
+theory: episodes (the forward rows that only the market's future clock
+entries can produce) and data (the volume clock and Hawkes layer need
+the broker export; the unseen-ness test needs the priced-expectations
+benchmark). The framework is finished being built. Now it waits to be
+scored.

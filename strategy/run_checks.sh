@@ -66,6 +66,9 @@ python3 test_smh_proof.py
 echo "=== 8j SMH hazard model (KM + Cox) ==="
 python3 test_smh_hazard.py
 
+echo "=== 8k SMH forward scoring protocol (draft, resolve, score, kill lines) ==="
+python3 test_smh_forward.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 

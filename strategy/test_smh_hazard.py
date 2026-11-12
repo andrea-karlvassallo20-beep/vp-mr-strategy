@@ -11,7 +11,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent))
 from fetch_data import write_csv
 from smh_hazard import (build_episodes, cox_fit, kaplan_meier,
-                        run_hazard_model)
+                        run_hazard_model, vassallo_scores)
 from smh_proof import WARMUP
 
 PASS = FAIL = 0
@@ -95,6 +95,26 @@ check("episodes only start inside compression (event within window)",
 r = run_hazard_model(data)
 check("hazard model runs end to end on real-shaped data",
       r["status"] in ("OK", "INSUFFICIENT_EPISODES"))
+
+# --- the Vassallo Score ------------------------------------------------
+# with a fitted model and a baseline, scores must be probabilities
+# in (0, 1), and deeper compression must score HIGHER (the fitted
+# sigma_pct coefficient is negative)
+if r.get("status") == "OK" and r.get("vassallo_scores"):
+    vs = r["vassallo_scores"]
+    check("Vassallo Scores are probabilities in (0, 1)",
+          all(0.0 < s["vassallo_score"] < 1.0 for s in vs))
+    check("Vassallo Scores ranked descending",
+          all(vs[i]["vassallo_score"]
+              >= vs[i + 1]["vassallo_score"]
+              for i in range(len(vs) - 1)))
+    deep = [s for s in vs if s["sigma_pct"] <= 0.05]
+    shallow = [s for s in vs if s["sigma_pct"] >= 0.25]
+    check("deeper compression scores higher on average",
+          (not deep or not shallow)
+          or (sum(s["vassallo_score"] for s in deep) / len(deep)
+              > sum(s["vassallo_score"] for s in shallow)
+              / len(shallow)))
 
 shutil.rmtree(tmp)
 print(f"\nRESULT: {PASS} passed, {FAIL} failed")
