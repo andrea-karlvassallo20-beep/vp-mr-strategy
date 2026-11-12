@@ -113,6 +113,7 @@ def philosopher_verdicts(data_dir: Path,
     # negative cells are FLAGGED, never excluded (excluding on
     # in-sample performance is blind-following in reverse)
     record = {}
+    timing_card = {}
     if research_dir is not None:
         rp = research_dir / "v4_charts.json"
         if rp.exists():
@@ -122,6 +123,13 @@ def philosopher_verdicts(data_dir: Path,
                     "per_asset", {})
             except Exception:
                 record = {}
+        tp = research_dir / "timing_battery.json"
+        if tp.exists():
+            try:
+                tb = json.loads(tp.read_text())
+                timing_card = tb.get("candidate_timing_card", {})
+            except Exception:
+                timing_card = {}
     out = []
     for name, c, v in _series(data_dir):
         logc = np.log(c)
@@ -184,6 +192,12 @@ def philosopher_verdicts(data_dir: Path,
             "region": region,
             "weekly_return": round(wr, 4),
             "avfi_v4": read,
+            "timing_card": {
+                "median_peak_week":
+                    timing_card.get("median_peak_week"),
+                "p_positive_week1":
+                    timing_card.get("p_positive_week1"),
+            },
             "reason": reason,
         })
     order = {"LONG_CANDIDATE": 0,
