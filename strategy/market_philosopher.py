@@ -150,9 +150,17 @@ def backtest_long_rule(data_dir: Path) -> dict:
         if name not in ANCHORED:
             continue
         logc = np.log(c)
+        last_entry = -10 ** 9
         for t in range(WARMUP, len(c) - WEEK * HOLD_WEEKS):
             wr = _weekly_return(logc, t)
-            if ZONE_LO <= wr < ZONE_HI:
+            prev = _weekly_return(logc, t - 1)
+            # ONE entry per crash episode: the CROSS into the
+            # zone (the trailing week was outside it), and no
+            # re-entry while the measured hold runs
+            if (ZONE_LO <= wr < ZONE_HI
+                    and not ZONE_LO <= prev < ZONE_HI
+                    and t >= last_entry + WEEK * HOLD_WEEKS):
+                last_entry = t
                 fwd = float(logc[t + WEEK * HOLD_WEEKS]
                             - logc[t])
                 trades.append({

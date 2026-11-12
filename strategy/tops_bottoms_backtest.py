@@ -148,12 +148,19 @@ def run_backtest(data_dir: Path) -> dict:
         slot["tops"] += fwd(t_, -1)
         slot["bottoms_un"] += fwd(ub, 1)
         slot["tops_un"] += fwd(ut, -1)
-        # the crash-zone long trades (net of costs)
+        # the crash-zone long trades (net of costs): ONE entry
+        # per crash episode - the cross into the zone, no
+        # re-entry while the hold runs
+        last_entry = -10 ** 9
         for tt in range(60, n - WEEK * HOLD_WEEKS):
             if tt < WEEK:
                 continue
             wr = float(logc[tt] - logc[tt - WEEK])
-            if ZONE_LO <= wr < ZONE_HI:
+            prev = float(logc[tt - 1] - logc[tt - 1 - WEEK])
+            if (ZONE_LO <= wr < ZONE_HI
+                    and not ZONE_LO <= prev < ZONE_HI
+                    and tt >= last_entry + WEEK * HOLD_WEEKS):
+                last_entry = tt
                 slot["zone"].append(
                     float(logc[tt + WEEK * HOLD_WEEKS]
                           - logc[tt]) - 2 * COST_BPS / 1e4)
