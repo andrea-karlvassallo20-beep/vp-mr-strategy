@@ -165,6 +165,14 @@ check("the portfolio block carries both variants and a "
       pb.get("baseline_4w", {}).get("status") == "OK"
       and pb.get("pt_4pct", {}).get("status") == "OK"
       and isinstance(pb.get("verdict"), str) and pb["verdict"])
+check("the v4_confirmed book faces the same referee with "
+      "its own verdict",
+      pb.get("v4_confirmed_4w", {}).get("entry_filter")
+      == "v4_confirmed"
+      and isinstance(pb.get("v4_confirmed_verdict"), str)
+      and pb["v4_confirmed_verdict"]
+      and pb["v4_confirmed_4w"]["n_trades"]
+      <= pb["baseline_4w"]["n_trades"])
 check("both portfolio variants trade the same entries",
       pb["baseline_4w"]["n_trades"]
       == pb["pt_4pct"]["n_trades"])
