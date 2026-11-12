@@ -40,7 +40,8 @@ def rw_series(n, seed):
 check("extended universe covers crypto, indices, commodities",
       {c for c, _ in EXTENDED_UNIVERSE} == {"crypto", "index", "commodity"}
       and len(EXTENDED_UNIVERSE) == len(CRYPTO) + len(INDICES)
-      + len(COMMODITIES) and len(CRYPTO) == 25
+      + len(COMMODITIES) and len(CRYPTO) >= 150
+      and len(set(CRYPTO)) == len(CRYPTO)
       and len(COMMODITIES) == 24)
 check("safe_name sanitizes ^ and =F and -",
       safe_name("^GSPC") == "GSPC" and safe_name("GC=F") == "GCF"
