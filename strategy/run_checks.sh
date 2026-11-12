@@ -45,6 +45,9 @@ python3 test_pdf_ingest.py
 echo "=== 8c Overfitting statistics (DSR, PBO) ==="
 python3 test_overfit_stats.py
 
+echo "=== 8d Lessons synthesis (live inferences) ==="
+python3 test_lessons.py
+
 echo "=== 9 Nightly pre-flight (full session simulation) ==="
 python3 test_nightly_preflight.py
 

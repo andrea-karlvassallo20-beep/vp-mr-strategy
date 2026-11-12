@@ -1257,6 +1257,49 @@ def _state_space_html(paper_dir: Path) -> str:
             f'{study_html}')
 
 
+def _lessons_html(paper_dir: Path) -> str:
+    """The learning lessons and live inferences, regenerated from
+    the research artifacts every nightly pass."""
+    path = paper_dir / "research" / "lessons.json"
+    if not path.exists():
+        return ("<p class=\"dim\">Lessons appear here after the "
+                "first nightly research pass.</p>")
+    r = json.load(open(path))
+    inf = r.get("inferences", {})
+    metrics = "".join(
+        f'<div class="metric"><div class="mval">{v}</div>'
+        f'<div class="mlabel">{_esc(k)}</div></div>'
+        for k, v in (
+            ("series studied", inf.get("universe_series")),
+            ("mean-reverting (all)", inf.get("mr_passing_all")),
+            ("mean-reverting (crypto)", inf.get("mr_passing_crypto")),
+            ("crypto confluence holds", inf.get("crypto_confluence_holds")),
+            ("region pooled n", inf.get("region_pooled_n")),
+            ("DSR (deflated)", inf.get("dsr")),
+            ("forward sessions", f"{inf.get('forward_sessions', 0)} / 20"),
+        ))
+    leaders = ", ".join(
+        f"{_esc(x['ticker'])} (t={x['t_stat']}, hl={x['half_life_bars']}b)"
+        for x in inf.get("strongest_mr", [])[:5])
+    cards = ""
+    for i, l in enumerate(r.get("lessons", []), 1):
+        cards += (
+            f'<div class="book"><div class="btitle">{i}. '
+            f'{_esc(l["lesson"])}</div>'
+            f'<div class="bdesc dim">forced by: '
+            f'{_esc(l["forced_by"])}</div>'
+            f'<div class="bdesc">{_esc(l["remedy"])}</div></div>')
+    return (f'<p class="dim">Everything this project has learned, '
+            f'extracted live from the accumulated studies - each '
+            f'lesson tied to the data that forced it and the '
+            f'method change it produced. Regenerated nightly; '
+            f'never hand-staled.</p>'
+            f'<div class="metrics">{metrics}</div>'
+            f'<p class="dim">Strongest measured mean reversion: '
+            f'{leaders}</p>'
+            f'<div class="bgrid">{cards}</div>')
+
+
 def _crypto_avfi_chart_svg(ch: dict, width=520, height=230) -> str:
     """Two-panel crypto chart: price with detected tops/bottoms on
     top, the AVFI spread z with the trigger line and throttle zone
@@ -1518,6 +1561,7 @@ def build_site(paper_dir: Path) -> str:
         (("avfi", "AVFI"), ("topsbottoms", "Tops & bottoms"),
          ("statespace", "State space"),
          ("commodities", "Commodities"), ("crypto", "Crypto 150"),
+         ("lessons", "Lessons"),
          ("overview", "Overview"),
          ("charts", "Charts"),
          ("race", "Self-learning"), ("crossasset", "Cross-asset"),
@@ -1687,6 +1731,9 @@ the same real bars every night. Each curve is scaled to its own range.</p>
 </section>
 <section id="crypto"><h2>Crypto detections &mdash; top 150, with AVFI</h2>
 {_crypto_detections_html(paper_dir)}
+</section>
+<section id="lessons"><h2>Learning lessons &mdash; what the data forced</h2>
+{_lessons_html(paper_dir)}
 </section>
 {journal_html}
 <section id="buildlog"><h2>Build log</h2>
