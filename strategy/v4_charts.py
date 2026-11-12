@@ -142,11 +142,16 @@ def portfolio_equity(data_dir: Path) -> dict:
         dates = [b["date"] for b in bars]
         logc = np.log(c)
         n = len(logc)
+        last_entry = -10 ** 9
         for t in range(60, n - WEEK * HOLD_WEEKS):
             if t < WEEK:
                 continue
             wr = float(logc[t] - logc[t - WEEK])
-            if ZONE_LO <= wr < ZONE_HI:
+            prev = float(logc[t - 1] - logc[t - 1 - WEEK])
+            if (ZONE_LO <= wr < ZONE_HI
+                    and not ZONE_LO <= prev < ZONE_HI
+                    and t >= last_entry + WEEK * HOLD_WEEKS):
+                last_entry = t
                 daily = np.diff(
                     logc[t:t + WEEK * HOLD_WEEKS + 1])
                 per_date = {

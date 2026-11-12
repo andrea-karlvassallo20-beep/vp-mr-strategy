@@ -2191,17 +2191,22 @@ def _philosopher_html(paper_dir: Path) -> str:
     counts = r.get("counts", {})
     bt = r.get("backtest", {})
     cands = [x for x in r.get("verdicts", [])
-             if x["verdict"] == "LONG_CANDIDATE"]
+             if x["verdict"] in ("LONG_CANDIDATE",
+                                 "LONG_CANDIDATE_FLAGGED")]
     cand_rows = ""
     for x in cands[:10]:
         conf = ("yes" if x["avfi_v4"].get("bull_confirmed")
                 else "")
+        flag = ('<span class="warn">flagged</span>'
+                if x["verdict"] == "LONG_CANDIDATE_FLAGGED"
+                else '<span class="good">clean</span>')
         cand_rows += (
             '<tr><td>' + _esc(x["ticker"]) + '</td><td>'
             + _esc(x["region"]) + '</td><td class="bad">'
             + str(x["weekly_return"]) + '</td><td>'
             + str(x["avfi_v4"].get("stretch_z"))
-            + '</td><td>' + conf + '</td></tr>')
+            + '</td><td>' + conf + '</td><td>' + flag
+            + '</td></tr>')
     gate = ("good" if bt.get("dual_split_gate") else "warn")
     return (f'<h3 class="sub">The market philosopher &mdash; '
             f'longs from measured rules, the verdicts live</h3>'
@@ -2229,7 +2234,8 @@ def _philosopher_html(paper_dir: Path) -> str:
             "(doctrine rule 5).</p>"
             + (f'<table><tr><th>Long candidate</th><th>Region'
                f'</th><th>weekly ret</th><th>AVFI v4 z</th>'
-               f'<th>bull conf</th></tr>{cand_rows}</table>'
+               f'<th>bull conf</th><th>context</th></tr>'
+               f'{cand_rows}</table>'
                if cand_rows else ""))
 
 

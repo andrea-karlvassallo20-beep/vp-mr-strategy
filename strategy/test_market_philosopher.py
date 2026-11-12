@@ -109,6 +109,36 @@ check("null: no false gate pass on a drifting asset",
       or bt_n.get("median_net_4w") is None
       or bt_n["median_net_4w"] <= 0.005)
 
+# --- the guideline path: a flagged candidate invites judgment ------------
+# a series ending exactly at a fresh cross into the zone, on an
+# asset whose measured record is a NEGATIVE cell: the guideline
+# must raise it FLAGGED (not silently exclude it), with the
+# judgment invitation in the reason
+rng_f = np.random.default_rng(51)
+n_f = 3000
+rets_f = 0.002 * rng_f.standard_t(6, size=n_f)
+# the crash concentrated in the final two bars: the latest close
+# IS the cross into the zone (the previous bar's trailing week
+# sits outside it)
+rets_f[-2:] = -0.045
+data_f = tmp / "flagged"
+data_f.mkdir()
+_write_series(data_f / "BTCUSD.csv", rets_f)
+res_f = tmp / "research_f"
+res_f.mkdir()
+(res_f / "v4_charts.json").write_text(json.dumps({
+    "equity": {"per_asset": {
+        "BTCUSD": {"n_trades": 55, "median_fwd": -0.0318,
+                   "positive": False}}}}))
+vf = philosopher_verdicts(data_f, res_f)
+btc_f = next(x for x in vf if x["ticker"] == "BTCUSD")
+check("a negative-cell asset crossing into the zone is raised "
+      "FLAGGED, not silently excluded",
+      btc_f["verdict"] == "LONG_CANDIDATE_FLAGGED")
+check("the flagged verdict carries the judgment invitation",
+      "judgment invited" in btc_f["reason"]
+      and "flagged, not excluded" in btc_f["reason"])
+
 # --- the full run --------------------------------------------------------
 r = run_philosopher(data)
 check("the full run returns verdicts, counts and backtest",

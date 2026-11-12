@@ -6,6 +6,15 @@ there a LONG here that the MEASURED record justifies? Every rule
 is pre-declared and traceable to a measured verdict in this
 programme - and the refusals are as explicit as the entries:
 
+  THE CRASH ZONE IS A GUIDELINE, NOT A RULE: it raises a
+  candidate; it does not fire a trade. The context layers
+  modulate every candidate - the asset's own measured record
+  (negative cells are flagged, not excluded: excluding on
+  in-sample performance is blind-following in reverse), the SMH
+  region, the AVFI v4 read - and the judgment log is where the
+  human decides, on the record, before the outcome. The
+  guideline never overrides; it proposes.
+
   THE ENTRY CONDITION (measured directional edge, the only one
   in the programme): an ANCHORED asset (a major that cannot go
   to zero and mean-reverts after panics) whose trailing weekly
@@ -93,10 +102,26 @@ def _weekly_return(logc, t):
     return float(logc[t] - logc[t - WEEK])
 
 
-def philosopher_verdicts(data_dir: Path) -> list:
+def philosopher_verdicts(data_dir: Path,
+                          research_dir: Path = None) -> list:
     """Per-market verdicts at the latest close: LONG_CANDIDATE,
-    ARMED (clock only, direction refused), or REFUSED - each
-    with its measured reasons, on the record."""
+    LONG_CANDIDATE_FLAGGED (the guideline raised it, context
+    weighs against - judgment invited), ARMED (clock only,
+    direction refused), or REFUSED - each with its measured
+    reasons, on the record."""
+    # the per-asset measured record, when the artifact exists:
+    # negative cells are FLAGGED, never excluded (excluding on
+    # in-sample performance is blind-following in reverse)
+    record = {}
+    if research_dir is not None:
+        rp = research_dir / "v4_charts.json"
+        if rp.exists():
+            try:
+                v4 = json.loads(rp.read_text())
+                record = v4.get("equity", {}).get(
+                    "per_asset", {})
+            except Exception:
+                record = {}
     out = []
     for name, c, v in _series(data_dir):
         logc = np.log(c)
@@ -109,21 +134,46 @@ def philosopher_verdicts(data_dir: Path) -> list:
                   else "mid" if states[t] == 1 else "stress"
                   if states[t] == 2 else "unassigned")
         wr = _weekly_return(logc, t)
+        prev = _weekly_return(logc, t - 1)
         read = _avfi_v4_read(c, v, t)
         anchored = name in ANCHORED
-        in_zone = ZONE_LO <= wr < ZONE_HI
-        if anchored and in_zone:
-            verdict = "LONG_CANDIDATE"
-            reason = ("anchored asset in the measured best-buy "
-                      "zone (-5..-10% weekly): +2.0/2.2% median "
-                      "forward 4w, 60-62% positive (T2, flagged "
-                      "until forward-scored)")
+        # the guideline fires on the CROSS into the zone (one
+        # proposal per episode), not on every in-zone bar
+        crossed = (ZONE_LO <= wr < ZONE_HI
+                   and not ZONE_LO <= prev < ZONE_HI)
+        if anchored and crossed:
+            flags = []
+            rec = record.get(name, {})
+            if rec.get("positive") is False:
+                flags.append(
+                    f"negative measured cell "
+                    f"({rec.get('n_trades')} trades, median "
+                    f"{rec.get('median_fwd')}) - flagged, not "
+                    f"excluded")
+            if region == "stress":
+                flags.append("stress region")
+            verdict = ("LONG_CANDIDATE_FLAGGED" if flags
+                       else "LONG_CANDIDATE")
+            reason = ("the GUIDELINE raised a candidate "
+                      "(anchored asset crossing into the "
+                      "measured best-buy zone, -5..-10% "
+                      "weekly; +1.7% median net 4w at one "
+                      "entry per episode, gate-passing)"
+                      + ("; context weighs against: "
+                         + "; ".join(flags)
+                         + " - judgment invited, on the record"
+                         if flags else ""))
+        elif anchored and ZONE_LO <= wr < ZONE_HI:
+            verdict = "ARMED"
+            reason = ("in the crash zone but not at the cross "
+                      "(the episode already proposed; the "
+                      "guideline does not re-fire)")
         elif region == "compression":
             verdict = "ARMED"
             reason = ("the clock is armed (compression) but the "
-                      "central theorem REFUSES direction: a long "
-                      "needs the measured crash-zone edge, not "
-                      "the clock")
+                      "central theorem REFUSES direction: a "
+                      "long needs the measured crash-zone edge, "
+                      "not the clock")
         else:
             verdict = "REFUSED"
             reason = (f"region {region}, weekly {wr:.3f}: no "
@@ -136,7 +186,9 @@ def philosopher_verdicts(data_dir: Path) -> list:
             "avfi_v4": read,
             "reason": reason,
         })
-    order = {"LONG_CANDIDATE": 0, "ARMED": 1, "REFUSED": 2}
+    order = {"LONG_CANDIDATE": 0,
+             "LONG_CANDIDATE_FLAGGED": 1,
+             "ARMED": 2, "REFUSED": 3}
     out.sort(key=lambda x: (order[x["verdict"]], x["ticker"]))
     return out
 
@@ -150,9 +202,17 @@ def backtest_long_rule(data_dir: Path) -> dict:
         if name not in ANCHORED:
             continue
         logc = np.log(c)
+        last_entry = -10 ** 9
         for t in range(WARMUP, len(c) - WEEK * HOLD_WEEKS):
             wr = _weekly_return(logc, t)
-            if ZONE_LO <= wr < ZONE_HI:
+            prev = _weekly_return(logc, t - 1)
+            # ONE entry per crash episode: the CROSS into the
+            # zone (the trailing week was outside it), and no
+            # re-entry while the measured hold runs
+            if (ZONE_LO <= wr < ZONE_HI
+                    and not ZONE_LO <= prev < ZONE_HI
+                    and t >= last_entry + WEEK * HOLD_WEEKS):
+                last_entry = t
                 fwd = float(logc[t + WEEK * HOLD_WEEKS]
                             - logc[t])
                 trades.append({
@@ -195,8 +255,9 @@ def backtest_long_rule(data_dir: Path) -> dict:
     }
 
 
-def run_philosopher(data_dir: Path) -> dict:
-    verdicts = philosopher_verdicts(data_dir)
+def run_philosopher(data_dir: Path,
+                    research_dir: Path = None) -> dict:
+    verdicts = philosopher_verdicts(data_dir, research_dir)
     backtest = backtest_long_rule(data_dir)
     counts = {}
     for x in verdicts:
@@ -205,13 +266,19 @@ def run_philosopher(data_dir: Path) -> dict:
         "status": "OK",
         "generated_utc": datetime.now(timezone.utc).isoformat(
             timespec="seconds"),
-        "philosophy": "longs are taken only on the measured "
-            "crash-zone edge of anchored assets; the SMH clock "
-            "arms but never authorizes (direction refused by the "
-            "central theorem); AVFI v4 colors but never "
-            "authorizes (no out-of-fold hazard gain); exposure "
-            "from measured distributions - 4-week hold, stop "
-            "from the exposure layer, not the clock",
+        "philosophy": "the crash zone is a GUIDELINE, not a "
+            "rule: it raises candidates, it does not fire "
+            "trades. The context layers modulate every candidate "
+            "(the asset's own measured record - negative cells "
+            "flagged, never excluded - the SMH region, the AVFI "
+            "v4 read), and the judgment log is where the human "
+            "decides, on the record, before the outcome. The "
+            "SMH clock arms but never authorizes (direction "
+            "refused by the central theorem); AVFI v4 colors "
+            "but never authorizes (no out-of-fold hazard gain); "
+            "exposure from measured distributions - one entry "
+            "per episode, 4-week hold, stop from the exposure "
+            "layer, not the clock",
         "counts": counts,
         "verdicts": verdicts,
         "backtest": backtest,
@@ -227,7 +294,7 @@ def main() -> None:
     ap.add_argument("--research-dir", type=Path,
                     default=Path("../paper/research"))
     args = ap.parse_args()
-    r = run_philosopher(args.data_dir)
+    r = run_philosopher(args.data_dir, args.research_dir)
     dest = args.research_dir / "market_philosopher.json"
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(json.dumps(r, indent=2))
