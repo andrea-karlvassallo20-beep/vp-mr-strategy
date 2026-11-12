@@ -112,6 +112,45 @@ r2 = draft_and_resolve(data_dir, res_dir)
 check("re-run on same data drafts no duplicate rows",
       len(r2["rows"]) == len(rows1))
 
+# --- the section-17 incremental row (comp_stretch) -------------------
+# the baseline artifact feeds the row's forecast
+(res_dir / "avfi_precursor.json").write_text(json.dumps({
+    "cells": {"compression_and_stretch": {
+        "n": 11718, "cum_event_12w": 0.657,
+        "ci95_lo": 0.648, "ci95_hi": 0.665}}}))
+r2b = draft_and_resolve(data_dir, res_dir)
+check("the comp_stretch baseline is read from the precursor "
+      "artifact",
+      r2b["baseline"].get(
+          "p_significant_week_12w_comp_stretch") == 0.657)
+check("the counts carry the comp_stretch book",
+      "comp_stretch_scored" in r2b["counts"]
+      and "comp_stretch_events" in r2b["counts"])
+# a comp_stretch row resolves EXACTLY like a compression row
+log = json.loads(dest.read_text())
+log["rows"].append({
+    "ticker": "SYM0USD", "kind": "comp_stretch",
+    "entry_index": 300,
+    "entry_close": round(float(close0[300]), 6),
+    "entry_sigma_w": round(float(sig0[300]), 6),
+    "stretch_z": -1.4,
+    "momentum_20": 0.0, "sigma_pct": 0.1,
+    "forecast_p": 0.657,
+    "logged_utc": "2026-11-12T00:00:00+00:00",
+    "status": "open", "definition": "sigweek",
+    "outcome": None,
+})
+dest.write_text(json.dumps(log))
+r2c = draft_and_resolve(data_dir, res_dir)
+cs = [x for x in r2c["rows"]
+      if x["kind"] == "comp_stretch"]
+check("the comp_stretch row resolves under the same frozen "
+      "event as compression rows",
+      len(cs) == 1 and cs[0]["status"] == "resolved"
+      and cs[0]["outcome"] in (0, 1))
+check("the resolver never revises the comp_stretch forecast",
+      cs[0]["forecast_p"] == 0.657)
+
 # --- ground truth: a row resolves to a known outcome ----------------
 # inject a row whose entry is far in the past so the window has
 # completed; force a big move after entry -> must resolve to 1

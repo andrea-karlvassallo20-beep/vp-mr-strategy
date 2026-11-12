@@ -2311,6 +2311,43 @@ def _avfi_precursor_html(paper_dir: Path) -> str:
             f'</th></tr>{rows}</table>')
 
 
+def _law4_battery_html(paper_dir: Path) -> str:
+    """The law-4 battery: effort vs result at the crash-zone
+    entry - does the volume read gate the bounce?"""
+    path = paper_dir / "research" / "law4_battery.json"
+    if not path.exists():
+        return ""
+    r = json.load(open(path))
+    if r.get("status") != "OK":
+        return ""
+    hi = r.get("high_effort", {})
+    lo = r.get("low_effort", {})
+    pooled = r.get("pooled", {})
+    if "median_net" not in hi or "median_net" not in lo:
+        return ""
+    rows = ""
+    for label, c in (("pooled", pooled),
+                     ("high effort (&gt; median)", hi),
+                     ("low effort (&le; median)", lo)):
+        gate = ('<span class="good">pass</span>'
+                if c.get("dual_split_gate")
+                else '<span class="warn">fail</span>')
+        rows += (f'<tr><td>{label}</td><td>{c.get("n")}'
+                 f'</td><td>{c.get("median_net")}</td>'
+                 f'<td>{c.get("p_positive")}</td><td>{gate}'
+                 f'</td></tr>')
+    return (f'<h3 class="sub">The law-4 battery &mdash; effort '
+            f'vs result at the crash-zone entry</h3>'
+            f'<p class="dim">The charter&rsquo;s law 4 says a move '
+            f'without volume is a suspect move. Measured on the '
+            f'{r.get("n_entries")} episode entries '
+            f'(effort = entry-bar volume vs trailing median): '
+            f'<strong>{_esc(r.get("verdict", ""))}</strong></p>'
+            f'<table><tr><th>cell</th><th>n</th>'
+            f'<th>median net</th><th>P(+)</th><th>gate</th>'
+            f'</tr>{rows}</table>')
+
+
 def _exit_battery_html(paper_dir: Path) -> str:
     """The exit battery: entry exits and fewer trades, every
     cell reported, verdicts honest either way."""
@@ -2501,6 +2538,7 @@ def build_site(paper_dir: Path) -> str:
                    + _smh_calibration_html(paper_dir)
                    + _trade_inevitables_html(paper_dir)
                    + _philosopher_html(paper_dir)
+                   + _law4_battery_html(paper_dir)
                    + _exit_battery_html(paper_dir)
                    + _smh_hazard_html(paper_dir))
     n_comp = n_mid = n_high = 0
@@ -2527,6 +2565,7 @@ def build_site(paper_dir: Path) -> str:
     vs_top_score = vs_top_ticker = "-"
     vs_count = 0
     vs_mean = "-"
+    vs_stretch_line = ""
     vs_path = paper_dir / "research" / "smh_hazard.json"
     if vs_path.exists():
         vr = json.loads(vs_path.read_text())
@@ -2546,6 +2585,11 @@ def build_site(paper_dir: Path) -> str:
                 f'<td>{s["sigma_pct"]}</td>'
                 f'<td>{s["momentum_20"]}</td></tr>'
                 for s in scores[:40])
+        sv = vr.get("stretch_oof", {})
+        if sv.get("verdict"):
+            vs_stretch_line = (
+                " The section-17 covariate question, out of "
+                "fold: " + _esc(sv["verdict"]))
 
     fw_rows_logged = fw_open = fw_resolved = 0
     jd_line = ""
@@ -2619,10 +2663,20 @@ def build_site(paper_dir: Path) -> str:
                 f"n = {pds.get('n_events')} - a coin flip; the "
                 "theorem's refusal, confirmed at scale.")
     if fw_rows_logged:
+        cs_open = sum(1 for r in fr.get("rows", [])
+                      if r.get("kind") == "comp_stretch"
+                      and r.get("status") == "open")
         progress_status += (f" The forward log: {fw_rows_logged} "
                             f"rows logged in advance, {fw_open} "
                             f"open, {fw_resolved} resolved; "
                             f"kill-line status {fw_kill}.")
+        if cs_open:
+            progress_status += (
+                f" The section-17 incremental claim is "
+                f"ON THE RECORD: {cs_open} comp_stretch rows "
+                f"logged at compression crosses with stretch-z "
+                f"&le; &minus;1, scored against the clock&rsquo;s "
+                f"own rows.")
     jd_path = paper_dir / "research" / "smh_judgment.json"
     if jd_path.exists():
         jd = json.loads(jd_path.read_text())
@@ -2970,7 +3024,7 @@ that into an ABSOLUTE probability of a significant event
 <strong>score = 1 &minus; S<sub>0</sub>(20)<sup>exp(&beta;&middot;z)</sup></strong>.
 Strictly causal, stated in advance, scored against outcomes every
 night &mdash; and never a direction, per the central theorem.
-This is the future event we see and can explain.</p>
+This is the future event we see and can explain.{vs_stretch_line}</p>
 <div class="metrics">
 <div class="metric"><div class="mval">{vs_top_score}</div>
 <div class="mlabel">highest Vassallo Score now ({vs_top_ticker})</div></div>

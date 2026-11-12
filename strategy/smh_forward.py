@@ -50,8 +50,10 @@ from smh_gradient import (HORIZON, _clock_for_region,
                           first_significant_week)
 from smh_hazard import MOM_BARS, cox_fit
 from smh_proof import WARMUP, _series, _weekly_sigma
+from v4_study import causal_z
 
 KILL_LINES = {10: 3, 20: 8, 40: 19, 60: 31}
+STRETCH_Z = -1.0     # the compression x stretch cell's threshold
 
 CORRECTIONS = [{
     "date": "2026-11-12",
@@ -175,6 +177,22 @@ def draft_and_resolve(data_dir: Path, research_dir: Path) -> dict:
     p_base_comp = comp_clock["cum_event_12w"]
     s0_stress = _baseline_surv(stress_eps, HORIZON)
     cox = cox_fit(comp_eps) if len(comp_eps) >= 200 else None
+    # the incremental claim's baseline (charter section 17): the
+    # compression x stretch cell's measured cum, from the
+    # precursor battery's artifact; falls back to the clock
+    # alone if the artifact is missing (the row is then flagged
+    # in its own record by the forecast it carries)
+    p_base_stretch = p_base_comp
+    ap_path = research_dir / "avfi_precursor.json"
+    if ap_path.exists():
+        try:
+            ap = json.loads(ap_path.read_text())
+            p_base_stretch = (ap.get("cells", {})
+                              .get("compression_and_stretch",
+                                   {}).get("cum_event_12w",
+                                          p_base_comp))
+        except Exception:
+            p_base_stretch = p_base_comp
 
     open_rows = [r for r in rows if r["status"] == "open"]
     still_open_keys = set()
@@ -217,7 +235,7 @@ def draft_and_resolve(data_dir: Path, research_dir: Path) -> dict:
         logc, sig, states = snapshots[r["ticker"]]
         n = len(logc)
         e = r["entry_index"]
-        if r["kind"] == "compression":
+        if r["kind"] in ("compression", "comp_stretch"):
             o = first_significant_week(logc, sig, e)
             if o > 0:
                 r["outcome"] = 1
@@ -269,8 +287,16 @@ def draft_and_resolve(data_dir: Path, research_dir: Path) -> dict:
         if t < WARMUP + 1 or states[t] < 0 or states[t - 1] < 0:
             continue
         kind = None
+        stretch_here = False
         if states[t] == 0 and states[t - 1] != 0:
             kind = "compression"
+            # the incremental claim rides the SAME cross: when
+            # AVFI's causal stretch-z is <= -1 at the entry, a
+            # second row drafts with its own baseline (the
+            # section-17 cell). The rows are correlated by
+            # construction - they test different claims on the
+            # same episode, and the log says so.
+            stretch_here = bool(causal_z(c)[t] <= STRETCH_Z)
         elif states[t] == 2 and states[t - 1] != 2:
             kind = "stress"
         if kind is None:
@@ -307,6 +333,36 @@ def draft_and_resolve(data_dir: Path, research_dir: Path) -> dict:
             "outcome": None,
         })
         drafted += 1
+        if kind == "compression" and stretch_here:
+            if (name, "comp_stretch") not in still_open_keys \
+                    and not any(
+                        r["ticker"] == name
+                        and r["kind"] == "comp_stretch"
+                        and r["entry_index"] == t
+                        for r in rows):
+                rows.append({
+                    "ticker": name,
+                    "kind": "comp_stretch",
+                    "entry_index": int(t),
+                    "entry_close": round(float(c[t]), 6),
+                    "entry_sigma_w": round(float(sig[t]), 6),
+                    "stretch_z": round(float(
+                        causal_z(c)[t]), 4),
+                    "momentum_20": round(mom, 4),
+                    "sigma_pct": round(sig_pct, 4),
+                    "forecast_p": round(min(max(
+                        p_base_stretch, 1e-4), 0.9999), 4),
+                    "logged_utc": datetime.now(
+                        timezone.utc).isoformat(
+                        timespec="seconds"),
+                    "status": "open",
+                    "definition": "sigweek",
+                    "outcome": None,
+                    "note": "correlated with the compression row "
+                            "on the same episode; tests the "
+                            "section-17 incremental claim",
+                })
+                drafted += 1
 
     # --- SCORE every resolved row ----------------------------------
     resolved = [r for r in rows if r["status"] == "resolved"]
@@ -362,6 +418,7 @@ def draft_and_resolve(data_dir: Path, research_dir: Path) -> dict:
             "p_significant_week_12w_compression": p_base_comp,
             "compression_ci95": [comp_clock["ci95_lo"],
                                  comp_clock["ci95_hi"]],
+            "p_significant_week_12w_comp_stretch": p_base_stretch,
             "survival_12w_stress": round(s0_stress, 4),
             "cox_used": cox is not None,
         },
@@ -372,6 +429,12 @@ def draft_and_resolve(data_dir: Path, research_dir: Path) -> dict:
             "resolved": len(resolved),
             "compression_scored": n_comp,
             "compression_events": int(n_events),
+            "comp_stretch_scored": sum(
+                1 for r in resolved
+                if r["kind"] == "comp_stretch"),
+            "comp_stretch_events": int(sum(
+                r["outcome"] for r in resolved
+                if r["kind"] == "comp_stretch")),
         },
         "scores": {
             "brier": round(brier, 4) if brier is not None else None,

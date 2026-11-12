@@ -11,7 +11,8 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).parent))
 from fetch_data import write_csv
 from smh_hazard import (build_episodes, cox_fit, kaplan_meier,
-                        run_hazard_model, vassallo_scores)
+                        run_hazard_model, vassallo_scores,
+                        _oof_concordance)
 from smh_proof import WARMUP
 
 PASS = FAIL = 0
@@ -58,6 +59,36 @@ check("Cox recovers the true covariate sign and significance",
       and "x" in cox["significant_covariates"])
 check("Cox concordance clearly above chance on true signal",
       cox["concordance"] > 0.6)
+
+# --- the stretch covariate's out-of-fold referee ------------------------
+# ground truth: hazard truly depends on stretch_z (and nothing
+# else) -> the 3-covariate model MUST beat the 2-covariate one
+# out of fold; on a null covariate it must NOT
+rng = np.random.default_rng(9)
+eps_s = []
+for i in range(3000):
+    sz = rng.standard_normal()
+    mom = rng.standard_normal()
+    sp = rng.uniform(0, 1)
+    lam = np.exp(-0.9 * sz) / 30.0
+    d = int(rng.exponential(1 / lam))
+    cens = int(rng.exponential(40))
+    eps_s.append({"momentum": mom, "sigma_pct": sp,
+                  "stretch_z": sz,
+                  "duration": min(d, cens),
+                  "event": int(d <= cens)})
+o2 = _oof_concordance(eps_s, ("momentum", "sigma_pct"))
+o3 = _oof_concordance(
+    eps_s, ("momentum", "sigma_pct", "stretch_z"))
+check("the OOF referee detects a true stretch covariate",
+      o3["c_index_oof"] > o2["c_index_oof"] + 0.05)
+eps_n = [{**e, "stretch_z": rng.standard_normal()}
+         for e in eps_s]
+o2n = _oof_concordance(eps_n, ("momentum", "sigma_pct"))
+o3n = _oof_concordance(
+    eps_n, ("momentum", "sigma_pct", "stretch_z"))
+check("the OOF referee refuses a null stretch covariate",
+      abs(o3n["c_index_oof"] - o2n["c_index_oof"]) < 0.05)
 
 # null covariate -> no significance, concordance ~ 0.5
 rng = np.random.default_rng(11)
