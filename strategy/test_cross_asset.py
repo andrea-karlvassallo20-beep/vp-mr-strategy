@@ -42,7 +42,8 @@ check("extended universe covers crypto, indices, commodities",
       and len(EXTENDED_UNIVERSE) == len(CRYPTO) + len(INDICES)
       + len(COMMODITIES) and len(CRYPTO) >= 150
       and len(set(CRYPTO)) == len(CRYPTO)
-      and len(COMMODITIES) == 24)
+      and len(COMMODITIES) >= 29
+      and len(set(COMMODITIES)) == len(COMMODITIES))
 check("safe_name sanitizes ^ and =F and -",
       safe_name("^GSPC") == "GSPC" and safe_name("GC=F") == "GCF"
       and safe_name("BTC-USD") == "BTCUSD")

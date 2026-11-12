@@ -63,14 +63,18 @@ CRYPTO = [
 ]
 INDICES = ["^GSPC", "^IXIC", "^DJI", "^RUT"]
 COMMODITIES = [
+    # every liquid commodity future the data source carries with
+    # 5y daily history (verified fetch; micros, index and FX
+    # futures and duplicate spot proxies excluded)
     # precious metals
     "GC=F", "SI=F", "PL=F", "PA=F",
     # energy
-    "CL=F", "BZ=F", "NG=F", "RB=F", "HO=F",
+    "CL=F", "BZ=F", "NG=F", "RB=F", "HO=F", "EH=F",
     # industrial
-    "HG=F", "LBS=F",
-    # grains
-    "ZC=F", "ZS=F", "ZW=F", "ZO=F", "ZR=F",
+    "HG=F", "LBS=F", "ALI=F",
+    # grains (incl. soybean complex and HRW wheat)
+    "ZC=F", "ZS=F", "ZW=F", "ZO=F", "ZR=F", "ZM=F", "ZL=F",
+    "KE=F",
     # softs
     "KC=F", "CC=F", "SB=F", "CT=F", "OJ=F",
     # livestock
