@@ -36,10 +36,10 @@ check("no unescaped script injection", "<script" not in html)
 
 site = build_site(tmp)
 check("salient site generated", len(site) > 6000)
-check("front page faces forward: hypothesis, proof, work, hazard",
+check("front page faces forward: hypothesis, proof, work, score",
       all(k in site for k in ("The hypothesis",
                              "certainty-timing-direction triangle",
-                             "The new work", "The hazard now")))
+                             "The new work", "The Vassallo Score")))
 check("front page carries no past sections",
       all(k not in site for k in ("Build log", "Session journal",
                                   "falsification archive",

@@ -1961,6 +1961,32 @@ def build_site(paper_dir: Path) -> str:
             f'<td>{x["sigma_w_pct"]}%</td></tr>'
             for x in comp[:40])
 
+    # THE VASSALLO SCORE: the hazard model's per-market probability
+    # of a significant event within 4 weeks, ranked
+    vs_rows = ""
+    vs_top_score = vs_top_ticker = "-"
+    vs_count = 0
+    vs_mean = "-"
+    vs_path = paper_dir / "research" / "smh_hazard.json"
+    if vs_path.exists():
+        vr = json.loads(vs_path.read_text())
+        scores = vr.get("vassallo_scores", [])
+        vs_count = len(scores)
+        if scores:
+            vs_top = scores[0]
+            vs_top_score = f"{vs_top['vassallo_score']*100:.1f}%"
+            vs_top_ticker = vs_top["ticker"]
+            vs_mean = (f"{sum(s['vassallo_score'] for s in scores)
+                       / len(scores)*100:.1f}%")
+            vs_rows = "".join(
+                f'<tr><td>{_esc(s["ticker"])}</td>'
+                f'<td class="good">{s["vassallo_score"]}</td>'
+                f'<td>{s["relative_hazard"]}x</td>'
+                f'<td>{s["sigma_w_pct"]}%</td>'
+                f'<td>{s["sigma_pct"]}</td>'
+                f'<td>{s["momentum_20"]}</td></tr>'
+                for s in scores[:40])
+
     laws_cards = "".join(
         f'<div class="book"><div class="btitle">{_esc(t)}</div>'
         f'<div class="bdesc dim">{_esc(d)}</div></div>'
@@ -2048,7 +2074,7 @@ def build_site(paper_dir: Path) -> str:
 </head><body>
 <nav><a href="#hypothesis">The hypothesis</a>
 <a href="#proof">The proof</a> <a href="#work">The new work</a>
-<a href="#now">The hazard now</a></nav>
+<a href="#now">The Vassallo Score</a></nav>
 <header>
 <h1>Salient<span>.</span></h1>
 <p class="tagline"><strong>The aim:</strong> see the future event
@@ -2098,27 +2124,33 @@ research problem with a scoreable end state &mdash; none is a
 lottery ticket.</p>
 <div class="bgrid">{work_cards}</div>
 </section>
-<section id="now"><h2>The hazard now &mdash; the future events we
-currently see</h2>
-<p class="dim">The live instrument: every market's current
-volatility state at the latest close (strictly causal, expanding
-terciles), and the conditional hazard the frozen tables assign to
-it. A significant event is <strong>3.3&times; more likely from
-compression</strong> than from high vol. This is the future event
-we see and can explain &mdash; a scored hazard, stated in advance,
-never a direction.</p>
+<section id="now"><h2>The Vassallo Score &mdash; the likelihood
+of the event, expected mathematically</h2>
+<p class="dim">The live instrument, named for its author: for every
+market currently in the compression state, the Cox hazard model
+converts its covariates (momentum into compression, compression
+depth) into a RELATIVE hazard, and the Kaplan-Meier baseline turns
+that into an ABSOLUTE probability of a significant event
+(&ge; 2.5&sigma;<sub>w</sub> within 4 weeks) at the latest close:
+<strong>score = 1 &minus; S<sub>0</sub>(20)<sup>exp(&beta;&middot;z)</sup></strong>.
+Strictly causal, stated in advance, scored against outcomes every
+night &mdash; and never a direction, per the central theorem.
+This is the future event we see and can explain.</p>
 <div class="metrics">
+<div class="metric"><div class="mval">{vs_top_score}</div>
+<div class="mlabel">highest Vassallo Score now ({vs_top_ticker})</div></div>
+<div class="metric"><div class="mval">{vs_count}</div>
+<div class="mlabel">markets scored (in compression)</div></div>
+<div class="metric"><div class="mval">{vs_mean}</div>
+<div class="mlabel">mean score across compression</div></div>
 <div class="metric"><div class="mval">{n_comp}</div>
-<div class="mlabel">markets currently in COMPRESSION
-(of {hz_total})</div></div>
-<div class="metric"><div class="mval">{n_mid}</div>
-<div class="mlabel">in the mid tercile</div></div>
-<div class="metric"><div class="mval">{n_high}</div>
-<div class="mlabel">in high vol</div></div>
+<div class="mlabel">of {hz_total} markets in COMPRESSION</div></div>
 </div>
-<h3 class="sub">Currently compressed (lowest sigma_w first
-&mdash; the coiled springs)</h3>
-<table><tr><th>Market</th><th>sigma_w %</th></tr>{hz_rows}</table>
+<h3 class="sub">Ranked by the Vassallo Score &mdash; the coiled
+springs, highest mathematical expectation first</h3>
+<table><tr><th>Market</th><th>Vassallo Score</th><th>rel. hazard</th>
+<th>sigma_w %</th><th>depth pct</th><th>momentum (20b)</th></tr>
+{vs_rows}</table>
 </section>
 </main>
 <footer>Salient &mdash; regenerated automatically every night.

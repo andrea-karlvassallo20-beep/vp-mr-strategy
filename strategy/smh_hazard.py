@@ -180,7 +180,7 @@ def cox_fit(episodes: list, covs=("momentum", "sigma_pct")) -> dict:
         "n_episodes": int(n),
         "n_events": int(E.sum()),
         "covariates": list(covs),
-        "coefficients": [round(float(b), 3) for b in beta],
+        "coefficients": [round(float(b), 4) for b in beta],
         "std_errors": [round(float(s), 3) for s in se],
         "z_stats": [round(float(zz), 2) for zz in z],
         "hazard_ratios_per_sd": [round(float(np.exp(b)), 3)
@@ -189,7 +189,64 @@ def cox_fit(episodes: list, covs=("momentum", "sigma_pct")) -> dict:
         "significant_covariates": [covs[k]
                                    for k in range(p)
                                    if abs(z[k]) > 1.96],
+        # persisted for scoring: the standardization and the fitted
+        # betas convert any new episode's covariates into a hazard
+        "_mu": [round(float(x), 4) for x in mu],
+        "_sd": [round(float(x), 4) for x in sd],
+        "_beta_raw": [float(b) for b in beta],
     }
+
+
+def vassallo_scores(data_dir: Path, cox: dict,
+                    baseline_surv_20: float) -> list:
+    """THE VASSALLO SCORE: the likelihood of a significant event,
+    expected mathematically, per market, at the latest close.
+
+    For every market currently in the compression state, the Cox
+    model's fitted coefficients convert its covariates (momentum
+    into compression, compression depth) into a RELATIVE hazard;
+    the Kaplan-Meier baseline survival at the 4-week horizon turns
+    that into an ABSOLUTE probability:
+
+        score = 1 - S0(20)^exp(beta . z)
+
+    Strictly causal: covariates use only trailing information at
+    the latest close. The score is a probability of a >= 2.5
+    sigma_w move within 4 weeks - never a direction, per the
+    central theorem. Ranked descending: the coiled springs with
+    the highest mathematical expectation of the event."""
+    mu = np.array(cox["_mu"])
+    sd = np.array(cox["_sd"])
+    beta = np.array(cox["_beta_raw"])
+    out = []
+    for name, c, v in _series(data_dir):
+        logc = np.log(c)
+        sig = _weekly_sigma(logc)
+        t = len(c) - 1
+        hist = sig[WARMUP:t + 1][sig[WARMUP:t + 1] > 0]
+        if len(hist) < 60 or sig[t] <= 0:
+            continue
+        q1, q2 = np.quantile(hist, [1 / 3, 2 / 3])
+        state = ("compression" if sig[t] <= q1
+                 else "mid" if sig[t] <= q2 else "high")
+        if state != "compression":
+            continue
+        mom = float(logc[t] - logc[max(0, t - MOM_BARS)])
+        sig_pct = float(np.mean(hist <= sig[t]))
+        z = (np.array([mom, sig_pct]) - mu) / sd
+        eta = float(beta @ z)
+        rel_hazard = float(np.exp(np.clip(eta, -5, 5)))
+        surv = baseline_surv_20 ** rel_hazard
+        out.append({
+            "ticker": name,
+            "vassallo_score": round(float(1.0 - surv), 3),
+            "relative_hazard": round(rel_hazard, 2),
+            "momentum_20": round(mom, 3),
+            "sigma_pct": round(sig_pct, 3),
+            "sigma_w_pct": round(float(sig[t]) * 100, 2),
+        })
+    out.sort(key=lambda x: -x["vassallo_score"])
+    return out
 
 
 def run_hazard_model(data_dir: Path) -> dict:
@@ -202,6 +259,8 @@ def run_hazard_model(data_dir: Path) -> dict:
     # survival at the 4-week mark (20 bars) - the clock's headline
     s20 = next((row["survival"] for row in km if row["t"] >= 20),
                None)
+    scores = (vassallo_scores(data_dir, cox, s20)
+              if s20 is not None else [])
     verdict = bool(cox["concordance"] > 0.55
                    and cox["significant_covariates"])
     return {
@@ -214,6 +273,7 @@ def run_hazard_model(data_dir: Path) -> dict:
         "survival_4_weeks": s20,
         "km_curve_head": km[:25],
         "cox": cox,
+        "vassallo_scores": scores,
         "verdict": verdict,
     }
 
