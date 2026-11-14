@@ -870,3 +870,46 @@ Corrections are part of the record. The bug was caught by a
 synthetic universe that refused to produce the flattered
 number - the ground-truth discipline doing exactly what it
 exists for.
+
+## 21. The move census and the hundredfold board: the
+exponential moves, learned from (dated addition,
+12 November 2026)
+
+The programme found its exponential moves and then learned
+from them at census scale. The move census (1,461 episodes
+across 532 series, `move_study.csv`) replaces the six-anecdote
+case file as the descriptive base of the state layer, and its
+aggregates support the SMH reading of the pre-move state:
+
+1. CRYPTO UP (n=714): 72.3% start at the range bottom, 47.2%
+   preceded by quiet, 20.9% by a deep coil, only 4.2% by a
+   blow-off. The forgotten-and-pinned signature is crypto's.
+2. CRYPTO DOWN (n=71): the blow-off signature belongs to the
+   down side (22.5%) - the short-side clue measured, not
+   asserted.
+3. NON-CRYPTO DOWN (n=257): the mirror image - 47.1% start at
+   the range top with a hot year behind them, not coiled
+   (4.3%), not quiet (12.1%). The extended-and-exhausted
+   signature is everyone's.
+
+The crown jewel (LSK +895%/30d out of a 170-day coil, the
+deepest ever measured) and the honest counter-example (KMD
++2,094%/30d with no coil and no quiet) are counted side by
+side - a gallery showing only the coiled ones would be
+marketing.
+
+The night-before gallery (92 charts, each truncated at the
+last quiet day) states the SMH's core lesson in picture form:
+no chart contains the move it precedes; it contains the state,
+and the state is what C7 measured at +7.9 points over matched
+quiet. The lion never looks like a lion the night before.
+
+Binding caveats, on the record: a census counts, it does not
+predict; multiplicity binds (the hundredfold board scans 303
+movers for the hundred biggest and finds big movers by
+construction); descriptive only, C7 sealed. The census's role
+in this charter is evidential context for the state layer and
+a generator of candidate hypotheses for the dual-split gate
+- never a belief. Four forward-test candidates from the
+2026-11-12 board (KAVA, HOLO, GENIUS, SOL) are pre-logged; the
+window closes 2027-01-11 and will be read whatever it says.

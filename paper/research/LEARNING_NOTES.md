@@ -232,3 +232,45 @@ Time Series, the algorithmic/HFT books, Nonlinear Optimization) feeds the
 same lab — each new book is another candidate source of claims, and the
 Bouchaud Hawkes/queue chapters in particular are required reading before
 C5/C6 ever run.
+
+## 8. What the exponential-move census taught (added 12 November 2026)
+
+The case file once held six anecdotes. It now holds a census: **1,461 move
+episodes across 532 series** (`move_study.py` / `move_study.csv`), found with
+pre-declared uniform thresholds (crypto >= +100% or <= -70% per 30 days,
+non-crypto >= +30% or <= -25%), overlapping windows collapsed to the largest
+move, and the pre-move state reconstructed causally at the last quiet day
+every time. 61 episodes were flagged as artifacts (launch-era bases,
+re-denominations) and excluded from the aggregates.
+
+What the census says, descriptively:
+
+- **Crypto UP (n=714):** 72.3% start at the range bottom; 47.2% preceded by
+  quiet; 20.9% by a deep coil; only 4.2% by a blow-off.
+- **Crypto DOWN (n=71):** the blow-off signature belongs here (22.5%) — the
+  short-side clue, now measured on 71 collapses instead of two anecdotes.
+- **Non-crypto DOWN (n=257):** the mirror image — 47.1% start at the range
+  top with a hot year behind them, not coiled (4.3%), not quiet (12.1%).
+
+The crown jewel and the counter-example sit in the same table: **LSK
++895%/30d out of a 170-day coil** (the deepest ever measured before a move)
+next to **KMD +2,094%/30d with no coil and no quiet** — counted, not hidden.
+
+Two galleries were built from the census, both honest about what they are:
+the **hundredfold board** (the 100 largest clean up-moves, one per asset,
+`hundred_moves.csv`) and the **night-before gallery** (92 charts showing each
+mover exactly as it looked on the last quiet day, `night_before.csv`). The
+night-before gallery teaches the programme's sharpest lesson: **no chart
+there contains the move it precedes — it contains the state** (coil depth,
+vol percentile, range position, stretch z, volume vs median), and boring is
+what the state looks like. The lion never looks like a lion the night
+before.
+
+The binding caveats, in the record and repeated here: **a census counts, it
+does not predict**; **multiplicity binds** (scanning 303 movers for the
+hundred biggest finds big movers by construction); descriptive only, C7
+sealed. The census generates candidate hypotheses (quiet-before-move,
+coil-depth) that may enter testing only through the dual-split gate. Four
+forward-test candidates from the 2026-11-12 board (KAVA, HOLO, GENIUS, SOL)
+are pre-logged; the window closes 2027-01-11 and will be read whatever it
+says.
