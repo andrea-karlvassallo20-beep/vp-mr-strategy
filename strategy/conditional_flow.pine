@@ -81,6 +81,15 @@ effort = math.abs(math.log(close / close[1])) * volRatio
 // ---------------------------------------------------------------------------
 // 3. THE CONDITIONAL DENOMINATOR — per-NBS-bucket trailing norms
 // ---------------------------------------------------------------------------
+// Pine v5 has no math.tanh — implemented explicitly and numerically
+// safe in both tails: tanh(x) = (e^2x - 1) / (e^2x + 1), computed as
+// 1 - 2/(e^2x + 1) for x >= 0 and the odd mirror for x < 0 (avoids
+// overflow for large |x|).
+f_tanh(x) =>
+    ax = math.abs(x)
+    e2 = math.exp(math.min(2.0 * ax, 40.0))
+    t = 1.0 - 2.0 / (e2 + 1.0)
+    x >= 0 ? t : -t
 // Arrays hold, per bucket b in 0..5: sum, sumsq, count. Pooled stats too.
 // STRICT CAUSALITY: the z for bar t is computed from stats that end at
 // bar t-1; today's effort updates the stats AFTER the z is read.
@@ -125,8 +134,8 @@ if barstate.isconfirmed and not na(effort)
     pCnt += 1
 
 // The bounded measure: tanh(z) in (-1, 1)
-zCondB = not na(zCond) ? math.tanh(zCond) : na
-zUncB  = not na(zUnc)  ? math.tanh(zUnc)  : na
+zCondB = not na(zCond) ? f_tanh(zCond) : na
+zUncB  = not na(zUnc)  ? f_tanh(zUnc)  : na
 
 // ---------------------------------------------------------------------------
 // RENDERING — the pane
