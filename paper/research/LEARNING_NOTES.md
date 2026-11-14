@@ -274,3 +274,9 @@ coil-depth) that may enter testing only through the dual-split gate. Four
 forward-test candidates from the 2026-11-12 board (KAVA, HOLO, GENIUS, SOL)
 are pre-logged; the window closes 2027-01-11 and will be read whatever it
 says.
+
+The full criteria registry — every state variable measurable on the prior
+day, tiered into already-measured (A), derivable-from-existing-data (B)
+and blocked-on-new-data (C), each with its census base rate and the gate it
+must pass — lives at
+`paper/research/night_before_criteria.md`.
