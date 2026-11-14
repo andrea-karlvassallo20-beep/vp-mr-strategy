@@ -1,0 +1,180 @@
+//@version=5
+// ============================================================================
+// State-conditional flow — the composite denominator, live
+// ============================================================================
+// WHAT THIS IS:
+//   The tested measure from src/state_conditional_flow.py, on the chart.
+//   Raw effort (|log return| x volume ratio) divided by the effort THIS
+//   STATE usually produces:
+//
+//       z_cond = (effort - mu[NBS]) / sigma[NBS]     then tanh-bounded
+//
+//   "Effort is high" becomes "effort is high FOR a coiled, quiet,
+//   forgotten asset" — the matched-control logic embedded in the measure.
+//
+// THE TESTED RESULT (156 series, 193,568 daily samples):
+//   UP SIDE (+30%/30d hazard by quintile): the conditional z is MONOTONE
+//     18.6% -> 23.9%, separation 5.2 points — beating the unconditional z
+//     (4.0 points, non-monotone). Effort high FOR a forgotten-and-pinned
+//     asset carries more up-hazard than effort high in general.
+//   CRASH SIDE: conditioning does NOT help (2.0 vs 3.3 points) — the
+//     crash reading lives in the raw effort level. This pane therefore
+//     also shows the unconditional effort z for the crash reading.
+//
+// ESTIMATION DISCIPLINE (matches the study):
+//   - STRICT CAUSALITY: today's effort is NEVER part of its own
+//     denominator — the bucket stats update after the z is computed.
+//   - TRAILING: per-bucket expanding mean/sd, never the future.
+//   - SHRINKAGE: buckets under MIN_OBS observations shrink toward the
+//     pooled estimate, exactly as in the study.
+//   - BOUND: tanh(z) in (-1, 1), bounded by construction.
+//
+// WHAT IT IS NOT: an entry signal. Descriptive until dual-split gated
+//   and forward logged; multiplicity binds; C7 sealed.
+// ============================================================================
+
+indicator("State-conditional flow", shorttitle="CondFlow",
+          overlay=false, max_labels_count=500)
+
+// ---------------------------------------------------------------------------
+// INPUTS
+// ---------------------------------------------------------------------------
+nbRangeW  = input.int(252, "Range window (NBS)",        minval=60, group="State")
+nbRvW     = input.int(20,  "Realized-vol window (NBS)",  minval=5,  group="State")
+nbRvPctW  = input.int(252, "Vol-percentile window",      minval=60, group="State")
+nbQuietP  = input.float(30, "Quiet vol percentile",      step=5,    group="State")
+nbRngW    = input.int(50,  "Range-average window",       minval=20, group="State")
+nbCoilF   = input.float(0.75, "Coil range fraction",    step=0.05, group="State")
+nbVolW    = input.int(20,  "Volume window (effort)",     minval=5,  group="State")
+minObs    = input.int(50,  "Min obs per bucket (shrinkage)", minval=10, group="Denominator")
+hotZ      = input.float(0.5, "Hot threshold (bounded z)", step=0.05, group="Display")
+
+// ---------------------------------------------------------------------------
+// 1. THE NIGHT-BEFORE STATE (same as AVFI v5)
+// ---------------------------------------------------------------------------
+hiW = ta.highest(high, nbRangeW)
+loW = ta.lowest(low,  nbRangeW)
+rangePos = hiW > loW ? (close - loW) / (hiW - loW) : 0.5
+
+rv    = ta.stdev(math.log(close / close[1]), nbRvW)
+rvPct = ta.percentrank(rv, nbRvPctW)
+
+rngAvg  = ta.sma(high - low, nbRngW)
+coilDay = rngAvg > 0 and (high - low) <= nbCoilF * rngAvg
+var int coilDays = 0
+coilDays := coilDay ? coilDays + 1 : 0
+
+volNorm  = ta.sma(volume, nbVolW)
+volRatio = volNorm > 0 ? volume / volNorm : 1.0
+
+trend52 = close[nbRangeW] > 0 ? close / close[nbRangeW] - 1.0 : 0.0
+
+nbs = (rangePos <= 0.25 ? 1 : 0) + (rvPct <= nbQuietP ? 1 : 0) +
+      (coilDays >= 10 ? 1 : 0) + (volRatio < 1.0 ? 1 : 0) +
+      (trend52 < 0.0 ? 1 : 0)
+
+// ---------------------------------------------------------------------------
+// 2. RAW EFFORT — |log return| x volume ratio
+// ---------------------------------------------------------------------------
+effort = math.abs(math.log(close / close[1])) * volRatio
+
+// ---------------------------------------------------------------------------
+// 3. THE CONDITIONAL DENOMINATOR — per-NBS-bucket trailing norms
+// ---------------------------------------------------------------------------
+// Arrays hold, per bucket b in 0..5: sum, sumsq, count. Pooled stats too.
+// STRICT CAUSALITY: the z for bar t is computed from stats that end at
+// bar t-1; today's effort updates the stats AFTER the z is read.
+var float[] bSum = array.from(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+var float[] bSq  = array.from(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+var int[]   bCnt = array.from(0, 0, 0, 0, 0, 0)
+var float   pSum = 0.0
+var float   pSq  = 0.0
+var int     pCnt = 0
+
+zCond  = float(na)
+zUnc   = float(na)
+muUsed = float(na)
+b      = nbs
+if barstate.isconfirmed and not na(effort)
+    // pooled (unconditional) norm — trailing only
+    if pCnt >= minObs
+        muP = pSum / pCnt
+        sdP = math.sqrt(math.max(pSq / pCnt - muP * muP, 1e-12))
+        zUnc := (effort - muP) / sdP
+    // bucket norm, with shrinkage toward pooled under minObs
+    cb = array.get(bCnt, b)
+    if cb >= minObs
+        muB = array.get(bSum, b) / cb
+        sdB = math.sqrt(math.max(array.get(bSq, b) / cb - muB * muB, 1e-12))
+        if cb < minObs * 4
+            muB := (cb * muB + pCnt * (pSum / pCnt)) / (cb + pCnt)
+            sdB := (cb * sdB + pCnt * sdP) / (cb + pCnt)
+        muUsed := muB
+        zCond := (effort - muB) / sdB
+    else if pCnt >= minObs
+        // sparse bucket: pooled norm (full shrinkage)
+        muP2 = pSum / pCnt
+        sdP2 = math.sqrt(math.max(pSq / pCnt - muP2 * muP2, 1e-12))
+        muUsed := muP2
+        zCond := (effort - muP2) / sdP2
+    // UPDATE AFTER — today is not its own denominator
+    array.set(bSum, b, array.get(bSum, b) + effort)
+    array.set(bSq,  b, array.get(bSq,  b) + effort * effort)
+    array.set(bCnt, b, cb + 1)
+    pSum += effort
+    pSq  += effort * effort
+    pCnt += 1
+
+// The bounded measure: tanh(z) in (-1, 1)
+zCondB = not na(zCond) ? math.tanh(zCond) : na
+zUncB  = not na(zUnc)  ? math.tanh(zUnc)  : na
+
+// ---------------------------------------------------------------------------
+// RENDERING — the pane
+// ---------------------------------------------------------------------------
+plot(zCondB, title="Conditional effort z (bounded)", color=#a371f7, linewidth=2)
+plot(zUncB,  title="Unconditional effort z (bounded)", color=#8b949e, linewidth=1)
+hline(0.0, "Neutral", color=color.new(#30363d, 40))
+hline(hotZ, "Hot (top-quintile territory)", color=color.new(#3fb950, 40))
+hline(-hotZ, "Cold", color=color.new(#f85149, 40))
+fill(zCondB, 0, color = zCondB > hotZ ? color.new(#3fb950, 75) :
+                   zCondB < -hotZ ? color.new(#f85149, 75) : na,
+     title="Surprise shading")
+
+// ---------------------------------------------------------------------------
+// DASHBOARD
+// ---------------------------------------------------------------------------
+f_row(t, r, name, val, isHot, hotCol) =>
+    table.cell(t, 0, r, name, text_color=color.gray, text_size=size.tiny)
+    table.cell(t, 1, r, val,
+               text_color=isHot ? hotCol : color.white, text_size=size.small)
+
+var table t = table.new(position.top_right, 2, 6, border_width=1)
+if barstate.islast
+    table.cell(t, 0, 0, "CondFlow", bgcolor=color.new(#161b22, 10),
+               text_color=color.white, text_size=size.small)
+    table.cell(t, 1, 0, "state-relative effort", bgcolor=color.new(#161b22, 10),
+               text_color=color.gray, text_size=size.tiny)
+    f_row(t, 1, "NBS", str.tostring(nbs) + " / 5",
+          nbs >= 4, #3fb950)
+    f_row(t, 2, "effort", str.tostring(effort, "#.###"),
+          effort > 2.0 * volRatio, #d29922)
+    f_row(t, 3, "bucket norm", na(muUsed) ? "warming up" : str.tostring(muUsed, "#.###"),
+          false, color.white)
+    f_row(t, 4, "z cond (bounded)", na(zCondB) ? "—" : str.tostring(zCondB, "#.##"),
+          not na(zCondB) and zCondB > hotZ, #3fb950)
+    f_row(t, 5, "reading",
+          na(zCondB) ? "warming up" :
+          zCondB > hotZ ? "effort high FOR this state (up-hazard)" :
+          zCondB < -hotZ ? "effort absent for this state" : "normal",
+          not na(zCondB) and math.abs(zCondB) > hotZ, #a371f7)
+
+// ---------------------------------------------------------------------------
+// ALERTS
+// ---------------------------------------------------------------------------
+alertcondition(not na(zCondB) and zCondB > hotZ and (na(zCondB[1]) or zCondB[1] <= hotZ),
+              "CondFlow effort surprise ON",
+              "State-conditional flow: effort high FOR this state — tested: monotone up-hazard reading, descriptive, not an entry signal")
+alertcondition(not na(zCondB) and zCondB < -hotZ and (na(zCondB[1]) or zCondB[1] >= -hotZ),
+              "CondFlow effort absent",
+              "State-conditional flow: effort absent for this state — descriptive")
