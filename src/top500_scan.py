@@ -23,6 +23,14 @@ DESCRIPTIVE ONLY. The multiplicity warning is binding and worse here than
 on the 160-pair panel: scanning 500 series for extremes finds extremes by
 construction. Nothing in this file tests a claim; C7's dataset is sealed
 and this scan does not touch it. Candidates, not evidence.
+
+GENESIS FILTER (directive, 2026-11-12): any asset with less than 90 days
+of true Binance listing history is EXCLUDED from the primed candidate
+list. The listing-pump artifact (63% of coins hold their ATH inside the
+first 90 days) invalidates the compression logic for new assets - a
+"coil" measured inside the launch window is the launch, not a coil.
+Short-history assets remain in the scan table (flagged) but can never
+appear as primed candidates.
 """
 
 import json
@@ -103,7 +111,7 @@ def fetch_klines(perp):
     CACHE.mkdir(parents=True, exist_ok=True)
     cache = CACHE / f"{perp}.csv"
     if cache.exists():
-        return pd.read_csv(cache)
+        return _validate(pd.read_csv(cache))
     data = _get(
         "https://fapi.binance.com/fapi/v1/klines"
         f"?symbol={perp}&interval=1d&limit=1000"
@@ -119,6 +127,54 @@ def fetch_klines(perp):
     df.to_csv(cache, index=False)
     time.sleep(0.15)
     return df
+
+
+def fetch_spot_klines(sym):
+    """Spot daily klines for coins with no USDT-M perp, cached as CSV.
+    Spot volume is real venue volume too - and spot lists often predate
+    the perp, so the genesis window is the truer one."""
+    CACHE.mkdir(parents=True, exist_ok=True)
+    cache = CACHE / f"SPOT_{sym}USDT.csv"
+    if cache.exists():
+        return _validate(pd.read_csv(cache))
+    data = _get(
+        "https://api.binance.com/api/v3/klines"
+        f"?symbol={sym}USDT&interval=1d&limit=1000"
+    )
+    if not data:
+        return None
+    df = pd.DataFrame(data, columns=[
+        "open_time", "open", "high", "low", "close", "volume",
+        "close_time", "qv", "n", "tbb", "tbq", "ig"])
+    df["date"] = pd.to_datetime(df["open_time"], unit="ms").dt.strftime("%Y-%m-%d")
+    df = df[["date", "open", "high", "low", "close", "volume"]].astype(
+        {"open": float, "high": float, "low": float, "close": float, "volume": float})
+    df.to_csv(cache, index=False)
+    time.sleep(0.15)
+    return df
+
+
+def _validate(df):
+    """Cache read guard: a run killed mid-write leaves truncated CSVs."""
+    if df is None or len(df) == 0:
+        return None
+    if not {"date", "close", "volume"} <= set(df.columns):
+        return None
+    try:
+        pd.to_datetime(df["date"], format="%Y-%m-%d")
+    except Exception:
+        return None
+    return df
+
+
+def is_stablecoin(close):
+    """A pegged price is not a market: a stablecoin's 'coil' is the peg.
+    Detected, not curated: median close within 1% of 1.0 and 99th-percentile
+    daily |return| under 2%."""
+    c = np.asarray(close, float)
+    ret = np.abs(np.diff(np.log(c)))
+    return (0.99 <= np.median(c) <= 1.01
+            and np.percentile(ret, 99) < 0.02)
 
 
 def genesis_metrics(df):
@@ -138,15 +194,18 @@ def genesis_metrics(df):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    meta = OUT / "top500_universe.meta.txt"
     if UNIVERSE_CSV.exists():
         uni = pd.read_csv(UNIVERSE_CSV)
-        snapshot = str(pd.read_csv(UNIVERSE_CSV).attrs.get(
-            "snapshot", "")) or None
+        snapshot = None
+        if meta.exists():
+            for line in meta.read_text().splitlines():
+                if line.startswith("coingecko top-500 snapshot date:"):
+                    snapshot = line.split(":", 1)[1].strip()
     else:
         uni, snapshot = fetch_universe()
         uni.to_csv(UNIVERSE_CSV, index=False)
-    (OUT / "top500_universe.meta.txt").write_text(
-        f"coingecko top-500 snapshot date: {snapshot}\n")
+        meta.write_text(f"coingecko top-500 snapshot date: {snapshot}\n")
     mapped = uni[uni["mapped"] == True]  # noqa: E712
     print(f"universe: top 500 by cap (snapshot {snapshot}); "
           f"{len(mapped)} mapped to Binance USDT-M perps, "
@@ -173,11 +232,57 @@ def main():
         s["pct_with_4sigma_day"] = (
             exp["pct_with_4sigma_day"] if exp else np.nan)
         s["primed_score"] = primed_score(s)
+        s["stablecoin"] = bool(is_stablecoin(df["close"]))
         g = genesis_metrics(df)
         g["pair"] = perp
+        g["venue"] = "perp"
         g["rank"] = int(r["rank"])
         genesis_rows.append(g)
+        s["venue"] = "perp"
         rows.append(s)
+
+    spot_rows, spot_genesis = [], []
+    spot_covered = 0
+    spot_info = _get("https://api.binance.com/api/v3/exchangeInfo")
+    spot_syms = {
+        s["symbol"] for s in spot_info["symbols"]
+        if s["quoteAsset"] == "USDT" and s["status"] == "TRADING"
+    } if spot_info else set()
+    for _, r in uni[uni["mapped"] != True].iterrows():  # noqa: E712
+        sym = r["symbol"]
+        if r.get("collision"):
+            continue
+        if f"{sym}USDT" not in spot_syms:
+            continue  # no Binance spot pair; probing it would retry-timeout
+        df = fetch_spot_klines(sym)
+        if df is None or len(df) < 150:
+            continue
+        spot_covered += 1
+        name = f"SPOT_{sym}USDT"
+        s = scan_series(name, df)
+        s["rank"] = int(r["rank"])
+        s["coingecko_id"] = r["coingecko_id"]
+        ret30 = df["close"].iloc[-1] / df["close"].iloc[-31] - 1.0
+        s["ret30"] = round(float(ret30), 3)
+        s["artifact_flag"] = bool(abs(ret30) > 0.20)
+        exp = expansion_stats(df)
+        s["n_coil_exits"] = exp["n_coil_exits"] if exp else 0
+        s["median_max10d"] = (exp["median_max10d"] if exp else np.nan)
+        s["pct_with_4sigma_day"] = (
+            exp["pct_with_4sigma_day"] if exp else np.nan)
+        s["primed_score"] = primed_score(s)
+        s["stablecoin"] = bool(is_stablecoin(df["close"]))
+        s["venue"] = "spot"
+        g = genesis_metrics(df)
+        g["pair"] = name
+        g["venue"] = "spot"
+        g["rank"] = int(r["rank"])
+        spot_genesis.append(g)
+        spot_rows.append(s)
+    print(f"spot extension: {spot_covered} of the unmapped coins have a "
+          f"Binance USDT spot pair with >=150 days of history")
+    rows.extend(spot_rows)
+    genesis_rows.extend(spot_genesis)
 
     scan = pd.DataFrame(rows).sort_values(
         "primed_score", ascending=False).reset_index(drop=True)
@@ -185,10 +290,19 @@ def main():
     gen = pd.DataFrame(genesis_rows).sort_values("first_bar").reset_index(drop=True)
     gen.to_csv(GENESIS_CSV, index=False)
 
-    print(f"scanned {len(scan)} perps ({len(failures)} failed/short history)")
-    clean = scan[~scan["artifact_flag"]]
+    print(f"scanned {len(scan)} series ({len(failures)} perps failed/short "
+          f"history; {int(scan['stablecoin'].sum())} flagged stablecoins)")
+    clean = scan[~scan["artifact_flag"] & ~scan["stablecoin"]]
+    # genesis filter: <90 days of true listing history is the launch
+    # window, not a coil - excluded from primed candidates (directive)
+    genesis_excluded = clean[clean["n_days"] < 90]
+    if len(genesis_excluded):
+        print(f"genesis filter: {len(genesis_excluded)} candidates excluded "
+              f"(<90 days listing history): "
+              f"{', '.join(genesis_excluded['series'])}")
+    clean = clean[clean["n_days"] >= 90]
     print("\n=== top-12 primed candidates (artifact-filtered) ===")
-    cols = ["binance_perp" if False else "series", "rank", "primed_score",
+    cols = ["series", "rank", "venue", "primed_score",
             "comp_days", "rvol_pct", "range_pos", "vol_ratio", "ret30"]
     print(clean.head(12)[cols].to_string(index=False))
     deep = clean[clean["comp_days"] >= 20]
@@ -205,7 +319,7 @@ def main():
         ath_rate = gen["ath_in_genesis"].mean()
         nulls = (90 / gen["n_days"]).mean()
         print(f"\n=== genesis (true listing dates from Binance) ===")
-        print(f"n={n} perps; ATH still inside first 90 days: {ath_rate:.1%} "
+        print(f"n={n} series; ATH still inside first 90 days: {ath_rate:.1%} "
               f"(random-window null {nulls:.1%})")
 
     try:
