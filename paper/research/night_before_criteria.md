@@ -99,3 +99,58 @@ closing 2027-01-11) are the first live pass through this path.
 
 Descriptive registry; multiplicity binds; C7 sealed. A registry lists what
 can be asked — the gates decide what is true.
+
+---
+
+## Appendix — the full computable list, exact daily-OHLCV formulas
+
+Every criterion below is computable from daily OHLCV alone (the data
+already in the database — no procurement, no order flow, no on-chain).
+Formulas are stated once here so the census extension, the backtests and
+the Pine panel all implement the same definitions. W = window length;
+all windows trailing, all signals finalized on bar close.
+
+### State (Tier A — measured in the census)
+
+| id | criterion | formula | default W |
+|---|---|---|---|
+| A1 | range position | `(C - min(L, W)) / (max(H, W) - min(L, W))` | 252 |
+| A2 | realized-vol percentile | `percentrank(stdev(ln(C/C[1]), w1), W)` | w1=20, W=252 |
+| A3 | coil days | consecutive bars with `H-L <= coilFrac × sma(H-L, W)` | W=50, coilFrac=0.75 |
+| A4 | stretch z | `(ln C - sma(ln C, W)) / stdev(ln C, W)` | W=100 |
+| A5 | volume ratio | `V / sma(V, W)` (the dry-up reading is < 1) | W=20 |
+| A6 | year trend | `C / C[W] - 1` | W=252 |
+
+### Derivatives and durations (Tier B — computable, not yet censused)
+
+| id | criterion | formula | default |
+|---|---|---|---|
+| B1 | time since last significant move | bars since `|C/C[30] - 1| >= moveThresh` last held | moveThresh: crypto 100%, non-crypto 30% |
+| B2 | consecutive quiet days | consecutive bars with `A2 <= quietPct` | quietPct=30 |
+| B3 | time from 52w high | bars since `H == max(H, 252)` | 252 |
+| B4 | vol-of-vol | `stdev(stdev(ln(C/C[1]), w1), W) / sma(...)` — the stability of the quiet state | w1=20, W=63 |
+| B5 | contraction rate | `sma(H-L, w1) / sma(H-L, w2)` — < 1 means the coil is tightening | w1=10, w2=50 |
+| B6 | ATR ratio | `atr(w1) / atr(w2)` — cheap redundancy with A2/A3 | w1=10, w2=50 |
+| B7 | drawdown from peak | `C / max(H, 252) - 1` (the numeric grievance) | 252 |
+| B8 | volume-trend direction | `sma(V, w1) / sma(V, w2)` — is the dry-up getting drier? | w1=10, w2=50 |
+| B9 | prior-move magnitude | the largest `|C/C[30] - 1|` in the series' trailing 252d | 252 |
+| B10 | board state (cross-sectional rank) | percentile rank of A2 (and A7) across the universe, same night — computable offline, not in a single-symbol Pine | universe |
+
+### The composite signature (the census reading, made computable)
+
+The dossier's forgotten-and-pinned signature, as a boolean state:
+`A1 <= 0.25` AND `A2 <= 30` AND `A3 >= 10` AND `A5 < 1` AND `A6 < 0`
+(low in range, quiet, coiled, dry, down on the year). The census says
+72.3% of crypto up-moves started at the range bottom and 47.2% followed
+quiet — the composite's *conditional* hazard versus matched controls is
+exactly what C7-style testing must measure. The composite is a state
+display and a hypothesis generator; it is NOT an entry signal.
+
+### Where each is implemented
+
+- Census extension (Python, all of Tier A/B): `src/move_study.py` frame —
+  to be extended, not yet run.
+- Live nightly-before panel (all single-symbol criteria):
+  `strategy/avfi_v5_night_before.pine` — the AVFI v4 engine with the
+  full night-before state computed on every bar and shown in the
+  dashboard, descriptive only.
