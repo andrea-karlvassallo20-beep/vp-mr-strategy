@@ -18,12 +18,21 @@
 //   peak, time since last significant move, prior-move magnitude).
 //
 // WHAT IT IS NOT — read this part:
-//   The night-before panel is DESCRIPTIVE. A census counts, it does not
-//   predict; the composite signature below has NOT passed the dual-split
-//   gate and is displayed as state, never as an entry signal. Entries
-//   remain exactly what the evidence supports: deep stretch + detector
-//   confirmation (v4). The throttle remains a sizing regime, not a timer.
-//   Multiplicity binds; C7 sealed.
+//   The night-before panel is DESCRIPTIVE, and its composite has now
+//   been causally TESTED (src/night_before_test.py, 6,767 matched state
+//   days, 156 series). The verdict, baked into every label below:
+//     - The signature does NOT predict big up-moves: score 4-5 carries
+//       a +100%/30d hazard of 2.6% vs 3.5% for score 0-1 (p=0.11),
+//       flat in both time halves. It is NOT an entry signal.
+//     - The signature PROTECTS against short-term crashes: score 4-5
+//       days carry roughly HALF the -30%/30d hazard (11.1% vs 20.0%,
+//       z=-7.29, p<0.001, stable in both halves) — volatility
+//       persistence. A RISK FILTER: the state tells you what is
+//       unlikely, not what is coming.
+//   Entries remain exactly what the evidence supports: deep stretch +
+//   detector confirmation (v4). The throttle remains a sizing regime.
+//   Multiplicity binds; C7 sealed until the dual-split gate and the
+//   forward log say otherwise.
 //
 // STRICT CAUSALITY: every window is trailing; signals finalize on bar
 // close (barstate.isconfirmed). Criteria formulas match
@@ -223,17 +232,28 @@ for i = 30 to nbRangeW
         priorMax := r
 priorMovePct = priorMax * 100.0
 
-// The composite forgotten-and-pinned signature — DESCRIPTIVE state only.
-// A census counts, it does not predict; this has NOT passed any gate.
+// The composite forgotten-and-pinned signature — the CAUSALLY TESTED
+// state. Does NOT predict big up-moves (tested null); DOES mark roughly
+// half the short-term crash hazard (p<0.001). A risk filter, not an entry.
 signature = rangePos <= 0.25 and rvPct <= nbQuietP and coilDays >= 10 and
             volRatio < 1.0 and trend52 < 0.0
+
+// The additive night-before score (NBS 0-5) — the tested indicator.
+// Measured hazards on 6,767 matched state days (156 crypto series):
+//   NBS 4-5: +100%/30d hazard 2.6% | -30%/30d hazard 11.1%
+//   NBS 0-1: +100%/30d hazard 3.5% | -30%/30d hazard 20.0%
+// The up-side is FLAT across the score (no edge); the down-side is the
+// finding: high score = about half the short-term crash hazard.
+nbs = (rangePos <= 0.25 ? 1 : 0) + (rvPct <= nbQuietP ? 1 : 0) +
+      (coilDays >= 10 ? 1 : 0) + (volRatio < 1.0 ? 1 : 0) +
+      (trend52 < 0.0 ? 1 : 0)
 
 // ---------------------------------------------------------------------------
 // RENDERING
 // ---------------------------------------------------------------------------
 bgcolor(throttled ? color.new(#f85149, 88) : na)
 bgcolor(showSig and signature and barstate.isconfirmed ?
-        color.new(#a371f7, 92) : na, title="Composite signature (state, NOT a signal)")
+        color.new(#a371f7, 92) : na, title="Composite signature (tested: crash-protected state, NOT an entry signal)")
 
 plotshape(sigBottom, title="Confirmed bottom (stretch + confirmation)",
           style=shape.labelup, location=location.belowbar,
@@ -264,7 +284,7 @@ f_row(t, r, name, val, isHot, hotCol) =>
     table.cell(t, 1, r, val,
                text_color=isHot ? hotCol : color.white, text_size=size.small)
 
-var table t = table.new(position.top_right, 2, 16, border_width=1)
+var table t = table.new(position.top_right, 2, 17, border_width=1)
 if barstate.islast
     table.cell(t, 0, 0, "AVFI v5", bgcolor=color.new(#161b22, 10),
                text_color=color.white, text_size=size.small)
@@ -298,8 +318,13 @@ if barstate.islast
           volTrend < 1.0, #3fb950)
     f_row(t, 14, "B9 prior move",  str.tostring(priorMovePct, "#") + "%",
           priorMovePct >= 100.0, #a371f7)
-    table.cell(t, 0, 15, "signature", text_color=color.gray, text_size=size.tiny)
-    table.cell(t, 1, 15, signature ? "pinned (STATE, not a signal)" : "—",
+    table.cell(t, 0, 15, "NBS score", text_color=color.gray, text_size=size.tiny)
+    table.cell(t, 1, 15, str.tostring(nbs) + " / 5  " +
+               (nbs >= 4 ? "crash-hazard ~11%" : nbs <= 1 ? "crash-hazard ~20%" : ""),
+               text_color=nbs >= 4 ? #3fb950 : nbs <= 1 ? #f85149 : color.white,
+               text_size=size.small)
+    table.cell(t, 0, 16, "signature", text_color=color.gray, text_size=size.tiny)
+    table.cell(t, 1, 16, signature ? "protected state (filter, NOT an entry)" : "—",
                text_color=signature ? #a371f7 : color.gray, text_size=size.tiny)
 
 // ---------------------------------------------------------------------------
@@ -309,7 +334,7 @@ alertcondition(sigBottom, "AVFI v5 confirmed bottom",
               "AVFI v5: deep stretch confirmed by detector — bottom signal")
 alertcondition(sigTop, "AVFI v5 confirmed top",
               "AVFI v5: deep stretch confirmed by detector — top signal")
-alertcondition(showSig and signature and not signature[1], "AVFI v5 composite signature ON",
-              "AVFI v5: forgotten-and-pinned state present — descriptive, not an entry signal")
+alertcondition(showSig and signature and not signature[1], "AVFI v5 protected state ON",
+              "AVFI v5: forgotten-and-pinned state present — tested: about half the short-term crash hazard, no up-move edge. Risk filter, not an entry signal.")
 alertcondition(throttled and not throttled[1], "AVFI v5 throttle ON",
               "AVFI v5: spread z below trigger — regime risk-off")
