@@ -146,6 +146,16 @@ quiet — the composite's *conditional* hazard versus matched controls is
 exactly what C7-style testing must measure. The composite is a state
 display and a hypothesis generator; it is NOT an entry signal.
 
+**VERDICT (12 November 2026, the first causal test —
+`night_before_test_report.md`):** given the denominator the census
+lacked (6,767 matched state days, 156 series), the composite does NOT
+raise the 30-day hazard of a +100% up-move (score 4–5: 2.6% vs score
+0–1: 3.5%, p=0.11, flat in both time halves). What it measures is
+protection: score 4–5 days carry roughly half the short-term crash
+hazard (−30%/30d: 11.1% vs 20.0%, z=−7.29, p<0.001, stable in both
+halves). The composite's value is on the downside, as a risk filter —
+not an up-move predictor.
+
 ### Where each is implemented
 
 - Census extension (Python, all of Tier A/B): `src/move_study.py` frame —
