@@ -96,27 +96,26 @@ zUnc   = float(na)
 muUsed = float(na)
 b      = nbs
 if barstate.isconfirmed and not na(effort)
-    // pooled (unconditional) norm — trailing only
+    // pooled (unconditional) norm — trailing only; declared at this
+    // scope so both branches below can see it (na until warmed up)
+    muP = pCnt > 0 ? pSum / pCnt : float(na)
+    sdP = pCnt > 0 ? math.sqrt(math.max(pSq / pCnt - muP * muP, 1e-12)) : float(na)
     if pCnt >= minObs
-        muP = pSum / pCnt
-        sdP = math.sqrt(math.max(pSq / pCnt - muP * muP, 1e-12))
         zUnc := (effort - muP) / sdP
-    // bucket norm, with shrinkage toward pooled under minObs
+    // bucket norm, with shrinkage toward pooled under minObs*4
     cb = array.get(bCnt, b)
     if cb >= minObs
         muB = array.get(bSum, b) / cb
         sdB = math.sqrt(math.max(array.get(bSq, b) / cb - muB * muB, 1e-12))
-        if cb < minObs * 4
-            muB := (cb * muB + pCnt * (pSum / pCnt)) / (cb + pCnt)
+        if cb < minObs * 4 and not na(sdP)
+            muB := (cb * muB + pCnt * muP) / (cb + pCnt)
             sdB := (cb * sdB + pCnt * sdP) / (cb + pCnt)
         muUsed := muB
         zCond := (effort - muB) / sdB
-    else if pCnt >= minObs
+    else if not na(sdP)
         // sparse bucket: pooled norm (full shrinkage)
-        muP2 = pSum / pCnt
-        sdP2 = math.sqrt(math.max(pSq / pCnt - muP2 * muP2, 1e-12))
-        muUsed := muP2
-        zCond := (effort - muP2) / sdP2
+        muUsed := muP
+        zCond := (effort - muP) / sdP
     // UPDATE AFTER — today is not its own denominator
     array.set(bSum, b, array.get(bSum, b) + effort)
     array.set(bSq,  b, array.get(bSq,  b) + effort * effort)
