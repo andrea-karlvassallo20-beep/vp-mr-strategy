@@ -5,7 +5,9 @@ all indexes, crypto, and the main 500 stocks - scored by what is most
 likely to make the next significant jump, then tracked over time to study
 what surprises. This module builds the unified board: the crypto top-500
 scan, the commodity/index/equity scan, and the full S&P 500 scan merged
-into one table with one priming score and one board rank.
+into one table with one priming score and one board rank - plus the
+global scan (world indexes, rates, FX incl. the Iranian rial, non-US
+equities) once it has run.
 
 Honesty rules carried over from the constituent scans:
   - The priming score is DESCRIPTIVE. It ranks candidates; it tests
@@ -39,6 +41,7 @@ BOARD_CSV = OUT / "board_table.csv"
 TOP500_CSV = OUT / "top500_scan_table.csv"
 EQ_CSV = OUT / "eq_commodity_scan_table.csv"
 SP500_CSV = OUT / "sp500_scan_table.csv"
+GLOBAL_CSV = OUT / "global_scan_table.csv"
 
 CRYPTO_KLINES = Path("data/raw/top500_klines")
 EQ_KLINES = Path("data/raw/eq_commodity_klines")
@@ -52,14 +55,16 @@ BOARD_COLUMNS = [
     "eligible", "data_file", "board_rank",
 ]
 
-CLASS_ORDER = ["commodity", "index", "equity", "sp500", "crypto"]
+CLASS_ORDER = ["commodity", "index", "world_index", "rate", "fx",
+               "equity", "global_equity", "sp500", "crypto"]
 
 
 def _eq_cache_file(yahoo_symbol):
     return str(EQ_KLINES / f"{yahoo_symbol.replace('=', '_').replace('^', '')}.csv")
 
 
-def build_board(top500_csv=TOP500_CSV, eq_csv=EQ_CSV, sp500_csv=SP500_CSV):
+def build_board(top500_csv=TOP500_CSV, eq_csv=EQ_CSV,
+                sp500_csv=SP500_CSV, global_csv=GLOBAL_CSV):
     """Merge the three scan tables into one ranked board."""
     frames = []
 
@@ -77,6 +82,13 @@ def build_board(top500_csv=TOP500_CSV, eq_csv=EQ_CSV, sp500_csv=SP500_CSV):
             "short_history" in sp.columns) else False
         sp["data_file"] = sp["yahoo_symbol"].map(_eq_cache_file)
         frames.append(sp)
+
+    if Path(global_csv).exists():
+        gl = pd.read_csv(global_csv)
+        gl["venue"] = gl.get("venue", "yahoo")
+        gl["genesis_flag"] = gl["n_days"] < GENESIS_MIN_DAYS
+        gl["data_file"] = gl["yahoo_symbol"].map(_eq_cache_file)
+        frames.append(gl)
 
     if Path(top500_csv).exists():
         cr = pd.read_csv(top500_csv)
@@ -107,7 +119,8 @@ def save_board(board, path=BOARD_CSV):
     meta = (
         f"built {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')} "
         f"from top500_scan_table.csv, eq_commodity_scan_table.csv, "
-        f"sp500_scan_table.csv; {len(board)} series; "
+        f"sp500_scan_table.csv, global_scan_table.csv; "
+        f"{len(board)} series; "
         f"DESCRIPTIVE ONLY - candidates, not claims; multiplicity binds."
     )
     Path(str(path).replace(".csv", ".meta.txt")).write_text(meta + "\n")

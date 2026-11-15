@@ -54,7 +54,8 @@ def _write_tables(tmp):
 
 def test_board_merges_and_ranks(tmp_path):
     eq_csv, sp_csv, cr_csv = _write_tables(tmp_path)
-    board = build_board(eq_csv=eq_csv, sp500_csv=sp_csv, top500_csv=cr_csv)
+    board = build_board(eq_csv=eq_csv, sp500_csv=sp_csv, top500_csv=cr_csv,
+                        global_csv=tmp_path / "none.csv")
     assert len(board) == 8
     assert set(board["class"]) == {"commodity", "index", "sp500", "crypto"}
     assert list(board["primed_score"]) == sorted(
@@ -84,7 +85,8 @@ def _kline_csv(path, dates, closes):
 
 def _board(tmp_path):
     eq_csv, sp_csv, cr_csv = _write_tables(tmp_path)
-    return build_board(eq_csv=eq_csv, sp500_csv=sp_csv, top500_csv=cr_csv)
+    return build_board(eq_csv=eq_csv, sp500_csv=sp_csv, top500_csv=cr_csv,
+                       global_csv=tmp_path / "none.csv")
 
 
 def test_ledger_seal_verify_and_tamper(tmp_path):
@@ -187,9 +189,37 @@ def test_heatmap_page_generation(tmp_path):
     html = page.read_text()
     assert out["n_series"] == 8
     assert html.count('class="tile"') == 8
+    # the checkerboard chip: flat horizontal cell, one line, no meta block
+    assert 'height: 21px' in html
+    assert 'display: none' in html
     assert "wheat" in html and "BTCUSDT" in html
     assert "The surprise ledger" in html
     assert "site.css" in html
+
+
+def test_board_merges_global_scan(tmp_path):
+    eq_csv, sp_csv, cr_csv = _write_tables(tmp_path)
+    gl = pd.DataFrame([
+        _scan_row("eurusd", "fx", 0.6, yahoo_symbol="EURUSD=X"),
+        _scan_row("telaviv125", "world_index", 0.5,
+                  yahoo_symbol="^TA125.TA"),
+        _scan_row("usdirr_rial", "fx", 0.9, yahoo_symbol="USDIRR=X"),
+        _scan_row("newfx", "fx", 0.95, n_days=50, yahoo_symbol="NEWFX=X"),
+    ])
+    gl_csv = tmp_path / "gl.csv"
+    gl.to_csv(gl_csv, index=False)
+    board = build_board(eq_csv=eq_csv, sp500_csv=sp_csv, top500_csv=cr_csv,
+                        global_csv=gl_csv)
+    assert len(board) == 12
+    by = board.set_index("series")
+    assert by.loc["eurusd", "class"] == "fx"
+    assert by.loc["telaviv125", "class"] == "world_index"
+    assert by.loc["usdirr_rial", "eligible"]
+    # genesis filter applies to the global scan too (<90d)
+    assert not by.loc["newfx", "eligible"]
+    assert by.loc["newfx", "genesis_flag"]
+    assert "eq_commodity_klines/EURUSD_X.csv" in by.loc[
+        "eurusd", "data_file"]
 
 
 def test_tile_color_monotonic():

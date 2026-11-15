@@ -35,7 +35,11 @@ PAGE = Path("docs/heatmap.html")
 CLASS_TITLES = {
     "commodity": "Commodities",
     "index": "Indexes",
+    "world_index": "World indexes (frontier and war-adjacent included)",
+    "rate": "Rates",
+    "fx": "FX (majors, EM, the Iranian rial)",
     "equity": "Large-cap equities",
+    "global_equity": "Global mega-caps (non-US)",
     "sp500": "S&P 500 (full constituents)",
     "crypto": "Crypto (top 500 by market cap)",
 }
@@ -180,7 +184,8 @@ def build_page(board_csv=BOARD_CSV, ledger_path=sl.LEDGER, page=PAGE):
     top = board[board["eligible"]].iloc[0]
 
     sections = []
-    for cls in ("commodity", "index", "equity", "sp500", "crypto"):
+    for cls in ("commodity", "index", "world_index", "rate", "fx",
+                "equity", "global_equity", "sp500", "crypto"):
         sub = board[board["class"] == cls]
         if len(sub):
             sections.append(_class_section(cls, sub))
@@ -193,17 +198,17 @@ def build_page(board_csv=BOARD_CSV, ledger_path=sl.LEDGER, page=PAGE):
 <title>Salient &mdash; The heat map</title>
 <link rel="stylesheet" href="site.css">
 <style>
-.tilegrid {{ display: flex; flex-wrap: wrap; gap: 6px; }}
-.tile {{ display: flex; flex-direction: column; justify-content: center;
-  min-width: 92px; padding: 8px 10px; border-radius: 8px; color: #070b12;
-  position: relative; }}
-.tile .tname {{ font-family: var(--mono); font-size: 11px; font-weight: 700;
-  max-width: 130px; overflow: hidden; text-overflow: ellipsis;
+.tilegrid {{ display: flex; flex-wrap: wrap; gap: 3px; }}
+.tile {{ display: inline-flex; flex-direction: row; align-items: center;
+  gap: 5px; height: 21px; padding: 1px 7px; border-radius: 4px;
+  color: #070b12; position: relative; white-space: nowrap; }}
+.tile .tname {{ font-family: var(--mono); font-size: 9.5px; font-weight: 700;
+  max-width: 110px; overflow: hidden; text-overflow: ellipsis;
   white-space: nowrap; }}
-.tile .tscore {{ font-size: 16px; font-weight: 700; }}
-.tile .tmeta {{ font-size: 10px; opacity: .75; }}
-.tile .tflag {{ position: absolute; top: 3px; right: 6px; font-size: 9px;
-  text-transform: uppercase; letter-spacing: .5px; opacity: .7; }}
+.tile .tscore {{ font-size: 10px; font-weight: 700; opacity: .85; }}
+.tile .tmeta {{ display: none; }}
+.tile .tflag {{ font-size: 8px; text-transform: uppercase;
+  letter-spacing: .5px; opacity: .6; }}
 .legend {{ display: flex; gap: 0; border-radius: 6px; overflow: hidden;
   height: 12px; max-width: 420px; }}
 .legend i {{ flex: 1; }}
@@ -219,10 +224,11 @@ def build_page(board_csv=BOARD_CSV, ledger_path=sl.LEDGER, page=PAGE):
 
 <div class="epigraph">
 "Look at EVERYTHING." So the board holds everything: all commodities, all
-indexes, crypto, the full S&amp;P 500. Each tile is one series, colored by
-priming score - how coiled, compressed and primed it measures tonight.
-Dark: nothing. Amber: compression building. Red: the deepest coils on the
-board.
+indexes - world, frontier and war-adjacent included - rates, FX down to
+the Iranian rial, the full S&amp;P 500, non-US mega-caps, crypto. Zoom out:
+the board reads as a checkerboard - color first, one flat cell per
+series, dark = nothing coiled, amber = compression building, red = the
+deepest coils alive tonight. Hover any cell for its name and grievance.
 </div>
 
 <p><span class="big">Descriptive only.</span> The priming score ranks
