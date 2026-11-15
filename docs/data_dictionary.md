@@ -111,3 +111,36 @@ Populated by hand; validated by a loader (to be added with the first use).
 Rules: one row per event; times in UTC only; `surprise_note` is annotation,
 never a model input; unknown values are empty strings, never `NULL`/`NaN`
 placeholders invented by tooling.
+
+## Schema: `paper/research/clue_scan/board_table.csv` (the heat-map board)
+
+Purpose: the unified EVERYTHING board - crypto top-500, commodities,
+indexes, large-cap equities and the full S&P 500 scan tables merged into
+one ranked table by `src/board_heatmap.py`. Descriptive only; the input
+to the heat-map page and the surprise ledger.
+
+| Column | Type | Rule |
+|---|---|---|
+| `series` | string | scan series name (perp symbol, or lowercase yahoo name) |
+| `class` | string | `commodity`, `index`, `equity`, `sp500`, `crypto` |
+| `venue` | string | `binance` or `yahoo` |
+| `last_date` | string | `YYYY-MM-DD` of the last bar the score was computed on |
+| `primed_score` | float | descriptive priming score from `clue_scan.primed_score`; 0-1 |
+| `artifact_flag` | bool | move-already-happened: abs 30d return > 20% |
+| `genesis_flag` | bool | too new: <90d listing history (crypto) or short-history sp500 addition |
+| `eligible` | bool | candidate only if NOT artifact and NOT genesis (and not a stablecoin) |
+| `data_file` | string | cached klines CSV the surprise ledger must resolve against |
+| `board_rank` | int | 1 = highest primed_score on the whole board |
+
+## Ledger: `logs/board_surprise_ledger.jsonl` (hash-chained, append-only)
+
+Purpose: the time half of the heat map - sealed priming scores vs
+realized jumps. Two record types on one SHA-256 chain (same discipline
+as `logs/forward_calibration.jsonl`): `snapshot` (top-k eligible
+candidates per class sealed at t0 with their full feature vector, no
+outcome fields allowed) and `resolution` (max abs close move over the
+10-bar horizon, read from the same cached klines, appended only once
+the horizon has strictly passed). Monotonic timestamps, verify-before-
+write, tamper refuses all writes. Study output:
+`paper/research/clue_scan/surprise_study.md` - Spearman rho between
+sealed score and realized jump, per class; descriptive only.
