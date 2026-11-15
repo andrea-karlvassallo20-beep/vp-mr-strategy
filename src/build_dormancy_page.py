@@ -2,7 +2,11 @@ import sys, html
 sys.path.insert(0, 'src')
 import pandas as pd, numpy as np
 
-dorm = pd.read_csv('paper/research/clue_scan/dormancy_table.csv')
+import os
+_dorm = 'paper/research/clue_scan/mega_dormancy_table.csv'
+if not os.path.exists(_dorm):
+    _dorm = 'paper/research/clue_scan/dormancy_table.csv'
+dorm = pd.read_csv(_dorm)
 miss = pd.read_csv('paper/research/clue_scan/missed_moves.csv')
 stats = pd.read_csv('paper/research/clue_scan/missed_moves_stats.csv')
 
