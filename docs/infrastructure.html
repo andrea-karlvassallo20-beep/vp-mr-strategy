@@ -53,10 +53,17 @@ first.</p>
       bands</td><td>Aug 5 2024</td><td>genuine</td>
       <td class="bad">none — snapshots destroy the update sequence; syntax-check
       use only</td></tr>
-  <tr><td>Full-depth incremental L2 + signed trades (Tardis)</td>
-      <td>event-level</td><td>pending procurement</td><td>—</td>
+  <tr><td>Full-depth incremental L2 + signed trades (Tardis raw
+      @depth replay)</td>
+      <td>event-level</td><td>4 complete UTC days, 2026-10-01 →
+      2026-10-04 (2.9GB compressed NDJSON; 13.07M native U/u/pu diff
+      messages)</td>
+      <td>genuine exchange replay; the claimed 17.8GB/10-day dataset
+      does not exist — the account's transfer quota exhausted
+      mid-download (HTTP 403), leaving 10-05/06 incomplete</td>
       <td class="ref">the only data that unblocks Layers 0–2 and claims
-      C5/C6</td></tr>
+      C5/C6 — <strong>arrived and gated</strong>, see the executed
+      Layer 0 report below</td></tr>
 </table>
 <div class="caveat"><strong>Capability statement, declared up front:</strong>
 Binance does not publicly archive bookTicker, and bookDepth is 5-second band
@@ -106,6 +113,48 @@ passes.</p>
 <p>Failure paths are unit-tested: an injected sequence gap → gate fails and
 the gap is written to the log; a displaced snapshot sample → gate fails;
 unknown schema → refusal.</p>
+
+<h2>The gate, executed — Tardis raw @depth replay, 2026-10-01 → 10-04</h2>
+<p>The first real L2 dataset was ingested (<code>src/tardis_ingest.py</code>:
+raw depth/depthSnapshot/trade replay, per-day resume/retry, int64-µs
+timestamp normalization — a ms→µs scaling bug was caught and fixed in place
+across all four days) and the gate was run for real. Per-day verdicts:</p>
+<table>
+  <tr><th>Day</th><th>Diff messages</th><th>Gaps</th><th>Gap rate</th>
+      <th>Mid agreement</th><th>10bps depth agreement</th><th>n compared</th>
+      <th>Verdict</th></tr>
+  <tr><td>2026-10-01</td><td>3,255,661</td><td>3</td><td>0.00009%</td>
+      <td class="good">1.000</td><td class="good">1.000</td><td>100</td>
+      <td class="good">GATE PASSED</td></tr>
+  <tr><td>2026-10-02</td><td>3,270,065</td><td>1</td><td>0.00003%</td>
+      <td>1.000</td><td>1.000</td><td>2 ⚠</td>
+      <td class="ref">PARTIAL</td></tr>
+  <tr><td>2026-10-03</td><td>3,265,077</td><td>3</td><td>0.00009%</td>
+      <td>0.500</td><td>0.500</td><td>4 ⚠</td>
+      <td class="ref">PARTIAL</td></tr>
+  <tr><td>2026-10-04</td><td>3,276,457</td><td>2</td><td>0.00006%</td>
+      <td>1.000</td><td>1.000</td><td>3 ⚠</td>
+      <td class="ref">PARTIAL</td></tr>
+</table>
+<p>⚠ = snapshot ground truth insufficient: the independent
+<code>book_snapshot_25</code> API quota was exhausted mid-download, so only
+2–4 comparisons exist on those days against the registered 100.
+Methodology, all recorded and none weakened: sequence continuity checked per
+message; the book seeded and reset from <code>depthSnapshot</code> at every
+feed (re)connect (the Binance-documented procedure — this reset semantics
+was the difference between 97% and 100% mid agreement); comparison on the
+Tardis local clock (the ground truth is built on local-timestamp ordering;
+exchange-clock alignment measured at 97% mid / 54% depth — pure feed-latency
+skew, not state error); depth comparison capped at the 25-level snapshot
+boundary.</p>
+<div class="caveat"><strong>The binding consequence:</strong> the registered
+kill line requires the full 100-timestamp audit on <em>every</em> day, so
+C1-L2 is <strong>not unblocked</strong> by this run — only 2026-10-01 fully
+passed. What the data does already license: passive cancellation fraction
+91.6–96.8% on all four days — no frozen-book regime — so C5 (absorption
+asymmetry) is testable on this data once it is procured at full audit
+depth. Full report:
+<code>paper/research/l0_gate/report_2026-10-01_04.md</code>.</div>
 
 <h2>Stage 3 — The event clock (<code>src/event_clock.py</code>)</h2>
 <p>State-change rows, not calendar rows: one row per best-bid/ask change (or
@@ -204,7 +253,18 @@ estimate. The half-life is ln2/β by construction (β fixed at 2.0/s) — a
 parameterization, not a measurement; estimating β jointly is a pre-declared
 future task. On the calm window, μ_buy hit its lower bound. These are
 diagnostics of the estimator's behavior on real ticks — exactly what the dry
-run exists to surface.</div>
+run exists to surface. <strong>The flagged items are now remedied</strong>:
+the T2 upgrade unpinned the decay — per-pair β is jointly optimized with
+α and a smooth 24-hour Fourier diurnal baseline (epoch-anchored phase, fit
+strictly on the training fold), with spectral radius ρ(G) &lt; 0.95 and an
+explicit <code>is_boundary_constrained</code> flag so boundary-constrained
+fits are never reported as interior estimates. The recursive likelihood was
+verified against a brute-force O(N²) reference on 2,000 synthetic timestamps
+(max abs error &lt; 1e-9, which caught and fixed an ordering bug: the entering
+event must be added before the interval decay). VPIN gained a redundancy
+guardrail: |Pearson| and |Spearman| between VPIN and |signed trade
+imbalance| must stay ≤ 0.80, and the redundant feature is dropped when it
+fires.</div>
 
 <h3>Top-of-book OFI, and the bookDepth syntax check</h3>
 <p>The Cont–Kukanov–Stoikov touch-level OFI is implemented and validated on
@@ -252,11 +312,13 @@ scheduled information arrival. Two binding rules: times are UTC only, and
 construction, and can never be a model input.</p>
 
 <h2>Test suite</h2>
-<p><span class="num">27</span> tests, all green, including deliberate
+<p><span class="num">106</span> tests, all green, including deliberate
 failure-path tests: sequence-gap rejection, crossed-book rejection,
 mid-disagreement rejection, unknown-schema refusal, CPCV leakage assertions,
-and each kill line fired individually. The infrastructure is built to fail
-loudly, and the tests prove it does.</p>
+and each kill line fired individually — including proofs on synthetic null
+markets that all five C1-L2 kill lines fire before any real L2 is ingested,
+and that the DML orthogonalizer's kill lines fire on planted nulls. The
+infrastructure is built to fail loudly, and the tests prove it does.</p>
 
 </main>
 <footer>
