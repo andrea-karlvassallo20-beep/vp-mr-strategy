@@ -42,6 +42,8 @@ TOP500_CSV = OUT / "top500_scan_table.csv"
 EQ_CSV = OUT / "eq_commodity_scan_table.csv"
 SP500_CSV = OUT / "sp500_scan_table.csv"
 GLOBAL_CSV = OUT / "global_scan_table.csv"
+ALLCRYPTO_CSV = OUT / "all_crypto_scan_table.csv"
+MIDSMALL_CSV = OUT / "midsmall_scan_table.csv"
 
 CRYPTO_KLINES = Path("data/raw/top500_klines")
 EQ_KLINES = Path("data/raw/eq_commodity_klines")
@@ -56,7 +58,8 @@ BOARD_COLUMNS = [
 ]
 
 CLASS_ORDER = ["commodity", "index", "world_index", "rate", "fx",
-               "equity", "global_equity", "sp500", "crypto"]
+               "equity", "global_equity", "sp500", "sp400", "sp600",
+               "crypto"]
 
 
 def _eq_cache_file(yahoo_symbol):
@@ -64,7 +67,8 @@ def _eq_cache_file(yahoo_symbol):
 
 
 def build_board(top500_csv=TOP500_CSV, eq_csv=EQ_CSV,
-                sp500_csv=SP500_CSV, global_csv=GLOBAL_CSV):
+                sp500_csv=SP500_CSV, global_csv=GLOBAL_CSV,
+                allcrypto_csv=ALLCRYPTO_CSV, midsmall_csv=MIDSMALL_CSV):
     """Merge the three scan tables into one ranked board."""
     frames = []
 
@@ -98,6 +102,18 @@ def build_board(top500_csv=TOP500_CSV, eq_csv=EQ_CSV,
         cr["data_file"] = cr["series"].map(lambda s: str(CRYPTO_KLINES / f"{s}.csv"))
         frames.append(cr)
 
+    if Path(allcrypto_csv).exists():
+        ac = pd.read_csv(allcrypto_csv)
+        ac["class"] = "crypto"
+        frames.append(ac)
+
+    if Path(midsmall_csv).exists():
+        ms = pd.read_csv(midsmall_csv)
+        ms["venue"] = "yahoo"
+        ms["genesis_flag"] = ms["short_history"].astype(bool)
+        ms["data_file"] = ms["yahoo_symbol"].map(_eq_cache_file)
+        frames.append(ms)
+
     if not frames:
         raise SystemExit("no scan tables found - run the constituent scans first")
 
@@ -119,7 +135,8 @@ def save_board(board, path=BOARD_CSV):
     meta = (
         f"built {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')} "
         f"from top500_scan_table.csv, eq_commodity_scan_table.csv, "
-        f"sp500_scan_table.csv, global_scan_table.csv; "
+        f"sp500_scan_table.csv, global_scan_table.csv, "
+        f"all_crypto_scan_table.csv, midsmall_scan_table.csv; "
         f"{len(board)} series; "
         f"DESCRIPTIVE ONLY - candidates, not claims; multiplicity binds."
     )

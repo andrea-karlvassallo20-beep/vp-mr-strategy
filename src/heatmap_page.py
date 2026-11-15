@@ -41,7 +41,9 @@ CLASS_TITLES = {
     "equity": "Large-cap equities",
     "global_equity": "Global mega-caps (non-US)",
     "sp500": "S&P 500 (full constituents)",
-    "crypto": "Crypto (top 500 by market cap)",
+    "sp400": "S&P 400 (mid caps)",
+    "sp600": "S&P 600 (small caps)",
+    "crypto": "Crypto (every Binance USDT market)",
 }
 
 NAV = """<nav>
@@ -185,7 +187,8 @@ def build_page(board_csv=BOARD_CSV, ledger_path=sl.LEDGER, page=PAGE):
 
     sections = []
     for cls in ("commodity", "index", "world_index", "rate", "fx",
-                "equity", "global_equity", "sp500", "crypto"):
+                "equity", "global_equity", "sp500", "sp400", "sp600",
+                "crypto"):
         sub = board[board["class"] == cls]
         if len(sub):
             sections.append(_class_section(cls, sub))

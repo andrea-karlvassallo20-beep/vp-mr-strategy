@@ -55,7 +55,9 @@ def _write_tables(tmp):
 def test_board_merges_and_ranks(tmp_path):
     eq_csv, sp_csv, cr_csv = _write_tables(tmp_path)
     board = build_board(eq_csv=eq_csv, sp500_csv=sp_csv, top500_csv=cr_csv,
-                        global_csv=tmp_path / "none.csv")
+                        global_csv=tmp_path / "none.csv",
+                        allcrypto_csv=tmp_path / "none.csv",
+                        midsmall_csv=tmp_path / "none.csv")
     assert len(board) == 8
     assert set(board["class"]) == {"commodity", "index", "sp500", "crypto"}
     assert list(board["primed_score"]) == sorted(
@@ -86,7 +88,9 @@ def _kline_csv(path, dates, closes):
 def _board(tmp_path):
     eq_csv, sp_csv, cr_csv = _write_tables(tmp_path)
     return build_board(eq_csv=eq_csv, sp500_csv=sp_csv, top500_csv=cr_csv,
-                       global_csv=tmp_path / "none.csv")
+                       global_csv=tmp_path / "none.csv",
+                       allcrypto_csv=tmp_path / "none.csv",
+                       midsmall_csv=tmp_path / "none.csv")
 
 
 def test_ledger_seal_verify_and_tamper(tmp_path):
@@ -209,7 +213,9 @@ def test_board_merges_global_scan(tmp_path):
     gl_csv = tmp_path / "gl.csv"
     gl.to_csv(gl_csv, index=False)
     board = build_board(eq_csv=eq_csv, sp500_csv=sp_csv, top500_csv=cr_csv,
-                        global_csv=gl_csv)
+                        global_csv=gl_csv,
+                        allcrypto_csv=tmp_path / "none.csv",
+                        midsmall_csv=tmp_path / "none.csv")
     assert len(board) == 12
     by = board.set_index("series")
     assert by.loc["eurusd", "class"] == "fx"

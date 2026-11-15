@@ -122,7 +122,7 @@ to the heat-map page and the surprise ledger.
 | Column | Type | Rule |
 |---|---|---|
 | `series` | string | scan series name (perp symbol, or lowercase yahoo name) |
-| `class` | string | `commodity`, `index`, `world_index`, `rate`, `fx`, `equity`, `global_equity`, `sp500`, `crypto` |
+| `class` | string | `commodity`, `index`, `world_index`, `rate`, `fx`, `equity`, `global_equity`, `sp500`, `sp400`, `sp600`, `crypto` |
 | `venue` | string | `binance` or `yahoo` |
 | `last_date` | string | `YYYY-MM-DD` of the last bar the score was computed on |
 | `primed_score` | float | descriptive priming score from `clue_scan.primed_score`; 0-1 |

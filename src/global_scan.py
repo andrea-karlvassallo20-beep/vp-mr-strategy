@@ -53,6 +53,16 @@ WORLD_INDEXES = {
 }
 RATES = {
     "^TNX": "ust10y_yield", "^FVX": "ust5y_yield", "^TYX": "ust30y_yield",
+    "ZQ=F": "fedfunds_30d",
+}
+# New markets only. Index futures (ES/NQ/YM/RTY) and FX futures (6E/6J/...)
+# duplicate the spot indexes and FX pairs already on the board, and the
+# micro contracts duplicate the big ones - duplicates are skipped on
+# purpose: one market, one tile.
+EXTRA_COMMODITIES = {
+    "ZR=F": "rice", "ZO=F": "oats", "ZL=F": "soybean_oil",
+    "GF=F": "feeder_cattle", "CJ=F": "cash_butter", "DC=F": "milk_class3",
+    "KE=F": "kc_wheat", "ALI=F": "aluminum",
 }
 FX = {
     "DX-Y.NYB": "dollar_index", "EURUSD=X": "eurusd", "USDJPY=X": "usdjpy",
@@ -80,6 +90,7 @@ GLOBAL_EQUITIES.pop("BRK-B")  # already on the board via the S&P 500 scan
 UNIVERSE = (
     [(s, n, "world_index") for s, n in WORLD_INDEXES.items()]
     + [(s, n, "rate") for s, n in RATES.items()]
+    + [(s, n, "commodity") for s, n in EXTRA_COMMODITIES.items()]
     + [(s, n, "fx") for s, n in FX.items()]
     + [(s, n, "global_equity") for s, n in GLOBAL_EQUITIES.items()]
 )
@@ -143,7 +154,7 @@ def main():
             "range_pos", "ret30"]
     print(scan.head(10)[cols].to_string(index=False))
     print("\n=== per-class summary ===")
-    for cls in ("world_index", "rate", "fx", "global_equity"):
+    for cls in ("commodity", "world_index", "rate", "fx", "global_equity"):
         sub = scan[scan["class"] == cls]
         print(f"[{cls}] n={len(sub)}  deep coils="
               f"{int((sub['comp_days'] >= 20).sum())}  "
