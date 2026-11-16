@@ -190,13 +190,59 @@ def test_heatmap_page_generation(tmp_path):
     sl.seal_snapshot(board, k_per_class=2, ledger_path=ledger,
                      timestamp_utc_us=1_000)
     page = tmp_path / "heatmap.html"
-    out = build_page(board_csv=board_csv, ledger_path=ledger, page=page)
+    out = build_page(mega_csv=tmp_path / "none.csv", board_csv=board_csv,
+                     ledger_path=ledger, page=page)
     html = page.read_text()
     assert out["n_series"] == 8
     assert html.count('class="tile"') == 8
     assert "wheat" in html and "BTCUSDT" in html
     assert "The surprise ledger" in html
     assert "site.css" in html
+
+
+def test_heatmap_page_prefers_living_board(tmp_path):
+    # the mega dormancy table is the living board; the page must read it
+    # in preference to the stale clue-scan board table
+    mega = pd.DataFrame({
+        "series": ["a", "b", "c"], "class": ["etf", "etf", "crypto"],
+        "venue": ["yahoo"] * 3, "n_days": [500, 400, 300],
+        "comp_days": [10, 40, 5], "rvol_pct": [50.0, 10.0, 60.0],
+        "range_pos": [0.5, 0.2, 0.7], "stretch_z": [0.0, -1.0, 0.5],
+        "ret30": [0.0, 0.0, 0.0], "last_4sigma_days_ago": [10, 400, 3],
+        "primed": [False, True, False],
+        "dormancy_score": [1.0, 5.0, 0.5],
+    })
+    mega_csv = tmp_path / "mega.csv"
+    mega.to_csv(mega_csv, index=False)
+    board_csv = tmp_path / "stale.csv"
+    board_csv.write_text("series,class\nold,crypto\n")
+    page = tmp_path / "heatmap.html"
+    out = build_page(mega_csv=mega_csv, board_csv=board_csv,
+                     ledger_path=tmp_path / "no-ledger.jsonl", page=page)
+    html = page.read_text()
+    assert out["n_series"] == 3
+    assert out["source"] == "mega_dormancy_table.csv"
+    assert html.count('class="tile"') == 3
+    # the etf class gets a section - no class is silently dropped
+    assert "ETFs" in html
+    # the stale board's series never renders as a tile
+    assert ">old<" not in html
+
+
+def test_heatmap_page_sections_data_driven(tmp_path):
+    # an unknown class still renders: first-appearance order, no drop
+    board = _board(tmp_path)
+    board.loc[len(board)] = board.iloc[0]
+    board.loc[board.index[-1], "series"] = "weird_thing"
+    board.loc[board.index[-1], "class"] = "frontier_thing"
+    board_csv = tmp_path / "board.csv"
+    board.to_csv(board_csv, index=False)
+    page = tmp_path / "heatmap.html"
+    build_page(mega_csv=tmp_path / "none.csv", board_csv=board_csv,
+               ledger_path=tmp_path / "no-ledger.jsonl", page=page)
+    html = page.read_text()
+    assert "frontier_thing" in html
+    assert html.count('class="tile"') == 9
 
 
 def test_tile_color_monotonic():
