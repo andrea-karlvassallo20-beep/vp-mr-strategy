@@ -1,0 +1,1343 @@
+=== page 1 ===
+Trading in the Sunshine or in the Shade:
+Market Impact and Adverse Selection on Hyperliquid
+Davide Barone1 and Fabrizio Lillo1
+1Scuola Normale Superiore, Pisa, Italy
+Abstract
+Sunshine trading theory predicts that publicly disclosing trading intentions can reduce
+adverse selection and attract liquidity provision, lowering execution costs. Evidence is scarce,
+because explicit preannouncement of large orders is rare in traditional markets. We study
+Hyperliquid, a fully on-chain limit order book for cryptocurrency perpetual futures, where
+protocol-native TWAP orders disclose their terms from inception and remain visible while
+active, a natural form of sunshine trading. Using address-level data, we reconstruct 4.3 million
+hidden metaorders and compare them with 465,000 visible TWAP executions. The two
+execution styles differ sharply: hidden metaorders follow front-loaded, U-shaped schedules
+consistent with transient-impact optimal execution, whereas TWAPs trade nearly uniformly.
+We test the preannouncement predictions of Admati and Pfleiderer (1991). Visible TWAPs
+face lower execution costs than comparable hidden metaorders and leave a smaller permanent
+price impact. Hidden metaorders executed alongside already-visible same-direction TWAP
+flow incur higher permanent costs: adverse-selection costs shift toward non-announcers.
+Finally, visible TWAP programs elicit liquidity provision: while active, displayed depth rises
+and the book tilts toward the absorbing side, the more so the larger the announced order.
+1 Introduction
+Modeling market impact, i.e., how prices react to orders and trades, is of paramount importance
+both to understand how information is impounded in prices and to quantify transaction costs.
+This is even more true and challenging for metaorders, i.e. sequences of orders and trades
+executed gradually over a long time period and following a single investment decision. Kyle’s
+seminal paper [1] showed that informed traders optimally split large trades over time into child
+orders in order to balance execution costs against information leakage.
+Despite its importance, a satisfactory model and characterization of market impact are still
+not available for two main reasons: first, metaorder data are rarely available because they are
+typically proprietary information or must be identified statistically from special labeled data;
+second, market impact of metaorders in principle depends on many characteristics which might
+not be observable and/or suitably modeled and therefore the observed properties might be the
+result of heterogeneous aggregations.
+On the empirical side, studies converge toward a series of stylized facts of market impact.
+The first one is the square-root impact law [2, 3, 4, 5] stating that the expected signed price
+change, also called temporary impact1, I(Q) between the beginning and the end of a metaorder
+of size Q is well described by
+I(Q) =±YσD
+( Q
+VD
+)δ
+, (1)
+where σD is daily volatility, VD daily traded volume, the sign is positive (negative) for buys (sells),
+and δ≃ 1/2. More recent analyses show a linear behavior for small volumes or participation
+1This quantity is sometimes also called peak impact. Temporary impact should not be confused with the
+temporary component of impact, used for example in the Almgren-Chriss model.
+1
+arXiv:2606.15715v1  [q-fin.TR]  14 Jun 2026
+
+=== page 2 ===
+rates [6, 7, 8, 9]. Notice that the square-root impact law indicates that the style of trading is
+not relevant for the price impact, a conclusion that is possibly valid only within some region of
+the trading trajectories.
+Second, a substantial amount of literature [10, 11, 12] investigated the price trajectory during
+the metaorder execution. It is typically found that the price increases in a concave way as a
+function of time and, after the end of the metaorder execution, it decays from the peak impact
+value. The amount of reversion is highly debated, but the evidence unambiguously indicates
+that market impact has a significant transient component. The long-term limit of the signed
+price change, named permanent impact of the metaorder, should be related to the information
+content of the trade. For example, Waelbroeck and Gomes [13] show that after the execution of
+uninformed metaorders prices tend, on average, to revert toward their pre-execution level.
+All these empirical regularities are observed in markets where trades and orders are anony-
+mous, i.e. the identity of the investor is not known to the other participants. This element is key
+to making metaorder execution meaningful: as suggested by Kyle, an informed trader has an
+incentive to hide her trading intention. In traditional markets, many trading strategies attempt
+to statistically identify large metaorder executions in order to predict future price changes. It is
+therefore natural to ask how market impact and price trajectories depend on whether trading
+intentions are revealed ex ante, i.e. on what the literature terms sunshine trading.
+Sunshine trading refers to a trading strategy in which large institutional investors pre-
+announce their intention to trade, for example, disclosing that they will buy or sell a given
+quantity of an asset over a specified period. The idea, introduced in the market microstructure
+literature, notably by Admati and Pfleiderer [14], is that transparency can mitigate the classic
+problem of adverse selection faced by uninformed or liquidity traders. In standard models,
+large traders who trade secretly are mistaken for informed traders, leading market makers to
+widen spreads and increase price impact. By contrast, when trades are publicly announced,
+i.e. “in the sunshine”, other market participants can better infer that the order flow is not
+information-driven, which reduces uncertainty and can improve execution.
+Theoretical predictions are nuanced. On one hand, sunshine trading can lower price impact
+and trading costs by reducing informational asymmetries and encouraging liquidity provision [14].
+On the other hand, public disclosure exposes the trader to front-running or strategic behavior
+by other market participants, who may trade ahead of the announced order and move prices
+adversely [15]. As a result, equilibrium models typically predict a trade-off: sunshine trading is
+more attractive when adverse selection is severe and markets are illiquid, but less desirable when
+strategic trading and predatory behavior dominate. Overall, the literature highlights that the
+optimal degree of transparency depends on market structure, the presence of informed traders,
+and the strategic responses of other agents.
+The traditional empirical evidence is relatively narrow because explicit sunshine trading
+is rare. A relevant quasi-natural experiment is Nasdaq’s “flash orders”, which temporarily
+revealed marketable orders to a subset of participants before routing. Skjeltorp, Sojli, and
+Tham [16] find that the introduction of flash functionality improved Nasdaq liquidity and that
+market quality deteriorated when it was removed, which is broadly consistent with the idea that
+selective disclosure can mitigate information asymmetry. Related evidence from predictable
+crude-oil ETF rolls points in the same direction, emphasizing liquidity provision and market
+resiliency rather than systematic predation [17]. At the same time, both the theoretical and
+policy literatures stress that transparency is not unambiguously beneficial: if disclosure invites
+anticipation, predation, or fragmented access to information, it can simply shift price impact
+earlier rather than eliminate it.
+The rise of blockchain-based decentralized exchanges (DEXs) provides a related but distinct
+setting in which to reconsider sunshine trading. In DeFi, transparency is not only a trader’s
+disclosure choice, but also a protocol-level design variable that depends on market architecture,
+block production, and execution ordering. In principle, on-chain data make order flow and
+2
+
+=== page 3 ===
+execution outcomes publicly observable and, depending on the protocol design, trading intentions
+may become visible before execution. This transparency is especially relevant for predatory
+trading. In traditional markets, the main concern is front-running or strategic order antici-
+pation after disclosure. In DeFi, related mechanisms include front-running, sandwich attacks,
+transaction-ordering games, and, more generally, MEV extraction [18, 19, 20]. These concerns
+have motivated several mitigation mechanisms, such as private order flow, private or encrypted
+mempools, batch auctions, and MEV-protection designs.
+This connection with sunshine trading becomes especially close with the development of
+on-chain central limit order books, which are more directly comparable to classical electronic
+markets than Automated Market Makers (AMMs). DeFi is therefore a useful laboratory for
+studying the costs and benefits of transparency.
+In this paper, we investigate the role of sunshine trading in price impact and transaction costs
+by using the unique environment provided by the Hyperliquid blockchain [21]. Hyperliquid is a
+market for spot and perpetual futures based on a fully on-chain central limit order book (CLOB),
+i.e., the standard market mechanism in traditional finance. Its architecture makes market
+activity observable at high frequency: order flow, executions, account-level activity, and the
+address initiating each action can be reconstructed from public data. More importantly, traders
+on Hyperliquid can use protocol-native TWAP orders, which automatically split a metaorder
+into child orders submitted at regular intervals. Since the existence and main parameters of a
+native TWAP are visible from inception, these orders provide a natural form of sunshine trading
+in a traditional electronic market. Alongside them, we reconstruct statistical metaorders, i.e.,
+executions carried out without a protocol-native mechanism and instead implemented through
+proprietary execution methods. We identify them by aggregating sequences of same-sign market
+orders from the same address under a standard splitting hypothesis [22, 23, 24]. This allows us
+to compare automated TWAP programs, whose parent-order parameters are observable from
+inception, with latent metaorders reconstructed ex post, whose intended size, horizon, and
+execution rule are not directly observed.
+Our main findings are as follows. First, at the aggregate level native TWAPs have systemati-
+cally lower temporary impact than statistical metaorders, and the two classes differ sharply in
+execution dynamics: statistical metaorders follow U-shaped execution schedules and markedly
+non-concave, double-inflection price trajectories, with a pronounced peak around completion
+followed by post-trade decay, consistent with optimal strategic execution under a transient-impact
+interpretation; native TWAP trajectories, by contrast, are much closer to the smooth, concave
+square-root path associated with uniform trading in propagator models [12, 7]. We then organize
+the remaining evidence around the four mechanisms in Admati and Pfleiderer’s analysis of
+preannouncement. In particular we find that
+1. Announcers face lower costs: at the median volatility and conditional on execution
+characteristics, visible TWAPs have about 9 basis points lower temporary impact than
+latent metaorders.
+2. Announced flow is less informationally adverse: after completion, native TWAPs leave
+roughly 5 basis points less post-execution price displacement than comparable statistical
+metaorders.
+3. The mirror cost falls on nonannouncers: hidden metaorders executed in the direction of
+already-visible TWAP flow face higher post-execution price displacement, about 0.8–0.9
+basis points for a 10 percentage point increase in same-side visible TWAP dominance.
+4. The limit-order book responds to visible execution: during active TWAP windows, displayed
+depth rises and the book tilts toward the absorbing side; these displayed-liquidity responses
+scale with announced size and are not explained by favorable pre-trends.
+3
+
+=== page 4 ===
+Taken together, the evidence is consistent with a sunshine-trading interpretation, in which
+publicly visible TWAP flow is on average less informed and its visibility elicits liquidity provision
+rather than predatory front-running [14, 16].
+The rest of the paper is organized as follows. Section 2 describes the Hyperliquid data,
+the construction of native TWAP and statistical metaorder samples, and the main descriptive
+statistics. Section 3 studies aggregate market impact, impact trajectories, and execution schedules
+for the two execution regimes. Section 4 interprets the evidence through the lens of sunshine
+trading, examining announcer costs, the information content of announced flow, the costs borne
+by nonannouncers, and the order-book response around visible execution. Section 5 discusses
+the main limitations of the analysis. Section 6 concludes.
+2 A Unique Dataset: Hyperliquid
+Our study is based on publicly observable Hyperliquid data. Hyperliquid is a purpose-built Layer-
+1 blockchain whose state execution is split into two tightly integrated components: HyperCore,
+which hosts fully on-chain spot and perpetual-futures central limit order books (CLOBs), and the
+HyperEVM, a general-purpose smart-contract environment secured by the same consensus [21].
+Consensus is implemented via HyperBFT, a custom BFT protocol explicitly described as inspired
+by HotStuff and successors [21, 25]. Importantly, the protocol’s consensus proceeds in rounds
+that may commit an execution block and validator-set parameters evolve over staking epochs
+[21]. Running nodes is permissionless, while the active validator set is selected transparently by
+stake. As of the documentation accessed on June 1, 2026, the active set is composed of the top
+24 validators by delegated stake [21].
+Consensus is optimized for end-to-end latency. End-to-end latency is measured as the
+duration between sending a request and receiving a committed response. For an order placed
+from a geographically co-located client, end-to-end latency has a median of 0.2 seconds and a
+99th percentile of 0.9 seconds [21].
+This architecture is especially useful here because executions and account-level activity are
+observable at transaction frequency and can be reconstructed directly from blockchain data.
+We obtain the raw historical data through Hydromancer’s Reservoir, a public Hyperliquid data
+layer [26]. Other recent work also exploits Hyperliquid’s on-chain message data to study market
+microstructure [27, 28].
+We study all 201 Hyperliquid perpetual markets over the period from July 28, 2025, to
+March 23, 2026. These instruments are crypto perpetual futures: linear contracts written
+on the oracle index of the corresponding underlying spot asset, with no expiration date and
+hourly funding. In Hyperliquid’s main contract specification, perpetuals are USDC-margined
+and USDT-denominated: collateral and traded notionals are accounted for in USDC, while
+oracle prices are generally denominated in USDT. Accordingly, throughout the paper, order
+size, market volume, and traded value are measured as USDC notional amounts, which we
+refer to as USD for familiarity since USDC is pegged one-to-one to the US dollar. The sample
+contains more than 641 million fills, corresponding to around 365 million market orders and
+about USD 1.93 trillion in traded volume. Because Hyperliquid trades continuously 24/7, we
+compute the normalization variables used in the analysis, such as daily traded volume and
+volatility, over a 24-hour forward-looking window anchored at the metaorder start.
+A key feature of the dataset is wallet-level attribution: each action can be assigned to the
+initiating on-chain address. We identify metaorders in two ways:
+• protocol-native TWAP metaorders: Hyperliquid offers native TWAP execution as a
+protocol-level mechanism for splitting a metaorder into a sequence of child orders submitted
+automatically by validators every 30 seconds. The protocol aims to keep execution close
+to a time-proportional schedule, subject to a maximum slippage constraint of 3% on each
+4
+
+=== page 5 ===
+slice, and allows later slices to increase in size when earlier ones underfill, with catch-up
+behavior bounded by a maximum of three times the normal suborder size [21]. These native
+TWAPs are especially relevant for our metaorder and impact analysis because they combine
+ex-ante observability with ex-post data traceability. On the one hand, the full parent-order
+instruction becomes publicly visible as soon as the corresponding on-chain transaction is
+submitted, allowing market participants to observe the existence of the TWAP program and
+its main characteristics, including direction, total size, execution horizon, and other execution
+parameters. This makes native TWAPs a protocol-level form of sunshine trading: unlike
+latent metaorders reconstructed ex post from same-address same-sign trades, they reveal the
+execution intention before completion.2 On the other hand, at the data level, TWAP child
+executions are identifiable because they are exposed as TWAP slice fills and therefore appear
+with a zero transaction hash (0x00...00); moreover, TWAP-related fills carry a dedicated
+twapId field that groups executions belonging to the same parent TWAP [21].
+• statistical metaorders: sequences of consecutive same-sign market trades from the same
+address on the same pair, grouped under a splitting hypothesis when inter-arrival times are
+below 30 minutes.
+After applying our sample restrictions, the final dataset contains approximately 4.3 million
+statistical metaorders, retaining only reconstructed metaorders with at least 10 child orders,
+a stricter threshold that reduces false positives from coincidental order clustering, and about
+465,000 native TWAP metaorders with at least 5 child orders, as protocol-level identification
+makes the reconstruction unambiguous even for shorter sequences. We further restrict both
+samples to executions that complete within 24 hours, consistent with the rolling 24-hour window
+used to normalize size and volatility, since the traded fraction of a longer execution is not well
+defined relative to a 24-hour reference window. This cap is immaterial: among reconstructed
+metaorders with at least 10 child orders it removes only 28,904 orders, 0.7% by count and 1.5%
+of notional.
+For the order-book analysis, we complement the transaction data with a separate sample of
+limit-order-book snapshots. The downloaded book data cover the investigated markets from
+December 15, 2025, to March 23, 2026, at one-minute frequency. The raw book files contain
+18,701 pair-day panels and about 26.9 million snapshots. For each pair-minute snapshot, we
+observe the first 20 price levels on both sides of the book, including prices, displayed sizes, and
+the number of resting orders at each level. The shorter book sample reflects data availability:
+order-book snapshots are available from December 15, 2025 onward.
+2.1 Metaorder Statistics
+We begin with descriptive statistics for our sample. We characterize each execution by its order
+size, physical duration, traded fraction, volume-time duration, participation rate, and number of
+child orders. For order i, executed on perpetual market mi, we define notional size, physical
+duration, and child-order count as
+Qi :=
+∑
+k∈i
+pk|qk|, Ti :=te,i −ts,i, Ni := #{k :k∈i}.
+Here qk is the signed quantity executed in child trade k, pk is the corresponding execution price,
+and Ti is measured in minutes. Since the order sign is encoded separately by ϵi, Qi is always
+positive.
+We use two market-volume normalizations. First, we compute the total notional volume
+traded on the same perpetual market over a rolling 24-hour window starting at the order start
+2Active TWAPs can be inspected, for example, on HypurrScan: https://hypurrscan.io/dashboard.
+5
+
+=== page 6 ===
+time:
+V24h,i :=
+∑
+j:mj =mi
+tj ∈[ts,i,ts,i+24h)
+pj|qj|, ϕi := Qi V24h,i .
+Thus ϕi is the traded fraction. This normalization is not based on calendar days or on a specific
+time zone: each order is normalized using a trade-specific 24-hour window anchored at its own
+start time.
+Second, we measure the amount of market activity taking place during the execution window
+of the order:
+V exec i := ∑
+j:mj =mi
+tj ∈[ts,i,te,i]
+pj|qj|, Fi := V exec i V24h,i , ηi := Qi V exec i .
+Here Fi is the execution duration measured in volume time, namely the fraction of 24-hour
+market volume traded during the execution window, while ηi is the average participation rate
+over the same window. By construction, ϕi = ηiFi. Thus ηi measures how aggressive the order
+is relative to contemporaneous market activity, rather than relative to daily volume.
+Figure 1 reports the distributions of these quantities for the statistical metaorders and
+native TWAP orders in our sample. The top panels show estimated marginal densities of order
+notional Q, volume-time duration F, and participation rate η. The bottom-left panel reports
+the distribution of the number of child orders N, while the remaining bottom panels show the
+joint distribution of F and η.
+Figure 1: Descriptive statistics for statistical metaorders and native TWAP orders. The top row
+reports the marginal distributions of order notional Q, volume-time duration F = V exec/V24h,
+and participation rate η = Q/V exec. The bottom-left panel reports the distribution of the
+number of child orders N. The two remaining bottom panels report log-density heatmaps for
+the joint distribution of volume-time duration and participation rate, separately for statistical
+metaorders and native TWAPs. Black lines denote statistical metaorders and red lines denote
+native TWAPs; dashed lines are tail fits.
+The size distributions are broadly comparable in the center but differ in the right tail.
+The median statistical metaorder has notional about 8.5 thousand USD, while the median
+6
+
+=== page 7 ===
+native TWAP is about 9.1 thousand USD. At high quantiles, however, TWAPs are larger: the
+95th percentile is roughly 496 thousand USD for TWAPs, compared with 256 thousand USD
+for statistical metaorders. Thus native TWAPs include a substantial tail of large announced
+executions.
+The volume-time duration distribution shows that TWAPs tend to span slightly more market
+activity. Median F is about 0.009 for statistical metaorders and 0.012 for native TWAPs, meaning
+that the median execution takes place over roughly 0.9% and 1.2%, respectively, of the market’s
+rolling 24-hour notional volume. The difference is more pronounced in the upper tail: the 95th
+percentile of F is about 0.23 for TWAPs, compared with about 0.16 for statistical metaorders.
+Native TWAPs therefore tend to spread execution over a larger fraction of contemporaneous
+market volume.
+The most important difference is in participation rates. Statistical metaorders are much
+more aggressive at the median: median η is about 3.4%, while median TWAP participation is
+about 0.45%. This gap remains large throughout the distribution. The 75th percentile is about
+20% for statistical metaorders and about 5.4% for TWAPs. Native TWAPs therefore tend to
+spread their volume over more market activity, even when their absolute notional is large.
+The child-order count distribution shows a further difference in execution style. Statistical
+metaorders are typically composed of relatively few child orders: the median count is N = 16,
+with a 75th percentile of 25 and a 95th percentile of 73. Native TWAPs have a heavier child-count
+distribution: their median is N = 30, but the 75th and 95th percentiles rise to about 61 and
+527, respectively. Thus TWAPs are not only less participatory at a given moment; they also
+tend to implement that lower participation through a finer slicing of the metaorder.
+The joint heatmaps in the bottom row sharpen this picture. In both samples the populated
+region is organized around a strong downward-sloping envelope in the (F,η) plane. This is the
+natural geometry of the decomposition ϕ = ηF: for a given traded fraction ϕ, orders with larger
+volume-time duration must have lower participation, while very aggressive orders must be short
+in volume time. Since extremely large traded fractions are rare in practice, the upper-right
+region, long in volume time and highly participatory at once, is essentially empty.
+Within this common envelope the two populations occupy different regions. Statistical
+metaorders are more dispersed and place much more mass at high participation rates, especially
+for short and intermediate values of F. Native TWAPs are shifted toward lower participation
+and somewhat larger volume-time duration, consistent with scheduled execution that deliberately
+spreads volume over market activity.
+Taken together, the marginal distributions, child-count panel, and joint heatmaps show that
+the contrast between the two samples is not primarily a difference in order size; it is a difference
+in execution footprint. Statistical metaorders are typically more concentrated and aggressive,
+whereas native TWAPs are larger in the right tail, split into more child orders, and executed
+more passively relative to contemporaneous volume.
+3 Market Impact and Price Trajectories
+In this section we study market impact at three complementary levels. We first analyze the
+square-root law, namely the relation between temporary impact and the traded fraction ϕ. This
+provides an aggregate comparison of execution costs between native TWAPs and statistical
+metaorders, abstracting from the detailed timing of trades. We then turn to the dynamic
+dimension of impact, studying both price trajectories during execution and the corresponding
+execution schedules. These objects allow us to understand how impact builds up over the life of
+a metaorder and whether different price trajectories are associated with different order-splitting
+patterns. Finally, we use a simple transient-impact benchmark to interpret the observed shapes.
+7
+
+=== page 8 ===
+3.1 Square-Root Law and Impact Surface
+We start from the standard aggregate benchmark in the market-impact literature: the dependence
+of temporary impact on order size expressed as a fraction of 24-hour market volume. For each
+order, we use the traded fraction ϕi =Qi/V24h,i, as defined in Section 2.1.
+Volatility normalized temporary impact is defined as the signed relative price change between
+the beginning and the end of execution, rescaled by the daily volatility of the same market:
+Itmp,i :=ϵi
+Smi (te,i)−Smi (ts,i)
+Smi (ts,i)σD,i
+, σD,i := 1√ 4 ln 2 ln (Hi Li ) .
+Here Smi (t) is the last trade price of market mi at time t, and σD,i is the daily volatility of
+the same market. We estimate σD,i over the rolling 24-hour window [ts,i,ts,i + 24h) using the
+Parkinson estimator [29], where Hi and Li are the highest and lowest transaction prices observed
+on market mi over that window.
+We estimate Itmp(ϕ) by averaging Itmp,i within bins of ϕi. We report our results in Figure 2.
+The fitted curves are estimated over the range ϕ≥ 10−5.
+Figure 2: Temporary market impact Itmp as a function of the 24-hour traded fraction ϕ = Q/V24h
+for statistical metaorders and native TWAP orders. Points denote binned means and error bars
+denote ±1 standard error. The plot is shown on double-logarithmic axes. The solid red curve is
+the fitted statistical-metaorder relation log10(Itmp) = A arctan(B log10(ϕ) + C) + D, while the
+dashed blue curve is the fitted TWAP power law log10(Itmp) = α + β log10(ϕ). Vertical dashed
+lines mark the intersections of the two fitted curves.
+The two populations are not described by a common aggregate impact curve. Native TWAP
+orders display an approximately linear relation in log-log scale over the displayed range:
+log10 I TWAP tmp (ϕ) =α +β log10 ϕ,
+with estimates ˆα = −0.780 ± 0.004 and ˆβ = 0.303 ± 0.002. Equivalently, I TWAP tmp (ϕ) ∝ ϕ0.303,
+with an exponent well below the square-root benchmark.
+8
+
+=== page 9 ===
+Statistical metaorders display a markedly different shape. Their binned impact is fitted by
+the nonlinear arctangent specification
+log10 I stat tmp(ϕ) =A arctan(B log10 ϕ +C) +D,
+with estimates
+ˆA = 0.256± 0.003, ˆB = 3.083± 0.081, ˆC = 7.497± 0.204, ˆD =−1.458± 0.002,
+and R2 = 0.968 across the fitted bins. This functional form captures the flattening of statistical-
+metaorder impact at low traded fractions, the sharp increase over intermediate traded fractions,
+and the subsequent saturation at high ϕ.
+The fitted curves intersect at approximately
+ϕ = 5.83× 10−4, ϕ = 2.71× 10−3, ϕ = 7.72× 10−2.
+Thus the ordering of statistical-metaorder and TWAP impact is not constant over the support.
+The main point is not the precise location of these crossings, but the fact that the two samples
+have different aggregate shapes: TWAP impact is close to a regular power law, whereas statistical
+metaorder impact is strongly curved and saturating. In this sample, therefore, a single square-root
+law does not provide a universal description of temporary impact.
+The traded fraction ϕ summarizes order size in a single variable, but it does not distinguish
+between two economically different dimensions: how long the order is executed and how
+aggressively it participates in the market. To separate these effects, we use the decomposition
+ϕi =ηiFi,
+where Fi is volume-time duration and ηi is the average participation rate, both defined in
+Section 2.1.
+Pooling statistical metaorders and native TWAPs, we estimate the temporary-impact surface
+in (log10 η, log10 F, log10 Itmp) by binning orders in the (η,F ) plane and computing the average
+temporary impact in each populated bin. We then fit a separable power law to the resulting
+pooled binned surface:
+Itmp(η,F ) =Y ηδFγ1 .
+This specification provides a good description of the aggregated surface, with
+ˆY = 0.186± 0.004, ˆδ = 0.118± 0.003, ˆγ1 = 0.306± 0.003,
+and R2 = 0.886.
+Overall, the fitted pooled surface varies more along the duration dimension than along the
+participation-rate dimension. The exponent on F is about 0.31, whereas the exponent on η is
+about 0.12. Thus, conditional on the decomposition ϕ = ηF, the amount of market activity
+spanned by the execution is the stronger predictor of temporary impact. Participation still
+enters positively, but with a substantially smaller elasticity. The one-dimensional square-root-law
+benchmark is therefore incomplete: orders with the same traded fraction can have different
+impact depending on how that fraction is split between participation rate and volume-time
+duration. This contrasts with Zarinelli et al. [6], who find a joint power-law fit with both
+exponents close to one half. In our pooled Hyperliquid sample, both elasticities are smaller
+and the surface is much more tilted toward volume-time duration. Thus, the deviation from
+the square-root benchmark is not a balanced dependence on η and F, but mainly reflects the
+dominance of the duration channel.
+9
+
+=== page 10 ===
+3.2 Impact Trajectories and Execution Schedules
+The previous analysis compresses each metaorder into a single temporary-impact measure. This
+is useful for comparing aggregate execution costs, but it discards the dynamic information
+contained in the price path during execution. We therefore study impact trajectories to compare
+how impact builds up over the life of a metaorder and how it evolves after completion.
+For this analysis, time is measured in physical time. For each metaorder i, let Ti := te,i−ts,i
+be its clock-time duration. If t denotes elapsed time from the start of the metaorder, normalized
+physical time is τ := t/Ti, so that τ = 0 corresponds to the start of execution and τ = 1 to
+completion. Values τ < 0 and τ > 1 describe the pre- and post-execution windows shown in the
+figure. For each order i, we construct the signed impact trajectory
+Ii(τ) = ϵi σD,i
+(Si(τ)
+Si(0) − 1
+)
+,
+where Si(τ) := Smi (ts,i + τTi) denotes the last trade price of market mi at normalized physical
+time τ.
+To compare trajectory shapes across orders with different aggregate impact scales, we
+normalize each signed trajectory by the fitted temporary impact predicted for its execution class.
+Let g(i)∈{stat, TWAP} denote the class of order i. We define
+~Ii(τ) = Ii(τ) ˆIg(i) tmp (ϕi) ,
+where
+log10 ˆI stat tmp (ϕ) =A arctan(B log10 ϕ +C) +D, log10 ˆI TWAP tmp (ϕ) =α +β log10 ϕ.
+are the fitted aggregate-impact laws with the estimated parameters. This normalization removes,
+separately for the two execution mechanisms, the average dependence of temporary impact on
+traded fraction and makes the figure mainly informative about trajectory shape rather than
+absolute impact levels. It does not, however, force the trajectory to equal one at completion:
+the denominator is the impact predicted by the aggregate law at ϕi, not the realized completion
+impact Ii(1); each panel averages order-level ratios, which need not coincide with the ratio of
+averages; and the law is pooled in ϕ while the panels condition on (T,η). The completion level
+~Ii(1) is therefore itself informative, measuring how far realized impact in each (T,η) cell departs
+from the one-dimensional square-root law.
+Figure 3 compares average impact trajectories after conditioning jointly on clock-time
+duration Ti and participation rate ηi. On the normalized left axis, native TWAP trajectories rise
+in a concave, strictly increasing way over the execution interval; in several panels, however, they
+lie substantially below one, that is, below the impact predicted by the aggregate square-root
+law. Plotted in signed basis points on the right vertical axis, the same trajectories display
+the typical concave, square-root-like profile documented in the empirical literature, rising as
+execution proceeds and well fitted by a power law of the form Aτγ [12, 6].
+Statistical metaorders display a different dynamic pattern. Their trajectories are markedly
+non-concave, with a double-inflection shape, a sharp peak around completion, and a more
+pronounced post-trade decay. This pattern is not an artifact of the normalization: the same
+qualitative shape is also observed when trajectories are expressed in signed basis points. This
+suggests that the difference between statistical metaorders and native TWAPs is not only a
+difference in impact levels, but also in the way impact accumulates during execution and relaxes
+afterwards. Such patterns are consistent with optimal execution under transient-impact models
+[30, 31], which prescribes a U-shape in the trading velocity.
+The pre-execution segments in Figure 3 reveal a further difference between the two regimes:
+the price conditions under which execution begins. Statistical metaorders start on average against
+10
+
+=== page 11 ===
+Figure 3: Average signed impact trajectories for statistical metaorders and native TWAP orders,
+conditional on clock-time duration Ti and participation rate ηi. The nine panels correspond to
+a 3 × 3 sort: rows by Ti and columns by ηi, both ordered increasingly from left to right and
+from top to bottom. The horizontal axis reports normalized physical time τ = t/Ti, where
+t is elapsed time from the start of the metaorder; τ = 0 marks the start of execution and
+τ = 1 marks completion. Each panel uses two independent vertical axes: the left axis reports
+the impact-law-normalized trajectory ~Ii(τ) = Ii(τ)/ˆIg(i) tmp (ϕi), while the right axis reports the
+corresponding native TWAP trajectory in signed basis points. Black solid lines denote statistical
+metaorders and red solid lines native TWAPs on the left axis; shaded bands denote ±1 SEM
+around the mean trajectory. The dotted dark-red line shows the TWAP trajectory in basis
+points on the right axis, and the dashed red line reports a power-law fit Aτγ.
+the recent price movement: over a 30-minute window before the start, the signed pre-start return
+is −7.0 basis points on average (median −3.9), and only 47.7% of pre-start moves are in the
+direction of the subsequent order. Native TWAPs begin with the trend: +18.2 basis points on
+average (median +13.5), with a same-direction share of 58.4%. This is a property of the entry
+decision rather than of the market states the two groups select: measured 24 hours before the
+start, the gap vanishes (−0.2 basis points, p = 0.73). Latent metaorders are thus on average
+contrarian, while announced TWAPs are trend-following.
+To understand whether these differences in price trajectories are related to differences in
+trading schedules, we next study the cumulative fraction executed over normalized physical
+time. Let Qi(τ) denote the amount executed by elapsed time τTi, with τ∈ [0, 1]. We define the
+execution schedule as
+Ci(τ) := Qi(τ) Qi .
+11
+
+=== page 12 ===
+Thus Ci(τ) is the cumulative fraction of the metaorder executed by normalized physical time τ.
+A linear schedule, Ci(τ) =τ, corresponds to uniform execution in physical time.
+Figure 4: Average normalized execution schedules for statistical metaorders and native TWAP
+orders, conditional on clock-time duration Ti and participation rate ηi. The horizontal axis
+reports normalized physical time τ = t/Ti ∈ [0, 1], and the vertical axis reports the execution
+schedule Ci(τ). Black lines denote statistical metaorders and red lines native TWAP orders; the
+dashed diagonal is the linear benchmark corresponding to uniform execution in physical time.
+Figure 4 shows that the difference in trajectories is mirrored by a difference in execution
+schedules. Native TWAP orders are, by construction, a linear benchmark: on Hyperliquid, the
+metaorder is split into regularly spaced child orders over the execution interval. The positive
+intercept visible in the figure is mechanical, since the first child trade is assigned to τ = 0 in
+our measurement of the cumulative schedule. Statistical metaorders, instead, are systematically
+non-linear: the execution rate is about 1.5–1.7 times the uniform benchmark over the first decile
+of normalized time, falls to 0.6–0.8 in the middle of the window, and rises again to 1.1–1.4 over
+the last decile, before a final step at τ = 1 that contains the mechanical mass of the last child
+order (≈ 1/N, analogous to the intercept at τ = 0). This asymmetric, front-loaded U-shape is
+typical of optimal execution under a transient-impact model with risk aversion.
+A natural concern is that the endpoint of a reconstructed metaorder is defined ex post by its
+last trade, so a trader who stops because the price has moved would mechanically concentrate
+peak impact at completion. The schedules argue against this reading. Price-contingent stopping
+at a constant trading rate would leave the interior schedule flat, with only a final mechanical step
+of size ≈ 1/N; instead, the acceleration builds over the entire last decile. Moreover, the shape
+does not respond to the realized price path: splitting metaorders by the sign of the in-window
+price move, both groups show the same terminal acceleration (1.01 vs. 1.03 times the uniform
+12
+
+=== page 13 ===
+benchmark). Completion is anticipated by the execution program, not triggered by the price.
+Taken together, Figures 3 and 4 support a transient-impact interpretation. Nearly uniform
+TWAP execution generates smooth, square-root-like trajectories, whereas the U-shaped schedules
+of statistical metaorders are associated with stronger curvature, completion peaks, and S-shaped
+trajectories. We do not claim structural identification of an optimal-execution model; the
+evidence is more modest, but it is consistent with the transient-impact model. Appendix A
+reviews the price trajectories expected under the transient impact model and their relation with
+the empirical data.
+4 Sunshine Trading
+The term sunshine trading refers to the preannouncement of a trader’s intended order before
+execution. Admati and Pfleiderer [14] analyze this mechanism by separating two effects of
+preannouncement. The first is an informational effect. In their baseline model with heterogeneous
+private information and zero entry costs, all speculators are already present in the market.
+Preannouncement therefore does not change the size of the market; instead, it changes what
+the market learns from order flow. If the announced demand is known to come from liquidity
+traders it is separated from the order flow that may be privately informed. In this case,
+preannouncement lowers the expected trading costs of announcers, raises the expected trading
+costs of nonannouncers, lowers the aggregate expected trading costs of liquidity traders, and
+makes prices more informative.
+The second effect operates through the participation of liquidity suppliers. In a separate
+model with no private information but positive entry costs, speculators must pay a fixed cost to
+enter the risky-asset market. Without preannouncement, entry is based on the distribution of
+liquidity demand. With preannouncement, entry can instead condition on the realized announced
+demand. When entry costs are sufficiently high, this can increase the effective supply of liquidity
+around announced orders and reduce announcers’ expected trading costs. When entry costs
+are low, however, most speculators would enter even without preannouncement, so the benefit
+from coordinating entry is limited and the effect on trading costs can reverse. Thus, the model
+predicts a clear informational selection effect, while the liquidity-supply channel depends on the
+importance of the entry margin.
+Hyperliquid provides an empirical analogue of these mechanisms. Protocol-native TWAP
+orders are visible while active and reveal the main features of the execution program before
+completion. Statistical metaorders, by contrast, are inferred only ex post from same-address
+same-sign trading sequences. The relevant comparison is therefore not simply between two
+execution algorithms, but between two execution regimes that differ in ex-ante observability.
+Native TWAPs play the role of visible liquidity demand, while statistical metaorders provide a
+benchmark for latent order splitting.
+We organize the evidence around four empirical counterparts of the Admati–Pfleiderer results.
+First, we test whether visible TWAPs have lower execution costs than otherwise comparable
+hidden metaorders, as predicted for announcers in the informational model and in the costly-
+entry model when the entry margin is sufficiently important. Second, we test whether visible
+TWAP flow is less informationally adverse by studying post-execution price persistence: if
+announced flow is less informed, it should leave a smaller permanent price displacement after
+completion. Third, we ask whether visible TWAP activity worsens the execution costs of hidden
+non-announcing traders, as in the adverse-selection effect on nonannouncers, or instead benefits
+them through a liquidity-supply externality. Fourth, we study the limit-order-book response
+around active TWAP windows as the observable counterpart of the market’s liquidity-supply
+response to preannounced execution.
+Since traders self-select into native TWAP execution, the comparison should be interpreted
+as an equilibrium comparison between visible and latent execution regimes, rather than as a
+13
+
+=== page 14 ===
+randomized treatment of order visibility.
+4.1 Trading Costs of Announcers
+The first empirical prediction concerns the trading costs of announcing traders. If preannounce-
+ment separates visible liquidity demand from potentially informed order flow, or if it attracts
+additional liquidity supply when entry margins are important, announced orders should face
+lower execution costs than comparable latent orders.
+We test this prediction by comparing the volatility-normalized temporary impact Itmp,i of
+protocol-native TWAPs and statistical metaorders. We compare groups on the common support
+of (ηi,Fi), where ϕi = ηiFi, to account for the distributional differences between the two samples
+documented in subsection 2.1. We also restrict the analysis to the second and third participation
+columns of the 3 × 3 duration–participation sort, excluding the lowest-participation region where
+signed price changes are dominated by idiosyncratic volatility rather than execution impact. We
+further require F∈ [3× 10−4, 1] and at least 50 observations per group in each (η,F ) cell.
+Figure 5: Common-support temporary-impact surfaces for statistical metaorders and native
+TWAPs. The top-left panel reports the surface for statistical metaorders, the top-right panel the
+surface for native TWAPs, and the bottom panel the log difference log10
+(
+I stat tmp/I TWAP tmp
+)
+. The
+plotted grid contains 562 populated common-support cells, representing 2,543,655 statistical
+metaorders and 200,916 native TWAPs. The log-difference panel is computed on the 470 cells in
+which both groups have positive mean temporary impact. Positive values in the bottom panel
+indicate cells in which statistical metaorders have larger volatility-normalized temporary impact
+than native TWAPs.
+Figure 5 reports the resulting surfaces. Statistical metaorders have larger temporary impact
+than native TWAPs in 81% of the populated common-support cells. Restricting to the cells
+14
+
+=== page 15 ===
+where both means are positive, this fraction is 79%, and weighting cells by the smaller of the
+two group counts raises it to 88%. The median log difference is 0.37, corresponding to a median
+impact ratio of about 2.3.
+The gap is concentrated at short and intermediate volume-time durations. For F < 3 × 10−3,
+statistical metaorders exceed native TWAPs in every positive cell, with a median ratio of about
+5.4. For 3 × 10−3 ≤F < 3 × 10−2, the median ratio is about 3.1. For F≥ 3 × 10−2, the two
+surfaces nearly coincide, with a median ratio close to one and an unstable sign. Thus, conditional
+on similar participation and volume-time duration, latent statistical metaorders generate larger
+temporary price impact than visible TWAPs over most of the economically relevant common
+support.
+To summarize the comparison parametrically, we fit the separable power-law specification
+Ig tmp(η,F ) =Ygηδg Fγg , g∈{stat, TWAP}. (2)
+For statistical metaorders, the fitted parameters are Ystat = 0.202 ± 0.006, δstat = 0.150 ± 0.006,
+and γstat = 0.303 ± 0.005, with R2 = 0.889. For native TWAPs, the corresponding estimates are
+YTWAP = 0.294± 0.013, δTWAP = 0.010± 0.011, and γTWAP = 0.622± 0.011, with R2 = 0.868.
+The fitted elasticities show that the two surfaces differ in shape, not only in level. For native
+TWAPs, the participation exponent is consistent with zero: conditional on volume-time duration,
+participation contains little additional information about temporary impact. For statistical
+metaorders, participation has a small but significant elasticity, while the duration elasticity is
+lower. As a result, the two surfaces cross: statistical metaorders dominate at short volume-time
+durations, and the gap narrows as F increases.
+As an order-level check of the surface evidence, we estimate a pooled interaction regression
+on the same common-support sample. We use median-centered log covariates, so that the TWAP
+indicator is evaluated at the median execution profile. Specifically, for x∈{Q,F,η,σ}, let
+xc i = logxi − medj∈S(logxj), where S denotes the common-support estimation sample. We
+estimate
+Itmp,i = α +θDTWAP i +βQQc i +βFFc i +βηηc i +βσσc i
++DTWAP i (κQQc i +κFFc i +κηηc i +κσσc i ) +µm(i) +λh(i) +δd(i) +ui. (3)
+Here DTWAP i is an indicator equal to one for native TWAPs, µm(i) are market fixed effects, λh(i)
+are start-hour fixed effects, and δd(i) are start-day fixed effects. Standard errors are clustered by
+start day. The coefficients βx describe how temporary impact varies with order size, duration,
+participation, and volatility for statistical metaorders, while βx + κx gives the corresponding
+slope for native TWAPs. The coefficient θ measures the TWAP–statistical gap at the median
+execution profile, within the same market, start hour, and start day.
+The estimated TWAP gap is ˆθ = −0.0177, with standard error 0.0010. At the pooled median
+volatility, σ≃ 0.050, this corresponds to about 8.9 basis points lower temporary impact for a
+native TWAP relative to a statistical metaorder with the same reference execution profile. Thus,
+the order-level regression confirms the main message of the surface comparison: the lower cost
+of visible execution is not only due to TWAPs occupying a different region of the (η,F ) plane.
+Because the two regimes enter under opposite price conditions (Section 3.2), part of the gap
+could in principle reflect the continuation or reversal of pre-existing trends rather than execution
+costs. Adding the signed pre-start return as a control leaves the estimate essentially unchanged,
+at ˆθ = −0.0173, about 8.7 basis points at the median volatility: the announcer discount is not
+an artifact of entry conditions.
+Table 1 shows that the two regimes differ not only in average impact, but also in the margins
+along which impact varies. For statistical metaorders, temporary impact increases significantly
+with notional size, volume-time duration, and participation. For native TWAPs, impact also
+increases with notional size and volume-time duration, but the participation slope is small and
+15
+
+=== page 16 ===
+Regressor Statistical metaorders Native TWAPs
+logQ 0.00829∗∗∗ (0.00042) 0.00650∗∗∗ (0.00048)
+logF 0.00419∗∗∗ (0.00061) 0.00690∗∗∗ (0.00085)
+logη 0.00342∗∗∗ (0.00048) −0.00058 (0.00071)
+logσ −0.01485∗∗∗ (0.00113) 0.00109 (0.00123)
+Table 1: Order-level regression slopes for volatility-normalized temporary impact on the common
+support of Figure 5. The first column reports βx, the slope for statistical metaorders; the second
+reports βx + κx, the corresponding slope for native TWAPs. Standard errors, clustered by start
+day, are in parentheses. Significance levels: ∗p< 0.10, ∗∗p< 0.05, ∗∗∗p< 0.01.
+statistically indistinguishable from zero. Thus, conditional on the amount of market activity
+spanned by the order, participation remains an important cost margin for latent metaorders but
+not for visible TWAPs. This reinforces the interpretation from the fitted surfaces: statistical
+metaorders are penalized when they execute aggressively relative to contemporaneous volume,
+whereas TWAP costs are driven mainly by size and exposure over volume time.
+Overall, the evidence is consistent with the announcer-cost prediction of sunshine trading.
+Visible TWAPs have lower temporary impact than latent statistical metaorders over most of
+the common support, especially for executions that are concentrated in (volume) time. The
+parametric fit reinforces this result: the two regimes are not related by a simple level shift, but
+by different elasticities to participation and volume-time duration. In this sense, the transparent
+execution channel is associated with lower trading costs for announcers, while the crossing of the
+surfaces suggests that the benefit of visibility is strongest for relatively concentrated executions.
+4.2 Information Content of Announced Flow
+The second implication concerns the information content of announced order flow. In the
+informational model, preannouncement identifies part of liquidity demand as uninformed, making
+equilibrium prices more informative. In our setting, however, traders choose whether to use
+native TWAP execution, so the uninformed nature of announced flow is not imposed by the
+protocol. The empirical question is whether visible TWAP flow is less informationally adverse
+than latent statistical metaorders.
+We use post-execution price dynamics as a reduced-form measure of informational content.
+Temporary impact at completion can reflect two components. One is transitory liquidity pressure
+generated by the execution itself, which should partly revert once the order is completed. The
+other is information incorporated into prices, which should be more permanent. Thus, if native
+TWAPs are less informationally adverse than statistical metaorders, their impact should decay
+more quickly after completion and leave a smaller permanent price displacement.
+Figure 6 reports post-execution impact decay after normalizing each trajectory by its value
+at completion. This normalization sets all trajectories equal to one at τ = 1, so that the
+comparison focuses on the fraction of completion impact that remains after execution. In most
+bins, statistical metaorders retain a larger fraction of their completion impact over the post-trade
+window, while native TWAP orders relax more quickly. The main exceptions are concentrated in
+longer-duration bins, where normalized TWAP paths remain closer to the statistical-metaorder
+paths or decay more slowly. Overall, this pattern suggests that the impact of visible TWAP
+flow is more transitory, while a larger component of the impact of statistical metaorders remains
+incorporated into prices.
+We quantify this difference using permanent impact. For τ∈{1.5, 2, 3, 4}, we evaluate the
+price Si(τ), defined in Section 3.2, at post-execution horizons expressed in multiples of the
+16
+
+=== page 17 ===
+Figure 6: Post-execution decay of signed impact across duration–participation bins, with each
+trajectory normalized by its value at completion. The horizontal axis reports normalized physical
+time τ = t/Ti, where τ = 1 marks the end of execution and the plotted interval after τ = 1
+corresponds to the post-trade window. Black solid lines denote statistical metaorders and red
+solid lines native TWAP orders; shaded bands denote ±1 standard error. Blue and dark-red
+dashed lines are power-law fits to post-execution decay, estimated separately for statistical
+metaorders and TWAPs.
+order’s own duration. We define
+I perm i (τ) = 104ϵi Si(τ)−Si(0) Si(0) . (4)
+This object measures the signed price displacement from the beginning of the metaorder to a
+post-execution horizon, which we refer to as the permanent price impact of the metaorder.
+For each horizon τ, we estimate
+I perm i (τ) =α+βTWAPDTWAP i +γ1 √ ϕi +γ2ηi +γ3 logTi +γ4σD,i +µcoin(i) +µhour(i) +µday(i) +ui.
+(5)
+We also estimate a specification that excludes the traded-fraction control,
+I perm i (τ) =α +βTWAPDTWAP i +γ1ηi +γ2 logTi +γ3σD,i +µcoin(i) +µhour(i) +µday(i) +ui. (6)
+The fixed effects are for asset, start hour, and start day, and standard errors are clustered by
+calendar day. The coefficient of interest is βTWAP: a negative value means that, conditional
+on the included controls and fixed effects, native TWAPs leave a smaller permanent price
+17
+
+=== page 18 ===
+Spec. τ = 1.5 τ = 2 τ = 3 τ = 4
+Eq. (5) −5.41∗∗∗ −4.99∗∗∗ −5.45∗∗∗ −5.23∗∗∗
+(0.69) (0.70) (0.84) (0.93)
+Eq. (6) −3.60∗∗∗ −3.25∗∗∗ −3.79∗∗∗ −3.66∗∗∗
+(0.64) (0.67) (0.81) (0.91)
+Table 2: TWAP discount in permanent impact. The table reports the coefficient βTWAP
+on DTWAP i from Eqs. (5)–(6). The dependent variable is I perm i (τ), measured in basis points.
+Standard errors, clustered by calendar day, are in parentheses. All specifications include
+asset, start-hour, and start-day fixed effects. The sample contains approximately 3.09 million
+observations and 239 day clusters. ∗∗∗p< 0.001.
+displacement than statistical metaorders.
+Table 2 shows that native TWAPs leave a smaller permanent price displacement than
+statistical metaorders at every post-execution horizon. In the baseline specification, the TWAP
+coefficient is between−5.0 and−5.5 basis points and highly significant across all horizons.
+The specification without the traded-fraction control gives the same qualitative result, with
+coefficients of about −3.3–−3.8 basis points. The attenuation indicates that part of the gap is
+related to differences in relative size, but the TWAP discount does not depend on controlling for
+ϕi.
+Entry conditions are a sharper concern for permanent impact: since statistical metaorders
+are on average contrarian, part of their larger permanent footprint could reflect the reversal
+of the pre-entry price dip rather than information. Controlling for the signed pre-start return
+attenuates the TWAP coefficient by 5–11% across horizons (from −5.4 to −5.1 basis points at
+τ = 1.5, and from−5.2 to−4.7 at τ = 4), leaving the conclusion unchanged.
+Taken together, the decay curves and the finite-horizon regressions point to the same
+conclusion. Native TWAPs do not only generate lower temporary impact at completion; they
+also leave a smaller permanent price displacement. This is consistent with the informational
+channel in Admati–Pfleiderer: the price displacement that survives execution is the component
+most plausibly tied to information, and it is systematically smaller for the visible execution
+channel.
+4.3 Trading Costs of Nonannouncers
+The third test shifts the focus from traders who choose visible execution to hidden traders
+who execute while visible TWAP flow is active. The key question is whether the presence of
+announced order flow changes the cost of latent metaorders. If visible TWAPs are interpreted
+by the market as relatively uninformed liquidity demand, then hidden same-side trading may
+become a more adversely selected residual category and therefore face higher execution costs.
+At the same time, visible TWAP activity may also attract liquidity supply, in which case hidden
+traders could benefit rather than suffer. We therefore test whether statistical metaorders become
+more or less costly when they overlap with native TWAP flow.
+The direction of the overlapping TWAP flow is central for this test. A same-side TWAP is
+visible order flow in the same direction as the focal statistical metaorder. If visible same-side
+flow is perceived as less informationally adverse, then the remaining hidden flow in that direction
+should be priced as more adversely selected. This is the direct analogue of the Admati–Pfleiderer
+prediction for nonannouncers. By contrast, opposite-side TWAP flow has a different mechanical
+interpretation: it pushes against the focal order direction and can reduce the focal’s signed cost.
+We therefore decompose contemporaneous TWAP dominance by side.
+18
+
+=== page 19 ===
+For each focal statistical metaorder i, we compute overlapping metaorder volume during its
+execution window [ts,i,te,i]. Let W + i be the temporally prorated USD volume of native TWAPs
+in the same direction as the focal order, and let W− i be the corresponding volume of native
+TWAPs in the opposite direction. Let Mi denote the temporally prorated USD volume of other
+statistical metaorders overlapping the same window, excluding the focal order itself. We define
+D+ i = W + i W + i +W− i +Mi , D− i = W− i W + i +W− i +Mi . (7)
+Thus D+ i measures same-side visible TWAP dominance, while D− i measures opposite-side
+visible TWAP dominance. The aggregate dominance measure Di = D+ i + D− i pools these two
+components. Since same-side and opposite-side exposure have different economic content and,
+as shown below, opposite signs, the aggregate measure is not the appropriate object for testing
+the nonannouncer prediction.
+A remaining concern is that the timing of the focal statistical metaorder may be related
+to visible TWAP activity. To separate TWAP flow that was already visible at the focal start
+from TWAPs that begin only later, we also construct already-visible versions of the dominance
+variables, D+,vis i andD−,vis i . ThesevariablesaredefinedasinEq.(7), butincludeonlyoverlapping
+TWAP programs that had already started by the time the focal metaorder began, tTWAP s,j ≤ts,i.
+Thus the TWAP program was observable to the market at the focal’s arrival, while its subsequent
+child executions may still overlap the focal execution window.
+We use the permanent impact I perm i (τ), defined in Eq. (4), as our outcome, evaluated both
+at completion (τ = 1) and at the post-execution horizons τ ∈{1.5, 2, 3, 4}, each winsorized
+symmetrically at the 99% level. The completion value isolates the signed execution cost, while
+the post-execution horizons reveal whether the effect persists: a purely mechanical price-pressure
+effect should weaken after execution, whereas an adverse-selection effect should remain visible in
+permanent price displacement.
+For each outcome Yi ∈{I perm i (τ) :τ∈{1, 1.5, 2, 3, 4}} we estimate
+Yi =α +β+ D+ i +β−D− i + γ′Xi +µm(i) +λh(i) +δd(i) +ui, (8)
+where Xi = (logQi, ηi, logTi, Ni). The fixed effects are for market, start hour, and start day,
+and standard errors are clustered by start day. We also estimate the same specification replacing
+(D+ i ,D− i ) with (D+,vis i ,D−,vis i ). The estimation sample applies the same restrictions used in the
+common-support analysis and contains 2,711,963 focal statistical metaorders across 199 markets
+and 239 start-day clusters.
+Table 3 shows that same-side and opposite-side TWAP dominance have large effects of
+opposite sign. Using all overlapping TWAPs, the same-side coefficient is about +25 basis
+points per unit of dominance, whereas the opposite-side coefficient is about −30 basis points.
+Aggregating the two exposures would therefore obscure the relevant economics: same-side visible
+flow is associated with higher costs for latent traders in the same direction, whereas opposite-side
+visible flow works against the focal order direction.
+The same-side effect is not a short-lived execution-window effect: the coefficient on D+ i is
+essentially unchanged from completion to the post-execution horizons, remaining between +23
+and +25 basis points up to τ = 4.
+The already-visible specification provides the more conservative estimate. When dominance is
+computed only from TWAP programs already visible at the focal start, the same-side coefficient
+remains positive, highly significant, and stable across horizons. The estimates lie between +8.4
+and +9.2 basis points per unit of dominance from completion through τ = 4. Since dominance
+is a share, this corresponds to approximately 0.84–0.92 basis points for a 10 percentage point
+increase in already-visible same-side TWAP dominance. Economically, hidden orders executed
+in the direction of visible TWAP flow face higher permanent costs.
+19
+
+=== page 20 ===
+Outcome ˆβ+ ˆβ− ˆβvis + ˆβvis −
+I perm i (1) (at completion) +24.78∗∗∗ −29.83∗∗∗ +8.57∗∗∗ −5.94∗∗∗
+(1.06) (1.19) (0.86) (0.89)
+I perm i (1.5) +24.82∗∗∗ −32.10∗∗∗ +8.43∗∗∗ −9.78∗∗∗
+(1.25) (1.49) (1.02) (1.09)
+I perm i (2) +24.60∗∗∗ −32.41∗∗∗ +9.01∗∗∗ −10.57∗∗∗
+(1.45) (1.63) (1.19) (1.24)
+I perm i (3) +24.73∗∗∗ −31.65∗∗∗ +9.19∗∗∗ −10.90∗∗∗
+(1.85) (1.97) (1.48) (1.53)
+I perm i (4) +23.45∗∗∗ −31.07∗∗∗ +8.56∗∗∗ −10.97∗∗∗
+(2.23) (2.35) (1.75) (1.81)
+Table 3: Side-decomposed regressions of permanent impact at and after completion on contem-
+poraneous TWAP dominance. The + columns measure same-side TWAP dominance, while
+the − columns measure opposite-side TWAP dominance. Columns 2–3 use all overlapping
+TWAPs. Columns 4–5 restrict to TWAPs whose programs were already visible when the focal
+statistical metaorder started. Coefficients are in basis points for a unit increase in dominance,
+where dominance is a share between zero and one; standard errors, clustered by start day, are
+in parentheses. All specifications include controls (logQi,ηi, logTi,Ni), market fixed effects,
+start-hour fixed effects, and start-day fixed effects. Significance: ∗∗∗p < 0.001. The sample
+contains 2,711,963 observations and 239 start-day clusters.
+The opposite-side coefficients have the opposite sign. In the already-visible specification, ˆβvis −
+is negative at all horizons and grows in magnitude from about −6 basis points at completion to
+about −11 basis points by τ = 4. Equivalently, a 10 percentage point increase in already-visible
+opposite-side TWAP dominance is associated with roughly 0.6–1.1 basis points lower permanent
+impact. This pattern is consistent with the opposite-side TWAP’s own price footprint benefiting
+the focal order mechanically; the direct test below confirms this reading.
+A mechanical concern remains: the overlapping TWAP flow moves prices through its own,
+largely permanent, impact. We therefore add to Eq. (8) the square-root-law pressure of the
+overlapping flow on each side,
+√
+W± i /V exec i , together with the focal’s signed pre-start return.
+The latter changes nothing. The former matters: in the all-overlap specification the same-side
+coefficient falls from about +25 to +8 basis points, and the negative opposite-side effect is entirely
+absorbed by the price footprint of the opposite flow itself. The conservative already-visible
+coefficient, instead, moves only from +8.6 to +6.4 basis points at completion (standard error 2.9).
+What survives is therefore a composition effect. Conditional on the mechanical price pressure
+generated by overlapping flow, hidden metaorders executed while same-side demand is already
+visible still pay about 6 basis points more than hidden metaorders executed when that demand
+remains latent. This residual effect is consistent with the adverse-selection channel in Admati
+and Pfleiderer’s preannouncement mechanism.
+The results therefore support the nonannouncer-side prediction of the Admati–Pfleiderer
+mechanism. The previous subsection shows that visible TWAP flow has a smaller permanent
+footprint than latent statistical metaorders. The present subsection shows the mirror effect:
+conditional on being latent, a statistical metaorder executed in the direction of already visible
+TWAP flow faces higher permanent costs, robustly to controlling for the price pressure of the
+visible flow itself. The same sorting channel that makes announced flow less costly is associated
+with higher costs for the hidden flow that remains on the same side.
+This sorting is conditional: it operates within a market, in the direction of contemporaneous
+visible flow. A natural further question is whether it also surfaces as a cross-market comparative
+20
+
+=== page 21 ===
+static, since Admati and Pfleiderer’s sharpest prediction is that the cost saving from visible
+execution should be larger where adverse selection is more severe. We close by testing this
+prediction directly, and find that it does not hold against coarse market-wide measures of adverse
+selection: a null that, as we argue, pins down the level at which the mechanism operates rather
+than contradicting it.
+For each market m we estimate the separable temporary-impact surfaces of Eq. (2) separately
+for the two channels and define the announcer discount
+∆m = log10 ˆI stat tmp (η⋆ m,F⋆ m) − log10 ˆI TWAP tmp (η⋆ m,F⋆ m), (9)
+at the market’s median common-support profile (η⋆ m,F⋆ m); ∆m is the market-level analogue of
+the pooled discount −θ of Section 4.1. The discount is positive in the large majority of markets,
+so the announcer-cost result holds market by market.
+We relate ∆m to three market-level proxies for adverse-selection severity, all built from the
+trade tape: Kyle’s price-impact coefficient λKyle m , the R2 of the same price-impact regression,
+and the lag-one autocorrelation of the sign of order flow [32, 23]. We take the order-flow
+autocorrelation as our preferred proxy because it is nearly orthogonal to volatility, whereas λKyle m
+and the price-impact R2 co-move strongly with it. Writing sm for a generic, standardized proxy,
+we run the cross-sectional regression
+∆m =b0 +b1 sm +b2 s2 m + γ′Zm +εm,
+where the quadratic term allows the cost saving from visible execution to be non-monotone in
+adverse selection, and Zm controls for market size, volatility, and the concentration of taker
+volume, measured by a Herfindahl–Hirschman index of taker market shares. The prediction is
+b1 > 0: the discount should widen where adverse selection is more severe. Instead, b1 and b2 are
+jointly insignificant for every proxy (p> 0.28), with point estimates if anything weakly negative.
+We also re-estimate the relation within market rather than across markets, on a market×week
+panel of 1,973 cells spanning 122 markets and 34 weeks, with market and week fixed effects and
+standard errors clustered by market. This exploits how the discount moves over time within a
+given market, and it again leaves the relation flat: for the volatility-orthogonal proxy the linear
+coefficient is ˆb1 = −0.011, with standard error 0.007, a joint p-value of 0.32, and a within-R2
+of 0.002. This within-market test has limited power, however: each market-week surface is
+estimated on only a few hundred orders, so the weekly discount is noisy and close to white noise
+from one week to the next, with a lag-one autocorrelation of just 0.075.
+We read this null not as evidence against the mechanism but as a statement about the level
+at which it operates in our data. Admati and Pfleiderer’s comparative static is framed in terms
+of a market-wide intensity of adverse selection, which our coarse trade-tape proxies are meant to
+capture. The closely related nonannouncer mechanism, however, is conditional: it concerns the
+inference the market draws about the residual hidden flow once part of the liquidity demand
+becomes visible. Our side-decomposed regressions isolate exactly this conditional object, now
+resolved by direction, and there the prediction holds sharply: same-side visible dominance raises
+permanent hidden-flow costs by about 8–9 basis points. The Admati–Pfleiderer sorting therefore
+does appear in our data, but in this conditional, event-level form, rather than as a relationship
+between the announcer discount and a market-wide measure of adverse selection.
+4.4 Liquidity Provision around Announced Orders
+The final implication concerns the supply of liquidity around announced orders. Two channels in
+Admati and Pfleiderer point in the same direction. In the costly-entry model, liquidity suppliers
+can condition their participation on the realized announced demand and add liquidity around
+visible orders. In the informational model, even with no entry margin, liquidity suppliers already
+in the market who infer that the announced flow is relatively uninformed face less adverse
+21
+
+=== page 22 ===
+selection on that side and can quote more aggressively. Either way, displayed liquidity should
+adjust around visible execution.
+Admati and Pfleiderer model liquidity supply in a stylized batch-auction setting rather than
+in a limit order book, so it does not speak directly to book-level quantities. Hyperliquid lets us
+go one step further: because the venue is a fully on-chain CLOB, we observe the liquidity-supply
+side directly, through displayed depth, order-book imbalance, and resting limit orders. We
+therefore adapt the liquidity-supply prediction to this CLOB setting and test whether the
+book changes during active native TWAP execution in a way consistent with a liquidity-supply
+response to visible order flow, without taking a stand on which channel drives it.
+For the order-book analysis, we retain events with a duration of at least five minutes and
+notional size of at least 10,000 USD. For statistical metaorders, we additionally require at
+least ten child trades. We study book-level variables around order execution: relative spreads,
+displayed depth, order-book imbalance, and fixed-notional sweep costs.
+All side-dependent book variables are oriented by order direction: for buy orders we evaluate
+liquidity on the ask side, and for sell orders on the bid side. After this orientation, positive
+imbalance, higher depth, and lower sweep costs all correspond to greater liquidity available to
+absorb the order flow. We measure these variables on each order-book snapshot and track them
+along event time around each order; in the figures event time is parametrized by normalized
+order time τ = t/Ti, while in the panel regressions below it is the relative clock minute m
+from the order start. For a given snapshot, let B(k) and A(k) denote displayed bid and ask size
+accumulated over all book levels whose prices are no farther than k quoted spreads from the
+midprice. This gives a local measure of displayed liquidity near the touch, while scaling the
+window by the spread makes it adaptive to differences in tightness across assets and market
+conditions. We define the oriented imbalance as
+Imb(k) =sB(k) −A(k)
+B(k) +A(k) , s =
+{
+−1, buy order,
+1, sell order.
+Thus positive values always mean that displayed depth is tilted toward the absorbing side. We set
+k = 5, so the band spans five times the quoted spread. Depth is the corresponding dollar depth
+on that side, accumulated within the same band. Relative spread is (a1 −b1)/mid, reported
+in basis points. Fixed-notional sweep cost is the additional cost, relative to execution at the
+midprice, of immediately executing a fixed USD notional on the absorbing side of the book; all
+sweep-cost outcomes are reported in basis points.
+Intuitively, under the sunshine-trading interpretation, the predicted signs are outcome-specific.
+A broad liquidity-supply response should appear away from the touch: imbalance should rise,
+depth should rise, and fixed-notional sweep costs should fall. These three are the signs of a
+book that becomes more able to absorb the announced flow while the program is active. The
+quoted spread is the ambiguous one: liquidity providers may widen the inside quote to protect
+themselves during a predictable execution window even as they supply more depth deeper in the
+book, so a narrowing spread is not a necessary implication.
+Figure 7 compares the descriptive book dynamics around visible native TWAPs with those
+around latent statistical metaorders, separately for short, medium, and long metaorder durations.
+The most striking TWAP pattern is in the first column, the oriented imbalance measured within
+five times the quoted spread of the mid, which rises sharply at the start of the execution window.
+Under this convention, native TWAPs show a marked increase in imbalance during the active
+interval, clearest at short and medium durations, where it jumps at τ = 0 and persists until
+completion. This is consistent with the book tilting toward the side able to absorb the announced
+flow. Statistical metaorders also display positive imbalance, but the increase is more gradual
+and tends to peak around completion rather than at the start. This is consistent with the
+fact that they are not publicly announced at τ = 0, but may become progressively inferable
+during execution from same-address, same-direction trading. The duration split supports this
+22
+
+=== page 23 ===
+Figure 7: Order-book liquidity measures over normalized order time for native TWAPs and
+statistically reconstructed metaorders, split by metaorder clock-time duration. The columns
+report oriented imbalance within five times the quoted spread of the midprice, relative spread in
+basis points, and the cost in basis points of sweeping 10,000 USD; the rows correspond to short
+(Ti < 24 min), medium (24 min–1.9 h), and long (Ti > 1.9 h) durations. The horizontal axis is
+τ = t/Ti, with τ = 0 denoting order start and τ = 1 denoting completion, and the displayed
+window runs from −0.65 to 1.65 order durations. Each series reports the change relative to its
+event-level pre-window mean. Variables are oriented to the side of the book opposite the order
+direction. Black lines denote statistically reconstructed metaorders and red lines denote native
+TWAPs; shaded bands denote±1 standard error.
+interpretation: for longer statistical metaorders, imbalance rises more persistently over the
+execution window, suggesting that market makers learn that a given address is carrying out
+a directional program even without an explicit TWAP announcement. For shorter statistical
+metaorders, the book dynamics also reflect the U-shaped execution schedule documented above.
+The more aggressive child trades near the beginning and the end of the program put stronger
+immediate pressure on the book, which can depress oriented imbalance and raise both relative
+spreads and fixed-notional sweep costs around the execution edges.
+The spread and sweep-cost panels reveal a distinction between quoted liquidity at the touch
+and executable liquidity deeper in the book. Native TWAPs exhibit a positive relative-spread
+response after the start of execution, so the inside quote becomes more expensive rather than
+narrower. At the same time, the cost of sweeping a fixed notional falls during the active TWAP
+interval, indicating that walking the book becomes cheaper even though the best quotes widen.
+This combination is not necessarily paradoxical. Once a large order is announced, liquidity
+23
+
+=== page 24 ===
+suppliers may be willing to absorb the predictable order flow only at prices that compensate
+them for the expected inventory risk. In a limit-order book, this can appear as a wider inside
+spread together with more depth away from the best quote on the absorbing side. The book
+therefore need not become cheaper at the very touch in order to become more able to absorb the
+announced flow. This reading is consistent with concurrent evidence that liquidity provision on
+Hyperliquid is dominated by high-frequency market-making strategies competing aggressively for
+queue priority through large volumes of post-only orders [28]. Both patterns are visible across
+the duration buckets and are sharpest at short and medium durations.
+Since the figure is descriptive, we complement it with an event-time placebo regression that
+isolates whether liquidity changes differentially during the active TWAP window, net of event
+baselines and common event-time patterns.
+We implement the TWAP liquidity-response test with an event-time placebo design. For
+event i and relative minute m, we estimate
+yi,m =αi +λm +β1{TWAP i}1{0≤m≤T i} +ui,m. (10)
+Here yi,m is one of the book-level liquidity measures defined above (oriented imbalance, displayed
+depth, relative spread, or fixed-notional sweep cost), αi are event fixed effects, and λm are
+relative-minute fixed effects. The treatment indicator equals one only for observations belonging
+to real native TWAP events during their active execution window. Placebo starts drawn from
+the same order-book panel provide the comparison group. The coefficient β therefore measures
+whether liquidity changes differentially during the active TWAP window, relative to event-specific
+baselines and common event-time patterns. Standard errors are clustered by event.
+Table 4 turns the descriptive figure into event-time placebo regressions for native TWAPs,
+pooled across durations. The regression uses the same within-five-quoted-spread imbalance and
+depth measures as Figure 7. During the active TWAP window, relative spreads are about 0.28
+basis points higher than in the placebo comparison, so the inside quote does not improve. Away
+from the touch, however, the signs are all favorable: imbalance increases by 0.022, depth rises
+by about 4,200 USD, and the 10,000 USD sweep cost falls by 0.025 basis points.
+We probe two further questions by augmenting Eq. (10). Define Ai,m = 1{TWAP i} 1{ 0 ≤
+m≤Ti} for the active-window indicator. First, to check that the active-window estimates are not
+an artifact of a differential pre-trend, we add a pre-window lead Li,m = 1{TWAP i} 1{m< 0}
+and estimate
+yi,m =αi +λm +βAi,m +δLi,m +ui,m; (11)
+under a clean event interpretation the change occurs at the announcement, so ˆδ should be close
+to zero. Second, to ask whether the response scales with the size of the announced program,
+we interact the active window with the log notional measured relative to its sample median,
+qi = log(Qi/Qmed), where Qmed is the median announced notional (about 49,000 USD), and
+estimate
+yi,m =αi +λm +βAi,m +ζAi,mqi +ui,m; (12)
+a positive ˆζ on the displayed-liquidity outcomes is the sharpest version of the costly-entry
+channel, in which a larger visible order summons a larger book response. Table 4 reports ˆδ and
+ˆζ alongside the baseline ˆβ.
+The pre-window lead confirms that the favorable book responses are not pre-trends. For
+imbalance, depth, and the sweep cost the lead coefficient is economically negligible and, where
+significant, of the opposite sign to the active-window effect: the imbalance lead is about three
+percent of the active-window estimate, and the depth and sweep-cost leads are essentially
+zero. The exception is the relative spread, whose lead (+0.21 bps) is of the same order as its
+active-window coefficient (+0.28 bps): much of the spread widening is already present before
+the program becomes active, although it continues to increase during the active TWAP window.
+24
+
+=== page 25 ===
+Book outcome Active window ˆβ Pre-window lead ˆδ Size interaction ˆζ
+Relative spread (bps) 0.277∗∗∗ 0.210∗∗∗ −0.024
+(0.029) (0.019) (0.013)
+Imbalance, 5× spread 0.0219∗∗∗ −0.0007∗∗ 0.0028∗∗∗
+(0.0012) (0.0003) (0.0008)
+Depth, 5× spread (USD) 4182∗ −222 3499∗∗
+(1801) (432) (1264)
+Sweep cost, 10,000 USD (bps) −0.0250∗∗∗ 0.0016 0.0288∗∗∗
+(0.0073) (0.0027) (0.0038)
+Table 4: Event-time liquidity response during active native TWAP execution, pooled across
+durations. Each cell reports a coefficient with its event-clustered standard error in parentheses.
+ˆβ is the active-window effect from Eq. (10); ˆδ is the pre-window lead from Eq. (11), with a value
+near zero indicating no differential pre-trend; ˆζ is the size interaction from Eq. (12). Positive
+imbalance and depth, and negative sweep-cost coefficients, indicate a book more able to absorb
+the announced flow. Imbalance and depth are accumulated over all book levels within five times
+the quoted spread of the midprice. The sample has about 9.4 million event-minute observations
+across 56,692 events. Significance: ∗p< 0.05, ∗∗p< 0.01, ∗∗∗p< 0.001.
+A comparison with statistical metaorders helps clarify the spread lead. Latent metaorders
+begin execution in book states with relative spreads about 0.16 bps above matched placebo
+windows, close to the 0.21 bps elevation of native TWAPs, but they show only a much smaller
+widening of the inside quote at the start itself, about 0.05 bps, against 0.17 bps for TWAPs.
+The level of the spread before execution is thus a property of the market states in which
+sizable directional programs are initiated, shared by visible and latent execution, while only the
+additional, announcement-coincident widening of the touch is specific to native TWAPs. We
+accordingly read the spread lead as selection into wider-spread states rather than as a response
+to TWAP visibility.
+The size interaction shows that the displayed-liquidity response scales with the announced
+size. The coefficient is positive and strongly significant for imbalance. A one-log-unit increase
+in announced notional, corresponding to roughly a 2.7× larger program, raises the imbalance
+response by ˆζ = +0.0028, about one eighth of the baseline effect. The coefficient is also positive
+and significant for depth: larger visible programs are met with a larger tilt of the book toward
+the absorbing side and with more displayed depth, exactly the comparative static implied by
+suppliers conditioning on the realized announced demand. The executable-cost improvement,
+by contrast, does not scale: the sweep-cost interaction is positive, so the cost reduction is, if
+anything, smaller for larger orders.
+Overall, the order-book evidence points to a liquidity-supply response around active native
+TWAP execution. During the active window, the book becomes more tilted toward the absorbing
+side, displayed depth increases, and fixed-notional sweep costs fall, while quoted spreads widen.
+This pattern is consistent with the book preparing to absorb the announced order flow at the
+prices at which liquidity suppliers are willing to bear the associated inventory risk. In this
+sense, visible TWAPs are associated with a book that becomes more able to accommodate the
+announced execution, rather than simply with more aggressive inside quotes. These responses
+are not explained by favorable pre-trends and, for displayed-liquidity measures, they scale with
+the size of the announced program.
+25
+
+=== page 26 ===
+5 Limitations
+Several limitations qualify the interpretation of the evidence. First, because the main analysis is
+market-order based, it can also classify very active liquidity providers as metaorder executors
+when they repeatedly cross the spread in the same direction. A filled-limit-order diagnostic
+illustrates the issue. In the population of reconstructed metaorders with at least ten child orders,
+46.2% have at least one same-address maker fill during the execution window and 40.3% have
+a same-direction maker fill. This passive volume, however, is highly concentrated: the top
+40 addresses by passive maker-fill volume account for about 68% of all passive same-address
+maker-fill USD and about 65% of same-direction passive USD. These addresses also display
+both same- and opposite-direction maker fills, consistent with market-maker-like activity rather
+than a diffuse pattern of metaorders being executed passively. After excluding these top-40
+passive-volume addresses, the same-direction maker-fill rate falls to about 31%. We therefore
+keep the market-orders-only definition as the main object and treat the filled-limit-order evidence
+as a contamination and classification caveat, rather than as a correction to metaorder size or
+participation.
+Second, the contrast between native TWAPs and statistical metaorders is observational.
+Traders choose whether to use the protocol-native TWAP tool, and this choice is strongly tied
+to trader identity. In an out-of-sample horse race, a pair-only model has AUC 0.674, adding
+pre-start book state raises it only to 0.685, while a taker-identity prior reaches AUC 0.998; the
+between-taker share of variation in the TWAP/statistical choice is about 0.93. In the full sample,
+86.6% of orders are generated by taker addresses that exclusively use one of the two mechanisms.
+A caveat is that addresses need not map one-to-one to traders. Hyperliquid natively supports
+sub-accounts, which share the master account’s volume-based fee tier and are therefore the
+natural way to separate strategies across wallets; sub-accounts, however, are publicly linkable
+to their master account on chain. Aggregating native sub-accounts to their master accounts
+(we map the addresses accounting for 99.7% of sample volume) leaves the picture essentially
+unchanged: the share of orders from single-mechanism units moves from 86.6% to 85.4%, and
+only 39 entities, accounting for 0.24% of volume, consist of pure-TWAP and pure-statistical
+wallets combined under one master. Splitting flow across independent, unlinkable wallets is
+instead pecuniarily costly, since fee tiers are computed per account on rolling 14-day volume, so
+fragmenting volume permanently worsens each wallet’s fee schedule. Mechanism segregation
+is thus a property of entities, not an artifact of wallet splitting. These numbers show that the
+comparison is between execution regimes populated by different trader types, not a randomized
+comparison of the same trader choosing two mechanisms under otherwise identical conditions.
+Third, “hidden” statistical metaorders are not hidden in the same sense as anonymous
+institutional metaorders in traditional markets. Every trade on Hyperliquid reports an address,
+so same-address, same-direction trading can be statistically inferred while it is unfolding. The dis-
+tinction we exploit is therefore between explicit protocol-level preannouncement of the metaorder
+and gradual statistical inferability from address-level flow. This matters for the order-book
+interpretation: the gradual increase in oriented book imbalance around statistical metaorders
+may reflect market participants learning from repeated address-level trades, whereas native
+TWAPs reveal the execution program directly from inception. The statistical-metaorder bench-
+mark is therefore a latent but partially learnable execution regime, not a perfectly anonymous
+hidden-flow benchmark.
+Fourth, market-state predictability is limited. In a discrete-time arrival exercise on five-
+minute bins, dynamic book and flow state improves PR-AUC for TWAP starts only from 0.0033
+under a pair-hour climatology to 0.0053, whereas the improvement for statistical-metaorder
+starts is larger, from 0.094 to 0.142. This suggests that market state is more useful for identifying
+regimes with high statistical-metaorder hazard than for forecasting the precise start of a native
+TWAP. Conditional on an order arriving, trader identity dominates book state. The paper
+26
+
+=== page 27 ===
+should therefore not be read as showing that the book strongly predicts individual TWAP
+arrivals.
+Finally, Hyperliquid is an environment with visible addresses and a protocol-native, low-
+friction TWAP mechanism. These features are central to the identification strategy, but they
+also mean that the mapping to anonymous traditional markets or to venues without a native
+TWAP facility should be made with care.
+6 Conclusion
+This paper studies market impact on Hyperliquid, a setting in which both execution paths and
+execution mechanisms are unusually transparent. Protocol-native TWAP orders are publicly
+visible while active and therefore constitute a protocol-level form of sunshine trading, whereas
+statistically reconstructed metaorders are inferred only ex post. This contrast lets us compare
+not two execution algorithms but two execution regimes that differ in ex-ante observability,
+along the dimensions of temporary impact, impact trajectories, execution schedules, post-trade
+relaxation, and the surrounding order book.
+We first establish that native TWAPs have systematically lower temporary impact than
+statistical metaorders over a broad range of traded fractions, and that the two classes differ
+sharply in dynamics: TWAP trajectories and schedules are smooth and close to the square-root
+benchmark associated with uniform execution, whereas statistical metaorders display U-shaped
+schedules, stronger trajectory curvature, a local peak around completion, and a larger permanent
+price displacement. These patterns are consistent with a transient-impact interpretation of
+strategic execution.
+We then read the comparison through the four mechanisms of Admati and Pfleiderer. Visible
+TWAPs face lower costs as announcers, and their flow is less informationally adverse, leaving a
+smaller permanent price footprint. The mirror cost falls on nonannouncers, since hidden flow
+executed in the same direction as already-visible TWAP activity is priced as more adversely
+selected. The order book also responds to visible execution. Concretely, during the active TWAP
+window the book becomes asymmetric: more displayed size accumulates on the side that has to
+absorb the announced flow than on the opposite side, so that our oriented imbalance measure
+rises. Total displayed depth near the touch increases as well, and as a result the cost of sweeping
+a fixed notional falls. The inside spread, by contrast, widens rather than narrows: liquidity
+suppliers do not quote more aggressively at the best bid and ask, but instead rest additional size
+slightly behind the touch, at the prices at which they are willing to fill the predictable order and
+be compensated for the inventory risk they take on. All of these displayed-liquidity responses
+scale with the announced size.
+Overall, the evidence is consistent with a sunshine-trading interpretation: on Hyperliquid,
+publicly visible TWAP flow appears less informed on average, and its visibility elicits liquidity
+provision rather than triggering predatory front-running. More broadly, Hyperliquid provides a
+rare empirical setting in which the costs and benefits of pre-trade transparency can be studied
+directly rather than inferred indirectly.
+27
+
+=== page 28 ===
+References
+[1] A. S. Kyle, “Continuous auctions and insider trading,” Econometrica, pp. 1315–1335, 1985.
+[2] R. Almgren, C. Thum, E. Hauptmann, and H. Li, “Direct estimation of equity market
+impact,” Risk, vol. 18, no. 7, pp. 58–62, 2005.
+[3] B. Tóth, Y. Lemperiere, C. Deremble, J. De Lataillade, J. Kockelkoren, and J.-P. Bouchaud,
+“Anomalous price impact and the critical nature of liquidity in financial markets,” Physical
+Review X, vol. 1, no. 2, p. 021006, 2011.
+[4] J. Donier and J. Bonart, “A million metaorder analysis of market impact on the Bitcoin,”
+Market Microstructure and Liquidity, vol. 1, no. 02, p. 1550008, 2015.
+[5] B. Tóth, Z. Eisler, and J.-P. Bouchaud, “The square-root impact law also holds for option
+markets,” Wilmott, vol. 2016, no. 85, pp. 70–73, 2016.
+[6] E. Zarinelli, M. Treccani, J. D. Farmer, and F. Lillo, “Beyond the square root: Evidence
+for logarithmic dependence of market impact on size and participation rate,” Market
+Microstructure and Liquidity, vol. 1, no. 2, p. 1550004, 2015.
+[7] J. Donier, J. Bonart, I. Mastromatteo, and J.-P. Bouchaud, “A fully consistent, minimal
+model for non-linear market impact,” Quantitative Finance, vol. 15, no. 7, pp. 1109–1121,
+2015.
+[8] M. Benzaquen and J.-P. Bouchaud, “Market impact with multi-timescale liquidity,” Quan-
+titative Finance, vol. 18, no. 11, pp. 1781–1790, 2018.
+[9] F. Bucci, M. Benzaquen, F. Lillo, and J.-P. Bouchaud, “Crossover from linear to square-root
+market impact,” Physical Review Letters, vol. 122, no. 10, p. 108302, 2019.
+[10] E. Moro, J. Vicente, L. G. Moyano, A. Gerig, J. D. Farmer, G. Vaglica, F. Lillo, and R. N.
+Mantegna, “Market impact and trading profile of hidden orders in stock markets,” Physical
+Review E, vol. 80, no. 6, p. 066102, 2009.
+[11] X. Brokmann, E. Serie, J. Kockelkoren, and J.-P. Bouchaud, “Slow decay of impact in
+equity markets,” 2014.
+[12] E. Bacry, A. Iuga, M. Lasnier, and C.-A. Lehalle, “Market impacts and the life cycle of
+investors orders,” Nov. 2014.
+[13] H. Waelbroeck and C. Gomes, “Is market impact a measure of the information value of
+trades? market response to liquidity vs. informed trades,” 2013. Working paper / SSRN.
+[14] A. R. Admati and P. Pfleiderer, “Sunshine trading and financial market equilibrium,” The
+Review of Financial Studies, vol. 4, no. 3, pp. 443–481, 1991.
+[15] T. Schöneborn and A. Schied, “Liquidation in the face of adversity: Stealth vs. sunshine
+trading.” EFA 2008 Athens Meetings Paper, Mar. 2009. Date written: March 18, 2009.
+Available at SSRN.
+[16] J. A. Skjeltorp, E. Sojli, and W. W. Tham, “Sunshine trading: Flashes of trading intent at
+the Nasdaq,” Tech. Rep. Discussion Paper 12-141/IV, Tinbergen Institute, 2012.
+[17] H. Bessembinder, A. Carrion, L. A. Tuttle, and K. Venkataraman, “Liquidity, resiliency
+and market quality around predictable trades: Theory and evidence,” Journal of Financial
+Economics, vol. 121, no. 1, pp. 142–166, 2016.
+28
+
+=== page 29 ===
+[18] P. Daian, S. Goldfeder, T. Kell, Y. Li, X. Zhao, I. Bentov, L. Breidenbach, and A. Juels,
+“Flash boys 2.0: Frontrunning, transaction reordering, and consensus instability in decen-
+tralized exchanges,” in 2020 IEEE Symposium on Security and Privacy, pp. 910–927, IEEE,
+2020.
+[19] L. Zhou, K. Qin, C. F. Torres, D. V. Le, and A. Gervais, “High-frequency trading on
+decentralized on-chain exchanges,” in 2021 IEEE Symposium on Security and Privacy,
+pp. 428–445, IEEE, 2021.
+[20] K. Qin, L. Zhou, and A. Gervais, “Quantifying blockchain extractable value: How dark is
+the forest?,” in 2022 IEEE Symposium on Security and Privacy, pp. 198–214, IEEE, 2022.
+[21] Hyperliquid Foundation, “Hyperliquid Documentation.” https://hyperliquid.gitbook.
+io/hyperliquid-docs, 2026. Accessed: 2026-06-01.
+[22] J.-P. Bouchaud, J. Bonart, J. Donier, and M. Gould, Trades, Quotes and Prices: Financial
+Markets Under the Microscope. Cambridge University Press, 2018.
+[23] F. Lillo and J. D. Farmer, “The long memory of the efficient market,” Studies in Nonlinear
+Dynamics & Econometrics, vol. 8, no. 3, 2004.
+[24] B. Tóth, I. Palit, F. Lillo, and J. D. Farmer, “Why is equity order flow so persistent?,”
+Journal of Economic Dynamics and Control, vol. 51, pp. 218–239, 2015.
+[25] M. Yin, D. Malkhi, M. K. Reiter, G. G. Gueta, and I. Abraham, “HotStuff: BFT consensus
+with linearity and responsiveness,” in Proceedings of the 2019 ACM Symposium on Principles
+of Distributed Computing (PODC ’19), ACM, 2019.
+[26] Hydromancer, “Reservoir: Hyperliquid Historical Data.” https://docs.hydromancer.xyz/
+reservoir, 2026. Accessed: 2026-05-27.
+[27] J. Albers, M. Cucuringu, S. Howison, and A. Y. Shestopaloff, “An open book: Level 4 order
+book data from the Hyperliquid exchange,” Mar. 2026. SSRN Working Paper.
+[28] J. Albers, M. Cucuringu, S. Howison, and A. Y. Shestopaloff, “The “Neutrinos” of the order
+book: Pervasive, weakly interacting order flow and its consequences,” Feb. 2026. SSRN
+Working Paper.
+[29] M. Parkinson, “The extreme value method for estimating the variance of the rate of return,”
+The Journal of Business, vol. 53, no. 1, pp. 61–65, 1980.
+[30] J. Gatheral, “No-dynamic-arbitrage and market impact,” Quantitative Finance, vol. 10,
+no. 7, pp. 749–759, 2010.
+[31] J. Gatheral, A. Schied, and A. Slynko, “Transient linear price impact and Fredholm integral
+equations,” Mathematical Finance, vol. 22, no. 3, pp. 445–474, 2012.
+[32] J. Hasbrouck, “Measuring the information content of stock trades,” The Journal of Finance,
+vol. 46, no. 1, pp. 179–207, 1991.
+[33] J.-P. Bouchaud, Y. Gefen, M. Potters, and M. Wyart, “Fluctuations and response in financial
+markets: the subtle nature of “random” price changes,” Quantitative Finance, vol. 4, no. 2,
+pp. 176–190, 2003.
+29
+
+=== page 30 ===
+A Appendix: A Transient-Impact Benchmark
+To interpret the empirical patterns, we consider a simple transient-impact benchmark based on
+a propagator model [33, 23, 30]. The model is written in model time v∈ [0,F ], where F denotes
+the execution horizon:
+s(v) =s(0) +
+∫ v
+0
+q(u)G(v−u)du +Wv,
+where q(u) is the signed execution rate, G(·) is the transient-impact kernel, and Wv captures
+exogenous price fluctuations. The execution rate is the infinitesimal counterpart of the cumulative
+schedule: if C(v) denotes the fraction of an order of size Q(F ) executed by time v, then
+C(v) = 1 Q(F ) ∫ v 0 q(u)du, C(F ) = 1.
+Thus different execution schedules C correspond to different trading rates q, and therefore to
+different impact trajectories.
+We use a linear propagator with a power-law decay kernel,
+G(t)∝t−ρ, ρ = 1 2.
+Once the kernel is fixed, the deterministic shape of the impact trajectory is driven by the
+execution schedule. In particular, under a constant-rate schedule q(u) =q0,
+∫ v
+0
+q0(v−u)−1/2 du∝√v.
+Thus a constant-rate schedule naturally produces a square-root-like impact trajectory, providing
+a simple benchmark for native TWAP execution.
+The same framework also explains why non-linear schedules can generate the double-inflection
+trajectories observed for statistical metaorders. We compute optimal schedules from a mean–
+variance-style objective that trades off expected transient-impact cost against a quadratic penalty
+on remaining inventory,
+minq C(q) +λR(q),
+∫ F
+0
+q(u)du =Q(F ),
+where C(q) is the expected impact-cost component, R(q) is the inventory-risk component, and
+λ≥ 0 indexes risk aversion. When λ = 0, the risk-neutral optimum in this transient-impact
+benchmark is U-shaped, with faster trading near the beginning and the end of the execution
+interval. Increasing λ shifts the schedule toward the beginning of the interval, because the
+trader puts more weight on reducing unfinished exposure. The benchmark therefore provides a
+parsimonious mechanism linking the execution schedules in Figure 4 to the impact trajectories
+in Figure 3.
+Figure 8 illustrates this mechanism for four values of λ. The blue curves report the during-
+execution impact paths generated by optimal schedules with different horizons F, and the black
+dots mark completion. The red curve is the corresponding temporary impact at completion,
+Itmp(F ), interpolatedacrosshorizons. Inthetoprowtheparticipationrateisfixed, so Q(F ) = ηF
+and temporary impact rises with F. In the bottom row total size is fixed, so Q(F ) = Q0 and
+longer execution lowers participation. Moving from left to right, higher risk aversion front-
+loads execution and makes impact peak earlier, producing non-concave during-execution shapes
+similar to those observed for statistical metaorders. The exercise is not intended as a structural
+calibration of the model, but as a qualitative benchmark showing that the empirical shapes are
+consistent with transient-impact dynamics.
+30
+
+=== page 31 ===
+Figure 8: Impact trajectories generated by optimal schedules in the propagator model. Each
+column corresponds to a different level of risk aversion λ. Blue curves show the signed impact
+trajectory during execution for different horizons F; black dots mark completion. The red curve
+reports the corresponding temporary impact at completion, Itmp(F ). The top row fixes the
+participation rate, so that Q(F ) = ηF, and the bottom row fixes total size, so that Q(F ) = Q0.
+As λ increases, optimal schedules become more front-loaded.
+31

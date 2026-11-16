@@ -1,0 +1,1693 @@
+=== page 1 ===
+Continuous-time reinforcement learning for optimal
+switching over multiple regimes
+Yijie Huang ∗ Mengge Li† Xiang Yu‡ Zhou Zhou§
+Abstract
+This paper studies the continuous-time reinforcement learning (RL) for optimal switching
+problems across multiple regimes. We consider a type of exploratory formulation under entropy
+regularization where the agent randomizes both the timing of switches and the selection of
+regimes through the generator matrix of an associated continuous-time finite-state Markov
+chain. We establish the well-posedness of the associated system of Hamilton-Jacobi-Bellman
+(HJB) equations and provide a characterization of the optimal policy. The policy improvement
+and the convergence of the policy iterations are rigorously established by analyzing the system
+of equations. We also show that the value function in the exploratory formulation converges
+to the one in the classical formulation as the temperature parameter vanishes. Finally, a
+model-free reinforcement learning algorithm is devised and implemented by invoking the policy
+evaluation based on the martingale characterization. Our numerical examples with financial
+applications illustrate the effectiveness and efficiency of the proposed RL algorithm.
+Keywords: Optimal regime switching, continuous-time reinforcement learning, system of
+HJB equations, policy improvement, policy iteration convergence, financial applications
+1 Introduction
+The optimal switching problem across multiple regimes entails solving a stochastic optimization
+problem in which the admissible strategies are formalized by sequences of discrete interventions.
+A decision-maker in this context faces two basic questions: (i) when to switch from the current
+regime to another, and (ii) which regime to select when the decision of switching is made. These
+problems are characterized by their hybrid nature, combining continuous state dynamics with
+discrete control actions, where each switch between regimes typically incurs a cost while different
+regimes yield different reward outcomes. Over past decades, the optimal switching problem has
+found extensive applications across different fields. Seminal work includes Carmona and Ludkovski
+[2008] on pricing asset scheduling, Carmona and Ludkovski [2010] on energy storage valuation,
+∗Department of Applied Mathematics, The Hong Kong Polytechnic University, Kowloon, Hong Kong.
+Email:yijie.huang@polyu.edu.hk
+†Department of Applied Mathematics, The Hong Kong Polytechnic University, Kowloon, Hong Kong.
+Email:meng-ge.li@polyu.edu.hk
+‡Department of Applied Mathematics, The Hong Kong Polytechnic University, Kowloon, Hong Kong.
+Email:xiang.yu@polyu.edu.hk
+§School of Mathematics and Statistics, University of Sydney, Sydney, Australia. Email:zhou.zhou@sydney.edu.
+au
+1
+arXiv:2512.04697v3  [math.OC]  30 Jul 2026
+
+=== page 2 ===
+Porchet et al. [2009] on power plant valuation, and Olofsson et al. [2022] on hydropower production
+planning, among others.
+The classical stochastic control approach typically assumes a full knowledge of the underlying
+model. However, this assumption often turns out to be unrealistic in practical applications.
+RL offers a powerful framework for learning optimal strategies in the unknown environment
+through trial-and-error interactions. While most conventional RL algorithms are designed in
+discrete-time settings, many real-life applications evolve continuously in time, motivating an up-
+surge of recent progress in theories and algorithms of the continuous-time RL approach. Within
+the continuous-time framework, decision-makers face the fundamental exploration-exploitation
+trade-off in a continuous-time manner: whether to exploit current knowledge by executing the
+best-known policy or to explore alternative actions to gather information for potential long-term
+improvement. Wang et al. [2020] addressed this problem by introducing an entropy-regularization
+on the randomized policy to encourage the exploration. This fundamental study spurred further
+pioneer studies of theories and algorithms in the continuous-time exploratory framework including
+Jia and Zhou [2022b,a, 2023], laying the foundations for the policy evaluation, the policy gradient,
+and the continuous-time q-learning, respectively. Later, the well-posedness of the exploratory HJB
+equation, the convergence of policy iterations and the regret analysis have also been examined in
+Tang et al. [2022], Huang et al. [2025], Tran et al. [2025], Tang and Zhou [2024].
+In addition, vast extensions and applications of continuous-time RL algorithms in different
+context have been considered in the recent literature. To name a few, Wu and Li [2024] addressed
+the continuous-time mean-variance portfolio selection problem in regime-switching markets with
+unobservable states using reinforcement learning approach; Bo et al. [2025] extended the q-learning
+theory in the model of reflected diffusion processes and applied it to learn the optimal tracking
+portfolio in incomplete markets; Wei and Yu [2025] generalized the continuous-time q-learning
+to mean-field control problems in McKean-Vlasov diffusion models; Wei et al. [2025] studied the
+continuous-time q-learning for both mean-field control and mean-field game problems from the
+perspective of the representative agent; Ren et al. [2026a] and Ren et al. [2026b] further developed
+the continuous-time q-learning for mean-field control with controlled common noise; Gao et al.
+[2024] studied the extension of q-learning in jump-diffusion models; Bo et al. [2026] examined
+the same jump-diffusion model by invoking the Tsallis entropy; Dong [2024] investigated the
+optimal stopping in an exploratory framework by considering the randomization of stopping time
+via the intensity control; Dianetti et al. [2024] utilized the randomization of stopping times as
+singular control and studied its exploratory formulation under residual entropy regularization;
+Dai et al. [2024] exploited the penalization method to transform the optimal stopping problem
+to an optimal control problem for which the entropy regularization is formalized; Liang et al.
+[2025a] proposed a continuous-time RL framework for singular stochastic control problems without
+entropy regularization, characterizing the optimal control through singular control laws; Liang
+et al. [2025b] further proposed a type of randomization of the singular control laws in Liang et al.
+[2025a] by considering an auxiliary singular control and entropy regularization, which lead to
+a time-inconsistent two-stage optimal control problem such that the task is to learn the time-
+consistent equilibrium.
+Despite these advancements of continuous-time RL in different model setups, its application
+to optimal regime switching problems remains relatively underexplored. This paper studies the
+exploratory formulation of the optimal regime switching with multiple regimes and bridges its
+2
+
+=== page 3 ===
+connection to the classical optimal switching problem as the entropy regularization vanishes. To
+this end, we propose a type of exploratory formulation where the decision-maker randomizes both
+switching time and the selection of the targeted regime state by invoking a generator matrix of
+an associated continuous-time Markov chain (CTMC) defined on finite state space. The entropy
+regularization on the generator is imposed to encourage the exploration. Specifically, we utilize the
+inherent property of the CTMC—particularly its jump times and state transitions—to determine
+the switching decision. This formulation, governed by the control of the CTMC’s generator
+matrix, transformed the randomized switching problem into an optimal control problem.
+We summarize the main contributions of the present paper as follows:
+(i) We derive the system of exploratory HJB equations and establish the existence of a bounded
+classical solution to the entropy regularized system (see Lemma 3.2) by resorting to some
+partial differential equation (PDE) theories together with a tailor-made truncation argu-
+ment. Furthermore, we prove its uniqueness and show by a verification theorem (see Propo-
+sition 3.3) that this solution coincides with the value function.
+(ii) For the entropy regularized problem, we obtain the characterization of the optimal policy
+and the policy iteration improvement result in Proposition 4.1. By analyzing the system of
+PDEs, we further establish the convergence of the policy iteration to the optimal policy in
+Theorem 4.2 for the entropy regularized problem with an explicit convergence rate, which
+is new to the literature.
+(iii) It is also shown that the value function in the exploratory formulation converges to the value
+function of the optimal switching problem in the classical formulation as the temperature
+parameter tends to zero. To facilitate the proof, we resort to some delicate stability analysis
+of viscosity solutions of the PDE system; see Lemma 4.4 and Theorem 4.5. This theoretical
+convergence justifies the choice of small temperature parameter in practical implementations
+in order to better approximate the optimal decision of switching in the original problem
+without entropy.
+(iv) Thanks to the policy iteration convergence, a model-free RL algorithm is devised by invoking
+a policy evaluation and the associated martingale characterization. We resort to a proper
+stochastic approximation when using the martingale orthogonality condition. An explicit
+error analysis of this stochastic approximation method is obtained in Theorem 5.4. To illus-
+trate the effectiveness of our proposed RL algorithm, we conducted numerical experiments
+in two examples with satisfactory iteration convergence, both necessitate the application of
+neural networks to parameterize the targeted functions.
+Most existing studies on optimal switching resort to the viscosity solution approach due to the
+lack of global regularity of solution to the system of variational inequalities, which often impose
+milder model assumptions. In contrast, our proposed entropy regularization shift the study from
+the variational inequality system to the PDE system. By imposing some stronger regularity
+conditions on model coefficients and reward functions and the uniform ellipticity condition (see
+Assumptions 2.1, 2.2 and 3.1), we are allowed to prove the existence of bounded classical solution
+to the system of exploratory PDEs. We emphasize that these model assumptions are essential
+to guarantee the desired regularity of solution to the exploratory PDE system and facilitate our
+3
+
+=== page 4 ===
+technical proofs in establishing some key theoretical foundations for the model-free RL algorithm,
+namely the policy improvement property (Proposition 4.1) and the explicit super-exponential
+convergence rate of policy iteration (Theorem 4.2).
+Let us also briefly compare the present work with three recent related studies. Denkert et al.
+[2025] introduced a control randomization method without entropy regularization in continuous-
+time RL with the application to optimal switching problems. They developed an Actor-Critic
+policy gradient algorithm that alternately learns the value function and the optimal intensity pol-
+icy. In contrast, our paper propose a different randomization approach for the optimal switching
+problem, utilizing the generator matrix of a CTMC and incorporating entropy regularization to
+encourage the exploration. A key advantage of our formulation is that the optimal policy depends
+explicitly on the value function itself, without requiring any of its derivatives. This allows us to
+parameterize both the policy and the value function using the same set of parameters. More
+recently, Dai et al. [2025] developed a RL approach to identify arbitrage strategies in stock index
+futures. Following the randomization method in Dong [2024], they randomized the switching times
+in Dai et al. [2025] using the Cox processes and formulated the problem as an optimal switching
+problem with three regimes where the state process is independent of the regimes. In comparison,
+we consider an exploratory framework for a more general multi-regime optimal switching problem,
+where the state process dynamics can also depend on the regime states. Furthermore, we rigor-
+ously establish the convergence of the policy iterations with an explicit convergence rate and also
+show the convergence as the entropy regularization vanishes. Finally, our work differs from Cao
+et al. [2025], which studied a randomization scheme for impulse control problems characterized
+by fixed points of compound operators combining regularized nonlocal and stopping operators. In
+contrast, our distinct exploratory formulation leads to the study of PDE system instead of a single
+PDE problem, for which we need to develop some delicate analysis for the system of equations to
+deduce some desired convergence results.
+The remainder of this paper is organized as follows. Section 2 reviews the classical optimal
+switching problem and presents preliminary results on viscosity solutions to the associated system
+of HJB variational inequalities. Section 3 introduces the exploratory formulation of the optimal
+switching problem, providing a regularity analysis of the value function and the characterization
+of the optimal policy. Section 4 establishes the policy improvement and the convergence result
+of policy iterations. Moreover, the convergence of the exploratory solution as the temperature
+parameter vanishes is also discusses therein. Section 5 develops a reinforcement learning algo-
+rithm that implements the martingale-based policy evaluation and the previous policy iteration,
+accompanied by an error analysis for the proposed algorithm. Finally, Section 6 presents some
+numerical examples demonstrating the very satisfactory performance of our RL algorithm.
+Notations. We specify the following list of notations for the rest of this paper.
+• Rn denotes the n-dimensional Euclidean space. For all x = (x1, · · · , xn), y = (y1, · · · , yn) ∈
+Rn, we denote by · the scalar product and by | · | the Euclidean norm:
+x · y =
+nX
+i=1
+xiyi, |x| = √x · x =
+vuut nX
+i=1
+x2 i .
+4
+
+=== page 5 ===
+• Rn×d is the set of real-valued n × d matrices. For σ ∈ Rn×d, we denote by σ⊤ the transpose
+matrix of σ. For A = (aij )1≤i,j≤n ∈ Rn×n, tr(A) = Pn i=1 aii is the trace of A. We define
+the matrix norm on Rn×d as |σ| = (tr(σσ⊤)) 1 2 .
+• For O ⊂ Rn, Ck(O) is the space of all real-valued continuous functions on O with continuous
+derivatives up to order k. For T ≥ 0, C 1,2([0, T ] × O) is the space of real-valued functions u
+on [0, T ] × O whose partial derivatives ∂u ∂t , ∂u ∂xi , ∂2u ∂xixj , 1 ≤ i, j ≤ n, exist and are continuous
+on [0, T ] × O. For u ∈ C 2(O), we denote by Dxu the gradient vector of u and D2 xu the
+Hessian matrix of u.
+• For points P = (t, x), P ′ = (t, x) ∈ [0, T ] × Rn, we define the parabolic distance between P
+and P ′ by
+d(P, P ′) = (|t − t′| + |x − x′|2) 1 2 .
+• For D ⊂ [0, T ] × Rn and α ∈ (0, 1) we introduce the following norms for functions defined
+on D:
+||u||C0(D) = sup
+P ∈D
+|f (P )|, ||u||Cα(D) = ||u||C0(D) + sup
+P,P ′∈D,P ̸=P ′
+|u(P ) − u(P ′)|
+d(P, P ′)α ,
+||u||C1(D) = ||u||C0(D) +
+nX
+i=1
+  ∂u ∂xi   C0(D) , ||u||C1+α(D) = ||u||Cα(D) + nX i=1   ∂u ∂xi   Cα(D) ,
+||u||C2(D) = ||u||C1(D) +
+nX
+i=1
+  ∂u ∂xi   C1(D) +   ∂u ∂t   C0(D) ,
+||u||C2+α(D) = ||u||C1+α(D) +
+nX
+i=1
+  ∂u ∂xi   C1+α(D) +   ∂u ∂t   Cα(D) .
+We say that function u(t, x) is in C q(D) if ||u||Cq (D) is finite (q = 0, α, 1 + α, 2 + α).
+2 Classical Optimal Switching Problem
+This section first reviews the classical optimal switching problem and introduce some preliminary
+results on viscosity solutions to the associated system of HJB variational inequalities.
+We fix a complete probability space (Ω, F , P), supporting a d-dimensional standard Brownian
+motion W = (Wt)t≥0. We denote by F the complete and right continuous filtration generated by
+W . The terminal time is denoted by T > 0. Let us introduce the domain D := [0, T ) × Rn, then
+the closure of D is given by D = [0, T ] × Rn.
+We then define the set At of admissible switching strategies at time t ∈ [0, T ] as the set of
+double sequences α = (τk, κk)k≥0, where (τk)k≥0 is a non-decreasing sequence of F-stopping times
+with τ0 = t and limk→∞ τk > T ; κk is an Fτk -measurable random variable valued in the set
+Im = {1, 2, · · · , m}. With a strategy α = (τk, κk)k≥0 ∈ At and an initial regime value i ∈ Im, we
+5
+
+=== page 6 ===
+associate the process (I t,i s )s≥t defined by
+I t,i s = X
+k≥0
+κk1s∈[τk ,τk+1), s ≥ t, I t,i t− = κ0 = i. (2.1)
+Given (t, x, i) ∈ [0, T ] × Rn × Im, and a switching control α ∈ At, we consider the controlled
+diffusion X t,x,i,α = (X t,x,i,α s )s∈[t,T ] governed by the SDE:
+dX t,x,i,α s = µ(s, X t,x,i,α s , I t,i s )ds + σ(s, X t,x,i,α s , I t,i s )dWs, s ∈ (t, T ], (2.2)
+with X t,x,i,α t = x. We have the following assumptions for the model coefficients.
+Assumption 2.1. (i) The drift µ(·, ·, ·) : [0, T ] × Rn × Im → Rn and volatility σ(·, ·, ·) : [0, T ] ×
+Rn × Im → Rn×d are uniformly Lipschitz continuous with respect to x, i.e., there exists a
+constant L > 0 such that
+|µ(s, x1, i) − µ(s, x2, i)| + |σ(s, x1, i) − σ(s, x2, i)| ≤ L|x1 − x2| (2.3)
+for all (s, x1, x2, i) ∈ [0, T ] × R2n × Im.
+(ii) The drift µ and volatility σ have linear growth in x, i.e., there exists a constant C > 0 such
+that
+|µ(s, x, i)| + |σ(s, x, i)| ≤ C(1 + |x|)
+for all (s, x, i) ∈ [0, T ] × Rn × Im.
+(iii) There exist some constant σ0 > 0 such that, for all (t, x, i) ∈ D × Im and ξ ∈ Rn,
+ξσ(t, x, i)σ⊤(t, x, i)ξ⊤ ≥ σ0ξξ⊤.
+Given the initial state (t, x, i), the expected total profit under the switching strategy α =
+(τk, κk)k≥0 ∈ At is given by
+Ji(t, x; α) = E
+ Z T
+t
+f (s, X t,x,i,α s , I t,i s )ds −
+∞X
+k=1
+gκk−1κk 1{τk ≤T } + h(X t,x,i,α T )
+
+, (2.4)
+where f (·, ·, ·) : [0, T ]×Rn ×Im → R is the running reward function, h(·) : Rn → R is the terminal
+reward function, and each gij denotes the constant cost of switching from regime i to j for all
+i ̸= j. We also impose the following assumptions.
+Assumption 2.2. (i) For i ∈ Im, the running reward f (·, ·, i) and terminal reward h(·) are
+assumed to be continuous. Furthermore, there exists a constant Kf,h > 0 such that
+|f (t, x, i)| + |h(x)| ≤ Kf,h, ∀(t, x, i) ∈ [0, T ] × Rn × Im. (2.5)
+(ii) For i, j ∈ Im with j ̸= i, the cost for switching from regime i to j is positive, that is, gij > 0,
+with the convention gii = 0. For i, j, k ∈ Im with j ̸= i, k, it is less expensive to switch
+directly in one step from regime i to k than in two steps via an intermediate regime j, that
+is, gik < gij + gjk.
+6
+
+=== page 7 ===
+The objective is to maximize the expected total profit over all switching strategies α. Accord-
+ingly, the classical value functions is defined by
+Vi(t, x) = sup
+α∈At
+Ji(t, x; α), (t, x, i) ∈ [0, T ] × Rn × Im. (2.6)
+By dynamic programming argument, the associated system of HJB variational inequalities is
+written by, for i ∈ Im,
+
+
+
+min
+
+− ∂Vi(t, x) ∂t − Li xVi(t, x) − f (t, x, i), Vi(t, x) − max j̸=i (Vj (t, x) − gij )  = 0, (t, x) ∈ D,
+Vi(T, x) = h(x), x ∈ Rn,
+(2.7)
+where the operator Li x is defined by
+Li xl(t, x) := µ(t, x, i)Dxl(t, x) + 1 2 tr(σσ⊤(t, x, i)D2 xl(t, x)), for l(t, ·) ∈ C 2(Rn).
+The value function (V1, · · · , Vm) can be characterized as the viscosity solution of system (2.7),
+which is defined as below.
+Definition 2.1. Let (u1, · · · , um) be a m-uplet of functions defined on D, R-valued and such that
+ui(T, x) = h(x) for any (i, x) ∈ Im × Rn. The m-uplet (u1, · · · , um) is called:
+(i) a viscosity supersolution (respectively, subsolution) of system (2.7) if, for each i ∈ Im, ui
+is lower-semicontinuous (respectively, upper-semicontinuous) on D and for any (t0, x0) ∈ D
+and any test function φi ∈ C 1,2(D) such that (t0, x0) is a local minimum point of ui − φi
+(respectively, maximum), we have
+min
+(
+− ∂φi(t0, x0) ∂t − Li xφi(t0, x0) − f (t0, x0, i),
+ui(t0, x0) − max j̸=i (uj (t0, x0) − gij )
+)
+≥ 0 (respectively, ≤ 0);
+(ii) a viscosity solution of system (2.7) if it both a viscosity supersolution and subsolution.
+Using a similar proof of Theorem 5.1 in El Asri [2013], we have the comparison principle for
+the system (2.7).
+Lemma 2.3 (Comparison Principle). Suppose Assumptions 2.1 and 2.2 hold. Let (u1, · · · , um)
+be a bounded viscosity supersolution of system (2.7) and (v1, · · · , vm) be a bounded viscosity sub-
+solution of system (2.7). Then vi(t, x) ≤ ui(t, x) for all (t, x, i) ∈ D × Im.
+Lemma 2.3 will help the proof of uniqueness of viscosity solution. The next result relates the
+value function (V1, · · · , Vm) to the system of variational inequalities.
+7
+
+=== page 8 ===
+Theorem 2.4. Under Assumptions 2.1 and 2.2, the value function (V1, · · · , Vm) given by (2.6)
+is the unique bounded viscosity solution of system (2.7).
+Proof. We begin by proving that the value function (V1, · · · , Vm) defined by (2.6) is bounded. By
+Assumption 2.2, for any (i, t, x) ∈ Im × D and α ∈ At,
+Ji(t, x, α) ≤ E
+ Z T
+t
+f (s, X t,x,i,α s , I t,i s )ds + h(X t,x,i,α T )
+
+≤ (T − t)Kf,h + Kf,h,
+which implies Vi(t, x) ≤ (T −t)Kf,h +Kf,h. For the lower bound, consider the no-switching control
+τn = ∞, n ≥ 1, i.e., I t,i s = i, s ≥ t. Applying Assumption 2.2 again yields
+Vi(t, x) ≥ E
+ Z T
+t
+f (s, X t,x,i,α s , I t,i s )ds + h(X t,x,i,α T )
+
+≥ −(T − t)Kf,h − Kf,h.
+Therefore, the value function is bounded. As it is bounded, it follows from Proposition 4.2 in
+Bouchard [2009] and Lemma 2.3 that the value function (V1, · · · , Vm) is the unique bounded
+viscosity solution of system (2.7).
+3 Exploratory Formulation under Entropy Regularization
+In this section, we introduce our exploratory formulation of the optimal switching problem, and
+study the well-posedness of the associated exploratory HJB system as well as the verification
+theorem.
+For the purpose of exploration, we let the agent randomize both the switching times and the
+choice of regimes to switch to. This randomization is achieved by considering the control of the
+generator matrix of a continuous-time finite-state Markov chain I = (It)t∈[0,T ] on the state space
+Im. That is, the agent chooses a feedback policy π(t, x) = (πij (t, x))i,j∈Im , where πij (t, x) is the
+instantaneous intensity of a transition from regime i to regime j at time t when the current state
+of the controlled diffusion is Xt = x. This formulation transforms the original optimal switching
+problem into a standard optimal control problem over the generator of the Markov chain, where
+the control acts continuously in time.
+For a fixed initial time t ∈ [0, T ], we define the set Ut of admissible feedback stochastic policies
+as follows.
+Definition 3.1. For t ∈ [0, T ], a policy π = (πij (s, x))i,j∈Im defined on [t, T ] × Rn belongs to the
+admissible set Ut if it satisfies:
+(i) For every i, j ∈ Im, the function πij (·, ·) : [t, T ] × Rn → R is measurable and bounded;
+moreover, it is uniformly Lipschitz continuous in x.
+(ii) For i ̸= j, πij (s, x) ≥ 0 for all (s, x) ∈ [t, T ] × Rn; for i = j, πii(s, x) ≤ 0.
+8
+
+=== page 9 ===
+(iii) For every i ∈ Im, the row sums satisfy
+mX
+j=1
+πij (s, x) = 0, ∀(s, x) ∈ [t, T ] × Rn.
+Given (t, x, i) ∈ [0, T ] × Rn × Im, we consider the controlled diffusion X = (Xs)s∈[t,T ] defined
+by the following SDE:
+dXs = µ(s, Xs, Is)ds + σ(s, Xs, Is)dWs, s ∈ (t, T ]. (3.1)
+with Xt = x and It = i. The regime switching process I = (Is)s∈[t,T ] is a continuous-time finite-
+state Markov chain with state space Im, whose generator at time s is given by the feedback matrix
+π(s, Xs) = (πij (s, Xs))i,j∈Im . For k ≥ 1, denote by τk the k-th jump time of process I with τ0 = 0
+and κk := Iτk .
+The pair (X, I) then forms a regime-switching diffusion with feedback-dependent jump inten-
+sities. To make the construction rigorous, we equip the probability space with an independent
+Poisson random measure N (ds, dz) on [0, T ]×[0, ∞) with intensity ds ν(dz), where ν is a Lebesgue
+measure on [0, ∞). This random measure allows us to represent the Markov chain I through a
+stochastic integral with respect to N (c.f. Section 2.2 in Nguyen et al. [2025]):
+dIs =
+Z ∞
+0
+p(s, Xs−, Is−, z)N (ds, dz), s ∈ [t, T ], (3.2)
+where the function p : [0, T ] × Rn × Im × [0, ∞) 7→ R is given by
+p(t, x, i, z) =
+mX
+j=1
+(j − i)1{z∈∆ij (t,x)}. (3.3)
+Here, for j ̸= i, the intervals ∆ij (t, x) are disjoint, left-closed, and right-open subsets of the positive
+real half-line, each having length πij (t, x). We set ∆ij (t, x) = ∅ if πij (t, x) = 0 for i ̸= j. Thus,
+p(t, x, i, z) = j − i if z ∈ ∆ij (t, x), and p(t, x, i, z) = 0 otherwise. Then, under Assumption 2.1
+and the conditions in Definition 3.1, the system (3.1) admits a unique strong solution (X, I). For
+detailed proofs of such results in the context of hybrid switching diffusions, we refer the reader to
+Theorem 2.6 and Corollary 2.8 in Section 2.1, as well as to the discussion of the nonhomogeneous
+case in Section 2.8 of Nguyen et al. [2025].
+For π ∈ Ut, denote by πs = (πij (s, Xs))i,j∈Im . To encourage the exploration, we adopt
+the normalized entropy similar to Dong [2024] that R(π, i) := P j̸=i πij − πij log πij for i ∈ Im.
+The exploratory formulation of objective functional under entropy regularizer is given by, for
+(t, x, i) ∈ [0, T ] × Rn × Im and π ∈ Ut,
+J λ i (t, x; π) := Et,x,i
+ Z T
+t
+f (s, Xs, Is)ds −
+∞X
+k=1
+gκk−1κk 1{τk ≤T } + λ
+Z T
+t
+R(πs, Is)ds + h(XT )
+
+,
+(3.4)
+where Et,x,i[·] := E[·|Xt = x, It = i], and λ > 0 is the temperature parameter. Furthermore, the
+optimal value function is denoted by
+V λ i (t, x) = sup
+π∈Ut
+J λ i (t, x; π). (3.5)
+9
+
+=== page 10 ===
+Applying the dynamic programming arguments (c.f. Section 5.3.2 in Pham [2009]), we derive the
+system of coupled HJB equations as follows: for i ∈ Im,
+
+
+
+∂V λ i (t, x)
+∂t + Li xV λ i (t, x) + f (t, x, i)
++ sup
+πi
+
+
+
+X
+j̸=i
+πij (V λ j (t, x) − gij − V λ i (t, x)) + λ X
+j̸=i
+(πij − πij log πij )
+
+
+ = 0, (t, x) ∈ D,
+V λ i (T, x) = h(x), x ∈ Rn.
+(3.6)
+Using the first-order condition, we arrive at the characterization of the optimal feedback policy
+by
+π∗ ij (t, x) = exp
+ 
+V λ j (t, x) − gij − V λ i (t, x)
+λ
+!
+, j ∈ Im \ {i}, (t, x) ∈ D. (3.7)
+Plugging (3.7) into (3.6), we get
+∂V λ i (t, x)
+∂t + Li xV λ i (t, x) + f (t, x, i) + λ X j̸=i exp  V λ j (t, x) − gij − V λ i (t, x) λ ! = 0, (t, x) ∈ D,
+(3.8)
+with the terminal condition V λ i (T, x) = h(x) for x ∈ Rn.
+To establish the existence of classical solution to the HJB system (3.6), we impose the following
+assumption.
+Assumption 3.1. The running reward function f (·, ·, i) ∈ C α(D) for i ∈ Im and terminal reward
+function h(·) ∈ C 2+α(Rn).
+Lemma 3.2. Let Assumptions 2.1, 2.2 and 3.1 hold. Then for any λ > 0, the system of HJB
+equations (3.6) has a classical solution (V λ 1 , V λ 2 , · · · , V λ m) with V λ i ∈ C1,2(D) ∩ C(D) for i ∈ Im.
+Proof. Given M > 0, consider a smooth and non-decreasing cut-off function ϕM such that
+ϕM (x) = ex for x ≤ M , ϕM (x) ≤ eM +1 for x ∈ (M, M + 1) and ϕM (x) = eM +1 for x ≥ M + 1.
+Hence, ϕM is bounded and Lipschitz continuous. Define DN := {(t, x) : (t, x) ∈ D, |x| < N }, and
+let ∂DN denote the parabolic boundary of DN , i.e., the set ([0, T ]×{|x| = N })∪({T }×{|x| ≤ N }).
+First, we will solve the following PDE system: for i ∈ Im,
+
+
+
+∂V M,N i (t, x)
+∂t + Li xV M,N i (t, x) + f (t, x, i) + λ X j̸=i ϕM
+ 
+V M,N j (t, x) − V M,N i (t, x) − gij
+λ
+!
+= 0,
+(t, x) ∈ DN ,
+V M,N i (t, x) = K(T − t) + h(x), (t, x) ∈ ∂DN ,
+(3.9)
+10
+
+=== page 11 ===
+where the constant K > 0 is given by
+K := Kf,h + λ sup
+i∈Im
+
+X
+j̸=i
+exp
+
+− gij
+λ
+
+
+ . (3.10)
+For i ∈ Im, let us introduce the function
+ui(t, x) = K(T − t) + Kf,h, (t, x) ∈ DN .
+It follows from Assumption 2.2 that
+∂ui(t, x)
+∂t + Li xui(t, x) + f (t, x, i) + λ X j̸=i ϕM  uj (t, x) − ui(t, x) − gij λ 
+= −K + f (t, x, i) + λ
+X
+j̸=i
+ϕM
+
+− gij
+λ
+
+≤ 0, ∀(t, x) ∈ DN , (3.11)
+and ui(t, x) ≥ V λ i (t, x) for all (t, x) ∈ ∂DN . Similarly, we have
+∂(−ui(t, x))
+∂t + Li x(−ui(t, x)) + f (t, x, i) + λ X j̸=i ϕM  (−uj (t, x)) − (−ui(t, x)) − gij λ 
+= K + f (t, x, i) + λ
+X
+j̸=i
+ϕM
+
+− gij
+λ
+
+≥ 0, ∀(t, x) ∈ DN , (3.12)
+and −ui(t, x) ≤ V λ i (t, x) for all (t, x) ∈ ∂DN . Invoking Theorem 2.1 in Kusano [1965], we
+obtain that system (3.9) has a classical solution (V M,N 1 , · · · , V M,N m ), with V M,N i ∈ C1+δ (DN ) for
+any δ ∈ (0, 1) and V M,N i ∈ C 2+α(DN ). Furthermore, we deduce from the comparison theorem
+(Theorem 1.3 in Kusano [1965]) that
+|V M,N i (t, x)| ≤ ui(t, x) = K(T − t) + Kf,h, ∀(i, t, x) ∈ Im × DN , (3.13)
+which implies that V M,N i (t, x) is bounded. Thus, by choosing some M large enough, for each
+i ∈ Im, V N i := V M,N i solves the following PDE
+
+
+
+∂V N i (t, x)
+∂t + Li xV N i (t, x) + f (t, x, i) + λ X j̸=i exp  V N j (t, x) − V N i (t, x) − gij λ ! = 0, (t, x) ∈ DN ,
+V N i (t, x) = K(T − t) + h(x), (t, x) ∈ ∂DN .
+(3.14)
+First, we apply Lemma 2 in Kusano [1965] to the problem (3.14) to derive for any δ ∈ (0, 1),
+||V N i ||C1+δ (DN ) ≤ C   1 + ||f (·, ·, i)||C0(DN ) + ||h||C2(DN )  .
+In particular, ||V N i ||Cα(DN ) are bounded independently of N . We then apply Lemma 1 in Kusano
+[1965] to the problem (3.14), obtaining
+||V N i ||C2+α(DN ) ≤ C   1 + ||f (·, ·, i)||Cα(DN ) + ||h||C2+α(DN ) 
+11
+
+=== page 12 ===
+≤ C
+ 
+1 + ||f (·, ·, i)||Cα(D) + ||h||C2+α(D)
+
+.
+In view of the uniform C 2+α(DN ) estimates, we deduce that for each fixed N0, the sequence
+{V N i } is relatively compact in C 2(DN0 ). By a diagonal argument, we can extract a subsequence
+converging uniformly in DN0 together with the first x , t-derivatives and second x-derivatives to
+a limit function V λ i , for every N0. The limit function V λ i thus belongs to C 1,2(D) ∩ C(D) and
+satisfies the PDE on D. The terminal condition is inherited from the boundary condition on ∂DN
+and the continuity at t = T . We then complete the proof.
+By the proof of Lemma 3.2, for any λ > 0, the system of HJB equations (3.6) admits a classical
+solution (V λ 1 , V λ 2 , · · · , V λ m) satisfying
+|V λ i (t, x)| ≤ K(T − t) + Kf,h, ∀(i, t, x) ∈ Im × D, (3.15)
+where the constant K > 0 is given by (3.10). We now prove that this bounded classical solution
+is unique and coincides with the value function.
+Proposition 3.3 (Verification Theorem). Suppose Assumptions 2.1, 2.2, and 3.1 hold, and let
+(V λ 1 , V λ 2 , · · · , V λ m) be a bounded classical solution to system (3.6), as provided by Lemma 3.2. We
+define a set of feedback functions by
+π∗ ij (t, x) = exp
+ 
+V λ j (t, x) − gij − V λ i (t, x)
+λ
+!
+, j ∈ Im \ {i}, (t, x) ∈ D, (3.16)
+and
+π∗ ii(t, x) = − X
+j̸=i
+π∗ ij (t, x), (t, x) ∈ D. (3.17)
+Consider the process X ∗ governed by the dynamics (3.1), where the generator of the process I ∗ is
+given by π∗ ij (t, X ∗ t )i,j∈Im,t∈[0,T ]. Then, for each i ∈ Im, the function V λ i is the value function for
+problem (3.5), and for any t ∈ [0, T ], the policy π∗ ∈ Ut is optimal.
+Proof. For (i, t, x) ∈ Im × D, π ∈ Ut, and s ∈ [t, T ], applying Itˆo’s rule yields
+V λ Is (s, Xs) = V λ i (t, x) +
+Z s
+t
+ 
+∂V λ Iℓ (ℓ, Xℓ)
+∂t + LIℓ x V λ Iℓ (ℓ, Xℓ)
+!
+dℓ +
+Z s
+t
+(DxV λ Iℓ (ℓ, Xℓ))⊤σ(ℓ, Xℓ, Iℓ)dWℓ
++
+Z s
+t
+X
+j̸=Iℓ
+
+πIℓj (ℓ, Xℓ)(V λ j (ℓ, Xℓ) − V λ Iℓ (ℓ, Xℓ))  dℓ
++
+Z s
+t
+Z ∞
+0
+
+V λ Iℓ−+p(ℓ,Xℓ−,Iℓ−,z)(ℓ, Xℓ−) − V λ Iℓ−(ℓ, Xℓ−)  ˜N (dℓ, dz), (3.18)
+where ˜N (ds, dz) := N (ds, dz) − dsν(dz) is a martingale measure. By the boundedness of the
+value function in (3.15), the stochastic integrals with respect to W and ˜N are both martingales.
+It follows from (3.6) that for any (i, t, x) ∈ Im × [0, T ] × Rn,
+∂V λ i (t, x)
+∂t + Li xV λ i (t, x) + X j̸=i πij (V λ j (t, x) − gij − V λ i (t, x))
+12
+
+=== page 13 ===
+≥
+X
+j̸=i
+πij gij − f (t, x, i) − λ
+X
+j̸=i
+(πij − πij log πij ). (3.19)
+Taking expectations on both sides of (3.18) and applying (3.19), we obtain
+V λ i (t, x) ≥ Et,x,i
+ Z s
+t
+f (ℓ, Xℓ, Iℓ)dℓ −
+∞X
+k=1
+gκk−1κk 1{τk ≤s} + λ
+Z s
+t
+R(πℓ, Iℓ)dℓ + V λ Is (s, Xs)
+
+. (3.20)
+Letting s → T in (3.20) and using the terminal condition V λ i (T, x) = h(x) together with the
+dominated convergence theorem, we deduce
+V λ i (t, x) ≥ Et,x,i
+ Z T
+t
+f (ℓ, Xℓ, Iℓ)dℓ −
+∞X
+k=1
+gκk−1κk 1{τk ≤T } + λ
+Z T
+t
+R(πℓ, Iℓ)dℓ + h(XT )
+
+. (3.21)
+The inequality (3.21) holds for any π ∈ Ut and becomes an equality when π = π∗. Moreover,
+using the boundedness of the value function in (3.15), we can verify that π∗ ∈ Ut for any t ∈ [0, T ].
+This completes the proof.
+4 Policy Iteration and Convergence
+The goal of this section is to study the policy iteration using the characterization in (3.7). In
+particular, in the context of optimal regime switching, we aim to show the policy improvement
+and the convergence of policy iterations, which demonstrate that each policy update guarantees
+the performance enhancement and the repeated iterations will lead to the desired optimal policy
+when the model is known. We also examine the connection between our exploratory formulation
+and the classical optimal switching problem by analyzing the limit of the vanishing regularization.
+We first focus on the rule of policy iteration. Given a feedback strategy πn(t, x) = (πn ij (t, x))i,j∈Im ,
+the corresponding value function (V n 1 , · · · , V n m) satisfies the following PDE system: for i ∈ Im,
+
+
+
+∂V n i (t, x)
+∂t + Li xV n i (t, x) + f (t, x, i) + Hi(πn i (t, x), V n 1 (t, x), · · · , V n m(t, x)) = 0,
+V n i (T, x) = h(x). (4.1)
+Here, πn i (t, x) = (πij (t, x))j∈Im for i ∈ Im, and the Hamiltomian Hi(πi, y) : Rm × Rm → R is
+defined by
+Hi(πi, y) =
+X
+j̸=i
+πij (yj − gij − yi) + λ
+X
+j̸=i
+(πij − πij log πij ). (4.2)
+Having the value function pair (V n 1 , · · · , V n m), one can construct a feedback strategy πn+1 satisfying
+πn+1 ij (t, x) = exp
+ V n j (t, x) − gij − V n i (t, x)
+λ
+
+, i, j ∈ Im, j ̸= i. (4.3)
+We continue this iteration, generating a sequence of strategy-value function pairs. The following
+result states that each iteration improves the value function.
+13
+
+=== page 14 ===
+Proposition 4.1. Let Assumptions 2.1, 2.2 and 3.1 hold. Give any initial guess (V 0 1 , · · · , V 0 m)
+with V 0 i ∈ C0(D) for i ∈ Im. {(V n i , πn ij )i,j∈Im }n=1,2,... are defined iteratively according to (4.1) and
+(4.3). Then, we have that V n i ≤ V n+1 i ≤ V λ i for i ∈ Im and n = 1, 2, . . ..
+Proof. By Proposition 3.3, the tuple (V λ 1 , · · · , V λ m) constitutes the optimal value function for the
+control problem (3.4). Since (V n 1 , · · · , V n m) is the value function corresponding to the strategy
+πn(t, x) for the same problem, it follows that V n i ≤ V λ i for all i ∈ Im and n ≥ 1.
+Given the uniform bound V n i ≤ V λ i , the estimate (3.15), V 0 i ∈ C0(D), and the policy iteration
+definition (4.3), we deduce that for any n ≥ 1 and i, j ∈ Im, the function πn ij (t, x) is bounded
+on D. For n ≥ 1, proceeding with a truncation argument analogous to the proof of Lemma 3.1,
+we select a suitable constant ˜K and consider the following pair of PDE systems defined on the
+truncated domain DN :
+
+
+
+∂V n,N i (t, x)
+∂t + Li xV n,N i (t, x) + f (t, x, i)
++ Hi(πn i (t, x), V n,N 1 (t, x), · · · , V n,N m (t, x)) = 0, (t, x) ∈ DN ,
+V n,N i (t, x) = ˜K(T − t) + h(x), (t, x) ∈ ∂DN ,
+(4.4)
+and
+
+
+
+∂V n+1,N i (t, x)
+∂t + Li xV n+1,N i (t, x) + f (t, x, i)
++ Hi(πn+1,N i (t, x), V n+1,N 1 (t, x), · · · , V n+1,N m (t, x)) = 0, (t, x) ∈ DN ,
+V n+1,N i (t, x) = ˜K(T − t) + h(x), (t, x) ∈ ∂DN ,
+(4.5)
+where policy πn+1,N is given by
+πn+1,N ij (t, x) = exp
+ 
+V n,N j (t, x) − gij − V n,N i (t, x)
+λ
+!
+, i, j ∈ Im, j ̸= i. (4.6)
+As in Lemma 3.1, the bounded solutions satisfy V n,N i → V n i and V n+1,N i → V n+1 i as N → ∞ for
+each i ∈ Im.
+Define the difference ∆n,N i (t, x) := V n+1,N i (t, x) − V n,N i (t, x) for i ∈ Im and (t, x) ∈ DN .
+Subtracting (4.4) from (4.5) yields the equation satisfied by ∆n,N i :
+∂∆n,N i (t, x)
+∂t + Li x∆n,N i (t, x) + Hi(πn+1,N i (t, x), V n+1,N 1 (t, x), · · · , V n+1,N m (t, x))
+− Hi(πn i (t, x), V n,N 1 (t, x), · · · , V n,N m (t, x)) = 0, (t, x) ∈ DN , (4.7)
+with boundary condition ∆n,N i (t, x) = 0 for (t, x) ∈ ∂DN . A key observation from (4.6) is that
+πn+1,N i (t, x) maximizes the Hamiltonian:
+πn+1,N i (t, x) = arg max π Hi(π, V n,N 1 (t, x), · · · , V n,N m (t, x)). (4.8)
+14
+
+=== page 15 ===
+Using (4.7) and the maximizing property (4.8), we derive for (t, x) ∈ DN :
+∂∆n,N i (t, x)
+∂t + Li x∆n,N i (t, x) + X j̸=i πn+1,N ij (t, x)∆n,N j (t, x) − X j̸=i πn+1,N ij (t, x)∆n,N i (t, x)
+= −Hi(πn+1,N i (t, x), V n+1,N 1 (t, x), · · · , V n+1,N m (t, x)) + X
+j̸=i
+πn+1,N ij (t, x)(∆n,N j (t, x) − ∆n,N i (t, x))
++ Hi(πn i (t, x), V n,N 1 (t, x), · · · , V n,N m (t, x))
+= Hi(πn i (t, x), V n,N 1 (t, x), · · · , V n,N m (t, x)) − Hi(πn+1,N i (t, x), V n,N 1 (t, x), · · · , V n,N m (t, x))
+≤ 0. (4.9)
+Applying Theorem 1.3 in Kusano [1965], we deduce that ∆n,N i (t, x) ≥ 0, that is, V n+1,N i (t, x) ≥
+V n,N i (t, x), for all i ∈ Im and (t, x) ∈ D. Passing to the limit as N → ∞, we have V n+1 i (t, x) ≥
+V n i (t, x), which then completes the proof.
+The following theorem, as the first main result of this paper, establishes a fundamental con-
+vergence guarantee for our policy iteration method, demonstrating that the sequence of value
+functions (V n 1 , · · · , V n m) generated through successive iterations converges uniformly to the opti-
+mal value functions (V λ 1 · · · , V λ m) of our exploratory optimal switching problem. Moreover, we
+can obtain the explicit convergence rate for the policy iteration.
+Theorem 4.2. Let Assumptions 2.1, 2.2 and 3.1 hold. Give any initial guess (V 0 1 , · · · , V 0 m) with
+V 0 i ∈ C 0(D) for i ∈ Im. {(V n i , πn ij )i,j∈Im }n=1,2,... are defined iteratively according to (4.1) and
+(4.3). Then, we have that, for all n ≥ 1,
+sup
+i∈Im
+sup
+(t,x)∈D
+|V n i (t, x) − V λ i (t, x)| ≤ C1 Cn 2 n! , (4.10)
+where C1, C2 > 0 are constants independent of n.
+Proof. For n ≥ 0, let us introduce the function F n : [0, T ] → R+ given by
+F n(t) := sup
+i∈Im
+sup
+x∈Rn
+|V n i (t, x) − V λ i (t, x)|. (4.11)
+By (3.13) and the convergence of {V N i } to V λ i as N → ∞, we can obtain
+|V λ i (t, x)| ≤ K(T − t) + Kf,h ≤ KT + Kf,h, ∀(i, t, x) ∈ Im × D, (4.12)
+where the constant K is given by (3.10). This leads to the boundedness of V λ i (t, x), which in turn
+implies that the policy π∗ from (3.7) is bounded. Similarly, by using Proposition 4.1 and (4.3),
+we can deduce that the sequence of functions V n i (t, x) and the corresponding policies πn(t, x) are
+uniformly bounded for n ≥ 1. Then, it follows from (3.7), (4.2) and (4.3) that
+Hi(πn i , V λ 1 , · · · , V λ m) − Hi(π∗ i , V λ 1 , · · · , V λ m) 
+=
+ X j̸=i πn ij (V λ j − gij − V λ i ) + λ X j̸=i (πn ij − πn ij log πn ij )
+15
+
+=== page 16 ===
++
+
+X
+j̸=i
+π∗ ij (V λ j − gij − V λ i ) + λ X
+j̸=i
+(π∗ ij − π∗ ij log π∗ ij )
+
+
+
+≤
+X
+j̸=i
+πn ij |V λ j − V n j | + |V λ i − V n i | X
+j̸=i
+πn ij
++ λ
+X
+j̸=i
+exp  V n j − gij − V n i λ  − exp  V λ j − gij − V λ i λ !
+≤ C∗F n(t), (4.13)
+where C ∗ > 0 is a constant independent of n. For n ≥ 0, we define the function wn i : D → R for
+i ∈ Im as
+wn i (t, x) := V λ i (t, x) − V n+1 i (t, x) − C ∗
+Z T
+t
+F n(s)ds, (t, x) ∈ D.
+By using (4.13), it holds that for any (t, x) ∈ D,
+∂wn i (t, x)
+∂t + Li xwn i (t, x) + X j̸=i πn+1 ij (t, x)wn j (t, x) − X j̸=i πn+1 ij (t, x)wn i (t, x)
+= Hi(πn+1 i (t, x), V λ 1 (t, x), · · · , V λ m(t, x)) − Hi(π∗ i (t, x), V λ 1 (t, x), · · · , V λ m(t, x)) + C ∗F n(t) ≥ 0,
+and wn i (T, x) = 0 for x ∈ Rn. By virtue of Theorem 1.3 in Kusano [1965], we deduce wn i (t, x) ≤ 0.
+That is,
+V λ i (t, x) − V n+1 i (t, x) ≤ C ∗
+Z T
+t
+F n(s)ds, ∀(i, t, x) ∈ Im × D. (4.14)
+This yields the inequality
+F n+1(t) ≤ C ∗
+Z T
+t
+F n(s)ds, ∀t ∈ [0, T ], (4.15)
+from which we deduce that
+F n(t) ≤ (C ∗)nT n
+n! sup s∈[0,T ] F 1(s), ∀t ∈ [0, T ]. (4.16)
+Because F 1(t) is bounded, let C2 = C ∗T and C1 = supt∈[0,T ] F 1(t). Then we obtain that desired
+result.
+Remark 4.3. By Stirling’s approximation, the convergence rate in (4.10) has the asymptotic
+behavior
+O
+ C n 2
+n!
+
+∼ O
+ C n 2√
+2πn (n/e)n
+
+= O
+ 
+exp
+ 
+n log C2 − n log n + n − 1 2 log n  .
+Consequently, it behaves like exp(n log C2 − n log n + O(n)), i.e., the super-exponential rate that
+is faster than any exponential rate e−Cn with C > 0.
+16
+
+=== page 17 ===
+To establish a connection between our exploratory formulation and the classical optimal
+switching problem, we next rigorously analyze the convergence result of the exploratory solu-
+tion as the temperature parameter λ approaches zero. Unlike the existing results in Tang et al.
+[2022] for regular control problem that focus on a single PDE problem, the nature of problem
+with multiple regime states calls for some distinct analysis to investigate the system of PDEs in
+our setting. In particular, we employ some stability analysis of viscosity solutions to the PDE
+system to examine the limit of vanishing entropy regularization. The mathematical goal is to show
+that the solution of the system of PDE will converge to the solution of the system of variational
+inequalities as λ → 0.
+Let us introduce the upper and lower weak limits of functions (V λ 1 , · · · , V λ m) defined as follows:
+for i ∈ Im and (t, x) ∈ D,
+V i(t, x) :=
+
+
+
+lim sup
+λ→0
+(s,y)→(t,x),(s,y)∈D
+V λ i (s, y), (t, x) ∈ D,
+h(x), t = T, x ∈ Rn,
+(4.17)
+and
+V i(t, x) :=
+
+
+
+lim inf
+λ→0,
+(s,y)→(t,x),(s,y)∈D
+V λ i (s, y), (t, x) ∈ D,
+h(x), t = T, x ∈ Rn.
+(4.18)
+The next lemma plays a crucial role in establishing the convergence of the value functions
+(V λ 1 , · · · , V λ m) as the temperature parameter λ tends to zero. By defining the upper and lower
+weak limits, we capture the limiting behavior of these functions. The result asserts that these
+limits are bounded and satisfy the viscosity solution properties for the system of HJB equations
+(2.7). Specifically, the upper weak limits form a viscosity subsolution, and the lower weak limits
+form a viscosity supersolution.
+Lemma 4.4. Let Assumptions 2.1, 2.2, and 3.1 hold. Consider the upper and lower weak limits
+of the functions (V λ 1 , · · · , V λ m), defined by (4.17) and (4.18), respectively. Then the tuple of upper
+weak limits (V 1, · · · , V m) is a bounded viscosity subsolution of system (2.7), while the tuple of
+lower weak limits (V 1, · · · , V m) is a bounded viscosity supersolution of system (2.7).
+Proof. It follows from (3.10), (3.15) and Assumption 2.2-(ii) that
+|V λ i (t, x)| ≤ KT + Kf,h = Kf,hT + λ sup
+i∈Im
+
+X
+j̸=i
+exp
+
+− gij
+λ
+
+
+ T + Kf,h
+≤ Kf,hT + λ(m − 1)T + Kf,h
+for all λ > 0 and (i, t, x) ∈ Im × D. This implies that V i and V i for i ∈ Im are bounded functions.
+Applying Lemma 1.5 in Chapter V of Bardi and Dolcetta [1997], V i is upper-semicontinuous on
+D while V i is lower-semicontinuous on D for every i ∈ Im.
+17
+
+=== page 18 ===
+We next show that the tuple of upper weak limits (V 1, · · · , V m) is a viscosity subsolution of
+system (2.7) using the contradiction argument. For i ∈ Im, let (t0, x0) ∈ D and the test function
+φi ∈ C1,2(D) such that (t0, x0) is a local maximum of V i − φi. Assume that
+min
+(
+− ∂φi(t0, x0) ∂t − Li xφi(t0, x0) − f (t0, x0, i),
+V i(t0, x0) − max j̸=i (V j (t0, x0) − gij )
+)
+> 0. (4.19)
+That is,
+δ := − ∂φi(t0, x0) ∂t − Li xφi(t0, x0) − f (t0, x0, i) > 0, (4.20)
+ε := V i(t0, x0) − max j̸=i (V j (t0, x0) − gij ) > 0. (4.21)
+In view of Lemma 1.6 in Chapter V of Bardi and Dolcetta [1997], there exists a sequence
+{(tn, xn)}n≥1 with (tn, xn) ∈ D and a sequence {λn}n≥1 with λn > 0, limn→∞ λn = 0 such
+that (tn, xn) is a local maximum point of V λn i − φi and
+lim
+n→∞
+(tn, xn) = (t0, x0), lim n→∞ V λn i (tn, xn) = V i(t0, x0). (4.22)
+Lemma 3.2 implies that for any λ > 0, (V λ 1 , V λ 2 , · · · , V λ m) is a classical solution to the system of
+of HJB equations (3.6), thus V λn i is a viscosity subsolution of the following PDE:
+− ∂V λn i (t, x) ∂t − Li xV λn i (t, x) − f (t, x, i) − λ X j̸=i exp  V λn j (t, x) − gij − V λn i (t, x) λ ! = 0.
+Consequently, we have
+− ∂φi(tn, xn) ∂t − Li xφi(tn, xn) − f (tn, xn, i) − λn X j̸=i exp  V λn j (tn, xn) − gij − V λn i (tn, xn) λ ! ≤ 0
+(4.23)
+for any n ≥ 1.
+From (4.20), (4.21) and (4.22), it follows that there exists some n1 > 0 such that for all n ≥ n1,
+− ∂φi(tn, xn) ∂t − Li xφi(tn, xn) − f (tn, xn, i) ≥ δ 2 ,
+and for any j ∈ Im, j ̸= i,
+V λn j (tn, xn) − gij − V λn i (tn, xn) ≤ − ε 2 .
+Selecting n2 such that for all n ≥ n2, λn exp(− ε 2λn ) < δ 2(m−1) , then for n ≥ max{n1, n2}, we get
+that
+− ∂φi(tn, xn) ∂t − Li xφi(tn, xn) − f (tn, xn, i) − λn X j̸=i exp  V λn j (tn, xn) − gij − V λn i (tn, xn) λ !
+18
+
+=== page 19 ===
+≥ − ∂φi(tn, xn) ∂t − Li xφi(tn, xn) − f (tn, xn, i) − λn X j̸=i exp  − ε 2λn 
+≥ δ 2 − λn(m − 1) exp  − ε 2λn  > 0. (4.24)
+The inequalities (4.23) and (4.24) are contradictory. Therefore, we conclude that the assumption
+(4.19) is note true, which implies that (V 1, · · · , V m) is a viscosity subsolution of system (2.7).
+We next show that the tuple of lower weak limits (V 1, · · · , V m) is a viscosity supersolution
+of system (2.7) by contradiction. For i ∈ Im, let (t0, x0) ∈ D and the test function φi ∈ C1,2(D)
+such that (t0, x0) is a local minimum of V i − φi. Assume that
+min
+(
+− ∂φi(t0, x0) ∂t − Li xφi(t0, x0) − f (t0, x0, i),
+V i(t0, x0) − max j̸=i (V j (t0, x0) − gij )
+)
+< 0. (4.25)
+Using Lemma 1.6 in Chapter V of Bardi and Dolcetta [1997] again, there exists a sequence
+{(tn, xn)}n≥1 with (tn, xn) ∈ D and a sequence {λn}n≥1 with λn > 0, limn→∞ λn = 0 such that
+(tn, xn) is a local minimum point of V λn i − φi and
+lim
+n→∞
+(tn, xn) = (t0, x0), lim n→∞ V λn i (tn, xn) = V i(t0, x0). (4.26)
+By Lemma 3.2, for any λ > 0, (V λ 1 , V λ 2 , · · · , V λ m) is a classical solution to the system of of HJB
+equations (3.6), thus V λn i is a viscosity supersolution of the following PDE:
+− ∂V λn i (t, x) ∂t − Li xV λn i (t, x) − f (t, x, i) − λ X j̸=i exp  V λn j (t, x) − gij − V λn i (t, x) λ ! = 0.
+Therefore we have
+− ∂φi(tn, xn) ∂t − Li xφi(tn, xn) − f (tn, xn, i) − λn X j̸=i exp  V λn j (tn, xn) − gij − V λn i (tn, xn) λ ! ≥ 0
+(4.27)
+for any n ≥ 1. We consider two cases for the inequality (4.25).
+Case 1. Assume that
+− ∂φi(t0, x0) ∂t − Li xφi(t0, x0) − f (t0, x0, i) < 0. (4.28)
+By (4.27), we have
+− ∂φi(tn, xn) ∂t − Li xφi(tn, xn) − f (tn, xn, i) ≥ λn X j̸=i exp  V λn j (tn, xn) − gij − V λn i (tn, xn) λ ! ≥ 0,
+19
+
+=== page 20 ===
+which yields
+− ∂φi(t0, x0) ∂t − Li xφi(t0, x0) − f (t0, x0, i)
+= lim
+n→∞
+
+− ∂φi(tn, xn) ∂t − Li xφi(tn, xn) − f (tn, xn, i)  ≥ 0.
+Thus, we obtain a contradiction.
+Case 2. Assume that
+δ := − ∂φi(t0, x0) ∂t − Li xφi(t0, x0) − f (t0, x0, i) ≥ 0, (4.29)
+and
+ε := −(V i(t0, x0) − max j̸=i (V j (t0, x0) − gij )) = V k(t0, x0) − gik − V i(t0, x0) > 0. (4.30)
+By (4.26), (4.29) and (4.30), there exists some n1 > 0 such that for all n ≥ n1,
+− ∂φi(tn, xn) ∂t − Li xφi(tn, xn) − f (tn, xn, i) ≤ 3δ 2 ,
+and
+V λn k (tn, xn) − gik − V λn i (tn, xn) ≥ ε 2 .
+Selecting n2 such that for all n ≥ n2, λn exp( ε 2λn ) > 3δ 2 , then for n ≥ max{n1, n2}, it holds that
+− ∂φi(tn, xn) ∂t − Li xφi(tn, xn) − f (tn, xn, i) − λn X j̸=i exp  V λn j (tn, xn) − gij − V λn i (tn, xn) λ !
+≤ − ∂φi(tn, xn) ∂t − Li xφi(tn, xn) − f (tn, xn, i) − λn exp
+ 
+V λn k (tn, xn) − gik − V λn i (tn, xn)
+λ
+!
+≤ 3δ 2 − λn exp  ε 2λn  < 0. (4.31)
+The inequalities (4.27) and (4.31) are contradictory.
+Combining the arguments in two cases above, we conclude that assertion (4.25) does not hold.
+This implies that (V 1, · · · , V m) is a viscosity supersolution of system (2.7), which completes the
+proof.
+As the second main result of this paper, the next theorem shows the convergence result towards
+the classical optimal switching problem as the entropy regularization vanishes.
+Theorem 4.5. Let Assumptions 2.1, 2.2 and 3.1 hold. Consider the value functions (V1, · · · , Vm)
+of the classical optimal switching problem defined by (2.6), and the value functions (V λ 1 , · · · , V λ m)
+of the exploratory optimal switching problem defined by (3.5). Then for any i ∈ Im and (t, x) ∈ D,
+lim
+λ→0
+V λ i (t, x) = Vi(t, x). (4.32)
+20
+
+=== page 21 ===
+Proof. By using Lemma 4.4 and Lemma 2.3, we have
+V i(t, x) ≤ V i(t, x), ∀i ∈ Im, (t, x) ∈ D.
+On the other hand, it follows from the definition of upper and lower weak limits that V i(t, x) ≥
+V i(t, x), for any i ∈ Im and (t, x) ∈ D. Thus, V i(t, x) = V i(t, x), and we denote by
+V ∗ i (t, x) := V i(t, x) = V i(t, x) for i ∈ Im, (t, x) ∈ D.
+It follows from (4.17), (4.18) and Lemma 4.4 that (V ∗ 1 , · · · , V ∗ m) is a bounded viscosity solution of
+system (2.7) satisfying V ∗ i (t, x) = limλ→0 V λ i (t, x). We deduce from Theorem 2.4 that
+Vi(t, x) = V ∗ i (t, x) = lim λ→0 V λ i (t, x). (4.33)
+Thus, we complete the proof of the theorem.
+Theorem 4.5 justifies the use of the exploratory formulation as a well-founded mathematical
+relaxation: as the exploration effect diminishes (as the temperature parameter λ → 0), the value
+function of the exploratory formulation indeed converges towards the value function of the classical
+optimal switching problem. Mathematically speaking, it is interesting to observe that the solution
+to the system of PDEs will converge to the solution of system of variational inequalities. Therefore,
+our exploratory formulation can also be regarded as a penalization approach to study a system
+of variational inequalities, under which we only need to handle the existence and regularity of
+solution to a system of PDEs.
+5 Reinforcement Learning Algorithm
+In this section, we design a RL algorithm to solve the exploratory optimal switching problem. We
+assume that the the drift µ, volatility σ, running profit f , and terminal reward h are all assumed
+unknown; whereas the switching costs gij are known constants and observable. The core of our
+approach lies in a key reformulation: we have transformed the original optimal switching problem
+into a standard optimal control problem where we control the generator of the finite-state Markov
+chain that characterizes the switching regimes. The primary distinction from classical problems
+is that the agent now actively controls the transition rates between regimes, adding a continuous
+layer of decision-making on top of the discrete switching choices.
+Our choice of the randomization and the exploratory form leads to an explicit characteriza-
+tion of the optimal policy that depends on the value functions, without involving their derivatives.
+Leveraging this solution structure, we adopt the policy evaluation (PE) method based on the mar-
+tingale characterization method similar to Jia and Zhou [2022b], which consider two alternative
+methods based on a martingale characterization: minimizing a martingale loss function, which
+provides the best mean-square approximation of the true value function, and solving a system of
+martingale orthogonality condition with test functions. In what follows, we design the PE algo-
+rithm by the martingale orthogonality condition and the established policy improvement result
+in Proposition 4.1.
+21
+
+=== page 22 ===
+Recall that given a feedback strategy π(t, x) = (πij (t, x))i,j∈Im , the corresponding value func-
+tion (vπ 1 , · · · , vπ m) satisfies the PDE system that for i ∈ Im,
+
+
+
+∂vπ i (t, x)
+∂t + Li xvπ i (t, x) + f (t, x, i) + Hi(πi(t, x), vπ 1 (t, x), · · · , vπ m(t, x)) = 0,
+vπ i (T, x) = h(x), (5.1)
+where the Hamiltomian Hi is given by (4.2). For simplicity, we omit the superscript π and denote
+the value function as:
+v(t, x, i) = vπ i (t, x), for i ∈ Im, (t, x) ∈ D, (5.2)
+and denote by I = (It)t≥0 a continuous-time finite-state Markov chain with generator π =
+(πij )i,j∈Im . Let us introduce the process M = (Mt)t∈[0,T ] given by
+Mt := v(t, Xt, It) +
+Z t
+0
+(f (s, Xs, Is) + λR(π(s, Xs), Is)) ds −
+∞X
+k=1
+gκk−1κk 1{τk ≤t}, t ∈ [0, T ].
+(5.3)
+The next lemma gives the martingale characterization that lays the foundation for the loss function
+and the policy evaluation RL algorithm.
+Lemma 5.1. Let π(t, x) = (πij (t, x))i,j∈Im be a feedback strategy and v(t, x, i) be the corresponding
+value function given by (5.2). Then the process M = (Mt)t∈[0,T ] given by (5.3) is a square-
+integrable martingale.
+Proof. Using Itˆo’s rule to v(s, Xs, Is) from t′ to t, we obtain
+v(t, Xt, It)
+= v(t′, Xt′ , It′ ) +
+Z t
+t′
+(Dxv(s, Xs, Is))⊤σ(s, Xs, Is)dWs
++
+Z t
+t′
+Z ∞
+0
+(v(s, Xs−, Is− + p(s, Xs−, Is−, z)) − v(ℓ, Xs−, Is−)) ˜N (ds, dz)
++
+Z t
+t′
+
+ ∂v(s, Xs, Is)
+∂t + LIs x v(s, Xs, Is) + X j̸=Is   πIsj (s, Xs)(v(s, Xs, j) − v(s, Xs, Is)) 
+
+ ds.
+(5.4)
+It follows from (5.1), (5.3) and (5.4) that
+E[Mt|Ft′ ]
+= E
+"
+v(t, Xt, It) +
+Z t
+0
+(f (s, Xs, Is) + λR(π(s, Xs), Is)) ds −
+∞X
+k=1
+gκk−1κk 1{τk ≤t}
+Ft′
+#
+= Mt′ + E
+h
+v(t, Xt, It) − v(t′, Xt′ , It′ ) Ft′ i
+22
+
+=== page 23 ===
++ E
+
+
+Z t
+t′
+(f (s, Xs, Is) + λR(π(s, Xs), Is)) ds −
+Z t
+t′
+X
+j̸=Is
+gIsj πIsj s ds Ft′
+
+
+= Mt′ + E
+Z t
+t′
+(Dxv(s, Xs, Is))⊤σ(s, Xs, Is)dWs
+Ft′ 
++ E
+Z t
+t′
+Z ∞
+0
+(v(s, Xs−, Is− + p(s, Xs−, Is−, z)) − v(s, Xs−, Is−)) ˜N (ds, dz)
+Ft′ 
+= Mt′ .
+Thus, we get the desired result.
+Let us introduce the notation L2([0, T ]) as the space of all processes K = (Kt)t∈[0,T ] that K is
+F-progressively measurable satisfying E[
+R T
+0 |Kt|2dt] < ∞ and E[⟨K⟩T ] < ∞. For any semimartin-
+gale R = (Rs)s∈[0,T ], we denote L2([0, T ]; R) the space of all processes K = (Kt)t∈[0,T ] that K is
+F-progressively measurable and satisfies
+E
+Z T
+0
+|Kt|2d ⟨R⟩t
+
+< ∞,
+where ⟨R⟩t is the quadratic variation process of R. We have the following result.
+Proposition 5.2. A diffusion process R = (Rs)s∈[0,T ] ∈ L2([0, T ]) is a martingale if and only if
+E
+Z T
+0
+ςtdRt
+
+= 0 (5.5)
+for any ς ∈ L2([0, T ]; R).
+Proof. As R is a diffusion process, it admits the stochastic differential representation
+Rt = R0 +
+Z t
+0
+Asds +
+Z t
+0
+MsdBs, t ∈ [0, T ],
+where B = (Bt)t∈[0,T ] is a F-adapted scalar Brownian motion, and A = (At)t∈[0,T ] and M =
+(Mt)t∈[0,T ] are F-progressively measurable processes. If R is a martingale, then its drift vanishes,
+i.e., A ≡ 0. Now take any ς ∈ L2([0, T ]; R). Then
+E
+Z T
+0
+|ςtMt|2dt
+
+= E
+Z T
+0
+|ςt|2d ⟨R⟩t
+
+< ∞.
+This implies that (
+R t
+0 ςsMsdBs)t∈[0,T ] is a martingale; consequently,
+E
+Z T
+0
+ςtdRt
+
+= E
+Z T
+0
+ςtMtdBt
+
+= 0.
+Conversely, assume that (5.5) holds for every ς ∈ L2([0, T ]; R). For any t, t′ with 0 ≤ t ≤ t′ ≤ T ,
+define
+ςs =
+(
+sgn(As), s ∈ [t, t′],
+0, otherwise.
+23
+
+=== page 24 ===
+As |ς| ≤ 1 for all t ∈ [0, T ], we have ς ∈ L2([0, T ]; R). Then
+0 = E
+Z T
+0
+ςsdRs
+
+= E
+"Z t′
+t
+|As|ds
+#
++ E
+"Z t′
+t
+ςsMsdBs
+#
+= E
+"Z t′
+t
+|As|ds
+#
+,
+where the last equality follows because (
+R ℓ
+t ςsMsdBs)ℓ∈[t,t′] is a martingale. By the arbitrariness
+of t and t′, we conclude that As = 0 a.s. for every s ∈ [0, T ]. Hence N is a martingale, which
+completes the proof.
+Proposition 5.2 is known as the martingale orthogonality condition (see, e.g., Jia and Zhou
+[2022b, 2023]). It provides a powerful characterization of martingales within the class of diffusion
+processes: a process is a martingale if and only if its stochastic integral against every admissible
+test process has zero expectation. This condition serves the theoretical backbone of our policy
+evaluation RL algorithm.
+Given a feedback strategy π(t, x) = (πij (t, x))i,j∈Im , we parameterize the value function by a
+neural network vξ (t, x, i) that is differentiable with respect to the parameter vector ξ and satisfies
+vξ (T, x, i) = h(x). Here ξ ∈ Θ ⊂ RLξ and Lξ is the dimension of the parameter vector. The term
+∂vξ
+∂ξ denotes the gradient of the neural network output with respect to its parameters.
+Let M ξ = (M ξ t )t∈[0,T ] be the parameterized version of the martingale process M defined in
+(5.3). Our goal is to find the optimal parameters ξ such that M ξ is as close as possible to a true
+martingale. Ideally, we would like M ξ to be an exact martingale; then, by Proposition 5.2, the
+orthogonality condition
+E
+Z T
+0
+ςtdM ξ t
+
+= 0 (5.6)
+must hold for every test process ς ∈ L2([0, T ]; M ). Equation (5.6) can be viewed as a (infinite-
+dimensional) family of equations to determine the parameter ξ. We refer to this as the martingale
+orthogonality equation. In principle, solving the full set of equations would require verifying the
+condition for all ς, which is numerically infeasible. For practical approximation, we select a finite
+collection of test processes that are sufficiently rich to determine ξ. Because we have Lξ unknown
+parameters, we need at least Lξ independent equations. A natural choice is to take the test process
+proportional to the gradient of the approximate value function with respect to the parameters,
+namely ςt = ∂vξ ∂ξ (t, Xt, It).
+To solve the martingale orthogonality equations, we apply the stochastic approximation method
+(see, e.g., Robbins and Monro [1951], Jia and Zhou [2022b]) — a class of iterative algorithms for
+finding roots of equations or optimizing objectives when only noisy measurements are available.
+Substituting the chosen test process ς = ∂vξ ∂ξ (t, Xt, It) into the orthogonality condition and apply-
+ing stochastic approximation yields the updating rule
+ξ ← ξ + αξ
+Z T
+0
+∂vξ
+∂ξ (s, Xs, Is)dM ξ s , (5.7)
+where αξ > 0 is the learning rate.
+24
+
+=== page 25 ===
+However, the update rule (5.7) involves a continuous-time integral that cannot be directly
+implemented computationally. To address this, we adopt a discrete-time approximation of the
+martingale orthogonality condition. Let K ∈ N be the number of time intervals and ∆t = T /K be
+the step size. Consider the discretization grid 0 = t0 < t1 < t2 < · · · < tK = T with tk −tk−1 = ∆t
+for k = 1, . . . , K. We have
+Z T
+0
+ςt dM ξ t ≈
+K−1X
+k=0
+ςtk ∆M ξ tk ,
+where ∆M ξ tk = M ξ tk+1 − M ξ tk . Expanding ∆M ξ tk by the definition of M ξ gives
+∆M ξ tk = M ξ tk+1 − M ξ tk
+= vξ (tk+1, Xtk+1 , Itk+1 ) − vξ (tk, Xtk , Itk ) +
+Z tk+1
+tk
+
+f (s, Xs, Is) + λR(πξ s , Is)  ds
+−
+∞X
+j=1
+gκj−1κj 1{tk <τj ≤tk+1}
+≈ vξ (tk+1, Xtk+1 , Itk+1 ) − vξ (tk, Xtk , Itk ) +  f (tk, Xtk , Itk ) + λR(πξ tk , Itk )  ∆t − gItk Itk+1
+:= ∆ξk, (5.8)
+where the parameterized strategy πξ (t, x) = (πξ ij (t, x))i,j∈Im is given by
+πξ ij (t, x) = exp
+ vξ (t, x, j) − gij − vξ (t, x, i)
+λ
+
+, j ̸= i, (5.9)
+and πξ ii(t, x) = − P j̸=i πξ ij (t, x). Here, we choose the time step ∆t to be sufficiently small relative
+to the transition rates of the continuous-time Markov chain It. Under this assumption, the
+probability of two or more jumps occurring within any single interval (tk, tk+1] is of order O((∆t)2)
+and is hence negligible for small ∆t. That is, we can assume that at most one regime switch occurs
+during each time step. Thus, we replace the infinite sum over jump times by the single switching
+cost gItk Itk+1 in (5.8). Substituting this into the discretized integral yields the parameter update
+ξ ← ξ + αξ
+K−1X
+k=0
+ςtk ∆ξk. (5.10)
+Note that this is an offline update: the entire trajectory over [0, T ] is collected first, all ∆ξk are
+computed, and then the parameter is updated once per episode. Alternatively, one can update
+the parameter in an online fashion at each time step as soon as ∆ξk becomes available:
+ξ ← ξ + αξ ςtk ∆ξk.
+The online update does not wait for the end of the episode; it uses data incrementally, which has
+better data efficiency, albeit it may introduce more noise per update.
+Based on the above updating rules, we can present the pseudo-code of the offline PE algorithm
+in Algorithm 1. The online PE algorithm can be devised in a similar fashion and is omitted.
+25
+
+=== page 26 ===
+Algorithm 1 Policy Evaluation Algorithm (Offline)
+Input: Initial state (x0, i0), horizon T , number of regimes m, time step ∆t, number of episodes N ,
+number of mesh grids K, initial learning rates αξ (·) (a function of the number of episodes), func-
+tional forms of parameterized value function vξ (·), policy πξ (·), regime switching costs (gij )i,j∈Im
+and temperature parameter λ.
+Required Program: an environment simulator (x′, i′, f ′) = Environment ∆t(t, x, i, j) that takes
+current time-state pair (t, x, i) and action j (the regime to switch to; if j = i, no switching occurs)
+as inputs and generates state x′, i′ = j and reward f ′ at time t + ∆t as outputs .
+Learning Procedure:
+1: Initialize ξ, and ℓ = 1.
+2: while ℓ < N do
+3: Initialize k = 0. Observe initial state x0, i0 and store (xt0 , it0 ) ← (x0, i0).
+4: while k < K do
+5: Generate action jtk by πξ (tk, xtk ).
+6: Apply jtk to environment simulator (x, i, f ) = Environment ∆t(tk, xtk , itk , jtk ).
+7: Observe new state x and i as output. Store xtk+1 ← x, itk+1 ← i and ftk ← f .
+8: Update k ← k + 1.
+9: end while
+10: For every k = 0, 1, ..., K − 1, compute
+∆ξk = vξ (tk+1, xtk+1 , itk+1 ) − vξ (tk, xtk , itk ) +  ftk + λR(πξ (tk, xtk ), itk )  ∆t − gitk itk+1 .
+11: Update ξ by
+ξ ← ξ + αξ (ℓ + 1)
+K−1X
+k=0
+∂vξ
+∂ξ (tk, xtk , itk ) ∆ξk,
+12: Update ℓ ← ℓ + 1.
+13: end while
+Proposition 4.1 and Theorem 4.2 confirm the improvement and convergence results of the
+policy iteration. Meanwhile, Lemma 5.1 and Proposition 5.2 show that policy evaluation can
+be performed by solving the martingale orthogonality condition via stochastic approximation. A
+natural question arises: what can be said about the convergence of Algorithm 1? To address this,
+we next turn to an analysis of the error estimates for Algorithm 1.
+We reformulate the update rule in equation (5.10) as follows:
+ξℓ+1 ← ξℓ + αξ (ℓ + 1)Ψ(ξℓ; X, I, πξℓ ), for iteration step ℓ ≥ 1, (5.11)
+where
+Ψ(ξℓ; X, I, πξℓ ) =
+K−1X
+k=0
+∂vξ
+∂ξ (tk, Xtk , Itk )∆ξk,
+26
+
+=== page 27 ===
+with ∆ξk defined in equation (5.8). For notational convenience, we introduce the shorthand
+Yℓ+1 = (X, I, πξℓ ) for ℓ ≥ 1. We further define the expected update function as ψ(ξ) := E[Ψ(ξ; Y )].
+To establish convergence guarantees, we make the following technical assumptions.
+Assumption 5.3. (i) The ordinary differential equation ξ′(t) = ψ(ξ(t)) has a unique stable
+equilibrium point ξ∗.
+(ii) There exists a constant C > 0 such that E[|Ψ(ξℓ; Yℓ+1)|2|ξℓ] ≤ C(1 + |ξℓ|2) for all iterations.
+(iii) There exists κ > 0 such that (ξ − ξ∗) · ψ(ξ) ≤ −κ|ξ − ξ∗|2 for all ξ ∈ RLξ .
+(iv) There exist constants ρ, C > 0 such that supj∈Im |vξ (·, j) − vξ∗ (·, j)|C0(D) ≤ C|ξ − ξ∗|ρ for
+all ξ ∈ RLξ .
+Under these conditions, we now present the main convergence result, which provides the
+explicit error bound for Algorithm 1.
+Theorem 5.4. Let Assumption 5.3 hold. Set αξ (ℓ) = A ℓν +B for some ν ∈ (0, 1], A > ν 2κ and
+B > 0, and let ϵ > 0. Then there exists C > 0 (independent of n, ϵ) such that with probability of
+at least 1 − ϵ,
+sup
+j∈Im
+|vξℓ (·, j) − v(·, j)|C0(D) ≤ sup j∈Im |v(·, j) − vξ∗ (·, j)|C0(D) + C ϵρ/2 ℓ− νρ 2 . (5.12)
+Proof. It follows from (5.11) and Assumption 5.3-(ii),(iii) that
+E
+
+|ξℓ+1 − ξ∗|2 | ξℓ  = E  |ξℓ − ξ∗ − ξℓ + ξℓ+1|2 | ξℓ 
+≤ |ξℓ − ξ∗|2 + 2|ξℓ − ξ∗|E [|ξℓ − ξℓ+1| | ξℓ] + E  |ξℓ − ξℓ+1|2 | ξℓ 
+= |ξℓ − ξ∗|2 + 2αξ (ℓ + 1)(ξℓ − ξ∗)ψ(ξ) + E[|Ψ(ξℓ; Yℓ+1)|2 | ξℓ]
+≤ (1 − 2αξ (ℓ + 1)κ)|ξℓ − ξ∗|2 + Cα2 ξ (ℓ + 1)(1 + |ξℓ|2)
+≤ (1 − 2αξ (ℓ + 1)κ)|ξℓ − ξ∗|2 + Cα2 ξ (ℓ + 1)(1 + 2|ξℓ − ξ∗|2 + 2|ξ∗|2)
+≤ (1 − 2αξ (ℓ + 1)κ + 2Cα2 ξ (ℓ + 1))|ξℓ − ξ∗|2 + Cα2 ξ (ℓ), (5.13)
+where C > 0 is a generic constant independent of n, ϵ, which may differ from line to line.
+Taking expectations on both sides of (5.13), we obtain
+E
+
+|ξℓ+1 − ξ∗|2 ≤ (1 − 2αξ (ℓ + 1)κ + 2Cα2 ξ (ℓ + 1))E  |ξℓ − ξ∗|2 + Cα2 ξ (ℓ). (5.14)
+As αξ (ℓ) = A ℓν +B with ν ∈ (0, 1], A > ν 2κ , and B > 0, it follows from Lemma 23 in Chapter 1 of
+Part II of Benveniste et al. [2012] that there exist constants C0 > 0 and ℓ0 ≥ 1 such that, for any
+c ≥ C0 and ℓ ≥ ℓ0, we have 1 − 2αξ (ℓ + 1)κ ≥ 0 and
+˜α(ℓ + 1) ≥ (1 − 2αξ (ℓ + 1)κ + 2Cα2 ξ (ℓ + 1)) ˜α(ℓ) + Cα2 ξ (ℓ), (5.15)
+where ˜α(ℓ) = cα(ℓ) for ℓ ≥ 1.
+27
+
+=== page 28 ===
+Choose c ≥ C0 such that E
+
+|ξℓ − ξ∗|2 ≤ cαξ (ℓ) for all ℓ ≤ ℓ0. For ℓ ≥ ℓ0, applying (5.14) and
+(5.15) and arguing by induction on ℓ, we get immediately that E
+
+|ξℓ − ξ∗|2 ≤ cαξ (ℓ). Thus, it
+holds that
+E[|ξℓ − ξ∗|2] ≤ Cℓ−ν ,
+where C > 0 is a constant independent of ℓ. This bound in turn implies that
+|ξℓ − ξ∗| ≤ Cϵ− 1 2 ℓ− ν 2
+with probability at least 1 − ϵ. Then, invoking Assumption 5.3-(iv), we deduce that with proba-
+bility at least 1 − ϵ,
+sup
+j∈Im
+|vξℓ (·, j) − v(·, j)|C0(D)
+≤ sup
+j∈Im
+|v(·, j) − vξ∗ (·, j)|C0(D) + sup j∈Im |vξ∗ (·, j) − vξℓ (·, j)|C0(D)
+≤ sup
+j∈Im
+|vξ∗ (·, j) − v(·, j)|C0(D) + C ϵρ/2 ℓ− νρ 2 .
+This completes the proof.
+Theorem 5.4 establishes a comprehensive error analysis for Algorithm 1, providing both theo-
+retical guarantees and practical insights into its convergence behavior. Assumption 5.3-(i) ensures
+that the unique stable equilibrium ξ∗ is the only possible candidate for convergence of the stochas-
+tic approximation algorithm (c.f. Theorem 7 in Chapter of Part I of Benveniste et al. [2012]).
+Assumptions 5.3-(ii) and (iii), together with the specific structure of the learning rate in The-
+orem 5.4, are crucial for characterizing the convergence rate of the stochastic approximation.
+Assumption 5.3-(iv) imposes a H¨older-type regularity condition on the function approximator,
+connecting the parameter-space error with the function-space error.
+The result demonstrates that the policy evaluation error can be systematically decomposed
+into two distinct components: the approximation error of the parametric function class and
+the algorithmic error arising from the stochastic approximation procedure. The first term,
+supj∈Im |v(·, j) − vξ∗ (·, j)|C0(D), represents the inherent approximation capability of our chosen
+parametric family. This bias term is independent of the learning algorithm and reflects how well
+the optimal parameter ξ∗ can approximate the true value function within the selected function
+class. The second term, Cℓ− νρ 2 /ϵρ/2, exhibits a polynomial decay with respect to the iteration
+number i and vanishes asymptotically as the number of iterations increases, demonstrating the
+algorithm’s convergence to the optimal parameter configuration within the chosen function class.
+6 Numerical Examples
+This section presents some numerical experiments to demonstrate the practical efficacy of the
+proposed RL algorithm. We first examine a bounded regulator problem to analyze the algorithm’s
+convergence property and policy behavior. Subsequently, we apply the algorithm to a put option
+selection problem involving the optimal switching between risky assets, showcasing its effectiveness
+in a more complex, multi-regime setting with some financial interpretations.
+28
+
+=== page 29 ===
+6.1 Bounded Regulator Problem
+To establish a performance benchmark for our algorithm, we consider a finite-horizon optimal
+switching problem with two regimes, conceptualized as a bounded regulator. This classic problem
+provides a tractable yet non-trivial testbed where the optimal policy has an intuitive structure,
+allowing for clear interpretation of the algorithm’s learned strategy.
+The system state X = (Xt)t∈[0,T ] evolves according to regime-specific stochastic dynamics:
+dXt = µidt + σdWt, i ∈ {0, 1}, t ∈ [0, T ], (6.1)
+with initial condition X0 = x ∈ R. Here, W = (Wt)t∈[0,T ] is a standard Brownian motion. The
+parameters are chosen with symmetry: the drift coefficients are µ0 = −2 and µ1 = 2, and the
+volatility is σ = 0.5. This symmetric setup induces a natural switching logic to correct the state’s
+deviation.
+The controller’s objective is to maximize the expected total reward over the horizon [0, T ],
+which comprises a running reward and a terminal reward:
+f (x) = 2e−2x2 − 0.1, h(x) = 2e−2x2 , x ∈ R.
+The Gaussian bump shape of the functions f and h creates a strong incentive to maintain the
+state Xt near zero, as the reward attains its maximum value at x = 0. Each switch between
+regimes incurs a cost, specified as g01 = g10 = 0.5. This cost penalizes excessive control actions,
+forcing the optimal policy to strategically balance the benefit of corrective switching against the
+incurred cost.
+We use a discrete version of (6.1) for t = 0, ∆t, ..., K∆t with T = 1, K = 100 and ∆t = T /K.
+The value function and policy are approximated by a neural network in the PyTorch framework
+with the architecture and parameters summarized in Table 1.
+In order to approximate the expectation operator in the theoretical formulation via Monte
+Carlo methods—that is, to estimate the gradient direction using the average of finite samples
+so that the update of parameters ξ is not based on a single specific scenario—we employ batch
+learning to train the neural network parameters ξ. This approach not only enhances training
+stability but also ensures that the learned policy is optimal in an expected sense.
+Table 1: Neural Network Architecture and Training Parameters for the Regulator Problem
+Component Specification
+Network Architecture 2 hidden layers
+Activation Functions ReLU (Layer 1), Tanh (Layer 2)
+Hidden Dimension 128
+Batch Size 64
+Optimizer Adam
+Learning Rate 1 × 10−3
+Training Episodes 1000
+The training progression under the temperature parameter λ = 0.2 is shown in Figure 1-(a).
+The loss function decreases efficiently and stabilizes after approximately 400 episodes, indicating
+29
+
+=== page 30 ===
+the robust convergence of the policy iteration in the RL algorithm. Figure 1-(b) depicts the learned
+value functions and the optimal switching probabilities at t = 0.5. The near symmetry between
+the value functions for regime 0 (blue line) and regime 1 (orange line) is a direct consequence of
+the symmetric problem parameters. The switching probabilities—from regime 0 to 1 (green line)
+and from regime 1 to 0 (yellow line)—are calculated from the optimal intensity π.
+(a)
+ (b)
+Figure 1: (a): Convergence of the training loss for the bounded regulator problem with λ = 0.2.
+(b): Learned value functions and switching probabilities at t = 0.5 and I0.5 = 0 for λ = 0.2, i.e,
+P (It+∆t = 1|It = 0, Xt = x, t = 0.5).
+A central theoretical result is the convergence of the exploratory solution to the classical opti-
+mal switching policy as the temperature parameter λ tends to zero. We validate this numerically.
+Figure 2-(a) shows that the training loss decreases for different values of λ, with convergence
+achieved in all cases. More importantly, Figure 2-(b) illustrates the fundamental transformation
+of the optimal policy. For a larger λ (e.g., 0.2), the switching probability is a smooth function of
+the state, reflecting exploratory randomization. As λ decreases to 1 × 10−6, the probability curve
+becomes sharp and nearly binary, approaching a deterministic threshold-based policy.
+To benchmark the proposed method, we construct a classical reference solution by solving the
+no-exploration HJB variational inequality system (i.e., the classical optimal switching problem
+with λ = 0) using a finite-difference scheme on a sufficiently fine grid. This provides a fully known-
+model baseline against which the exploratory RL algorithm can be evaluated. The RL agent is
+trained under entropy regularization with λ = 5, 0.1, 10−6, and the resulting value functions are
+compared with the finite-difference reference at two representative time instants, t = 0.5 and t =
+0.8, as shown in Figure 3. The comparison reveals that the learned RL value functions faithfully
+capture the overall shape of the classical solution across both regimes. As anticipated, the closest
+match occurs at the smallest temperature parameter λ = 10−6, which lends strong numerical
+support to Theorem 4.5: the exploratory HJB solutions converge to the classical variational
+inequality solution as λ → 0. These results thus confirm that the proposed continuous-time RL
+framework is capable of recovering the value structure of the classical optimal switching problem
+in the vanishing-regularization limit.
+30
+
+=== page 31 ===
+(a)
+ (b)
+Figure 2: (a): Training convergence for different temperature parameters λ. (b): Evolution of the
+switching probability from regime 0 to 1 as λ decreases.
+6.2 Put Option Selection Problem
+In this second example, we consider an investor who aims to optimally switch an investment
+decision between three regimes: two European put options on different assets and a risk-free
+savings account. The investor’s wealth can be allocated to one of three regimes during the finite
+horizon [0, T ]:
+• regime 0: a put option on Stock A.
+• regime 1: a put option on Stock B.
+• regime 2: the risk-free savings account.
+The underlying stock prices follow the geometric Brownian motion:
+dSA t = µASA t dt + σASA t dWt, dSB t = µB SB t dt + σB SB t dWt, t ∈ (0, T ],
+with SA 0 = sA ∈ [0, ∞), SB 0 = sB ∈ [0, ∞). The parameters are set as (µA, σA) = (0.1, 0.2) and
+(µB , σB ) = (0.05, 0.1), and W = (Wt)t∈[0,T ] is a standard Brownian motion. The risk free rate is
+r = 0.05. For any time t ∈ [0, T ], the investor decides an action It ∈ {1, 2, 3}, which determines the
+regime in which the investor’s wealth is allocated. Switching between regimes incurs transaction
+costs given by the matrix:
+G = (gij )1≤i,j≤3 =
+
+
+0 0.02 0.01
+0.02 0 0.01
+0.02 0.02 0
+
+ .
+The investor’s objective is to maximize the expected total reward over the horizon [0, T ], where
+31
+
+=== page 32 ===
+(a)
+(b)
+Figure 3: The learned entropy-regularized value functions under different temperature parame-
+ters λ vs the numerical value function at (a) t = 0.5; (b) t = 0.8.
+the running reward function is given by
+f (sA, sB , i) =
+
+
+
+(SK − sA)+, i = 1,
+(SK − sB )+, i = 2,
+rSK , i = 3,
+with the strike price SK = 1 and (x)+ := max{x, 0} for x ∈ R. The terminal reward function is
+assumed to be 0.
+We set the time horizon T = 1, the number of time intervals K = 50, the step size ∆t = T /K =
+0.02, and the temperature parameter λ = 0.1. The value function and policy are approximated
+by a neural network with the architecture and parameters summarized in Table 2. The model
+was implemented within the PyTorch framework.
+According to Figure 4, at the beginning of training, the loss exhibits a oscillation, and the
+32
+
+=== page 33 ===
+Table 2: Neural Network Architecture and Training Parameters for the Regulator Problem
+Component Specification
+Network Architecture 2 hidden layers
+Activation Functions Tanh (Layer 1), Tanh (Layer 2)
+Hidden Dimension 128
+Batch Size 1024
+Optimizer Adam
+Learning Rate 1 × 10−4
+Training Episodes 1000
+convergence is very pronounced. It becomes stable when the number of episodes exceeds 800. We
+then plot in Figure 5 the learnt value functions (V 1, V 2, V 3). Conforming to financial intuition,
+each value function V i (for i = 1, 2, 3) is a decreasing function of both underlying stock prices sA
+and sB .
+Figure 4: The training loss for the put option selection problem.
+We further validate the algorithm by comparing its outputs with a finite-difference solution
+of the classical HJB variational inequality system (corresponding to λ = 0) on the same example,
+this time assuming full knowledge of the model coefficients. Figure 6 displays this comparison
+at t = 0.5 along representative cross-sections of the two-dimensional state space, with one state
+variable held fixed to highlight the dependence on the other. The RL value functions are computed
+for λ = 0.01, 0.5, 1. As expected, smaller λ yield solutions increasingly close to the no-exploration
+benchmark; notably, the curve for λ = 0.01 already exhibits excellent qualitative and quantitative
+agreement with the finite-difference reference. At the smallest tested value, the learned functions
+become nearly indistinguishable from the classical solution across the entire domain, offering
+compelling evidence of convergence as the temperature vanishes. This numerical comparison
+confirms that the proposed continuous-time RL method successfully recovers the value structure
+of the classical optimal switching problem in the limit of vanishing entropy regularization, thereby
+demonstrating both the validity of the theoretical framework and the practical effectiveness of
+the algorithm.
+33
+
+=== page 34 ===
+Figure 5: Left panel: The learnt value functions sA → (V 1, V 2, V 3) with (sB , t) = (1.0, 0.5).
+Right panel: The learnt value functions sB → (V 1, V 2, V 3) with (sA, t) = (1.0, 0.5).
+Figure 6: The learned entropy-regularized value functions under different temperature parame-
+ters λ vs the numerical value function at t = 0.5.
+34
+
+=== page 35 ===
+Acknowledgements: Yijie Huang, Mengge Li and Xiang Yu are supported by the Hong Kong
+RGC General Research Fund (GRF) under grant no. 15211524 and the Hong Kong Polytechnic
+University research grant under no. P0045654.
+References
+M. Bardi and I. C. Dolcetta. Optimal control and viscosity solutions of Hamilton-Jacobi-Bellman equations,
+volume 12. Springer, 1997.
+A. Benveniste, M. M´etivier, and P. Priouret. Adaptive algorithms and stochastic approximations, volume 22.
+Springer Science & Business Media, 2012.
+L. Bo, Y. Huang, and X. Yu. On optimal tracking portfolio in incomplete markets: The reinforcement
+learning approach. SIAM Journal on Control and Optimization, 63(1):321–348, 2025.
+L. Bo, Y. Huang, X. Yu, and T. Zhang. Continuous-time q-learning for jump-diffusion models under
+Tsallis entropy. Mathematics and Financial Economics, online first, https://doi.org/10.1007/s11579-
+026-00419-4, 2026.
+B. Bouchard. A stochastic target formulation for optimal switching problems in finite horizon. Stochastics,
+81(2):171–197, 2009.
+H. Cao, Y. Dong, and Z. Yang. A two-fold randomization framework for impulse control problems. arXiv
+preprint arXiv:2509.12018, 2025.
+R. Carmona and M. Ludkovski. Pricing asset scheduling flexibility using optimal switching. Applied
+Mathematical Finance, 15(5-6):405–447, 2008.
+R. Carmona and M. Ludkovski. Valuation of energy storage: An optimal switching approach. Quantitative
+finance, 10(4):359–374, 2010.
+M. Dai, Y. Sun, Z. Q. Xu, and X. Y. Zhou. Learning to optimally stop diffusion processes, with financial
+applications. arXiv preprint arXiv:2408.09242, 2024.
+M. Dai, Y. Dong, and L. Li. Reinforcement learning for arbitrage strategies in stock index futures. Available
+at SSRN 5403455, 2025.
+R. Denkert, H. Pham, and X. Warin. Control randomisation approach for policy gradient and application
+to reinforcement learning in optimal switching. Applied Mathematics & Optimization, 91(1):9, 2025.
+J. Dianetti, G. Ferrari, and R. Xu. Exploratory optimal stopping: A singular control formulation. arXiv
+preprint arXiv:2408.09335, 2024.
+Y. Dong. Randomized optimal stopping problem in continuous time and reinforcement learning algorithm.
+SIAM Journal on Control and Optimization, 62(3):1590–1614, 2024.
+B. El Asri. Stochastic optimal multi-modes switching with a viscosity solution approach. Stochastic
+Processes and their Applications, 123(2):579–602, 2013.
+X. Gao, L. Li, and X. Y. Zhou. Reinforcement learning for jump-diffusions, with financial applications.
+arXiv preprint arXiv:2405.16449, 2024.
+Y.-J. Huang, Z. Wang, and Z. Zhou. Convergence of policy iteration for entropy-regularized stochastic
+control problems. SIAM Journal on Control and Optimization, 63(2):752–777, 2025.
+35
+
+=== page 36 ===
+Y. Jia and X. Y. Zhou. Policy gradient and actor-critic learning in continuous time and space: Theory and
+algorithms. Journal of Machine Learning Research, 23(275):1–50, 2022a.
+Y. Jia and X. Y. Zhou. Policy evaluation and temporal-difference learning in continuous time and space:
+A martingale approach. Journal of Machine Learning Research, 23(154):1–55, 2022b.
+Y. Jia and X. Y. Zhou. q-Learning in continuous time. Journal of Machine Learning Research, 24(161):
+1–61, 2023.
+T. Kusano. On the first boundary problem for quasilinear systems of parabolic differential equations in
+non-cylindrical domains. Funkcial. Ekvac, 7(103-118):6, 1965.
+Z. Liang, X. Luo, and X. Yu. A reinforcement learning framework for some singular stochastic control
+problems. arXiv preprint arXiv:2506.22203, 2025a.
+Z. Liang, X. Luo, and X. Yu. Reinforcement learning for irreversible reinsurance problems: the randomized
+singular control approach. arXiv preprint arXiv:2512.02769, 2025b.
+H.-D. Nguyen, G. Yin, and C. Zhu. Hybrid Switching Diffusions: Properties and Applications, volume 63.
+Springer, 2025.
+M. Olofsson, T. ¨Onskog, and N. L. Lundstr¨om. Management strategies for run-of-river hydropower plants:
+an optimal switching approach. Optimization and Engineering, 23(3):1707–1731, 2022.
+H. Pham. Continuous-time stochastic control and optimization with financial applications, volume 61.
+Springer Science & Business Media, 2009.
+A. Porchet, N. Touzi, and X. Warin. Valuation of a power plant under production constraints and market
+incompleteness. Mathematical Methods of Operations research, 70(1):47–75, 2009.
+Z. Ren, X. Wei, X. Yu, and X. Y. Zhou. Continuous-time q-learning for mean-field control with common
+noise, part-i: theoretical foundations. arXiv preprint arXiv:2604.27372, 2026a.
+Z. Ren, X. Wei, X. Yu, and X. Y. Zhou. Continuous-time q-learning for mean-field control with common
+noise, part-ii: q-learning algorithms. arXiv preprint arXiv:2604.27378, 2026b.
+H. Robbins and S. Monro. A stochastic approximation method. The Annals of Mathematical Statistics,
+pages 400–407, 1951.
+W. Tang and X. Y. Zhou. Regret of exploratory policy improvement and q-learning. arXiv preprint
+arXiv:2411.01302, 2024.
+W. Tang, Y. P. Zhang, and X. Y. Zhou. Exploratory HJB equations and their convergence. SIAM Journal
+on Control and Optimization, 60(6):3191–3216, 2022.
+H. V. Tran, Z. Wang, and Y. P. Zhang. Policy iteration for exploratory Hamilton–Jacobi–Bellman equa-
+tions. Applied Mathematics & Optimization, 91(2):50, 2025.
+H. Wang, T. Zariphopoulou, and X. Y. Zhou. Reinforcement learning in continuous time and space: A
+stochastic control approach. Journal of Machine Learning Research, 21(198):1–34, 2020.
+X. Wei and X. Yu. Continuous time q-learning for mean-field control problems. Applied Mathematics &
+Optimization, 91(1):10, 2025.
+X. Wei, X. Yu, and F. Yuan. Unified continuous-time q-learning for mean-field game and mean-field control
+problems. arXiv preprint arXiv:2407.04521, 2025.
+B. Wu and L. Li. Reinforcement learning for continuous-time mean-variance portfolio selection in a regime-
+switching market. Journal of Economic Dynamics and Control, 158:104787, 2024.
+36

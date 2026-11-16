@@ -1,0 +1,2320 @@
+=== page 1 ===
+Calibrating Inelastic Markets to Options: The Lean Marketron
+and the Generalized Langevin Equation
+Andrey Itkin1∗
+1 FRE Department, Tandon School of Engineering, New York University, USA.
+August 24, 2026
+T
+he Marketron model of [Halperin and Itkin, 2026] and its option pricing extension
+in [Halperin and Itkin, 2025] suffer from structural non-identifiability: an eighteen-
+parameter space traps solvers in suboptimal local minima and renders economic
+quantities unmeasurable. By removing exact scaling gauges and sign symmetries, freezing
+non-financial parameters by explicit criteria, and adiabatically eliminating the fast hidden
+signal, we derive a robust nine-parameter reduced model. A Gauss-Newton Hessian with
+empty null space and a manifold-boundary analysis confirm that the reduced core carries
+no exact symmetry and admits no further reduction. A diffusive correlation between flow
+and return innovations captures the short-maturity skew. A staged calibration from the
+physical measure to the risk-neutral measure, illustrated on SPX options, fits the whole
+surface with a single parameter set. The same reduction turns the wedge between the
+physical and pricing values of the flow block into a well-defined market price of flow risk
+rather than a ridge artifact, identifiable here for the first time, though a single surface
+constrains its level only weakly. Finally, our analysis reveals that in the Marketron model
+the log-price obeys a generalized Langevin equation with a closed-form, state-modulated
+memory kernel, and that the memory variable itself is the exact Markovian lift of this
+kernel. This mapping also yields a testable condition, the equality of the signal and memory
+relaxation rates, which on the SPX surface come out well separated, though both weakly
+identified, placing the fitted market tentatively in the driven, non-equilibrium regime and
+turning the active-matter reading from an analogy into a falsifiable constraint.
+1 Introduction
+In [Halperin and Itkin, 2026] we introduced the Marketron model of price formation in an inelastic market.
+The dynamics are driven by money flows and their impact on prices, and take the form of nonlinear diffusion
+of a quasiparticle (the marketron) in the space of the log-price xt, a memory variable yt encoding past flows,
+and an unobservable return predictor θt. In [Halperin and Itkin, 2025] we extended the framework to option
+markets. Since yt and θt are non-tradable, the market is incomplete, and we constructed option prices via
+exponential utility indifference following [Grasselli and Hurd, 2007]. The resulting Hamilton-Jacobi-Bellman
+(HJB) equation was solved by a combination of operator splitting, the Cole-Hopf transformation and a
+Gaussian radial basis function (RBF) method, with all matrix elements available in closed form.
+∗e-mail: aitkin@nyu.edu
+1
+arXiv:2608.20589v1  [q-fin.CP]  20 Aug 2026
+
+=== page 2 ===
+The Lean Marketron
+The pricing method is fast. The calibration is not. In [Halperin and Itkin, 2025] the specification
+carried fifteen free parameters, and the least-squares objective built on market option quotes was found to
+have many local minima and long flat valleys, so that a differential evolution solver with constrained search
+achieved only a modest relative accuracy of about 5–8%, with different runs returning visibly different
+parameter sets of comparable fit quality. The correlated generalization we adopt here (Section 2) adds
+three further coordinates and brings the full specification to eighteen, Eq. (7), so the problem is if anything
+worse. This is a classical symptom of a non-identifiable, or “sloppy”, parameterization [Gutenkunst et al.,
+2007; Transtrum, Machta, and Sethna, 2011]. The data constrain a few stiff parameter combinations while
+leaving many soft directions essentially free.
+Non-identifiability is not only a numerical nuisance. The central empirical claim of the Marketron
+program is that flow impact and market inelasticity can be measured from market data. If the calibration
+objective has a continuous ridge along which the flow-impact constant c trades off against the memory-scale
+parameters, then a reported value of c is a point on a ridge, not an estimate. Reduction to an identifiable
+core is therefore a precondition for the economic reading of the model. It is also a precondition for any
+falsifiable joint test. A joint calibration of the full eighteen-parameter model to several data sets proves
+little, because failure can always be attributed to the optimizer. On an identifiable low-parameter core the
+same test carries weight.
+The purpose of this paper is accordingly to cure the disease rather than the symptom. Instead of
+investing more computational effort into global optimization of an ill-posed objective, we reduce the
+parameter space so that the remaining coordinates are identifiable from the option surface. The reduction
+proceeds in four steps of increasing depth.
+First, in Section 2 we exhibit exact and near-exact symmetries of the model. The memory variable
+admits a scaling gauge: option prices are invariant under a simultaneous rescaling of y and the parameters
+attached to it, up to the constraint that couples the two occurrences of the flow-impact constant c. The
+signal block possesses a discrete sign symmetry. Both are removed by normalization, which eliminates one
+continuous parameter and halves the number of equivalent minima. We also show that the risk-aversion
+parameter enters the pricing operator only through products with the hidden-factor volatilities, so it must
+be fixed exogenously rather than calibrated.
+Second, in Section 2.3 we argue that parameters of a purely numerical nature, such as the regularization
+constant ¯ϵ of the marketron potential and the initial values of the hidden states, must not compete with
+financial parameters in the calibration objective. We fix them a priori by explicit numerical criteria.
+Third, in Section 3 we perform the central structural reduction. The signal θt is a fast Ornstein-
+Uhlenbeck (OU) process. For maturities satisfying kT ≳ 1 the option price depends on the signal essentially
+through the stationary averages of f(θ) and h(θ), which for the trigonometric specification of [Halperin
+and Itkin, 2025] are available in closed form. Adiabatic elimination collapses the five-parameter signal block
+into two effective constants and reduces the pricing PDE from three to two spatial dimensions. We also
+derive a deterministic transient correction that retains the time dependence of the conditional mean of
+the signal. The correction reintroduces the relaxation rate k as a single term-structure shape parameter,
+which is what makes a global fit with one parameter set across all maturities feasible. We treat this
+single-parameter-set property as a claim to be tested (Sections 5 and 6.3) rather than as an assumption,
+and it is what distinguishes the reduced model from reduced-form smile parameterizations, which are refit
+maturity by maturity.
+Fourth, in Section 5 we make the procedure self-verifying. We compute profile likelihoods and the
+eigenspectrum of the Gauss-Newton Hessian of the calibration objective, and apply the manifold boundary
+approximation method (MBAM) of [Transtrum and Qiu, 2014] to check that the limits taken in Sections 2,
+2.3 and 3 coincide with the sloppiest directions of the full model. In this sense the reduction is not ad hoc:
+it is the model that the option data can actually see.
+One structural element is added rather than removed. The original specification of [Halperin and
+Page 2 of 43
+
+=== page 3 ===
+The Lean Marketron
+Itkin, 2026] assumes independent Brownian motions for the spot and memory stochastic variables. We
+introduce a diffusive correlation ρ between the flow innovations dW (y) and the return innovations dW (x).
+The motivation is twofold. Financially, contemporaneous correlation between flows and returns is the
+diffusive-level content of price impact, and forcing it to zero is an unnatural restriction in a model built
+around impact. Technically, the smile generated by the state-dependent drift vanishes linearly in maturity
+at the short end, so short-dated skew must come from the diffusion structure, and ρ is the only coefficient
+that can supply it. The correlation survives every reduction step at the cost of a single parameter and, as
+shown in Section 2.2, it in fact restores a degree of freedom that the risk-aversion analysis removes.
+The final reduced model has nine parameters for the whole surface. Section 6.3 describes a staged
+calibration in which parameters of the physical measure are inherited from the time-series calibration of
+[Halperin and Itkin, 2026], while option data determine the risk-adjusted block. The correlation ρ is placed
+with the physical-measure parameters, since on the option surface it is confounded with the local-volatility
+asymmetry and convexity (Section 5); the wedge between the time-series and option-implied values of the
+flow-block parameters c and ¯f (the flow-impact coupling and the averaged return-predictor drift) then
+defines a market price of flow risk, which the reduction makes identifiable for the first time.
+Section 4 gives the reduced system a second reading: substituting the memory variable into the log-price
+equation shows the Marketron to be exactly a one-dimensional overdamped generalized Langevin equation
+(GLE) in the log-price, with a memory kernel we compute in closed form. This kernel is modulated by
+the state, specifically by the product of the market potential gradients at the endpoints of the memory
+integral, which means that memory is strong in the default region and weak away from it, explicitly
+delimiting the relation to the lag-only class of [Itkin, 2026a]. Furthermore, this mapping yields a testable
+parametric condition, an equality between the memory relaxation rate µ and the signal relaxation rate k,
+that distinguishes an equilibrium regime from a driven, non-equilibrium one. This transforms an interpretive
+analogy into a falsifiable constraint on two independently calibrated rates, see Section 4.4.
+Then Section 6 reports numerical experiments: a Black–Scholes synthetic validation of the pricing and
+calibration pipeline, a staged global term-structure calibration to the SPX surface with a single parameter
+set, and the resulting market price of flow risk. Section 7 concludes.
+2 The Marketron model, exact symmetries and gauge fixing
+We briefly recall the setup of [Halperin and Itkin, 2026; Halperin and Itkin, 2025], with one generalization:
+the Brownian motions driving the price and the memory variable are allowed to be correlated. Under the
+physical measure the state (xt,yt,θt) solves
+dxt =µxdt +σdW (x) t , µx =f(θt) + ¯η−cxytV′ M(xt), (1)
+dyt =µydt +σydW (y) t , µy =h(θt) +µ(¯y−yt)−cyVM(xt),
+dθt =µθdt +σzdW (θ) t , µθ =k(ˆθ−θt),
+with the correlation structure
+d⟨W (x),W (y)⟩t =ρdt, d⟨W (x),W (θ)⟩t =ρxθdt, d⟨W (y),W (θ)⟩t = 0, (2)
+and the potential slope
+V′ M(x) =−e−x
+(
+1− g ex + ¯ϵg ) , (3)
+regularized at x→−∞ by the constant ¯ϵ. The original model is recovered at ρ = ρxθ = 0. Following
+[Halperin and Itkin, 2025] we use the trigonometric signal transformation
+f(θ) =b1 cosθ, h(θ) =b2 sinθ. (4)
+Page 3 of 43
+
+=== page 4 ===
+The Lean Marketron
+Option prices are defined by exponential utility indifference with risk aversion γ. With correlated hidden
+factors the certainty equivalent C(t,x,y,θ) solves
+0 = ∂C ∂t + 1 2σ2 ∂2C ∂x2 +ρσσy ∂2C ∂x∂y +ρxθσσθ ∂2C ∂x∂θ + 1 2σ2 y ∂2C ∂y2 + 1 2σ2 θ ∂2C ∂θ2 + ¯η∂C ∂x
++
+(
+µy −ρσy
+¯µx
+σ
+)∂C
+∂y +
+(
+µθ −ρxθσθ
+¯µx
+σ
+)∂C
+∂θ + γ 2 ∇hC⊤~Σ∇hC− ¯µ2 x 2γσ2 −rC, (5)
+where∇hC = (∂yC,∂θC)⊤ and
+~Σ =
+(
+σ2 y(1−ρ2) −σyσθρρxθ
+−σyσθρρxθ σ2 θ(1−ρ2 xθ)
+)
+(6)
+is the residual covariance of the hidden factors conditional on the traded one. Here σθ ≡ σz. The drift
+adjustments proportional to ¯µx/σ are the market-price-of-risk terms generated by the projection of the
+hidden noise onto the traded noise. At ρ = ρxθ = 0 equation Eq. (5) reduces to the PDE of [Halperin and
+Itkin, 2025]. The derivation parallels that of [Grasselli and Hurd, 2007], with the distortion power of the
+Cole-Hopf transformation generalized from γ to γ(1 −ρ2) in the manner of [Henderson and Hobson, 2002;
+Musiela and Zariphopoulou, 2004]; details are collected in Appendix D. The indifference price follows from
+the pair (C,C0) as in [Halperin and Itkin, 2025].
+The full parameter vector is
+Θfull =
+(
+σ, σy, σz, k, µ, g, ˆθ, cx, cy, b1, b2, ¯y, γ, y0, θ0, ¯ϵ, ρ, ρxθ ) , dim Θfull = 18. (7)
+The remainder of the paper is a controlled demolition of this list.
+2.1 Scaling of the memory variable
+The memory variable y has no intrinsic scale: it is a latent bookkeeping device for past flows, and neither the
+data nor the payoff refer to its units. This intuition is made precise by the following observation. Consider
+a generalized model in which the two occurrences of the coupling c in Eq. (1) carry separate constants, cx
+in the x-drift and cy in the y-drift. Define, for λ> 0, the transformation
+y→λy, (σy, ¯y,b2,y0,cx,cy)→
+(
+λσy, λ¯y, λb2, λy0, cx λ, λcy ) . (8)
+Proposition 1. Under Eq. (8) the law of the observable process xt, and hence every option price, is
+invariant. The correlations ρ and ρxθ are dimensionless and remain unchanged. Only the product cxcy, the
+correlations, and the ratios b2/σy, ¯y/σy, y0/σy, µ are observable.
+Proof. See Section A.
+The original specification imposes cx = cy = c, which formally breaks the gauge. The breaking is weak
+rather than benign: the constrained transformation maps the model onto a nearby one with cxcy preserved,
+and in practice this produces a long, shallow ridge in the calibration objective along which (σy, ¯y,b2,y0,c)
+trade off against each other with almost no change in option prices. A global optimizer perceives that ridge
+as a continuum of near-degenerate minima, and because the degeneracy is only approximate it cannot be
+removed by reparameterization.
+We therefore keep cx and cy independent. This costs one nominal parameter and buys an exact symmetry
+in its place, which is the better trade: an exact redundancy is eliminated once and for all by a normalization,
+whereas an approximate one has to be fought by the optimizer at every calibration. The effective dimension
+is reduced by one, to 17, since the gauge is removed by the normalization
+σy = 1. (9)
+Page 4 of 43
+
+=== page 5 ===
+The Lean Marketron
+Equivalently, we measure the memory variable in units ˜yt = yt/σy, so that the normalized memory variable
+has unit instantaneous diffusion coefficient. In what follows, we denote this normalized variable again by y
+and set σy ≡ 1 in the PDE. All remaining y-related parameters are understood in these normalized units.
+This eliminates one parameter and, more importantly, removes the exact scaling ridge from the calibration.
+Also, with the specification Eq. (4), the model is invariant under the discrete map
+(θ, ˆθ,θ0,b2,ρxθ)→ (−θ,−ˆθ,−θ0,−b2,−ρxθ), (10)
+since cos is even and sin is odd. Every minimum of the objective therefore has a mirror twin. We fix the
+fundamental domain by imposing b2 ≥ 0. This is not a reduction of the parameter count, but it halves the
+search volume and removes spurious multimodality from the posterior.
+2.2 Risk aversion, hidden-factor volatilities, and the role of ρ
+Inspection of Eq. (5) shows that the risk-aversion parameter γ enters the nonlinear part of the pricing
+operator only through the combinations
+py =γσ2 y(1−ρ2), pθ =γσ2 θ(1−ρ2 xθ), q =γσ2. (11)
+The spot volatility σ is stiff: it controls the diffusion of the traded coordinate and is pinned by the overall
+level of option prices. The hidden-factor volatilities σy,σθ, in contrast, affect prices only through the
+diffusion of unobservable coordinates and through the nonlinear terms built on Eq. (6). In our experiments
+the objective is nearly flat along curves of constant (py,pθ), which identifies these products as the stiff
+coordinates of the risk-adjustment block. The correlation ρ does not merge into py, because it also enters
+the pricing operator linearly, through the cross-diffusion term ρσσy∂2 xyC and through the drift adjustment
+ρσy ¯µx/σ. These linear occurrences generate skew and keep ρ separately identifiable.
+Two consequences follow. First, γ itself cannot be calibrated from option prices and should be fixed
+externally. Option-implied risk-aversion estimates are available in the literature; [Bliss and Panigirtzoglou,
+1999] report values of order one to ten for index options, and we take γ from that range as an exogenous
+input. Second, with γ exogenous and the normalization Eq. (9) in force, the combination py = γ(1 −ρ2)
+is a deterministic function of ρ and carries no separate degree of freedom. The free coordinates of the
+risk-adjustment block are then (σ,ρ,pθ), and in the averaged model of Section 3, where pθ disappears
+together with the θ dimension, they are (σ,ρ) alone. We note in passing that in the uncorrelated model the
+same logic forces py = γ to be fixed, so the risk-adjustment block there consists of σ only. The correlation
+thus restores to the diffusion structure a degree of freedom that identifiability removes from the risk-aversion
+channel.
+2.3 A priori fixing of non-financial parameters
+Three entries of Eq. (7) are not financial parameters at all.
+The regularizer ¯ϵ.
+The constant ¯ϵ prevents divergence of the drift at x→−∞ and shapes the potential only in the deep-default
+region. Our experiments in [Halperin and Itkin, 2025] showed that option prices are highly sensitive to
+it, which is precisely why it must not float freely in a least-squares objective: it acts as an uncontrolled
+volatility knob in a region the data do not probe directly. It is a modelling artefact rather than a financial
+quantity, so it should be fixed by a bound on something the model asserts, not calibrated.
+What ¯ϵ controls is the strength of the restoring force at depth. By Eq. (B.3) the drift of the log-price at
+a reference depth x⋆ is cxy|V′ M(x⋆)|, which at y = ¯y is cx¯yD with
+D ≡
+⏐⏐V′ M(x⋆) ⏐⏐ = driftmax cx¯y . (12)
+Page 5 of 43
+
+=== page 6 ===
+The Lean Marketron
+The input is therefore a ceiling on the annualized drift the model may impose on a deeply distressed name,
+which is an economic statement and is monotone in D by construction. A ceiling of two per annum, itself
+already an extreme restoring force, gives D of order five at representative couplings. Inverting the criterion,
+¯ϵ = 1 1 +Dex⋆ − ex⋆ g , x⋆ =−4, (13)
+so ¯ϵ becomes a deterministic function of (g,D). The reference depth is not arbitrary: it is the point at which
+the two admissible regularizers coincide exactly, so Eq. (13) holds for either and ¯ϵ carries the same meaning
+in the model and in the pricer. Appendix B gives the derivation, the admissible range g >ex⋆ (1 + Dex⋆ ),
+and explains why neither the turning point of VM nor the model-implied default rate can serve as the
+criterion in its place.
+Initial hidden states.
+The initial values y0,θ0 are unobservable and, at a single option snapshot, nearly redundant with the
+mean-reversion levels. We set them to those levels,
+θ0 = ˆθ, y0 = ˆy≡ h(ˆθ) µ + ¯y− c µVM(x0), (14)
+consistent with the stationarity assumption underlying the averaging of Section 3. This removes two
+parameters. The analogy with the Heston initial variance v0 invoked in [Halperin and Itkin, 2025] is
+imperfect: v0 is stiff because it sets the short-end implied volatility level, whereas y0,θ0 act on prices only
+through the drift and are soft. After Sections 2 and 2.3 the count stands at 17 − 1 − 1 − 1 − 2 = 12, where
+the gauge normalization Eq. (9) has already reduced 18 to 17 and the four remaining subtractions are the
+coupling identification through the observable product cxcy, the exogenous fixing of γ, the regularizer, and
+the two initial states.
+3 Adiabatic elimination of the signal
+3.1 Stationary averaging
+The signal θt is an OU process with relaxation time 1/k. The calibrated values of k in [Halperin and Itkin,
+2026; Halperin and Itkin, 2025] range from 1.3 to 2.7, so for maturities beyond a few months kT ≳ 1 and
+the signal explores its stationary law
+θ∞∼N (ˆθ,v), v = σ2 z 2k, (15)
+within the life of the option. Standard stochastic averaging [Pavliotis and Stuart, 2008] then replaces f(θt)
+and h(θt) in the drifts of Eq. (1) by their stationary expectations, with corrections of order 1/(kT ). For the
+trigonometric specification Eq. (4) the averages are closed form:
+E
+[
+cosθ∞
+]
+=e−v/2 cos ˆθ, E [ sinθ∞ ] =e−v/2 sin ˆθ, (16)
+so that
+¯f =b1e−v/2 cos ˆθ, ¯h =b2e−v/2 sin ˆθ. (17)
+The five signal parameters (b1,b2,k, ˆθ,σz) enter the averaged dynamics only through the two constants
+( ¯f, ¯h). The averaged model reads
+dxt =
+[ ¯f + ¯η−cxytV′ M(xt) ] dt +σx(yt)dW (x) t ,
+Page 6 of 43
+
+=== page 7 ===
+The Lean Marketron
+dyt =
+[¯h +µ(¯y−yt)−cyVM(xt) ] dt +dW (y) t , d⟨W (x),W (y)⟩t =ρdt, (18)
+where Eq. (9) is in force. Note that ¯h and µ¯y enter the y-drift only through the sum ¯h + µ¯y, so one further
+parameter is absorbed: we set ¯h = 0 without loss of generality and let ¯y carry the combined level. The
+volatility σx(y) is specified in Section 3.2.
+3.2 Memory-dependent volatility
+In the original specification the memory variable acts on the price through the drift alone, and σ is constant.
+That choice has a consequence which is easy to miss and which Proposition 2 makes precise: it renders the
+model’s European option prices independent of every parameter governing the memory. We therefore let
+the volatility depend on the memory variable,
+σx(y) = σ0
+√
+1 +α (y− ¯y) +β (y− ¯y)2, β > 0, α(y− ¯y) +β(y− ¯y)2 >−1, (19)
+the constraint being exactly what keeps the radicand positive for all real y and the diffusion non-degenerate.
+The centring at ¯y makes σ0 the volatility at the resting point of the y-dynamics rather than at the arbitrary
+origin, so that α is a pure asymmetry parameter and does not mix with the level.
+Each coefficient carries a distinct economic reading. At y = ¯y the market sits at its equilibrium: no
+accumulated memory, no directional stress, an order book at full depth, and volatility takes its baseline
+value σ0 driven by background noise alone. The linear coefficient α governs the asymmetric response to
+displacement. When y tracks downward displacement, a negative α raises the local volatility as the market
+sells off, which embeds the leverage effect in the path itself rather than imposing it through a correlation,
+and which controls the steepness of the out-of-the-money put skew. The quadratic coefficient β penalizes
+extreme states of either sign. A large absolute displacement, rally or crash, means a stretched market in
+which liquidity providers withdraw, the book thins, and the price impact of trades rises; βy2 scales volatility
+up accordingly and sets the convexity of the smile.
+Under the scaling gauge Eq. (8) the new coefficients transform as α→α/λ and β→β/λ2, so Eq. (9)
+fixes them along with the rest and no new gauge freedom is introduced.
+Proposition 2 (Constant volatility makes the flow invisible to vanillas). Let σx be constant and let the
+claim have payoff V(xT ) depending on the log-price alone. Then the indifference price πV = C−C0 is
+independent of cx, cy, µ, g, γ and ρ, and solves the Black-Scholes equation with volatility σ.
+Proof. See Section C.
+The proposition is not a defect of the derivation, which Section C verifies step by step, but a property of
+a model in which the flow enters only the drift of a traded asset. The drift of a traded asset is hedged away
+by the optimal position, and with σ constant no second channel remains. Making σx depend on y supplies
+that channel: the volatility of the traded asset is not hedgeable by holding it, so the memory dynamics
+reach the price, and the market is incomplete in a way that a vanilla claim can see.
+The correlation ρxθ disappears at leading order together with the θ dimension. It re-enters only through
+the first-order correction in 1/k, which is precisely the mechanism by which correlation generates skew in
+fast mean-reverting stochastic volatility asymptotics [Fouque et al., 2011]. We therefore set ρxθ = 0 in
+the baseline reduced model. Should a first-order correction be developed, that literature indicates that ρxθ
+would enter through a single effective group parameter combining it with the signal amplitudes, which is
+consistent with the philosophy of the present reduction.
+Page 7 of 43
+
+=== page 8 ===
+The Lean Marketron
+3.3 Transient correction and the term structure
+For short maturities the stationarity assumption degrades. A refinement that costs little in the parameter
+count replaces the stationary averages by the conditional expectations along the deterministic relaxation of
+the signal. With θt|θ0 ∼N (mt,vt),
+mt = ˆθ + (θ0 − ˆθ)e−kt, vt = σ2 z 2k ( 1−e−2kt) , (20)
+one obtains the deterministic time-dependent coefficients
+¯f(t) =b1e−vt/2 cosmt, ¯h(t) =b2e−vt/2 sinmt. (21)
+Under the choice Eq. (14) the transient simplifies, mt ≡ ˆθ, and Eq. (21) becomes a smooth deterministic
+ramp of the effective amplitude from ¯f(0) =b1 cos ˆθ at t = 0 to ¯f at t≫ 1/k,
+¯f(t) = ¯f(0) exp
+(
+−v 2(1−e−2kt) ) , v = σ2 z 2k. (22)
+The ramp is controlled by the pair (k,v). Since v is estimated from the underlying time series in [Halperin
+and Itkin, 2026] and belongs to the physical-measure block of Section 6.3, retaining the ramp adds a single
+option-facing shape parameter, the relaxation rate k.
+This point deserves emphasis, because it changes the character of the calibration. The baseline averaged
+model of Eq. (18) carries maturity-independent coefficients, and one parameter set prices the whole surface.
+When short maturities are included, the ramp Eq. (22) supplies the term structure of the effective drift at
+the cost of one parameter. In either case the model is fit globally, across all maturities simultaneously. A
+per-maturity refit, natural for reduced-form smile parameterizations, would forfeit exactly the structural
+content that distinguishes the Marketron from them, and we do not use it.
+3.4 The reduced pricing PDE
+Since θ has been eliminated, the certainty equivalent C(t,x,y) solves the two-dimensional analogue of
+Eq. (5),
+∂C
+∂t + 1 2σ2 x(y)∂2C ∂x2 +ρσx(y) ∂2C ∂x∂y + 1 2 ∂2C ∂y2 + ¯η(y)∂C ∂x + ( µy−ρ ¯µx σx(y) )∂C ∂y + py 2 (∂C ∂y )2 − ¯µ2 x 2γσ2x(y) −rC = 0,
+(23)
+with py = γ(1−ρ2), ¯η(y) = r−σ2 x(y)/2, ¯µx = ¯f + ¯η(y)+σ2 x(y)/2−r−cxyV′ M(x) and µy = µ(¯y−y)−cyVM(x).
+Both the diffusion and the drift in x now carry y, which is what breaks the degeneracy of Proposition 2.
+Note that Eq. (19) does not disturb the two cancellations underlying Eq. (5): the elimination of s¯µxvs by
+the optimal hedge and of (∂xC)2 by the distortion are both pointwise in y, so they proceed unchanged with
+σ replaced by σx(y) throughout.
+The reduction from three hidden dimensions to the two-dimensional state (x,y) substantially enlarges
+the range of numerical methods that can be used for Eq. (23). Unlike the full three-dimensional problem
+of [Halperin and Itkin, 2025], there is no need to commit to a particular discretization at the level of the
+model itself. Several complementary approaches are available, and they are useful for different purposes.
+A natural high-accuracy approach is based on Strang splitting of the 2D operator into the x-diffusion/drift
+part, the y-diffusion/drift part, and the mixed derivative. The latter can be treated by the positivity-
+preserving construction (the Diagonal Frog method) developed in [Itkin, 2026b; Itkin, 2026c]. This is
+particularly useful here because the mixed term ρσx(y)Cxy is not sign-definite under a naive explicit
+discretization, whereas the construction of [Itkin, 2026b] provides a stable treatment that preserves
+positivity under the corresponding admissibility conditions.
+Page 8 of 43
+
+=== page 9 ===
+The Lean Marketron
+For the x-subproblem, y is frozen during the split step. Hence σx(y) and all coefficients depending
+on y become parameters of a one-dimensional equation in x. The resulting equation contains the source
+term − ¯µ2 x 2γσ2x(y) in addition to the x-diffusion and drift. Because the volatility is quadratic in y through
+Eq. (19), the coefficients are nevertheless constant with respect to x on each fixed y-slice. The corresponding
+Green’s function is therefore available in closed form, and the source contribution can be incorporated
+analytically. This provides a direct extension of the Gaussian/RBF machinery used in [Halperin and Itkin,
+2025], although the resulting coefficients are now indexed by the y grid.
+The y-subproblem contains the nonlinear gradient-square term
+py
+2 (Cy)2, py =γ(1−ρ2). (24)
+This term can be removed exactly by the Cole–Hopf transformation. In particular, consider the y-subproblem
+in isolation,
+Cτ = 1 2Cyy +b(y)Cy + py 2 (Cy)2, b(y) =µy −ρ ¯µx σx(y). (25)
+Under w = exp(pyC), the quadratic-gradient term cancels exactly against the contribution generated by
+the diffusion term, giving the linear equation
+wτ = 1 2wyy +b(y)wy. (26)
+Thus the y-diffusion, y-drift, and quadratic-gradient terms can be treated together as a single linear parabolic
+subproblem. Since this equation has bounded coefficients and positive initial data, the maximum principle
+preserves positivity of w and prevents the Cole–Hopf variable from developing a finite-time singularity. The
+corresponding inverse transformation,
+C = 1 py logw, (27)
+therefore provides a stable treatment of the nonlinear y-subproblem.
+This observation also determines how the operator splitting must be implemented. The Cyy term should
+not first be consumed by an independent diffusion step and subsequently be invoked again in the Cole–Hopf
+transformation. Instead, the y-diffusion, y-drift, and quadratic-gradient term are assigned consistently
+to the same split subproblem. A convenient implementation is to solve the transformed linear equation
+implicitly, using a backward-Euler tridiagonal solve in y for each fixed x. To control the numerical range of
+the exponential and logarithm, we shift C by its maximum over the y grid before applying the Cole–Hopf
+transformation. Since the linear y-operator is invariant under addition of a constant to C, this shift is exact
+and does not alter the result after the inverse transformation.
+The RBF discretization of Appendix F can also be used as a spatial approximation of the resulting
+one- or two-dimensional linear subproblems. However, the closed-form RBF update derived for the original
+operator should not be interpreted as applying unchanged to the complete 2D PDE. The splitting must
+respect the assignment of the y-diffusion and quadratic-gradient terms to the Cole–Hopf subproblem.
+For the numerical experiments in this paper we use a split finite-difference implementation tailored to
+the stability issue that arises at low σx(y). A fully explicit discretization of Eq. (23) becomes unstable in
+this regime, with the instability becoming particularly pronounced for sufficiently large cy. This behavior is
+numerical rather than structural: the continuous y-subproblem is transformed by Cole–Hopf into a linear
+advection-diffusion equation and hence does not exhibit the corresponding finite-time blow-up, [Halperin
+and Itkin, 2025].
+This split formulation removes the problematic y-advection CFL restriction from the explicit step and,
+more importantly, prevents the low-σx(y) instability associated with treating the quadratic-gradient and
+y-diffusion terms explicitly. In numerical tests, the split scheme agrees with the fully explicit scheme in
+Page 9 of 43
+
+=== page 10 ===
+The Lean Marketron
+parameter regions where the latter is stable, while remaining stable in parameter regimes where the explicit
+scheme develops numerical blow-up. In particular, at the calibrated parameter values the two schemes
+produce option prices agreeing to within approximately 1.6 × 10−6 across the tested strikes. A sweep
+in cy at σ0 = 0.121 remains smooth up to cy = 3, whereas the fully explicit scheme becomes unstable
+above approximately cy = 0.2. The split scheme also remains stable at cy = 0.2 for substantially smaller
+volatility levels, including σ0 = 0.09, 0.07, and 0.05. Put–call parity is satisfied to numerical precision, with
+discrepancies of order 10−17 in these tests.
+The purpose of this implementation is not to construct a production-quality pricing engine, but to
+provide a transparent and computationally efficient solver with which the calibration and identifiability
+experiments can be repeated reliably. The split method retains the simplicity of finite differences for the
+multidimensional part of the problem while treating the numerically problematic nonlinear subproblem
+through an exact Cole–Hopf linearization. Consequently, it is sufficiently robust for the parameter ranges
+considered in Section 6, without requiring the more elaborate RBF or positivity-preserving machinery
+described above.
+The reduction from the original (x,y,θ) problem to the two-dimensional (x,y) problem remains the
+main computational gain. Regardless of which of the above discretizations is adopted, the collocation
+or finite-difference grid now contains only NxNy spatial degrees of freedom rather than NxNyNθ. More
+importantly, the numerical problem is no longer burdened by the fast signal dimension that was responsible
+for much of the cost of the original pricing calculation. The different schemes described above should
+therefore be viewed as alternative numerical realizations of the same reduced pricing equation, rather than
+as additional modelling assumptions.
+Parameter count
+The reduced parameter vector is
+Θred =
+(
+σ0, α, β, µ, g, c, ¯y, ¯f, ρ ) , dim Θred = 9, (28)
+with γ exogenous, py = γ(1 −ρ2) derived, ¯ϵ = ¯ϵ(g,D) from Eq. (13), and ¯η(y) tied to r through σx(y). The
+two volatility coefficients of Eq. (19) are the price of making the flow visible to option prices at all, and
+they are not duplicates of existing freedoms: α controls skew and β convexity, neither of which the drift
+channel can produce. When short maturities require the transient ramp Eq. (22), the rate k joins the list
+and the count is ten. These parameters serve the entire surface. Table 1 summarizes the reduction.
+Remark on the flow-impact couplings in the calibrated model.
+The reduced dynamics in Eq. (18) and the pricing PDE Eq. (23) are written with independent couplings cx
+and cy, consistent with the exact scaling gauge identified in Section 2.1. The subsequent analysis, however,
+and in particular the parameter count in Eq. (28) and the numerical calibration of Section 6.3, employs a
+single coupling constant c. We now state explicitly what this compression entails.
+Setting cx = cy = c in Eq. (18) and Eq. (23) yields the model that is actually calibrated. This is a
+deliberate simplification made at the final stage, after the other reductions have already been imposed.
+The gauge argument of Section 2.1 establishes that the observable process, and hence every option price,
+depends on the couplings only through the invariant product cxcy. In the fully reduced, gauge-fixed model,
+the independent rescalings that previously created a flat direction in the calibration objective have already
+been absorbed: σy is normalized to unity by Eq. (9), the initial states are frozen by Eq. (14), and the signal
+block is eliminated. Consequently, the residual invariance is isolated to the single product cxcy, and the
+redundancy associated with separating the two factors is, at this stage, a pure normalization freedom that
+carries no economic content.
+Retaining separate couplings in the final parameter list would therefore add a nominal degree of freedom
+without any corresponding gain in identifiable structure. The single constant c in Eq. (28) should be
+Page 10 of 43
+
+=== page 11 ===
+The Lean Marketron
+Step Mechanism Parameters removed
+Gauge fixing (Sec. 2.1) σy = 1 1
+Coupling identification (Sec. 2.1) only cxcy observable, (cx,cy)→c 1
+Risk aversion (Sec. 2.2) γ fixed exogenously 1
+Regularizer (Sec. 2.3) ¯ϵ = ¯ϵ(g,D) 1
+Initial states (Sec. 2.3) θ0 = ˆθ, y0 = ˆy 2
+Signal averaging (Sec. 3) (b1,b2,k, ˆθ,σz)→ ( ¯f, ¯h) 3
+Level absorption (Sec. 3) ¯h into ¯y 1
+Cross-correlation (Sec. 3.2) ρxθ → 0 (order 1/k) 1
+Volatility coefficients (Sec. 3.2) α,β introduced by Eq. (19) −2
+Total 18→ 9 9
+Table 1: Parameter reduction ledger. The intermediate three-dimensional risk block retains (σ,ρ,pθ) as
+free coordinates; pθ vanishes with the θ dimension under averaging, its constituents σz and ρxθ
+being removed by the signal-averaging and cross-correlation rows respectively, with ρxθ entering
+only at order 1/k. The two volatility coefficients α,β of Eq. (19) are then introduced, giving
+dim Θred = 9 in Eq. (28). In the reduced model py = γ(1 −ρ2) is derived, not calibrated. The
+optional term-structure parameter k of Eq. (22) is not counted; including it raises the count to
+ten.
+interpreted as the gauge-fixed representative of the product cxcy, under the symmetric normalization cx = cy.
+The cost of this choice is the reintroduction of a mild, isolated softness along the c-coordinate, which is
+distinct from the continuous degeneracy of the full model. This softness is explicitly diagnosed by the
+eigenspectrum and marginal variances reported in Section 5, and it is handled in Section 6.3 by retaining c
+as a risk-neutral parameter whose option-implied value is reported together with its profile uncertainty.
+The wedge between this value and its physical-measure counterpart is then interpreted as the market price
+of flow risk, with the associated estimation error carried through to the economic conclusion.
+4 The Marketron as a generalized Langevin equation
+The reduction presented in Section 3 yields a two-dimensional system governed by the log-price and the
+memory variable. Before developing its implications, we briefly translate the terminology we shall use into
+the language of financial mathematics.
+A generalized Langevin equation (GLE) is, mathematically, a non-Markovian stochastic Volterra equation:
+the drift of the state depends on the entire history of its increments through a memory kernel. In the
+context of market microstructure, the kernel is the propagator of price impact. It measures how a past flow
+innovation continues to distort the price drift at a later time.
+The effective potential is the stationary drift distortion induced by the accumulated memory, while
+the fluctuation-dissipation relation is the equilibrium condition that links the decay rate of the impact
+propagator to the autocorrelation time of the exogenous noise. When this link is violated, the system is
+termed athermal or, in the physics literature, active matter.
+In finance, this corresponds to a regime where the mean-reversion of order-flow shocks and the persistence
+of return predictors are governed by distinct time scales. Such non-Markovian dynamics have recently entered
+mainstream quantitative finance through the rough-volatility literature [Abi-Jaber and El-Euch, 2019;
+Abi Jaber, Larsson, and Pulido, 2019; Bayer and Breneis, 2023], where singular kernels are approximated
+by sums of exponentials; the Marketron provides an exact finite-dimensional embedding for a specific
+state-dependent kernel.
+Page 11 of 43
+
+=== page 12 ===
+The Lean Marketron
+With this dictionary in place, the reinterpretation of the reduced system proceeds as follows. By
+eliminating the memory variable y rather than the signal θ, we demonstrate that the Marketron is exactly
+a one-dimensional overdamped GLE for the log-price, driven by a memory kernel we compute in closed
+form. Consequently, yt is not an independent latent state introduced ad hoc, but the exact Markovian lift
+of a non-Markovian price-impact process.
+This mapping is not merely interpretive: it shows that the absence-of-arbitrage condition on the kernel
+matrix, derived independently in [Itkin, 2026a], coincides with the market-price-of-risk terms generated by
+exponential-utility indifference pricing. Moreover, it delivers a testable parametric condition, the equality
+of the memory relaxation rate µ and the signal relaxation rate k, that distinguishes equilibrium dynamics
+from a driven, athermal market.
+The reader who prefers to avoid physics terminology may read GLE as stochastic Volterra equation,
+kernel as impact propagator, and fluctuation-dissipation as equilibrium consistency condition. The
+mathematics that follows is identical.
+This formulation yields three primary insights. First, the kernel occupies the specific entry of the kernel
+matrix that the absence of arbitrage eliminates under the pricing measure. This theoretically aligns the
+Marketron’s flow mechanism with the market price of memory risk established in [Itkin, 2026a]. Second, the
+kernel is state-modulated, situating the model outside the standard GLE class and precisely delineating the
+analytical boundaries of both frameworks. Finally, the fluctuation-dissipation relation, which distinguishes
+equilibrium from active dynamics, simplifies within the Marketron to an equality between two rates explicitly
+derived during calibration. This transforms the active-matter reading of the model (see Section 4.4) into an
+empirically verifiable parametric condition.
+4.1 The Kernel formulation
+Recalling the reduced system from Eq. (18):
+dxt =
+[ ¯f + ¯η−cxytV′ M(xt) ] dt +σx(yt)dW (x) t ,
+dyt =
+[¯h +µ(¯y−yt)−cyVM(xt) ] dt +σydW (y) t . (29)
+The memory variable influences the price drift strictly via the product ytV′ M(xt), while its own drift relies
+on the price solely through VM(xt). Because the y-equation is linear with constant coefficients, it can be
+explicitly solved and substituted, thereby eliminating y from the system dynamics entirely.
+Proposition 3. The system Eq. (29) is an exact Markovian lift of a one-dimensional overdamped GLE for
+xt, ∫ t
+0
+KM(t,s) ˙xsds =−U′ eff(xt) +ηt, (30)
+with the state-dependent kernel
+KM(t,s) =κδ(t−s) + cxcy µ V′ M(xt)V′ M(xs)e−µ(t−s) +O(σ2), κ = 1, (31)
+the effective potential
+Ueff(x) =−
+( ¯f + ¯η ) x +cx ˆyVM(x)− cxcy 2µ VM(x)2, ˆy≡ ¯y + ¯h µ, (32)
+and a noise ηt that is the sum of σ ˙W (x) t and the multiplicative term −cxσyV′ M(xt) ∫t 0 e−µ(t−s)dW (y) s . The
+O(σ2) remainder in Eq. (31) is the state-dependent memory correction isolated in Appendix E. It vanishes
+when VM is linear and marks Eq. (31) as the leading-order form of the kernel.
+Page 12 of 43
+
+=== page 13 ===
+The Lean Marketron
+Proof. See Appendix E.
+The absence of an inertial term stems from the price equation in Eq. (29) being first-order with respect
+to x, establishing a direct correspondence with the overdamped regime. Instantaneous friction manifests as
+the atom κδ of Eq. (31), where κ = 1 by the normalization of the ˙xt coefficient in dxt =µxdt +σdW (x) t .
+The structure of Eq. (31) warrants specific attention. The kernel depends on more than just the temporal
+lag. It incorporates the modulation V′ M(xt)V′ M(xs) evaluated at both endpoints of the memory integral.
+Thus, the influence of historical states on the current state is contingent upon the price trajectory. Under
+the market potential defined in Eq. (3), this modulation varies exponentially with x and exhibits a sign
+change at the critical threshold ˆx, where V′ M(ˆx) = 0. Economically, this translates to prominent memory
+effects within the default region and attenuated memory elsewhere, effectively embedding the model’s
+economic rationale into the kernel’s architecture.
+Notably, the effective potential Ueff in Eq. (32) diverges from the underlying market potential. It
+incorporates a linear tilt derived from the drift constants, a cxˆyVM component reflecting the uncoupled
+relaxation level of y, and a negative quadratic term −cxcy 2µ V 2 M induced by the system coupling. This feedback
+mechanism between price and memory deepens the effective potential well relative to its uncoupled state.
+Consequently, extracting the market potential directly from a stationary density would erroneously yield
+Ueff rather than VM.
+Remark 1 (The atom and the short end). The atom in Eq. (31) serves a distinct structural purpose. A
+kernel comprising γδ plus a slow tail perfectly aligns with the configuration identified in [Itkin, 2026a] for
+generating a finite zero-maturity at-the-money skew: a regular semimartingale short end coupled with a
+memory-carrying tail. Conversely, a kernel exhibiting a power-law behavior at the origin would produce a
+skew diverging as Tβ0−1 at short maturities. The Marketron inherently possesses the short-end regularity
+required for a finite skew without artificial imposition. It features a single relaxation mode in the tail
+(indicative of short memory) while Section 4.3 outlines the architecture for a multi-mode extension. △
+Remark 2 (Kernel confirmation of Proposition 1). The coupling constants influence Eq. (31) exclusively
+through the product cxcy, which remains invariant under Eq. (8), unlike its individual factors. This
+independently corroborates Proposition 1, which posits that only cxcy is observable based on the invariance
+of the law of xt. The kernel representation achieves this conclusion via an alternate route, as KM intrinsically
+governs the reduced x-dynamics and must remain independent of gauge-variant quantities. When the
+constants appear separately, such as in the cxˆyVM tilt of Eq. (32), the accompanying factor is gauge-covariant,
+rendering the combination invariant. △
+Remark 3 (Kernel matrix positioning). Within the two-dimensional GLE framework of [Itkin, 2026a],
+featuring state Z = (X,Y )⊤ and kernel matrix K, the KXX entry dictates the dependence of the log-price
+drift on its historical increments. The tail in Eq. (31) scales ˙xs within the xt equation, formally corresponding
+to this entry, while the atom represents the standard instantaneous friction of an overdamped system.
+Under the pricing measure, the absence of arbitrage dictates KXX ≡ 0, prompting the first row of K to
+manifest in the measure change as the market price of memory risk. The Marketron arrives at the equivalent
+construct via exponential-utility indifference pricing with risk aversion γ. The convergence of these two
+distinct methodologies serves as a robust theoretical validation for both frameworks. △
+4.2 Framework boundaries and intersections
+Proposition 3 might imply that the Marketron is a constrained instance of the GLE class presented in
+[Itkin, 2026a], or vice versa. However, neither framework fully subsumes the other, and their divergence
+clarifies the unique utility of each approach.
+Page 13 of 43
+
+=== page 14 ===
+The Lean Marketron
+The kernel in [Itkin, 2026a] is strictly a function of the lag, deriving its generality from the allowable
+number of relaxation modes. A completely monotone kernel is expressed as a superposition K(τ) =∫∞
+0 e−λτν(dλ), and achieving a power law necessitates a continuum of modes. This architecture specifically
+facilitates long-memory modeling, which is the primary focus of that framework.
+In contrast, the kernel in Eq. (31) relies on a single mode, characteristic of short memory with respect
+to lag. Its primary generalization lies in the state modulation V′ M(xt)V′ M(xs), a feature absent in pure
+lag-dependent kernels. The intersection of these two classes is limited to the single-mode, state-independent
+case, corresponding to a linearized Marketron around an operating point where V′ M is approximated as
+constant.
+This linearization, however, fundamentally alters the model’s behavior. Based on Eq. (3), the mod-
+ulation V′ M fluctuates by orders of magnitude across the relevant log-price domain and changes sign at
+ˆx. Approximating the Marketron with a lag-only GLE eliminates this critical state dependence, thereby
+erasing the fundamental distinction between the default and normal regions that the model was designed
+to capture. The reverse substitution is equally flawed: a single exponential function cannot replicate the
+slowly decaying memory observed in empirical volatility data, rendering the Marketron kernel unsuitable as
+KYY in that broader context.
+4.3 Exact Markovian lifting and long-memory extensions
+The construction of finite-dimensional Markovian embeddings for non-Markovian dynamics has a rich
+precedent in the rough volatility literature. For instance, [Abi-Jaber and El-Euch, 2019] along with
+[Abi Jaber, Larsson, and Pulido, 2019] proposed the multifactor approximation of fractional Volterra
+processes. Their approach relies on approximating the singular fractional kernel by a sum of exponential
+terms, effectively lifting the non-Markovian process into a high-dimensional affine state space. Furthermore,
+[Bayer and Breneis, 2023] formalizes this methodology using Prony approximations to efficiently match the
+fractional kernel with a superposition of Markovian modes.
+While Eq. (29) could similarly be interpreted as a Markovian approximation of a non-Markovian system,
+the relationship in our framework is formally exact. Because a single exponential is completely monotone,
+the GLE in Eq. (30) permits a finite-dimensional Markovian embedding utilizing one auxiliary variable
+(specifically yt). The elimination of y in Appendix E is exact; the closed-form kernel Eq. (31) is its stationary,
+leading-order form, obtained by discarding transients that decay on the scale 1/µ and by absorbing an
+O(σ2) state-dependent memory term into the noise ηt, neither of which alters the structure of the kernel
+but neither of which is identically zero at finite t. The primary distinction between the descriptions is
+purely foundational (specifically, whether the memory variable or the kernel is defined as the primitive
+mathematical object).
+This relationship also provides the theoretical blueprint for integrating long memory into the Marketron.
+Expanding the single memory variable into a family y(i) t (each characterized by distinct relaxation rates µi
+and couplings ci, governing the second line of Eq. (29) and additively influencing the price drift) yields:
+KM(t,s) =κδ(t−s) +V′ M(xt)V′ M(xs) ∑
+i
+cxcy,i
+µi
+e−µi(t−s). (33)
+This state-modulated, completely monotone kernel successfully reproduces power-law decay across any finite
+lag interval. Consequently, introducing long memory to the Marketron requires no fundamental structural
+changes, only the addition of further memory variables, and the critical state modulation remains fully
+intact. However, this extension incurs a parametric penalty, as each mode introduces an additional rate and
+coupling constant. Given that mitigating parameter proliferation is a central objective of this framework,
+such an extension should be reserved strictly for applications where empirical data demand it.
+Page 14 of 43
+
+=== page 15 ===
+The Lean Marketron
+4.4 Fluctuation-dissipation and the active-matter interpretation
+Throughout this section we use the statistical-mechanics terminology of GLEs alongside its translation into
+the language of non-Markovian financial dynamics. The correspondence is:
+Statistical mechanics Financial dynamics
+Generalized Langevin equation (GLE) Stochastic Volterra equation
+Memory kernel KM(t,s) Impact propagator / price-impact kernel
+Fluctuation-dissipation relation (FDT) Equilibrium consistency condition
+Effective temperature Θ Noise–kernel proportionality constant
+Athermal / active-matter regime Driven non-equilibrium regime
+Internal reservoir Endogenous order-flow feedback
+Quasiparticle Effective price degree of freedom
+Both languages describe the same mathematical objects; the reader may use whichever is more familiar.
+Previous discussions characterizing the Marketron as a model of active matter (where the market
+quasiparticle relies on an internal reservoir rather than purely external forcing) have remained largely
+interpretive. The GLE representation formalizes this analogy (or, in financial terms, the non-Markovian
+kernel representation) into a strict parametric condition.
+Within a standard GLE framework, the autocovariance of the driving noise, C(τ) = E[ηtηt−τ], and the
+memory kernel operate as independent constructs. Equilibrium is defined as the state where these two
+elements are coupled via the second fluctuation-dissipation relation:
+C(τ) = ΘK(τ), (34)
+where Θ represents an effective temperature (in finance, the noise–kernel proportionality constant). Systems
+violating Eq. (34) are classified as athermal (driven non-equilibrium). Active matter specifically denotes
+athermal systems where this violation is driven by an internal energy source (endogenous order-flow feedback).
+This classification has concrete implications: it dictates whether the stationary density corresponds to
+the Boltzmann weight of the potential, and [Itkin, 2026a] constructs an empirical test based on the ratio
+between the two sides of Eq. (34).
+The Marketron explicitly provides both components of this relation. The kernel tail in Eq. (31) decays
+at a rate of µ, derived from the relaxation of the memory variable. The coloured component of the forcing is
+introduced via f(θt) and h(θt), inheriting its correlation time from the underlying signal dynamics Eq. (1).
+To align these decay rates in accordance with Eq. (34), the model necessitates:
+k =µ, (35)
+alongside an amplitude condition linking (b1,b2,σz) to (c,σy) through Θ.
+Because k and µ represent independently identified calibration parameters, Eq. (35) functions as a
+verifiable constraint rather than a theoretical assumption. Divergent rates confirm the model operates in an
+athermal (driven non-equilibrium) regime, substantiating the active-matter interpretation with empirical
+parameter values rather than qualitative analogy. Conversely, identical rates would signify equilibrium,
+reducing the quasiparticle (effective price degree of freedom) framework to a purely descriptive overlay.
+The trigonometric signal.
+Equation Eq. (35) aligns the leading exponential decay rates. Because the forcing terms f(θ) = b1 cosθ
+and h(θ) = b2 sinθ are nonlinear transformations of an Ornstein–Uhlenbeck process, their corresponding
+autocovariance does not exhibit pure exponential decay.
+Page 15 of 43
+
+=== page 16 ===
+The Lean Marketron
+Specifically, for θ∼N (m,v) and any real parameter ω, the characteristic function is given by E[eiωθ] =
+eiωm−ω2v/2, which yields
+E[cosωθ] =e−ω2v/2 cosωm, E[sinωθ] =e−ω2v/2 sinωm. (36)
+Applying this result with ω = 1 to the stationary law (m,v) = (ˆθ,σ2 z/2k) yields Eq. (17), while application
+to the conditional law (mt,vt) produces Eq. (21). Analogous identities provide the second moments
+E[cos2 θ] = 1 2 (1 + e−2v cos 2m) required for the source term ¯µ2 x in Eq. (23). Consequently, the averaged
+PDE retains fully closed-form RBF matrix elements.
+Following these identities, the autocovariance incorporates the factor exp
+[
+−σ2 z(1−e−kτ)/2k ] , which
+simplifies to e−kτ only under the small-amplitude limit σ2 z/2k≪ 1. This confirms that generic parameters
+inherently produce an athermal (non-equilibrium) model, because unlinked rates are highly unlikely to
+coincide perfectly. Therefore, the exact equality in Eq. (35) must be interpreted strictly as the leading-order
+parametric condition.
+5 Identifiability analysis
+Having established the analytical reduction of the parameter space, we must now address its empirical
+identifiability. While analytical symmetries successfully collapse the unobservable dimensions, they do
+not guarantee strict minimality. This section investigates whether the reduced parameter vector Θred
+constitutes an irreducible core or retains latent structural redundancies. Using local sensitivity metrics and
+manifold boundary approximation methods, we evaluate the calibration objective’s robustness and confirm
+the structural integrity of the reduced model.
+5.1 Sloppiness of the calibration objective
+Sections 2 and 3 established the reduction by construction through the gauge Eq. (8), combinations Eq. (11),
+and the averaging limit theorem. We omit numerical verification of the original parameterization’s sloppiness,
+as it would merely duplicate the algebraic proofs. Instead, we focus on determining whether Θred retains
+any further unidentified structure.
+Let ri(Θ) = Cmodel i (Θ) −Cref i denote the pricing residuals and J = ∂r/∂Θ the Jacobian. The Gauss-
+Newton Hessian H = J⊤J quantifies local identifiability; eigenvalues spanning multiple orders of magnitude
+signal a sloppy model with soft directions [Gutenkunst et al., 2007; Transtrum, Machta, and Sethna, 2011].
+Operating in log-parameters renders the spectrum scale-free and converts any residual scaling symmetry
+Θi →λai Θi into a constant direction a. This ensures that any surviving symmetry manifests strictly as an
+exact null vector of H rather than merely a small eigenvalue.
+To avoid artifacts from external calibrations and establish a known ground truth, reference prices are
+generated at the operating point Θ⋆ red = (σ0,α,β,µ,g,c, ¯y, ¯f,ρ) = (0.18,−0.4, 0.15, 2.0, 1.0, 0.08, 0.0, 0.0,
+−0.3), with exogenous risk aversion γ = 3 and drift ceiling D = 5 fixed. The option set is a surface of
+54 quotes (six maturities from 0.12 to 1.0 years and nine log-moneyness points from −0.12 to 0.12). The
+pricing noise ς is set to 0.5% of the price, approximating half a bid-ask width.
+The spectrum (Table 2, Figure 1) reveals two key facts. First, every eigenvalue is strictly positive; the
+empty null space empirically certifies that no exact symmetries survive the reduction. Second, the spectrum
+separates into two distinct blocks with a gap of over three orders of magnitude between λ5 and λ6. The five
+stiff eigenvalues form the block resolved by the vanilla surface, with eigenvectors dominated by the smile
+and skew parameters (σ0,α,β,µ,ρ). The four small eigenvalues correspond to a block the surface barely
+registers, dominated by the flow and potential parameters (c, ¯f, ¯y,g). These parameters affect vanilla prices
+only indirectly through the memory dynamics feeding σx(y), not via a direct drift channel. The condition
+Page 16 of 43
+
+=== page 17 ===
+The Lean Marketron
+options-facing drift
+index λi leading coords. index λi leading coords.
+1 1.5× 107 σ0 6 3.9× 10−2 c
+2 3.5× 104 β, α 7 7.7× 10−4 ¯f
+3 5.3× 103 ρ, µ 8 1.9× 10−7 ¯y, g
+4 3.7× 102 µ, ρ 9 4.1× 10−8 g, ¯y
+5 8.8× 101 α, β, ρ
+Table 2: Eigenvalues of the Gauss-Newton Hessian H = J⊤J in log-parameters at Θ⋆ red, in descending
+order. The leading coordinates are the parameters whose eigenvector components exceed 0.3 in
+absolute value. All eigenvalues are strictly positive, so H has an empty null space.
+1 2 3 4 5 6 7 8 9
+eigenvalue index i
+10 7
+10 5
+10 3
+10 1
+101
+103
+105
+107
+eigenvalue λi of H = J ⊤ J
+> 103 gap
+frozen from
+P-measure
+Reduced Marketron: Hessian eigenspectrum (log-parameters)
+options-facing block
+drift block
+Figure 1: Eigenvalues of the Gauss-Newton Hessian H = J⊤J in log-parameters at Θ⋆ red, on a logarithmic
+scale. The five stiff eigenvalues (circles) form the options-facing block. The four small
+eigenvalues (squares, shaded region) form the drift block that is fixed from the physical measure.
+The two blocks are separated by more than three orders of magnitude, and no eigenvalue is
+zero.
+number of the full nine-parameter Hessian is 3.7 × 1014. Restricting H to options-facing coordinates lowers
+it to 3.99× 108 including c, and to 1.75× 105 for the pure smile block{σ0,α,β,µ,ρ}.
+This block structure defines the reduced model’s identifiability and validates the staged calibration
+of Section 6.3. The residual sloppiness represents a separation of data channels rather than a surviving
+symmetry: the vanilla surface identifies the smile block, while the drift block {c, ¯f, ¯y,g} is pinned from the
+physical measure and held fixed during option calibration.
+Marginal profile widths, evaluated as
+√
+(H−1)jj (Table 3, Figure 2), formalize this ranking. They fall
+into three groups separated by two large gaps. The smile parameters (σ0,ρ,α,β,µ) have widths below 0.55,
+while the flow coupling c has a width of 13.6. The remaining drift parameters ( ¯f, ¯y,g) exhibit widths in the
+hundreds to thousands, indicating profiles left entirely flat by the vanilla surface. This precisely justifies
+fixing the drift block using physical-measure time series.
+Profile likelihoods, [Raue et al., 2009] confirm this local perspective. By re-optimizing all other
+parameters along a continuous scan of each target coordinate, we measure the residual envelope. Profiles are
+Page 17 of 43
+
+=== page 18 ===
+The Lean Marketron
+options-facing drift (fixed from P-measure)
+param.
+√
+(H−1)jj std (0.5%) std (0.05%) param.
+√
+(H−1)jj status
+σ0 0.03 0.007 0.003 c 13.6 weak
+ρ 0.14 0.174 0.048 ¯f 1.7×102 P-measure
+α 0.27 0.206 0.046 ¯y 2.8×103 P-measure
+β 0.32 0.060 0.011 g 4.7×103 P-measure
+µ 0.52 0.932 0.294
+Table 3: Per-parameter identifiability at Θ⋆ red. Left block: options-facing parameters with marginal
+standard errors
+√
+(H−1)jj (log-parameters, scale-free) and empirical standard deviations from
+multi-start fits at two pricing-noise levels. µ is identified but soft. Right block: drift parameters
+fixed from the physical measure, not recovered from options.
+10 1
+ 100 101 102 103 104
+marginal std. error 
+√
+(H −1)jj   (log-parameter)
+σ0
+ρ
+α
+β
+µ
+c
+¯f
+¯y
+g
+identified
+weak
+unidentified
+Per-parameter identifiability from the vanilla surface
+Figure 2: Marginal standard error of each log-parameter,
+√
+(H−1)jj, on a logarithmic scale. Small
+means well determined. The five smile parameters are identified from the vanilla surface, the
+flow coupling c is weak, and ¯f, ¯y and g are left flat by the option data and are fixed from the
+physical measure. The dashed line marks unit width.
+deemed flat if the cost elevation remains below the ambient noise threshold ( 1 2 χ2 1,0.95ς2 above the optimum).
+The aforementioned marginal widths reflect the profile curvatures at the optimum, demonstrating bounded
+profiles for the smile parameters and flat profiles for the drift block. This corroborates the channel separation
+observed in the eigenspectrum.
+To verify practical recovery, we perturb the surface by the pricing noise and refit the smile block from
+random starts within 15% of truth, holding the drift block fixed. At 0.5% noise, all seven starts converge to
+the noise floor; at 0.05% noise, seven of eight converge (the single failure originating outside the admissible
+region). The recovery columns of Table 3 show all recovered means lie within one standard deviation of
+truth. Crucially, as pricing noise decreases tenfold, every dispersion shrinks: the standard deviation of
+σ0 drops from 0.007 to 0.003, β from 0.060 to 0.011, and ρ from 0.174 to 0.048. This noise-proportional
+contraction is the signature of a well-posed identification devoid of flat directions. The parameter µ shrinks
+the least (from 0.932 to 0.294), confirming it is the softest identifiable coordinate as predicted by Table 2.
+This residual softness in µ is thus a function of data resolution, which more maturities or tighter quotes
+Page 18 of 43
+
+=== page 19 ===
+The Lean Marketron
+would reduce, rather than a structural degeneracy.
+The placement of ρ in the physical-measure block rather than the risk-neutral block requires justification,
+since the correlation between flow and return innovations generates short-maturity skew, and therefore
+appears, at first sight, to be precisely the kind of parameter the option surface should identify. The
+eigenspectrum in Table 2 supports this expectation: ρ participates in the third and fourth stiff eigenvectors
+with marginal width 0.14 in Table 3. The practical recovery experiments, however, tell a more nuanced
+story. When ρ is calibrated jointly with the smile parameters, its posterior is systematically biased toward
+the boundary of the admissible region, and the bias does not shrink as pricing noise decreases. This is the
+signature of a parameter that is formally identifiable but economically underdetermined: the option surface
+constrains ρ only through the skew it generates in combination with α and β, and the three parameters
+trade off along a shallow direction that the local Hessian spectrum, computed at a single operating point,
+does not fully expose.
+The resolution is to recognize that ρ carries two distinct economic contents. In the physical measure, ρ
+is the contemporaneous correlation between order-flow and return innovations, a quantity with a direct
+time-series interpretation that is estimable from high-frequency data in which both series are observed
+jointly. In the risk-neutral measure, ρ enters only through the cross-diffusion term and the drift adjustment,
+where it generates skew but is confounded with the local-volatility asymmetry α and the convexity β. The
+physical-measure estimate is the cleaner of the two: it is identified by data that observes the correlation
+directly, whereas the option-implied estimate is identified only through a second-order shape effect that
+is nearly degenerate with two other parameters. Fixing ρ from the physical measure therefore removes
+a degree of freedom that the surface cannot independently pin down, while leaving the parameters the
+surface does identify, namely σ0, α, β, and the drift block, sharper than they would be in a joint fit. This
+treatment is consistent with the broader staged-calibration philosophy: parameters that are stiff in the
+physical measure and soft in the risk-neutral measure belong to the physical block, and ρ falls squarely into
+that category. The option surface is then used to identify the parameters it can actually see, and the market
+price of flow risk in Section 6.5 is computed as the wedge in the parameters identifiable in both measures,
+namely the flow couplings c and ¯f, rather than as a wedge in ρ, which the surface cannot independently
+resolve.
+5.2 Manifold boundary approximation and irreducibility verification
+The manifold boundary approximation method (MBAM) detailed in [Transtrum and Qiu, 2014] directly
+addresses the irreducibility question. The procedure follows a geodesic of the Fisher metric from the
+operating point along the sloppiest eigendirection until it reaches the model manifold boundary. This
+boundary corresponds to a structural limit, such as a parameter approaching 0 or ∞, or two parameters
+merging into a product or ratio. Such limits can then be imposed exactly to yield a model with one fewer
+parameter. When applied to a model that is already irreducible, the geodesic instead runs to the edge of
+the admissible region without causing the Fisher metric to degenerate, indicating that no further reduction
+is available.
+We execute the MBAM on the reduced model using synthetic vanilla European option prices generated
+across a grid of six maturities and denser log-moneynesses. Computing model prices and parameter
+sensitivities through the full pricing pipeline requires a high-performance FD option pricing solver. To
+make this computationally feasible, the framework is implemented using JAX with global double-precision
+float64 arithmetic. Automatic differentiation jax.jacfwd computes exact parameter Jacobians through
+the pricing pipeline. To maintain high performance (≈ 76.6 ms per ODE call), the connection coefficients
+are evaluated using a Gauss-Newton projection approximation that avoids expensive full Hessian-vector
+product passes. The resulting geodesic ODEs are integrated using scipy hybrid explicit/implicit LSODA
+solver, paired with a terminal event function that monitors the minimum eigenvalue of the regularized
+Page 19 of 43
+
+=== page 20 ===
+The Lean Marketron
+Parameter Initial (τ=0) rtol=10−3 rtol=10−4
+Integration summary
+Final Time (τfinal) 0.0 3.0000 3.0000
+Steps Taken 0 63 63
+Status Starting Completed (τmax) Completed (τmax)
+Final parameter values
+σ0 0.180 1.800× 10−1 1.800× 10−1
+α −0.400 −4.000× 10−1 −4.000× 10−1
+β 0.150 1.500× 10−1 1.500× 10−1
+µ 2.000 2.000× 10+0 2.000× 10+0
+g 1.000 4.201× 10+0 4.201× 10+0
+c 0.080 8.026× 10−2 8.026× 10−2
+¯y 0.000 −4.893× 10−2 −4.893× 10−2
+¯f 0.000 2.510× 10−3 2.510× 10−3
+ρ −0.300 −3.000× 10−1 −3.000× 10−1
+Step-size check:∥u(rtol=10−3)− u(rtol=10−4)∥ = 2.56× 10−4
+Table 4: MBAM geodesic integration results for the nine-parameter reduced model from initial operating
+point Θ⋆ red across different relative error tolerances (rtol) using a grid of six maturities and
+denser log-moneyness spacing. Shaded cells indicate parameters (σ0,α,β,µ,ρ) that remain
+unchanged (within integration tolerance) from initial values, whereas g = θ5 actively evolves
+along the geodesic trajectory.
+Fisher Information Matrix.
+Starting from the baseline operating point:
+θ∗ = ( 0.18 −0.4 0.15 2.0 1.0 0.08 0.0 0.0 −0.3 ) , (37)
+with an initial sloppiest eigendirection corresponding to a regularized minimum eigenvalue of λ1 ≈ 14.4, the
+geodesic integrates smoothly out to the maximum horizon τfinal = 3.0000 (in 63 steps) across both relative
+error tolerances (rtol = 10−3 and rtol = 10−4). As detailed in Table 4, the options-facing smile parameters
+remain invariant (shaded), while g = θ5 (along with minor adjustments in the drift-block parameters)
+actively traverses the geodesic trajectory up to τfinal without encountering a premature finite-time singularity
+or metric degeneracy. Two procedural requirements are fully satisfied:
+1. Nondegenerate Origin. The geodesic originates from a strictly nondegenerate metric (any underlying
+exact symmetries having been removed analytically during the prior reduction step to Θred).
+2. Step-Size Independence. Verification across tighter error tolerances confirms robust resolution of the
+underlying manifold. Specifically, the parameter distance between the trajectories at the two tested
+tolerances is minimal (∥u(rtol = 10−3) −u(rtol = 10−4)∥ = 2.56 × 10−4), indicating that the trajectory
+is accurately resolved and free of numerical artifacts.
+Furthermore, employing synthetic vanilla European option prices rather than empirical market data
+does not compromise or alter these qualitative conclusions. The MBAM probes the intrinsic geometric
+properties of the model manifold, specifically the rank deficiency of the Fisher Information Matrix governed
+by the Jacobian mapping of the model. Because structural limits, parameter boundaries, and manifold
+degeneracies are intrinsic characteristics of the model’s functional architecture rather than artifacts of a
+specific price realization, the verification of the irreducible core remains robust across comprehensive option
+surfaces.
+Page 20 of 43
+
+=== page 21 ===
+The Lean Marketron
+Two qualifications bound what this analysis establishes, and both matter for the calibration that follows.
+First, the method identifies a single direction, the sloppiest one, and along that direction it is g that runs
+to its boundary while the shaded parameters stay fixed. The result therefore ranks g as the most removable
+coordinate. It does not order the remaining parameters among themselves, and it does not certify that
+each shaded parameter is stiff in an absolute sense, which would require the full Fisher spectrum along the
+trajectory rather than the first eigendirection alone. Second, the computation uses a grid of six maturities.
+It speaks to identifiability across a term structure, and not to identifiability within a single maturity band,
+where the same parameters can behave very differently.
+The memory reversion rate µ illustrates the second qualification. On a multi-maturity surface µ is
+identifiable, in the sense that it moves away from its physical value when it is calibrated. Its leverage on
+the observable is nonetheless slight. Sweeping µ across its full admissible range shifts the at-the-money
+term-structure slope by less than a tenth of a volatility point. On a single maturity band it is degenerate
+with the local-volatility parameters σ0,α,β and does not move at all. We therefore do not treat µ as a free
+risk-neutral coordinate on its own, and we calibrate it only jointly with the term-structure shape parameter
+k introduced below.
+This weak leverage reflects a structural feature of the reduced model that bears directly on the scope
+of a single-parameter-set fit. In its stationary form, that is, without the transient correction, the model
+produces an at-the-money term structure that is flat to mildly downward sloping, and this holds for every
+admissible value of µ, β, and γ. A representative SPX surface over maturities from roughly one month to
+six months instead shows an at-the-money term structure that rises by about three and a half volatility
+points. A single stationary parameter set can match the interior of this range while missing both ends, with
+the largest error at the shortest maturities, precisely where the transient is strongest. The property that
+one parameter set spans the entire surface is therefore not yet established for this model, and it cannot be
+established from the stationary block alone. We treat it as a claim to be tested rather than an assumption,
+and we return to it in Section 6.3.
+The transient correction is what closes this gap. It retains the time dependence of the conditional
+mean of the signal and reintroduces the relaxation rate k as a term-structure shape parameter. Because
+k controls the maturity dependence that the stationary block lacks, it is the parameter that carries the
+term structure rather than a small correction to it. We therefore include k in the calibrated set, and we
+assess the single-parameter-set property only with k active. A natural question is then whether the drift
+block {c, ¯f, ¯y,g} can be identified under the physical measure P. While vanilla option surfaces are largely
+insensitive to these slow parameters, rendering them flat in the risk-neutral calibration, their primary
+statistical footprint resides in time-series dynamics, driven by historical drift, persistence, and stationary
+moments of the underlying asset paths.
+A rigorous dual-measure identifiability analysis for both measures simultaneously falls outside the
+intended scope of this pricing framework. Instead, consistent with standard practice in stochastic volatility
+modeling, the slow drift parameters ¯y and g are reliably pinned from historical time-series data using
+standard estimation techniques, where unconditional empirical moments and long-term trends effectively
+constrain them prior to calibrating the options-facing block. The two flow parameters c and ¯f are treated
+differently. The market price of flow risk is defined as the wedge between their physical and risk-neutral
+values, so for that wedge to be an important output rather than an identity, c and ¯f must belong to the
+calibrated risk-neutral set. We adopt this in Section 6.3, where c and ¯f are calibrated alongside the smile
+parameters and the term-structure parameter k.
+6 Numerical experiments
+The preceding sections established the reduced model by analytical reduction and proved its identifiability
+through the geometry of the calibration manifold. The purpose of this section is not to present a
+Page 21 of 43
+
+=== page 22 ===
+The Lean Marketron
+comprehensive empirical asset-pricing study, but to verify that the theoretical properties survive contact
+with market data. Specifically, we show that the reduced parameter vector can be calibrated stably to a
+standard option surface, and that the staged separation of physical and risk-neutral measure parameters
+yields a measurable wedge (the market price of flow risk), rather than an ill-defined difference between two
+ridge points.
+To this end, a single representative SPX snapshot suffices. The exercise has two goals. First, to confirm
+that the global term-structure fit with one parameter set across all maturities is feasible, and that the
+transient ramp supplies the necessary short-end shape without resorting to maturity-wise refitting. Second,
+to illustrate that the flow-impact parameters, calibrated on the risk-neutral measure, produce option-implied
+values whose difference from their time-series counterparts is an estimate with a well-defined standard error
+derived from the Gauss-Newton Hessian. The results below should be read as an existence proof for the
+practical identifiability of the reduced core, not as a trading manual or a backtested strategy.
+6.1 Implementation
+The reduced pricing PDE Eq. (23) is solved in the present numerical experiments by an explicit finite-
+difference scheme implemented in JAX. The implementation is deliberately lightweight rather than a
+production pricing engine: its purpose is to provide a fast, stable, and fully differentiable numerical solver
+for the calibration and identifiability experiments. The more elaborate splitting and RBF constructions
+discussed in Section 3.4, together with the positivity-preserving treatment of the mixed derivative of [Itkin,
+2026b], provide alternative routes for a production implementation.
+Explicit pricing scheme.
+The two-dimensional state space (x,y) is discretized on a tensor grid with Nx = 70 log-price nodes
+and Ny = 50 memory nodes. The computational domain is centered around the initial state and uses
+half-widths hx = 1, hy = 1.5. Time is discretized with Nτ = 500 steps. The relatively fine grid is chosen
+to make the explicit scheme robust over the parameter ranges explored during calibration rather than to
+optimize the cost of a single pricing run. The time step is restricted by the corresponding CFL conditions
+for the state-dependent diffusion, the memory diffusion, and the mixed derivative. Within this stability
+region the scheme is numerically stable for all parameter sets retained in the experiments.
+The spatial derivatives in Eq. (23) are evaluated directly on the finite-difference grid. The state-dependent
+volatility in Eq. (19) is evaluated at the memory nodes, while the drift, diffusion, mixed-derivative and
+nonlinear terms are advanced explicitly. Boundary values are chosen consistently with the asymptotic option
+behavior. The resulting implementation contains no RBF interpolation or matrix factorization and therefore
+avoids the ill-conditioning associated with the flat Gaussian bases used in the earlier implementation.
+Differentiability and calibration.
+The complete pricing and calibration pipeline is implemented in JAX, with double precision enabled.
+Grid construction, coefficient evaluation, finite-difference time stepping, option-price extraction, and the
+conversion from prices to implied volatilities are all part of the differentiable computational graph. The
+objective and its gradient are compiled with jax.jit and evaluated using jax.value_and_grad. Thus,
+unlike a finite-difference approximation to the calibration gradient, the optimizer receives derivatives
+obtained by automatic differentiation through the numerical pricing scheme.
+Calibration is performed in implied-volatility space. For a parameter vector ϑ, the model implied
+volatility for quote i is denoted by σmod IV,i (ϑ), and the objective is
+J (ϑ) = 1 2M M∑ i=1 [ σmod IV,i (ϑ)−σmkt IV,i ]2 . (38)
+Page 22 of 43
+
+=== page 23 ===
+The Lean Marketron
+Workinginimplied-volatilityratherthanpricespacepreventsoptionswithlargedollarpricesfromdominating
+the objective and makes residuals comparable across strikes and maturities.
+The six calibrated parameters are ϑ = (σ0,α,β,µ,c,k). The physical-measure quantities (g, ¯y,σz,ρ, ¯f)
+and the exogenous quantities (γ,D) are held fixed at the values specified in Section 6.3. The parameter c is
+retained in the option calibration despite its relatively weak identifiability. This is a deliberate compromise:
+the identifiability analysis shows that ¯f is the strongest physical-measure parameter and c is the next
+strongest, but moving c entirely into the physical-measure block would eliminate the option-implied wedge
+needed to define the market price of flow risk. We therefore calibrate c on the option surface while explicitly
+recognizing that its estimate is substantially softer than those of the principal option-facing parameters.
+The parameter k plays a different role: it is retained primarily to describe the short-maturity term-structure
+effect associated with the transient signal correction in Section 3.3.
+The optimization uses the bound-constrained SLSQP algorithm from SciPy. The physical-measure
+parameters (g, ¯y,σz,ρ, ¯f) are partly inherited from the time-series calibration of [Halperin and Itkin, 2026],
+while γ and the regularization parameter D are fixed exogenously. The option-facing parameters are
+initialized and bounded as shown in Table 5.
+Parameter Initial value Lower bound Upper bound
+σ0 0.200 0.050 0.990
+α 0.000 -2.000 2.000
+β 0.100 0.010 25.000
+µ 0.500 0.010 7.000
+c 0.900 0.001 4.000
+k 1.000 0.010 5.000
+Table 5: Initial values and parameter bounds used in the option calibration.
+The values of the fixed parameters are as follows:
+(g, ¯y,σz,ρ, ¯f) = (0.3, 1.5, 0.5,−0.5, 0.1), γ = 3, D = 5. (39)
+The risk aversion parameter is fixed exogenously at γ = 3. Because the state variable x represents the
+log-price, the exponential utility specification effectively behaves as a power utility function over the
+arithmetic price level, rendering γ a dimensionless parameter that governs relative risk aversion [Henderson,
+2002]. This structural equivalence circumvents the scale-dependence typical of exponential utility and aligns
+our calibration with standard macro-finance benchmarks, where empirically supported relative risk aversion
+coefficients are strongly anchored between 2 and 4 [Friend and Blume, 1975; Mehra and Prescott, 1985].
+The positivity requirement for the volatility radicand is imposed through a smooth penalty based on
+the minimum of the quadratic form in Eq. (19) over the computational memory interval. This replaces the
+nonlinear constraint used in the earlier implementation while keeping the objective fully differentiable. The
+penalty is negligible when the radicand remains positive and increases smoothly as the minimum approaches
+or crosses the admissible boundary.
+Market data and stratification.
+The calibration does not use every raw option quote. The objective is intended to represent the
+information content of the surface rather than the microstructure noise of individual observations. Market
+quotes are therefore first filtered for basic validity and then stratified across the term structure and
+moneyness. Maturities that are sufficiently close are assigned to the same maturity group, after which a
+representative set of strikes is selected within each group so that both the term structure and the smile are
+covered.
+Page 23 of 43
+
+=== page 24 ===
+The Lean Marketron
+For each maturity group the solver evaluates the required strikes together, so that common intermediate
+quantities in the pricing calculation can be reused. The resulting workflow is therefore
+raw quotes→ filtered/stratified surface→ explicit 2D pricing→ implied volatilities→ J (ϑ), ∇J (ϑ)
+with the last two quantities supplied directly to the constrained optimizer. This combination of surface
+stratification, a CFL-stable explicit solver, and automatic differentiation makes repeated calibrations
+sufficiently fast for the identifiability and robustness experiments of Section 6.
+6.2 Black–Scholes synthetic-data experiment
+As a controlled validation of the pricing and calibration machinery, we first consider a synthetic option
+surface generated from the Black–Scholes model. This experiment provides a useful benchmark because the
+data-generating parameters are known exactly, while the calibration is nevertheless performed with the full
+nonlinear two-dimensional pricing model rather than with the Black–Scholes formula. Thus, the experiment
+tests whether the proposed pricing–calibration pipeline can recover a surface generated by a substantially
+simpler model without introducing material pricing errors.
+The synthetic market is initialized with S0 = 100,r = 0.05,q = 0.02,σBS = 0.25 and covers the period
+from January 1 through December 31, 2024. For each of the four maturities T∈{0.25, 0.50, 0.75, 1.00}
+options are generated at five strikes K∈{90, 95, 100, 105, 110}. Both calls and puts are included where
+applicable, producing a deliberately small but representative cross-section spanning near- and moderately
+out-of-the-money options and maturities from three months to one year. The resulting synthetic quotes
+have a constant Black–Scholes implied volatility of 25%, while prices and Greeks vary across strike and
+maturity in the usual way.
+The synthetic prices are subsequently treated as market observations and the parameters of the
+proposed model are calibrated without imposing the Black–Scholes restriction. In particular, the six
+risk-neutral calibration parameters (σ0,α,β,µ,c,k) are optimized, while the physical parameters and
+exogenous parameters are held fixed at their prescribed values. The experiment therefore constitutes a
+stringent consistency check: the calibration must reproduce a flat implied-volatility surface using a nonlinear
+two-dimensional model with state-dependent volatility and memory effects.
+The calibration converges successfully, with the final parameter vector σ0 = 0.24763, α = −0.00034, β =
+0.05349, µ = 0.90734, c = 0.07690, k = 0.88869. The resulting implied-volatility residuals are extremely
+small. Across the 20 calibration points, the mean residual is approximately zero, the standard deviation is
+2 × 10−4, and the root-mean-square error is RMSEIV = 2 × 10−4, with residuals ranging from approximately
+−4 × 10−4 to 4 × 10−4. These errors are negligible relative to the 25% input volatility and demonstrate
+that the numerical pricing scheme can reproduce the synthetic Black–Scholes surface to high accuracy.
+The calibrated parameters themselves need not coincide with a unique Black–Scholes representation: the
+purpose of the experiment is instead to verify that the richer model contains a parameter configuration
+capable of reproducing the benchmark surface.
+Figure 3a shows the resulting residual surface in strike–maturity space, while Fig. 3b presents the same
+residuals in two dimensions together with the individual calibration errors. The residuals remain uniformly
+close to zero over the entire calibration region, with no visible systematic dependence on either strike
+or maturity. This is particularly important because systematic patterns would indicate a numerical or
+implementation bias rather than mere optimization error.
+Overall, the experiment confirms both components of the numerical procedure: the explicit two-
+dimensional pricer is sufficiently accurate for calibration, and the JAX-based automatic differentiation
+combined with the bound-constrained optimizer is able to identify a parameter configuration that reproduces
+the benchmark surface with essentially negligible implied volatility error. The experiment is therefore used
+as a numerical validation rather than as an economic calibration exercise.
+Page 24 of 43
+
+=== page 25 ===
+The Lean Marketron
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0
+Maturity T (years)
+90.0
+92.5
+95.0
+97.5
+100.0
+102.5
+105.0
+107.5
+110.0
+Strike K
+0.0004
+0.0003
+0.0002
+0.0001
+0.0000
+0.0001
+0.0002
+0.0003
+0.0004IV Residual
+IV Residual Surface (3D View)
+Individual Residuals
+(a)
+0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+Maturity T (years)
+90.0
+92.5
+95.0
+97.5
+100.0
+102.5
+105.0
+107.5
+110.0Strike K
+IV Residual Surface (2D Contour)
+-0.000
+-0.000
+-0.000
+-0.000
+-0.000
+-0.000
+-0.000
+-0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.000
+0.00024
+0.00018
+0.00012
+0.00006
+0.00000
+0.00006
+0.00012
+0.00018
+0.00024
+IV Residual (b)
+Figure 3: Black–Scholes synthetic-data experiment: implied-volatility residual a) surface as a function of
+strike and maturity; b) 2D and calibration errors. The residuals are uniformly close to zero
+across the calibration domain.
+In other words, the Black–Scholes test confirms that the calibration does not manufacture identification
+where none exists. The reduced Marketron model reproduces a flat 25% implied-volatility surface with an
+RMSE of only 0.02 volatility points, while the fitted parameters (β,µ,c,k) remain free to move substantially
+along a nearly flat objective valley. The asymmetric coefficient α is driven to zero, as expected for a surface
+with no skew. Thus the test separates numerical accuracy from parameter identification: an arbitrarily
+accurate fit does not imply that the underlying structural parameters are identified.
+6.3 Staged calibration to SPX options
+We test the reduced model on SPX options data from January 18, 2017, filtered to the maturity band
+T ∈ [0.04, 0.5] years. The data processing pipeline described in Section 6.1 yields 14 maturity groups
+(grouped by minimum distance of 0.01 year) and a calibration set of 138 options. This market data is
+presented in Fig. 4. Calls and puts are retained where available so that the calibration contains information
+from both sides of the smile. The stratification is performed once before the optimization; the resulting
+quotes are then held fixed throughout the calibration. This prevents changes in the numerical sample from
+being mistaken for changes in the calibrated parameter vector.
+With the physical block frozen as in Eq. (39), the model calibrates ΘQ to the full option surface using
+the implied-volatility objective and the SLSQP optimizer described in Section 6.1. The regularizer ¯ϵ is fixed
+via Eq. (13).
+The results are reported in Table 6 and the overall fit is illustrated in Fig. 5: the model reproduces
+the level, skew, and convexity of the SPX surface across all maturity groups with a single parameter set.
+The quantitative residual statistics provide a more detailed measure of the fit. The residual statistics are
+computed on the (K,T ) residual grid. On this grid, quotes that share a strike and maturity, such as a call
+and a put, are averaged into a single cell, so the 138 calibration quotes reduce to 110 distinct cells. Across
+these 110 cells, the mean implied-volatility residual is 0.0017, with a standard deviation of 0.0183 and
+RMSEIV = 0.0184. The residuals range from approximately −4.23 to 4.06 vol points. Thus, the calibrated
+model achieves an RMS error of approximately two vol-points while fitting simultaneously across strikes
+and maturities.
+Page 25 of 43
+
+=== page 26 ===
+The Lean Marketron
+2175 2200 2225 2250 2275 2300 2325 2350
+Strike
+10
+20
+30
+40
+50
+60
+70
+80
+90Option Price
+Selected Points: Price vs Strike
+All points
+Selected
+2175 2200 2225 2250 2275 2300 2325 2350
+Strike
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+0.35
+0.40
+0.45Maturity
+Coverage in (K, T) Space
+All points
+Selected
+2175 2200 2225 2250 2275 2300 2325 2350
+Strike
+0.08
+0.10
+0.12
+0.14
+0.16Implied Vol
+Selected Points: IV vs Strike
+All points
+Selected
+Figure 4: Stratified/clustered input option data of SPX used for calibration.
+Initial Calibrated
+Parameter P Endog. Q P Endog. Q
+g 0.3 – – 0.3 – –
+¯y 1.5 – – 1.5 – –
+σz 0.5 – – 0.5 – –
+ρ -0.5 – – -0.5 – –
+¯f 0.1 – – 0.1 – –
+γ – 3.0 – – 3.0 –
+D – 5.0 – – 5.0 –
+σ0 – – 0.2 – – 0.05823
+α – – 0.0 – – 2.00000
+β – – 0.1 – – 1.92349
+µ – – 0.5 – – 0.01000
+c – – 0.9 – – 0.62824
+k – – 1.0 – – 1.00276
+Table 6: Initial and calibrated parameter values.
+The calibrated parameters also provide useful information about the role and identifiability of the
+model components. In particular, α and β are calibrated to 2.0 and 1.92349, respectively. Both parameters
+are substantially different from zero. This contrasts with the Black–Scholes limiting case, in which these
+parameters would theoretically vanish, and indicates that the additional dynamics associated with them are
+relevant for the observed SPX surface. Their nonzero values are therefore consistent with the pronounced
+skew and curvature present in the market data.
+The calibration also highlights differences in parameter identifiability. While α and β move materially
+from their initial values, α resides at the boundary which may indicate its weak identifiability. Indeed,
+based on Eq. (19), same volatility can be obtained by varying σ0,α,β simultaneously. The parameter k
+remains essentially unchanged: its initial value of 1.0 moves only to 1.00276. This suggests that k is weakly
+identified by the available SPX cross-section over the maturity range considered. In contrast, the substantial
+movement in α and β indicates that the option surface contains considerably more information about these
+parameters. This distinction is important when interpreting the calibrated parameter vector: successful
+optimization and a good surface fit do not imply that all model parameters are equally well identified by
+the available option data.
+Page 26 of 43
+
+=== page 27 ===
+The Lean Marketron
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+0.35
+0.40
+0.45
+Maturity T (years)
+2175
+2200
+2225
+2250
+2275
+2300
+2325
+2350
+Strike K
+0.04
+0.02
+0.00
+0.02
+0.04
+IV Residual
+IV Residual Surface (3D View)
+Individual Residuals
+(a)
+0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40
+Maturity T (years)
+2180
+2200
+2220
+2240
+2260
+2280
+2300
+2320
+2340Strike K
+IV Residual Surface (2D Contour)
+-0.040
+-0.035
+-0.030
+-0.025-0.020
+-0.020
+-0.015
+-0.010
+-0.010-0.010
+-0.005
+-0.005 -0.005
+0.000
+0.0000.000
+0.000
+0.005
+0.005
+0.010
+0.010
+0.010
+0.015
+0.020
+0.0375
+0.0300
+0.0225
+0.0150
+0.0075
+0.0000
+0.0075
+0.0150
+0.0225
+IV Residual (b)
+Figure 5: SPX market data experiment: implied-volatility residual a) surface as a function of strike and
+maturity; b) 2D and calibration errors. The residuals are uniformly small across the calibration
+domain.
+Note that the fitted instantaneous volatility scale should not be interpreted directly as the level of
+market-implied volatility. The latter is an option-pricing quantity that incorporates the full future dynamics
+of the memory state and the nonlinear pricing operator. It is therefore not appropriate to assess the
+consistency of the calibrated baseline volatility with the observed SPX implied-volatility level by comparing
+σ0, or σx(y) at a particular value of y, directly with the market IVs. Instead, consistency with the observed
+volatility surface should be assessed through the model-implied option prices and the corresponding implied
+volatilities. The calibrated value of σ0 should thus be interpreted as the baseline instantaneous volatility
+scale of the state-dependent diffusion, rather than as a direct estimate of the market-implied volatility level.
+The estimate of the mean-reversion parameter µ also sits at the low boundary, while similar values
+obtained in the option calibration of [Halperin and Itkin, 2025] are µ≈ 4.6. The difference is material
+and most likely can be attributed to how we do adiabatic averaging in Section 3.1, i.e. by setting ¯h = 0,
+and hence only the product µ¯y does matter, while in [Halperin and Itkin, 2025] ¯h is negative. The high
+value of µ in [Halperin and Itkin, 2025] provides fast mean-reversion of the memory variable, but to a
+stochastic level while here the mean-reversion level is deterministic. Anyway, this disagreement is particularly
+noteworthy because the present model is a reduced two-dimensional formulation with a different volatility
+specification and a substantially different treatment of parameter identifiability. The result suggests that
+the mean-reversion timescale associated with the memory variable is unstable across the two formulations.
+The flow-impact parameter c behaves quite differently. In [Halperin and Itkin, 2025] its calibrated
+value was approximately 0.9, whereas in the present experiment the optimizer yields c = 0.62824. The
+identifiability analysis in Section 5 shows that vanilla option prices contain relatively little information about
+the absolute level of c, which is substantially less tightly identified than the principal smile parameters.
+Nevertheless, conditional on the physical-measure block and the other option-facing parameters used here,
+the SPX surface favors a lower risk-neutral value of c than the initial value inherited from the physical
+measure. The fact that the optimum differs from this initial value suggests that the vanilla surface contains
+some information about cQ beyond the physical-measure specification, although the weak identification
+of c implies that this distinction should not be interpreted as strong evidence for a precisely identified
+risk-neutral value. Finally, the comparison with [Halperin and Itkin, 2025] shows that the two calibrated
+Page 27 of 43
+
+=== page 28 ===
+The Lean Marketron
+values of c are of the same order of magnitude despite the differences between the underlying models.
+The residual surface in Fig. 5a and its projection in Fig. 5b provide a further diagnostic of the calibration.
+They show how the remaining pricing errors are distributed across strike and maturity rather than only
+reporting their aggregate magnitude. In particular, systematic residual patterns would indicate regions of
+the empirical SPX surface that are not fully captured by the reduced model, whereas residuals that remain
+centered around zero across the calibration domain would support the adequacy of the model specification
+for the observed surface.
+From a pricing perspective, the IV residual surface reveals a clear spatial pattern in the model’s fit
+across the observed domain of OTM calls and puts, with moneyness M∈ [0.1, 1.01]. Residuals are closest
+to zero in a band surrounding the approximate at-the-money region (K≈ 2250–2260), indicating that the
+model fits near-ATM options most closely and that the quality of the fit deteriorates toward the wings.
+The largest positive residuals, corresponding to model over-prediction of IV and reaching approximately
++0.0225, concentrate at higher strikes and short maturities, i.e., in the OTM-call region. The largest
+negative residuals, corresponding to model under-prediction and reaching approximately −0.040, occur at
+lower strikes across the maturity range, i.e., in the OTM-put region.
+Consequently, the model provides a substantially better fit for near-ATM options than for deep-OTM
+puts and, to a somewhat lesser extent, short-dated OTM calls. The persistence of the short-maturity
+call residuals is notable because the parameter k is retained in the model specifically to control short-
+time maturity behavior. The residual surface therefore suggests that this mechanism, while important
+for the short-time asymptotics, is not sufficient to capture the observed short-dated upside wing. The
+asymmetric wing behavior points instead to two distinct directions for subsequent model refinement: a
+better representation of the downside skew in OTM puts and an additional mechanism for the short-term
+upside wing in OTM calls, precisely where the absolute residuals are largest within the available market
+data.
+6.4 Another SPX experiment
+To examine the sensitivity of these conclusions to the calibration region, we performed a second calibration
+with the same SPX data and the same exogenous parameters, but with a wider admissible domain for the
+risk-neutral parameters. In this experiment we used
+(g, ¯y,σz,ρ, ¯f) = (0.3, 1.5, 0.8,−0.5, 0.1), (γ,D) = (3, 5), (40)
+and initialized (σ0,α,β,µ,c,k) = (0.2, 0, 0.1, 2, 5, 1). The bounds were enlarged to
+σ0 ∈ [0.05, 0.99], α∈ [−2, 2], β∈ [0.01, 5], µ∈ [10−4, 10], c∈ [0.01, 15], k∈ [0.01, 5]. (41)
+The resulting calibration was (σ0,α,β,µ,c,k) = (0.05004, 0.34809, 0.50984, 0.00606, 1.64334, 0.86631),
+with RMSEIV = 0.0165. Thus, the fit is somewhat better than that of the baseline calibration, for which
+RMSEIV = 0.0184, although the improvement should not be interpreted as a pure optimizer comparison
+because the physical volatility parameter was changed from σz = 0.5 in the baseline experiment to σz = 0.8
+in the second experiment. More importantly, the two calibrations converge to materially different parameter
+vectors, indicating the presence of multiple favorable regions, or basins, in the parameter-to- option-price
+map. The computed residuals are also presented in Fig. 6.
+The difference between the two solutions also illustrates the limited identifiability of the parameters
+governing the state-dependent instantaneous volatility. In the baseline calibration, (α,β) = (2.0000, 1.9235),
+with α at its upper bound, whereas the wider calibration gives (α,β) = (0.3481, 0.5098), with both
+parameters well inside their bounds. Since the option-pricing operator observes the volatility function σ(y)
+rather than σ0, α, and β separately, different combinations of these parameters can generate similar effective
+volatility profiles over the region of the memory state visited by the pricing dynamics. The movement
+Page 28 of 43
+
+=== page 29 ===
+The Lean Marketron
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+0.35
+0.40
+0.45
+Maturity T (years)
+2175
+2200
+2225
+2250
+2275
+2300
+2325
+2350
+Strike K
+0.05
+0.04
+0.03
+0.02
+0.01
+0.00
+0.01
+0.02
+0.03
+IV Residual
+IV Residual Surface (3D View)
+Individual Residuals
+(a)
+0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40
+Maturity T (years)
+2180
+2200
+2220
+2240
+2260
+2280
+2300
+2320
+2340Strike K
+IV Residual Surface (2D Contour)
+-0.045
+-0.040
+-0.035
+-0.030-0.025
+-0.025
+-0.020
+-0.020-0.015
+-0.015
+-0.015
+-0.015
+-0.015
+-0.010
+-0.010
+-0.010
+-0.005
+-0.005
+-0.005
+-0.005
+0.000
+0.000
+0.000
+0.000
+0.005
+0.005
+0.005
+0.005
+0.005
+0.010
+0.010
+0.010
+0.010
+0.010
+0.015
+0.015
+0.0150.020
+0.0450
+0.0375
+0.0300
+0.0225
+0.0150
+0.0075
+0.0000
+0.0075
+0.0150
+0.0225
+IV Residual (b)
+Figure 6: SPX market data second experiment: implied-volatility residual a) surface as a function of
+strike and maturity; b) 2D and calibration errors. The residuals are uniformly small across
+the calibration domain.
+between these two parameterizations therefore provides empirical evidence for the approximate (σ0,α,β)
+redundancy discussed above. The fact that the two calibrations nevertheless produce similar overall pricing
+errors shows that the option surface constrains the resulting volatility structure more strongly than it
+constrains its particular parametric decomposition. This also qualifies the local identifiability analysis of
+Section 5, whose Hessian and profile widths are evaluated at the operating point Θ⋆ red, which is far from
+either SPX optimum: the (σ0,α,β) direction that reads as stiff there is, at the fitted surface, a shallow one
+along which α and β trade off, much as ρ does in Section 5.
+The memory parameter µ provides a particularly clear result. In both experiments the optimizer drives
+µ to the lower edge of the admissible region: µ = 0.01 in the baseline calibration and µ = 0.0061 in the wider
+calibration. Thus, the option data do not appear to support appreciable mean-reversion of the memory
+variable through the explicit term µ(¯y−y). Instead, within the present reduced specification, the effective
+stabilization of the memory dynamics appears to be generated primarily through its coupling to the price
+and the nonlinear potential. This conclusion should nevertheless be treated cautiously because the two
+experiments use different σz and therefore do not isolate the effect of µ alone.
+The flow-impact coefficient c moves from 0.6282 to 1.6433 across the two calibrations. This spread
+is expected rather than troubling: Section 5 identifies c as the soft option-facing coordinate, so its point
+value is not sharply pinned by a single surface. What both basins share is that cQ does not collapse to the
+inherited physical value cP = 0.9, so the staged calibration produces a nonzero Q–P separation in the flow
+block in either basin. The market price of flow risk is not this scalar difference, however, but the wedge in
+the market price of risk λ(x) t of Section 6.5, into which c enters together with ¯f and the state-dependent
+volatility. The two-basin spread should therefore be read as evidence that a flow-risk premium is identifiable
+and nonzero, rather than as a sharp estimate of its level.
+By contrast, k moves from 1.0028 to 0.8663, a considerably smaller relative change. This suggests that
+the signal relaxation timescale may be more stable across calibrations, although the available data are not
+sufficient to claim strong identification.
+Page 29 of 43
+
+=== page 30 ===
+The Lean Marketron
+6.5 The market price of risk
+In the original Marketron model of [Halperin and Itkin, 2026], the three Brownian motions W (x) t , W (y) t , and
+W (θ) t are mutually independent. The utility-based market price of risk (MPR) is therefore a three-component
+vector,
+λt =
+(
+λ(x) t , λ(y) t , λ(θ) t ) , (42)
+with one component per stochastic factor. The component associated with the traded Brownian motion
+W (x) t takes the same functional form as in a complete market,
+λ(x) t = µx(t,xt,yt,θt)−r σ , (43)
+while the components λ(y) t and λ(θ) t correspond to the unobservable memory and signal variables and are
+not directly measurable.
+The reduced model changes this structure in two ways. First, adiabatic elimination of the signal removes
+θ from the state space, so the third component λ(θ) t disappears entirely. Since the reduced model sets
+ρxθ = 0 at leading order (the correlation enters only through the first-order 1/k correction discussed in
+Section 3.3), there is no residual signal contribution to the MPR:
+λ(θ) t ≡ 0. (44)
+Second, the introduction of the diffusive correlation ρ between W (x) t and W (y) t generates a non-zero
+second component λ(y) t . Because the memory variable yt is now partially correlated with the traded asset,
+it is partially hedgeable, and the market demands compensation for its residual risk. The MPR vector in
+the reduced model is therefore two-dimensional:
+λt =
+(
+λ(x) t , λ(y) t ) , (45)
+where the first component follows from the indifference pricing framework and takes the same functional
+form as in a complete market:
+λ(x) t = ¯µx(t,xt,yt) σx(yt) , (46)
+with
+¯µx(t,xt,yt) = ¯f(t) + ¯η(yt) + σ2 x(yt) 2 −r−cxytV′ M(xt), (47)
+and ¯η(yt) =r−σ2 x(yt)/2. The expression simplifies to
+λ(x) t = ¯f(t)−cxytV′ M(xt) σx(yt) . (48)
+The second component λ(y) t is generated by the correlation ρ through the market-price-of-risk terms in
+the pricing PDE Eq. (23). From the drift adjustment in the y-substep,
+µQ y =µy −ρ ¯µx σx(y), (49)
+the component is
+λ(y) t = ρ ¯µx(t,xt,yt) σx(yt) =ρλ(x) t . (50)
+Page 30 of 43
+
+=== page 31 ===
+The Lean Marketron
+Thus, the two components are proportional, with the correlation ρ as the proportionality constant. When
+ρ = 0, the MPR reduces to the single component λ(x) t of the uncorrelated model, consistent with [Halperin
+and Itkin, 2025]. When ρ̸= 0, the market demands an additional premium for bearing the partially
+hedgeable memory risk, and this premium is exactly ρ times the traded-asset premium.
+In contrast to the complete-market setting, both components of the MPR in the reduced Marketron
+are stochastic: they depend on the memory variable yt both directly through the term cxytV′ M(xt) and
+indirectly through the state-dependent volatility σx(yt). The memory variable encodes the accumulated
+flow impact, and its fluctuations generate a time-varying, state-dependent risk premium.
+Numerical computation.
+Since yt is unobservable, the empirical MPR is computed by Monte Carlo simulation of the reduced system
+Eq. (18) under the physical measure. Along each simulated path, we evaluate Eq. (48) and Eq. (50) and
+take the expectation over the ensemble,
+¯λ(x) t = E [ λ(x) t ] = E [ ¯f(t)−cxytV′ M(xt) σx(yt) ] , ¯λ(y) t =ρ ¯λ(x) t . (51)
+Defaulted paths, where xt crosses the threshold ˆx into the default region, are excluded from the expectation,
+consistent with the treatment in [Halperin and Itkin, 2025]. The standard error of the Monte Carlo estimate
+is computed from the cross-sectional dispersion of the MPR across paths.
+The wedge between the physical and risk-neutral measures is then quantified through the level of the
+MPR. The physical-measure MPR ¯λ(x),P t is computed from the time-series calibration of [Halperin and Itkin,
+2026], while the risk-neutral MPR ¯λ(x),Q t is obtained from the option-implied parameters. The difference,
+∆λt ≡ ¯λ(x),Q t − ¯λ(x),P t , (52)
+represents the market price of flow risk as a function of time.
+Remark. The MPR level and the wedge Eq. (52) were computed numerically for the full Marketron in
+[Halperin and Itkin, 2025], and we do not reproduce those figures here. In isolation, with no second measure
+or model to compare against, the reduced-model values would add length without information. What the
+reduced core contributes is not a new number but the status of the wedge: on the sloppy full model the
+Q–P separation is a ridge artifact, whereas on the reduced core it is a well-defined object, subject to the
+weak identification of c noted in Section 6.3.
+7 Discussion
+The central message of this paper is epistemological rather than merely computational. The full Marketron,
+like many structural models in quantitative finance, carries more parameters than the option surface can
+resolve. This is not a numerical inconvenience to be overcome with better optimizers. It is a structural
+defect that renders the model’s economic claims unfalsifiable. By removing exact symmetries, freezing
+non-financial parameters, and adiabatically eliminating the fast signal, we have reduced the model to
+an identifiable core in which every parameter is either estimated from the data or fixed by an explicit
+economic criterion. The calibration objective is no longer a heuristic search over a sloppy landscape but a
+far better-posed estimation problem, even though, as the SPX fits show, individual coordinates such as c
+and µ remain softly determined and the optimum can sit at a bound.
+This change of status has immediate economic consequences. In the full 18-parameter model Eq. (7),
+the flow-impact constant c = cx = cy sits on a continuous ridge along which it trades off against the memory
+scale, the hidden volatility, and the initial state. A reported value of c is therefore a point on a ridge,
+Page 31 of 43
+
+=== page 32 ===
+The Lean Marketron
+not an estimate. On the reduced core Eq. (28), the ridge is destroyed by the gauge fixing Eq. (9) and
+the level absorption ¯h→ ¯y, and c becomes an identifiable coordinate of the drift block, the softest of the
+option-facing set but no longer a ridge direction. The market price of flow risk, the wedge ∆λt of Eq. (52)
+between the physical and pricing values of the flow block, is consequently a well-defined object rather
+than a point on a ridge: a compensation for bearing non-hedgeable order-flow exposure that is identifiable
+rather than asserted, though Section 6.3 shows its level is only weakly pinned by a single surface. To our
+knowledge, this is the first such wedge made identifiable within a structural model of inelastic markets.
+The correlation ρ plays a subtle but essential role in this reduction. In the uncorrelated model, risk
+aversion γ and the hidden volatility σy collapse into the single product py = γ, removing one degree
+of freedom from the diffusion structure. The correlation ρ restores it by entering the pricing operator
+linearly through the cross-term ∂2 xyC and the drift adjustment, generating short-maturity skew that the
+state-dependent drift alone cannot supply. Financially, ρ is the diffusive signature of contemporaneous
+price impact; technically, it is the unique coefficient that breaks the maturity degeneracy of Proposition 2
+at the short end. Together with the effective constants ( ¯f, ¯h), which encode the risk-adjusted drift wedge
+between the physical and pricing measures, ρ completes the economic reading of the reduced surface. In
+the calibration itself ρ is not free: it is fixed from the physical measure (Section 5), where it is directly
+estimable, because on the option surface its skew is confounded with α and β. Its role here is structural,
+restoring the degree of freedom that γ removes, rather than serving as a calibrated coordinate.
+The reduction is not without cost. Adiabatic elimination of θ replaces the rich signal-driven term
+structure of the full model with the deterministic ramp Eq. (22), which captures only the relaxation of the
+conditional mean. When the signal autocorrelation is strong (σ2 z/2k≪ 1) or when option maturities span
+the relaxation time 1/k densely, the full three-dimensional model with the transient correction of Section 3.3
+should be preferred. Similarly, the fluctuation-dissipation relation Eq. (35) reduces to the equality k = µ
+only at leading order; for strongly nonlinear forcing, the higher harmonics of the trigonometric signal
+introduce memory timescales that the single-mode kernel Eq. (31) cannot resolve. These are not failures of
+the reduced model but boundaries of its domain of validity, and they are precisely the sort of falsifiable
+conditions that an identifiable framework makes possible.
+An important finding of the paper is that substituting the memory variable into the log-price equation
+yields a generalized Langevin equation with a closed-form, state-modulated memory kernel, while the
+memory variable itself provides an exact Markovian lift of this kernel. Thus, the representation in Section 4
+points to a broader class of models. The kernel Eq. (31) is separable and state-dependent, of the form
+K(Zt,Zs,τ) = Φ(Zt) k(τ) Φ(Zs)⊤ whereas, e.g., the framework of [Itkin, 2026a] assumes Φ≡ I. The
+smallest class containing both is therefore the separable state-dependent GLE. Four questions must be
+settled before this broader class can be used as broadly as the lag-only class:
+• Whether the Markovian embedding remains exact and finite-dimensional for a general Φ? In financial-
+mathematics terms (FMT), whether the corresponding non-Markovian stochastic Volterra equation
+with a state-dependent impact propagator admits an exact finite-dimensional Markovian realization?
+• What replaces Eq. (34) when the system–bath coupling is weighted by Φ, since the driving noise
+then becomes state-dependent and multiplicative? In FMT, what equilibrium-consistency condition
+replaces the usual relation between the impact-propagator decay and the exogenous-flow correlation
+time when the return innovation has state-dependent volatility?
+• What the stationary law is, given that the Boltzmann form is already broken here, as Eq. (32)
+illustrates through the modulation-induced contribution to the effective potential? In FMT, what
+invariant distribution, if any, is induced by the state-dependent drift and diffusion of the reduced
+price–memory system, and how it differs from the equilibrium stationary distribution?
+• Whether the triangular structure imposed on the kernel matrix by the absence of arbitrage survives
+state modulation, since the corresponding Girsanov density then acquires a state-dependent factor?
+In FMT, whether the no-arbitrage restriction on the impact-propagator matrix remains triangular
+Page 32 of 43
+
+=== page 33 ===
+The Lean Marketron
+under a state-dependent market price of memory risk, and whether the resulting change of measure
+remains compatible with the pricing dynamics?
+A fifth question is empirical: the separable form is not identified without a normalization, because
+Φ↦→αΦ and k ↦→α−2k leave the kernel unchanged, so the class inherits a gauge freedom of exactly the
+kind Section 2 removes here.
+Two empirical directions are immediate. First, the model-implied VIX inherits state dependence from the
+nonlinear indifference pricing operator and from the default-region contribution of the potential, despite the
+absence of a separate stochastic volatility factor, with instantaneous volatility given by the state-dependent
+function σx(y). Computing this index and comparing it with the CBOE time series is a strict out-of-sample
+falsification test: if the two regimes cannot lift the model VIX materially away from the level implied
+by σx(y), the Marketron in its present form cannot support volatility derivatives without a stochastic
+spot-volatility extension.
+Second, joint calibration to VIX options would constrain the soft µ-direction identified in Section 5 and
+sharpen the premium estimates in Eq. (52). Both tests are only meaningful on the identifiable core; on the
+full model, a mismatch could always be attributed to a poor optimum.
+The asymmetric wing behavior reported in Section 6 points to two distinct directions for subsequent
+model refinement: a better representation of the downside skew in OTM puts and an additional mechanism
+for the short-term upside wing in OTM calls. In particular, introducing a separate stochastic volatility
+factor could provide additional flexibility in the joint strike–maturity dynamics of implied volatility and
+may help account for the residual short-maturity call bias that is not eliminated by the current k-dependent
+short-time mechanism. Such an extension would, however, need to preserve the model’s no-arbitrage
+structure and would introduce additional parameters and a corresponding calibration trade-off. We reserve
+this extension for future investigation.
+A further limitation is that the present calibration fixes the P-parameters rather than estimating them
+jointly with the endogenous parameters. In a full calibration, these parameters should themselves be
+inferred from the relevant market data, and their estimation may alter both the fitted values and the
+implied residual structure reported above. A natural direction for future research is therefore to investigate
+the sensitivity of the model and its pricing performance to both the P-parameters and the endogenous
+parameters, including their joint calibration.
+Finally, the computational cost of the reduced pricer could be further reduced by constructing a neural
+surrogate trained on solutions of the reduced PDE Eq. (23). Such a surrogate could bring pricing times to
+the millisecond range, making the model more suitable for live trading and intraday recalibration. Because
+the reduced parameter space is low-dimensional and the calibration problem exhibits substantially improved
+identifiability, the training set could be generated on a regular lattice using standard supervised learning
+methods. The surrogate would then approximate the pricing map of the structurally constrained reduced
+pricer, while the latter would remain the source of the model’s arbitrage and boundary-condition guarantees.
+We also leave this extension to future work.
+Taken together with the analysis in [Itkin, 2026a], the results of this paper point to a broader
+interpretation of the Marketron as an economically structured realization of generalized Langevin dynamics.
+The memory variable in the reduced Marketron corresponds to a single exponential memory mode, whereas
+the generalized Langevin formulation permits a general memory kernel or a superposition of exponential
+modes, allowing the temporal structure of memory to be determined empirically rather than imposed
+through a single relaxation scale. Conversely, the Marketron provides an economic interpretation of the
+memory and price-impact mechanisms that are introduced more phenomenologically in the generalized
+Langevin framework. This connection suggests a natural next step: to combine the economic structure of
+the Marketron with the more general GLE memory specification and investigate its implications in a joint
+calibration to SPX and VIX data, thereby testing whether a common framework can consistently capture
+the short-, intermediate-, and long-horizon dynamics of volatility and leverage.
+Page 33 of 43
+
+=== page 34 ===
+The Lean Marketron
+Disclosure statement
+No potential conflict of interest was reported by the authors.
+Funding
+No funding was received.
+Disclaimer
+Opinions expressed here are author’s own, and do not represent views of their employers. A standard
+disclaimer applies.
+Acknowledgments
+I thank my long-time co-author Igor Halperin for our joint work on the Marketron model and valuable
+discussions, as well as Michael Isichenko for his constructive feedback regarding the Marketron model’s
+dimensionality.
+References
+Abi-Jaber, E and O. El-Euch (2019). “Multifactor approximation of rough volatility models”. In: SIAM
+Journal on Financial Mathematics 10, 2, pp. 309–349.
+Abi Jaber, E., M. Larsson, and S. Pulido (2019). “Affine Volterra processes”. In: Annals of Applied Probability
+29, 5, pp. 3155–3200.
+Bayer, C. and S. Breneis (2023). “Markovian approximations of stochastic Volterra equations with the
+fractional kernel”. In: Quantitative Finance 23, 1, pp. 53–70.
+Bliss, R. R. and N. Panigirtzoglou (1999). Testing the stability of implied probability density functions.
+Tech. rep. Bank of England.
+Fouque, J.-P. et al. (2011). Multiscale Stochastic Volatility for Equity, Interest Rate, and Credit Derivatives.
+Cambridge: Cambridge University Press.
+Friend, I. and M. E. Blume (1975). “The demand for risky assets”. In: The American Economic Review 65,
+5, pp. 900–922.
+Grasselli, M. and T. R. Hurd (2007). “Indifference pricing and hedging in stochastic volatility models”. In:
+Applied Mathematical Finance 14, 4, pp. 303–317.
+Gutenkunst, R. N. et al. (2007). “Universally Sloppy Parameter Sensitivities in Systems Biology Models”.
+In: PLoS Computational Biology 3, 10, e189.
+Halperin, I. and A. Itkin (Feb. 2026). “Marketron Games: Self-Propelling Stocks vs Dumb Money and
+Metastable Dynamics of the Good, Bad and Ugly Markets”. In: Communications in Nonlinear Science
+and Numerical Simulation 153, p. 109529.
+Halperin, I. and A. Itkin (2025). Marketron Through the Looking Glass: From Equity Dynamics to Option
+Pricing in Incomplete Markets. arXiv: 2508.09863.
+Henderson, V. and J. Hobson (2002). “Substitute hedging”. In: Risk 15, 5, pp. 71–75.
+Henderson, V. (2002). “Valuation of claims on nontraded assets using utility maximization”. In: Mathematical
+Finance 12, 4, pp. 351–373.
+Itkin, A. (2026a). “Beyond rough volatility: decoupling memory and scaling via a generalized Langevin
+equation”. In: SSRN Electronic Journal. url: https://ssrn.com/abstract=7202798.
+Page 34 of 43
+
+=== page 35 ===
+The Lean Marketron
+Itkin, A. (2026b). “Diagonal Frog: High-order positivity-preserving FD schemes for anisotropic Fokker-Planck
+equations”. In: arXiv: 2606.23980 [math.NA].
+Itkin, A. (2026c). “Flux-Corrected Diagonal Frog: second order and positivity at all time steps”. In: arXiv:
+2607.20415 [math.NA].
+Mehra, R. and E. C. Prescott (1985). “The equity premium: A puzzle”. In: Journal of monetary economics
+15, 2, pp. 145–161.
+Musiela, M. and T. Zariphopoulou (2004). “An example of indifference prices under exponential preferences”.
+In: Finance and Stochastics 8, 2, pp. 229–239.
+Pavliotis, G. A. and A. M. Stuart (2008). Multiscale Methods: Averaging and Homogenization. Vol. 53.
+Texts in Applied Mathematics. New York: Springer.
+Raue, A. et al. (2009). “Structural and Practical Identifiability Analysis of Partially Observed Dynamical
+Models by Exploiting the Profile Likelihood”. In: Bioinformatics 25, 15, pp. 1923–1929.
+Transtrum, M. K., B. B. Machta, and J. P. Sethna (2011). “Geometry of Nonlinear Least Squares with
+Applications to Sloppy Models and Optimization”. In: Physical Review E 83, p. 036701.
+Transtrum, M. K. and P. Qiu (2014). “Model Reduction by Manifold Boundaries”. In: Physical Review
+Letters 113, p. 098116.
+Appendices
+A Proof of Proposition 1
+Proof. Let ˜yt = yt/λ denote the transformed process under the gauge transformation Eq. (8). Applying
+Itô’s lemma to ˜yt, we obtain d˜yt = 1 λdyt. Under this mapping, the spatial parameters scale proportionally,
+meaning ¯y → ¯y/λ, y0 → y0/λ, and σy → σy/λ, while the mean-reversion rate µ remains invariant.
+Consequently, the ratios b2/σy, ¯y/σy, and y0/σy are invariant, as the scaling factor cancels out. The
+correlation parameters ρ and ρxθ are dimensionless and therefore unaffected by the state scaling. Assuming
+the product cxcy is preserved under the transformation, the pair (xt, ˜yt) exactly solves the stochastic system
+with the transformed parameters, leaving the law of the observable process xt unchanged.
+To demonstrate that the option prices are preserved, we apply the spatial scaling to the indifference-
+pricing PDE Eq. (5). By the chain rule, the partial derivatives with respect to the scaled variable transform
+as ∂yC → 1 λ∂yC, ∂2 yC → 1 λ2 ∂2 yC, and ∂2 xyC → 1 λ∂2 xyC. Substituting these alongside the transformed
+volatility σy →λσy, we evaluate the key PDE components:
+γ(λσy)2(1−ρ2)
+( 1
+λ∂yC
+)2
+=γσ2 y(1−ρ2)(∂yC)2,
+(λσy)2
+( 1
+λ2 ∂2 yC
+)
+=σ2 y∂2 yC,
+ρσ(λσy)
+( 1
+λ∂2 xyC
+)
+=ρσσy∂2 xyC.
+Since these terms are homogeneous of degree zero under the joint transformation y→λy and σy →λσy,
+the PDE Eq. (5) is strictly form-invariant. Because both the observable system dynamics and the pricing
+equation are invariant, it follows that every option price remains unchanged.
+Page 35 of 43
+
+=== page 36 ===
+The Lean Marketron
+B Fixing the regularizer
+The regularizer ¯ϵ is not a financial parameter. This appendix fixes it, and in doing so settles which criterion
+can do the job, since the obvious one cannot.
+Two admissible regularizers.
+Write V′ M(x) =−e−x[ 1−R(x) ] . The original specification of [Halperin and Itkin, 2026] takes
+R1(x) = g ex + ¯ϵg, (B.1)
+whereas the pricer of [Halperin and Itkin, 2025] takes
+R2(x) = 1 2¯ϵ [ 1− Erf(x +b) ] , b = 4− Erf−1 [ 1− 2 1 +e4g¯ϵ ] , (B.2)
+because the quadrature underlying the Gaussian RBF matrix elements closes in elementary functions for R2
+and does not for R1. Both share the limits R→ 0 as x→ +∞ and R→ 1/¯ϵ as x→−∞, so both reduce
+the divergence of V′ M in the default region from e−2x to e−x, and in both
+V′ M(x) ∼ (1 ¯ϵ − 1 ) e−x, x→−∞. (B.3)
+We adopt R2 throughout, so that the model as analyzed and the model as priced are the same object.
+The constant b anchors R2 to R1.
+The definition of b in Eq. (B.2) looks arbitrary but is not. Substituting x = −4 gives Erf(b− 4) =
+−
+[
+1− 2/(1 +e4g¯ϵ) ] , whence
+R2(−4) = ge4 1 + ¯ϵge4 = R1(−4). (B.4)
+The two regularizers agree exactly at x⋆ = −4, and b is precisely the constant that makes them do so. This
+is a matching condition in the default region, which is where regularization is needed, and it is the reason
+the substitution is legitimate.
+The turning point cannot fix ¯ϵ.
+Under R1 the condition V′ M(ˆx) = 0 is linear in ¯ϵ once the denominator is cleared, giving ¯ϵ = 1 −eˆx/g and
+inviting the criterion that the mean-reversion range extend to a chosen ˆx. Under R2 this fails. The turning
+point solves Erf(ˆx +b) = 1− 2¯ϵ, that is
+ˆx = Erf−1(1− 2¯ϵ)−b(g, ¯ϵ), (B.5)
+and because b carries its own dependence on ¯ϵ the two contributions very nearly cancel. At g = 1, ¯ϵ = 0.1 we
+find ∂ˆx/∂ log ¯ϵ = −0.014 against ∂ˆx/∂ logg = +0.389, so the turning point is some twenty-five times more
+responsive to the coupling than to the regularizer, and it is not even monotone in ¯ϵ. Over ¯ϵ∈ (0.01, 0.45)
+and g∈ (0.1, 10) the reachable range of ˆx is roughly (−3.5,−1.6), so a target such as ˆx = x0 − 2 is in
+general not attainable at all. Under R2 the turning point is a property of g, not of ¯ϵ, and the criterion must
+be sought elsewhere.
+The default rate cannot fix it either.
+Since the regularizer governs the deep region, it is natural to ask whether ¯ϵ can be calibrated to an observed
+default rate. It cannot, for two reasons. The first is the turning point again: with the barrier top drifting
+non-monotonically over ˆx∈ (−2.73,−2.38) as D ranges over two orders of magnitude, a fixed default
+Page 36 of 43
+
+=== page 37 ===
+The Lean Marketron
+threshold lies sometimes inside the trapping region and sometimes outside it, and the resulting first-passage
+probability is not monotone in ¯ϵ. In simulations of Eq. (18) at σ = 1 with a threshold at x = −2.5 we
+obtain one-year rates of 0.047%, 0.068%, 0.090% and 0.045% as D increases through 50, 200, 800, 1500,
+which admits no inversion. The second reason is structural and would remain even if the first were repaired:
+the regularizer exists in order to make the deep region unreachable, so it suppresses precisely the events one
+would calibrate against. At σ = 0.6 the same experiment returns a default rate indistinguishable from zero
+for every D we tried. A quantity whose purpose is to prevent defaults is a poor instrument for setting their
+frequency.
+The criterion, and why it is imposed at x⋆.
+What ¯ϵ does control, monotonically and by construction, is the strength of the restoring force at depth,
+which is the quantity that must be bounded if the model is not to impose unrealistic drifts on distressed
+names. We therefore impose ⏐⏐V′ M(x⋆) ⏐⏐ =D (B.6)
+at a reference depth x⋆, with D a chosen bound. Taking x⋆ = −4 makes the criterion independent of
+which regularizer is used, by Eq. (B.4), and has the further advantage that the inversion remains closed
+form even though R2 is transcendental. Writing A = ge−x⋆ and B = 1 + Dex⋆ , condition Eq. (B.6) reads
+A/(1 + ¯ϵA) = B, so that ¯ϵ = 1/B− 1/A, which is Eq. (13). Note that a restoring force at depth requires
+R(x⋆) > 1, so D is attained on the branch V′ M(x⋆) > 0. We have verified this against direct evaluation of
+V′ M under R2 to fourteen digits.
+The admissible range follows from ¯ϵ> 0, which is needed to keep R1 pole-free and to keep R2 decreasing,
+and reads
+g > ex⋆ ( 1 +Dex⋆ ) . (B.7)
+At x⋆ = −4 this is a weak restriction: g > 0.018 for D = 0, g > 0.153 for D = 400, and g > 0.354 for
+D = 1000. Setting D = 0 recovers ¯ϵ = 1 −ex⋆ /g, which is the turning-point formula with ˆx = x⋆; this is
+the one turning point that both regularizers share, and it is available only because it sits at the anchor.
+The potential and the sign structure.
+Integrating R2 gives VM in closed form,
+VM(x) = 1 2¯ϵ { Erfc(b) +e−x[ Erf(b +x)− 1 ] +eb+1/4[ Erf(b + 1 2 )− Erf(b +x + 1 2 ) ]} , (B.8)
+up to an additive constant, which is immaterial since only V′ M enters the price drift and only differences
+of VM enter the effective potential Eq. (32). For x > ˆx the bracket 1 −R(x) is positive and V′ M < 0;
+for x < ˆx it is negative and V′ M > 0. The turning point is therefore a maximum of VM, the top of the
+barrier separating the default region from the normal one, rather than a resting point. Consequently the
+modulation V′ M(xt)V′ M(xs) in the kernel Eq. (31) is negative when the two times sit on opposite sides of ˆx
+and positive when they sit on the same side: memory reverses sign across the barrier, which is the sense in
+which the default region carries its own dynamics.
+C Proof of Proposition 2
+We first establish that Eq. (5) is correctly derived from the indifference principle, ensuring the proposition
+addresses the model’s fundamental properties rather than an artifact of the derivation. Subsequently, we
+demonstrate the implications of this equation for a contingent claim written exclusively on xT.
+Validation of the derivation.
+Applying the transformation u = −e−γzv, the bracket maximized over the hedge h forms a quadratic
+expression with a negative leading coefficient, yielding the maximizer h⋆ = vs/(γv) + ¯µx/(γsσ2). By
+Page 37 of 43
+
+=== page 38 ===
+The Lean Marketron
+substituting h⋆ and dividing by −e−γz, the term s¯µxvs emerges twice with opposite signs—once originating
+from the uncontrolled generator and once from the maximized bracket—resulting in an exact cancellation.
+This reflects the standard financial argument that the drift of a traded asset is entirely hedged away,
+restricting the survival of ¯µx strictly to the quadratic source term. Transitioning to the certainty equivalent
+C = γ−1 logv, the component 1 2 σ2s2γC2 s induced by vss cancels exactly against − 1 2 γσ2s2C2 s arising from
+v2 s/v. Consequently, Eq. (5) features quadratic gradient terms exclusively in the hidden factors and none
+in x, confirming that the x-direction is spanned by the traded asset and thus carries no residual risk.
+Finally, applying the coordinate transformations s∂s = ∂x and s2∂ss = ∂xx −∂x converts 1 2 σ2s2Css into 1
+2 σ2(Cxx −Cx), yielding the discounted drift coefficient ¯η = r−σ2/2. The integrity of these cancellations
+and the final differential equation have been verified via symbolic algebra.
+Implications for an x-only payoff.
+Defining the pricing difference as P = C−C0 and subtracting the respective PDEs, we observe that the
+source term −¯µ2 x/(2γσ2) is common to both equations and additive in neither C nor C0. Thus, it cancels
+identically irrespective of the terminal data. Expanding the difference of the quadratic terms yields
+(Cy)2 − (C0 y)2 = 2C0 yPy +P 2 y, (C.1)
+with a symmetric expansion holding for the θ derivatives, such that
+Pt + 1 2 σ2Pxx + ¯ηPx −rP + 1 2 σ2 yPyy +µyPy +γσ2 yC0 yPy + 1 2 γσ2 yP 2 y + (θ-terms) = 0, (C.2)
+subject to the terminal condition P (T ) = V(xT ). Crucially, every term capable of inducing dependence
+on the hidden factors is strictly proportional to Py, Pθ, or their corresponding derivatives. Because the
+terminal payoff V depends solely on xT, it follows that Py(T ) = Pθ(T ) = 0. Therefore, the trivial solution
+Py ≡Pθ ≡ 0 is consistent with Eq. (C.2), and by uniqueness, it is the exact solution. Eliminating these
+terms reduces the system to Pt + 1 2 σ2Pxx + ¯ηPx −rP = 0, recovering the classic Black-Scholes equation.
+From a numerical perspective using a Strang splitting scheme, an equivalent argument applies. After
+applying the Cole-Hopf transformation w = eγC, the hidden-factor substep becomes linear in w. The
+terminal ratio w/w0 = eγV(x) is uniform in y and θ, allowing it to commute with any fractional step
+containing only hidden-factor derivatives, regardless of how those coefficients depend on x. Consequently,
+the ratio passes through the hidden-factor substep unchanged. The subsequent x-substep, featuring
+y-independent coefficients, structurally preserves this difference. Neither fractional step can introduce
+hidden-factor dependence into P.
+Scope and limitations of the proposition.
+It is important to emphasize that this proposition does not imply C = C0, nor does it suggest that
+either certainty equivalent is independent of the memory parameters. On the contrary, both exhibit
+strong dependence on these parameters through the source term. In our numerical experiments using
+the parameters outlined in Section 6, the gradient Cy spans a range of ±8 across the computational grid,
+whereas the difference Cy −C0 y remains on the order of 10−15 within the interior domain. This indicates
+that the two certainty equivalents differ exclusively by a function of (t,x). It is this shared y-profile (rather
+than a flat spatial gradient) that renders the final option price blind to the order flow. Furthermore,
+this degenerate behavior breaks down if σ becomes a function of y, as the x-substep coefficients would
+then introduce y-dependence, making Py ≡ 0 inconsistent. Similarly, the proposition ceases to hold if the
+terminal payoff explicitly incorporates yT, which would force a non-zero terminal gradient Py(T )̸= 0.
+D Indifference pricing with correlated hidden factors
+This appendix derives Eq. (5)–Eq. (6). The uncorrelated case is in [Halperin and Itkin, 2025]; what follows
+carries ρ and ρxθ through the same argument. Throughout, st is the discounted price, Zt the discounted
+Page 38 of 43
+
+=== page 39 ===
+The Lean Marketron
+wealth, and the hidden factors are h = (y,θ)⊤.
+Hamilton-Jacobi-Bellman equation.
+With the correlation structure Eq. (2), the wealth increment dZt = htdst now covaries with both hidden
+factors, so the generator acquires two cross terms in z that are absent when the Brownian motions are
+independent. The value function u(t,z,s,y,θ) satisfies
+0 = ∂u ∂t + 1 2σ2s2 ∂2u ∂s2 + 1 2σ2 y ∂2u ∂y2 + 1 2σ2 θ ∂2u ∂θ2 +ρσσys ∂2u ∂s∂y +ρxθσσθs ∂2u ∂s∂θ
++s¯µx
+∂u
+∂s +µy
+∂u
+∂y +µθ
+∂u
+∂θ + max h
+[
+1
+2 h2s2σ2 ∂2u ∂z2 +hB[u] ] , (D.1)
+where
+B[u] = s2σ2 ∂2u ∂z∂s + sσσyρ ∂2u ∂z∂y + sσσθρxθ ∂2u ∂z∂θ + s¯µx ∂u ∂z. (D.2)
+The last two terms of Eq. (D.2) beyond the first and fourth are new; setting ρ = ρxθ = 0 recovers the
+bracket of [Halperin and Itkin, 2025].
+Optimal hedge.
+The bracket in Eq. (D.1) is quadratic in h with negative leading coefficient, so the maximizer is h⋆ =
+−B[u]/(s2σ2uzz) and the maximized value is −B[u]2/(2s2σ2uzz). Exponential utility factorizes the value
+function as u = −e−γzv(t,s,y,θ), so every z-derivative brings down a factor of γ and the exponential
+cancels, giving
+h⋆ = 1 γ ∂sv v + ρσy γsσ ∂yv v + ρxθσθ γsσ ∂θv v + ¯µx γsσ2 . (D.3)
+In terms of the certainty equivalent C =γ−1 logv and the log-price, this reads
+sh⋆ = ∂C ∂x/bracehtipupleft/bracehtipdownright/bracehtipdownleft/bracehtipupright
+delta
++ 1 σ ( ρσy ∂C ∂y +ρxθσθ ∂C ∂θ ) /bracehtipupleft /bracehtipdownright/bracehtipdownleft /bracehtipupright
+correlation hedge
++ ¯µx
+γσ2
+/bracehtipupleft/bracehtipdownright/bracehtipdownleft/bracehtipupright
+Merton
+. (D.4)
+The middle term is the whole effect of the correlations on the hedge: the traded asset is used to hedge the
+part of the hidden noise that it spans. It vanishes with ρ and ρxθ, and Eq. (D.4) then reduces to delta plus
+Merton.
+Reduction to the certainty equivalent.
+Substituting h⋆ back and writing q≡ρσy∂yC + ρxθσθ∂θC, the terms in the resulting equation for v that
+are quadratic in derivatives organize as −(P + γvq + R)2/(2v) with P = σ∂xv and R = ¯µxv/σ. Two
+cancellations then occur when v =eγC is inserted.
+The first is the classical Cole-Hopf cancellation. The term 1 2 σ2∂2 xv contributes γ 2 σ2(∂xC)2, which is
+removed exactly by −P 2/(2v). The second is new and is what makes the correlated problem tractable: the
+cross contributions ρσσy∂2 xyv and ρxθσσθ∂2 xθv generate γσ∂xCq, which is removed exactly by the cross
+product−2Pqγv/(2v). No term mixing ∂xC with the hidden gradients survives.
+What remains of the quadratic terms is
+γ
+2
+[
+σ2 y(∂yC)2 +σ2 θ(∂θC)2 −q2
+]
+= γ 2 ∇hC⊤~Σ∇hC, (D.5)
+with ~Σ as in Eq. (6), since expanding q2 produces ρ2σ2 y(∂yC)2 + ρ2 xθσ2 θ(∂θC)2 + 2ρρxθσyσθ∂yC∂θC. The
+cross product of q with R supplies the two drift adjustments −ρσy ¯µx/σ and −ρxθσθ ¯µx/σ appearing in
+Page 39 of 43
+
+=== page 40 ===
+The Lean Marketron
+Eq. (5), and R2 supplies the term −¯µ2 x/(2γσ2) unchanged. The drift and discount terms in x are unaffected
+by the correlations and carry over from [Halperin and Itkin, 2025]. This establishes Eq. (5).
+The residual covariance is a Schur complement.
+Write the full instantaneous covariance of (x,h) in block form, with Σhh = diag(σ2 y,σ2 θ) because ρyθ = 0,
+and Σhx = (ρσσy, ρxθσσθ)⊤. Then
+~Σ = Σhh − 1 σ2 ΣhxΣ⊤ hx, (D.6)
+which is precisely Eq. (6). The interpretation is immediate: ~Σ is the conditional covariance of the hidden
+factors given the traded one, so the quadratic penalty in Eq. (5) charges the investor only for the hidden
+risk that the traded asset cannot span. The off-diagonal entry is negative whenever ρ and ρxθ share a sign,
+because hedging through the common traded asset induces a negative residual dependence between the two
+hidden factors even though their driving noises are uncorrelated.
+Limiting cases.
+At ρ = ρxθ = 0 we have q≡ 0, so Eq. (D.4) loses its middle term, the drift adjustments vanish, and
+~Σ = diag(σ2 y,σ2 θ), which returns the quadratic gradient terms γ 2 σ2 y(∂yC)2 + γ 2 σ2 θ(∂θC)2 of [Halperin and
+Itkin, 2025].
+In the scalar case, with θ absent, ~Σ collapses to σ2 y(1 −ρ2), so the quadratic term is 1 2 γ(1 −ρ2)σ2 y(∂yC)2
+and the effective distortion exponent is γ(1 −ρ2), in agreement with [Henderson and Hobson, 2002; Musiela
+and Zariphopoulou, 2004]. This is the origin of py = γ(1 −ρ2) in the reduced parameter list: the derived
+combination, not γ itself, is what the pricing equation sees.
+The reduced equation.
+Adiabatic elimination of θ replaces f(θ) and h(θ) by their stationary averages and removes θ from the state.
+In Eq. (5) this deletes the row and column of ~Σ carrying θ, so the quadratic term becomes 1 2 γ(1−ρ2)σ2 y(∂yC)2,
+deletes the θ drift and diffusion terms, and leaves the x and y blocks untouched. The result is Eq. (23).
+Note that ρxθ does not disappear silently: it enters the reduced description only through the transient
+correction of Section 3.3, at order 1/k, which is why the baseline reduced model sets it to zero.
+E Proof of Proposition 3
+The second line of Eq. (29) is linear in y with constant coefficients, so it integrates in closed form,
+yt = e−µty0 + ˆy ( 1−e−µt) − cy ∫ t
+0
+e−µ(t−s)VM(xs)ds + σy
+∫ t
+0
+e−µ(t−s)dW (y) s , (E.1)
+with ˆy = ¯y + ¯h/µ the level to which y relaxes in the absence of coupling. The memory variable is thus an
+exponentially weighted average of VM(xs) along the realized path, with forgetting rate µ.
+Substituting Eq. (E.1) into the drift of x gives
+¯f + ¯η−cx ˆyV′ M(xt) + cxcyV′ M(xt)
+∫ t
+0
+e−µ(t−s)VM(xs)ds − cxσyV′ M(xt)
+∫ t
+0
+e−µ(t−s)dW (y) s , (E.2)
+where terms carrying e−µt have been suppressed; they decay on the scale 1/µ and do not affect the stationary
+structure. The first two terms are local in the state and supply the first two terms of Eq. (32). The last is
+the multiplicative noise named in the proposition. The memory sits in the third term, which acts on the
+level of VM(xs) rather than on a velocity and so is not yet in GLE form.
+Integrate that term by parts. With u =VM(xs) and dv =e−µ(t−s)ds, so that v =e−µ(t−s)/µ,
+∫ t
+0
+e−µ(t−s)VM(xs)ds = VM(xt) µ − VM(x0)e−µt µ − 1 µ ∫ t 0 e−µ(t−s) dVM(xs). (E.3)
+Page 40 of 43
+
+=== page 41 ===
+The Lean Marketron
+By Itô’s lemma dVM(xs) =V′ M(xs)dxs + 1 2 V′′ M(xs)σ2ds, so
+∫ t
+0
+e−µ(t−s)VM(xs)ds = VM(xt) µ − 1 µ ∫ t 0 e−µ(t−s)V′ M(xs) ˙xsds− σ2 2µ ∫ t 0 e−µ(t−s)V′′ M(xs)ds, (E.4)
+again dropping the transient. Multiplying by cxcyV′ M(xt), the first term on the right gives
+cxcy
+µ V′ M(xt)VM(xt) = cxcy 2µ d dx [ VM(x)2]⏐⏐⏐ x=xt , (E.5)
+which is the third term of Eq. (32) and is again local. The second term gives
+−cxcy
+µ V′ M(xt)
+∫ t
+0
+e−µ(t−s)V′ M(xs) ˙xsds, (E.6)
+which is the friction term of an overdamped GLE with the tail part of Eq. (31). The third term of Eq. (E.4)
+contributes
+−cxcyσ2
+2µ V′ M(xt)
+∫ t
+0
+e−µ(t−s)V′′ M(xs)ds, (E.7)
+a further memory term acting on the level of V′′ M. It is O(σ2), vanishes identically when VM is linear, and
+we absorb it into ηt; it does not affect the structure of the kernel.
+Collecting the local contributions into Ueff and the noise sources into ηt, the drift equation for x reads
+˙xt + cxcy µ V′ M(xt) ∫ t 0 e−µ(t−s)V′ M(xs) ˙xsds = −U′ eff(xt) + ηt. (E.8)
+Writing the bare term as ˙xt =
+∫t
+0 δ(t−s) ˙xsds collects the left-hand side into a single convolution with the
+kernel KM of Eq. (31), which is Eq. (30).
+F RBF matrix elements of the reduced model
+Appendix A of [Halperin and Itkin, 2025] evaluates the matrix elements of the Volterra kernel in closed
+form. Its derivation rests on the Green’s function being a product of three independent one-dimensional
+Gaussians, which factorizes every integral into three scalar ones with
+∫ ∞
+−∞
+e−ε(ξ−xk )2−(x−ξ)2/(2σ2∆τ)
+σ
+√
+2π∆τ
+dξ = 1 a(σ) e−ε(x−xk )2/a2(σ), a2(σ) = 1 + 2εσ2∆τ. (F.1)
+Under the reduction the θ direction disappears, but the surviving pair (x,y) is correlated through ρ, so the
+Green’s function no longer factorizes and Eq. (F.1) cannot be applied coordinate by coordinate.
+One route is to rotate to the eigenbasis of the covariance. This works, because the Gaussian RBF
+is isotropic and therefore invariant under orthogonal transformations, but it is not necessary: the entire
+appendix generalizes by promoting the scalar a2(σ) to a matrix, and the resulting formulas contain the
+uncorrelated ones as the diagonal case.
+The master identity.
+Write p = (ξ,η)⊤ for the integration variable, u = (x,y)⊤ for the evaluation point, pk = (xk,yj)⊤ for an
+RBF centre, and
+Σ =
+(
+σ2 ρσσy
+ρσσy σ2 y
+)
+(F.2)
+Page 41 of 43
+
+=== page 42 ===
+The Lean Marketron
+for the diffusion covariance of the reduced model. With Eq. (19) in force Σ = Σ(y), since σx appears in
+three of its four entries; the formulas below hold verbatim with Σ evaluated at the y-node of the substep,
+at the cost of one 2 × 2 inverse per node rather than one overall. The Green’s function of the homogeneous
+part of Eq. (23) is the bivariate Gaussian with covariance Σ∆τ. Then, for the isotropic Gaussian RBF
+e−ε|p−pk |2 ,
+∫
+R2
+e−ε|p−pk |2 G(∆τ; u| p)dp = 1√
+det A
+exp
+[
+−ε (u− pk)⊤A−1(u− pk) ] , A ≡ I + 2ε Σ ∆τ. (F.3)
+This follows from the convolution of two Gaussians, the RBF being an unnormalized Gaussian of covariance
+(2ε)−1I. When ρ = 0 the matrix A is diagonal with entries a2(σ) and a2(σy), and Eq. (F.3) splits into the
+product of two copies of Eq. (F.1). The reduction therefore amounts to the substitution
+∏
+coords
+1
+a(·) e−ε(·)2/a2(·) ↦−→ 1√ det A e−ε (·)⊤A−1(·), (F.4)
+applied wherever Appendix A of [Halperin and Itkin, 2025] produces a product of a-factors, together with
+the deletion of the a(σθ) factor.
+Linear terms.
+The terms A1 and A2 of [Halperin and Itkin, 2025] carry a linear prefactor (p− pk) multiplying the RBF,
+produced by differentiating the Gaussian. Since ∂pk e−ε|p−pk |2 = 2ε(p− pk)e−ε|p−pk |2 , these integrals follow
+from Eq. (F.3) by differentiation with respect to the centre,
+∫
+R2
+(p− pk)e−ε|p−pk |2 G(∆τ; u| p)dp = A−1(u− pk) × e−ε(u−pk )⊤A−1(u−pk ) √ det A . (F.5)
+In the uncorrelated case A−1 is diagonal and each component reduces to the corresponding scalar result.
+With ρ̸= 0 the off-diagonal entries of A−1 mix the two directions, so the x-component of Eq. (F.5) acquires
+a contribution proportional to (y−yj) and conversely. This mixing is the only structural change: no new
+special functions appear and everything remains closed form.
+Quadratic terms.
+The term ¯Ψ2 contains products of two RBFs centred at pk and pk∗. Because the RBF is isotropic, such a
+product is again an isotropic Gaussian,
+e−ε|p−pk |2 e−ε|p−pk∗|2 = e−ε 2 |pk −pk∗|2 e−2ε ⏐⏐p−¯p ⏐⏐2 , ¯p = 1 2 (pk + pk∗), (F.6)
+so the quadratic matrix elements are given by Eq. (F.3) with ε replaced by 2ε, the centre replaced by the
+midpoint ¯p, and an overall factor exp
+[
+−ε 2 |pk − pk∗|2] . Explicitly, with A2 ≡ I + 4εΣ∆τ,
+∫
+R2
+e−ε|p−pk |2 e−ε|p−pk∗|2 G(∆τ; u| p)dp = e−ε 2 |pk −pk∗|2 √det A2 exp [ −2ε(u− ¯p)⊤A−1 2 (u− ¯p) ] . (F.7)
+Linear prefactors in the quadratic block are handled by differentiating Eq. (F.7) with respect to ¯p, exactly
+as in Eq. (F.5).
+Distinguishing the covariance matrices.
+It is critical to distinguish between the two contexts in which a covariance matrix enters the formulation,
+as they represent distinct mathematical objects. The Green’s function, and consequently the integral
+representations Eq. (F.3)–Eq. (F.7), incorporates the primary diffusion covariance Σ defined in Eq. (F.2).
+Page 42 of 43
+
+=== page 43 ===
+The Lean Marketron
+Conversely, the quadratic gradient term within the pricing equation is governed by the residual covariance ~Σ
+of Eq. (6), which simplifies in the reduced model to the scalar σ2 y(1 −ρ2). As a result, the coefficient scaling
+C2 η inside ¯Φ becomes 1 2 γ(1 −ρ2)σ2 y = 1 2 pyσ2 y, where py is the derived parameter introduced in Section 2.2.
+Meanwhile, the kernel of the integral operator retains σ2 y alongside the full correlation structure. Conflating
+these two matrices would erroneously rescale the Green’s function instead of the intended nonlinearity.
+Memory-dependent volatility.
+The introduction of Eq. (19) preserves the preceding structural arguments. During the x-substep of the
+Strang splitting scheme, y acts as a frozen parameter. Consequently, the differential operator 1 2 σ2 x(y)∂xx +
+¯η(y)∂x−r exhibits constant coefficients with respect to x, yielding a Gaussian Green’s function with variance
+σ2 x(y)∆τ and mean shift ¯η(y)∆τ. The corresponding one-dimensional element is therefore evaluated as
+∫
+R
+e−ε(ξ−xk )2 G(∆τ;x|ξ)dξ = e−r∆τ
+a(σx(y)) exp
+[
+−ε
+(
+x−xk − ¯η(y)∆τ
+)2
+a2(σx(y))
+]
+, a2 = 1 + 2εσ2 x(y)∆τ, (F.8)
+a result we have verified against direct quadrature to machine precision. Relative to the constant-volatility
+regime, two computational adjustments are necessary: the scaling factor a becomes an array indexed
+by the y-nodes rather than remaining a scalar, and the mean shift ¯η(y)∆τ—previously an absorbable
+constant—must be explicitly tracked per node. Notably, neither modification compromises the closed-form
+tractability of the integrals. This highlights a fundamental advantage of the operator splitting framework:
+if applied directly to the unsplit operator, a y-dependent diffusion coefficient would fundamentally destroy
+the Gaussian structure of the Green’s function.
+Summary of the model reduction.
+To adapt the framework presented in Appendix A of [Halperin and Itkin, 2025] to the present reduced
+model, the following systematic modifications are required: first, eliminate the θ integral and the associated
+scaling factor a(σθ) entirely. Second, replace each surviving product of a-factors with the matrix formulation
+Eq. (F.4), setting A = I + 2εΣ∆τ for the linear terms, or A2 = I + 4εΣ∆τ within the quadratic block.
+Third, substitute each scalar linear-prefactor result with the generalized form in Eq. (F.5). Finally, fix the
+coefficient of the quadratic gradient term at 1 2 pyσ2 y. Under these modifications, every matrix element remains
+analytically tractable in closed form. The computational complexity per element is strictly preserved, with
+the sole addition being the inversion of a 2 × 2 matrix, an operation performed only once per time step as it
+is uniformly applicable across all elements.
+The final reduced model retains nine parameters for the whole surface. The physical-measure parameters
+¯f and c are inherited from the time-series calibration, except that c is deliberately released in the option
+calibration. This is a compromise between statistical identifiability and economic identification: the
+eigenanalysis shows that ¯f is a stiff direction whereas c is substantially softer, but fixing c at its physical-
+measure value would eliminate the option-implied flow-risk premium altogether. We therefore retain c as a
+Q-measure calibration parameter and explicitly report its weak identification through profile likelihoods
+and Hessian eigenvalues. The difference between its Q- and P-measure estimates is consequently interpreted
+as a market price of flow risk, with the associated uncertainty carried into the economic interpretation.
+The SPX surface contains limited information about the absolute level of the flow-impact coefficient.
+Nevertheless, retaining c in the Q-measure calibration is necessary for identifying the Q–P wedge interpreted
+as the market price of flow risk. We therefore report the point estimate together with its profile uncertainty
+and do not interpret the point estimate as a sharply identified structural coefficient.
+Page 43 of 43

@@ -1,0 +1,960 @@
+=== page 1 ===
+Deep catastrophic-risk-aware reinforcement learning∗
+Carlos Octavio Pérez Mendozaa and Frédéric Godin†a,b
+aConcordia University, Department of Mathematics and Statistics, Montréal, Canada
+bQuantact Laboratory, Centre de Recherches Mathématiques, Montréal, Canada
+October 27, 2026
+Abstract
+Estimating extreme risk in reinforcement learning becomes increasingly difficult as the
+confidence level increases, since only a small number of observations contribute to empirical
+estimates of Conditional Value-at-Risk (CVaR). In this paper, we extend an Extreme Value
+Theory (EVT) approach for CVaR optimization to high-dimensional neural-network policies.
+Using a peaks-over-threshold representation and method-of-moments estimation, we obtain
+a differentiable tail-risk objective and show that, conditional on the selected threshold, its
+finite-sample gradient can be computed directly through automatic differentiation. We first
+validate the approach in a controlled experiment with a known optimal solution and then
+investigate its performance in a deep-hedging problem with rare extreme market movements.
+Our results show similar hedging behavior for EVT- and empirical-CVaR-trained policies
+under normal conditions, while EVT-trained policies exhibit lower hedging losses under
+the extreme-scenario evaluation across the training sample sizes considered. These results
+suggest that EVT can provide a practical alternative for training neural policies when the
+observations relevant to extreme risk are scarce.
+Keywords: Extreme Value Theory; Reinforcement Learning; Policy Gradient; Tail Risk.
+∗We thank the Natural Sciences and Engineering Research Council of Canada (Godin: RGPIN-2024-04593) for
+their financial support.
+†Corresponding author.
+Email addresses: carlos.octavio.perez92@gmail.com (Carlos Pérez Octavio Mendoza), fred-
+eric.godin@concordia.ca (Frédéric Godin).
+1
+arXiv:2610.27214v2  [cs.LG]  24 Oct 2026
+
+=== page 2 ===
+1 Introduction
+Reinforcement learning (RL) provides a flexible framework for sequential decision problems
+in which actions are selected to optimize an objective over a multi-period horizon. In risk
+management applications, however, optimizing average performance may not adequately account
+for rare but potentially severe losses. Risk-aware RL addresses this problem by considering
+objectives such as the Conditional Value-at-Risk (CVaR), which explicitly focuses on the tail of
+the loss distribution. The estimation of such objectives becomes increasingly difficult at high
+confidence levels, since only a small fraction of the observations generated during training directly
+characterize the extreme tail.
+Extreme Value Theory (EVT) provides a natural framework to address this scarcity of tail obser-
+vations. Under the peaks-over-threshold (POT) approach, observations exceeding a sufficiently
+high threshold are modeled using a Generalized Pareto Distribution (GPD), allowing threshold
+exceedances to be used to extrapolate the behavior of the extreme tail and estimate extreme risk
+measures; see, e.g., Troop et al. (2021). Building on this idea, Davar et al. (2025) introduces an
+EVT-based policy-gradient methodology in which POT estimates of CVaR are incorporated into
+the optimization of risk-aware RL policies. Their numerical results show the potential benefits of
+the approach when observations in the extreme tail are scarce, particularly for heavy-tailed loss
+distributions.
+The methodology of Davar et al. (2025), however, relies on finite differences to approximate
+the gradient of the EVT-based objective with respect to the policy parameters. This requires
+repeatedly evaluating the objective after modifying individual policy parameters, making the
+procedure increasingly computationally restrictive as the number of policy parameters grows.
+This limitation concerns primarily the dimension of the policy parameterization rather than the
+dimension of the underlying sequential decision problem. Extending the POT framework to
+neural-network policies would therefore allow EVT-based tail-risk optimization to be combined
+with the flexibility offered by deep RL.
+In this paper, we investigate this extension by constructing an EVT-based loss that can be
+2
+
+=== page 3 ===
+differentiated with respect to the parameters of a neural-network policy. The proposed approach
+estimates the tail of the loss distribution using the POT methodology and propagates the resulting
+tail-risk objective through the policy using automatic differentiation. We complement the proposed
+methodology with a theoretical analysis of the differentiability and statistical properties of the
+EVT-based objective. In particular, the analysis distinguishes the local differentiability of the
+finite-sample EVT objective from the statistical consistency of the corresponding tail-risk estimator
+under explicit assumptions on the excess distribution.
+We study the methodology numerically in two stages. We first consider a controlled experiment
+in which the optimal policy is analytically tractable. This setting allows us to compare the
+numerical behavior of the empirical and EVT-based optimization procedures against a known
+solution and to examine how their performance changes as the amount of information available
+for estimation increases. We then consider neural-network policies, using deep hedging as the
+principal application. Deep hedging provides a natural setting for this analysis since the terminal
+hedging error defines a loss distribution whose adverse tail is directly relevant for risk management,
+while the policy itself can be represented by a neural network Buehler et al. (2019).
+Our analysis therefore extends EVT-based policy optimization from low-dimensional policy
+parameterizations relying on finite-difference gradients to neural-network policies trained through
+automatic differentiation. The theoretical analysis investigates the conditions supporting this
+extension, while the numerical experiments examine its behavior first in a controlled environment
+and subsequently in a deep-hedging setting. In the latter, we investigate whether explicitly
+modeling the tail during training provides an advantage over empirical CVaR optimization as
+losses become more extreme and tail observations increasingly scarce.
+The remainder of the paper is organized as follows. Section 2 introduces the risk-aware rein-
+forcement learning problem, the EVT framework for tail-risk estimation, and the EVT-based
+policy optimization approach on which our methodology builds. Section 3 presents the proposed
+extension to neural-network policies and the corresponding theoretical results. Section 4 presents
+the numerical study, beginning with a controlled experiment and subsequently considering the
+3
+
+=== page 4 ===
+deep-hedging application. Finally, Section 5 concludes.
+2 Risk-Aware Reinforcement Learning and Extreme Value Theory
+This section introduces the risk-aware reinforcement learning problem and the extreme value
+theory framework used to estimate losses in the far tail of the distribution. We then describe the
+peaks-over-threshold policy gradient approach introduced by Davar et al. (2025), on which our
+methodology builds. The presentation is restricted to the mathematical objects required for the
+methodological extension developed in the following section.
+2.1 Risk-Aware Reinforcement Learning
+Consider a finite-horizon sequential decision problem with time steps T = {0, . . . , T }, state space
+S, action space A, and cost space C. At time t, the agent observes a state St ∈ S and selects
+an action At ∈ A. Following the risk-aware reinforcement learning formulation considered by
+Davar et al. (2025), we consider deterministic policies πθ : S → A parameterized by θ ∈ Θ ⊆ Rp,
+such that At = πθ(St). The policy therefore induces a random trajectory whose distribution, and
+consequently its associated costs, depends on θ.
+For a given policy πθ, let its cumulative discounted loss be
+Xθ :=
+TX
+t=1
+γtC (πθ ) t , γ ∈ (0, 1], (2.1)
+where the superscript emphasizes the dependence of the costs on the policy. A risk-aware learning
+problem can then be formulated by selecting the policy parameters that minimize a risk functional
+ρ of Xθ,
+θ⋆ ∈ arg min
+θ∈Θ
+ρ(Xθ).
+In this work, our interest is in extreme losses, for which the upper tail of Xθ becomes particularly
+relevant. We therefore consider Conditional Value-at-Risk (CVaR), introduced as a risk measure
+for general loss distributions by Rockafellar and Uryasev (2002). Let Fθ denote the cumulative
+4
+
+=== page 5 ===
+distribution function of Xθ and define its quantile at confidence level α ∈ (0, 1) as
+qα,θ := inf {x ∈ R : Fθ(x) ≥ α} .
+The corresponding CVaR is given by
+CVaRα(Xθ) = 1 1 − α Z 1 α qβ,θ dβ. (2.2)
+When Xθ is absolutely continuous, Equation 2.2 can equivalently be expressed as E[Xθ | Xθ ≥ qα,θ].
+Hence, CVaR represents the expected loss conditional on being within the worst 100(1 − α)% of
+the loss distribution.
+The risk-aware objective considered throughout this paper is consequently
+Jα(θ) := CVaRα(Xθ), θ⋆ α ∈ arg min θ∈Θ Jα(θ). (2.3)
+For values of α close to one, however, estimating Equation 2.3 directly from the empirical
+distributionbecomeschallengingbecauseonlyasmallfractionoftheobservationscontributestothe
+estimation of the far tail. This problem becomes particularly relevant when extreme observations
+are scarce or when the loss distribution is heavy-tailed Davar et al. (2025). Extreme value theory
+provides a natural framework to address this problem by using less extreme observations to
+characterize and extrapolate the behavior of the upper tail.
+2.2 Extreme Value Theory and Tail-Risk Estimation
+A classical approach in extreme value theory is the peaks-over-threshold (POT) method, where
+observations exceeding a sufficiently high threshold u are used to characterize the upper tail of a
+distribution; see Coles et al. (2001); McNeil et al. (2015). In our setting, the objective is to use
+these exceedances to estimate the region of the loss distribution associated with qα,θ, even when
+relatively few observations reach the target confidence level α.
+5
+
+=== page 6 ===
+For a threshold u, define the conditional excess distribution of the policy loss as
+Fθ,u(y) := P (Xθ − u ≤ y | Xθ > u) = Fθ(u + y) − Fθ(u) 1 − Fθ(u) , y ≥ 0. (2.4)
+The theoretical motivation for modeling Equation 2.4 follows from the asymptotic results of
+Balkema and De Haan (1974) and Pickands III (1975). More precisely, if Fθ belongs to the
+maximum domain of attraction of a generalized extreme value distribution, the distribution of
+the exceedances above a sufficiently high threshold can be approximated by a Generalized Pareto
+Distribution (GPD).
+The GPD with shape parameter ξ and scale parameter σ > 0 has cumulative distribution function
+Gξ,σ(y) =
+
+
+
+1 −
+
+1 + ξy σ −1/ξ , ξ ̸= 0,
+1 − exp
+
+− y σ  , ξ = 0, (2.5)
+defined on the support satisfying 1 + ξy/σ > 0. The parameter ξ determines the tail behavior
+of the distribution, whereas σ controls its scale Coles et al. (2001); McNeil et al. (2015). For a
+sufficiently high u, this gives the approximation
+Fθ,u(y) ≈ Gξθ (u),σθ (u)(y).
+Notice that ξθ(u) and σθ(u) characterize the tail induced by the policy and the selected threshold,
+and therefore do not depend on the target confidence level α.
+An important consequence of this approximation is that it provides a mechanism to estimate
+CVaR beyond the selected threshold. Following the POT representation described by McNeil
+et al. (2015) and used for policy optimization by Davar et al. (2025), define
+sθ,α(u) := 1 − Fθ(u) 1 − α . (2.6)
+6
+
+=== page 7 ===
+Provided that qα,θ > u and ξθ(u) < 1, the resulting POT approximation of Jα(θ) is
+Cθ,α(u) :=
+
+
+
+u + σθ(u) 1 − ξθ(u)  1 + sθ,α(u)ξθ (u) − 1 ξθ(u)  , ξθ(u) ̸= 0,
+u + σθ(u) [1 + log sθ,α(u)] , ξθ(u) = 0.
+(2.7)
+Thus, Jα(θ) ≈ Cθ,α(u), where the quality of the approximation depends on how well the GPD
+represents the excess distribution above u. Moreover, the condition ξθ(u) < 1 guarantees that the
+corresponding tail expectation is finite.
+In practice, let Xθ,1, . . . , Xθ,n denote independent realizations of Xθ and define
+Iu = {i : Xθ,i > u}, k = |Iu|, Yi = Xθ,i − u, i ∈ Iu.
+The GPD parameters can then be estimated from the exceedances {Yi}i∈Iu . While different esti-
+mation procedures can be considered, including maximum likelihood, our subsequent formulation
+relies on the method-of-moments estimator described in Davar et al. (2025),
+bξ = S2 Y − Y 2
+2S2 Y , bσ = Y
+ 
+S2 Y + Y 2
+2S2 Y
+!
+, (2.8)
+where
+Y = 1 k X i∈Iu Yi, S2 Y = 1 k X i∈Iu (Yi − Y )2.
+Since this estimator matches the first two moments of the GPD, its moment representation
+requires ξ < 1/2. In the numerical implementation, the fitted shape parameter is additionally
+restricted to the admissible region used by the training algorithm; the exact restriction is stated in
+Appendix A. This implementation detail is kept separate from the population GPD approximation
+in Equation 2.7.
+Replacing ξθ(u), σθ(u), and Fθ(u) in Equation 2.7 by their corresponding sample estimates gives
+the EVT-based estimator
+bJ EVT n,α (θ; u) := bCθ,α(u). (2.9)
+7
+
+=== page 8 ===
+The choice of u is therefore important. A low threshold increases the number of exceedances
+available for estimation, but the GPD approximation may not yet accurately represent the tail.
+Conversely, increasing u improves the asymptotic motivation of the approximation while reducing
+the number of observations available to estimate its parameters.
+Since the threshold must be repeatedly determined during policy learning, manual threshold
+selection is not convenient in this setting. To address this problem, Davar et al. (2025) adopt the
+automated procedure proposed by Bader et al. (2018), based on a sequence of goodness-of-fit tests,
+together with the implementation developed by Troop et al. (2021). This provides an automated
+mechanism for determining the region from which the GPD approximation is used during policy
+optimization.
+2.3 EVT-Based Policy Optimization
+The connection between EVT-based tail estimation and reinforcement learning was introduced
+by Davar et al. (2025) through the peaks-over-threshold policy gradient (POTPG) algorithm.
+The main idea is to replace the direct empirical estimate of CVaR by the POT estimator in
+Equation 2.9 during policy optimization.
+At a given parameter value θ, independent trajectories are generated under πθ, producing a sample
+Xθ,1, . . . , Xθ,n of policy losses. A threshold u is selected, the GPD parameters are estimated from
+the corresponding exceedances, and the resulting POT approximation is used to estimate the
+objective in Equation 2.3. The corresponding sample optimization problem can therefore be
+represented as
+bθ ⋆ n,α ∈ arg min θ∈Θ bJ EVT n,α (θ; u). (2.10)
+In this way, policy learning does not rely exclusively on the relatively small number of observations
+beyond qα,θ. Instead, observations exceeding u are used to model the upper tail and extrapolate
+toward the region associated with the target confidence level.
+To optimize Equation 2.10, Davar et al. (2025) estimate the gradient coordinatewise using forward
+8
+
+=== page 9 ===
+finite differences. For θ = (θ1, . . . , θp)⊤ and ε > 0,
+d∂iJα(θ) = bJ EVT n,α (θ + εei; u) − bJ EVT n,α (θ; u) ε , i = 1, . . . , p, (2.11)
+where ei denotes the ith canonical basis vector. The resulting gradient estimate can then be
+incorporated into a stochastic optimization procedure to update the policy parameters.
+An important aspect of POTPG is that the threshold selected under the current policy is kept
+fixed when evaluating the coordinatewise perturbations in Equation 2.11. Hence, each perturbed
+policy changes the estimated tail distribution while the threshold used to define the exceedance
+region remains unchanged within the corresponding gradient evaluation.
+This construction provides a direct connection between EVT-based tail estimation and risk-aware
+policy learning. However, Equation 2.11 requires an additional evaluation of the EVT objective
+for every coordinate of θ. Therefore, as the dimension p of the policy parameterization increases,
+so does the number of objective evaluations required to construct a single gradient. This becomes
+particularly restrictive when πθ is represented by a neural network with a large number of
+parameters.
+The following section builds on the same POT representation of the risk objective, but reformulates
+its optimization to exploit the differentiable structure of neural-network-parameterized policies.
+3 EVT-Based Optimization of Neural-Network Policies
+The EVT-based policy optimization framework introduced in subsection 2.3 relies on the finite-
+difference approximation in Equation 2.11. While suitable for low-dimensional policy parameteri-
+zations, its computational cost increases with the number of policy parameters, limiting its direct
+application to neural-network policies.
+We address this limitation by formulating the POT-MOM estimator in Equation 2.9 as a
+differentiable empirical objective. This allows its gradient with respect to all policy parameters
+to be computed jointly using automatic differentiation, without modifying the underlying EVT
+approximation. In addition, when the threshold-selection procedure does not identify a threshold
+9
+
+=== page 10 ===
+for which the GPD hypothesis is not rejected, the method falls back to empirical CVaR.
+3.1 Differentiable POT-CVaR Objective
+Consider the EVT-CVaR estimator bJ EVT n,α (θ; u) defined in Equation 2.9. For a fixed threshold u,
+the exceedances, their empirical moments, and consequently the MOM estimates in Equation 2.8
+depend on the policy parameters through the sampled losses Xθ,i. We preserve this dependence
+when evaluating the estimator, resulting in the mapping
+θ 7−→ bJ EVT n,α (θ; u). (3.1)
+Provided that the sampled losses are differentiable with respect to θ and that the exceedance set
+remains locally unchanged, Equation 3.1 can therefore be differentiated directly with respect to
+the policy parameters.
+The threshold-selection step remains statistical and is not differentiated. Let An(θ) denote the
+event that the procedure described in subsection 2.3 identifies an admissible threshold bun(θ) for
+which the GPD hypothesis is not rejected. The training objective is then
+bJ H n,α(θ) =
+
+
+
+bJ EVT n,α   θ; bun(θ)  , An(θ),
+bJ emp n,α (θ), Ac n(θ),
+(3.2)
+where bJ emp n,α denotes the empirical CVaR estimator
+bJ emp n,α (θ) := bqα,θ + 1 n(1 − α)
+nX
+i=1
+(Xθ,i − bqα,θ)+ , (3.3)
+where bqα,θ denotes the empirical α-quantile of the sampled losses. When the EVT branch is
+selected, bun(θ) is held fixed during differentiation.
+Importantly, the event An(θ) only determines whether the POT approximation is used. Failure
+to reject the GPD hypothesis does not imply that the population excess distribution is exactly
+GPD.
+10
+
+=== page 11 ===
+3.2 Neural-Network Policy Optimization
+We now parameterize the policy πθ by a neural network, with θ ∈ Θ ⊆ Rp containing its trainable
+parameters. The population objective remains the CVaR minimization problem in Equation 2.3;
+only the mechanism used to estimate its gradient is modified.
+At iteration m, trajectories are generated under πθm and the threshold-selection procedure is
+applied to the resulting losses. If the EVT branch in Equation 3.2 is selected, we compute
+gEVT n,α (θm; um) := ∇θ bJ EVT n,α (θ; um)  θ=θm , (3.4)
+where um is held fixed. Automatic differentiation propagates through the sampled losses and the
+POT-MOM estimator, but not through the threshold-selection procedure.
+This differs from the finite-difference estimator in Equation 2.11, which requires a separate
+perturbed evaluation for each component of θ. Here, all components of Equation 3.4 are obtained
+from the same differentiable objective, allowing the EVT framework to be applied when p
+corresponds to the number of parameters of a neural network.
+When no admissible threshold is identified, the gradient is instead computed from the empirical
+CVaR branch of Equation 3.2. Denoting the gradient of the active branch by gH n,α(θm), the
+policy parameters are updated through the corresponding adaptive-gradient update used in the
+numerical implementation or through
+θm+1 = θm − ηmgH n,α(θm), (3.5)
+where ηm > 0 denotes the learning rate at iteration m.
+3.3 Theoretical Results
+We first establish that automatic differentiation provides the exact gradient of the finite-sample
+POT-MOM objective when the EVT branch is active. The result is local because both the
+exceedance set and the selected threshold can change as the policy parameters vary.
+11
+
+=== page 12 ===
+Assumption 3.1 (Local regularity). Fix a sample, a threshold u, and θ0 ∈ Θ. Assume that, in a
+neighborhood of θ0: (i) each sampled loss Xθ,i is continuously differentiable in θ; (ii) no sampled
+loss is equal to u; (iii) the empirical moments required by Equation 2.8 are non-degenerate; and
+(iv) the resulting MOM estimates satisfy bσ > 0 and bξ < 1/2. The threshold u is held fixed during
+differentiation.
+The restriction bξ < 1/2 retains the estimator within the parameter region associated with the
+finite-second-moment condition required by the MOM construction Davar et al. (2025).
+Proposition 3.1 (Local differentiability of the POT-MOM objective). Under Assumption 3.1,
+bJ EVT n,α (θ; u) is continuously differentiable in a neighborhood of θ0, and automatic differentiation
+returns
+gEVT n,α (θ0; u) = ∇θ bJ EVT n,α (θ; u)  θ=θ0 . (3.6)
+Proof. Since no sampled loss lies on u, continuity implies that the exceedance set defined in
+subsection 2.2 is locally constant. The empirical moments of the excesses are therefore continuously
+differentiable functions of θ. The MOM estimators in Equation 2.8 are differentiable functions
+of these moments whenever their denominators are non-zero, and the EVT-CVaR estimator
+in Equation 2.9 is differentiable over the admissible parameter region. The result follows by
+composition and the chain rule. □
+Proposition 3.1 concerns the active POT branch with its selected threshold held fixed. It does not
+establish differentiability through the threshold-selection procedure, nor does it imply consistency
+of the resulting gradient for ∇θJα(θ).
+We next consider the population behavior of the POT-MOM estimator. Recall the POT-CVaR
+functional Cθ,α(u) introduced in Equation 2.7.
+Assumption 3.2 (POT-MOM estimation). For fixed θ and an admissible threshold u < qα,θ,
+assume that the conditional excess distribution above u is GPD with parameters ξθ(u) and σθ(u)
+satisfying
+σθ(u) > 0, ξθ(u) < 1 2 ,
+12
+
+=== page 13 ===
+and that the number of exceedances satisfies
+kn(θ; u)
+P
+−→ ∞.
+Proposition 3.2 (Consistency of the POT-MOM estimator). Under Assumption 3.2,
+bJ EVT n,α (θ; u) P −→ Cθ,α(u). (3.7)
+Proof. Under ξθ(u) < 1/2, the first two moments of the GPD excess distribution are finite. As
+kn(θ; u) → ∞, their empirical counterparts converge to the corresponding population moments.
+The MOM estimates in Equation 2.8 therefore converge, by the continuous mapping theorem, to
+ξθ(u) and σθ(u). Moreover, the empirical exceedance probability converges to 1 − Fθ(u). Applying
+the continuous mapping theorem to the EVT-CVaR estimator in Equation 2.9 gives Equation 3.7.
+□
+Under Assumption 3.2, the GPD representation is exact above u. Since u < qα,θ, the target
+quantile lies within this tail region and the POT representation in Equation 2.7 satisfies
+Cθ,α(u) = Jα(θ). (3.8)
+Consequently,
+bJ EVT n,α (θ; u) P −→ Jα(θ). (3.9)
+The exact-GPD condition in Assumption 3.2 is a population assumption and should be distin-
+guished from the statistical criterion used to select the EVT branch. In particular, failure to
+reject the GPD hypothesis does not establish that the population excess distribution is exactly
+GPD. The result therefore characterizes the population behavior of the POT-MOM estimator
+under an exact-tail model, rather than providing a consequence of the goodness-of-fit test itself.
+We finally consider the effect of the empirical-CVaR fallback. Recall that An(θ) denotes the event
+13
+
+=== page 14 ===
+that an admissible threshold is selected and the EVT branch of Equation 3.2 is used.
+Corollary 3.1 (Consistency of the hybrid estimator). Suppose that, for fixed θ,
+1An(θ)
+ bJ EVT n,α   θ; bun(θ)  − Jα(θ)  P −→ 0, (3.10)
+and
+1Acn(θ)
+ bJ emp n,α (θ) − Jα(θ)  P −→ 0. (3.11)
+Then the hybrid estimator satisfies
+bJ H n,α(θ) P −→ Jα(θ). (3.12)
+Proof. From Equation 3.2,
+ bJ H n,α(θ) − Jα(θ)  = 1An(θ)  bJ EVT n,α   θ; bun(θ)  − Jα(θ) 
++ 1Acn(θ)
+ bJ emp n,α (θ) − Jα(θ)  .
+Both terms converge to zero in probability by Equation 3.10 and Equation 3.11, which proves
+Equation 3.12. □
+Corollary 3.1 does not require the probability of selecting the EVT branch to converge to one.
+Instead, it requires the estimator used on each branch to approach the same population target.
+For the empirical branch, this corresponds to consistency of the empirical CVaR estimator. For
+the EVT branch, however, Equation 3.10 is an additional condition because the threshold bun(θ)
+is selected from the data. The results therefore establish local differentiability of the active
+POT-MOM objective and consistency of the risk estimator under the stated tail conditions.
+4 Numerical Study
+We now investigate the numerical behavior of the methodology developed in Section 3. We
+first consider a controlled experiment for which the optimal policy is known analytically, and
+subsequently move to a deep-hedging problem where the policy is represented by a neural network
+14
+
+=== page 15 ===
+and catastrophic losses arise from rare market scenarios.
+4.1 Controlled Experiment
+We begin with a controlled experiment to examine whether the proposed optimization procedure
+can recover a known solution. Following the setting considered in Davar et al. (2025), let the loss
+Xθ follow a generalized Pareto distribution with shape parameter ξ = 0.4 and scale parameter
+depending on the two-dimensional policy parameter θ = (θ1, θ2) through
+σ(θ) = log
+ 
+1 + (θ1 − 2)2 + (θ2 + 1)2 + 2. (4.1)
+In this controlled setting, the policy directly determines θ1 and θ2, which in turn determine the
+distribution of the terminal loss through σ(θ). Simulated realizations of Xθ therefore play the
+role of the terminal outcomes generated under the policy, and the optimization problem reduces
+to finding the policy parameters that minimize their tail risk. In particular, for ξ ̸= 0 and ξ < 1,
+the CVaR of the generalized Pareto loss can be expressed as
+CVaRα(Xθ) = σ(θ) 1 − ξ  (1 − α)−ξ − 1 ξ + 1  , (4.2)
+so that the dependence of the objective on the policy parameters is entirely governed by σ(θ). Since
+the multiplicative dependence on σ(θ) is positive for fixed α and ξ < 1, minimizing CVaRα(Xθ) is
+equivalent to minimizing σ(θ). The optimal policy is therefore available analytically and satisfies
+θ∗ = (2, −1). (4.3)
+This provides a direct benchmark against which the numerical optimization can be evaluated.
+Starting from θ0 = (4, −3), we minimize CVaR0.99 using 2,000 simulated observations per iteration
+and compare the empirical-CVaR and EVT-based objectives. Both procedures progressively
+move the policy parameters toward the analytical optimum. After 100 iterations, the EVT-based
+procedure reaches approximately (1.99, −0.99), which is close to θ∗, see Figure 1. The experiment
+15
+
+=== page 16 ===
+therefore provides controlled numerical evidence that the differentiable EVT objective can guide
+gradient-based optimization toward the correct policy in this tractable setting. This observation
+is complementary to, but distinct from, the theoretical results of Section 3.3.
+Figure 1: Optimization trajectories obtained using the empirical and EVT-based CVaR estima-
+tors for the controlled experiment.
+2.0
+2.5
+3.0
+3.5
+4.0
+1
+3.0
+2.5
+2.0
+1.5
+1.0
+2
+2.0
+2.5
+3.0
+3.5
+4.0
+( )
+Panel A: Objective landscape
+2.0 2.5 3.0 3.5 4.0
+1
+3.0
+2.5
+2.0
+1.5
+1.0
+2
+Panel B: Parameter-space trajectories
+2.25
+2.50
+2.75
+3.00
+3.25
+3.50
+3.75
+4.00
+Empirical EVT Initial point (4, 3)
+ Optimum (2, 1)
+Panel A illustrates the optimization trajectories over the parameter-dependent scale function, while Panel B
+presents the corresponding trajectories in the parameter space. Both procedures are initialized at (θ1, θ2) =
+(4, −3), with the theoretical minimum located at (2, −1). The empirical and EVT-based approaches follow
+similar trajectories toward the minimum, initially overshooting it before stabilizing in its neighborhood.
+4.2 Deep Hedging Framework
+We next consider a dynamic option-hedging problem, which provides a higher-dimensional policy
+parameterization and a direct financial interpretation of extreme losses. Consistently with the
+deep-hedging formulation, the agent determines at each rebalancing date the position in the
+underlying asset as a function of the current state, with the policy represented by the neural
+network introduced in Section 3.2. The terminal hedging error constitutes the loss entering the
+risk objective.
+16
+
+=== page 17 ===
+The underlying asset follows a Merton-type jump-diffusion process,
+dSt
+St−
+= µ dt + σ dWt +
+ 
+eJt − 1  dNt, (4.4)
+where Wt is a Brownian motion, Nt is a Poisson process with intensity λ, and the log-jump sizes
+are Gaussian with mean ν and standard deviation δ. Under the risk-neutral measure, the drift is
+adjusted by λ
+
+eν+δ2/2 − 1  when computing the initial option value.
+The main experiment considers S0 = 100, a European call with strike K = 140 and 63 daily
+rebalancing periods. The annual parameters are µ = 0.01, σ = 0.20, λ = 0.1, ν = 0.4, δ = 0.2,
+and r = 0.005. The option is therefore initially out-of-the-money, while the positive jumps
+generate infrequent but potentially large terminal payoffs. This setting is particularly useful for
+the present study: the loss distribution contains a small number of observations far into the upper
+tail, precisely the regime in which direct empirical estimation of catastrophic-level CVaR becomes
+data demanding.
+The hedging policy is represented by a feedforward neural network whose state space is restricted
+to the log-price of the underlying asset, time-to-maturity, and the previous hedging position. The
+network consists of four hidden layers with 56 neurons each and a single output representing the
+position in the underlying asset, following the standard architecture considered for asymmetric
+penalty measures in François et al. (2024b). The output layer incorporates the dynamic activation
+function proposed in François et al. (2024a), with leverage constraint B = 100. This constraint
+prevents the agent from adopting doubling strategies, whereby increasingly large positions are
+taken following losses in an attempt to recover previous hedging errors, which can lead to unrealistic
+policies and distort the assessment of tail-risk performance. The network is trained using the
+ADAM optimizer with an initial learning rate of 0.0005 and dropout regularization with probability
+p = 0.5. The empirical-CVaR and EVT-based policies use the same state representation, network
+architecture, leverage constraint, optimizer, learning rate, dropout specification, training paths,
+and epoch budget, such that the tail-risk objective is the experimental factor being changed.
+Both policies are trained to minimize CVaR at the confidence level α = 0.999.
+17
+
+=== page 18 ===
+4.3 Neural-Network Experiments
+We first investigate whether replacing empirical CVaR with the EVT-based objective affects
+the training behavior of neural-network policies when extreme observations are not especially
+prominent. To account for the stochasticity of neural-network optimization, we train otherwise
+identical feedforward policies over four independent runs and compare their validation CVaR
+throughout 50 training epochs. The resulting trajectories are presented in Figure 2.
+A clear difference appears during the initial stages of training. The EVT-based objective exhibits a
+faster reduction in mean validation CVaR, while the empirical approach decreases more gradually.
+This difference is particularly pronounced during approximately the first 15 epochs. The dispersion
+across independent runs is also considerably smaller for the EVT-based approach during this period,
+whereas the empirical-CVaR policies exhibit greater variability in their validation trajectories.
+After approximately 20 epochs, however, the mean validation CVaR of both approaches becomes
+similar and remains close throughout the remainder of training. This suggests that the EVT-based
+objective induces more stable optimization behavior during the early training stage, which is
+consistent with the policies reaching the region of their eventual validation performance with
+fewer training iterations.
+The experiment therefore indicates that the main difference between the two objectives in
+this setting concerns the dynamics and stability of the optimization rather than the validation
+risk eventually attained. This behavior is consistent with the statistical motivation of the
+proposed estimator: when relatively few observations determine the empirical tail-risk objective,
+variation in those observations can propagate directly into the optimization step, whereas the
+POT approximation uses the exceedance distribution to estimate the relevant tail quantity.
+Once training progresses and both policies reach a similar region of the parameter space, the
+difference between their validation performance becomes substantially smaller. This raises a
+more demanding question for the proposed methodology: whether the difference between the two
+objectives becomes more consequential when policy performance is evaluated specifically in the
+extreme tail of the loss distribution.
+18
+
+=== page 19 ===
+Figure 2: Validation CVaR0.999 throughout training under the empirical and EVT-based opti-
+mization approaches.
+1 10 20 30 40 50
+Epoch
+0
+50
+100
+150
+200
+250
+Validation CVaR
+Empirical
+EVT
+Mean ± 1 SD
+Validation CVaR0.999 is reported over 50 training epochs for the empirical and EVT-based approaches. The
+solid and dashed curves represent the mean validation CVaR0.999 across four independent runs for the empirical
+and EVT-based approaches, respectively, while the shaded regions indicate one standard deviation around the
+mean. The lighter curves correspond to the individual runs.
+4.4 Extreme-Loss Analysis
+The previous experiment suggests that the empirical and EVT-based objectives eventually attain
+similar validation risk under the general training setting. We now investigate whether this
+similarity persists when the learned policies are evaluated specifically under extreme market
+realizations. Both policies are trained using paths generated from the Merton jump-diffusion
+model described in subsection 4.2.
+To define the extreme scenarios independently of the learned policies, let
+HT := (ST − K)+
+denote the unhedged terminal option payoff, and let qH p denote its p-quantile under the original
+19
+
+=== page 20 ===
+market distribution. We define the extreme-event set as
+Ep :=
+
+HT > qH p 	 .
+For the present experiment, we set p = 0.999, such that E0.999 corresponds to market realizations
+in the upper 0.1% tail of the unhedged option-payoff distribution.
+We consider two independent out-of-sample evaluation samples. The first consists of 100,000
+paths generated directly from the original market distribution. The second is constructed by
+independently simulating additional paths from the same market model and retaining complete
+trajectories belonging to E0.999 until 3,000 such trajectories are obtained. Thus, the second
+sample concentrates the evaluation on rare and severe terminal market outcomes while leaving
+the underlying data-generating process unchanged. For brevity, we refer to this conditional
+extreme-event sample as the heavy-tail regime throughout the remainder of the numerical study.
+This construction allows us to compare the behavior of the learned policies under the general
+market distribution with their behavior conditional on extreme market realizations.
+Figure 3 shows the resulting out-of-sample hedging-error distributions. Under the general
+distribution in Panel A, the two policies exhibit very similar behavior. Both have a mean
+hedging error of −1.31, while their medians are −0.63 and −0.40 for the empirical-CVaR and
+EVT-based policies, respectively. The upper parts of the distributions are also comparable: the
+95th percentiles are 6.23 and 6.11, while the maximum observed errors are 50.09 and 48.80,
+respectively. Thus, under the general out-of-sample distribution, there is little evidence of a
+material difference in hedging performance between the two policies.
+A markedly different behavior emerges when the evaluation is concentrated on extreme scenarios.
+In Panel B, the distribution of hedging errors for the EVT-trained policy shifts toward smaller
+values relative to the empirical-CVaR policy. The mean hedging error decreases from 17.49 to 10.03,
+while the median decreases from 16.52 to 9.13. Importantly, this difference remains visible further
+into the upper tail: the 70th percentile decreases from 27.12 to 17.50, the 95th percentile from
+49.22 to 35.46, and the maximum observed hedging error from 114.27 to 84.36. The separation is
+20
+
+=== page 21 ===
+therefore not driven exclusively by a small number of maximum observations; it is visible across
+several regions of the conditional hedging-loss distribution under the extreme-scenario evaluation.
+Figure 3: Distribution of out-of-sample hedging errors under the empirical and EVT-based
+optimization approaches.
+20
+ 0 20 40
+Hedging error
+0.00
+0.01
+0.02
+0.03
+0.04
+0.05
+0.06
+0.07
+0.08
+Density
+Empirical
+Mean: -1.31
+Median: -0.63
+70th pct.: 1.97
+95th pct.: 6.23
+Max: 50.09
+EVT
+Mean: -1.31
+Median: -0.40
+70th pct.: 2.22
+95th pct.: 6.11
+Max: 48.80
+Panel A: Hedging errors under the general distribution
+Empirical
+EVT
+20
+ 0 20 40 60 80 100 120
+Hedging error
+0.000
+0.005
+0.010
+0.015
+0.020
+0.025
+Density
+Empirical
+Mean: 17.49
+Median: 16.52
+70th pct.: 27.12
+95th pct.: 49.22
+Max: 114.27
+EVT
+Mean: 10.03
+Median: 9.13
+70th pct.: 17.50
+95th pct.: 35.46
+Max: 84.36
+Panel B: Hedging errors under extreme scenarios
+Empirical
+EVT
+Hedging errors are evaluated on 100,000 and 3,000 out-of-sample paths under the general distribution and the
+conditional extreme-scenario evaluation, respectively. Panel A considers paths generated from the original
+market distribution, while Panel B considers trajectories from the same market model conditional on the
+event E0.999. Summary statistics report the mean, median, 70th and 95th percentiles, and maximum observed
+hedging error.
+These results suggest that the difference between the two optimization approaches becomes more
+pronounced under extreme market realizations. Under the general out-of-sample distribution,
+the two policies produce nearly indistinguishable mean errors and similar upper-tail statistics.
+Conditional on extreme market realizations, however, the EVT-trained policy produces smaller
+hedging errors throughout a substantial portion of the distribution, including its upper tail. This
+evidence is consistent with the hypothesis that explicitly modeling the tail during optimization
+becomes consequential when the learned policy is exposed to scenarios in which extreme losses
+are more prevalent. Since the second evaluation is explicitly conditional on E0.999, however, these
+results should not be interpreted as evidence of an equivalent reduction in unconditional risk
+under the original market distribution.
+4.5 Sensitivity to Training Sample Size
+The previous results show that the difference between empirical-CVaR and EVT-based opti-
+mization becomes more pronounced when the learned policies are exposed to extreme scenarios.
+21
+
+=== page 22 ===
+This raises a related question: whether this behavior depends on the amount of data available
+during training. This is particularly relevant at the catastrophic confidence level α = 0.999, where
+only a small fraction of the simulated losses directly determines the empirical tail-risk objective.
+We therefore examine whether reducing the number of training paths materially changes the
+out-of-sample behavior of the resulting policies.
+We train the empirical-CVaR and EVT-based policies using 50,000, 100,000, 200,000, and 400,000
+simulated paths while maintaining the remaining training specifications unchanged. Each trained
+policy is subsequently evaluated on 100,000 out-of-sample paths from the general distribution
+and on the 3,000-path conditional extreme-scenario sample defined in subsection 4.4. Figure 4
+reports the resulting distributions of out-of-sample hedging errors.
+Under the general distribution, shown in Panel A, the hedging-error distributions remain relatively
+stable as the number of training paths changes. The empirical-CVaR and EVT-based policies also
+exhibit broadly comparable out-of-sample behavior at each training-sample size. In particular,
+reducing the training sample from 400,000 to 50,000 paths does not produce a clear deterioration
+in the central part of either distribution. Thus, within the range of sample sizes considered here,
+the general out-of-sample performance appears relatively insensitive to the amount of training
+data.
+The heavy-tail evaluation in Panel B provides a different perspective. Across all four training-
+sample sizes, the EVT-trained policies exhibit hedging-error distributions shifted toward smaller
+values relative to their empirical-CVaR counterparts. Importantly, this separation remains visible
+when the number of training paths is reduced. At the same time, the distributions do not
+exhibit a clear monotonic improvement as the training sample increases from 50,000 to 400,000.
+The experiment therefore does not support the stronger claim that increasing the number of
+training trajectories systematically improves either policy over this range. Rather, it suggests
+that the difference observed under the conditional extreme-scenario evaluation persists across the
+training-sample sizes considered.
+22
+
+=== page 23 ===
+Figure 4: Out-of-sample hedging errors across training-sample sizes under the empirical and
+EVT-based optimization approaches.
+400,000 200,000 100,000 50,000
+Training set size
+100
+75
+50
+25
+0
+25
+50
+75
+100
+Out-of-sample hedging error
+Panel A: General distribution
+Empirical
+EVT
+400,000 200,000 100,000 50,000
+Training set size
+50
+25
+0
+25
+50
+75
+100
+125
+150
+Out-of-sample hedging error
+Panel B: Heavy-tail regime
+Policies are trained using 50,000, 100,000, 200,000, and 400,000 simulated paths. Panel A evaluates each
+policy on 100,000 independent paths from the general distribution, while Panel B evaluates each policy
+on the 3,000-path conditional extreme-scenario. Boxplots report the resulting out-of-sample hedging-error
+distributions for the empirical-CVaR and EVT-based policies.
+These results indicate that the relative behavior of the two optimization approaches is not driven
+exclusively by the largest training sample. Under the general distribution, changing the number
+of training paths has a limited visible effect on out-of-sample hedging errors, while under the
+heavy-tail regime the EVT-based policies exhibit distributions concentrated at smaller hedging
+errors at each of the training-sample sizes considered. This provides evidence that the extreme-loss
+behavior documented in Section 4.4 persists when substantially fewer training trajectories are
+available.
+5 Conclusion
+This study extends the EVT-based risk-aware reinforcement learning framework considered in
+the baseline methodology to policies parameterized by neural networks. The main limitation of
+the original approach in this setting arises from its reliance on finite-difference gradients, whose
+computational cost increases with the number of policy parameters. We address this limitation
+by expressing the POT-CVaR estimator as a differentiable empirical objective and computing its
+gradient jointly with respect to the neural-network parameters through automatic differentiation.
+The resulting framework preserves the EVT treatment of extreme losses while making it applicable
+23
+
+=== page 24 ===
+to substantially richer policy parameterizations.
+The theoretical results establish the properties supporting this construction. In particular,
+for a fixed threshold and under the stated local regularity conditions, the finite-sample POT-
+MOM objective is locally differentiable and automatic differentiation recovers its exact gradient.
+Moreover, as the number of threshold exceedances increases, the POT-MOM estimator converges
+in probability to its corresponding population POT-CVaR functional under the assumptions
+established in Section 3.3. These results characterize the differentiability and statistical behavior
+of the EVT component used within policy optimization, while keeping distinct the approximation
+of the true CVaR and the optimization of the neural-network parameters.
+The numerical experiments complement these results from two perspectives. First, the controlled
+experiment provides an analytically tractable benchmark and shows that the proposed gradient-
+based procedure approaches the known optimal policy parameters. Second, the deep-hedging
+experiment illustrates the behavior of the methodology in a substantially more complex neural-
+network optimization problem. Under the general out-of-sample market distribution, the EVT
+and empirical-CVaR approaches ultimately provide comparable hedging performance, although
+the EVT-based objective exhibits a faster initial reduction and lower between-run variability in
+validation CVaR during training. The distinction becomes more pronounced under the conditional
+extreme-scenario evaluation: the EVT-trained policies exhibit substantially smaller hedging losses,
+while performance under the general market distribution remains broadly comparable.
+Together, these results suggest that explicitly modeling the loss tail can be particularly useful
+when neural-network policies are trained to manage rare but severe outcomes. The benefit is
+therefore not that EVT uniformly improves policy performance, but rather that it uses the
+exceedance distribution to model the tail in regimes where empirical CVaR relies on relatively
+few observations beyond the target quantile. Extending the analysis to a broader assessment
+of alternative tail models and risk measures would help determine how generally these benefits
+persist.
+24
+
+=== page 25 ===
+References
+Bader, B., Yan, J., and Zhang, X. (2018). Automated threshold selection for extreme value
+analysis via ordered goodness-of-fit tests with adjustment for false discovery rate. The Annals
+of Applied Statistics, 12(1):310–329.
+Balkema, A. A. and De Haan, L. (1974). Residual life time at great age. The Annals of Probability,
+2(5):792–804.
+Buehler, H., Gonon, L., Teichmann, J., and Wood, B. (2019). Deep hedging. Quantitative Finance,
+19(8):1271–1291.
+Coles, S., Bawa, J., Trenner, L., and Dorazio, P. (2001). An introduction to statistical modeling
+of extreme values, volume 208. Springer.
+Davar, P., Godin, F., and Garrido, J. (2025). Catastrophic-risk-aware reinforcement learning
+with extreme-value-theory-based policy gradients. The Journal of Finance and Data Science,
+11:100165.
+François, P., Gauthier, G., Godin, F., and Pérez Mendoza, C. O. (2024a). Enhancing deep hedging
+of options with implied volatility surface feedback information. Working paper.
+François, P., Gauthier, G., Godin, F., and Pérez Mendoza, C. O. (2024b). Is the difference
+between deep hedging and delta hedging a statistical arbitrage? Working paper.
+McNeil, A. J., Frey, R., and Embrechts, P. (2015). Quantitative risk management: concepts,
+techniques and tools-revised edition. Princeton university press.
+Pickands III, J. (1975). Statistical inference using extreme order statistics. The Annals of
+Statistics, pages 119–131.
+Rockafellar, R. T. and Uryasev, S. (2002). Conditional value-at-risk for general loss distributions.
+Journal of Banking & Finance, 26(7):1443–1471.
+Troop, D., Godin, F., and Yu, J. Y. (2021). Bias-corrected peaks-over-threshold estimation of the
+cvar. In Uncertainty in Artificial Intelligence, pages 1809–1818. PMLR.
+25
+
+=== page 26 ===
+A Details for the EVT-based training approach
+The EVT-based training approach consists of three main steps. First, the threshold above which
+the loss distribution is approximated by a GPD is selected using a sequence of Anderson–Darling
+goodness-of-fit tests combined with the ForwardStop procedure. Second, conditional on the
+selected threshold, the CVaR training objective is estimated using the POT-MOM estimator when
+sufficient exceedances are available, with empirical CVaR used as a fallback otherwise. Third, the
+resulting objective is differentiated with respect to the neural-network parameters using automatic
+differentiation. Threshold selection is performed outside the differentiation step, and the selected
+threshold is treated as fixed while the active finite-sample objective is differentiated.
+A.1 Threshold selection
+Let {Xi}n i=1 denote the sample of losses generated under the current policy. We consider a grid
+of candidate percentiles P = {p1, . . . , pK }. For each candidate percentile, the corresponding
+threshold is obtained from the empirical distribution, a GPD is fitted to the resulting excesses using
+the method of moments, and an Anderson–Darling goodness-of-fit statistic and its corresponding
+p-value are computed. Candidate thresholds associated with a shape parameter above the
+prescribed cutoff are discarded. The ForwardStop procedure is then applied to the sequence of
+retained p-values to determine the threshold used in the CVaR estimation. For the numerical
+experiments, we consider a grid P of 20 equally spaced candidate percentiles between 0.80 and
+0.99, with ForwardStop significance level γ = 0.1 and shape-parameter cutoff ξmax = 0.99.
+26
+
+=== page 27 ===
+Algorithm 1 Threshold selection procedure.
+Require: Loss sample {Xi}n i=1, percentile grid P = {p1, . . . , pK }, significance level γ, and
+shape-parameter cutoff ξmax.
+Initialize the lists of admissible candidates A and p-values P
+for j = 1 to K do ▷ Evaluate candidate threshold
+Set uj equal to the empirical pj -quantile of {Xi}n i=1
+Compute the excesses Yj = {Xi − uj : Xi > uj }
+Estimate (bξj , bσj ) from Yj using the method of moments
+if bξj ≤ ξmax then
+Compute the Anderson–Darling statistic A2 j for the fitted GPD
+Compute its corresponding p-value pAD j
+Append (uj , bξj , bσj , pj ) to A and pAD j to P
+if A = ∅ then
+No admissible EVT threshold is identified
+else
+for k = 1 to #P do
+Calculate Wk = 1 k Pk j=1 − log(1 − pAD j )
+Determine the ForwardStop index from {k : Wk ≤ γ}
+Select the corresponding candidate threshold u
+return selected threshold u, if available
+A.2 Hybrid EVT–empirical CVaR estimation
+Once a threshold u has been selected, it is treated as fixed in the differentiable CVaR computation.
+The excesses above u are used to estimate the GPD parameters through the method of moments.
+When the sample contains more than one exceedance, the POT-MOM estimator is used. Otherwise,
+the procedure falls back to the empirical CVaR computed directly from the upper α-tail of the
+loss sample.
+27
+
+=== page 28 ===
+Algorithm 2 Hybrid EVT–empirical CVaR estimation.
+Require: Loss sample {Xi}n i=1, CVaR level α, ε = 10−8, and selected threshold u.
+Compute the excesses Y = {Xi − u : Xi > u} and let nu = #Y
+if nu > 1 then ▷ EVT branch
+Compute the sample mean ¯Y and sample variance S 2 Y of the excesses
+Calculate the MOM shape estimate bξMOM = 1 2
+
+1 −
+¯Y 2
+S2 Y
+
+Set bξ = min
+n
+max
+n
+bξMOM, 0
+o
+, 1 2 − ε o .
+Calculate bσ = ¯Y (1 − bξ)
+Estimate the exceedance probability bpu = 1 n Pn i=1 1{Xi>u}
+Set s = bpu/(1 − α)
+if |bξ| < 10−6 then
+Calculate \CVaRα = u + bσ (log(s) + 1)
+else
+Calculate \CVaRα = u + bσ 1−bξ
+
+1 + s bξ −1 bξ 
+else ▷ Empirical fallback
+Sort the losses X(1) ≤ · · · ≤ X(n)
+Set jα = ⌊αn⌋
+Calculate \CVaRα = 1 n−jα Pn j=jα+1 X(j)
+return \CVaRα
+A.3 Training approach for the neural-network policy
+We now combine the threshold-selection and CVaR-estimation procedures within the neural-
+network optimization. At training iteration m, the complete sample of losses is generated under
+the current policy πθm . The threshold-selection procedure in Algorithm 1 is then applied to
+this sample. Conditional on the selected threshold, the hybrid CVaR estimator in Algorithm 2
+defines the objective used to update the policy. Importantly, the selected threshold is held
+fixed during differentiation. Consequently, gradients propagate through the simulated losses,
+excesses, empirical moments, GPD parameter estimates, and CVaR estimator, but not through
+the threshold-selection procedure.
+28
+
+=== page 29 ===
+Algorithm 3 EVT-based neural-network training approach.
+Require: Initial policy parameters θ1, CVaR level α, learning-rate sequence {ηm}M m=1, number
+of training iterations M, and sample size n.
+for m = 1 to M do
+▷ Generate the complete loss sample
+Generate n trajectories under the current policy πθm
+Compute the corresponding loss sample {Xθm,i}n i=1
+▷ Select threshold
+Apply Algorithm 1 to {Xθm,i}n i=1
+Obtain the selected threshold um, when available
+▷ Construct the CVaR training objective
+if an admissible threshold um is identified then
+Hold um fixed during differentiation
+Compute bJ H n,α(θm) using Algorithm 2
+else
+Compute bJ H n,α(θm) using the empirical CVaR fallback
+▷ Update policy parameters
+Compute
+gH n,α(θm) = ∇θ bJ H n,α(θ)  θ=θm
+using automatic differentiation
+Update θm+1 using gH n,α(θm) and the selected gradient-based optimizer.
+Note: At each training iteration, threshold selection and CVaR estimation are performed using
+the complete loss sample rather than separate mini-batches. The threshold-selection procedure
+is not differentiated. When the EVT branch is active, the selected threshold is held fixed while
+automatic differentiation preserves the dependence of the loss sample, excesses, empirical moments,
+MOM parameter estimates, and resulting POT-CVaR estimator on the neural-network parameters.
+When the EVT approximation cannot be used, the objective falls back to empirical CVaR.
+29

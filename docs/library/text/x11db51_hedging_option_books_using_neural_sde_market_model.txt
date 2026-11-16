@@ -1,0 +1,1975 @@
+=== page 1 ===
+Hedging option books using neural-SDE market models
+Samuel N. Cohen Christoph Reisinger Sheng Wang
+Mathematical Institute, University of Oxford
+{samuel.cohen, christoph.reisinger, sheng.wang}
+@maths.ox.ac.uk
+June 1, 2022
+Abstract
+We study the capability of arbitrage-free neural-SDE market models to yield eﬀective
+strategies for hedging options. In particular, we derive sensitivity-based and minimum-
+variance-based hedging strategies using these models and examine their performance
+when applied to various option portfolios using real-world data. Through backtesting
+analysis over typical and stressed market periods, we show that neural-SDE market
+models achieve lower hedging errors than Black–Scholes delta and delta-vega hedging
+consistently over time, and are less sensitive to the tenor choice of hedging instruments.
+In addition, hedging using market models leads to similar performance to hedging using
+Heston models, while the former tends to be more robust during stressed market periods.
+MSC: 91B28; 91B70; 62M45; 62P05
+Keywords: Market models; European options; market simulators; no-arbitrage; neural-
+SDE; hedging
+1 Introduction
+Hedging is critical for managing market risks of option books; in particular, the smaller
+hedging errors are, the smaller bid-ask spreads market makers are can oﬀer, improving
+liquidity. In general, to hedge an option dynamically, one starts with identifying its risk
+factors (e.g. the price and volatility of the underlying asset), then evaluates the sensitivities
+of the option value with respect to these risk factors (normally known as “Greeks”), and
+ﬁnally trades liquid instruments so that the sensitivities of the combined portfolio to some
+risk factors vanish. In order to calculate sensitivities, we require a pricing model that
+evaluates an option’s price from its risk factors. We note that this is true even for vanilla
+options, so while models are typically redundant for determining the current value of vanilla
+options, as these are observed on the market, they are needed for ﬁnding the hedge ratios.
+Neural-SDE factor-based models, introduced in our previous work [17, 18], are extremely
+well suited for this task. While there is a vast literature on martingale models for option
+pricing and their associated hedging strategies, this paper explores the capacity of the
+neural-SDE market models for producing eﬀective hedging strategies for portfolios of vanilla
+European options in real markets. Though we also discuss hedge ratios for exotics, such as
+barrier and lookback options, we leave empirical assessment of these for future works.
+1
+arXiv:2205.15991v1  [q-fin.CP]  31 May 2022
+
+=== page 2 ===
+A typical option price model describes the dynamics of the underlying price by a stochas-
+tic process. The Black–Scholes model [7] assumes constant volatility, such that continuously
+rebalanced delta hedging using the underlying asset should in theory completely remove risk
+from the option exposure, leading to a complete market. However, due to model misspeciﬁ-
+cations (for instance, the assumption of constant volatility) and the impossibility of contin-
+uous rebalancing in practice, there is residual risk for delta-hedged options. The resulting
+residual risk may be reduced by the addition of a gamma or vega hedge, which requires
+taking positions in a second option on the same underlying. The introduction of stochastic
+volatilities and/or jumps in models such as Heston [26], SABR [24, 25], Merton [30] and
+more generally exponential L´evy models [20], renders the market incomplete, making it
+impossible to eliminate option risk by solely hedging with the underlying asset, even under
+continuously rebalancing. The hedging strategies associated with these models then diﬀer1,
+depending on what risk factors are included and how their dynamics are modelled.
+The neural-SDE market model, introduced in our previous work [17, 18], consists of an
+SDE system for states that represent the underlying asset price and a small number of fac-
+tors. These factors are chosen, in a data-driven manner, for a statistically accurate dynamic
+representation of the option surface and the minimisation of dynamic and static arbitrage.
+Consequently, hedging an option using a neural-SDE market model means neutralising the
+sensitivities of the option’s modelled price to the underlying (i.e. delta hedging) and the
+factors. As we shall see later, there are at least two notable diﬀerences in the derivation
+of hedging strategies between the neural-SDE market models in [17, 18] and traditional
+martingale models:
+(i) The market model leads to a straightforward computation of price sensitivities to the
+factors; speciﬁcally, the normalised call option price is linear in the factors (as shown
+in (3.2) below), so the ﬁrst partial derivative with respect to a given factor is simply
+the factor weight. In contrast, under a martingale model, computing sensitivities gen-
+erally involves numerical integration or Monte–Carlo simulation to compute Greeks,
+due to the lack of analytical formulas for option prices.
+(ii) A model needs to be calibrated to market data before using it for hedging. The neural-
+SDE market models are calibrated with the joint objectives of (a) calibrating (exactly,
+in principle) to the cross sections of option prices, which contain forward-looking
+information, and (b) maximising the likelihood of having observed the historical time-
+series of the underlying and liquid options. These two objectives, however, cannot be
+fulﬁlled simultaneously, in a consistent manner2, when calibrating martingale models,
+and there is not a straightforward mechanism of factoring in historical option prices.
+Choosing one objective over the other can lead to signiﬁcantly diﬀerent parameter
+values, and therefore raises concerns of model misspeciﬁcations (see [2]).
+We now discuss the diﬀerence between our approach and other published works on
+the use of neural networks for pricing and hedging options; see Ruf and Wang [34] for an
+1Nevertheless, diﬀerent option pricing models may yield the same hedge ratios (and consequently hedging
+performance) if they are scale-invariant; see the in-depth analysis by Alexander and Nogueira [3].
+2There are attempts to estimate some parameters using time series of the underlying and calibrating
+the remaining parameters to option prices (for example, Bates [5] and Broadie et al. [9]). However, this
+approach remains inconsistent, as it still relies on daily recalibration of the model, which leads to time-varying
+calibrated parameters, whereas in theory the model parameters are assumed constant over time.
+2
+
+=== page 3 ===
+overview of a large body of the literature. While most works focus on ﬁrst outputting option
+prices and then deriving hedging strategies as sensitivities, some directly output hedging
+strategies from neural networks, such as Buehler et al. [10] and Ruf and Wang [35]. In
+constructing neural-SDE market models, the neural networks act as function approximators
+to the drift and diﬀusion coeﬃcients of the SDE, in order to give a ﬂexible class of models.
+As a result, neural-SDE market models largely reduce the “black-box” nature of neural
+network models (see the discussion by [19]) and enhance model interpretability while still
+retaining their computational advantages.
+In this paper, we will derive sensitivity-based and minimum-variance(MV)-based hedg-
+ing strategies using neural-SDE market models, and examine their performance when ap-
+plied to various portfolios of EURO STOXX 50 index options over typical and stressed
+market periods. We compare these market model hedging strategies with Black–Scholes
+(BS) and Heston delta and delta-vega hedging, along with considering the use of diﬀerent
+hedging instruments (i.e. vanilla options) and rebalancing frequencies. When only hedging
+with the underlying, our empirical results show that neural-SDE MV-based delta hedging
+outperforms BS and Heston delta hedging on average, and is notably more eﬀective dur-
+ing stressed market periods (e.g. COVID-19 outbreak). When hedging with an additional
+vanilla option, neural-SDE hedging strategies yield similar performance to hedging using
+Heston models, while their performance is less sensitive to the tenor of the hedging options
+than hedging using Black–Scholes models. Neural-SDE hedging is shown to outperform
+BS hedging consistently over time. Moreover, the MV-based variant of neural-SDE hedges
+(but not the sensitivity-based variant) outperforms Heston hedging for most portfolios,
+while the analysis of outright options indicates that Heston hedging gives smaller hedging
+errors speciﬁcally for short-dated options.
+The rest of the paper is structured as follows. In Section 2, we formulate the option
+hedging problem and introduce sensitivity-based and minimum-variance(MV)-based hedg-
+ing approaches. Thereafter, we derive hedge ratios with these two approaches using the
+neural-SDE market model framework in Section 3, and investigate the hedging performance
+relative to Black–Scholes and Heston delta and delta-vega hedging, in Section 4 for EURO
+STOXX 50 data. Finally, we oﬀer conclusion from our empirical observations in Section 5.
+2 Option hedging
+Suppose an option pricing model considers a set of d + 1 risk factors {S,ξ1,...,ξd}. An
+agent sells an option (or a portfolio of options) with price V modelled as a function of
+the risk factors. To ensure that the agent’s position is neutral to all d + 1 risk factors (at
+least instantaneously), it is typically necessary to hedge the sold option using d + 1 risky
+instruments. We assume that hedges are rebalanced at discrete time intervals of length ∆t,
+called the rebalancing horizon. Therefore, we consider the hedged portfolio
+Π(S,ξ1,...,ξd) = V (S,ξ1,...,ξd) −XSS−
+d∑
+i=1
+XCi Ci(S,ξ1,...,ξd), (2.1)
+3
+
+=== page 4 ===
+where XS is the amount (or hedge ratio) held of the underlying asset with value S, and
+XCi is the amount of the i-th liquidly tradable call3 option with value Ci. We observe that
+V and Π are deterministic functions of the risk factors (S,ξ1,...,ξd), while by substituting
+the stochastic processes of the risk factors (St,ξ1t,...,ξdt), we obtain processes Vt and Πt.
+In a one-period hedging problem, suppose at time t the agent holds this hedged portfolio
+(with all XS,XCi constant), then closes it after ∆t, and obtains a hedging error of
+Et(∆t) = Πt+∆t − Πt. (2.2)
+For simplicity, we assume zero interest and dividend yield4. To reduce the variations of the
+hedging error in (2.2), the agent ﬁnds a hedging strategy deﬁned by X = (XS,XC1,...,XCd )
+such that the hedged portfolio Π is instantaneously invariant with respect to each risk factor
+f ∈{S,ξ1,...,ξd}. In the following sections, we introduce sensitivity-based and minimum-
+variance-based approaches to derive hedging strategies.
+2.1 Delta hedging
+Usually an agent will not fully hedge all risk factors imposed by a model, likely due to
+high transaction costs and trading limits of adding extra hedges. In particular, in a delta
+hedging strategy, we use the underlying asset as the only hedging instrument, and exclude
+the use of other options as hedging instruments. Assuming broadly markets described by
+continuous semi-martingales, by Itˆo’s lemma,
+dΠ =
+(∂V
+∂S −XS
+)
+dS +
+d∑
+i=1
+[··· ] dξi + [··· ] dt.
+To eliminate Π’s instantaneous exposure to S, we set the coeﬃcient of dS to zero and obtain
+XS = ∂V/∂S, which is the standard delta of the option.
+When the dynamics of the other risk factors ξ = (ξ1,...,ξd) imposed by the model inter-
+act with that of the underlying S, the standard delta might not be the most eﬃcient hedge
+ratio. An alternative derivation of hedging strategies has been introduced to locally min-
+imise the conditional variance process of the hedging error (2.2) by F¨ollmer and Schweizer
+[23] and Schweizer [36]. The resulting hedge ratios are known as minimum variance (MV)
+hedge ratios. Bakshi et al. [4] and Poulsen et al. [32] provide an intuitive and tractable
+derivation based on reducing the instantaneous covariance of a delta-hedged portfolio with
+the underlying to zero, i.e.
+0 = ⟨dΠ, dS⟩ = ⟨dV −XS mv dS, dS⟩ = ⟨dV, dS⟩−XS mv⟨dS, dS⟩,
+where we use XS mv to denote the MV delta hedge ratio, and ⟨·,·⟩ to denote the quadratic
+co-variation. Using Itˆo’s lemma on V , we obtain
+⟨dV, dS⟩ =
+⟨
+∂V
+∂S dS +
+d∑
+i=1
+∂V
+∂ξi
+dξi, dS
+⟩
+= ∂V ∂S⟨dS, dS⟩ + d∑ i=1 ∂V ∂ξi ⟨dξi, dS⟩.
+3We use liquidly traded European style vanilla options as hedging instruments. Though we only consider
+call options here, by put-call parity, put options can also be used.
+4The agent could invest the residual cash from the hedged portfolio (2.1) in a risk-free asset. If, for
+example, the risk-free asset has non-zero interest yield rt, then the hedging error in (2.2) would be revised
+to Et(∆t) = Πte
+∫ t+∆t
+t rs ds − Πt+∆t instead.
+4
+
+=== page 5 ===
+Therefore,
+XS mv = ⟨dV, dS⟩ ⟨dS, dS⟩ = ∂V ∂S + d∑ i=1 ∂V ∂ξi ⟨dξi, dS⟩ ⟨dS, dS⟩ = XS + d∑ i=1 ∂V ∂ξi ⟨dξi, dS⟩ ⟨dS, dS⟩. (2.3)
+Hence, the MV delta hedge ratio XS mv is the sensitivity-based delta hedge ratio XS with
+adjustments that take into account sensitivities to other risk factors, weighted by the correla-
+tion between the risk factor and the underlying price. In particular, if the underlying-factor
+correlations are all zero, the MV hedge ratio is identical to the sensitivity-based hedge ratio
+(see discussion by Alexander and Nogueira [3]).
+Remark 1. The prevailing presence of the leverage eﬀect [6] in equity markets, i.e. nega-
+tive correlation between stock return and volatility, has encouraged practitioners to adjust
+sensitivity-based deltas by either following the MV approach (2.3) or, in a model-free man-
+ner, adding other Greeks weighted by statistically regressed coeﬃcients. For example, Hull
+and White [27] and Ruf and Wang [35] have demonstrated the excellent hedging perfor-
+mance on S&P 500 index options of the statistically adjusted Black–Scholes delta.
+2.2 Delta-factor hedging
+We now generalise to hedging other risk factors. Suppose we want to eliminate the exposures
+to S and the ﬁrst d′ factors (i.e. ξ1,...,ξd′), without loss of generality, using the underlying
+asset and d′ options {Ci}i=1,...,d′ as the hedging instruments.
+We use f ∈{S,ξ1,...,ξd′} to denote a risk factor. By Itˆo’s lemma,
+dΠ =
+∑
+f
+∂Π
+∂f df + [··· ] dt =
+∑
+f
+(
+∂V
+∂f − ∂S ∂fXS − d′ ∑ i=1 ∂Ci ∂f XCi ) df + [··· ] dt.
+Similarly to the delta hedging approaches discussed previously, when hedging each risk
+factor f, there are two alternatives to deriving the hedge ratios, either using sensitivities,
+∂Π
+∂f = 0 ⇒
+
+
+∂S/∂f
+∂C1/∂f
+...
+∂Cd′/∂f
+
+
+⊤
+
+XS
+XC1
+...
+XCd′
+
+ = ∂V ∂f, (2.4a)
+or using a minimum variance criterion in terms of the risk factors,
+⟨dΠ, df⟩ = 0 ⇒
+
+
+⟨dS, df⟩
+⟨dC1, df⟩
+...
+⟨dCd′, df⟩
+
+
+⊤
+
+XS
+XC1
+...
+XCd′
+
+ = ⟨dV, df⟩. (2.4b)
+Either condition leads to a linear equation with regard to the hedging strategy X, because
+both the partial derivative operator and the quadratic co-variation operator are linear.
+Consequently, the delta-factor hedging problem can be formulated as solving a (d′ + 1)-
+dimensional linear system of equations.
+5
+
+=== page 6 ===
+Remark 2. Alternatively, we can use a minimum variance criterion on the hedging instru-
+ments rather than the risk factors, i.e. ⟨dΠ, dCi⟩ = 0, which also leads to a linear condition
+with regard to the hedging strategy. We compare the diﬀerence between this approach and
+the two criteria above under a speciﬁc neural-SDE market model in Section 4.4.
+3 Hedging with neural-SDE market models
+We ﬁrst brieﬂy recall the modelling components of the neural-SDE market model introduced
+in our previous work [17, 18], and then derive corresponding hedging strategies. Speciﬁcally,
+suppose we work with d factors ξ = (ξ1,...,ξd). Let ˜ξ = (ln S,ξ), then we model its
+dynamics by the following SDE5:
+d ˜ξt = µ(ξt) dt + σ(ξt) dWt, (3.1)
+where W = [W1 ··· Wd+1]⊤ ∈ Rd+1 are standard independent Brownian motions under
+the real-world measure P. We denote by Lp loc(Rd) the space of all Rd-valued, progressively
+measurable, and locally p-integrable (in t, P-a.s.) processes, and assume that µ∈L1 loc(Rd+1)
+and σ∈L2 loc(Rd+1). In the SDE model calibration step, we represent the drift and diﬀusion
+functions by neural networks, the reason why the neural-SDE is so named.
+Now we associate ˜ξ with option prices. We denote by Ct(T,K) the market price at time t
+of an European call option with expiry T and strike K. In addition, we reparametrise the call
+price function Ct(·,·) by introducing τ = T −t to be the time-to-expiry and m = ln(K/St)
+the moneyness. We assume these prices, in the underlying numeraire, can be written as
+time independent linear functions of the factors, that is,
+Ct(T,K) = St˜ct(τ,m), (3.2a)
+˜ct(τ,m) = G0(τ,m) +
+d∑
+i=1
+Gi(τ,m)ξit, (3.2b)
+where Gi ∈ C1,2(Rliq) for i = 0,...,d are called price basis functions. We ﬁx a constant
+compact set Rliq ⊂ {(τ,m) ∈ R2}, which represents the range of time-to-expiries and
+moneynesses where options are liquidly traded. We call ˜c the normalised call option price.
+The neural-SDE market model rules out static, model-free arbitrage on the underlying
+factors as follows. Considering a ﬁnite set of option speciﬁcations Lliq = {(τj,mj)}j=1,...,N ⊂
+Rliq, called liquid lattice, we have their normalised prices ct = [˜ct(τ1,m1) ··· ˜ct(τN,mN)]⊤.
+Noting that absence of static arbitrage can be expressed as a system of linear inequalities,
+using the construction in our previous work [16], we write static arbitrage constraints in the
+form Act ≥ˆb, where A = (Aij) ∈ RR×N and ˆb = (ˆbj) ∈ RR are a known constant matrix
+and vector, and R is the number of static arbitrage constraints. Our derivation is mainly
+based on Carr et al. [13], Carr and Madan [14], Davis and Hobson [22], and Cousot [21].
+Given the factor representation (3.2b), we have ct = G0 + G⊤ξt, where we deﬁne G as the
+d×N matrix with i-th row Gi = (Gij)N j=1 ∈ RN for i = 0,...,d, and Gij = Gi(τj,mj).
+5We have assumed that the drift and diﬀusion coeﬃcients are independent of S, in the sense that the
+underlying asset’s log-return and volatility surfaces (represented by ξ) are unaﬀected by its price level.
+Nevertheless, it is possible, and simple, to add S as an additional argument and train the model with neural
+nets (as is done in [17]).
+6
+
+=== page 7 ===
+Consequently, the market model allows no static arbitrage among options on the liquid
+lattice Lliq if ξt satisﬁes, for all t,
+AG⊤ξt ≥ b := ˆb − AG⊤ 0 . (3.3)
+We learn functions µ, σ in (3.1) to ensure ξt satisﬁes this inequality at all times (see [17]
+for details).
+3.1 Delta hedging
+Next, we derive the hedge ratios with the sensitivity-based and the MV-based approaches
+for a call option with maturity T∗ and strike price K∗. For ease of notation, we omit time
+dependence in the following derivations, and use the same symbol for the option’s value
+function and the realisation of its value, if it is clear from the context which is being used.
+Let V = C(T∗,K∗) be the option to hedge. Using (3.2a), in a sensitivity-based delta
+hedging strategy, the hedge ratio of the underlying asset is
+XS = ∂V ∂S = ∂ ∂S (S˜c) = ( ˜c− ∂˜c ∂m ) (τ∗,m∗), where τ∗ = T∗−t,m∗ = ln(K∗/S). (3.4)
+It is worth noting that the sensitivity-based delta XS is independent of the dynamics of S
+and ξ given in the model (3.1). In addition, if the prices of the T∗-maturity options, for
+a continuum of strike prices, are available, the evaluation of ∂˜c/∂m is model-free, hence
+XS could be computed independently of any models. This is indeed consistent with the
+conclusion by Alexander and Nogueria [3] that hedge ratios for European claims under
+scale-invariant models are model-free, provided a perfect ﬁt to market prices.
+In contrast to sensitivity-based deltas, deriving MV deltas relies on the dynamics in
+(3.1). In particular, we assume, without loss of generality, that σ = (σi,j) ∈ R(d+1)×(d+1) is
+a lower triangular matrix, so that we have,
+⟨dS, dS⟩ = σ2 1,1S2 dt, ⟨dξi, dS⟩ = σ1,1σi+1,1S dt.
+In addition,
+∂V
+∂ξi
+= ∂ ∂ξi (S˜c) = S ∂ ∂ξi
+
+G0 +
+d∑
+j=1
+Gjξj
+
+ = SGi. (3.5)
+Hence, the MV delta hedge ratio in (2.3) under the market model can be computed as
+XS mv = XS +
+d∑
+i=1
+σi+1,1(ξ)
+σ1,1(ξ) Gi(τ∗,m∗). (3.6)
+3.2 Delta-factor hedging
+Now we evaluate the two alternative hedging equations (2.4a) and (2.4b) under the market
+models given by (3.1) and (3.2). For an asset (underlying or option) U, we introduce the
+7
+
+=== page 8 ===
+following notation:
+∆(U) := ∂U ∂S, ∆mv(U) := ∆(U) + d∑ i=1 ∆i(U)σi+1,1 σ1,1S,
+∆j(U) := ∂U ∂ξj , ∆j mv(U) := ∆(U)σ1σ⊤ j+1S + d∑ i=1 ∆i(U)σi+1σ⊤ j+1, (3.7)
+where σi is the i-th row of the diﬀusion matrix σ ∈ R(d+1)×(d+1). In particular, we call
+∆j (∆j mv) the sensitivity-based (MV-based) ξj-exposure. To hedge V using d′ options with
+the strategy X = (XS,XC1,...,XCd′) following the sensitivity-based approach, we set the
+partial sensitivity of the hedged portfolio Π with regard to a risk factor f to zero and
+establish the linear equation
+∂Π
+∂f = 0 ⇒
+{
+XS + ∑d′ i=1 ∆(Ci)XCi = ∆(V ), if f = S;
+∆j(S)XS + ∑d′ i=1 ∆j(Ci)XCi = ∆j(V ), if f = ξj, for j = 1,...,d′. (3.8)
+Alternatively, with MV-based hedging, where there is zero instantaneous co-variation be-
+tween the hedged portfolio Π and the risk factor f, we have
+⟨dΠ, df⟩ = 0 ⇒
+{
+XS + ∑d′ i=1 ∆mv(Ci)XCi = ∆mv(V ), if f = S;
+∆j mv(S)XS + ∑d′ i=1 ∆j mv(Ci)XCi = ∆j mv(V ), if f = ξj, for j = 1,...,d′.
+(3.9)
+Both (3.8) and (3.9) indicate that, for each risk factor f, the aggregated f-exposure of
+all hedging instruments equals the f-exposure of the option to be hedged. In addition, the
+only diﬀerence between them is that the corresponding f-exposure is computed based on
+zero-sensitivity and minimum-variance, respectively.
+Remark 3. The sensitivity-based hedging equation (3.8) does not exploit statistical informa-
+tion established by the SDE model (3.1), and completely relies on the factor representation
+of option prices given by (3.2). This means it is a simpler approach to hedging, which does
+not use “machine learning” techniques to a signiﬁcant extent.
+Remark 4. When one risk factor f is independent of all other risk factors, its MV-based
+hedging condition (3.9) becomes equivalent to its sensitivity-based hedging condition (3.8).
+To see this, suppose f = S is independent of ξ, then σi+1,1 = 0, which yields ∆mv(U) =
+∆(U) according to (3.7); if f = ξj is independent of S and the other factors, ∆j mv(U) =
+∆j(U)σ2 j+1,j+2 ∝ ∆j(U).
+3.3 A two-factor market model
+Here we consider a two-factor market model (i.e. d = 2) as in [18]6 for modelling historical
+price data of EURO STOXX 50 index options and DAX options and therefore constructing
+a realistic option market simulator for computing VaR.
+We focus on studying the following three problems:
+6We assume independent Brownian motions that drive the randomness in S and ξ in the main text of
+[18] for simplicity, but build a model for S and ξ jointly with a full R(d+1)×(d+1) covariance matrix, in
+Appendix B.2 of [18]. Since we would like to see how MV-based delta hedging behaves diﬀerently from its
+sensitivity-based counterpart using market models, we need a market model that captures the correlation
+between S and ξ, according to Remark 4. Hence, here we allow a fully speciﬁed diﬀusion matrix (by neural
+networks) when building a market model.
+8
+
+=== page 9 ===
+(i) Does MV-based delta hedging using neural-SDE market models perform better than
+sensitivity-based delta hedging and MV-based delta hedging using Heston models?
+This poses two questions: (a) is MV-based delta hedging superior to sensitivity-based
+delta hedging, given that the MV approach takes into account possible correlation
+between S and other modelled risk factors? and (b) do neural-SDE market models
+predict more accurate joint dynamics (of S and other modelled risk factors) than
+Heston models, hence producing better MV-based deltas?
+(ii) In both the numerical experiments with Heston-SLV synthetic data [17] and with
+real world data [18], the ﬁrst factor ξ1 behaves similarly to the volatility process of
+the underlying. In fact, as shall be seen in Section 3.5, vegas of vanilla options have
+qualitatively similar geometry over strikes and expiries to their ξ1-exposures. Hence,
+we want to examine whether hedging an option’s ξ1-exposure achieves comparable
+performance with hedging its vega, while the former has computational advantages.
+The calculation of an option’s vega relies on the model speciﬁed for the underlying
+and its volatility process, and, in general, is computationally costly due to lack of
+analytical formulas and non-trivial model calibration. In contrast, the sensitivity-
+based ξ1-exposure, i.e. SG1, is easily decoded from historical time series of option
+price data using a fast PCA-based algorithm (see Algorithm 1 in [17]).
+(iii) Will hedging MV-based ξ1-exposures perform better than hedging sensitivity-based
+ξ1-exposures? Since MV-based hedging exploits the correlation between factors, cap-
+tured by the SDE model (3.1), we are therefore assessing whether estimating a joint
+dynamic model for the factors is beneﬁcial for hedging.
+Assuming the hedging instruments available are the underlying asset S and one liquid
+call option C1, we derive their hedge ratios using a two-factor market model with the
+objective of hedging exposures to S and ξ1 (i.e. d′ = 1). With sensitivity-based hedging,
+we solve (3.8) and obtain
+XS =
+(
+˜c− ∂˜c ∂m ) (τ∗,m∗) −XC1 ( ˜c− ∂˜c ∂m ) (τ1,m1), XC1 = G1(τ∗,m∗) G1(τ1,m1) . (3.10)
+And with MV-based hedging, we solve (3.9) and obtain
+XS mv =
+(
+˜c− ∂˜c ∂m ) (τ∗,m∗) −XC1 mv ( ˜c− ∂˜c ∂m ) (τ1,m1), XC1 mv = G(V ) G(C1), (3.11)
+where, for a call option U with time-to-expiry τU and moneyness mU,
+G(U) :=
+d∑
+i=1
+Gi(τU,mU)σi+1
+[ σ⊤ 2
+σ1σ⊤ 2 − σ⊤ 1 σ1σ⊤ 1 ] . (3.12)
+3.4 Hedge ratios for more option types
+The hedge ratios (3.10) and (3.11) derived in the previous section apply to European vanilla
+call options. Nevertheless, the sensitivity-based and MV-based hedging equations (3.8) and
+(3.9) can, in principle, be universally applied to a much wider range of option types, and
+therefore yield corresponding hedge ratios.
+9
+
+=== page 10 ===
+To derive the hedge ratios for a generic option V , we need to evaluate ∆(V ) and
+∆j(V ), for which the deﬁnitions are given in (3.7). This will be straightforward if V =
+h(S,C1,...,Cn) where {C1,...,Cn} is a series of n European vanilla call options:
+∂V
+∂S = ∂h ∂S + n∑ i=1 ∂h ∂Ci ∆(Ci), ∂V ∂ξj = n∑ i=1 ∂h ∂Ci ∆j(Ci).
+We discuss a few examples as follows.
+European put option. For a European put option with maturity T and strike price K,
+there is a model-free no-arbitrage relationship with the European call option with exactly
+the same maturity and strike price, namely put-call parity given by P (K) = C(K)−S +K,
+where we use P (K) and C(K) to denote prices of the put and the call (without explicitly
+showing their dependence on T for ease of notation). Therefore, we have
+∂P (K)
+∂S = ∆(C(K)) − 1, ∂P (K) ∂ξj = ∆j(C(K)).
+Binary options. Let BC(K) denote a binary call option with strike price K. It is known
+that binary calls can be synthesised using an inﬁnite number of vertical spreads of European
+calls:
+BC(K) = lim
+n→+∞
+n
+(
+C(K) −C(K + 1 n) ) = ∂C(K) ∂K .
+Assuming that C ∈C2 (i.e. all the second-order partial derivatives exist and are continuous),
+∂BC(K)
+∂S = ∂∆(C(K)) ∂K = 1 K ( ∂˜c ∂m − ∂2˜c ∂m2 ) ,
+∂BC(K)
+∂ξj
+= ∂∆j(C(K)) ∂K = −S K ( Gj − ∂Gj ∂m ) .
+Thereafter, the corresponding partial derivatives for a binary put option BP (K) can be
+derived easily using the model-free no-arbitrage put-call parity BP (K) = 1 −BC(K).
+Exotic options. Carr, Ellis and Gupta [12] have developed static hedges for various exotic
+options such as (single and multiple) barrier options and lookback options using European
+vanilla puts and calls, with assumptions on the shape of the local volatility smiles7.
+For example, a down-and-out call option8, denoted as DOC(K,B), with strike K and
+barrier B <K can be exactly replicated by a portfolio of calls and puts
+DOC(K,B) = C(K) −KB−1P (B2K−1).
+The replicating portfolio matches the terminal payoﬀ (i.e. long a call C(K)) and the payoﬀ
+along the barrier (i.e. short additional KB−1 puts struck at B2K−1). Using put-call parity,
+7However, these assumptions will not generally hold for neural-SDE market models. It remains to be
+investigated empirically how the violation of these assumptions impacts hedging performance using neural-
+SDE market models.
+8A down-and-out call option is a vanilla call option if its barrier has not been hit by its expiry date.
+However it becomes worthless if its barrier is hit at any time before it expires.
+10
+
+=== page 11 ===
+we can further re-write DOC(K,B) as a portfolio of vanilla calls. We refer readers to [12]
+for how to construct vanilla call portfolios that statically replicate down-and-out, double
+knockouts, roll-down, ratchet, and lookback options.
+In general, if an option can be statically hedged9 by European vanilla options, then we
+can derive its partial derivatives with regard to S and ξ and therefore its hedge ratios. There
+is vast literature on static hedging of exotic options, to name a few recent developments,
+[8], [28] and [29].
+3.5 Hedging with Black–Scholes and Heston models
+In the empirical studies that follow, we use Black–Scholes and Heston models as two bench-
+mark models for comparing hedging performance. Now we derive the delta(-vega) hedge
+ratios using the two benchmark models.
+Black–Scholes model. The delta and vega of a call option U = Ct(T,K) derived using
+the Black–Scholes model are given by
+∆bs(U) = Φ(d1), Vbs(U) = S
+√
+T −tφ(d1), where d1 = ln(S/K) σ √ T −t + 1 2σ √ T −t. (3.13)
+Therefore, neutralising the delta and vega exposures of V yields the hedge ratios
+XS bs = ∆bs(V ) −XC1 bs · ∆bs(C1), XC1 bs = Vbs(V ) Vbs(C1). (3.14)
+Remark 5. There remains the choice of which volatility should be used as σ in the formulas
+in (3.13), as the implied volatility of the option to hedge (V ) is usually diﬀerent from the
+IV of the option used as the hedging instrument (C1). For example, in computing the
+hedge ratios in (3.14), should one use V ’s IV in the deltas/vegas of both V and C1? In our
+empirical experiments that follow, we choose to use an option’s own IV for computing its
+delta/vega. As it turns out, this has limited impact due to the stability of the Black–Scholes
+model [33].
+Heston model. Heston models are constructed from the SDE
+dSt = rtSt dt + √νtSt dWS t ,
+dνt = k(θ−νt) dt + σ√νt dWν t , d⟨WS t ,Wν t ⟩ = ρ dt, (3.15)
+We denote the delta and vega of a call option U using a Heston model as ∆h(U) and Vh(U),
+which can be derived as the partial derivatives of U, evaluated using the Heston model, with
+respective to S0 and ν0, respectively. We refer readers to Heston [26] and Albrecher et al.
+[1] for a formula for the call option price, from which one could compute call option delta
+and vega (numerically). In particular, Alexander and Nogueria [3] derive the MV-based
+delta using Heston models
+∆h(mv) = ∆h + Vh
+ρσ
+S0
+. (3.16)
+9Nevertheless, the static hedging relation is usually derived with certain model assumptions, so that the
+replicating portfolios may only approximate the option’s payoﬀ. The impact of the approximation errors on
+hedging performance needs to be examined with empirical tests.
+11
+
+=== page 12 ===
+In fact, one could derive (3.16) from (2.3).
+Calibration can aﬀect the hedging results considerably, yet Alexander and Kaeck [2]
+ﬁnd that daily recalibration of the Heston model to option prices “clearly improves its
+hedging performance... for all hedging strategies considered (delta, delta-gamma, and delta-
+vega) and for both rebalancing frequencies (one day and one week)”. Hence, we compute
+hedge ratios using Heston models with daily recalibrated parameters. We give the objective
+function and time series of calibrated parameters in Appendix C.
+In Figure 1, we show the Black–Scholes vegas, the Heston vegas and the market model
+ξ1-exposures for a few traded call options that have selected time-to-expiries (roughly 1M,
+3M, 6M, 1Y and 2Y) as of 2nd January 2019. BS and Heston vegas and ξ1-exposures
+have qualitatively similar behaviour over strikes and expiries. For a ﬁxed strike price, they
+increase over expiries; for a ﬁxed expiry, they ﬁrst increase over strikes, reach a peak near
+the ATM strike level, and then decline.
+2500 3000 3500
+Strike price
+250
+500
+750
+1000
+1250
+1500
+Black–Scholes vega
+44-day
+86-day
+170-day
+352-day
+716-day
+2500 3000 3500
+Strike price
+300
+400
+500
+600
+700
+800
+Heston vega
+44-day
+86-day
+170-day
+352-day
+716-day
+2500 3000 3500
+Strike price
+2000
+2500
+3000
+3500
+4000
+Market model ξ1-exposure (Sens.)
+44-day
+86-day
+170-day
+352-day
+716-day
+Figure 1: Black–Scholes vegas, Heston vegas and market model ξ1-exposures of traded call options as of
+2nd January 2019. Here we only show traded options that are within the liquid range and have selected
+time-to-expiries.
+4 Empirical results
+We assess the hedging performance using the market model speciﬁed in Section 3.3 by
+examining out-of-sample hedging errors where the hedge ratios are given by (3.10) and
+(3.11). In addition, we use hedge ratios derived using Black–Scholes (BS) models and
+Heston models as benchmarks, and examine if the market model yields better hedging
+performance than the benchmarks.
+4.1 Option datasets and the trained neural-SDE market model
+Training data. We use the same dataset from OptionMetrics’ IvyDB Europe [31] as in
+[18] for training the neural-SDE model. To be speciﬁc, OptionMetrics oﬀers historical daily
+settlement prices10 for calls with expiries of 30, 60, 91, 122, 152, 182, 273, 365, 547, and
+730 calendar days, at deltas of 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75,
+and 0.8. We collect daily call option prices from 2nd January 2002 to 31st December 2018
+10These prices are calculated from implied volatilities that are interpolated using a methodology based on
+a kernel smoothing algorithm, according to the OptionMetrics’ IvyDB Europe reference manual [31].
+12
+
+=== page 13 ===
+for the two most traded vanilla European options listed on Eurex, namely EURO STOXX
+50® index options and DAX® options.
+For every expiry and each delta-quoted option, we choose the median of its historical
+moneynesses to deﬁne our liquid option lattice Lliq (see details in Appendix A of [18]);
+We choose the historical median moneynesses (for each delta-quoted option) to deﬁne our
+liquid option lattice Lliq; the liquid range Rliq is computed as the convex hull of the liquid
+lattice. We show the liquid lattice Lliq in Figure 2a. In addition, in Figure 2b, we show
+historical daily prices for the EURO STOXX 50 index, the DAX index, and the 1M at-the-
+money (ATM) normalised call options written on the two indices. As discussed in [18], we
+assume that the volatility processes of the two indices have similar features, and therefore
+concatenate the normalised call price data of the two option books when decoding factors
+and training the neural-SDE model for factors.
+−0.2 0.0 0.2
+Moneyness m
+0.0
+0.5
+1.0
+1.5
+2.0
+Time-to-expiries (in years)
+(a) Liquid lattice Lliq.
+2002 2004 2006 2008 2010 2012 2014 2016 2018
+5000
+10000
+Index price
+EURO STOXX 50
+DAX
+2002 2004 2006 2008 2010 2012 2014 2016 2018
+0.0
+0.1
+1M ATM call option price (normalised)
+EURO STOXX 50
+DAX (b) Historical daily prices (underlying indices and 1M ATM call options).
+Figure 2: Scattergram of liquid option lattice and historical prices (training data).
+Testing data. We analyse the out-of-sample hedging performance on EURO STOXX 50
+index options. For the testing data, we use raw end-of-day settlement prices of actually
+traded contracts, rather than using standardised option prices that are interpolated from
+raw prices for a standard set of expiries and deltas as in the training data. While the
+standardised prices are convenient for decoding factors and estimating statistical models,
+the raw prices are more accurate in reﬂecting options’ values, which are important for
+calculating hedging errors. Speciﬁcally, we collect daily prices for traded call options from
+2rd January 2019 to 30th September 2021 (700 trading days) for the out-of-sample hedging
+analysis. The testing period thus covers the market turmoil of early 2020 induced by the
+COVID-19 pandemic.
+The trained neural-SDE market model. We refer the reader to Section 3 and Ap-
+pendix B.2 of [18] for the detailed factor decoding and SDE estimation procedures. Here,
+we show the decoded factors, the estimated price basis functions G and the trained neural-
+diﬀusion functions σ, which are ingredients for computing hedge ratios.
+Shown in Figure 3 is the cloud of factor realisations decoded from the training data.
+Given these factors, we use the linear programming method (Caron, McDonald and Ponic
+[11]) to eliminate redundant constraints in the system (3.3), which is the projection of the
+13
+
+=== page 14 ===
+original no-arbitrage constraints, constructed in price space, to the R2 factor space. This
+results in only 8 constraints, which we indicate as red dashed lines in Figure 3. The convex
+polygonal domain bounded by these constraints (light green area) is the statically arbitrage-
+free zone for the factors, that is, provided the factor process remains in this region, we are
+guaranteed to have no static arbitrage in the reconstructed call prices on our liquid lattice.
+−0.02 0.00 0.02 0.04 0.06 0.08 0.10
+ξ1
+−0.05
+0.00
+0.05
+0.10
+ξ2
+Figure 3: Trajectory (black dots) of the R2 factors and the corresponding static arbitrage constraints (red
+dashed lines) projected to the R2 factor space.
+Next, we plot the price basis functions of these two factors, denoted as G1 and G2,
+as well as G0, the constant term of ˜c, in Figure 4. The points in the liquid lattice (in
+(τ,m) coordinates) are also shown on this plot. Here the real-valued functions G1 and G2
+are obtained by interpolating the price basis vectors G1 and G2, and G0 is obtained by
+interpolating the normalised call prices averaged over time.
+Figure 4: Price basis functions of the normalised call price surface.
+With the decoded factor data as input, we train a two-factor neural-SDE market model;
+in Appendix A, we demonstrate the goodness-of-ﬁt of the trained model. Finally, we sample
+a few factor data points, and visualise their drift and diﬀusion coeﬃcients, approximated
+by neural networks, in Figure 5. As observed in the trajectory of the factor data in Figure
+3, the data set is distributed around a lower-dimensional manifold. For samples on the
+periphery of the dataset, the learnt drifts tend to point inwards to the manifold, while the
+principal direction of their diﬀusions tend to align with the closest boundary.
+14
+
+=== page 15 ===
+−0.02 0.00 0.02 0.04 0.06 0.08
+ξ1
+−0.02
+0.00
+0.02
+0.04
+ξ2
+Drift
+−0.02 0.00 0.02 0.04 0.06 0.08
+ξ1
+−0.02
+0.00
+0.02
+0.04
+ξ2
+Diﬀusion
+Figure 5: Drift vectors (arrows on the left plot) and diﬀusion matrices (ellipses representing the principal
+components of the diﬀusion on the right plot) for some randomly selected factor data points.
+4.2 Tested option portfolios and hedging error calculation
+We assess the performance of using the trained neural-SDE market model for hedging a
+variety of representative option portfolios. In particular, we deﬁne the naive portfolio on
+some day as the equally-weighted portfolio that consists of all traded call option contracts
+within the liquid range Rliq on the day. In addition, we consider a variety of portfolios
+from outright options to heavily hedged portfolios11. The list of tested portfolios is given
+in Table 1, with detailed description in Appendix B.
+Portfolio Naive Outright Delta spread Delta butterﬂy Strangle Calendar spread VIX
+Number 1 70 210 30 30 45 1
+Table 1: Number of tested portfolios of various types.
+Both the sensitivity-based and MV-based hedging strategies are linear with respect to
+the constituents of the option portfolio, because “the hedging portfolios can be interpreted
+as orthogonal projections of contingent claims onto the closed linear subspace of hedgeable
+portfolios”, as argued by Tankov [37]. Consequently, to hedge a portfolio of options written
+on the same underlying, we compute the hedge ratios for every option in the portfolio and
+then add them up.
+Suppose there are L testing samples (between 2nd January 2019 and 30th September
+2021) on trading days {tl}l=1,...,L, we deﬁne, for an option portfolio Π, two metrics for
+11In practice, some of these portfolios are constructed to trade views on volatility directions or skews,
+hence hedging them may contradict the intended purpose of making proﬁts when market moves as expected.
+By including these portfolios in the hedging analysis, we are more motivated by examining the performance
+of hedging diﬀerent risk proﬁles than giving practical implications.
+15
+
+=== page 16 ===
+measuring its PnL ∆t-variations:
+E
+2
+(Π, ∆t) = 1 L− 1 L∑ l=1 (Πtl+∆t − Πtl )2 , (4.1a)
+ˆE2 tl (Π, ∆t,λ) =
+{
+(Πt1+∆t − Πt1)2 , if l = 1,
+λˆE2 tl−1(Π, ∆t,λ) + (1 −λ) (Πtl+∆t − Πtl )2 , for l = 2,...,L. (4.1b)
+We note thatE(Π, ∆t) > 0 measures the variation of Π’s PnLs over the entire testing period,
+and ˆEtl (Π, ∆t,λ) > 0 is the exponentially-weighted moving average (EWMA) PnL variation
+up to date tl, with the weight decay factor λ∈ (0, 1). On each trading day tl for the testing
+data samples, we suppose that an option portfolio with value Vtl has been written. We
+hedge the portfolio with liquid instruments, hold the hedged portfolio, denoted Πtl , until
+tl + ∆t and then close it, and therefore measure the ∆t-hedging error by the percentages:
+ε(∆t) =E(Π, ∆t) E(V, ∆t) × 100%, ˆεtl (∆t,λ) = ˆEtl (Π, ∆t,λ) ˆEtl (V, ∆t,λ) × 100%. (4.2)
+Whileε(∆t) measures average relative hedging errors over the entire testing period, we use
+ˆεtl (∆t,λ) for generating more time-sensitive measurements of hedging errors. In the follow-
+ing analysis, we will focus on studying hedging performance under two diﬀerent rebalancing
+frequencies: daily (∆t = 1 trading day) and weekly (∆t = 5 trading days).
+4.3 Delta hedging of the naive portfolio
+We ﬁrst compare performance of delta hedging using Black–Scholes models, Heston models
+and neural-SDE market models. In addition, because Heston models and market models
+take into account more risk factors than S, we follow the MV-based approach to compute
+their hedge ratios. We list the delta hedging strategies and the formulas of their hedge
+ratios in Table 2.
+Hedging strategy X S Hedging error ε(∆t)
+∆t = 1 trading day ∆t = 5 trading days
+Delta (BS) ∆bs(V ) in (3.13) 20.19% 33.48%
+Delta (Heston-MV) ∆h(mv)(V ) in (3.16) 19.77% 33.33%
+Delta (nSDE-MV) ∆mv(V ) in (3.7) 18.44% 30.35%
+Table 2: Formulas of hedge ratios under various delta hedging strategies and corresponding relative
+hedging errors ε(∆t) over the entire testing period.
+Table 2 also reportsε(∆t), the average relative ∆t-hedging errors over the testing period,
+for daily and weekly rebalancing cases. We observe the smallest hedging errors with nSDE-
+MV delta hedging, and the largest errors with BS delta hedging. To investigate how the
+three delta hedging strategies perform over time, we show in Figure 6 their relative EWMA
+hedging errors ˆεt(∆t,λ = 0.99). We use the data of the ﬁrst year, i.e. 2019, as seed and do
+not show them in the plots. In both daily and weekly cases, nSDE-MV delta hedging greatly
+reduces hedging errors, when compared with BS delta hedging, from March to September in
+2020, when global equity markets were hit severely by the fear of the COVID-19 pandemic
+16
+
+=== page 17 ===
+2020−01 2020−05 2020−09 2021−01 2021−05 2021−09
+Date
+−25000
+0
+25000
+PnL
+Unhedged
+Delta-hedged (nSDE-MV)
+2020−01 2020−05 2020−09 2021−01 2021−05 2021−09
+10%
+20%
+30%Hedging error ˆε Delta (BS)
+Delta (Heston-MV)
+Delta (nSDE-MV)
+(a) Daily rebalancing.
+2020−01 2020−05 2020−09 2021−01 2021−05 2021−09
+Date
+−50000
+0
+50000
+PnL
+Unhedged
+Delta-hedged (nSDE-MV)
+2020−01 2020−05 2020−09 2021−01 2021−05 2021−09
+20%
+40%
+60%Hedging error ˆε Delta (BS)
+Delta (Heston-MV)
+Delta (nSDE-MV) (b) Weekly rebalancing.
+Figure 6: Top - EWMA hedging errors ˆεt(∆t,λ = 0.99) for the three delta hedging strategies. Bottom -
+time series of the PnLs for the unhedged naive portfolio and for the nSDE-MV delta-hedged portfolio.
+and yet to fully recover. Heston-MV delta hedging also improves BS delta hedging, but
+only slightly in the weekly rebalancing case.
+Neural-SDE and Heston models reduce delta hedging errors, because they are able to
+capture negative correlations between stock return and volatility, which lead to downward
+adjustments in deltas; see (2.3). To verify this, in Figure 7, we show the deltas calculated
+using the three models for call options of various strike prices and expiries, as of 16th March
+2020. In particular, the neural-SDE model gives larger delta adjustments than the Heston
+model for short-dated options.
+2000 2250 2500 2750 3000
+Strike price
+0.2
+0.4
+0.6
+0.8
+Delta
+Time-to-expiry: 32-day
+BS
+Heston-MV
+nSDE-MV
+2000 2250 2500 2750 3000
+Strike price
+0.2
+0.4
+0.6
+0.8
+Time-to-expiry: 277-day
+BS
+Heston-MV
+nSDE-MV
+2000 2250 2500 2750 3000
+Strike price
+0.2
+0.4
+0.6
+0.8
+Time-to-expiry: 641-day
+BS
+Heston-MV
+nSDE-MV
+Figure 7: Model-implied deltas for call options of various strike prices and expiries as of 16th March 2020.
+4.4 Delta-factor hedging of the naive portfolio
+As discussed in Section 3.3, we focus on examining the performance of sensitivity-based and
+MV-based delta-ξ1 hedging using neural-SDE market models, relative to delta-vega hedging
+using Black–Scholes and Heston models. To construct these hedges, we assume the hedging
+instruments available are the underlying asset S and one liquid option C1.
+17
+
+=== page 18 ===
+Hedging instruments of diﬀerent tenors. Due to liquidity concerns, we restrict our
+choice of C1, the single option used as a hedging instrument, to traded options that are
+closest to at-the-money. Nevertheless, we assume that we are free to choose tenors up to
+1 year. We analyse the errors of hedging the naive portfolio when near ATM options of
+diﬀerent tenors are used as the hedging instrument.
+Speciﬁcally, we consider the set of 12 consecutive monthly tenors from 1M to 1Y. For
+each tenor, we identify the available time-to-expiry of traded options that is closest to the
+tenor, and then choose the closest to ATM option of the identiﬁed time-to-expiry as the
+hedging instrument. Thereafter, we compute the hedging errors for the naive portfolio
+over the out-of-sample testing period, under the four seven hedging strategies that are
+summarised in Table 3 (along with the formulas of corresponding hedge ratios).
+Hedging strategy X S X C1 Relevant formulas
+Delta-vega (BS) ∆bs(V ) −X C1 · ∆bs(C1) Vbs(V )/Vbs(C1) (3.13)
+Delta-vega (Heston) ∆h(V ) −X C1 · ∆h(C1) Vh(V )/Vh(C1) (3.16)
+Delta-ξ1 (Sens.) ∆(V ) −X C1 · ∆(C1) ∆1(V )/∆1(C1) (3.7), (3.8), (3.10)
+Delta-ξ1 (MV) ∆mv(V ) −X C1 · ∆mv(C1) G(V )/G(C1) (3.7), (3.9), (3.11), (3.12)
+Table 3: Formulas of hedge ratios under various hedging strategies.
+In Figure 8, we show how hedging errors change with the use of hedging options of
+diﬀerent tenors, for both daily and weekly rebalancing cases. Overall, the performance of
+delta-vega (BS- and Heston-based) and delta-ξ1 (sensitivity- and MV-based) hedging are
+much worse when short-dated options are used as the hedging instrument. In particular,
+using 1M ATM options as the hedging instrument gives consistently larger errors than
+(simpler) delta hedging. The potential reason is that, as we have seen in Figure 1, short-
+dated options have relatively smaller vegas and ξ1-exposures, making them less eﬀective in
+hedging long-dated options in the portfolio.
+1M 2M 3M 4M 5M 6M 7M 8M 9M 10M 11M 12M
+Tenor (in months) of the hedging option
+0%
+5%
+10%
+15%
+20%
+25%
+30%
+35%
+40%
+45%Hedging errors ε
+Daily rebalancing
+Delta (BS)
+Delta-vega (BS)
+Delta-vega (Heston)
+Delta-ξ1 (nSDE-Sens.)
+Delta-ξ1 (nSDE-MV)
+1M 2M 3M 4M 5M 6M 7M 8M 9M 10M 11M 12M
+Tenor (in months) of the hedging option
+0%
+10%
+20%
+30%
+40%
+50%
+60%
+70%Hedging errors ε
+Weekly rebalancing
+Delta (BS)
+Delta-vega (BS)
+Delta-vega (Heston)
+Delta-ξ1 (nSDE-Sens.)
+Delta-ξ1 (nSDE-MV)
+Figure 8: Average relative errors ε of hedging the naive option portfolio when near ATM options of
+diﬀerent tenors are used as the hedging instrument.
+In the daily rebalancing case, delta-ξ1 hedging seems to be at least as good as BS delta-
+vega hedging, regardless of which tenor of option is used as the hedging instrument. Mean-
+while, Heston delta-vega hedging leads to very similar hedging errors to delta-ξ1 hedging.
+18
+
+=== page 19 ===
+In particular, delta-ξ1 hedging and Heston delta-vega hedging outperform BS delta-vega
+hedging more signiﬁcantly when shorter-dated options are used as the hedging instrument.
+In practice, in markets where short-dated options are much more liquid than long-dated
+options (e.g. FX), we would then be more comfortable with hedging ξ1-exposures or Heston
+vegas than BS vegas. Overall, the performance of delta-ξ1 hedging and Heston delta-vega
+hedging is less sensitive than that of BS delta-vega hedging to the choice of hedging op-
+tion. When the hedging option’s time-to-expiry is at least 7 months, the performance of the
+four hedging strategies is similar. Comparing sensitivity-based delta-ξ1 hedging and MV-
+based delta-ξ1 hedging, taking into account the correlation between factors does reduce the
+hedging errors if the hedging option’s time-to-expiry is less than 7 months.
+When the hedged portfolios are rebalanced weekly, we observe similar behaviours of the
+four hedging strategies as seen in the daily rebalancing case. MV-based delta-ξ1 hedging
+outperforms sensitivity-based delta-ξ1 hedging only when the hedging option’s time-to-
+expiry is less than 5 months.
+Hedging errors over time. Next, we investigate how the four hedging strategies perform
+over time. While Figure 8 shows the average relative hedging errors ε(∆t) over the entire
+testing period, we now present the relative EWMA hedging errors ˆεt(∆t,λ = 0.99). For
+each hedging strategy, we choose the corresponding optimal hedging option that gives the
+smallest average hedging errors in the testing period. Therefore, in the daily rebalancing
+case, based on the evidence in Figure 8, we choose 7M ATM options as hedging instruments
+for BS delta-vega hedging, and 5M ATM options as hedging instruments for Heston delta-
+vega hedging and (sensitivity- and MV-based) delta-ξ1 hedging. In the top plot of Figure 9a,
+we report the EWMA hedging errors of the four hedging strategies that are rebalanced on
+a daily basis. For better illustrating the dynamic changes in the hedging errors, we provide
+the time series of the PnLs for the unhedged naive portfolio and for the sensitivity-based
+delta-ξ1-hedged naive portfolio in the bottom plots.
+First, all the investigated hedging strategies yield similar dynamics of hedging errors.
+Hedging errors experienced a sharp rise in March 2020, when the fear of the COVID-19
+pandemic severely hit global equity markets. The hedging errors maintained a higher-than-
+usual level until the winter of 2020. Meanwhile, we observe concurrent larger ﬂuctuations
+of the portfolio PnLs in the bottom plot. When comparing across diﬀerent hedging strate-
+gies, MV-based delta-ξ1 hedging is consistently the best, and maintains a 1% advantage
+in hedging errors when compared with BS delta-vega hedging. Heston delta-vega hedging
+gives roughly the same hedging errors as MV-based delta-ξ1 hedging before March 2020,
+but performs worse in stressed periods. Sensitivity-based delta-ξ1 hedging is better than
+BS delta-vega hedging except before March 2020.
+We report the same hedging error statistics for weekly-rebalanced hedging in Figure
+9b. In this comparison analysis, we choose 7M ATM options as hedging options for BS
+delta-vega hedging, 6M ATM options for Heston delta-vega hedging and sensitivity-based
+delta-ξ1 hedging, and 5M ATM options for MV-based delta-ξ1 hedging. Sensitivity-based
+delta-ξ1 hedging is almost always better than BS and Heston delta-vega hedging. However,
+unlike the daily rebalancing case, MV-based delta-ξ1 hedging is worse than sensitivity-based
+delta-ξ1 hedging except before March 2020.
+Remark 6. Why does MV-based delta-ξ1 hedging perform worse than sensitivity-based
+delta-ξ1 hedging, in the weekly rebalancing case, after March 2020? By construction, MV-
+19
+
+=== page 20 ===
+2020−01 2020−05 2020−09 2021−01 2021−05 2021−09
+Date
+−25000
+0
+25000
+PnL
+Unhedged
+Delta-ξ1-hedged (nSDE-Sens.)
+2020−01 2020−05 2020−09 2021−01 2021−05 2021−09
+3%
+4%
+5%
+6%Hedging error ˆε
+Delta-vega (BS)
+Delta-vega (Heston)
+Delta-ξ1 (nSDE-Sens.)
+Delta-ξ1 (nSDE-MV)
+(a) Daily rebalancing.
+2020−01 2020−05 2020−09 2021−01 2021−05 2021−09
+Date
+−50000
+0
+50000
+PnL
+Unhedged
+Delta-ξ1-hedged (nSDE-Sens.)
+2020−01 2020−05 2020−09 2021−01 2021−05 2021−09
+2%
+4%
+6%Hedging error ˆε
+Delta-vega (BS)
+Delta-vega (Heston)
+Delta-ξ1 (nSDE-Sens.)
+Delta-ξ1 (nSDE-MV) (b) Weekly rebalancing.
+Figure 9: Top - EWMA hedging errors ˆεt(∆t,λ = 0.99) for the four hedging strategies. Bottom - time
+series of the PnLs for the unhedged naive portfolio and for the nSDE sensitivity-based delta-ξ1-hedged
+naive portfolio.
+based delta-ξ1 hedging is beneﬁcial only when the neural-SDE model gives good adjustments
+to ξ1-exposures based on accurate forecasts of the correlation between ξ1 and ξ2 within the
+rebalancing horizon. When the rebalancing horizon gets larger (i.e. from one day to one
+week) and the instantaneous correlation between ξ1 and ξ2 changes drastically, the neural-
+SDE might give a poor model for the average correlation within the rebalancing horizon
+and therefore deteriorate the hedging performance. To verify these arguments, we present
+empirical evidence and analysis of decoded factors in Appendix D.
+Hedging instruments of diﬀerent moneynesses. Although we have restricted the
+choice of hedging instruments to ATM options due to liquidity concerns, it is interesting
+to see whether ITM and OTM options could achieve lower hedging errors. Therefore, we
+ﬁx the tenors and see how options of diﬀerent moneynesses perform when used as hedging
+instruments.
+In Figure 10, we show how hedging errors change with the use of hedging options of
+diﬀerent moneynesses, for both daily and weekly rebalancing cases. For the daily rebalancing
+case, we choose 7M options as hedging instruments for BS delta-vega hedging, and 5M
+options for Heston delta-vega hedging and (sensitivity- and MV-based) delta-ξ1 hedging.
+For the weekly rebalancing case, we choose 7M options as hedging instruments for BS
+delta-vega hedging, 6M options for Heston delta-vega hedging and sensitivity-based delta-
+ξ1 hedging, and 5M options for MV-based delta-ξ1 hedging. For all the hedging strategies,
+ATM options achieve the lowest hedging errors (except the Heston delta-vega and MV-based
+delta-ξ1 hedging in the weekly rebalancing case). This is unsurprising because both vegas
+and ξ1-exposure reach their peak near the ATM strike level, as seen in Figure 1; hence,
+ATM options are more eﬀective in reducing a portfolio’s vegas and ξ1-exposure.
+20
+
+=== page 21 ===
+0.2 0.3 0.4 0.5 0.6 0.7 0.8
+Delta of the hedging option
+3%
+4%
+5%
+6%
+7%
+8%Hedging errors ε
+Daily rebalancing
+Delta-vega (BS)
+Delta-vega (Heston)
+Delta-ξ1 (nSDE-Sens.)
+Delta-ξ1 (nSDE-MV)
+0.2 0.3 0.4 0.5 0.6 0.7 0.8
+Delta of the hedging option
+2%
+4%
+6%
+8%
+10%
+12%
+14%Hedging errors
+Weekly rebalancing
+Delta-vega (BS)
+Delta-vega (Heston)
+Delta-ξ1 (nSDE-Sens.)
+Delta-ξ1 (nSDE-MV)
+Figure 10: Average relative errors ε of hedging the naive option portfolio when options of diﬀerent
+moneynesses (in deltas) are used as the hedging instrument.
+MV-based direct hedging. We consider an alternative MV-based hedging approach
+where, rather than requiring zero instantaneous co-variations between hedged portfolios
+and risk factors, we require a hedged portfolio to have zero instantaneous co-variations with
+all its hedging instruments. We call this approach MV-based direct hedging, and compare
+its performance with MV-based delta-ξ1 hedging.
+Again, assuming the hedging instruments available are the underlying asset S and one
+liquid call option C1, we derive their hedge ratios under the two-factor neural-SDE model
+speciﬁed in Section 3.3:
+{
+⟨dΠ, dS⟩ = 0,
+⟨dΠ, dC1⟩ = 0; ⇒
+[ 1 ∆mv(C1)
+∆mv(C1) H(C1,C1)
+][XS
+XC1
+]
+=
+[ ∆mv(V )
+H(V,C1)
+]
+, (4.3)
+where, for two options U and V ,
+H(U,V ) := ∆(U)∆(V ) + 1 σ2 1,1S2 [ ∆(U) ∆1(U) ∆2(U) ] σσ⊤
+
+
+∆(V )
+∆1(V )
+∆2(V )
+
+. (4.4)
+MV-based delta-ξ1 hedging constructs hedge ratios by eliminating sensitivities to (S,ξ1)
+with adjustments due to correlations between (S,ξ1) and ξ2. Instead, MV-based direct
+hedging establishes hedge ratios by eliminating a combination of exposures to all risk factors
+(S,ξ1,ξ2) that aﬀect the hedging option C1.
+It turns out that MV-based direct hedging leads to quite similar hedging errors to MV-
+based delta-ξ1 hedging, regardless of which hedging option is used. To illustrate this, we
+show in Figure 11 the diﬀerence in average relative hedging errors ε (errors of MV-based
+delta-ξ1 hedging minus errors of MV-based direct hedging) for the naive option portfolio
+when options of diﬀerent tenors (in months) and moneynesses (in deltas) are used as hedging
+instruments. The diﬀerence is close to zero in all cases, while there seems to be consistent
+patterns between the daily and weekly rebalancing cases.
+Concluding remarks. To conclude from the evidence presented in this section, choosing
+diﬀerent options as a hedging instrument makes a substantial diﬀerence to the resultant
+21
+
+=== page 22 ===
+1M 2M 3M 4M 5M 6M 7M 8M 9M 10M 11M 12M
+Tenor (in months) of the hedging option
+-0.15%
+-0.10%
+-0.05%
+0.00%
+0.05%
+0.10%
+0.15%
+0.20%
+0.25%
+0.30%
+Hedging errors
+Daily rebalancing
+Weekly rebalancing
+0.2 0.3 0.4 0.5 0.6 0.7 0.8
+Delta of the hedging option
+-0.02%
+0.00%
+0.02%
+0.04%
+0.06%
+0.08%
+0.10%
+Hedging errors
+Daily rebalancing
+Weekly rebalancing
+Figure 11: Diﬀerence in average relative hedging errors ε (errors of MV-based delta-ξ1 hedging minus
+errors of MV-based direct hedging) for the naive option portfolio when options of diﬀerent tenors (in
+months) and moneynesses (in deltas) are used as hedging instruments. Left - diﬀerence in hedging errors
+when ATM options of diﬀerent tenors are used as hedging instruments. Right - diﬀerence in hedging errors
+when options of speciﬁed tenors (corresponding to Figure 10) and diﬀerent moneynesses are used as
+hedging instruments.
+hedging performance. In particular, the performance of BS delta-vega hedging is more
+sensitive to the choice of ATM hedging options of diﬀerent tenors than that of Heston delta-
+vega hedging and market model delta-ξ1 hedging (see Figure 8). In order to allow a fair
+comparison of hedging performance in the following analysis (for more option portfolios), we
+choose 7M ATM options as the hedging instruments for all the hedging strategies because
+using them BS and Heston delta-vega hedging and delta-ξ1 hedging yield similarly good
+hedging performance for the naive portfolio (see Figure 8). This allows us to disentangle
+the eﬀect of the diﬀerent payoﬀ characteristics in a situation when the average hedging
+performance is comparable.
+4.5 Hedging error analysis for more portfolios
+We summarise the relative hedging errors ε of diﬀerent categories of option portfolios in
+Table 4. When there are multiple portfolios within one category (all except the naive and
+VIX portfolio), the table reports the average hedging errors over all portfolios of the same
+category. We make the following observations:
+(i) Neural-SDE MV-based delta hedging outperforms BS and Heston-MV delta hedging
+for the naive portfolio, outrights, strangles and the VIX portfolio, in both daily and
+weekly rebalancing cases.
+(ii) For outright and strangle portfolios, (sensitivity-based and MV-based) delta-ξ1 hedg-
+ing consistently outperforms BS delta-vega hedging by at least 3%. Meanwhile, MV-
+based delta-ξ1 hedging slightly improves sensitivity-based hedging, though it is worse
+than Heston delta-vega hedging. Compared with other portfolio categories, these two
+types only involve options of one direction (i.e. either all-long or all-short).
+(iii) For delta spread portfolios, there is no signiﬁcant diﬀerence in hedging their vegas or
+ξ1-exposures. However, Heston delta-vega hedging reduces at least 7% errors when
+22
+
+=== page 23 ===
+compared with the other strategies of hedging butterﬂy portfolios in the weekly re-
+balancing case.
+(iv) Sensitivity-based delta-ξ1 hedging achieves the lowest hedging errors for the VIX
+portfolio, while MV-based delta-ξ1 hedging improves over BS and Heston delta-vega
+hedging by at least 5%. This seems to imply that ξ1-exposure is a better indicator of
+volatility risk than BS or Heston vega.
+(v) All the given hedging strategies perform poorly for calendar spread portfolios. The
+best strategy is the simpler delta hedging, which only manages a reduction of less
+than 4% of the PnL ﬂuctuations.
+Daily rebalancing (∆t = 1 trading day)
+Portfolio category Delta (BS) Delta (Heston-MV) Delta (nSDE-MV) Delta-vega (BS) Delta-vega (Heston) Delta-ξ1 (nSDE-Sens.) Delta-ξ1 (nSDE-MV)
+Naive 20.19% 19.77% 18.44% 4.36% 4.35% 4.22% 4.33%
+Outright 29.00% 28.66% 27.32% 14.89% 10.68% 11.34% 11.06%
+Delta spread 12.96% 19.05% 15.21% 11.45% 11.47% 11.69% 11.38%
+Delta butterﬂy 62.54% 85.41% 73.67% 48.77% 47.07% 51.84% 49.67%
+Strangle 24.47% 23.46% 22.66% 12.05% 8.49% 9.02% 8.78%
+Calendar spread 96.21% 100.3% 104.4% 164.4% 110.9% 114.2% 111.1%
+VIX 81.54% 82.49% 77.24% 59.46% 51.59% 51.12% 53.39%
+Weekly rebalancing (∆t = 5 trading days)
+Portfolio category Delta (BS) Delta (Heston-MV) Delta (nSDE-MV) Delta-vega (BS) Delta-vega (Heston) Delta-ξ1 (nSDE-Sens.) Delta-ξ1 (nSDE-MV)
+Naive 33.48% 33.33% 30.35% 4.13% 4.64% 4.09% 6.13%
+Outright 43.27% 44.13% 39.30% 22.68% 13.50% 16.68% 15.41%
+Delta spread 21.47% 28.30% 21.24% 18.48% 18.73% 19.47% 17.30%
+Delta butterﬂy 72.52% 97.63% 68.83% 49.21% 38.34% 45.58% 50.37%
+Strangle 38.35% 38.02% 34.05% 18.30% 9.48% 12.41% 12.18%
+Calendar spread 96.77% 96.08% 106.0% 226.5% 109.7% 140.1% 132.2%
+VIX 87.35% 88.74% 82.74% 56.59% 51.05% 45.20% 49.71%
+Table 4: Average hedging errors ε(∆t) of diﬀerent categories of option portfolios under diﬀerent hedging
+strategies. The lowest hedging error of each category is highlighted in bold, separately for delta hedging
+strategies and delta-vega/ξ1-hedging strategies.
+Next, we compare the hedging performance of the four delta-factor hedging strategies
+when applied to outright options of diﬀerent expiries and moneynesses. In Figure 12, we
+show the heatmaps of three pairwise hedging error diﬀerences, when the hedges are re-
+balanced on a daily basis. In each plot, given values indicate the second listed strategy
+performs better, i.e. less hedging errors. The leftmost plot shows that MV-based delta-ξ1
+hedging outperforms BS delta-vega hedging for almost all combinations of tenors and mon-
+eynesses. In particular, the advantage of MV-based delta-ξ1 hedging gets more pronounced
+for long-dated (18M and 24M) OTM options. It is also interesting to see that BS delta-vega
+hedging slightly outperforms delta-ξ1 hedging for some 5M and 6M options. The reason may
+be that the hedging instrument we choose is a 7M near ATM option, while BS delta-vega
+hedging gives more eﬃcient hedge ratios for options with speciﬁcations nearer the hedging
+instrument. This is consistent with our observation in Section 4.4 that the performance of
+BS delta-vega hedging is more sensitive to the choice of the hedging option than that of
+market model delta-ξ1 hedging.
+The right plot shows that, when hedging ξ1-exposures, it is beneﬁcial to follow the MV-
+based approach and take into account the correlation between factors only when the options
+to hedge have long expiries (typically more than 9 months). When compared with Heston
+23
+
+=== page 24 ===
+delta-vega hedging, as shown in the middle plot, MV-based delta-ξ1 hedging is better for
+long-dated ATM and ITM options, and is worse for all short-dated options.
+1M
+2M
+3M
+4M
+5M
+6M
+9M
+12M
+18M
+24M
+Tenor
+0.20.30.40.50.60.70.8
+Moneyness in deltas
+Delta-vega(BS) − delta-ξ1(nSDE-MV)
+0%
+5%
+10%
+15%
+20%
+1M
+2M
+3M
+4M
+5M
+6M
+9M
+12M
+18M
+24M
+Tenor
+0.20.30.40.50.60.70.8
+Moneyness in deltas
+Delta-vega(Heston) − delta-ξ1(nSDE-MV)
+−2%
+−1%
+0%
+1%
+1M
+2M
+3M
+4M
+5M
+6M
+9M
+12M
+18M
+24M
+Tenor
+0.20.30.40.50.60.70.8
+Moneyness in deltas
+Delta-ξ1(nSDE-Sens.) − delta-ξ1(nSDE-MV)
+0%
+2%
+4%
+Figure 12: Comparison of hedging errors ε(∆t = 1 trading day) for positions of outright options with
+various tenors (i.e. time-to-maturities) and moneynesses (measured in deltas), hedged using 7M ATM
+options.
+The disadvantage of MV-based delta-ξ1 hedging over Heston delta-vega hedging for
+short-dated option is partly due to the tenor choice of the hedging options. Compared with
+Figure 12, where we use 7M ATM options to hedge, we show in Figure 13 a similar analysis
+but with 2M ATM options as hedging instruments. We observe that the relative perfor-
+mance of hedging short-dated options by MV-based delta-ξ1 gets improved. Nevertheless,
+hedging OTM long-dated options gets worse as shorter-tenor options are used as hedging
+instruments.
+1M
+2M
+3M
+4M
+5M
+6M
+9M
+12M
+18M
+24M
+Tenor
+0.20.30.40.50.60.70.8
+Moneyness in deltas
+Delta-vega(BS) − delta-ξ1(nSDE-MV)
+0%
+20%
+40%
+60%
+80%
+1M
+2M
+3M
+4M
+5M
+6M
+9M
+12M
+18M
+24M
+Tenor
+0.20.30.40.50.60.70.8
+Moneyness in deltas
+Delta-vega(Heston) − delta-ξ1(nSDE-MV)
+−8%
+−6%
+−4%
+−2%
+0%
+2%
+1M
+2M
+3M
+4M
+5M
+6M
+9M
+12M
+18M
+24M
+Tenor
+0.20.30.40.50.60.70.8
+Moneyness in deltas
+Delta-ξ1(nSDE-Sens.) − delta-ξ1(nSDE-MV)
+0%
+5%
+10%
+15%
+Figure 13: Comparison of hedging errors ε(∆t = 1 trading day) for positions of outright options with
+various tenors (i.e. time-to-maturities) and moneynesses (measured in deltas), hedging using 2M ATM
+options.
+For completeness, we show in Figure 14 the heatmaps of the three pairwise hedging
+error diﬀerences when the hedges are rebalanced on a weekly basis. We have consistent
+observations with the daily rebalancing case, while the size of the diﬀerences gets larger.
+Revisiting the hedging of the VIX portfolio
+When hedging the VIX portfolio, the best hedging strategy, i.e. sensitivity-based delta-ξ1
+hedging, only manages to reduce its PnL variations by half (see Table 4). This is likely
+due to the fact that the VIX portfolio consists of approximately 1M options [15] while the
+24
+
+=== page 25 ===
+1M
+2M
+3M
+4M
+5M
+6M
+9M
+12M
+18M
+24M
+Tenor
+0.20.30.40.50.60.70.8
+Moneyness in deltas
+Delta-vega(BS) − delta-ξ1(nSDE-MV)
+0%
+10%
+20%
+30%
+40%
+1M
+2M
+3M
+4M
+5M
+6M
+9M
+12M
+18M
+24M
+Tenor
+0.20.30.40.50.60.70.8
+Moneyness in deltas
+Delta-vega(Heston) − delta-ξ1(nSDE-MV)
+−10%
+−5%
+0%
+1M
+2M
+3M
+4M
+5M
+6M
+9M
+12M
+18M
+24M
+Tenor
+0.20.30.40.50.60.70.8
+Moneyness in deltas
+Delta-ξ1(nSDE-Sens.) − delta-ξ1(nSDE-MV)
+0%
+5%
+10%
+15%
+Figure 14: Comparison of hedging errors ε(∆t = 5 trading days) for positions of outright options with
+various tenors (i.e. time-to-maturities) and moneynesses (measured in deltas), hedging using 7M ATM
+options.
+hedging options used in all the hedging strategies have 7M tenor. Hence, to ﬁnd the optimal
+hedging instrument to use for the VIX portfolio, we perform a similar hedging instrument
+analysis as for the naive portfolio in Figure 8.
+In Figure 15, we show how hedging errors change with the use of hedging options of
+diﬀerent tenors, for both daily and weekly rebalancing. In both cases, MV-based delta-ξ1
+hedging is at least as good as BS and Heston delta-vega hedging, regardless of which tenor
+of option is used as the hedge. In practice, it might be more sensible to hedge the VIX
+with 1M options, which are usually more liquid; and when 1M options are used as hedges,
+MV-based delta-ξ1 hedging performs the best and signiﬁcantly improves sensitivity-based
+delta-ξ1 hedging. Similar to hedging the naive portfolio, the performance of delta-ξ1 hedging
+is less sensitive than that of BS delta-vega hedging to the choice of the hedging option for
+the VIX portfolio.
+1M 2M 3M 4M 5M 6M 7M 8M 9M 10M 11M 12M
+Tenor (in months) of the option hedge
+0%
+10%
+20%
+30%
+40%
+50%
+60%
+70%
+80%
+90%Hedging errors
+Daily rebalancing
+Delta (BS)
+Delta-vega (BS)
+Delta-vega (Heston)
+Delta-ξ1 (nSDE-Sens.)
+Delta-ξ1 (nSDE-MV)
+1M 2M 3M 4M 5M 6M 7M 8M 9M 10M 11M 12M
+Tenor (in months) of the option hedge
+20%
+30%
+40%
+50%
+60%
+70%
+80%
+90%
+100%Hedging errors
+Weekly rebalancing
+Delta (BS)
+Delta-vega (BS)
+Delta-vega (Heston)
+Delta-ξ1 (nSDE-Sens.)
+Delta-ξ1 (nSDE-MV)
+Figure 15: Average relative errors ε of hedging the VIX option portfolio when near ATM options of
+diﬀerent tenors are used as the hedge.
+We report the relative EWMA hedging errors ˆεt(∆t,λ = 0.99) of the four hedging
+strategies using 1M ATM options as the hedge (that are rebalanced on a daily basis and
+on a weekly basis respectively) in Figure 16a and 16b. For better illustrating the dynamic
+changes in the hedging errors, we append the time series of the PnLs for the unhedged VIX
+25
+
+=== page 26 ===
+portfolio and for the MV-based delta-ξ1-hedged VIX portfolio at the bottom. MV-based
+delta-ξ1 hedging consistently improves sensitivity-based delta-ξ1 hedging over the course
+of the testing period, where the largest improvement amounts to about 20%. MV-based
+delta-ξ1 hedging is also consistently better than BS and Heston delta-vega hedging most of
+time, while the advantage is more apparent in the weekly rebalancing case.
+2020−01 2020−05 2020−09 2021−01 2021−05 2021−09
+Date
+0.00
+0.05
+0.10
+PnL
+Unhedged
+Delta-ξ1-hedged (nSDE-MV)
+2020−01 2020−05 2020−09 2021−01 2021−05 2021−09
+10%
+20%
+30%Hedging error ˆε
+Delta-vega (BS)
+Delta-vega (Heston)
+Delta-ξ1 (nSDE-Sens.)
+Delta-ξ1 (nSDE-MV)
+(a) Daily rebalancing.
+2020−01 2020−05 2020−09 2021−01 2021−05 2021−09
+Date
+0.0
+0.2
+PnL
+Unhedged
+Delta-ξ1-hedged (nSDE-MV)
+2020−01 2020−05 2020−09 2021−01 2021−05 2021−09
+20%
+40%
+60%
+80%Hedging error ˆε
+Delta-vega (BS)
+Delta-vega (Heston)
+Delta-ξ1 (nSDE-Sens.)
+Delta-ξ1 (nSDE-MV) (b) Weekly rebalancing.
+Figure 16: Top - EWMA hedging errors ˆεt(∆t,λ = 0.99) for the four delta hedging strategies. Bottom -
+time series of the PnLs for the unhedged VIX portfolio and for the nSDE MV-based delta-ξ1-hedged VIX
+portfolio.
+5 Conclusions
+We derive sensitivity-based and MV-based hedging strategies in neural-SDE market models
+that satisfy generic systems of linear equations. In particular, we focus on a two-factor
+market model and examine the performance of its derived (1) MV-based delta hedging
+and (2) single-option hedging strategies, called delta-ξ1 hedging, when applied to various
+portfolios of EURO STOXX 50 index options over typical and stressed market periods.
+We compare market model delta(-ξ1) hedging with Black–Scholes and Heston delta(-vega)
+hedging, along with considering the use of diﬀerent hedging instruments and rebalancing
+frequencies. The empirical results address the following three questions:
+(i) Does MV-based delta hedging improve sensitivity-based delta hedging? In addition,
+since MV-based hedge ratios rely on a model-speciﬁc correlation between S and other
+modelled risk factors, do market models predict more accurate correlations than Hes-
+ton models? The statistics displayed in Table 2 and Figure 6 give positive answers to
+both questions. In fact, the observation that MV hedge ratios provide better hedges
+on average is consistent with empirical ﬁndings in the literature [2, 3]. We ﬁnd that
+neural-SDE market models yield particularly lower hedging errors during stressed
+market periods, indicating their capability of better predicting correlation between S
+and other modelled risk factors.
+26
+
+=== page 27 ===
+(ii) Does market model delta-ξ1 hedging outperform Black–Scholes and Heston delta-vega
+hedging? We have shown that the hedging performance of a strategy highly depends
+on the choice of hedging instruments, and therefore we answer this question as follows:
+(a) BS delta-vega hedging seems to be more sensitive to the choice of the hedging
+instrument, in particular its tenor, than Heston delta-vega hedging and delta-ξ1
+hedging, both when hedging the naive portfolio and the VIX portfolio. Traders
+might favour less sensitive hedging strategies as they will have more ﬂexibility
+in choosing the hedging instrument and can better accommodate liquidity and
+other practical restrictions.
+(b) When optimal hedges are chosen, delta-ξ1 hedging is shown to outperform BS
+delta-vega hedging consistently over time and at diﬀerent rebalancing frequen-
+cies, for the naive and the VIX portfolios. In particular, delta-ξ1 hedging leads
+to the largest improvements for hedging long-dated and OTM options. However,
+there is no signiﬁcant diﬀerence in their hedging performance when hedging delta
+spread and delta butterﬂy portfolios.
+(c) Heston delta-vega hedging shares many similarities with MV-based delta-ξ1
+hedging, in terms of the sensitivity of hedging errors with respect to hedging
+options (Figure 8) and hedging error dynamics (Figure 9 and 16). Overall, MV-
+based delta-ξ1 hedging outperforms Heston delta-vega hedging for the naive and
+VIX portfolio. However, the analysis on outright options suggests that Heston
+delta-vega hedging is better suited for short-dated options.
+(iii) In the market model, does the dependence between factors that is estimated by the
+neural-SDE improve delta-ξ1 hedging? There is not a deﬁnite answer to this ques-
+tion, as it depends on which hedging instrument is used. From the evidence in the
+study of the naive and VIX portfolios, MV-based delta-ξ1 hedging can improve on
+the sensitivity-based counterpart when short-dated options are used as the hedge.
+Speciﬁcally, it is worth highlighting that when hedging the VIX using 1M options,
+MV-based delta-ξ1 hedging can improve sensitivity-based delta-ξ1 hedging by as much
+as 20%, and BS and Heston delta-vega hedging by 10%.
+Overall, the hedging performance of “PCA-factor” hedging is impressive: though ξ1 is
+a factor decoded statistically from historical option prices using a simple, model-free PCA-
+based method, hedging its exposure is at least as good as BS vega hedging and comparable
+with Heston vega hedging. Meanwhile, since MV-based delta-ξ1 hedging is not necessar-
+ily better than the model-free sensitivity-based counterpart, in some cases it may not be
+necessary to establish and estimate a model for factor dynamics at all.
+A The trained neural-SDE market model
+We establish a neural-SDE model for the joint dynamics of (ln S,ξ1,ξ2) and derive hedge
+ratios based on this model. In this section, we demonstrate the goodness-of-ﬁt of this model
+and its capability as a realistic market simulator.
+In Figure 17, we show the evolution of training losses and validation losses over epochs
+during the training of the model. Both the training and validation losses decline rapidly
+over the ﬁrst 1000 epochs and then converge gradually.
+27
+
+=== page 28 ===
+0 5000 10000 15000 20000
+Epochs
+−6000
+−4000
+−2000
+Loss history for model of (ln S, ξ)
+Training loss
+Validation loss
+Figure 17: Evolution of training losses and validation losses for the joint model of ln S and ξ.
+The loss function is constructed based on the likelihood of observing historical fac-
+tor paths, subject to arbitrage constraints. Our approximate likelihood corresponds to an
+assumption that the model residuals are independent standard normal white noise. There-
+fore, it is worth checking if the model residuals appear to be independent standard normals,
+within our training data. In Figure 18, we show the normal QQ-plots of the empirical
+marginal distributions for the residuals. For the underlying stock indices and ξ2, their
+residuals show mild fat tails. For ξ1, its residuals appear slightly right-skewed, implying
+higher-than-expected probabilities for large volatilities.
+−4 −2 0 2 4
+Theoretical Quantiles
+−4
+−2
+0
+2
+4
+Sample Quantiles
+Residuals of ξ1
+−4 −2 0 2 4
+Theoretical Quantiles
+−4
+−2
+0
+2
+4
+Sample Quantiles
+Residuals of ξ2
+−4 −2 0 2 4
+Theoretical Quantiles
+−4
+−2
+0
+2
+4
+Sample Quantiles
+Residuals of ln S
+Figure 18: QQ-plots of historical in-sample model residuals.
+To investigate dependence between the model residuals, we show in Figure 19 the scatter
+plots of each pair of residuals. The residuals for each pair look fairly uncorrelated, indicat-
+ing that the trained neural nets have well captured factor covariances over time, which is
+important for MV-based hedging under the neural-SDE market model.
+Finally, we assess the learnt model’s ability to simulate time series data that are like the
+input real data. We take the trained model and simulate sample paths using a tamed Euler
+scheme. Rather than generating the innovations from normal distributions, we randomly
+sample them from historical residuals of the trained models. There are two major advantages
+of drawing innovations from historical residuals rather than normal distributions. First,
+historical residuals have fatter tails than normal (see Figure 18). Second, the joint historical
+residuals implicitly preserve the (potentially higher-order) dependence of factors that may
+fail to be captured by the covariance terms (see Figure 19). We show the time series
+of ξ in Figure 20 (right). In the scatter plot on the left of Figure 20, we see that the
+dependence structure between ξ1 and ξ2 is well captured. In addition, the simulated factors
+28
+
+=== page 29 ===
+−0.2 0.0 0.2
+Residuals of ξ1
+−0.2
+0.0
+0.2
+Residuals of ξ2
+−0.2 0.0 0.2
+Residuals of ξ1
+−0.2
+0.0
+0.2
+Residuals of ln S
+−0.2 0.0 0.2
+Residuals of ξ2
+−0.2
+0.0
+0.2
+Residuals of ln S
+Figure 19: Scattter plots of historical in-sample model residuals.
+remain within the no-arbitrage region, due to the hard constraints imposed on the drift and
+diﬀusion functions.
+Figure 20: Simulation of ξ = (ξ1,ξ2) from the learnt neural-SDE model, compared with the real data.
+B Tested option portfolios for hedging analysis
+To assess performance of a hedging strategy, we evaluate its hedging errors for a va-
+riety of representative trading strategies. In particular, deﬁning a set of deltas D =
+{0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8} and a set of time-to-expiries T = {30, 60, 91, 122, 152, 182, 273,
+365, 547, 730} (in calendar days)12, we consider:
+(1) Outright call option C(τ, ∆) with all deltas ∆ ∈D and all time-to-expiries τ ∈T .
+There are in total 7 × 10 = 70 outright test strategies.
+(2) Delta spread C(τ, ∆1) −C(τ, ∆2) with all distinguished delta pairs ∆1 > ∆2 ∈D
+and all time-to-expiries τ ∈T . There are in total
+(7
+2
+)
+× 10 = 210 delta spread test
+strategies.
+12These portfolios are constructed from options with speciﬁed time-to-expiries and moneynesses (deltas),
+which are in general impossible to match perfectly with traded options. Therefore, we ﬁnd the options that
+have closest time-to-expiries and moneynesses to the desired speciﬁcations when constructing portfolios.
+29
+
+=== page 30 ===
+(3) Delta butterﬂy C(τ, ∆) + C(τ, 1 − ∆) − 2 ×C(τ, 0.5) with all deltas ∆ ∈D\{0.5} and
+all time-to-expiries τ ∈T . There are in total 3 × 10 = 30 delta butterﬂy spread test
+strategies.
+(4) Strangle C(τ, ∆) + C(τ, 1 − ∆) with all deltas ∆ ∈D\{0.5} and all time-to-expiries
+τ ∈T . There are in total 3 × 10 = 30 strangle test strategies.
+Note that a typical straggle involves simultaneously buying a call and a put, i.e.
+C(τ, ∆) + P (τ,−∆). Here we use put-call parity to express such straddles in terms of
+only calls, ignoring the underlying and cash components.
+(5) Calendar spread C(τ1, ∆)−C(τ2, ∆) with ∆ = 0.5 and all distinguished time-to-expiry
+pairs τ1 >τ2 ∈T . There are in total 1 ×
+(10
+2
+)
+= 45 calendar spread test strategies.
+(6) VIX, the square of which is a linear combination of OTM call and put option prices,
+and can be further written as a linear combination of call prices only, provided that
+put-call parity holds under no-arbitrage; see details in [15].
+C Heston model calibration results
+Given the Heston model speciﬁed by the SDE (3.15), we characterise option price surfaces
+by the parameters Θ = (S0,ν0,θ,k,σ,ρ). On each testing date t, we calibrate parameters
+by solving
+ˆΘt = arg min
+Θ
+N∑
+j=1
+1
+Vbs,t(τj,mj)
+(
+cΘ(τj,mj) − ˜ct(τj,mj) )2 ,
+where Vbs is the Black–Scholes option vega calculated through (3.13). In Figure 21, we show
+the time series of the calibrated parameters and calibration errors, measured by MAPE, for
+historical price data of EURO STOXX 50 index options during the testing period. Since
+ν0, θ, k and σ are positive by construction, we include the positivity constraint for these
+parameters during the calibration. In addition, we constrain the correlation parameter ρ
+between −1 and 1. Over time, we observe less than 0.15% calibration errors measured by
+MAPE (and typically below 0.05%).
+2019−03 2020−01 2020−11 2021−09
+0.0
+0.5
+ν0
+2019−03 2020−01 2020−11 2021−09
+0.00
+0.25
+0.50
+θ
+2019−03 2020−01 2020−11 2021−09
+0
+10
+20
+k
+2019−03 2020−01 2020−11 2021−09
+2.5
+5.0
+7.5
+σ
+2019−03 2020−01 2020−11 2021−09
+−0.8
+−0.6
+ρ
+2019−03 2020−01 2020−11 2021−09
+0.0%
+0.05%
+0.1%
+0.15%
+MAPE
+Figure 21: Heston model calibrated parameters and calibration errors (measured as mean absolute
+percentage error) for historical price data of EURO STOXX 50 index options.
+30
+
+=== page 31 ===
+D Analysis of decoded factors, COVID-19 and the 2008 GFC
+Since the diﬀusion matrix of a neural-SDE is a (smooth) function of (ξ1,ξ2), we now examine
+if (ξ1,ξ2) behaves diﬀerently before and after March 2020. We show the trajectory of the
+decoded factors ξ1 and ξ2 for the testing data in Figure 22 by black dots. The top left plot
+shows the factors for all the testing data (from 2nd January 2019 to 30th September 2021).
+−0.02 0.00 0.02 0.04 0.06 0.08 0.10
+ξ1
+−0.04
+−0.02
+0.00
+0.02
+0.04
+0.06
+ξ2
+Testing data
+Training data
+Figure 22: Scatter plots of the decoded factors (ξ1,ξ2) for the testing data (from 2nd January 2019 to
+30th September 2021). The decoded factors for the training data are shown as light grey dots, and the
+corresponding static arbitrage constraints (projected to the R2 factor space) are given as red dashed lines.
+While the top left plot shows factors of all testing data, the other plots show factors of testing data within
+the speciﬁed periods.
+From 24th February to 7th April in 2020, equity markets across the world suﬀered from
+a series of crashes due to panic selling following the onset of the COVID-19 pandemic. In
+particular, on the Black Thursday (12th March), EURO STOXX 50 and DAX closed down
+12% and 11% respectively. In the US market, on 16th March, the sudden and dramatic
+drop in stock prices triggered multiple trading halts (also known as “circuit breakers”) in
+a single day. We divide the testing period into three sub-periods that are before, between
+and after the market crashes. Accordingly, we show the trajectories of (ξ1,ξ2) during the
+three sub-periods in the other subplots. During the market crashes (24th Feb – 7th April),
+as seen in the top right plot, the trajectory of (ξ1,ξ2) spreads over a wide range of the
+conventional area (light grey dots) where the training data usually reside. In particular,
+we mark on the plot the corresponding dates of the ﬁve data points that are out side of
+the arbitrage-free region13 (conﬁned by the red dashed line and highlighted in green). Note
+13This does not indicate that arbitrage was present in the market on these dates, but rather that our
+31
+
+=== page 32 ===
+that the 16th of March is among these dates.
+The most visited areas of the factors seem to be distinct before and after the start of
+the COVID-19 pandemic. Speciﬁcally, before the pandemic, as seen in the bottom left plot,
+factors tended to cluster and have small variations in ξ1. In contrast, after the pandemic
+started, factors tended to spread out with much larger variations in ξ1, as seen in the top
+and bottom right plots. Furthermore, comparing with the diﬀusion matrices visualised by
+ellipses in Figure 5, factors before the pandemic have more ill-conditioned diﬀusion matrices
+(i.e. with ﬂatter ellipses), implying that the instantaneous correlation between ξ1 and ξ2
+is stable and close to −1. Hence, since factors change more drastically post-pandemic, the
+neural-SDE model fails to give good forecasts of the average factor correlation over weekly
+rebalancing horizons. We conjecture this to be a contributing factor why MV-based hedging
+becomes worse than sensitivity-based hedging after the outbreak of the pandemic.
+To support the above arguments with more data, we evaluate the relative EWMA hedg-
+ing errors ˆεt(∆t,λ = 0.99) back to the year ending January 2019. Note that all delta-ξ1
+hedge ratios computed before 2019 are based on in-sample estimation of price basis func-
+tions G and the factor diﬀusion matrix σ. In Figure 23, we see that factors in 2018 cluster
+around similar regions to factors in 2019 and early 2020 before the pandemic. In addition,
+since the instantaneous correlations estimated within the regions are stable, the neural-SDE
+model tends to produce reasonable forecasts of the average factor correlation over weekly
+rebalancing horizons. The corresponding MV-based delta-ξ1 hedge yields lower hedging
+errors than sensitivity-based delta-ξ1 hedging, as seen on the right plot of Figure 23.
+−0.02 0.00 0.02 0.04 0.06 0.08 0.10
+ξ1
+−0.04
+−0.02
+0.00
+0.02
+0.04
+0.06
+ξ2
+Training data (2nd Jan – 28th Dec, 2018)
+Training data
+Figure 23: Left - trajectories of the decoded factors (ξ1,ξ2) for the price data in 2018. Right - relative
+EWMA hedging errors ˆεt(∆t = 5 trading days, λ = 0.99) of the four hedging strategies and time series of
+the PnLs for the unhedged naive portfolio and for the sensitivity-based delta-ξ1-hedged naive portfolio.
+The 2008 Global Financial Crisis. Finally, as a comparative analysis, we investigate
+neural-SDE market model hedging performance during the 2008 Global Financial Crisis, a
+similar stressed market period caused by the US subprime crisis.
+First, in Figure 24 on the left, we show the trajectory of the decoded factors ξ1 and ξ2
+two-factor model fails to represent prices accurately, and so the best ﬁtting factor values do not represent
+the prices in an arbitrage-free way. This was not observed in our training data (which includes the 2007-8
+ﬁnancial crisis, see Figure 24).
+32
+
+=== page 33 ===
+for option price data in 2007, 2008 and 2009. In particular, on the right we highlight the
+trajectory between 15th September 2008 (when Lehman Brothers ﬁled bankruptcy) and 2nd
+April 2009 (when G-20 ﬁnance ministers announced a coordinated response to the crisis),
+when global equity markets were hit most severely. We observe that the trajectory spreads
+over a wide range during 2007–2009, and both ξ1 and ξ2 tend to be unusually large during
+the most stressed period.
+−0.02 0.00 0.02 0.04 0.06 0.08 0.10
+ξ1
+−0.04
+−0.02
+0.00
+0.02
+0.04
+0.06
+ξ2
+Training data (2nd Jan, 2007 – 31st Dec, 2009)
+Training data
+Figure 24: Trajectories of the decoded factors (ξ1,ξ2) for the option price data from 2007 to 2009.
+Next, we examine the performance of hedging the naive portfolio during the crisis using
+the four hedging strategies. Note that all delta-ξ1 hedge ratios computed here are based on
+in-sample estimation of the price basis functions G and the factor diﬀusion matrix σ. We
+report the relative EWMA hedging errors ˆεt(∆t,λ = 0.99) of the four hedging strategies
+using 7M ATM options as the hedge (that are rebalanced on a daily basis and on a weekly
+basis respectively) in Figure 25a and 25b.
+(a) Daily rebalancing.
+ (b) Weekly rebalancing.
+Figure 25: Top - EWMA hedging errors ˆεt(∆t,λ = 0.99) for the four hedging strategies. Bottom - time
+series of the PnLs for the unhedged naive portfolio and for the nSDE sensitivity-based delta-ξ1-hedged
+naive portfolio.
+33
+
+=== page 34 ===
+Heston and neural-SDE market models produce obviously better performing hedging
+strategies than Black–Scholes model, in both daily and weekly rebalancing cases. Over
+time, Heston delta-vega hedging yields very similar hedging errors to delta-ξ1 hedging.
+We observe that MV-based delta-ξ1 hedging becomes worse than sensitivity-based hedging
+after the outbreak of the COVID-19 pandemic in the 2019–2021 testing data. A similar
+phenomenon is observed after the 2008 ﬁnancial crisis was triggered. In the daily rebalancing
+case, MV-based delta-ξ1 hedging is consistently the best over time. Nevertheless, in the
+weekly rebalancing case, sensitivity-based delta-ξ1 overtakes its MV-based counterpart after
+September 2008, though the hedging error reduction is marginal.
+Acknowledgements
+This publication is based on work supported by the EPSRC Centre for Doctoral Training in
+Industrially Focused Mathematical Modelling (EP/L015803/1) in collaboration with CME
+Group.
+Samuel Cohen and Christoph Reisinger acknowledge the support of the Oxford-Man
+Institute for Quantitative Finance, and Samuel Cohen also acknowledges the support of
+the UKRI Prosperity Partnership Scheme (FAIR) under the EPSRC Grant EP/V056883/1,
+and the Alan Turing Institute.
+References
+[1] H. Albrecher, P. Mayer, W. Schoutens, and J. Tistaert. The little Heston trap. Wilmott,
+(1):83–92, 2007.
+[2] C. Alexander and A. Kaeck. Does model ﬁt matter for hedging? Evidence from FTSE
+100 options. Journal of Futures Markets, 32(7):609–638, 2012.
+[3] C. Alexander and L. M. Nogueira. Model-free hedge ratios and scale-invariant models.
+Journal of Banking & Finance, 31(6):1839–1861, 2007.
+[4] G. Bakshi, C. Cao, and Z. Chen. Empirical performance of alternative option pricing
+models. The Journal of Finance, 52(5):2003–2049, 1997.
+[5] D. S. Bates. Post-’87 crash fears in the S&P 500 futures option market. Journal of
+Econometrics, 94(1-2):181–238, 2000.
+[6] F. Black. Studies of stock market volatility changes. 1976 Proceedings of the American
+statistical association buisness and economic statistics section, pages 177–181, 1976.
+[7] F. Black and M. Scholes. The pricing of options and corporate liabilities. Journal of
+Political Economy, 81(3):637–54, 1973.
+[8] S. Boyarchenko and S. Levendorski˘ı. Static and semistatic hedging as contrarian or
+conformist bets. Mathematical Finance, 30(3):921–960, 2020.
+[9] M. Broadie, M. Chernov, and M. Johannes. Model speciﬁcation and risk premia:
+Evidence from futures options. The Journal of Finance, 62(3):1453–1490, 2007.
+[10] H. Buehler, L. Gonon, J. Teichmann, and B. Wood. Deep hedging. Quantitative
+Finance, 19(8):1271–1291, 2019.
+[11] R. J. Caron, J. F. McDonald, and C. M. Ponic. A degenerate extreme point strat-
+egy for the classiﬁcation of linear constraints as redundant or necessary. Journal of
+Optimization Theory and Applications, 62(2):225–237, 1989.
+34
+
+=== page 35 ===
+[12] P. Carr, K. Ellis, and V. Gupta. Static hedging of exotic options. In Quantitative Anal-
+ysis In Financial Markets: Collected Papers of the New York University Mathematical
+Finance Seminar, pages 152–176. World Scientiﬁc, 1999.
+[13] P. Carr, H. Geman, D. Madan, and M. Yor. Stochastic volatility for L´evy processes.
+Mathematical Finance, 13(3):345–382, 2003.
+[14] P. Carr and D. B. Madan. A note on suﬃcient conditions for no arbitrage. Finance
+Research Letters, 2(3):125–130, 2005.
+[15] CBOE. White paper: CBOE volatility index, 2019. https://cdn.cboe.com/
+resources/vix/vixwhite.pdf, Accessed: 2021-04-08.
+[16] S. N. Cohen, C. Reisinger, and S. Wang. Detecting and repairing arbitrage in traded
+option prices. Applied Mathematical Finance, 27(5):345–373, 2020.
+[17] S. N. Cohen, C. Reisinger, and S. Wang. Arbitrage-free neural-SDE market models,
+2021. arXiv:2105.11053.
+[18] S. N. Cohen, C. Reisinger, and S. Wang. Estimating risks of option books using neural-
+SDE market models, 2022. arXiv:2202.07148.
+[19] S. N. Cohen, D. Snow, and L. Szpruch. Black-box model risk in ﬁnance, 2021.
+arXiv:2102.04757.
+[20] R. Cont and P. Tankov. Financial modelling with jump processes. Chapman and
+Hall/CRC, 2004.
+[21] L. Cousot. Conditions on option prices for absence of arbitrage and exact calibration.
+Journal of Banking & Finance, 31(11):3377–3397, 2007.
+[22] M. H. A. Davis and D. G. Hobson. The range of traded option prices. Mathematical
+Finance, 17(1):1–14, 2007.
+[23] H. F¨ollmer and M. Schweizer. Hedging of contingent claims under incomplete informa-
+tion. In M. Davis and R. Elliott, editors, Applied Stochastic Analysis, pages 389–414.
+Stochastics Monographs Gordon & Breach, London, 1990.
+[24] P. S. Hagan, D. Kumar, A. S. Lesniewski, and D. E. Woodward. Managing smile risk.
+Wilmott Magazine, 1:84–108, 2002.
+[25] P. S. Hagan, D. Kumar, A. S. Lesniewski, and D. E. Woodward. Arbitrage-free SABR.
+Wilmott, 69:60–75, 2014.
+[26] S. L. Heston. A closed-form solution for options with stochastic volatility with appli-
+cations to bond and currency options. Review of Financial Studies, 6:327–343, 1993.
+[27] J. Hull and A. White. Optimal delta hedging for options. Journal of Banking &
+Finance, 82:180–190, 2017.
+[28] K.-K. Kim and D.-Y. Lim. Static replication of barrier-type options via integral equa-
+tions. Quantitative Finance, 21(2):281–294, 2021.
+[29] J. L. Kirkby and S. Deng. Static hedging and pricing of exotic options with payoﬀ
+frames. Mathematical Finance, 29(2):612–658, 2019.
+[30] R. C. Merton. Option pricing when underlying stock returns are discontinuous. Journal
+of Financial Economics, 3(1-2):125–144, 1976.
+[31] OptionMetrics. IvyDB Europe Reference Manual. https://wrds-www.wharton.
+upenn.edu/documents/1447/IvyDB_Europe_Reference_Manual_wEX3ZW6.pdf, 2020.
+Version 2.4.
+[32] R. Poulsen, K. R. Schenk-Hopp´e, and C.-O. Ewald. Risk minimization in stochas-
+tic volatility models: model risk and empirical performance. Quantitative Finance,
+9(6):693–704, 2009.
+35
+
+=== page 36 ===
+[33] R. Rebonato. Volatility and correlation: the perfect hedger and the fox. John Wiley &
+Sons, 2005.
+[34] J. Ruf and W. Wang. Neural networks for option pricing and hedging: a literature
+review. Journal of Computational Finance, 24(1):1–46, 2020.
+[35] J. Ruf and W. Wang. Hedging with linear regressions and neural networks. Journal of
+Business & Economic Statistics, pages 1–13, 2021.
+[36] M. Schweizer. Option hedging for semimartingales. Stochastic Processes and Their
+Applications, 37(2):339–363, 1991.
+[37] P. Tankov. Pricing and hedging in exponential l´evy models: review of recent results.
+Paris-Princeton Lectures on Mathematical Finance 2010, pages 319–359, 2011.
+36

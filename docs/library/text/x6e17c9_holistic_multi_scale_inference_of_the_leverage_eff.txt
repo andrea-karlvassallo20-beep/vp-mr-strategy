@@ -1,0 +1,4745 @@
+=== page 1 ===
+Holistic Multi-Scale Inference of the Leverage Effect:
+Efficiency under Dependent Microstructure Noise
+Ziyang Xiong1, Zhao Chen∗1, and Christina Dan Wang†2
+1School of Data Science, Fudan University
+2Business Division, New York University Shanghai
+February 11, 2026
+Abstract
+This paper addresses the long-standing challenge of estimating the leverage effect from
+high-frequency data contaminated by dependent, non-Gaussian microstructure noise. We
+depart from the conventional reliance on pre-averaging or volatility “plug-in” methods by
+introducing a holistic multi-scale framework that operates directly on the leverage effect.
+We propose two novel estimators: the Subsampling-and-Averaging Leverage Effect (SALE)
+and the Multi-Scale Leverage Effect (MSLE). Central to our approach is a shifted win-
+dow technique that constructs a noise-unbiased base estimator, significantly simplifying the
+multi-scale architecture. We provide a rigorous theoretical foundation for these estimators,
+establishing central limit theorems and stable convergence results that remain valid under
+both noise-free and dependent-noise settings. The primary contribution to estimation effi-
+ciency is a specifically designed weighting strategy for the MSLE estimator. By optimizing
+the weights based on the asymptotic covariance structure across scales and incorporating
+finite-sample variance corrections, we achieve substantial efficiency gains over existing bench-
+marks. Extensive simulation studies and an empirical analysis of 30 U.S. assets demonstrate
+that our framework consistently yields smaller estimation errors and superior performance
+in realistic, noisy market environments.
+Keywords: High-frequency data; Realized volatility; Subsampling; Variance reduction; Robust
+estimation
+1 Introduction
+The leverage effect, or the observed negative correlation between asset returns and their
+volatility changes, is a prominent stylized fact in financial econometrics (Black, 1976; Christie,
+1982). It captures the asymmetry in volatility responses to positive and negative shocks in
+asset prices and is widely attributed to mechanisms such as financial leverage and asymmetric
+information in markets. Accurate estimation of the leverage effect is not only central to our
+∗Corresponding author: zchen fdu@fudan.edu.cn
+†Corresponding author: christina.wang@nyu.edu
+1
+arXiv:2505.08654v3  [stat.ME]  10 Feb 2026
+
+=== page 2 ===
+understanding of asset price dynamics but also has critical implications for the pricing and
+hedging of derivative securities, especially in the presence of volatility skews.
+However, obtaining reliable estimates of the leverage effect in high-frequency data is com-
+plicated by market microstructure (MMS) noise. The well-known “volatility signature plot”
+demonstrates a key challenge: with high-frequency observations, simple realized volatility esti-
+mators are largely biased and thus inconsistent due to noise (Zhou, 1996; Andersen et al., 2000;
+A¨ıt-Sahalia et al., 2005; Patton, 2011; A¨ıt-Sahalia and Xiu, 2019); simple leverage effect estima-
+tors suffer from a similar issue. Existing methods for leverage effect estimation have primarily
+focused on mitigating the impact of such noise by either adopting the pre-averaging technique
+(Jacod et al., 2009; Podolskij and Vetter, 2009; Mykland and Zhang, 2016) under the assumption
+of independent and identically distributed (i.i.d.) Gaussian noise or using extra information.
+For instance, Wang and Mykland (2014) and A¨ıt-Sahalia et al. (2017) utilize the pre-averaging
+methods to estimate leverage effect under i.i.d. Gaussian noise, Yuan et al. (2020) adopts
+the parametric setting for microstructure noise proposed by Li et al. (2016) that incorporates
+trading information to address noise, Chong and Todorov (2024) utilizes high-frequency short-
+dated option to recover spot volatility process, thereby estimating leverage effect, while some
+other works (e.g. Bandi and Ren`o, 2012; Kalnina and Xiu, 2017; Curato and Sanfelici, 2022;
+Yang, 2023) estimate leverage effect without explicitly addressing microstructure noise. While
+these methods represent significant advances, their reliance on i.i.d. Gaussian noise-related
+assumptions or auxiliary data remains restrictive in practice. Specifically, empirical evidence
+has consistently shown that microstructure noise exhibits serial dependence and higher-order
+moments (Jacod et al., 2017; A¨ıt-Sahalia and Xiu, 2019; Li et al., 2020; Da and Xiu, 2021; Li
+and Linton, 2022). These features not only violate standard modeling assumptions, but also ex-
+acerbate bias and variance in leverage effect estimation, underscoring the need for more flexible
+methodologies that can accommodate complex noise structures.
+In this paper, we propose a novel multi-scale framework for estimating the leverage ef-
+fect that explicitly accounts for microstructure noise exhibiting more flexible noise structures,
+allowing for stationary, dependent noise with nontrivial higher-order moments, which are com-
+monly observed in empirical financial data. Specifically, we introduce two new estimators: the
+Subsampling-and-Averaging Leverage Effect (SALE) estimator and the Multi-Scale Leverage Ef-
+fect (MSLE) estimator. In particular, the MSLE estimator aggregates a series of weighted SALE
+estimators computed across multiple time scales, exploiting their complementary properties to
+achieve improved convergence rates. Our methodology draws inspiration from the principles un-
+derlying the Two-Scale Realized Volatility (TSRV) and Multi-Scale Realized Volatility (MSRV)
+estimators (Zhang et al., 2005; Zhang, 2006; A¨ıt-Sahalia et al., 2011), but adapts and extends
+them for the specific task of estimating the leverage effect. Crucially, we do not merely use
+their methods as plug-in estimators for spot volatility; we develop a holistic multi-scale ap-
+proach for the leverage effect itself. A key innovation in our construction is the use of a shifted
+window for estimating spot volatility, as illustrated schematically in Figure 1a and 1b. This
+shift is important as it not only helps decouple noise components to achieve unbiasedness and
+variance reduction with respect to noise, but also fundamentally simplifies certain aspects of
+the multi-scale estimation procedure compared with the classical constructions in TSRV and
+2
+
+=== page 3 ===
+MSRV.
+The second primary contribution of this work is the explicit demonstration of multi-scale
+benefits in efficiency beyond mere noise mitigation. Specifically, for the noise-free setting, we
+show that our MSLE estimator, through a proper weighting scheme, achieves a notable re-
+duction in asymptotic variance compared with the base estimator by exploiting the covariance
+structure of SALE estimators of different subsampling scales. Furthermore, in the noisy setting,
+this efficiency advantage becomes even more pronounced when benchmarked against the pre-
+averaging estimator, particularly at lower noise levels that are more representative of practical
+scenarios.
+Recognizing a potential gap between standard theoretical assumptions and empirical reality
+regarding MMS noise, another major contribution of this work lies in the in-depth study of
+optimal weight assignment under diverse and realistic noise magnitudes. Classical asymptotic
+analyses often assume that noise variance is of constant order, thus dominating the shrinking
+latent increments as the sampling frequency increases. However, empirical evidence suggests
+a more complex picture. For instance, A¨ıt-Sahalia and Xiu (2019) finds that improvements
+in market liquidity allow employing simple volatility estimators at higher frequencies, while
+Kalnina and Linton (2008) and Da and Xiu (2021) also explore the case of shrinkage MMS
+noise. A recent work by Chong et al. (2025) investigates the rough noise model that captures a
+more subtle interplay between the latent price process and noise. This implies that weighting
+schemes based solely on the strict noise-dominance assumption might suffer from modeling error
+when applied to real data. Motivated by this, we conduct a fine-grained analysis of the MSLE’s
+asymptotic variance components across different subsampling scales and noise conditions. More-
+over, implementing truly optimal weights would require precise values of asymptotic covariances
+between SALE estimators at sampling scales, which are infeasible in practice. To overcome this,
+we develop a computationally efficient approximate weighting strategy that works for a wide
+spectrum of noise conditions, yielding robust finite-sample performance as demonstrated in
+Monte Carlo simulations.
+Our theoretical analysis establishes central limit theorems and stable convergence results
+for both the noise-free and noisy settings, demonstrating that the proposed estimators achieve
+consistency and asymptotic normality. Under the noise-free setting, both estimators attain the
+optimal convergence rate of order n−1/4. In the presence of MMS noise, the MSLE estimator
+achieves a convergence rate of ordern−1/9. While this theoretical rate is slightly slower than the
+n−1/8 achieved by the pre-averaging approach, our simulations consistently demonstrate that the
+MSLE estimator outperforms the pre-averaging method in practical settings across a wide range
+of noise levels and sample sizes. To support feasible inference, we construct consistent estimators
+for the asymptotic variances in both noise-free and noisy regimes, enabling the implementation
+of feasible central limit theorems. Monte Carlo simulations, employing both independent and
+dependent noise with various distributions, validate both the feasible and infeasible central limit
+theorems.
+To assess the finite-sample performance of the proposed estimators, we conduct another ex-
+tensive simulation study that encompasses a variety of settings with realistic time horizons and
+noise conditions. This study verifies the outstanding efficiency of the proposed MSLE estimator
+3
+
+=== page 4 ===
+with the approximate weighting strategy. The result shows that: (i) under the noise-free setting,
+our method outperforms the base estimator, whereas (ii) under the noisy setting, our method
+consistently outperforms the pre-averaging approach, and this advantage is particularly pro-
+nounced in empirically relevant scenarios. This superior finite-sample behavior is attributable
+to a combination of factors, detailed in Section 4.2: (i) the more advantageous noise-free asymp-
+totic variance of the SALE estimator, (ii) the relatively smaller impact of noise under realistic
+settings, and (iii) the enhanced performance of MSLE over the individual SALE estimators.
+To examine the performance of our estimators in practical applications, we also conduct
+an empirical analysis using high-frequency financial data. The high-frequency trading data
+of 30 assets including ETFs and individual stocks from the U.S. stock market are utilized.
+The leverage effects are estimated adaptively based on the microstructure noise characteristics
+in each period, and general negative correlation between the returns and volatility changes
+is verified. This study demonstrates the practical flexibility and effectiveness of the MSLE
+estimator in capturing the leverage effect under realistic market conditions, further validating
+the advantages observed in the simulation experiments.
+The remaining paper is arranged as follows. Section 2 introduces the model settings, no-
+tations, and estimators. Section 3 states the main theoretical results, including limit theorems
+for the SALE and MSLE estimators under both noise-free and noisy conditions. Section 4 dis-
+cusses the issue of variance reduction, including variance approximations under both noise-free
+and noisy settings, and proposes practical strategies for optimizing the performance of MSLE.
+Section 5 provides a detailed simulation study to validate the theoretical properties, examining
+the asymptotic behavior and finite-sample performance under various settings of microstructure
+noise. Section 6 reports the results of an empirical study using real-world high-frequency data
+to demonstrate the practical utility of the proposed methods. Proofs, feasible central limit
+theorems, and further elaborations on Section 4 to 6 are provided in Supplementary Material.
+2 Methodology
+2.1 Model Settings
+The noise-contaminated log-price Yti is observed at ti =i∆n =iT/n for i = 0, 1,...,n:
+Yti =Xti +εi, (1)
+whereXti denotes the latent log-price, andεi denotes the noise. For simplicity, for any stochastic
+process V , we denote: (i) Vi :=Vti, (ii) ∆Vi :=Vi+1 −Vi, and (iii) ∆kVi :=Vi+k −Vi.
+Assumption 1 (Underlying processes). Let both log-price process (Xt)t≥0 and volatility pro-
+cess (σt)t≥0 be Itˆo processes defined on a filtered probability space (Ω,F, (Ft)t≥0, P):
+Xt =X0 +
+∫ t
+0
+µsds +
+∫ t
+0
+σsdWs, (2)
+σt =σ0 +
+∫ t
+0
+asds +
+∫ t
+0
+fsdWs +
+∫ t
+0
+gsdBs, (3)
+4
+
+=== page 5 ===
+whereWt andBt are independent Brownian motions, andµt,at,ft,gt are adapted c`adl`ag locally
+bounded processes. In addition,ft andgt are Itˆo processes and the volatility pathσ2 t is bounded
+away from zero.
+Assumption 2 (Noise). Let{εi}n i=0 be mean-zero, identically distributed random variables
+independent ofF, with νk := E[εk i ] and ν4 <∞. In terms of serial dependency,{εi}n i=0 are
+specified as either:
+(a) independent (εi ⊥εj for all i̸=j); or
+(b) q-dependent (εi ⊥εj for|i−j|>q) and stationary up to the fourth moment.
+Let⟨X,σ2⟩T = ∫T 0 2σ2 sfsds denote the true leverage effect parameter. For any estimator of
+interest, we maintain a clear distinction between its infeasible version ^⟨X,σ2⟩T based on latent
+data{Xi}n i=0, and its feasible version \⟨X,σ2⟩T based on observed data{Yi}n i=0. The statistical
+properties of the estimator are investigated from two aspects:
+1. Asserting its unbiasedness with respect to noise:
+E
+( \⟨X,σ2⟩T ⏐⏐F ) − ^⟨X,σ2⟩T/bracehtipupleft /bracehtipdownright/bracehtipdownleft /bracehtipupright
+bias due to noise
+= 0. (4)
+2. Assessing its total variance by decomposing it into the variance due to discretization and
+the expected variance due to noise:
+Var
+( \⟨X,σ2⟩T ) = Var ( ^⟨X,σ2⟩T ) /bracehtipupleft /bracehtipdownright/bracehtipdownleft /bracehtipupright
+variance due to discretization
++ E
+[
+Var
+( \⟨X,σ2⟩T ⏐⏐F ) /bracehtipupleft /bracehtipdownright/bracehtipdownleft /bracehtipupright
+variance due to noise
+]
+. (5)
+Remark 1. While some literature (for example, Wang and Mykland, 2014; Kalnina and Xiu,
+2017) defines the leverage effect as ⟨X,F (σ2)⟩T = ∫T 0 2F′(σ2 s)σ2 sfsds for a general function
+F ∈ C2, we focus on the canonical case where F (x) = x. Beyond notational simplicity, this
+allows us to concentrate on a primary challenge addressed in this work: robust estimation under
+complex, dependent noise, where a general F function poses significant additional difficulties.
+However, it is worth noting that the results of our noise-free estimators (Theorems 1 and 3) can
+be easily extended to the general case.
+2.2 Estimators and The Robustness to Noise
+For simplicity, the following notations are used for spot volatility estimation:
+ˆσ2 +(i,H,k,s) = 1 kH∆n k+s∑ j=s+1 (∆HYi+jH)2 for σ2 i+H, (6)
+ˆσ2 −(i,H,k,s) = 1 kH∆n −s−1∑ j=−k−s (∆HYi+jH)2 for σ2 i, (7)
+ˆδ(i,H,k,s) = ˆσ2 +(i,H,k,s)−ˆσ2 −(i,H,k,s) for ∆Hσ2 i. (8)
+5
+
+=== page 6 ===
+Here, H represents the subsampling scale, whereas k and s represent the size and shift of the
+windows for estimating spot volatility. Specifically, the last parameter s can be omitted when
+s = 1, as this work primarily focuses on this case.
+······ ······ ······ ······
+∆Yi
+i i + 1
+ˆσ2 −(i, 1,kn, 0)
+i−kn
+ˆσ2 +(i, 1,kn, 0)
+i +kn + 1
+(a) The continuous leverage effect estimator in A¨ıt-Sahalia et al. (2017)
+······ ······ ······ ······
+∆Yi
+i i + 1
+ˆσ2 −(i, 1,kn, 1)
+i− 1i−kn− 1
+ˆσ2 +(i, 1,kn, 1)
+i + 2 i +kn + 2
+(b) The all-observation leverage effect estimator defined in Equation (9)
+······ ······ ······ ······
+∆Yi
+i i + 1
+ˆσ2 −(i, 1,kn, 2)
+i− 2i−kn− 2
+ˆσ2 +(i, 1,kn, 2)
+i + 3 i +kn + 3
+(c) The shifted all-observation leverage effect estimator (see Remark 2)
+······ ······ ······ ······
+∆Yi
+i i + 2
+ˆσ2 −(i, 2,k′ n, 1)
+i− 2i− 2k′ n− 2
+ˆσ2 +(i, 2,k′ n, 1)
+i + 4 i + 2k′ n + 4
+(d) The subsampling leverage effect estimator defined in Equation (13) with H = 2
+Figure 1: Increments in the base and subsampling estimators. The increments in the base
+estimators shown in panels (a) to (c) are used as proxies for
+∫ti+1
+ti d⟨X,σ2⟩t, whereas the incre-
+ment in the subsampling estimator shown in panel (d) is used as a proxy for
+∫ti+H
+ti d⟨X,σ2⟩t.
+2.2.1 All-Observation Estimator
+To start with, consider an all-observation Leverage Effect (LE) estimator that directly uti-
+lizes all noisy observations,
+\⟨X,σ2⟩ (all) T = n−kn−2∑
+i=kn+1
+(∆Yi) ˆδ(i, 1,kn). (9)
+Here, the window sizekn satisfies thatkn →∞ andkn∆n → 0 asn→∞. The estimator is very
+similar to the continuous leverage effect estimator1 studied by A¨ıt-Sahalia et al. (2017). The
+only difference is that our estimator shifts the windows for spot volatility estimates outward by
+∆n, as illustrated by Figure 1a and 1b. To see the reason, consider applying their estimator
+directly to noisy observations, and it follows that there is a divergent bias due to noise of
+E
+( \⟨X,σ2⟩ [AFLWY17] T ⏐⏐F ) − ^⟨X,σ2⟩ [AFLWY17] T = 2ν3T−1k−1 n n2 +Op(n), (10)
+when ν3 is not strictly zero. In contrast, the estimator in Equation (9) is unbiased due to noise
+with a smaller variance, as described by the next Proposition 1.
+Proposition 1. Under Assumptions 1 and 2(a), as n→∞, we have
+E
+( \⟨X,σ2⟩ (all) T ⏐⏐F ) = ^⟨X,σ2⟩ (all) T , (11)
+∆3 nk2 nVar ( \⟨X,σ2⟩ (all) T ⏐⏐F ) p −→ (8ν2ν4 + 16ν3 2 + 8ν2 3 )T. (12)
+With the window shift, the bias due to noise is eliminated, and the variance due to noise
+1Since jumps are not included, the truncation term in their original estimator is omitted here.
+6
+
+=== page 7 ===
+is reduced, while the asymptotic behavior of the noise-free estimator ^⟨X,σ2⟩
+(all)
+T remains the
+same as ^⟨X,σ2⟩
+[AFLWY17]
+T . As a direct result of this unbiasedness, a debias step in TSRV or
+MSRV is no longer needed. However, the all-observation estimator is not consistent in the
+presence of noise: the variance due to noise is O(n3k2 n) while the noise due to discretization is
+O(k−1 n +n−1kn), resulting in an exploding total variance.
+2.2.2 SALE: Subsampling-and-Averaging Estimator
+To mitigate the impact of noise, we employ a subsampling procedure: a subsample of obser-
+vations is denoted by a pair of integers (H,h), where H≥ 1 and 1≤h≤H are the scale and
+index of the subsample. The jth observation in subsample (H,h) corresponds to the original
+index jH,h = jH +h− 1, where j = 0, 1,...,nH,h and nH,h =⌊(n−h + 1)/H⌋. Assume that
+kn →∞, Hn →∞ and knHn∆n → 0 as n→∞. A subsampling estimator is constructed by
+applying the all-observation estimator to a subsample of observations:
+\⟨X,σ2⟩ (Hn,h) T = nHn,h−kn−2∑
+i=kn+1
+(∆HnYiHn,h) ˆδ(iHn,h,Hn,kn). (13)
+As a variant of the all-observation estimator, the subsampling estimator is not consistent. Nor is
+it statistically sound, as it fails to utilize the full information in the observed data. Therefore, by
+taking average over the subsampling estimators with the same scale, we obtain an Subsampling-
+and-Averaging Leverage Effect (SALE) estimator:
+\⟨X,σ2⟩ (Hn) T = 1 Hn Hn∑ h=1 \⟨X,σ2⟩ (Hn,h) T = 1 Hn n−(kn+2)Hn∑ i=(kn+1)Hn (∆HnYi) ˆδ(i,Hn,kn), (14)
+which can be viewed as summation of overlapping sparse increments. The SALE estimator is
+consistent under Assumption 2 with proper choices of kn and Hn. This is primarily attributed
+to the fact that the correlation due to noise between different subsampling estimators in Equa-
+tion (14) can be controlled by the dependence level of noise. Specifically, if Assumption 2(a)
+holds, this correlation becomes zero. Thus, the variance due to noise significantly reduces, as
+the following proposition describes.
+Proposition 2. Suppose that Assumptions 1 and 2(b) hold, and that Hn > 2q. Define the
+generalized autocorrelation functions (ACFs) of noise for any l∈ Z as
+ρ2(l) = Corr(εi,εi+l) = E[εiεi+l] ν2 , (15)
+ρ3(l) = Corr(εi,ε2 i+l) = E[εiε2 i+l]√
+ν2(ν4 −ν2 2 ) , (16)
+ρ4(l) = Corr(ε2 i,ε2 i+l) = E[ε2 iε2 i+l]−ν2 2 ν4 −ν2 2 . (17)
+7
+
+=== page 8 ===
+As n→∞, we have
+∆3 nH4 nk2 nVar ( \⟨X,σ2⟩ (Hn) T ⏐⏐F ) p −→ ΦT, (18)
+where Φ = 8ν2(ν4 −ν2 2 )
+q∑
+l=−q
+(
+ρ2(l)ρ4(l) +ρ3(l)ρ3(−l)
+)
++ 24ν3 2
+q∑
+l=−q
+ρ3 2(l). (19)
+Specifically, under Assumptions 1 and 2(a), Equation (18) holds with Φ = 8ν2ν4 + 16ν3 2 + 8ν2 3 .
+The SALE estimator has a variance due to noise of O(n3H−4 n k−2 n ), and a variance due to
+discretization of O(k−1 n +n−1Hnkn). Suppose Hn ∝ na and kn ∝ (n/H)b, the optimal total
+varianceO(n−1/7) is achieved ata = 5/7 andb = 1/2. Despite being consistent, this is far from
+the optimal rate O(n−1/4) of pre-averaging approach.
+2.2.3 MSLE: Multi-Scale Estimator
+Consider a set of scales 1≤ H1 <··· < HMn ≤ na for some a∈ (0, 1), where Mn > 0.
+An Multi-Scale Leverage Effect (MSLE) estimator is defined as a weighted average of SALE
+estimators at different scales:
+\⟨X,σ2⟩ (MS) T = Mn∑
+p=1
+wp \⟨X,σ2⟩ (Hp) T , (20)
+where the weight vector w = (w1,...,wMn) satisfies wT 1Mn = 1 with∥w∥1 bounded.
+When the noise is i.i.d., the covariance due to noise between a pair of SALE estimators are
+non-zero only when a scale is double the other, and the corresponding correlation coefficient
+is small (for example, 0.1 for Gaussian noise). For serial dependent noise, the case is more
+complicated and analytical results are hard to derive. Instead, numerical calculation is available
+(see Supplementary Material).
+Proposition 3. Under Assumptions 1 and 2(a), and suppose kp =⌊β⌊n/Hp⌋b⌋ holds for all
+p∈{1,...,Mn} with some constant β > 0 and b∈ (0, 1). For any p,q ∈{1,...,Mn}, as
+n→∞, we have
+∆3 nH2 pH2 qkpkqCov ( \⟨X,σ2⟩ (Hp) T , \⟨X,σ2⟩ (Hq) T ⏐⏐F ) p −→Fp,qT. (21)
+where Fp,q = (8ν2ν4 + 16ν3 2 + 8ν2 3 )1{p=q} + 2ν2(ν4 −ν2 2 )(1{Hp/Hq=2} + 1{Hq/Hp=2}), (22)
+and thus
+Var
+( \⟨X,σ2⟩ (MS) T ⏐⏐F )
+∆−3 n
+Mn∑
+p=1
+Mn∑
+q=1
+wp
+H2pkp ·Fp,q · wq H2qkq
+p
+−→T. (23)
+Remark 2. The “double scale” terms in Fp,q can be removed by using a further shifted spot
+volatility window with s = 2 in Equation (8), as illustrated in Figure 1c. A similar proposition
+can be established with Fp,q = (8ν2ν4 + 8ν3 2 + 8ν2 3 )1{p=q}, eliminating the cross terms and
+reducing the variance.
+8
+
+=== page 9 ===
+The MSLE estimator effectively reduces the variance due to noise. For example, settingHp =
+p for p = 1,...,Mn, Mn =⌊na⌋, and wp ∝p4−2b, the variance due to noise is O(n3−5a−2b+2ab),
+while the variance due to discretization is O(n−(1−a)(b∧(1−b))). Thus, by selecting a = 5/9 and
+b = 1/2, an optimal convergence rate of n1/9 is achieved for MSLE, close to the optimal rate
+n1/8 of pre-averaging approach.
+3 Main Results
+3.1 Central Limit Theorems for SALE
+We start by establishing the following theorem for the noise-free version of SALE. Two
+scenarios for the scale Hn are considered: either it is fixed, or it goes to infinity as n→∞.
+Hereafter, we use st−→ to denote stable convergence in law.
+Assumption 3. Suppose that Hn and kn satisfy one of the following conditions:
+(a) Hn =H is a given positive integer, kn =⌊β⌊n/H⌋b⌋ for some β > 0 and b∈ (0, 1).
+(b) Hn =⌊αna⌋, kn =⌊β⌊n/Hn⌋b⌋ for some α,β > 0 and a,b∈ (0, 1).
+Theorem 1.
+(1) Under Assumptions 1 and 3(a), let un =
+√
+kn ∧ (knH∆n)−1. There exist a standard
+Brownian motion (W1,t)t≥0 independent ofF and a predictable process (ζ1,t)t≥0 such that,
+as n→∞,
+un
+( ^⟨X,σ2⟩ (H) T −⟨X,σ2⟩T ) st−→ ∫ T 0 ζ1,tdW1,t, (24) ∫ T
+0
+ζ2 1,tdt = u2 n kn (8 3 + 4 3H2 )∫ T 0 σ6 sdt +u2 nknH∆n 2 3 ∫ T 0 σ2 t d⟨σ2,σ2⟩t. (25)
+(2) Under Assumptions 1 and 3(b), there exist a standard Brownian motion (W1,t)t≥0 inde-
+pendent ofF and a predictable process (ζ1,t)t≥0 such that, as n→∞,
+n
+1
+2 (1−a)(b∧(1−b))( ^⟨X,σ2⟩ (Hn) T −⟨X,σ2⟩T ) st−→ ∫ T 0 ζ1,tdW1,t, (26) ∫ T
+0
+ζ2 1,tdt = 8αb 3β ∫ T 0 σ6 t dt· 1(0,1/2](b) + 2α1−bβT 3 ∫ T 0 σ2 t d⟨σ2,σ2⟩t · 1[1/2,1)(b). (27)
+Remark 3. TakingH = 1 in Theorem 1(1) yields the central limit theorem for the all-observation
+estimator, which has a same asymptotic variance as the continuous leverage effect estimator
+in A¨ıt-Sahalia et al. (2017).
+Remark 4. Similar to existing work on leverage effect estimation (Wang and Mykland, 2014;
+A¨ıt-Sahalia and Jacod, 2014; A¨ıt-Sahalia et al., 2017; Kalnina and Xiu, 2017; Yang, 2023), the
+asymptotic variance is determined by the spot volatility estimation, which consists of two sources
+of errors: the price variation error and the volatility variation error (A¨ıt-Sahalia et al., 2017),
+corresponding to the first and second terms in Equation (25) or (27). Intuitively, increasing
+kn leads to a wider spot volatility estimation window and thus a larger sample size for that
+9
+
+=== page 10 ===
+estimation, which reduces the price variation error. On the other hand, this increases the
+volatility variation error, because the estimated volatility becomes less “local”. The optimal
+choice of kn is thus a trade-off between these two sources of error.
+Next, we establish the following theorem for the noisy version of SALE. Notably, Assump-
+tion 3(a) is not considered, as a finite H leads to a divergent variance due to noise and thus an
+inconsistent estimator.
+Theorem 2. Under Assumptions 1, 2(b) and 3(b), suppose thatHn > 2q and 4a+2b−2ab> 3.
+Let r = [(1−a)(b∧ (1−b))]∧ [4a + 2b− 2ab− 3] and let Φ be as defined in Equation (19).
+There exist a standard Brownian motion (W2,t)t≥0 independent ofF and a predictable process
+(ζ2,t)t≥0, such that, as n→∞,
+n
+1
+2 r( \⟨X,σ2⟩ (Hn) T −⟨X,σ2⟩T ) st−→ ∫ T 0 ζ2,tdW2,t, (28) ∫ T
+0
+ζ2 2,tdt = 8αb 3β ∫ T 0 σ6 t dt· 1{(1−a)b}(r)
++ 2α1−bβT 3 ∫ T 0 σ2 t d⟨σ2,σ2⟩t · 1{(1−a)(1−b)}(r)
++ 1 α4−2bβ2T 3
+∫ T
+0
+Φdt· 1{4a+2b−2ab−3}(r). (29)
+3.2 Central Limit Theorems for MSLE
+To establish the limit theorems for MSLE, the following conditions on scales, window sizes
+and weights are established, and the covariances due to discretization between SALE estimators
+are given by Proposition 4 and 5.
+Assumption 4. The scales{Hp}Mn p=1 satisfy 1≤ H1 < ... < HMn ≤ na for some a∈ (0, 1).
+The window sizes are kp =⌊β⌊n/Hp⌋b⌋ for all p∈{1,...,Mn} for some β > 0 and b∈ (0, 1).
+The weight vector w = (w1,...,wMn) satisfies that wT 1Mn = 1 and that∥w∥1 is bounded.
+Proposition 4. Suppose that Assumptions 1 and 4 hold. For any 1 ≤ q ≤ p ≤ Mn, let
+un =
+√
+kp ∧ (kpHp∆n)−1. There exist v(1) p,q,v(2) p,q ∈ [0, 1) that depend on Hp,Hq and n, such that,
+as n→∞,
+un
+
+ ^⟨X,σ2⟩
+(Hp)
+T −⟨X,σ2⟩T
+^⟨X,σ2⟩
+(Hq)
+T −⟨X,σ2⟩T
+
+ st−→N
+
+0,u2 n
+
+Σ(disc) p,p Σ(disc) p,q
+Σ(disc) p,q Σ(disc) q,q
+
+
+
+, (30)
+where Σ(disc) p,q = 1 kp · 4v(1) p,q Hq Hp · ∫ T 0 σ6 t dt +kpHp∆n · 2 3v(2) p,q ( kqHq kpHp )2 · ∫ T 0 σ2 t d⟨σ2,σ2⟩t, (31)
+and the limiting process is independent ofF.
+Remark 5. Factorsv(1) p,q andv(2) p,q, arising from the grid structures of scalesHp andHq, contribute
+to price variation error and volatility variation error, respectively. Their definitions are detailed
+in Supplementary Material.
+10
+
+=== page 11 ===
+Proposition 5. Suppose that the conditions of Proposition 4 hold. Consider two sequences
+of scales Hp and Hq indexed by n, satisfying that (i) Hp ≥ Hq for all n, (ii) as n → ∞,
+Hp,Hq →∞ and Hq/Hp →ρ for some constant ρ∈ (0, 1]. Then, as n→∞, we have
+v(1) p,q → 1− ρ 3 and v(2) p,q → 1. (32)
+For the asymptotic behavior of MSLE, a specific set of consecutive scales are considered,
+and the weights are defined with a continuous bounded function.
+Assumption 5. Suppose that{Hp}Mn p=1 and w satisfy the following conditions:
+(a) Hp = mn +p for all p∈{1,...,Mn}. Defining H∗ n = HMn, the sequences of positive
+integersmn andMn are selected such that, asn→∞,H∗ n/na →α,mn/H∗ n →c for some
+constants α> 0, a∈ (0, 1), c∈ (0, 1).
+(b) wp = 1−c Mnϕ(c + p H∗n ) for allp∈{1,...,Mn}, whereϕ : [c,∞)→ R is a continuous bounded
+function satisfying that
+∫ 1
+c ϕ(x)dx = 1.
+Theorem 3. Suppose that Assumptions 1, 4 and 5 hold. There exist a standard Brownian
+motion (W3,t)t≥0 independent ofF and a predictable process (ζ3,t)t≥0, such that, as n→∞,
+n
+1
+2 (1−a)(b∧(1−b))( ^⟨X,σ2⟩ (MS) T −⟨X,σ2⟩T ) st−→ ∫ T 0 ζ3,tdW3,t, (33) ∫ T
+0
+ζ2 3,tdt = 8αb β ∫ 1 c ∫ x c ϕ(x)ϕ(y)xb ( y x − y2 3x2 ) dydx· ∫ T 0 σ6 t dt· 1(0,1/2](b)
++ 4α1−bβT 3 ∫ 1 c ∫ x c ϕ(x)ϕ(y)y2(1−b) x1−b dydx· ∫ T 0 σ2 t d⟨σ2,σ2⟩t · 1[1/2,1)(b). (34)
+Theorem 4. Under Assumptions 1, 2(a), 4 and 5, suppose that 5a + 2b− 2ab > 3, and let
+r = [(1−a)(b∧ (1−b))]∧ [5a + 2b− 2ab− 3], F1 = 8ν2ν4 + 16ν3 2 + 8ν2 3 and F2 = 2ν2(ν4 −ν2 2 ).
+There exist a standard Brownian motion (W4,t)t≥0 independent ofF and a predictable process
+(ζ4,t)t≥0, such that, as n→∞,
+n
+1
+2 r( \⟨X,σ2⟩ (MS) T −⟨X,σ2⟩T ) st−→ ∫ T 0 ζ4,tdW4,t, (35) ∫ T
+0
+ζ2 4,tdt = 8αb β ∫ 1 c ∫ x c ϕ(x)ϕ(y)xb ( y x − y2 3x2 ) dydx· ∫ T 0 σ6 t dt· 1{(1−a)b}(r)
++ 4α1−bβT 3 ∫ 1 c ∫ x c ϕ(x)ϕ(y)y2(1−b) x1−b dydx· ∫ T 0 σ2 t d⟨σ2,σ2⟩t · 1{(1−a)(1−b)}(r)
++ 1 α5−2bβ2T 3
+∫ 1
+c
+ϕ2(x)x−(4−2b)dx·
+∫ T
+0
+F1dt· 1{5a+2b−2ab−3}(r)
++ 1(0,1/2](c) 22−bα5−2bβ2T 3 ∫ 1/2 c ϕ(x)ϕ(2x)x−(4−2b)dx· ∫ T 0 F2dt· 1{5a+2b−2ab−3}(r). (36)
+Note that the asymptotic variances in Theorems 1 to 4 are unobservable. Their consistent
+estimators and feasible central limit theorems are detailed in Supplementary Material.
+11
+
+=== page 12 ===
+4 Practical Aspects: Variances and Weights
+4.1 Asymptotic Variances in Practice
+Accurate asymptotic variance is important for parameter tuning. For SALE, it helps pin
+down the optimal scale; for MSLE, it helps decide the optimal weight distributions. Despite
+theoretical correctness, the accuracy of derived variances may be affected by two situations in
+practice: (i) small noise and (ii) violation of conditions in Proposition 5.
+The asymptotic variances due to noise in Proposition 1, 2 and 3 are established based on
+non-shrinkaging noise assumptions. However, a small noise correction could be necessary in
+practice, as some terms of small order become more pronounced as noise becomes smaller. For
+all-observation estimators, we have
+∆3 nk2 nVar ( \⟨X,σ2⟩ (all)⏐⏐F ) p −→
+(
+(8ν2ν4 + 16ν3 2 + 8ν2 3 ) + kn n2 · (8ν4 + 16ν2 2 ) ∫ T 0 σ2 t dt + 1 n2 · 8Tν2 ∫ T 0 σ4 t dt ) T. (37)
+Figure 2 compares the simulated performance of Equation (37) and Equation (12). Similar
+correction for SALE estimators are provided in Supplementary Material.
+10□5 10□4 10□3 10□2 10□1
+ς
+10□13
+10□9
+10□5
+10□1
+103
+107
+Asymptotic Variance
+Empirical
+Dominant
+Corrected
+Figure 2: Simulated asymptotic variance due to noise of all-observation estimators under
+different noise levels. A fixed Heston path from Section 5 is used for X, whereas i.i.d.N (0,ς 2)
+random variables are used for ε. “Empirical”: average of 5000 realizations of
+( \⟨X,σ2⟩ (all) T −
+^⟨X,σ2⟩
+(all)
+T
+)2. “Dominant”: variance calculated with Equation (12). “Corrected”: variance
+calculated with Equation (37).
+As for asymptotic variance due to discretization, the limit expression in Equation (32) does
+not work for Hq/Hp → 0, and can be inaccurate when any of n,Hp,Hq is not large enough
+(Theorem 1(1) is an example with fixed Hp = Hq). Consequently, Proposition 4 will improve
+the accuracy of asymptotic variances in such cases.
+12
+
+=== page 13 ===
+4.2 Approximate Weights of MSLE Estimators
+Suppose that Assumption 4 holds. Let Σ∈ RMn×Mn denote the total asymptotic covariance
+matrix between scales, the optimal weight assignment can be obtained by solving
+minimize
+w∈RMn
+V (w) = wTΣw, (38)
+subject to wT1Mn = 1. (39)
+The solution and the corresponding minimum are given by
+w∗ = Σ−11Mn
+1T MnΣ−11Mn , V (w∗) = 1 1T MnΣ−11Mn =
+(Mn∑
+p=1
+Mn∑
+q=1
+(Σ−1)p,q
+)−1
+. (40)
+However, direct application of Equation (40) faces challenges in practice: (i) the covariance
+matrix cannot be observed and therefore estimated values are needed; (ii) the solution w∗ can
+be numerically unstable, sensitive to estimation errors of Σ; and (iii) calculating Equation (40)
+requires matrix inversion, which has an expensive time complexity of O(M 3 n). To address these
+challenges, we construct approximate weights for MSLE estimators. For simplicity, hereafter in
+this section, we suppose that Assumption 5(a) holds, and let
+s1 = 4 β ∫ T 0 σ6 t dt, s2 = 2βT 3 ∫ T 0 σ2 t d⟨σ2,σ2⟩t, s3 = 8ν2ν4 + 16ν3 2 + 8ν2 3 α9/2β2T 2 . (41)
+Detailed derivations for Equations (42) and (44) presented in this section can be found in
+Supplementary Material.
+4.2.1 Approximation in the Noise-Free Case
+In the absence of noise, the MSLE estimator can be used to enhance the statistical efficiency
+of the all-observation estimator by employing a more optimal weight assignment, rather than
+only allocating all weight to theH = 1 scale. For generality, Definition 1 provides a closed-form
+expression for the approximate weights applicable to all scales within (mn,mn +Mn]. It is
+obtained by taking the limit mn →∞ in Equation (40), where Σ is approximated by using
+Proposition 5 and assuming that s2 ≪s1.
+Definition 1 (Approximate weights). Suppose that Assumptions 4 and 5(a) hold. The approx-
+imate weights are given by ~w = (1T Mn~ω)−1 ~ω, where
+~ωp =
+
+
+
+2(mn + 1)−1/2, p = 1,
+(mn +p)−3/2, p = 2,...,Mn − 1,
+(mn +Mn)−1/2, p =Mn.
+(42)
+Apart from being computationally and statistically efficient, ~w is numerically stable: since
+~wp > 0 holds for any p = 1,...,Mn, we always have ∑Mn p=1 |~wp| = ∑Mn p=1 ~wp = 1.
+13
+
+=== page 14 ===
+4.2.2 Approximation in the Noisy Case
+Let φ(x) =x−3/2ϕ(x), γ =s1/(3(s1 +s2)), λ =−(s1 +s2)/s3, and
+K(x,y) =x3/2y3/2(x∨y)1/2
+(
+x∧y
+x∨y −γ
+(x∧y
+x∨y
+)2)
+. (43)
+The optimal ϕ(x) in Assumption 5(b) is related to a Fredholm integral equation:
+φ(x) =kx3/2 +λ
+∫ 1
+c
+K(x,y)φ(y)dy, (44)
+where k∈ R is a constant such that
+∫ 1
+c φ(x)x3/2dx = 1. Equation (44) relies on several simpli-
+fications: (i) the conditions of Theorem 4 hold with a = 5/9 and b = 1/2, corresponding to the
+optimal convergence rate of MSLE estimators; (ii) the sparse off-diagonal terms of covariance
+due to noise are omitted, as explained in Section 2.2.3; and (iii) finite-sample corrections in Sec-
+tion 4.1 are not considered. These simplifications are made to isolate the dominant asymptotic
+behavior for analytical tractablity.
+10□1
+100
+101
+102
+103
+104
+105
+Asymptotic Variance
+Noise
+Discretization
+Total
+50 100 150 200
+Scale
+0.00
+0.01
+0.02
+Weight
+Optimal (asymptotic covariance)
+(a) λ =−1
+10□1
+100
+101
+102
+103
+104
+Asymptotic Variance
+Noise
+Discretization
+Total
+50 100 150 200
+Scale
+0.00
+0.01
+0.02
+Weight
+Optimal (asymptotic covariance) (b) λ =−10
+10□1
+100
+101
+102
+Asymptotic Variance
+Noise
+Discretization
+Total
+50 100 150 200
+Scale
+0.00
+0.01
+Weight
+Optimal (asymptotic covariance) (c) λ =−102
+10□1
+100
+101
+Asymptotic Variance
+Noise
+Discretization
+Total
+50 100 150 200
+Scale
+0.00
+0.01
+Weight
+Optimal (asymptotic covariance) (d) λ =−103
+10□2
+10□1
+100
+Asymptotic Variance
+Noise
+Discretization
+Total
+Minimum
+50 100 150 200
+Scale
+0.00
+0.02
+Weight
+Optimal (asymptotic covariance)
+(e) λ =−104
+10□3
+10□2
+10□1
+Asymptotic Variance
+Noise
+Discretization
+Total
+Minimum
+50 100 150 200
+Scale
+0.000
+0.025
+0.050
+Weight
+Optimal (asymptotic covariance) (f) λ =−105
+10□4
+10□3
+10□2
+10□1
+Asymptotic Variance
+Noise
+Discretization
+Total
+Minimum
+50 100 150 200
+Scale
+0.00
+0.05
+0.10
+Weight
+Optimal (asymptotic covariance) (g) λ =−106
+10□5
+10□4
+10□3
+10□2
+10□1
+Asymptotic Variance
+Noise
+Discretization
+Total
+Minimum
+50 100 150 200
+Scale
+0.0
+0.1
+0.2
+Weight
+Optimal (asymptotic covariance) (h) λ =−107
+Figure 3: The effect of varying noise levels on the asymptotic variances of SALE estimators
+(top panels) and the resulting optimal weights for the MSLE estimator (bottom panels). Each
+subfigure corresponds to a different noise level, parameterized by λ, while the range of scales
+is fixed to isolate the effect of noise. Asymptotic variances are shown on a logarithmic scale.
+Parameters: n = 23400, mn = 20, Mn = 180, H∗ n = 200, s1 = 1/2, s2 = 1/2, s3 =−1/λ.
+Figure 3 shows the impact of the noise level in this simplified situation. The asymptotic
+variances of SALEs and the optimal weights of the MSLE are presented on a fixed set of scales.
+Note that a smaller|λ| represents a larger noise magnitude. For a small|λ|, the variances due
+to noise dominate in most scales. Specifically, as|λ|→ 0, the integral term in Equation (44)
+vanishes, and the optimal weights are given by ϕ(x)→ 4x3. Despite having a closed-form ex-
+14
+
+=== page 15 ===
+pression, the result is not useful in practice, as noise always dominates the total variance, so the
+estimation error is too large. On the other hand, as|λ|→∞, noise has negligible contributions
+to the total variances, and Equation (44) becomes ill-posed. However, the proposed weights in
+Definition 1 offer good approximations in this case.
+Beyond these simplifications, the intuition behind our multi-scale approach and approximate
+weighting strategy is illustrated by the signature plot in Figure 4, which compares different
+estimators across various scales (or pre-averaging window lengths) for a simulated path under
+realistic noise. While illustrative, these patterns are systematic and confirmed by the extensive
+simulations in Section 5.3.
+1.0
+1.5
+2.0
+2.5
+3.0
+3.5
+4.0
+Asymptotic Variance
+×10□8
+Pre-Averaging LE
+SALE
+Optimal Pre-Averaging LE
+Optimal SALE
+20 40 60 80 100 120
+Scale or Pre-Averaging Length
+□0.0012
+□0.0010
+□0.0008
+□0.0006
+□0.0004
+□0.0002
+0.0000
+0.0002
+Leverage Eﬀect
+ True
+Pre-Averaging LE
+SALE
+MSLE
+Optimal Pre-Averaging LE
+Optimal SALE
+Scales used in MSLE
+95% CI of Pre-Averaging LE
+95% CI of SALE
+95% CI of MSLE
+Figure 4: Signature plot for a simulated path with time horizon T = 5/252 and noise scale
+ς = 3× 10−4.
+The plot reveals two key advantages. First, SALE outperforms the pre-averaging estimator,
+as its minimum asymptotic variance (top panel) is smaller, leading to a more efficient optimal
+estimator.2 Second, MSLE can improve upon SALE by averaging SALE estimates across an
+appropriate range of scales (bottom panel) using an effective weighting strategy, yielding a more
+accurate estimate with a tighter confidence interval.
+Based on this, we propose the following weighting method: (i) find an optimal scale Hn for
+SALE estimators by minimizing the total variance, using the corrections in Section 4.1; and (ii)
+allocate weights by applying Definition 1 withmn =Hn− 1. This data-driven strategy ensures
+that MSLE leverages the most informative scales, improving upon the optimal SALE in two
+ways: the variance due to discretization is reduced through the approximate weights, and the
+variance due to noise is reduced because SALE estimators at subsequent scales exhibit smaller
+noise contributions.
+2The fundamental reason is that the SALE estimator has a smaller coefficient of price variation error as shown
+in Theorem 1, which is 8/3, compared to a larger coefficient 4 in the pre-averaging estimator.
+15
+
+=== page 16 ===
+5 Monte Carlo Simulations
+5.1 Data Generating Processes
+The Heston model (Heston, 1993) is used to generate the discrete values of the underlying
+continuous processes. The model is defined as
+dXt =
+(
+µ− σ2 t
+2
+)
+dt +σtdWt, (45)
+dσ2 t =κ(θ−σ2 t )dt +γσt
+(
+ρdWt +
+√
+1−ρ2dBt
+)
+, (46)
+whereWt andBt are independent Brownian motions, with the leverage effect being⟨X,σ2⟩T =
+γρ
+∫T
+0 Vtdt. The parameters are set as follows: µ = 0.02,κ = 5,θ = 0.04,γ = 0.5,ρ =−0.7. The
+initial values are set as X0 = 0,V0 = 0.02.
+Let the variance of noise random variables{εi}n i=0 be ς2. For independent noises, three
+distributions are considered: (i) normal: εi ∼N (0,ς2); (ii) uniform: εi ∼ Unif(− √ 3ς, √ 3ς);
+and (iii) skew-normal: εi has a PDF of f(x) = 2ω−1ϕ0(ω−1(x−ξ))Φ0(αω−1(x−ξ)), where
+ϕ0 and Φ0 are the PDF and CDF of N (0, 1), and ξ = −ωδ
+√
+2/π, ω = ς(1− 2δ2/π)−1/2,
+δ =α(1 +α2)−1/2, with the shape parameter α = 1. For dependent noises, consider
+(i) MA(2) process: εi =ei +θ1ei−1 +θ2ei−2, ei i.i.d.∼ N (0,ς2(1 +θ2 1 +θ2 2)−1); and (47)
+(ii) AR(1) process: εi =ϕεi−1 +ei, ei i.i.d.∼ N (0,ς2
+√
+1−ϕ2) with ϕ∈ (−1, 1). (48)
+Specifically, the AR(1) process is included to evaluate the robustness of the proposed estimators.
+While AR(1) noise is not q-dependent and thus technically violates Assumption 2, it serves as
+a benchmark model for persistent, serially correlated noise (Jacod et al., 2017; Li and Linton,
+2022). As our subsequent simulations will confirm, the proposed estimators are indeed robust
+to this moderate violation, preserving their asymptotic normality and superior finite-sample
+efficiency.
+5.2 Asymptotic Normality
+This section validates the central limit theorems by examining the distribution of standard-
+ized estimation errors. For each estimator, the error is standardized using both its infeasible and
+feasible asymptotic variance. According to the results in Section 3, these standardized errors
+should converge to a standard normal distribution.
+We simulate 5000 paths for each scenario, covering noise-free, independent noise, and depen-
+dent noise. For data generation, we set T = 1/252, n = 23400, ς = 0.005, θ1 =±0.7, θ2 = 0.5,
+and ϕ = 0.7. For estimators, we set β = 1/2, b = 1/2, with scales and weights detailed in
+Table 1.
+Table 2 presents the summary statistics for the standardized errors. Across all scenarios,
+these statistics closely match those of a standard normal distribution, corroborating our the-
+oretical results (Theorems 1 to 4 and their feasible versions). Additional Q-Q plots in the
+Supplementary Material further support these findings.
+16
+
+=== page 17 ===
+Table 1: Scales and weights used in SALE and MSLE.
+Noise
+SALE MSLE
+H {Hp}Mn p=1 {wp}Mn p=1
+None 1, 15 {1, 2,..., 15} wp ∝H−3/2 p
+Independent 1, 15 {1, 2,..., 15} wp ∝H3 p
+Dependent 15 {11, 12,..., 15} wp ∝H3 p
+Table 2: Summary statistics for standardized estimation errors under different settings. The
+standardized error is computed as (Estimate− True Value)/√Asymptotic Variance, using both
+infeasible and feasible versions of the asymptotic variance. The mean, standard deviation and
+the 25th, 50th and 75th percentiles are reported. “LE” in the “Estimator” column represents the
+all-observation estimator (SALE withH = 1), whereas “SALE” represents SALE withH = 15.
+Noise Setting Estimator Infeasible Feasible
+Mean Std Q1 Q2 Q3 Mean Std Q1 Q2 Q3
+None
+LE -0.016 1.013 -0.693 -0.013 0.683 -0.014 1.013 -0.693 -0.013 0.684
+SALE 0.012 0.990 -0.650 0.012 0.685 0.013 0.996 -0.652 0.012 0.687
+MSLE -0.012 1.013 -0.694 0.005 0.678 -0.010 1.014 -0.696 0.005 0.676
+Independent
+Normal
+LE -0.022 1.004 -0.693 -0.030 0.650 -0.022 0.998 -0.691 -0.030 0.643
+SALE -0.008 1.003 -0.693 -0.007 0.673 -0.007 0.991 -0.684 -0.007 0.666
+MSLE -0.005 1.047 -0.718 0.000 0.702 -0.005 1.019 -0.699 0.000 0.685
+Uniform
+LE 0.008 1.009 -0.653 0.019 0.680 0.008 1.002 -0.651 0.019 0.676
+SALE 0.002 0.998 -0.679 -0.009 0.673 0.002 0.983 -0.667 -0.009 0.663
+MSLE 0.004 1.023 -0.707 0.008 0.689 0.004 0.989 -0.683 0.007 0.668
+Skew-normal
+LE 0.010 1.004 -0.662 0.018 0.685 0.010 0.999 -0.655 0.018 0.678
+SALE 0.008 1.010 -0.681 0.015 0.691 0.008 0.999 -0.676 0.014 0.686
+MSLE 0.010 1.048 -0.699 0.001 0.716 0.010 1.021 -0.680 0.001 0.696
+Dependent
+MA(2) (θ1 = 0.7) SALE -0.013 1.012 -0.706 -0.024 0.676 -0.012 1.004 -0.698 -0.024 0.671 MSLE -0.008 1.032 -0.727 -0.007 0.696 -0.008 1.022 -0.721 -0.007 0.689
+MA(2) (θ1 =−0.7) SALE 0.001 1.022 -0.682 0.008 0.680 0.001 1.015 -0.677 0.008 0.678 MSLE -0.001 1.073 -0.717 0.004 0.727 -0.001 1.063 -0.709 0.004 0.723
+AR(1) SALE -0.011 1.006 -0.693 -0.015 0.666 -0.010 0.996 -0.690 -0.015 0.657 MSLE -0.005 1.040 -0.705 -0.008 0.685 -0.003 1.028 -0.695 -0.008 0.680
+Asymptotic Value (Standard Normal) 0.000 1.000 -0.674 0.000 0.674 0.000 1.000 -0.674 0.000 0.674
+5.3 Finite-Sample Performance: Superior Efficiency
+5.3.1 Efficiency in the Noise-Free Case
+The finite-sample efficiency of the MSLE estimator, using both optimal and approximate
+weights, is compared against the all-observation estimator. To evaluate the performance across
+different sample sizes, four common time horizons are considered for T : one day (T = 1/252),
+one week (T = 5/252), two weeks (T = 10/252) and one month (T = 22/252). For each
+T , the sample size is set to n = 23400× 252T , and 1000 paths are simulated. The MSLE
+estimators are computed with scalesHp = 1, 2,...,⌊0.5n0.5⌋, and the optimal weights are given
+by Equation (40) and (31).
+Figure 5 and Table 3 summarize the results. The findings clearly demonstrate the superiority
+of the MSLE estimator over the all-observation estimator, evidenced by its smaller asymptotic
+variance, lower finite-sample RMSE, and higher finite-sample efficiency.
+A key practical insight is that the MSLE with approximate weights achieves efficiency nearly
+identical to that with optimal weights, but offers significantly better numerical stability. By
+17
+
+=== page 18 ===
+□0.00015 □0.00010 □0.00005 0.00000 0.00005 0.000100
+20000
+40000
+60000
+80000
+100000
+120000
+140000
+160000Density
+MSLE (Approximate)
+MSLE (Optimal)
+All-Observation LE
+True Value
+(a) 1 day
+□0.0005 □0.0004 □0.0003 □0.0002 □0.0001 0.00000
+2000
+4000
+6000
+8000
+10000
+12000
+14000Density
+MSLE (Approximate)
+MSLE (Optimal)
+All-Observation LE
+True Value (b) 5 days
+□0.0010 □0.0008 □0.0006 □0.0004 □0.0002 0.00000
+1000
+2000
+3000
+4000Density
+MSLE (Approximate)
+MSLE (Optimal)
+All-Observation LE
+True Value (c) 10 days
+□0.0025 □0.0020 □0.0015 □0.0010 □0.0005 0.00000
+200
+400
+600
+800
+1000
+1200
+1400
+1600Density
+MSLE (Approximate)
+MSLE (Optimal)
+All-Observation LE
+True Value (d) 22 days
+□0.00015 □0.00010 □0.00005 0.00000 0.00005 0.000100
+2000
+4000
+6000
+8000
+10000
+12000
+14000
+16000Density
+MSLE (Approximate)
+MSLE (Optimal)
+All-Observation LE
+(e) 1 day
+□0.0002 □0.0001 0.0000 0.0001 0.00020
+2000
+4000
+6000
+8000
+10000Density
+MSLE (Approximate)
+MSLE (Optimal)
+All-Observation LE (f) 5 days
+□0.0004 □0.0002 0.0000 0.0002 0.00040
+1000
+2000
+3000
+4000
+5000
+6000
+7000
+8000Density
+MSLE (Approximate)
+MSLE (Optimal)
+All-Observation LE (g) 10 days
+□0.0008 □0.0006 □0.0004 □0.0002 0.0000 0.0002 0.0004 0.00060
+1000
+2000
+3000
+4000Density
+MSLE (Approximate)
+MSLE (Optimal)
+All-Observation LE (h) 22 days
+0.0 0.5 1.0 1.5 2.0
+×10□9
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+Density
+×109
+MSLE (Approximate)
+MSLE (Optimal)
+All-Observation LE
+(i) 1 day
+0.0 0.5 1.0 1.5 2.0
+×10□8
+0
+1
+2
+3
+4Density
+×108
+MSLE (Approximate)
+MSLE (Optimal)
+All-Observation LE (j) 5 days
+0 1 2 3 4 5 6 7
+×10□8
+0.00
+0.25
+0.50
+0.75
+1.00
+1.25
+1.50
+1.75
+2.00
+Density
+×108
+MSLE (Approximate)
+MSLE (Optimal)
+All-Observation LE (k) 10 days
+0.0 0.5 1.0 1.5 2.0
+×10□7
+0
+1
+2
+3
+4
+5
+6
+7Density
+×107
+MSLE (Approximate)
+MSLE (Optimal)
+All-Observation LE (l) 22 days
+Figure 5: The performances of the MSLE and all-observation estimators for each setting of T
+in the noise-free setting. The first row shows the true and estimated values of leverage effect,
+the second row shows the estimation errors, and the third row shows the asymptotic variances.
+Table 3: Finite-sample performances of the MSLE and all-observation estimators in the noise-
+free setting. The finite-sample relative efficiency is compared with the all-observation estimator.
+Days
+True Value RMSE Relative Efficiency ∥w∥1
+Mean Std Approximate Optimal LE Approximate Optimal LE Approximate Optimal LE
+1 −2.80× 10−5 2.77× 10−6 2.55× 10−5 2.44× 10−5 2.93× 10−5 1.32 1.44 1.00 1.00 13.77 1.00
+5 −1.48× 10−4 3.10× 10−5 4.57× 10−5 4.50× 10−5 5.32× 10−5 1.36 1.40 1.00 1.00 24.77 1.00
+10 −3.06× 10−4 8.98× 10−5 6.43× 10−5 6.44× 10−5 7.28× 10−5 1.28 1.28 1.00 1.00 28.53 1.00
+22 −7.44× 10−4 2.72× 10−4 1.06× 10−4 1.07× 10−4 1.14× 10−4 1.16 1.13 1.00 1.00 34.83 1.00
+construction, the approximate weights are non-negative, thus ensuring∥w∥1 = 1. In contrast,
+the optimal weights can become negative, causing their L1-norm to grow with the sample
+size. This not only increases numerical instability, but also potentially violates our theoretical
+requirement in Assumption 4, making the approximate weighting scheme a more robust choice
+for practical implementation.
+5.3.2 Efficiency in the Noisy Case
+The finite-sample efficiency of the MSLE estimator using approximate weights is compared
+against the pre-averaging LE estimator in A¨ıt-Sahalia et al. (2017) in a noisy setting. While
+the pre-averaging estimator has a slightly faster theoretical convergence rate (n−1/8) than the
+MSLE estimator (n−1/9), we demonstrate that MSLE achieves superior finite-sample efficiency,
+especially in realistic scenarios. To this end, we again vary T to assess the performance across
+18
+
+=== page 19 ===
+different sample sizes.
+The simulation uses dependent AR(1) noise with ϕ = 0.7, and three noise levels: small
+(ς = 10−4), medium (ς = 10−3.5), and large (ς = 10−3). Notably, empirical evidence suggests
+that real-world noise levels are closer to the “small” setting (Christensen et al., 2014), which
+is further supported by our empirical study in Section 6. For the MSLE estimator, the noise
+ACF is truncated at q = 3, the scales are set to Hp = 7, 8,...,⌊n5/9⌋, and for simplicity, the
+same weight allocation is used for all paths in each case. For the pre-averaging estimator,
+since a closed-form optimal tuning parameter is unavailable, we grant it an advantage by ex-
+post selecting the pre-averaging window that yields the minimum RMSE, from a wide grid of
+candidates (5, 10, 30, 60, 90, 120, 180, 240, and 300).
+□0.0004□0.0003□0.0002□0.0001 0.0000 0.0001 0.0002 0.00030
+20000
+40000
+60000
+80000
+100000
+120000
+140000
+160000Density
+MSLE (Approximate)
+Pre-Averaging LE (K = 10)
+True Value
+(a) 1 day
+□0.0008 □0.0006 □0.0004 □0.0002 0.0000 0.0002 0.00040
+2000
+4000
+6000
+8000
+10000
+12000
+14000Density
+MSLE (Approximate)
+Pre-Averaging LE (K = 10)
+True Value (b) 5 days
+□0.0012□0.0010□0.0008□0.0006□0.0004□0.0002 0.0000 0.0002 0.00040
+1000
+2000
+3000
+4000Density
+MSLE (Approximate)
+Pre-Averaging LE (K = 10)
+True Value (c) 10 days
+□0.0030 □0.0025 □0.0020 □0.0015 □0.0010 □0.0005 0.00000
+200
+400
+600
+800
+1000
+1200
+1400
+1600Density
+MSLE (Approximate)
+Pre-Averaging LE (K = 5)
+True Value (d) 22 days
+□0.0004□0.0003□0.0002□0.0001 0.0000 0.0001 0.0002 0.0003 0.00040
+2000
+4000
+6000
+8000Density
+MSLE (Approximate)
+Pre-Averaging LE (K = 10)
+(e) 1 day
+□0.0006 □0.0004 □0.0002 0.0000 0.0002 0.0004 0.00060
+1000
+2000
+3000
+4000
+5000Density
+MSLE (Approximate)
+Pre-Averaging LE (K = 10) (f) 5 days
+□0.0006□0.0004□0.0002 0.0000 0.0002 0.0004 0.0006 0.0008 0.00100
+500
+1000
+1500
+2000
+2500
+3000
+3500
+4000Density
+MSLE (Approximate)
+Pre-Averaging LE (K = 10) (g) 10 days
+□0.0015 □0.0010 □0.0005 0.0000 0.0005 0.00100
+500
+1000
+1500
+2000
+2500Density
+MSLE (Approximate)
+Pre-Averaging LE (K = 5) (h) 22 days
+Figure 6: The performances of the MSLE and pre-averaging LE estimators for each setting of
+T in the dependent noise setting (ς = 10−4). The first row shows the true and estimated values
+of leverage effect, and the second row shows the estimation error.
+Table 4: Finite-sample performances of the MSLE and pre-averaging LE estimators in the
+dependent noise setting. The finite-sample relative efficiency is compared with the pre-averaging
+estimator.
+ς Days
+True Value RMSE Relative Efficiency
+Mean Std MSLE Pre-Averaging LE MSLE Pre-Averaging LE
+10−4
+1 −2.80× 10−5 2.77× 10−6 4.78× 10−5 7.11× 10−5 2.21 1.00
+5 −1.48× 10−4 3.10× 10−5 8.67× 10−5 1.21× 10−4 1.95 1.00
+10 −3.06× 10−4 8.98× 10−5 1.14× 10−4 1.62× 10−4 2.00 1.00
+22 −7.44× 10−4 2.72× 10−4 1.74× 10−4 2.50× 10−4 2.05 1.00
+10−3.5
+1 −2.80× 10−5 2.77× 10−6 6.65× 10−5 9.28× 10−5 1.95 1.00
+5 −1.48× 10−4 3.10× 10−5 1.18× 10−4 1.62× 10−4 1.86 1.00
+10 −3.06× 10−4 8.98× 10−5 1.63× 10−4 2.20× 10−4 1.81 1.00
+22 −7.44× 10−4 2.72× 10−4 2.67× 10−4 3.65× 10−4 1.87 1.00
+10−3
+1 −2.80× 10−5 2.77× 10−6 9.63× 10−5 1.18× 10−4 1.50 1.00
+5 −1.48× 10−4 3.10× 10−5 1.82× 10−4 2.27× 10−4 1.56 1.00
+10 −3.06× 10−4 8.98× 10−5 2.53× 10−4 3.07× 10−4 1.48 1.00
+22 −7.44× 10−4 2.72× 10−4 3.82× 10−4 4.86× 10−4 1.62 1.00
+19
+
+=== page 20 ===
+Figure 6 (for ς = 10−4) and Table 4 (for all noise levels) present the results. The findings
+confirm that the MSLE estimator consistently and substantially outperforms the pre-averaging
+estimator in terms of finite-sample RMSE and efficiency across all sample sizes and noise lev-
+els. Crucially, the advantage is most pronounced in the small-noise setting, which is the most
+empirically relevant scenario. Even as the time horizon increases to one month, MSLE’s lead
+remains significant, demonstrating that the theoretical convergence rate is not the only deter-
+minant of the finite-sample performance. This highlights the practical power of the proposed
+estimators and the approximate weighting strategy. Furthermore, this superior performance is
+achieved without resorting to the infeasible ex-post parameter tuning that was granted to the
+pre-averaging estimator, underscoring the robustness and practical utility of our methods.
+An additional study for the i.i.d. noise case, along with supplementary information of the
+simulation details, are provided in Supplementary Material.
+6 Empirical Study
+The high-frequency trading data for a selection of assets, covering the regular trading hours
+from 2014 to 2023 (2,516 trading days), are collected from the TAQ database. The data are
+cleaned before analysis, retaining only regular trades and removing erroneous entries.3 The
+dataset consists of 15 ETFs and 15 individual stocks, as listed in Table 5. The ETFs track
+the performance of the S&P 500, NASDAQ 100, Dow Jones Industrial Average, Russell 2000
+indices, as well as the 11 sectors of the S&P 500. The individual stocks are selected to represent
+a range of liquidity and volatility levels, covering various sectors such as technology, consumer
+goods, healthcare, and entertainment, thus providing a diverse set of assets for the empirical
+study. Among the 30 assets, XLC and XLRE were issued partway through the sample period.
+Therefore, our analysis for them begins at the start of their second year, in 2017 and 2019,
+respectively. After data cleaning, we resample the data to obtain 1-second and 5-second returns.
+We apply the jump test proposed by A¨ıt-Sahalia et al. (2012) to identify and remove trading
+days with the presence of jumps for each stock. This test is a robustified version of the test
+introduced by A¨ıt-Sahalia and Jacod (2009), incorporating the pre-averaging method to deal
+with the MMS noise. After computing the standardized statistics with 5-second intraday data,
+we apply the universal threshold technique proposed by Bajgrowicz et al. (2016) to eliminate
+spurious jump detections. This method is more stringent than the FDR procedure and is
+designed to asymptotically remove all spurious detections, thereby minimizing data loss. As a
+result, 909 asset-days, comprising 1.2% of the entire dataset of 73,910 asset-days, are identified
+as containing jumps and excluded from further analysis. The numbers of days with jumps for
+each asset are listed in Table 5.
+We estimate the leverage effects for both weekly (defined as every five trading days) and
+monthly (defined as natural months) periods using both 1-second and 5-second data for each
+stock. The estimation proceeds in several steps, showcasing the flexibility and robustness of our
+3A practical and detailed guideline on high-frequency data cleaning is offered by Barndorff-Nielsen et al. (2009).
+While we follow most of the steps therein, some are omitted. For example, the entries with Sale Conditions ‘I’
+(odd lot trade) and ‘C’ (cash trade) are retained because of their significant contribution in our dataset. We also
+remove the “bounceback” outliers described by A¨ıt-Sahalia et al. (2011).
+20
+
+=== page 21 ===
+framework in handling real-world data complexities.
+1. The ReMeDI estimator proposed by Li and Linton (2022) is used to estimate the moments
+ν2,ν4 and the generalized acfsρ2(l),ρ3(l), andρ4(l) of the MMS noise in each period. The
+existence and the dependence level of noise are determined by its autocovariances. The
+results show that the noise in the dataset is small, while the dependencies are common.
+For example, the analysis of noise in monthly 5-second frequency data shows that: (i)
+for the ETFs, 33.9% of asset-months exhibit significant noise, among which 71.5% are
+dependent and the average noise scale is ς = 9.6× 10−5; while (ii) for the stocks, 63.5%
+of the asset-months exhibit significant noise, among which 60.8% are dependent and the
+average noise scale is ς = 2.0× 10−4.
+2. The scale Hn in the approximate weights of the MSLE estimator is determined by mini-
+mizing the total asymptotic variances of SALE estimators, where the asymptotic variances
+are estimated using 1-minute pre-averaging return data. With the existence of noise, ad-
+ditional lower bounds forHn are applied, such that: (i)Hn satisfiesHn ≥ 2ˆq + 1, where ˆq
+is the estimated dependence level; and (ii) the minimum values of Hn are 20 for 1-second
+data (corresponding to 20 seconds) and 12 for 5-second data (corresponding to 60 sec-
+onds). The former is a condition for the proposed SALE and MSLE estimators, while the
+latter is a rather conservative manual intervention, which mitigates numerical instability
+at the cost of larger asymptotic variance.
+3. The leverage effect and its asymptotic variance are estimated using the MSLE estimator
+with approximate weights, where the number of scales is set toMn = 50 for computational
+efficiency.
+2014 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024
+□0.2
+0.0
+MSLE
+95% CI
+(a) Month data, 5-second frequency
+2014 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024
+□0.2
+0.0
+MSLE
+95% CI
+(b) Week data, 5-second frequency
+Figure 7: Leverage effect estimation for AMZN (Amazon.com, Inc.).
+Figure 7 illustrates the dynamic nature of the leverage effect for AMZN, showcasing our es-
+timator’s ability to capture its time-varying behavior. The monthly estimates reveal significant
+fluctuations, clearly capturing major market stress events such as the February 2018 “Volpoca-
+lypse” and the COVID-19 sell-off in early 2020. The weekly estimates, while more volatile,
+provide a higher-resolution view of these dynamics.
+21
+
+=== page 22 ===
+Table 5: Data descriptions and results of empirical study.
+Type Ticker Name
+Average
+Daily
+Observations
+Average
+Daily
+Volume
+Annualized
+Volatility
+Trading
+Days
+Days
+with
+Jumps
+Signs of Leverage Effects (%)
+M, 1-sec M, 5-sec W, 1-sec W, 5-sec
+− + − + − + − +
+ETF
+SPY SPDR S&P 500 ETF Trust 428321 9.27× 107 0.175 2516 5 89.2 10.8 93.3 6.7 83.3 16.7 86.7 13.3
+QQQ Invesco QQQ Trust 219580 4.14× 107 0.215 2516 3 88.3 11.7 90.8 9.2 84.9 15.1 86.7 13.3
+DIA SPDR Dow Jones Industrial Average ETF Trust 35501 4.53× 106 0.174 2516 11 86.7 13.3 90.0 10.0 77.4 22.6 82.1 17.9
+IWM iShares Russell 2000 ETF 153098 2.98× 107 0.221 2516 5 86.7 13.3 89.2 10.8 77.0 23.0 80.4 19.6
+XLC The Communication Services Select Sector SPDR ETF Fund 27626 4.65× 106 0.242 1393 6 88.3 11.7 86.7 13.3 75.1 24.9 76.3 23.7
+XLY The Consumer Discretionary Select Sector SPDR Fund 49127 5.63× 106 0.208 2516 12 88.3 11.7 90.0 10.0 74.2 25.8 79.8 20.2
+XLP The Consumer Staples Select Sector SPDR Fund 45530 1.19× 107 0.146 2516 21 70.8 29.2 75.8 24.2 62.5 37.5 61.9 38.1
+XLE The Energy Select Sector SPDR Fund 112759 2.10× 107 0.298 2516 24 71.7 28.3 75.8 24.2 62.5 37.5 64.9 35.1
+XLF The Financial Select Sector SPDR Fund 72205 5.54× 107 0.221 2516 15 81.7 18.3 87.5 12.5 71.2 28.8 71.6 28.4
+XLV The Health Care Select Sector SPDR Fund 63047 9.89× 106 0.170 2516 19 82.5 17.5 88.3 11.7 69.0 31.0 68.8 31.2
+XLI The Industrial Select Sector SPDR Fund 65217 1.15× 107 0.196 2516 13 80.8 19.2 90.8 9.2 71.4 28.6 73.8 26.2
+XLB The Materials Select Sector SPDR Fund 38370 6.33× 106 0.206 2516 20 73.3 26.7 77.5 22.5 69.0 31.0 68.8 31.2
+XLRE The Real Estate Select Sector SPDR Fund 15748 4.21× 106 0.214 2069 30 73.8 26.2 75.0 25.0 59.8 40.2 63.5 36.5
+XLK The Technology Select Sector SPDR Fund 60643 1.04× 107 0.226 2516 7 89.2 10.8 91.7 8.3 83.3 16.7 83.7 16.3
+XLU The Utilities Select Sector SPDR Fund 66683 1.48× 107 0.191 2516 48 64.2 35.8 65.0 35.0 55.4 44.6 57.1 42.9
+Stock
+AAPL Apple Inc. 368263 1.37× 108 0.284 2516 22 76.7 23.3 75.8 24.2 70.2 29.8 73.6 26.4
+AMC AMC Entertainment Holdings, Inc. 104278 2.77× 106 1.352 2516 56 50.8 49.2 48.3 51.7 47.8 52.2 49.6 50.4
+AMZN Amazon.com, Inc. 164947 8.02× 107 0.332 2516 21 78.3 21.7 76.7 23.3 68.7 31.3 68.8 31.2
+CLX The Clorox Company 16352 1.18× 106 0.227 2516 70 52.5 47.5 55.8 44.2 49.6 50.4 51.2 48.8
+CPB The Campbell’s Company 18902 2.32× 106 0.236 2516 66 51.7 48.3 49.2 50.8 54.8 45.2 53.6 46.4
+GME GameStop Corp. 51874 1.82× 107 1.080 2516 52 43.3 56.7 49.2 50.8 47.2 52.8 48.2 51.8
+KO The Coca-Cola Company 78632 1.42× 107 0.180 2516 44 65.8 34.2 67.5 32.5 55.4 44.6 59.1 40.9
+MRK Merck & Co., Inc. 68200 1.08× 107 0.214 2516 52 64.2 35.8 56.7 43.3 56.0 44.0 50.8 49.2
+MSFT Microsoft Corporation 231381 3.02× 107 0.271 2516 16 72.5 27.5 73.3 26.7 65.5 34.5 66.3 33.7
+NVDA NVIDIA Corporation 204440 4.58× 108 0.464 2516 30 71.7 28.3 76.7 23.3 68.1 31.9 68.7 31.3
+PEP PepsiCo, Inc. 44764 4.69× 106 0.184 2516 44 66.7 33.3 68.3 31.7 52.0 48.0 54.6 45.4
+PFE Pfizer Inc. 113288 2.79× 107 0.226 2516 40 65.8 34.2 61.7 38.3 57.3 42.7 57.1 42.9
+PG The Procter & Gamble Company 61423 8.27× 106 0.182 2516 61 69.2 30.8 65.8 34.2 59.1 40.9 61.5 38.5
+TAP Molson Coors Beverage Company 16751 1.83× 106 0.282 2516 67 60.0 40.0 59.2 40.8 52.0 48.0 52.6 47.4
+TSLA Tesla, Inc. 368486 1.13× 108 0.557 2516 29 75.8 24.2 74.2 25.8 63.7 36.3 63.7 36.3
+106 107 108 109
+Average Daily Volume
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4
+Annualized Volatility
+AAPL
+AMC
+AMZN
+CLX CPB
+GME
+KO
+MRK
+MSFT
+NVDA
+PEP
+PFE
+PG
+TAP
+TSLA
+45
+50
+55
+60
+65
+70
+75
+Proportion of Negative Leverage Eﬀect (%)
+Figure 8: Individual stocks included in the empirical study. The sizes of the circles represent
+the average number of daily observations in our dataset, while the colors represent the proportion
+of negative leverage effect detected using monthly data sampled at 1-second frequency.
+As summarized in Table 5 and visualized in Figure 8, a negative leverage effect is predom-
+inant across most assets, particularly within established large-cap and defensive stocks, con-
+sistent with financial theory. The notable exceptions are the “meme stocks” AMC and GME,
+where retail-investor-driven speculative trading results in extreme volatility and a weaker or
+non-negative leverage effect. This demonstrates our method’s ability to uncover such asset-
+specific idiosyncrasies.
+7 Conclusion
+We introduce a multi-scale framework for the robust and efficient estimation of the leverage
+effect from high-frequency data contaminated by complex, serially dependent microstructure
+noise. We construct two estimators, SALE and MSLE, by combining the shifted window, sub-
+22
+
+=== page 23 ===
+sampling, and multi-scale techniques. We develop the asymptotic theory, and design an effective
+weighting strategy for the MSLE estimator. Beyond noise robustness, a central merit of our
+framework is its superior efficiency. In the absence of noise, the MSLE estimator improves the
+efficiency of the base estimator. Under a realistic setting of noise and sample size, the SALE
+estimator already outperforms the standard pre-averaging estimator, and the MSLE estimator
+further improves upon this, delivering consistently more accurate and reliable estimates. Exten-
+sive simulations and empirical applications have validated the asymptotic theory, finite-sample
+performance, and the practical robustness and flexibility of the proposed methods.
+References
+Yacine A¨ıt-Sahalia and Jean Jacod. Testing for jumps in a discretely observed process. The
+Annals of Statistics, 37(1), February 2009. ISSN 0090-5364. doi: 10.1214/07-AOS568.
+Yacine A¨ıt-Sahalia and Jean Jacod. High-Frequency Financial Econometrics. Princeton Uni-
+versity Press, July 2014. ISBN 978-1-4008-5032-7. doi: 10.1515/9781400850327.
+Yacine A¨ıt-Sahalia and Dacheng Xiu. A Hausman test for the presence of market microstructure
+noise in high frequency data. Journal of Econometrics, 211(1):176–205, July 2019. ISSN
+03044076. doi: 10.1016/j.jeconom.2018.12.013.
+Yacine A¨ıt-Sahalia, Per A. Mykland, and Lan Zhang. How Often to Sample a Continuous-Time
+Process in the Presence of Market Microstructure Noise. Review of Financial Studies, 18(2):
+351–416, 2005. ISSN 0893-9454, 1465-7368. doi: 10.1093/rfs/hhi016.
+Yacine A¨ıt-Sahalia, Per A. Mykland, and Lan Zhang. Ultra high frequency volatility estimation
+with dependent microstructure noise. Journal of Econometrics, 160(1):160–175, January
+2011. ISSN 03044076. doi: 10.1016/j.jeconom.2010.03.028.
+Yacine A¨ıt-Sahalia, Jean Jacod, and Jia Li. Testing for jumps in noisy high frequency data.
+Journal of Econometrics, 168(2):207–222, June 2012. ISSN 03044076. doi: 10.1016/j.jeconom.
+2011.12.004.
+Yacine A¨ıt-Sahalia, Jianqing Fan, Roger J. A. Laeven, Christina Dan Wang, and Xiye Yang.
+Estimation of the Continuous and Discontinuous Leverage Effects . Journal of the American
+Statistical Association, 112(520):1744–1758, October 2017. ISSN 0162-1459, 1537-274X. doi:
+10.1080/01621459.2016.1240082.
+Torben G. Andersen, Tim Bollerslev, Francis X. Diebold, and Paul Labys. Great realizations.
+Risk, 13:105–108, 2000.
+Pierre Bajgrowicz, Olivier Scaillet, and Adrien Treccani. Jumps in High-Frequency Data: Spu-
+rious Detections, Dynamics , and News. Management Science, 62(8):2198–2217, August 2016.
+ISSN 0025-1909, 1526-5501. doi: 10.1287/mnsc.2015.2234.
+Federico M. Bandi and Roberto Ren`o. Time-varying leverage effects. Journal of Econometrics,
+169(1):94–113, July 2012. ISSN 03044076. doi: 10.1016/j.jeconom.2012.01.010.
+23
+
+=== page 24 ===
+O. E. Barndorff-Nielsen, P. Reinhard Hansen, A. Lunde, and N. Shephard. Realized kernels
+in practice: Trades and quotes. The Econometrics Journal, 12(3):C1–C32, November 2009.
+ISSN 1368-4221, 1368-423X. doi: 10.1111/j.1368-423X.2008.00275.x.
+Fischer Black. Studies of stock price volatility changes. In Proceedings of the 1976 Meeting
+of the Business and Economic Statistics Section, American Statistical Association , pages
+177–181. American Statistical Association, 1976.
+Carsten H. Chong and Viktor Todorov. Volatility of volatility and leverage effect from
+options. Journal of Econometrics, 240(1):105669, March 2024. ISSN 03044076. doi:
+10.1016/j.jeconom.2024.105669.
+Carsten H. Chong, Thomas Delerue, and Guoying Li. When Frictions Are Fractional: Rough
+Noise in High-Frequency Data. Journal of the American Statistical Association, pages 1–14,
+January 2025. ISSN 0162-1459, 1537-274X. doi: 10.1080/01621459.2024.2428466.
+Kim Christensen, Roel C.A. Oomen, and Mark Podolskij. Fact or friction: Jumps at ultra high
+frequency. Journal of Financial Economics, 114(3):576–599, December 2014. ISSN 0304405X.
+doi: 10.1016/j.jfineco.2014.07.007.
+A Christie. The stochastic behavior of common stock variances Value, leverage and interest rate
+effects. Journal of Financial Economics, 10(4):407–432, December 1982. ISSN 0304405X. doi:
+10.1016/0304-405X(82)90018-6.
+Imma Valentina Curato and Simona Sanfelici. Stochastic leverage effect in high-frequency data:
+A Fourier based analysis. Econometrics and Statistics, 23:53–82, July 2022. ISSN 24523062.
+doi: 10.1016/j.ecosta.2021.03.001.
+Rui Da and Dacheng Xiu. When Moving-Average Models Meet High-Frequency Data: Uniform
+Inference on Volatility. Econometrica, 89(6):2787–2825, 2021. ISSN 0012-9682. doi: 10.3982/
+ECTA15593.
+Steven L. Heston. A Closed-Form Solution for Options with Stochastic Volatility with Applica-
+tions to Bond and Currency Options . Review of Financial Studies, 6(2):327–343, April 1993.
+ISSN 0893-9454, 1465-7368. doi: 10.1093/rfs/6.2.327.
+Jean Jacod. On continuous conditional Gaussian martingales and stable convergence in law.
+In Jacques Az´ema, Marc Yor, and Michel Emery, editors, S´eminaire de Probabilit´es XXXI,
+volume 1655, pages 232–246. Springer Berlin Heidelberg, Berlin, Heidelberg, 1997. ISBN
+978-3-540-62634-3 978-3-540-68352-0. doi: 10.1007/BFb0119308.
+Jean Jacod and Philip E. Protter. Discretization of Processes. Number 67 in Stochas-
+tic Modelling and Applied Probability. Springer-Verlag Berlin Heidelberg, Berlin, Heidel-
+berg, 2012. ISBN 978-3-642-24126-0 978-3-642-24127-7 978-1-283-45152-9. doi: 10.1007/
+978-3-642-24127-7.
+Jean Jacod and Al’bert N. ˇSirjaev. Limit Theorems for Stochastic Processes. Number 288 in
+Grundlehren Der Mathematischen Wissenschaften. Springer, Berlin, [Germany] ; Heidelberg,
+[Germany], second edition edition, 2003. ISBN 978-3-662-05265-5.
+24
+
+=== page 25 ===
+Jean Jacod, Yingying Li, Per A. Mykland, Mark Podolskij, and Mathias Vetter. Microstructure
+noise in the continuous case: The pre-averaging approach. Stochastic Processes and their
+Applications, 119(7):2249–2276, July 2009. ISSN 03044149. doi: 10.1016/j.spa.2008.11.004.
+Jean Jacod, Yingying Li, and Xinghua Zheng. Statistical Properties of Microstructure Noise.
+Econometrica, 85(4):1133–1174, 2017. ISSN 0012-9682. doi: 10.3982/ECTA13085.
+Ilze Kalnina and Oliver Linton. Estimating quadratic variation consistently in the presence of
+endogenous and diurnal measurement error. Journal of Econometrics, 147(1):47–59, Novem-
+ber 2008. ISSN 03044076. doi: 10.1016/j.jeconom.2008.09.016.
+Ilze Kalnina and Dacheng Xiu. Nonparametric Estimation of the Leverage Effect: A Trade-Off
+Between Robustness and Efficiency. Journal of the American Statistical Association, 112(517):
+384–396, January 2017. ISSN 0162-1459, 1537-274X. doi: 10.1080/01621459.2016.1141687.
+Dazhong Lao and Shanshan Zhao. Fundamental Theories and Their Applications of the Calculus
+of Variations. Springer Singapore, Singapore, 1st ed. 2021 edition, 2021. ISBN 978-981-15-
+6069-9 978-981-15-6070-5. doi: 10.1007/978-981-15-6070-5.
+E. L. Lehmann. Elements of Large-Sample Theory. Springer Texts in Statistics. Springer, New
+York, 1999. ISBN 978-0-387-98595-4.
+Yingying Li, Shangyu Xie, and Xinghua Zheng. Efficient estimation of integrated volatility
+incorporating trading information. Journal of Econometrics, 195(1):33–50, November 2016.
+ISSN 03044076. doi: 10.1016/j.jeconom.2016.05.017.
+Z. Merrick Li and Oliver Linton. A ReMeDI for Microstructure Noise. Econometrica, 90(1):
+367–389, 2022. ISSN 0012-9682. doi: 10.3982/ECTA17505.
+Z. Merrick Li, Roger J.A. Laeven, and Michel H. Vellekoop. Dependent microstructure noise
+and integrated volatility estimation from high-frequency data. Journal of Econometrics, 215
+(2):536–558, April 2020. ISSN 03044076. doi: 10.1016/j.jeconom.2019.10.004.
+Per Mykland and Lan Zhang. Inference for Continuous Semimartingales Observed at High
+Frequency. Econometrica, 77(5):1403–1445, 2009. ISSN 0012-9682. doi: 10.3982/ECTA7417.
+Per A. Mykland and Lan Zhang. Between data cleaning and inference: Pre-averaging and
+robust estimators of the efficient price. Journal of Econometrics, 194(2):242–262, October
+2016. ISSN 03044076. doi: 10.1016/j.jeconom.2016.05.005.
+Andrew J. Patton. Data-based ranking of realised volatility estimators. Journal of Economet-
+rics, 161(2):284–303, April 2011. ISSN 03044076. doi: 10.1016/j.jeconom.2010.12.010.
+Mark Podolskij and Mathias Vetter. Bipower-type estimation in a noisy diffusion setting.
+Stochastic Processes and their Applications, 119(9):2803–2831, September 2009. ISSN
+03044149. doi: 10.1016/j.spa.2009.02.006.
+25
+
+=== page 26 ===
+Mark Podolskij and Mathias Vetter. Understanding limit theorems for semimartingales: A short
+survey. Statistica Neerlandica, 64(3):329–351, August 2010. ISSN 0039-0402, 1467-9574. doi:
+10.1111/j.1467-9574.2010.00460.x.
+Mathias Vetter. Estimation of integrated volatility of volatility with applications to goodness-
+of-fit testing. Bernoulli, 21(4), November 2015. ISSN 1350-7265. doi: 10.3150/14-BEJ648.
+Christina D. Wang and Per A. Mykland. The Estimation of Leverage Effect With High-
+Frequency Data. Journal of the American Statistical Association, 109(505):197–215, January
+2014. ISSN 0162-1459, 1537-274X. doi: 10.1080/01621459.2013.864189.
+Xiye Yang. Estimation of Leverage Effect: Kernel Function and Efficiency. Journal of Business
+& Economic Statistics, 41(3):939–956, July 2023. ISSN 0735-0015, 1537-2707. doi: 10.1080/
+07350015.2022.2097910.
+Huiling Yuan, Yan Mu, and Yong Zhou. Leverage effect in high-frequency data with market
+microstructure. Statistics and Its Interface, 13(1):91–101, 2020. ISSN 19387989, 19387997.
+doi: 10.4310/SII.2020.v13.n1.a8.
+Lan Zhang. Efficient estimation of stochastic volatility using noisy observations: A multi-scale
+approach. Bernoulli, 12(6), December 2006. ISSN 1350-7265. doi: 10.3150/bj/1165269149.
+Lan Zhang, Per A Mykland, and Yacine A¨ıt-Sahalia. A Tale of Two Time Scales: Determining
+Integrated Volatility With Noisy High-Frequency Data. Journal of the American Statistical
+Association, 100(472):1394–1411, December 2005. ISSN 0162-1459, 1537-274X. doi: 10.1198/
+016214505000000169.
+Bin Zhou. High-Frequency Data and Volatility in Foreign-Exchange Rates. Journal of Business
+& Economic Statistics, 14(1):45–52, January 1996. ISSN 0735-0015, 1537-2707. doi: 10.1080/
+07350015.1996.10524628.
+26
+
+=== page 27 ===
+Supplementary Material
+S1 Technical Proofs
+S1.1 Preliminary Results
+Lemma S1. Suppose that Assumption 1 holds, and let s<t. As (t−s)→ 0, we have
+E
+[(
+(Xt −Xs)
+(
+σ2 t −σ2 s
+)
+−
+∫ t
+s
+2σ2 rfrdr
+)2⏐⏐⏐⏐⏐Fs ] = 4σ4 s ( 2f 2 s +g2 s ) (t−s)2 +Op ( (t−s)5/2 ) .
+(S1)
+Proof. Note that d⟨X,σ2⟩r = 2σ2 rfr, and that
+(Xt −Xs)
+(
+σ2 t −σ2 s
+)
+=
+∫ t
+s
+(σ2 r −σ2 s)dXr +
+∫ t
+s
+(Xr −Xs)dσ2 r +
+∫ t
+s
+d⟨X,σ2⟩r. (S2)
+According the Itˆo isometry, it follows that
+E
+[(
+(Xt −Xs)
+(
+σ2 t −σ2 s
+)
+−
+∫ t
+s
+2σ2 rfrdr
+)2⏐⏐⏐⏐⏐Fs ]
+= E
+[(∫ t
+s
+(σ2 r −σ2 s)dXr +
+∫ t
+s
+(Xr −Xs)dσ2 r
+)2⏐⏐⏐⏐⏐Fs ]
+= E
+[∫ t
+s
+(σ2 r −σ2 s)2d⟨X,X⟩r +
+∫ t
+s
+(Xr −Xs)2d⟨σ2,σ2⟩r
++ 2
+∫ t
+s
+(σ2 r −σ2 s)(Xr −Xs)d⟨X,σ2⟩r
+⏐⏐⏐⏐⏐Fs ] . (S3)
+Denote ∂⟨A,B⟩t = d⟨A,B⟩r dr |r=t for processes A and B. For the first term, we have
+E
+[∫ t
+s
+(σ2 r −σ2 s)2d⟨X,X⟩r
+⏐⏐⏐⏐⏐Fs ]
+=
+(
+∂⟨X,X⟩s +Op((t−s)1/2) ) E [∫ t
+s
+(σ2 r −σ2 s)2dr
+⏐⏐⏐⏐⏐Fs ]
+=
+(
+∂⟨X,X⟩s +Op((t−s)1/2) ) E [∫ t
+s
+(t−r)d(σ2 r −σ2 s)2
+⏐⏐⏐⏐⏐Fs ]
+=
+(
+∂⟨X,X⟩s +Op((t−s)1/2) )( ∂⟨σ2,σ2⟩s +Op((t−s)1/2) )1 2(t−s)2
+=∂⟨X,X⟩s∂⟨σ2,σ2⟩s (t−s)2 2 +Op ( (t−s)5/2 ) . (S4)
+The same approach applies to the remaining two terms, leading to a final result of
+E
+[(
+(Xt −Xs)
+(
+σ2 t −σ2 s
+)
+−
+∫ t
+s
+2σ2 rfrdr
+)2⏐⏐⏐⏐⏐Fs ]
+=
+[
+∂⟨X,X⟩s∂⟨σ2,σ2⟩s + ( ∂⟨X,σ2⟩s )2] (t−s)2 +Op ( (t−s)5/2 )
+27
+
+=== page 28 ===
+= 4σ4 s
+(
+2f 2 s +g2 s
+)
+(t−s)2 +Op
+(
+(t−s)5/2
+)
+. (S5)
+This completes the proof.
+Lemma S2. Suppose that Assumption 1 holds, and let v <s, u<t, d = (s−v)∨ (t−u).
+(a) If v≤u<s≤t, as d→ 0, we have
+E
+[(∫ s
+v
+(Xr −Xv)dXr
+)(∫ t
+u
+(Xr −Xu)dXr
+)⏐⏐⏐⏐Fv ] = 1 2σ4 v(s−u)2 +Op(d5/2), (S6)
+E
+[(∫ s
+v
+(σ2 r −σ2 v)dr
+)(∫ t
+u
+(σ2 r −σ2 u)dr
+)⏐⏐⏐⏐Fv ] = 1 3 d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=v (s−u)3 +Op(d7/2).
+(S7)
+(b) If v≤u<t≤s, as d→ 0, we have
+E
+[(∫ s
+v
+(Xr −Xv)dXr
+)(∫ t
+u
+(Xr −Xu)dXr
+)⏐⏐⏐⏐Fv ] = 1 2σ4 v(t−u)2 +Op(d5/2), (S8)
+E
+[(∫ s
+v
+(σ2 r −σ2 v)dr
+)(∫ t
+u
+(σ2 r −σ2 u)dr
+)⏐⏐⏐⏐Fv ] = 1 3 d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=v (t−u)3 +Op(d7/2).
+(S9)
+Proof. Let a<b. By the Burkholder-Davis-Gundy inequality, there is a constant C1 > 0 such
+that (ignoring the drift term of Op(b−a))
+E
+[
+sup
+a≤r≤b
+|Xr −Xa|
+⏐⏐⏐⏐⏐Fa ] ≤C1E [(∫ b a σ2 rdr )1/2⏐⏐⏐⏐⏐⏐ Fa ] ≤C1σ+(b−a)1/2. (S10)
+Consequently, we have
+E
+[⏐⏐⏐ ∫ b
+a
+(Xr −Xa)µrdr
+⏐⏐⏐ ⏐⏐⏐⏐⏐Fa ] ≤C1σ+µ+(b−a)3/2, (S11)
+where σ+ and µ+ are some local upper bounds of|σr| and|µr|. It follows that
+E
+[∫ b
+a
+(Xr −Xa)dXr
+⏐⏐⏐⏐⏐Fa ] = E [∫ b a (Xr −Xa)µrdr ⏐⏐⏐⏐⏐Fa ] =Op ( (b−a)3/2 ) . (S12)
+Obviously, E[Xb −Xa|Fa] =Op(b−a). According to the Itˆo isometry, we also have
+E
+[
+(Xb −Xa)
+∫ b
+a
+(Xr −Xa)dXr
+⏐⏐⏐⏐⏐Fa ] = E [∫ b a (Xr −Xa)σ2 rdr ⏐⏐⏐⏐⏐Fa ] =Op ( (b−a)3/2 ) . (S13)
+For the first equality in (a), decompose the integral as
+∫ s
+v
+(Xr −Xv)dXr =
+∫ s
+v
+(Xr −Xv)dXr + (Xu −Xv)(Xs −Xu) +
+∫ s
+u
+(Xr −Xu)dXr, (S14)
+∫ t
+u
+(Xr −Xu)dXr =
+∫ s
+u
+(Xr −Xu)dXr + (Xs −Xu)(Xt −Xs) +
+∫ t
+s
+(Xr −Xs)dXr. (S15)
+28
+
+=== page 29 ===
+By utilizing the nested property E[·|Fv] = E[E(E(·|Fs)|Fu)|Fv] and applying the previous re-
+sults, one can verify that the only dominant term turns out to be
+E
+[(∫ s
+u
+(Xr −Xu)dXr
+)2⏐⏐⏐⏐⏐Fv ] = E [∫ s u (Xr −Xu)2σ2 rdr ⏐⏐⏐⏐Fv ]
+=σ4 v
+∫ s
+u
+(r−u)dr +Op
+(
+(s−u)5/2
+)
+= 1 2σ4 v(s−u)2 +Op(d5/2), (S16)
+and all other terms are Op(d5/2). The rest of the proof is similar after using integration by
+parts: ∫ b
+a
+(σ2 r −σ2 a)dr =−
+∫ b
+a
+(σ2 r −σ2 b)d(b−r) =
+∫ b
+a
+(b−r)dσ2 r. (S17)
+This completes the proof.
+Without loss of generality, consider grids of two scales, with intervals being 1 for the larger
+scale and l∈ (0, 1) for the smaller one. For a given larger scale interval, the grids of smaller
+scale partition the interval into several subintervals, with their lengths denoted as (α1,...,αp).
+Define α1 as a uniformly distributed random variable on (0,l], so that p is also a random
+variable related to α1 and l. The parameter of interest is the summation of kth powers of αi’s
+as Sk =Sk(α1,l) = ∑p i=1 αk i , and its expectation with respect to α1 ∼ Unif(0,l] is discussed in
+the following lemma.
+Lemma S3. For any integer k≥ 1, we have
+Eα1∼Unif(0,l]
+[
+Sk(α1,l)
+]
+=lk−1
+(
+1− k− 1 k + 1l ) =lk−1 − k− 1 k + 1lk. (S18)
+Proof. It is equivalent to prove that
+I(l) =
+∫ l
+0
+Sk(α1,l)dα1 =lk − k− 1 k + 1lk+1. (S19)
+Denote (α1,α2,...,αp) = (x,a1,...,am), where m =⌈(1−x)/l⌉ = p− 1, x = α1 ∈ (0,l],
+a1 =··· , =am−1 =l, and am = 1−x− (m− 1)l. The summation can be rewritten as
+Sk(α1,l) =xk +Tk(x,l), where Tk(x,l) =
+m∑
+i=1
+ak i, (S20)
+and the target integral is
+I(l) = 1 k + 1lk+1 +J(l), where J(l) = ∫ l 0 Tk(x,l)dx. (S21)
+Therefore, it is further equivalent to prove that
+J(l) =
+∫ l
+0
+Tk(x,l)dx =lk − k k + 1lk+1. (S22)
+It is easy to see that liml→0+ J(l) = 0, which is consistent with Equation (S22). According to
+29
+
+=== page 30 ===
+the Leibniz’s rule, the derivative of J(l) is
+d
+dlJ(l) =Tk(l,l) +
+∫ l
+0
+∂
+∂lTk(x,l)dx, (S23)
+so we only need to prove that for any l∈ (0, 1),
+d
+dlJ(l) =klk−1 −klk. (S24)
+For the first term in Equation (S23), we have
+Tk(l,l) = (m− 1)lk +ak m. (S25)
+For the second term in Equation (S23), we need to derive the detailed form of ∂ ∂lTk(x,l). For a
+given am ∈ (0,l], consider an arbitrarily small ∆l > 0, so that m remains unchanged. In this
+case,ai =l→l+∆l,∀i = 1,...,m−1; whileam →am−(m−1)l. Therefore, the corresponding
+change in Tk(x,l) is
+∆Tk(x,l) =Tk(x,l + ∆l)−Tk(x,l)
+= (m− 1)
+[
+(l + ∆l)k −lk
+]
++
+[
+(am − (m− 1)∆l)k −ak m ]
+= (m− 1)k(lk−1 −ak−1 m )∆l +o(∆l), (S26)
+so we have
+∂
+∂lTk(x,l) = (m− 1)k
+(
+lk−1 −ak−1 m
+)
+. (S27)
+Next, we need to consider the specific value of am as x ranges from 0 to l. In fact, for a given
+l, there exists r =⌈1/l⌉ and x0 = 1− (r− 1)l, such that for x∈ (0,l], we have
+m =
+
+
+
+r, if 0<x<x0,
+r− 1, if x0 ≤x≤l,
+(S28)
+am =
+
+
+
+−x +x0, if 0<x<x0,
+−x +x0 +l, if x0 ≤x≤l,
+(S29)
+∂Tk
+∂l =
+
+
+
+(r− 1)k
+(
+lk−1 − (x0 −x)k−1
+)
+, if 0<x<x0,
+(r− 2)k
+(
+lk−1 − (x0 +l−x)k−1
+)
+, if x0 ≤x≤l.
+(S30)
+As a result, the first term in Equation (S23) is
+Tk(l,l) = (r− 2)lk +xk 0, (S31)
+and the second term in Equation (S23) is
+∫ l
+0
+∂
+∂lTk(x,l)dx =
+∫ x0
+0
+∂
+∂lTk(x,l)dx +
+∫ l
+x0
+∂
+∂lTk(x,l)dx
+30
+
+=== page 31 ===
+= (r− 1)k
+[
+x0lk−1 − 1 kxk 0 ] + (r− 2)k [ (l−x0)lk−1 − 1 klk + 1 kxk 0 ]
+= (r− 2)(k− 1)lk +kx0lk−1 −xk 0. (S32)
+Therefore, the derivative of J(l) is
+d
+dlJ(l) =Tk(l,l) +
+∫ l
+0
+∂
+∂lTk(x,l)dx
+= (r− 2)lk +xk 0 + (r− 2)(k− 1)lk +kx0lk−1 −xk 0
+= (r− 2)klk +k[1− (r− 1)l]lk−1
+=klk−1 −klk, (S33)
+which is the same as Equation (S24). This completes the proof of Lemma S3.
+S1.2 Proof of Proposition 1
+S1.2.1 Notations and Unbiasedness
+Rewrite the noisy all-observation estimator as
+\⟨X,σ2⟩ (all) T = ∑
+i∈I
+(∆Yi) ˆδ(i, 1,kn) = 1 kn∆n ∑ i∈I ui, (S34)
+where I ={kn + 1,...,n−kn − 2}. Denote the noise-free version of ˆδ(i,H,k,s) defined in
+Equation (8) as δ(i,H,k,s). Decompose ui as
+ui = (ai +Ai) (bi +Bi), (S35)
+where
+ai +Ai = (∆Yi) = (∆Xi) +⟨θAi,ε⟩, (S36)
+bi +Bi =kn∆nˆδ(i, 1,kn) =kn∆nδ(i, 1,kn) +⟨θBi,ε⟩ +⟨ϕBi,ε2⟩ +⟨ψBi,εε+⟩. (S37)
+The lowercase lettersai andbi represent pure process termsui, while the capital letters Ai and
+Bi represent noise-related terms. The latter includes three types: εj, ε2 j, andεjεj+1 (for validj
+values). For simplicity, we denote the corresponding noise vectors as ε, ε2, and εε+, defined by
+(ε)j =εj, (ε2)j =ε2 j, (εε+)j =εjεj+1I(j̸=n), (S38)
+for j∈{0, 1,...,n}. The non-zero values of the coefficient vectors θAi, θBi, ϕBi, and ψBi are
+listed in Table S1. We also adopt the convention that the index of coefficient vectors is written
+as a superscript, so we have, for instance,⟨ψBi,εε+⟩ = ∑n j=0 ψj Biεjεj+1.
+Similarly, rewrite the noise-free all-observation estimator as
+^⟨X,σ2⟩
+(all)
+T =
+∑
+i∈I
+(∆Xi)δ(i,Hn,kn) = 1 kn∆n ∑ i∈I vi, (S39)
+31
+
+=== page 32 ===
+Table S1: Values of coefficient vectors in all-observation estimator
+i−kn − 1 i−kn ··· i− 2 i− 1 i i + 1 i + 2 i + 3 ··· i +kn + 1 i +kn + 2
+θAi 0 0 ··· 0 0 −1 +1 0 0 ··· 0 0
+θBi +2∆Xi−kn−1 +2∆2Xi−kn−1 ··· +2∆2Xi−3 −2∆Xi−2 0 0 −2∆Xi+2 −2∆2Xi+2 ··· −2∆2Xi+kn +2∆Xi+kn+1
+ϕBi −1 −2 ··· −2 −1 0 0 +1 +2 ··· +2 +1
+ψBi +2 +2 ··· +2 0 0 0 −2 −2 ··· −2 0
+where vi = aibi. Note that E[εi] = 0, so E[Ai|F] = 0; and that E[εiεi+1] = 0, ∑ j ϕj Bi = 0, so
+E[Bi|F] = 0. Also note that (Ai ⊥Bi)|F. We have thus
+E[ui|F] = E
+(
+(ai +Ai)(bi +Bi)
+⏐⏐⏐F ) (S40)
+=aibi +aiE[Bi|F] +biE[Ai|F] + E[Ai|F]E[Bi|F] (S41)
+=vi. (S42)
+Therefore, the all-observation estimator is unbiased due to noise:
+E
+(
+\⟨X,σ2⟩ (all) T ⏐⏐⏐⏐F ) = ^⟨X,σ2⟩ (all) T . (S43)
+S1.2.2 Variance due to noise
+The variance due to noise is given by
+Var
+(
+\⟨X,σ2⟩ (all) T ⏐⏐⏐⏐F ) = E (( \⟨X,σ2⟩ (all) T )2⏐⏐⏐⏐⏐F ) − [ E ( \⟨X,σ2⟩ (all) T ⏐⏐⏐⏐F )]2 (S44)
+= E
+((
+\⟨X,σ2⟩ (all) T )2⏐⏐⏐⏐⏐F ) − ( ^⟨X,σ2⟩ (all) T )2 (S45)
+= 1 k2n∆2n E
+
+∑
+k∈I
+∑
+l∈I
+(ukul −vkvl)
+⏐⏐⏐⏐⏐⏐ F  . (S46)
+At this stage, we obtain an important decomposition:
+k2 n∆2 nVar
+(
+\⟨X,σ2⟩ (all) T ⏐⏐⏐⏐F )
+=
+∑
+k∈I
+∑
+l∈I
+E
+[
+(ak +Ak) (bk +Bk) (al +Al) (bl +Bl)−akbkalbl
+⏐⏐⏐F ]
+=
+∑
+k∈I
+∑
+l∈I
+E
+[
+N1(k,l) +N2(k,l) +N3(k,l) +N4(k,l)
+⏐⏐⏐F ] .
+(S47)
+Note that in the above equation, the pure process-related term akbkalbl is elimininated, while
+the remaining terms may contain one to four noise-related terms. For simplicity, we omit the
+subscript k in (ak,bk,Ak,Bk) and denote (al,bl,Al,Bl) as (c,d,C,D) when these terms appear
+inside ∑ k,l. Thus, we have
+N1(k,l) =
+∑
+comb
+Abcd =Abcd +aBcd +abCd +abcD, (S48)
+N2(k,l) =
+∑
+comb
+ABcd =ABcd +AbCd +AbcD +aBCd +aBcD +abCD, (S49)
+32
+
+=== page 33 ===
+N3(k,l) =
+∑
+comb
+ABCd =ABCd +ABcD +AbCD +aBCD, (S50)
+N4(k,l) =ABCD. (S51)
+We further adopt the conventions that noise terms inA,B,C,D are indexed byi,α,j,β respec-
+tively, for example, A =⟨θA,ε⟩ = ∑n i=0 θi Aεi.
+To summarize, the variance due to noise can be calculated by
+Var
+(
+\⟨X,σ2⟩ (all) T ⏐⏐⏐⏐F ) = 4∑
+m=1
+1
+k2n∆2n
+∑
+k∈I
+∑
+l∈I
+E
+(
+Nm(k,l)
+⏐⏐⏐F ) , (S52)
+and we will proceed by analyzing the contribution of m = 1, 2, 3, 4, respectively.
+The following observation, while elementary, will be repeatedly used in the calculations.
+Lemma S4. Let{Xi}l i=1 be mean zero, independent and identically distributed random vari-
+ables, and let νk = E[Xk i ] denote the kth moment of Xi. For integers k1,k2,...,kl ≥ 1, we
+have
+E[Xk1 1 Xk2 2 ···Xkl l ] =νk1 νk2 ···νkl, (S53)
+A necessary condition for the above expectation to be non-zero is that ki ≥ 2 for all i = 1,...,l.
+Moreover, let n = ∑l i=1 ki, then n≥ 2l.
+Contribution of N1 With the same argument as in Section S1.2.1, we have
+E[Abcd|F] =bcdE[A|F] = 0. (S54)
+Similarly,
+E[aBcd|F] = E[abCd|F] = E[abcD|F] = 0. (S55)
+Therefore, N1 contributes nothing to the variance due to noise.
+Contribution of N2 The following lemma concerns the noise-related terms in N2.
+Lemma S5. For P,Q∈{A,B,C,D}, P̸=Q, we have
+E[PQ|F] =ν2⟨θP,θQ⟩ +ν4⟨ϕP,ϕQ⟩
++ν2 2 [−⟨ϕP,ϕQ⟩ +⟨ψP,ψQ⟩] +ν3 [⟨θP,ϕQ⟩ +⟨ϕP,θQ⟩]. (S56)
+Proof. Suppose that the error terms are εα, ε2 α, εαεα+1 in P , and εβ, ε2 β, εβεβ+1 in Q. For all
+nine possible combination in PQ, by Lemma S4, the non-zero terms are
+E[εαεβ] =ν2δαβ,
+E[ε2 αε2 β] =ν4δαβ +ν2 2 (1−δαβ),
+E[εαεα+1εβεβ+1] =ν2 2 δαβ,
+E[εαε2 β] =ν3δαβ,
+E[ε2 αεβ] =ν3δαβ.
+(S57)
+33
+
+=== page 34 ===
+Take the coefficients into considerations and note that
+∑
+α,β
+ϕα Pϕβ Q = ∑
+α
+ϕα P ∑
+β
+ϕβ Q = 0, (S58)
+so we have
+E[PQ|F] =ν2
+∑
+α,β
+θα Pθβ Qδαβ +ν4 ∑
+α,β
+ϕα Pϕβ Qδαβ
++ν2 2 ∑
+α,β
+(
+ϕα Pϕβ Q(1−δαβ) +ψα Pψβ Qδαβ )
++ν3
+∑
+α,β
+(
+θα Pϕβ Qδαβ +ϕα Pθβ Qδαβ )
+=ν2⟨θP,θQ⟩ +ν4⟨ϕP,ϕQ⟩
++ν2 2 [−⟨ϕP,ϕQ⟩ +⟨ψP,ψQ⟩] +ν3 [⟨θP,ϕQ⟩ +⟨ϕP,θQ⟩].
+(S59)
+The proof is thus completed.
+Although there are six terms to consider in the contribution of N2, as
+E[AB|F] = E[CD|F] = 0, (S60)
+we only need to calculate
+1
+k2n∆2n
+∑
+k∈I
+∑
+l∈I
+E
+(
+bdAC +bcAD +adBC +acBD
+⏐⏐⏐F ) . (S61)
+Notice that
+E[AC|F] =ν2
+(
+2I(k =l)−I(|k−l| = 1)
+)
+, (S62)
+so
+∑
+k∈I
+∑
+l∈I
+E[bdAC|F] =ν2
+
+2
+n−kn−2∑
+k=kn+1
+b2 k −
+n−kn−2∑
+k=kn+2
+bkbk−1 −
+n−kn−3∑
+k=kn+1
+bkbk+1
+
+
+=ν2
+
+
+n−kn−3∑
+k=kn+1
+(∆bk)2 +b2 kn+1 +b2 n−kn−2
+
+,
+(S63)
+where
+(∆bk)2 = ( (∆Xk+kn+2)2 − (∆Xk+2)2 − (∆Xk−1)2 + (∆Xk−kn−1)2)2 , (S64)
+As Mykland and Zhang (2009) point out, the drift terms typically have no impact on the final
+result in the high-frequency setting, and locally constant approximations can be applied to
+simplify the analysis of asymptotic results. Therefore, by noticing that
+(∆bk)2 ≈ ( σ2 k+kn+2 (∆Wk+kn+2)2 −σ2 k+2 (∆Wk+2)2
+−σ2 k−1 (∆Wk−1)2 +σ2 k−kn−1 (∆Wk−kn−1)2)2
+≈ 8σ4 k∆2 n,
+(S65)
+34
+
+=== page 35 ===
+we have
+∆−1 n ∑
+k∈I
+∑
+l∈I
+E
+(
+bdAC
+⏐⏐⏐F ) p −→ 8ν2 ∫ T
+0
+σ4 t dt. (S66)
+Notice that
+E[AD|F] =ν2⟨θA,θD⟩ +ν3⟨θA,ϕD⟩, (S67)
+so ∑
+k∈I
+∑
+l∈I
+E[bcAD|F] =ν2
+∑
+k∈I
+∑
+l∈I
+bc⟨θA,θD⟩ +ν3
+∑
+k∈I
+∑
+l∈I
+bc⟨θA,ϕD⟩. (S68)
+When⟨θA,θD⟩ is not zero, it can be written as ∑ rηr∆Xr, where up to four terms are present in
+this summation. The coefficientηr satisfies|ηr|≤ 3, and⟨θA,θD⟩ is obviously mean zero as well
+as independent of bc, while bc only includes the linear and cubic terms of (∆Xr). Therefore,
+we can ignore the impact of ∑ k∈I ∑ l∈I bc⟨θA,θD⟩ as its “standardized version” (divided by the
+order of its standard deviation) is asymptotically mean zero and therefore tight. As for⟨θA,ϕD⟩,
+one can verify that
+⟨θA,ϕD⟩ =I
+(
+|k−l|∈{1, 2}
+)
+−I
+(
+|k−l|∈{kn + 1,kn + 2}
+)
+, (S69)
+so for a given k, there are up to eight non-zero⟨θA,ϕD⟩, each with constant absolute value 1.
+When⟨θA,ϕD⟩ is non-zero,bc vanishes. Therefore, the “standardized version” of ∑ k∈I ∑ l∈I bc⟨θA,ϕD⟩
+is tight as well. The order of variance can be estimated as Op(k2 n∆n) for ∑ k∈I ∑ l∈I bc⟨θA,ϕD⟩
+and even smaller for ∑ k∈I ∑ l∈I bc⟨θA,θD⟩. It follows that
+k−1 n ∆−1/2 n ∑
+k∈I
+∑
+l∈I
+E
+(
+bcAD
+⏐⏐⏐F ) =Op(1). (S70)
+Moreover, because
+∑
+k∈I
+∑
+l∈I
+adBC =
+∑
+k∈I
+∑
+l∈I
+akblBkAl =
+∑
+k∈I
+∑
+l∈I
+albkBlAk =
+∑
+k∈I
+∑
+l∈I
+bcAD, (S71)
+we also have
+k−1 n ∆−1/2 n ∑
+k∈I
+∑
+l∈I
+E
+(
+adBC
+⏐⏐⏐F ) =Op(1). (S72)
+Lastly, notice that
+E[BD|F] =ν2⟨θB,θD⟩ +ν4⟨ϕB,ϕD⟩
++ν2 2 [−⟨ϕB,ϕD⟩ +⟨ψB,ψD⟩] +ν3 [⟨θB,ϕD⟩ +⟨ϕB,θD⟩]. (S73)
+Because ac≈σ2 k∆nI(k =l), and
+∥ϕB∥2 = 8kn − 4, ∥ψB∥2 = 8kn, (S74)
+35
+
+=== page 36 ===
+we can know that, as n→∞,
+∑
+k∈I
+∑
+l∈I
+ac
+(
+ν4⟨ϕB,ϕD⟩ +ν2 2 [−⟨ϕB,ϕD⟩ +⟨ψB,ψD⟩] )
+≈
+∑
+k∈I
+σ2 k∆n
+[
+ν4∥ϕB∥2 +ν2 2
+(
+−∥ϕB∥2 +∥ψB∥2
+)]
+=
+∑
+k∈I
+σ2 k∆n
+[
+(8kn − 4)(ν4 −ν2 2 ) + 8knν2 2
+]
+≈
+[
+(8kn − 4)(ν4 −ν2 2 ) + 8knν2 2
+]∫ T
+0
+σ2 t dt
+≈ 8knν4
+∫ T
+0
+σ2 t dt.
+(S75)
+For the ac⟨θB,θD⟩ term, when k̸= l, only (a,D) and (c,B) can overlap, so ac⟨θB,θD⟩ only
+contains the cubic terms of (∆Xr), and thus vanishes. Therefore, the corresponding summation
+can be roughly estimated as
+∑
+k∈I
+∑
+l∈I
+ac
+(
+ν2⟨θB,θD⟩
+)
+≈ν2
+∑
+k∈I
+a2∥θB∥2 ≈ν2 ∑
+k∈I
+σ2 k∆n∥θB∥2
+=ν2
+(∫ T
+0
+σ2 t dt
+)
+Op(kn∆n) =Op(kn∆n).
+(S76)
+As for the ac⟨θB,ϕD⟩ term, notice that
+∑
+k∈I
+∑
+l∈I
+ac⟨θB,ϕD⟩ =
+∑
+k∈I
+a2⟨θB,ϕB⟩ + ∑
+k∈I
+∑
+l∈I
+ac⟨θB,ϕD⟩I(k̸=l). (S77)
+The first term vanishes because⟨θB,ϕB⟩ only contains linear terms of (∆Xr) and does not over-
+lap with a2. The second term vanishes because a only contains the linear terms of (∆Xr) and
+does not overlap withc or⟨θB,ϕD⟩. As a result, the “standardized version” of ∑ k∈I ∑ l∈I ac⟨θB,ϕD⟩
+is tight, which is
+k−1 n ∆−3/2 n ∑
+k∈I
+∑
+l∈I
+ac⟨θB,ϕD⟩ =Op(1). (S78)
+The same argument can be applied to the ac⟨ϕB,θD⟩ term. Therefore, we have
+k−1 n ∑
+k∈I
+∑
+l∈I
+E
+(
+acBD
+⏐⏐⏐F ) p −→ 8ν4 ∫ T
+0
+σ2 t dt. (S79)
+Therefore, by combining Equation (S66), (S70), (S72), and (S79), we can conclude that the
+contribution of the N2 term to the variance due to noise is
+k−1 n ∑
+k∈I
+∑
+l∈I
+E
+(
+N2(k,l)
+⏐⏐⏐F ) p −→ 8ν4 ∫ T
+0
+σ2 t dt. (S80)
+Contribution of N3 The contribution of N3 can be calculated in a similar way as N2. We
+have the following lemma concerning the noise-related terms in N3.
+36
+
+=== page 37 ===
+Lemma S6. For ABC and ACD terms, we have
+E [ABC|F] = E [ACD|F] = 0. (S81)
+For ABD and BCD terms, we have
+E [ABD|F] =
+∑
+i,α,β
+{
+ν2 2
+[
+θi Aθα Bψβ D ]( δ(k+1) iβ δ(k+2) α,β+1 +δ(k) αβδ(k−1) i,β+1 )
++ν2ν3
+[
+θi Aϕα Bψβ D ]( δ(k+1) iβ δ(k+2) α,β+1 +δ(k) αβδ(k−1) i,β+1 )} , (S82)
+where δ(k+1) iβ is defined as I(i =β =k + 1), and
+E [BCD|F] =
+∑
+j,α,β
+{
+ν2 2
+[
+θj Cθβ Dψα B ]( δ(l+1) jα δ(l+2) β,α+1 +δl βαδ(l−1) j,α+1 )
++ν2ν3
+[
+θj Cϕβ Dψα B ]( δ(l+1) jα δ(l+2) β,α+1 +δl βαδ(l−1) j,α+1 )} . (S83)
+Proof. Firstly, consider E [ABC|X,σ]. Notice that
+ABC =
+∑
+i,j,α
+θi Aεi
+(
+θα Bεα +ϕα Bε2 α +ψα Bεαεα+1
+)
+θj Cεj. (S84)
+There are three types of possible combinations in ABC, the expectations of which are
+E[εiεαεj] = 0,
+E[εiε2 αεj] =ν2 2 δij,
+E[εiεαεα+1εj] = 0,
+(S85)
+according to Lemma S4. This is becausei̸=α for all terms andi̸=α+1 additionally for terms
+with εαεα+1. Taking their coefficients into consideration, and notice that
+∑
+α
+ϕα B = 0, E [ABC|X,σ] = ∑
+i,j,α
+ν2 2
+[
+θi Aϕα Bθj C ] (δij) = ∑
+i
+ν2 2
+[
+θi Aθi C
+]∑
+α
+ϕα B = 0. (S86)
+For the same reason, we can conclude that
+E [ACD|X,σ] = 0. (S87)
+Next, consider E [ABD|X,σ]. Notice that
+ABD =
+∑
+i,α,β
+θi Aεi
+(
+θα Bεα +ϕα Bε2 α +ψα Bεαεα+1
+)(
+θβ Dεβ +ϕβ Dε2 β +ψβ Dεβεβ+1 ) . (S88)
+There are nine types of possible combinations, among which four types have non-zero expecta-
+37
+
+=== page 38 ===
+tions, and they are
+E [εiεαεβεβ+1] =ν2 2 (δiβδα,β+1 +δαβδi,β+1),
+E
+[
+εiε2 αεβ
+]
+=ν2 2 δiβ,
+E
+[
+εiε2 αε2 β
+]
+=ν2ν3δiβ,
+E
+[
+εiε2 αεβεβ+1
+]
+=ν2ν3 (δiβδα,β+1 +δαβδi,β+1).
+(S89)
+Therefore, we have
+E [ABD|F] =
+∑
+i,α,β
+{
+ν2 2
+[
+θi Aθα Bψβ D ] (δiβδα,β+1 +δαβδi,β+1)
++ν2 2
+[
+θi Aϕα Bθβ D ] (δiβ) +ν2ν3 [ θi Aϕα Bϕβ D ] (δiβ)
++ν2ν3
+[
+θi Aϕα Bψβ D ] (δiβδα,β+1 +δαβδi,β+1) }
+=
+∑
+i,α,β
+{
+ν2 2
+[
+θi Aθα Bψβ D ]( δ(k+1) iβ δ(k+2) α,β+1 +δ(k) αβδ(k−1) i,β+1 )
++ν2ν3
+[
+θi Aϕα Bψβ D ]( δ(k+1) iβ δ(k+2) α,β+1 +δ(k) αβδ(k−1) i,β+1 )} ,
+(S90)
+and E[BCD|F] can be calculated in a similar way. Thus, the proof is completed.
+Lemma S6 implies that we need to calculate
+1
+k2n∆2n
+∑
+k∈I
+∑
+l∈I
+E
+(
+cABD +aBCD
+⏐⏐⏐F ) = 2 k2n∆2n ∑ k∈I ∑ l∈I E ( cABD ⏐⏐⏐F ) . (S91)
+First, notice that
+∑
+i,α,β
+ν2 2
+[
+θi Aθα Bψβ D ]( δ(k+1) iβ δ(k+2) α,β+1 +δ(k) αβδ(k−1) i,β+1 )
+=ν2 2
+{
+θk+1 A θk+2 B ψk+1 D +θk Aθk−1 B ψk−1 D
+}
+=ν2 2
+{
+(+1)(−2∆Xk+2)ψk+1 D + (−1)(−2∆Xk−2)ψk−1 D
+}
+,
+(S92)
+and ψk+1 D as well as ψk−1 D can be written as
+ψk+1 D = +2I(k + 3≤l≤k +kn + 2)− 2I(k−kn ≤l≤k− 1),
+ψk−1 D = +2I(k + 1≤l≤k +kn)− 2I(k−kn − 2≤l≤k− 3), (S93)
+38
+
+=== page 39 ===
+so ∑
+k∈I
+∑
+l∈I
+c
+∑
+i,α,β
+ν2 2
+[
+θi Aθα Bψβ D ]( δ(k+1) iβ δ(k+2) α,β+1 +δ(k) αβδ(k−1) i,β+1 )
+= 2ν2 2
+{
+−
+∑
+k∈I
+∑
+l∈I
+(∆Xl)(∆Xk+2)ψk+1 D + ∑
+k∈I
+∑
+l∈I
+(∆Xl)(∆Xk−2)ψk−1 D
+}
+= 4ν2 2
+{
+−
+∑
+k∈I
+∑
+l∈I
+(∆Xl)(∆Xk+2)I(k + 3≤l≤k +kn + 2)
++
+∑
+k∈I
+∑
+l∈I
+(∆Xl)(∆Xk+2)I(k−kn ≤l≤k− 1)
++
+∑
+k∈I
+∑
+l∈I
+(∆Xl)(∆Xk−2)I(k + 1≤l≤k +kn)
+−
+∑
+k∈I
+∑
+l∈I
+(∆Xl)(∆Xk−2)I(k−kn − 2≤l≤k− 3)
+}
+= 4ν2 2
+n−kn−3∑
+k=kn+2
+{
+−(∆Xk+2)(Xk+kn+3 −Xk+3) + (∆Xk+2)(Xk −Xk−kn)
++ (∆Xk−2)(Xk+kn+1 −Xk+1)− (∆Xk−2)(Xk−2 −Xk−kn−2)
+}
++ (edge terms)
+≈ 4ν2 2
+n−kn−3∑
+k=kn+2
+(∆Xk)
+(
+∆2Xk+kn+1 − ∆2Xk+1 + ∆2Xk−2 − ∆2Xk−kn−2
+)
+.
+(S94)
+It is clear that the expectation of this term vanishes, for (∆Xk) does not overlap with (∆2Xk+kn+1−
+∆2Xk+1 + ∆2Xk−2 − ∆2Xk−kn−2). In fact, a CLT for ηn = ∑n−kn−3 k=kn+2(∆Xk)(∆2Xk+kn+1 −
+∆2Xk+1 + ∆2Xk−2 − ∆2Xk−kn−2) is
+∆1/2 n ηn st−→ ∫ T 0 4σ2 t dW (η) t , as n→∞, (S95)
+where (W (η) t )t≥0 is a Wiener process independent of (Wt)t≥0, and the convergence mode is stable
+convergence. As a result,
+∆1/2 n ∑
+k∈I
+∑
+l∈I
+c
+∑
+i,α,β
+ν2 2
+[
+θi Aθα Bψβ D ]( δ(k+1) iβ δ(k+2) α,β+1 +δ(k) αβδ(k−1) i,β+1 ) =Op(1). (S96)
+Next, notice that
+∑
+i,α,β
+ν2ν3
+[
+θi Aϕα Bψβ D ]( δ(k+1) iβ δ(k+2) α,β+1 +δ(k) αβδ(k−1) i,β+1 )
+=ν2ν3
+{
+θk+1 A ϕk+2 B ψk+1 D +θk Aϕk−1 B ψk−1 D
+}
+=ν2ν3
+{
+(+1)(+1)ψk+1 D + (−1)(−1)ψk−1 D
+}
+= 2ν2ν3
+{
+I(k + 3≤l≤k +kn + 2)−I(k−kn ≤l≤k− 1)
++I(k + 1≤l≤k +kn)−I(k−kn − 2≤l≤k− 3)
+}
+,
+(S97)
+39
+
+=== page 40 ===
+so
+∑
+k∈I
+∑
+l∈I
+c
+∑
+i,α,β
+ν2ν3
+[
+θi Aϕα Bψβ D ]( δ(k+1) iβ δ(k+2) α,β+1 +δ(k) αβδ(k−1) i,β+1 )
+= 2ν2ν3
+{∑
+k∈I
+∑
+l∈I
+(∆Xl)
+[
+I(k + 3≤l≤k +kn + 2)−I(k−kn ≤l≤k− 1)
++I(k + 1≤l≤k +kn)−I(k−kn − 2≤l≤k− 3)
+]}
+= 2ν2ν3
+{∑
+l∈I
+(∆Xk)
+∑
+k∈I
+[
+I(k + 3≤l≤k +kn + 2)−I(k−kn ≤l≤k− 1)
++I(k + 1≤l≤k +kn)−I(k−kn − 2≤l≤k− 3)
+]}
+.
+(S98)
+Different from some other summations in this section, in this summation, the center terms
+vanishes, while the edge terms dominate the result. After some careful calculation, we have
+∑
+k∈I
+∑
+l∈I
+c
+∑
+i,α,β
+ν2ν3
+[
+θi Aϕα Bψβ D ]( δ(k+1) iβ δ(k+2) α,β+1 +δ(k) αβδ(k−1) i,β+1 )
+= 2ν2ν3
+{(
+(−2kn)∆Xkn+1 + (−2kn + 1)∆Xkn+2 +
+kn−1∑
+q=1
+(−2kn + 2q)∆Xkn+2+q
++ (−1)∆X2kn+2
+)
++
+(
+∆Xn−2kn−3 +
+kn−1∑
+q=1
+2q∆Xn−2kn−3−q
++ (2kn − 1)∆Xn−kn−3 + 2kn∆Xn−kn−2
+)}
+.
+(S99)
+Of course, the expression vanishes if we omit the drift terms. However, in this case, it is safer
+to check it more carefully because of the special structure, where the drift terms at the start
+and end of the day are compared. Let the term inside the large bracket be denoted as ξn.
+The asymptotic mean of ξn is given by (µT −µ0)k2 n∆n, and its asymptotic stochastic variance
+is 4(σ2 0 +σ2 T )k3 n∆n/3. Thus, we can conclude that the “standardized version” of ξn is tight.
+Specifically, we have
+k−3/2 n ∆−1/2 n ∑
+k∈I
+∑
+l∈I
+c
+∑
+i,α,β
+ν2ν3
+[
+θi Aϕα Bψβ D ]( δ(k+1) iβ δ(k+2) α,β+1 +δ(k) αβδ(k−1) i,β+1 ) =Op(1). (S100)
+Therefore, by combining Equation (S96) and (S100), we can conclude that the contribution
+of the N3 term to the variance due to noise satisfies
+k−3/2 n ∆−1/2 n ∑
+k∈I
+∑
+l∈I
+E
+(
+N3(k,l)
+⏐⏐⏐F ) =Op(1). (S101)
+Contribution of N4 Similarly, we have the following lemma.
+40
+
+=== page 41 ===
+Lemma S7. For E [ABCD|F], we have
+E [ABCD|F] =
+∑
+i,j,α,β
+{
+ν2 2
+[
+θi Aθα Bθj Cθβ D ] (δijδαβ +δiβδαj)
++ν2ν3
+[
+θi Aϕα Bθj Cθβ D +θi Aθα Bθj Cϕβ D ] (δijδαβ +δiβδαj)
++ν2ν4
+[
+θi Aϕα Bθj Cϕβ D ] (δijδαβ)
++ν3 2
+[
+θi Aϕα Bθj Cϕβ D ] (δij (1−δαβ))
++ν2 3
+[
+θi Aϕα Bθj Cϕβ D ] (δiβδαj)
++ν3 2
+[
+θi Aψα Bθj Cψβ D ]( δijδαβ +δ(k+1) iβ δ(k+2) α,β+1δ(k+3) α+1,jI(l =k + 3)
++δ(l+1) αj δ(l+2) α+1,βδ(l+3) i,β+1I(l =k− 3) )} .
+(S102)
+Proof. Notice that
+ABCD =
+∑
+i,j,α,β
+θi Aεi
+(
+θα Bεα +ϕα Bε2 α +ψα Bεαεα+1
+)
+θj Cεj ( θβ Dεβ +ϕβ Dε2 β +ψβ Dεβεβ+1 ) . (S103)
+There are nine types of possible combinations of noise terms, among which five types have
+non-zero expectations, and they are
+E[εiεαεjεβ] =ν2 2 (δijδαβ +δiβδαj),
+E[εiε2 αεjεβ] =ν2ν3 (δijδαβ +δiβδαj),
+E[εiεαεjε2 β] =ν2ν3 (δijδαβ +δiβδαj),
+E[εiε2 αεjε2 β] =ν2ν4 (δijδαβ) +ν3 2 (δij (1−δαβ)) +ν2 3 (δiβδαj),
+E[εiεαεα+1εjεβεβ+1] =ν3 2 (δijδαβ +δiβδα,β+1δα+1,j +δαjδα+1,βδi,β+1).
+(S104)
+The proof is completed by taking the coefficients into consideration.
+According to Lemma S7, we need to calculate
+1
+k2n∆2n
+∑
+k∈I
+∑
+l∈I
+E
+(
+ABCD
+⏐⏐⏐F ) . (S105)
+Before we proceed, it would be helpful to notice that there are two frequently present patterns
+of coefficients and Kronecker deltas, which imply some conditions on k and l, and can be used
+to help simplify the calculation. Notice that
+∑
+i,j
+θi Aθj Cδij =
+k+1∑
+i=k
+l+1∑
+j=l
+θi Aθj CδijI(|k−l|≤ 1)
+= (θk Aθk C +θk+1 A θk+1 C )I(k =l)
++θk Aθk CI(l =k− 1) +θk+1 A θk+1 C I(l =k + 1)
+= 2I(k =l)−I(k =l− 1)−I(k =l + 1),
+(S106)
+41
+
+=== page 42 ===
+so for any coefficient vectors ξ and η, we have the first typical pattern:
+∑
+k∈I
+∑
+l∈I
+∑
+i,j,α,β
+[
+θi Aξα Bθj Cηβ D ] (δijδαβ)
+=
+∑
+k∈I
+∑
+l∈I
+{∑
+α
+ξα Bηα D ∑
+i,j
+θi Aθj Cδij }
+=
+∑
+k∈I
+{
+2⟨ξB,ηB⟩−⟨ξBk,ηBk−1 ⟩I
+(
+(k− 1)∈I
+)
+−⟨ξBk,ηBk+1 ⟩I
+(
+(k + 1)∈I
+)}
+,
+(S107)
+The second typical pattern is
+∑
+k∈I
+∑
+l∈I
+∑
+i,j,α,β
+[
+θi Aξα Bθj Cηβ D ] (δiβδαj) = ∑
+k∈I
+∑
+l∈I
+{∑
+i
+θi Aηi D ∑
+j
+θi Cξi B
+}
+=
+∑
+k∈I
+∑
+l∈I
+⟨θA,ηD⟩⟨θC,ξB⟩.
+(S108)
+These two patterns can be used to simplify the calculation.
+First, we analyze the terms without coefficients θB and θD, as these terms only include
+constant coefficients, and thus are easier to handle and there is no need to take the expectation
+with respect to processes. They are also likely to have larger order than the terms with θB and
+θD. Notice that
+∥ϕB∥2 = 8kn − 4, for all k∈I, (S109)
+⟨ϕBk,ϕBk+1 ⟩ = 8kn − 8, for all k,k + 1∈I, (S110)
+so we have
+∑
+k∈I
+∑
+l∈I
+∑
+i,j,α,β
+ν2ν4
+[
+θi Aϕα Bθj Cϕβ D ] (δijδαβ)
+=ν2ν4
+∑
+k∈I
+{
+2∥ϕB∥2 −⟨ϕBk,ϕBk−1 ⟩I ( (k− 1)∈I ) −⟨ϕBk,ϕBk+1 ⟩I ( (k + 1)∈I )}
+=ν2ν4
+∑
+k∈I
+{
+2(8kn − 4)− (8kn − 8)− (8kn − 8)
+}
+=ν2ν4
+(
+(n− 2kn − 4)× 8 + 2× 8kn
+)
+=ν2ν4(8n− 32).
+(S111)
+Recall that ∑ αϕα B = 0, so we have
+∑
+k∈I
+∑
+l∈I
+∑
+i,j,α,β
+ν3 2
+[
+θi Aϕα Bθj Cϕβ D ] (δij (1−δαβ))
+=ν3 2 ∑
+k∈I
+∑
+l∈I
+{(∑
+α
+ϕα B
+)(∑
+β
+ϕβ D )∑
+i,j
+θi Aθj Cδij − ∑
+i,j,α,β
+[
+θi Aϕα Bθj Cϕβ D ] (δijδαβ) }
+=−ν3 2 ∑
+k∈I
+∑
+l∈I
+∑
+i,j,α,β
+[
+θi Aϕα Bθj Cϕβ D ] (δijδαβ)
+=−ν3 2 (8n− 32).
+(S112)
+42
+
+=== page 43 ===
+Recall Equation (S69). Because
+⟨θA,ϕD⟩ =⟨θC,ϕB⟩ =I
+(
+|k−l|∈{1, 2}
+)
+−I
+(
+|k−l|∈{kn + 1,kn + 2}
+)
+, (S113)
+we can know that
+⟨θA,ϕD⟩⟨θC,ϕB⟩ =I
+(
+|k−l|∈{1, 2,kn + 1,kn + 2}
+)
+. (S114)
+Therefore, we have ∑
+k∈I
+∑
+l∈I
+∑
+i,j,α,β
+ν2 3
+[
+θi Aϕα Bθj Cϕβ D ] (δiβδαj)
+=ν2 3 ∑
+k∈I
+∑
+l∈I
+⟨θA,ϕD⟩⟨θC,ϕB⟩
+=ν2 3 ∑
+k∈I
+∑
+l∈I
+I
+(
+|k−l|∈{1, 2,kn + 1,kn + 2}
+)
+= 2ν2 3 ∑
+q∈{1,2,kn+1,kn+2}
+(n− 2kn − 2−q)
+=ν2 3 (8n− 20kn − 28).
+(S115)
+Moreover, notice that
+∥ψB∥2 = 8kn, for all k∈I, (S116)
+⟨ψBk,ψBk+1 ⟩ = 8kn − 8, for all k,k + 1∈I, (S117)
+so we have
+∑
+k∈I
+∑
+l∈I
+∑
+i,j,α,β
+ν3 2
+[
+θi Aψα Bθj Cψβ D ] (δijδαβ)
+=ν3 2 ∑
+k∈I
+{
+2∥ψB∥2 −⟨ψBk,ψBk−1 ⟩I ( (k− 1)∈I ) −⟨ψBk,ψBk+1 ⟩I ( (k + 1)∈I )}
+=ν3 2 ∑
+k∈I
+{
+2× 8kn − (8kn − 8)− (8kn − 8)
+}
+=ν3 2
+(
+(n− 2kn − 4)× 16 + 2× (8kn + 8)
+)
+=ν3 2 (16n− 16kn − 48).
+(S118)
+The last term without coefficients θB and θD is
+∑
+k∈I
+∑
+l∈I
+∑
+i,j,α,β
+ν3 2
+[
+θi Aψα Bθj Cψβ D ]( δ(k+1) iβ δ(k+2) α,β+1δ(k+3) α+1,jI(l =k + 3)
++δ(l+1) αj δ(l+2) α+1,βδ(l+3) i,β+1I(l =k− 3) )
+=ν3 2 ∑
+k∈I
+∑
+l∈I
+{
+θk+1 A ψk+2 B θl Cψl−2 D I(l =k + 3) +θk Aψk−2 B θl+1 C ψl+2 D I(l =k− 3) }
+= 4ν3 2 ∑
+k∈I
+∑
+l∈I
+I(|k−l| = 3) =ν3 2 (8n− 16kn − 40).
+(S119)
+43
+
+=== page 44 ===
+Next, we consider terms with coefficients θB and θD. Notice that
+∥θB∥2 ≈ 16σ2 kkn∆n, for all k∈I, (S120)
+⟨θBk,θBk+1 ⟩≈ 16σ2 k(kn − 1)∆n, for all k,k + 1∈I, (S121)
+so
+∑
+k∈I
+∑
+l∈I
+∑
+i,j,α,β
+ν2 2
+[
+θi Aθα Bθj Cθβ D ] (δijδαβ)
+=ν2 2 ∑
+k∈I
+{
+2∥θB∥2 −⟨θBk,θBk−1 ⟩I ( (k− 1)∈I ) −⟨θBk,θBk+1 ⟩I ( (k + 1)∈I )}
+≈ν2 2 ∑
+k∈I
+{
+2× 16σ2 kkn∆n − 16σ2 k(kn − 1)∆nI ( (k− 1)∈I )
+− 16σ2 k(kn − 1)∆nI ( (k + 1)∈I )}
+≈ν2 2 ∑
+k∈I
+16σ2 kkn∆n ≈ 16knν2 2
+∫ T
+0
+σ2 t dt.
+(S122)
+Notice that any of⟨θA,θD⟩ and⟨θB,θC⟩ is a linear combination of (∆Xr)’s, and the (∆Xr)’s in
+two terms never overlap, so the “standardized version” vanishes:
+k−1/2 n ∆−1/2 n ∑
+k∈I
+∑
+l∈I
+∑
+i,j,α,β
+ν2 2
+[
+θi Aθα Bθj Cθβ D ] (δiβδαj) p −→ 0. (S123)
+For similar reason, because⟨ϕB,θD⟩,⟨θB,ϕD⟩,⟨θA,ϕD⟩ and⟨θC,ϕB⟩ only contain linear com-
+binations (∆Xr)’s, we have
+k−1/2 n ∑
+k∈I
+∑
+l∈I
+ν2ν3
+[
+θi Aϕα Bθj Cθβ D +θi Aθα Bθj Cϕβ D ] (δijδαβ +δiβδαj) p −→ 0. (S124)
+Therefore, by combing Equation (S111), (S112), (S115), (S118), (S119), (S122), (S123) and
+(S124), we can conclude that the contribution of the N4 term to the variance due to noise is
+n−1 ∑
+k∈I
+∑
+l∈I
+E
+(
+N4(k,l)
+⏐⏐⏐F ) p −→ 8ν2ν4 + 16ν3 2 + 8ν2 3 . (S125)
+Total Variance Due to Noise Finally, by combining Equation (S80), (S101) and (S125),
+we can see that N4 dominates the variance due to noise, so
+n−1
+4∑
+m=1
+∑
+k∈I
+∑
+l∈I
+E
+(
+Nm(k,l)
+⏐⏐⏐F ) p −→ 8ν2ν4 + 16ν3 2 + 8ν2 3 . (S126)
+Therefore, according to Equation (S52), the variance due to noise satisfies that
+∆3 nk2 nVar ( \⟨X,σ2⟩ (all) T ⏐⏐F ) p −→ (8ν2ν4 + 16ν3 2 + 8ν2 3 )T, (S127)
+as n→∞.
+44
+
+=== page 45 ===
+A Corrected Version A corrected version of variance due to noise under smaller noise can
+be obtained as a by-product of the analysis above. Combining Equation (S66), Equation (S79)
+and Equation (S122), we have
+∆3 nk2 nVar ( \⟨X,σ2⟩ (all) T ⏐⏐F ) p −→ [ (8ν2ν4+16ν3 2 +8ν2 3 )+kn n2 ·(8ν4+16ν2 2 ) ∫ T 0 σ2 t dt+ 1 n2 ·8Tν2 ∫ T 0 σ4 t dt ] T.
+(S128)
+S1.2.3 A Central Limit Theorem
+A CLT for
+( \⟨X,σ2⟩ (all) T − ^⟨X,σ2⟩ (all) T ) is established for subsequent analysis. Let⟨X,σ2⟩(all) T
+denote the pure noise version of the all-observation estimator (by applying the estimator to the
+noise sequence{εi}n i=0). Note that the increments of⟨X,σ2⟩T are stationary and have finite
+variances. According to the previous analysis and the CLT form-dependent sequence of random
+variables (see Theorem 2.8.1 in Lehmann, 1999), one can establish that as n→∞,
+∆3/2 n kn⟨X,σ2⟩ (all) T d−→N (0, (8ν2ν4 + 16ν3 2 + 8ν2 3 )T ). (S129)
+Moreover, since
+∆3/2 n kn
+(
+\⟨X,σ2⟩ (all) T − ^⟨X,σ2⟩ (all) T −⟨X,σ2⟩ (all) T ) =Op ( k1/2 n n ) , (S130)
+and therefore converges to 0 in probability. By Slutsky’s Lemma, it follows that, as n→∞,
+∆3/2 n kn ( \⟨X,σ2⟩ (all) T − ^⟨X,σ2⟩ (all) T ) d−→N (0, (8ν2ν4 + 16ν3 2 + 8ν2 3 )T ). (S131)
+The above convergence in law can be easily strengthened as an convergenceF-stably in law.
+Simply “realize” the limit as a random variable on the same probability space of noise random
+variables, which is independent of (Ω,F, P), and theF-stable convergence follows.
+S1.3 Proof of Proposition 2
+Consider the covariance between different subsample estimators:
+Var
+(
+\⟨X,σ2⟩ (Hn) T ⏐⏐⏐⏐F ) =H−2 n Hn∑
+h=1
+Hn∑
+g=1
+Cov
+(
+\⟨X,σ2⟩ (Hn,h) T , \⟨X,σ2⟩ (Hn,g) T ⏐⏐⏐⏐F ) . (S132)
+Under Assumption 2(a), by Proposition 1, it follows that, as n→∞,
+∆3 nH4 nk2 nVar
+(
+\⟨X,σ2⟩ (Hn) T ⏐⏐⏐⏐F ) p −→ (8ν2ν4 + 16ν3 2 + 8ν2 3 )T. (S133)
+Under Assumption 2(b), given a scale Hn > 2q, consider two subsamples (Hn,h) and (Hn,g)
+with|g−h|<q. LetIHn =∩Hn h=1IHn,h ={kn+1,...,nHn−kn−2}, wherenHn =⌊(n+1)/Hn⌋−1.
+45
+
+=== page 46 ===
+Rewrite the subsample estimators as (edge effects ignored)
+\⟨X,σ2⟩ (Hn,h) T = ∑
+k∈IHn
+(∆HnYkHn,h) ˆδ(kHn,h,Hn,kn) = 1 knHn∆n ∑ k∈IHn uk,h, (S134)
+\⟨X,σ2⟩ (Hn,g) T = ∑
+l∈IHn
+(∆HnYlHn,h) ˆδ(lHn,h,Hn,kn) = 1 knHn∆n ∑ l∈IHn ul,g, (S135)
+The increment are decomposed similarly as
+uk,h = (ak,h +Ak,h) (bk,h +Bk,h), (S136)
+where
+ak,h +Ak,h = (∆HnYkHn,h) = (∆HnXkHn,h) +⟨θAk,h,ε(h)⟩, (S137)
+bk,h +Bk,h = ˆδ(kHn,h,Hn,kn)
+=δ(kHn,h,Hn,kn) +⟨θBk,h,ε(h)⟩ +⟨ϕBk,h,ε(h)2⟩ +⟨ψBk,h,εε(h) + ⟩. (S138)
+Here, the noise vector is defined by
+(ε(h))j =εjh, (ε(h)2)j = (εjh)2, (εε(h) + )j =εjhε(j+1)hI(j̸=nHn,h), (S139)
+and the non-zero values of θAi,h, θBi,h, ϕBi,h and ψBi,h are listed in Table S2, where the column
+represents the observation indices in subsample (Hn,h).
+Table S2: Values of coefficient vectors in the subsample estimator
+i−kn − 1 i−kn ··· i− 2 i− 1 i i + 1 i + 2 i + 3 ··· i +kn + 1 i +kn + 2
+θAi,h 0 0 ··· 0 0 −1 +1 0 0 ··· 0 0
+θBi,h +2∆HnXi−knHn−Hn +2∆2 HnXi−knHn−Hn ··· +2∆2 HnXi−3Hn −2∆HnXi−2Hn 0 0 −2∆HnXi+2Hn −2∆2 HnXi+2Hn ··· −2∆2 HnXi+knHn +2∆HnXi+knHn+Hn
+ϕBi,h −1 −2 ··· −2 −1 0 0 +1 +2 ··· +2 +1
+ψBi,h +2 +2 ··· +2 0 0 0 −2 −2 ··· −2 0
+The proof differs from Section S1.2 in two ways: (i) the form of coefficient vector θBi,h is
+different (but is finally negligible); and (ii) the noise random variables in different subsamples
+satisfy that
+εih ⊥εjl, if i̸=j, (S140)
+and specifically, we have
+E[εihεjg] =ν2ρ2(g−h)δij, (S141)
+E[εihε2 jg] = √ ν2 ( ν4 −ν2 2 ) ρ3(g−h)δij, (S142)
+E[ε2 ihε2 jg] =ν2 2 + ( ν4 −ν2 2 ) ρ4(g−h)δij. (S143)
+With these differences, the covariance can be obtained: as n→∞,
+∆3 nH3 nk2 nCov
+(
+\⟨X,σ2⟩ (Hn,h) T , \⟨X,σ2⟩ (Hn,g) T ⏐⏐⏐⏐F )
+46
+
+=== page 47 ===
+p
+−→
+(
+8ν2
+(
+ν4 −ν2 2 ) ρ2(g−h)ρ4(g−h) + 24ν3 2 ρ3 2(g−h)
++ 8ν2
+(
+ν4 −ν2 2 ) ρ3(g−h)ρ3(h−g) ) T. (S144)
+Consequently, as n→∞,
+∆3 nH4 nk2 nVar
+(
+\⟨X,σ2⟩ (Hn) T ⏐⏐⏐⏐F ) p −→ ΦT, (S145)
+where
+Φ = 8ν2
+(
+ν4 −ν2 2
+) q∑
+l=−q
+(
+ρ2(l)ρ4(l) +ρ3(l)ρ3(−l)
+)
++ 24ν3 2
+q∑
+l=−q
+ρ3 2(l). (S146)
+This completes the proof.
+Similarly, a more precise version is
+∆3 nH4 nk2 nVar
+(
+\⟨X,σ2⟩ (Hn) T ⏐⏐⏐⏐F ) p −→ Φ′T, (S147)
+where
+Φ′ = 8ν2
+(
+ν4 −ν2 2
+) q∑
+l=−q
+(
+ρ2(l)ρ4(l) +ρ3(l)ρ3(−l)
+)
++ 24ν3 2
+q∑
+l=−q
+ρ3 2(l)
++ knHn
+n ·
+[
+8(ν4 −ν2 2 )
+∫ T
+0
+σ2 t dt
+q∑
+l=−q
+(
+1−|d| Hn
+)(
+ρ4(d) + ν2 2 ν4 −ν2 2 ( 1−ρ2 2(d) ))]
++ knHn
+n ·
+[
+24ν2 2
+∫ T
+0
+σ2 t dt
+q∑
+l=−q
+(
+1−|d| Hn
+)
+ρ2 2(d)
+]
++ H2 n
+n2 ·
+[
+8Tν2
+∫ T
+0
+σ4 t dt
+q∑
+l=−q
+(
+1−|d| Hn
+)2
+ρ2(d)
+]
+.
+(S148)
+A correspondingF-stable convergence CLT can also be established.
+S1.4 Proof of Proposition 3
+The Independent Noise Case Under Assumption 2(a), the correlation due to noise between
+SALE at different scales are negligible except for a special case, where one scale is exactly double
+the other. This can be established with the same way of calculating the contribution of noise
+terms as above. The calculation is tedious, so we will only explain the intuition instead of
+expanding the details. For example, consider the increment from two scales Hp ≥Hq.
+\⟨X,σ2⟩ (Hp) T = 1 kpH2p∆n n−(kp+2)Hp∑ k=(kp+1)Hp u(Hp) k , (S149)
+\⟨X,σ2⟩ (Hq) T = 1 kqH2q ∆n n−(kq+2)Hq∑ l=(kq+1)Hq u(Hq) l , (S150)
+47
+
+=== page 48 ===
+where the increment can be decomposed similarly, for example, u(Hp) k as (ak +Ak)(bk +Bk),
+andu(Hq) l as (cl +Cl)(dl +Dl). The dominant terms can be established similar as in Lemma S7,
+where we only consider terms withoutθB andθD as they become negligible asn→∞. However,
+for Hp >Hq, the only terms that remain after summation over l is
+n−(kq+2)Hq∑
+l=(kq+1)Hq
+∑
+i,j,α,β
+ν2(ν4 −ν2 2 ) [ θi Aϕα Bθj Cϕβ B ] (δijδαβ) = 2ν2(ν4 −ν2 2 )I(Hp = 2Hq), (S151)
+so Hp = 2Hq is a very special situation. The contribution of elements from ϕB and ϕD at
+l− 2,l− 1,l + 2, and l + 3 adds up to 2 in total, while the contribution at l−m and l +m + 1
+for any m≥ 3 cancels out. The former distinguishes Hp = 2Hq from any other cases, and the
+variance due to noise of the MSLE estimator follows. This completes the proof.
+For the same reason, shifting the spot volatility estimation window outward by one time
+interval (shown in Figure 1c) can completely eliminate this distribution, so the correlation
+between different scales become totally negligible.
+The Dependent Noise Case Although the closed-form expression of the covariance between
+different scales is difficult to derive, a multi-scale alternative of Lemma S7 (dropping terms with
+θB andθD) can be used as an algorithm to explicitly calculate the covariance due to noise when
+the noise is dependent. The idea is straightforward:
+1. For each given pair of k and l, the contribution can be calculated with this multi-scale
+and dependent alternative of Lemma S7.
+2. Given a fixed k, for the summation over l, we need to consider all l’s that may have
+potential contribution to the final result. Specifically, if the dependent level of noise is ˜q,
+the following l’s are considered:
+l∈{k− (kp + 1)Hp − ˜q− (kq + 2)Hq,...,k + (kp + 2)Hp + ˜q + (kq + 1)Hp}. (S152)
+3. The summation over k is substituted by simply multiplying n.
+4. The result is normalized by kpH2 p∆n and kqH2 q ∆n.
+The code has been implemented and validated in the simulation study.
+S1.5 Proof of Theorem 1
+Let δ(·) and σ2 ±(·) denote the noise-free versions of ˆδ(·) and ˆσ2 ±(·), respectively. Recall that
+the noise-free SALE estimator can be written as
+^⟨X,σ2⟩
+(Hn)
+T = 1 Hn
+n−(kn+2)Hn∑
+i=(kn+1)Hn
+(∆HnXi)δ(i,Hn,kn) = 1 Hn
+n−(kn+2)Hn∑
+i=(kn+1)Hn
+VHn,i, (S153)
+where
+VHn,i = (∆HnXi)
+(
+σ2 +(i,Hn,kn)−σ2 −(i,Hn,kn) ) (S154)
+48
+
+=== page 49 ===
+Jacod’s stable central limit theorem for partial sums of triangular arrays (Jacod, 1997) (also
+refer to Theorem 2.6 in Podolskij and Vetter, 2010) is used in the proof, and an essential step
+is to calculate the predictable quadratic variation of the error process un( ^⟨X,σ2⟩−⟨X,σ2⟩t),
+where the normalizing sequence is taken asun =
+√
+kn ∧ (knHn∆n)−1. However, since the SALE
+estimator contains an increasing and overlapping window for spot volatility estimation, there is
+a lack of conditional independence of the summands. To overcome this challenge, we adopt the
+“big block” technique to establish some conditional independence (for example, see Section 12.2
+in Jacod and Protter, 2012). Specifically, we divide the time interval [0,T ] into big blocks of size
+L = (K + 2kn + 3)Hn∆n, where K =Kn is an appropriately selected sequence. As illustrated
+in Figure S1, the time span of the νth block is [Lν,Lν +L), where ν = 0, 1,...,⌊T/L⌋− 1.
+t
+FLν FL(ν+1)
+······
+(kn + 1)Hn∆n (kn + 1)Hn∆n(kn + 2)Hn∆nKHn∆n
+L = (K + 2kn + 3)Hn∆n
+Figure S1: The partition within the νth big block.
+In theνth big block, the blue interval in the middle corresponds to the time span [Lν +(kn+
+1)Hn∆n,Lν +(K +kn +1)Hn∆n), with a length ofKHn∆n. The red intervals on both sides are
+(kn + 1)Hn∆n and (kn + 2)Hn∆n long, respectively. Within this big block, we only consider the
+KHn increment termsVi’s of which the time pointi∆n lies within the left-closed, right-open blue
+interval, and their indices areJ(ν) ={Lν/∆n + (kn + 1)Hn,...,Lν/∆n + (K +kn + 1)Hn− 1}.
+Note that all observations contained in these Vi’s are within this big block, and thusFL(ν+1)-
+measurable. An appropriate choice of K satisfies two conditions: (i) K/kn →∞ as n→∞, so
+that the (2kn + 3)Hn terms Vi’s in the red small blocks are negligible; and (ii) KHn∆n → 0 as
+n→∞, so that the time span of big blocks is short enough for a local constant approximation.
+With these notations, the SALE estimator is further rewritten as
+^⟨X,σ2⟩
+(Hn)
+T = 1 Hn
+⌊T/L⌋−1∑
+ν=0
+∑
+i∈J(ν)
+VHn,i + (edge terms). (S155)
+The edge terms include the increments in the red small blocks, and the end-of-the-day increments
+beyond the last big block (if any). Obviously, in both cases, they are negligible. Ignoring them,
+and rewrite the error process as
+un
+(
+^⟨X,σ2⟩
+(Hn)
+T −⟨X,σ2⟩T
+)
+=
+⌊T/L⌋−1∑
+ν=0
+Uν, (S156)
+where
+Uν =un
+
+ 1
+Hn
+∑
+i∈J(ν)
+VHn,i −
+∫ L(ν+1)
+Lν
+d⟨X,σ2⟩t
+
+− (edge terms)
+49
+
+=== page 50 ===
+= un
+Hn
+∑
+i∈J(ν)
+(
+VHn,i −
+∫ (i+Hn)∆n
+i∆n
+d⟨X,σ2⟩t
+)
+=Uν,1 +Uν,2. (S157)
+and
+Uν,1 = un Hn ∑ i∈J(ν) ( VHn,i − (∆HnXi)(∆Hnσ2 i ) ) , (S158)
+Uν,2 = un Hn ∑ i∈J(ν)
+(
+(∆HnXi)(∆Hnσ2 i )−
+∫ (i+Hn)∆n
+i∆n
+d⟨X,σ2⟩t
+)
+. (S159)
+Here, Uν,1 is the error due to spot volatility estimation, whereas Uν,2 is the discretization error
+of “oracle” leverage estimation. Note that
+Uν,1 = un Hn ∑ i∈J(ν) (∆HnXi)(eHn,i+ −eHn,i−). (S160)
+where
+eHn,i+ =σ2 +(i,Hn,kn)−σ2 i+Hn, (S161)
+eHn,i− =σ2 −(i,Hn,kn)−σ2 i. (S162)
+The following lemma concerns these eHn,i± terms.
+Lemma S8. Suppose that i,j∈J(ν) and|i−j|<Hn. As n→∞,
+E
+[
+eHn,i±eHn,j±
+⏐⏐⏐FLν ] = ( 1 kn ) · 2 [(|i−j| Hn )2 + ( 1−|i−j| Hn )2] σ4 ν
++ (knHn∆n)· 1 3 d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=Lν +op(k−1 n +knHn∆n), (S163)
+E
+[
+eHn,i±eHn,j∓
+⏐⏐⏐FLν ] =op(k−1 n +knHn∆n). (S164)
+Moreover, un(eHn,i+,eHn,i+) converges stably in law to a pair of mean-zero, independent normal
+random variables that are independent ofF.
+Proof. To begin with, let
+eHn,i+ = (σ2 +(i,Hn,kn)−σ2 i+2Hn) + (σ2 i+2Hn −σ2 i+Hn) = ˜eHn,i+ + ∆Hnσ2 i+Hn, (S165)
+eHn,i− = (σ2 −(i,Hn,kn)−σ2 i−Hn) + (σ2 i−Hn −σ2 i ) = ˜eHn,i−− ∆Hnσ2 i−Hn, (S166)
+where
+(knHn∆n)˜eHn,i+
+=
+kn+1∑
+k=2
+∫ (i+(k+1)Hn)∆n
+(i+kHn)∆n
+2(Xr −Xi+kHn)dXr + (σ2 r −σ2 i+2Hn)dr
+50
+
+=== page 51 ===
+=
+(kn+1∑
+k=2
+∫ (i+(k+1)Hn)∆n
+(i+kHn)∆n
+2(Xr −Xi+kHn)dXr
+)
++
+∫ (i+(kn+2)Hn)∆n
+(i+2Hn)∆n
+(σ2 r −σ2 i+2Hn)dr
+=
+(kn+1∑
+k=2
+ξi,k
+)
++ηi. (S167)
+Without loss of generality, take i≤j <i +Hn. By Lemma S2, it follows that
+E
+[
+ξi,kξj,k
+⏐⏐⏐F(i+kHn)∆n ] = 2σ4 (i+kHn)∆n (( 1− j−i Hn ) Hn∆n )2 +op(H2 n∆2 n), (S168)
+E
+[
+ξi,k+1ξj,k
+⏐⏐⏐F(j+kHn)∆n ] = 2σ4 (j+kHn)∆n ((j−i Hn ) Hn∆n )2 +op(H2 n∆2 n), (S169)
+E
+[
+ηiηj
+⏐⏐⏐F(i+2Hn)∆n ] = 1 3 d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=(i+2Hn)∆n (knHn∆n)3 +op(k3 nH3 n∆3 n). (S170)
+The negligibility of cross terms such as E[ξj,kηi|F(i+2Hn)∆n] follows from
+E
+[
+ξj,kηi
+⏐⏐⏐F(i+2Hn)∆n ]
+= E
+[(∫ (j+(k+1)Hn)∆n
+(j+kHn)∆n
+2(Xr −Xj+kHn)dXr
+)
+(∫ (i+(kn+2)Hn)∆n
+(i+2Hn)∆n
+[
+(i + (kn + 2)Hn)∆n −r
+]
+dσ2 r
+)⏐⏐⏐⏐⏐F(i+2Hn)∆n ]
+≈
+(
+(i + (kn + 2)Hn)∆n − (j +kHn)∆n
+) d⟨X,σ2⟩t
+dt
+⏐⏐⏐⏐⏐
+t=(i+2Hn)∆n
+E
+[∫ (j+(k+1)Hn)∆n∧(i+(kn+2)Hn)∆n
+(j+kHn)∆n
+2(Xr −Xj+kHn)dr
+⏐⏐⏐⏐⏐F(i+2Hn)∆n ]
+=Op(knHn∆n ·knHn∆n ·Hn∆n)
+=Op(k2 nH3 n∆3 n). (S171)
+Consequently, we have
+E
+[
+˜eHn,i+˜eHn,j+
+⏐⏐⏐FLν ] = 1 k2nH2n∆2n E [(kn+1∑ k=2 ξi,k +ηi )(kn+1∑ l=2 ξj,l +ηj )⏐⏐⏐⏐⏐FLν ]
+=
+( 1
+kn
+)
+· 2
+[(j−i
+Hn
+)2
++
+(
+1− j−i Hn
+)2]
+σ4 ν
++ (knHn∆n)· 1 3 d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=Lν +op(k−1 n +knHn∆n). (S172)
+On the other hand, since E[(∆Hnσ2 i+Hn)2|F(i+Hn)∆n] =Op(Hn∆n), we have
+E
+[
+eHn,i+eHn,j+
+⏐⏐⏐FLν ] = ( 1 kn ) · 2 [(j−i Hn )2 + ( 1− j−i Hn )2] σ4 ν
++ (knHn∆n)· 1 3 d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=Lν +op(k−1 n +knHn∆n). (S173)
+51
+
+=== page 52 ===
+Similar results can be proved for eHn,i− related terms and Equation (S164). The stable con-
+vergence of un(eHn,i+,eHn,i+) is similar to established results on integrated volatility (also see
+Lemma 1 in Supplementary Material of A¨ıt-Sahalia et al., 2017).
+The conditions of Jacod’s stable central limit theorem are verified below.
+Ucp Convergence First, we need to prove that
+⌊t/L⌋−1∑
+ν=0
+E[Uν|FLν]
+u.c.p.
+−−−→ 0. (S174)
+This uniform convergence on compacts in probability is defined as
+sup
+t∈[0,T ]
+⏐⏐⏐⏐⏐⏐ ⌊t/L⌋−1∑ ν=0 E[Uν|FLν] ⏐⏐⏐⏐⏐⏐ p −→ 0. (S175)
+The left-hand side is bounded by
+sup
+t∈[0,T ]
+⏐⏐⏐⏐⏐⏐ ⌊t/L⌋−1∑ ν=0 E[Uν|FLν] ⏐⏐⏐⏐⏐⏐ ≤ ⌊t/L⌋−1∑ ν=0 ⏐⏐⏐E[Uν|FLν] ⏐⏐⏐≤ ⌊t/L⌋−1∑ ν=0 (⏐⏐⏐E[Uν,1|FLν] ⏐⏐⏐+ ⏐⏐⏐E[Uν,2|FLν] ⏐⏐⏐ ) . (S176)
+By Lemma S8, we have
+E[Uν,1|FLν] = un Hn ∑ i∈J(ν) E [ (∆HnXi)(eHn,i+ −eHn,i−) ⏐⏐⏐FLν ]
+= 1 Hn ∑ i∈J(ν) E [ ∆HnXi ⏐⏐⏐FLν ] E [ un(eHn,i+ −eHn,i−) ⏐⏐⏐FLν ]
+= 1 Hn ∑ i∈J(ν) Op(Hn∆n)op(1) =op(KHn∆n). (S177)
+On the other hand, by Lemma S1, we have
+⏐⏐⏐E[Uν,2|FLν] ⏐⏐⏐≤ un Hn ∑ i∈J(ν) E [⏐⏐⏐(∆HnXi)(∆Hnσ2 i )− ∫ (i+Hn)∆n i∆n d⟨X,σ2⟩t ⏐⏐⏐ ⏐⏐⏐⏐⏐FLν ]
+≤ un
+Hn
+∑
+i∈J(ν)
+/radicaltp/radicalvertex/radicalvertex√E [( (∆HnXi)(∆Hnσ2 i )− ∫ (i+Hn)∆n
+i∆n
+d⟨X,σ2⟩t
+)2 ⏐⏐⏐⏐⏐FLν ]
+= un
+Hn
+∑
+i∈J(ν)
+Op(Hn∆n) =op(unKHn∆n). (S178)
+It follows that
+⌊t/L⌋−1∑
+ν=0
+(⏐⏐⏐E[Uν,1|FLν] ⏐⏐⏐ + ⏐⏐⏐E[Uν,2|FLν] ⏐⏐⏐ ) = ⌊t/L⌋−1∑
+ν=0
+op(KHn∆n) +op(unKHn∆n) =op(t). (S179)
+52
+
+=== page 53 ===
+Predictable Quadratic Variation We need to prove that
+⌊t/L⌋−1∑
+ν=0
+(
+E[U 2 ν|FLν]− E[Uν|FLν]2
+) p
+−→
+∫ t
+0
+ζ2 s ds, (S180)
+for some predictable process (ζs)s≥0. According to previous analysis, the only non-trivial term
+in the summand is E[U 2 ν,1|FLν]. By Lemma S8, up to the highest order, we have
+E[U 2 ν,1|FLν]
+= u2 n
+H2n
+∑
+i∈J(ν)
+∑
+j∈J(ν)
+E
+[
+(∆HnXi)(∆HnXj)
+⏐⏐⏐FLν ] E [ (eHn,i+ −eHn,i−)(eHn,j+ −eHn,j−) ⏐⏐⏐FLν ]
+= u2 n
+H2n
+∑
+i∈J(ν)
+∑
+j∈J(ν),|i−j|<Hn
+σ2 ν
+(
+1−|i−j| Hn
+)
+Hn∆nE
+[
+eHn,i+eHn,j+ +eHn,i−eHn,j−
+⏐⏐⏐FLν ]
+= u2 n
+H2n
+∑
+i∈J(ν)
+∑
+j∈J(ν),|i−j|<Hn
+σ2 ν
+(
+1−|i−j| Hn
+)
+Hn∆n
+2
+{
+1
+kn
+· 2
+[(|i−j|
+Hn
+)2
++
+(
+1−|i−j| Hn
+)2]
+σ4 ν +knHn∆n · 1 3 d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=Lν }
+=u2 n
+(
+1
+kn
+·
+(8
+3 + 4 3H2n
+)
+σ6 ν ·KHn∆n +knHn∆n · 2 3σ2 ν d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=Lν ·KHn∆n ) . (S181)
+It follows that
+⌊t/L⌋−1∑
+ν=0
+(
+E[U 2 ν|FLν]− E[Uν|FLν]2
+)
+= u2 n
+kn
+⌊t/L⌋−1∑
+ν=0
+(8
+3 + 4 3H2n
+)
+σ6 ν ·KHn∆n +u2 nknHn∆n
+⌊t/L⌋−1∑
+ν=0
+2
+3σ2 ν d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=Lν ·KHn∆n
+p
+−→ u2 n
+kn
+∫ t
+0
+(8
+3 + 4 3H2n
+)
+σ6 sds +u2 nknHn∆n
+∫ t
+0
+2
+3σ2 sd⟨σ2,σ2⟩s. (S182)
+Predictable Quadratic Covariation We need to prove that
+⌊t/L⌋−1∑
+ν=0
+E
+[
+Uν(ML(ν+1) −MLν)
+⏐⏐⏐FLν ] p −→ 0, ∀M∈{W,B,N}, (S183)
+where (Ns)s≥0 is an arbitrary boundedFt-martingale with N0 = 0 and⟨W,N⟩ =⟨B,N⟩ = 0.
+As before, omit Uν,2 for its minor contribution, and we have
+⌊t/L⌋−1∑
+ν=0
+E
+[
+Uν,1(ML(ν+1) −MLν)
+⏐⏐⏐FLν ]
+=
+⌊t/L⌋−1∑
+ν=0
+1
+Hn
+∑
+i∈J(ν)
+E
+[
+(∆HnXi)(ML(ν+1) −MLν)
+⏐⏐⏐FLν ] E [ un(eHn,i+ −eHn,i−) ⏐⏐⏐FLν ]
+=
+⌊t/L⌋−1∑
+ν=0
+1
+Hn
+∑
+i∈J(ν)
+Op(Hn∆n)op(1) =op
+( t
+KHn∆n
+· 1 Hn ·KHn ·Hn∆n · 1 )
+53
+
+=== page 54 ===
+=op(t). (S184)
+This argument holds for any boundedFt-martingale.
+Lindeberg Condition We need to prove that
+⌊t/L⌋−1∑
+ν=0
+E
+[
+U 2 ν 1{|Uν|>ϵ}
+⏐⏐⏐FLν ] p −→ 0, ∀ϵ> 0. (S185)
+It is well-known that a sufficient condition for Equation (S185) is
+⌊t/L⌋−1∑
+ν=0
+E
+[
+|Uν|2+δ
+⏐⏐⏐FLν ] p −→ 0, (S186)
+for any δ > 0. We take δ = 2 for simplicity, and omit Uν,2. The resulting expression is
+⌊t/L⌋−1∑
+ν=0
+E[U 4 ν,1|FLν]
+=
+⌊t/L⌋−1∑
+ν=0
+1
+H4n E
+[ 4∏
+k=1
+∑
+ik∈J(ν)
+(∆HnXik)un(eHn,ik+ −eHn,ik−)
+⏐⏐⏐⏐⏐FLν ]
+=
+⌊t/L⌋−1∑
+ν=0
+1
+H4n
+∑
+i1,i2,i3,i4∈J(ν)
+E
+[ 4∏
+k=1
+(∆HnXik)
+⏐⏐⏐⏐⏐FLν ] E [ 4∏ k=1 un(eHn,ik+ −eHn,ik−) ⏐⏐⏐⏐⏐FLν ]
+=
+⌊t/L⌋−1∑
+ν=0
+1
+H4n Op((KHn)2H2 n ·H2 n∆2 n + (KHn)4 ·H4 n∆4 n)
+=Op(tKHn∆n) =op(t). (S187)
+Result By Jacod’s stable CLT, there exist a standard Brownian motion (W1,t)t≥0 independent
+ofF and a predictable process (ζ1,t)t≥0 such that, as n→∞,
+un
+( ^⟨X,σ2⟩ (Hn) T −⟨X,σ2⟩T ) st−→ ∫ T 0 ζ1,tdW1,t, (S188) ∫ T
+0
+ζ2 1,tdt = u2 n kn (8 3 + 4 3H2n )∫ T 0 σ6 sdt +u2 nknHn∆n 2 3 ∫ T 0 σ2 t d⟨σ2,σ2⟩t. (S189)
+Taking Hn and kn as specified in Assumption 3(a) and 3(b) respectively completes the proof.
+S1.6 Proof of Theorem 2
+By Theorem 1 and Section S1.3, as n→∞, we have
+√
+kn ∧ (knHn∆n)−1( ^⟨X,σ2⟩ (Hn) T −⟨X,σ2⟩T ) st−→ ∫ T 0 ζ1,tdW1,t, (S190)
+∆3/2 n H2 nkn ( \⟨X,σ2⟩ (Hn) T − ^⟨X,σ2⟩ (Hn) T ) st−→ √ ΦTZ, (S191)
+54
+
+=== page 55 ===
+where Z is anN (0, 1) random variable independent ofF. Since the two sequences are asymp-
+totically independent and each convergesF-stably in law, they jointly convergeF-stably in law
+to independent limits. Thus, applying the continuous mapping theorem completes the proof.
+S1.7 Proof of Proposition 4
+To start with, we define the adjustment factors v(1) p,q and v(2) p,q.
+Definition S1. Letp,q,Hp,Hq,kp,kq be positive integers such thatp≥q andHp ≥Hq. Define
+the kernel functionKp,q : Z→ R that satisfies ∑ d∈Z Kp,q(d) = 1 by
+Kp,q(d) =
+
+
+
+d+Hq
+HpHq, if −Hq <d< 0,
+1
+Hp, if 0≤d≤Hp −Hq,
+−d+Hp
+HpHq , if Hp −Hq <d<Hp,
+0, otherwise,
+(S192)
+For any i,j∈ Z, define the following sets and quantities:
+Gp(i) ={i +kHp :k∈ Z}, (S193)
+Gq(j) ={j +kHq :k∈ Z}, (S194)
+Lp,q(i,j) = (i + 2Hp)∨ (j + 2Hq), (S195)
+Rp,q(i,j) = (i + (kp + 2)Hp)∧ (j + (kq + 2)Hq), (S196)
+Pp,q(i,j) = (Gp(i)∪Gq(j))∩ [Lp,q(i,j),Rp,q(i,j)]. (S197)
+Let x1 < x2 <··· < xm be the elements of the set Pp,q(i,j) sorted in ascending order. Define
+the sum of squares of overlapping segments (SSOS), the cubed overlapping length (COL), and
+their normalized versions by
+SSOSp,q(i,j) =
+m−1∑
+k=1
+(xk+1 −xk)2, ^SSOSp,q(i,j) = SSOSp,q(i,j) kqH2q . (S198)
+COLp,q(i,j) =
+[
+(Rp,q(i,j)−Lp,q(i,j))+
+]3, ]COLp,q(i,j) = COLp,q(i,j) k3qH3q , (S199)
+Note that SSOSp,q(i,j) and COLp,q(i,j) depend oni,j only through the differencej−i. Finally,
+the adjustment factors v(1) p,q and v(2) p,q are defined as
+v(1) p,q = ∑
+d∈Z
+Kp,q(d)^SSOSp,q(0,d), (S200)
+v(2) p,q = ∑
+d∈Z
+Kp,q(d) ]COLp,q(0,d). (S201)
+Proposition 4 is a two-scale extension of Theorem 1. Similar as Section S1.5, the big block
+technique is used to establish the conditional independence in the proof. Let H∗ n ∈ Z satisfies
+that H∗ n ≥ Hp ≥ Hq. Consier big blocks of size L, where L/(KH∗ n∆n)→ 1 as n→∞, where
+K =Kn is a sequence satisfyingK→∞ andKH∗ n∆n → 0 asn→∞. Similarly, the time span
+55
+
+=== page 56 ===
+of the νth big block is denoted as [Lν,Lν +L) with ν = 0, 1,...,⌊T/L⌋− 1.
+Recall that, with these notations, rewrite the error of the Hp-scaled SALE estimator as
+un
+(
+^⟨X,σ2⟩
+(Hp)
+T −⟨X,σ2⟩T
+)
+=
+⌊T/L⌋−1∑
+ν=0
+UHp,ν + (edge terms), (S202)
+where
+UHp,ν =UHp,ν,1 +UHp,ν,2, (S203)
+UHp,ν,1 = un Hp ∑ i∈JHp(ν) ( VHp,i − (∆HpXi)(∆Hpσ2 i ) ) , (S204)
+UHp,ν,2 = un Hp ∑ i∈JHp(ν)
+(
+(∆HpXi)(∆Hpσ2 i )−
+∫ (i+Hp)∆n
+i∆n
+d⟨X,σ2⟩t
+)
+. (S205)
+Here, JHp(ν) ={Lν/∆n + (kp + 1)Hp,...,Lν/∆n + (K +kp + 1)Hp − 1} is the set of indices
+of the main increments within the big block. Similar notations for Hq can be established. Set
+un =
+√
+kp ∧ (kpHp∆n)−1. We have the following lemma.
+Lemma S9. As n→∞, we have
+E
+(
+UHp,ν,1UHq,ν,1
+⏐⏐⏐FLν )
+= u2 n
+kp
+· 4v(1) p,q Hq Hp ·σ6 νL +u2 nkpHp∆n · 2 3v(2) p,q
+(
+kqHq
+kpHp
+)2
+·σ2 ν d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=Lν L
++op(u2 nk−1 p L +u2 nkpHp∆nL). (S206)
+Proof. Note that
+UHp,ν,1 = un Hp ∑ i∈JHp(ν) (∆HpXi)(eHp,i+ −eHp,i−), (S207)
+eHp,i+ =σ2 +(i,Hp,kp)−σ2 i+Hp, (S208)
+eHp,i− =σ2 −(i,Hp,kp)−σ2 i. (S209)
+Similar expression follows for UHq,ν,2. We have
+E
+(
+UHp,ν,1UHq,ν,1
+⏐⏐⏐FLν )
+= u2 n
+HpHq
+∑
+i∈JHp(ν)
+∑
+j∈JHq (ν)
+E
+[
+(∆HpXi)(∆HqXj)
+⏐⏐⏐FLν ] E [ (eHp,i+ −eHp,i−)(eHq,j+ −eHq,j−) ⏐⏐⏐FLν ] .
+(S210)
+For price-related terms, note that
+E
+[
+(∆HpXi)(∆HqXj)
+⏐⏐⏐FLν ] =σ2 νs(i,j) +op(Hq∆n), (S211)
+56
+
+=== page 57 ===
+where s(i,j) =HpHq∆nKp,q(j−i). For spot-volatility-related terms, note that
+eHp,i+ = ˜eHp,i+ + ∆Hpσ2 i+Hp, (S212)
+˜eHp,i+ = 1 kpHp∆n
+
+
+
+ ∑
+k∈S+ Hp
+ξHp,i,k
+
+ +η+ Hp,i
+
+, (S213)
+ξHp,i,k =
+∫ (i+(k+1)Hp)∆n
+(i+kHp)∆n
+2(Xr −Xi+kHp)dXr for k = 2,...,kp + 1, (S214)
+η+ Hp,i =
+∫ (i+(kp+2)Hp)∆n
+(i+2Hp)∆n
+(σ2 r −σ2 i+2Hp)dr, (S215)
+and by Lemma S2, we have
+E
+[( ∑
+k∈S+ Hp
+ξHp,i,k
+)( ∑
+l∈S+ Hq
+ξHq,j,l
+)⏐⏐⏐⏐⏐FLν ] = 2σ4 νSSOSp,q(i,j)∆2 n +op(kqH2 q ∆2 n), (S216)
+E
+[
+η+ Hp,iη+ Hq,j
+⏐⏐⏐FLν ] = 1 3 d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=Lν COLp,q(i,j)∆3 n +op(k3 qH3 q ∆3 n). (S217)
+Other terms are negligible, similar as in Section S1.5. It follows that
+E
+(
+UHp,ν,1UHq,ν,1
+⏐⏐⏐FLν )
+≈ u2 n
+HpHq
+1
+kpHp∆n
+1
+kqHq∆n
+∑
+i∈JHp(ν)
+∑
+j∈JHq (ν)
+E
+[
+(∆HpXi)(∆HqXj)
+⏐⏐⏐FLν ] E [( ∑
+k∈S+ Hp
+ξHp,i,k
+)( ∑
+l∈S+ Hq
+ξHq,j,l
+)
++η+ Hp,iη+ Hq,j
+⏐⏐⏐⏐⏐FLν ] × 2
+≈ u2 n
+kpkqH2pH2q ∆2n
+∑
+i∈JHp(ν)
+kqHpH3 q ∆3 n · 4σ6 νv(1) p,q +k3 qHpH4 q ∆4 n · 2 3σ2 ν d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=Lν v(2) p,q
+≈ u2 n
+kp
+· 4v(1) p,q Hq Hp ·σ6 νL +u2 nkpHp∆n · 2 3v(2) p,q
+(
+kqHq
+kpHp
+)2
+·σ2 ν d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=Lν L. (S218)
+This completes the proof of Lemma S9.
+The rest of the proof is similar with Section S1.5, except that a multi-dimensional stable
+CLT is used (for example, Theorem 7.19 in Jacod and ˇSirjaev, 2003).
+S1.8 Proof of Proposition 5
+Forv(2) p,q, note that a necessary condition ofKp,q(d)> 0 is that−Hq <d<Hp, which implies
+that ]COLp,q(0,d)→ 1 as n→∞, and thus
+v(2) p,q → 1. (S219)
+For v(1) p,q, note that, for a given i and all j that satisfies i−Hq <j <i +Hp, as n→∞, the
+57
+
+=== page 58 ===
+SSOS is asymptotically equivalent to the sum of Np,q SSOS’s within consecutive Hp-intervals:
+SSOSp,q(i,j)≍
+Np,q∑
+l=1
+gp,q(l;i,j), (S220)
+Np,q ≍ kqHq Hp ≍βc1−b(n/Hp)b →∞. (S221)
+Here, gp,q(l;i,j) is the SSOS within the group l. Thus, we have
+v(1) p,q ≍ 1 kqH2q ∑ d∈Z Kp,q(d) Np,q∑ l=1 gp,q(l; 0,d) = 1 kqH2q Np,q∑ l=1 ∑ d∈Z Kp,q(d)gp,q(l; 0,d). (S222)
+Note thatgp,q(l; 0,d) =gp,q(l; 0,d +Hq) for any validd, as the pattern of grid points within the
+lth Hp-interval repeats itself when j shifts Hq. Another important observation is that, through
+direct calculation, we have
+∑
+d∈Z
+Kp,q(d)1{d≡d0 mod Hq} = 1 Hq , for all d0 = 0, 1,...,Hq − 1. (S223)
+Therefore, we have
+v(1) p,q ≍ 1 kqH2q
+Np,q∑
+l=1
+∑
+d∈Z
+Kp,q(d)gp,q(l; 0,d)
+= 1 kqH2q
+Np,q∑
+l=1
+∑
+d∈Z
+Kp,q(d)gp,q(l; 0,d)
+Hq−1∑
+d0=0
+1{d≡d0 mod Hq}
+= 1 kqH2q
+Np,q∑
+l=1
+Hq−1∑
+d0=0
+gp,q(l; 0,d0)
+∑
+d∈Z
+Kp,q(d)1{d≡d0 mod Hq}
+= 1 kqH2q
+Np,q∑
+l=1
+1
+Hq
+Hq−1∑
+d0=0
+gp,q(l; 0,d0). (S224)
+On the other hand, by Lemma S3, as Hq →∞, we have
+1
+Hq
+Hq−1∑
+d0=0
+gp,q(l; 0,d0) =H2 p Eα1∼Unif{1/Hq,...,Hq/Hq}
+[
+S2(α1,Hq/Hp)
+]
+→H2 p Eα1∼Unif(0,1]
+[
+S2(α1,Hq/Hp)
+]
+(S225)
+=HpHq
+(
+1− Hq
+3Hp
+)
+, (S226)
+It follows that, as n→∞, we have
+v(1) p,q → 1 kqH2q
+Np,q∑
+l=1
+HpHq
+(
+1− Hq
+3Hp
+)
+≍ 1 kqH2q kqHq Hp HpHq
+(
+1− Hq
+3Hp
+)
+= 1− ρ 3. (S227)
+This completes the proof.
+58
+
+=== page 59 ===
+S1.9 Proofs of Theorem 3 and 4
+We use the same block partition as Section S1.7, whereH∗ n is specificed by Assumption 5(a).
+Rewrite the error of the MSLE estimator as
+un
+(
+^⟨X,σ2⟩
+(MS)
+T −⟨X,σ2⟩T
+)
+=
+⌊T/L⌋−1∑
+ν=0
+Mn∑
+p=1
+wpUHp,ν + (edge terms), (S228)
+where UHp,ν and its decomposition are given by Equation (S203), (S204) and (S205). Let
+xp =Hp/H∗ n for all p = 1,...,Mn. By Lemma S9 and Proposition 5, for any 1≤q≤p≤Mn,
+as n→∞, we have
+E
+(
+UHp,ν,1UHq,ν,1
+⏐⏐⏐FLν )
+=u2 nn−(1−a)b · 4αb β ·xb p ( xq xp − x2 q 3x2p ) ·σ6 νL
++u2 nn−(1−a)(1−b) · 2α1−bβT 3 · x2(1−b) q x1−bp ·σ2 ν d⟨σ2,σ2⟩t dt ⏐⏐⏐⏐⏐ t=Lν L
++op(u2 nn−(1−a)(b∧(1−b))). (S229)
+Note that Assumption 5(b) implies that ∑Mn p=1 |wp| is bounded as n→∞, which is enough for
+the rest of the proof to be completed similarly as in Section S1.5 and S1.6.
+S2 Feasible Central Limit Theorems
+To establish feasible central limit theorems for SALE and MSLE estimators, consistent esti-
+mators for the quantities in asymptotic variances are needed, including
+∫T
+0 σ6 t dt, ∫T 0 σ2 t d⟨σ2,σ2⟩t,
+Φ, and F .
+In the noise-free case, the following estimators have been established in the literature:
+G(1) n = 1 15∆2n n−1∑ i=0 (∆Xi)6 p −→ ∫ T 0 σ6 t dt, (S230)
+G(2) n = 1 kn∆n n−kn−2∑ i=kn+1 (∆Xi)2 ( 3 2 (ˆδ(i, 1,kn) )2 − 1 k2n∆2n ( −2∑ j=−kn−1 + kn+1∑ j=2 ) (∆Xj)4 )
+p
+−→
+∫ T
+0
+σ2 t d⟨σ2,σ2⟩t. (S231)
+For G(1) n , refer to Theorem 3.4.1 of Jacod and Protter (2012), or Example 3.2 of Podolskij and
+Vetter (2010). ForG(2) n , refer to Theorem 8.11 of A¨ıt-Sahalia and Jacod (2014), or Theorem 2.6
+of Vetter (2015) (also see Equation (5.4) in A¨ıt-Sahalia et al., 2017).
+In the noisy case, we employ the pre-averaging technique to construct corresponding esti-
+mators. Consider a sequence of non-overlapping windows, each of length An, satisfying that
+An →∞ andAn∆n →∞ asn→∞ (for example, takeAn =⌊n1/2⌋). The pre-averaged pseudo-
+observations are defined byXi =A−1 n ∑(i+1)An j=iAn for alli = 0, 1,...,n, wheren =⌊(n+1)/An⌋−1.
+59
+
+=== page 60 ===
+Let ∆n =An∆n, and define kn, ˆδ similarly. Thus, we have
+ˆG(1) n = 9 40∆n n−1∑ i=0 (∆Xi)6 p −→ ∫ T 0 σ6 t dt, (S232)
+ˆG(2) n = 27 8kn∆n ∑ i∈I (∆Xi)2
+(
+3
+2
+(ˆδ(i, 1,kn) )2 − 1
+k
+2
+n∆
+2
+n
+( −2∑
+j=−kn−1
++
+kn+1∑
+j=2
+)
+(∆Xj)4
+)
+p
+−→
+∫ T
+0
+σ2 t d⟨σ2,σ2⟩t. (S233)
+The quantities Φ and F depend on the autocovariances of the noise variables, which can
+be estimated with existing methods, including Jacod et al. (2017) and Li and Linton (2022).
+We employ the Realized moMents of Disjoint Increments (ReMeDI) method (Li and Linton,
+2022) to estimate the required moments. For any fixed integer l, suppose there is a sequence of
+positive numbers k′ n such that k′ n →∞ and k′ n∆n → 0 as n→∞, we can establish that
+1
+n
+n−m−k′ n∑
+i=k′n
+(Yi+l −Yi+l+k′n)(Yi −Yi−k′n) p −→ E[εiεi+l], (S234)
+1
+n
+n−m−k′ n∑
+i=2k′n
+(Yi+l −Yi+l+k′n)(Yi+l −Yi+l−k′n)(Yi −Yi−2k′n) p −→ E[εiε2 i+l], (S235)
+1
+n
+n−m−k′ n∑
+i=3k′n
+(Yi+l −Yi+l+k′n)(Yi+l −Yi+l−k′n)(Yi −Yi−2k′n)(Yi −Yi−3k′n) p −→ E[ε2 iε2 i+l]. (S236)
+The estimators for the noise moments ˆν2, ˆν4 and the generalized acfs ˆρ2(l), ˆρ3(l), ˆρ4(l) can be
+constructed accordingly. Thus, by plugging these estimators into Equation (19), the following
+estimator for Φ can be derived:
+ˆΦn = 8ˆν2(ˆν4 −ˆν2 2 )
+q∑
+l=−q
+ˆρ2(l)ˆρ4(l) + 24ˆν3 2
+q∑
+l=−q
+ˆρ3 2(l) + 8ˆν2(ˆν4 −ˆν2 2 )
+q∑
+l=−q
+ˆρ3(l)ˆρ3(−l) p −→ Φ. (S237)
+The construction for F follows similarly.
+Given these consistent estimators of asymptotic variances, the feasible CLTs follow from the
+property of stable convergence in law: givenYn st−→VU andVn p −→V , we haveYn/Vn st−→U. For
+example, the feasible CLT for SALE estimators is as follows.
+Theorem S1.
+(1) Under Assumption 1 and 3(a), let un =
+√
+kn ∧ (knH∆n)−1. As n→∞, we have
+un√
+V1,n
+( ^⟨X,σ2⟩ (H) T −⟨X,σ2⟩T ) st−→N (0, 1), (S238)
+where V1,n = u2 n kn (8 3 + 4 3H2 ) G(1) n +u2 nknH∆n 2 3G(2) n , (S239)
+and the limiting distribution is independent ofF.
+60
+
+=== page 61 ===
+(2) Under Assumption 1 and 3(b), as n→∞, we have
+n
+1
+2 (1−a)(b∧(1−b))
+√
+V1,n
+( ^⟨X,σ2⟩ (Hn) T −⟨X,σ2⟩T ) st−→N (0, 1), (S240)
+where V1,n = 8αb 3β G(1) n · 1(0,1/2](b) + 2α1−bβT 3 G(2) n · 1[1/2,1)(b), (S241)
+and the limiting distribution is independent ofF.
+(3) Under Assumption 1, 2(b) and 3(b), suppose that Hn > 2q and 4a + 2b− 2ab > 3. Let
+r = [(1−a)(b∧ (1−b))]∧ [4a + 2b− 2ab− 3]. As n→∞, we have
+n
+1
+2 r
+√
+V2,n
+( \⟨X,σ2⟩ (Hn) T −⟨X,σ2⟩T ) st−→N (0, 1), (S242)
+where V2,n = 8αb 3β ˆG(1) n · 1{(1−a)b}(r) + 2α1−bβT 3 ˆG(2) n · 1{(1−a)(1−b)}(r)
++ 1 α4−2bβ2T 3
+∫ T
+0
+ˆΦndt· 1{4a+2b−2ab−3}(r), (S243)
+and the limiting distribution is independent ofF.
+A feasible CLT for MSLE estimators follows similarly.
+S3 Practical Aspects
+S3.1 A Correction for SALE Estimators
+A small noise correction of SALE estimators has been given in Equation (S147). Figure S2
+compares this corrected version with the original (dominant) version and the empirical result.
+40 60 80 100 120 140 160 180 200
+H
+10□11
+10□10
+10□9
+10□8
+Average Asymptotic VarianceNoise (Empirical)
+Noise (Corrected)
+Noise (Dominant)
+Discretization
+Figure S2: Asymptotic variance of SALE estimators. The same simulated paths are used as
+Figure 2, and the noise level is ς = 6× 10−4.
+Unlike pure-noise terms, these correction terms are generally not independent across scales.
+61
+
+=== page 62 ===
+Thus, for MSLE estimators, we can use the following upper bound for variances due to noise:
+Var
+(Mn∑
+p=1
+wp \⟨X,σ2⟩ (Hp) T ⏐⏐F ) ≤
+(Mn∑
+p=1
+|wp|
+√
+Var
+( \⟨X,σ2⟩ (Hp) T ⏐⏐F )
+)2
+. (S244)
+Equation (S244) is used to construct confidence intervals in Figure 4 and the empirical study.
+S3.2 Derivation of Approximate Weights
+The following lemma is useful in the derivation of approximate weights.
+Lemma S10. Let n be a positive integer, and let m∈ R. Define the matrix B∈ Rn×n by
+Bp,q =f
+(
+(m +p)∨ (m +q)
+)g ( (m +p)∧ (m +q) )
+g
+(
+(m +p)∨ (m +q)
+), for all p,q∈{1,...,n}, (S245)
+where f,g are well-defined functions such that all expressions in this lemma are valid. Let
+h(p,q) =f(m +p)− g2(m +p) g2(m +q)f(m +q). (S246)
+The inverse A = B−1 is tridiagonal, with superdiagonal and subdiagonal elements given by
+Ap,p+1 =Ap+1,p =− g(m +p) g(m +p + 1) 1 h(p,p + 1), p = 1,...,n− 1, (S247)
+and main diagonal elements given by
+A1,1 = 1 h(1, 2), (S248)
+Ap,p = h(p− 1,p + 1) h(p− 1,p)h(p,p + 1), p = 2,...,n− 1, (S249)
+An,n = f(m +n− 1) f(m +n) 1 h(n− 1,n). (S250)
+For simplicity, denote xp = Hp/H∗ n for any p = 1,...,Mn. Under the conditions of Defini-
+tion 1, the asymptotical covariance between scales is given by
+Σp,q = (s1 +s2)(n/H∗ n)−1/2(xp ∨xq)1/2
+
+xp ∧xq
+xp ∨xq
+− s1
+3(s1 +s2)
+(
+xp ∧xq
+xp ∨xq
+)2
+. (S251)
+Note that the second term within the bracket has a coefficient ofs1/(3(s1+s2))∈ (0, 1/3), which
+depends on the ratio of s1 to s2, and the scale ratio term satisfies that (xp∧xq)/(xp∨xq)≤ 1.
+To formulate the approximate weights without relying on estimates ofs1 ands2, we only retain
+the first term in the bracket, which contributes more to the covariance. Thus, the approximate
+covariance matrix is given by
+~Σp,q = (s1 +s2)(n/H∗ n)−1/2(xp ∨xq)1/2 xp ∧xq xp ∨xq = (s1 +s2)n−1/2Bp,q. (S252)
+62
+
+=== page 63 ===
+Let ω = B−11Mn. Applying Lemma S10 with f(x)←√x, g(x)←x, m←mn, and n←Mn,
+for p = 2,...,Mn − 1, we have
+ω1 =
+(mn + 2
+mn + 1
+)1/2 1
+(mn + 2)3/2 − (mn + 1)3/2 (S253)
+ωp = (mn +p)1/2
+(
+(mn +p)1/2 − (mn +p− 1)1/2
+(mn +p)3/2 − (mn +p− 1)3/2 − (mn +p + 1)1/2 − (mn +p)1/2 (mn +p + 1)3/2 − (mn +p)3/2 ) ,
+(S254)
+ωMn = (mn +Mn)1/2 (mn +Mn)1/2 − (mn +Mn − 1)1/2 (mn +Mn)3/2 − (mn +Mn − 1)3/2 . (S255)
+For simplicity, taking the limit mn →∞, for p = 2,...,Mn − 1, we have
+ω1 → 2 3(mn + 1)1/2 , ωp → 1 3(mn +p)3/2 , ωMn → 1 3(mn +Mn)1/2 . (S256)
+Consequently, by Equation (40), the approximate weights ~w in Definition 1 are obtained.
+S3.3 Derivation of Equation (44)
+Recall that γ =s1/(3(s1 +s2)). With the simplifications in Section 4.2.2, the total asymp-
+totic covariances of SALE estimators are given by
+Σp,q = Σ(1) p,q + Σ(2) p,q, (S257)
+where Σ(1) p,q = (s1 +s2)(n/H∗ n)−1/2(xp ∨xq)1/2
+
+xp ∧xq
+xp ∨xq
+−γ
+(
+xp ∧xq
+xp ∨xq
+)2
+, (S258)
+and Σ(2) p,q =α9/2s3n2(H∗ n)−3x−3 p δp,q. (S259)
+Thus, the asymptotic variance of the MSLE estimator is
+Mn∑
+p=1
+Mn∑
+q=1
+wpwqΣp,q =
+Mn∑
+p=1
+Mn∑
+q=1
+wpwqΣ(1) p,q +
+Mn∑
+p=1
+Mn∑
+q=1
+wpwqΣ(2) p,q, (S260)
+where
+Mn∑
+p=1
+Mn∑
+q=1
+wpwqΣ(1) p,q
+= (s1 +s2)
+( n
+H∗n
+)−1/2 Mn∑
+p=1
+Mn∑
+q=1
+( 1
+H∗n
+)2
+ϕ(xp)ϕ(xq)(xp ∨xq)1/2
+
+xp ∧xq
+xp ∨xq
+−γ
+(
+xp ∧xq
+xp ∨xq
+)2
+
+→ (s1 +s2)
+( n
+H∗n
+)−1/2 ∫ 1
+c
+∫ 1
+c
+dxdyϕ(x)ϕ(y)(x∨y)1/2
+[
+x∧y
+x∨y −γ
+(x∧y
+x∨y
+)2]
+= (s1 +s2)α1/2n−2/9
+∫ 1
+c
+∫ 1
+c
+ϕ(x)ϕ(y)(x∨y)1/2
+[
+x∧y
+x∨y −γ
+(x∧y
+x∨y
+)2]
+dxdy, (S261)
+63
+
+=== page 64 ===
+and
+Mn∑
+p=1
+Mn∑
+q=1
+wpwqΣ(2) p,q
+=α9/2s3n2(H∗ n)−3
+Mn∑
+p=1
+Mn∑
+q=1
+( 1
+H∗n
+)2
+ϕ(xp)ϕ(xq)x−3 p δp,q
+=α9/2s3n2(H∗ n)−4
+Mn∑
+p=1
+( 1
+H∗n
+)
+ϕ2(xp)x−3 p
+→α9/2s3n2(H∗ n)−4
+∫ 1
+c
+dxϕ2(x)x−3
+=s3α1/2n−2/9
+∫ 1
+c
+ϕ2(x)x−3dx. (S262)
+It follows that
+Mn∑
+p=1
+Mn∑
+q=1
+wpwqΣp,q =α1/2n−2/9S0[ϕ], (S263)
+where S0[ϕ] is a functional of ϕ(x):
+S0[ϕ] = (s1 +s1)
+∫ 1
+c
+∫ 1
+c
+ϕ(x)ϕ(y)(x∨y)1/2
+[
+x∧y
+x∨y −γ
+(x∧y
+x∨y
+)2]
+dxdy
++s3
+∫ 1
+c
+ϕ2(x)x−3dx− 2k
+(∫ 1
+c
+ϕ(x)dx− 1
+)
+. (S264)
+Here, k∈ R is a Lagrange multiplier that enforces the constraint on ϕ(x) in Assumption 5(b).
+Note that Equation (S263) again confirms the rate of convergencen−1/9 of the MSLE estimator,
+as the functional S0[ϕ] has a finite value. Recall that φ(x) =x−3/2ϕ(x) and λ =−(s1 +s2)/s3.
+Scale S0[ϕ] with s3 to obtain that
+S[φ] =s−1 3 S0[ϕ]
+=−
+∫ 1
+c
+∫ 1
+c
+φ(x)φ(y)K(x,y)dxdy +
+∫ 1
+0
+φ(x)
+(
+φ(x)− 2kx3/2) dx + const., (S265)
+where K(x,y) is defined in Equation (43). A necessary condition for the extremum of S[φ] is
+that, φ(x) is a solution to a Fredholm integral equation of the second kind (for example, see
+Lao and Zhao, 2021), which is given by Equation (44).
+S4 Simulation Study
+S4.1 Moments of Dependent Noise
+Since higher order autocovariances of noise variables are used in our method, we further
+describe these quantities. Recall that, both MA(2) and AR(1) processes driven by Gaussian
+white noise are used to generate dependent noise. Specifically, AR(1) process does not satisfy
+Assumption 2, but given its fast decaying speed and wide appearance in literature, we include
+64
+
+=== page 65 ===
+the case to demonstrate the robustness of our methods.
+1. For the MA(2) process, we set
+εi =ei +θ1ei−1 +θ2ei−2, ei iid∼N (0,ς2(1 +θ2 1 +θ2 2)−1). (S266)
+The second and fourth moments of the process are
+ν2 =ς2, ν4 = 2ς4(1 + 2θ2 1 + 2θ2 2 +θ4 1 +θ4 2 + 2θ2 1θ2 2), (S267)
+and the generalized ACFs defined in Equation (15) are
+ρ2(l) = 1{l=0} + θ1 +θ1θ2 1 +θ2 1 +θ2 2 1{|l|=1} + θ2 1 +θ2 1 +θ2 2 1{|l|=2}, (S268)
+ρ3(l) = 0, (S269)
+ρ4(l) = 1{l=0} + θ2 1θ2 2 +θ2 1 + 2θ2 1θ2 1 + 2θ2 1 + 2θ2 2 +θ4 1 +θ4 2 + 2θ2 1θ2 2 1{|l|=1}
++ θ2 2
+1 + 2θ2 1 + 2θ2 2 +θ4 1 +θ4 2 + 2θ2 1θ2 2 1{|l|=2}. (S270)
+2. For the AR(1) process, we set
+εi =ϕεi−1 +ei, ei iid∼N (0,ς2
+√
+1−ϕ2), (S271)
+whereϕ∈ (−1, 1) is the autoregressive coefficient. This is a common setting for modeling
+the stationary component of dependent noise (see Jacod et al., 2017; Li and Linton, 2022).
+The moments of the process are
+ν2 =ς2, ν4 = 3ς4, (S272)
+and the generalized ACFs are
+ρ2(l) =ϕ|l|, ρ3(l) = 0, ρ4(l) =ϕ2|l|. (S273)
+S4.2 Asymptotic Normality
+The Q-Q plots of the infeasible and feasible standardized estimation errors are presented in
+Figures S3 and S4, respectively.
+S4.3 Finite-Sample Performance
+Parameter Tuning in the Noisy Case In both the i.i.d. and dependent noise cases, the
+weights in MSLE estimators and the window sizes in pre-averaging estimators need to be tuned.
+The tuning methods are as follows:
+1. The MSLE Estimator.
+65
+
+=== page 66 ===
+(a) Noise-free LE
+ (b) Noise-free SALE
+ (c) Noise-free MSLE
+(d) Normal LE
+ (e) Normal SALE
+ (f) Normal MSLE
+(g) Uniform LE
+ (h) Uniform SALE
+ (i) Uniform MSLE
+(j) Skew-normal LE
+ (k) Skew-normal SALE
+ (l) Skew-normal MSLE
+(m) MA(2) (θ1 = 0.7) SALE
+ (n) MA(2) (θ1 = 0.7) MSLE
+ (o) MA(2) (θ1 =−0.7) SALE
+(p) MA(2) (θ1 =−0.7) MSLE
+ (q) AR(1) SALE
+ (r) AR(1) MSLE
+Figure S3: Histograms and Q-Q plots of standardized estimation errors calculated with infea-
+sible asymptotic variances across noise settings and estimators. Blue bars and points represent
+empirical standardized errors; red curves and lines represent the standard normal distribution.
+66
+
+=== page 67 ===
+(a) Noise-free LE
+ (b) Noise-free SALE
+ (c) Noise-free MSLE
+(d) Normal LE
+ (e) Normal SALE
+ (f) Normal MSLE
+(g) Uniform LE
+ (h) Uniform SALE
+ (i) Uniform MSLE
+(j) Skew-normal LE
+ (k) Skew-normal SALE
+ (l) Skew-normal MSLE
+(m) MA(2) (θ1 = 0.7) SALE
+ (n) MA(2) (θ1 = 0.7) MSLE
+ (o) MA(2) (θ1 =−0.7) SALE
+(p) MA(2) (θ1 =−0.7) MSLE
+ (q) AR(1) SALE
+ (r) AR(1) MSLE
+Figure S4: Histograms and Q-Q plots of standardized estimation errors calculated with feasible
+asymptotic variances across noise settings and estimators. Blue bars and points represent
+empirical standardized errors; red curves and lines represent the standard normal distribution.
+67
+
+=== page 68 ===
+(a) Optimal weights (for the i.i.d. case only). Calculated using Equation (40), where the
+covariance due to discretization is given by Equation (31), and the diagonal elements
+of covariance due to noise are given by Equation (S147).
+(b) Approximate weights (for both cases). Derived from the method in Section 4.2.2,
+with the asymptotic variances of SALE estimators calculated using Equations (31)
+and (S147). The optimal sclae is denoted as Hn.
+2. The Pre-Averaging Estimator.
+(a) Optimal weights (for the i.i.d. case only). Determined by minimizing the asymptotic
+variance in Equation 6.6 of A¨ıt-Sahalia et al. (2017). The optimal window size is
+denoted as An.
+(b) Ex-post selected weights (for both cases).
+For computational efficiency, we use the same set of Hn and An for all paths within a given
+setting, rather than specifying these parameters in a path-wise manner. Specifically, the average
+quantities
+∫T
+0 σ6 t dt and ∫T 0 σ2 t d⟨σ2,σ2⟩t over all paths are used to determine these paramters.
+Tables S3 and S4 list the selected parameters for each setting.
+Table S3: Settings of MSLE estimators with approximate weights and pre-averaging estimators
+with optimal pre-averaging window in the i.i.d. noise case.
+ς
+1 day 5 days 10 days 22 days
+Hn An Hn An Hn An Hn An
+10−4 7 8 7 7 6 7 5 6
+10−3.5 43 25 35 23 32 21 26 19
+10−3 190 79 171 73 152 67 128 59
+Table S4: Settings of MSLE estimators with approximate weights in the dependent noise case.
+ς
+H n
+1 day 5 days 10 days 22 days
+10−4 10 9 8 6
+10−3.5 57 47 44 37
+10−3 230 219 201 169
+Results of the I.I.D. Noise Case The settings of T , n and the number of paths are the
+same as the noise-free case. We generate i.i.d. Gaussian noise with the same noise levels as the
+dependent noise case. For MSLE estimators, we set Hp = 1, 2,...,⌊n5/9⌋. For pre-averaging
+estimators, the ex-post selected version is the estimator with the minimum RMSE from windows
+of 5, 10, 30, 60, and 120. The results are presented in Figure S5 and Table S5.
+68
+
+=== page 69 ===
+□0.0003 □0.0002 □0.0001 0.0000 0.0001 0.00020
+20000
+40000
+60000
+80000
+100000
+120000
+140000
+160000Density
+MSLE (Approximate)
+MSLE (Optimal)
+Pre-Averaging LE (K = 5)
+Pre-Averaging LE (Optimal)
+True Value
+(a) 1 day
+□0.0008 □0.0006 □0.0004 □0.0002 0.0000 0.00020
+2000
+4000
+6000
+8000
+10000
+12000
+14000Density
+MSLE (Approximate)
+MSLE (Optimal)
+Pre-Averaging LE (K = 10)
+Pre-Averaging LE (Optimal)
+True Value (b) 5 days
+□0.00125□0.00100□0.00075□0.00050□0.00025 0.00000 0.000250
+1000
+2000
+3000
+4000Density
+MSLE (Approximate)
+MSLE (Optimal)
+Pre-Averaging LE (K = 5)
+Pre-Averaging LE (Optimal)
+True Value (c) 10 days
+□0.0030 □0.0025 □0.0020 □0.0015 □0.0010 □0.0005 0.00000
+200
+400
+600
+800
+1000
+1200
+1400
+1600Density
+MSLE (Approximate)
+MSLE (Optimal)
+Pre-Averaging LE (K = 5)
+Pre-Averaging LE (Optimal)
+True Value (d) 22 days
+□0.0003 □0.0002 □0.0001 0.0000 0.0001 0.0002 0.00030
+2000
+4000
+6000
+8000
+10000Density
+MSLE (Approximate)
+MSLE (Optimal)
+Pre-Averaging LE (K = 5)
+Pre-Averaging LE (Optimal)
+(e) 1 day
+□0.0004 □0.0002 0.0000 0.0002 0.00040
+1000
+2000
+3000
+4000
+5000
+6000Density
+MSLE (Approximate)
+MSLE (Optimal)
+Pre-Averaging LE (K = 10)
+Pre-Averaging LE (Optimal) (f) 5 days
+□0.0008□0.0006□0.0004□0.0002 0.0000 0.0002 0.0004 0.0006 0.00080
+1000
+2000
+3000
+4000
+5000Density
+MSLE (Approximate)
+MSLE (Optimal)
+Pre-Averaging LE (K = 5)
+Pre-Averaging LE (Optimal) (g) 10 days
+□0.0015 □0.0010 □0.0005 0.0000 0.0005 0.00100
+500
+1000
+1500
+2000
+2500
+3000Density
+MSLE (Approximate)
+MSLE (Optimal)
+Pre-Averaging LE (K = 5)
+Pre-Averaging LE (Optimal) (h) 22 days
+Figure S5: The performances of the MSLE and pre-averaging LE estimators for each setting
+of T in the i.i.d. noise setting (ς = 10−4). The first row shows the true and estimated values of
+leverage effect, and the second row shows the estimation error.
+Table S5: Finite-sample performances of the MSLE and pre-averaging LE estimators in the
+i.i.d. noise setting. The finite-sample relative efficiency is compared with the ex-post selected
+pre-averaging estimator.
+ς Days True Value
+RMSE Relative Efficiency
+MSLE Pre-Averaging LE MSLE Pre-Averaging LE
+Mean Std Approximate Optimal Optimal Selected Approximate Optimal Optimal Selected
+10−4
+1 −2.80× 10−5 2.77× 10−6 4.20× 10−5 3.71× 10−5 5.93× 10−5 6.16× 10−5 2.16 2.77 1.08 1.00
+5 −1.48× 10−4 3.10× 10−5 7.64× 10−5 6.98× 10−5 1.02× 10−4 1.07× 10−4 1.95 2.34 1.10 1.00
+10 −3.06× 10−4 8.98× 10−5 1.04× 10−4 9.61× 10−5 1.42× 10−4 1.36× 10−4 1.73 2.01 0.93 1.00
+22 −7.44× 10−4 2.72× 10−4 1.64× 10−4 1.58× 10−4 2.22× 10−4 2.25× 10−4 1.89 2.02 1.03 1.00
+10−3.5
+1 −2.80× 10−5 2.77× 10−6 5.86× 10−5 6.04× 10−5 7.79× 10−5 7.94× 10−5 1.83 1.73 1.04 1.00
+5 −1.48× 10−4 3.10× 10−5 1.05× 10−4 1.07× 10−4 1.32× 10−4 1.35× 10−4 1.68 1.61 1.05 1.00
+10 −3.06× 10−4 8.98× 10−5 1.43× 10−4 1.40× 10−4 1.77× 10−4 1.81× 10−4 1.60 1.67 1.05 1.00
+22 −7.44× 10−4 2.72× 10−4 2.30× 10−4 2.19× 10−4 2.92× 10−4 3.13× 10−4 1.84 2.04 1.15 1.00
+10−3
+1 −2.80× 10−5 2.77× 10−6 8.60× 10−5 1.12× 10−4 9.85× 10−5 1.01× 10−4 1.36 0.81 1.04 1.00
+5 −1.48× 10−4 3.10× 10−5 1.62× 10−4 1.86× 10−4 1.80× 10−4 1.72× 10−4 1.12 0.85 0.92 1.00
+10 −3.06× 10−4 8.98× 10−5 2.26× 10−4 2.53× 10−4 2.43× 10−4 2.39× 10−4 1.11 0.89 0.96 1.00
+22 −7.44× 10−4 2.72× 10−4 3.45× 10−4 3.90× 10−4 4.08× 10−4 4.04× 10−4 1.37 1.07 0.98 1.00
+S5 Empirical Study
+The Estimation of MMS Noise The second-order to fourth-order autocovariances with lags
+0,±1,...,±5 are estimated with the ReMeDI estimator. While the estimator is consistent, its
+application in this empirical study faces a few challenges: (i) “unreasonable” moment estimates
+(for example, a minus variance estimate) may appear in the finite-sample scenario; and (ii) an
+operational definition of the “existence” of the noise is needed. To mitigate these challenges,
+we adopt a conservative procedure for this part, avoiding underestimating the noise level:
+1. These “unreasonable” estimates are handled as follows.
+(a) The case with ˆν2 ≤ 0: it is treated as noise-free.
+(b) The case with ˆν2 > 0 but ˆν4 ≤ 0: the fourth-order autocovariances are “corrected”
+by ˆE[ε2 iε2 i+l]←ˆν2 2 (ˆE[εiεi+l] )2 for all l = 0,±1,...,±5.
+69
+
+=== page 70 ===
+(c) The case with ˆE[ε2 iε2 i+l]< (ˆE[εiεi+l] )2 for any l∈{0,±1...,±5}: the corresponding
+fourth-order autocovariance is “corrected” by ˆE[ε2 iε2 i+l]← (ˆE[εiεi+l] )2 ∨ˆE[ε2 iε2 i+l].
+2. A conservative 90% confidence interval is used to test the significance of each lag of second-
+order autocovariance. The noise is treated as existing if there exists anl∈{0,±1,...,±5}
+such that ˆE[εiεi+l] is significant. In this case, the dependence level is then defined as the
+largest l such that any of ˆE[εiεi+l] and ˆE[εiεi−l] is significant.
+3. The case with √ ˆν2 > 10−4 is always treated as noisy.
+70

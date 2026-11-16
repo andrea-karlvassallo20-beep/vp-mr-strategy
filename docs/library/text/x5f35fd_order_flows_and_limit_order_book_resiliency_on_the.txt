@@ -1,0 +1,1239 @@
+=== page 1 ===
+Order Flows and Limit Order Book Resiliency on the Meso-Scale
+Kyle Bechler∗ Mike Ludkovski †
+June 29, 2017 ‡
+Abstract
+We investigate the behavior of limit order books on the meso-scale motivated by order
+execution scheduling algorithms. To do so we carry out empirical analysis of the order ﬂows
+from market and limit order submissions, aggregated from tick-by-tick data via volume-based
+bucketing, as well as various LOB depth and shape metrics. We document a nonlinear rela-
+tionship between trade imbalance and price change, which however can be converted into a
+linear link by considering a weighted average of market and limit order ﬂows. We also doc-
+ument a hockey-stick dependence between trade imbalance and one-sided limit order ﬂows,
+highlighting numerous asymmetric eﬀects between the active and passive sides of the LOB. To
+address the phenomenological features of price formation, book resilience, and scarce liquidity
+we apply a variety of statistical models to test for predictive power of diﬀerent predictors. We
+show that on the meso-scale the limit order ﬂows (as well as the relative addition/cancellation
+rates) carry the most predictive power. Another ﬁnding is that the deeper LOB shape, rather
+than just the book imbalance, is more relevant on this timescale. The empirical results are
+based on analysis of six large-tick assets from Nasdaq.
+Keywords: limit order books, order ﬂows, scarce liquidity, price impact
+1 Introduction: the Meso-Scale
+With the proliferation of the electronic trading, research on the ﬁne time-scale of ﬁnancial markets,
+exempliﬁed by the microstructure of Limit Order Books (LOBs), continues to grow in scope and
+importance. The microstructure time-scale (on the order of milliseconds) works with the discrete
+events that correspond to the order messages submitted to the exchanges and hence captures
+the fundamental price formation and market behavior. It is often contrasted with the classical
+“diﬀusion-limit” framework (on the order of hours and days) that works with continuous-time
+processes and allows for inﬁnitesimal trading. However, in between these two time-scales, there
+lies a third: the meso-scale, capturing the asset behavior on the order of minutes.
+The meso-scale is of key importance for the market participants engaged in market-making
+and order execution. Consider the proverbial trader who executes a large order (an action orig-
+inally driven by a macro-scale analysis) by dividing it into smaller “child” orders executed over
+∗UCSB, Email: kyle.bechler@gmail.com
+†Corresponding Author: Department of Statistics and Applied Probability, University of California, Santa Bar-
+bara CA, 93106-3110 USA. Email: ludkovski@pstat.ucsb.edu
+‡We thank Sebastian Jaimungal for many useful discussions and for help with the datasets. We are also grateful
+for feedback from the participants at the 2015 Stevanovich Conference on Market Microstructure and High Frequency
+Data (Chicago) and the 2016 Microstructure: Confronting Many Viewpoints Conference (Paris), where earlier
+versions of this work were presented.
+1
+arXiv:1708.02715v1  [q-fin.TR]  9 Aug 2017
+
+=== page 2 ===
+multiple “slices”. She is concerned with execution costs comprised of instantaneous slippage and
+longer-term price impact. The ﬁrst component is addressed via the routing layer that optimizes
+individual trades, for example to avoid “walking the book”. The second component is addressed
+by the scheduling layer that determines the pace of execution and usually works over 2–10 minute
+intervals. This scheduling revolves around the expected evolution of the LOB through time,
+requiring aggregation of the information from the static LOB snapshots and lifting it to the
+meso-scale.
+The dynamics of the book on the meso-scale, and the associated consumption and provision of
+liquidity drive the concept of resilience, also known as the transient and permanent price impacts,
+that underlies much of the literature on algorithmic trading and order execution. On the tick-by-
+tick scale, the eﬀect of an order is mechanical and can be easily described using observable LOB
+characteristics, namely the resting limit volume at various levels, summarized via LOB depth
+and shape. In particular, for vast proportion of executions direct price impact is zero, as only a
+portion of the respective top queue is consumed. However, on a longer time-scale (as implemented
+in order splitting algorithms that typically unfold over several hours), the enormous volume of
+the order messages obscures the link between price evolution and individual orders, and renders
+static liquidity measures irrelevant. Consequently, proper calibration of the HFT models ought
+to rely on meso-scopic/dynamic, rather than microscopic/static LOB metrics.
+To measure liquidity on the mesoscale it is necessary to consider aggregated metrics about
+types/volumes of orders submitted. A natural quantity of interest therefore becomes the order
+ﬂows which can be viewed as the dynamic version of instantaneous LOB characteristics. Statistical
+analysis of the order ﬂows is the main focus of this article. We analyze the mesoscopic links
+between market and limit order ﬂows, and between order ﬂows, prices and static LOB metrics.
+Our main goal is a phenomenological description of these relationships, so as to a provide a data-
+driven perspective for LOB behavior. For empirical work we utilize a cross-section of 6 liquid,
+large-tick Nasdaq tickers spread across 2 calendar years.
+Based on our analysis, we report several key ﬁndings. First, we document an S-shaped non-
+linear relationship between mid-price change ∆P and market order ﬂow VM. In tandem, we
+also record a strong linear relationship between ∆P and Net Liquidity ﬂow, which is a weighted
+average of VM and limit order ﬂow VL. These empirical results oﬀer an important correction to
+the commonly assumed framework of linear price impact: to obtain linearity one must take into
+account touch limit orders, weighted appropriately. Ignoring limit ﬂow dramatically weakens the
+explanatory power of the models, in fact our ﬁndings suggest that limit ﬂows are at least, if not
+more statistically signiﬁcant than the market trades.
+Second, we use statistical tools to identify key predictors for price formation on the meso-
+scale. We ﬁnd that the explanatory power of the top-level LOB queue depths is rather weak.
+This is primarily due to the rapid ﬂuctuations in those quantities, which do not allow for easy
+time-aggregation. Instead, liquidity measures that look deeper into the book are more relevant
+for quantifying liquidity. At the same time, we ﬁnd that the LOB metrics oﬀer an important
+modulation to the eﬀect of order ﬂows and do add a non-negligible predictive power. Third, we
+disentangle price trend (deﬁned in terms of overall bid/ask-side pressure captured by market order
+ﬂow VM) from liquidity (primarily captured by limit order ﬂows VL). This allows us to pinpoint
+the meaning of scarce liquidity. We carry out further statistical analysis in that direction, which
+is of interest for adaptive order scheduling that can respond to varying expected price impact.
+The meso-scale is intrinsically deﬁned via aggregating the raw LOB data into slices, and the
+question of aggregation method looms large. The micro-scale is naturally discrete-event-based.
+On the macro-scale, the high degree of averaging lends itself naturally to a (calendar) time-based
+limit. Here we propose that volume-based aggregation is most appropriate for the meso-scale.
+2
+
+=== page 3 ===
+Thus, our analysis is based on working with LOB buckets, with each bucket containing the same
+amount of executed (market) volume. As we show, this yields a desired stabilizing eﬀect on the
+LOB data and removes some known artifacts. It also quantiﬁes what we mean by the meso-scale;
+informally it can be characterized as dealing with “dozens of trades”; indeed our buckets contain
+10–100 market executions, accompanied by 100–1000 limit order events. At that intermediate
+time-scale, the aforementioned event-based analysis is less tractable for capturing the dynamic
+quantities that come to the fore; while time-based analysis must contend with huge swings in
+market activity that are caused by extreme clustering of LOB events.
+As far as we are aware, this is the ﬁrst academic study of volume-aggregated intra-day LOB
+data. Several previous studies used ﬁxed-interval time-aggregation, such as 15-min slices in [21]
+and 5-min slices in [10], [20] and [5]. The closest study to ours is by Cont et al. [12] who also
+investigated the relationship between order ﬂows, price change and book depth, and reached some
+similar conclusions. However, that study was limited to working only with top-level book infor-
+mation, and most crucially postulated the expected (linear) link between the diﬀerent variables.
+In contrast, we employ non-parametric tools to obtain data-driven ﬁndings about variable impor-
+tance, empirical non-linearities, et cetera. Moreover, we also investigate the asymmetric features
+of the order ﬂows which are obscured by the total netting carried out in [12].
+Our investigation oﬀers a statistical counterpoint to the research on optimal execution which
+has put forth a plethora of diﬀerent theoretical price impact models. From the empirical point
+of view, there is already a growing literature on tick-by-tick data, see [12, 14, 17, 16, 34, 35].
+These are complemented by LOB simulators that aim to capture short-term behavior and price
+impacts. The most popular framework views the LOB as a collection of interacting queues [22,
+29, 28, 30]. For example, Huang et al [24] model limit order, cancellation, and market order
+arrival rates as a function of the queue sizes. Unfortunately such models are much less tractable
+on the meso-scale, so few analytic results are so far available. An alternative way to model
+the mesoscopic price impact is to infer the impulse response function, known as the propagator,
+of an individual order/trade. The aggregate eﬀect on the mid-price is then viewed as a linear
+superposition of individual impacts, see [16, 7]. However, such event-by-event analysis largely
+excludes capturing the statistical eﬀects of observable covariates which “dress” the evolution of
+the respective dynamical system describing the LOB. Yet another micro-scale analysis which
+also leads to important meso-scale implications is the emerging strand on long-memory eﬀects of
+micro-structural phenomena [32], as well as time-series approaches to the functional evolution of
+the entire LOB shape [20].
+The remainder of the paper is structured as follows. In Section 2 we discuss LOB evolution
+in the context of static and dynamic measures of liquidity and price impact, as well our volume-
+bucketing method. Sections 3-4 contain our main statistical analysis regarding the meaning of
+price trend, liquidity, and scarce liquidity. Section 5 takes a diﬀerent tack, addressing the time-
+series properties of order ﬂows. Finally, Section 6 discusses ramiﬁcations from the previous sections
+and oﬀers an outlook for further work.
+2 Limit Order Books: Price Impact, Order Flows and Liquidity
+2.1 Limit Order Book
+Electronic trading marketplaces match liquidity providers and consumers via the limit order
+book (LOB). Participants asynchronously submit trading messages which are aggregated by the
+exchange into the LOB. The two base classes of trades are market orders and limit orders. Market
+orders, henceforth called trades, indicate actual transactions taking place and are denoted as
+3
+
+=== page 4 ===
+M := {(TM i ,OM i )}, where TM i are the execution times, and OM i are corresponding execution
+volumes. OM i ’s are signed, with positive indicating a buy order and negative a sell order. Limit
+orders, henceforth orders, are L := {(TL i ,OL i ,SL i )} where TL i are the message time stamps, OL i are
+(signed) order volumes and SL i is the limit order price. Positive values of OL i indicate submission
+of a new limit order, while negative OL i indicates a cancellation. Limit orders reside in the LOB
+until executed by an incoming market order, or being cancelled by the participant who initially
+placed the order. We refer to [19, 11] for more general introduction on the functioning of LOBs,
+and other types of orders possible.
+At any given moment t, the LOB lists all the resting limit orders, represented as a vector
+(pj i(t),vj i (t)), listing the volume vi(t) ≥ 0 of resting limit orders at price pi(t). The superscript
+j ∈A,B denotes the Ask and Bid sides, respectively. The subscript i = 1, 2,... indexes the price
+level which is discretized in terms of the tick size ∆p, typically 1 cent for US equities. Indexing
+is done separately for each side of the LOB, starting from the best-bid and best-ask levels and
+moving consecutively. Thus, pA 1 (t) is the best-ask (at the touch) price, pA 2 (t) = pA 1 (t) + ∆p is the
+second price level, etc. Some queues can be empty, vj i (t) = 0. However the top queues vj 1(t) > 0
+are always strictly positive, and after netting executable limit orders, the best-ask price is at least
+one tick above the best-bid pA 1 (t) ≥pB 1 (t)+∆p. Based on the bid/ask prices, we have the midprice
+P and the spread S:
+P (t) := pA 1 (t) + pB 1 (t) 2 , Spr(t) := pA 1 (t) −pB 1 (t). (1)
+2.2 Static LOB Snapshots and Price Impact
+A starting point for understanding LOB liquidity is the information contained in a static snapshot
+of the LOB. The most basic measure of liquidity is the spread Spr(t) which dictates the costs
+of a round-trip trade that is fundamental to market-making. However, for liquid US equities the
+spread may not be useful, as it is not sensitive to changing market conditions. In particular for
+“large tick” assets, the bid-ask spread is almost always equal to one tick. This is the case for all
+the assets in our sample, where Spr(t) is essentially always 1 or 2 ticks – and the 2-tick spreads
+are short-lived: after opening up the spread quickly closes as an aggressive limit order is posted
+inside the spread.
+Another commonly used measure is the volume-at-the-touch vj 1(t), i.e. queue lengths at the
+best-oﬀer and best-bid price levels. Over very short time horizons, v1 indicates the immediate
+liquidity available for incoming market orders, and hence drives the direction and likelihood of a
+mid-price change. Recall that P changes by a half-tick when vj 1 hits zero, whereupon vj 1 is reset
+to the posted volume at the new top LOB level. A related quantity that measures the relative
+“strength” of each side of the book is the Book Imbalance
+BI := vA 1 −vB 1
+vA 1 + vB 1 ∈ (−1, 1). (2)
+The book imbalance BI has been shown to be predictive of the next order side and resulting price
+move [14, 12, 9]. Consequently, at the slicing/routing level of the execution process, BI is often
+used as an indicator of when to employ limit orders and when to cross the spread and place a
+market order [33, 28]. In a similar vein, [24, 30, 26] document a link between BI and order arrival
+rates.
+The top queues oﬀer only a “tip of the iceberg” summary for the overall LOB shape. The
+direct procedure to describe LOB shape employs units of shares and measures cumulative depth
+4
+
+=== page 5 ===
+over the ﬁrst k levels
+Dj k :=
+k∑
+i=1
+vj i, j = A,B, k = 1, 2,.... (3)
+Thus, Dj 1 = vj 1 is the top-level depth, Dj 2 = vj 1 + vj 2 is the total volume posted at the top two
+levels and so on. A complementary inverse procedure measures execution cost in units of ticks.
+Execution cost quantiﬁes the slippage from immediately making a market trade, converting depth
+(shares) into monetary terms. Fix a quantity N of shares and let ¯ij(N) := max{k : Dj k(t) <N}.
+Then
+PIj N(t) := 1 N
+
+
+
+¯ij (N)∑
+i=1
+vj i (t) ( pj i(t) −P (t) ) + (N −Dj ¯ij (N)(t)) ( pj ¯ij (N)+1(t) −P (t) )
+
+
+. (4)
+Thus, PIj N blends information about the shape of the LOB by computing weighted average cost
+(relative to the mid-price) per share of immediately executing N shares in the j-th direction. The
+map N ↦→ PIj N(t) then summarizes the shape of the book in terms of executing diﬀerent order
+sizes. Intuitively, PI ∝ 1/D is inversely proportional to depth.
+Remark 1. We stress that PIN(t) is a theoretical construct, based on the counterfactual that
+an immediate market order is placed exactly at t. In practice the vast majority of market trades
+have zero impact, consuming less than the standing liquidity at the ﬁrst level. Moreover, latency
+delays make it diﬃcult to realize the “observed” PI in real-life trades.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Volume 𝑆𝑝𝑟(𝑡) 
+ 𝑝4 𝐴 
+Price 
+Type equation here. 
+ 𝑝3 𝐴  𝑝2 𝐴  𝑝1 𝐴  𝑃𝑀  𝑝1 𝐵  𝑝2 𝐵 
+ 𝑣1 𝐴 
+ 𝑝3 𝐵  𝑝4 𝐵 
+ 𝑣2 𝐴 
+ 𝑣4 𝐴 
+ 𝑣3 𝐴 
+ 𝑣1 𝐵 
+ 𝑣2 𝐵 
+ 𝑣3 𝐵 
+ 𝑣4 𝐵 
+5000 15000 25000
+0.5 1.0 1.5 2.0
+Order Size N (shares)
+Cost/Share (ticks)
+Figure 1: Left: Stylized limit order book. In this illustration the spread is two ticks Spr(t) = 2∆p
+and book imbalance is positive vA 1 > vB 1 ⇒ BI(t) > 0. Right: Measuring execution cost in a
+hypothetical limit order book. The underlying queue lengths are taken to be (v1,v2,v3,v4) =
+(8000, 10000, 7000, 15000). We plot n ↦→ PIn (solid) and the ﬁtted line n ↦→ ˆS·n based on the
+impact slope ˆS (dashed).
+The right panel of Figure 1 illustrates the above computations for a hypothetical book with
+v1 = 8000,v2 = 10000,v3 = 7000,v4 = 15000. The solid curve shows N ↦→ PIN. Note that
+(4) implies that for N ≤ v1, PIN = Spr/2 is half the spread; for larger order sizes, PIN has a
+nonlinear shape due to the N-dependent averaging weights. For example, at N = 30, 000, we
+obtain PIN = 1.8 ticks, which averages the cost of 0.5 ticks for the ﬁrst 8000 shares, 1.5 ticks for
+the next 10K shares, 2.5 ticks for the 7K thereafter and 3.5 ticks for the last 5K shares.
+5
+
+=== page 6 ===
+One can observe from the plot that N ↦→ PIN is asymptotically linear, which would be
+consistent with the book having an asymptotic “rectangular” shape with ¯v volume per level.
+(Namely, ¯v ≃ N/(2PIN) which for the computation above yields ¯v = 8333 taking N = 30K.)
+Motivated by this idea, [10] have proposed to compute an LOB slope Sj which is obtained from
+a linear regression model
+PIj n = Sj ·n + ϵ, n = 1, 2,...,N, (5)
+estimated using the standard least-squares ﬁt. The slope coeﬃcient Sj can be interpreted as
+a linearized price impact (on the j-th side of the book) per share and allows to imply a single
+liquidity metric from the collection (PIj n)n. In Figure 1 the estimated impact slope is ˆS = 0.0611
+ticks/1000 shares, see the ﬁtted dashed line ˆS·n. ˆS can be inverted to map into “averaged” book
+depth ¯v = 0.5/ ˆS = 8176. An advantage of the metric S is the ability to average vk’s over multiple
+levels and incorporate the spread Spr, which makes it less sensitive to short-term ﬂuctuations
+that dramatically lower the statistical usefulness of depth measures Dj k.
+2.3 Order Flows and LOB Evolution
+To visualize the meso-scopic behavior of the book, Figure 2 shows an event-by-event summary of
+an LOB for a representative 90-second period. The main plot at the bottom shows the top-level
+queue lengths vj 1 driven by the market orders (in orange) and limit orders at-the-touch. At the
+top of Figure 2 we also track the contemporaneous eﬀect on the mid-price, with dotted vertical
+lines marking a change in bid- or ask-price.
+The Figure indicates that following a market execution the LOB response varies widely, at
+times bouncing back through fresh posted volume, while at other times falling through and fading.
+We observe several “regimes”: episodes of strong resilience when market orders are counteracted
+with added limit orders (so that vj 1(t) stays roughly constant over time), and other periods where
+market orders are accompanied primarily by limit order cancellations, creating a strong negative
+trend in vj 1(t), known as an LOB fade. This happens on the left of Figure 2, where the arriving
+market ﬂow is heavily tilted towards sell orders TI < 0 and net limit ﬂow to the bid-side touch is
+clearly negative. The result is a rapid drop in mid-price, creating scarce liquidity for sellers and
+increasing their respective execution costs. A milder form of this is when few new limit orders
+are added at the touch, so that the book is not replenished fast enough and “retreats” along
+with executed trades. Our goal below is to ﬁnd meso-scopic predictors that explain whether
+market orders are likely to be met with strong resilience via new limit orders, or minimal liquidity
+provision or even net cancellations.
+2.4 Volume Bucketing
+To move from the micro- to meso-scale we divide the trading day into buckets that are used for
+aggregation. Buckets are deﬁned in terms of their start- and end- time-stamps {τk}, with the k-th
+bucket consisting of all messages entered during (τk,τk+1] (special treatment possibly accorded
+to the ﬁrst and last message, see below). Slice times τk+1 are taken to be the time-stamp of the
+ﬁnal trade included in bucket k. The resulting bucketed quantities are:
+VMA,B k := ∑
+i:τk <T M i ≤τk+1
+|OM i |1{OM i ≷0}; (6)
+VLj,(1) k := ∑
+i:τk <T L i ≤τk+1
+OL i 1{SL i =pj 1(T L i )}, j = A,B. (7)
+6
+
+=== page 7 ===
+0 50 100 150 200
+0 1000 2000 3000 4000 5000 6000
+Events
+Top Level Volume
+51.60 51.65 51.70 51.75
+Bid/Ask Price
+Figure 2: Best bid/ask queue levels vj 1(t) for TEVA (bottom curves) along with bid/ask price pj 1(t)
+(top). Event-by-event data taken from a 90 second window beginning at 2:30pm on 2/18/2011.
+Limit orders are in red (ask-side) and blue (bid), market executions in orange. All orders are plot-
+ted event-by-event (in particular without re-combining split market orders), so that the mechanics
+and sequence of order arrivals are more clear.
+Thus, VMj are the respective aggregated volumes of executed market buys and sells, and VLj,(1)
+are the volumes of limit orders at the touch. Note that VLj,(1) tracks the mid-price throughout
+the bucket, aggregating the respective top-level (at the time of message submission) limit orders.
+Because the tickers we consider are highly liquid in the sequel we focus exclusively on top-level
+limit orders VL≡VL(1). Recall that market orders capture the consumption of liquidity by ag-
+gressive orders and decrease top-level depth vj 1, while limit orders can either augment vj 1 (liquidity
+provision) or decrease it (order cancellations). Consequently, VMj ≥ 0 is non-negative by con-
+struction, whereas VLj can be of either sign depending on the net limit additions/cancellations.
+Given a slice (τk,τk+1) we deﬁne the corresponding price change as
+∆Pk = P (τk+1) −P (τk). (8)
+Based on the buckets we also deﬁne the discrete snapshots of LOB statistics through indexing by
+k; for example the book imbalance BIk ≡BI(τk) or the depth Dk ≡D(τk). As analogue to the
+static BI, we also deﬁne the normalized trade imbalance
+TIk := VMB k −VMA k Vk , (9)
+where Vk = VMA k +VMB k is the total executed volume in the bucket. By deﬁnition, TIk ∈{−1, 1};
+if TIk = 1 then all executed trades in the bucket were ‘Buys’, and if TIk = −1, all executed trades
+were Sells. Trade imbalance captures the aggregate supply and demand for the asset and is often
+used as the basis for measuring price impact [6, 10].
+We propose to bucket in terms of executed market volume, namely keeping Vk ≡V ﬁxed across
+buckets. Technically, this requires that market orders are sometimes split in two as one bucket
+“ﬁlls” up and the next begins. In our main analysis we take V ≃{0.25%, 1%, 2%} of average
+7
+
+=== page 8 ===
+daily volume (ADV, based on the considered time period of 10:00am–3:45pm) for the respective
+ticker. This means that on average there are about 400 (resp. 100, 50) buckets per day; actual
+number of buckets can be 30%–500% of the average due to ﬂuctuating levels of market activity.
+Note that slicing is done in terms of executed volume; volume of limit orders VLA k + VLB k
+remains random across buckets. The reason for this is that even though market orders account for
+only 2 − 4% of total trades, they indicate actual transactions taking place and hence ultimately
+drive traders’ P&L. Thus, due to their intrinsic nature of “putting money on the table”, they are
+typically viewed as inﬂuential by other participants and carry the most information for deﬁning
+the “business-time” for the ticker.
+Most related studies have used time-based aggregation. For instance, [12] used 10-second
+slices, [5, 10, 20] used 5-min slices. Nevertheless, using volume buckets has several attractive
+properties for our purposes. First, slicing by trade volume rather than time yields consistency in
+information across buckets. Under clock-time bucketing, one can easily appreciate the diﬃculty
+of comparing buckets with dramatically diﬀerent activity levels (in the extreme, a time-based
+bucket could be entirely empty). Second, working in volume-time also reduces the intra-day
+seasonality eﬀects, such as volume and volatility clustering, and improves statistical properties
+(such as Gaussianity) of the (VLk,VMk) time-series. Third, comparison of limit order activity
+across buckets is naturally normalized when measuring in (trade) volume time, i.e. the stable
+quantity is not VLk per se, but rather the ratio VLk/Vk (or VLk/VMk). For example, it is
+intuitive that limit additions to the touch depend more on quantity of market trades than passing
+minutes. Fourth, our method avoids the diﬃcult challenge of estimating trade volume eﬀects that
+are present in trade-by-trade aggregation.
+2.5 Datasets
+For our statistical analysis we use Nasdaq ITCH TotalView data which contains “Level-2” informa-
+tion on order book events. Speciﬁcally, we have access to direction and size of market executions,
+as well as limit order additions, modiﬁcations and cancellations for i ≤ 30 levels (ticks) into
+the current book. To avoid synchronization issues, we work only with Nasdaq-based messages,
+leaving out information from other exchanges. Furthermore, since erratic LOB behavior is often
+seen near the market open and close, we consider only activity between 10:00am and 3:45pm.
+Other pre-processing included removing all executions against hidden orders (less than 10% of
+executed volume) and aggregating executed trades. Market orders are often matched against
+several smaller limit orders; we re-created the size of the original market order by aggregating
+orders that were consecutive, in the same direction, and with identical time stamps.
+To give a broad slice of market activity, we use a total of six diﬀerent tickers, covering two
+distinct time-periods. Thus, we used data on MSFT, TEVA and BBBY from the ﬁrst 100 days
+of 2011, and data on INTC, ORCL and NTAP from the last 100 days of 2013. All assets are
+categorized as large cap stocks, with market caps ranging from about 12B USD for BBBY, and
+up to 240B for MSFT. Tables 1-2 provide summary info for each stock. We note that all stocks
+are highly liquid, with several thousand trades per day, and hundreds of thousands of limit
+orders. Moreover, the analyzed LOBs are quite deep, with average depth of 3–10 average event
+size (AES). As a result, most of the economically relevant information can be gleaned from the
+top-level events. These still correspond to 50K–100K touch limit orders per day, and respective
+nominal order volume ∑ k|VLk|≃ 5M–100M shares.
+To illustrate how volume aggregation works, we describe it in the case of ORCL. We use
+V = 20000 which is about 1% of the average daily volume of 1.84M shares traded during 10:00am–
+3:45pm. In total, we obtain 9229 aggregated buckets over the 100 days of data. Since the average
+8
+
+=== page 9 ===
+MSFT TEVA BBBY
+mean (stdev) mean (stdev) mean (stdev)
+Mean Price (USD) P 26.29 (1.25) 50.34 (2.73) 50.51 (3.64)
+Mean Abs Price Change (ticks) 1.80 (1.46) 3.33 (3.07) 3.67 (3.27)
+Ave Daily Vol (shares) VM 10.0M (4.61M) 1.21M (1.06M) 0.64M (0.30M)
+Num of Daily MO’s (events) 5340 (2173) 5455 (2484) 4281 (1483)
+Ave Event Size (shares) 1643 (3612) 293 (596) 192 (321)
+Ave Limit volume (shares) VL 116.4M (42.6M) 12.04M (5.90M) 6.60M (2.58M)
+Num of Daily LO’s (events) 292K (92K) 110K (45K) 77K (31K)
+Spread (ticks) Spr 1.01 (.067) 1.13 (.362) 1.29 (.599)
+Mean depth at Level 1 D1 25.5K (27.9K) 1.33K (2.62K) 0.63K (1.09K)
+Mean depth at Levels 1+2 D2 59.2K (29.9K) 2.80K (7.4K) 1.24K (0.97K)
+Ave Slope (ticks/000’s shares) S .0274 (.00976) 0.691 (0.305) 1.37 (0.663)
+Table 1: Summary statistics (mean/standard deviation) for MSFT (Microsoft), BBBY (Bed
+Bath & Beyond) and TEVA (Teva Pharmaceuticals) for the 100 trading days from 1/2/2011
+to 5/25/2011. Average price change is per 1%-ADV volume buckets.
+trade size for ORCL is about 800 shares, a typical slice has about 25 trades, and about 500 limit
+orders. Figure 3 shows a histogram of net limit order-ﬂow VLk (using combined Bid and Ask
+data) for ORCL. As expected, average limit ﬂow at the touch is typically positive, i.e. there are
+more orders entered than cancelled, providing liquidity against executed trades. For ORCL at
+that aggregation frequency about 5.5% of the buckets had negative VLj; this number ﬂuctuates
+in the 2–10% range across the 6 assets. Also observe that typically the nominal limit order ﬂow
+VL is larger than executed volume V , hinting at the high rate of “churn” in the limit orders, even
+after netting additions and cancellations. The middle panel of Figure 3 shows the distribution
+of the ORCL bucket durations, τk+1 −τk; the median duration is about 170 seconds. Note the
+strong skew with many buckets that last for 5 or even 10 minutes; the longest bucket covered
+29 calendar minutes (during a particularly slow lunchtime on day 19). Notably, the correlation
+between VLk and τk+1 −τk) is statistically 0, implying minimal relationship between liquidity
+provided and physical time elapsing within a volume slice. Appendix A provides a summary of
+the bucketing employed for each asset.
+3 Price Trend and Liquidity State
+As discussed, at the meso-scale the most important quantities are the order ﬂows, i.e. VM and
+VL from (6)-(7). In this section we document their relationship to the fundamental ﬁnancial
+output of the LOB: the mid-price change ∆Pk.
+Based on the price formation mechanism originating in the LOB, the changes in the mid-price
+are driven by the respective liquidity consumption and provision. A simple narrative ties ∆Pk to
+the market demand for the asset, exempliﬁed by the trade imbalance TIk. Self-evidently, if there
+are more market buys than sells, the price is expected to rise, and if TIk < 0 we expect ∆Pk < 0.
+A basic model assumes a linear relationship between ∆P and TI. A theoretical justiﬁcation for
+this is provided in the Obizhaeva and Wang [31] framework and uses a combination of permanent
+and transient price impact to link executed volume to price move. The basic premise is that limit
+9
+
+=== page 10 ===
+INTC ORCL NTAP
+mean (stdev) mean (stdev) mean (stdev)
+Mean Price (USD) P 23.66 (0.98) 33.84 (1.28) 41.26 (1.35)
+Mean Abs Price Change (ticks) 1.31 (1.10) 2.11 (1.79) 2.71 (2.27)
+Ave Daily Vol (shares) VM 3.58M (1.18M) 1.84M (0.80M) 0.71M (0.31M)
+Num of Daily MO’s (events) 2058 (609) 2880 (1192) 2171 (935)
+Ave Event Size (shares) 1740 (3819) 837 (1257) 252 (287)
+Ave Limit Volume (shares) VL 99.62M (33.42M) 40.30M (15.96M) 15.80M (5.26M)
+Num of Daily LO’s (events) 263K (77K) 190K (68K) 136K (46K)
+Spread (ticks) Spr 1.01 (0.13) 1.03 (0.17) 1.08 (0.29)
+Mean depth at Level 1 D1 13.9K (10.0K) 3.9K (2.8K) 1.24K (1.13K)
+Mean depth at Levels 1+2 D2 31.9K (17.9K) 8.5K (4.8K) 2.69K (1.28K)
+Ave Slope (ticks/000’s shares) S .0367 (.0158) 0.136 (.0659) 0.432 (0.201)
+Table 2: Summary statistics (mean/standard deviation) for INTC (Intel), ORCL (Oracle), and
+NTAP (Net Appliances) for the 100 trading days from 8/9/2013 to 12/31/2013.
+orders reﬁll the book over time, but take time to be entered. Therefore, price changes are driven
+by “too many too fast” trade executions, and quantiﬁed by the LOB resilience (e.g. the rate of
+the respective exponential recovery), which yields the sensitivity of ∆P to TI.
+The left panel of Figure 4 shows a scatterplot of ∆P against TI over buckets of 1% ADV
+(12,000 shares) for TEVA. While a positive relationship can be seen as expected, the link is
+clearly non-linear. In fact, there is an S-shape behavior, whereby for strongly one-sided markets,
+TI close to ±1, the expected price change becomes constant or even declines. This puzzling result
+in fact indicates intelligent order-placing: traders take into account the state of the LOB when
+executing orders and hence induce dependency between order ﬂow and price moves. In other
+words, 12,000 shares executed consecutively in the same direction is an infrequent occurrence for
+TEVA, and is usually precipitated by a deep/resilient book at that moment. Another important
+feature of Figure 4 is the dispersion in the observed price change ∆Pk conditional on concurrent
+trade imbalance TIk. For example, conditional on TIk = 0.5, we observe that ∆Pk|TIk = 0.5
+ranges from −0.08 to 0.16 for buckets across our sample period, which is ﬁnancially material.
+This indicates that on its own trade imbalance has low predictive power, i.e. price formation is
+driven by much more than the net executed volume.
+To statistically capture the relationship between price change over each volume slice ∆Pk =
+Pk+1 −Pk and the concurrent trade imbalance TIk we ﬁt a nonparametric model of the form
+∆P = g(TI) + ϵ, (10)
+where g is the link function to be estimated and ϵk are i.i.d. regression residuals. Speciﬁcally
+to account for the observed non-linear dependence we use a generalized additive model (GAM),
+taking g(·) in (10) to be a penalized regression spline that is ﬁt via cross-validation. The analysis
+is done using the R package mgcv [36] and is carried out for each stock on volume buckets from the
+entire sample period, excluding the rare buckets where a single large market order ﬁlled the entire
+bucket (leading to a bucket with zero duration). An example of the resulting ﬁt TI ↦→ g(TI) is
+shown in the left panel of Figure 4 illustrating the aforementioned S-shape.
+Figure 5 shows a cross-section of ﬁtted GAM models (10) across assets (left panel) and bucket
+sizes V (right panel). We ﬁnd that the S-shape observed in Figure 4 is highly persistent, so
+10
+
+=== page 11 ===
+Net Order Flow at the Touch
+−2 0 2 4 6 8
+Time Elapsed (seconds)
+0 200 400 600 800 1200
+Depth at the touch (shares)
+0 5000 10000 15000 20000
+Figure 3: Left: Volume-normalized limit order ﬂow at the touch VLk/V (net of additions and
+cancellations). About 5.5% of buckets had negative VL indicated in red. Middle: Time elapsed
+during volume buckets ∆τk; the mean duration is indicated by the dashed line. Right: one-sided
+depth Dj 1 at the touch (combined Bid/Ask information). Figures drawn for ORCL over 100
+trading days with buckets of V = 20K traded volume (a total of 9229 buckets).
+that it is a fundamental stylized feature of the liquid, large-tick LOBs under consideration. In
+order to compare the ﬁtted g’s, we normalize the y-axis measuring price changes by the respective
+mean absolute price move. This yields a consistent way of mapping trade imbalance, which is by
+deﬁnition in the range of {−1, 1} to the relative price move ∆Pk/Ave(|∆Pk|).
+The above ﬁndings are in contrast to the widely used linear price impact framework that can
+be traced back to [31] and has since appeared in numerous optimal execution/market-making
+models, e.g. [1, 18, 2]. Part of the discrepancy can be attributed to our volume-based bucketing
+which through normalizing TI to be in [−1, 1] crystalizes the underlying nonlinearity. From
+a diﬀerent direction, our ﬁnding is consistent with the documented volume-concave impact of
+individual market trades which implies a concave relationship between |TI| and ∆P [16].
+Remark 2. One approach to improve the goodness-of-ﬁt of (10) is to ﬁt a separate regression
+model for each trading day. Indeed, it is often assumed that the LOB behavior is driven by a
+daily cycle. We found that while daily models do reveal signiﬁcant day-to-day variation in the
+shape of the best ﬁt curve (cf. [10]), the resulting R2 is only marginally better compared to ﬁtting
+a single model over all days. For example, the R2 based on individual day ﬁts for MSFT 1% ADV
+improves from 46.9% in Table 3 to 53.3%. So the signiﬁcant noise in (10) is not simply the result
+of inter-day variation, but rather shows that liquidity provision is stochastic on an intra-day basis.
+Furthermore, checking the residuals ˆϵk’s from (10) ﬁtted to the whole sample period, we ﬁnd that
+they are reasonably Gaussian and exhibit minimal temporal autocorrelation.
+3.1 Limit Flow
+Fundamentally, price is driven by the net liquidity supply; looking just at traded volume as was
+done in (10) only considers liquidity consumption. Thus, a natural next step is to look at both
+market orders that consume liquidity, and limit orders that provide liquidity. For the latter, we
+concentrate on orders added/cancelled at the present bid/ask touch which are by far the most
+relevant given the liquid LOBs under consideration. To capture this idea, we ﬁt the linear model
+∆P = α0 + α1TI + α2(VLB −VLA) + ϵ, (11)
+11
+
+=== page 12 ===
+−1.0 −0.5 0.0 0.5 1.0
+−0.10 0.00 0.05 0.10 0.15
+Trade Imbalance
+∆ Pk
+−3 −2 −1 0 1 2 3
+−0.10 −0.05 0.00 0.05 0.10
+Net Liquidity
+∆ Pk
+Figure 4: Left: Price change ∆Pk plotted against trade imbalance TIk for TEVA for the ﬁrst 100
+days of 2013 (9954 buckets with V = 12000). The ﬁtted curve is based on (10). Right: Price
+change against net liquidity provision for NTAP over buckets of V = 8000. We plot the linear ﬁt
+from (11) (light line) and the non-parametric GAM model g(·) based on ∆P = g(NetLiq) + ϵ,
+with NetLiq from (12) (dark curve). Since ∆Pk ∈{0.005k : k∈ Z}, the y-axes are discretized by
+half-ticks.
+Only TI (10) Net Liquidity (12)
+Ticker 0.25%ADV 1%ADV 2%ADV 0.25%ADV 1%ADV 2%ADV
+BBBY 0.290 0.270 0.243 0.493 0.596 0.590
+INTC 0.303 0.403 0.421 0.371 0.682 0.767
+MSFT 0.370 0.469 0.485 0.579 0.785 0.765
+NTAP 0.293 0.315 0.302 0.470 0.712 0.751
+ORCL 0.320 0.314 0.276 0.449 0.708 0.750
+TEVA 0.269 0.276 0.269 0.520 0.607 0.592
+Table 3: R2 scores from the nonparametric ﬁt against TI in (10) compared to R2 scores from a
+linear ﬁt against TI and VL in (11).
+which connects price change to net executed volume and net limit order ﬂow. The main ﬁnding
+is that (11) yields an excellent ﬁt. Moreover, the linearity in (11) is intrinsic, i.e. taking into
+account the limit ﬂows VL completely removes the previously documented S-shape. Let us deﬁne
+NetLiq := TI + β·VL, (12)
+where β = α2/α1 is the ratio between the impact of a market order vis-a-vis that of a touch
+limit order. The right panel of Figure refﬁg:SvsTI shows (for a diﬀerent ticker, to showcase
+the generality of the phenomenon) that NetLiq captures the fundamental price formation story
+of liquidity provision, yielding ∆P ∝ ∆NetLiq (the estimated intercept coeﬃcient α0 in (11) is
+statistically indistinguishable from zero). In the Figure we also compare the linear and GAM-
+based ﬁts of ∆P against NetLiq which are found to be nearly identical, conﬁrming the linearity
+postulated in (11)).
+Incorporating order ﬂows not only removes the nonlinear price response, but also dramatically
+improves the goodness-of-ﬁt, see Figure 4 again. Table 3 compares the R2 scores from (10) and
+12
+
+=== page 13 ===
+−1.0 −0.5 0.0 0.5 1.0
+−2 −1 0 1 2
+Trade Imbalance
+Normalized Price Change
+BBBY
+INTC
+MSFT
+NTAP
+ORCL
+TEVA
+BBBY
+INTC
+MSFT
+NTAP
+ORCL
+TEVA
+−1.0 −0.5 0.0 0.5 1.0
+−2 −1 0 1 2
+Trade Imbalance
+Normalized Price Change
+5
+10
+16
+24
+32
+40
+48
+Figure 5: Relationship between normalized price change ∆Pk/Ave(|∆Pk|) and bucket trade im-
+balance TIk. Left: six tickers across the two sample periods; Right: for ORCL across 10 diﬀerent
+bucket sizes V .
+(11). We observe a major improvement from about R2 ≃ 0.4 when using only TI as a predictor
+for ∆P , to R2 ≃ 0.7 when using both TI and VLj. This suggests that the predictive power of
+VLj is at least as signiﬁcant as of the executed volume. Table 3 also shows that goodness-of-ﬁt
+improves as we consider larger bucket sizes, implying that the other predictors get averaged out
+over time (i.e. are primarily about the microstructural eﬀects of the LOB).
+While mechanically net liquidity is simply VMA−VMB+VLB−VLA, it is commonly assumed
+that the price impact of limit orders should be less than that of market orders. This is precisely the
+reason for using separate coeﬃcients α1,α2 in (11). The resulting ratio β that is used to construct
+NetLiq in (12) is another fundamental stylized feature of the meso-scale. Table 4 reports the
+estimated ˆβ := ˆα2/ˆα1 across assets and bucket sizes, which can be observed to be highly stable
+across all cases. As expected, the respective price impacts are highly non-equal, namely the
+relative eﬀect of a limit order is only about 50%–70% of a market order. Again, we observe that
+β is larger for larger V ’s: on the macro-scale price formation is mechanically determined by total
+liquidity supplied/consumed; on the meso-scale there are further eﬀects coming from LOB shape
+and shorter-term patterns.
+Remark 3. We also tested for the relative price impact of limit order additions and cancellations
+by further decomposing into VLj = VLj,+ −VLj,−. Statistically, the price impact of the two
+latter order types was the same, giving minimal improvement to the ﬁt in (11). However, as we
+will show below, cancellations are important for capturing periods of scarce liquidity.
+The idea of (12) echoes the analysis in Cont et al. [13], who however worked with time-
+based buckets (of 10 seconds, so generally shorter than ours) and combined all ﬂows into a single
+predictor, i.e. pre-assigned equal price impact α2 = α1 or β = 1 to market and limit orders.
+Our analysis suggests that β is signiﬁcantly less than 100%, which seems to be closer to market
+practice. On the one hand, intuition suggest that executed trades carry more information, i.e. are
+more relevant for questions of adverse selection or informed trading and hence contribute more
+to price formation. On the other hand, the nominal volume of limit orders VL is 1–3 times
+larger than nominal volume of VM; without separate coeﬃcients, ∆P would be unduly aﬀected
+by limit orders. The above ﬁndings are also consistent with the event-by-event analysis done in
+[16, 22] who found that the impact of market trades (measured by the temporal impulse response
+13
+
+=== page 14 ===
+Ticker 0.25%ADV 1%ADV 2%ADV
+BBBY 0.39 0.55 0.58
+INTC 0.20 0.42 0.55
+MSFT 0.41 0.67 0.59
+NTAP 0.33 0.64 0.68
+ORCL 0.24 0.57 0.68
+TEVA 0.49 0.66 0.66
+Table 4: Price impact β of touch Limit Orders relative to Market Orders based on (12).
+function) for large-tick Nasdaq stocks is 2–4 times larger than that of limit orders.
+Remark 4. We also mention the less-known work of [23] who proposed a diﬀerent way of deﬁning
+Net Liquidity by using power-weighing, namely considering ∑ i:τk <T L i ≤τk+1 (OL i )α1{SL i =pj 1(T L i )} in
+(7), with the power coeﬃcient α ∈ [0, 1]. In particular, he advocated looking at square-root-
+volume (α = 0.5) or just order counts (α = 0) when constructing the NetLiq measure. On the
+latter point, [5] used the number of market trades to estimate permanent price impact.
+3.2 Limit Flows vs Market Flows
+The previous subsection documented that price change is driven by a weighted average of VM and
+VL, with the link being essentially linear. This motivates the analysis of the relationship between
+trade imbalance and limit order ﬂows, shown for a representative ticker in Figure 6 below. We
+separately plot VLA and VLB against TI to highlight the inherent nonlinear dependence between
+the two sides of the book. Indeed, when the market is unbalanced (large |TI|), the book behaves
+asymmetrically: the net limit order activity is stable on the passive side, while liquidity provision
+on the active side declines. We conjecture that this eﬀect is due to market-makers competing to
+avoid adverse selection, leading to diminished new limit orders and existing order cancellations.
+Thus, Figure 6 shows that there is a hockey-stick-response curve VLj = gj(TI) on each side of
+the book. For example, looking at VLA, there is a “base-line” level of liquidity provision that
+takes place as long as TI < 0.3 or so (i.e. less than 2/3 of execution are buys). However, when
+the market is dominated by Buys, VLA tends to be lower, i.e. the Ask side is replenished less
+than usual under upside price pressure. For some stocks (BBBY, TEVA see Figure 9 in Appendix
+B) we see an upside-down V-shape, whereby VLA also falls for TI close to −1, i.e. the Ask
+side “hibernates” under intense sell pressure. Mirror eﬀects take place on the Bid side. These
+ﬁndings suggest that LOB resilience (and hence price impact) is essentially driven by one-sided
+ﬂows rather than aggregate two-sided metrics. For example, when net limit order ﬂow at the best
+bid VLB is large, the price is unlikely to move lower even if trade imbalance is negative.
+Figure 6 also shows that large upside price moves tend to coincide with (i) positive TI; (ii)
+smaller than usual VLA and (iii) larger than usual VLB; the converse holding for downside
+price moves. Hence when prices move rapidly, both the market and limit order ﬂows are highly
+unbalanced, lending credence to weak resilience manifesting itself as a “wrong-way” correlation
+between VM and VL. Given the very large number of heterogeneous players participating in
+trading activity, it is diﬃcult to draw any conclusions as to the respective causality. Whether
+HFT market-makers are predicting one-sided market ﬂow or reacting to it, liquidity provision via
+VL seems to reﬂect liquidity consumption in VM.
+Remark 5. An extreme example of weak resilience was documented in [25] in the context of the
+market events of July 12, 2012. On that day four large-cap US stocks exhibited an unusual trading
+14
+
+=== page 15 ===
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLB
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLA
+Figure 6: Scatterplot of the net limit order ﬂow at the best bid VLB k (left) and best ask VLA k
+(right) against the trade imbalance TIk across the 8886 buckets of V = 8000 for NTAP. The
+y-axis is normalized via VLj/V . Red (blue) points indicate volume buckets with price decrease
+(increase) ∆Pk of more than 0.07. The solid lines indicate the average response gj(TI) obtained
+from a spline-based GAM ﬁt to VLj = gj(TI) + ϵ.
+pattern: heavy buying following by heavy selling in a predictable fashion over 30 minute intervals.
+The result was a sawtooth pattern in the asset prices, apparently generated by signiﬁcant price
+slippage for the aggressive buyers/sellers. Lehalle et al. [25] conclude that this weak LOB resilience
+was driven by liquidity providers who anticipated one-sided market order ﬂow and were jockeying
+for queue priority via rapid cancellation of their resting top-level orders after each execution.
+4 Liquidity Predictors
+The results in the previous section strongly indicate that including concurrent limit order ﬂow
+VLk along with trade imbalance TIk dramatically improves the goodness-of-ﬁt for predicting ∆Pk.
+Nevertheless, for purposes of optimal execution the role of trade imbalance remains paramount.
+Indeed, the execution algorithm displaces some of the market orders, so that the order scheduler
+in eﬀect partially controls the trade imbalance TIk+1 in the upcoming bucket. Hence, forecasting
+the conditional price change ∆Pk+1|TIk+1 is crucial in scheduling the next slice.
+Unlike the time slicing approach, each bucket in our setup contains an identical amount of
+traded volume. Thus the diﬀerence between observed price change ∆P for two buckets with
+similar trade imbalance TI must be due to diﬀerences in LOB resilience and/or shape. Therefore,
+the ﬁndings in the previous section lead to the natural decomposition of price formation into
+two components: (1) price trend, which is primarily about the supply and demand for the asset
+captured in trade imbalance TIk, and (2) liquidity, which is seen in the deviation of the observed
+∆Pk from the best ﬁt curve between the two variables, and has been already shown to strongly
+depend on VLj k. In this section we seek to more systematically identify the key variables important
+for explaining LOB liquidity on the meso-scale. This is done by constructing a series of regression
+models taking in a variety of potential covariates, and quantifying their signiﬁcance and eﬀect.
+The following Section 4.1 then concentrates on predicting the periods of scarce liquidity that lead
+to out-sized price impact.
+For the above purpose, we utilized four classes of statistical models: (i) classical linear models
+(LM) using stepwise selection criteria; (ii) LASSO models ﬁt via cross-validation; (iii) MARS
+15
+
+=== page 16 ===
+models; (iv) random forests (RF). Generically, we model
+∆P =
+∑
+r
+φr(X) + ϵ, (13)
+where X is the vector of all the covariates and the basis functions φr are adaptively picked by
+the model. We focus our attention on the primary eﬀect of various predictors and therefore take
+φr to be low-dimensional in X: they are linear for LM and LASSO, of the hockey-stick form
+(X(r) −Kr)+ for MARS, and indicator functions of hypercubes for RF. Thus, except for RF no
+interactions among covariates are a priori considered.
+The three model frameworks beyond LM oﬀer complementary perspectives on variable im-
+portance and ultimately model selection. LASSO uses L1-regularization to drop less relevant
+predictors giving a crisp quantiﬁcation of variable importance and easily interpretable coeﬃcients
+for covariate impact. Multivariate adaptive regression splines (MARS) aims to identify nonlinear
+relationships through using piecewise linear hinge basis functions. It can also search for statisti-
+cally signiﬁcant predictors from low-degree interactions among covariates. Finally, RF constructs
+a black-box nonlinear model by randomly considering subsets of predictors to obtain a piecewise
+constant relationship. Random Forests yield only indirect measures of variable importance or
+contribution via model averaging, but makes minimal parametric assumptions about the func-
+tional form of covariate impact. Note that our goal is not to maximize predictive performance,
+but to obtain interpretable qualitative analysis. Hence, we do not explore fully non-parametric
+“machine learning” tools.
+To build a statistical description for ∆P we utilized both static measures based on the LOB
+state at bucket times τk, as well as dynamic quantities measured over time. The static predictors
+tested in our regression models included the measures of LOB depth and shape described in
+Section 2, speciﬁcally price impact PIN, impact slope S, cumulative depth Di for i = 1, 2 and
+book imbalance BI. For completeness, we also included time-of-day τk. All static quantities
+were measured at the start of the volume slice i.e. the price change Pk −Pk−1 from the activity
+during [τk−1,τk] was regressed against static variables measured at time τk−1. Dynamic quantities
+included the contemporaneous net limit ﬂows VLA k,VLB k , as well as lagged quantities: trailing
+limit ﬂow VLj k−𝓁, lagged price change ∆Pk−𝓁, and lagged trade imbalance TIk−𝓁 over the previous
+𝓁 volume buckets, where 𝓁 ∈ 1, 5, 10, 20. Also included was the exponentially weighted moving
+average of recent trade imbalance, ﬁrst introduced in [4],
+TIMA(β) i+1 := e−β|OM i |TIMA(β) i + (1 −e−β|OM i |) sign(OM i ), (14)
+where i indexes arrival of market orders of size |OM i | and β dictates the exponential weights; we
+set β = 0.5/V .
+Important Covariates. Our results indicate that the trade imbalance TI and the limit
+order ﬂows VLj are by far the most statistically signiﬁcant predictors for ∆P . Further predictors
+that were consistently picked by the models include the price impact PIj, the depth at the top-2
+levels D2, and the proportion of limit order cancellations PCj := VLj,−/VLj. For the latter,
+we observe that when cancellations at the bid dominate additions, PCB > 0.5, the price can
+move lower on very little volume. Weaker predictors (picked by some models but not all) are
+Book Imbalance BI and Impact Slope S. There are additional covariates that were statistically
+signiﬁcant for one or two of the tickers, but these yield negligible improvement to overall model
+ﬁt. See Table 6 in Appendix B for a summary of variable importance.
+The RF models also assigned strong statistical signiﬁcance to the interactions TI×PI, VLj×
+PIj (one-sided interaction between limit ﬂow and book impact) and TI ×S. Since both PI
+16
+
+=== page 17 ===
+and S are in units of ticks/share, the latter two terms are denominated in ticks, and provide an
+impact-normalized measure of market trend. Indeed, the static LOB metrics capture the shape
+of the book and hence modulate the eﬀect of the major predictors in the ﬂows. The relevance of
+the above cross-terms was conﬁrmed by a LASSO model where we manually added all possible
+interactions between TI,VLA,VLB and the impact covariates PI and S. As an additional check,
+no further interactions (considered by building a degree-2 MARS model) were deemed signiﬁcant.
+Overall, using the R2 as a simple goodness-of-ﬁt metric, we ﬁnd that it starts out at R2 ≃ 30%
+when regressing ∆P against just TI; rises to about R2 ≃ 70% once VLA,VLB are included; and
+reaches about R2 ≃ 80% after adding in the mentioned LOB shape metrics. Another 1-2% gain
+in R2 is possible by including all the covariates listed, including their lagged versions.
+Of note, top level depth D1 was statistically insigniﬁcant in the regression tests. Given the
+amount of activity in each volume bucket it is not surprising that “shallow” LOB measures
+capturing only the top of the LOB are not all that useful. Instead, the models identify (partly
+due to the underlying collinearities) a mix of the deeper LOB shape metrics, including the top-2
+levels volume D2, the price impact PIN (which looks at 3-5 levels deep, N ≃Ave(D4)), and the
+impact slope S (a cost-averaged depth over ≃ 4 levels). We note that for more liquid tickers (such
+as MSFT), D2 is more relevant, while for less liquid ones the models emphasize PI. Another
+interesting ﬁnd was the (moderate) signiﬁcance of trailing moving average of executions TIMA
+from (14), with a consistently negative relationship to ∆Pk. The inclusion of TIMA appears to
+be capturing the tendency of stock prices to, more often than not, retrace recent movement. More
+precisely, when TI leans with the prevailing trend (TIMA) the impact on price is less.
+Returning to a more qualitative description, Figure 8 (Appendix C) shows paired scatterplots
+across 9229 buckets of ORCL for limit ﬂows VLj, proportion of cancellations PCj and impact
+slopes Sj. Some important observations are:
+• Strong negative correlation ρ≃−0.4 between VLA and VLB, meaning that Ask/Bid limit order
+activity is complementary: at any given moment most of the limit orders go to one side;
+• Positive correlation (ρ ≃ 0.45) between order ﬂow VL and proportion of cancellations PC on
+the other side: as more orders are added, say, on the Ask side, limit orders are also cancelled
+on the Bid side;
+• Negative correlation between depth D and order ﬂow VL on the opposite side, so that the
+less-active side of the book also tends to be more shallow;
+• Positive correlation between book depth on the two sides, DA and DB, meaning that the book
+as a whole ﬂuctuates between being deep and shallow;
+• Weak positive correlation (ρ ≃ 0.2) between cancellation proportions PCA, PCB on the two
+sides, dovetailing with the previous point.
+These complex cross-relationships imply that disentangling the marginal eﬀect of a given predictor
+is diﬃcult, and a simple additive model, such as MARS or LASSO, should be interpreted with care.
+For instance, the ask-side depth metric DA 2 is intrinsically correlated with DB 2 ,VLB,SA,PCA
+and so on. Therefore, the counterfactual of changing ask-side depth while keeping all other
+covariates ﬁxed, captured by a regression coeﬃcient (or partial dependence plot) of DA 2 , is not
+too meaningful.
+17
+
+=== page 18 ===
+4.1 Scarce Liquidity
+Intuitively, scarce liquidity describes the situation where large price moves occur under low volume,
+indicating weak resilience. Within our framework, the latter corresponds to an “abnormally”
+large ∆Pk relative to the contemporaneous trade imbalance TI. Pinpointing the conﬂuence of
+factors that coincide with scarce liquidity is of practical importance due to the potentially large
+ramiﬁcations of executing during a period of low resilience in the LOB.
+To capture the idea of a “disproportionately large” price move relative to executed volume we
+remove the eﬀect of trade imbalance to focus on the resulting residuals ˆϵk = ∆Pk −g(TIk) from
+(10). Namely, we deﬁne a scarce liquidity indicator variable SLj k ∈{0, 1} in a binary fashion in
+terms of ˆϵk, so that SLj occurs on at most one side of the LOB per volume bucket:
+SLA k := I{ˆϵk ≥ ¯M}, SLB k := I{ˆϵk ≤− ¯M}, (15)
+where we empirically choose the scarcity threshold ¯M in terms of the standard deviation of the
+residuals ˆϵ, speciﬁcally ¯M = 1.5StDev(ˆϵ1:K). Thus, scarce liquidity occurs on each side of the
+LOB in approximately 6% of volume buckets. Our data-driven deﬁnition of liquidity is similar to
+Amihud [3]. The pairs plot in Figure 8 in the Appendix color-codes buckets with scarce liquidity,
+highlighting the relationship of key predictors to SLj.
+To quantitatively analyze the occurrence of scarce liquidity we ran a logistic regression model
+for SLA and SLB with the covariates described in the previous section. Compared to the re-
+gression models for ∆P of the previous section, logistic regression is geared towards capturing
+one-sided LOB eﬀects and also focuses attention on the buckets with more extreme price moves.
+It can therefore better identify the LOB regimes that cause substantial price moves, compared
+to (13) that concentrates on ﬁtting the “typical” price formation factors. Recall that logistic
+regression assumes that SLj k ∼Bernoulli(πj k), where the log-odds of πj k are speciﬁed via
+logit πj = ∑
+r
+φSL,j r (X). (16)
+This analysis reveals that occurrences of scarce liquidity are driven by a high asymmetry in
+the limit ﬂows, as well as reduced LOB depth and/or high cancellation rates. For example, the
+major predictors of SLA are VLB (+ve correlation), TI (-), VLA (-) and DA,B 2 (both -). Several
+of these inﬂuences need to come together to explain SLA. Financially, we observe that scarce
+liquidity tends to occur on a passive and shallow side of the book. For instance, if the Bid side is
+passive (high VLA and low VLB), and moreover is less deep than normal (low DB 1 ), then prices
+are likely to fall through on the downside, triggering SLB = 1. The logistic regression models also
+show that the proportion of limit order cancellations has a high predictive power, so that large
+price moves are associated with a “LOB fade”. As in the previous section, the limit order ﬂows
+were the most statistically signiﬁcant predictors for SLj via (16). Unlike the previous section,
+price impact PI had a heightened signiﬁcance. Speciﬁcally, same-side price impact (PIj N when
+testing πj) was of approximately equal importance as VLj for all six tickers. The physical timing
+τk, was also signiﬁcant, as was bucket duration ∆τk. The ﬁtted models imply that scarce liquidity
+is more likely in the morning, or when trading is slow (large ∆τk).
+Table 7 in Appendix B reports goodness-of-ﬁt of the above logistic models using a hold-out
+test set. The Table shows the relative frequency of SLj against the predicted log-odds ˆπj. We
+observe that for vast majority of cases the log-odds are low and in those buckets there is indeed
+almost no cases of abnormally large price moves. On the other hand, when the model predicts
+scarce liquidity, it is correct in about 70–80% of the time. We note that due to the low frequency
+18
+
+=== page 19 ===
+of SL, the model predicts less than half of all scarce liquidity occurrences, i.e. there are more false
+negatives than true positives.
+Table 6 in Appendix B lists the signiﬁcant predictors for the three regressions we ran (for ∆P ,
+SLA, and SLB). In the Table we used the importance function in the randomForest package
+[27] to roughly classify given predictors into Most Important (**), Somewhat Important (*) and
+Unimportant (-). Since the RF model is data-driven and able to capture nonlinear eﬀects the
+resulting variable importance is more robust compared to other model classes we tried, such as
+Lasso or MARS which only capture low-degree interactions and have trouble with collinearity.
+We also manually checked the predictors selected by LASSO and MARS vis-a-vis those of RF to
+conﬁrm covariate importance.
+Table 6 matches the intuition that same-side covariates (especially the impact-dollar metrics
+PIj and Sj) ought to be more signiﬁcant for explaining SLj. We also note that the logistic
+models are more complex (assigning predictive power to more covariates), and moreover include
+additional “two-sided” predictors, such as bucket duration or price volatility, that would not con-
+tribute to ∆P , but make sense for forecasting large price moves. The observed asymmetric eﬀects
+imply the need to build separate models for diﬀerent aspects of the limit-ﬂow/price relationship.
+The listed signiﬁcant predictors are remarkably consistent across assets. Moreover, they are com-
+plementary/symmmetric on the Ask and Bid side (the respective regressions were run completely
+independently), indicating that these are generic stylized facts for liquid, large-tick LOBs.
+5 Time Series Perspective
+Previous sections carried out a statistical investigation of LOB behavior using the regression
+paradigm that treats observations as i.i.d. samples from the “true population”. Of course, in
+practice LOB data is sequentially ordered, so time series methods are also appropriate. However,
+the observed complexity (such as multiple nonlinear relationships) makes constructing multivari-
+ate time-series models a major challenge and beyond the scope of this paper. For our purposes
+we therefore simply present some stylized observations.
+A basic test is for the presence of auto-correlation which would imply that there are some
+persistent factors in the observations, and hence serial dependence among buckets that are close
+in time. We ﬁrst consider the net order ﬂow variables: TI,VLA,VLB. We ﬁnd that there
+is minimal autocorrelation at the shorter scales (0.25% ADV buckets), but some persistence is
+observed on the longer scales and for less-liquid assets. Positive autocorrelation suggests that
+periods of strong liquidity provision are followed by more of the same, and conversely, low VL
+tends to persist for multiple buckets. For the deeper LOB’s, we believe the persistence is still
+there but a better tool than the ACF diagnostic is needed. Remarkably, the persistence carries
+through for long lags, indicating presence of long-term memory on the order of hours. Figure 7
+illustrates the non-zero autocorrelation in VLj for NTAP and TEVA across 2% ADV buckets.
+These results echo previous literature (e.g. [35]) that documents long-term persistence in order
+ﬂows, possibly even on the scale of days. Overall, we note that the computed auto-correlation
+levels are not too strong (relative to say the very high R2 reported previously), indicating that
+standard ARIMA models might not ﬁt well.
+Turning attention to scarce liquidity, as remarked there is essentially no auto-correlation in
+the residuals of (10) and hence minimal ACF levels in the one-sided SLj indicators. In other
+words, the ACF test does not detect any obvious clustering in one-sided scarce liquidity. At the
+same time, we do ﬁnd cross-correlation, so that an abnormally large positive price move is likely
+to be followed by an abnormally large negative ∆Pk. This hints at the “whiplash” property of the
+19
+
+=== page 20 ===
+LOB, where reversions in price change or in TI seem to trigger reduced liquidity provision. The
+right panel of Figure 7 shows the ACF plot for the combined indicator SL = SLA + SLB (volume
+buckets with scarce liquidity in either direction), which is positively auto-correlated, i.e. exhibits
+some temporal clustering.
+5 10 15 20 25 30 35
+0.0 0.1 0.2 0.3 0.4
+Lag
+Autocorrelation
+TI
+VLA
+VLB
+TEVA
+NTAP
+5 10 15 20 25 30 35
+0.00 0.05 0.10 0.15 0.20
+Lag
+Autocorrelation
+NTAP
+ORCL
+TEVA
+Figure 7: Marginal autocorrelation functions (ACF) for order ﬂows and scarce liquidity. Left:
+the marginal ACF for the trade imbalance TI, as well as one-sided net limit ﬂows at the touch
+VLA and VLB. Data is based on 2% ADV bucketing for NTAP and TEVA. Right: marginal
+ACF for the scarce liquidity indicator SL = SLA + SLB. In both panels dashed lines indicate
+the signiﬁcance threshold for the presence of autocorrelation.
+5.1 Co-Movement of Ask/Bid Order Flows
+Recall Figure 6 which presented an aggregated relationship between VM and VL. To capture the
+respective co-movement of ﬂows, we consider the correlation ρj between one-sided limit ﬂows VLj
+and VMj, j = A,B. Lower levels of ρj are indicative of increased cancellations and hence less
+liquidity, while positive values are characteristic of strong resilience. Negative correlation suggests
+that liquidity gets removed/added in tandem with market orders, which would be characteristic
+of book “fading”, cf. the event-by-event plot in Figure 2. Rapidly declining ρj could then be an
+indication of the cumulative eﬀect of persistent and aggressive buying/selling that leads market
+makers to adjust their reference prices to account for added inventory risk.
+A major challenge is to operationalize ρj given the asynchronous nature of the entered orders.
+Using the aggregated bucketed quantities VLk,VMk is not convenient given the relatively large
+buckets we consider—to compute statistical correlation one needs time-series of at least a few
+dozen terms, while the episodes observed in Figure 2 are much more ﬂeeting. One attempt we
+made was to deﬁne the correlation on either side of the LOB as
+ρj t := corr(VMj [t−s,t],VLj [t−s,t]), (17)
+computing empirical correlation over a sliding window of s physical time using smaller time-based
+buckets. Speciﬁcally we tried s = 1.5 hours with time buckets of 30 seconds. However the resulting
+(ρj t) were not very stable in time and the statistical signiﬁcance of the resulting predictor was too
+low to be included in any of the models of Section 4. Another challenge is normalizing ρ across
+assets. For tickers with deeper queues, such as MSFT, the short-term behavior of limit ﬂows is
+less tied to price formation, so that VLj and VMj are less coupled, leading to lower respective
+correlations |ρj|.
+20
+
+=== page 21 ===
+Remark 6. A related mechanism to quantify the co-movement of market and limit orders for
+the purposes of explaining book liquidity are so-called toxicity indicators. Toxicity is linked to
+adverse selection: in a toxic environment market-makers withdraw due to orders coming from
+“informed” traders who possess better knowledge of the future asset price. In that direction, we
+may mention the VPIN metric [15] which can be operationalized as the average of the absolute
+trade imbalance across the 𝓁 most recent volume buckets,
+|TI|k−𝓁:k := 1 𝓁 𝓁∑ i=1 |TIk−i|, (18)
+Large values of |TI|k−𝓁:k, are supposed to lead to less liquidity and more volatility. Another
+toxicity measure described in [8] is constructed from the event-based correlation between market
+ﬂow and price change based on the previous 200 market order arrivals:
+ρTox(τk) := corr(∆Pi−200:i,OM i−200:i). (19)
+We also tried to include these in our regressions, but preliminary results suggested that they
+had weak predictive power (this is consistent with the feature that all lagged variables were poor
+predictors relative to contemporaneous covariates). It remains an open question how to construct
+a relevant volume-bucketed toxicity measure.
+6 Conclusion
+In this article we have investigated the meso-scopic phenomenology of price formation and liquidity
+provision/consumption. The documented stylized facts are crucial for algorithmic scheduling of
+child trades, where the LOB state is used as a dynamic input rather than a static parameter. Our
+central take-away is that at the minute-scale the distinct order ﬂows, both of market and limit
+type, are the primary predictors of price moves. We have also observed that top-level depth and
+the associated book imbalance are insuﬃcient for forecasting price impact; rather deeper book
+characteristics, such as PI and S, are better suited.
+Our results pave the way for further research directions. First, we stress that it is imperative
+to develop models for limit ﬂows in parallel with the market ﬂow. This is a challenging task
+as one must consider the book asymmetry (interaction between market and limit orders on the
+same side of the book), cross-eﬀects (interactions between market buys and sells, and between
+limit orders on the two sides, e.g. via book imbalance) and interaction between limit Additions
+and Cancellations. Second, our approach oﬀers a way to disentangle price evolution into price
+trend (impact of market executions), book resilience(impact of limit ﬂows) and liquidity (residual
+eﬀects that drive price ﬂuctuations beyond their expected level). This gives a starting point for
+quantifying LOB dynamics, for example to obtain a dynamic deﬁnition of liquidity regimes. In
+analogue to the developed models for individual order arrivals, we need probabilistic description
+for the evolution of, say, (PIk) or SLk. Third, the unique meso-scopic phenomena raise new
+questions on connecting the event-based market microstructure, the time-based macro-diﬀusion
+and the volume-based bucketing proposed herein in a single multi-scale framework.
+First-generation models for execution, liquidation and market-making have been prescriptive
+in nature, postulating some features of the limit order books and optimizing participant behavior
+under those assumptions. The phenomenological investigation herein takes the opposite view, at-
+tempting to crystalize the data-driven features. For the practical application, the next step would
+be to develop predictive models that can statistically forecast book characteristics going forward,
+21
+
+=== page 22 ===
+and therefore inform execution algorithms. Theoretically, we need models that move away from
+working with static book snapshots (e.g. an abstract “depth” parameter) and towards using more
+robust deﬁnitions of impact. More sophisticated frameworks for capturing the interaction between
+market makers and observed ﬂows, the so-called “toxicity” eﬀects, are also warranted.
+By design, our analysis has been limited to the most liquid, large-tick equities. While these
+cover many of the most active tickers, including many blue-chip companies such as Dow Jones
+components, more work is needed on other ticker types. This would include liquid small-tick
+assets, such as AAPL or GOOG, which might be very active, but where the spread has non-
+trivial dynamics and book depth has to be understood diﬀerently. One challenge for such tickers
+is that a nontrivial portion of the limit orders are aggressive, i.e. placed inside the spread, which
+requires to adjust the meaning of VL. Another issue is that when share prices are very high,
+the discrete nature of order volumes becomes prominent. A diﬀerent direction for future work
+is analysis of large-tick but illiquid assets, where the event-by-event scale might still be relevant
+even on the minutes-scale.
+References
+[1] A. Alfonsi and A. Schied, Optimal trade execution and absence of price manipulations
+in limit order book models, SIAM Journal on Financial Mathematics, 1 (2010), pp. 490–522.
+[2] A. Alfonsi, A. Schied, and A. Slynko, Order book resilience, price manipulation, and the
+positive portfolio problem, SIAM Journal on Financial Mathematics, 3 (2012), pp. 511–533.
+[3] Y. Amihud, Illiquidity and stock returns: cross-section and time-series eﬀects, Journal of
+ﬁnancial markets, 5 (2002), pp. 31–56.
+[4] K. Bechler and M. Ludkovski, Optimal execution with dynamic order ﬂow imbalance,
+SIAM Journal on Financial Mathematics, 6 (2015), pp. 1123–1151.
+[5] M. Benzaquen, I. Mastromatteo, Z. Eisler, and J.-P. Bouchaud, Dissecting cross-
+impact on stock markets: An empirical analysis, tech. report, Available at SSRN 2836472,
+2016.
+[6] J.-P. Bouchaud, J. D. Farmer, and F. Lillo, How markets slowly digest changes in
+supply and demand, in Handbook of Financial Markets: Dynamics and Evolution: Dynamics
+and Evolution, T. Hens IV and K. R. Schenk-Hopp´e, eds., Elsevier, 2009, pp. 57–160.
+[7] J.-P. Bouchaud, Y. Gefen, M. Potters, and M. Wyart, Fluctuations and response in
+ﬁnancial markets: the subtle nature of random price changes, Quantitative ﬁnance, 4 (2004),
+pp. 176–190.
+[8] R. Carmona and K. Webster, The self-ﬁnancing equation in high frequency markets,
+tech. report, 2013. arXiv preprint arXiv:1312.2302.
+[9] ´A. Cartea, R. F. Donnelly, and S. Jaimungal, Enhancing trading strategies with order
+book signals, tech. report, Available at SSRN 2668277, 2015.
+[10] ´A. Cartea and S. Jaimungal, Incorporating order-ﬂow into optimal execution, Mathe-
+matics and Financial Economics, 10 (2016), pp. 339–364.
+22
+
+=== page 23 ===
+[11] ´A. Cartea, S. Jaimungal, and J. Penalva, Algorithmic and high-frequency trading,
+Cambridge University Press, 2015.
+[12] R. Cont and A. De Larrard, Price dynamics in a Markovian limit order market, SIAM
+Journal on Financial Mathematics, 4 (2013), pp. 1–25.
+[13] R. Cont, A. Kukanov, and S. Stoikov, The price impact of order book events, Journal
+of Financial Econometrics, 12 (2014), pp. 47–88.
+[14] R. F. Donnelly, Ambiguity Aversion in Algorithmic and High Frequency Trading, PhD
+thesis, 2014. Available at SSRN 2527808.
+[15] D. Easley, M. M. L. de Prado, and M. O’Hara, Flow toxicity and liquidity in a
+high-frequency world, Review of Financial Studies, 25 (2012), pp. 1457–1493.
+[16] Z. Eisler, J.-P. Bouchaud, and J. Kockelkoren, The price impact of order book events:
+market orders, limit orders and cancellations, Quantitative Finance, 12 (2012), pp. 1395–
+1419.
+[17] J. D. Farmer, A. Gerig, F. Lillo, and H. Waelbroeck, How eﬃciency shapes market
+impact, Quantitative Finance, 13 (2013), pp. 1743–1758.
+[18] J. Gatheral, A. Schied, and A. Slynko, Transient linear price impact and Fredholm
+integral equations, Mathematical Finance, 22 (2012), pp. 445–474.
+[19] M. D. Gould, M. A. Porter, S. Williams, M. McDonald, D. J. Fenn, and S. D.
+Howison, Limit order books, Quantitative Finance, 13 (2013), pp. 1709–1742.
+[20] W. K. H¨ardle, N. Hautsch, and A. Mihoci, Modelling and forecasting liquidity supply
+using semiparametric factor dynamics, Journal of Empirical Finance, 19 (2012), pp. 610–625.
+[21] J. Hasbrouck and D. J. Seppi, Common factors in prices, order ﬂows, and liquidity,
+Journal of ﬁnancial Economics, 59 (2001), pp. 383–411.
+[22] N. Hautsch and R. Huang, The market impact of a limit order, Journal of Economic
+Dynamics and Control, 36 (2012), pp. 501–522.
+[23] C. Hopman, Do supply and demand drive stock prices?, Quantitative Finance, 7 (2007),
+pp. 37–53.
+[24] W. Huang, C.-A. Lehalle, and M. Rosenbaum, Simulating and analyzing order book
+data: The queue-reactive model, Journal of the American Statistical Association, 110 (2015),
+pp. 107–122.
+[25] C.-A. Lehalle and M. Lasnier, What does the saw-tooth pattern on US markets on 19
+july 2012 tell us about the price formation process, tech. report, CA Chevreux Quantitative
+Research, 2012.
+[26] C.-A. Lehalle and O. Mounjid, Limit order strategic placement with adverse selection
+risk and the role of latency, tech. report, arXiv preprint arXiv:1610.00261, 2016.
+[27] A. Liaw and M. Wiener, Classiﬁcation and regression by randomforest, R News, 2 (2002),
+pp. 18–22.
+23
+
+=== page 24 ===
+[28] A. Lipton, U. Pesavento, and M. G. Sotiropoulos, Trade arrival dynamics and quote
+imbalance in a limit order book, tech. report, arXiv preprint arXiv:1312.0514, 2013.
+[29] C. C. Moallemi, M. Saglam, and M. Sotiropoulos, Short-term trading skill: An
+analysis of investor heterogeneity and execution quality, tech. report, Available at SSRN
+2463952, 2016.
+[30] I. Muni Toke, The order book as a queueing system: average depth and inﬂuence of the
+size of limit orders, Quantitative Finance, 15 (2015), pp. 795–808.
+[31] A. A. Obizhaeva and J. Wang, Optimal trading strategy and supply/demand dynamics,
+Journal of Financial Markets, 16 (2013), pp. 1–32.
+[32] E. E. Omar, F. Masaaki, and R. Mathieu, The microstructural foundations of leverage
+eﬀect and rough volatility, tech. report, arXiv preprint arXiv:1609.05177, 2016.
+[33] S. Stoikov and R. Waeber, Optimal asset liquidation using limit order book information,
+tech. report, Available at SSRN 2113827, 2012.
+[34] B. Toth, Z. Eisler, F. Lillo, J. Kockelkoren, J.-P. Bouchaud, and J. D. Farmer,
+How does the market react to your order ﬂow?, Quantitative Finance, 12 (2012), pp. 1015–
+1024.
+[35] B. Toth, I. Palit, F. Lillo, and J. D. Farmer, Why is order ﬂow so persistent?, Journal
+of Economic Dynamics and Control, 51 (2015), pp. 218–239.
+[36] S. N. Wood, Fast stable restricted maximum likelihood and marginal likelihood estimation
+of semiparametric generalized linear models, Journal of the Royal Statistical Society (B), 73
+(2011), pp. 3–36.
+Appendices
+A Volume Bucketing Parameters
+0.25%ADV 1%ADV 2%ADV
+Ticker V med(∆τ) Trades V med(∆τ) Trades V med(∆τ) Trades
+BBBY 1.5K 32.9 7.8 6K 161 31.2 12K 334 62.5
+INTC 9K 21.4 5.2 36K 149 20.7 72K 324 41.4
+MSFT 25K 28.0 14.6 100K 159 58.2 200K 341 116.5
+NTAP 2K 36.6 7.9 8K 188 31.7 16K 393 63.5
+ORCL 5K 31.6 6.0 20K 170 23.9 40K 357 47.8
+TEVA 3K 31.1 10.2 12K 158 40.9 24K 337 81.9
+Table 5: Summary statistics for the volume-based bucketing. We list the size V of each bucket
+(in 000’s executed shares), median duration med(τk+1 −τk) in seconds, and average number of
+market trades per slice.
+24
+
+=== page 25 ===
+B Predictor Importance
+Price Change ∆P Ask Scarce Liquidity SLA Bid Scarce Liquidity SLB
+Predictor BBBY INTC MSFT ORCL NTAP TEVA BBBY INTC MSFT ORCL NTAP TEVA BBBY INTC MSFT ORCL NTAP TEVA
+TIk ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗ ∗∗ ∗∗ ∗∗ ∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗
+TIk−3:k−1 − − − − − − ∗ ∗ ∗ ∗ ∗ ∗ − ∗ ∗ ∗ − ∗
+TIk−1 − − − − − − ∗ ∗ ∗ ∗ − ∗ − ∗ ∗ ∗ ∗ −
+VLa k ∗ ∗∗ ∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗
+VLb k ∗ ∗∗ ∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗
+VLa k−1 − − − − − − ∗ − − − − − ∗ ∗ ∗ − ∗ ∗
+VLb k−1 − − − − − − ∗ ∗ ∗ ∗ − ∗ ∗ − − ∗ − −
+PCa k ∗ ∗ ∗ ∗ ∗ ∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗ ∗ ∗ ∗∗ ∗∗ ∗
+PCb k ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗∗ ∗∗ ∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗
+PIa k ∗ ∗ ∗ ∗ ∗ ∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗ ∗∗ ∗ ∗ ∗∗ ∗
+PIb k ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗
+Sa k ∗ ∗ ∗ ∗ ∗ − ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗ ∗ ∗∗ ∗
+Sb k ∗ ∗ ∗ ∗ ∗ − ∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗
+Da 1 − − − − − − ∗ ∗ ∗ ∗ ∗ ∗ − ∗ ∗ ∗ ∗ ∗
+Db 1 − − − − ∗ − ∗ ∗∗ ∗ ∗ ∗∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗
+Da 2 ∗ ∗ ∗ ∗ ∗ ∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗
+Db 2 ∗ ∗ ∗ ∗ ∗ ∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗ ∗∗
+BIk−3:k − − − − ∗ − ∗ ∗ ∗ ∗ ∗∗ ∗ ∗ ∗ ∗ ∗ ∗∗ ∗
+τk ∗ − − ∗ ∗ − ∗∗ ∗∗ ∗ ∗∗ ∗∗ ∗∗ ∗ ∗ ∗ ∗∗ ∗∗ ∗
+τk −τk−1 − − − − − − ∗ ∗ ∗ ∗∗ ∗∗ ∗∗ ∗ ∗ ∗ ∗ ∗∗ ∗∗
+Pk −Pk−20 − − − − − − ∗ − ∗ − ∗ − − − − − ∗ −
+Table 6: Signiﬁcant predictors for price change ∆P and scarce liquidity SLj using a Random Forest model.
+We use a RF with 500 trees, and the mean decrease in accuracy variable importance metric reported in
+randomForest::importance function. Highly signiﬁcant (**) predictors are those with relative importance above
+0.4; signiﬁcant (*) predictors have relative importance in [0.15, 0.4]; the rest are labeled as not signiﬁcant (-). Re-
+sults are based on 1% ADV bucketing. Predictors with subscripts other than k are (averaged) lagged values over the
+indicated previous buckets.
+
+=== page 26 ===
+PLOT OMITTED FROM ARXIV DUE TO SIZE
+Figure 8: Pairs plot for main predictors of scarce liquidity. Blue points indicate buckets with
+Ask-side scarce liquidity SLA = 1, and green are buckets with SLB = 1. Plot for NTAP and
+V = 8000 (1% ADV). Lower-triangle entries indicate the correlation between the predictor pairs
+over the entire sample period.
+SLA SLB
+Low Med High Low Med High
+BBBY
+AUC = 0.938 AUC = 0.942
+NoSL 84.73 10.71 0.40 84.28 10.59 0.37
+SL 0.77 2.76 0.63 0.68 3.02 1.05
+INTC
+AUC = 0.928 AUC = 0.925
+NoSL 86.67 7.98 0.24 86.55 8.61 0.55
+SL 1.34 3.04 0.73 0.97 2.47 0.85
+MSFT
+AUC = 0.946 AUC = 0.963
+NoSL 86.62 8.33 0.24 87.96 7.47 0.18
+SL 0.77 2.36 1.68 0.49 2.70 1.19
+NTAP
+AUC = 0.958 AUC = 0.961
+NoSL 86.11 8.74 0.34 86.62 8.12 0.31
+SL 0.72 2.97 1.13 0.51 3.11 1.33
+ORCL
+AUC = 0.959 AUC = 0.967
+NoSL 86.51 8.54 0.33 87.62 7.72 0.26
+SL 0.56 2.69 1.38 0.43 3.02 0.95
+TEVA
+AUC = 0.934 AUC = 0.945
+NoSL 85.95 9.45 0.24 86.67 8.37 0.27
+SL 0.93 2.67 0.75 0.78 2.85 1.05
+Table 7: Goodness-of-ﬁt for predicting Scarce Liquidity. We list observed percentages of scarce
+liquidity SL (rows) grouped by predicted model response (columns). Speciﬁcally, let ˆπj k be the
+predicted probability of SLj k as obtained from individual tree votes in a RF logistic regression
+model (16) with 500 trees. Then Low = {k : ˆπk ≤ 0.1}, Med = {ˆπ ∈ (0.1, 0.5)}, High = {ˆπ ≥
+0.5}. AUC is the area under the receiver operator curve, computed using a hold-out test set: 2/3
+of data was randomly selected for training and the rest for above testing. As a result, the actual
+frequency of SLj in the test sets varies across assets in the range 4%–5%. All results are based
+on 1% ADV buckets.
+
+=== page 27 ===
+C Relationship between Market and Limit Order Flows
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLB
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLA
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLB
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLA
+BBBY V = 6, 000 ORCL V = 20, 000
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLB
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLA
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLB
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLA
+INTC V = 36, 000 NTAP V = 8, 000
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLB
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLA
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLB
+−1.0 −0.5 0.0 0.5 1.0
+−2 0 1 2 3 4
+Trade Imbalance TI
+VLA
+MSFT V = 100, 000 TEVA V = 12, 000
+Figure 9: Net limit order ﬂow at the best bid (left panels) and best ask (right panels) plotted against the market order
+imbalance TI. The y-axis is normalized via VLj/V . Blue (red) points indicate buckets with large price moves: ∆Pk
+of more (less) than ±1.645 ·StDev(∆P ). The solid line shows the GAM ﬁt for gj(TI) = E[VLj|TI], cf. Figure 6.

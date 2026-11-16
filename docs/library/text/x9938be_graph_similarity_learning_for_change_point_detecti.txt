@@ -1,0 +1,1780 @@
+=== page 1 ===
+Graph similarity learning for change-point detection
+in dynamic networks
+Deborah Sulem∗
+Department of Statistics
+University of Oxford
+deborah.sulem@stats.ox.ac.uk
+Henry Kenlay
+Department of Engineering Science
+University of Oxford
+kenlay@robots.ox.ac.uk
+Mihai Cucuringu†
+Department of Statistics, University of Oxford
+The Alan Turing Institute, London, UK
+mihai.cucuringu@stats.ox.ac.uk
+Xiaowen Dong†
+Department of Engineering Science
+University of Oxford
+xdong@robots.ox.ac.uk
+March 30, 2022
+Abstract
+Dynamic networks are ubiquitous for modelling sequential graph-structured data, e.g., brain con-
+nectome, population ﬂows and messages exchanges. In this work, we consider dynamic networks
+that are temporal sequences of graph snapshots, and aim at detecting abrupt changes in their struc-
+ture. This task is often termed network change-point detection and has numerous applications,
+such as fraud detection or physical motion monitoring. Leveraging a graph neural network model,
+we design a method to perform online network change-point detection that can adapt to the spe-
+ciﬁc network domain and localise changes with no delay. The main novelty of our method is to
+use a siamese graph neural network architecture for learning a data-driven graph similarity function,
+which allows to eﬀectively compare the current graph and its recent history. Importantly, our method
+does not require prior knowledge on the network generative distribution and is agnostic to the type
+of change-points; moreover, it can be applied to a large variety of networks, that include for instance
+edge weights and node attributes. We show on synthetic and real data that our method enjoys a
+number of beneﬁts: it is able to learn an adequate graph similarity function for performing online
+network change-point detection in diverse types of change-point settings, and requires a shorter data
+history to detect changes than most existing state-of-the-art baselines.
+Keywords
+dynamic networks, change-point detection, graph similarity learning, siamese graph neural networks.
+1 Introduction
+The study of dynamic - or temporal, evolutionary, time-varying - networks has become very popular in the last decade,
+with the increasing amount of sequential data collected from structured and evolving systems, e.g. online communica-
+tion platforms [1], co-voting networks [2] or fMRI data [3]. In fact, adding a time component to graph-structured data
+leads to a richer representation and allows more powerful analysis [4]. This is particularly important when the network
+is governed by a non-stationary underlying process, which dynamics undergo abrupt switches or breaks. For instance,
+interaction patterns in social networks, such as Twitter or Reddit, can be very quickly modiﬁed after some event or
+“shock“ [5], thus providing strong motivation for incorporating a temporal dimension in the analysis. Detecting such
+structural breaks is a common task in diverse applications, from brain connectivity state segmentation [6] to phase
+∗Corresponding author.
+†Listed alphabetically.
+arXiv:2203.15470v1  [stat.ML]  29 Mar 2022
+
+=== page 2 ===
+discovery in ﬁnancial correlation networks [7]. Moreover, most real-world dynamic networks are structured around
+functional groups or densely connected communities. Therefore their evolution over time has been often measured by
+the changes in these substructures - sometimes called community life-cycle [8] - e.g. growth, decay, merges, splits, etc.
+For multivariate time series, change-point detection is a task that has been widely studied in various settings (e.g.,
+nonparametric [9], high-dimensional [10] or online [11]). The equivalent task for dynamic networks is often denoted
+network change-point detection (NCPD) and has recently become a popular problem with numerous successful ap-
+plications in ﬁnance [7], neuroscience [12] or transport networks [13]. Depending on the type of problem at hand,
+dynamic networks have been represented in multiple ways, e.g., with contact sequences, interval graphs, graph snap-
+shots (see [14] for a precise review of concepts, models and applications). In this work, we will consider the discrete
+representation of time-varying networks or snapshot networks: we denote a dynamic network NI = {Gt}t∈I to be a
+sequence of graph snapshots, where I is an ordered set, chosen as >0 for simplicity, and each Gt, t ∈ I, is a (static)
+graph. We note that each Gt is a general graph, that can be directed and/or have edge weights or node attributes. We
+deﬁne a change-point for the network N as a timestamp t ∈ >0 such that the generative distribution of the graphs
+before t, (G1,..., Gt−2, Gt−1) is diﬀerent from the one of graphs observed from t, (Gt, Gt+1,... ). When the genera-
+tive distribution of the graph snapshots, a change-point for a dynamic network sequence is more broadly deﬁned as a
+timestamp t where a signiﬁcant shift or deviation can be observed between Gt and the preceding graph snapshots.
+In general, a dynamic network may contain multiple change-points and the tasks of detecting and localisating the latter
+therefore correspond to partitioning an observation window [1, T], T > 0 into segments [1, T] = ⋃K−1 i=0 [τi,τi+1] where
+τ0 = 1 and τK = T, such that the generative distribution of the graph snapshots is stationary on [τi,τi+1] for each i.
+Intuitively, each temporal segment [τi,τi+1] can be associated with a state of the underlying process, and each change-
+point τi can be interpreted as a response of the system to an external event. Therefore, NCPD shares some similarity
+with the task of anomaly detection in temporal graphs [15]. In an online setting, one aims to detect such change-points
+while the graph snapshots are collected, and with minimal detection delay, while in an oﬄine setting, such analysis
+is conducted a posteriori on the whole data sequence. For particular graph generative models, the feasibility of the
+NCPD task and minimax rates of estimation have been analysed in dynamic random graph models, e.g., Bernoulli
+networks [16, 15, 13, 17], graphon models [18], stochastic block models [2, 19] and generalized hierarchical random
+graphs [20]. However, most real-world dynamic networks have heterogeneous properties, e.g. sparsity, edge weights,
+node attributes or nonlinear dynamics [21] - and neither their generative distribution nor the type of change that can
+happen are known in advance.
+Many existing methods for NCPD measure the discrepancy between two subsets of graphs, and rely on a graph similar-
+ity function, kernel or distance for pairwise graph comparisons [22, 3, 18, 23]. However, it is often diﬃcult to choose
+a priori an appropriate measure of similarity (or dissimilarity) that can integrate all the network characteristics, while
+being agnostic to the generating mechanism or type of change-point. Consequently, without any domain knowledge,
+this choice is often arbitrary, and result in poor performances [22, 15, 24]. Moreover, most online NCPD methods re-
+quire ﬁnely tuning several hyperparameters, such as detection thresholds [13] and window sizes [25]. To address these
+challenges, we propose a change-point agnostic and end-to-end method for online NCPD that in particular includes
+learning a data-driven graph similarity function. Our method is therefore adaptive to the network distribution and
+diﬀerent types of change-points; in particular, it can easily incorporate general graph features such as node attributes,
+edge weights or attributes, and can adapt to sparse settings. In summary, our contributions are the following:
+• We propose a graph similarity learning model based on a siamese graph neural network able to handle any
+available node attributes, and demonstrate how it can be leveraged for the online NCPD problem with an
+adequate training procedure. In particular, our learnt similarity function is sensitive to both local and global
+displacements in the graph structure, and can eﬀectively be employed in the context of change-point (and
+anomaly) detection in temporal networks.
+• We use an eﬃcient online NCPD statistic with a short-term history of the graph snapshots that avoids detec-
+tion delays and requires little additional hyperparameter tuning.
+• We empirically demonstrate the advantages of our method on synthetic networks with diverse types of
+change-points, as well as on two challenging real-world data sets. We notably design a self-supervised
+training procedure for data without ground-truth labelling of change-points.
+Paper outline. In Section 2, we succinctly review existing work on NCPD and present our general setup and method-
+ology in Section 3. In Section 4, we evaluate our method on synthetic and real-world data sets and compare to several
+existing NCPD baseline methods. Finally, we conclude in Section 5 with a summary of our results and discuss possible
+future developments.
+2
+
+=== page 3 ===
+2 Related works
+The study of dynamic networks, and in particular NCPD, is a relatively recent area of research that has largely incor-
+porated principles from change-point detection in time series, especially in high-dimensional settings. Some NCPD
+methods estimate the parameters of a network model, e.g., the generalised hierarchical random graph [20], a stochas-
+tic block model [26] or the preferential attachment model [27], and conduct hypothesis tests to detect changes in the
+estimated parameters. Other methods maximize a penalized likelihood function, e.g., based on a non-homogeneous
+Poisson point process model [28] or a dynamic stochastic block model [2, 29]. However, for real-world networks, the
+assumption on a particular model can sometimes be too restrictive.
+Several model-agnostic methods for NCPD extract features from the graph snapshots, e.g., the degree distribution
+[30] or the joint distribution of a set of edges [31], and use classical discrepancy measures to quantify the amount of
+change. Other methods relying on pairwise comparison of graphs use a graph similarity or pseudo-distance, such as the
+DeltaCon metric [32], the Hamming distance and the Jaccard distances [33], the Frobenius and maximum norms [7],
+spectral distances based on the Laplacian [25, 3, 34], 𝓁2 or 𝓁∞ norms [18] or a graph kernel [35, 23, 36]. Nevertheless,
+these graph metrics suﬀer from intrinsic limitations; e.g., the Hamming distance is sensitive to the graph density and
+the Jaccard distance treats all edges uniformly [33]. Furthermore, it has been previously underlined that the choice of
+graph distance can signiﬁcantly aﬀect a method’s results [7], and therefore requires a-priori knowledge or assumption
+on the network distribution.
+One widely popular statistic in change-point detection problems is the cumulative sums (CUSUM) statistic, which has
+been used in diﬀerent time series contexts, e.g., in the oﬄine and high-dimensional setting (in combination with the
+network binary segmentation algorithm) [10], and more recently, in the online setting [11]. Several NCPD methods
+have adapted this eﬃcient statistic to dynamic networks, e.g., for sparse graphs [17], graphs with missing links [37, 15],
+in oﬄine [16] and online [13] settings, and proved that minimax rates of estimation can be obtained for the overall
+false alarm probability and the detection delay. However, computing the CUSUM statistic necessitates a “forward”
+window to detect a change at a given timestamp, and methods based on this statistic often require to tune several
+hyperparameters (e.g., one or several detection thresholds).
+In addition to the aforementioned limitations, most previously cited methods do not provide a principled way to
+incorporate node attributes or even edge weights. Interestingly, to the best of our knowledge, no prior work has ever
+considered graph neural networks (GNNs) for the NCPD problem, despite the fact that such architectures can easily
+handle diﬀerent types of networks (e.g., signed [38] or directed [39] ), and in particular, can inherently account for
+any available node attributes [40]. In dynamic network modelling, graph convolutional recurrent networks [41] and
+dynamic graph convolutional networks [42] were introduced for predicting graph-structured sequences. In the dynamic
+link prediction task, methods that learn representations of dynamic networks have been proposed, using deep temporal
+point processes [43], joint attention mechanisms on nodes neighborhoods and temporal domain [44], memory feature
+vectors in message-passing architectures [5] or recurrent neural networks [45, 1]. For anomalous edge detection in
+dynamic graphs, [46] process subgraphs around the target edges through convolution and sort pooling operations, and
+gated recurrent units. To our knowledge, only one prior work has incorporated GNN layers in a method for change-
+point detection, but has done so in the context of multivariate time series [47]. However, in this method, the GNN
+encodes the cross-covariances between the time series’ dimensions in the spatial layers, and is one part of a complex
+neural network architecture (the temporal dependencies being encoded by recurrent neural network layers).
+Moreover, while GNNs have proved to eﬀectively learn representations of graphs, they can also be leveraged to learn
+graph similarity functions in a data-driven way and for particular tasks in a end-to-end fashion. This now popular
+problem is called graph similarity learning (GSL) [48]. One common type of model for this task is siamese networks
+[49], e.g., siamese graph neural networks [50]) or graph matching networks [51, 52]. These architectures allow to
+learn ﬂexible and adaptive similarity functions and have been successfully applied to several tasks and graph domains,
+e.g. classiﬁcation of brain networks [50, 53, 54], image classiﬁcation [55], and detection of vulnerabilities in software
+systems [51]. In this work, we will leverage such GSL models for the online NCPD task, which avoids the need for
+choosing a-priori a particular graph distance, kernel or embedding.
+3 General setup and framework
+In this section, we describe our general set-up and NCPD method based on a graph similarity learning model. We will
+ﬁrst present our network change-point statistic in Section 3.1, leveraging a similarity function learnt by a GSL model
+described in Section 3.2, through an adequate training and validation procedures (see Section 3.3). Before presenting
+our methodology, we introduce some useful notation.
+3
+
+=== page 4 ===
+Notation. We denote G = (A, E) ∈  a graph with n > 1 nodes denoted by {u1,..., un}, adjacency matrix A ∈ n×n
+and node attributes (or features) matrix E ∈ n×d ∪{∅}, d > 1. We say that the graph is attributed if E , ∅, and
+unattributed otherwise. If A ∈ n×n >0 , we also say that the graph is unsigned. We denote NT = {Gt}1⩽t⩽T a dynamic network with T > 1 snapshots, where each graph Gt has the same set of nodes with a ﬁxed ordering. Let In and 1n be
+respectively the n × n identity matrix and the all-one vector of size n. For a matrix M, we denote Mi j an entry, Mi: its
+i-th row and M: j its j-th column. We also denote ‖M‖F and ‖M‖ respectively the Frobenius norm and operator norm
+(i.e., the largest singular value). For a vector u, we denote ‖u‖ its Euclidean norm. For any positive integer J, let [J]
+denote the set {1, 2,..., J}.
+3.1 Graph similarity function for network change point detection
+We consider a single dynamic network NT = {Gi}1⩽t⩽T with an unknown number of change-points 1 < τ1 < ··· <
+τK < T, K > 1, such that, for any k ∈ [K] we have
+Gi i.i.d∼ Gk−1, τk−1 ⩽ i <τk,
+Gi i.i.d∼ Gk, τk ⩽ i <τk+1,
+with τ0 = 1 and (G0,...,GK ) distinct graph generating distributions. We assume that ∀k > 1,τk −τk−1 >L0, with
+L0 > 0 a known lower bound of the minimal spacing between two consecutive change-points. We recall that in our
+setting, the set of nodes in each graph snapshot Gt is ﬁxed and its ordering is kept unchanged along the sequence.
+Assume for now that we have a graph similarity function s : G × G → [0, 1] such that for any Gt1 ∼Gi1 , Gt2 ∼Gi2 ,
+s(Gt1 , Gt2 ) > 0.5 if Gi1 = Gi2 and s(Gt1 , Gt2 ) ⩽ 0.5 otherwise. One can then detect change-points in NT by monitoring
+the following average similarity statistic
+Zt(s, L) = 1 L L∑ i=1 s(Gt, Gt−i), t > L, (1)
+where L < L0 is a hyperparameter that controls the length of the past window, and declare a change-point at any
+timestamp t such that
+Zt′(s, L) > 0.5, t − L ⩽ t′ < t, (2)
+Zt(s, L) ⩽ 0.5.
+This general method can be applied to recover an arbitrary number of change-points in the dynamic network in an
+online setting and without any detection delay, i.e., as soon as the data is collected. In practice, one can choose a graph
+similarity function or kernel s(·,·) and a detection threshold θ, e.g., using a validation criterion [56] or a signiﬁcance
+test procedure using stationary bootstrap [3], and declare a change-point (or an anomaly) in the dynamic network
+whenever Zt(s, L) > θ. Note that the properties of this method heavily depend on the chosen similarity function and
+its discriminative power.
+Our NCPD method consists of using the statistic Zt(s, L) and the detection rule (2), together with a data-driven graph
+similarity function s(·,·) learnt by a s-GNN model, which we describe in the next section.
+Remark 3.1. Our method can also be employed in an oﬄine setting, where one aims at localising changes in a
+dynamic network after the whole sequence has been collected, with a slight change of the detection rule. For instance,
+for a dynamic network with a single change-point, one can localise the latter at ˆτ, such that
+ˆτ = arg min
+t∈[L,T]
+Zt(s, L),
+or ˆτ = arg max
+t∈[L+1,T]
+|Zt(s, L) − Zt−1(s, L)|. (3)
+Additionally, our method could be adapted to a setting where a small detection delay (e.g., of order L) may be tolerated.
+In this case, we could replace (1) by a more robust change-point statistic that also uses a future (or forward) window,
+e.g., (Gt, Gt+1,... Gt+L). For instance, we could use a two-sample test statistic on the two sets of graphs (Gt−1,..., Gt−L)
+and (Gt,..., Gt+L) such as the maximum kernel Fisher discriminant ratio [36] or the maximum mean discrepancy
+(MMD) [23], for which an unbiased estimate is given by
+ZMMD t =
+vu√
+1
+L(L + 1)
+L+1∑
+i, j=1
+(
+s(Gt−i, Gt− j) + s(Gt−1+i, Gt−1+ j) − s(Gt−i, Gt−1+ j)
+)
+.
+Note that this estimate would correspond to the empirical MMD measure between two sets of graphs mapped into a
+reproducing kernel Hilbert space if the function s(·,·) was a graph kernel function [23].
+4
+
+=== page 5 ===
+(a) Siamese graph neural network
+ (b) Similarity module
+Figure 1: Architecture of our graph similarity learning model. The general pipeline (a) is a siamese GNN where the
+output module is a similarity module (b). We design the latter with Euclidean distance, Sort-k pooling operations, and
+fully-connected layers, for measuring the proximity of snapshots in dynamic networks.
+3.2 Graph similarity learning via siamese graph neural networks
+Siamese graph neural networks (s-GNN) are architectures designed to compare pairs of graphs, e.g., for learning a
+graph similarity function or distance. They can notably be used in graph classiﬁcation and graph matching tasks
+[50, 54] in both supervised and unsupervised settings. More precisely, a general s-GNN takes as input a pair (G1, G2),
+embeds G1 and G2 with the same graph encoder (or equivalently, two siamese encoders that share the same weights),
+then combines the embeddings in a symmetric similarity module. The variability of s-GNN architectures mainly lies
+in the design of these two modules (see for instance [54, 50, 52]).
+In our NCPD method, we propose a s-GNN architecture summarized in Figure 1, for learning a similarity score
+s(Gt1 , Gt2 ) in [0, 1] on the space of graph snapshots (G1, G2,..., Gt,... ) from the dynamic network. For this purpose,
+we design a similarity module for comparing the node-level embeddings output by a generic graph encoder (e.g., a
+graph convolutional network [40], a graph attention network [57], a GraphSage network [58] or a graph isomorphism
+network (GIN) [59]). Our similarity module consists of Euclidean distance, pooling and fully-connected layers, as
+detailed in Figure 1b. The design of this module allows to select local regions of interest of the graph and limits the
+number of parameters by using Sort-k pooling [60] and two fully-connected layers.
+For the sake of simplicity, we use a simple graph convolutional network (GCN) [40] for undirected and unsigned
+graphs as the graph encoder in our architecture. However, this block can be replaced by any ad-hoc graph encoder.
+With a GCN, the embedding of a graph H( j) at each layer j ∈ [J], J > 1 is computed as follows
+H( j) = σ ( ˜AH( j−1)W( j) + B( j)) , (4)
+where W( j) ∈ h j−1×h j is a weight matrix, h j is the number of hidden units of layer j, B( j) ∈ h j is a bias vector,
+˜A = ˜D−1/2( A + In) ˜D−1/2 is the normalized augmented adjacency matrix with degree matrix ˜D = Diag(( A + In)1n),
+and σ is the point-wise ReLU activation function, i.e., σ(x) = max(x, 0). The input of the ﬁrst layer, H(0), is either the
+node attributes matrix E ∈ n×d if the input graph is attributed or a positional encoding matrix (see below). Finally,
+the output of the GCN is the node-level embedding matrix HJ ∈ n×hJ at the last layer. Therefore, for a pair of graphs
+(Gt1 , Gt2 ), this siamese encoder module computes a pairs of graph embeddings, (H1, H2) := (HJ(Gt1 ), HJ(Gt2 )), and
+the vectors (H1)i: and (H2)i: correspond to the representations of the node i respectively in Gt1 and Gt2 . Intuitively, a
+large distance between these two embeddings can indicate that node i plays distinct structural roles in Gt1 and Gt2 .
+Then, the pair of embeddings (H1, H2) is processed by a similarity module, which ﬁrst computes a vector of Euclidean
+distance between the nodes’ embeddings, and secondly, applies a Sort-k pooling operation [60] to select its k largest
+entries, i.e.,
+P = ( fr1 ,..., frk ), fi = ‖(H1)i: − (H2)i:‖2 ∈ >0, 1 ⩽ i ⩽ n,
+where r1,..., rk correspond to the indices of the (sorted) k largest elements of { fi}i∈[n]. Next, the pooled vector P
+is processed by two fully connected layers, each of them containing an aﬃne transformation, batch normalisation
+and ReLU activation function. Finally, the output of the second fully connected layer is pooled using a sum-pooling
+layer followed by a sigmoid activation function, so that the ﬁnal output of the similarity module (and the s-GNN),
+s(Gt1 , Gt2 ) ∈ [0, 1], a non-negative similarity score between the two input graphs. This score can be transformed into
+a similarity label via
+ˆy(Gt1 , Gt2 ) =
+{
+1 (i.e., Gt1 and Gt2 are similar or have the same generative distribution), if s(Gt1 , Gt2 ) > 0.5
+0 (i.e., Gt1 and Gt2 are dissimilar or have diﬀerent generative distributions), otherwise.
+5
+
+=== page 6 ===
+Note that using a Sort-k pooling layer in the design of the similarity module has two main advantages in our context.
+• First, since it follows the (node-wise) Euclidean distance operation, it therefore selects the nodes that have the largest
+discrepancies between their embeddings in the two graphs. Therefore, if a structural change in the dynamic network
+aﬀects only a few nodes, this change can be picked up by this pooling operation, without being diminished by the
+absence of change in the rest of the network. This component could be further built upon for identifying which local
+part of the network is mainly driving the change-point, thus enhancing the explainability of the proposed pipeline.
+• Second, Sort-k pooling reduces the number of parameters while preserving the most important information for
+measuring potential and local graph changes. More generally, replacing max or sum pooling by sorted pooling have
+been proven to increase the accuracy and generalization power of neural networks, in particular in settings with limited
+data availability, such as one-shot learning [61], and can also be used for downsampling graphs [62]. In the network
+change-point-agnostic detection task, we incorporate this pooling layer to mitigate our lack of information on the
+change-points.
+Remark 3.2. It is often a desirable property of GNN models with graph-level (resp. nodel-level) output to be invariant
+(resp. equivariant) to nodes’ permutations. This is due to the fact that nodes in a graph are generally considered
+exchangeable, or in other words, the order of node set in the adjacency and node attributes matrix is arbitrary. In our
+method, the s-GNN model takes as input pairs of graph snapshots from a dynamic network sequence (see Section 3.1),
+where every snapshot contains the same set of nodes with the same ordering. Therefore, in our context, the invariance
+property of the learned graph similarity function denotes that the latter is invariant to any permutation of the nodes
+that is applied on both inputs. More precisely, for any permutation of the node set σ : [n] → [n], denoting σ∗ G
+the resulting transformation of a graph G under σ (i.e., permutation of the rows and columns of the adjacency and
+node attributes matrices), the invariance property writes s(σ(G1),σ(G2)) = s(G1, G2). This is indeed the case for our
+method since the node-wise operations, i.e, the graph encoder and the Euclidean distance, are equivariant. Then, since
+the Sort-k pooling layer is permutation-invariant, i.e. P(H) = P(σ(H)), so is the ﬁnal similarity score.
+Moreover, when the dynamic network is unattributed, i.e., each graph snapshot contains only structural information
+Gi = ( Ai,∅), one needs to choose an appropriate initialisation of the node features matrix H(0) as input of the s-
+GNN. Following existing methodology [63], we compute Positional Encodings (PE), i.e., synthetic node attributes
+that capture their relative positions in the graph structure. In fact, it has been previously noted that the choice of PE is
+critical for the expressivity of GNN models [64]. Therefore, in our experiments, we will use and compare four types
+of encoding, the ﬁrst three being existing techniques that have been introduced in diﬀerent graph learning settings, and
+the last being one that we believe may also be appropriate for certain NCPD tasks.
+1. Degree encoding [65]: the attribute of a node is a scalar equal to its degree in the graph, i.e. H(0) = A1n ∈
+n×1.
+2. Random-Walk encoding [66, 64]: for k > 1, the vector of attributes of a node ni, 1 ⩽ i ⩽ n is deﬁned as
+H(0) i: = [Rii, R2 ii,... Rk ii] ∈ k,
+where R = A D−1 is the random-walk operator and k > 1 is a hyperparameter.
+3. Laplacian encoding [67]: the node attributes are the principal eigenvectors of the symmetric normalised
+Laplacian matrix L = In − D−1/2 A D−1/2. We note that this is similar to the ﬁrst steps of spectral clustering
+algorithms. More precisely, using the factorisation L = UT ΛU where U, Λ respectively contain the ordered
+set of eigenvectors and eigenvalues of L, the Laplacian encodings are deﬁned as
+H(0) = [UT :1, UT :2,..., UT :k] ∈ n×k,
+where k > 1 is a hyperparameter.
+4. Identity encoding: we deﬁne the initial feature matrix as H(0) = In, which corresponds to learning a unique
+initial input embedding for each node at the ﬁrst layer of the s-GNN. We argue that this is an appropriate
+choice for the graph siamese encoder in our setting. In fact, these encodings in general break the equivariance
+property of GNN models; however, this is not the case here since this property has a modiﬁed deﬁnition when
+the graphs are snapshots of a dynamic network (see Remark 3.2). We recall that we have assumed that the
+set of nodes is constant in the dynamic network, and the global ordering of the nodes, although arbitrary,
+is common to all graph snapshots. Finally, it has been previously noted in graph learning tasks that taking
+into account the nodes’ identities [33] can be beneﬁcial. We will in particular use these encodings for the
+real-world dynamic network with a small number of nodes in Section 4.5.
+6
+
+=== page 7 ===
+We note that more complex strategies for computing positional encodings include learning them along the training
+procedure of the s-GNN [64]. However, we do not consider these latter approaches, which signiﬁcantly increase the
+model complexity.
+Finally, our s-GNN architecture can classically be trained in a supervised way if a data set of labelled pairs of graphs
+is available, with D = {(Gi 1, Gi 2,yi)}i with yi ∈{0, 1} indicating if the graphs come from the same distribution or not. For example, one can optimise its parameters by minimising the cross-entropy loss function
+L(G1, G2,y) = −y log s(G1, G2) − (1 −y) log(1 − s(G1, G2)),
+via gradient descent. In the NCPD task, designing such a data set requires an adequate sampling scheme of the
+snapshots in the dynamic network as well as an ad-hoc validation procedure. In the next section, we present our
+supervised learning strategy for the s-GNN.
+3.3 Training and validation procedures for NCPD
+In the NCPD task, a supervised setting corresponds to the case where a training subsequence of the dynamic network
+containing ground-truth change-points is available. In this setting, these change-point labels can then be used to design
+training and validation sets for our GSL model, with these sets containing triplets (G1 i , G2 i ,yi), where yi ∈{0, 1} is a similarity label (yi = 1 corresponding to ”similar”). In this section, we describe our strategy for sampling such triplets
+from the dynamic network sequence, for both the training and validation steps.
+First, we divide the sequence of graph snapshots into training, validation and test subsequences, e.g., using consecutive
+windows of respectively x%, y% and z% timestamps. In the training and validation sequences, we sample labelled
+pairs of graphs according to the two following schemes.
+1. Random scheme (training set): we consider the set of all (non-ordered) pairs of graphs in the training
+sequence and label each pair (Gt1 , Gt2 ) with y = 1 if there is no change-point between t1 and t2, and yi = 0
+otherwise. Then we uniformly sample a ﬁxed number of pairs with label 1 (”positive” examples) and the
+same number of pairs with label 0 (”negative” examples), without replacement. The number of pairs is a
+hyperparameter of the method, which can be chosen heuristically as 10 × T, if T is not too large.
+2. Windowed scheme (validation set): we consider the set of all (non-ordered) pairs of graphs in the network
+sequence that are not distant from each other by more than L timestamps, and label them with the same
+procedure as in the Random scheme.
+We note that the diﬀerent sampling mechanisms for the pairs in the training and validation sets are designed to satisfy
+a double objective of our learning procedure: we aim to learn an adequate graph similarity function and to detect
+change-points in a network sequence using the latter. For the ﬁrst objective, the Random scheme allows to create
+pairs of graph snapshots that are far away in the sequence in order to avoid strong correlations between the training
+pairs and undesired ”transition” eﬀects in real networks, e.g., when the change of generative distribution is not abrupt.
+Moreover, with the scheme, we can avoid label imbalance in the training set by sampling the same number of positive
+and negative pairs, which we assume is favorable for the s-GNN. For the second objective, the Windowed scheme
+builds a validation set of pairs that imitates the test setting of our GSL model. In fact, in our online NCPD method
+(see Section 3.1), the evaluation of the graph similarity function s(.,.) in the statistic (1) (and detection rule (2)) only
+applies for pairs of graphs within a sliding window of size L. In particular, in the test setting, the pairs of graphs
+that are compared by s(·,·) are highly correlated and the number of positive pairs is much larger than the number of
+negative examples, since there are generally only few change-points in the dynamic network. We ﬁnally note that in
+both the Random and Windowed schemes, the sampled pairs may have in common (at most) one graph snapshot.
+Consequently, in a supervised NCPD setting, we can train our s-GNN model in a supervised way as a binary classiﬁer
+of pairs (see Section 3.2) using the previous sampling strategies. In an unsupervised NCPD setting, i.e., when the
+dynamic network does not contain any ground-truth label of change-point, we need to resort to a novel self-supervised
+learning technique [68]. In this case, we ﬁrst pre-estimate a set of change-points in the training and validation se-
+quences and then use the previous sampling schemes to draw training and validation pairs of graphs. This learning
+procedure is applied on the ﬁnancial network data set in Section 4.4, where our algorithm for pre-estimating a set of
+change-points is based on a spectral clustering technique.
+4 Numerical experiments
+In this section, we test and evaluate the performances of our s-GNN method in the online NCPD task, ﬁrst in a
+controlled setting of synthetic dynamic networks (Section 4.3), then on real-world correlation networks (Sections 4.4
+7
+
+=== page 8 ===
+and 4.5). Moreover, since one of these data sets does not contain ground-truth change-points, we also introduce a
+self-supervised learning procedure for our method (see Section 4.4).
+4.1 Performance metrics
+For dynamic network data sets with ground-truth labels of change-points, we evaluate the performance of NCPD
+methods using the following metrics, in the single or multiple change-point settings:
+• Localisation error (single change-point) deﬁned as ErrorCPD = |ˆτ − τ|, where τ, ˆτ are respectively the
+ground-truth and estimated change-points.
+• Adjusted F1-score [69] (multiple change-points) on the classiﬁcation of timestamps as change-point (label
+1) or not change-point (label 0). We tolerate an error of ±5 timestamps on this task, i.e. all the timestamps
+within a window of length 11 centered at the ground-truth change-point are given a ground-truth label 1, and
+a valid detection occurs whenever one of these timestamps is classiﬁed as change-point.
+For the the data set without ground-truth labels in Section 4.4, we qualitatively discuss our ﬁndings, place them in
+a ﬁnancial context, and compare them with previous analysis of similar data. Additionally, in the synthetic data
+experiments in Section 4.3, we also evaluate the ability of our graph similarity function ˆs to discriminate between
+graphs sampled from the same or diﬀerent distributions, i.e., to classify pairs of graphs generated from either the same
+or diﬀerent random graph models. We measure this property in terms of the accuracy score.
+4.2 Baselines
+We will compare our data-driven graph similarity function to graph distances, similarity function and kernel previously
+used in the context of NCPD and graph two-sample-test.
+• Frobenius distance [7, 70, 71, 37], deﬁned as dF ( A, B) = ‖ A − B‖F , for two matrices A, B with equal
+dimensions. Here, we will apply this distance to the adjacency matrices of two graphs. Note that one can also
+apply it on the graph Laplacian matrices [71], and that this distance has also been used in a minimax testing
+perspective between two graph samples [72].
+• Procrustes distance between Laplacian principal eigenspaces [34]. This distance corresponds to the Frobe-
+nius distance between the matrices of eigenvectors corresponding to the k largest eigenvalues of the symmetric
+graph Laplacian L = In − D1/2 A D1/2, after performing an alignment step. The number of eigenvectors k can
+be pre-speciﬁed or chosen by ﬁnding the optimal low-rank approximation of L.
+• DeltaCon similarity [32]. This graph similarity function is based on the Matusita distance applied to the
+Fast Belief Propagation graph operators, deﬁned for a graph as S = [In + ϵ2 D −ϵ A]−1 with ϵ > 0. We use
+the implementation of this similarity function provided in the python package netrd.3
+• Weisfeiler-Lehman (WL) kernel [73]. This graph kernel is notably used in the two-sample-test problem for
+sets of graphs [23]. We use the implementation from the GraKel python package [74], and ﬁx the number of
+iterations of the WL kernel algorithm to 5 in our experiments.
+We will use the previous baselines in the statistic (1) and detect change-points using a threshold chosen on a validation
+set. We also compare our NCPD pipeline to methods that do not rely on an explicit graph metric for detecting change-
+points.
+• Network change-point detection with spectral clustering (SC-NCPD) [3]. This method ﬁrst partitions
+the node set of each snapshot with a spectral clustering algorithm and compute an inner product between
+averages of spectral features across a backward (or past) and a forward (or future) windows. In this method,
+the number of clusters and the lengths of the windows are pre-speciﬁed.
+• Laplacian anomaly detection (LAD) [25]. This method applies both to the anomaly detection and change-
+point detection tasks for dynamic networks, and is based on the anomaly score
+Zt = 1 −| ˜σtσt|,
+where σt is the vector of top-k singular values of the unormalized Laplacian of the graph Gt and ˜σt aggregates
+(e.g. averages) the top-k singular values of each snapshots in a past window of size L, i.e., (σt−L,...,σt−1).
+The number of singular values k and the length of the window are pre-speciﬁed hyperparameters.
+3https://netrd.readthedocs.io/en/latest/index.html#
+8
+
+=== page 9 ===
+• Network cumulative sums statistic (CUSUM) [13]. This method uses a backward and a forward windows
+of sizes L′ to compute a sequence of CUSUM matrices
+Ct = 1√ 2L′
+ t∑
+s=t−L′+1
+As −
+t+L′ ∑
+s=t+1
+As
+, L′ ⩽ t ⩽ T − L′. (5)
+Following the methodology in [13], we divide the dynamic network into two samples, NA = {G2t}1⩽t⩽T/2 and
+NB = {G2t−1}1⩽t⩽T/2, containing the snapshots respectively at even and uneven timestamps. This algorithm
+monitors two statistics based on the CUSUM matrices (5) of these samples: the Frobenius norm of the
+Universal Singular Value Threshold (USVT) estimator ~B(t) of the CUSUM matrix computed from NB, and the
+dot product between ~B(t)/‖~B(t)‖ and the CUSUM matrix computed from NA. To avoid tuning the additional
+threshold parameters, we do not apply the USVT step (or equivalently choose τ1 = 0 and τ2 = 1 in USVT).
+Moreover, we only use the second statistics since the ﬁrst one is very close to the next baseline.
+• Operator norm of network CUSUM (CUSUM 2) [15]. We adapt this oﬄine method to the online problem
+by computing the CUSUM matrix over a past and future windows of size L′. The NCPD statistics is then
+zt = ‖Zt‖.
+For these baselines, we ﬁx the number of clusters or singular values to k = 6 and the size of windows to L′ = L/2 when
+both the past and future are used in the NCPD statistic. We also note that these methods are applied to non-attributed
+dynamic networks and therefore only use the sequence of adjacency matrices ( At)t. However, only one of our network
+data sets is attributed (see Section 4.4) and in this case, the node attributes are ignored by the baseline methods.
+4.3 Synthetic data
+In this section, we generate dynamic networks from a dynamic stochastic block model [18, 13, 16, 29] with a unique
+change-point. More precisely, we generate sequences of unattributed graphs (G1,..., GT ) with T = 100 such that for
+each t ∈ [T], each graph is independently drawn from a Stochastic Block Model (SBM) with n = 400 nodes and
+Gt i.i.d∼ G1, if t <τ,
+Gt i.i.d∼ G2, if t > τ,
+where G1,G2 are two SBM distributions. We recall that an SBM with K > 1 communities can be deﬁned by a
+connectivity matrix C = (p − q)IK + q1K 1T K with intra- and inter-cluster connectivity parameters p, q ∈ [0, 1], and a
+membership matrix Θ ∈{0, 1}n×K . The parameter p (respectively q) corresponds to the probability of existence of an
+edge between two nodes in the same community (respectively in two diﬀerent communities), while each row Θi of the
+membership matrix indicates the community a node ni belongs to.
+We consider four diﬀerent change-point scenarios related to three possible types of events in a community life-cycle
+[8], namely “Merge”, “Birth” and “Swaps”. These community events are illustrated in Figure 2 by heatmaps of
+the expected adjacency matrices in G1 and G2. We note that in all the following settings, the graph snapshots will be
+relatively sparse.
+• Scenario 1 (“Merge”). the two SBMs G1 and G2 have respectively four and two equal-size clusters with
+inter-cluster connectivity parameter q = 0.02 and intra-cluster connectivity parameter p > q which we vary.
+We design several diﬃculty levels of this scenario by changing the value of p: the larger p is, the easier the
+detection problem is.
+• Scenario 2 (“Birth 1”). This scenario mimics the appearance of a community in a dynamic network. In this
+case, G1 is the distribution of an Erdos-Renyi model with parameter q = 0.03 and G2 is a SBM with two
+communities of size n − s and s, 1 ⩽ s ⩽ n/2, and connectivity matrix
+C =
+(
+q q
+q p
+)
+,
+with p = 0.1. We vary the diﬃculty of this detection scenario by changing the size of the second cluster s:
+the bigger s is, the easier the detection problem is.
+• Scenario 3 (“Birth 2”). This scenario uses the setting of Scenario 2 but in this case, the size of the dense
+subgraph is ﬁxed to s = 100 and the diﬃculty level is controlled by the connectivity p. We consider p > q
+such that the larger p is, the easier the detection problem.
+9
+
+=== page 10 ===
+(a) “Merge” scenario.
+ (b) “Birth” scenarios.
+ (c) “Swap” scenario.
+Figure 2: Expectation of the adjacency matrices of the graphs in the SBMs G1 (ﬁrst row) and G2 (second row) , i.e.,
+before and after the change-point, in our three types of synthetic scenarios, “Merge” (a), “Birth” (b) and “Swaps” (c).
+• Scenario 4 (“Swaps”). In this scenario, the connectivity parameters of the two SBMs are equal but their
+membership matrices diﬀer. We simulate a recombination of communities where pairs of nodes exchange
+their community memberships, i.e., two nodes ”swap” their community of attachment. The two SBMs have
+four equal-size clusters with inter-connectivity parameter q = 0.05 and intra-connectivity parameter p = 0.1.
+We test diﬀerent diﬃculty levels by varying the proportion h of pairs of nodes swapping their memberships;
+the bigger the h, the easier the detection problem.
+Note that Scenario 1 can be considered as a global change of the network structure, while the other scenarios corre-
+spond to a local topological change (i.e., localised on a subset of nodes). For each scenario and each diﬃculty level,
+we generate 50 sequences with one change-point uniformly sampled in the interval [25, 75]. Moreover, for the pair
+classiﬁcation task (see Section 4.1), in each scenario, we also independently generate 1000 labelled pairs of graphs
+{(Gi 1, Gi 2,yi)}i, where for each i, Gi 1 ∼Gk, Gi 2 ∼Gl with k, l ∈{1, 2} and yi = 1 if Gk = Gl and yi = 0 otherwise. Each of these data sets of pairs is balanced and we use respectively 60%, 20% and 20% of the pairs for training, validation
+and test. In the NCPD task, we estimate the unique change-point with the detection rule (3), and use a window size
+L = 6. Additional details on the experimental setting can be found in Appendix A.
+We test our NCPD method with the four variants of positional encodings (Degree, Random Walk, Laplacian and
+Identity) deﬁned in Section 3.2 and report the results of each scenario in Figures 3, 4, 5 and 6. In almost all scenarios
+and diﬃculty levels, our method outperforms the other baselines, except for the variant with Laplacian attributes.
+The drop of performance using the latter type of encodings has been previously attributed to the sign ambiguity in
+Laplacian eigenvectors [64]. Moreover, the degree and random walks encodings generally seem to be better than the
+identity encodings, except for the last scenario. We conjecture that this is due to the fact that in the ﬁrst three scenarios,
+nodes in the same cluster are exchangeable in the SBM model, while in the last scenario, this symmetry is broken by
+the membership exchange mechanism. For networks with a lot of symmetry, the Identity encoding might introduce
+additional noise.
+We also observe that the strongest baselines are CUSUM and CUSUM2, which have better performances if larger
+window sizes L are used, while our method is not sensitive to this hyperparameter (see Appendix A.2). In particular,
+our method performs well even for a short history of data and therefore could also detect change-points that are close
+to each other in a multiple change-point setting. Consequently, these experiments show that using a data-driven graph
+similarity function leads to better performances in the NCPD task than existing baselines, in various change-point
+scenarios.
+10
+
+=== page 11 ===
+0.03 0.04 0.05 0.06 0.07 0.08 0.09 0.10
+Intra-connectivity (p)
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0Accuracy
+Frobenius
+Procrustes
+WL
+DeltaCon
+s-GNN-PE
+s-GNN-D
+s-GNN-RW
+s-GNN-I
+(a) Classiﬁcation accuracy vs the intra-connectivity parameter p.
+0.025 0.03 0.04 0.05 0.075 0.1
+Intra-connectivity (p)
+0
+10
+20
+30
+40
+50
+60
+70Error
+Frobenius
+Procrustes
+WL
+LAD
+NCPD
+CUSUM
+DeltaCon
+CUSUM_2
+s-GNN-PE
+s-GNN-D
+s-GNN-RW
+s-GNN-I
+(b) Change-point localisation error for diﬀerent intra-connectivity parameters p.
+Figure 3: Performances of our s-GNN method and baselines on the classiﬁcation and detection tasks in the “Merge”
+scenario. The ﬁrst task consists in classifying pairs of graphs sampled from the same or diﬀerent SBM distributions
+using a graph similarity function or a graph distance. The second task consists in localising a single change-point in a
+dynamic SBM sequence. We remark that for very large values of p, many methods attain zero error.
+40 50 60 70 80 90 100
+s
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0Accuracy
+Frobenius
+Procrustes
+WL
+DeltaCon
+s-GNN-PE
+s-GNN-D
+s-GNN-RW
+s-GNN-I
+(a) Classiﬁcation accuracy of pairs vs the community size s.
+40 50 60 70 100
+s
+0
+10
+20
+30
+40
+50
+60
+70Error
+Frobenius
+Procrustes
+WL
+LAD
+NCPD
+CUSUM
+DeltaCon
+CUSUM_2
+s-GNN-PE
+s-GNN-D
+s-GNN-RW
+s-GNN-I
+(b) Change point localisation error for diﬀerent community sizes.
+Figure 4: Performances on the classiﬁcation (a) and detection (b) tasks in the “Birth 1” scenario.
+11
+
+=== page 12 ===
+0.06 0.08 0.10 0.12 0.14 0.16 0.18 0.20
+p
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0Accuracy
+Frobenius
+Procrustes
+WL
+DeltaCon
+s-GNN-PE
+s-GNN-D
+s-GNN-RW
+s-GNN-I
+(a) Classiﬁcation accuracy vs the intra-connectivity parameter p.
+0.05 0.06 0.08 0.1 0.15 0.2
+p
+0
+10
+20
+30
+40
+50
+60
+70Error
+Frobenius
+Procrustes
+WL
+LAD
+NCPD
+CUSUM
+DeltaCon
+CUSUM_2
+s-GNN-PE
+s-GNN-D
+s-GNN-RW
+s-GNN-I
+(b) Change point localisation error for diﬀerent intra-connectivity parameters p.
+Figure 5: Performances on the classiﬁcation (a) and detection (b) tasks in the “Birth 2” scenario. The ﬁrst task consists
+in classifying pairs of graphs sampled from the same or diﬀerent random graph models using a graph similarity
+function or a graph distance. The second task consists in localising a single change-point in a dynamic network
+sequence. We remark that for very large values of p, many methods attain zero error.
+0.025 0.050 0.075 0.100 0.125 0.150 0.175 0.200
+h
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0Accuracy
+Frobenius
+Procrustes
+WL
+DeltaCon
+s-GNN-PE
+s-GNN-D
+s-GNN-RW
+s-GNN-I
+(a) Classiﬁcation accuracy vs the exchange rate h.
+0.01 0.02 0.03 0.04 0.1 0.2
+h
+0
+10
+20
+30
+40
+50
+60
+70Error
+Frobenius
+Procrustes
+WL
+LAD
+NCPD
+CUSUM
+DeltaCon
+CUSUM_2
+s-GNN-PE
+s-GNN-D
+s-GNN-RW
+s-GNN-I
+(b) Change point localisation error for diﬀerent exchange rates h.
+Figure 6: Performances on the classiﬁcation (a) and detection (b) tasks in the “Swaps” scenario.
+12
+
+=== page 13 ===
+4.4 Correlation network from stock returns data
+This data set comprising the cross-correlation networks of daily stock returns, computed over a one-month interval,
+from the S&P 500 index in a period of about 20 years (February 2000 - December 2020). Data sets of stock returns
+have been previously analysed in diﬀerent contexts. For online NCPD, [13] and [7] consider the covariance matrices
+of S&P 500 weekly log-returns respectively on the period between 1950 and 2000, and between 1982 and 2000, while
+[37] analyses the weekly log-returns of 29 stocks from the Dow Jones Industrial Average index, from April 1990 to
+January 2012. Closely related to our problem, [75] and [76] cluster market behaviours in the USA S&P 500 and Japan
+Nikkei 225 stock networks during the period from 1985 to 2016.
+In this analysis, we consider 685 stocks (therefore nodes in the dynamic network) alongside additional information of
+their economic activity during each month. The correlation networks are built from the time series of open-to-close
+(intraday) and close-to-open (overnight) returns. Typically, there are 21 trading days in a calendar month, hence each
+stock has associated a time series of length 42, since each day of the month contributes with two returns. The resulting
+stock correlation matrix is the starting point for our network construction. In addition, we employ the following stock
+properties as node attributes
+• volatility: the standard deviation of the above 42 open-to-close and close-to-open returns, based on which the
+correlation network was built,
+• volume ADV: average daily volume, in shares, over the 21 days of the month,
+• sharesOut ADV: average shares outstanding, over the 21 days of the month.
+We then construct an attributed and unweighted dynamic network GF = (( At, Et))1⩽t⩽244 with 244 snapshots, and
+for each t, At ∈ {0, 1}685×685 and Et ∈ 685×4, by truncating the cross-correlation matrices between stocks. More
+precisely, we set to 1 the matrix entries that are below the 0.1-quantile and above the 0.9-quantile among the entries
+of all correlation matrices. We note that after this preprocessing step, each graph snapshot is connected and contains
+self-loops. A similar procedure has been applied in [13], while other works transform the correlation matrices into
+complete weighted graphs, e.g., by squaring the correlation coeﬃcients [75] or computing the inverse of the ultra-
+metric distance [76]. Here we adopt the sparsifying approach to avoid dealing with a large complete graph. In Table
+1, we report some properties of the resulting network. Finally, we standardize the node attributes matrices {Et}1⩽t⩽244
+across the timestamps: for each column (i.e. each attribute) and each matrix, we center and scale its values by the
+mean and standard deviation of all the values of this attribute in the graph snapshots.
+Although previous work reported changes in the behaviour of the stock market following diﬀerent economic or global
+events [75], there is no ground-truth knowledge of change-points for this dynamic correlation network. However,
+there is strong evidence that some major events, such as the ones listed in Table 2, have impacted the dynamics of
+stock returns and their correlation [7]. Therefore, we consider a self-supervised training procedure [68] that ﬁrst
+pre-estimates a set of change-points in order to train our s-GNN with the procedure described in Section 3.
+We ﬁrst divide our dynamic network into consecutive windows of 50%, 20% and 30% graph snapshots as training,
+validation and test sequences. Then we pre-estimate change-points in the training and validation sequences using the
+following methodology. It is common practice to cluster stocks into market sectors [75], and we conjecture that this
+cluster structure is reﬂected in the correlation network and is a proxy for the underlying state of the ﬁnancial market
+at a given time. Therefore, we consider the following three-step procedure:
+1. We estimate a cluster structure for each correlation matrix using a spectral clustering algorithm based on the
+Symmetric Signed Laplacian [77].
+2. We compare the obtained node partitions in each pair of matrices using the Adjusted Rand Index and use the
+latter as a pairwise measure of similarity between correlation graphs. Then we apply a spectral clustering
+algorithm based on the Normalised Symmetric Laplacian on the graph snapshots (i.e., each snapshot is given
+a label, interpreted as a state or behaviour of the stock market).
+3. We estimate change-points by “smoothing” the snapshots’ labels: we compute the centroid timestamp of
+each cluster of snapshots and relabel the latter with the labels of their closest centroid. These new labels now
+deﬁne a partition of the temporal window into consecutive intervals, and therefore pre-estimate change-points
+in network training sequence.
+In the ﬁrst step, we cluster each correlation matrix into k = 13 clusters; this value is chosen by evaluating the silhouette
+index of the result clustering for diﬀerent number of clusters k ∈ {10,..., 20}. In the second step, we cluster the
+similarity matrix between the graph snapshots based on the ARI (see Figure 10 in Appendix A) into C = 9 clusters.
+We note that in the ﬁrst step, the clusters correspond to sets of nodes (i.e., stocks) in each graph, while in the second
+13
+
+=== page 14 ===
+Financial network (T = 244, n = 685)
+Mean Median Standard deviation
+Number of edges per graph 46.3 × 103 40.3 × 103 23.6 × 103
+Edge density 0.20 0.17 0.10
+Average degree 135 96 111
+Average shortest path length 1.8 1.8 0.1
+Diameter 2.8 3.0 0.5
+Table 1: Mean, median and standard deviation of network statistics for the snapshots in the correlation network of
+S&P index stock returns.
+Major crashes Period Date
+9/11 Financial Crisis 11/09/2001
+Stock Market Downturn Of 2002 09/10/2002
+US Housing Bubble 2005-2007
+Lehman Brothers Crash 16/09/2008
+DJ Flash Crash 06/05/2010
+Tsunami/Fukushima 11/03/2011
+Black Monday / Stock Markets Fall 08/08/2011
+Chinese Black Monday 24/08/2015
+Dow Jones plunge 02/2018 - 03/2018
+WHO public emergency state (COVID-19) 30/01/2020
+Table 2: Dates of major crashes and bubbles in the USA market.
+step, the clusters are sets of graph snapshots. The estimated change-points obtained in the third step are plotted in
+Figure 11.
+Then for the training set, we sample N = 3000 pairs of graphs using the “Random scheme” (see Section 3.3) and
+for the validation set, we use the “Windowed scheme” with a window of size 12, which leads to 684 pairs. For
+choosing the hyperparameters of the s-GNN, we test every conﬁguration of values with the learning rate in the set
+{10−5, 10−4, 10−3, 10−2}, the weight decay in {10−6, 10−5}, the dropout rate in {0.05, 0.2, 0.4}, the output size of the
+Sort-k layer in {50, 100, 200}, the number of hidden units in {32, 64, 128}. We select the model with the highest F1-
+score on the validation set to make predictions on the test set.
+Finally, we compute our NCPD statistic (1) with a window size L = 6 over the whole network sequence (i.e., training,
+validation and test), and qualitatively interpret the time series of its increments ∆Zt(s, L) = |Zt(s, L)−Zt−1(s, L)|, plotted
+in Figure 7, alongside the baselines, the SPY and VIX volatility indices and a timeline with the major market events
+listed in Table 2. We observe that our detection statistic exhibits some large peaks at several timestamps coinciding or
+soon after some market events. The biggest peaks appear in August 2007, August 2015, February 2018 and February
+2020 and could be associated with the following ﬁnancial events and world disruptions.
+1. The ﬁnancial crisis of 2007-2008, which began as early as February 2007 when the stock prices in China and
+the US dramatically fell.
+2. The Chinese Black Monday in August 2015.
+3. The Dow Jones index’s plunge in February-March 2018.
+4. The declaration of a Public Health Emergency of International Concern by the World Health Organisation in
+January 2020 after the emergence of COVID-19.
+A secondary peak is also observed in March 2002, which could be a consequence of the 9/11 ﬁnancial crisis.
+In comparison, the baselines are not able to detect as many events. Almost all baselines detect change-points be-
+tween 2010 and 2012, a period when several ﬁnancial crashes happened such as the 2010 Dow Jone ﬂash crash, the
+Fukushima nuclear incident in March 2011 and the Stock Markets Fall of August 2011. However, most baselines
+fail to detect anything outside this two-year period. One exception holds for the CUSUM 2, which indicates net-
+work disruptions at roughly six periods: during the ﬁnancial crisis of 2007-2008, Dow Jones Flash Crash in 2010, the
+14
+
+=== page 15 ===
+Subject Activity performed Number of change points Number of timestamps1 2 3 4 5 6 7 12 13 16 17 24
+1 ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ 13 2490
+2 ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ 13 2618
+3 ✓ ✓ ✓ ✓ – – – ✓ ✓ ✓ ✓ – 10 1732
+4 ✓ ✓ ✓ ✓ – ✓ ✓ ✓ ✓ ✓ ✓ – 11 2302
+5 ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ 13 2709
+6 ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ 13 2487
+7 ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ – 12 2314
+8 ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ ✓ 13 2606
+Table 3: Properties of the dynamic networks obtained from the physical activity monitoring data. Some activities are
+not listed because they have not been performed by any of the subjects in this experiment.
+Stock Market Fall in 2011, the Chinese Black Monday in 2015, the Dow Jones plunge in 2018 and the consequences
+of the COVID-19 pandemic in 2020. However, this method delimits some periods of disruptions rather than clear
+change-points.
+4.5 Correlation networks from physical activity monitoring
+This public data set4 was built for benchmarking time series classiﬁers on physical activity monitoring [78, 79]. This
+data contains multivariate time series recorded from eight subjects wearing 3D inertial measurement units (IMUs) and
+performing a protocol of 12 diﬀerent physical activities such as sitting, walking, descending and ascending stairs and
+vacuum cleaning. The time series correspond to measurements from 3 IMUs positioned on the subjects’ wrist, chest
+and ankle and containing 3-axis MEMS sensors (an accelerometer, a gyroscope and a magnetometer) with a sampling
+period of 0.01s. Thus, the dimension of the time series is 27, and there are 8 time series in total (one per subject).
+Although this data has also been analysed in the change-point detection task for time series [47], to our knowledge, it
+has not been used in the context of NCPD. However, previous work noted that the correlations between pairs of axis
+are particularly useful for diﬀerentiating activities based on translations such as walking, running or ascending stairs
+[79]. Therefore, similarly to Section 4.4, for each subject (i.e., each multivariate time series), we build a dynamic
+correlation network from the 27 time series, where each node therefore corresponds to an IMU sensor’s axis and is
+associated with a body part.
+More precisely, we segment the time series into non-overlapping windows of 100 observations (i.e., a window of
+length one second) and compute the correlation matrices of these time series over these windows. Then, the correlation
+matrices {Ct}t are transformed into binary adjacency matrices At = 1|Ct|>η, t ∈ [T] with a chosen threshold η = 0.2.
+We thus obtain an unweighted, unattributed, dynamic network with 27 nodes for each of the 8 subjects. Moreover,
+each graph snapshot is labelled with the activity performed by the subject during the corresponding temporal window.
+Therefore, a change of activity between two consecutive snapshots corresponds to a change-point for the network.
+Table 3 summarises the characteristics of each network.
+We then deﬁne two NCPD tasks to evaluate our method on, deﬁned as follows.
+• Individual-level NCPD. Each dynamic network (subject) is used separately and segmented into train, valida-
+tion and test set. Then we train and test one s-GNN model per network, therefore the learnt graph similarity
+function is subject-dependent. We note that in this setting, the test sequence contains graphs with unseen
+activity labels.
+• Cross-individual NCPD. The eight dynamic networks are combined into a train, validation and test set and
+we train only one s-GNN model for all sequences. In this case, our method learns only one graph similarity
+function for all the subjects and its performances evaluated on all of them.
+More precisely, in the Individual-level NCPD task, we randomly split each dynamic network into 70% training and
+validation, and 30% test, by isolating a test interval and a validation interval. The latter is a window of size 60 centered
+around a uniformly sampled change-point, while the lower end of the test interval is uniformly sampled in the whole
+sequence. We then sample 4000 pairs from the training sequence and 1000 pairs from the validation interval, and train
+4http://www.pamap.org/demo.html
+15
+
+=== page 16 ===
+9/11
+Stock Market Downturn
+US Housing bubble
+Lehman Brothers Crash
+DJ Flash Crash
+Market Fall
+Chinese Black Monday
+DJ Plunge
+COVID-19
+s-GNN
+SPY/VIX
+SPY
+Frobenius
+Procrustes
+WL
+DeltaCon
+LAD
+SC-NCPD
+CUSUM
+2001 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 2013 2014 2015 2016 2017 2018 2019 2020
+CUSUM_2
+VIX
+Figure 7: Change-point detection statistics obtained with our method and the baselines on the dynamic correlation
+network of S&P 500 stock returns from February 2000 to December 2020. This period covers a training period from
+February 2000 to August 2010, a validation period from September 2010 to October 2014 and a test period from
+November 2014 to December 2020. Main ﬁnancial events are indicated with vertical red bars. The diﬀerent rows
+correspond, from top to bottom, to a timeline of known market events, our NCPD statistic, the SPY and VIX volatility
+indices and the baselines’ NCPD statistics. 16
+
+=== page 17 ===
+Individual-level NCPD
+Subject s-GNN-I Frobenius SC-NCPD CUSUM CUSUM 2
+1 0.76 (0.20) 0.62 (0.31) 0.82 (0.14) 0.54 (0.30) 0.81 (0.20)
+2 0.91 (0.11) 0.45 (0.22) 0.61 (0.08) 0.45 (0.12) 0.84 (0.11)
+3 0.60 (0.18) 0.37 (0.14) 0.67 (0.15) 0.21 (0.27) 0.34 (0.26)
+4 0.73 (0.18) 0.58 (0.26) 0.70 (0.08) 0.60 (0.07) 0.59 (0.22)
+5 0.85 (0.19) 0.61 (0.22) 0.72 (0.16) 0.36 (0.24) 0.72 (0.13)
+6 0.74 (0.19) 0.73 (0.22) 0.75 (0.17) 0.56 (0.30) 0.58 (0.16)
+7 0.90 (0.13) 0.79 (0.19) 0.67 (0.35) 0.57 (0.23) 0.72 (0.37)
+8 0.72 (0.24) 0.88 (0.13) 0.65 (0.14) 0.57 (0.28) 0.82 (0.13)
+Cross-individual NCPD
+Setting s-GNN-I Frobenius SC-NCPD CUSUM CUSUM 2
+Random split 0.81 (0.07) 0.75 (0.03) 0.75 (0.03) 0.59 (0.12) 0.80 (0.04)
+LOSO 0.89 (0.02) 0.70 (0.20) 0.77 (0.06) 0.62 (0.11) 0.75 (0.12)
+Table 4: Adjusted F1-score of our method and baselines in the Individual-level and Cross-individual NCPD tasks
+on the physical activity monitoring data. The red, respectively blue, bold values in each row denote the top best,
+respectively second best, performing methods. The values in the parentheses denote the standard deviation over 10
+repetitions of the random splits train/validation/set, except for the leave-one-subject-out (LOSO) setting for which
+mean and standard deviation are computed over the 8 folds.
+and evaluate our method on each subject separately. In the Cross-individual NCPD task, we design the following two
+evaluation settings.
+1. Random split: we concatenate all the training, validation and test sequences from the previous task, as well
+as the training and validation sets of pairs. Then we subsample respectively 15000 and 3000 pairs with the
+Random scheme (see Section 3.3). Note that in this case, the s-GNN is trained and tested on sub-sequences
+from every dynamic network.
+2. Leave-one-subject-out (LOSO): in this setting we keep the whole sequence of one subject for testing, and
+train and validate on the seven remaining sequences. For the latter, we select validation intervals as in the
+previous task, and sample 3000 training and 1000 validation pairs in each network. Then we subsample
+15000 and 3000 pairs from the aggregated training and validation sets.
+One can get an insight on the feasibility of these two tasks by looking at (a) the similarity of adjacency matrices within
+each dynamic network, grouped by activity labels; (b) the similarity of adjacency matrices within the same activity,
+grouped by network (i.e., subject). We report in Appendix C.1 some insights on the dissimilarity between activities
+and subjects, measured in terms of the Frobenius distance. In Figure 15, we plot the average adjacency matrices in
+each activity (the average of all matrices corresponding to the same activity) from the ﬁrst subject. We note that some
+of these matrices are quite similar, like the ones for activities {1, 2, 3}, that correspond respectively to sitting, lying
+and standing, which are all static activities. In Figure 16, we plot the Frobenius distance between these matrices. We
+observe that the lowest values of this distance matrix are mostly located on the diagonal, indicating that the graphs
+that have the same label are more similar to each other than graphs with diﬀerent labels. In Figure 17, we represent
+the Frobenius distances between the graphs of diﬀerent subjects with the same label, for four activities. We observe
+that for activities 5 and 7, the distances between matrices of diﬀerent subjects are bigger than the ones from the same
+subject, however this diﬀerence is not always signiﬁcant and does not seem to appear for activities 1 and 17. Figure
+18 conﬁrms this observation: we note that the average Frobenius distance between the graphs with the same label and
+from diﬀerent subjects is smaller than the average distance between graphs with diﬀerent labels.
+For our change-point statistic, we use sliding windows of L = 20 timestamps. We report the performances of our
+method and baselines in terms of the adjusted F1-score [69] in Table 4, with a tolerance window of ±5 timestamps.
+Our method has the best performance in most evaluation settings, and largely outperforms the baselines in the LOSO
+scheme. This latter result seems to indicate that the s-GNN is able to learn a graph similarity function that is general-
+isable to unseen subjects, while the good performances in the Individual-level task suggests that it can generalise to
+unseen activities.
+17
+
+=== page 18 ===
+5 Conclusion
+In this work, we proposed a novel method for detecting change-points in dynamic networks using a data-driven graph
+similarity function. The latter is learnt by a siamese GNN model, trained and validated on pairs of graphs from the
+network sequence. This similarity function allows to eﬀectively compare the current graph to its short-term history
+for detecting potential displacements, with a simple online statistic. We demonstrated the beneﬁts of our method in
+synthetic experimental settings of dynamic SBMs, and on two real-world data sets of correlation networks, and con-
+cluded that our method is more accurate at distinguishing graphs with diﬀerent generative distributions and detecting
+change-points, compared to existing baselines.
+As previously noted, one main challenge posed by using a deep-learning based model for NCPD is the training and
+validation procedures, which necessitate either a data set with change-point labels, or an adequate unsupervised or
+self-supervised learning procedure. Since the former is quite rare, a future direction for this work could to develop
+the latter approach, for instance using data augmentation strategies [80] for introducing artiﬁcial change-points in the
+training set. Another possible extension would be to adapt our framework to more general types of dynamic networks,
+e.g., snapshots with varying node sets or with missing edges. In certain application domains, it may well be the
+case that change-points phenomena are localized only in certain parts of the network (as considered in some of our
+synthetic experiments), and are not aﬀecting the global structure. To this end, yet another interesting addition to the
+current framework is to be able to pinpoint speciﬁcally which part of the network is mainly driving the change-point,
+to enhance explainability.
+Finally, extending the methodology to diﬀerent types of networks, such as directed networks, is an interesting direction
+to explore, especially in the context of recent work in the literature that encodes various measures of causality or lead-
+lag associations in multivariate time series as directed graphs [81, 82]. The structure of such weighted directed graphs
+may evolve over time, which motivates the need for techniques for change-point detection, a setting where adapting
+traditional spectral methods for change-point detection would be challenging, due to the asymmetry of the adjacency
+matrix.
+References
+[1] Srijan Kumar, Xikun Zhang, and Jure Leskovec. Predicting dynamic embedding trajectory in temporal interaction
+networks. Proceedings of the 25th ACM SIGKDD International Conference on Knowledge Discovery & Data
+Mining, Jul 2019. 1, 3
+[2] James D. Wilson, Nathaniel T. Stevens, and William H. Woodall. Modeling and detecting change in temporal
+networks via a dynamic degree corrected stochastic block model, 2016. 1, 2, 3
+[3] Ivor Cribben and Yi Yu. Estimating whole-brain dynamics by using spectral clustering. Journal of the Royal
+Statistical Society. Series C: Applied Statistics, 66(3):607–627, 2017. 1, 2, 3, 4, 8
+[4] Joakim Skarding, Bogdan Gabrys, and Katarzyna Musial. Foundations and modeling of dynamic networks using
+dynamic graph neural networks: A survey. IEEE Access, 9:79143–79168, 2021. 1
+[5] Emanuele Rossi, Ben Chamberlain, Fabrizio Frasca, Davide Eynard, Federico Monti, and Michael Bronstein.
+Temporal graph networks for deep learning on dynamic graphs, 2020. 1, 3
+[6] Martin Ondrus, Emily Olds, and Ivor Cribben. Factorized binary search: change point detection in the network
+structure of multivariate high-dimensional time series, 2021. 1
+[7] Ian Barnett and Jukka-Pekka Onnela. Change Point Detection in Correlation Networks. Scientiﬁc Reports,
+6(1):18893, 2016. 2, 3, 8, 13
+[8] Giulio Rossetti and R´emy Cazabet. Community discovery in dynamic networks. ACM Computing Surveys,
+51(2):1–37, Jun 2018. 2, 9
+[9] Changliang Zou, Guosheng Yin, Long Feng, and Zhaojun Wang. Nonparametric maximum likelihood approach
+to multiple change-point problems. The Annals of Statistics, 42(3), Jun 2014. 2
+[10] Tengyao Wang and Richard J. Samworth. High-dimensional changepoint estimation via sparse projection, 2017.
+2, 3
+[11] Yudong Chen, Tengyao Wang, and Richard J. Samworth. High-dimensional, multiscale online changepoint
+detection. pages 1–40, 2020. 2, 3
+[12] Dorcas Ofori-Boateng, Yulia R. Gel, and Ivor Cribben. Nonparametric anomaly detection on time series of
+graphs. bioRxiv, 2019. 2
+18
+
+=== page 19 ===
+[13] Yi Yu, Oscar Hernan Madrid Padilla, Daren Wang, and Alessandro Rinaldo. Optimal network online change
+point localisation, 2021. 2, 3, 9, 13
+[14] Petter Holme and Jari Saram¨aki. Temporal networks. Physics Reports, 519(3):97–125, Oct 2012. 2
+[15] Farida Enikeeva and Olga Klopp. Change-point detection in dynamic networks with missing links, 2021. 2, 3, 9
+[16] Oscar Hernan Madrid Padilla, Yi Yu, and Carey E. Priebe. Change point localization in dependent dynamic
+nonparametric random dot product graphs. 2019. 2, 3, 9
+[17] Daren Wang, Yi Yu, and Alessandro Rinaldo. Optimal change point detection and localization in sparse dynamic
+networks, 2020. 2, 3
+[18] Zifeng Zhao, Li Chen, and Lizhen Lin. Change-point detection in dynamic networks via graphon estimation,
+2019. 2, 3, 9
+[19] Heng Wang, Minh Tang, Youngser Park, and Carey E Priebe. Locality statistics for anomaly detection in time
+series of graphs. IEEE Transactions on Signal Processing, 62(3):703–717, 2013. 2
+[20] Leto Peel and Aaron Clauset. Detecting change points in the large-scale structure of evolving networks, 2014. 2,
+3
+[21] A. Li, S. P. Cornelius, Y.-Y. Liu, L. Wang, and A.-L. Barab´asi. The fundamental advantages of temporal networks.
+Science, 358(6366):1042–1046, Nov 2017. 2
+[22] Lynna Chu and Hao Chen. Sequential change-point detection for high-dimensional and non-euclidean data,
+2018. 2
+[23] Arthur Gretton, Karsten Borgwardt, Malte J. Rasch, Bernhard Scholkopf, and Alexander J. Smola. A kernel
+method for the two-sample problem, 2008. 2, 3, 4, 8
+[24] Nils M. Kriege, Fredrik D. Johansson, and Christopher Morris. A survey on graph kernels. Applied Network
+Science, 5(1), Jan 2020. 2
+[25] Shenyang Huang, Yasmeen Hitti, Guillaume Rabusseau, and Reihaneh Rabbany. Laplacian Change Point Detec-
+tion for Dynamic Graphs. 2020. 2, 3, 8
+[26] Simon De Ridder, Benjamin Vandermarliere, and Jan Ryckebusch. Detection and localization of change points
+in temporal networks with the aid of stochastic block models. Journal of Statistical Mechanics: Theory and
+Experiment, 2016(11):113302, Nov 2016. 3
+[27] Shankar Bhamidi, Jimmy Jin, and Andrew Nobel. Change point detection in network models: Preferential
+attachment and long range dependence. The Annals of Applied Probability, 28(1):35–78, 2018. 3
+[28] Marco Corneli, Pierre Latouche, and Fabrice Rossi. Multiple change points detection and clustering in dynamic
+networks. Statistics and Computing, 28:989–1007, 2018. 3
+[29] Monika Bhattacharjee, Moulinath Banerjee, and George Michailidis. Change point estimation in a dynamic
+stochastic block model, 2020. 3, 9
+[30] Hadar Miller and Osnat Mokryn. Size agnostic change point detection framework for evolving networks, 2018.
+3
+[31] Yu Wang, Aniket Chakrabarti, David Sivakoﬀ, and Srinivasan Parthasarathy. Fast change point detection on
+dynamic social networks, 2017. 3
+[32] Danai Koutra, Neil Shah, Joshua T. Vogelstein, Brian Gallagher, and Christos Faloutsos. Deltacon: Principled
+massive-graph similarity function with attribution. ACM Trans. Knowl. Discov. Data, 10:28:1–28:43, 2016. 3, 8
+[33] Claire Donnat and Susan Holmes. Tracking network dynamics: a survey of distances and similarity metrics,
+2018. 3, 6
+[34] Isuru Udayangani Hewapathirana, Dominic Lee, Elena Moltchanova, and Jeanette McLeod. Change detection in
+noisy dynamic networks: A spectral embedding approach, 2019. 3, 8
+[35] Fr´ed´eric Desobry, Manuel Davy, and Christian Doncarli. An online kernel change detection algorithm. IEEE
+Transactions on Signal Processing, 53(8):2961–2974, 2005. 3
+[36] Zaid Harchaoui, Eric Moulines, and Francis R Bach. Kernel change-point analysis. In Advances in neural
+information processing systems, pages 609–616, 2009. 3, 4
+[37] Paromita Dubey, Haotian Xu, and Yi Yu. Online network change point detection with missing values, 2021. 3,
+8, 13
+[38] Tyler Derr, Yao Ma, and Jiliang Tang. Signed graph convolutional network, 2018. 3
+19
+
+=== page 20 ===
+[39] Junjie Huang, Huawei Shen, Liang Hou, and Xueqi Cheng. Signed graph attention networks, 2019. 3
+[40] Thomas N Kipf and Max Welling. Semi-supervised classiﬁcation with graph convolutional networks. arXiv
+preprint arXiv:1609.02907, 2016. 3, 5
+[41] Youngjoo Seo, Micha¨el Deﬀerrard, Pierre Vandergheynst, and Xavier Bresson. Structured sequence modeling
+with graph convolutional recurrent networks. In Long Cheng, Andrew Chi Sing Leung, and Seiichi Ozawa,
+editors, Neural Information Processing, pages 362–373, Cham, 2018. Springer International Publishing. 3
+[42] Franco Manessi, Alessandro Rozza, and Mario Manzo. Dynamic graph convolutional networks. Pattern Recog-
+nition, 97:107000, Jan 2020. 3
+[43] Rakshit Trivedi, Mehrdad Farajtabar, Prasenjeet Biswal, and Hongyuan Zha. Dyrep: Learning representations
+over dynamic graphs. In International Conference on Learning Representations, 2019. 3
+[44] Aravind Sankar, Yanhong Wu, Liang Gou, Wei Zhang, and Hao Yang. DySAT: Deep Neural Representation
+Learning on Dynamic Graphs via Self-Attention Networks, page 519–527. Association for Computing Machin-
+ery, New York, NY, USA, 2020. 3
+[45] Mengqi Zhang, Shu Wu, Xueli Yu, and Liang Wang. Dynamic graph neural networks for sequential recommen-
+dation, 2021. 3
+[46] Lei Cai, Zhengzhang Chen, Chen Luo, Jiaping Gui, Jingchao Ni, Ding Li, and Haifeng Chen. Structural Tem-
+poral Graph Neural Networks for Anomaly Detection in Dynamic Graphs, page 3747–3756. Association for
+Computing Machinery, New York, NY, USA, 2021. 3
+[47] Ruohong Zhang, Yu Hao, Donghan Yu, Wei-Cheng Chang, Guokun Lai, and Yiming Yang. Correlation-aware
+unsupervised change-point detection via graph neural networks, 2020. 3, 15
+[48] Guixiang Ma, Nesreen K. Ahmed, Theodore L. Willke, and Philip S. Yu. Deep graph similarity learning: A
+survey, 2020. 3
+[49] Gregory R. Koch. Siamese neural networks for one-shot image recognition. 2015. 3
+[50] Guixiang Ma, Nesreen K. Ahmed, Ted Willke, Dipanjan Sengupta, Michael W. Cole, Nicholas B. Turk-Browne,
+and Philip S. Yu. Similarity learning with higher-order graph convolutions for brain network analysis, 2019. 3, 5
+[51] Yujia Li, Chenjie Gu, Thomas Dullien, Oriol Vinyals, and Pushmeet Kohli. Graph matching networks for learning
+the similarity of graph structured objects. In ICML, 2019. 3
+[52] Xiang Ling, Lingfei Wu, Saizhuo Wang, Tengfei Ma, Fangli Xu, Alex X. Liu, Chunming Wu, and Shouling Ji.
+Multilevel graph matching networks for deep graph similarity learning. IEEE Transactions on Neural Networks
+and Learning Systems, page 1–15, 2021. 3, 5
+[53] Jiahao Liu, Guixiang Ma, Fei Jiang, Chun-Ta Lu, Philip S. Yu, and Ann B. Ragin. Community-preserving graph
+convolutions for structural and functional joint embedding of brain networks, 2019. 3
+[54] Soﬁa Ira Ktena, Sarah Parisot, Enzo Ferrante, Martin Rajchl, Matthew Lee, Ben Glocker, and Daniel Rueckert.
+Distance metric learning using graph convolutional networks: Application to functional brain networks. In
+International Conference on Medical Image Computing and Computer-Assisted Intervention, pages 469–477.
+Springer, 2017. 3, 5
+[55] Thomas Mensink, Jakob Verbeek, Florent Perronnin, and Gabriela Csurka. Metric learning for large scale image
+classiﬁcation: Generalizing to new classes at near-zero cost. In European Conference on Computer Vision, pages
+488–501. Springer, 2012. 3
+[56] Stephen Ranshous, Shitian Shen, Danai Koutra, Steve Harenberg, Christos Faloutsos, and Nagiza F Samatova.
+Anomaly detection in dynamic networks: a survey. Wiley Interdisciplinary Reviews: Computational Statistics,
+7(3):223–247, 2015. 4
+[57] Petar Veliˇckovi´c, Guillem Cucurull, Arantxa Casanova, Adriana Romero, Pietro Li`o, and Yoshua Bengio. Graph
+attention networks, 2018. 5
+[58] William L. Hamilton, Rex Ying, and Jure Leskovec. Inductive representation learning on large graphs, 2018. 5
+[59] Keyulu Xu, Weihua Hu, Jure Leskovec, and Stefanie Jegelka. How powerful are graph neural networks?, 2019.
+5
+[60] Muhan Zhang, Zhicheng Cui, Marion Neumann, and Yixin Chen. An end-to-end deep learning architecture for
+graph classiﬁcation. In Proceedings of the AAAI Conference on Artiﬁcial Intelligence, volume 32, 2018. 5
+[61] Andr´as Horv´ath. Sorted pooling in convolutional networks for one-shot learning. arXiv preprint
+arXiv:2007.10495, 2020. 6
+20
+
+=== page 21 ===
+[62] Junhyun Lee, Inyeop Lee, and Jaewoo Kang. Self-attention graph pooling. In 36th International Conference on
+Machine Learning, ICML 2019, 36th International Conference on Machine Learning, ICML 2019, pages 6661–
+6670. International Machine Learning Society (IMLS), 2019. Funding Information: This work was supported
+by the National Research Foundation of Korea (NRF-2017R1A2A1A17069645, NRF-2016M3A9A7916996,
+NRF-2017M3C4A7065887) Publisher Copyright: © 36th International Conference on Machine Learning, ICML
+2019. All rights reserved.; 36th International Conference on Machine Learning, ICML 2019 ; Conference date:
+09-06-2019 Through 15-06-2019. 6
+[63] Jiaxuan You, Rex Ying, and Jure Leskovec. Position-aware graph neural networks, 2019. 6
+[64] Vijay Prakash Dwivedi, Anh Tuan Luu, Thomas Laurent, Yoshua Bengio, and Xavier Bresson. Graph neural
+networks with learnable structural and positional representations, 2022. 6, 7, 10
+[65] Joan Bruna and X Li. Community detection with graph neural networks. stat, 1050:27, 2017. 6
+[66] Pan Li, Yanbang Wang, Hongwei Wang, and Jure Leskovec. Distance encoding: Design provably more powerful
+neural networks for graph representation learning, 2020. 6
+[67] Vijay Prakash Dwivedi and Xavier Bresson. A generalization of transformer networks to graphs, 2021. 6
+[68] Yixin Liu, Shirui Pan, Ming Jin, Chuan Zhou, Feng Xia, and Philip S Yu. Graph self-supervised learning: A
+survey. arXiv preprint arXiv:2103.00111, 2021. 7, 13
+[69] Haowen Xu, Yang Feng, Jie Chen, Zhaogang Wang, Honglin Qiao, Wenxiao Chen, Nengwen Zhao, Zeyan Li,
+Jiahao Bu, Zhihan Li, Ying Liu, Youjian Zhao, and Dan Pei. Unsupervised anomaly detection via variational
+auto-encoder for seasonal kpis in web applications. Proceedings of the 2018 World Wide Web Conference on
+World Wide Web - WWW ’18, 2018. 8, 17
+[70] Lizhen Nie and Dan L. Nicolae. Weighted-graph-based change point detection. 2021. 8
+[71] Dianbin Bao, Kisung You, and Lizhen Lin. Network distance based on laplacian ﬂows on graphs. ArXiv,
+abs/1810.02906, 2018. 8
+[72] Debarghya Ghoshdastidar, Maurilio Gutzeit, Alexandra Carpentier, and Ulrike von Luxburg. Two-sample hy-
+pothesis testing for inhomogeneous random graphs. The Annals of Statistics, 48(4), Aug 2020. 8
+[73] Nino Shervashidze, Pascal Schweitzer, Erik Jan van Leeuwen, Kurt Mehlhorn, and Karsten M. Borgwardt.
+Weisfeiler-lehman graph kernels. J. Mach. Learn. Res., 12(null):2539–2561, nov 2011. 8
+[74] Giannis Siglidis, Giannis Nikolentzos, Stratis Limnios, Christos Giatsidis, Konstantinos Skianis, and Michalis
+Vazirgiannis. Grakel: A graph kernel library in python. Journal of Machine Learning Research, 21(54):1–5,
+2020. 8
+[75] Anirban Chakraborti, Hrishidev, Kiran Sharma, and Hirdesh K. Pharasi. Phase separation and scaling in correla-
+tion structures of ﬁnancial markets, 2020. 13, 22, 25
+[76] Areejit Samal, Hirdesh K. Pharasi, Sarath Jyotsna Ramaia, Harish Kannan, Emil Saucan, J¨urgen Jost, and Anir-
+ban Chakraborti. Network geometry and market instability, 2021. 13
+[77] Jean Gallier. Spectral theory of unsigned and signed graphs. applications to graph clustering: a survey, 2016. 13
+[78] Attila Reiss and Didier Stricker. Introducing a new benchmarked dataset for activity monitoring. In 2012 16th
+international symposium on wearable computers, pages 108–109. IEEE, 2012. 15
+[79] Attila Reiss and Didier Stricker. Creating and benchmarking a new dataset for physical activity monitoring. In
+Proceedings of the 5th International Conference on PErvasive Technologies Related to Assistive Environments,
+PETRA ’12, New York, NY, USA, 2012. Association for Computing Machinery. 15
+[80] Chris U. Carmona, Franccois-Xavier Aubet, Valentin Flunkert, and Jan Gasthaus. Neural contextual anomaly
+detection for time series. ArXiv, abs/2107.07702, 2021. 18
+[81] Stefanos Bennett, Mihai Cucuringu, and Gesine Reinert. Lead-lag detection and network clustering for multivari-
+ate time series with an application to the us equity market. KDD 2021 MileTS (preliminary workshop version),
+2022. 18
+[82] Detecting causal associations in large nonlinear time series datasets. Science Advances, 5(11), 2019. 18
+21
+
+=== page 22 ===
+A Additional details and analysis in the synthetic experiments
+In this section, we provide additional details on the hyperparameter selection procedure in the synthetic networks
+of Section 4.3, and two supplementary experiments, namely a sensitivity analysis of our method to the window size
+parameter L and to the choice of pooling layer in the similarity module (see Section 3).
+A.1 Hyperparameter selection
+In each scenario and diﬃculty level, we train our s-GNN over 100 epochs and and validate using the F1-score. We
+select one set of hyperparameters of the s-GNN (i.e., learning rate, number of hidden units, dropout rate and size of
+Sort-k layer) per scenario by searching over a grid of values in one diﬃculty level, i.e., p = 0.03 in Scenario 1, s = 60
+in Scenario 2, p = 0.06 in Scenario 3, and h = 0.1 in Scenario 4. For choosing the hyperparameters we test every
+conﬁguration of values with the learning rate in the set {0.001, 0.01}, the dropout rate in {0.01, 0.05, 0.1}, the size of
+the Sort-k layer in {20, 40, 100}, the number of hidden units in {16, 32, 64}, and select the one with the highest F1-score
+on the validation set.
+For each graph distance baseline d, we use the training and validation sets to choose a classiﬁcation threshold θ such
+that the estimated label ˆyi = 1 if d(Gi 1, Gi 2) <θ and ˆyi = 0 otherwise (or reversely for the WL kernel).
+A.2 Sensitivity to the window size
+We evaluate the sensitivity of our NCPD method and the baselines to the window size parameter L in the “Merge”
+scenario from Section 4.3. We recall that this hyperparameter corresponds to the amount of past (and future for
+some baselines) information needed to compute the NCPD statistic. It is therefore also the minimal distance between
+change-points that a method can detect. In this analysis, we test the performances of the methods using diﬀerent
+window sizes in a a synthetic setting from Section 4.3. More precisely, we consider Scenario 1 (“Merge”) and three
+diﬃculty levels (p = 0.3, 0.4, 0.5).
+We report our ﬁndings in Figure 8. We note that our method is not very sensitive to the window size, in particular our
+best variant (s-GNN-RW) outperforms the baselines for all window sizes. We also remark that the two methods based
+on the CUSUM statistic (CUSUM and CUSUM 2) have better performances for larger L, and this eﬀect is larger than
+for the other baselines. In conclusion, the choice of window size in our NCPD statistic (1) does not have a big impact
+on the performance of our method, and therefore does not require to be ﬁnely tuned.
+A.3 Sensitivity to the pooling layer
+In this section, we test the importance of using a Sort-k pooling layer in our similarity module (Figure 1b). We consider
+the “Birth 1” scenario from Section 4.3 and compare the performance of our method with Sort-k pooling (k = 100)
+with the same method with Max or Average pooling. We report our ﬁndings in Figure 9. We note that Max pooling
+does not have good performances in this experiment and Average pooling has a higher variance than Sort-k, except in
+the last (and easiest setting). It may be due to the fact that Max pooling is less robust to the sparsity of the network
+than Sort-k and Average pooling, and that the latter cannot detect local changes in the graphs since it averages the
+displacement over the whole set of nodes. Therefore, we can conclude that Sort-k pooling is more adapted to detect
+small distribution changes, while being robust to the sparsity of edges.
+B Additional results on the S&P 500 stock returns data set
+In this section, we ﬁrst report additional ﬁgures illustrating the procedure for pre-estimating change-points in the
+training and validation sequences of the dynamic correlation network; secondly we analyse the network using the
+eigen-entropy H(t), as previously done in [75] on similar data. This latter analysis also gives an insight on the possible
+market phases (i.e., the period in-between our estimated change-points).
+In Figure , we plot the heatmap of the similarity matrix between the graph snapshots in the training and validation
+sequences. We recall from Section 4.4 that the similarity score between pairs of snapshots is measured in terms of
+the Adjusted Rand Index values between the stock partitions obtained for each snapshots. We note that this similarity
+matrix seems to have a cluster structure; in particular, high similarity scores can be found during the period of the
+ﬁnancial crisis from 2007 to 2011 and in 2001-2002. The clustering procedure of this matrix with spectral clustering
+and a post-processing step (see 4.4) leads to the pre-estimated change-points plotted in Figure 11.
+22
+
+=== page 23 ===
+6 12 24
+window size
+0
+10
+20
+30
+40
+50
+60
+70Error
+Frobenius
+Procrustes
+WL
+LAD
+SC-NCPD
+CUSUM
+DeltaCon
+CUSUM_2
+s-GNN-PE
+s-GNN-D
+s-GNN-RW
+s-GNN-I
+(a) Diﬃcult level
+6 12 24
+window size
+0
+10
+20
+30
+40
+50
+60
+70Error
+Frobenius
+Procrustes
+WL
+LAD
+SC-NCPD
+CUSUM
+DeltaCon
+CUSUM_2
+s-GNN-PE
+s-GNN-D
+s-GNN-RW
+s-GNN-I
+(b) Moderate level
+6 12 24
+window size
+0
+10
+20
+30
+40
+50
+60Error
+Frobenius
+Procrustes
+WL
+LAD
+SC-NCPD
+CUSUM
+DeltaCon
+CUSUM_2
+s-GNN-PE
+s-GNN-D
+s-GNN-RW
+s-GNN-I
+(c) Easy level
+Figure 8: Performances on the detection task in the “Merge” scenario for 3 window sizes L = 6, 12, 24 in three
+diﬃculty levels: diﬃcult (p = 0.3) (a), moderate (p = 0.4) (b), easy (p = 0.5) (c).
+23
+
+=== page 24 ===
+40 50 60 70 100
+s
+0
+10
+20
+30
+40
+50
+60
+70Error
+topk
+max
+average
+Figure 9: Localisation error of the s-GNN in the “Birth 1” scenario with diﬀerent choices of pooling layers in the
+similarity module, namely Sort-k, Max and Average pooling.
+02 200011 200107 200304 200512 200609 200806 201002 201212 2013
+02 2000
+11 2001
+07 2003
+04 2005
+12 2006
+09 2008
+06 2010
+02 2012
+12 2013
+ 0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+Figure 10: Matrix of Adjusted Rand Index values between the partitions obtained for each pair of graph snapshots in
+the correlation network of S&P 500 stock returns. The ﬁrst two digits denote the month, followed by the year.
+07 2002
+07 2004
+12 2005
+09 2006
+03 2008
+04 2009
+09 2009
+06 2010
+09 2011
+training validation
+Figure 11: Pre-estimated change-points on the training and validation sequences of the S&P 500 stock returns corre-
+lation network.
+24
+
+=== page 25 ===
+Figure 12: Eigen-entropy of the correlation graph, the market mode and the group plus random mode over time.
+Analysis of the eigen-entropy We ﬁrst analyse the correlation structures of our graphs using the eigen-entropy H(t)
+[75]. The eigen-entropy of a graph is deﬁned as the entropy of the eigen-centrality vector, which is a L1-normalised
+version of the principal eigenvector of the graph adjacency matrix. This principal eigenvector is related to the relative
+ranks of the diﬀerent stocks in the market and its entropy measures the market “disorder”. The correlation matrices
+C(t)’s can be further decomposed into a market mode (principal eigen matrix) C(t)M and a composite group plus
+random mode C(t)GR and their corresponding eigen-entropy (HM(t), HGR(t) can be also computed (see Figure 12).
+This allows to deﬁne a 3D-phase space where the graphs can be separated into types (e.g. market anomalies, crashes,
+normal behaviour or highest disorder in [75]). A 2D visualisation of our graphs with their corresponding labels is
+given in Figure 14a. The distribution of the average eigen-centrality vectors in each class of graphs also indicates
+that the correlation structure changes in the diﬀerent phases (see Figure 13). [75] also observe a scaling behaviour by
+comparing the absolute entropy diﬀerence |H − HGR| and the mean market correlation (see Figure 14b).
+C Additional experimental results on the physical activity monitoring data
+C.1 Similarity between activities and subjects
+Additional results on the similarity between activities and subjects are presented in Figure 15, Figure 16, Figure 17,
+and Figure 18.
+C.2 ONCPD statistic
+Additional results on ONCPD statistics are presented in Figure 19, Figure 20, and Figure 21.
+C.3 Sensitivity to the tolerance level
+In this section, we investigate the sensitivity of our results presented in Table 4 to the tolerance level chosen to compute
+the adjusted F1-score. We consider the Random split experiment in the Cross-Individual task from Section 4.5, and
+we reproduce this experiment for diﬀerent levels of tolerance tol = {1, 3, 5, 7}. We report the numerical results in Table
+5. We note that our method has the best performance for all considered levels.
+25
+
+=== page 26 ===
+Figure 13: Histogram of the values in the average eigen-centrality vector of each class (phase) of graphs (the subplots
+correspond to diﬀerent classes).
+26
+
+=== page 27 ===
+(a) Entropy diﬀerences |H − HGR| versus |H − HM|.
+(b) Entropy diﬀerences |H − HM| versus mean market cor-
+relation.
+Figure 14: Entropy diﬀerences |H − HGR| versus |H − HM| (in log scale) (a) and entropy diﬀerences |H − HM| versus
+mean market correlation (b) for the graphs in the ﬁnancial correlation dynamic network. The colors indicate the class
+of the graphs in our partition.
+27
+
+=== page 28 ===
+0 5 10 15 20 25
+0
+5
+10
+15
+20
+25
+Activity 1.0
+0.2
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+(a) Activity 1
+0 5 10 15 20 25
+0
+5
+10
+15
+20
+25
+Activity 2.0
+0.2
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0 (b) Activity 2
+0 5 10 15 20 25
+0
+5
+10
+15
+20
+25
+Activity 3.0
+0.2
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0 (c) Activity 3
+0 5 10 15 20 25
+0
+5
+10
+15
+20
+25
+Activity 4.0
+0.75
+0.50
+0.25
+0.00
+0.25
+0.50
+0.75
+1.00
+(d) Activity 4
+0 5 10 15 20 25
+0
+5
+10
+15
+20
+25
+Activity 5.0
+0.6
+0.4
+0.2
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0 (e) Activity 5
+0 5 10 15 20 25
+0
+5
+10
+15
+20
+25
+Activity 6.0
+0.6
+0.4
+0.2
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0 (f) Activity 6
+0 5 10 15 20 25
+0
+5
+10
+15
+20
+25
+Activity 7.0
+0.6
+0.4
+0.2
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+(g) Activity 7
+0 5 10 15 20 25
+0
+5
+10
+15
+20
+25
+Activity 12.0
+0.6
+0.4
+0.2
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0 (h) Activity 12
+0 5 10 15 20 25
+0
+5
+10
+15
+20
+25
+Activity 13.0
+0.6
+0.4
+0.2
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0 (i) Activity 13
+(j) Activity 16
+0 5 10 15 20 25
+0
+5
+10
+15
+20
+25
+Activity 17.0
+0.4
+0.2
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0 (k) Activity 17
+0 5 10 15 20 25
+0
+5
+10
+15
+20
+25
+Activity 24.0
+0.6
+0.4
+0.2
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0 (l) Activity 24
+Figure 15: Average adjacency matrices for each of the 12 activities performed by Subject 1.
+28
+
+=== page 29 ===
+(a) Distance between average adjacency matrices per activity.
+(b) Average (and standard deviation) distance between graphs
+grouped by activities.
+Figure 16: Frobenius distance between graphs in the dynamic network corresponding to Subject 1.
+29
+
+=== page 30 ===
+(a) Activity 1
+ (b) Activity 2
+ (c) Activity 3
+(d) Activity 4
+ (e) Activity 5
+ (f) Activity 6
+(g) Activity 7
+ (h) Activity 12
+ (i) Activity 13
+(j) Activity 16
+ (k) Activity 17
+ (l) Activity 24
+Figure 17: Average (and standard deviation) Frobenius distance between the graphs grouped by subjects for each
+activity label.
+30
+
+=== page 31 ===
+Figure 18: Average Frobenius distance between graphs with the same label grouped by subjects.
+0 100 200 300 400 500 600 700
+0.0
+0.2
+0.4
+0.6
+0.8
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+change-point
+(a) Subject 1
+0 100 200 300 400 500 600 700 800
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+change-point (b) Subject 2
+0 100 200 300 400 500 600 700
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0change-point (c) Subject 3
+0 100 200 300 400 500 600 700 800
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+change-point
+(d) Subject 4
+0 100 200 300 400 500 600 700
+0.0
+0.2
+0.4
+0.6
+0.8
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0change-point (e) Subject 5
+0 100 200 300 400 500 600 700
+0.0
+0.2
+0.4
+0.6
+0.8
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0change-point (f) Subject 6
+Figure 19: Change point detection statistic of our sGNN method and activity change points (in red) with a tolerance
+of ±5 timestamps for Subjects 1-6 a window size L = 10.
+0 500 1000 1500 2000 2500
+0
+1
+2
+3
+4
+5
+6
+7
+8
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+change-point
+(a) Subject 1
+0 500 1000 1500 2000 2500
+0
+1
+2
+3
+4
+5
+6
+7
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+change-point (b) Subject 2
+0 500 1000 1500 2000
+0
+1
+2
+3
+4
+5
+6
+7
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+change-point (c) Subject 3
+0 500 1000 1500 2000 2500
+0
+1
+2
+3
+4
+5
+6
+7
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+change-point
+(d) Subject 4
+0 500 1000 1500 2000 2500
+0
+1
+2
+3
+4
+5
+6
+7
+8
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+change-point (e) Subject 5
+0 500 1000 1500 2000
+0
+2
+4
+6
+8
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+change-point (f) Subject 6
+Figure 20: CUSUM 2 statistic and activity change points (in red) with a tolerance of ±5 timestamps for Subjects 1-6
+a window size L = 20.
+31
+
+=== page 32 ===
+(a) Subject 1
+ (b) Subject 2
+ (c) Subject 3
+(d) Subject 4
+ (e) Subject 5
+ (f) Subject 6
+Figure 21: Change point detection statistic using the Frobenius distance and activity change points (in red) with a
+tolerance of ±5 timestamps for Subjects 1-6 a window size L = 20.
+32
+
+=== page 33 ===
+Cross-individual NCPD
+Tolerance s-GNN-I Frobenius SC-NCPD CUSUM CUSUM 2
+1 0.60 (0.30) 0.53 (0.22) 0.43 (0.32) 0.33 (0.24) 0.42 (0.30)
+3 0.87 (0.25) 0.68 (0.20) 0.70 (0.31) 0.53 (0.24) 0.76 (0.29)
+5 0.61 (0.27) 0.53 (0.20) 0.41 (0.32) 0.27 (0.22) 0.44 (0.31)
+7 0.85 (0.28) 0.71 (0.21) 0.71 (0.30) 0.56 (0.25) 0.75 (0.29)
+Table 5: Adjusted F1-score of our method (s-GNN) and baselines in the Cross-individual NCPD task and the random
+split setting on the physical activity monitoring data. The bold values in each row denote the top performing method.
+The values in the parentheses denote the standard deviation over 10 repetitions of the random splits train/validation/set.
+We remark that diﬀerent rows corresponding to diﬀerent tolerance levels essentially amounts to deﬁning a diﬀerent
+set of ground truth change-points, and hence we should not necessarily expect a monotonic relationship between
+tolerance versus the recovery accuracy of all methods; the main take-away message here is that the s-GNN method
+attains superior performance when compared to other baselines, for the same tolerance level.
+33

@@ -1,0 +1,1661 @@
+=== page 1 ===
+Model-agnostic noise reduction for high-dimensional
+time series data
+Bram Wouters and Cees Diks
+University of Amsterdam
+September 24, 2026
+Abstract
+We develop a model-agnostic framework for noise reduction in high-dimensional time
+series that explicitly targets optimal recovery of a low-dimensional latent dynamic
+component contaminated by observational white noise. Under the assumption that
+the latent dynamics live in a low-dimensional linear dynamic subspace, we charac-
+terize the optimal linear projection onto the dynamic subspace and provide a ge-
+ometric description of the residual error in terms of the relative orientation of the
+signal and noise spaces. We propose estimators for the dynamic subspace and the
+optimal projection based on lagged covariance matrices, bootstrap dimension selec-
+tion, and a low-rank representation of the structured noise. Under mild conditions,
+the resulting denoised series is shown to converge to its population target at the
+usual parametric rate. Simulations show that the proposed method can substantially
+improve subspace estimation, reconstruction error, and one-step-ahead forecast ac-
+curacy compared with both orthogonal projection-based denoising and the raw data.
+The approach is illustrated by empirical applications to high-dimensional stock re-
+turns and to a 20-variate time series of macroeconomic indicators. Code is available
+at https://github.com/brwo/NoiseReductionForTimeSeries.
+1
+arXiv:2609.27614v1  [stat.ME]  23 Sep 2026
+
+=== page 2 ===
+1 Introduction
+High-dimensional time series are ubiquitous in statistics and econometrics. Examples in-
+clude panels of macroeconomic indicators, large portfolios of financial assets, spatially
+indexed climate or environmental fields, and collections of biomedical or sensor signals. In
+such settings, it is often natural to view the observed process as a noisy manifestation of
+a lower-dimensional dynamic system: a small number of latent components drive most of
+the serial dependence, while the remaining variation reflects measurement error, idiosyn-
+cratic shocks, or other forms of high-dimensional noise. Accurately extracting this latent
+dynamic signal is essential for forecasting, structural interpretation, and policy analysis.
+Dynamic factor models provide a prominent framework for capturing this structure. In
+macroeconomics, large approximate factor models have become standard for summarizing
+many predictors with a few diffusion indexes and for improving forecasts; see, for instance,
+Stock and Watson (2002b,a) and Bai and Ng (2002, 2007). In a complementary spectral
+approach, generalized dynamic factor models based on the eigenstructure of the spectral
+density matrix have been developed by Forni et al. (2000) and further refined in Forni
+et al. (2005). Hallin and Liˇska (2007) proposed information criteria to determine the
+number of common shocks in such models. For high-dimensional vector time series, Pan
+and Yao (2008) and Lam et al. (2011), Lam and Yao (2012) showed how to estimate a
+low-dimensional dynamic factor space using lagged autocovariances in a way that is robust
+to additive white noise. Related ideas have also been used to study the number of factors
+in very high-dimensional settings, for example in Xia et al. (2018).
+Similar concepts arise in functional time series, where each observation is a function (or
+curve) rather than a finite-dimensional vector. Bathia et al. (2010) studied the problem
+of identifying a finite-dimensional dynamic subspace underlying a curve time series and
+proposed bootstrap-based tests for its dimension. Functional factor approaches have been
+successfully used for forecasting age-specific mortality and fertility rates in the presence of
+measurement errors and outliers (Hyndman and Shahid Ullah, 2007). These developments
+underscore the broad appeal of viewing complex data as lying near a low-dimensional
+dynamic structure embedded in a noisy high-dimensional space.
+At the same time, there is a substantial and largely parallel literature on denoising and
+regularization in high dimensions. In the context of independent observations, wavelet-
+based signal denoising pioneered by Donoho and Johnstone (1994, 1995) showed that sparse
+representations can yield near-optimal risk properties. In high-dimensional covariance esti-
+mation, shrinkage and factor-based estimators have been proposed to stabilize eigenvalues
+and improve conditioning; see, for example, Ledoit and Wolf (2004) and Fan et al. (2011,
+2013). These methods highlight the importance of exploiting structure, either in the un-
+derlying signal or in the covariance matrix, to reduce noise effectively in high dimensions.
+Most of the dynamic factor literature has focused on two main tasks: determining the
+dimension and orientation of the low-dimensional dynamic space, and using the associ-
+ated factors for forecasting or structural analysis. The noise is typically treated as an
+idiosyncratic remainder that is uncorrelated over time and relatively small compared with
+2
+
+=== page 3 ===
+the common component. In practice, however, the noise can be large, structured, and
+partially aligned with the signal directions. Orthogonally projecting the data onto an es-
+timated factor space therefore does not necessarily yield an optimally denoised series. By
+contrast, many denoising and covariance regularization methods are not tailored to exploit
+the specific combination of temporal dependence and cross-sectional factor structure that
+arises in high-dimensional time series.
+The aim of this paper is to develop and analyze a noise reduction method for high-
+dimensional time series that explicitly targets optimal recovery of the low-dimensional
+dynamic component, while remaining agnostic about the detailed parametric form of its
+dynamics. We assume only that there exists a low-dimensional linear “dynamic subspace”
+that carries all serial dependence, and that the noise is white but may have arbitrary
+cross-sectional covariance and lives in a linear subspace that may (partly) overlap with
+the dynamic space. Within this general framework, we address three questions: how to
+define an optimal linear denoiser that preserves the dynamic subspace; how the geometry
+between the dynamic and noise subspaces determines what can be achieved in principle;
+and how such an optimal denoiser can be estimated from data and used in practice.
+Our contributions Our contributions are threefold. First, at the population level we
+formalize noise reduction as the problem of finding the linear projection onto the dy-
+namic space that minimizes the mean-squared reconstruction error of the latent dynamic
+component. Within the class of linear projections, we characterize a population-optimal
+denoiser that combines projection onto the dynamic space with a correction that exploits
+the cross-sectional structure of the noise. A geometric analysis links achievable denoising
+to the relative geometry of the dynamic and noise spaces and identifies when perfect linear
+denoising is possible.
+Second, we turn the population construction into an estimation method for a single
+observed high-dimensional time series. Building on lagged autocovariances (Lam and Yao,
+2012) and bootstrap-based dimension selection (Bathia et al., 2010), we estimate the dy-
+namic space and then the structured noise from residual covariances, using an explained-
+variance rule for the noise dimension. The method uses only second-order properties and,
+seen as a pre-processing step, can be paired with many downstream models on the denoised
+series.
+Third, we show that, under standard conditions, the denoised series obtained from the
+estimated optimal transformation converges to its population target at the usual square-
+root rate. Simulations with vector autoregressions and mixed noise show that optimal de-
+noising markedly improves parameter estimates, reconstruction error, and one-step-ahead
+forecasting performance relative to projection-based denoising and raw data.
+Overall, the proposed method can be viewed as a bridge between the dynamic factor and
+denoising literatures: it uses lagged autocovariance structure to learn the low-dimensional
+dynamic subspace and the cross-sectional noise structure to design a linear transformation
+that reduces noise as effectively as possible within that space.
+3
+
+=== page 4 ===
+Related literature Our work is related to several strands of literature on high-dimensional
+and functional time series, dynamic factor models, and high-dimensional denoising.
+The first strand concerns factor modeling for high-dimensional time series and panels.
+For large cross-sectional datasets, Bai and Ng (2002, 2007) developed influential infor-
+mation criteria for determining the number of factors in approximate factor models. In
+macroeconomic forecasting, Stock and Watson (2002b,a) showed that diffusion indexes or
+principal components constructed from large panels of macro indicators can substantially
+improve forecasts. Spectral approaches to dynamic factor modeling have been developed
+by Forni et al. (2000, 2005), who introduced and analyzed generalized dynamic factor
+models based on the spectral density matrix. Hallin and Liˇska (2007) proposed criteria
+to determine the number of common shocks in the general dynamic factor model. For
+multivariate time series, Pan and Yao (2008) and Lam et al. (2011), Lam and Yao (2012)
+studied high-dimensional factor models in which a small number of dynamic factors drive
+the serial dependence, and proposed methods to estimate the factor space from lagged
+autocovariances in the presence of additive noise. More recent work such as Xia et al.
+(2018) examines the eigenvalue behavior of high-dimensional covariance structures to infer
+the number of factors, providing complementary tools for dimension selection.
+A second strand is the functional time series literature, where each observation is a curve
+or function. Bathia et al. (2010) introduced a dynamic dimension-reduction framework for
+curve time series and proposed bootstrap procedures to determine the finite-dimensional
+dynamic subspace, exploiting the fact that white noise has vanishing lagged covariance.
+This connects closely to functional data approaches to forecasting, such as Hyndman and
+Shahid Ullah (2007), which treat age-specific mortality and fertility rates as functional data
+observed with noise. There is also work on regularized and sparse principal component
+methods in high dimensions, for example Johnstone and Lu (2009), providing insight into
+the behavior of principal components when the dimension is large relative to the sample
+size. Our setting can be viewed as a finite-dimensional analog of these frameworks, with
+an emphasis on exploiting the noise structure for improved denoising.
+A third related area is high-dimensional denoising and covariance regularization. Wave-
+let-based denoising methods, pioneered by Donoho and Johnstone (1994, 1995), have
+demonstrated how combining orthogonal transforms with thresholding can yield near-
+optimal risk properties in nonparametric regression and signal processing. In the con-
+text of high-dimensional covariance estimation, Ledoit and Wolf (2004) proposed a well-
+conditioned shrinkage estimator that stabilizes eigenvalues, while Fan et al. (2011, 2013)
+developed factor-based and thresholding methods for estimating large covariance matrices
+in approximate factor models. Related work on high-dimensional regression and regular-
+ization, such as the Dantzig selector of Candes and Tao (2007), highlights the importance
+of exploiting low-dimensional structure in high-dimensional problems more generally. Our
+approach is complementary to these methods; instead of focusing on static covariance or
+regression problems, we target noise reduction in a dynamic setting where both temporal
+dependence and cross-sectional factor structure are present, and we design a denoiser that
+is explicitly optimal within a natural class of linear transformations.
+4
+
+=== page 5 ===
+2 Methodology
+We consider an observable vector-valued time series {yt}, with yt ∈ Rn, and t ∈ Z,
+composed of a latent signal component xt ∈ Rn and a latent white-noise component εt ∈
+Rn,
+yt = xt + εt
+The signal component contains, by definition, all serial dependence of the observed time
+series. We assume it can be represented as a d-dimensional factor model, xt = U ξt, where
+U is an (n × d) factor-loading matrix and ξt ∈ Rd are the factors. We assume both
+{ξt} and {εt} are strictly stationary time series processes with finite second moments, so
+they are also weakly stationary. Denoting the covariance matrix of any weakly stationary
+vector-valued time series {vt} by Σv = Var[vt] , we assume the factor time series {ξt} has
+a full-rank covariance matrix Σξ, ruling out the possibility of redundancy in the factor
+model. Other details of the underlying process defining the signal are left unspecified. The
+noise component εt is white noise with mean zero and covariance matrix Σε.
+The dimension of the factor model is typically small and much smaller than the dimen-
+sion of the observed time series, i.e., d ≪ n. The method proposed here does not necessarily
+need this assumption, but in typical applications only then the dimension reduction is use-
+ful.
+Without loss of generality, we assume that the columns of U are orthonormal and the
+covariance matrix of the factors, Σξ, is assumed to be diagonal. Starting from a factor
+model xt = U ξt that does not have these properties, we can use the QR-decomposition
+U = QR and redefine U as Q and ξt as Rξt. This makes the columns of U orthonormal.
+There is still freedom in defining U, since for any orthogonal (d × d)-matrix A we have
+U ξt = U A⊤ξt. By redefining U as U A and ξt as A⊤ξt, one can choose A such that Σξ is
+diagonal.
+We refer to the d-dimensional subspace in which xt lives, spanned by the columns
+of U, as the dynamic space M. The serial dependence of the observed time series exists
+entirely within this space. Because Σξ is full-rank, the covariance matrix of the signal,
+Σx = U ΣξU ⊤, has exactly d non-zero eigenvalues. The corresponding eigenvectors form a
+basis of the dynamic space M. We use this fact to estimate the dimension and obtain a
+basis of M, but Σx cannot be estimated directly because xt is unobservable. Moreover,
+the standard (naive) estimator of the covariance matrix of the observed time series {yt} is
+biased due to the noise component, since Σy = Σx + Σε. This bias does not vanish as the
+sample size of the observed time series tends to infinity.
+Lam et al. (2011) present a method, developed earlier for functional time series (Bathia
+et al., 2010), that overcomes this problem by exploiting the lagged autocovariance, which is
+defined for any weakly stationary vector-valued time series {vt} as Σv(k) = Cov [vt+k, vt] .
+Since the lagged autocovariance of the noise component is zero, Σε(k) = 0 for k ̸= 0, the
+lagged autocovariances of the observed time series and the signal component are equal,
+Σy(k) = Σx(k) for k ̸= 0. Hence, the observed time series can be used to estimate the
+autocovariance of xt at non-zero lags.
+5
+
+=== page 6 ===
+A vector in the orthogonal complement of the dynamic space M is necessarily an
+eigenvector of Σy(k) = U Σξ(k)U ⊤ with eigenvalue zero. Assuming that Σξ(k) is full rank,
+the kernel of Σy(k) is of dimension n − d and therefore its eigenvectors with eigenvalue zero
+span the orthogonal complement of M. As a consequence of the same full-rank assumption,
+for any u ∈ Rn it holds that Σy(k)Σy(k)⊤u = 0 if and only if Σy(k)⊤u = 0. Hence, M⊥ is
+spanned by the eigenvectors of Σy(k)Σy(k)⊤ with eigenvalue zero. Note that Σy(k)Σy(k)⊤
+is positive semi-definite and, in particular, symmetric. Therefore, its eigenvectors with
+non-zero eigenvalue span M.
+More generally, introducing the matrix
+K =
+k0X
+k=1
+ckΣy(k)Σy(k)⊤, (2.1)
+where ck ∈ R are arbitrary coefficients, the eigenvectors of K with non-zero eigenvalue
+span the dynamic space M, provided that there is at least one k with ck ̸= 0 for which the
+corresponding matrix Σξ(k) is full rank. Crucially, using the naive estimator for Σy(k),
+one can define a consistent estimator for K without asymptotic bias arising from the noise
+component. This means that a basis for M can be estimated without asymptotic bias,
+using an eigenanalysis of the sample version of the matrix K. Because of the sum in the
+definition of K, information from different lags is combined. For the default option ck = 1
+for k = 1, . . . , k0, it has been reported that the estimation of the dynamic space is rather
+insensitive to the choice of k0 (provided k0 ≥ 2), both in the case of high-dimensional (Lam
+et al., 2011) and functional (Bathia et al., 2010) time series data.
+For future reference, we denote by V the (n×d) matrix whose columns are d orthonormal
+eigenvectors of K associated with its non-zero eigenvalues. We emphasize that U and V
+are alike in the sense that their columns form orthonormal bases of the same dynamic space
+M, but U and V are typically not equal. The matrix U is an inherent property of the
+time series process under consideration, whereas V also depends on the (partly arbitrary)
+choice of the coefficients ck in the definition of K in Equation (2.1).
+2.1 Noise reduction in time series data
+Given an observed time series {yt}T t=1, the goal of denoising is to reconstruct the signal
+component xt. Formally, denoising is a linear operation Pden : Rn → Rn such that xden t =
+Pdenyt is the reconstruction of xt. In the context of an underlying factor model as described
+above, the true signal component xt lies within the subspace M ⊂ Rn. It therefore makes
+sense to restrict ourselves to denoising operations that are projections onto the dynamic
+space M. This means that P 2 den = Pden and if u ∈ M, then Pdenu = u. In addition, we
+limit our analysis to linear operations and will refer to Pden as a denoising matrix.
+An example of such a denoising operation is an orthogonal projection onto M, i.e.,
+Portho = U U ⊤. Although not framed as noise reduction, this is in essence what is proposed
+in Lam et al. (2011) (and in Bathia et al. (2010) for functional time series data), where
+an estimate of the dynamic space M can be used to reconstruct the latent component of
+6
+
+=== page 7 ===
+the time series described by a factor model. This approach does not take into account the
+possibility of noise taking values in a subspace that is not orthogonal to M. If there exists
+such structure in the noise, orthogonal denoising removes noise in a suboptimal way. In
+what follows, we develop an optimal form of noise reduction that explicitly exploits this
+structure.
+2.2 MSE-optimal denoising
+To address the question of optimal denoising, we first specify the concept of optimality. We
+say that a denoising matrix Pden is optimal if it minimizes the mean squared (denoising)
+error E
+
+∥xt − xden t ∥2 , where ∥·∥ denotes the Euclidean norm. We will use the terms
+“MSE-optimal denoising” and “optimal denoising” interchangeably.
+Before presenting the optimal denoising strategy, some notation regarding the noise
+component εt must be introduced, since our strategy leverages structure in the noise. Given
+a dynamic space M, the noise can be decomposed as εt = ε∥ t + ε⊥ t , where ε∥ t = U U ⊤εt and
+ε⊥ t = (In − U U ⊤)εt. The noise is thus decomposed into a geometrically parallel and an
+orthogonal component with respect to M. Note that orthogonality in the outcome space
+Rn does not imply that ε⊥ t and ε∥ t are uncorrelated; in fact, our denoising strategy is based
+on exploiting their covariance.
+We then write the orthogonal noise component in terms of a lower-dimensional rep-
+resentation, ε⊥ t = W⊥χt, such that Σχ is full rank. Let d⊥ be the dimension of this
+representation, i.e., W⊥ is an (n × d⊥)-matrix and χt ∈ Rd⊥ . With the same reasoning as
+previously used for U and Σξ, we can assume without loss of generality that the columns
+of W⊥ are orthonormal and Σχ is diagonal. Note that this representation can be viewed
+as a factor model for the noise component, although it should be stressed that there is no
+serial dependence within the noise. Furthermore, the dimension of the orthogonal noise is
+bounded from above, d⊥ ≤ n − d. In the case of equality, the (linear) space of the orthogo-
+nal noise component corresponds to the orthogonal complement of M. We also emphasize
+that d⊥ is not assumed to be small relative to n or any other scale. The sole purpose of
+this lower-dimensional representation is its non-redundancy, making Σχ full rank.
+We are now in a position to present the optimal denoising strategy, which is the main
+result of this paper.
+Theorem 1. Given a dynamic space M, the MSE-optimal denoising matrix, i.e. the min-
+imizer of E
+
+∥xt − xden t ∥2 , among all projections onto M is given by
+Popt = U U ⊤   In − ΣyW⊥(Σχ)−1W ⊤ ⊥  , (2.2)
+which is the solution of a convex optimization problem.
+Proof. The matrix Pden is meant to act on the time series observations yt = xt + ε∥ t + ε⊥ t ,
+which can be written as a linear combination of the columns of U and W⊥. Since we have
+restricted our analysis to denoising matrices that are projections onto the dynamic space
+M, we can, without loss of generality, write Pden = U U ⊤ + U QW ⊤ ⊥ . The search for an
+7
+
+=== page 8 ===
+optimal Pden is therefore reduced to the search for an optimal (d × d⊥)-matrix Q. Since
+xden t = Pdenyt = xt + ε∥ t + U QW ⊤ ⊥ ε⊥ t , the mean squared (denoising) error is
+E
+
+∥xt − xden t ∥2 = Tr h Var h ε∥ t + U QW ⊤ ⊥ ε⊥ t ii
+= Tr[Σε∥ ] + 2Tr
+
+QW ⊤ ⊥ ΣyU  + Tr  Q⊤QΣχ  ,
+where we used that εt is assumed to have zero mean and that Cov
+h
+ε∥ t , ε⊥ t
+i
+= U U ⊤Σy(In −
+U U ⊤).
+This is a convex optimization problem for Q, because the Hessian is block diagonal
+with blocks Σχ that are all positive definite (recall that Σχ is full rank). The first-order
+condition is U ⊤ΣyW⊥ + QΣχ = 0, whose solution is Qopt = −U ⊤ΣyW⊥Σ−1 χ . Substituting
+this back into Pden gives the desired Popt.
+The intuition behind this optimal denoising strategy is as follows. Given a dynamic
+space M, it is possible to use the observed time series {yt} to recover the noise component
+ε⊥ t that is orthogonal to M. Subtracting this from yt is what we refer to as orthogonal de-
+noising. This is generally suboptimal, as the parallel noise component ε∥ t is left untouched.
+By exploiting the structure within the noise space, information about the orthogonal noise
+component can be used to remove (part of) the parallel noise component, thereby minimiz-
+ing the mean squared denoising error. To be more concrete, one can view the procedure as
+performing a multiple linear regression with ε⊥ t as the regressor and using its covariance
+with ε∥ t to also remove (part of) ε∥ t from the observed time series {yt}.
+To understand how much of the noise can be removed, we write the total noise in the
+factor-model form εt = W ξ(ε) t , where W is an (n × dε)-matrix and Σξε is full rank. Again,
+without loss of generality, the columns of W are assumed to be orthonormal. They span
+what we will call the noise space Mε. Note that this representation always exists, since
+no assumptions about the (relative) size of the noise dimension dε are made.
+Theorem 2. Given a dynamic space M and a noise space Mε, the denoising error of
+optimal denoising xopt t = Poptyt, as defined in Equation (2.2), is given by
+xopt t − xt =
+
+
+
+0 if M ∩ Mε = ∅,
+εc t − Cov  εc t , ε⊥ t  W⊥(Σχ)−1W ⊤ ⊥ ε⊥ t if M ∩ Mε ̸= ∅,
+where εc t = WcW ⊤ c εt and the columns of Wc form an orthonormal basis of the common
+subspace M ∩ Mε (the c stands for “common”).
+Proof. First consider the case M∩Mε = ∅. The noise space Mε is spanned by the columns
+of W, where εt = W ξ(ε) t . If the dynamic and noise space have no common subspace, every
+linear combination of the columns of W has a component orthogonal to M. Noise εt
+therefore always has an orthogonal component ε⊥ t and a (potential) parallel component
+ε∥ t can always be expressed as a linear function of the perpendicular component. More
+8
+
+=== page 9 ===
+concretely, if M ∩ Mε = ∅, there exists a matrix M∥⊥ ∈ Rn×n such that εt = (M∥⊥ + In)ε⊥ t ,
+where In is the identity matrix on Rn. This implies
+Cov
+h
+ε∥ t , ε⊥ t
+i
+= M∥⊥Σε⊥ = M∥⊥W⊥ΣχW ⊤ ⊥
+and therefore
+U U ⊤ΣyW⊥(Σχ)−1W ⊤ ⊥ ε⊥ t = U U ⊤Cov h ε∥ t , ε⊥ t i W⊥(Σχ)−1W ⊤ ⊥ ε⊥ t = M∥⊥ε⊥ t = ε∥ t .
+The optimal denoising matrix Popt, defined in Equation (2.2), then projects the noise onto
+the null vector, i.e., Poptεt = 0, leading to perfect denoising.
+In the case M ∩ Mε ̸= ∅ parallel noise ε∥ t can contain a component in M ∩ Mε,
+which is given by εc t = WcW ⊤ c εt, where the columns of Wc form an orthonormal basis of
+the common subspace M ∩ Mε (the c stands for ‘common’). The space spanned by the
+remaining noise parallel to M, ε∥ t − εc t , has no common component with the dynamic space
+M and thus for this part of the noise the previous situation applies. This means that there
+exists a matrix M∥⊥ ∈ Rn×n such that εt = εc t + (M∥⊥ + In)ε⊥ t . The optimally denoised
+signal then simplifies to
+xopt t = Poptyt
+= Popt(xt + εc t + (M∥⊥ + In)ε⊥ t )
+= xt + εc t + (ε∥ t − εc t ) − U U ⊤ΣyW⊥(Σχ)−1W ⊤ ⊥ ε⊥ t
+= xt + εc t − Cov  εc t , ε⊥ t  W⊥(Σχ)−1W ⊤ ⊥ ε⊥ t ,
+where in the last equality we used that
+U ⊤ΣyW⊥ = U ⊤Cov  εc t , ε⊥ t  W⊥ + U ⊤Cov h ε∥ t − εc t , ε⊥ t i W⊥
+and Cov
+h
+ε∥ t − εc t , ε⊥ t
+i
+= M∥⊥Σε⊥ = M∥⊥W⊥ΣχW ⊤ ⊥ . As in the previous case, the compo-
+nent ε∥ t − εc t is perfectly denoised.
+In the previous discussion of optimal denoising and in Theorems 1 and 2, two types of
+structure within the noise space have been used: linear correlations between ε⊥ t and ε∥ t , and
+a factor-model form of the noise and the orthogonal component of the noise, εt = W ξ(ε) t
+and ε⊥ t = W⊥χt, respectively. The first type of structure is essential for optimal denoising.
+In the absence of such a structure, i.e., when the covariance between ε⊥ t and ε∥ t is zero,
+Theorem 1 is still valid, but optimal denoising reduces to orthogonal denoising.
+By contrast, it is important to note that the factor-model form of the noise is not a
+restrictive assumption, because we do not assume the dimensions dε and d⊥ to be small.
+Typical noise εt ∼ IID(0, Σε) fits into the framework εt = W ξ(ε) t , where Σε = W Σξε W ⊤
+is the eigendecomposition with the zero eigenvalues removed. The same representation
+applies to ε⊥ t = W⊥χt. Assuming that dε and d⊥ are small would be unrealistic, because,
+9
+
+=== page 10 ===
+unless the noise is subject to context-specific restrictions, there is no reason for the noise
+to be confined to a lower-dimensional subspace. This suggests that, typically, dε = n and
+d⊥ = n − d, in which cases Σε and Σε⊥ , respectively, are invertible. This does not imply,
+though, that the invertibility of Σε and Σε⊥ is guaranteed. The primary purpose of using
+the factor-model form for the noise is to ensure that the results in Theorems 1 and 2 remain
+valid even when the noise covariance matrices are not invertible.
+It should be noted though that at the sample level optimal denoising is more effective
+when (most of) the noise can be explained by a small number of factors. This implies that
+Σε and Σε⊥ have a few relatively large eigenvalues, while the remaining eigenvalues are
+(close to) zero. This in turn makes the (effective) dimensions dε and d⊥ small relative to
+n and n − d, respectively. In the simulations in Section 3 we investigate how the presence
+of noise that lacks the two types of structure discussed here affects optimal denoising in
+finite samples.
+2.3 Estimation
+This section translates the theoretical optimal denoising result of Equation (2.2) into an ac-
+tionable approach for the practical case of an observed time series sample {yt}T t=1 of length
+T. The optimal denoising matrix contains several quantities that need to be estimated.
+Regarding the dynamic space M, both the dimension d and a set of basis vectors must be
+estimated. For this we largely follow the approach of Lam et al. (2011), as outlined at the
+start of Section 2. Recall that we made the distinction between the (n × d)-matrices U and
+V. Both have columns that form an orthonormal basis of M. In particular, U U ⊤ = V V ⊤
+and therefore U can be replaced by V in the optimal denoising matrix of Equation (2.2).
+A crucial difference is that the columns of V are (by definition) eigenvectors of K, defined
+in Equation (2.1). This makes it possible to define an estimator of V, in contrast to U.
+The sample version of the matrix K is accessible by means of the naive estimator for the
+lagged autocovariance matrix,
+bΣy(k) = 1 T − k
+T −kX
+t=1
+(yt+k − ¯y)(yt − ¯y)⊤,
+where ¯y is the sample mean of the observed time series.
+Recall that K has exactly d non-zero (positive) eigenvalues, with corresponding eigen-
+vectors that form a basis of M. This will typically not be the case for the estimate bK, due
+to finite-sample estimation error coming from the noise components εt. This complicates
+the estimation of d. The literature contains many proposals to address this issue. Early
+approaches try to minimize forecast errors (Hyndman and Shahid Ullah, 2007) or use in-
+formation criteria (Bai and Ng, 2002, 2007, Hallin and Liˇska, 2007, Otto and Salish, 2024).
+One approach iteratively adds directions to the orthogonal complement of M, until the
+next addition is no longer white noise (Pan and Yao, 2008). This method, based on the
+Ljung-Box-Pierce portmanteau test for white noise, has been reported to be problematic
+in the current context (Bathia et al., 2010). A widely-used alternative is the ratio-based
+10
+
+=== page 11 ===
+approach (Lam et al., 2011, Lam and Yao, 2012), which estimates d based on the largest
+relative drop in eigenvalues of bK. Our simulations have shown that, for relatively low signal-
+to-noise ratios and small time series length T, the largest relative drop can occur at d + dε,
+where dε is the dimension of the noise space Mε. This can inadvertently identify the noise
+components as signal and thereby (largely) overestimates the dimension of M. A more
+recent approach by Wu (2018) uses the fact that the asymptotic behavior of eigenvalue
+estimates differs between non-zero and zero eigenvalues, see also Otto and Salish (2024),
+Otto and Winter (2025). This method requires the tuning of a hyperparameter to separate
+the two types of asymptotic behavior. In a supervised setting this can be accomplished
+with cross-validation, for example, but we do not observe the would-be target variable xt.
+One option is to tune this hyperparameter indirectly, for example by using the denoised
+signal for forecasting and taking the resulting forecast error as the tuning criterion.
+In this paper, we estimate d using a series of bootstrap tests. This approach was
+first proposed by Bathia et al. (2010) in the context of functional time series. As it uses
+neither the smoothness of the curves, nor the infinite dimensionality of the Hilbert space
+of functional data, this method can also be applied to vector-valued time series. It is
+worth noting that a satisfying denoising performance often does not require an exactly
+correct estimate of d. The signal component xt can be viewed as a linear combination of
+the different factors in the factor model. The expected importance of each of the factors,
+which can be quantified by the corresponding eigenvalue of Σξ, typically varies among
+the different factors. This means that a subset of the d factors can account for most, or
+almost all, of the signal component. Our simulations in Section 3 show that d is often
+underestimated, without much harm to the denoising performance. For details about the
+bootstrap approach to estimating d and its effect on the noise reduction, see Appendix A.
+Given an estimated dimension ˆd of the dynamic space, we define ˆV with on its columns
+the orthonormal eigenvectors of bK associated with the ˆd largest eigenvalues.
+Since Σy can be estimated by bΣy(0), what remains to be estimated in Equation (2.2) is
+an orthonormal basis of the orthogonal noise components, i.e., the columns of W⊥, and the
+covariance structure of the corresponding noise factors χt. The covariance of the orthogonal
+noise is estimated via bΣε⊥ = (In − ˆV ˆV ⊤) ˆΣy(In − ˆV ˆV ⊤). Given an estimate ˆd⊥ of d⊥, the
+estimate cW⊥ of W⊥ has, in its columns, the orthonormal eigenvectors of bΣε⊥ associated
+with the ˆd⊥ largest eigenvalues. The corresponding eigenvalues form the diagonal of ˆΣχ,
+whose off-diagonal elements are zero. We resolve the problem of estimating d⊥ differently
+than we did for estimating d. It is possible to use the bootstrap procedure of Bathia et al.
+(2010) again, if one uses the reconstructions ˆε⊥ t = (In − ˆV ˆV ⊤)yt as the “observed” data
+from which bootstrap samples are generated. This is, however, sensitive to estimation error
+in ˆV . We opt for a more pragmatic approach and choose ˆd⊥ such that the fraction of the
+explained variance of ˆε⊥ t included in cW⊥ exceeds a threshold τ⊥ ∈ (0, 1),
+ˆd⊥ = min
+(
+d ∈ {1, . . . , n}
+ dX i=1 ˆλ(ε⊥) i ≥ τ⊥ nX j=1 ˆλ(ε⊥) j ) ,
+where ˆλ(ε⊥) i are the eigenvalues of bΣε⊥ in descending order. The threshold is set by the
+11
+
+=== page 12 ===
+practitioner. This pragmatic approach suffices, because we are not interested in d⊥ itself.
+Instead, we use ε⊥ t as a regressor for ε∥ t . A priori, there is no reason why relatively small
+factors of ε⊥ t solely predict large factors of ε∥ t . The distinction between orthogonal and
+parallel noise is made by the dynamic space M, whose orientation is typically unrelated
+to the directions of the noise factors. Neglecting small factors in ε⊥ t therefore entails little
+risk of missing a big denoising opportunity. In addition, estimating small factors in ε⊥ t
+is more sensitive to finite-sample estimation error. Neglecting them therefore reduces the
+risk of overfitting on noise.
+2.4 Asymptotic theory
+The expressions for the denoising errors under optimal denoising in Theorem 2 are asymp-
+totic. They can only be achieved with full knowledge of the underlying distribution or with
+an infinite amount of data available. Considering an observed time series sample {yt}T t=1 ,
+a natural question is how fast the asymptotic denoising error is approached as a function
+of the time series length T.
+The asymptotics of estimating the dynamic space M have been studied by Lam et al.
+(2011) and Lam and Yao (2012) for finite-dimensional time series, and in Bathia et al.
+(2010) for functional time series. In both cases, the asymptotics of estimating a basis for
+M are derived under the assumption that the number of basis vectors, the dimension d,
+is known. The fact that the methods used for estimating d are consistent supports this
+assumption. We will do the same and assume that both d and d⊥ are known.
+Before stating the asymptotics of optimal denoising, we first present the main assump-
+tions that were used in the derivation of that result. More technical assumptions are
+deferred to Appendix B.
+Assumption 1. No linear combination of the components of {ξt} is white noise.
+Assumption 2. The random variables xt and εt′ are stochastically independent ∀t, t′.
+Assumption 3. Considering the definition of K in Equation (2.1), there is at least one
+k ∈ {1, 2, . . . , k0} for which ck ̸= 0 and Σξ(k) is full-rank.
+Assumption 4. The d non-zero eigenvalues of K are all distinct.
+Assumption 5. The sequence {yt} ∈ Rn is strictly stationary and ψ-mixing with coeffi-
+cients such that P∞ ℓ=1 ℓ ψ1/2(ℓ) < ∞. Furthermore, E  |yt|4 < ∞ elementwise.
+Assumption 1 is equivalent to saying that Σξ is full rank. If this assumption is violated,
+one can always remove the redundancy by redefining the factors. This assumption also
+implies that there exists k ≥ 1 such that Σξ(k) is full rank, which is relevant for Assumption
+3. Assumption 2 is imposed for simplicity and is stronger than strictly necessary for
+deriving the asymptotics of optimal denoising, as long as certain conditions on the (lagged)
+covariance between signal and noise are satisfied. Assumption 3 ensures that M is spanned
+by the eigenspace of K associated with the non-zero eigenvalues, and Assumption 4 is
+12
+
+=== page 13 ===
+needed to derive a bound on estimation errors of the associated eigenvectors. As reported
+in Lam et al. (2011), Assumption 5 can be replaced by an α-mixing condition, at the
+expense of additional technicalities.
+Theorem 3. Given an observed sample {yt}T t=1 of length T from a time series process
+satisfying Assumptions 1-5, the denoising error of optimal denoising ˆxopt t = ˆPoptyt satisfies,
+for each fixed t, as T → ∞,
+∥ˆxopt t − xt∥ = OP   T −1/2 if M ∩ Mε = ∅,
+∥ˆxopt t − xt − εc t + Cov  εc t , ε⊥ t  W⊥(Σχ)−1W ⊤ ⊥ ε⊥ t ∥ = OP   T −1/2 if M ∩ Mε ̸= ∅.
+The proof of Theorem 3 is deferred to Appendix B. For the estimation of M we adapted
+the analysis of Bathia et al. (2010), based on V-statistics, to the setting of finite-dimensional
+time series. Building on this result, we then derived the asymptotic behavior of optimal
+denoising by means of existing results in time series asymptotics and perturbation theory
+of eigenvalues and eigenvectors.
+3 Simulation studies
+This chapter uses simulations to assess three aspects of the denoising performance of
+(MSE-)optimal denoising: recovery of the unobserved signal, i.e., the actual denoising
+(Section 3.2), improved parameter estimation (Section 3.3) and improved one-step-ahead
+forecasting (Section 3.4). The data-generating process of the simulated data is inspired by
+Bathia et al. (2010), Chen et al. (2022). The performance of (MSE-)optimal denoising is
+primarily compared with orthogonal denoising, as described in Section 2.1.
+However, note that both methods use a consistent estimator for the dynamic space
+(i.e. the eigenspace of K defined in Equation (2.1)). Alternatively, both methods could
+also be applied with an asymptotically biased estimate of M, using the naive estimator
+of the covariance matrix Σy = Σx + Σε of the observed time series. The dominant noise
+directions are then erroneously attributed to the dynamic space. As a consequence, there
+is no orthogonal noise component that can be denoised or used to remove the parallel noise
+component. This means that neither orthogonal denoising nor (MSE-)optimal denoising
+using an asymptotically biased estimate of M are able to meaningfully remove noise from
+the observed time series, even asymptotically. Apart from Figure 1, we leave out the
+denoising results of the biased methods, with the understanding that in Figures 7-11 they
+would have led to zero denoising on average. For parameter estimation and forecasting,
+we do include a biased method (see Figures 2 and 3).
+3.1 Setup
+We consider a simulated time series {yt}T t=1 of length T, where yt ∈ Rn, and where yt =
+xt + εt + εo t . The terms xt and εt correspond to the signal and noise of the time series
+13
+
+=== page 14 ===
+considered throughout Section 2. We have added a new term εo t , which will be specified
+later and which represents unstructured noise.
+For the data-generating process of the signal we choose a factor-model form xt = U ξt,
+where the factors ξt follow a d-dimensional VAR(p) process
+ξt =
+pX
+s=1
+Asξt−s + et, where et ∼ N (0, Σe) . (3.1)
+To ensure generality of the simulation results, we use an algorithm that randomly generates
+VAR(p) processes that are stationary, have a diagonal covariance matrix Σξ, and for which
+Tr[Σξ] = 1. Furthermore, we demand that Tr[Σe] is within a specified range, making
+it easier to compare asymptotic behavior of different VAR(p) processes. The details of
+this algorithm are given in Appendix C. Also note that this form of the VAR(p) process
+automatically ensures that E[xt] = U E[ξt] = 0.
+The factor loading matrix U has elements
+Uai =
+√
+1 − λ
+r
+2
+n cos
+ 2πi
+n a
+
+,
+where a = 1, . . . , n and i = 1, . . . , d. The parameter λ ∈ (0, 1) normalizes the signal such
+that Tr[Var[xt]] = 1 − λ. The choice of U means that the signal xt is a linear combination
+of discretized trigonometric functions, represented at an increasingly fine resolution as n
+increases. We emphasize that the use of basis functions of M that are smooth is purely a
+matter of convenience and does not affect the denoising. In fact, the denoising procedure is
+equivariant under a permutation of the coordinate index a: randomly shuffling the observed
+data yt in the index a does not change the denoising procedure in any way and leads to
+an identical denoised signal. Hence, a choice for basis functions that are smooth does
+not impact the generality of the simulation results. This is important, because real-world
+high-dimensional time series data often lacks this smoothness property (e.g., stock market
+prices).
+For the structured part of the noise we also use a factor-model form εt = W ξ(ε) t , but
+assume that the factors are serially independent: ξ(ε) t ∼ N (0, Σξε ) are i.i.d. over time, with
+Σξε = diag   σ2 ε,1, . . . , σ2 ε,dε  and σε,j = cj−1 εqPdε
+k=1 c2(k−1) ε
+with cε ∈ (0, 1). This noise consists of dε modes whose contributions to the total variance
+decrease geometrically, while the total variance is normalized to Tr[Σξε ] = 1. The factor
+loadings are given by
+Waj =
+√
+λ
+√
+1 − δ
+r
+2
+n
+
+cos(θj ) cos
+ 2πj
+n a
+
++ sin(θj ) sin
+ 2πj
+n a
+
+,
+where a = 1, . . . , n and j = 1, . . . , dε. The normalization factors are chosen such that
+Tr[Var[εt]] = λ(1 − δ). The angles θj specify the orientation of the noise space Mε relative
+14
+
+=== page 15 ===
+Parameter Default value
+d 4
+p 2
+n 50
+dε 8
+cε 2/3
+λ 0.2
+δ 0.0
+T 400
+Table 1: Default values of simulation parameters. Unless stated otherwise, these values
+are used in the simulations presented in Section 3.
+to the dynamic space M. If θj = 0 (for j ≤ d), the j-th noise mode lies inside the dynamic
+space. If θj = π/2, the noise mode is in the orthogonal complement of M.
+Finally, for the unstructured part of the noise all elements are independent across
+both coordinates and time. We take εo t ∼ N   0, λδ n In  , independently over time, making
+Tr[Var[εo t ]] = λδ.
+With the above specification of the data-generating process, the total variance of the
+observed time series is conveniently normalized to one, Tr[Var[yt]] = 1. Most of our sim-
+ulations do not include unstructured noise (δ = 0), implying Tr[Var[εt]] = λ, which leads
+to the interpretation of the parameter λ as the noise fraction of the total variance of the
+observed time series. In a similar fashion, δ = Tr[Var[εo t ]] /Tr[Var[εt]] is the fraction of
+unstructured noise variance in the total noise variance.
+To assess the general applicability of optimal denoising in our simulations, we vary one
+parameter at a time in the data-generating process while keeping the other parameters
+fixed. Table 1 shows the default values of the simulation parameters. Unless stated other-
+wise, these values are being used in the simulations presented here. When generating the
+factors ξt of the VAR(p) process underlying the signal, we initialize the factors at zero and
+we use a burn-in phase of 200 time steps.
+3.2 Denoising results
+Given a time series {yt}T t=1, estimation and denoising proceeds as described in Section 2.3.
+Since the specific choice of K in Equation (2.1) has little influence on the estimation of
+M, we fix K by setting c1 = c2 = 1 and all other coefficients to zero (Bathia et al., 2010,
+Lam et al., 2011). For the bootstrap procedure used to estimate d, described in Appendix
+A, we set B = 300 and α = 0.05. To estimate dε we set the cutoff to τ⊥ = 0.95.
+For both orthogonal denoising and optimal denoising, we measure denoising perfor-
+mance in terms of the estimated mean squared error
+MSE = 1 T
+TX
+t=1
+∥ˆxden t − xt∥2.
+15
+
+=== page 16 ===
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+MSE/λ
+p = 1
+ p = 2
+d= 2
+p = 5
+biased orthogonal denoising
+orthogonal denoising
+MSE-optimale denoising
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+MSE/λ
+d= 4
+400 800 1600 3200 6400
+T
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+MSE/λ
+400 800 1600 3200 6400
+T
+400 800 1600 3200 6400
+T
+d= 6
+Figure 1: (asymptotic) denoising performance, measured as MSE/λ, as a function of
+the dimension d and the lag order p of the VAR(p) process. Each boxplot consists of 100
+independent simulations. For the sake of a baseline, we have included (in green) orthogonal
+denoising based on the standard asymptotically biased estimate of the covariance matrix
+of the signal.
+16
+
+=== page 17 ===
+In case of trivial denoising, Pden = In, so the observed time series is unchanged and
+E[MSE] = λ. Thus, the no-denoising case yields an MSE of λ, which we use as a baseline.
+Values with MSE/λ < 1 indicate beneficial denoising, whereas values with MSE/λ > 1
+indicate that denoising is counterproductive.
+In Figure 1 we report the denoising performance, measured by the normalized mean
+squared error MSE/λ, as a function of the time series length T, for different values of the
+dimension d and the lag order p of the VAR(p) process. Each boxplot is based on 100
+independent simulations. MSE-optimal denoising outperforms orthogonal denoising for
+all VAR(p) specifications. In accordance with our theoretical analysis, the MSE-optimal
+denoiser converges to zero denoising error, whereas orthogonal denoising exhibits an irre-
+ducible denoising error equal to the total variance of ε∥ t . Both methods produce a large
+number of outliers, which can be attributed to misestimation of the VAR dimension d by
+the bootstrap procedure (see Appendix A for details).
+As a baseline, Figure 1 also includes results for orthogonal denoising based on the naive,
+asymptotically biased, estimate of the covariance matrix of the signal. On average, this
+method does not remove any noise from the observed time series. As explained in the
+introduction of Section 3, MSE-optimal denoising would give a similar poor performance
+when based on the (inconsistent) naive estimate of M.
+Figures 7-11 in Appendix D report results from the same experimental design with
+other hyperparameters varied. In Figure 7 we find that the dimension n of the observed
+time series {yt} affects denoising performance only when n (≲ 10). This reflects that
+the simulated dynamic and noise spaces have dimensions d = 4 and dε = 8, respectively.
+Identifying all d + dε = 12 modes therefore requires n = 12 observed dimensions. For
+smaller n, complete noise removal is impossible, even asymptotically.
+Figure 8 shows how denoising performance varies with Tr [Σe] , the noise-to-signal ratio
+under the normalization Tr[Var[ξt]] = 1. Larger noise-to-signal ratios require longer time
+series for denoising performance to get close to its asymptotic value. When the noise-to-
+signal ratio is large and the time series is short, denoising can be harmful (MSE/λ > 1):
+the denoised signal xden t then is a less accurate approximation of xt than the observed
+time series {yt}. This is due to overfitting and may possibly be remedied with a form of
+(Ridge) regularization. We attribute this behavior to overfitting, which may be mitigated
+by regularization. This extension is beyond the scope of the present paper, as regularization
+is unnecessary under the assumed finite dimensionality of the signal and noise subspaces.
+Figure 9 examines the effect of λ, the noise fraction in the observed time series, for time
+series of the default length T = 400. For very small noise fractions (λ = 0.01) orthogonal
+denoising outperforms MSE-optimal denoising. However, the right panel of Figure 9 shows
+that that this difference is negligible in absolute terms. Even for very large noise fractions
+(λ = 0.99) optimal denoising removes about 70% of the noise on average.
+Figure 10 investigates the effect of changing the ratio of structured noise εt and un-
+structured noise εo t by varying δ.
+In Figure 11 we vary the orientation of the noise space relative to the dynamic space. In
+the left panel the second noise component is parallel to the dynamic space. In accordance
+with Theorem 2, MSE-optimal denoising then exhibits an asymptotically irreducible de-
+17
+
+=== page 18 ===
+50 100 200 400 800 1600 3200 6400 12800 25600
+T
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4
+1.6B den s
+orthogonal denoising (biased)
+orthogonal denoising (unbiased)
+MSE-optimal denoising (unbiased)
+Figure 2: the (asymptotic) behavior of the parameter estimation error after denoising.
+Each point is the average of 100 independent simulations and the standard error. We have
+assumed the lag order is known, since the plotted measure ∆Bden s only makes sense if the
+lag order of the estimated model equals the true p.
+noising error. In the right panel the entire noise space lies in the orthogonal complement of
+the dynamic space and MSE-optimal denoising performs similarly to orthogonal denoising.
+3.3 Improved parameter estimation
+In this section we use the simulation setup to investigate whether model-agnostic optimal
+denoising can be used as a preprocessing step that improves parameter estimation of the
+underlying low-dimensional model that drives the serial dependence, which for our sim-
+ulations is the VAR(p) process defined in Equation (3.1). It should be noted that this
+representation of the VAR(p) process cannot be estimated without bias, because the dy-
+namic space M is spanned by the columns of V rather than the columns of U. If we define
+factors ζt = V ⊤xt, the VAR(p) process of Equation (3.1) can be written in an alternative
+representation
+ζt =
+pX
+s=1
+Bsζt−s + e′ t, where e′ t ∼ N (0, Σe′ ) , (3.2)
+and where Bs = V ⊤U AsU ⊤V and e′ t = V ⊤U et link both representations. Given a chosen
+denoising method represented by Pden, we use the denoised factors ζ den t = V ⊤xden t to
+estimate the parameters of the VAR(p) process by means of multivariate least squares
+estimation (L¨utkepohl, 2005). We fit the models with the statsmodels Python module
+and in order to compare the parameter values of Bs for s = 1, 2, . . . , p the lag order p is
+treated as known and set to its true oracle value.
+18
+
+=== page 19 ===
+As a measure of parameter estimation performance we define
+∆Bden s = E
+"
+1
+p
+pX
+s=1
+|| ˆBden s − Bs||F
+||Bs||F
+#
+,
+where ˆBden s denotes the estimator of the VAR(p) coefficient matrix at las s after denoising.
+Figure 2 compares the performance of optimal denoising, orthogonal denoising and no de-
+noising (Pden = In). We find that parameter estimation becomes consistent after optimal
+denoising, with the estimation error converging to zero as the time series length increases.
+In contrast, orthogonal denoising and no denoising do not yield consistent parameter esti-
+mates.
+3.4 Improved one-step-ahead forecasting
+Subsequently, the estimated VAR(p) model can be used to forecast the observed time series.
+We consider one-step-ahead forecasting,
+y(1) t = V
+pX
+s=1
+BsV ⊤Pdenyt−s,
+and measure forecasting performance in terms of the mean squared error,
+E
+h
+||yt − ˆy(1) t ||2
+i
+,
+where ˆy(1) t is the sample version of the one-step-ahead forecast. Here, we do not assume
+the lag order p to be known. Instead, we estimate it using order selection with the Akaike
+information criterion and statsmodels’ default maximum number of lags to be checked
+(12 ∗ (T /100)1/4).
+In Figure 3 we see that optimal denoising is again consistent, as its forecast mean
+squared error converges to the theoretical lower bound λ + (1 − λ)Tr[Σe] . Moreover, it
+outperforms orthogonal denoising and forecasting without denoising. We also note that
+the diverging forecast errors for short time series can be attributed to poor lag order
+estimation. Finally, we note that orthogonally denoised and non-denoised forecasting both
+improve for large T when the lag order is not given and must be estimated. The lag order
+is typically overestimated, which gives the VAR model, estimated with an asymptotic bias,
+more degrees of freedom to capture the serial dependence in the data.
+4 Applications
+We now illustrate the proposed noise reduction method using two real-world high-dimensional
+time series datasets: a panel of daily stock returns and a panel of monthly macroeconomic
+indicators. Both settings are commonly modeled through a low-dimensional factor struc-
+ture, but they differ substantially in their signal-to-noise characteristics, which allows us
+19
+
+=== page 20 ===
+50 100 200 400 800 1600 3200 6400 12800
+T
+0.30
+0.35
+0.40
+0.45
+0.50
+0.55
+0.60
+0.65
+0.70
+E
+[
+||yt − ˆy(1) t ||2
+]
+theoretical lower bound
+orth. den. (biased)
+orth. den. (unbiased)
+MSE-opt. den. (unbiased)
+Figure 3: the (asymptotic) behavior of the mean squared error of one-step-ahead forecasting
+after denoising. Each point is the average of 100 independent simulations and the standard
+error.
+to assess the method under conditions that are quite different from the simulation study
+of Section 3. Throughout, we use the same estimation procedure as in Section 2.3, with K
+defined via c1 = c2 = 1 (i.e. k0 = 2) and, when the bootstrap procedure of Appendix A is
+used, B = 300 bootstrap samples and significance level α = 0.05. The dimension of the or-
+thogonal noise component d⊥ is estimated with the explained-variance rule of Section 2.3,
+using cutoff τ⊥ = 0.95.
+4.1 Data
+The first dataset consists of daily log returns of the n = 459 constituents of the S&P 500
+index for which a complete price history is available over the sample period from 5 January
+2015 through 13 February 2026, giving a time series of length T = 2795. This is a typical
+example of a large cross-section of financial return series in which any common dynamic
+structure, if present at all, is known to be weak and easily obscured by idiosyncratic and
+market-wide noise.
+The second dataset is a panel of the first n = 20 monthly US macroeconomic indicators
+(measures of output, income and industrial production) in the Federal Reserve Economic
+Data (FRED) 2026-02-MD snapshot obtained from the macroeconomic database main-
+tained by the Federal Reserve Bank of St. Louis, containing monthly data from January
+1959 until January 2026. Although the dataset contains 127 different indicators, we re-
+duced the analysis to the leading indicators listed in the first 20 columns, ignoring the
+secondary and sometimes incomplete indicators in the later columns. For each series we
+20
+
+=== page 21 ===
+Method S&P 500 log-returns Macroeconomic panel
+biased orthogonal denoising 45.82% 78.07%
+orthogonal denoising (unbiased) 39.96% 73.72%
+MSE-optimal denoising (unbiased) 10.22% 46.29%
+Table 2: fraction of the total variance of yt that is attributed to the estimated signal
+xden t (Tr  Var ˆxden t  /Tr h ˆΣy i ) by each denoising method, for both applications, using the
+handpicked dimension d = 4.
+compute first differences and standardize the result to unit sample variance, giving a full
+sample of length T = 802, spanning February 1959 to November 2025, some of the 20
+indicators being available only up until then in the dataset. For the leave-one-year-out
+cross-validation exercise of Section 4.3 we restrict attention to the 65 complete calendar
+years contained in this sample, from 1960 up to and including 2024 (T = 780 months).
+Unlike the daily returns data of the S&P 500 index, monthly macroeconomic aggregates
+are widely believed to be governed by a small number of common dynamic factors that
+account for a substantial share of their total variance.
+For both datasets we inspect the eigenvalues of bK (Equation (2.1)) and apply the
+bootstrap procedure of Appendix A to estimate the dimension d of the dynamic space.
+In both cases the eigenvalues of bK show a pronounced elbow, with only the first few
+eigenvalues clearly separated from a long tail of eigenvalues close to zero, yet the bootstrap
+counter of Algorithm 1 behaves non-monotonically in d0 and does not settle on a stable
+estimate of d, a pattern consistent with the underestimation of d for noisy or moderately
+sized samples documented in Appendix A. We therefore follow the alternative suggested
+by Bathia et al. (2010) themselves and set d by visual inspection of the eigenvalues of bK,
+rather than by the sequential bootstrap algorithm. For both applications this leads us
+to choose d = 4, which, together with p = 2 for the VAR(p) model used in forecasting,
+coincides with the default values used throughout the simulation study (Table 1), making
+the two sets of results easier to compare.
+4.2 Denoising results
+Table 2 reports, for both datasets, the fraction of the total variance of yt that each denoising
+method attributes to the signal xden t . For both applications this fraction drops sharply when
+moving from orthogonal to MSE-optimal denoising: from about 40% to about 10% for the
+S&P 500 returns, and from about 74% to about 46% for the macroeconomic panel. This is
+consistent with our interpretation of the difference between the two methods: orthogonal
+denoising treats the entire component of yt within M as signal, even though part of it may
+be a parallel noise component ε∥ t correlated with the orthogonal noise ε⊥ t . MSE-optimal
+denoising uses this correlation to remove part of ε∥ t as well. That this reclassification is so
+pronounced in both datasets suggests that real-world noise is often not orthogonal to the
+dynamic space, reinforcing the relevance of the optimal denoising approach developed in
+21
+
+=== page 22 ===
+1960
+1961
+1962
+1963
+1964
+1965
+1966
+1967
+1968
+1969
+1970
+1971
+1972
+1973
+1974
+1975
+1976
+1977
+1978
+1979
+1980
+1981
+1982
+1983
+1984
+1985
+1986
+1987
+1988
+1989
+1990
+1991
+1992
+1993
+1994
+1995
+1996
+1997
+1998
+1999
+2000
+2001
+2002
+2003
+2004
+2005
+2006
+2007
+2008
+2009
+2010
+2011
+2012
+2013
+2014
+2015
+2016
+2017
+2018
+2019
+2020
+2021
+2022
+2023
+2024
+Year
+0.00
+0.25
+0.50
+0.75
+1.00
+1.25
+1.50
+1.75
+2.00
+MSE Fraction
+biased orthogonal denoising
+orthogonal denoising
+MSE-optimal denoising
+Figure 4: one-step-ahead forecasting MSE (as a fraction of the total variance that year) for
+the macroeconomic panel, per calendar year. Each year is left out of the training sample
+in turn and the corresponding VAR(p) model, with p = 2 and (handpicked) d = 4, is used
+to forecast that year.
+this paper.
+The effect is considerably stronger for the S&P 500 returns than for the macroeconomic
+panel. Only about one tenth of the total variance of the daily returns is attributed to the
+signal after MSE-optimal denoising, compared with roughly half of the total variance for
+the macroeconomic panel. This is in line with the common view that daily stock returns
+are hard to predict, so that little of their variance can be attributed to a low-dimensional
+dynamic component, whereas monthly macroeconomic aggregates are widely believed to
+share a more substantial common dynamic component. Because the fraction of the variance
+of the S&P 500 returns identified as signal by MSE-optimal denoising is so small, any
+downstream model fitted to the corresponding denoised factors is estimated on what is
+effectively very little signal. Indeed, one-step-ahead forecasts of the denoised S&P 500
+returns based on a VAR(p) model, for any of the three denoising methods of Table 2, do
+not meaningfully improve on the total variance of yt itself, so that no method can reliably
+be said to outperform the others. We therefore do not report forecasting results for the
+S&P 500 application and instead turn to one-step-ahead forecasting for the macroeconomic
+panel, where the signal fraction is large enough for the comparison to be informative.
+4.3 One-step-ahead forecasting
+For the macroeconomic panel we assess one-step-ahead forecasting performance of the
+VAR(p) model, with p = 2 and d = 4, estimated on the denoised factors of each of the
+three methods in Table 2. We use a leave-one-year-out cross-validation scheme: for each
+of the 65 complete calendar years in the sample, that year is removed from the training
+data, the model is re-estimated on the remaining months, and the mean squared forecast
+error is computed for the left-out year. Figure 4 shows the resulting mean squared error
+22
+
+=== page 23 ===
+Method Average MSE (std. error)
+biased orthogonal denoising 22.90 (11.29)
+orthogonal denoising (unbiased) 22.36 (10.83)
+MSE-optimal denoising (unbiased) 23.47 (10.87)
+Table 3: average one-step-ahead forecasting MSE for the macroeconomic panel over the 65
+leave-one-year-out folds, with the standard error of the mean across folds in parentheses.
+for every calendar year and every method, while Table 3 reports the average performance
+over all 65 years, together with the corresponding standard error.
+Unlike in the simulation study of Section 3.4, the three methods perform comparably
+on average, with overlapping standard errors, and MSE-optimal denoising does not sys-
+tematically improve on orthogonal denoising here. Figure 4 shows that this holds fairly
+uniformly across calendar years, in that the three methods track each other closely from
+year to year. This is a markedly different picture from the simulation results of Figure 3,
+where MSE-optimal denoising clearly dominates. A likely explanation is that, unlike the
+simulated data, the macroeconomic panel is not generated by a low-dimensional VAR(p)
+process with additive white noise. As a result any of the three (denoised) representations of
+the data are likely to be similarly misspecified as inputs to a linear VAR forecasting model,
+leaving comparatively little room for noise reduction to improve out-of-sample forecasts.
+Acknowledgments
+The authors are grateful to Peter Boswijk, Sven Otto, Peter Zadrozny and participants at
+various seminars and conferences, including at the 10th International Workshop on Applied
+Probability in Thessaloniki, the Bernoulli-IMS 11th World Congress in Probability and
+Statistics in Bochum, for their comments and suggestions.
+23
+
+=== page 24 ===
+A Bootstrap tests for estimating d
+We use the bootstrap test proposed by Bathia et al. (2010) to estimate the dimension of the
+dynamic space d. In this appendix we describe the method and evaluate its performance
+on the simulated data of Section 3 and assess its effect on our denoising approach.
+Using the notation of Bathia et al. (2010), we denote the non-zero eigenvalues of the
+matrix K, which was defined in Equation (2.1), by θ1 ≥ θ2 ≥ . . . ≥ θd > 0. When we test
+the null hypothesis H0 : d = d0, we focus on testing its implication θd0+1 = 0 under the null
+hypothesis. Let ˆθ1 ≥ ˆθ2 ≥ . . . ≥ 0 be the eigenvalues of bK, the sample version of K based
+on an observed sample {yt}T t=1, which typically has n > d strictly positive eigenvalues.
+We reject the null hypothesis if we observe ˆθd0+1 > lα, where lα is a threshold value to be
+determined by a bootstrap test and α ∈ (0, 1) is the significance level. Bathia et al. (2010)
+suggest visual inspection of the estimated eigenvalues to choose d0. Instead, we perform a
+series of repeated hypothesis tests for increasing value of d0, starting at d0 = 1, until the
+null hypothesis is not rejected. Algorithm 1 gives a detailed description of the procedure
+we use.
+Algorithm 1 Bootstrap method to estimate d
+Require: observed sample {yt}T t=1; significance level α ∈ (0, 1); bootstrap sample size B.
+1: d0 ← 0; reject ← True
+2: while reject do
+3: d0 ← d0 + 1
+4: Let bVd0 be the (n × d0)-matrix whose columns are the first d0 eigenvectors of bK.
+5: ˆyt ← ¯yt = bVd0 + ˆηt, where ˆηt = bV ⊤ d0 (yt − ¯yt) and ¯yt = 1 T PT t=1 yt.
+6: ˆεt ← yt − ˆyt
+7: counter ← 0
+8: for j = 1, 2, . . . , B do
+9: y∗ t ← ˆyt +ε∗ t , with ε∗ t randomly drawn (with replacement) from { ˆε1, ˆε2, . . . , ˆεT }.
+10: Compute K ∗ based on sample {y∗ t }T t=1 and let θ∗ d0+1 be its (d0 + 1)th eigenvalue.
+11: if ˆθd0+1 > θ∗ d0+1, then
+12: counter ← counter + 1
+13: end if
+14: end for
+15: if c < ⌊αB⌋ then
+16: reject ← False
+17: end if
+18: end while
+19: return d0
+In Figure 5 we analyze the performance of the bootstrap method on the simulated data
+of Section 3 with the default values described in Table 1 and in particular d = 4. We
+use B = 300 bootstrap samples and vary the significance level α. We observe that for long
+24
+
+=== page 25 ===
+1 2 3 4 5 6
+0
+25
+50
+75
+100Frequency
+T = 100
+1 2 3 4 5 6
+T = 400
+1 2 3 4 5 6
+T = 1600
+1 2 3 4 5 6
+T = 3200
+1 2 3 4 5 6
+α= 0.01
+T = 6400
+1 2 3 4 5 6
+0
+25
+50
+75
+100Frequency
+1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6 1 2 3 4 5 6
+α= 0.05
+1 2 3 4 5 6
+Estimated d
+0
+25
+50
+75
+100Frequency
+1 2 3 4 5 6
+Estimated d
+1 2 3 4 5 6
+Estimated d
+1 2 3 4 5 6
+Estimated d
+1 2 3 4 5 6
+Estimated d
+α= 0.1
+Figure 5: histogram (based on 100 independent simulations) of estimated dimension of the
+dynamic space using the bootstrap Algorithm 1, for varying significance level α and time
+series length T. The true dimension in the simulated data is d = 4.
+time series the fraction of incorrect estimates is close to the nominal significance level α. In
+this regime the dimension of the dynamic space M is typically overestimated. For shorter
+time series (see T = 100) the fraction of misestimated dimensions is larger, the dimension
+typically being underestimated.
+Figure 6 studies the effect of misestimation of d on orthogonal and MSE-optimal de-
+noising. In the left panel of Figure 6 we see the typical boxplots of the normalized MSE
+after denoising, based on 100 independently simulated time series, analogous to the panel
+with p = 2 and d = 4 in Figure 1. In the right panel we report the estimated value of d for
+each individual time series. Recall that we use B = 300 and α = 0.05 for the bootstrap
+procedure. We observe that almost all outliers are due to incorrect estimates of the dimen-
+sion d. We also observe that the effect of this on orthogonal and MSE-optimal denoising
+is comparable. Finally, we see that for short time series (T = 100) the performance drop
+due to faulty estimation of d is less pronounced. This suggests using a small significance
+level, e.g., α = 0.01, which reduces the fraction of erroneous estimates for long time series.
+B Asymptotic analysis
+The purpose of this section is to establish the asymptotic behavior of optimal denoising,
+as specified in Theorem 3. We start by reviewing a result on V-statistics, which underpins
+the asymptotic analysis of the estimator of K. This analysis builds on on Bathia et al.
+(2010) and is adapted here to finite-dimensional time series.
+25
+
+=== page 26 ===
+100 400 1600 3200 6400
+T
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+MSE/λ
+Box plots of normalized MSE
+orthogonal denoising
+MSE-optimal denoising
+lower bound ortho. den.
+100 400 1600 3200 6400
+T
+Scatter plots of normalized MSE, colored by d estimation accuracy
+orthogonal denoising
+MSE-optimal denoising
+lower bound ortho. den.
+ˆd = d (correct)
+ˆd < d (underestimated)
+ˆd > d (overestimated)
+Figure 6: denoising performance, measured as MSE/λ, for a VAR(p) process with d = 4
+and p = 2. Each boxplot (left panel) consists of 100 independent simulations. In the right
+panel we specify the estimation of d for each individual time series.
+B.1 V-statistics and their asymptotic behavior
+Suppose Zt ∈ V is a sequence of stationary random variables with marginal distribution
+function PZ (z) and V a finite-dimensional vector space. Given a function ϕ : V m → V that
+is symmetric in each of its m ≥ 2 arguments, we define the quantity
+θ(PZ ) =
+Z
+V m
+ϕ(z1, . . . , zm)
+mY
+j=1
+PZ ( dzj ), (B.1)
+assuming that PZ (·) is such that ∥θ(PZ )∥ < ∞. Note that we integrate over the product
+measure, treating the arguments of ϕ as independent copies of Zt. Given a sequence
+Z1, . . . , ZT of T observations, the V-statistic
+VT = 1 T m
+TX
+i1=1
+· · ·
+TX
+im=1
+ϕ(Zi1 , . . . , Zim )
+is a consistent estimator of θ(PZ ). The Hoeffding decomposition (Van der Vaart, 1998) of
+VT takes the form
+VT − θ(PZ ) =
+mX
+c=1
+m
+c
+
+VT c,
+where
+VT c =
+Z
+V c
+ϕc(z1, . . . , zc)
+cY
+j=1
+(PT ( dzj ) − PZ ( dzj )) , c = 1, . . . , m.
+26
+
+=== page 27 ===
+In the definition of VT c we used the empirical distribution
+PT (Z) = 1 T (δZ1 (Z) + . . . + δZT (Z)) ,
+where we used Dirac measures δZt , and we defined
+ϕc(z1, . . . , zc) =
+Z
+V m−c
+ϕ(z1, . . . , zm)
+mY
+j=c+1
+PZ ( dzj ).
+Intuitively, VT c measures the difference between the sample realization of a consistent
+estimator and its population counterpart. It converges in probability to the zero vector.
+The rate of convergence is given by the lemma below, for which we need an additional
+technical assumption.
+Assumption 6.
+R
+V m ∥ϕ(z1, . . . , zm)∥2 Qm j=1 PZ ( dzj ) < ∞.
+Lemma 1. Consider a stationary sequence Zt ∈ V obeying the same conditions as in
+Assumption 5. Introduce the V -statistics as done above and let Assumption 6 hold. Then
+E[∥VT c∥2] = O (T −c) for c = 1, . . . , m.
+For a proof of Lemma 1, we refer to Lemma 3.3 in Sen (1972).
+B.2 Asymptotics of optimal denoising
+The asymptotic behavior of optimal denoising, as stated in Theorem 3, is expressed in
+terms of a OP(·)-property. Before proving Theorem 3, we first define this notation and
+relate it to the asymptotic result of expected values from Lemma 1. For a sequence of
+scalar-valued random variables WT , where T = 1, 2, . . . , and a sequence of nonzero scalars
+aT , we write WT = OP(aT ) if for any ε > 0 there exist M > 0 and T0 ∈ N+ such that
+P
+ WT aT  ≥ M  ≤ ε
+for any T ≥ T0. In that case, we say that the sequence of random variables WT aT is stochas- tically bounded.
+Lemma 2. For a sequence of scalar-valued random variables WT , if E[W 2 T ] = O (T −c) for
+some c > 0, then WT = OP
+ 
+T −c/2 .
+Proof. We use Markov’s inequality. Choose an arbitrary ε > 0. Because of the assumption
+E[W 2 T ] = O (T −c) there exist M ′ > 0 and T0 ∈ N+ such that E[W 2 T ] ≤ M ′T −c for all
+27
+
+=== page 28 ===
+T ≥ T0. Define M =
+p
+M ′/ε. We then have
+P
+ WT T −c/2  ≥ M  = P  W 2 T ≥ M 2T −c
+≤ E[W 2 T ] M 2T −c
+≤ M ′
+M 2
+= ε,
+where the first inequality is Markov’s inequality. Since ε > 0 was chosen arbitrarily, this
+proves that WT = OP
+ 
+T −c/2 .
+We are now in a position to prove Theorem 3, which is the main result on the asymptotic
+behavior of optimal denoising in this paper.
+Proof of Theorem 3. For simplicity, we assume that the dynamic and noise spaces do not
+have a common subspace (M ∩ Mε = ∅). Extending the proof to the case M ∩ Mε ̸= ∅
+is straightforward. Throughout this proof, we work with V V ⊤ instead of U U ⊤. As argued
+in Section 2.3, they are equal, but only for V can we define an estimator. This makes V
+suitable for asymptotic analysis, contrary to U.
+We know from Theorem 2 that optimal denoising removes all noise if M ∩ Mε = . One
+way of seeing this is by means of the following decomposition,
+∥xopt t − xt∥2 = ∥(Popt − In)xt + Poptεt∥2
+≤ ∥(Popt − In)xt∥2 + ∥Poptεt∥2
+≤ ∥(V V ⊤ − In)xt∥2 + ∥V V ⊤ΣyW⊥(Σχ)−1∥2∥W ⊤ ⊥ xt∥2 (B.2)
++ ∥V ∥2∥V ⊤ε⊥ t ∥2 + ∥V V ⊤ΣyW⊥(Σχ)−1∥2∥W ⊤ ⊥ ε∥ t ∥2
++ ∥V V ⊤ε∥ t − V V ⊤ΣyW⊥(Σχ)−1W ⊤ ⊥ ε⊥ t ∥2,
+where we used the triangle inequality and the fact that operator norms are submultiplica-
+tive. In the last expression, the rightmost norm in each term is exactly zero, making
+∥xopt t − xt∥2 = 0 (see the proof of Theorem 2 for details). At the sample level, given a
+time series of length T, each matrix in the above display is replaced by its sample estimate
+ˆV , ˆΣy, cW⊥ and ˆΣχ. This makes ∥ˆxopt t − xt∥2 not exactly zero. We are interested in its
+behavior as T → ∞ at fixed, finite n, d and dε.
+We start by focusing on the first term ∥( ˆV ˆV ⊤ − In)xt∥2. The columns of ˆV are the
+orthonormal eigenvectors of bK associated with non-zero eigenvalues. The asymptotics of
+bK have been derived by Lam et al. (2011). Here, we outline a different derivation based
+on V-statistics, completely analogous to the derivation for functional time series in Bathia
+et al. (2010). Because ∥ bK − K∥2 ≤ Pk0 k=1 c2 k∥bΣy(k)bΣy(k)⊤ − Σy(k)Σy(k)⊤∥2, we focus on
+the asymptotics of the k-th term in this sum. The statistic
+˜Σy(k) = 1 T − k
+T −kX
+t=1
+(yt+k − µ)(yt − µ)⊤,
+28
+
+=== page 29 ===
+where µ = E[yt] , is unbiased for Σy(k), in contrast to bΣy(k). Using that bΣy(k) = ˜Σy(k) −
+(µ − ¯y)(µ − ¯y)⊤ + OP(T −1) for fixed k, we obtain
+∥bΣy(k)bΣy(k)⊤ − Σy(k)Σy(k)⊤∥2 ≤ ∥ ˜Σy(k) ˜Σy(k)⊤ − Σy(k)Σy(k)⊤∥2
++ 2∥ ˜Σy(k)∥2∥µ − ¯y∥4 + ∥µ − ¯y∥8,
+where we used the triangle inequality, the fact that operator norms are sub-multiplicative
+and that the matrix norm of an outer product equals the product of the respective vector
+norms. The central limit theorem for stationary processes (Anderson, 1971) implies that
+∥µ − ¯y∥ = OP
+ 
+T −1/2 , making, as we will see, the second and third term in the above
+expression asymptotically negligible.
+If we define the function ρ : Rn×n × Rn×n → Rn×n as ρ(A, B) = 1 2 (AB⊤ + BA⊤), we
+have that
+bΣy(k)bΣy(k)⊤ = 1 (T − k)2
+T −kX
+t=1
+T −kX
+t′=1
+ρ(zt(k), zt′ (k)),
+where zt(k) = (yt+k − µ)(yt − µ)⊤. This has the form of a V-statistic with m = 2. If we
+define VT = bΣy(k)bΣy(k)⊤, then θ(PZ ) = Σy(k)Σy(k)⊤ is its expectation with respect to
+the product measure as in Equation (B.1). Since VT − θ(PZ ) = 2VT 1 + VT 2, by means of
+Lemma 1 we find that
+E
+h
+∥ ˜Σy(k) ˜Σy(k)⊤ − Σy(k)Σy(k)⊤∥2
+i
+= O
+ 
+T −1 .
+By Lemma 2, we thus find that ∥bΣy(k)bΣy(k)⊤ − Σy(k)Σy(k)⊤∥2 = OP(T −1) and therefore
+∥ bK − K∥2 = OP(T −1) .
+Assuming that the non-zero eigenvalues of K are all distinct, the distance between the
+respective eigenvectors is bounded by ∥ bK − K∥ (see theorem 2.7 in Horv´ath and Kokoszka
+(2012)). As a consequence, ∥ ˆV − V ∥2 = OP(T −1) . Defining δV = ˆV − V, we get by
+expanding in δV
+∥( ˆV ˆV ⊤ − In)xt∥2 = ∥(V V ⊤ − In)xt + (V δV ⊤ + δV V ⊤ + δV δV ⊤)xt∥2 (B.3)
+≤ ∥(V V ⊤ − In)xt∥2 + 2∥V ∥2∥δV ∥2∥xt∥2 + ∥δV ∥4∥xt∥2
+= 0 + OP
+ 
+T −1 + OP   T −2
+= OP
+ 
+T −1 .
+Going back to Equation (B.2), with analogous arguments we obtain for the sample version
+of the third term that ∥ ˆV ∥2∥ ˆV ⊤ε⊥ t ∥2 = OP(T −1) as well.
+For the other terms in Equation (B.2), we need to know the asymptotic behavior of
+ˆΣy, cW⊥ and ˆΣχ. It is well-known that ∥ ˆΣy∥2 = OP(T −1) (Brockwell and Davis, 1991). Re-
+call that the columns of cW⊥ are the orthonormal eigenvectors of bΣε⊥ = (In − ˆV ˆV ⊤) ˆΣy(In −
+ˆV ˆV ⊤) associated with the d⊥ largest eigenvalues. Analogously to Equation (B.3), we can
+expand bΣε⊥ in terms of δV and ˆΣy − Σy, use their asymptotics and the triangle inequal-
+ity, to find that ∥bΣε⊥ − Σε⊥ ∥2 = OP(T −1) . We again invoke Theorem 2.7 of Horv´ath
+29
+
+=== page 30 ===
+and Kokoszka (2012) and find ∥cW⊥∥2 = OP(T −1) . The matrix ˆΣχ is diagonal, with on
+its diagonal the d⊥ largest eigenvalues of bΣε⊥ . The Bauer-Fike theorem implies that the
+gap between the respective eigenvalues of bΣε⊥ and Σε⊥ is bounded by ∥bΣε⊥ − Σε⊥ ∥ and
+hence ∥ ˆΣχ − Σχ∥2 = OP(T −1) . Proceeding as in Equation (B.3), by expanding the remain-
+ing terms in the sample version of Equation (B.2) we find that all terms have the same
+leading-order asymptotic behavior of OP(T −1) . This concludes the proof.
+C Simulation - details
+The procedure that randomly generates VAR(p) processes as defined in Equation (3.1) is
+given by Algorithm 2. For technical details about VAR(p) processes, see, e.g., L¨utkepohl
+(2005). We require that the process is stationary by imposing that the largest modulus
+of the roots of the characteristic polynomial of this VAR(p) process rmax(A1, . . . , As) is
+below r2 < 1, where r2 is set by the practitioner. We also ensure that Σξ is diagonal and
+that Tr[Σξ] = 1. Furthermore, we require that Tr[Σe] is within a specified range [s1, s2],
+with s1, s2 ∈ (0, 1), which facilitates comparison of the asymptotic behavior across VAR(p)
+processes.
+The algorithm consists of four steps. First, a positive definite Σe is randomly sampled.
+Then matrices A1, A2, . . . , Ap are randomly sampled and rescaled such that they constitute
+a stationary VAR(p) process. Next, the corresponding Σξ is diagonalized and Σe is rescaled
+such that Tr[Σξ] = 1. If the resulting Tr[Σe] /∈ [s1, s2], the whole procedure is repeated.
+Otherwise, the procedure is terminated and the output is a VAR(p) process defined by Σe
+and As for s = 1, 2, . . . , p.
+Throughout the simulations in this paper, unless stated otherwise, we use r1 = 0.01,
+r2 = 0.98, s1 = 0.05, and s2 = 0.25. The most important parameters here are r2 and
+s2. Obviously, r2 < 1 to ensure stationarity. If we choose r2 too small, Algorithm 2 has
+difficulty finding a VAR(p) process satisfying all conditions when both d and p are large
+(e.g., d = 6, p = 5). If we choose s2 too small, we encounter a similar problem. If we
+choose s2 too large, the convergence of the denoising procedures as a function of the time
+series length T is slower.
+30
+
+=== page 31 ===
+Algorithm 2 Random generation of VAR(p) process.
+Require: d ≥ 1; p ≥ 1; r1, r2, s1, s2 ∈ (0, 1) such that r1 < r2 and s1 < s2.
+1: while Tr[Σe] /∈ [s1, s2] do
+2:
+3: while Σe is not positive definite do ▷ Sample Σe.
+4: Σe ← 1 10 M M ⊤, where M ∼ N (0, Id) is randomly sampled.
+5: end while
+6:
+7: Sample As ∼ N (0, Id) for s = 1, 2, . . . , p. ▷ Sample As.
+8:
+9: b ← (rmax(A1, . . . , As) > r2) ▷ Find stationary process.
+10: f ← 2
+11: while rmax(A1, . . . , As) /∈ [r1, r2] do
+12: if rmax(A1, . . . , As) > r2 then
+13: if b = 0 then
+14: b ← 1
+15: f ← f + 1
+16: end if
+17: As ← (1 − 1/f )As for s = 1, 2, . . . , p.
+18: else
+19: if b = 1 then
+20: b ← 0
+21: f ← f + 1
+22: end if
+23: As ← (1 + 1/f )As for s = 1, 2, . . . , p.
+24: end if
+25: end while
+26:
+27: Find S that diagonalizes Σξ. ▷ Diagonalize Σξ.
+28: As ← S⊤AsS for s = 1, 2, . . . , p.
+29: Σe ← S⊤ΣeS.
+30:
+31: Rescale Σe ← Σe/Tr[Σξ]. ▷ Impose Tr[Σξ] = 1.
+32:
+33: end while
+34: return Σe and As for s = 1, 2, . . . , p.
+31
+
+=== page 32 ===
+D Additional simulation results
+0.00
+0.25
+0.50
+0.75
+1.00
+1.25
+1.50
+MSE/λ
+n = 5
+orthogonal denoising
+MSE-optimale denoising
+n = 6
+ n = 7
+ n = 8
+400 800 1600 3200 6400
+T
+0.00
+0.25
+0.50
+0.75
+1.00
+1.25
+1.50
+MSE/λ
+n = 9
+400 800 1600 3200 6400
+T
+n = 10
+400 800 1600 3200 6400
+T
+n = 50
+400 800 1600 3200 6400
+T
+n = 100
+Figure 7: (asymptotic) denoising performance, measured as MSE/λ, as a function of the
+dimension n of the observed time series yt. Each boxplot consists of 100 independent
+simulations.
+400 800 1600 3200 6400
+T
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4
+MSE/λ
+Tr[Σe] = 0.033
+orthogonal denoising
+MSE-optimale denoising
+400 800 1600 3200 6400
+T
+Tr[Σe] = 0.342
+400 800 1600 3200 6400
+T
+Tr[Σe] = 0.53
+400 800 1600 3200 6400
+T
+Tr[Σe] = 0.812
+Figure 8: (asymptotic) denoising performance, measured as MSE/λ, as a function of the
+total variance of the VAR(p) process, Tr[Σe] . Each boxplot consists of 100 independent
+simulations.
+32
+
+=== page 33 ===
+0.01 0.05 0.1 0.3 0.5 0.7 0.9 0.95 0.99
+λ
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+MSE/λ
+0.01 0.05 0.1 0.3 0.5 0.7 0.9 0.95 0.99
+λ
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+MSE
+orthogonal denoising
+MSE-optimale denoising
+Figure 9: denoising performance for time series of (default) length T = 400, measured as
+MSE/λ (left panel) and as absolute MSE (right panel), as a function of the noise fraction
+λ of the observed time series {yt}. Each boxplot consists of 100 independent simulations.
+0.0 0.2 0.4 0.6 0.8 1.0
+δ
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+MSE/λ
+T = 100
+0.0 0.2 0.4 0.6 0.8 1.0
+δ
+T = 400
+0.0 0.2 0.4 0.6 0.8 1.0
+δ
+T = 1600
+orthogonal denoising
+MSE-optimale denoising
+Figure 10: (asymptotic) denoising performance, measured as MSE/λ, as a function of the
+fraction δ of unstructured noise εo t within the total noise εt + εo t , while keeping the fraction
+of the latter within the observed time series {yt} constant at the (default) value λ = 0.2.
+Each boxplot consists of 100 independent simulations.
+100 400 1600 3200 6400
+T
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+MSE/λ
+θ2 = 0
+orthogonal denoising
+MSE-optimale denoising
+100 400 1600 3200 6400
+T
+θj = π/2
+Figure 11: (asymptotic) denoising performance, measured as MSE/λ, as a function of the
+orientation of the noise space with respect to the dynamic space. In the left panel the
+second noise component is parallel (θ2 = 0) to the dynamic space. In the right panel the
+full noise space is in the orthogonal complement of the dynamic space (θj = π/2).
+33
+
+=== page 34 ===
+References
+Anderson, T. W. (1971). The Statistical Analysis of Time Series. Wiley Series in Proba-
+bility and Statistics. John Wiley, New York, 1st edition edition.
+Bai, J. and Ng, S. (2002). Determining the Number of Factors in Approximate Factor
+Models. Econometrica, 70(1):191–221.
+Bai, J. and Ng, S. (2007). Determining the Number of Primitive Shocks in Factor Models.
+Journal of Business & Economic Statistics, 25(1):52–60.
+Bathia, N., Yao, Q., and Ziegelmann, F. (2010). Identifying the finite dimensionality of
+curve time series. The Annals of Statistics, 38(6).
+Brockwell, P. J. and Davis, R. A. (1991). Time Series: Theory and Methods. Springer
+Series in Statistics. Springer, New York, NY.
+Candes, E. and Tao, T. (2007). The Dantzig selector: Statistical estimation when p is
+much larger than n. The Annals of Statistics, 35(6).
+Chen, C., Guo, S., and Qiao, X. (2022). Functional Linear Regression: Dependence and
+Error Contamination. Journal of Business & Economic Statistics, 40(1):444–457.
+Donoho, D. L. and Johnstone, I. M. (1994). Ideal spatial adaptation by wavelet shrinkage.
+Biometrika, 81(3):425–455.
+Donoho, D. L. and Johnstone, I. M. (1995). Adapting to Unknown Smoothness via Wavelet
+Shrinkage. Journal of the American Statistical Association, 90(432):1200–1224.
+Fan, J., Liao, Y., and Mincheva, M. (2011). High-dimensional covariance matrix estimation
+in approximate factor models. The Annals of Statistics, 39(6):3320–3356.
+Fan, J., Liao, Y., and Mincheva, M. (2013). Large Covariance Estimation by Thresholding
+Principal Orthogonal Complements. Journal of the Royal Statistical Society Series B:
+Statistical Methodology, 75(4):603–680.
+Forni, M., Hallin, M., Lippi, M., and Reichlin, L. (2000). The Generalized Dynamic-
+Factor Model: Identification and Estimation. The Review of Economics and Statistics,
+82(4):540–554.
+Forni, M., Hallin, M., Lippi, M., and Reichlin, L. (2005). The Generalized Dynamic Factor
+Model: One-Sided Estimation and Forecasting. Journal of the American Statistical
+Association, 100(471):830–840.
+Hallin, M. and Liˇska, R. (2007). Determining the Number of Factors in the General
+Dynamic Factor Model. Journal of the American Statistical Association, 102(478):603–
+617.
+34
+
+=== page 35 ===
+Horv´ath, L. and Kokoszka, P. (2012). Inference for Functional Data with Applications,
+volume 200 of Springer Series in Statistics. Springer, New York, NY.
+Hyndman, R. J. and Shahid Ullah, Md. (2007). Robust forecasting of mortality and
+fertility rates: A functional data approach. Computational Statistics & Data Analysis,
+51(10):4942–4956.
+Johnstone, I. M. and Lu, A. Y. (2009). On Consistency and Sparsity for Principal Com-
+ponents Analysis in High Dimensions. Journal of the American Statistical Association,
+104(486):682–693.
+Lam, C. and Yao, Q. (2012). Factor modeling for high-dimensional time series: Inference
+for the number of factors. The Annals of Statistics, 40(2).
+Lam, C., Yao, Q., and Bathia, N. (2011). Estimation of latent factors for high-dimensional
+time series. Biometrika, 98(4):901–918.
+Ledoit, O. and Wolf, M. (2004). A well-conditioned estimator for large-dimensional covari-
+ance matrices. Journal of Multivariate Analysis, 88(2):365–411.
+L¨utkepohl, H. (2005). New Introduction to Multiple Time Series Analysis. Springer, Berlin,
+Heidelberg.
+Otto, S. and Salish, N. (2024). Approximate Factor Models for Functional Time Series.
+Otto, S. and Winter, L. (2025). Functional Factor Regression with an Application to
+Electricity Price Curve Modeling.
+Pan, J. and Yao, Q. (2008). Modelling multiple time series via common factors. Biometrika,
+95(2):365–379.
+Sen, P. K. (1972). Limiting behavior of regular functionals of empirical distributions for
+stationary *-mixing processes. Zeitschrift f¨ur Wahrscheinlichkeitstheorie und Verwandte
+Gebiete, 25(1):71–82.
+Stock, J. H. and Watson, M. W. (2002a). Forecasting Using Principal Components
+From a Large Number of Predictors. Journal of the American Statistical Association,
+97(460):1167–1179.
+Stock, J. H. and Watson, M. W. (2002b). Macroeconomic Forecasting Using Diffusion
+Indexes. Journal of Business & Economic Statistics, 20(2):147–162.
+Van der Vaart, A. W. (1998). Asymptotic Statistics. Cambridge Series in Statistical and
+Probabilistic Mathematics. Cambridge University Press, Cambridge.
+Wu, J. (2018). Eigenvalue difference test for the number of common factors in the approx-
+imate factor models. Economics Letters, 169:63–67.
+35
+
+=== page 36 ===
+Xia, Q., Liang, R., Wu, J., and Wong, H. (2018). Determining the number of factors for
+high-dimensional time series. Statistics and Its Interface, 11(2):307–316.
+36

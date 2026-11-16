@@ -1,0 +1,2811 @@
+=== page 1 ===
+Neural Hawkes: Non-Parametric Estimation in High Dimension
+and Causality Analysis in Cryptocurrency Markets
+Timothée Fabre1,2 and Ioane Muni Toke1
+1Laboratoire MICS, CentraleSupélec, Université Paris-Saclay, France.
+2SUN ZU Lab, Paris, France.
+November 5, 2024
+Abstract
+We propose a novel approach to marked Hawkes kernel inference which we name the moment-based
+neural Hawkes estimation method. Hawkes processes are fully characterized by their first and second
+order statistics through a Fredholm integral equation of the second kind. Using recent advances in
+solving partial differential equations with physics-informed neural networks, we provide a numerical
+procedure to solve this integral equation in high dimension. Together with an adapted training
+pipeline, we give a generic set of hyperparameters that produces robust results across a wide range of
+kernel shapes. We conduct an extensive numerical validation on simulated data. We finally propose
+two applications of the method to the analysis of the microstructure of cryptocurrency markets. In
+a first application we extract the influence of volume on the arrival rate of BTC-USD trades and in
+a second application we analyze the causality relationships and their directions amongst a universe
+of 15 cryptocurrency pairs in a centralized exchange.
+Keywords – Hawkes process, Non-parametric estimation, Physics-informed neural network, Cryp-
+tocurrency
+Contents
+1 Introduction 2
+1.1 Literature review of non-parametric estimation methods . . . . . . . . . . . . . . . . . . . 2
+1.2 Contribution and organization of the paper . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+2 Moment-based non-parametric neural Hawkes estimation 3
+2.1 Framework and notation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+2.2 Physics-Informed Neural Networks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+2.3 Moment-based neural Hawkes estimation procedure . . . . . . . . . . . . . . . . . . . . . . 6
+2.4 The practitioner’s corner . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+3 Numerical validation 9
+3.1 Numerical validation for various shapes of kernels . . . . . . . . . . . . . . . . . . . . . . . 9
+3.2 Convergence rate with respect to the number of observations . . . . . . . . . . . . . . . . 17
+3.3 Robustness with respect to the choice of hyperparameters . . . . . . . . . . . . . . . . . . 18
+3.4 Stability comparison with the Wiener-Hopf benchmark . . . . . . . . . . . . . . . . . . . . 18
+4 Application to high-frequency cryptocurrency data 21
+4.1 Data . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21
+4.2 The impact of volume on the arrival rate . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22
+4.3 Cryptocurrency spillover: a causality analysis of transactions . . . . . . . . . . . . . . . . 24
+4.4 Intraday seasonality and robustness of empirical results . . . . . . . . . . . . . . . . . . . 26
+5 Conclusion 27
+1
+arXiv:2401.09361v3  [q-fin.TR]  4 Nov 2024
+
+=== page 2 ===
+1 Introduction
+Hawkes processes are a class of point process that models a sequence of arrivals of events that can cluster
+over time. Their properties can display self-exciting or self-inhibiting behaviors in the unidimensional
+case, and mutual-exciting or mutual-inhibiting behaviors for multidimensional processes. In the recent
+years, their application has been explored in many areas such as earthquakes (Wang et al., 2012; Kwon
+et al., 2023), neuroscience (Reynaud-Bouret et al., 2013), criminality (Olinde and Short, 2020) and in
+finance (Muni Toke and Pomponio, 2012; Bacry et al., 2013, 2015; Rambaldi et al., 2017; Gao et al., 2018;
+Jusselin and Rosenbaum, 2020). A D-variate linear Hawkes process N = (N 1, . . . , N D ) is a counting
+process with conditional intensity vector λt = (λ1 t , . . . , λD t ) such that for any i = 1, . . . , D,
+λi t = µi +
+DX
+j=1
+Z
+(−∞,t)
+ϕij (t − s) dN j s , (1)
+where µ = (µ1, . . . , µD ) is the baseline intensity which corresponds to the exogenous component and
+Φ = (ϕij )1≤i,j≤D is the kernel matrix. For any i = 1, . . . , D, j = 1, . . . , D, the element ϕij is a function
+that gives the impact each past event has over the instantaneous probability of observing a new event
+at time t. This interpretability of Hawkes processes justifies their widespread use especially in causality
+analysis (Xu et al., 2016; Achab et al., 2017). In the common framework where ϕ is positive we say
+that the processes N 1, . . . , N D are self- and mutually exciting. The use of Hawkes processes that exhibit
+kernels with negative parts provides more flexibility and better fits to inhibitory behaviors that are often
+observed in the data, at the price of a lesser mathematical tractability (Lu and Abergel, 2018; Duval
+et al., 2022).
+In general the estimation of such processes is carried on by specifying a parametric form of the influence
+kernel and then calibrating the parameters via likelihood maximization (Lee and Seo, 2017; Lu and
+Abergel, 2018; Bonnet et al., 2023, among recent contributions). Specifying an exponentially decreasing
+kernel preserves the Markovian property and is therefore a common choice. But even the estimation
+of exponential kernels can sometimes be tricky — especially in large dimension — since the likelihood
+is strongly non-convex. Moreover, much more specific forms of Hawkes kernels are required to fit the
+data in practice. For example, latency effects may cause the kernel to be non-monotonic when dealing
+with high-frequency financial data. Furthermore, the dynamic of the point process may depend on an
+additional component such as the past realizations of marks which makes the kernel even more complex
+to specify. The application of a non-parametric method is thus essential in these cases.
+1.1 Literature review of non-parametric estimation methods
+Non-parametricinferencehasbeenexploredthroughdifferentmethodologies. Anexpectation-maximization
+(EM) algorithm was designed using the cluster representation of Hawkes and Oakes (1974) for univariate
+kernel estimation (Lewis and Mohler, 2011) and was later extended to the multivariate case (Zhou et al.,
+2013). Nevertheless this method has three drawbacks which are particularly exacerbated in the context
+of high-frequency financial data, as outlined in Bacry and Muzy (2016):
+- high computational cost: the evaluation of the log-likelihood has a quadratic time complexity in
+the number of observations ;
+- tail-modulated speed of convergence: the EM algorithm slowly converges when the kernel is power-
+law decaying, and such kernels are often observed in financial data ;
+- removal of inhibition effects: as the kernel is constrained to take positive values, inhibitory effects
+cannot be quantified.
+The exploitation of an infinite autoregressive representation has been proposed as well in Eichler et al.
+(2017). Similarly, the INAR representation of Hawkes processes is used in Kirchner (2017). Note that
+other kernel estimation methods have been proposed in the literature and either explore least squares
+estimation (Bacry et al., 2020) or Bayesian inference perspectives (Zhang et al., 2018; Donnet et al.,
+2020; Sulem et al., 2024). However, these methods are unsuitable to general multivariate marked kernels.
+Other methods focus on the estimation of the norm of the kernels rather than their shape as in Achab
+et al. (2017).
+The use of neural networks has been explored in Joseph et al. (2020); Joseph and Jain (2023). The authors
+train a neural network model that outputs the kernel matrix and aims at maximizing the associated log-
+2
+
+=== page 3 ===
+likelihood over event time observations. This procedure solves the problem of high dimension but shares
+the drawbacks that are directly linked to a Hawkes likelihood optimization, i.e. the potentially large
+number of local minima and a high computational cost.
+To overcome these disadvantages, another class of non-parametric methods encompassing moment-based
+procedures has been made popular in the literature. Based on the Laplace transform of the autocovariance
+function, the inference of symmetric kernels is developed in Bacry et al. (2012). This methodology is
+extended in Bacry and Muzy (2016) by relaxing the symmetry assumption. The authors demonstrate
+a characterization equation that links the kernel matrix of any stationary linear Hawkes process to its
+second order statistics. The resulting system of equations involves Fredholm integral equations of the
+second kind that are numerically solved as a Wiener-Hopf system by discretizing the time domain with
+quadratures.
+Although the Wiener-Hopf (WH) method of Bacry and Muzy (2016) seems to provide a convenient
+framework as both power-laws and inhibitory effects, as well as marked kernels are inferred, its practical
+application can be laborious as it is prone to the curse of dimensionality when D increases. Solving such
+a system involves the inversion of a matrix that can be arbitrarily large depending on the dimension of
+the Hawkes process, on the size of the support of the mark process and on the number of quadrature
+points. Moreover estimation issues involving oscillatory behaviours have been reported — see for example
+Cartea et al. (2021) — and the optimal number of quadratures might be highly problem-dependent.
+The problem of the Wiener-Hopf approach does not lie in the methodology itself since solving the char-
+acterization equation should lead to the desired solution, but rather in the numerical solving procedure.
+Supported by recent advances in the literature about physics-informed neural networks (PINNs), we pro-
+pose in this work to infer the solution by training a neural network to solve the characterization integral
+equation. Originally developed in Psichogios and Ungar (1992); Dissanayake and Phan-Thien (1994);
+Lagaris et al. (1998) for differential equations and initial/boundary value problems that arise in physics,
+this idea has gained much more attention in the past years due to the rising availability of computational
+resources.
+1.2 Contribution and organization of the paper
+Our main contributions are the following.
+- We introduce a novel non-parametric estimation method for the kernel of marked Hawkes processes
+in high dimension. Our method leverages some of the latest advances in PINNs training to train a
+robust kernel learner that solves the characterization equation of Bacry and Muzy (2016).
+- We provide a general configuration of hyperparameters and network architecture that approximates
+the solution with excellent accuracy with respect to the characterization equation residual.
+- Using our estimation method on high-frequency cryptocurrency data, we extract the impact of
+volume over the arrival rate of BTC-USD trades and we analyze spillover effects within a high-
+dimensional universe of cryptocurrency pairs. We define two ratios that quantify the direction of
+causal relationships.
+The structure of this paper is as follows. Section 2 first defines our framework and notation, then intro-
+duces the characterization equation of Bacry and Muzy (2016) and finally presents the neural Hawkes
+non-parametric estimation method. A fully detailed training procedure is provided. Section 3 validates
+the estimation method on simulated data and provides insights about hyperparameter tuning and ro-
+bustness. Section 4 finally applies the estimation method to high-frequency cryptocurrency data.
+2 Moment-based non-parametric neural Hawkes estimation
+2.1 Framework and notation
+Let N be a D-dimensional linear marked Hawkes process such that for i ∈ {1, . . . , D}, (N i t )t≥0 has
+the intensity process (λi t)t≥0 and mark process (ξi t )t≥0. We assume the non-zero marks are i.i.d. and
+{t, ξi t ̸= 0} = {t, N i t − N i t− = 1}. We denote by pi the probability density function of the random variable
+ξi t conditionally on {N i t − N i t− = 1}. We furthermore denote by Xi ⊂ (0, +∞) the domain of pi.
+3
+
+=== page 4 ===
+We denote by Φ := (ϕij )(i,j)∈{1,...,D} the kernel matrix of N and by µi its baseline intensity and we
+assume that for any i = 1, . . . , D, j = 1, . . . , D, ϕij takes values in R+. For any i ∈ {1, . . . , D}, the
+arrival intensity of events of type i at time t ≥ 0 is
+λi t = µi +
+DX
+j=1
+Z
+(−∞,t)
+ϕij (t − s, ξj s ) dN j s . (2)
+Let ∥Φ∥ :=
+ 
+∥ϕij ∥  (i,j)∈{1,...,D}2 be the matrix of L1-norms of the kernel components, i.e. for all (i, j) ∈
+{1, . . . , D}2,
+∥ϕij ∥ :=
+Z Z
+(0,+∞)×Xj
+ϕij (s, z) pj (z)dsdz. (3)
+The branching ratio of the process N is
+R := max
+λ∈S(Φ)
+|λ|, (4)
+where S(Φ) is the spectrum of the matrix ∥Φ∥. The condition R < 1 ensures the stationarity of N and
+consequently, the vector of first order statistics Λ := E(λt) = (Λi)i∈{1,...,D} is
+Λ = (I − ∥Φ∥)−1 µ, (5)
+where I is the identity matrix of size D.
+Let us now define two quantities that will be of interest in our paper. For all (i, j) ∈ {1, . . . , D}2, we call
+aggregated time kernel, denoted φij , the expectation of the kernel component (i, j) with respect to the
+mark distribution :
+φij (t) := E   ϕij   t, ξj  = Z
+Xj
+ϕij (t, z) pj (z)dz. (6)
+Similarly, we call aggregated mark kernel, denoted f ij , the norm of the kernel component (i, j) along the
+time coordinate
+f ij (x) := 1 ∥ϕij ∥ Z (0,+∞) ϕij (s, x)ds. (7)
+Note the normalization such that E
+ 
+f ij (ξj )  = 1. The aggregated kernels are such that if the kernel is
+multiplicative in the sense that ϕij (t, x) = ψ(t)h(x) for some functions ψ and h with E(h(ξ)) = 1, then
+ψ ≡ φij and h ≡ f ij .
+The second order statistics characterization equation of a point process N with intensity defined in
+Equation (2) is given by the following result.
+Theorem 1 (Bacry and Muzy (2016)) If G is the second order statistics matrix defined by
+Gij (t, x)dtdx := E h dN i t  dN j 0 = 1, ξj 0 ∈ [x, x + dx] i − 1{i=j, t=0}dx − Λidtdx, (8)
+then for all i ∈ {1, . . . , D}, the cross-excitation kernels of the i-th event type ϕi. := (ϕij )j∈{1,...,D} are the
+solutions of the following D-system of equations
+Gij (t, x) = ϕij (t, x) +
+DX
+k=1
+Z Z
+(0,+∞)×Xk
+ϕik(s, z)H kj (t − s, x, z)pk(z) dsdz, 1 ≤ j ≤ D (9)
+where
+H kj (t, x, z) := Gkj (t, x)1{t>0} + Λk Λj Gjk(−t, z)1{t<0}. (10)
+The process is fully characterized by this result in the sense that once the kernel matrix is obtained from
+Equation (9), the baseline intensity µ is deduced using Equation (5).
+In practice the mark universe is discretized which turns Equation (9) into a Fredholm equation of the
+second kind. The Wiener-Hopf method consists in discretizing the time domain using quadratures and
+inverting the corresponding matrix to deduce the values taken by the solution at the quadrature points.
+Thus, theentirekernelmatrix Φ isobtainedbyproceedingtotheinversionof D matricesofsize Q×M ×D,
+4
+
+=== page 5 ===
+where Q is the number of quadratures and M the size of the discretized mark universe. For a large Q —
+100 to 1000 points —, a reasonably large M — 3 to 10 points — and a large dimension — 10 event types
+— the inversion becomes both computationally costly and noisy with a potentially high approximation
+error.
+Note that depending on the sign of the second order statistics, inhibitory effects can be observed, i.e.
+a kernel that explores negative values. As discussed in Bacry and Muzy (2016); Rambaldi et al. (2017)
+this does not invalidate the non-parametric estimation method as long as P
+ 
+λi t < 0  is negligible for any
+i = 1, . . . , D. In this case, the authors have shown the method leads to reliable results.
+2.2 Physics-Informed Neural Networks
+Assume f : [0, T ] × Ω → R is a solution to a partial differential equation (PDE) with representation
+∂tf + Df = 0, t ∈ [0, T ], x ∈ Ω ⊂ R, (11)
+where D is a differential operator, T the time horizon and Ω the spatial domain. Suppose that some
+initial and boundary conditions ensure the uniqueness of solution f :
+f (0, x) = g(x), x ∈ Ω, (12)
+Bf (t, x) = 0, t ∈ [0, T ], x ∈ ∂Ω, (13)
+where B is the boundary operator associated to Equation (11) and ∂Ω is the boundary of Ω.
+A data-driven approach to solve this PDE is to specify the solution f as a neural network fθ where
+θ is the set of trainable parameters. Since f is assumed continuous on [0, T ] × Ω, the existence of this
+approximation is guaranteed by the universal approximation theorem (Hornik et al., 1989) provided there
+are enough hidden units and the activation function is continuous, unbounded. This physics-informed
+neural network (PINN) specification was formulated in Raissi et al. (2019) and have motivated many
+researchers in the past years. The idea is to train fθ such that it minimizes the following loss function
+L(θ, E) := 1 N c
+N c X
+n=1
+|∂tfθ (tn, xn) + Dfθ (tn, xn)|2+ 1 N i
+N i X
+n=1
+fθ (0, xi n) − g(xi n) 2 + 1 N b N b X n=1 Bfθ (tb n, xb n)2, (14)
+where E := {{(tn, xn)}1≤n≤N c , {xi n}1≤n≤N i , {(tb n, xb n)}1≤n≤N b } are either a reference grid used for valida-
+tionorrandomlygenerateddatapointsateachiterationofagradientdescentalgorithm. Thenotation N c,
+N i and N b holds respectively for the number of collocation points, initial condition points and boundary
+condition points. The gradients and other derivatives are computed via automatic differentiation.
+At the beginning of its development, the method presented a lot of training issues that have been tackled
+since, encompassing unbalanced gradients (Wang et al., 2021; Deguchi and Asai, 2023), the reproduction
+of time causality (Wang et al., 2022b), the complexity of the PINNs loss landscapes (Krishnapriyan et al.,
+2021) and the difficulty of optimizing the sum of multiple competitive loss functions (Bischof and Kraus,
+2021). Although the literature about PINNs is still burgeoning, several good practices have already
+emerged and now allow researchers to train robust models.
+This data-driven approach can be transposed from PDEs to integral equations (IEs). If f is a solution
+to an integral equation with representation
+f + If = 0, t ∈ [0, T ], x ∈ Ω ⊂ R, (15)
+where I is an integral operator, T the time horizon and Ω the spatial domain, then the loss function of
+the associated PINN fθ is written
+L(θ, E) := 1 N
+NX
+n=1
+|fθ (tn, xn) + Ifθ (tn, xn)|2 . (16)
+For example, if f is the solution of the following Fredholm integral equation of the second kind
+g(t) = f (t) +
+Z T
+0
+g(t − s)f (s)ds, t ∈ [0, T ], (17)
+5
+
+=== page 6 ===
+where g is a continuous function satisfying sup
+0≤t≤T
+R T
+0 |g(t − s)|ds < 1 which ensures the uniqueness of the
+solution, we write for all t ∈ [0, T ]
+If (t) := −g(t) +
+Z T
+0
+g(t − s)f (s)ds. (18)
+This time, the training of a PINN fθ that approximates the solution of Equation (15) does not involve the
+estimation of gradients, but the computation of an integral via a quadrature method. The exploitation of
+neural networks in such frameworks has been proposed in e.g., Effati and Buzhabadi (2012); Zappala et al.
+(2022);Guanetal.(2022);Yuanetal.(2022). Inspiredbythebestpracticesfromtheliteratureconcerning
+PINNs applied to PDEs and IEs, we now design a PINN model to solve the Hawkes characterization
+equation.
+2.3 Moment-based neural Hawkes estimation procedure
+Let uθ : (t, x) 7→ (uij θ (t, x))1≤i,j≤D be a physics-informed neural network with trainable parameters θ.
+Our goal is to find θ∗ that minimizes a loss function L over the domain of Equation (9). We truncate the
+time domain and define the kernels for t ∈ [0, T ] instead of [0, +∞). Without any loss of generality we
+assume that for all i, Xi = X ⊂ (0, +∞) and that X is bounded. In practice, it simplifies the computation
+of the loss function and we can always extend the sets Xi such that all D probability density functions
+pi share the same domain X .
+2.3.1 Loss function
+Consider a set of data points E := {(tn, xn), 1 ≤ n ≤ N c} sampled over the domain (0, T ) × X . We
+assume that the second order statistics Gij (tn, xn) defined at Equation (8) are non-zero for all i, j and n.
+From the characterization equation of Theorem 1, we define the (i, j)-equation residual at the n-th data
+point by
+εij n (θ) := Gij (tn, xn) − uij θ (tn, xn) −
+DX
+k=1
+Z Z
+(0,T )×X
+uik θ (s, z)H kj (tn − s, xn, z)pk(z) dsdz, (19)
+and define the quadratic loss function L with
+L(θ, E) :=
+N c X
+n=1
+X
+1≤i,j≤D
+εij n (θ)2. (20)
+Following the recommendations of Wang et al. (2023) on the training of PINNs, we use a loss weighting
+procedure to better infer the time causality of the kernel matrix. This weighting procedure was introduced
+in Wang et al. (2022b). The authors noticed that neural networks may encounter issues in approximating
+the solution of PDEs over the time component t due to the propensity of the model to minimize all loss
+components at the same time. They proposed to create temporal weights that will not give importance to
+a loss component evaluated at any time t unless all the previous components — for all time s < t — are
+sufficiently small. This can be particularly relevant for Hawkes kernels when the accuracy of estimation
+at short times is crucial.
+We revisit this methodology by introducing a normalized weighting procedure that scales the loss and
+controls the weights’ range of values. Assume the set E is built such that for all n ∈ {1, . . . , N c}, tn−1 < tn
+and define the cumulative loss at time tn:
+S ij n :=
+nX
+k=1
+εij k (θ)2. (21)
+We define the (i, j)-temporal weight evaluated at the n-th data point
+ωij n (θ) :=
+
+
+
+1 if n = 1,
+exp
+(
+−ϵ S ij n−1
+S ij N c
+)
+otherwise, (22)
+6
+
+=== page 7 ===
+where ϵ is a a hyperparameter that controls the minimum value taken by the weights as they all take
+values in ]e−ϵ, 1]. We finally define the weighted loss function as
+Lω (θ, E) :=
+N c X
+n=1
+Lω n (θ), (23)
+where
+Lω n (θ, E) := X
+1≤i,j≤D
+ωij n (θ) εij n (θ)2. (24)
+2.3.2 Sampling procedure
+We now detail the sampling procedure of the set of data points E := {(tn, xn), 1 ≤ n ≤ N c}. Our
+method uses a generic randomized sampling. The model did not show any significant improvement
+by using residual-based adaptive sampling such as the ones described in Wu et al. (2023) as standard
+sampling already provides accurate estimates of the kernel matrix.
+As our practical applications are usually done for short time scales – such as high-frequency data –
+we are particularly concerned by the inference of kernels that may have large variations for t < 10−3,
+corresponding to a millisecond. Therefore we adapt the randomized time sampling by generating more
+data points for small times. Let S be the proportion of time points taking values under a short-time scale
+threshold τ ≪ T . For a training set of size N c, we sample ⌊SN c⌋ data points using a uniform law on
+the interval (0, τ ), and N c − ⌊SN c⌋ data points using a uniform law on the interval (τ, T ), ⌊.⌋ being the
+floor function. In the rest of the paper, we set S = 0.3. The choice of the threshold τ highly depends on
+the problem and the time scale of the analysis. Other sampling distributions of time points have been
+tested, but did not result in any significant improvement to the estimation. Later, we introduce an analog
+threshold h for the estimation grid of second order statistics and we set τ = h. The value of h is specified
+at each numerical experiment.
+Finally, an integer uniform grid sampling is used for the mark data points.
+2.3.3 Architecture and detailed training pipeline
+The choice of the neural network architecture can be crucial when designing a PINN. For example in
+Wang et al. (2021), the authors propose a novel architecture to help reducing gradient flow issues during
+training. Furthermore, neural networks inspired from the long-short term memory cell may lead to better
+performance as argued in Sirignano and Spiliopoulos (2018). In the rest of the paper, we use the Deep
+Galerkin Method (DGM) network architecture introduced in Sirignano and Spiliopoulos (2018). We
+make a slight modification to the original architecture by using ReLU activation functions in place of
+hyperbolic tangent. Indeed, in our numerical experiments, we found that discontinuous kernels are much
+better reproduced with this configuration1.
+As discussed in Bacry and Muzy (2016), it is noteworthy that the system of D2 Fredholm integral
+equations can be formulated as D independent systems of D Fredholm integral equations. Thus, the
+approximated solution can be splitted into D neural networks each predicting an output of size D —
+the kernels ϕi. or in other words, the i-th row of the kernel matrix Φ. This splitting procedure thus
+involves the training of D models and has the additional benefit that the D models are suitable for
+parallel computing, leading to a much faster training. We use this methodology to learn the entire kernel
+matrix Φ. The loss functions of Equations (20) and (24) are decomposed as D loss functions such that
+for all i,
+Li(θ, E) :=
+N c X
+n=1
+DX
+j=1
+εij n (θ)2, (25)
+and
+Lω i,n(θ, E) :=
+DX
+j=1
+ωij n (θ) εij n (θ)2. (26)
+The detailed training pipeline is described in Algorithm 1.
+1We also explored the idea of using the L∞-norm instead of the L2-norm in the training process as Wang et al. (2022a)
+suggests that it might lead to more accurate solutions in some problems. We finally chose to stick to the original norm as
+the validation results presented in the next section did not improve with this change.
+7
+
+=== page 8 ===
+Algorithm 1 Training procedure of the moment-based neural Hawkes
+1. Estimate the first order statistics Λ and second order statistics G given by Equation (8) over the
+time and mark domains.
+2. For i = 1 to D:
+(a) Represent the solution of the i-th characterization equation of Theorem 1 by a DGM neural
+network ui θ and initialize its weights θ with a Glorot scheme.
+(b) Set the number of epochs E, the size N c of the training set E, the batch size B such that
+N c = 0 [B], a decreasing sequence of learning rates (γe)e≥1 and a random sampling scheme,
+e.g. the procedure described above. We use γe = γ0100− e E .
+(c) For e = 1 to E:
+i. Sample a training set E = {(tn, xn), 1 ≤ n ≤ N c} and a validation set ¯E.
+ii. Apply a standardization and log-scaling to the data points.
+iii. Over the elements of E: compute the equation residuals (εij n (θ))1≤j≤D and the temporal
+weights (ωij n (θ))1≤j≤D .
+iv. For s = 1 to N c B :
+- Using Equation (26), update the weights via a mini-batch gradient descent
+θ ← θ − γe
+1
+B
+sBX
+n=(s−1)B+1
+∇θ Lω i,n(θ). (27)
+v. Using Equation (25), compute the unweighted validation loss Li(θ, ¯E).
+(d) Outputs: An estimate θi of the optimal weights for the i-th model and a list of validation
+losses over the epochs.
+3. Outputs: D models (ui θi )1≤i≤D , the i-th model representing the i-th row of the kernel matrix.
+2.4 The practitioner’s corner
+The aim of this section is to give a practical advice regarding training and potential questions that arise
+during the implementation step.
+On the non-dimensionalization of the problem. In order to standardize the time and mark inputs
+of the neural network, we recommend the following transformations.
+- Time: Apply a logarithmic transformation t 7→ logp t, with p = 10 for example. This allows the
+network to better infer kernels that have large fluctuations over small time windows. In practice,
+as this is commonly observed in financial microstructure when studying the order flow at short
+time scales, we advise the practitioners to use this scaling by default. Furthermore, our numerical
+experiments have shown significant improvements by using this transformation.
+- Mark: A good standardization methodology for the marks should depend on the data generating
+process. By default, we applied a z-score transformation x 7→ x−m σ where m and σ are respectively
+the empirical average and empirical standard deviation computed over a sample of the training
+data.
+On the estimation of the integral. The integral component of Equation (29) is numerically esti-
+mated with time quadratures. Although a large number of quadratures — larger than 1000 — may
+provide slightly better results, we did find that 500 quadratures were amply sufficient to obtain a good
+performance. One should keep in mind that the training procedure becomes costly if this number is too
+large as D2M integrals need to be computed at each evaluation of the loss. In the numerical experiments,
+we use a quadrature scheme with a logarithmic grid.
+On the estimation of the second order statistics. A correct choice of the time grid over which
+the statistics G are estimated is crucial. As the number of observations increases, we can expect to get a
+more precise estimation and thus we can set a finer mesh. As the choice of the sample-grid may be highly
+problem-dependent, we will use a grid that is well suited for our scope of application. To this extent,
+we shall use a scheme inspired by the work of Bacry et al. (2016) and Rambaldi et al. (2017) for the
+estimation of kernels with short time horizon. It consists in a linear scheme for very short times up to an
+intermediate step h, and then a logarithmic scheme from h to the time horizon T . This allows to account
+8
+
+=== page 9 ===
+for the structure of high-frequency data as explained by the authors. We thus use the following rule. We
+set h < T , the number of points in the linear part nlin and the number of points in the logarithmic part
+nlog and estimate the statistics on the following grid
+"
+tmin, tmin + 1 nlin (h − tmin), tmin + 2 nlin (h − tmin), . . . , h, h  T h  1 nlog , h  T h  2 nlog , . . . , T # . (28)
+A linear interpolation method is used to obtain the values for any t ∈ [tmin, T ]. In the numerical
+experiments, we set tmin = h nlin .
+On the continuity of the kernel at time T −. Since the kernel matrix is defined for t ≤ T , we may
+impose a continuity condition u(T, x) = 0, for all x ∈ X depending on the practical application. In the
+PINN literature, this boundary constraint is simply introduced to the training by adding an additional
+error term to the quadratic loss. A regularization weight ωc is then applied to this loss term.
+On kernels with different orders of magnitude. Approximation issues may arise when the values
+taken by each kernel component of the matrix explore very different orders of magnitude. In this case,
+the kernels with high values will be correctly estimated but the relative error made over the other kernels
+might be high. This inference problem is similar to the causality issue that was studied in Wang et al.
+(2022b) in the sense that the neural network averages the errors made over the statistics G. Thus,
+statistics that take high values will overshadow the ones taking small values. An idea to mitigate this
+problem is to use a weighted version of the loss function defined in Equation (29). To this extent, we
+propose the following weighted loss function
+Lω (u, G, E) :=
+N c X
+n=1
+X
+1≤i,j≤D
+ζij (xn)ωij n (θ)εij n (θ)2, (29)
+with
+ζij (x) :=
+ Z
+(0,T )
+Gij (t, x)  dt
+!−1
+X
+1≤i′ ,j′ ≤D
+ Z
+(0,T )
+Gi′ j′ (t, x)  dt !−1 , 1 ≤ i, j ≤ D. (30)
+This weighting procedure puts more weight to kernels that exhibit smaller absolute second order statistics
+G with respect to other kernels. Obviously, this technique becomes irrelevant if all the components of
+the kernel matrix Φ take similar values.
+On the training time. As the Wiener-Hopf approach, our non-parametric method has the benefit of
+having a computation time that is independent from the number of observations. In fact, the number of
+observations influences the computation time of second order statistics but not the training time itself.
+This strongly contrasts with common likelihood approaches.
+3 Numerical validation
+In this section we present several numerical experiments conducted over a wide range of simulated data.
+We show that the moment-based non-parametric neural Hawkes estimation method detailed in Section
+2 provides accurate kernel estimates in various configurations of dimensions, kernel types and mark
+distributions. We measure the rate of convergence of the method with respect to the sample size and
+provide some elements regarding the robustness of the method with respect to hyperparameters.
+3.1 Numerical validation for various shapes of kernels
+We set up six numerical experiments. In each experiment, we use a thinning algorithm to simulate a
+sequence of timestamps generated by a multidimensional linear Hawkes process with kernel configurations
+that may appear in financial applications, e.g., with slowly decreasing tails, delayed modes and inhibition
+patterns. For each simulated event, a mark ξ is independently generated from a discrete uniform law
+taking values in X = {1, . . . , M } where M is specified for each experiment.
+9
+
+=== page 10 ===
+More precisely, we use in the first five experiments a multiplicative kernel matrix Φ with components
+satisfying
+ϕij (t, x) := φij (t)f ij (x), 1 ≤ i, j ≤ D, t ∈ (0, +∞), x ∈ X . (31)
+Each experiment tests a specific form of aggregated time kernels φij , namely exponentially decreasing
+kernels, slowly-decreasing kernels, kernels with latencies, kernels with inhibition and kernels with multiple
+Gaussian modes. As for marks, aggregated mark kernels in the first five experiments can be either a
+constant mark kernel
+f0(x) = 1, (32)
+or a linear mark kernel
+f1(x) = 2 M + 1 x, (33)
+or a quadratic mark kernel
+f2(x) = 6 (M + 1)(2M + 1) x2. (34)
+In each case E (f (X)) = 1.
+Observe that we use in the first five experiments a decoupled kernel for the sake of simplicity and
+illustration but that the estimation method is designed for a non-multiplicative kernel, as it is clear in
+Sections 2 and 4. In the last (sixth) experiment, we test the estimation method on a non-multiplicative
+kernel in order to validate the general case.
+In all experiments, we train a neural network following Algorithm 1 with the set of hyperparameters
+displayed in Table 1 and we estimate the kernel over the truncated time domain (0, T ).
+Table 1: Hyperparameters configuration in the numerical experiment.
+Neurons DGM depth Learning rate Quadratures Batch size Training size Validation size Epochs
+64 1 10−3 250 8 1024 128 1000
+Exponentially decreasing kernel. Exponentially decreasing functions are amongst the most popular
+kernels found in the literature. The Markov property that results from such a specification provides
+mathematical tractability and a greatly reduced computation cost when simulating. The non-parametric
+estimation of these kernels from simulated data constitutes the first step of our validation procedure.
+We set D = 4, M = 10 and simulate 107 events of a linear marked Hawkes process with kernel functions
+ϕij (t, x) := αij e−βij tf ij (x), 1 ≤ i, j ≤ D, t ∈ [0, +∞), x ∈ X . (35)
+The parameters of the time component and the mark kernels are given in Table 2. The second order
+statistics are estimated using the grid of Equation (28) with parameters h = 0.1, nlin = 10, nlog = 50.
+The baseline intensity is µ = [0.5, 0.25, 0.75, 0.15]′.
+Table 2: Exponentially decreasing kernel — Parameter configuration of the simulation.
+(a) α
+αij 1 2 3 4
+1 1.5 1 2 0.75
+2 1 2 2 1
+3 1 1 2 1.5
+4 2 1 2 0.5
+(b) β
+βij 1 2 3 4
+1 8 5 10 8
+2 5 15 8 5
+3 8 10 8 8
+4 5 5 8 4
+(c) f
+f ij 1 2 3 4
+1 f1 f2 f1 f1
+2 f1 f2 f2 f0
+3 f0 f0 f2 f0
+4 f2 f1 f2 f1
+The fits of aggregated time kernels and mark kernels are displayed in Figure 1 and 2. We observe a great
+fit for both components and the model is able to reproduce the various mark kernel functions even when
+f ≡ 1.
+10
+
+=== page 11 ===
+0
+1
+ϕ11(t)
+0.0
+0.5
+1.0
+ϕ12(t)
+0
+1
+2
+ϕ13(t)
+0.0
+0.5
+ϕ14(t)
+0.0
+0.5
+1.0
+ϕ21(t)
+0
+1
+2
+ϕ22(t)
+0
+1
+2
+ϕ23(t)
+0.0
+0.5
+1.0
+ϕ24(t)
+0.0
+0.5
+1.0
+ϕ31(t)
+0.0
+0.5
+1.0
+ϕ32(t)
+0
+1
+2
+ϕ33(t)
+0
+1
+ϕ34(t)
+0 1
+0
+1
+2
+ϕ41(t)
+t 0 1
+0.0
+0.5
+1.0
+ϕ42(t)
+t 0 1
+0
+1
+2
+ϕ43(t)
+t 0 10.0
+0.2
+0.4
+ϕ44(t)
+t
+True Predicted
+Figure 1: Exponentially decreasing kernel — Comparison of the predicted and exact aggregated time
+kernel matrix (φij )1≤i,j≤D defined in Equation (6).
+11
+
+=== page 12 ===
+0.5
+1.0
+1.5
+f 11(x)
+0
+1
+2
+f 12(x)
+0.5
+1.0
+1.5
+f 13(x)
+0.5
+1.0
+1.5
+f 14(x)
+0.5
+1.0
+1.5
+f 21(x)
+0
+1
+2
+f 22(x)
+0
+1
+2
+f 23(x)
+0
+1
+2
+f 24(x)
+0
+1
+2
+f 31(x)
+0
+1
+2
+f 32(x)
+0
+1
+2
+f 33(x)
+0
+1
+2
+f 34(x)
+1 10
+0
+1
+2
+f 41(x)
+x 1 10
+0.5
+1.0
+1.5
+f 42(x)
+x 1 10
+0
+1
+2
+f 43(x)
+x 1 10
+0.5
+1.0
+1.5
+f 44(x)
+x
+True Predicted
+Figure 2: Exponentially decreasing kernel — Comparison of the predicted and exact aggregated mark
+kernel matrix (f ij )1≤i,j≤D defined in Equation (7).
+12
+
+=== page 13 ===
+10−4 10−2 100
+10−1
+101
+ϕ11(t)
+10−4 10−2 100
+10−2
+100
+ϕ12(t)
+10−4 10−2 100
+10−2
+100
+ϕ21(t)
+t
+10−4 10−2 100
+10−1
+101
+ϕ22(t)
+t
+True Predicted
+(a) Time kernel (φij )1≤i,j≤D
+0
+1
+2
+f 11(x)
+0
+1
+2
+f 12(x)
+1 50
+1
+2
+f 21(x)
+x
+1 50
+1
+2
+f 22(x)
+x
+True Predicted (b) Mark kernel (f ij )1≤i,j≤D
+Figure 3: Slowly decreasing kernel — Comparison of the predicted and exact aggregated kernel matrices
+defined in Equations (6) and (7).
+Slowly decreasing kernel. Slowly decreasing kernels are often observed on high-frequency financial
+data after applying non-parametric estimation methods for Hawkes processes — see Bacry et al. (2012),
+Bacry et al. (2016), Fosset et al. (2022). Identifying the rates of decrease over time of self-excitation and
+cross-excitation components gives a better understanding of the market microstructure and the memory
+of order flow.
+We set D = 2, M = 5 and simulate 2.106 events of a linear marked Hawkes process with kernel functions
+ϕij (t, x) := αij (γij + t)−βij f ij (x), 1 ≤ i, j ≤ D, t ∈ [0, +∞), x ∈ X , (36)
+with f ij (x) = f2(x). The parameters of the time component are given in Table 3. The second order
+statistics are estimated using the grid of Equation (28) with parameters h = 10−3, nlin = 25, nlog = 75.
+The baseline intensity is µ = [0.05, 0.05]′.
+Table 3: Slowly decreasing kernel — Parameter configuration of the simulation.
+(a) α
+αij 1 2
+1 0.01 0.006
+2 0.005 0.012
+(b) β
+βij 1 2
+1 1.05 1.25
+2 1.3 1.025
+(c) γ
+γij 1 2
+1 0.0005 0.00075
+2 0.001 0.0006
+The fits of aggregated time kernels and mark kernels are displayed in Figure 3. The model reproduces
+the power law over 5 decades and fits the mark component as well.
+Delayed exponentially decreasing kernel. In practice, trading algorithms are exposed to transmis-
+sion delays and latency. This phenomenon passes through to the formation of lagged kernels — see for
+example Carreira (2021).
+We set D = 2, M = 5 and simulate 2.106 events of a linear marked Hawkes process with kernel functions
+ϕij (t, x) := αij e−βij (t−ℓij )f ij (x) 1{t≥ℓij }, 1 ≤ i, j ≤ D, t ∈ [0, +∞), x ∈ X , (37)
+13
+
+=== page 14 ===
+0.0
+0.5
+1.0
+ϕ11(t)
+0.0
+0.1
+0.2
+0.3
+ϕ12(t)
+0 1
+0.0
+0.2
+0.4
+0.6
+ϕ21(t)
+t
+0 1
+0.0
+0.5
+1.0
+ϕ22(t)
+t
+True Predicted
+(a) Time kernel (φij )1≤i,j≤D
+0
+1
+2
+f 11(x)
+0
+1
+2
+f 12(x)
+1 50
+1
+2
+f 21(x)
+x
+1 50
+1
+2
+f 22(x)
+x
+True Predicted (b) Mark kernel (f ij )1≤i,j≤D
+Figure 4: Delayed exponentially decreasing kernel — Comparison of the predicted and exact aggregated
+kernel matrices defined in Equations (6) and (7).
+with f ij (x) = f2(x).
+The parameters of the time component are given in Table 4. The second order statistics are estimated
+using the grid of Equation (28) with parameters h = 0.1, nlin = 10, nlog = 50. The baseline intensity is
+µ = [0.05, 0.05]′.
+Table 4: Delayed exponentially decreasing kernel — Parameter configuration of the simulation.
+(a) α
+αij 1 2
+1 1.25 0.35
+2 0.6 1.15
+(b) β
+βij 1 2
+1 5 8
+2 8 10
+(c) ℓ
+ℓij 1 2
+1 0.1 0.2
+2 0.25 0.4
+The fits of aggregated time kernels and mark kernels are displayed in Figure 4. All different 4 latencies
+are correctly captured by the model and the mark kernels are correctly estimated as well.
+Kernel with inhibition. Inhibition effects have been documented several times in the market mi-
+crostructure literature - see for example Rambaldi et al. (2017), Lu and Abergel (2018). In this experi-
+ment, we combine both latency and inhibition effects in one single kernel.
+We set D = 2, M = 5 and simulate 2.106 events of a linear marked Hawkes process with kernel functions
+ϕij (t, x) :=  αij e−β ij t 1{t<ℓij } + αij e−βij (t−ℓij ) 1{t≥ℓij }  f ij (x), 1 ≤ i, j ≤ D, t ∈ [0, +∞), x ∈ X ,
+(38)
+with f ij (x) = f2(x) and we set the instantaneous self/cross-impact elements αij and αij such that
+sign(αij ) = −sign(αij ). (39)
+The parameters of the time component are given in Table 5. The second order statistics are estimated
+using the grid of Equation (28) with parameters h = 0.1, nlin = 25, nlog = 75. The baseline intensity is
+µ = [3, 2.5]′.
+14
+
+=== page 15 ===
+Table 5: Kernel with inhibition — Parameter configuration of the simulation.
+(a) α
+αij 1 2
+1 1 -0.25
+2 -0.2 1.2
+(b) β
+βij 1 2
+1 3 3
+2 2 2
+(c) α
+αij 1 2
+1 -0.3 1.5
+2 1 -0.25
+(d) β
+βij 1 2
+1 2 5
+2 3 10
+(e) ℓ
+ℓij 1 2
+1 0.25 0.5
+2 0.15 0.6
+0.0
+0.5
+1.0
+ϕ11(t)
+0.0
+0.5
+1.0
+1.5
+ϕ12(t)
+0 1
+0.0
+0.5
+1.0
+ϕ21(t)
+t
+0 1
+0.0
+0.5
+1.0
+ϕ22(t)
+t
+True Predicted
+(a) Time kernel (φij )1≤i,j≤D
+0
+1
+2
+f 11(x)
+0
+1
+2
+f 12(x)
+1 50
+1
+2
+f 21(x)
+x
+1 50
+1
+2
+f 22(x)
+x
+True Predicted (b) Mark kernel (f ij )1≤i,j≤D
+Figure 5: Kernel with inhibition — Comparison of the predicted and exact aggregated kernel matrices
+defined in Equations (6) and (7).
+The fits of aggregated time kernels and mark kernels are displayed in Figure 5. Note that the model is
+able to correctly capture the inhibition effects together with the latencies.
+High-dimensional bimodal Gaussian kernel. In order to validate the estimation method in high-
+dimension in the presence of non-Markovian kernels, we design the following experiment.
+We set D = 15, M = 1 and simulate 5.107 events of a linear marked Hawkes process with bimodal
+Gaussian kernel that we define, for 1 ≤ i, j ≤ D, t ∈ [0, +∞), x ∈ X , as
+ϕij (t, x) := αij
+2
+√
+2π
+ 
+1
+σij
+exp
+ 
+− 1 2  t − µij σij 2! + 1 σij exp  − 1 2  t − µij σij 2!! . (40)
+The parameters of the time component are given in Table 5. The second order statistics are estimated
+using a linear grid { k n }1≤k≤n over [0, 1], with n = 50. We generate the parameters randomly such that
+the Hawkes process is stable, i.e. the branching ratio R < 1.
+The numerical values of the kernels parameters are given in Appendix in Tables 10 and 11. The fits of
+kernels are displayed in Figure 6. The model is able to capture both unimodal and bimodal shapes of
+the kernels.
+Non-multiplicative bimodal Gaussian kernel. As an ultimate test, we validate the ability of our
+estimation method to capture non-multiplicative relationships between the time component and the mark
+component of the kernel. We set D = 2, M = 10 and simulate 5.106 events of a linear marked Hawkes
+15
+
+=== page 16 ===
+0.0
+0.2
+i=1
+j=1 j=2 j=3 j=4 j=5 j=6 j=7 j=8 j=9 j=10 j=11 j=12 j=13 j=14 j=15
+0.0
+0.2
+i=2
+0.0
+0.2
+i=3
+0.0
+0.2
+i=4
+0.0
+0.2
+i=5
+0.0
+0.2
+i=6
+0.0
+0.2
+i=7
+0.0
+0.2
+i=8
+0.0
+0.2
+i=9
+0.0
+0.2
+i=10
+0.0
+0.2
+i=11
+0.0
+0.2
+i=12
+0.0
+0.2
+i=13
+0.0
+0.2
+i=14
+0 10.0
+0.2
+i=15
+t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t
+True Predicted
+Figure 6: Bimodal Gaussian kernel — Comparison of the predicted and exact kernel matrices.
+process with non-multiplicative kernel functions that we define, for 1 ≤ i, j ≤ D, t ≥ 0, x ∈ X , as
+ϕij (t, x) := αij
+2
+√
+2π
+ 
+1
+σij
+exp
+ 
+− 1 2  t − µij σij 2! + 1 σij exp  − 1 2  t − mij (x) σij 2!! , (41)
+where mij (x) := x−1 M µij + M −x+1 M µij .
+Thus, this kernel is non-multiplicative in the sense that it cannot be decomposed as a product of the
+form ϕ(t, x) = φ(t)f (x). The parameters are given in Table 6. The second order statistics are estimated
+using a linear grid { k n }1≤k≤n over [0, 1], with n = 75. The baseline intensity is µ = [0.05, 0.05]′.
+The fits of aggregated time kernels and mark kernels are displayed in Figure 7. We observe that the
+model is able to reproduce the non-multiplicative property of the kernel as the results are satisfactory for
+all x ∈ X .
+16
+
+=== page 17 ===
+Table 6: Non-multiplicative bimodal Gaussian kernel — Parameter configuration of the simulation.
+(a) α
+αij 1 2
+1 0.5 0.1
+2 0.1 0.2
+(b) µ
+µij 1 2
+1 0.05 0.15
+2 0.25 0.15
+(c) σ
+σij 1 2
+1 0.1 0.05
+2 0.2 0.1
+(d) µ
+µij 1 2
+1 0.5 0.7
+2 0.6 0.8
+(e) σ
+σij 1 2
+1 0.1 0.2
+2 0.075 0.1
+0
+1
+2
+φ11(t, x)
+x=1 x=2 x=3 x=4 x=5 x=6 x=7 x=8 x=9 x=10
+0.0
+0.2
+0.4
+φ12(t, x)
+0.0
+0.2
+0.4
+φ21(t, x)
+0 10.0
+0.5
+φ22(t, x)
+t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t
+True Predicted
+Figure 7: Non-multiplicative bimodal Gaussian kernel — Comparison of the predicted and exact kernel
+matrices in each mark configuration.
+3.2 Convergence rate with respect to the number of observations
+We measure the rate of decay of the estimation error of the moment-based non-parametric neural Hawkes
+methodforsmoothkernelswithrespectto thenumberof observations. Weset D = 2, M = 2 andsimulate
+a linear marked Hawkes process with exponential and power-law kernels given by Equations (35) and (36).
+The numerical values of the parameters are given in Appendix in Table 13.
+For each case, we simulate a sample of N events and apply the moment-based non-parametric neural
+Hawkes estimation method. We then compute for the estimated kernels ˆϕi,j N a root mean squared error
+(using a regular subdivision of [0, T ] of size K):
+∆2(N ) :=
+vuut 1
+D2M (K + 1)
+DX
+i,j=1
+MX
+m=1
+KX
+k=0
+
+ˆϕi,j N
+ kT
+K , m
+
+− ϕi,j
+ kT
+K , m
+2
+. (42)
+For ease of comparison, we also define a normalized version ∆2(N ) of this error by
+∆2(N ) := ∆2(N ) supi,j,m ∥ϕij (·, m)∥∞ . (43)
+Similarly, we define a L∞-error
+∆∞(N ) := sup
+i,j,m,k
+ ˆϕi,j N (kT /K, m) − ϕi,j (kT /K, m)  , (44)
+and its corresponding normalized error
+∆∞(N ) := ∆∞(N ) supi,j,m ∥ϕij (·, m)∥∞ . (45)
+17
+
+=== page 18 ===
+103 104 105 106
+N
+10−2
+10−1
+100
+∆(N )
+N −0.5
+N −0.33
+Power ∆2
+Power ∆∞
+Exponential ∆2
+Exponential ∆∞
+Figure 8: Robustness experiment — Decays of the normalized errors as functions of the number of events
+N for both power and exponential experiments. We observe a decay rate ∼ N −0.5 over the 4 decades.
+Figure 8 plots the normalized errors ∆2 and ∆∞ with respect to the number of events N for both kernels.
+We empirically observe a decay rate ∼ N −0.5 over several decades. Note that these results are obtained
+with the standard configuration of Table 1 without any fine tuning. It was shown in Bacry and Muzy
+(2016) that if one assumes that kernels are bounded Lipshitz continuous functions, then the rate of
+convergence of the L∞ error on the kernel by the Wiener-Hopf method is rather ∼ N −0.33 (empirically
+validated in the same paper on an exponential kernel).
+3.3 Robustness with respect to the choice of hyperparameters
+We now test the robustness of the moment-based neural Hawkes estimation method with respect to
+the choice of various hyperparameters. We simulate the linear marked Hawkes process with power-law
+kernels defined at Equation (36) and Table 13 with N = 2.106 events and apply our estimation method
+with varying number of DGM cells (first experiment), varying number of neurons in the DGM cell
+(second experiment), varying size of the training set (third experiment) and varying batch size (fourth
+experiment). Note that when we make each hyperparameter vary, the rest of the hyperparameters is left
+unchanged with respect to the generic configuration given in Table 1.
+Figures 9 and 10 plot for each experiment the normalized errors ∆2 and the validation losses L of the
+trainedmodelforthepowerlawcase. Additionalmaterialregardingthenormalizederrors ∆∞ isdisplayed
+in appendix and exhibits similar shapes as ∆2 — see Figure 18. The aforementioned losses are the average
+of the validation losses of the two models ( ˆϕ1j )1≤j≤2 and ( ˆϕ2j )1≤j≤2, i.e. L = 1 2 (L1 + L2), across the
+epochs. We observe that neither the number of cells nor the number of units seem to have a significant
+impact on the quality of the model. Tuning the number of layers or the number of units does not necessary
+lead to a solid improvement of the overall performance, but a number of neurons in the range of [50, 100]
+seems a good choice hence justifying our general hyperparameter configuration. Concerning the training
+set we can formulate a similar conclusion and set a good value in [1000, 2000]. By observing losses decays,
+we can expect that smaller values of the training set should be coupled with a larger number of epochs to
+ensure that the model explores a sufficient number of collocation points. Thus, the first three experiments
+do not suggest a high sensitivity of the model to these hyperparameters. Finally, we observe that large
+values of batch size lowers the learning speed. This result contrasts with the findings of Sankaran et al.
+(2022) and may be specific to our problem as the authors explored the case of PDEs and not IEs. We
+also found that a very small batch size, i.e. in the range [1,8], generally improves the performance. All
+in all, it is very satisfying to observe that the moment-based neural Hawkes estimation method appears
+robust with respect to the choice of hyperparameters.
+3.4 Stability comparison with the Wiener-Hopf benchmark
+An example with kernels with different orders of magnitude. We now design a simple exper-
+iment to show our non-parametric estimation method can lead to much more stable solutions than the
+Wiener-Hopf method. We simulate N = 2.105 events of a linear Hawkes process with an exponential
+kernel in D = 2 dimensions. We set M = 1 and the kernel parameters are given in Table 7. The baseline
+18
+
+=== page 19 ===
+1 2 3 4
+Number of DGM layers
+0.0075
+0.0080
+0.0085
+0.0090
+∆2
+(a) Number of DGM cells
+101 102
+Number of units
+0.007
+0.008
+0.009
+0.010
+0.011
+∆2 (b) Number of neurons
+102 103 104
+N c
+0.006
+0.008
+0.010
+0.012
+0.014
+0.016
+∆2 (c) Size of the training set
+100 101 102
+B
+0.005
+0.010
+0.015
+0.020
+0.025
+0.030
+∆2 (d) Batch size
+Figure 9: Robustness experiment — Error ∆2 as a function of the hyperparameters in the four experi-
+ments.
+100 101 102 103
+Epoch
+100
+101
+L
+1
+2
+4
+(a) Number of DGM cells
+100 101 102 103
+Epoch
+100
+101
+L
+8
+16
+32
+64
+128
+256 (b) Number of neurons
+100 101 102 103
+Epoch
+100
+101
+L
+128
+256
+512
+1024
+2048
+4096
+8192
+16384 (c) Size of the training set
+100 101 102 103
+Epoch
+100
+101
+L
+1
+2
+4
+8
+16
+32
+64
+128
+256 (d) Batch size
+Figure 10: Robustness experiment — Validation loss as a function of the number of epochs over the four
+experiments.
+intensity is µ = [0.05, 0.05]′. The second order statistics are estimated using the grid of Equation (28)
+with parameters h = 0.1, nlin = 10, nlog = 50.
+Table 7: Benchmark — Parameter configuration of the simulation.
+(a) α
+αij 1 2
+1 10 0.2
+4 0.5 30
+(b) β
+βij 1 2
+1 20 5
+3 2.5 40
+A moment-based neural Hawkes is trained with hyperparameters given in the general configuration setting
+of Table 1. As a benchmark, we estimate the kernel with the Wiener-Hopf method developed in Bacry
+and Muzy (2016), using our own implementation of the method. We set Q = 200 a reasonably high
+number of quadrature points (tq )q=1,...,Q, such that t0 = 0, tQ = T and δ := tq+1 − tq = T /(Q − 1) for
+any q. We then solve the Wiener-Hopf system at each tq , q = 1, . . . , Q to obtain the estimated values
+(ϕij q )1≤q≤Q of the kernel at time tq . We finally compute the estimated kernel bϕij at any point t using the
+equation
+bϕij (t) = Gij (t) − δ
+DX
+k=1
+QX
+q=1
+ϕik q K kj (t − tq ), (46)
+with
+K kj (t) := Gkj (t)1{t>0} + Λk Λj Gjk(−t)1{t<0}. (47)
+The results are displayed in Figure 11.
+The moment-based neural Hawkes estimation method greatly improves the stability of the results. We
+observe the Wiener-Hopf method gives satisfactory results for large kernels, i.e. ϕ11 and ϕ22, but leads to
+unstable solutions for the other kernels. The resulting oscillatory behaviour was also reported by Cartea
+et al. (2021).
+We now proceed to the following numerical test. We use the estimated moment-based neural Hawkes
+19
+
+=== page 20 ===
+0
+5
+10φ11(t)
+True
+Neural
+Wiener-Hopf
+−0.2
+0.0
+0.2
+φ12(t)
+True
+Neural
+Wiener-Hopf
+0 1
+t
+0
+1φ21(t)
+True
+Neural
+Wiener-Hopf
+0 1
+t
+0
+20
+40φ22(t)
+True
+Neural
+Wiener-Hopf
+Figure11: Benchmark —ComparisonoftheWiener-Hopfmethodwiththemoment-basedneuralHawkes.
+kernel ( eϕij )1≤i,j≤D to compute the fit of the second order statistics
+eGij (t) = eϕij (t) +
+DX
+k=1
+Z T
+0
+eϕik(s)K kj (t − s)ds, 1 ≤ i, j ≤ D, 0 ≤ t ≤ T. (48)
+The computation of functions K ij is done using Equation (47) and the second order statistics Gij that
+were previously estimated on the data. We then proceed to the estimation of the kernel using the
+Wiener-Hopf method over the fitted second order statistics eGij instead of the empirical values of the
+statistics. The results are displayed in Figure 12. The neural Hawkes result remains the best fit, but
+strikingly the Wiener-Hopf kernel is much less noisy than the previous estimation carried on the raw
+second order statistics. This numerical experiment suggests that stability issues with Wiener-Hopf may
+occur depending on the regularity of second order statistics and thus on the binning scheme. Our method
+appears to depend much less on the irregularities of the estimated statistics that are inherent to the
+choice of the grid parameters h, nlin, nlog.
+0
+10G11(t)
+True
+Neural
+1
+2G12(t)
+True
+Neural
+0.0 0.5 1.0
+t
+2
+4G21(t)
+True
+Neural
+0.0 0.5 1.0
+t
+0
+50G22(t)
+True
+Neural
+(a) Second order statistics (Gij (t))1≤i,j≤D
+0
+5
+10φ11(t)
+True
+Neural
+Wiener-Hopf
+0.0
+0.2
+φ12(t)
+True
+Neural
+Wiener-Hopf
+0.0 0.5 1.0
+t
+0
+1φ21(t)
+True
+Neural
+Wiener-Hopf
+0.0 0.5 1.0
+t
+0
+20
+40φ22(t)
+True
+Neural
+Wiener-Hopf (b) Kernel (ϕij (t))1≤i,j≤D
+Figure 12: Benchmark — Fit of the second order statistics with the moment-based neural Hawkes and
+estimated estimated kernels.
+20
+
+=== page 21 ===
+Robustness with respect to the choice of the second order statistics hyperparameters. In
+order to assess the sensitivity of our estimation method to the choice of the grid parameters for the
+computation of the second order statistics, we design the following experiment. We simulate 105 events of
+theHawkesprocesswiththenon-multiplicativebimodalGaussiankernelofEquation(41)withparameters
+given in Table 6. We then proceed to the estimation of the kernels using both the Wiener-Hopf and the
+neural Hawkes estimation methods, for different second order statistic grid configurations: we use a fully
+linear grid over the domain [0, 1] with varying size nlin ranging from 25 to several hundreds of points. As
+nlin increases, the number of events per bin decreases and one cannot obtain a smooth estimate of the
+second order statistic over the whole domain.
+We display the results in Figure 13 for the grid of size nlin = 25, and in Figure 14 for the grid of size
+nlin = 100. As expected, we observe that the Wiener-Hopf method is very sensitive to the size of the
+grid, leading to noisy estimations when the hyperparameter of the second order statistic is poorly chosen.
+Moreover, for a small size of the grid like in Figure 13, although the fit is quite satisfactory, the Wiener-
+Hopf method can still generate kernels with oscillatory behaviours which could lead to false discoveries in
+practical cases, e.g. when one seeks to analyze excitation delays and multimodal kernels. Concerning our
+method, we see that the estimated kernels are much more stable from one grid configuration to another.
+Even when the second order statistic estimate is noisy, we see that the moment-based neural Hawkes is
+able to provide very satisfactory results with similar kernel shapes as for smaller grids configurations.
+We have tested for larger grids up to size 200 and the observation holds: the Wiener-Hopf estimation
+gets even noisier, whereas our methodology provides similar results. We conclude that the neural Hawkes
+method is more robust to changes in the second order statistics hyperparameters than Wiener-Hopf,
+implying that the application of our method to practical cases requires less tuning of the second order
+statistics grid than in the Wiener-Hopf case.
+0
+2
+φ11(t, x)
+x=1 x=2 x=3 x=4 x=5 x=6 x=7 x=8 x=9 x=10
+0.0
+0.5
+φ12(t, x)
+0.00
+0.25
+0.50φ21(t, x)
+0 1
+0.0
+0.5
+1.0
+φ22(t, x)
+t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t
+Wiener-Hopf
+Ground truth
+Neural
+Figure 13: Robustness to the choice of the second order statistics grid — Comparison of the predicted
+and exact kernel matrices in each mark configuration for the moment-based neural Hawkes estimation
+method and the Wiener-Hopf methodology. The second order statistics is estimated on a linear grid of
+25 points.
+4 Application to high-frequency cryptocurrency data
+4.1 Data
+In this section we apply our estimation method to cryptocurrency trade data provided by SUN ZU Lab.
+The dataset is composed of trades executed between December 1st, 2023 and December 30th, 2023 on
+Coinbase for 15 cryptocurrency pairs. With every trade is given a timestamp that corresponds to the
+21
+
+=== page 22 ===
+0
+2
+φ11(t, x)
+x=1 x=2 x=3 x=4 x=5 x=6 x=7 x=8 x=9 x=10
+0.0
+0.5
+φ12(t, x)
+0.00
+0.25
+0.50φ21(t, x)
+0 1
+0.0
+0.5
+1.0
+φ22(t, x)
+t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t 0 1t
+Wiener-Hopf
+Ground truth
+Neural
+Figure 14: Robustness to the choice of the second order statistics grid — Comparison of the predicted
+and exact kernel matrices in each mark configuration for the moment-based neural Hawkes estimation
+method and the Wiener-Hopf methodology. The second order statistics is estimated on a linear grid of
+100 points.
+time at which the matching engine of the market processed the transaction. Timestamps are given with
+microsecond precision. For each pair, trades that share the same timestamp are aggregated and identified
+as one single event that was initiated either as a market order or as a marketable limit order. No feed
+handler disconnection was reported during the time period, ensuring a coherent estimation of the first
+and second order statistics. Descriptive statistics are displayed in Table 8.
+Table 8: Descriptive statistics of the dataset over the 1 month period.
+Pair Number of events Λi (events.s−1) Traded volume (millions USD)
+BTC-USD 5,196,281 2.00 15,803.85
+ETH-USD 3,579,423 1.38 8,058.49
+SOL-USD 2,734,306 1.05 5,655.90
+ICP-USD 569,019 0.22 464.61
+SEI-USD 730,907 0.28 567.25
+AVAX-USD 1,668,967 0.64 2,654,.66
+XRP-USD 1,190,267 0.46 1,091.47
+LINK-USD 1,237,588 0.48 1,275.48
+XLM-USD 580,121 0.22 288.27
+ADA-USD 1,436,622 0.55 1,031.34
+MATIC-USD 896,950 0.35 753.90
+DOT-USD 810,835 0.31 415.30
+AAVE-USD 658,330 0.25 290.75
+DOGE-USD 1,195,724 0.46 1,174.46
+LTC-USD 967,231 0.37 405.78
+4.2 The impact of volume on the arrival rate
+To illustrate the quality of our moment-based neural Hawkes estimation method in the presence of a
+marked kernel, we analyze the influence of the traded size on the trade arrival rate. Note that a similar
+analysis was made in Rambaldi et al. (2017) on traditional financial markets using the Wiener-Hopf
+estimation method. We focus on the BTC-USD pair, set D = 1 and M = 15 and the mark random
+variable ξ encodes the volume of each trade. The hyperparameter configuration we use is the generic
+22
+
+=== page 23 ===
+Table 9: The impact of volume - Discretization of the mark domain and probability mass function of ξ.
+m Volume interval (USD) p(m)
+1 (0 - 100] 0.46
+2 (100 - 170] 0.046
+3 (170 - 290] 0.053
+4 (290 - 490] 0.046
+5 (490 - 840] 0.043
+6 (840 - 1,425] 0.053
+7 (1,425 - 2,425] 0.051
+8 (2,425 - 4,125] 0.057
+9 (4,125 - 7,000] 0.078
+10 (7,000 - 12,000] 0.055
+11 (12,000 - 20,300] 0.028
+12 (20,300 - 34,500] 0.015
+13 (34,500 - 58,750] 0.008
+14 (58,750 - 100,000] 0.003
+15 (100,000 - +∞] 0.002
+10−5 10−4 10−3 10−2 10−1 100
+t (seconds)
+0
+500
+1000
+1500φ(t, x)
+x = 1
+x = 2
+x = 3
+x = 4
+x = 5
+x = 6
+x = 7
+x = 8
+x = 9
+x = 10
+x = 11
+x = 12
+x = 13
+x = 14
+x = 15
+(a) Kernels (ϕ(t, x))x∈X — x-axis in logarithmic scale
+0 20000 40000 60000 80000 100000
+x
+0
+5
+10f (x)
+102 103 104 10510−1
+100
+101 (b) Aggregated mark kernel f (x)
+Figure 15: The impact of volume — Time kernels as functions of time and aggregated mark kernel f as
+a function of the traded volume (USD). The mark kernel seems to reach a plateau for x > 50, 000.
+one of Table 1, we set T = 1 s and estimate the second order statistics with h = 5.10−4 = 500 µs,
+nlin = 50 and nlog = 100. The discretization of the mark domain and the associated probability mass
+function p of ξ are displayed in Table 9. The adopted binning scheme uses a logarithmic grid from 100
+USD to 100, 000 USD. The analysis differs from the one of Rambaldi et al. (2017) as we focus on the
+shape of the aggregated mark kernel f and the asset classes, and hence the market microstructures, are
+different. However, our results are consistent in the sense that the shape of the kernel depends on the
+traded volume.
+Figure 15 shows the kernels (ϕ(., m))m∈X and the aggregated mark kernel f computed using Equation (7).
+We observe that the aggregated kernel is a concave non-decreasing function of the volume and reaches a
+plateau for sizes that are larger than 50,000 USD. The monotonicity of the function is expected as the
+larger the size, the greater the amount of information interpreted by the market. A possible explanation
+of the concavity of the function and its plateau is that the agents consider there is less and less additional
+information when the size increases and once it reaches a specific value, i.e. here 50,000 USD, larger sizes
+do not bring any additional information.
+This finding also provides insights to practitioners regarding the choice of parametric kernels in order
+flow models. Concerning the kernel functions (ϕ(., x))x∈X they exhibit different latency peaks depending
+on the traded volume. We see that they all globally share three latency peaks at around 10 µs, 4 to 5
+ms and a smaller one near 10 ms. However, for large values of x, we observe other peaks: one near 70 µs
+and one near 200 µs.
+23
+
+=== page 24 ===
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Trigger
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Triggered
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+||φ||
+(a) Branching ratio matrix
+(∥ϕij ∥)1≤i,j≤D
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Trigger
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Triggered
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+||φ||
+(b) Branching ratio matrix
+(∥ϕij ∥)1≤i,j≤D — diagonal removed
+10−5 10−4 10−3 10−2 10−1 100
+t (seconds)
+0
+500
+1000
+1500φii(t)
+LTC-USD
+DOGE-USD
+AAVE-USD
+DOT-USD
+MATIC-USD
+ADA-USD
+XLM-USD
+LINK-USD
+XRP-USD
+AVAX-USD
+SEI-USD
+ICP-USD
+SOL-USD
+ETH-USD
+BTC-USD
+(c) Kernels (ϕii(t))1≤i≤D
+— x-axis in logarithmic scale
+10−5 10−4 10−3 10−2 10−1 100
+t (seconds)
+10−3
+10−2
+10−1
+100
+101
+102
+103
+φii(t)
+t−1
+LTC-USD
+DOGE-USD
+AAVE-USD
+DOT-USD
+MATIC-USD
+ADA-USD
+XLM-USD
+LINK-USD
+XRP-USD
+AVAX-USD
+SEI-USD
+ICP-USD
+SOL-USD
+ETH-USD
+BTC-USD
+(d) Kernels (ϕii(t))1≤i≤D
+— Both axes in logarithmic scale
+Figure 16: Cryptocurrency spillover — Branching ratios and diagonal of the kernel matrix. Note the
+near-critical power law above 3 milliseconds with exponent close to 1.
+4.3 Cryptocurrency spillover: a causality analysis of transactions
+We analyze the causality relationships between arrival times of transactions amongst the 15 cryptocur-
+rency pairs of Table 8. To this extent, we proceed to a moment-based non-parametric neural Hawkes
+estimation in D = 15 dimensions and set M = 1. The hyperparameter configuration we use is the generic
+one of Table 1, we set T = 1 s and estimate the second order statistics with h = 5.10−4 = 500 µs,
+nlin = 50 and nlog = 100. Goodness-of-fit is assessed via the comparison of the first and second moments
+of the fitted process and of the empirical data. Numerical values and the full matrix of the empirical and
+fitted second order statistics are given in Appendix (Figure 19).
+The kernel ϕij characterizes the impact of the arrival of a transaction in the j-th pair on the intensity
+of the arrival rate of transactions in the i-th pair. The branching ratio matrix (∥ϕij ∥)1≤i,j≤D and the
+diagonal components (ϕii)1≤i≤D of the kernel are displayed in Figure 16. The branching ratio R of the
+system is 0.80. We observe that Bitcoin (BTC) and Ethereum (ETH) are not the most endogeneous
+components of the system as other less traded coins show a much larger branching ratio for their self-
+excitation component, e.g., AAVE, DOGE, SOL or LINK. Furthermore, as observed for the BTC-USD
+pair in the previous analysis, the kernels exhibit mainly three peaks at around 10 µs, 2 to 5 ms. The
+self-excitation component of ADA shows a significant peak at 100 ms. We recover the near-critical power
+law behavior ∼ t−γ with γ ≃ 1 of the kernel for t > 3 ms, consistent with the microstructure literature
+— see e.g., Bacry et al. (2012); Fosset et al. (2022). All kernels share an inhibitory behaviour between
+500 µs and 3 ms. Note that we checked the duration distribution and observed a gap in this specific time
+frame as well. We provide the entire estimated kernel in Figure 20 in appendix. The results highlight the
+stability of the method as no fine tuning was made for this experiment.
+If one denotes by N i←j the counting process of events of type i that are caused by the arrival of events
+of type j, we have from Bacry et al. (2015)
+E
+
+dN i←j t
+
+= Λj ∥ϕij ∥dt. (49)
+Therefore the ratio of the arrival rate of events of type i with a direct ancestor of type j to the overall
+arrival rate of events of type i is a measure of the causal relationship from j to i. We thus define the
+24
+
+=== page 25 ===
+spillover ratio
+Sij := Λj
+Λi ∥ϕij ∥1{i̸=j}, 1 ≤ i, j ≤ D. (50)
+Questions that naturally arise when analyzing the microstructure of a highly correlated multi-asset frame-
+work are the following. Which asset does lead the others and which asset does not? Can we sort the
+assets according to their causal strength amongst the selected trading universe and is the traded volume
+a good indicator of such property?
+To answer these questions and gain insights about the direction of causal relationships, we propose to
+look at two aggregated versions of the spillover ratio of Equation (50). The first measure is what we call
+the leader ratio
+Lj := Λj P
+i̸=j Λi
+X
+i̸=j
+∥ϕij ∥, 1 ≤ j ≤ D. (51)
+This measure is the ratio of the arrival rate of all the events — except those of type j — with a direct
+ancestor of type j to the overall arrival rate of all the events that are not of type j. The larger the
+ratio, the greater the causal strength of type j over the trading universe. In other words, a large ratio Lj
+indicates that a large proportion of the observed events that are not of type j is directly caused by an
+event of type j, suggesting that the j-th pair leads the other pairs. On the contrary, a small ratio Lj → 0
+indicates that very few events that are not of type j are directly caused by an event of type j, suggesting
+that the j-th pair does not lead the other pairs. The second measure we define is the receiver ratio
+Ri :=
+P
+j̸=i Λj ∥ϕij ∥
+Λi , 1 ≤ i ≤ D. (52)
+It is the ratio of the arrival rate of the events of type i that are directly caused by events of other types
+than i to the overall arrival rate of events of type i. When Ri → 1, the causal strength of other types
+of events over events of type i is large. Hence, a large ratio Ri indicates that a large proportion of the
+observed events of type i is directly caused by an event of another type, suggesting that the i-th pair is a
+receiver amongst the pairs. On the contrary, a small ratio Ri → 0 indicates that very few events of type
+i are directly caused by an event of another type, suggesting that the i-th pair is not a receiver.
+Usually, practitionersrefertotheparticipationrateoftheassetstogaininsightsaboutpossibleleader/lager
+relationships. For example, it is well-known — e.g. see Jia et al. (2023) — that the most traded cryp-
+tocurrencies, i.e. Bitcoin and Ethereum, lead the overall market. But the question can be trickier for
+less traded coins such as Cardano (ADA) and Ripple (XRP). We define the participation rate
+νj := V j PD
+i=1 V i
+, (53)
+where V j is the traded volume of pair j and we compare the ranking with respect to this measure with
+the ranking with respect to the aggregated spillover ratio.
+The results are displayed in Figure 17. First of all we clearly see discrepancies between the branching
+ratio matrix of Figure 16 and the spillover ratio matrix which is due to the inherent differences in market
+activity amongst the coins. We observe a strong causality from BTC and ETH to other coins as expected.
+There is a strong bi-directional causality between BTC and ETH which is consistent with the conclusions
+of recent empirical studies — see for example Kumar and Anandarao (2019); Moratis (2021). Some of
+the least traded coins such as ICP, SEI and AAVE are strongly self-exciting but exhibit weak mutual
+excitation with other coins. Interestingly, we notice a bi-directional causality relationship between XRP
+and XLM, the strongest direction being from XRP to XLM. This finding gives credit to the widespread
+hypothesis that Ripple and Stellar (XLM) are two highly correlated cryptocurrencies2. In fact, the ideas
+behind these protocols are similar and the causal relationship between both prices is still a debate in
+the decentralized finance community. Furthermore, we observe that the top three leaders are BTC, ETH
+and XRP and the top three receivers are XLM, XRP and LINK. It shows that XRP is both a strong
+transmitter and a strong receiver which is consistent with the studies of Kim et al. (2021); Moratis (2021).
+Comparing the ratios with the participation rates, we see that high market activity does not necessarily
+2Although we did not find any empirical analysis of the XRP/XLM relationship in the academic literature, we refer the
+reader to a blog discussion https://u.today/intriguing-xrp-and-stellar-xlm-correlation-deciphered-heres-expla
+nation (Accessed on Jan. 9th, 2024).
+25
+
+=== page 26 ===
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Trigger
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Triggered
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+S
+(a) Spillover ratio matrix
+(Sij )1≤i,j≤D
+BTC-USD
+ETH-USD
+XRP-USD
+SOL-USD
+LINK-USD
+ADA-USD
+DOGE-USD
+AVAX-USD
+LTC-USD
+XLM-USD
+DOT-USD
+MATIC-USD
+AAVE-USD
+SEI-USD
+ICP-USD
+0.00
+0.01
+0.02
+0.03
+0.04
+0.05
+0.06
+0.07
+L
+(b) Leader ratios
+(Lj )1≤j≤D
+XLM-USD
+XRP-USD
+LINK-USD
+LTC-USD
+DOGE-USD
+ETH-USD
+AVAX-USD
+DOT-USD
+MATIC-USD
+ADA-USD
+AAVE-USD
+BTC-USD
+SOL-USD
+SEI-USD
+ICP-USD
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+0.35
+R
+(c) Receiver ratios
+(Ri)1≤i≤D
+BTC-USD
+ETH-USD
+SOL-USD
+AVAX-USD
+LINK-USD
+DOGE-USD
+XRP-USD
+ADA-USD
+MATIC-USD
+SEI-USD
+ICP-USD
+DOT-USD
+LTC-USD
+AAVE-USD
+XLM-USD
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+0.35
+0.40
+ν
+(d) Participation rates
+(νj )1≤j≤D
+Figure 17: Cryptocurrency spillover — Spillover ratios and ranking of the leader, receiver measures and
+participation rates amongst the 15 cryptocurrency pairs.
+mean high shock transmission. For example, the traded volume on AVAX is much greater than the one
+on XRP on this time period but XRP shows a significantly higher leader ratio. We also observe that
+least traded coins are not necessarily strong receivers, e.g. ICP. Finally, it is noteworthy that we trained
+several models with different hyperparameters configurations and all the results were mostly identical.
+4.4 Intraday seasonality and robustness of empirical results
+The linear marked Hawkes process model and the second order characterization of Theorem 1 rely on
+the assumption of stationarity in the data generating process. However, in practice, financial data often
+exhibits non-stationary features. It is well-known that equity trading data exhibits significant intraday
+seasonality, meaning that the intensity of trades can vary widely throughout the day. Applying our
+method without accounting for this seasonality could lead to inaccurate estimations of the kernel, and
+could inflate the branching ratios (Filimonov and Sornette, 2015; Wehrli et al., 2021). We thus conduct
+robustness checks for the empirical results of the previous sections.
+We start by computing the trading intensity at time t on 5-minutes bins each day. Then, we compute
+the average of these intensities per bin over the month, with a 95% confidence interval. The results for
+the 3 most traded coins in the sample are displayed in Appendix in Figure 21. We observe an intraday
+seasonality, with a high activity and variance from 16:00 UTC to 20:00 UTC. The intensity appears to
+be reasonably stable from 07:00 to 12:00 UTC, exhibiting smaller variations and no strong trend. We
+therefore restrict our sample by focusing on the time interval 7:00-12:00 UTC every day and implement
+two alternative estimation strategies.
+In the first alternative estimation strategy, we apply our estimation procedure of the Hawkes process
+over the whole month of December 2023, using only the selected time window each day. The covariance
+estimator is computed once on this subsample. We then compute the fitted Hawkes kernels with the
+neural Hawkes method, as well as the matrix of branching ratios and our leader-receiver metrics. We
+find that the estimated branching ratio of the system is 78%, which is close to the one obtained when
+the estimation is performed over the entire period of time (80%). We display in Appendix the estimated
+branching ratio matrix in Figure 22, and the spillover ratios with the leader-receiver rankings in Figure
+23. We find that the differences between the branching ratios estimated on the full time period and the
+ones estimated on the restricted time period are small. The relative difference between the two is about
+a few percent for the largest branching ratios, and about 15 % to 20% for the smallest ones, which are
+also the most prone to estimation errors. Note that these results are in line with those of Rambaldi et al.
+(2017), who performed a similar experiment to test for the robustness of the Wiener-Hopf method to
+seasonality effects. Concerning the spillover ratios and the leader-receiver measures, we also find small
+discrepancies, but they do not change our conclusions. We conclude that the main findings of the spillover
+analysis are robust to intraday seasonality effects.
+For a complete view, we propose a second alternative estimation strategy, in which we use our estimation
+procedure daily from 7:00 to 12:00 UTC, i.e. we obtain 30 fits of our model. We then compute the
+matrix of median branching ratios and boxplots of our leader-receiver metrics. Results are given in
+Appendix on Figure 24. We observe that the median spillover ratios (Sij )1≤i,j≤D are close to the ones
+we obtained in the two previous settings and exhibit similar features, such as the causality relationship
+from XRP to XLM. Furthermore, the box plots of leader-receiver rankings offer a similar yet interestingly
+26
+
+=== page 27 ===
+complementary view. Boxplots of the leader ratios confirm that BTC and ETH are clear leaders, ICP
+and SEI close the ranking. For the receiver ratios, median ranking is also very close to the previous ones,
+although the larger variance observed for some coins may alter the ranking on a daily basis. All in all,
+it is very interesting to observe that, even though daily fits of the model are more prone to estimation
+errors since much less data is used for each fit than when a single model is estimated on the entire period
+of time, (daily) median metrics are in line with the previous (full sample) results.
+5 Conclusion
+In this paper we proposed a new non-parametric estimation method for linear multivariate Hawkes
+processes that relies on two main tools:
+- The second order statistics characterization theorem of multivariate linear Hawkes processes origi-
+nally proven in Bacry and Muzy (2016);
+- The physics-informed neural networks that are able to solve non-linear PDEs in high dimension,
+provided that they are properly trained – see Wang et al. (2023).
+The Fredhlom equation that links second order statistics to the kernel function is solved using a neural
+network that is trained using the latest advances in PINNs literature. The benefits of our approach is
+threefold.
+- The application of the Wiener-Hopf method requires the inversion of a matrix that can be arbitrarily
+large in high dimension, leading to potential computation issues and approximation errors. The
+neural network model is able to work around this problem as it is well suited to high dimension
+inference;
+- The performance of the model can be evaluated by tracking the estimated second order statistics
+at any point, allowing us to evaluate its ability to fit the data;
+- Once the model is trained, it is able to compute the value of the kernel at any given point. This
+contrasts with the Wiener-Hopf method for which the computation of the kernel between two
+quadrature points is done either by linear interpolation or by inversion of the characterization
+equation.
+We provided a general hyperparameter configuration that can be used to fit a first non-parametric model
+before further tuning, as it showed robust performance across the numerical experiments. The model
+shows a great performance on simulated data with general kernels. We explored the influence of some
+hyperparameters on the final performance and found the model to be essentially sensitive to the batch
+size, the learning rate and the number of hidden layers. In general, a small batch size, a learning rate of
+0.001 and 1 to 3 DGM cells provide very satisfactory results.
+As an example of practical applications we conducted a non-parametric estimation of the kernel matrix
+of transactions on a centralized exchange in two settings. The first one is univariate marked Hawkes
+estimated on BTC-USD trades, mapping the traded volume to the mark process. The second one is a
+multivariate Hawkes estimated on a universe of 15 cryptocurrency pairs. We analyzed the shape of the
+mark component of the kernel and found it appears to behave as a concave function of the volume. We
+introduced a spillover measure and leader/receiver ratios that can be used for identifying the directions
+of the causal relationships of shocks amongst a correlated asset universe. The estimated metrics indicate
+that the traded volume is not necessarily representative of the leader-lager relationships. The use of our
+method can provide reliable insights about the causality structure of large complex systems.
+References
+Achab, M., Bacry, E., Gaıffas, S., Mastromatteo, I., and Muzy, J.-F. (2017). Uncovering causality from
+multivariate Hawkes integrated cumulants. In International Conference on Machine Learning, pages
+1–10. PMLR.
+Bacry, E., Bompaire, M., Gaïffas, S., and Muzy, J.-F. (2020). Sparse and low-rank multivariate Hawkes
+processes. Journal of Machine Learning Research, 21(50):1–32.
+27
+
+=== page 28 ===
+Bacry, E., Dayri, K., and Muzy, J.-F. (2012). Non-parametric kernel estimation for symmetric Hawkes
+processes. application to high frequency financial data. The European Physical Journal B, 85:1–12.
+Bacry, E., Delattre, S., Hoffmann, M., and Muzy, J.-F. (2013). Modelling microstructure noise with
+mutually exciting point processes. Quantitative Finance, 13(1):65–77.
+Bacry, E., Jaisson, T., and Muzy, J.-F. (2016). Estimation of slowly decreasing Hawkes kernels: applica-
+tion to high-frequency order book dynamics. Quantitative Finance, 16(8):1179–1201.
+Bacry, E., Mastromatteo, I., and Muzy, J.-F. (2015). Hawkes processes in finance. Market Microstructure
+and Liquidity, 1(01):1550005.
+Bacry, E. and Muzy, J.-F. (2016). First-and second-order statistics characterization of Hawkes processes
+and non-parametric estimation. IEEE Transactions on Information Theory, 62(4):2184–2202.
+Bischof, R. and Kraus, M. (2021). Multi-objective loss balancing for physics-informed deep learning.
+arXiv preprint arXiv:2110.09813.
+Bonnet, A., Martinez Herrera, M., and Sangnier, M. (2023). Inference of multivariate exponential Hawkes
+processes with inhibition and application to neuronal activity. Statistics and Computing, 33(4):91.
+Carreira, M. C. S. (2021). Exponential kernels with latency in Hawkes processes: Applications in finance.
+arXiv preprint arXiv:2101.06348.
+Cartea, Á., Cohen, S. N., and Labyad, S. (2021). Gradient-based estimation of linear Hawkes processes
+with general kernels. arXiv preprint arXiv:2111.10637.
+Deguchi, S. and Asai, M. (2023). Dynamic & norm-based weights to normalize imbalance in back-
+propagated gradients of physics-informed neural networks. Journal of Physics Communications,
+7(7):075005.
+Dissanayake, M. and Phan-Thien, N. (1994). Neural-network-based approximations for solving partial
+differential equations. Communications in Numerical Methods in Engineering, 10(3):195–201.
+Donnet, S., Rivoirard, V., and Rousseau, J. (2020). Nonparametric bayesian estimation for multivariate
+Hawkes processes. The Annals of statistics, 48(5):2698–2727.
+Duval, C., Luçon, E., and Pouzat, C. (2022). Interacting Hawkes processes with multiplicative inhibition.
+Stochastic Processes and their Applications, 148:180–226.
+Effati, S. and Buzhabadi, R. (2012). A neural network approach for solving Fredholm integral equations
+of the second kind. Neural Computing and Applications, 21:843–852.
+Eichler, M., Dahlhaus, R., and Dueck, J. (2017). Graphical modeling for multivariate Hawkes processes
+with nonparametric link functions. Journal of Time Series Analysis, 38(2):225–242.
+Filimonov, V. and Sornette, D. (2015). Apparent criticality and calibration issues in the Hawkes self-
+excited point process model: application to high-frequency financial data. Quantitative Finance,
+15(8):1293–1314.
+Fosset, A., Bouchaud, J.-P., and Benzaquen, M. (2022). Non-parametric estimation of quadratic Hawkes
+processes for order book events. The European Journal of Finance, 28(7):663–678.
+Gao, X., Zhou, X., and Zhu, L. (2018). Transform analysis for Hawkes processes with applications in
+dark pool trading. Quantitative Finance, 18(2):265–282.
+Guan, Y., Fang, T., Zhang, D., and Jin, C. (2022). Solving Fredholm integral equations using deep
+learning. International Journal of Applied and Computational Mathematics, 8(2):87.
+Hawkes, A. G. and Oakes, D. (1974). A cluster process representation of a self-exciting process. Journal
+of applied probability, 11(3):493–503.
+Hornik, K., Stinchcombe, M., and White, H. (1989). Multilayer feedforward networks are universal
+approximators. Neural networks, 2(5):359–366.
+28
+
+=== page 29 ===
+Jia, Y., Wu, Y., Yan, S., and Liu, Y. (2023). A seesaw effect in the cryptocurrency market: Understanding
+the return cross predictability of cryptocurrencies. Journal of Empirical Finance, 74:101428.
+Joseph, S. and Jain, S. (2023). A neural network based model for multi-dimensional nonlinear Hawkes
+processes. arXiv preprint arXiv:2303.03073.
+Joseph, S., Kashyap, L.D., andJain, S.(2020). ShallowneuralHawkes: Non-parametrickernelestimation
+for Hawkes processes. arXiv preprint arXiv:2006.02460.
+Jusselin, P. and Rosenbaum, M. (2020). No-arbitrage implies power-law market impact and rough volatil-
+ity. Mathematical Finance, 30(4):1309–1336.
+Kim, M. J., Canh, N. P., and Park, S. Y. (2021). Causal relationship among cryptocurrencies: A
+conditional quantile approach. Finance Research Letters, 42:101879.
+Kirchner, M. (2017). An estimation procedure for the Hawkes process. Quantitative Finance, 17(4):571–
+595.
+Krishnapriyan, A., Gholami, A., Zhe, S., Kirby, R., and Mahoney, M. W. (2021). Characterizing possible
+failuremodesinphysics-informedneuralnetworks. Advances in Neural Information Processing Systems,
+34:26548–26560.
+Kumar, A. S. and Anandarao, S. (2019). Volatility spillover in crypto-currency markets: Some evidences
+from GARCH and wavelet analysis. Physica A: statistical mechanics and its applications, 524:448–458.
+Kwon, J., Zheng, Y., and Jun, M. (2023). Flexible spatio-temporal Hawkes process models for earthquake
+occurrences. Spatial Statistics, 54:100728.
+Lagaris, I. E., Likas, A., and Fotiadis, D. I. (1998). Artificial neural networks for solving ordinary and
+partial differential equations. IEEE transactions on neural networks, 9(5):987–1000.
+Lee, K. and Seo, B. K. (2017). Marked Hawkes process modeling of price dynamics and volatility
+estimation. Journal of Empirical Finance, 40:174–200.
+Lewis, E. and Mohler, G. (2011). A nonparametric EM algorithm for multiscale Hawkes processes.
+Journal of nonparametric statistics, 1(1):1–20.
+Lu, X. and Abergel, F. (2018). High-dimensional Hawkes processes for limit order books: modelling,
+empirical analysis and numerical calibration. Quantitative Finance, 18(2):249–264.
+Moratis, G. (2021). Quantifying the spillover effect in the cryptocurrency market. Finance Research
+Letters, 38:101534.
+Muni Toke, I. and Pomponio, F. (2012). Modelling trades-through in a limit order book using Hawkes
+processes. Economics, 6(1):20120022.
+Olinde, J. and Short, M. B. (2020). A self-limiting Hawkes process: interpretation, estimation, and use
+in crime modeling. In 2020 IEEE International Conference on Big Data (Big Data), pages 3212–3219.
+IEEE.
+Psichogios, D. C. and Ungar, L. H. (1992). A hybrid neural network-first principles approach to process
+modeling. AIChE Journal, 38(10):1499–1511.
+Raissi, M., Perdikaris, P., and Karniadakis, G. E. (2019). Physics-informed neural networks: A deep
+learning framework for solving forward and inverse problems involving nonlinear partial differential
+equations. Journal of Computational physics, 378:686–707.
+Rambaldi, M., Bacry, E., and Lillo, F. (2017). The role of volume in order book dynamics: A multivariate
+Hawkes process analysis. Quantitative Finance, 17(7):999–1020.
+Reynaud-Bouret, P., Rivoirard, V., and Tuleau-Malot, C. (2013). Inference of functional connectivity
+in neurosciences via Hawkes processes. In 2013 IEEE global conference on signal and information
+processing, pages 317–320. IEEE.
+29
+
+=== page 30 ===
+Sankaran, S., Wang, H., Guilhoto, L. F., and Perdikaris, P. (2022). On the impact of larger batch size in
+the training of physics informed neural networks. In The Symbiosis of Deep Learning and Differential
+Equations II.
+Sirignano, J. and Spiliopoulos, K. (2018). DGM: A deep learning algorithm for solving partial differential
+equations. Journal of computational physics, 375:1339–1364.
+Sulem, D., Rivoirard, V., and Rousseau, J. (2024). Bayesian estimation of nonlinear Hawkes processes.
+Bernoulli, 30(2):1257–1286.
+Wang, C., Li, S., He, D., and Wang, L. (2022a). Is L2 physics informed loss always suitable for training
+physics informed neural network? Advances in Neural Information Processing Systems, 35:8278–8290.
+Wang, S., Sankaran, S., and Perdikaris, P. (2022b). Respecting causality is all you need for training
+physics-informed neural networks. arXiv preprint arXiv:2203.07404.
+Wang, S., Sankaran, S., Wang, H., and Perdikaris, P. (2023). An expert’s guide to training physics-
+informed neural networks. arXiv preprint arXiv:2308.08468.
+Wang, S., Teng, Y., and Perdikaris, P. (2021). Understanding and mitigating gradient flow pathologies
+in physics-informed neural networks. SIAM Journal on Scientific Computing, 43(5):A3055–A3081.
+Wang, T., Bebbington, M., and Harte, D. (2012). Markov-modulated Hawkes process with stepwise
+decay. Annals of the Institute of Statistical Mathematics, 64:521–544.
+Wehrli, A., Wheatley, S., and Sornette, D. (2021). Scale-, time- and asset-dependence of Hawkes process
+estimates on high frequency price changes. Quantitative Finance, 21(5):729–752.
+Wu, C., Zhu, M., Tan, Q., Kartha, Y., and Lu, L. (2023). A comprehensive study of non-adaptive and
+residual-based adaptive sampling for physics-informed neural networks. Computer Methods in Applied
+Mechanics and Engineering, 403:115671.
+Xu, H., Farajtabar, M., and Zha, H. (2016). Learning granger causality for Hawkes processes. In
+International conference on machine learning, pages 1717–1726. PMLR.
+Yuan, L., Ni, Y.-Q., Deng, X.-Y., and Hao, S. (2022). A-PINN: Auxiliary physics informed neural
+networks for forward and inverse problems of nonlinear integro-differential equations. Journal of Com-
+putational Physics, 462:111260.
+Zappala, E., Fonseca, A. H. d. O., Caro, J. O., and van Dijk, D. (2022). Neural integral equations. arXiv
+preprint arXiv:2209.15190.
+Zhang, R., Walder, C., Rizoiu, M.-A., and Xie, L. (2018). Efficient non-parametric bayesian Hawkes
+processes. arXiv preprint arXiv:1810.03730.
+Zhou, K., Zha, H., and Song, L. (2013). Learning triggering kernels for multi-dimensional Hawkes
+processes. In International conference on machine learning, pages 1301–1309. PMLR.
+Appendix
+This appendix provides additional figures and tables that do not appear in the main text in order to
+enhance readability.
+5.1 Numerical validation – Additional material
+We give the true values of the parameters of the high-dimensional bimodal Gaussian kernel of Section
+3.1. The baseline intensity is
+µ = [0.07, 0.20, 0.09, 0.16, 0.12, 0.16, 0.12, 0.10, 0.15, 0.09, 0.14, 0.11, 0.09, 0.14, 0.16]′. (54)
+and the five 15 × 15 matrices defining the kernel parameters are given in Tables 10 and 11. We also give
+the values of the parameters used in Section 3.2 in Tables 12 and 13. Finally, Figure 18 displays L∞
+errors of the robustness tests of Section 3.2.
+30
+
+=== page 31 ===
+Table 10: Bimodal Gaussian kernel — Parameter configuration of the simulation (Part 1).
+(a) α
+αij 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+1 0.03 0.04 0.03 0.04 0.04 0.04 0.06 0.05 0.04 0.05 0.06 0.04 0.03 0.04 0.06
+2 0.05 0.05 0.06 0.04 0.05 0.05 0.04 0.05 0.05 0.04 0.03 0.06 0.06 0.05 0.04
+3 0.06 0.03 0.05 0.05 0.06 0.04 0.04 0.04 0.04 0.06 0.06 0.05 0.06 0.05 0.03
+4 0.03 0.04 0.06 0.06 0.06 0.05 0.04 0.03 0.05 0.06 0.06 0.06 0.06 0.04 0.04
+5 0.03 0.03 0.04 0.05 0.04 0.06 0.04 0.05 0.03 0.04 0.05 0.04 0.04 0.05 0.04
+6 0.05 0.05 0.04 0.06 0.06 0.04 0.06 0.04 0.04 0.04 0.03 0.06 0.04 0.05 0.04
+7 0.05 0.06 0.04 0.06 0.04 0.04 0.06 0.06 0.03 0.04 0.05 0.06 0.04 0.04 0.04
+8 0.04 0.05 0.05 0.05 0.06 0.06 0.04 0.05 0.05 0.06 0.06 0.04 0.05 0.03 0.04
+9 0.03 0.06 0.06 0.04 0.04 0.06 0.04 0.06 0.05 0.03 0.05 0.03 0.04 0.04 0.05
+10 0.03 0.06 0.03 0.05 0.04 0.05 0.06 0.04 0.05 0.05 0.05 0.05 0.04 0.06 0.06
+11 0.05 0.05 0.05 0.04 0.04 0.05 0.04 0.04 0.06 0.05 0.06 0.05 0.06 0.04 0.05
+12 0.04 0.06 0.03 0.05 0.06 0.04 0.05 0.06 0.03 0.03 0.04 0.05 0.05 0.05 0.04
+13 0.06 0.05 0.03 0.06 0.04 0.04 0.05 0.04 0.06 0.05 0.03 0.05 0.03 0.06 0.05
+14 0.06 0.04 0.05 0.04 0.05 0.05 0.05 0.05 0.04 0.05 0.06 0.04 0.06 0.03 0.03
+15 0.06 0.06 0.05 0.05 0.06 0.05 0.05 0.05 0.04 0.03 0.05 0.04 0.04 0.05 0.05
+(b) µ
+µij 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+1 0.71 0.53 0.04 0.30 0.32 0.60 0.10 0.46 0.67 0.43 0.53 0.59 0.72 0.47 0.61
+2 0.30 0.29 0.56 0.42 0.65 0.36 0.03 0.43 0.09 0.47 0.37 0.17 0.30 0.02 0.40
+3 0.42 0.50 0.25 0.71 0.45 0.30 0.40 0.29 0.20 0.08 0.34 0.20 0.38 0.31 0.41
+4 0.36 0.42 0.56 0.59 0.71 0.44 0.64 0.07 0.43 0.07 0.69 0.70 0.73 0.27 0.50
+5 0.18 0.01 0.55 0.44 0.61 0.53 0.22 0.17 0.09 0.16 0.30 0.20 0.61 0.18 0.41
+6 0.61 0.40 0.26 0.61 0.27 0.30 0.55 0.21 0.11 0.16 0.35 0.13 0.61 0.08 0.22
+7 0.59 0.26 0.12 0.30 0.47 0.34 0.29 0.40 0.34 0.69 0.57 0.53 0.07 0.20 0.58
+8 0.73 0.72 0.54 0.66 0.75 0.41 0.70 0.31 0.68 0.39 0.57 0.52 0.65 0.47 0.49
+9 0.59 0.04 0.69 0.30 0.37 0.27 0.25 0.39 0.00 0.22 0.71 0.30 0.68 0.47 0.59
+10 0.41 0.55 0.31 0.11 0.50 0.60 0.08 0.72 0.43 0.72 0.70 0.38 0.47 0.29 0.38
+11 0.44 0.32 0.49 0.70 0.66 0.62 0.66 0.01 0.73 0.30 0.04 0.72 0.13 0.46 0.41
+12 0.11 0.06 0.44 0.69 0.53 0.58 0.36 0.65 0.64 0.20 0.35 0.70 0.42 0.43 0.22
+13 0.21 0.01 0.72 0.30 0.63 0.42 0.67 0.49 0.10 0.05 0.10 0.32 0.37 0.29 0.18
+14 0.16 0.42 0.15 0.71 0.49 0.23 0.39 0.43 0.63 0.34 0.27 0.38 0.56 0.19 0.16
+15 0.70 0.09 0.11 0.41 0.31 0.51 0.43 0.59 0.74 0.38 0.69 0.45 0.18 0.43 0.68
+(c) σ
+σij 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+1 0.05 0.08 0.18 0.16 0.10 0.10 0.18 0.14 0.10 0.11 0.11 0.15 0.16 0.08 0.09
+2 0.09 0.20 0.08 0.13 0.19 0.17 0.13 0.14 0.16 0.19 0.13 0.17 0.09 0.06 0.08
+3 0.10 0.16 0.09 0.05 0.13 0.18 0.20 0.06 0.13 0.15 0.07 0.07 0.18 0.09 0.13
+4 0.12 0.09 0.06 0.18 0.19 0.11 0.18 0.12 0.12 0.16 0.11 0.11 0.07 0.11 0.16
+5 0.19 0.18 0.18 0.18 0.08 0.06 0.13 0.07 0.15 0.05 0.20 0.06 0.17 0.10 0.16
+6 0.07 0.16 0.11 0.19 0.09 0.20 0.06 0.15 0.14 0.18 0.06 0.17 0.14 0.14 0.16
+7 0.13 0.07 0.09 0.09 0.15 0.18 0.08 0.06 0.14 0.14 0.17 0.12 0.20 0.08 0.08
+8 0.08 0.14 0.09 0.08 0.17 0.09 0.17 0.08 0.18 0.11 0.18 0.15 0.07 0.16 0.17
+9 0.18 0.16 0.12 0.07 0.05 0.19 0.14 0.12 0.11 0.17 0.12 0.08 0.18 0.09 0.13
+10 0.11 0.13 0.07 0.17 0.16 0.14 0.06 0.10 0.18 0.06 0.14 0.19 0.18 0.09 0.14
+11 0.12 0.13 0.12 0.10 0.16 0.14 0.15 0.09 0.16 0.13 0.07 0.05 0.19 0.11 0.10
+12 0.18 0.14 0.11 0.14 0.18 0.07 0.12 0.17 0.08 0.18 0.14 0.18 0.14 0.05 0.05
+13 0.08 0.09 0.14 0.18 0.09 0.10 0.12 0.16 0.17 0.15 0.10 0.18 0.18 0.10 0.15
+14 0.07 0.10 0.08 0.09 0.19 0.20 0.14 0.10 0.19 0.07 0.13 0.11 0.09 0.14 0.19
+15 0.17 0.07 0.20 0.16 0.10 0.14 0.17 0.18 0.06 0.10 0.08 0.16 0.15 0.07 0.11
+31
+
+=== page 32 ===
+Table 11: Bimodal Gaussian kernel — Parameter configuration of the simulation (Part 2).
+(a) µ
+µij 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+1 0.31 0.52 0.16 0.17 0.52 0.52 0.04 0.38 0.51 0.00 0.47 0.40 0.61 0.45 0.07
+2 0.12 0.43 0.30 0.17 0.07 0.57 0.54 0.35 0.19 0.16 0.48 0.09 0.45 0.36 0.27
+3 0.42 0.30 0.62 0.33 0.57 0.24 0.03 0.66 0.67 0.38 0.28 0.12 0.50 0.07 0.07
+4 0.10 0.24 0.16 0.10 0.31 0.12 0.18 0.10 0.49 0.35 0.16 0.68 0.10 0.58 0.04
+5 0.22 0.24 0.18 0.16 0.13 0.53 0.32 0.02 0.45 0.14 0.05 0.04 0.35 0.02 0.65
+6 0.37 0.02 0.00 0.25 0.02 0.60 0.03 0.32 0.48 0.67 0.55 0.69 0.33 0.50 0.00
+7 0.35 0.54 0.50 0.09 0.52 0.44 0.70 0.05 0.42 0.52 0.39 0.02 0.27 0.66 0.73
+8 0.50 0.36 0.74 0.65 0.27 0.13 0.50 0.54 0.15 0.62 0.59 0.33 0.38 0.12 0.14
+9 0.28 0.72 0.04 0.37 0.21 0.01 0.12 0.41 0.47 0.60 0.57 0.37 0.57 0.02 0.15
+10 0.40 0.69 0.00 0.21 0.39 0.42 0.49 0.29 0.67 0.35 0.10 0.31 0.28 0.32 0.66
+11 0.55 0.22 0.26 0.49 0.52 0.13 0.68 0.58 0.39 0.55 0.69 0.33 0.16 0.02 0.61
+12 0.59 0.33 0.28 0.42 0.03 0.54 0.62 0.04 0.32 0.39 0.03 0.33 0.69 0.50 0.39
+13 0.15 0.67 0.09 0.19 0.71 0.02 0.62 0.71 0.51 0.63 0.27 0.01 0.55 0.48 0.71
+14 0.53 0.61 0.44 0.56 0.26 0.28 0.30 0.52 0.04 0.53 0.41 0.63 0.01 0.59 0.52
+15 0.33 0.48 0.63 0.23 0.17 0.18 0.02 0.62 0.26 0.15 0.06 0.11 0.59 0.04 0.73
+(b) σ
+σij 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+1 0.10 0.14 0.18 0.11 0.06 0.08 0.17 0.18 0.08 0.16 0.12 0.15 0.10 0.12 0.15
+2 0.07 0.19 0.15 0.16 0.08 0.16 0.16 0.08 0.17 0.16 0.17 0.06 0.12 0.17 0.14
+3 0.20 0.06 0.15 0.16 0.17 0.13 0.19 0.12 0.14 0.16 0.12 0.12 0.15 0.06 0.15
+4 0.18 0.08 0.16 0.09 0.18 0.19 0.07 0.06 0.07 0.17 0.17 0.07 0.15 0.16 0.09
+5 0.06 0.09 0.07 0.10 0.06 0.11 0.19 0.05 0.18 0.14 0.07 0.13 0.12 0.09 0.12
+6 0.06 0.13 0.08 0.12 0.15 0.10 0.08 0.20 0.07 0.08 0.12 0.15 0.15 0.07 0.06
+7 0.20 0.14 0.06 0.05 0.15 0.19 0.17 0.06 0.10 0.08 0.11 0.07 0.14 0.10 0.19
+8 0.15 0.12 0.17 0.15 0.06 0.16 0.05 0.20 0.18 0.08 0.07 0.05 0.06 0.09 0.06
+9 0.09 0.18 0.09 0.19 0.14 0.13 0.19 0.14 0.18 0.12 0.15 0.13 0.10 0.18 0.20
+10 0.07 0.17 0.14 0.06 0.16 0.11 0.12 0.18 0.17 0.05 0.07 0.14 0.08 0.19 0.08
+11 0.07 0.16 0.16 0.09 0.08 0.09 0.16 0.15 0.07 0.09 0.12 0.19 0.08 0.09 0.18
+12 0.19 0.10 0.16 0.11 0.11 0.05 0.13 0.19 0.19 0.16 0.14 0.14 0.20 0.13 0.06
+13 0.18 0.16 0.14 0.16 0.13 0.06 0.19 0.15 0.13 0.18 0.17 0.13 0.19 0.07 0.14
+14 0.15 0.06 0.20 0.11 0.16 0.06 0.15 0.08 0.05 0.09 0.11 0.18 0.19 0.19 0.15
+15 0.14 0.06 0.07 0.09 0.09 0.08 0.07 0.17 0.20 0.15 0.14 0.13 0.10 0.18 0.09
+Table 12: A 2-variate exponentially decreasing kernel.
+(a) α
+αij 1 2
+1 1 0.25
+2 0.5 0.75
+(b) β
+βij 1 2
+1 2 1
+2 1 1.5
+Table 13: A 2-variate power-law decreasing kernel.
+(a) α
+αij 1 2
+1 0.012 0.008
+2 0.004 0.005
+(b) β
+βij 1 2
+1 1.3 1.3
+2 1.3 1.3
+(c) γ
+γij 1 2
+1 0.0005 0.0005
+2 0.0005 0.0005
+5.2 Cryptocurrency spillover – Additional material
+Goodness-of-fit. We evaluate the goodness-of-fit of the fitted model of Section 4.3 by comparing its
+first and second moments with the moments of the data. We simulate 106 events of a linear Hawkes
+32
+
+=== page 33 ===
+1 2 3 4
+Number of DGM layers
+0.026
+0.028
+0.030
+∆∞
+(a) Number of DGM cells
+101 102
+Number of units
+0.03
+0.04
+0.05
+∆∞ (b) Number of neurons
+102 103 104
+N c
+0.02
+0.04
+0.06
+0.08
+∆∞ (c) Size of the training set
+100 101 102
+B
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+∆∞ (d) Batch size
+Figure 18: Robustness experiment — Error ∆∞ as a function of the hyperparameters in the four experi-
+ments.
+process with the fitted kernels using the thinning algorithm, and then estimate the second order statistics
+on the simulated data with the same grid as the one we used for the real data. For the first moment, we
+obtain
+Λ = [2.21, 1.48, 1.11, 0.25, 0.31, 0.71, 0.50, 0.52, 0.23, 0.61, 0.39, 0.35, 0.28, 0.48, 0.40]′ (55)
+which can be compared to the “true” vector computed on the data and given in Table 8. We obtain a
+satisfactory fit, the mean absolute relative error being 9.3% with respect to the values computed on the
+data. Figure 19 shows the second order statistics computed on simulated data and their corresponding
+fit with the real ones. Again, it is very satisfactory to observe that the model is able to reproduce
+the multimodal shape of the second order statistics, and produces a good fit concerning the order of
+magnitude of the excitations.
+Fitted kernels. Figure 20 displays the full 15-dimensional kernel estimated in the empirical analysis
+of Section 4.3.
+Robustness with respect to intraday seasonality. We provide here complementary figures con-
+cerning the robustness tests detailed in Section 4.4. Intraday seasonality is plotted on Figure 21. Results
+of the first alternative estimation (single model on the 7am-12pm period) are given in Figure 22 and 23.
+Results of the second alternative method (daily fits on the 7am-12pm period) are given in Figure 24.
+33
+
+=== page 34 ===
+BTC
+BTC ETH SOL ICP SEI AVAX XRP LINK XLM ADA MATIC DOT AAVE DOGE LTC
+ETHSOLICPSEIAVAXXRPLINKXLMADAMATICDOTAAVEDOGE
+10−3 100
+t (s.)
+LTC
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+Data Model
+Figure 19: Cryptocurrency spillover — Fit of the second order statistics with the moment-based neural
+Hawkes kernel (ϕij )1≤i,j≤D for a universe of 15 cryptocurrencies using trade data on Coinbase from
+2023/12/01 to 2023/12/30. Note the scale of the y-axis might change from one kernel to another as they
+do not necessary share the same orders of magnitude. We chose to remove the ticks of the y-axis for
+illustration purposes. The second order statistics of the fitted model were computed over simulations
+using 106 events.
+34
+
+=== page 35 ===
+BTC
+BTC ETH SOL ICP SEI AVAX XRP LINK XLM ADA MATIC DOT AAVE DOGE LTC
+ETHSOLICPSEIAVAXXRPLINKXLMADAMATICDOTAAVEDOGE
+10−3 100
+t (s.)
+LTC
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+10−3 100
+t (s.)
+Figure 20: Cryptocurrency spillover — Moment-based neural Hawkes kernel (ϕij )1≤i,j≤D as a function of
+time for a universe of 15 cryptocurrencies using trade data on Coinbase from 2023/12/01 to 2023/12/30.
+Note the scale of the y-axis might change from one kernel to another as they do not necessary share the
+same orders of magnitude. We chose to remove the ticks of the y-axis for illustration purposes.
+35
+
+=== page 36 ===
+0 4 8 12 16 20 24
+Hour of the day
+1
+2
+3
+4¯Λ(t)
+(a) BTC-USD
+0 4 8 12 16 20 24
+Hour of the day
+1
+2
+3¯Λ(t) (b) ETH-USD
+0 4 8 12 16 20 24
+Hour of the day
+0.5
+1.0
+1.5
+2.0
+2.5
+¯Λ(t) (c) SOL-USD
+Figure 21: Intraday seasonality — Intensity of marketable orders expressed in number of events per
+second, computed over bins of 5 minutes. The black plain line is the average intensity, and the dark
+shade represents its 95% confidence interval. Both statistics are computed using the 30 days of data.
+The red shaded aread represents the time period from 7:00 to 12:00 that is used in the robustness check
+experiment.
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Trigger
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Triggered
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+||φ||
+(a) Branching ratio matrix
+(∥ϕij ∥)1≤i,j≤D
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Trigger
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Triggered
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+||φ||
+(b) Branching ratio matrix
+(∥ϕij ∥)1≤i,j≤D — diagonal
+removed
+10−5 10−4 10−3 10−2 10−1 100
+t (seconds)
+0
+500
+1000
+1500φii(t)
+LTC-USD
+DOGE-USD
+AAVE-USD
+DOT-USD
+MATIC-USD
+ADA-USD
+XLM-USD
+LINK-USD
+XRP-USD
+AVAX-USD
+SEI-USD
+ICP-USD
+SOL-USD
+ETH-USD
+BTC-USD
+(c) Kernels (ϕii(t))1≤i≤D
+—x-axisinlogarithmicscale
+10−5 10−4 10−3 10−2 10−1 100
+t (seconds)
+10−3
+10−2
+10−1
+100
+101
+102
+103
+φii(t)
+t−1
+LTC-USD
+DOGE-USD
+AAVE-USD
+DOT-USD
+MATIC-USD
+ADA-USD
+XLM-USD
+LINK-USD
+XRP-USD
+AVAX-USD
+SEI-USD
+ICP-USD
+SOL-USD
+ETH-USD
+BTC-USD
+(d) Kernels (ϕii(t))1≤i≤D
+— Both axes in logarithmic
+scale
+Figure 22: Cryptocurrency spillover — Branching ratios the kernel matrix. Estimation performed on the
+time windows spanning from 07:00 to 12:00 UTC.
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Trigger
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Triggered
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+S
+(a) Spillover ratio matrix
+(Sij )1≤i,j≤D
+BTC-USD
+ETH-USD
+XRP-USD
+LINK-USD
+SOL-USD
+DOGE-USD
+AVAX-USD
+LTC-USD
+ADA-USD
+XLM-USD
+DOT-USD
+MATIC-USD
+AAVE-USD
+SEI-USD
+ICP-USD
+0.00
+0.01
+0.02
+0.03
+0.04
+0.05
+L
+(b) Leader ratios
+(Lj )1≤j≤D
+XLM-USD
+LINK-USD
+XRP-USD
+LTC-USD
+DOGE-USD
+MATIC-USD
+ETH-USD
+AVAX-USD
+DOT-USD
+AAVE-USD
+ADA-USD
+BTC-USD
+SOL-USD
+ICP-USD
+SEI-USD
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+R
+(c) Receiver ratios
+(Ri)1≤i≤D
+BTC-USD
+ETH-USD
+SOL-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+DOGE-USD
+ADA-USD
+MATIC-USD
+SEI-USD
+DOT-USD
+ICP-USD
+LTC-USD
+AAVE-USD
+XLM-USD
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+0.35
+ν
+(d) Participation rates
+(νj )1≤j≤D
+Figure 23: Cryptocurrency spillover — Spillover ratios and ranking of the leader, receiver measures and
+participation rates amongst the 15 cryptocurrency pairs. Estimation performed on the time windows
+spanning from 07:00 to 12:00 UTC.
+36
+
+=== page 37 ===
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Trigger
+BTC-USD
+ETH-USD
+SOL-USD
+ICP-USD
+SEI-USD
+AVAX-USD
+XRP-USD
+LINK-USD
+XLM-USD
+ADA-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+DOGE-USD
+LTC-USD
+Triggered
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+S
+(a) Median spillover ratio
+matrix (Sij )1≤i,j≤D
+BTC-USD
+ETH-USD
+LINK-USD
+SOL-USD
+XRP-USD
+AVAX-USD
+DOGE-USD
+ADA-USD
+LTC-USD
+XLM-USD
+MATIC-USD
+DOT-USD
+AAVE-USD
+ICP-USD
+SEI-USD
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+L
+(b) Box plot of leader ratios
+(Lj )1≤j≤D
+XLM-USD
+LINK-USD
+MATIC-USD
+XRP-USD
+ADA-USD
+AAVE-USD
+DOGE-USD
+DOT-USD
+LTC-USD
+AVAX-USD
+ETH-USD
+BTC-USD
+ICP-USD
+SOL-USD
+SEI-USD
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+R
+(c) Box plot of receiver
+ratios (Ri)1≤i≤D
+BTC-USD
+ETH-USD
+SOL-USD
+AVAX-USD
+LINK-USD
+XRP-USD
+DOGE-USD
+ADA-USD
+MATIC-USD
+SEI-USD
+ICP-USD
+DOT-USD
+LTC-USD
+AAVE-USD
+XLM-USD
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+ν
+(d) Box plot of
+participation rates
+(νj )1≤j≤D
+Figure 24: Cryptocurrency spillover — Median spillover ratios and ranking of the median leader, receiver
+measures and participation rates amongst the 15 cryptocurrency pairs. Estimation is performed daily on
+the time window spanning from 07:00 to 12:00 UTC, medians and box plots are computed using the 30
+fits.
+37

@@ -1,0 +1,483 @@
+=== page 1 ===
+Beyond Surrogate Modeling: Learning the Local Volatility Via
+Shape Constraints∗
+Marc Chataigner† Areski Cousin ‡ St´ephane Cr´epey§ Matthew Dixon¶
+Djibril Gueye‡
+December 21, 2022
+Abstract
+We explore the abilities of two machine learning approaches for no-arbitrage interpolation of European
+vanilla option prices, which jointly yield the corresponding local volatility surface: a ﬁnite dimensional
+Gaussian process (GP) regression approach under no-arbitrage constraints based on prices, and a neural
+net (NN) approach with penalization of arbitrages based on implied volatilities. We demonstrate the
+performance of these approaches relative to the SSVI industry standard. The GP approach is proven
+arbitrage-free, whereas arbitrages are only penalized under the SSVI and NN approaches. The GP
+approach obtains the best out-of-sample calibration error and provides uncertainty quantiﬁcation. The
+NN approach yields a smoother local volatility and a better backtesting performance, as its training
+criterion incorporates a local volatility regularization term.
+Keywords: Gaussian Processes; Local Volatility; Option pricing; Neural Networks; No-arbitrage.
+1 Introduction
+There have been recent surges of literature about the learning of derivative pricing functions by machine
+learning surrogate models, i.e. neural nets and Gaussian processes that are respectively surveyed in [11]
+and [4, Section 1]. There has, however, been relatively little coverage of no-arbitrage constraints when
+interpolating prices, and of the ensuing question of extracting the corresponding local volatility surface.
+Tegn´er & Roberts [12, see their Eq. (10)] ﬁrst attempt the use of GPs for local volatility modeling by
+placing a Gaussian prior directly on the local volatility surface. Such an approach leads to a nonlinear least
+squares training loss function, which is not obviously amenable to gradient descent (stochastic or not), so
+the authors resort to a MCMC optimization. Zheng et al. [13] introduce shape constraint penalization via a
+multi-model gated neural network, which uses an auxiliary network to ﬁt the parameters. The gated network
+is interpretable and lightweight, but the training is expensive and there is no guarantee of no-arbitrage. They
+do not consider the local volatility and the associated regularization terms, nor do they assess the extent to
+which no-arbitrage is violated in a test set.
+∗Single-ﬁle demos Master.html and Master.ipynb are available on [https://github.com/mChataign/Beyond-Surrogate-
+Modeling-Learning-the-Local-Volatility-Via-Shape-Constraints]. Note that, due to github size limitations, the ﬁle Master.html
+ﬁle must be downloaded locally (and then opened with a browser) to be displayed.
+†LaMME, Universit´e d’Evry, CNRS, Universit´e Paris-Saclay; marc.chataigner@univ-evry.fr. The PhD thesis of Marc
+Chataigner is co-funded by the Research Initiative “Mod´elisation des march´es actions, obligations et d´eriv´es”, ﬁnanced by
+HSBC France under the aegis of the Europlace Institute of Finance, and by the public grant ANR-11-LABX-0056-LLH LabEx
+LMH.
+‡Institut de Recherche en Math´ematique Avanc´ee, Universit´e de Strasbourg, 7 rue Ren´e Descartes, 67084 Strasbourg, cedex;
+a.cousin@unistra.fr
+§LPSM, Universit´e de Paris; Stephane.Crepey@lpsm.paris. The research of S. Cr´epey beneﬁted from the support of the
+Chair Stress Test, RISK Management and Financial Steering, led by the French Ecole polytechnique and its Foundation and
+sponsored by BNP Paribas.
+¶Department of Applied Mathematics, Illinois Institute of Technology, Chicago; matthew.dixon@iit.edu.
+1
+arXiv:2212.09957v1  [q-fin.MF]  20 Dec 2022
+
+=== page 2 ===
+Maatouk & Bay [9] introduce ﬁnite dimensional approximation of Gaussian processes (GP) for which
+shape constraints are straightforward to impose and verify. Cousin et al. [3] apply this technique to ensure
+arbitrage-free and error-controlled yield-curve and CDS curve interpolation.
+In this paper, we propose an arbitrage-free GP option price interpolation, which jointly yields the cor-
+responding local volatility surface, with uncertainty quantiﬁcation. Another contribution of the paper is to
+introduce a neural network approximation of the implied volatility surface, penalizing arbitrages on the basis
+of the Dupire formula, which is also used for extracting the corresponding local volatility surface. This is all
+evidenced on an SPX option dataset.
+Throughout the paper we consider European puts on a stock (or index) S with dividend yield q, in an
+economy with interest rate term r, with q and r constant in the mathematical description and deterministic
+in the numerics.
+Given any rectangular domain of interest in time and space, we tacitly rescale the inputs so that the
+domain becomes Ω = [0, 1]2. This rescaling avoids any one independent variable dominating over another
+during any ﬁtting of the market prices.
+2 Gaussian process regression for learning arbitrage-free price
+surfaces
+We denote by P∗(T,K) the time-0 market price of the put with maturity T and strike K on S, observed for a
+ﬁnite number of pairs (T,K). Our ﬁrst goal is to construct, by Gaussian process regression, an arbitrage-free
+and continuous put price surface P : R+ × R+ → R+, interpolating P∗ up to some error term, and to retrieve
+the corresponding local volatility surface σ(·,·) by the Dupire formula.
+In terms of the reduced prices p(T,k) = eqTP (T,K), where k = Ke−(r−q)T, the Dupire formula [5] reads
+(assuming p of class C1,2 on {T > 0}):
+σ2(T,K)
+2 = ∂Tp(T,k) k2∂2 k2 p(T,k) =: dup(T,k). (1)
+Obviously, for this formula to be meaningful, its output must be nonnegative, which holds if the interpolating
+map p exhibits nonnegative derivatives w.r.t. T and second derivative w.r.t. k, i.e.
+∂Tp(T,k) ≥ 0 , ∂2 k2 p(T,k) ≥ 0, (2)
+In this section, we consider a zero-mean Gaussian process prior on the mapping p = p(x)x∈Ω with
+correlation function c given, for any x = (T,k),x′ = (T′,k′) ∈ Ω, by
+c(x,x′) = σ2γT (T −T′,θT )γk(k−k′,θk). (3)
+Here (θT,θk) = θ and σ2 correspond to length scale and variance hyper-parameters of the kernel function c,
+whereas the functions γT and γk are kernel correlation functions.
+Without consideration of the conditions (2), (unconstrained) prediction and uncertainty quantiﬁcation
+are made using the conditional distribution p|p(x)+ε = y, where y = [y1,...,yn]⊤ are n noisy observations
+of the function p at input points x = [x1,...,xn]⊤, corresponding to observed maturities and strikes xi =
+(Ti,ki); the additive noise term ε = [ε1,...,εn]⊤ is assumed to be a zero-mean Gaussian vector, independent
+from p(x), and with an homoscedastic covariance matrix given as ς2In, where In is the identity matrix of
+dimension n. Note that bid and ask prices are considered here as (noisy) replications at the same input
+location.
+2.1 Imposing the no-arbitrage conditions
+To deal with the constraints (2), we adopt the solution of Cousin et al. [3] that consists in constructing
+a ﬁnite dimensional approximation ph of the Gaussian prior p for which these constraints can be imposed
+in the entire domain Ω with a ﬁnite number of checks. One then recovers the (non Gaussian) constrained
+posterior distribution by sampling a truncated Gaussian process.
+2
+
+=== page 3 ===
+Remark 1 Switching to a ﬁnite dimensional approximation can also be viewed as a form of regularization,
+which is also required to deal with the ill-posedness of the (numerical diﬀerentiation) Dupire formula.
+We ﬁrst consider a discretized version of the (rescaled) input space Ω = [0, 1]2 as a regular grid (ıh)ı,
+where ı = (i,j), for a suitable mesh size h and indices i,j ranging from 0 to 1/h (taken in N⋆). For each
+knot ı = (i,j), we introduce the hat basis functions φı with support [(i− 1)h, (i + 1)h] × [(j− 1)h, (j + 1)h]
+given, for x = (T,k), by
+φı(x) = max(1 −|T −ih| h , 0) max(1 −|k−jh| h , 0).
+We take V = H1(Ω) = {u∈L2(Ω) : Dαu∈L2(Ω),|α|≤ 1}, where Dαu is a weak derivative of order |α|,
+as the space of (the realizations of) p. Let Vh ⊂ V denote the ﬁnite dimensional linear subspace spanned
+by the M linearly independent basis functions φı. The (random) surface p in V is projected onto Vh as
+ph(x) = ∑
+ı
+p(ıh)φı(x), ∀x∈ Ω. (4)
+If we denote ϱı = p(ıh), then ϱ = (ϱı)ı is a zero-mean Gaussian column vector (indexed by ı) with M ×M
+covariance matrix Γh such that Γh ı, = c(ıh,h), for any two grid nodes ı and . Let φ(x) denote the vector
+of size M given by φ(x) = (φı(x))ı. The equality (4) can be rewritten as ph(x) = φ(x) ·ϱ. Denoting by
+ph(x) = [ph(x1),...,ph(xn)]⊤ and by Φ(x) the n×M matrix of basis functions where each row 𝓁 corresponds
+to the vector φ(x𝓁), one has ph(x) = Φ(x) ·ϱ. By application of the results of [9]:
+Proposition 2 (i) The ﬁnite dimensional process ph converges uniformly to p on Ω as h→ 0, almost surely,
+(ii) ph(T,k) is a nondecreasing function of T if and only if ϱi+1,j ≥ϱi,j,∀(i,j),
+(iii) ph(T,k) is a convex function of k if and only if ϱi,j+2 −ϱi,j+1 ≥ϱi,j+1 −ϱi,j,∀(i,j).
+In view of (i), denoting by I the set of 2d continuous positive functions which are nondecreasing in T and
+convex in k, we choose as constrained GP metamodel for the put price surface the law of ph conditional on
+{ ph(x) + ε = y
+ph ∈I.
+In view of (ii)-(iii), ph ∈I if and only if ϱ ∈Ih, where Ih corresponds to the set of (ı indexed) vectors
+ρ = (ρı)ı such that ρi+1,j ≥ρi,j and ρi,j+2 −ρi,j+1 ≥ρi,j+1 −ρi,j ∀(i,j). Hence, our GP metamodel for the
+put price surface can be reformulated as the law of ϱ conditional on
+{ Φ(x) ·ϱ + ε = y
+ϱ∈Ih. (5)
+2.2 Hyper-parameter learning
+Hyper-parameters consist in the length scales θ and the variance parameter σ2 in (3), as well as the noise
+variance ς. Up to a constant, the so called marginal log likelihood of ϱ at λ = [θ,σ,ς]⊤ can be expressed as
+(see e.g. [10, Section 15.2.4, p. 523]):
+L(λ) = −1 2y⊤( Φ(x)ΓhΦ(x)⊤ + ς2In )−1 y− 1 2 log ( det ( Φ(x)ΓhΦ(x)⊤ + ς2In )) .
+We maximize L for learning the hyper-parameters λ (MLE estimation).
+Remark 3 The above expression does not take into account the inequality constraints in the estimation.
+However, Bachoc et al. [1, see e.g. their Eq. (2)] argue (and we observed empirically) that, unless the
+sample size is very small, conditioning by the constraints signiﬁcantly increases the computational burden
+with negligible impact on the MLE.
+3
+
+=== page 4 ===
+2.3 The most probable response surface and measurement noises
+We compute the joint MAP (ˆρ, ˆe) of the truncated Gaussian vector ϱ and of the Gaussian noise vector ε,
+(ˆρ, ˆe) = arg max
+(ρ,e)
+Prob
+(
+ϱ∈ [ρ,ρ + dρ],ε∈ [e,e + de] | Φ(x) ·ϱ + ε = y, ϱ∈Ih)
+(for the probability measure Prob underlying the GP model). As (ϱ,ε) is Gaussian centered with block-
+diagonal covariance matrix with blocks Γh and ς2In, this implies that the MAP (ˆρ, ˆe) is a solution to the
+following quadratic problem :
+arg min
+Φ(x)·ρ+e=y,ρ∈Ih
+(
+ρ⊤(Γh)−1ρ + e⊤(ς2In)−1e ) . (6)
+We deﬁne the most probable measurement noise to be ˆe and the most probable response surface ˆph(x) =
+Φ(x) · ˆρ. Distance to the data can be an eﬀect of arbitrage opportunities within the data and/or misspeci-
+ﬁcation / lack of expressiveness of the kernel.
+2.4 Sampling ﬁnite dimensional Gaussian processes under shape constraints
+The conditional distribution of ϱ| Φ(x)·ϱ+ε = y is multivariate Gaussian with mean ηy(x) and covariance
+matrix Cy(x) such that
+ηy(x) = ΓhΦ(x)⊤(Φ(x)ΓhΦ(x)⊤ + ς2In)−1y (7)
+Cy(x) = ΓhΦ(x)⊤(Φ(x)ΓhΦ(x)⊤ + ς2In)−1Φ(x)Γh. (8)
+In view of (5), we thus face the problem of sampling from this truncated multivariate Gaussian distribution,
+which we do by Hamiltonian Monte Carlo, using the MAP ˆϱ of ϱ as the initial vector (which must verify
+the constraints) in the algorithm.
+2.5 Local volatility
+Due to the shape constraints and to the ensuing ﬁnite-dimensional approximation with basis functions of
+class C0 (for the sake of Proposition 2), ph is not diﬀerentiable. Hence, exploiting GP derivatives analytics,
+as done for the mean in [4, cf. Eq. (10)] and also for the covariance in [8], is not possible for deriving the
+corresponding local volatility surface here. Computation of derivatives involved in the Dupire formula is
+implemented by ﬁnite diﬀerences with respect to a coarser grid (than the grid of basis functions). Another
+related solution would be to formulate a weak form of the Dupire equation and construct a local volatility
+surface approximation using a ﬁnite element method.
+See Algorithm 1 for the main steps of the GP approach.
+Algorithm 1 The GP algorithm for local volatility surface approximation.
+Data: Put price training set p⋆
+Result: M realizations of the local volatility surface {duph i}M i=1
+1 ˆλ← Maximize the marginal log-likelihood of the put price surface ph w.r.t. λ // Hyperparameter fitting
+2 (ˆρ, ˆe) ← Minimize quadratic problem 6 based on ˆλ // Joint MAP estimate
+3 ˆρ→ Initialize a Hamiltonian MC sampler
+4 ph 1 ,...,ph M ← Hamiltonian MC Sampler // Sampling price surfaces
+5 duph i ← Finite diﬀerence approximation using each ph i, i := 1 →M
+3 Neural networks implied volatility metamodeling
+Our second goal is to use neural nets (NN) to construct an implied volatility (IV) put surface Σ : R+ × R →
+R+, interpolating implied volatility market quotes Σ∗ up to some error term, both being stated in terms of
+4
+
+=== page 5 ===
+a put option maturity T and log-(forward) moneyness κ = log( k S0 ) = log ( K S0 ) − (r−q)T . The advantage
+of using implied volatilities rather than prices (as previously done in [2]), both being in bijection via the
+Black-Scholes put pricing formula as well known, is their lower variability, hence better performance as we
+will see.
+The corresponding local volatility surface σ is given by the following local volatility implied variance
+formula, i.e. the Dupire formula stated in terms of the implied total variance1 Θ(T,κ) = Σ2(T,κ)T (assuming
+Θ of class C1,2 on {T > 0}):
+σ2(T,K) = ∂T Θ
+1 − κ Θ ∂κΘ + 1 4
+(
+− 1 4 − 1 Θ + κ2 Θ2
+)
+(∂κΘ)2 + 1 2 ∂κ2 Θ (T,κ) =: calT (Θ) buttk(Θ)(T,κ). (9)
+We use a feedforward NN with weights W, biases b and smooth activation functions for parameterizing
+the implied volatility and total variance, which we denote by
+Σ = ΣW,b , Θ = ΘW,b.
+The terms calT (ΘW,b) and buttk(ΘW,b) are available analytically, by automatic diﬀerentiation, which we
+exploit below to penalize calendar spread arbitrages, i.e. negativity of calT (Θ), and butterﬂy arbitrage,
+i.e. negativity of buttk(Θ).
+The training of NNs is a non-convex optimization problem and hence does not guarantee convergence
+to a global optimum. We must therefore guide the NN optimizer towards a local optima that has desirable
+properties in terms of interpolation error and arbitrage constraints. This motivates the introduction of an
+arbitrage penalty function into the loss function to select the most appropriate local minima. An additional
+challenge is that maturity-log moneyness pairs with quoted option prices are unevenly distributed and the
+NN may favor ﬁtting to a cluster of quotes to the detriment of ﬁtting isolated points. To remedy this non-
+uniform data ﬁtting problem, we re-weight the observations by the Euclidean distance between neighboring
+points. More precisely, given n observations χi = (Ti,κi) of maturity-log moneyness pairs and of the
+corresponding market implied volatilities Σ∗(χi), we construct the n×n distance matrix with general term
+d(χi,χj) =
+√
+(Tj −Ti)2 + (κj −κi)2. We then deﬁne the loss weighting wi for each point χi as the distance
+wi = min j,j⁄=i d(χi,χj). with the closest point. These modiﬁcations aim at reducing error for any isolated points.
+In addition, in order to avoid linear saturation of the neural network, we apply a further log-maturity change
+of variables (adapting the partial derivatives accordingly).
+Learning the weights W and biases b to the data subject to no arbitrage soft constraints (i.e. with
+penalization of arbitrages) then takes the form of the following (nonconvex) loss minimization problem:
+arg min
+W,b
+vuu√ 1
+n
+∑
+i
+(
+wi
+ΣW,b(χi) − Σ∗(χi)
+Σ∗(χi)
+)2
++ µw
+m
+∑
+ξ∈Ωh
+λTR(ΘW,b)(ξ), (10)
+where λ = [λ1,λ2,λ3]⊤∈ R3 + and
+R(Θ) = [cal− T (Θ), butt− k (Θ), ( calT buttk (Θ) −a )+ + ( calT buttk (Θ) −a )− ]⊤
+is a regularization penalty vector evaluated over a penalty grid Ωh with m nodes as detailed below. The
+error criterion is calculated as a root mean square error on relative diﬀerence, so that it does not discriminate
+high or low implied volatilities. The ﬁrst two elements in the penalty vector R(Θ) favor the no-arbitrage
+conditions (2) and the third element favors desired lower and upper bounds 0 <a<a (constants or functions
+of T ) on the estimated local variance σ2(T,K). In order to adjust the weight of penalization, we multiply our
+penalties by the weighting mean µw := 1 m ∑ i wi. Suitable values of the “Lagrange multipliers” λ, ensuring
+the right balance between ﬁt to the market implied volatilities and the constraints, is then obtained by grid
+search. Of course a soft constraint (penalization) approach does not fully prevent arbitrages. However, for
+1This follows from the Dupire formula by simple transforms detailed in [6, p.13].
+5
+
+=== page 6 ===
+large λ, arbitrages are extremely unlikely to occur, except perhaps very far from Ω. With this in mind, we
+use a penalty grid Ωh that extends well beyond the domain of the IV interpolation. This is intended so that
+the penalty term penalizes arbitrages outside of the domain used for IV Interpolation.
+See Algorithm 2 for the pseudo-code of the NN approach.
+Algorithm 2 The NN-IV algorithm for local volatility surface approximation.
+Data: Market implied volatility surface Σ∗
+Result: The local volatility surface
+√
+calT
+buttk (Θ ˆW,ˆb)
+1 ( ˆW, ˆb) ← Minimize the penalized training loss (10) w.r.t. (W, b);
+2
+√
+calT
+buttk (Θ ˆW,ˆb) ← AAD diﬀerentiation of the trained NN implied vol. surface
+4 Numerical results
+4.1 Experimental design
+Our training set is prepared using SPX European puts with diﬀerent available strikes and maturities ranging
+from 0.005 to 2.5 years, listed on 18th May 2019, with S0 = $2859.53. Each contract is listed with a bid/ask
+price and an implied volatility corresponding to the mid-price. The associated interest rate is constructed
+from US treasury yield curve and dividend yield curve rates are then obtained from call/put parity applied
+to the option market prices and forward prices. We preprocess the data by removing the shortest maturity
+options, with T < 0.055, and the numerically inconsistent observations for which the gap between the listed
+implied volatility and the implied volatility calibrated from mid-price with our interest/dividend curves
+exceeds 5% of the listed implied volatility. But we do not remove arbitrable observations. The preprocessed
+training set is composed of 1720 market put prices. The testing set consists of a disjoint set of 1725 put
+prices.
+All results for the GP method are based on using Matern ν = 5/2 kernels over a [0, 1]2 domain with
+ﬁtted kernel standard-deviation hyper-parameter ˆσ = 185.7611, length-scale hyper-parameters ˆθk = 0.3282
+and ˆθT = 0.2211, and homoscedastic noise standard deviation, ˆς = 0.6876.2 The grid of basis functions for
+constructing the ﬁnite-dimensional process ph has 100 nodes in the modiﬁed strike direction and 25 nodes
+in the maturity direction. The Matlab interior point convex algorithm quadprog is used to solve the MAP
+quadratic program 6.
+Regarding the NN approach, we use a three layer architecture similar to the one based on prices (instead
+of implied volatilities in Section 3) in [2], to which we refer the reader for implementation details. We use a
+penalty grid Ωh with m = 50 × 100 nodes. In the moneyness and maturity coordinates, the domain of the
+penalty grid is [0.005, 10] × [0.5, 2].
+4.2 Arbitrage-free SVI
+We benchmark the machine learning results with the industry standard provided by the arbitrage free
+stochastic volatility inspired (SVI) model of [7]. Under the “natural parameterization” SVI = (∆,µ,ρ,ω,ζ),
+the implied total variance is given, for any ﬁxed T , by
+ΘSVI(κ) = ∆ + ω 2 ( 1 + ρ(κ−µ)ζ + √ (ζ(κ−µ) + ρ)2 + (1 −ρ2) ) . (11)
+Our SSVI parameterization of a surface corresponds to SVIT = (0, 0,ρ, ΘT,φ(ΘT )) for each T , where ΘT
+is the at-the-money total implied variance and we use for φ a power law function φ(ϑ) = η ϑγ(1+ϑ)1−γ . [7,
+Remark 4.4] provides suﬃcient conditions on SSVI parameters (η(1 + |ρ|) ≤ 2 with γ = 0.5) that rule out
+butterﬂy arbitrage, whereas SSVI is free of calendar arbitrage when ΘT is nondecreasing.
+2When re-scaled back to the original input domain, the ﬁtted length scale parameters of the 2D Matern ν = 5/2 are
+ˆθk = 973.1901 and ˆθT = 0.5594.
+6
+
+=== page 7 ===
+We calibrate the model as in [7]:3 First, we ﬁt the SSVI model; Second, for each maturity in the training
+grid, the ﬁve SVI parameters are calibrated, (starting in each case from the SSVI calibrated values. The
+implied volatility is obtained for new maturities by a weighted average of the parameters associated with
+the two closest maturities in the training grid, T and U, say, with weights determined by ΘT and ΘU. The
+corresponding local volatility is extracted by ﬁnite diﬀerence approximation of 9.
+As, in practice, no arbitrage constraints are implemented for SSVI by penalization (see [7, Section 5.2]),
+in the end the SSVI approach is in fact only practically arbitrage-free, much like our NN approach, whereas
+it is only the GP approach that is proven arbitrage-free.
+4.3 Calibration results
+Training times for SSVI, GP, and NNs are reported in the last row of Table 1 which, for completeness, also
+includes numerical results obtained by NN interpolation of the prices as per [2]. Because price based NN
+results are outperformed by IV based NN results we only focus on the IV based NN in the ﬁgures that follow,
+referring to [2] for every detail on the price based NN approach. We recall that, in contrast to the SSVI and
+NNs which ﬁt to mid-quotes, GPs ﬁt to the bid-ask prices.
+IV RMSE
+(Price RMSE) SSVI GP IV based NN Price based NN SSVI Unconstr. GP Unconstr. IV based NN Unconstr. Price based NN Unconstr.
+Calibr. ﬁt on
+the training set
+1.37%
+(2.574)
+0.58%
+(0.338)
+1.23%
+(2.897)
+13.70%
+(9.851)
+1.04%
+(2.691)
+0.60%
+(0.321)
+0.84%
+(2.163)
+5.65 %
+(2.456)
+Calibr. ﬁt on
+the testing set
+1.52%
+(2.892)
+0.57%
+(0.355)
+1.29%
+(2.966)
+14.27%
+(10.347)
+1.09%
+(2.791)
+0.57%
+(0.477)
+0.86%
+(2.045)
+6.14%
+(2.888)
+MC backtest 8.69% (22.826) 19.76% (74.017) 2.95% (4.989) 6.37% (11.764) N/A N/A N/A N/A
+CN backtest 6.88% (33.545) 7.86% (35.270) 3.43% (11.976) 5.56% (26.785) N/A N/A N/A N/A
+Comput. time
+(seconds) 33 856 191 185 1 16 76 229
+Table 1: The IV and price RMSEs of the SSVI, GP and NN approaches. Last row: computation times (in
+seconds).
+The GP implementation is in Matlab whereas the SSVI and NN approaches are implemented in Python.
+On our (large) dataset, the constrained GP has the longest training time. Training is longer for constrained
+SSVI than for unconstrained SSVI because of the ensuing amendments to the optimization routine. There
+are no arbitrage violations observed for any of the constrained methods in neither the training or the testing
+grid. Unconstrained methods yield 18 violations with NN and 177 with SSVI on the testing set, out of a
+total of 1725 testing points, i.e. violations in 1.04% and 10.26% of the test nodes. The unconstrained GP
+approach yields constraint violations on 12.5% of the basis function nodes ıh. The NN penalizations (calT )−
+and (buttk)− vanish identically on the penalty grid Ωh in the constrained case, whereas in the unconstrained
+case their averages across grid nodes in Ωh are (calT )− = 3.91 × 10−6 and (buttk)− = 1.60 × 10−2 with the
+IV based NN.
+Fig. 1(a-b) respectively compare the ﬁtted IV surfaces and their errors with respect to the market mid-
+implied volatilities, among the constrained methods. The surface is sliced at various maturities (more slices
+are available in the github) and the IVs corresponding to the bid-ask price quotes are also shown – the blue
+and red points respectively denote training and test observations.
+We generally observe good correspondence between the models and that each curve typically falls within
+the bid-ask spread, except for the shortest maturity contracts where there is some departure from the bid-ask
+spreads for observations with the lowest log-moneyness values. We see on Fig. 1(b) that the GP IV errors
+are small and mostly less than 5 volatility points, whereas NN and SSVI exhibit IV error that may exceed
+15 volatility points. The green line and the red shaded envelopes respectively denote the GP MAP estimates
+3Building on https://www.mathworks.com/matlabcentral/proﬁle/authors/4439546.
+7
+
+=== page 8 ===
+and the posterior uncertainty bands under 100 samples per observation. The support of the posterior GP
+process assessed on the basis of 100 simulated paths of the GP captures the majority of bid-ask quotes.
+The GP MAP estimate occasionally corresponds to the boundary of the support of the posterior simulation.
+This indicates that the posterior truncated Gaussian distribution is heavily skewed for some points, and
+that the MAP estimate consequently saturates the arbitrage constraints. This indicates a tension between
+these constraints and the calibration requirement, which cannot be fully reconciled, most likely because some
+of the (short maturity) data are arbitrable (they are at least illiquid and hence noisy). See notebook for
+location of arbitrages in the unconstrained approach.
+Fig. 1(a-b) suggest that the data may exhibit arbitrage at the lowest maturities where the methods depart
+from the bid-ask spreads. This is further supported in Fig. 2(a-b) which shows the corresponding methods
+without the no-arbitrage constraints. In Fig. 2(a-b) we observe that the estimated IVs now fall within close
+proximity of the bid-ask spreads–all methods exhibit an error typically less than 5 volatility points. Note
+that the y-axis has been scaled for each plot in Fig. 2(b) to accommodate the wide uncertainty band of
+the posterior for the unconstrained GP. Whereas the uncertainty band of the constrained GP spanned at
+most 10 volatility points, the uncertainty band of the unconstrained GP is an order of magnitude larger,
+sometimes spanning more than 100 volatility points.
+(a) Implied volatilities.
+(b) Fitted IV errors with respect to mid-price IVs.
+Figure 1: Slices of constrained GP (green), NN (purple), and SSVI (black) models of SPX puts with training
+bid-asks IVs (+) and testing bid-asks IVs as a function of log forward moneyness (+)(the bid-ask IVs are
+reconstructed numerically from the corresponding bid-ask market prices). The shaded envelopes show 100
+paths of the constrained GP’s posterior.
+Fig. 3 shows the local volatility surfaces that stem from the three constrained approaches. Fig. 3(a)
+shows the spiky local volatility surface generated by SSVI, capped at the 200% level for scaling convenience.
+Fig. 3(b) shows the capped local volatility surface constructed from the GP MAP price estimate. Fig. 3(c)
+shows the (complete) NN local volatility surface.
+8
+
+=== page 9 ===
+(a) Implied volatilities.
+(b) Fitted IV errors with respect to mid-price IVs.
+Figure 2: Same as Figure 1 but for unconstrained GP, NN and SSVI.
+(a) The local volatility surface gen-
+erated by SSVI with finite differences,
+capped at the 200% level.
+(b) The MAP estimate of the GP lo-
+cal volatility surface, capped at the 200%
+level.
+(c) The implied volatility based NN
+local volatility surface (with the local
+volatility penalization).
+Figure 3: The GP, SSVI, and NN local volatility estimate.
+9
+
+=== page 10 ===
+4.4 In-sample and out-of-sample calibration errors
+The error between the prices of the calibrated models and the market data are evaluated on both the
+training and the out-of-sample data set. The ﬁrst two rows of Table 1 compare the in-sample and out-of-
+sample RMSEs of the prices and implied volatilities across the diﬀerent approaches. The diﬀerences between
+the training and testing RMSEs are small, suggesting that all approaches are not over-ﬁtting the training
+set. The GP exhibits the lowest price RMSEs.
+4.5 Backtesting results
+The ﬁrst repricing backtest estimates the prices of the European options corresponding to the testing set,
+by Monte Carlo sampling in each calibrated local volatility model (same methodology as in [2, Section 7.2]).
+The second approach uses ﬁnite diﬀerences to price the options with the calibrated local volatility surfaces.
+The pricing PDEs with local volatility are discretized using a Crank-Nicolson (CN) scheme implemented on
+a 100 × 100 backtesting grid. The last two rows in Table 1 compare the resulting price backtest RMSEs
+across the diﬀerent approaches. The NN ﬁtted to implied volatilities exhibit signiﬁcantly lower errors in the
+backtests, followed by NN based on prices, SSVI and GP. To quantify discretization error in these backtest-
+ing results (as opposed to the part of the error stemming from a wrong local volatility), we ran the same
+backtests in a Black-Scholes model with 20% volatility and the associated prices. The corresponding Monte
+Carlo and Crank-Nicholson backtesting IV(price) RMSEs are 2.90%(1.56) and 0.846%(4.10), conﬁrming the
+signiﬁcance of the above results.
+5 Conclusion
+We approach the option quote ﬁtting problem from two perspectives: (i) the GP approach assumes noisy
+data and hence the existence of a latent function. The mid-prices are not considered, rather the GP calibrates
+to bid-ask quotes; and (ii) the NN and SSVI approaches ﬁt to the mid-prices under a noise-free assumption.
+While these two approaches are important to distinguish on theoretical grounds, in practice there are other
+factors which are more important for, in particular, local volatility modeling. In line with classical inverse
+problems theory, we ﬁnd that regularization of the local volatility is critical for backtesting performance.
+6 Acknowledgements
+he authors are thankful to Antoine Jacquier and Tahar Ferhati for useful hints regarding the SSVI method,
+and to an anonymous referee for stimulating comments.
+References
+[1] Fran¸cois Bachoc, Agnes Lagnoux, Andr´es F L´opez-Lopera, et al. Maximum likelihood estimation for
+Gaussian processes under inequality constraints. Electronic Journal of Statistics, 13(2):2921–2969, 2019.
+[2] Marc Chataigner, St´ephane Cr´epey, and Matthew Dixon. Deep local volatility. Risks, 8(3):82, 2020.
+[3] Areski Cousin, Hassan Maatouk, and Didier Rulli`ere. Kriging of ﬁnancial term-structures. European J.
+Oper. Res., 255(2):631–648, 2016.
+[4] St´ephane Cr´epey and Matthew Dixon. Gaussian process regression for derivative portfolio modeling
+and application to CVA computations. Journal of Computational Finance, 24(1):47–81, 2020.
+[5] Bruno Dupire. Pricing with a smile. Risk, 7:18–20, 1994.
+[6] Jim Gatheral. The volatility surface: a practitioner’s guide. Wiley, 2011.
+10
+
+=== page 11 ===
+[7] Jim Gatheral and Antoine Jacquier. Arbitrage-free SVI volatility surfaces. Quantitative Finance,
+14(1):59–71, 2014.
+[8] Mike Ludkovski and Yuri Saporito. Krighedge: Gaussian process surrogates for delta hedging, 2020.
+arXiv:2010.08407.
+[9] Hassan Maatouk and Xavier Bay. Gaussian process emulators for computer experiments with inequality
+constraints. Math. Geosci., 49(5):557–582, 2017.
+[10] K. Murphy. Machine Learning: A Probabilistic Perspective. MIT Press, 2012.
+[11] Johannes Ruf and Weiguan Wang. Neural networks for option pricing and hedging: a literature review.
+Journal of Computational Finance, 24(1), 2020.
+[12] Martin Tegn´er and Stephen Roberts. A probabilistic approach to nonparametric local volatility. arXiv
+preprint arXiv:1901.06021, 2019.
+[13] Yu Zheng, Yongxin Yang, and Bowei Chen. Gated neural networks for implied volatility surfaces, 2020.
+arXiv:1904.12834.
+11

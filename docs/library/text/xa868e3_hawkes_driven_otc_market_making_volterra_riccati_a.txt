@@ -1,0 +1,1217 @@
+=== page 1 ===
+Hawkes-Driven OTC Market Making:
+Volterra–Riccati Approximation
+Alexander Barzykin∗
+August 27, 2026
+Abstract
+We formulate an over-the-counter (OTC) market-making problem in which request-for-quote (RFQ)
+arrivals are modelled by general Hawkes kernels and fills are controlled thinnings of the exogenous
+request flow. The modelling choice is motivated by spot-FX RFQ data: after filtering and transforming
+to seasonality-adjusted RFQ activity time, two-way activity in major currency pairs exhibits large
+fitted branching ratios and multi-scale persistence. For general Hawkes kernels the control problem is
+path-dependent: the relevant state contains the order-flow history, or equivalently the forward curve of
+conditional future RFQ intensities. Exact Markovian lifting is available for exponential kernels, but it
+becomes high-dimensional for mixtures of exponentials and impractical for long-memory kernels. We
+therefore develop a hierarchy of Volterra–Riccati approximations. The first level replaces random future
+request flow by its conditional Volterra forecast; the second adds a covariance correction for intensity
+uncertainty; the third updates the quote rule with the realized Hawkes memory, or equivalently with the
+post-request conditional forecast curve. Although Hawkes dynamics provide these inputs explicitly, the
+Riccati control layer uses only the conditional mean intensity, its covariance and the post-request update,
+and can therefore in principle be paired with other exogenous request-flow models. The approximation
+hierarchy is validated in an exponential Hawkes benchmark, where the exact lifted HJB can be solved
+numerically. The state-feedback Volterra–Riccati policy closely tracks the exact benchmark, especially
+in directional regimes, while a memory-free Poisson policy suffers substantial regret. We then apply the
+same state-feedback rule to a power-law-like RFQ memory model. A directional RFQ burst changes
+the conditional forecast of future flow and is converted by the continuation-value shadow price into a
+persistent quote skew. The resulting endogenous OTC quote impact inherits the long-memory decay of
+the RFQ forecast response and improves inventory and P&L risk control relative to a no-conditioning
+Poisson benchmark.
+Keywords: Market Making; RFQ; Stochastic Optimal Control; Hawkes Processes; Market Impact;
+Volterra-Riccati Approximation
+1 Introduction
+Classical stochastic-control models of market making represent buy and sell arrivals as controlled point
+processes whose intensities decrease with the quoted distance from the mid-price. The dealer earns
+spread revenue while managing running and terminal inventory risk. This approach originates in dealer
+models such as Ho–Stoll (1981) and Avellaneda–Stoikov (2008) and has been further developed into the
+Hamiltonian framework (Gu´eant et al. 2013, Gu´eant 2016, Cartea et al. 2015). Bergault et al. (2021)
+showed that quadratic expansions of the OTC Hamiltonians lead to Riccati equations and tractable
+quote decompositions in high-dimensional market-making problems. Bergault and Gu´eant (2023) further
+extend micro-price ideas to OTC RFQ markets and model liquidity imbalances through bi-dimensional
+∗HSBC, 8 Canada Square, Canary Wharf, London E14 5HQ, United Kingdom, alexander.barzykin@hsbc.com.
+1
+arXiv:2608.02002v2  [q-fin.RM]  25 Aug 2026
+
+=== page 2 ===
+Markov-modulated Poisson processes, providing a pricing framework for illiquid or one-sided RFQ markets.
+Their distinction between an underlying liquidity state and the dealer’s price-dependent response is related
+in spirit to the request/response separation used below.
+The Poisson specification is analytically convenient but cannot represent clustered and persistent
+order flow. Hawkes processes are a flexible reduced form alternative and are widely used in market
+microstructure to represent clustering, order-flow persistence and liquidity resilience (Large 2007, Bacry et
+al. 2015, Hardiman et al. 2013, Lallouache and Challet 2016). Nearly unstable Hawkes processes provide
+one mechanism for long-memory limits (Jaisson and Rosenbaum 2015). Persistent signed flow is also
+central to theories of market impact and volatility: market impact can be interpreted as anticipation
+of future order-flow imbalance (Jaisson 2015), no-arbitrage restrictions lead to power-law impact and
+rough volatility (Jusselin and Rosenbaum 2020), and recent unified models connect order-flow persistence,
+impact and volatility through Hawkes reaction flows (Muhle-Karbe et al. 2026). Importantly for the OTC
+motivation, Eisler and Bouchaud (2016) study credit-index transactions without a limit order book and
+find persistent order-flow correlations and impact behaviour compatible with more classical electronic
+markets.
+We do not attach a structural contagion interpretation to the Hawkes branching representation.
+Correlated RFQs may be reactions to a common unobserved cause—public market activity, volatility, a
+client execution programme or another latent liquidity factor—rather than consequences of earlier RFQs.
+If such exogenous variation is omitted from the baseline intensity, a fitted Hawkes model may absorb part
+of it into the excitation kernel and thereby produce a large branching ratio. In this paper the Hawkes
+specification is therefore used primarily as a predictive model for the conditional distribution of future
+RFQ flow. The control problem depends on that conditional forecast, not on a causal interpretation of its
+statistical decomposition.
+This reduced-form interpretation is consistent with a broader effective-memory viewpoint in stochastic
+dynamics. In generalized Langevin models, eliminating latent degrees of freedom can leave an observable
+process with a memory kernel and stochastic forcing, so persistent memory need not be read as direct
+interaction between successive observations. Recent financial applications separate the memory kernel,
+nonlinear potential and noise covariance (Itkin 2026a), while the Lean Marketron model provides an
+example in which the log-price admits a state-modulated generalized Langevin representation and the
+memory variable gives an exact Markovian lift of that representation (Itkin 2026b).
+The closest market-making reference is Jusselin (2021), who considers general Hawkes-driven market-
+order flow in an electronic market, formulates the resulting non-Markovian stochastic-control problem,
+proves existence and uniqueness of a viscosity solution to the associated HJB equation, and develops
+a consistent numerical approximation. The common starting point is that the relevant state is the full
+order-flow history, or an equivalent forward intensity curve. The present paper differs in two respects.
+First, it is built around the OTC distinction between an exogenous RFQ opportunity and its controlled
+conversion into a fill: observing a request changes the information state even when the dealer does not trade.
+Second, rather than approximating the full path-dependent value function, we seek a low-dimensional
+and interpretable quote rule by combining the conditional Hawkes forecast with the quadratic/Riccati
+approximation of Bergault et al. (2021). The exact exponential lift is used as a validation benchmark,
+while the intended application is to general long-memory kernels.
+Other uses of Hawkes dynamics in execution and market making include execution with mixed market-
+impact Hawkes price dynamics (Alfonsi and Blanc 2016), linear-quadratic Volterra control (Abi Jaber
+et al. 2021), liquidation with general Volterra propagator impact and signals (Abi Jaber and Neuman
+2025), mutually exciting market-order and book-shape models (Cartea et al. 2018), and numerical Hawkes
+limit-order-book solvers based on deep-learning or impulse-control methods (Kumar 2024, Jain et al. 2025).
+Martin and Tse (2026) use a Markovian approximation of Hawkes kernels via Mercer’s expansion and
+solve the resulting high-dimensional HJB with a PINN. Bergault et al. (2024) discuss related Hawkes
+liquidity states in price-aware automated market makers and emphasize that when order-flow states jump
+together with inventory, exact dynamic programming becomes high-dimensional.
+More broadly, the paper is connected to the literature on non-Markovian and path-dependent stochastic
+control. Bandini and Keller (2024) study stochastic control of path-dependent piecewise deterministic
+2
+
+=== page 3 ===
+processes and the associated non-local path-dependent Hamilton–Jacobi–Bellman equations. Allan and
+Cohen (2020) develop a pathwise stochastic-control approach based on rough differential equations, while
+Bank et al. (2024) use path signatures to parameterise progressively measurable controls for generic non-
+Markovian stochastic-control problems. These works provide general path-dependent control frameworks.
+The approach below is more specialized: it exploits the Hawkes–Volterra structure of RFQ forecasts and
+the quadratic expansion of market-making Hamiltonians to obtain an interpretable low-dimensional quote
+approximation. Accordingly, we treat the conditional forecast curve as the economically relevant reduced
+state; when a finite-dimensional Markovian lift exists, it is an alternative computational representation
+rather than a prerequisite for the control construction.
+A useful precedent comes from non-Markovian optimal execution (Abi Jaber and Neuman 2025). In
+linear-quadratic execution models with transient impact, one can often avoid a high-dimensional Markovian
+lift: convexity and the linear-quadratic structure lead, through the stochastic maximum principle or
+equivalent first-order conditions, to Fredholm, Volterra or Riccati–Volterra equations for the optimal
+trading rate. Memory therefore does not by itself preclude tractable control. The present market-making
+problem is less direct. The dealer controls quote-dependent conversion probabilities, the Hamiltonians are
+nonlinear, and RFQ arrivals change the future distribution of inventory. The method developed below
+follows the same non-Markovian philosophy—work with conditional forecast curves rather than a large
+lifted state—but adapts it to nonlinear quote-driven market making.
+We consider an OTC/RFQ market in which requests are exogenous information events and executions
+are quote-dependent conversions of those requests. The dealer’s quote changes the probability of winning
+a request but does not create the request itself. Economically, the same two stages are present in a
+request-for-stream setting even when the decomposition is not separately recorded: there is first an
+intention or willingness to trade and then a decision to trade conditional on the prices received. This
+separation makes the conditional forecast of future request flow a Volterra object driven by observed RFQ
+history, while the dealer’s conversion decision remains a market-making control.
+We begin by documenting persistent RFQ activity in spot-FX data after filtering and transformation
+to seasonality-adjusted RFQ activity time. We then formulate the exact path-dependent dynamic program
+for RFQ market making with general Hawkes kernels, separating the information value of observing a
+request from the execution value of winning it. We derive a hierarchy of Volterra–Riccati approximations:
+a conditional-mean policy, a noise-aware covariance correction, and a state-feedback rule that updates the
+quote with the post-request forecast curve. Finally, we validate the hierarchy in an exponential Hawkes
+benchmark where the exact lifted HJB is available, and apply the state-feedback rule to a power-law-like
+RFQ memory model. In the long-memory experiment, directional RFQ bursts generate persistent quote
+skew through the continuation-value shadow price, giving an endogenous OTC analogue of market impact
+and reducing inventory and P&L risk relative to a memory-free Poisson benchmark.
+2 Empirical motivation: persistent RFQ activity
+Before introducing the theoretical model, we briefly document the empirical feature that motivates it.
+We use anonymised spot-FX RFQ arrivals for EURUSD, GBPUSD and USDJPY.1 Since requests are
+typically two-way, the empirical process studied here is limited to an activity process rather than a signed
+buy/sell process. The raw data are filtered to retain ordinary trading days. Weekends, major holidays,
+daylight-saving transition periods, the Christmas–New Year period, and daily roll windows with abnormal
+liquidity are removed. The active window is taken to be [00:00, 20:00] in London time. We also remove very
+small requests and client streams with negligible historical conversion, in order to reduce price-discovery
+traffic with little apparent trading intent. In the results below we keep RFQs of size at least 0.25 million
+notional and clients with historical fill ratio of at least 1%. RFQ sizes are assigned to a small number of
+standard FX size buckets. The historical window spans three years and the number of qualified events
+after filtering is in excess of 5 · 105 for each currency pair.
+FX RFQ activity has strong deterministic intraday seasonality. Estimating a Hawkes kernel directly in
+1HSBC data.
+3
+
+=== page 4 ===
+Table 1: Reduced form Hawkes estimates for two-way RFQ activity in activity time. The kernel is a three-exponential
+mixture with half-lives of 1, 10 and 60 minutes. The branching ratio η is the size-weighted excitation mass in (4).
+Pair η w1 w10 w60
+USDJPY 0.862 0.559 0.320 0.120
+GBPUSD 0.895 0.521 0.359 0.120
+EURUSD 0.880 0.692 0.209 0.099
+calendar time would therefore confound deterministic seasonality with residual serial dependence. We
+consequently estimate the kernel in seasonality-adjusted RFQ activity time. For each currency pair c, let
+¯λc(θ) denote the average intraday RFQ activity profile at time of day θ, normalised to have unit average
+over the active window. Calendar time t is then transformed to activity time
+τ c(t) =
+Z t
+0
+¯λc(θ(u)) du. (1)
+The terminology activity time is deliberate: unlike event-count or transaction-time clocks that are also
+sometimes called business time, the transformation (1) is deterministic. The fitted kernel should therefore
+be interpreted as an activity-time predictive memory kernel rather than a wall-clock causal response.
+All rates entering a control problem must be expressed in the same clock. If u = τ c(t), tc(u) = (τ c)−1(u)
+and the calendar-time variance rate is (σc cal(t))2, then the time-changed price has variance rate
+ 
+eσc(u) 2 =   σc cal(tc(u)) 2 dtc(u) du .
+Writing qu := qtc(u), consequently,
+γ
+2
+Z  
+σc cal(t) 2q2 t dt = γ 2 Z   eσc(u) 2q2 u du.
+The present empirical exercise does not estimate eσc and does not test whether volatility is constant in
+activity time. In the theoretical model below, time denotes one chosen clock and the volatility coefficient
+is understood per unit of that clock. Taking it constant is a separate modelling approximation used in the
+numerical examples, not a consequence of the activity-time transformation.
+For each currency pair c and size bucket k, let M c,k be the two-way RFQ counting process in activity
+time. We fit the reduced form marked Hawkes activity model
+λc τ = µc + X
+k
+αc,k
+Z τ
+0
+φc(τ − u) dM c,k u , (2)
+where the size-bucket coefficient αc,k is the total fitted excitation mass associated with an RFQ in bucket
+k. The common unit-mass kernel is represented as a short mixture of exponentials,
+φc(u) = X
+n
+wc nβne−βnu, X
+n
+wc n = 1, βn = log 2 hn , (3)
+with half-lives hn = 1, 10 and 60 minutes in activity-time units in this study. If πc,k denotes the empirical
+fraction of RFQs in bucket k, the average branching ratio is
+ηc = X
+k
+πc,kαc,k. (4)
+Within the fitted branching representation, it is the average total offspring mass assigned to one additional
+request; it should not be interpreted as direct evidence that one client’s RFQ causes another client’s RFQ.
+4
+
+=== page 5 ===
+0 25 50 75 100 125 150 175 200
+Lag, minutes
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Cumulative kernel mass
+Cumulative RFQ memory response for GBPUSD
+Figure 1: Cumulative fitted RFQ memory response for GBPUSD. The kernel was estimated from two-way RFQ
+request arrivals after filtering and transforming to activity time, as described in the text.
+Table 1 reports the fitted branching ratios and mixture weights. Across all three major pairs, the fitted
+branching ratio is consistently high, around 0.86–0.90, even after filtering and activity-time transformation.
+The estimated kernels are multi-scale: a large part of the response is concentrated at minute horizons, but
+a non-negligible component persists over tens of minutes. Figure 1 plots the cumulative memory response
+F c(u) =
+Z u
+0
+φc(v) dv (5)
+for GBPUSD. The RFQ response indeed does not vanish immediately after a request burst – a material
+fraction persists over economically relevant intraday horizons. Thus, for a dealer choosing quotes over a
+finite horizon, the conditional forecast of future RFQ activity is a relevant state variable.
+The estimates in Table 1 are used only as reduced form motivation. They are not intended to identify
+the structural source of RFQ bursts. A burst may reflect public market activity, correlated client demand,
+repeated price discovery, execution slicing, information propagation across dealers and venues, or a common
+latent factor omitted from the baseline intensity. In the latter case, part of the fitted branching mass may
+represent unmodelled exogenous variation rather than endogenous propagation. For the market-making
+control problem, these mechanisms enter through the same object: the dealer’s conditional forecast of
+future RFQ activity. The empirical evidence therefore supports replacing a memoryless Poisson forecast
+by a history-dependent Hawkes/Volterra forecast, without requiring a causal interpretation of the fitted
+kernel.
+The empirical model merges bid and ask sides because the observed requests are predominantly two-way.
+Section 3 reintroduces side marks because the inventory consequence of a fill is directional. For one-way
+RFQs the side may be observed; for two-way RFQs it must be interpreted as a latent trade-intention mark
+or estimated through a filtering layer. The theoretical side-marked model is therefore an idealized control
+model rather than a claim that signed request flow is directly observed in the data used above.
+3 Hawkes-driven OTC market-making problem
+3.1 Request flow and dealer objective
+Let T > 0 be a finite horizon and let (Ω, F , (Ft)0≤t≤T , P) satisfy the usual conditions. Time t is measured
+in one fixed clock. If the activity-time clock of Section 2 is used, the volatility and all intensity coefficients
+5
+
+=== page 6 ===
+are transformed to that clock as described there. For notational simplicity, we assume a constant variance
+rate in the chosen clock and write
+dSt = σ dWt, (6)
+where the Wiener process W is independent of the innovations driving the request process. Let Z =
+{z1, . . . , zK } ⊂ R+ be a discrete RFQ size ladder. Side s = b (bid) denotes a client selling to the dealer, so
+a fill increases dealer inventory. Similarly, side s = a (ask) denotes a client buying from the dealer, so a
+fill decreases dealer inventory. We define dealer directionality indicator ϵs for s ∈ {b, a}, where ϵb = +1,
+ϵa = −1.
+The exogenous RFQ processes are denoted by M s,k, where k indexes size zk. Their intensities are
+Hawkes processes with general kernels,
+λs,k t = µs,k(t) + X
+r∈{b,a}
+KX
+ℓ=1
+Z t
+0
+φs,k;r,ℓ(t − u) dM r,ℓ u , (7)
+where µs,k(t) is a deterministic, locally bounded background intensity for side s and size zk; it is constant
+in the stationary numerical examples. A stochastic background intensity would be an additional state
+variable and is not included in the present model. The kernels are non-negative and locally integrable,
+and may be exponential, sums of exponentials, power-law-like, cross-exciting or side-asymmetric. In the
+stationary case, stability requires the spectral radius of the matrix of L1 kernel masses to be less than one.
+The important modelling convention is that requests, not the dealer’s controlled executions, drive
+the Hawkes memory. In an RFQ market the arrival of a request is an information event: it may reflect
+client demand, dealer-to-dealer dissemination, aggregator activity, broader market conditions or a common
+latent factor. The dealer’s quote controls whether that request is converted into a trade, but a marginally
+more aggressive quote should not, in the base model, create the client’s request itself. The same economic
+decomposition applies to request-for-stream protocols even when intention and conversion are not separately
+recorded. This convention also prevents the dealer from mechanically controlling future RFQ intensity
+through their own fill decisions. It can be relaxed when modelling public trade prints, last-look rejection
+feedback, client relationship scores, or hedging/externalisation flow. Those effects are deliberately separated
+from the baseline request-flow model.
+Conditional on an RFQ of side s and size zk, the dealer posts offset δs,k t and wins the request with
+probability
+fk(δs,k t ), f ′ k(δ) < 0, 0 < fk(δ) < 1. (8)
+For the analytical Hamiltonian on R, we impose the classical regularity conditions fk ∈ C 2(R; (0, 1)),
+f ′ k < 0,
+lim
+δ→+∞
+δfk(δ) = 0, sup
+δ∈R
+fk(δ)f ′′ k (δ)
+(f ′ k(δ))2 < 2. (9)
+These conditions make the first-order map strictly monotone and give a finite Hamiltonian with a unique
+optimizer. In the numerical schemes, quotes are additionally restricted to a compact interval A = [δ, δ];
+existence is then automatic, and every formula below applies with the supremum taken over A. Exponential
+response functions remain useful for closed-form checks and can be handled on this compact domain. For
+RFQ markets a sigmoid win probability is often natural.2 The controlled execution processes N s,k are
+thinnings of the request processes and have predictable intensities
+Λs,k t (δs,k t ) = λs,k t fk(δs,k t ). (10)
+Inventory evolves as
+dqt =
+X
+s∈{b,a}
+KX
+k=1
+ϵszk dN s,k t . (11)
+2Here we consider side-symmetric win probabilities for simplicity; generalisation is straightforward.
+6
+
+=== page 7 ===
+Let Xt denote the dealer’s cash account. With the above sign convention,
+dXt = −
+X
+s,k
+ϵszk(St − ϵsδs,k t ) dN s,k t . (12)
+Consequently
+d(Xt + qtSt) = qt− dSt +
+X
+s,k
+zkδs,k t dN s,k t . (13)
+The inventory process is c`adl`ag. We denote by qt− its predictable left limit, which is the inventory observed
+when quotes are chosen and immediately before an execution jump. In ordinary time integrals we write qt
+for simplicity, since qt and qt− differ only at jump times.
+The dealer wants to maximize the expected marked-to-market value at the end of the trading period,
+XT + qT ST , while managing the risk associated with holding the inventory. Under the martingale mid-price
+assumption, the control-relevant reduced objective is given by Cartea et al. (2015), Gu´eant (2016)
+sup
+δ
+E
+
+
+Z T
+0
+X
+s,k
+zkδs,k t dN s,k t − 1 2 γ Z T 0 σ2q2 t dt − ℓ(qT )   , (14)
+where γ is the inventory risk aversion coefficient and ℓ(qT ) is the terminal penalty.
+3.2 Path-dependent dynamic program and limits of exact lifting
+For t ∈ [0, T ], let Ht denote the set of finite marked RFQ histories before time t,
+H =
+ 
+(tj , sj , kj )
+n
+j=1, 0 < t1 < · · · < tn < t,
+including the empty history. For a fixed history H, the associated counting measures can be written as
+dM r,ℓ u (H) =
+nX
+j=1
+1 {sj =r, kj =ℓ} δtj (du),
+so that Z t
+0
+φs,k;r,ℓ(t − u) dM r,ℓ u (H) =
+nX
+j=1
+1 {sj =r, kj =ℓ}φs,k;r,ℓ(t − tj ).
+Thus the stochastic-integral representation in (7) becomes, on a fixed history, the history-dependent
+intensity functional
+λs,k(t, H) = µs,k(t) +
+nX
+j=1
+φs,k;sj ,kj (t − tj ). (15)
+If Ht is the realized RFQ history, then the predictable stochastic intensity in (7) is simply
+λs,k t = λs,k(t, Ht−).
+For a new request of type (s, k) at time t, write
+H ⊕ (t, s, k)
+for the concatenated history. The state variable of the exact control problem is therefore (t, q, H) and the
+value function is the deterministic functional V (t, q, H) on the history state space.
+Define the per-size, per-request Hamiltonian
+hk(p) = sup
+δ∈R
+fk(δ)(δ − p), (16)
+7
+
+=== page 8 ===
+with unique optimizer δ∗ k(p) under the conditions above. If compact quote controls are used, the same
+notation denotes the supremum over A. The post-request shadow price is
+ps k(t, q, H) = V (t, q, H ⊕ (t, s, k)) − V (t, q + ϵszk, H ⊕ (t, s, k)) zk . (17)
+Formally, the path-dependent HJB is the deterministic equation
+0 = ∂tV (t, q, H) − κq2
++
+X
+s,k
+λs,k(t, H) h V (t, q, H ⊕ (t, s, k)) − V (t, q, H) + zkhk(ps k(t, q, H)) i , (18)
+with κ := 1 2 γσ2 and terminal condition V (T, q, H) = −ℓ(q). Here ∂t denotes the horizontal derivative
+obtained by advancing time while appending no new RFQ. The first difference inside the brackets is
+the value effect of observing a request even if it is not won; the Hamiltonian is the incremental value of
+optimally converting that request into a trade. Equation (18) is a deterministic equation on the history
+state space; stochasticity enters when it is evaluated along the realized state (qt, Ht).
+This history-state formulation is closest to the exact general Hawkes treatment of Jusselin (2021). The
+additional OTC feature is that the history is updated by the request itself, whereas inventory is updated
+only by the controlled Bernoulli conversion. The approximation developed below does not replace Jusselin’s
+path-dependent characterization; it targets a different computational object, namely a low-dimensional
+quote approximation expressed through conditional forecast curves.
+Equation (18) is the exact control problem, but it is not computationally viable for general kernels.
+Exponential kernels yield finite-dimensional Markovian lifts, and sums of exponentials yield one state
+variable per factor, side and size. Thus a d-factor approximation of a two-sided, K-size Hawkes model
+already introduces 2Kd flow-memory variables in addition to inventory. A power-law kernel requires either
+a large exponential mixture or a genuinely infinite-dimensional Volterra state.
+This obstruction is not simply the presence of memory. In linear-quadratic execution, the stochastic
+maximum principle or equivalent first-order optimality conditions often reduce non-Markovian transient-
+impact problems to deterministic Volterra or Fredholm equations. The RFQ market-making problem is
+different because the control acts through nonlinear quote-response functions and controlled jump intensities;
+after an RFQ, the value of a possible inventory jump has to be evaluated under an updated Hawkes
+forecast. A direct maximum-principle route therefore does not yield the same closed finite-dimensional
+structure.
+A Markovian lift combined with a quadratic approximation in inventory does not remove this difficulty
+because the expansion coefficients remain functions of the entire lifted Hawkes state. Moreover, RFQ
+arrivals jump both the inventory and the memory state, producing nonlocal terms in the coefficient
+equations. One therefore obtains a system of transport-jump equations in the memory variables, not a
+small Riccati system. Machine-learning methods face the same structural issue: they may approximate
+a particular high-dimensional lifted benchmark, but they do not by themselves deliver a transparent
+low-dimensional quote formula, nor do they scale naturally to long-memory kernels without a large
+Markovian embedding. The purpose of the Volterra–Riccati approximation below is to preserve the
+economically relevant conditional Hawkes forecast while avoiding the full lifted dynamic program.
+4 Volterra–Riccati approximation hierarchy
+4.1 Conditional Volterra forecast
+For each current history Ht, define the conditional future intensity curve
+ms,k t (u) = E h λs,k t+u | Ft i , u ≥ 0. (19)
+8
+
+=== page 9 ===
+In vector form, with mt(u) collecting all side-size components, the Hawkes structure gives the deterministic
+Volterra equation
+mt(u) = ζt(u) +
+Z u
+0
+Φ(u − v)mt(v) dv, (20)
+where Φ is the matrix kernel and
+ζt(u) = µ(t + u) +
+Z t
+0
+Φ(t + u − r) dMr (21)
+is the contribution of the observed past. This forecast is independent of the dealer’s future quotes because
+quotes thin requests into executions but do not create requests.
+It is useful to introduce the forecast response to a new request of type i = (s, k). Let ei be the unit
+vector corresponding to that type. The additional conditional mean generated by observing such a request
+at the current time is the resolvent response ρi, defined by
+ρi(u) = Φ(u)ei +
+Z u
+0
+Φ(u − v)ρi(v) dv. (22)
+Thus, immediately after observing a type-i request, the forward forecast curve changes from mt to mt + ρi.
+4.2 Mean Volterra–Riccati approximation
+At a decision time t, the mean Volterra approximation freezes the conditional forecast curve mt and
+replaces the random future RFQ intensity by this deterministic curve. For τ ∈ [t, T ], define the conditional
+mean approximation v0(τ, q; mt) by
+0 = ∂τ v0(τ, q) − κq2 + X
+s,k
+ms,k t (τ − t)zkhk(∆s kv0(τ, q)) , (23)
+with terminal condition v0(T, q; mt) = −ℓ(q), where
+∆s kv(τ, q) = v(τ, q) − v(τ, q + ϵszk) zk . (24)
+Equation (23) is not claimed to be the HJB equation of the original Hawkes control problem, nor a
+time-consistent auxiliary value function as the conditioning time t changes. It is a certainty-equivalent
+approximation to the continuation value conditional on the information available at time t. Once mt is
+supplied, neither the Hawkes kernel Φ nor the request process M appears in (23); Hawkes enters this level
+only through the forecast-generation step (20). Operationally, the forecast curve and backward Riccati
+system are recomputed as new information arrives, yielding a receding-horizon feedback policy. Section 4.3
+adds the leading covariance correction around this conditional mean. The BEGV approximation (Bergault
+et al. 2021) expands hk locally in the shadow price,
+hk(p) ≈ hk,0 + hk,1p + 1 2 hk,2p2, (25)
+and uses a quadratic inventory ansatz
+v0(τ, q; mt) ≈ − 1 2 A0(τ )q2 + B0(τ )q + C0(τ ). (26)
+For this ansatz,
+∆s kv0(τ, q) = ϵsA0(τ )q − ϵsB0(τ ) + 1 2 A0(τ )zk. (27)
+Substitution of (25) and (27) into (23), followed by coefficient matching in q, gives a backward Riccati
+system. Writing
+ds,k(τ ) = −ϵsB0(τ ) + 1 2 A0(τ )zk, (28)
+9
+
+=== page 10 ===
+the coefficient equations take the representative form
+˙A0(τ ) = −2κ + A0(τ )2 X
+s,k
+ms,k t (τ − t)zkhk,2, (29)
+˙B0(τ ) = −A0(τ ) X
+s,k
+ϵsms,k t (τ − t)zk (hk,1 + hk,2ds,k(τ )) , (30)
+˙C0(τ ) = − X
+s,k
+ms,k t (τ − t)zk
+
+hk,0 + hk,1ds,k(τ ) + 1 2 hk,2ds,k(τ )2
+
+, (31)
+with terminal values determined by ℓ(q).3 For symmetric side intensities and penalties the skew coefficient
+B0 is zero; for directional bursts it becomes the dominant quote-skew term. At each decision time, after
+updating the conditional forecast and resolving the approximation, the quote itself is computed from the
+exact Hamiltonian optimizer,
+δs,k t = δ∗ k(∆s kv0(t, qt; mt)) , (32)
+so the Hamiltonian expansion is used to approximate the continuation value, not to impose a linear quote
+rule.
+4.3 Noise-aware second-order correction
+The mean Volterra–Riccati policy treats the conditional RFQ forecast curve mt as a deterministic future
+intensity. This captures the conditional mean effect of Hawkes excitation but ignores the remaining
+uncertainty around the future intensity path. When the Hawkes process is persistent, this uncertainty
+can be economically relevant: two histories with the same current mean forecast may still differ in the
+conditional dispersion of future RFQ activity. We introduce a perturbative functional delta method
+correction at the level of the deterministic-intensity Riccati value map. For a deterministic non-negative
+forecast curve m, let V0(t, q; m) denote the value obtained by solving the mean Volterra–Riccati system
+on [t, T ] with forecast curve m. Thus the mean approximation in the previous subsection is
+v0(t, q; mt) = V0(t, q; mt).
+Conditional on Ft, the forecast curve mt is deterministic, but the realized future intensity process fluctuates
+around this conditional mean due to future RFQ arrivals. Let
+ξt(u) = λt+u − mt(u), u ≥ 0, (33)
+so that Et[ξt(u)] = 0, and define the conditional covariance kernel
+Σt(u, v) = Covt(λt+u, λt+v). (34)
+The covariance is understood componentwise over side-size types, i.e.
+Σt,ij (u, v) = Et[ξt,i(u)ξt,j (v)] . (35)
+Assume that the map m 7→ V0(t, q; m) is twice differentiable in the neighbourhood of mt, in the sense of
+functional derivatives. Denote its first and second sensitivities by
+Di(t, q; u) = δV0(t, q; m) δmi(u)  m=mt , Kij (t, q; u, v) = δ2V0(t, q; m) δmi(u) δmj (v)  m=mt . (36)
+3The coefficient equations close cleanly when the terminal penalty is quadratic, e.g. ℓ(q) = κT q2, with terminal conditions
+A0(T ) = 2κT , B0(T ) = C0(T ) = 0. If ℓ(q) is general then the quadratic ansatz requires a terminal quadratic projection.
+10
+
+=== page 11 ===
+A second-order expansion of the deterministic-intensity value map around the conditional mean forecast
+gives
+V0(t, q; mt + ξt) ≈ v0(t, q; mt) +
+X
+i
+Z T −t
+0
+Di(t, q; u)ξt,i(u) du
++ 1 2 X i,j Z T −t 0 Z T −t 0 Kij (t, q; u, v)ξt,i(u)ξt,j (v) du dv. (37)
+Taking the conditional expectation removes the linear term and yields the noise-aware approximation
+¯V (t, q) ≈ v0(t, q; mt) + 1 2 X i,j Z T −t 0 Z T −t 0 Kij (t, q; u, v)Σt,ij (u, v) du dv. (38)
+This is a local covariance correction to the conditional mean approximation. It is not an exact value
+function and is not claimed to restore a dynamic-programming or time-consistency property. Its sign is
+governed by the curvature of the deterministic-intensity value map with respect to the forecast curve; it is
+not assumed to be positive in general. Its usefulness is assessed against the exact exponential Hawkes
+benchmark below.
+The corresponding deterministic noise-aware shadow price is
+¯pi(t, q) =
+¯V (t, q) − ¯V (t, q + ϵizi)
+zi
+, i = (s, k), (39)
+and the quote is computed from the exact Hamiltonian optimizer,
+δi(t, q) = δ∗ i (¯pi(t, q)).
+Thus the Hamiltonian expansion is still used only to approximate the continuation value, while the final
+quote remains generated by the original win-probability model.
+In implementation, the sensitivities D and K can be obtained by differentiating the Riccati system
+with respect to a finite-dimensional parametrization of the forecast curve. In an exponential Markovian
+benchmark, the same quantities can equivalently be obtained by differentiating the lifted Riccati coefficients
+with respect to the Hawkes memory state. The resulting policy is deterministic conditional on the
+information available at time t: it uses both the conditional mean forecast mt and the conditional
+covariance kernel Σt, but it does not yet incorporate the discrete post-request forecast update when valuing
+the conversion of the RFQ currently being answered. The next approximation level introduces this realized
+state feedback explicitly.
+4.4 State-feedback stochastic Volterra–Riccati approximation
+The strongest approximation retains the Volterra–Riccati continuation value but updates the forecast curve
+after observed RFQs. In the exact path-dependent HJB, the relevant shadow price after a request of type
+i = (s, k) is evaluated under the post-request history. The forecast-based analogue is therefore to evaluate
+the continuation value under the post-request conditional forecast. Let F i,+ t denote the information state
+immediately after observing a type-i RFQ at time t, and define
+mi,+ t (u) = E h λt+u | F i,+ t i . (40)
+For the Hawkes model,
+mi,+ t (u) = mt(u) + ρi(u), (41)
+where ρi is the forecast response defined in (22). The three approximation levels reveal a useful separation
+between the request-flow model and the Riccati control layer: the mean approximation requires mt,
+the covariance correction additionally requires Σt, and state feedback requires the post-request update
+mi,+ t . Hawkes dynamics provide these objects through the Volterra equation and resolvent, but another
+11
+
+=== page 12 ===
+exogenous-intensity model could in principle supply the same conditional inputs. The mean state-feedback
+shadow price is then
+pSF,0 i (t, q) ≈ v0(t, q; mi,+ t ) − v0(t, q + ϵizi; mi,+ t ) zi . (42)
+Equivalently, this is the mean Volterra–Riccati value evaluated not at the pre-request forecast mt, but at
+the forecast curve that already incorporates the information contained in the newly observed RFQ.
+For analytical interpretation, specialize to Hawkes so that mi,+ t − mt = ρi, and linearize this expression
+around the pre-request forecast mt. Using the first functional sensitivity D of the deterministic-intensity
+Riccati value map, introduced in the previous subsection, gives
+pSF,0 i (t, q) ≈ ∆iv0(t, q; mt) + 1 zi X j Z T −t 0 h Dj (t, q; u) − Dj (t, q + ϵizi; u) i ρi,j (u) du, (43)
+where, for i = (s, k), we write ∆i = ∆s k, zi = zk and ϵi = ϵs. The first term is the mean-forecast shadow
+price. The second term is the incremental information value of the RFQ: the request is not treated only
+as a possible inventory jump, but also as a signal that changes the conditional distribution of future RFQ
+flow.
+The same idea can be combined with the noise-aware approximation. Let ¯V (t, q; m, Σ) denote the
+covariance-corrected value obtained from the second-order approximation in the previous subsection when
+the conditional forecast and covariance are (m, Σ). If Σi,+ t denotes the conditional covariance kernel after
+observing a type-i RFQ, the noise-aware state-feedback shadow price is
+pSF i (t, q) ≈ ¯V (t, q; mi,+ t , Σi,+ t ) − ¯V (t, q + ϵizi; mi,+ t , Σi,+ t ) zi . (44)
+For Hawkes, mi,+ t = mt + ρi. In applications where the covariance update is ignored or approximated
+by its pre-request value, one may set Σi,+ t ≈ Σt. If this noise-aware expression is linearized, additional
+derivative terms arise from the covariance-corrected value map and, if retained, from the post-request
+covariance update. Thus the displayed linear formula above should be read specifically as the first-order
+linearization of the mean state-feedback rule.
+The quote is finally computed from the exact Hamiltonian optimizer,
+δi(t, q) = δ∗ i (pSF i (t, q)),
+or from δ∗ i (pSF,0 i (t, q)) in the mean state-feedback version. Hence the Volterra–Riccati approximation
+affects the continuation-value shadow price, while the final quote remains generated by the original
+win-probability model.
+This state-feedback term is absent from a pure mean-forecast policy. It is the main channel through
+which the approximation closes the gap to the exact lifted HJB in directional Hawkes regimes. In a
+general-kernel Hawkes model, the state variable is the updated forecast curve. In an exponential benchmark,
+the same update is represented by the finite-dimensional Hawkes memory state.
+Figure 2 summarizes the approximation hierarchy.
+5 Exponential Hawkes validation benchmark
+The exponential Hawkes model permits an exact finite-dimensional dynamic-programming benchmark and
+thus can serve to test the Volterra-Riccati approximation hierarchy in a setting where the true optimal
+quote can still be computed directly. In this validation experiment we use a unit RFQ size, z1 = 1, and
+therefore suppress the size index. A fill on side s ∈ {b, a} changes inventory from q to q + ϵs. This unit-size
+benchmark isolates the effect of Hawkes memory and avoids mixing memory effects with size-discretisation
+effects.
+12
+
+=== page 13 ===
+Mean Volterra–Riccati
+conditional mean forecast mt(u)
+Noise-aware Volterra–Riccati
+mean forecast plus conditional covariance Σt(u, v)
+State-feedback stochastic Volterra–Riccati
+update the forecast curve after observed RFQs
+Poisson benchmark
+deterministic baseline intensity, no Hawkes memory
+Exact lifted HJB validation benchmark
+available for exponential kernels; high-dimensional otherwise
+Figure 2: Approximation hierarchy. The modelling problem is Hawkes-driven and generally non-Markovian. The
+exact lifted HJB is used only as a validation benchmark in kernels where such a lift is finite-dimensional; the Poisson
+model is a misspecified comparator.
+For the lifted exponential benchmark, let Xt denote the scalar Hawkes memory. We write
+dXt = −βXt dt +
+X
+s∈{b,a}
+αs dM s t , λs t = λs(Xt), (45)
+where αs is the excitation generated by observing a side-s RFQ. The memory state jumps from x to
+x + αs as a result, irrespective of whether the dealer wins the request. The inventory changes only if the
+request is won. For example, the directional one-sided benchmark corresponds to αb = α and αa = 0, with
+λb(x) = µb + x and λa(x) = µa. A symmetric common-mode benchmark may instead use αb = αa = α.
+Since (qt, Xt) is Markovian, the exact value function can be written as V (t, q, x). Using the unit-size
+Hamiltonian h1 defined in (16), the lifted HJB is
+0 = ∂tV (t, q, x) − βx ∂xV (t, q, x) − κq2
++
+X
+s
+λs(x)
+"
+V (t, q, x + αs) − V (t, q, x) + h1
+
+V (t, q, x + αs) − V (t, q + ϵs, x + αs)
+#
+, (46)
+with terminal condition
+V (T, q, x) = −ℓ(q). (47)
+The first difference inside the brackets, V (t, q, x + αs) − V (t, q, x), is the value effect of observing the RFQ
+and updating the Hawkes memory even when the dealer does not win the request. The Hamiltonian term
+is the incremental value of optimally converting that request into a unit fill. Equation (46) is therefore the
+exact Markovian control problem for the exponential-memory benchmark. After truncating the inventory
+and memory domains, it can be solved backward on a grid in (q, x) and compared with the approximation
+hierarchy.
+The conditional mean and variance of the Hawkes memory satisfy closed equations. In the scalar
+one-sided case where
+λt = µ + Xt, dXt = −βXt dt + α dMt,
+13
+
+=== page 14 ===
+Table 2: Key numerical parameters for the three validation regimes. The common-mode cases use symmetric side
+intensities, while the directional case excites only one side of the RFQ flow.
+Parameter Description Benign Near-critical Directional
+q0 Initial inventory 10 10 0
+X0 Hawkes memory 120 120 120
+µb Bid RFQ intensity 10 1.5 5
+µa Ask RFQ intensity 10 1.5 20
+β Hawkes decay 8 10 10
+α Hawkes excitation 5.2 9.2 9.2
+η Branching ratio 0.65 0.92 0.92
+one has
+˙xt = αµ − (β − α)xt, (48)
+˙yt = −2(β − α)yt + α2(µ + xt), (49)
+where xt = E[Xt | X0] and yt = Var(Xt | X0). The branching ratio is η = α/β. As η approaches one,
+intensity uncertainty becomes persistent and the mean forecast alone can become insufficient.
+Three regimes are used to isolate distinct mechanisms.
+• Benign common-mode burst. A side-symmetric Hawkes burst increases total opportunity flow
+but does not create strong signed inventory pressure. The mean forecast is expected to capture most
+of the value.
+• Near-critical common-mode burst. The same common-mode structure is made persistent and
+noisy by taking a high branching ratio. This stresses the noise-aware correction.
+• Directional one-sided burst. One side of the market is self-exciting, for example
+λb t = µb + Xt, λa t = µa, dXt = −βXt dt + α dM b t .
+This creates signed inventory pressure. In this regime the realized memory state is economically
+important, and the state-feedback stochastic Volterra–Riccati policy is expected to be closest to the
+exact HJB.
+The policies compared in each regime are: a (misspecified) Poisson policy using baseline intensities, the
+mean Volterra–Riccati policy, the mean plus variance correction, the state-feedback stochastic Volterra–
+Riccati policy, and the exact lifted HJB policy used as the benchmark.
+5.1 Numerical results
+We do not pursue a general well-posedness theorem for the full path-dependent Hawkes control problem.
+Throughout the numerical experiments, admissible quotes are restricted to a compact interval and the
+response functions are smooth and bounded by the exogenous Hawkes activity. Hence the controlled
+intensities and the finite-horizon objective are well defined under the parameter regimes considered. In
+the exponential memory benchmark, after truncating the inventory and Hawkes-state domains, the exact
+lifted HJB reduces to a finite system of backward ordinary differential equations. The Volterra–Riccati
+approximations are likewise obtained from finite-dimensional backward Riccati systems with bounded
+deterministic coefficients. The focus of the paper is therefore not a general convergence theorem, but a
+controlled numerical validation of the approximation hierarchy.
+The exact benchmark solves the lifted HJB backward on a grid in (q, X). The Hamiltonian optimizer
+is precomputed on a shadow-price grid and then used to recover the optimal quotes. To avoid giving the
+14
+
+=== page 15 ===
+memory-free model an artificial numerical disadvantage, we do not use the Riccati approximation for the
+Poisson policy but rather solve the underlying exact one-dimensional HJB on the inventory grid. Thus
+the Poisson dealer is optimal within their own misspecified memory-free model, but their quotes depend
+only on time and inventory, not on the realized Hawkes memory. In the unit-size case the Poisson value
+function V P (t, q) solves the familiar
+0 = ∂tV P (t, q) − κq2 + X
+s
+¯λs(t)h1
+
+V P (t, q) − V P (t, q + ϵs)  , (50)
+with terminal condition V P (T, q) = −ℓ(q). Here ¯λs(t) denotes the deterministic intensity used by the
+Poisson dealer. In the experiments below this is the baseline intensity of the corresponding side, so the
+Poisson policy deliberately ignores the realized Hawkes excitation.
+The remaining policies are approximate. The mean Volterra–Riccati policy solves a deterministic
+time-inhomogeneous Riccati system driven by the conditional mean forecast, the noise-aware policy adds
+the covariance correction, and the state-feedback policy updates the forecast or lifted memory state in the
+quote rule. Since the Hawkes memory is one-dimensional in this validation experiment, the conditional
+forecast curve is represented by the current memory state Xt.
+Poisson HJB Mean VR Noise-awareState-feedback
+10 4
+10 3
+10 2
+10 1
+100
+Relative regret
+Benign
+Poisson HJB Mean VR Noise-awareState-feedback
+Near-critical
+Poisson HJB Mean VR Noise-awareState-feedback
+Directional
+Figure 3: Relative paired regret against the exact lifted HJB across the three exponential Hawkes validation regimes.
+The Poisson policy is exact within the misspecified memory-free model. The Volterra–Riccati policies progressively
+add mean forecasting, intensity uncertainty correction and realized memory state feedback. State feedback gives
+the closest approximation, particularly in the directional regime, where the current Hawkes memory contains
+economically relevant information about future signed RFQ flow.
+Monte Carlo simulation in this study is used only for out-of-sample evaluation of the already computed
+controls under the true Hawkes dynamics. All policies are evaluated under the same simulated Hawkes
+environments. Common random numbers are used across policies, so accuracy is reported through paired
+regret, i.e. the difference between the exact lifted HJB objective and the approximate policy objective,
+where both objectives are evaluated pathwise on the same simulated RFQ and fill randomness and then
+averaged. This removes most of the sampling noise in comparisons between close policies. Since the
+objective scale differs across the three scenarios, the relative paired regret (with respect to the exact
+objective) is also reported.
+Table 2 reports the key parameters used in the three validation regimes. In the numerical benchmarks,
+one day is the unit of the chosen model clock; RFQ intensities and the volatility-derived penalty are
+expressed per unit of that same clock. Trade size and inventory units correspond to one million notional
+and price increments are in basis points. In addition, the period T = 1 day was used for all scenarios
+with timestep ∆t = 10−4. Calculations were performed on an integer inventory grid with qmax = 50
+million and a 1000-point memory grid with Xmax = 800. The quote offset grid was δ ∈ [−5, 20] bp with
+5000 points and shadow price grid was p ∈ [−10, 14] with 2400 points. Sigmoid win probability function
+f (δ) =
+
+1 + exp
+ 
+δ − 1.2)
+	−1 was assumed throughout. The penalty coefficients were κ = κT = 0.2,
+where we assumed quadratic terminal penalty form ℓ(q) = κT q2. Finally, the number of generated Monte
+Carlo paths was 2 · 104.
+15
+
+=== page 16 ===
+Table 3: Policy performance in the exponential Hawkes validation benchmark. Objectives and paired regrets are
+computed under common simulated Hawkes paths. Objectives are reported with standard error, absolute regrets
+with 95% confidence.
+Scenario Policy Objective Absolute Regret Relative Regret (%)
+Benign Exact lifted HJB 42.46 ± 0.12 0.000 ± 0.000 0.000
+Benign Poisson HJB 39.86 ± 0.11 2.606 ± 0.059 6.138
+Benign Mean VR 42.38 ± 0.12 0.077 ± 0.027 0.182
+Benign Noise-aware VR 42.40 ± 0.12 0.064 ± 0.026 0.151
+Benign State-feedback VR 42.43 ± 0.12 0.034 ± 0.024 0.080
+Near-critical Exact lifted HJB 48.80 ± 0.24 0.000 ± 0.000 0.000
+Near-critical Poisson HJB 42.58 ± 0.22 6.218 ± 0.085 12.742
+Near-critical Mean VR 48.37 ± 0.25 0.432 ± 0.042 0.884
+Near-critical Noise-aware VR 48.55 ± 0.24 0.250 ± 0.036 0.513
+Near-critical State-feedback VR 48.76 ± 0.24 0.041 ± 0.025 0.083
+Directional Exact lifted HJB 46.20 ± 0.10 0.000 ± 0.000 0.000
+Directional Poisson HJB 33.58 ± 0.08 12.617 ± 0.119 27.312
+Directional Mean VR 45.04 ± 0.10 1.154 ± 0.054 2.498
+Directional Noise-aware VR 45.20 ± 0.10 0.997 ± 0.049 2.159
+Directional State-feedback VR 46.12 ± 0.10 0.079 ± 0.020 0.170
+Figure 3 demonstrates the relative paired regret in the three regimes. The Poisson policy is the exact
+one-dimensional HJB solution for the memory-free model, so its error is due to model misspecification
+rather than to a weak numerical implementation. In the common-mode regimes, Hawkes excitation mainly
+changes the amount of future RFQ opportunity flow. The mean Volterra–Riccati policy therefore captures
+much of the effect, while covariance correction becomes more valuable when the Hawkes process is more
+persistent and intensity uncertainty is larger. In the directional regime, however, the realized Hawkes
+memory is itself a control-relevant state variable. The state-feedback Volterra–Riccati policy is then closest
+to the exact lifted HJB because it updates the quote rule with the realized memory state, rather than
+using only a deterministic forecast. Table 3 reports the complementary absolute quantities and errors.
+For each policy and regime it shows the Monte Carlo objective, absolute paired regret and relative regret.
+The objective column gives the scale of the control problem, while the regret column gives the loss in the
+original objective units.
+Figure 4 explains the mechanism behind the directional regime ranking. It shows quote offsets at the
+initial time as functions of inventory for three realized Hawkes memory states, X = 60, 120, 240. We plot
+the ask offset δa(q) together with minus the bid offset −δb(q), so that both sides can be compared on a
+common vertical scale. The exact lifted HJB and the state-feedback Volterra–Riccati policy both react to
+the realized Hawkes state: as X increases, the quote skew changes because the dealer anticipates a stronger
+conditional imbalance in future RFQ arrivals. The mean Volterra–Riccati policy, on the other hand, does
+not condition on the realized value of X. Its bid-ask skew comes from the deterministic directional mean
+forecast used when the Riccati system is solved, not from the displayed state slices.
+The numerical evidence therefore separates three effects. First, solving the Poisson baseline exactly
+confirms that the large directional-regime loss is not a numerical artifact: it is the cost of ignoring
+Hawkes memory. Second, deterministic Volterra forecasting captures the average effect of excitation
+and already improves substantially over the memory-free policy. Third, when the Hawkes state carries
+directional information, the realized memory must enter the quote rule. The state-feedback Volterra–Riccati
+approximation captures this last mechanism and closely tracks the exact lifted HJB, while remaining
+applicable to general kernels for which a low-dimensional lifted HJB is unavailable.
+16
+
+=== page 17 ===
+10.0
+ 7.5
+ 5.0
+ 2.5
+ 0.0 2.5 5.0 7.5 10.0
+Inventory q
+6
+5
+4
+3
+2
+1
+0
+1
+2
+Quote offsets
+a(q)
+b(q)
+Directional Hawkes burst
+X = 60
+X = 120
+X = 240
+Exact HJB
+State-feedback VR
+Mean VR
+Figure 4: Directional Hawkes benchmarks: ask offsets δa(q) and minus bid offsets −δb(q) at the initial time. Coloured
+curves correspond to realized Hawkes-memory states X = 60, 120, 240. Solid curves are the exact lifted HJB and
+dashed curves are the state-feedback stochastic Volterra–Riccati approximation. The dotted black curves show the
+mean Volterra–Riccati policy, which does not depend on the realized Hawkes state.
+6 Power-law RFQ memory and endogenous OTC impact
+The exponential Hawkes benchmark above validates the approximation hierarchy in a setting where an
+exact lifted HJB can be computed. We now use the same state-feedback Volterra–Riccati rule in the
+intended setting: a long-memory RFQ environment for which no low-dimensional exact dynamic program
+is available.
+The purpose of the experiment is not only numerical. The Volterra formulation also gives a transparent
+mechanism for OTC market impact. A directional RFQ burst changes the conditional forecast of future
+RFQ flow. Through the state-feedback shadow price (42), this forecast change immediately modifies
+quotes. Thus quote impact is generated endogenously by optimal conditioning on RFQ information, rather
+than being imposed as an exogenous price-impact function.
+6.1 Linearized RFQ-information impact
+Consider a side-size type i = (s, k) and a current forecast curve mt. The state-feedback quote uses
+δ∗ i (pSF i (t, q)),
+where pSF i is given by (42). Suppose now that, at time zero, the dealer observes a directional RFQ burst
+of type i0. At a later time t, the additional conditional forecast at future lag u is, to first order,
+ρi0 (t + u),
+where ρi0 is the Volterra forecast response defined in (22). Linearising (42) around the unperturbed
+forecast gives the incremental shadow-price impact
+∆pi(t, q) ≈ 1 zi X j Z T −t 0 [Dj (t, q; u) − Dj (t, q + ϵizi; u)] ρi0,j (t + u) du. (51)
+Here zi = zk, ϵi = ϵs for i = (s, k). This is the analytical counterpart of the numerical quote response. The
+kernel ρi0 describes the change in future conditional intensities following an observed RFQ; the sensitivity
+difference in brackets describes how future intensity changes affect the continuation value of filling the
+17
+
+=== page 18 ===
+current RFQ. The impact is therefore a Volterra filter of the RFQ forecast response, without requiring a
+causal interpretation of the fitted Hawkes branching representation.
+The quote impact follows by differentiating the Hamiltonian optimizer:
+∆δi(t, q) ≈ (δ∗ i )′  p0 i (t, q)  ∆pi(t, q), (52)
+where p0 i (t, q) is the corresponding baseline shadow price. Equation (52) is only a local formula; in the
+numerical experiment below the final quote is still computed with the exact optimizer δ∗ i (·). The formula
+is useful because it identifies the source of the impact and its tail behaviour.
+To see this tail behaviour, suppose the Hawkes kernel is subcritical and has a power-law tail. Write
+the matrix of kernel masses as
+B =
+Z ∞
+0
+Φ(u) du,
+with spectral radius r(B) < 1. If, for a slowly varying function L and exponent χ > 1,
+Φ(u) ∼ CΦu−χL(u), u → ∞,
+then the Volterra response ρi has the same tail order. More precisely, the Hawkes resolvent asymptotics
+give
+ρi(u) ∼ (I − B)−1CΦ(I − B)−1ei u−χL(u), u → ∞. (53)
+If the Riccati sensitivity kernel in (51) is integrable in the future lag u, then the slowly varying tail can be
+pulled through the finite-memory Volterra filter. In a stationary setting, or in a finite-horizon computation
+with a sufficiently long continuation horizon so that the relevant Riccati sensitivities are effectively away
+from the terminal boundary, the convolution in (51) preserves the tail order of the resolvent response.
+Hence, for fixed inventory q and side-size type i,
+∆δi(t, q) ∼ C imp i,i0 (q) t−χL(t), t → ∞, (54)
+Here Cimp i,i0 (q) is the leading-order impact amplitude obtained by combining three terms: the tail constant
+of the Hawkes resolvent response to the initial burst of type i0, the lag-integrated Riccati sensitivity of
+the current shadow price for type i, and the local derivative of the quote optimizer (δ∗ i )′ at the baseline
+shadow price. Its sign and magnitude depend on the burst direction, the quoted side and size, and the
+current inventory, but the time decay is inherited from the RFQ-memory kernel.
+Thus the Volterra–Riccati quote impact has the same long-lag decay exponent as the conditional RFQ-
+flow response. Inventory feedback and the nonlinear sigmoid optimizer affect the amplitude and short-time
+shape, but not the leading power-law tail under the above long-horizon approximation. The general
+mechanism is forecast-based rather than Hawkes-causal: any alternative request-flow model producing a
+post-shock conditional forecast with the same long-lag asymptotics would be filtered through the same
+Riccati sensitivity and would generate the same leading decay mechanism, subject to the corresponding
+regularity assumptions. The explicit amplitude and resolvent asymptotics in (53), however, are specific to
+the Hawkes specification.
+6.2 Numerical experiment
+We now illustrate the mechanism in a two-sided marked RFQ market with a power-law-like Hawkes memory.
+Consider the RFQ size ladder Z = {1, 2, 5} with probabilities (0.65, 0.25, 0.10), so that E[z] = 1.65 and
+E[z2] = 4.15. As before, size is in units of million notional. Conditional on an RFQ, the dealer wins with
+sigmoid probability f (δ) =
+
+1 + exp
+ 
+3(δ − 1)
+	−1. The corresponding myopic zero-shadow-price quote is
+δ∗(0) = 0.85 bp, corresponding to f (δ∗(0)) = 0.61.
+The side-level Hawkes kernel is represented by a scalar exponential mixture multiplied by a branching
+matrix B,
+Φ(u) = gN (u)B, gN (u) =
+NX
+n=1
+wnβne−βnu,
+NX
+n=1
+wn = 1.
+18
+
+=== page 19 ===
+With this normalization, B is the same kernel-mass matrix as in the asymptotic discussion above. In the
+experiment
+B =
+0.55 0.05
+0.05 0.55
+
+, r(B) = 0.60 < 1.
+Thus same-side excitation dominates cross-side excitation, while the Hawkes system remains subcritical.
+The background intensities are symmetric, µb = µa = 155, giving stationary prospective RFQ intensities
+¯λb = ¯λa = 388 per day. These values correspond to a target unconditional executed notional of
+approximately 2 ¯λsf (δ∗(0))E[z] = 780 million per day.
+The mixture contains N = 8 exponential factors. The decay rates βn are logarithmically spaced on
+[2, 2500], and the weights are chosen as
+wn = β−νmix nPN
+l=1 β−νmix ℓ , νmix = 0.65.
+This construction allocates more mass to slower factors and makes the finite mixture behave like a slowly
+decaying power law over the relevant intraday range. Since the grid is logarithmic,
+gN (u) ≈ C
+Z
+β−νmix βe−βu d log β = C
+Z
+β−νmix e−βu dβ ∝ u−(1−νmix)
+over the interior scaling range. Since the mixture is finite, the power-law behaviour should be read as an
+intermediate-range approximation: the fastest exponential creates a short-time cut-off and the slowest
+exponential eventually dominates at very long lags.
+10 4
+ 10 3
+ 10 2
+ 10 1
+Time
+10 1
+2 × 10 1
+3 × 10 1
+4 × 10 1
+( b a)/( b + a)
+Conditional imbalance
+0.00 0.02 0.04 0.06 0.08 0.10
+Time
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+a
+t (0) b t (0)
+RFQ impact
+Figure 5: Power-law RFQ memory (conditional imbalance, left, log-log) and direct quote impact at zero inventory
+(quote skew, right). The guide slope (dashed) in the left panel is −(1 − νmix) = −0.35, as described in the text. A
+one-sided RFQ burst creates a persistent conditional imbalance in future request flow. The Poisson policy does
+not react to this information. The state-feedback Volterra–Riccati policy converts the forecast imbalance into a
+persistent quote skew, providing an endogenous source of OTC market impact.
+The state-feedback Volterra–Riccati dealer uses the conditional forecast curve generated by this Hawkes
+model, but we do not solve a lifted HJB in the exponential factors. The Poisson benchmark uses the same
+RFQ size distribution, win probability and inventory penalty, and is calibrated to the same stationary side
+intensities ¯λb = ¯λa. Its misspecification is therefore not the unconditional level of RFQ activity, but the
+absence of conditioning on the realized Hawkes memory and on the resulting signed imbalance.
+The running inventory penalty is set to κ = 2.0 and the terminal penalty is ℓ(q) = κT q2 with κT = 0.01.
+The Monte Carlo evaluation horizon is Teval = 0.1 days, discretised with ∆t = 5 · 10−5, giving 2000
+time steps. Before applying the information shock, the Hawkes process is simulated for a burn-in period
+Tburn = 0.1 and the burn-in observations are discarded. This avoids the artificial empty-history effect
+that would arise if the process were started with zero memory at the beginning of the experiment.
+19
+
+=== page 20 ===
+The quote computation uses an additional continuation horizon Tcont = 0.1. In practice, the backward
+Volterra–Riccati system is solved on the extended horizon Teval + Tcont, while only the first Teval units
+of the resulting policy are used in the reported simulation. This continuation horizon is therefore not
+an additional evaluation period; it is a numerical device that reduces terminal-horizon distortions in the
+displayed post-burst window. The conditional forecast curve in the Volterra–Riccati solver is discretised
+with Nf = 12 future-lag grid points. This forecast grid is distinct from both the Monte Carlo time step ∆t
+and the N = 8 exponential factors used to represent the Hawkes kernel. The quote optimizer is tabulated
+on δ ∈ [−1, 12] bp and p ∈ [−15, 25], using respectively 30001 quote grid points and 5201 shadow price
+grid points.
+At time zero, after the burn-in period, the dealer observes a one-sided RFQ burst. Without loss
+of generality, we consider a bid-side burst, corresponding to clients selling to the dealer, so that fills
+tend to increase dealer inventory. Default burst size is 50 RFQs, unless specified otherwise. Directional
+perturbation changes the signed conditional distribution of future RFQs, not merely the total activity
+level. This is the cleanest setting in which to isolate information-driven OTC impact. All Monte Carlo
+comparisons use common random numbers across the Poisson and state-feedback Volterra–Riccati policies,
+with 105 simulated paths.
+Figure 5 illustrates the mechanism. The left panel plots the conditional RFQ imbalance after the burst.
+Its slow decay reflects the power-law Volterra response. The right panel plots the corresponding direct
+RFQ-information quote impact at zero inventory. The Poisson dealer has no response because their future
+flow forecast is unchanged by the burst. The state-feedback Volterra–Riccati dealer immediately skews
+quotes because the burst changes the continuation-value shadow price.
+0.00 0.02 0.04 0.06 0.08 0.10
+Time
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5Mean inventory
+Average inventory path
+Volterra-Riccati
+Poisson
+0.00 0.02 0.04 0.06 0.08 0.10
+Time
+0
+1
+2
+3
+4
+5RMS inventory
+RMS inventory path
+Volterra-Riccati
+Poisson
+Figure 6: Inventory response after a directional RFQ burst. The Poisson dealer ignores the conditional future-flow
+imbalance and accumulates directional inventory. The state-feedback Volterra–Riccati dealer uses the updated
+forecast curve in the continuation-value shadow price and reduces both mean and RMS inventory.
+Figure 6 demonstrates the inventory consequence of the same mechanism. The Poisson dealer is pulled
+into directional inventory after the burst. The state-feedback dealer anticipates the conditional future
+flow and quotes defensively, reducing both the average inventory displacement and the root mean square
+(RMS) inventory. This is the most robust economic effect in the experiment: conditioning on the RFQ
+memory primarily improves inventory-risk control.
+Finally, Figure 7 varies the size of the initial one-sided burst. The value of conditioning increases with the
+strength of the observed RFQ imbalance. We report relative reduction in P&L standard deviation, compar-
+ing state-feedback Volterra–Riccati with the Poisson benchmark, i.e. 1-StDev(P&LVR)/StDev(P&LPoisson).
+Mean P&L differences are less stable and are not the main message; the robust effect is the reduction of
+inventory and P&L risk when the flow history is informative.
+These findings are consistent with, and complementary to, earlier academic work on persistent order
+flow and market impact. Jaisson (2015) interprets market impact as anticipation of future order-flow
+20
+
+=== page 21 ===
+0 20 40 60 80 100
+Initial one-sided RFQ burst size
+0.00
+0.05
+0.10
+0.15
+0.20Relative Risk Reduction
+Value of conditioning
+Figure 7: Value of conditioning on the RFQ memory. As the initial directional burst becomes larger, the conditional
+imbalance in future RFQ flow becomes more informative. The state-feedback Volterra–Riccati policy uses this
+information to reduce inventory risk and P&L volatility relative to the Poisson no-conditioning benchmark.
+imbalance; our mechanism gives an OTC/RFQ version of the same idea, where the relevant information
+is not an exchange trade print but the dealer’s observed request flow. The power-law decay in Figure
+5 is also in line with the no-arbitrage and long-memory impact mechanisms studied by Jusselin and
+Rosenbaum (2020), and with the broader Hawkes-based connection between order-flow persistence, impact
+and volatility developed by Muhle-Karbe et al. (2026). The OTC interpretation is particularly close
+in spirit to Eisler and Bouchaud (2016), who document price impact without a limit order book. The
+difference here is that the impact is derived from a dealer’s optimal quote response: persistent RFQ
+memory changes the conditional distribution of future flow, and the Volterra–Riccati shadow price converts
+this information into a persistent quote skew. The uncovered impact mechanism is different from, and
+complementary to, the inventory-based impact of a trade (Barzykin 2026).
+This experiment should be read together with the exponential Hawkes validation. In the benchmark
+case the same approximation hierarchy was compared to the exact lifted HJB, and the state-feedback
+Volterra–Riccati rule was closest to the exact policy in directional regimes. In the present power-law
+case, an exact lifted benchmark is not available at comparable complexity. The role of the experiment is
+therefore to apply the validated approximation to the genuinely non-Markovian setting. The analytical
+formula (51) explains why the numerical quote response is persistent, while the Monte Carlo results show
+that this endogenous OTC impact has economic value through lower inventory and P&L risk.
+7 Concluding remarks
+This paper develops a Volterra–Riccati approximation for market making when RFQ arrivals are persistent
+and history-dependent. The main practical message is that, in an OTC market, the relevant state is
+not only inventory and time. Recent RFQ history changes the conditional distribution of future client
+demand, and this information should enter the dealer’s continuation-value shadow price. In directional
+regimes, ignoring this state can lead to systematically misplaced quotes and unnecessary inventory risk.
+The state-feedback Volterra–Riccati rule provides a tractable way to incorporate such information without
+solving a high-dimensional lifted HJB.
+The fitted Hawkes model should be understood as a reduced-form conditional-intensity model rather
+than a structural account of how client requests cause one another. A common exogenous driver may
+21
+
+=== page 22 ===
+generate several RFQs and, if it is absent from the baseline intensity, the fitted branching representation
+may attribute part of this dependence to endogenous excitation. Generalized Langevin models provide a
+complementary effective-memory viewpoint: persistent observable dynamics can arise after latent degrees
+of freedom have been reduced out, without requiring literal event-to-event contagion (Itkin 2026a,b). A
+natural empirical extension is therefore to compare pure Hawkes dynamics with latent-factor or Cox
+specifications, and potentially retain Hawkes excitation only for residual event-to-event dependence after
+persistent common drivers have been modelled.
+Several further practical qualifications are important. The empirical motivation in this paper uses
+two-way RFQ activity, whereas the most economically valuable state variable for market making is
+directional flow pressure. In real RFQ markets, directionality is not always directly observed. Some RFQs
+are one-way, and in other cases dealers can infer likely direction from previous client activity, historical
+conversion patterns, skewed response behaviour, or contemporaneous public market activity. Nevertheless,
+directionality assessment is a statistical filtering problem, not an assumption that can be taken for granted.
+A production implementation would therefore require a joint filtering layer that maps RFQ messages,
+client history, quote outcomes and public market variables into a conditional forecast of future signed
+RFQ flow.
+A second limitation is the separation between request arrivals and win probabilities. The model assumes
+that RFQs follow the exogenous conditional intensity model, while the dealer’s win probability conditional
+on an RFQ remains governed by the quoted offset and is not itself directly affected by the Hawkes memory.
+This is a useful baseline because it separates information arrival from execution conversion, and the same
+conceptual decomposition applies to request-for-stream protocols. It is not, however, the only possible
+mechanism. In stressed or one-sided markets, RFQ bursts may coincide with changes in competition,
+client urgency, quote toxicity or last-look behaviour, all of which can alter the quote-response function.
+Extending the framework to state-dependent win probabilities is therefore a natural next step.
+The mean and covariance-corrected Volterra–Riccati constructions are approximations rather than exact
+value functions. A frozen conditional forecast does not satisfy an intertemporal dynamic-programming
+principle; the implemented policy obtains feedback by reconditioning and resolving as the history evolves.
+The exponential benchmark provides numerical evidence that this receding horizon construction is accurate
+in the regimes studied, but a general error or convergence theory remains open. One possible route to a
+more systematic hierarchy is through expansions of point-process functionals, including the pseudo-chaotic
+expansions for counting processes developed by Hillairet and R´eveillac (2024); pursuing that connection is
+beyond the scope of the present paper.
+A third extension concerns the effect of fills and hedging. In the baseline model, requests drive Hawkes
+memory and fills are controlled thinnings of those requests. This prevents the dealer from mechanically
+controlling future RFQ intensity through their own executions. In practice, however, executed trades
+may contain additional information: fills reveal stronger client intent than unfilled RFQs, may update
+relationship-level beliefs, and may be followed by externalisation trades that interact with public market
+activity. Similarly, RFQ intensity may be co-excited with price moves, volatility, market depth or observable
+order-flow imbalance in lit venues. A richer model would therefore treat RFQs, fills, hedging trades and
+public market signals as a coupled marked point process or Volterra system.
+These limitations indicate where the approximation is most useful. Exact dynamic programming for
+such enriched non-Markovian models is unlikely to be feasible. The value of the Volterra–Riccati approach
+is that it preserves an interpretable conditional forecast state and converts it into quote adjustments
+through a tractable backward Riccati calculation. The Riccati layer is partly modular with respect to
+the request-flow model: Hawkes dynamics provide the required conditional objects explicitly, while other
+predictive flow models could in principle feed the same control calculation. This makes the construction a
+practical bridge between persistent RFQ flow and implementable market-making controls while leaving
+open the structural origin of the persistence. Future work should focus on latent-factor and directional
+RFQ filtering, separating common persistent drivers from residual excitation, state-dependent response
+functions, joint RFQ–price excitation, and empirical validation on realized quoting and fill data.
+22
+
+=== page 23 ===
+Acknowledgment
+The author is grateful to Richard Anthony (HSBC) for support throughout the project, and to Olivier
+Gu´eant (Universit´e Paris Cit´e), Andrey Itkin (NYU Tandon School of Engineering) and Eyal Neuman
+(Imperial College London) for fruitful discussions and valuable comments. The views expressed are those
+of the author and do not necessarily reflect the views or practices at HSBC.
+References
+Abi Jaber, E., Miller, E., and Pham, H., Linear-quadratic control for a class of stochastic Volterra equations:
+solvability and approximation. Annals of Applied Probability, 2021, 31 (5), 2244–2274.
+Abi Jaber, E. and Neuman, E., Optimal liquidation with signals: the general propagator case. Mathematical Finance,
+2025, 35 (4), 841–866.
+Allan, A.L. and Samuel N. Cohen, S.N., Pathwise stochastic control with applications to robust filtering. Annals of
+Applied Probability, 2020, 30 (5), 2274 – 2310.
+Alfonsi, A. and Blanc, P., Dynamic optimal execution in a mixed-market-impact Hawkes price model. Finance and
+Stochastics, 2016, 20, 183–218.
+Avellaneda, M. and Stoikov, S., High-frequency trading in a limit order book. Quantitative Finance, 2008, 8 (3),
+217–224.
+Bacry, E., Mastromatteo, I., and Muzy, J.-F., Hawkes processes in finance. Market Microstructure and Liquidity,
+2015, 1 (1), 1550005.
+Bandini, E. and Keller, C., Non-local Hamilton-Jacobi-Bellman equations for the stochastic optimal control of
+path-dependent piecewise deterministic processes. arXiv:2408.02147, 2024.
+Bank, P., Bayer, C., Hager, P.P., Riedel, S., and Nauen, T., Stochastic Control with Signatures. SIAM Journal on
+Control and Optimization, 2025, 63 (5), 3189–3218.
+Barzykin, A., Market Making and Transient Impact in Spot FX. arXiv:2601.13421, 2026.
+Bergault, P., Evangelista, D., Gu´eant, O. and Vieira, D., Closed-form approximations in multi-asset market making.
+Applied Mathematical Finance, 2021, 28 (2), 101–142.
+Bergault, P. and Gu´eant, O., Liquidity Dynamics in RFQ Markets and Impact on Pricing. arXiv:2309.04216, 2023.
+Bergault, P., Bertucci, L., Bouba, D., Gu´eant, O., and Guilbert, J., Price-aware automated market makers: models
+beyond Brownian prices and static liquidity. arXiv:2405.03496, 2024.
+Cartea, ´A, Jaimungal, S. and Penalva, J., Algorithmic and High Frequency Trading, 2015 (Cambridge University
+Press: Cambridge, United Kingdom).
+Cartea, A., Jaimungal, S., and Ricci, J., Algorithmic trading, stochastic control, and mutually exciting processes.
+SIAM Review, 2018, 60 (3), 673–703.
+Eisler, Z. and Bouchaud, J.-P., Price impact without order book: a study of the OTC credit index market.
+arXiv:1609.04620, 2016.
+Gu´eant, O., The Financial Mathematics of Market Liquidity: From optimal execution to market making, 2016
+(Chapman and Hall/CRC: Boca Raton, FL).
+Gu´eant, O., Lehalle, C.-A. and Fernandez-Tapia, J., Dealing with the inventory risk: a solution to the market
+making problem. Mathematics and Financial Economics, 2013, 7, 477–507.
+Hardiman, S. J., Bercot, N., and Bouchaud, J.-P., Critical reflexivity in financial markets: a Hawkes process analysis.
+European Physical Journal B, 2013, 86, 442.
+Hillairet, C. and R´eveillac, A., On the chaotic expansion for counting processes. Electronic Journal of Probability,
+2024, 29, 1–33.
+Ho, T. and Stoll, H. R., Optimal dealer pricing under transactions and return uncertainty. Journal of Financial
+Economics, 1981, 9 (1), 47–73.
+Itkin, A., Beyond Rough Volatility: Decoupling Memory and Scaling via a Generalized Langevin Equation. SSRN
+7202798, 2026.
+23
+
+=== page 24 ===
+Itkin, A., Calibrating Inelastic Markets to Options: The Lean Marketron and the Generalized Langevin Equation.
+arXiv:2608.20589, 2026.
+Jain, K., Firoozye, N., Kochems, J., and Treleaven, P., An impulse control approach to market making in a Hawkes
+LOB market. arXiv:2510.26438, 2025.
+Jaisson, T., Market impact as anticipation of the order flow imbalance. Quantitative Finance, 2015, 15 (7), 1123–1135.
+Jaisson, T. and Rosenbaum, M., Limit theorems for nearly unstable Hawkes processes. Annals of Applied Probability,
+2015, 25 (2), 600–631.
+Jusselin, P., Optimal market making with persistent order flow. SIAM Journal on Financial Mathematics, 2021, 12
+(3), 1150–1200.
+Jusselin, P. and Rosenbaum, M., No-arbitrage implies power-law market impact and rough volatility. Mathematical
+Finance, 2020, 30 (4), 1309–1336.
+Kumar, P., Deep Hawkes process for high-frequency market making. Journal of Banking and Financial Technology,
+2024, 8 (1), 11–28.
+Lallouache, M. and Challet, D., The limits of statistical significance of Hawkes processes fitted to financial data.
+Quantitative Finance, 2016, 16 (1), 1–11.
+Large, J., Measuring the resiliency of an electronic limit order book. Journal of Financial Markets, 2007, 10 (1),
+1–25.
+Martin, N. and Tse, A. S. L., Optimal market-making with Hawkes process: a Markovian approximation approach
+via Mercer’s expansion. SSRN.6451058, 2026.
+Muhle-Karbe, J., Ouazzani Chahdi, Y., Rosenbaum, M., and Szymanski, G., A unified theory of order flow, market
+impact, and volatility. arXiv:2601.23172, 2026.
+24

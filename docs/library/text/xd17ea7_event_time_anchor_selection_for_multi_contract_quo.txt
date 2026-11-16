@@ -1,0 +1,1489 @@
+=== page 1 ===
+Event-Time Anchor Selection for Multi-Contract Quoting
+Aditya Nittur Anantha1,2, Shashi Jain1, Shivam Goyal3, and Dhruv Misra3
+1Department of Management studies, Indian Institute of Science, Bengaluru, Karnataka, 560012,
+India
+2SigmaQuant Technologies Pvt. Ltd, Bengaluru, Karnataka, 560066, India
+3AlgoQuant Technologies Ltd., Bengaluru, Karnataka, 560066, India
+December 3, 2025
+Abstract
+When quoting across multiple contracts, the sequence of execution can be a key driver of implementation
+shortfall relative to the target spread [6]. We model the short-horizon execution risk from such quoting as
+variations in transaction prices between the initiation of the first leg and the completion of the position. Our
+quoting policy anchors the spread by designating one contract ex ante as a reference contract. Reducing execution
+risk requires a predictive criterion for selecting that contract whose price is most stable over the execution
+interval. This paper develops a diagnostic framework for reference-contract selection that evaluates this stability
+by contrasting order-flow Hawkes forecasts with a Composite Liquidity Factor (CLF) of instantaneous limit order
+book (LOB) shape. We illustrate the framework on tick-by-tick data for a pair of NIFTY futures contracts. The
+results suggest that event-history and LOB-state signals offer complementary views of short-horizon execution
+risk for reference-contract selection.
+Keywords: High Frequency Trading, Execution, Slippage, Market Microstructure, Liquidity, Quoting
+1 Introduction
+Automated trading in electronic limit order books produces a dense, time-stamped order flow that motivates an
+event-time rather than calendar-time treatment of short-horizon execution risk [12, 1, 16]. Advances in network-
+ing, matching-engine design, and co-located infrastructure have enabled rapid order placement and adjustment at
+microsecond horizons.
+In liquid venues, this latency profile is now routine. With increased adoption of low-latency infrastructure across
+venues, the marginal value of further latency reductions has declined. Consequently, execution has shifted from
+predominantly aggressive liquidity-taking policies to adaptive quoting policies [27]. Quoting is effective because
+it is anticipatory: placements and updates are conditioned on short-horizon forecasts of the microstructure state,
+rather than solely on the current tick or current limit order book state. In practice, quoting systems place and
+update limit orders on one or both sides of the LOB using estimated near-term trajectories of order flow, queue
+depth, and price continuity [2, 20]. Design goals include lowering inventory variance, capturing bid–ask spread,
+and maintaining price competitiveness under latency and reliability constraints. Quoting performance, therefore,
+depends on forecasting of short-horizon order flow and the probability of adverse selection, both of which influence
+spreads and trading costs [22, 21]. Accordingly, in this paper we treat predictive modeling as a central component of
+quoting and use this perspective to motivate the choice of a reference instrument (basis) in multi-contract settings.
+No-arbitrage requirements jointly constrain the prices of related contracts, necessitating coordinated pricing and
+execution across individual legs [7]. Accordingly, we adopt multi-contract arbitrage (see Section 1.3 for a detailed
+example) in a diagnostic setting: in liquid markets, arbitrage opportunities are short-lived and spreads are thin.
+Even small reductions in execution cost translate directly into realized P&L [32, 27]. As illustrative structures,
+calendar spreads, butterflies, and iron condors are routinely used to express short-horizon views under thin spreads
+and tight constraints [31, 13, 34]. This sensitivity makes reference-leg selection a measurable problem of near-term
+basis stability, which we evaluate using only information available at the start of each decision interval.
+In multi-contract arbitrage, a quoting policy must select a reference leg and price the target leg’s quotes relative
+to that reference. Operationally, the strategy posts limit orders on the target leg while monitoring a designated
+reference price. Once the target order fills, the strategy submits a marketable limit order on the reference leg
+to complete the position.1 This design places orders in advance rather than reacting after opportunities arise,
+1On the National Stock Exchange (NSE) of India, market orders are disallowed for algorithmic systems; orders must include explicit
+price limits, therefore, our implementation uses marketable limit orders on the reference leg.
+1
+arXiv:2507.05749v2  [q-fin.TR]  2 Dec 2025
+
+=== page 2 ===
+aiming to capture a trader-defined spread while controlling execution cost. In practice, quote prices are functions
+of the observed mid-price of the target leg and the contemporaneous reference price. The approach presumes that
+the reference remains sufficiently stable over the fill horizon. Instability in the basis results in deviation from
+target spread and reduced profitability [6].In this setting, execution risk is amplified because the reference leg
+establishes the pricing basis while other legs await fills. Our focus is on the information available at decision time:
+a temporal component based on multivariate Hawkes processes (order-flow clustering and cross-excitation) and a
+contemporaneous LOB-state component aggregated as a Composite Liquidity Factor (CLF). In this design, the
+selection of reference-legs is evaluated from two differing information sets.
+Remark. We study reference selection as an informational problem for execution–cost control, not as a prescriptive
+quoting rule. Two information sets are considered at decision time: (i) temporal interaction in order–flow events,
+modeled with a multivariate Hawkes process (clustering and cross–excitation), and (ii) contemporaneous LOB state,
+summarized as a Composite Liquidity Factor (CLF) derived from depth and price discontinuities. Decisions are
+evaluated in a rolling, walk–forward, out–of–sample design, with each interval’s choice formed from the information
+available at its beginning. Evaluation is anchored by a hindsight lower bound on deviation from the target spread,
+which provides a common yardstick for comparing heterogeneous rules.
+1.1 Literature and existing frameworks
+A large body of literature models optimal quoting under inventory and adverse selection constraints in dealer and
+electronic markets [29, 22]. In electronic limit order books, Avellaneda and Stoikov [2] formulate a stochastic control
+model for dynamic bid/ask placement that trades off expected return against inventory risk, while Cartea et al. [14]
+survey algorithmic trading frameworks that include inventory-aware quoting. Related microstructure work shows
+how quoting behavior shapes liquidity and price formation [20]. Collectively, these studies support dynamic quotes
+that respond to inventory and volatility. However, the canonical formulations are predominantly single-asset and
+do not address the choice of reference instrument in multi-contract quoting.
+From single-asset quoting to multi-contract reference-leg selection
+Multi-leg spreads (e.g., futures calendar spreads and option combinations) raise execution challenges that single-asset
+models do not address. Prior work extends optimal control to multi-asset settings, including stochastic programs
+for arbitrage portfolios [7] and closed-form policies for multi-asset market making with joint inventory control [5].
+These studies show potential efficiency gains from coordinated quoting across related instruments. In practice,
+legs rarely execute simultaneously: quoting policies place limit orders on the non-reference leg(s) and execute the
+reference leg last with a marketable limit order once those orders fill [1]. This sequential execution creates a short
+fill horizon in which adverse price moves against the reference cause the realized spread to deviate from the targeted
+spread. Multi-asset execution frameworks also address cross-asset coordination [6]. However, while multi-contract
+quoting has been studied, the specific question of sequencing risk under different choices of the reference leg is, to
+our knowledge, not established in the literature.
+A second line of work studies real-time features derived from LOB state. The configuration of the LOB, including
+depth at best quotes, LOB imbalance, and the spread, contains predictive information about short-horizon price
+changes [18, 9]. In a Markovian LOB setting, Cont et al. show that transition probabilities depend on volumes at
+the best quotes and related state variables [18]. In practice, limit order book features are routinely incorporated as
+decision inputs in high-frequency execution and market-making systems [14, 27]. Several studies propose composite
+indicators to summarize liquidity conditions by combining depth, spread, and imbalance. Building on this idea, we
+construct a Composite Liquidity Factor (CLF) that aggregates instantaneous LOB features into a scalar proxy for
+near-term price stability derived from depth and price discontinuities, and we use it as a real-time decision input in
+our framework. To our knowledge, prior studies analyze gap statistics and their relation to jumps and impact, but
+do not aggregate cross-level gaps with depth into a single factor for reference-leg selection in multi-contract quoting
+[10, 18, 8, 14].
+A third line of work models market activity in event time rather than clock time. Auto-regressive Conditional
+Duration (ACD) models show that trade durations exhibit serial dependence that can be exploited for short-horizon
+forecasting [19]. Multivariate self-exciting point processes extend this approach to order-flow interactions: Hawkes
+models capture clustering and cross-excitation between trades and quote updates and have been applied extensively
+in high-frequency settings [11, 4, 15, 35]. Empirical studies report that incorporating self-excitation improves short-
+horizon predictions of price changes and liquidity shortfalls [26]. A practical consideration is the specification of
+the excitation kernels with both parametric and non-parametric estimators being used in practice [33]. In our
+framework, the Hawkes arrival ratio provides temporal estimates of near-term order-flow intensity and direction,
+yielding leg-specific forecasts that inform reference-leg selection. Within Hawkes-based LOB models, (i) queue-
+reactive specifications endogenize excitation via queue-size–dependent terms [43, 30], while (ii) LOB–dependent
+specifications let the intensity vary with observable LOB co-variates [36, 41].
+2
+
+=== page 3 ===
+In summary, to our knowledge and within the scope of this review, the problem of dynamic reference-leg selection
+for multi-contract spreads remains underdeveloped. To address this gap, we propose a framework that combines a
+Hawkes-based estimate of imminent relative price stability with a Composite Liquidity Factor (CLF) summarizing
+contemporaneous LOB state. We evaluate the resulting choices in a rolling, walk-forward, and out-of-sample design.
+1.2 Contribution of This Paper
+This paper presents a general framework for incorporating order flow and LOB state in quoting policy. Specifically,
+we compare an arrival ratio based on Hawkes processes with a composite liquidity factor (CLF) to study reference-
+leg selection in multi-contract quoting. Under this framework, the contributions of this paper are summarized as
+follows:
+1. Arrival ratio (ρ): A leg-specific, Hawkes-based estimate of short-horizon order-flow direction and intensity
+used for reference-leg selection.
+2. Composite Liquidity Factor (CLF): A scalar summary of limit order book state (depth and cross-level
+price gaps) used as a proxy for short-term price stability in reference-leg selection.
+3. Benchmark oracle: A deviation from the target spread metric, compared to an infeasible hindsight lower
+bound (oracle), enabling like-for-like comparison across heterogeneous rules.
+1.3 Execution Structure and Reference Leg Selection Problem
+Among the many available multi-contract strategies that employ quoting, this study uses the calendar-spread
+strategy. The calendar spread offers two advantages: it has the minimal number of legs for a multi-contract design
+(two), and the only variation between the two contracts is the date of expiration on the same underlying. This
+concentrates execution effects in the traded spread with fewer confounding factors. Execution of calendar spreads
+involves taking offsetting positions in two futures contracts with different expiries. We define the reference-leg
+selection problem as choosing, at each decision time, that contract whose short-horizon dynamics will anchor the
+spread quote while the other leg awaits execution.
+Quoting Mechanics and Execution Risk
+In a futures calendar spread, the traded entity is the price difference, or spread, between the near-term and far-
+term contracts. Table 1 presents bid and ask prices for NIFTY futures expiring in February 2022 and March
+2022. In typical carry regimes, near-term contract prices are below the farther-term contract, consistent with the
+cost-of-carry term structure.
+To illustrate the mechanics of a calendar spread, we consider execution under a liquidity-taking setup. The
+trader submits marketable limit orders to buy the near-term contract at the best ask and to sell the far-term
+contract at the best bid, achieving immediate fills. With the sign convention that the calendar spread is quoted as
+far minus near, this entry corresponds to a long-near/short-far position with a positive spread at execution.1
+Remark. (On liquidity-taking via marketable limit orders)
+In this paper, liquidity-taking execution is implemented exclusively with marketable limit orders (also referred to
+as “aggressive” limit orders), i.e., limit orders priced to execute immediately against standing best quotes. We do
+not use market orders. All references to liquidity-taking strategies should be interpreted accordingly.
+We adopt the following notational conventions throughout: p(t) denotes the quoted limit order book price of a
+futures contract as a function of time t, with superscripts b and a indicating bid and ask, respectively. Subscripts
+c and n refer to the near (current) and far (next) month contracts. ˜p(t) denotes an executed (traded) price at time
+t, distinguishing it from quoted prices. We define the calendar spread as S(t) = pn(t) − pc(t) (next minus current).
+The realized spreads at entry and exit are denoted ˜Sentry and ˜Sexit. The net realized profit is Π = ˜Sentry − ˜Sexit.
+We let t0 denote the time of spread entry and t1 the time of spread exit.
+Suppose the trader anticipates that, over the intended holding interval, the calendar spread will narrow (for
+example, owing to temporary changes in cost of carry or relative demand). Under the liquidity-taking setup
+described above and the same sign convention, the trader enters a long-near/short-far position and plans to exit
+once the realized spread has tightened by the targeted amount. The trader initiates the calendar spread by:
+1. Buying the near-term (February) futures contract at the executed ask price ˜pa c (t0) = 17, 458.55,
+2. Selling the far-term (March) futures contract at the executed bid price ˜pb n(t0) = 17, 514.20,
+1Throughout, references to liquidity-taking strategies indicate marketable limit orders (not market orders). See Remark 1.3.
+3
+
+=== page 4 ===
+at time t = t0.
+The entry spread realized at time t0 is computed as:
+˜Sentry = ˜pb n(t0) − ˜pa c (t0), (1)
+˜Sentry = 17, 514.20 − 17, 458.55 = 55.65.
+If the market evolves as expected and the spread narrows, the trader can exit the spread profitably. Suppose at
+time t = t1, the February contract’s bid price rises to ˜pb c(t1) = 17, 460.00 and the March contract’s ask price falls
+to ˜pa n(t1) = 17, 510.00. Then, to close the position, the trader:
+1. Sells the February contract at ˜pb c(t1) = 17, 460.00,
+2. Buys back the March contract at ˜pa n(t1) = 17, 510.00.
+The exit spread realized at time t1 is:
+˜Sexit = ˜pa n(t1) − ˜pb c(t1), (2)
+˜Sexit = 17, 510.00 − 17, 460.00 = 50.00.
+The net realized profit per unit traded is given by:
+Π = ˜Sentry − ˜Sexit, (3)
+Π = 55.65 − 50.00 = 5.65.
+Execution using quoting
+The same spread trade can be executed through a quoting strategy. In this approach, the trader begins with a
+predefined target spread S. Rather than accepting the current market spread as fixed, the trader aims to minimize
+the cost of exit and maximize the profitability of the entry by selectively quoting one leg of the spread.
+To execute the strategy, the price of one contract is designated as the reference price, and a limit order is placed
+on the other contract at a price derived as a function of the reference price and the target spread S. Upon the limit
+order being filled, a corresponding marketable limit order (crossing the book ) is triggered on the reference contract
+to complete the spread execution.
+In pure liquidity-taking strategies, where immediate aggressive orders are fired on both legs simultaneously, the
+execution risk is considered negligible. This assertion is valid in markets that support atomic two-leg and three-leg
+Immediate-Or-Cancel (IOC) order types, which guarantee that either both legs execute simultaneously or neither leg
+executes. At the National Stock Exchange (NSE) of India, such IOC multi-leg orders are supported. Consequently,
+when using simultaneous liquidity-taking across legs, the execution of the trader’s view on the spread occurs with
+atomicity, and execution risk can be considered zero.
+In quoting strategies, however, execution risk is non-zero. This arises because of the latency between the limit
+order on the quoting leg being filled and the marketable limit order on the reference leg being fired and executed.
+During this time window, the reference price may change adversely.
+As a result, the realized spread at time t, denoted ˜S(t), may differ from the trader’s intended spread S. In
+certain market conditions such as contango, the farther-month futures price may trade below the nearer-month
+price, leading to a negative target spread.2 The slippage associated with quoting, denoted δS (t), is defined as:
+δS (t) = |S − ˜S(t)|. (4)
+A critical aspect of quoting across contracts is the choice of which contract to reference. The choice directly
+impacts both the realized cost at entry and the realized profit at exit. The core forecasting problem addressed
+in this paper is selecting the reference leg that minimizes the probability of unfavorable price changes during the
+execution window.
+Remark. (On Reverse Arbitrage and Contango Markets)
+In certain market conditions, such as contango, the futures price of a farther-month contract may trade below
+that of a nearer-month contract. This results in a negative intended spread S for calendar spread strategies. The
+slippage definition δS (t) = |S − ˜S(t)| naturally accommodates both positive and negative target spreads.
+2See Remark 1.3 for a discussion on contango markets and reverse spreads.
+4
+
+=== page 5 ===
+Execution using limit orders
+Market makers frequently employ quoting strategies that involve placing limit orders on both the bid and ask sides
+of the limit order book, aiming to profit from short-term fluctuations in the bid-ask spread, especially during phases
+of spread expansion or contraction. However, in the context of futures rollover trades, simultaneously quoting both
+legs of a multi-contract strategy increases execution risk. The resulting fill asymmetry can lead to a significant
+deviation between the realized spread ˜S(t) and the trader’s intended spread S, reflected in higher slippage δS (t).
+Another critical consideration when designing quoting policies is whether the objective is to minimize execution
+risk alone, or whether it must also meet minimum trading volume constraints over time. While the framework
+presented in this paper can be extended to symmetric quoting across multiple contracts, our focus is specifically
+on asymmetric multi-contract quoting strategies, in which limit orders are placed only on a subset of contracts and
+priced using reference prices derived from a disjoint subset.
+1.4 Impact of Reference Leg Selection on Execution Slippage
+We consider two futures contracts on the same underlying: the current-month contract (denoted by subscript c)
+and the next-month contract (subscript n). The trader wishes to enter a spread trade at time t0 with a target
+spread of S(t0) = 58.5 INR per contract. We adopt the following time Convention:
+t0: time of initial quote placement.
+t1: time when the quoting leg limit order is executed.
+t2: time when the reference leg (aggressive order) is executed.
+The interval [t1, t2] is referred to as the critical interval. We reiterate here for clarity, the notation Convention:
+pb k(t): best bid price of contract k ∈ {c, n} at time t
+pa k(t): best ask price of contract k at time t
+S(r)(t): spread implied by reference leg r ∈ {c, n} at time t
+˜S(r)(t2): realized spread at execution
+δ(r) S (t2) = | ˜S(r)(t2) − S(t0)|: slippage
+All prices and spreads are expressed in INR per contract.
+Remark. (On Slippage and Execution Timing)
+The time difference between the execution of the quoting leg and the reference leg is called the critical interval.
+During this interval, the top-of-book price on the reference leg may change. This affects the realized spread ˜S(r)(t2),
+causing deviation from the trader’s target spread S(t0). We define the slippage incurred as:
+δ(r) S (t2) =  ˜S(r)(t2) − S(t0) 
+A positive slippage implies favorable price movement during execution; a negative value implies a cost.
+Top of the Book at t0
+(a) NIFTY February 2022 (Prices in INR; sizes in
+contracts)
+Bid Qty Ask Qty
+17455 50 17458.55 50
+17450 50 17459.65 50
+17401.1 100 17459.95 100
+17376 800 17460 550
+17355 100 17475 250
+(b) NIFTY March 2022 (Prices in INR; sizes in contracts)
+Bid Qty Ask Qty
+17514.2 50 17516.5 150
+17510.2 150 17516.55 50
+17510.1 100 17516.7 50
+17509.1 150 17517.2 50
+17503.6 50 17523.4 200
+Table 1: Top 5 LOB levels at t0 for NIFTY futures
+From the limit order books in table 1, at time t0, the two implied spreads are:
+5
+
+=== page 6 ===
+S(c)(t0) = pb n(t0) − pb c(t0)
+= 17514.2 − 17455
+= 59.2
+(5)
+S(n)(t0) = pa n(t0) − pa c (t0)
+= 17516.5 − 17458.55
+= 57.95
+(6)
+Case 1: Current Month as Reference Leg:
+In this setup, the trader designates the current-month contract as the reference leg. A buy limit order is placed on
+the next-month contract at time t0, quoting the best available ask price of pa n(t0) = 17514.2. This order is executed
+at time t1.
+Following this execution, at time t2, the trader fires a marketable limit order to sell the current-month contract.
+During the critical interval [t1, t2], the top bid on the current month leg improves from 17455 to 17458. Consequently,
+the aggressive order is executed at the updated price pb c(t2) = 17458.
+The spread realized under this execution path, denoted ˜S(c)(t2), is calculated as the difference between the bid
+on the next month leg (observed at t1) and the updated bid on the reference leg (current month) at t2. This spread
+is |56.2, leading to a slippage of |2.3 compared to the target spread of |58.5.
+Despite initially observing a wider possible spread, the trader incurs higher slippage due to adverse price move-
+ment during the critical interval.
+(a) NIFTY March 2022 (t1)
+Bid Qty Ask Qty
+17514.2 50 17514.2 50
+17510.2 50 17516.5 150
+17510.1 150 17516.55 50
+(b) NIFTY February 2022 (t2)
+Bid Qty Ask Qty
+17458 50 17458.55 50
+17455 50 17459.65 50
+17450 50 17459.95 100
+Table 2: LOB snapshots when current month is the reference leg
+˜S(c)(t2) = pb n(t1) − pb c(t2)
+= 17514.2 − 17458
+= 56.2
+(7)
+δ(c) S (t2) = |56.2 − 58.5|
+= 2.3 INR per contract
+(8)
+Case 2: Next Month as Reference Leg:
+In this alternative configuration, the trader chooses the next-month contract as the reference leg. A buy limit
+order is placed on the current-month contract at time t0, quoting the best available ask price of pa c (t0) = 17458.55.
+This order is filled at time t1.
+At t2, the trader fires a marketable limit order on the next-month contract to sell at market. During the critical
+interval, the top ask price on the next-month contract shifts slightly from 17516.5 to 17516.55, reflecting minor
+upward movement. The order is thus executed at the updated price pa n(t2) = 17516.55.
+The realized spread ˜S(n)(t2), computed as the difference between the ask on the reference leg (next month) at
+t2 and the ask on the quoting leg (current month) at t1, equals |58.0. This results in a slippage of only |0.5 from
+the target spread.
+Although the next month leg had a slightly narrower spread at t0, the higher short-term stability during the
+critical interval led to significantly lower execution risk.
+˜S(n)(t2) = pa n(t2) − pa c (t1)
+= 17516.55 − 17458.55
+= 58.0
+(9)
+6
+
+=== page 7 ===
+(a) NIFTY February 2022 (t1)
+Bid Qty Ask Qty
+17458.55 50 17458.55 50
+17455 50 17459.65 50
+17450 50 17459.95 100
+(b) NIFTY March 2022 (t2)
+Bid Qty Ask Qty
+17514.2 50 17516.55 50
+17510.2 150 17516.7 50
+17510.1 100 17517.2 50
+Table 3: LOB snapshots when next month is the reference leg
+δ(n) S (t2) = |58.0 − 58.5|
+= 0.5 INR per contract
+(10)
+Summary and Interpretation
+Ref. Leg Ref Price (t0) Ref Exec (t2) Realized Spread Slippage (INR)
+Current Month (r = c) 17455 17458 56.2 2.3
+Next Month (r = n) 17516.5 17516.55 58.0 0.5
+Table 4: Reference leg outcomes: reference price at t0 and execution at t2 with realized spread and slippage (in
+INR) for the current month (r = c) and next month (r = n).
+Although the initial spread was wider when the current month was selected as the reference leg, the final realized
+spread was lower due to price movement during the critical interval, resulting in higher slippage. Conversely, the
+next month leg provided better price stability, despite a narrower initial spread, and resulted in lower slippage.
+This highlights the core insight: short-term stability of the reference leg is more important than instantaneous
+spread width when minimizing execution risk. In the sections that follow, we derive leg-specific stability estimates
+from LOB state (CLF) and from event history via a Hawkes arrival ratio, and use them to evaluate reference-leg
+choices.
+2 Problem Formulation: Optimal Reference Leg Selection
+The preceding empirical comparison illustrated that the choice of reference leg in a calendar spread quoting strategy
+materially affects the realized spread and slippage. Specifically, even when the initial observed spread favors one
+contract, short-term price stability during the critical interval can dominate realized execution outcomes. Motivated
+by these observations, we now formalize the reference leg selection problem as a dynamic decision-making process.
+At each quoting decision point, the trader must select the contract to treat as the reference leg based on observable
+market conditions, to minimize expected slippage relative to a target spread constraint. Unlike classical optimization
+problems, this selection is guided by statistical methods and empirical characteristics of the limit order book rather
+than by solving an explicit minimization problem. This formulation captures the execution asymmetry inherent
+in quoting strategies and provides the foundation for systematic reference leg selection based on real-time market
+data.
+Let W = {w(1), w(2), . . . } be a collection of non-overlapping evaluation intervals of the form w = [w1, w2), where
+w1 and w2 denote the start and end of each interval respectively.
+Iterating over each interval in W, we consider two classes of filters that guide quoting decisions at time w1:
+1. Filters GT (w) that act on the stream of trades and quotes observed strictly before the start of the interval.
+2. Filters GB(w) that operate on the LOB snapshot observed at the start of the interval.
+Each filter selects or scores relevant inputs from its respective domain, producing a filtered representation that
+will be used to assess the quoting viability of each contract leg.
+Each filter is paired with a quoting function that maps the filtered representation to a real-valued score for each
+candidate leg. The tick-based quoting function QT operates on the output of GT (w), while the LOB-based quoting
+function QB operates on the output of G B(w).
+Each quoting function returns a real-valued estimate of expected slippage for each leg r ∈ {c, n}, and selects the
+leg with the smaller value:
+QT (w) := arg min
+r∈{c,n}
+E[δ(r) S (w2) | GT (w)] ∀w ∈ W (11)
+7
+
+=== page 8 ===
+QB(w) := arg min
+r∈{c,n}
+E[δ(r) S (w2) | GB(w)] ∀w ∈ W (12)
+Here, δ(r) S (w2) denotes the realized slippage incurred on leg r at the end of the interval, and the filters G T (w)
+and GB(w) encode the information available at decision time.
+The quoting decisions are finally expressed as binary indicators:
+χT (w) := I  QT (w) = n 	 , χB(w) := I  QB(w) = n 	 (13)
+where a value of 1 indicates that the quoting rule recommends the next-month leg, and 0 indicates the current-
+month leg.
+We denote by χm(w) ∈ {0, 1} the market-optimal reference leg decision for interval w, defined as the choice
+that yields the lowest realized slippage in hindsight. This oracle benchmark provides a reference against which to
+evaluate the quality of decisions made by each quoting rule.
+Remark. We report realized spread slippage because the remaining cost components (exchange fees, rebates, and
+longer–horizon opportunity costs) are invariant to the reference–leg choice under our setup: a single venue and
+identical contract multipliers. These terms therefore add an interval–level constant and do not affect the ranking of
+χB versus χH. In market settings with asymmetric fee schedules, cross–venue routing, or role–dependent fills, these
+terms need not be invariant. Integrating them is orthogonal to our information comparison and is left for future
+work.
+Problem Definition: Evaluation of Reference Leg Selection Rules.
+Let W = {w} be non–overlapping evaluation intervals w = [w1, w2). For each w, let χB(w), χH(w) ∈ {0, 1}
+denote the binary decisions produced at w1 by the CLF–based rule and the Hawkes–based rule, respectively
+(value 1 selects the next–month leg, value 0 selects the current–month leg). Let δ (r) S (w2) be realized slippage on
+leg r ∈ {c, n} over [w1, w2). Given the market–optimal oracle decision
+χm(w) :=
+(
+1, if δ(n) S (w2) < δ(c) S (w2),
+0, if δ(c) S (w2) ≤ δ(n) S (w2),
+which breaks ties in favor of c deterministically, we define the agreement score:
+A(χ, χm) := 1 |W| X w∈W I {χ(w) = χm(w)}
+Compute and compare the agreement scores A(χT , χm) and A(χB, χm).
+Note: Decisions χB(w) and χH(w) are formed using only information timestamped strictly before w1. The
+realized slippage on [w1, w2) is used only for evaluation and to define χm(w).
+3 Methodology
+The decision rules introduced in Section 2 are evaluated against an oracle benchmark. In this paper, the oracle is
+an infeasible hindsight lower bound on deviation from the target spread: for each interval w, the oracle decision
+χm(w) selects the leg (current or next month) that would have minimized realized slippage on [w1, w2). We use
+this hindsight choice as an evaluation label for scoring data-driven quoting rules formed from observable signals.
+The methodology implements χT (w) and χB(w), instantiates χm(w) from realized outcomes, and computes the
+agreement score defined in the Problem Definition of Section 2 as the primary evaluation metric. All decisions use
+only information timestamped strictly before w1; outcomes on [w1, w2) are used solely for evaluation.
+3.1 Execution Design and Quoting Framework
+This subsection specifies how the executable quoting price is computed after the reference leg is chosen: we restate
+the notation for completeness, benchmark against the no-arbitrage spread, and then express the executable price as
+a VWAP on the selected reference leg. We frame the problem as a calendar-spread rollover. A common configura-
+tion is buying the spread : selling the current-month contract and buying the next-month contract simultaneously.
+Execution requires a side-conditional decision—whether the bid in the current-month or the ask in the next-month
+offers better instantaneous liquidity for the required size. We treat this as a reference-leg selection problem and
+evaluate the choice using deviation from the target spread as per the oracle benchmark (Section 3.6).
+8
+
+=== page 9 ===
+Let Fc denote the futures contract expiring in the current-month (priced pc(t) at time t) and Fn the next-
+month contract (priced pn(t)). Let q be the quantity to trade and let S denote a fixed target-spread threshold (a
+maximum acceptable cost per unit, distinct from the time-varying spread S(t) = pn(t) − pc(t)). A calendar spread
+trade sells q units of Fc and buys q units of Fn subject to the constraint pn(t) − pc(t) ≤ S. We next benchmark this
+threshold against the theoretical spread implied by no-arbitrage carry. Conditional on the reference-leg decision,
+the executable quoting price is taken as the volume-weighted average of the quoted prices required to fill q on the
+chosen leg at time t. The next paragraph makes this VWAP construction explicit.
+In an efficient, arbitrage-free market with risk-free rate R and identical multipliers on the current- and next-
+month contracts (ignoring dividends/funding spreads), the cost-of-carry relation implies pn(t) = eR(tn −tc ) pc(t),
+where tc and tn denote the expiry times of the current- and next-month contracts, respectively, and tn − tc is
+measured in years consistent with the compounding convention of R. This yields the model-implied spread
+Sm(t) = pc(t)
+ 
+eR(tn −tc ) − 1 
+. which may deviate in practice due to mispricing or market frictions. These frictions motivate quoting policies
+that dynamically adjust order prices to maintain execution costs below S.
+We consider two quoting configurations:
+Case 1: Using Fc as reference. Conditional on the reference-leg choice, we now compute the executable quoting
+price on the chosen leg using a VWAP of the LOB levels needed to fill q at time t0.
+The price pr c (t) is computed as the VWAP over the top ν levels on the bid side of Fc’s LOB:
+pr c (t) =
+Pν
+i=1 pb,i c qb,i cPν
+i=1 qb,i c ,
+with quoting price on Fn set to:
+pl n(t) = S − pr c (t).
+Case 2: Using Fn as reference. Conditional on selecting the next-month contract as the reference leg, the
+reference leg is executed via a marketable limit order at time t. The executable reference price pr n(t) is taken as the
+VWAP of the ask-side levels of the limit order book of Fn required to fill the target size q:
+pr n(t) =
+Pν
+i=1 pa,i n qa,i nPν
+i=1 qa,i n ,
+where ν is the smallest depth index such that Pν i=1 qa,i n ≥ q; the last level is partially consumed if needed. The
+linked quoting price on the current-month contract is then set to
+pl c(t) = pr n(t) − S,
+so that the quoted spread equals the target S under the convention S(t) = pn(t) − pc(t). Here, the superscripts r
+and l denote the reference-leg VWAP and the linked quote, respectively. (If the trading direction requires selling
+Fn, the construction is symmetric with bid-side levels.)
+The realized spread ˜S(t) is computed from the resulting trade prices after quoting and executing the reference
+leg with a marketable limit order. Consequently, the choice of reference leg affects execution cost and slippage, and
+will be evaluated against the oracle benchmark in the next subsection.
+3.2 Benchmarking Framework for quoting policies
+To compare quoting rules, we define a market-derived oracle decision χm(w) ∈ {0, 1} based on actual executed
+spread trades.
+Let E = {T, C, PDM} denote the set of event types observed in tick data, where T represents trades, C represents
+cancellations, and PDM denotes price downward modifications.
+The tick-based filter G T (w) returns the set of valid passive-aggressive trade pairs identified within the interval
+w = [w1, w2), extracted from tick history and used to construct the benchmark reference leg decision.
+Remark. (Trade-Only Basis for oracle Construction)
+Only Trade events are used to construct the oracle decision χm(w). Events of type Cancellation or Price Downward
+Modification are excluded from the filtered set G T (w), ensuring that benchmarking reflects executed spread trades
+alone.
+9
+
+=== page 10 ===
+Timew1 w2
+Evaluation window w = [w1, w2)
+Trades on Fc
+Trades on Fn
+Passive-aggressive
+trade pairs
+Figure 1: Illustration of oracle construction using passive-aggressive trade pairs within interval w = [w1, w2). The
+first-leg execution determines the oracle decision χm(w).
+For each pair (t1, t2) ∈ GT (w), the realized spread is:
+˜Sm(t) = pb,T n (t2) − pa,T c (t1)
+, where T represents event-type Trade. The oracle decision is:
+χm(w) :=
+(
+1 if Fc was traded first (ref leg is Fn)
+0 if Fn was traded first (ref leg is Fc)
+Each quoting rule χ(w) ∈ {χT (w), χB(w)} is compared to χm(w) using the agreement score:
+A(χ, χm) := 1 |W| X w∈W I {χ(w) = χm(w)}
+Remark. (On Quantity Normalization)
+All observed calendar spread trades in G T (w) are evaluated using the minimum tradable quantity permitted by the
+venue. This ensures that the realized spread ˜Sm(t) reflects slippage on a per-unit basis, independent of execution
+size.
+We define the oracle label χm(w) by sequentially evaluating tick data for calendar-spread trade pairs, i.e., opposite-
+direction trades across Fc and Fn within each considered window. For each valid pair, we compute the realized
+spread using trade-derived prices. If multiple valid pairs occur within w, we retain the pair that attains the smallest
+spread. This yields a hindsight lower bound for evaluation. The leg that trades first in the retained pair determines
+the oracle decision. The complete filtered set is denoted G T (w), and all benchmarking is grounded in this empirically
+observed structure.
+We now formalize two reference leg selection rules that instantiate the quoting framework introduced in Section
+2.
+3.3 Tick-based quoting rule.
+For each interval w ∈ W, we define a tick-based quoting rule that estimates the expected slippage of each leg using
+filtered trade and quote activity observed strictly prior to the quoting time w1:
+QT (w) := arg min
+r∈{c,n}
+E
+h
+δ(r) S (w2) | GT (w) i (14)
+The quoting decision is then encoded as a binary rule:
+χT (w) := I  QT (w) = n 	 (15)
+3.4 Forecasting Execution Risk with Multivariate Hawkes Processes
+Building on the event taxonomy above, we introduce a predictive framework that forecasts short-horizon execution
+risk across candidate reference legs. We estimate forward-looking arrival ratios with multivariate Hawkes processes
+and map them to a reference-leg decision. This model-based rule complements the reactive rules presented earlier
+and serves as a forecasting proxy for the oracle decision χm(w) defined in the Problem Definition (Section 2). The
+next subsection specifies the event sets, sides, and windows used to form these arrival-ratio forecasts.
+10
+
+=== page 11 ===
+Model Structure
+Let E = {T, C, P DM } denote the set of reference-impacting event types: T for trades, C for cancellations, and
+PDM for downward price modifications. Let Y = {b, a} represent the bid and ask sides of the limit order book,
+and X ∈ {c, n} index the current and next-month contracts. Define the joint index set I = E × Y .
+Our goal is to forecast, over a forward interval (τ, τ + ξ], the number of reference-impacting events ˜N X,Y,r (τ,τ +ξ] and
+the total number of events ˜N X,Y (τ,τ +ξ]. From these, we compute the arrival ratio:
+ρX,Y (τ,τ +ξ] = ˜N X,Y,r (τ,τ +ξ] ˜N X,Y (τ,τ +ξ] (16)
+Given that spread execution involves selling Fc and buying Fn, the ask side of Fc and the bid side of Fn are
+relevant. We therefore define the reference leg decision based on the forecasted arrival ratios:
+˜χ(τ,τ +ξ] = I
+n
+ρc,a (τ,τ +ξ] ≥ ρn,b (τ,τ +ξ]
+o
+(17)
+To maintain consistency with the decision framework introduced in Section 2, we denote this forecasting-driven
+rule as QH, with its output defined as:
+χH(w) := ˜χ(τ,τ +ξ] = I n ρc,a (w) ≥ ρn,b (w) o ,
+where w = (τ, τ + ξ]
+Here, QH maps estimated arrival ratios to a binary reference leg decision over window w ∈ W.
+Definition: Hawkes-Derived Feature Mapping.
+For each interval w = [w1, w2) ∈ W, let GH(w) ∈ R2 denote the filtered representation obtained by simulating
+a fitted Hawkes model on recent tick data to estimate directional arrival ratios. Define:
+˜N X,Y (w) , Simulated total Hawkes event counts on w
+˜N X,Y,r (w) , Simulated events attributed to leg
+r ∈ {c, n}
+ρX,Y (w) := ˜N X,Y,r (w) ˜N X,Y (w)
+GH(w) :=  ρc,a (w), ρn,b (w) 
+QH(w) := arg min
+r∈{c,n}
+ρr,s(w)
+χH(w) := I  QH(w) = n 	
+where ρr,s(w) represents the simulated relative arrival intensity for quoting side s of leg r, and n refers to the
+next-month contract.
+The above formalization defines the Hawkes-based decision rule χH(w) as a function of simulated forward event
+counts derived from fitted multivariate Hawkes models. By comparing the relative frequency of reference-price-
+impacting events across LOB sides, this approach translates microstructural event flow forecasts into a structured
+quoting decision. This provides a direct, data-driven proxy for short-term execution stability under each reference
+leg and can be evaluated against the market-optimal decision χm(w).
+Modeling Remark
+This decision rule χH(w) serves as a forecasting-based analog of the oracle decision χm(w). It selects the
+contract whose LOB side is expected to exhibit fewer reference-price-impacting events, thus offering more
+stable execution.
+11
+
+=== page 12 ===
+Multivariate Hawkes Process for Event Forecasting
+We model reference-impacting events using multivariate Hawkes processes [4]. For each contract X and side Y , we
+define a D-dimensional Hawkes process indexed by i ∈ I. The intensity λi t evolves as:
+λi t = µi +
+DX
+j=1
+Z t
+0
+ϕij (t − s) dN j s (18)
+where ϕij (t) captures the excitation effect of events of type j on type i.
+Following [37], we estimate separate Hawkes models for:
+Reference-impacting events only N X,Y,r
+All events N X,Y
+Each model is estimated on a rolling basis over historical windows (τ − h, τ ], yielding fitted kernels ˆΦX,Y,r and
+ˆΦX,Y .
+Estimation and Simulation Procedure
+The accuracy of short-term event forecasts under the Hawkes framework depends critically on the choice of kernel
+function ϕij (t), which encodes the temporal excitation effect of past events. We evaluate both parametric and non-
+parametric approaches to kernel estimation, balancing model interpretability, estimation stability, and flexibility of
+fit.
+Parametric kernels include the exponential and sum-of-exponentials forms, whose functional structures are
+shown in Table 5. These allow for low-dimensional maximum likelihood estimation and are widely used in market
+microstructure applications due to their analytical tractability.
+Non-parametric kernels, by contrast, do not assume a fixed functional form. Instead, we consider two classes of
+non-parametric estimators: (i) the expectation-maximization (EM) method, which iteratively estimates a discretised
+kernel by maximizing a latent-variable likelihood, and (ii) the conditional law approach, which reconstructs the
+kernel by inverting the conditional intensity relation from observed event times. These methods provide flexible
+approximations of ϕij (t), allowing for data-driven recovery of potentially complex excitation structures.
+Table 5: Evaluated Parametric Kernels
+Kernel Type Functional Form Method
+Exponential αe−βt TICK MLE
+Sum of exponentials P u αue−βu t TICK MLE
+The estimation and simulation procedures employed here closely follow those developed in our earlier work [37].
+The present formulation adapts those methods to forecast arrival ratios for reference-impacting events, enabling
+their integration into a structured decision rule.
+Hawkes kernels are estimated via maximum likelihood using the method presented in [40]. For parametric
+kernels, we use exponential and sum-of-exponentials forms. Non-parametric estimation follows [3, 33]. Simulated
+event sequences are generated using Ogata’s thinning method [38].
+Forecast Evaluation and Model Selection
+To assess kernel performance, we compare simulated distributions ˜DX,m ω of forecasted counts against realized counts
+N X,Y,r (τ,τ +ξ], computing the log-likelihood loss:
+ℓX,m = −
+TX
+j=1
+log P
+
+N X,Y,r ωj | ˜DX,m ωj
+
+(19)
+Model selection is based on the test for superior predictive ability (SPA) [25], which compares competing kernels
+under common evaluation metrics while controlling for multiple testing.
+The best-performing kernel ˆΦ∗ is used for all subsequent simulations. The resulting forecasting-based decision
+rule χH(w) is benchmarked against the oracle decision χm(w) using the agreement score defined in Section 2.
+12
+
+=== page 13 ===
+Tick history
+(τ − h, τ ]
+Filter:
+E = {T, C, P DM }
+Estimate kernel
+ˆΦX,Y,r
+Simulate
+˜N X,Y,r
+No filtering:
+Use all ticks
+Estimate kernel
+ˆΦX,Y
+Simulate
+˜N X,Y
+Compute arrival ratio
+ρX,Y (τ,τ +ξ]
+Reference leg decision
+χH(w)
+Figure 2: Forecasting decision pipeline: kernel estimation, simulation, arrival ratio computation, and final decision
+χH(w).
+Summary: Integration into Evaluation Framework
+The Hawkes-based arrival ratio forecast yields a reference leg decision that anticipates short-term slippage.
+This decision is validated by comparing its alignment with the oracle decision across evaluation windows,
+allowing rigorous benchmarking against LOB- and tick-based quoting rules.
+3.5 LOB-based quoting rule.
+Similarly, for each w ∈ W, we define a LOB-based quoting rule that uses the limit order book snapshot observed
+at time w1 to evaluate expected slippage:
+QB(w) := arg min
+r∈{c,n}
+E
+h
+δ(r) S (w2) | GB(w) i (20)
+with associated decision function:
+χB(w) := I  QB(w) = n 	 (21)
+These rules instantiate the framework in Section 2 using real-time market observables. The tick-based rule
+aggregates historical event data, and the LOB-based rule extracts instantaneous liquidity conditions. Both deci-
+sions use only information timestamped strictly before w1. The realized outcomes on [w1, w2) are used solely for
+evaluation. When the two leg scores are exactly equal, we break ties in favor of c for determinism and comparability
+with the oracle.
+3.6 Reference Leg Selection via LOB Liquidity Profiles
+Building on the previous section’s reference-leg selection rule derived from multivariate Hawkes intensity forecasts,
+we now introduce a LOB-state alternative that relies solely on the instantaneous limit order book configuration.
+Concretely, we aggregate level-wise depth with cross-level price gaps to form a composite liquidity profile (defined
+below). Whereas the Hawkes arrival ratio encodes temporal dependencies in event flow, this LOB-state construction
+encodes contemporaneous structure. We use this contrast to motivate a real-time, reference-leg selection rule based
+on liquidity discontinuities, with the empirical role of LOB-state information assessed against our evaluation oracle
+(deviation from the target spread).
+Recent models of limit order book dynamics, including multivariate Hawkes formulations, offer detailed descrip-
+tions of event arrivals and state dependence [15, 41, 36]. In latency-sensitive HFT deployments, real-time estimation
+13
+
+=== page 14 ===
+and updating can be computationally demanding, particularly as the number of event types and cross-excitation
+terms grows [15]. This motivates a complementary rule that is computable at decision times from LOB-state features
+alone.
+Motivated by the computational considerations in the preceding paragraph, we make explicit a practical trade-off
+between model expressiveness (rich event-history dependence) and runtime tractability (updates computable within
+each decision interval). In latency-sensitive deployments, low-latency decision rules with tractable state updates
+are commonly employed [14, 2]. Full re-estimation or online updating of high-dimensional event-history models can
+be computationally demanding [15]. We therefore consider a complementary LOB-state framework that preserves
+LOB-aware structure while remaining tractable at runtime. As defined in Section 3 and detailed in Section 3.4, the
+Hawkes arrival-ratio construction models the timing of events from history and treats the absolute price level as
+exogenous.
+Grounding the tractability discussion above in a concrete LOB-state effect, cross-level price gaps can produce
+materially higher execution cost when available depth at the best quotes is insufficient [17, 10]. In Table 1, the
+bid ladder exhibits a drop from |17450 at level 2 to |17401.1 at level 3, a |48.9 gap. An order that consumes the
+top two bid levels and then executes at level 3 would incur approximately |48.9 additional cost per contract due to
+this discontinuity. This motivates encoding price levels and cross-level gaps directly in our LOB-state measure for
+reference-leg selection, formalized in Section 3.6.
+Extending the example above, the magnitude of cross-level price drops directly determines execution cost when
+top-of-book depth is insufficient, as illustrated in Table 1. Because our Hawkes arrival-ratio in Section 3.4 treats
+the absolute price level as exogenous, it is not directly sensitive to these discontinuities. We therefore introduce a
+complementary LOB-state measure that encodes price levels, cross-level price gaps, and level-wise depth, and we
+assess its effect on reference-leg selection using the oracle benchmark defined in Section 3.6.
+Building on the need to encode price levels, cross-level gaps, and depth stated above, the Composite Liquidity
+Factor (CLF) draws on established links between limit order book shape and execution cost. Hasbrouck’s log quote
+slope (the rate of price change per unit depth) provides a core antecedent [28]. Figure 3 depicts this slope as the
+gradient of the line connecting logarithmic quantity and price at the top levels; a greater quantity near the mid-price
+corresponds to a flatter slope and higher immediate liquidity. Prior work shows how shape and depth regularities
+affect short-horizon price impact and stability [10, 17], while Glosten’s decomposition of spreads links such shape
+effects to informational trading costs [21]. We adapt these ideas into a direction-sensitive LOB-state measure (CLF)
+for reference-leg selection.
+Log
+quantity
+Price per share
+pb,i
+pa,i
+− log(qb,i) log(qa,i)
+Figure 3: Illustration of the log quote slope: the slope of the dashed line connecting (− log(q b,i), pb,i) and
+(log(qa,i), pa,i). Adapted from [28], Figure 2.
+Although the log-quote slope combines spread and depth across both sides of the LOB [28], reference-leg selection
+in our setting is side-conditional: we require a measure that emphasizes one-sided liquidity asymmetries across price
+gaps and level-wise depth on the side that will be consumed. The relevant side (bid or ask) is determined by whether
+the spread order is a buy or a sell. We therefore construct CLF features to encode these one-sided discontinuities
+(Section 3.6) and evaluate their contribution using deviation from the target spread.
+To operationalise the side-conditional requirement above, we introduce a LOB-state measure that adapts the
+log-quote slope to one-sided execution. We refer to this measure as the Composite Liquidity Factor (CLF). CLF
+preserves the slope intuition while explicitly encoding price levels, cross-level price gaps, and level-wise depth on
+the side to be consumed; formal definitions follow in Section 3.6.
+Let pY,i X denote the price at level i on side Y ∈ {b, a} (bid or ask) for contract X ∈ {c, n} (current or next
+month), and let qY,j X denote the available quantity at level j. With the current-month contract used as the reference
+leg, we define a bid-side CLF at depth i that contrasts the cross-level price gap with cumulative available depth on
+the consumed side:
+CLF b,i c = log
+ 
+pb,1 c /pb,i+1 c 
+log
+  Pi
+j=1 qb,j c  , i ∈ {1, . . . , ν −1}, pb,i+1 c < pb,i c . (22)
+14
+
+=== page 15 ===
+Here, the numerator encodes the price drop from the best bid to level i+1, and the denominator encodes cumulative
+bid-side depth through level i.
+Conversely, for the next-month contract used as the reference leg, we define an ask-side CLF at depth i that
+contrasts the cross-level price gap with cumulative available depth on the consumed side:
+CLF a,i n = log
+ 
+pa,i+1 n /pa,1 n 
+log
+  Pi
+j=1 qa,j n  , i ∈ {1, . . . , ν −1}, pa,i+1 n > pa,i n . (23)
+Here, the numerator encodes the price increase from the best ask to level i + 1, and the denominator encodes
+cumulative ask-side depth through level i.
+This construction provides a flexible and direction-sensitive indicator of slippage risk, suited to the decision
+of reference contract selection in spread-based strategies. Unlike the Hawkes-based approach, the CLF-based rule
+requires no model fitting or simulation. All quantities used in the decision rule are computed directly from the current
+limit order book snapshot, making the method suitable for real-time application in latency-sensitive environments.
+We now define the CLF-based quoting rule formally, using the same decision function structure introduced in
+Section 2.
+Definition: CLF-Based Reference Leg Selection Rule.
+For each evaluation window w = [w1, w2) ∈ W, let GB(w) ∈ R2 denote the LOB-based filter output containing
+directional liquidity values for the two contract legs. Define:
+GB(w) := (CLFc(w), CLFn(w))
+QB(w) := arg min
+r∈{c,n}
+CLFr (w)
+χB(w) := I  QB(w) = n 	
+where CLFr (w) denotes the composite liquidity factor for leg r ∈ {c, n}, and n refers to the next-month contract.
+This decision rule operates entirely on the LOB-based filtered representation G B(w), requiring no historical data,
+simulation, or model fitting. It is fully deterministic and computed from observable execution risk at the quoting
+time w1. By capturing asymmetries in directional liquidity across contract legs, G B(w) provides a structurally
+simpler, real-time quoting signal that complements event-driven methods.
+The two approaches discussed in this paper reflect different assumptions about the information content of
+market data. The Hawkes-based rule treats reference-impacting events as informative flow variables, modeling their
+interactions over time. In contrast, the CLF-based rule assumes that execution-relevant information is embedded
+in the instantaneous structure of the limit order book.
+4 Data
+This section describes the tick-driven market data and the microstructural features used by our filters. We use
+tick-by-tick (TBT) data from the National Stock Exchange (NSE) of India; the experiment analyzes NIFTY futures
+on February 7, 2022.3 The dataset includes two instruments: the current-month contract expiring on February 24,
+2022 (Fc), and the next-month contract expiring on March 31, 2022 (Fn). As shown in Table 6, both contracts
+display substantial tick activity on the sample date, providing granularity for execution modeling.
+Each tick is one of four event types: NEW (order addition), MODIFY (order revision), CANCEL (order withdrawal),
+and TRADE (execution). These types are used to extract features relevant to quoting behavior and limit order book
+dynamics. The minimum tick size for NIFTY futures is |0.05, as mandated by NSE.
+In our methodology, this data is segmented into a collection of evaluation windows W = {w = [w1, w2)}, where
+each window spans a short time interval (e.g., 100 milliseconds) aligned with the quoting decision frequency. For
+each w ∈ W, we apply two distinct classes of filters:
+The tick-based filter G T (w) operates on the order flow observed strictly before the quoting time w1.
+The LOB-based filter GB(w) extracts features from the limit order book snapshot observed exactly at time
+w1.
+These filters produce real-valued representations of prevailing market conditions that serve as inputs to the
+quoting rules defined in Section 2.
+3All exchange specifications and market microstructure rules referenced in this study reflect those in effect as of March 2022,
+corresponding to the period from which the data were collected.
+15
+
+=== page 16 ===
+Tick-derived features. For each evaluation window w ∈ W, the tick-based filter G T (w) encodes summary
+statistics of the recent order flow observed strictly before the quoting time w1. The features chosen as filtration
+criteria are those event types that worsen the price stability of the selected reference contract. These features
+include:
+Count of executed trades (TRADE events).
+Count of order cancellations (CANCEL events).
+Count of price-worsening quote updates (MODIFY events where the best bid decreases or the best ask increases).
+Total number of tick events, inclusive of all above types.
+LOB-derived features. Analogous to tick-derived features, we define features derived from the current limit
+order book (LOB) to evaluate reference-leg selection. In each interval w ∈ W, the LOB-based filter G B(w) extracts
+directional liquidity indicators from the limit order book snapshot observed at time w1. These features are computed
+separately for each contract leg and for each relevant side of the LOB (bid or ask), based on whether the leg is
+expected to be lifted or hit under the quoting convention.
+Specifically, we extract:
+Price at each level pb,i, pa,i, for i = 1, . . . , ν
+Quantity available at each level qb,i, qa,i, for i = 1, . . . , ν
+These level-wise features are later used to construct directional liquidity measures such as the Composite Liq-
+uidity Factor (CLF), introduced in a subsequent section, which serve as inputs to the LOB-based quoting rule
+QB.
+5 Experiment and Results
+From a market microstructure perspective, the two decision rules are designed to respond to different aspects
+of market information. The CLF is computed directly from limit order book primitives: instantaneous depth,
+queue imbalance, and local LOB shape, which are widely used as proxies for short-horizon liquidity and price
+impact in limit-order markets [2, 17]. This construction makes the CLF-based rule sensitive to rapid changes in
+the relative liquidity of the two legs over short horizons. However, during episodes of intense trading activity,
+high-frequency quotes and trades are heavily affected by microstructure noise and fleeting orders. Hasbrouck and
+Saar [27] document that low-latency trading can amplify such transitory LOB dynamics. In such environments, an
+exclusively cross-sectional, LOB-based statistic can generate spurious or very short-lived signals.
+The Hawkes arrival-ratio rule, in contrast, is a low-dimensional summary of the event-time dynamics of price-
+impacting messages. It aggregates information about how often price-impacting events arrive on each leg, with
+an explicit memory structure. Consistent with empirical evidence that Hawkes-based event-time models capture
+clustering and persistent order-flow dynamics [4, 26, 15], we expect this construction to be relatively insensitive to
+purely transitory fluctuations in the order-flow and better suited to detecting and exploiting persistent regimes in
+the benchmark.
+We deliberately differentiate the information sets of the two rules. For the Hawkes arrival-ratio we use only
+reference-impacting events at the top of the book (arrivals, cancellations, and downward price modifications that
+change the best quotes). For the CLF-based rule, we construct LOB-state measures from the first five depth
+levels on each side, thereby capturing the local cross-sectional shape of the LOB. In this sense, the comparison
+pits a history of reference-impacting ticks against a smoothed history of LOB snapshots. Our empirical analysis
+focuses on February 7, 2022 and on NIFTY futures expiring in February (Fc) and March (Fn). Throughout, the
+Hawkes arrival-ratio rule and the CLF-based LOB-state rule are evaluated within the decision-function framework
+of Section 2, using the oracle χm(w) as a benchmark. Table 6 reports tick-event counts for each contract on February
+7, 2022. Counts include all four TBT event types (NEW, MODIFY, CANCEL, TRADE). The substantial volume supports
+evaluation of quoting policies at high temporal resolution.
+Contract Date Tick events (count)
+NIFTY February Futures 2022-02-07 49,828,303
+NIFTY March Futures 2022-02-07 16,349,197
+Table 6: Tick-event counts by contract on February 7, 2022. Counts include NEW, MODIFY, CANCEL, and TRADE
+events. A sample from the processed tick data is provided in the appendix, in Table A2 for illustration.
+16
+
+=== page 17 ===
+The evaluation period contains both short-lived bursts in which the oracle reference leg flips frequently and
+extended segments in which the oracle remains on the same leg for many consecutive windows. The presence of
+both low- and high-persistence benchmark regimes within a single day is useful for our purposes: it allows us to
+examine how order-flow based and LOB-based rules behave under different benchmark regimes while keeping the
+market context fixed. Among the runs, Figure 4 shows that benchmark regimes are distributed almost symmetrically
+across the two legs: across the four bins Q1–Q4 the oracle generates 124 runs on Fc and 123 runs on Fn. This
+symmetry emphasises that benchmark regimes are not dominated by a single contract in terms of the number of
+episodes. In the subsequent analysis we investigate this structure by conditioning agreement scores on the run-
+length and oracle’s benchmark contract, so that the relative performance of the Hawkes arrival-ratio and CLF can
+be interpreted in terms of both the duration and the contract choice of benchmark regimes.
+Number of runs
+0
+20
+40
+60
+80 71
+33
+38
+52
+29
+23
+62
+32
+30
+62
+30
+32
+Q1
+(1–3 windows)
+Q2
+(4–10 windows)
+Q3
+(11–58 windows)
+Q4
+(≥ 59 windows)
+Oracle selects Fc
+Oracle selects Fn
+Figure 4: Number of oracle runs in each benchmark-persistence bin on February 7, 2022, split by the benchmark’s
+selected reference leg.
+Share of windows (%)
+0
+20
+40
+60
+80
+100
+0.4% 0.9% 4.6%
+94.1%
+Q1 Q2 Q3 Q4
+Figure 5: Share of evaluation windows in each benchmark-persistence bin on February 7, 2022.
+To study how performance varies with the stability of the oracle, we construct what we call benchmark persistence.
+Starting from the sequence of oracle decisions {χm(w)}w, we segment the evaluation period into maximal contiguous
+runs during which the oracle selects the same reference leg. The length of a run, measured in evaluation windows,
+is our measure of persistence: very short runs correspond to rapid benchmark switches between contracts, whereas
+long runs correspond to extended periods in which the oracle consistently prefers the same leg.
+We then examine the empirical distribution of run lengths on February 7, 2022 and partition runs into bins of
+benchmark persistence. The first bin contains runs of length 1–3 windows, the second bin contains runs of length
+4–10 windows, the third bin collects runs of length 11–58 windows, and the fourth bin consists of runs of length at
+least 59 windows. Figures 4 and 5 summarise this structure. Figure 4 reports the number of oracle runs in each
+persistence bin, while Figure 5 shows the share of evaluation windows that fall into each bin. The first two bins
+account for many distinct runs (72 and 52, respectively) but together cover only about 1.3% of evaluation windows.
+The third bin contains 62 medium-length runs and accounts for roughly 4.6% of windows. The fourth bin also
+contains 62 runs, but these long, high-persistence regimes account for about 94% of the evaluation period.
+Splitting runs by the oracle’s preferred contract shows that benchmark persistence is driven more by regime
+duration than by regime count. Across all four bins Q1–Q4, the numbers of runs on the two contracts are similar.
+Over the full evaluation period, however, the oracle selects the near leg in about 72% of windows. Within the
+highest-persistence bin Q4, runs on the near leg last on average roughly three times as long as runs on the other leg
+and together account for close to 69% of all windows. By contrast, the low- and medium-persistence bins Q1–Q3
+17
+
+=== page 18 ===
+cover only about 6% of the day and are more evenly split across the two contracts. Benchmark regimes are therefore
+concentrated in long intervals during which one leg remains market-optimal, punctuated by shorter excursions in
+which the oracle switches to the other leg.
+5.1 Hawkes-Based Forecasting.
+Within each decision interval w, the rule χH(w) in Section 3.4 uses simulated forward intensities from a multivariate
+Hawkes model. Using only data available at the start of w, we estimate the Hawkes kernels over the past 1000 ms
+for the reference-impacting events by maximum likelihood, then simulate K forward paths over the next 10 ms.
+From the simulated reference-side event counts, we compute arrival ratios ρX,Y (w) and apply the prescribed threshold
+to issue the binary reference-leg decision χH(w) ∈ {0, 1}.
+5.2 CLF-Based Rule.
+At each tick, we compute CLF at depths 1–4 for both Fc and Fn (CLF1, . . . , CLF4). CLF contrasts the cross-
+level price gap with cumulative depth, so that a lower value indicates more favourable immediate liquidity on the
+consumed side. The contract with the lower per-tick CLF score is selected at that tick as the reference contract.
+We partition the evaluation period into decision windows w of length 10 ms, shifted forward in 10 ms steps. For
+each window w, we take a majority vote over the tick-level reference choices observed in the preceding 1,000 ms.
+This yields the reference-leg decision χB(w) applied to the next 10 ms interval, with ties broken in favour of the
+next-month contract Fn.
+Modeling Remark
+Tick-level CLF values must be mapped to the interval-based decision framework of Section 2. We construct
+the LOB-based filter GB by applying an exponential moving average (EMA) to per-tick CLF observations
+over the historical window (w − ∆, w), using only information available before the start of the interval. Let
+ct denote the CLF at tick time t < w. In our implementation we set ∆ = 1,000 ms, so that the EMA smooths
+CLF over the same 1,000 ms history used in the majority-vote construction and in the Hawkes-based rule’s
+estimation window.
+5.3 Market-Optimal Benchmark.
+Before computing the Hawkes-based rule and the CLF-based rule, we use the method presented in Section 3.2 for
+evaluation. We construct a reference oracle χm(w) ∈ {0, 1}, which selects the contract that would have yielded the
+lower realized spread in hindsight. For each window w ∈ W, we compute the actual execution spreads for both
+reference leg choices and select the contract that minimizes slippage.
+5.4 Evaluation Metric.
+Each method’s prediction accuracy is measured using the agreement score A(χ, χm), as defined in Section 2:
+A(χ, χm) := 1 |W| X w∈W I {χ(w) = χm(w)}
+This metric reflects how often each rule’s decision matches the market-optimal choice based on realized execution
+outcomes. To contextualize the empirical comparison, we summarize the three decision rules evaluated in this
+experiment.
+Summary of Reference Leg Decision Rules. Hawkes-based rule:
+χH(w) = I  ρc,a(w) ≥ ρn,b(w) 	
+CLF-based rule:
+χB(w) = I {CLFn(w) < CLFc(w)}
+Market-optimal rule:
+χm(w) = arg minr∈{c,n} δ(r) S (w)
+This evaluation framework enables a direct comparison of flow-based and state-based decision models under
+realistic market conditions, using slippage-minimizing outcomes as ground truth.
+We divide the results into two parts. First, we compare alternative Hawkes kernel specifications using the test
+for superior predictive ability [25]. Second, we evaluate the reference-leg selection rules, χH(w) and χB(w), using
+deviation from the target spread, with both benchmarked against the oracle χm(w) introduced in Section 2.
+18
+
+=== page 19 ===
+5.5 Hawkes Kernel Selection
+Table 7 reports SPA [25] test values for four kernel specifications: two parametric (HawkesExp and HawkesSumExp)
+and two non-parametric (HawkesEM and HawkesCondLaw). The parametric methods yield comparable test values
+of 0.017 and 0.015, respectively, indicating similar performance. The non-parametric methods exhibit greater
+variability: the EM-based kernel records a substantially higher test value of 0.530, while the conditional law kernel
+yields 0.0. The results suggest that the expectation-maximization kernel [33] is not outperformed by any of the
+other candidate models when used as a benchmark.
+Table 7: SPA test values for Hawkes kernel specifications
+HawkesExp HawkesSumExp HawkesEM HawkesCondLaw
+0.017 0.015 0.530 0.000
+SPA setup and interpretation. For each candidate specification k, we treat k as the benchmark and test
+whether any competing model achieves a lower expected loss than k under the chosen loss function. We report the
+SPA p-value pk for this benchmarked comparison. Small values of pk lead to rejection of the null (there is evidence
+that at least one competing model outperforms the benchmark k); large values of pk imply we fail to reject the
+null (no evidence, in this sample, that any competitor is superior to benchmark k). Accordingly, higher p-values
+do not establish optimality, but they indicate that the chosen benchmark withstands the SPA comparison on this
+sample [25].
+Since the SPA test does not reject the null hypothesis that the EM-based kernel is the benchmark, we adopt
+the HawkesEM specification for all subsequent analyses. Consistent with evidence that high-frequency order-flow
+intensities exhibit time-of-day patterns [39], we report intraday kernel variation, as shown in Figures 8.
+5.6 Comparison of Hawkes Arrival Ratio and CLF
+Using the forecasting rules defined in the preceding subsections and the agreement metric A(χ, χm) introduced in
+Section 2, we compare the Hawkes-based rule χH(w) and the CLF-based rule χB(w) against the market-optimal
+oracle χm(w). The evaluation uses high-frequency tick data from February 7, 2022 for the NIFTY futures contracts
+Fc and Fn. All CLF parameters and Hawkes kernel coefficients are estimated on a training sample; the evaluation
+period is used only for generating forecasts and for computing agreement scores. The oracle benchmark χm(w) is
+the only object that uses realised post-decision information when defining the market-optimal reference leg.
+Table 8: Agreement score A(χ, χm): proportion of evaluation windows in which each method’s predicted reference
+leg matches the market-optimal oracle on February 7, 2022. The joint-agreement row reports the fraction of windows
+in which both the Hawkes arrival ratio and CLF4 simultaneously match the oracle.
+Method Agreement score
+CLF1 0.3796
+CLF2 0.4754
+CLF3 0.5919
+CLF4 0.6358
+Hawkes arrival ratio 0.6856
+Hawkes–CLF4 joint agreement 0.4149
+Table 8 shows that, on this evaluation day, the Hawkes arrival-ratio rule attains an agreement score of 0.6856 with
+the market-optimal oracle. Among the CLF variants, CLF4 achieves the highest agreement score at 0.6358, followed
+by CLF3, CLF2, and CLF1. On February 7, 2022, therefore, the low-dimensional Hawkes arrival ratio extracted
+from the limit-order dynamics attains a modestly higher agreement with the oracle than the best-performing CLF
+specification.
+To quantify how often the two rules arrive at the same decision, Figure 6 and the joint-agreement row of Table 8
+report the fraction of evaluation windows in which each combination of outcomes occurs. In 41.49% of windows,
+both the Hawkes arrival ratio and CLF4 match the oracle. The Hawkes arrival ratio is uniquely in agreement with
+the oracle in 27.08% of windows, while CLF4 is uniquely in agreement in 22.10%. Only 9.34% of windows are
+misclassified by both rules simultaneously.
+Conditional on the Hawkes arrival ratio agreeing with the oracle, CLF4 is also in agreement in about 60.5%
+of windows; conditional on CLF4 agreeing with the oracle, the Hawkes arrival ratio is also in agreement in about
+65.2%. These conditional shares indicate substantial overlap between the two rules, together with a non-trivial set
+19
+
+=== page 20 ===
+of windows in which only one of them matches the oracle. A hypothetical aggregator that could choose, ex ante,
+the better of the two signals in each window would miss the benchmark leg in at most the 9.34% of windows where
+both rules disagree with the oracle.
+Panels (b) and (c) of Figure 6 separate agreement by the oracle’s selected contract for each rule in isolation.
+In these panels, the rows distinguish evaluation windows in which the oracle selects the current-month contract Fc
+from those in which it selects the next-month contract Fn, while the columns indicate whether the rule matches or
+deviates from the oracle. Panel (b) shows that the Hawkes arrival-ratio rule agrees with the oracle in approximately
+88% of windows when the oracle selects Fc, but only in about 18% of windows when the oracle selects Fn. Panel (c)
+shows that CLF4 attains agreement of about 61% when the oracle selects Fc and about 69% when it selects Fn.
+Taken together, these contract-wise panels indicate that the Hawkes arrival ratio is most informative in regimes
+where the current-month contract is the market-optimal reference leg, whereas CLF4 contributes relatively more
+information when the oracle favours the next-month contract.
+41.49%
+(14,502)
+27.08%
+(9,465)
+22.10%
+(7,724)
+9.34%
+(3,265)
+agree disagreeCLF4
+agree
+disagree
+Hawkes
+(a) All windows
+88.18%
+(22,238)
+11.82%
+(2,981)
+17.76%
+(1,729)
+82.24%
+(8,007)
+agree disagreeHawkes
+Fn
+Fc
+Oracle leg
+(b) Hawkes by contract
+61.33%
+(15,468)
+38.67%
+(9,751)
+69.41%
+(6,758)
+30.59%
+(2,978)
+agree disagreeCLF4
+Fn
+Fc
+Oracle leg
+(c) CLF4 by contract Outcome
+Agreement
+Hawkes only (panel a)
+CLF4 only (panel a)
+Disagreement
+Figure 6: Joint agreement of the Hawkes arrival-ratio rule and CLF4 relative to the oracle on February 7, 2022.
+Panel (a) reports unconditional shares of evaluation windows in each joint outcome. Panel (b) reports contract-
+wise agreement and disagreement of the Hawkes arrival-ratio rule with the oracle. Panel (c) reports contract-wise
+agreement and disagreement of CLF4 with the oracle. Each cell reports the percentage and the number of evaluation
+windows corresponding to that outcome, using a common colour palette across panels.
+Given the partition in 4, each evaluation window inherits the benchmark-persistence bin of the run to which
+it belongs. Figure 7 reports agreement scores for the Hawkes arrival-ratio and CLF4 within each persistence bin.
+In the lowest-persistence bin (runs of length 1–3 windows), CLF4 attains an agreement score of approximately
+0.459, compared with 0.406 for the Hawkes arrival ratio. In the second bin (runs of length 4–10 windows), CLF4
+reaches an agreement score of 0.524 and the Hawkes arrival ratio reaches 0.489. In the third bin (runs of length
+11–58 windows), CLF4 attains an agreement score of 0.576, while the Hawkes arrival ratio attains 0.413. In the
+highest-persistence bin (runs of at least 59 windows), the ordering reverses: the Hawkes arrival-ratio rule reaches
+0.702 agreement with the oracle, while CLF4 attains 0.641.
+The aggregate agreement scores, the benchmark-persistence and contract-wise decompositions describe a con-
+sistent pattern. The Hawkes arrival-ratio rule and the LOB-based CLF4 rule both achieve non-trivial agreement
+with the market-optimal oracle, with a large intersection of windows in which they select the same reference leg, yet
+they extract information from different parts of the joint distribution of order-flow and LOB state. The persistence
+analysis shows that most evaluation windows fall into long benchmark regimes, within which the arrival-ratio rule is
+comparatively more accurate, while the CLF4 rule performs relatively better in short and medium-lived regimes in
+which the oracle switches reference legs more frequently. The contract-wise panels further indicate that the arrival
+20
+
+=== page 21 ===
+Agreement score
+0.0
+0.2
+0.4
+0.6
+0.8
+0.40600.4586 0.48900.5237 0.4131 0.5758
+0.7021
+0.6406
+Q1
+(1–3 windows,
+n = 133)
+Q2
+(4–10 windows,
+n = 317)
+Q3
+(11–58 windows,
+n = 1,622)
+Q4
+(≥ 59 windows,
+n = 32,884)
+Hawkes arrival ratio
+CLF4
+(a) Agreement by benchmark-persistence bin
+Hawkes − CLF4
+-0.20
+-0.10
+0.0
+0.05
+Q1 Q2 Q3 Q4
+−0.0526 −0.0347 −0.1628
++0.0615
+(b) Difference in agreement (Hawkes − CLF4) by bin
+Figure 7: Agreement scores of the Hawkes arrival-ratio and CLF4 across benchmark-persistence bins. Panel (a)
+shows agreement relative to the oracle in each bin of benchmark persistence. Panel (b) displays the corresponding
+difference in agreement (Hawkes minus CLF4); CLF4 attains higher agreement in the three lower-persistence bins
+(negative bars), while the Hawkes arrival ratio attains higher agreement in the highest-persistence bin (positive
+bar).
+ratio is most informative when the benchmark favours the current-month contract Fc, whereas CLF4 contributes
+more when the benchmark favours the next-month contract Fn. These findings suggest that event-history and
+LOB-state information are complementary rather than interchangeable inputs for reference-leg selection. Figures 4
+and 6 summarise this structure, including the contract-wise split of runs across the two contracts. They motivate
+the state-dependent interpretation of the two complementary signals developed in the discussion that follows.
+6 Discussion
+The prevailing literature on market microstructure supports such state-dependent performance. Empirical studies
+show that LOB shape, depth profiles and queue imbalance near the best quotes carry information about short
+horizon price impact [10, 18]. The CLF is computed directly from limit order book primitives: it responds to
+instantaneous depth, queue imbalance, and local LOB shape. This design allows it to adjust quickly when the
+relative liquidity of the two legs changes over short horizons. At the same time, during periods of intense trading
+activity, high-frequency quotes and trades are subject to microstructure noise and fleeting orders. Hasbrouck [27]
+emphasises that low-latency trading can amplify such transitory effects in the observed LOB. Under such conditions,
+a purely cross-sectional LOB-based statistic may produce spurious or short-lived signals.
+The Hawkes arrival-ratio, in contrast, is a low-dimensional summary of the event-time dynamics that influence
+price-impacting events. It aggregates information about how often price-impacting events arrive on each leg, with an
+explicit memory structure. Under standard Hawkes specifications, intensity forecasts are driven by self- and cross-
+excitation in recent order-flow [4]. This construction makes the arrival ratio relatively insensitive to very short-lived
+fluctuations in the order-flow, and better suited to detecting and exploiting persistent directional regimes in the
+benchmark.
+The pattern in benchmark persistence aligns with this microstructure interpretation. In segments with low
+benchmark persistence, where the oracle switches legs frequently or after only short bursts, CLF4 achieves higher
+agreement with the oracle than the Hawkes arrival ratio. In the highest-persistence bin, where the benchmark
+exhibits long, stable regimes, the Hawkes arrival ratio attains the higher agreement score. Collapsing the bins into
+low-persistence (runs of length at most 58 windows) and high-persistence (runs of at least 59 windows) segments
+reproduces the aggregate pattern discussed above: in the low-persistence segment CLF4 attains an agreement score
+of 0.5155 compared with 0.3903 for the Hawkes arrival ratio, whereas in the high-persistence segment the Hawkes
+arrival ratio reaches 0.7060 compared with 0.6441 for CLF4. In this sense, the two rules exploit complementary parts
+of the benchmark’s temporal structure: short-memory cross-sectional signals versus longer-memory event-history
+signals.
+21
+
+=== page 22 ===
+7 Conclusion
+This study develops and evaluates a diagnostic framework for reference-leg selection in multi-contract quoting.
+Using tick-by-tick NIFTY index futures data, we construct a market-optimal oracle based on realised slippage and
+compare two reference-leg decision rules: a Hawkes arrival-ratio rule built from reference-impacting order-flow, and
+a CLF-based rule constructed from contemporaneous LOB shape. In our illustrative application, the Hawkes arrival
+ratio attains higher agreement with the oracle in high-persistence benchmark regimes, while the CLF-based rule is
+relatively more accurate when the benchmark switches frequently; in addition, there is a non-trivial set of windows
+in which both rules match the oracle, indicating that event-history and LOB-state information often point to the
+same market-optimal benchmark.
+Methodologically, the framework is diagnostic in scope. It is parsimonious at runtime and portable across tick-
+driven, multi-contract markets where quoting is employed,since it relies only on tick-time event histories and LOB
+snapshots.The diagnostic emphasis is deliberate: it isolates decision quality from strategy-specific implementation
+details and clarifies where event-history and LOB-state information each contribute to reference-leg selection. Eval-
+uation is anchored by an infeasible hindsight lower bound on deviation from the target spread, which provides a
+common yardstick for comparing heterogeneous rules, and all tests follow a walk-forward, out-of-sample protocol
+that relies on model-comparison procedures controlling for data-snooping risk [25, 42].
+The construction of the CLF places the framework within the strand of microstructure research that links LOB
+state to short-horizon execution risk. The incorporation of cross-level log-quote slopes is motivated by Hasbrouck’s
+analysis of low-latency order books, where steep slopes in the best quotes are associated with fragile depth and
+heightened sensitivity to incoming orders [27]. In this paper these ingredients are aggregated into a single, direction-
+sensitive score per leg, designed to be computed from the LOB without repeated high-dimensional re-estimation.
+The Hawkes arrival ratio connects the study to intensity-based models of execution risk with limit orders. The
+prevailing literature investigates limit-order fills and price moves modeled by point-process intensities [23, 14, 24].
+The associated execution and price risk is managed by steering these intensities rather than by reacting solely to
+static book configurations. However, these models are constructed for single contract order-flow and do not naturally
+extend to multi-contract quoting frameworks and the dependent nature of execution risk in such a setting. The
+arrival ratio used here is a reduced-form summary of such intensity forecasts, the framework uses their relative
+magnitudes to choose the leg that is less exposed to future price-impacting flow. In our illustrative application, the
+non-trivial intersection of windows in which both CLF and Hawkes arrival ratios match the oracle suggests that
+cross-sectional book shape and short-run order-flow clustering often point to the same market-optimal oracle.
+Looking ahead, the same diagnostic structure can be embedded in an explicit control formulation. In such
+a setting, each quoting rule induces a mapping from an event-time state (summarising recent order-flow, LOB
+shapes or other market co-variates) to a reference-contract choice. The oracle benchmark provides a natural loss
+functional based on slippage relative to the choice of market optimal reference contract. Formalising this extension
+is beyond the scope of the present methodological study, but the results here suggest that combining event-history
+and LOB-state signals in such a control framework is a promising direction for future work.
+References
+[1] Irene Aldridge. High-frequency trading: a practical guide to algorithmic strategies and trading systems. John
+Wiley & Sons, 2013.
+[2] Marco Avellaneda and Sasha Stoikov. High-frequency trading in a limit order book. Quantitative Finance, 8
+(3):217–224, 2008.
+[3] E. Bacry and J.F. Muzy. Second order statistics characterization of hawkes processes and non-parametric
+estimation. arXiv preprint arXiv:1401.0903, 2014.
+[4] Emmanuel Bacry, Iacopo Mastromatteo, and Jean-Fran¸cois Muzy. Hawkes processes in finance. Market Mi-
+crostructure and Liquidity, 1(01):1550005, 2015.
+[5] Philippe Bergault, David Evangelista, Olivier Gu´eant, and Douglas Vieira. Closed-form approximations in
+multi-asset market making. arXiv preprint arXiv:1810.04383, 2018.
+[6] Philippe Bergault, Fay¸cal Drissi, and Olivier Gueant. Multi-asset optimal execution and statistical arbitrage
+strategies under ornstein-uhlenbeck dynamics. SIAM Journal on Financial Mathematics, 13(1):353–390, 2022.
+[7] Dimitris Bertsimas and Andrew W. Lo. Stochastic programming methods in arbitrage portfolio construction.
+Management Science, 47(3):455–468, 2001.
+[8] Jose Blanchet and Xinyun Chen. Continuous-time modeling of bid-ask spread and price dynamics in limit
+order books. Quantitative Finance, 15(7):1171–1186, 2015.
+22
+
+=== page 23 ===
+[9] Jean-Philippe Bouchaud. Markets as complex systems. Cambridge University Press, 2009.
+[10] Jean-Philippe Bouchaud, Marc Mezard, and Marc Potters. Statistical properties of stock order books: empirical
+results and models. Quantitative Finance, 2(4):251–256, 2002.
+[11] Clive G. Bowsher. Modelling security market events in continuous time: Intensity based, multivariate point
+process models. Journal of Econometrics, 141(2):876–912, 2007.
+[12] Jonathan Brogaard, Terrence Hendershott, and Ryan Riordan. High frequency trading and its impact on
+market quality. Journal of Financial Economics, 113(1):1–28, 2014.
+[13] Matthias M. Buehlmaier. Option spread strategies: An empirical study on risk-return profiles. Journal of
+Financial Economics, 131(2):456–472, 2019.
+[14] Alvaro Cartea, Sebastian Jaimungal, and Jose Penalva. Algorithmic and High-Frequency Trading. Cambridge
+University Press, 2015.
+[15] Val´erie Chavez-Demoulin and Jennifer McGill. High-frequency financial data modeling using hawkes processes.
+Journal of Banking & Finance, 36(12):3415–3426, 2012.
+[16] Ben Clapham. The impact of high-frequency trading on market stability. Journal of Financial Markets, 25:
+100–118, 2022.
+[17] Rama Cont and Adrien De Larrard. Price dynamics in a markovian limit order market. SIAM Journal on
+Financial Mathematics, 4(1):1–25, 2014.
+[18] Rama Cont, Sasha Stoikov, and Rajesh Talreja. Price dynamics in a markovian limit order market. SIAM
+Journal on Financial Mathematics, 1(1):1–25, 2010.
+[19] Robert F. Engle and Jeffrey R. Russell. Autoregressive conditional duration: A new model for irregularly
+spaced transaction data. Econometrica, 66(5):1127–1162, 1998.
+[20] Thierry Foucault, Ohad Kadan, and Eugene Kandel. Limit order book as a market for liquidity. Review of
+Financial Studies, 18(4):1171–1217, 2005.
+[21] Lawrence R Glosten. Components of the bid-ask spread and the statistical properties of transaction prices.
+Journal of Finance, 42(5):1293–1307, 1987.
+[22] Lawrence R. Glosten and Paul R. Milgrom. Bid, ask and transaction prices in a specialist market with
+heterogeneously informed traders. Journal of Financial Economics, 14(1):71–100, 1985.
+[23] Olivier Gu´eant, Charles-Albert Lehalle, and Joaquin Fernandez-Tapia. Dealing with the inventory risk: a
+solution to the market making problem. Mathematics and Financial Economics, 7(4):477–507, 2013. doi:
+10.1007/s11579-012-0087-0.
+[24] Fabien Guilbaud and Huyen Pham. Optimal high-frequency trading with limit and market orders. Quantitative
+Finance, 13(1):79–94, 2013. doi: 10.1080/14697688.2012.678278.
+[25] P.R. Hansen. A test for superior predictive ability. Journal of Business & Economic Statistics, 23(4):365–380,
+2005.
+[26] Stephen Hardiman, Nicolas Bercot, and Jean-Philippe Bouchaud. Predicting order book dynamics through a
+self-exciting point process model. arXiv preprint arXiv:1302.0133, 2013.
+[27] Joel Hasbrouck and Gideon Saar. Low-latency trading. Journal of Financial Markets, 16(4):646–679, 2013.
+[28] Joel Hasbrouck and Duane J. Seppi. Common factors in prices, order flows, and liquidity. Journal of Financial
+Economics, 59(3):383–411, 2001. ISSN 0304-405X.
+[29] Thomas Ho and Hans R. Stoll. Optimal dealer pricing under transactions and return uncertainty. Journal of
+Financial Economics, 9(1):47–73, 1981.
+[30] Weibing Huang, Charles-Albert Lehalle, and Mathieu Rosenbaum. Simulating and analyzing order book data:
+The queue-reactive model. arXiv preprint arXiv:1312.0563, 2013. URL https://arxiv.org/abs/1312.0563.
+[31] John C. Hull. Options, Futures, and Other Derivatives. Pearson, 2018.
+[32] Michael Kearns, Alex Kulesza, and Yuriy Nevmyvaka. Empirical limitations on high-frequency trading prof-
+itability. The Journal of Trading, 5(4):50–62, 2010.
+23
+
+=== page 24 ===
+[33] E. Lewis and G. Mohler. A non-parametric em algorithm for multiscale hawkes processes. Journal of Non-
+Parametric Statistics, 1(1):1–20, 2011.
+[34] James Macbeth. Trading and hedging iron condors in volatile markets. Financial Analysts Journal, 67(4):
+34–45, 2011.
+[35] Maxime Morariu-Patrichi and Mikko S Pakkanen. State-dependent hawkes processes and their application to
+limit order book modelling. Quantitative Finance, 21(12):2069–2086, 2021.
+[36] Luca Mucciante and Alessio Sancetta. Estimation of an order book dependent hawkes process for large datasets.
+Journal of Financial Econometrics, 22(4):1098–1129, 2024. doi: 10.1093/jjfinec/nbad021. URL https://
+academic.oup.com/jfec/article/22/4/1098/7241580.
+[37] Aditya Nittur Anantha and Shashi Jain. Forecasting high frequency order flow imbalance using hawkes pro-
+cesses. Computational Economics, 2025.
+[38] Y. Ogata. On lewis’ simulation method for point processes. IEEE transactions on Information Theory, 27(1):
+23–31, 1981.
+[39] Takahiro Omi, Yoshito Hirata, and Kazuyuki Aihara. Hawkes process model with a time-dependent background
+rate and its application to high-frequency financial data. Physical Review E, 96(1):012303, Jul 2017. doi:
+10.1103/PhysRevE.96.012303. URL https://link.aps.org/doi/10.1103/PhysRevE.96.012303.
+[40] T Ozaki. Maximum likelihood estimation of hawkes’ self-exciting point processes. Annals of the Institute of
+Statistical Mathematics, 31:145—-155, 1979.
+[41] Philip E. Protter, Qianfan Wu, and Shihao Yang. Order book queue hawkes-markovian modeling. SIAM
+Journal on Financial Mathematics, 15(1):1–25, 2024. doi: 10.1137/22M1470815. URL https://epubs.siam.
+org/doi/10.1137/22M1470815.
+[42] H. White. A reality check for data snooping. Econometrica, 68(5):1097–1126, 2000.
+[43] Peng Wu, Marcello Rambaldi, Jean-Fran¸cois Muzy, and Emmanuel Bacry. Queue-reactive hawkes models for
+the order flow. arXiv preprint arXiv:1901.08938, 2019. URL https://arxiv.org/abs/1901.08938.
+24
+
+=== page 25 ===
+8 Appendix I: Hawkes excitation kernel norms
+We visualize the Hawkes EM kernel norms across three time blocks to illustrate how excitation strength between
+event types evolves intraday. Each pair shows the ask and bid sides during a 20-minute window.
+In each pair of kernel norm heat maps shown, the first heat map is for the NIFTY futures contract expiring
+on 24th February 2022, while the second heatmap is for the NIFTY futures contract expiring on March 30th 2022.
+Table A1: Microstructure Event Types Used in Hawkes Modeling
+Label Description
+TA Trade from aggressive order on the ask.
+TB Trade from aggressive order on the bid.
+CA Cancellation at the top level of the ask.
+CB Cancellation at the top level of the bid.
+P DMA Downward price adjustment on the ask.
+P DMB Downward price adjustment on the bid.
+25
+
+=== page 26 ===
+(a) Fig. A1. 10:05–10:25 AM: Strong self-excitation in
+price-down modifications (PDM), NIFTY Feb.
+(b) Fig. A2. 10:05–10:25 AM: Strong self-excitation in
+price-down modifications (PDM), NIFTY Mar.
+(c) Fig. A3. 12:10–12:30 PM: Increased excitation from
+trades and cancellations, NIFTY Feb.
+(d) Fig. A4. 12:10–12:30 PM: Increased excitation from
+trades and cancellations, NIFTY Mar.
+(e) Fig. A5. 2:10–2:30 PM: Cancellations dominate
+excitation; PDM influence fades, NIFTY Feb.
+(f) Fig. A6. 2:10–2:30 PM: Cancellations dominate
+excitation; PDM influence fades, NIFTY Mar.
+Figure 8: Excitation diagnostics by interval and contract. Panels are arranged two per row and scaled to fit on a
+single float page.
+26
+
+=== page 27 ===
+9 Appendix II: Sample Tick Data
+The table below displays a snippet of the raw tick-by-tick data used in the experiments. It includes timestamps,
+event types, order sides, price levels, and available quantities. This example illustrates the granularity and structure
+of the input used to estimate Hawkes kernels and compute liquidity metrics.
+27
+
+=== page 28 ===
+Server epoch
+nanos
+Symbol event type side Price Qty OID1 OID2 Aggres-
+sor
+capture timestampz
+1644227998953429992 NSEFNO
+NIFTY G22
+TRADE 17214.00 50 11000000712953441100000071290667BUY 2022-02-07
+09:59:58.953429992+00
+1644227999031664383 NSEFNO
+NIFTY G22
+TRADE 17213.80 50 11000000712954491100000071295363BUY 2022-02-07
+09:59:59.031664383+00
+1644227999031664383 NSEFNO
+NIFTY G22
+TRADE 17213.85 150 11000000712954491100000071290493BUY 2022-02-07
+09:59:59.031664383+00
+1644205500049497674 NSEFNO
+NIFTY G22
+N BUY 17000.00 50 1100000000001754 2022-02-07
+03:45:00.049497674+00
+1644205500050566579 NSEFNO
+NIFTY G22
+N BUY 17401.10 100 1100000000001939 2022-02-07
+03:45:00.050566579+00
+1644205500050579855 NSEFNO
+NIFTY G22
+N BUY 16901.05 100 1100000000001941 2022-02-07
+03:45:00.050579855+00
+1644205500050016996 NSEFNO
+NIFTY G22
+N SELL 17460.00 50 1100000000001849 2022-02-07
+03:45:00.050016996+00
+1644205500050096128 NSEFNO
+NIFTY G22
+N SELL 17500.00 100 1100000000001864 2022-02-07
+03:45:00.050096128+00
+1644205500050121328 NSEFNO
+NIFTY G22
+N SELL 17458.55 400 1100000000001868 2022-02-07
+03:45:00.050121328+00
+1644227999966936439 NSEFNO
+NIFTY G22
+MODIFY
+TICK
+SELL 17225.00 250 1100000045070355 2022-02-07
+09:59:59.966936439+00
+1644227999969919000 NSEFNO
+NIFTY G22
+MODIFY
+TICK
+BUY 17205.95 100 1100000071271630 2022-02-07
+09:59:59.969919000+00
+1644227999988916651 NSEFNO
+NIFTY G22
+MODIFY
+TICK
+SELL 17216.70 100 1100000071286370 2022-02-07
+09:59:59.988916651+00
+1644228205338970644 NSEFNO
+NIFTY G22
+CANCEL
+TICK
+SELL 17444.00 50 1100000012222592 2022-02-07
+10:03:25.338970644+00
+1644228205340990944 NSEFNO
+NIFTY G22
+CANCEL
+TICK
+SELL 17273.00 50 1100000010068455 2022-02-07
+10:03:25.340990944+00
+1644228205341822198 NSEFNO
+NIFTY G22
+CANCEL
+TICK
+BUY 17000.00 550 1100000058552827 2022-02-07
+10:03:25.341822198+00
+Table A2: Data snippet for 2022-02-07 (TRADE: trade tick order, N: new tick order, MODIFY TICK: modification tick order, CANCEL TICK: cancellation tick order).
+28
+
+=== page 29 ===
+10 Appendix III: Global Notation
+Table 11: Summary of Symbols and Their First Point of Introduction
+Symbol Description Section
+Market Structure and Events
+Fc, Fn Current and next-month futures contracts Problem Formula-
+tion
+pb,i, pa,i Price at level i on bid / ask side CLF Section
+qb,i, qa,i Quantity at level i on bid / ask side CLF Section
+X ∈ {c, n} Contract index: current or next-month Forecasting Objec-
+tive
+Y ∈ {b, a} Limit order book side: bid or ask Forecasting Objec-
+tive
+E Event types: trades (T), cancels (C), PDM Forecasting Objec-
+tive
+TA, TB Trades due to aggressive orders on ask/bid Appendix Table
+CA, CB Cancellations at top of ask/bid Appendix Table
+P DMA, P DMB Price-down moves on ask/bid side Appendix Table
+Feature Extraction and Data Structures
+T (w) Tick history in interval w Problem Formula-
+tion
+B(w) LOB snapshot at start of window w Problem Formula-
+tion
+W Set of all evaluation windows w = [τ, τ + ξ) Problem Formula-
+tion
+τ Start time of evaluation window w Problem Formula-
+tion
+ξ Forecast horizon length Problem Formula-
+tion
+GT , GB, GH Resulting feature vectors from each input
+source
+Problem Formula-
+tion
+Decision Rules and Outcomes
+χT (w), χB(w), χH(w) Binary decisions: 0 = Fc, 1 = Fn Problem Formula-
+tion
+χm(w) Market-optimal reference leg (minimum real-
+ized spread)
+Problem Formula-
+tion
+Hawkes Process Components
+λi t Intensity function for event type i Hawkes Forecasting
+µi Baseline intensity for event type i Hawkes Forecasting
+ϕij (t) Kernel function: excitation from j to i Hawkes Forecasting
+˜N X,Y (w) Simulated total event count over window w Forecasting Objec-
+tive
+˜N X,Y,r (w) Simulated reference-impacting event count Forecasting Objec-
+tive
+ρX,Y (w) Arrival ratio: ˜N X,Y,r (w) / ˜N X,Y (w) Forecasting Objec-
+tive
+Liquidity and Evaluation Metrics
+CLFi Composite Liquidity Factor using top i LOB
+levels
+CLF Section
+δ(r) S (w) Realized spread under contract r as reference
+leg
+Problem Formula-
+tion
+A(χ, χm) Agreement score: 1 |W| P I{χ(w) = χm(w)} Problem Formula-
+tion
+29

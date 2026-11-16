@@ -1,0 +1,4226 @@
+=== page 1 ===
+Idiosyncratic Market Effects in Global Time Series Momentum
+Andrew Butler, Maciej Zawadzki, Adam Butler
+ReSolve Asset Management
+Abstract
+Time series momentum is a pervasive explanatory factor in financial markets whereby a market’s recent
+historical average return positively predicts future returns. Recent applications of statistical learning augment
+the traditional linear model definition with a more descriptive global nonlinear factor model. We extend the
+work of Moskowitz et al. [47] and demonstrate that models fit at the individual market level exhibit response
+curves that are distinct from the global factor model. We highlight the heterogeneity of forward market
+returns as a function of time series momentum and provide a framework that enables each feature-market
+pair to express its unique prediction behaviour. Empirical results demonstrate that, despite substantially
+smaller sample sizes, fitting nonlinear models to individual markets is a robust and often overlooked modelling
+approach that can result in a marginal improvement in out-of-sample performance.
+Keywords: Time Series Momentum, Quantitative Finance, Statistical Learning, Regression
+1. Introduction
+Forecasting global financial markets is a challenging problem in quantitative finance. The efficient market
+hypothesis posits that the sum total of investor decisions leads to a rational and complete price discovery.
+Under this hypothesis, all currently available information is immediately reflected in the asset price [43]. That
+is to say, asset prices follow a martingale, whose future variations are unpredictable given current information.
+In contrast, many academics and practitioners reject the hypothesis that financial agents act in a perfectly
+rational manner with no friction. Instead, factors such as investor biases [31], social influence [36] and limits
+to arbitrage [51] can result in pricing inefficiencies which can persist for a meaningful period of time.
+The use of market ‘factors’ to forecast and explain asset returns has a long and established history in the
+financial literature. Notably, the capital asset pricing model (CAPM), first introduced by Treynor [56], Sharpe
+[50] and Lintner [41], models stock returns as a linear function of the stock’s sensitivity to the corresponding
+equity market. The seminal work of Fama and French [22, 23, 24, 25] expands upon CAPM by introducing
+other explanatory factors such as market capitalization, value and profitability, in order to forecast stock
+returns.
+The observation that asset returns generally exhibit non-zero autocorrelation has also been documented
+in the financial literature and suggests that asset prices do not follow a perfect martingale process. For
+example, the generalized autoregressive conditional heteroskedasticity (GARCH) model proposed by Engle
+[21] and Bollerslev [9] demonstrates that the absolute value of returns exhibits long-memory effects and other
+‘stylized facts’ common to financial time series [10, 11]. Moreover, the application of general time series
+analysis techniques, such as autoregressive and moving average models, has demonstrated positive predictive
+power for forecasting asset mean returns (see for example [13, 16, 19, 39]). Most relevant to this work,
+Moskowitz et al. [46] demonstrate that the forward returns of many global futures markets can be reasonably
+Preprint submitted to arXiv November 13, 2026
+arXiv:2611.15646v1  [q-fin.MF]  11 Nov 2026
+
+=== page 2 ===
+forecasted by the market’s average return over a 1 to 12 month period. The so-called ‘time series momentum’
+factor is therefore the observation that markets generally exhibit a small, but positive autocorrelation in
+returns, and is the dominant explanatory factor for Commodity Trading Advisors (CTAs) and systematic
+hedge fund performance [8, 12]. Of equal importance, the slope and/or shape of the futures term structure
+contains information pertaining to commodity inventory levels and hedging activity, and has been shown
+to positively predict forward returns [28, 54]. Koijen et al. [37] demonstrate that the convenience yield, or
+market ‘carry’, can be estimated from the spot market and futures term structure and produce predictions
+that generalize across commodity and financial markets alike. To date, the time series momentum and carry
+factors remain some of the strongest, most durable, and most widely studied factors in the global factor
+literature (see for example [2, 3, 4, 5, 29, 30, 32, 34, 57, 44]). While this paper focuses primarily on the time
+series momentum factor, the general framework and modelling approach naturally extend to other factors
+such as carry, volatility, and skewness.
+Traditionally, the implementation of factor strategies often assumes a simple response function between
+factor features and forward expected returns. For example, the time series momentum factor, frequently
+defined as the past 12-month return, has been widely studied in the context of equities [33], mutual funds
+[17] and futures markets [46]. The expected return is typically modelled as a linear function of momentum,
+with a slope coefficient set to 1 and no intercept term. This imposes the assumption that expected returns are
+zero when the factor score is zero, and increase linearly as the factor score increases. While straightforward
+to implement, this simplistic linear specification imposes strong assumptions about the relationship between
+past returns (feature values) and forward expected returns.
+Statistical learning methods, on the other hand, are able to capture nonlinearities and interactions that
+are often overlooked by traditional linear factor models. Rather than assuming a specific linear functional
+form, machine learning methods provide a data-driven approach to uncover the optimal mapping from feature
+values to forward expected returns. With the rise of advanced statistical methods and data science, much of
+the recent financial literature on asset pricing focuses on the use of machine learning methods to extract price
+signals from noisy financial data [15, 20, 26, 35, 38, 42]. Notably, Liew and Mayster [40] explore the use of
+neural networks, random forest and support vector machines to forecast the sign of liquid ETF returns. They
+consider price, volume and seasonality features and demonstrate positive predictive power over time horizons
+ranging from 1 to 3 months. Related, Ta et al. [55] explore the use of linear regression and support vector
+machines for forecasting stock returns. More recently, Blitz et al. [7] survey a variety of machine learning
+techniques including linear regression, elastic net, gradient boosting trees and neural networks for forecasting
+US stock returns. They demonstrate that, in recent years, a naive machine learning implementation results
+in zero net performance. Significantly positive net returns, however, are achievable by forecasting over longer
+time horizons and applying efficient portfolio construction techniques.
+Closely related is the work of Carver [18], who presents a binning procedure for mapping time series
+momentum features to expected volatility-adjusted returns. To attenuate the potential for model overfitting,
+the author recommends fitting a single response function aggregated across multiple markets, and, consistent
+with the factor literature, does not recommend fitting at the individual market level. Related, Waldow
+et al. [58] explore the use of time series momentum features in conjunction with logistic regression, random
+forest and gradient boosting classifiers to forecast the cross-section of futures market returns. Similarly,
+Schmidhuber [49] uses time series momentum features and provides a parametric model for forecasting futures
+markets. The author demonstrates that, in contrast to the factor literature, market expected returns can
+be modelled as a cubic polynomial of the observed trend strength, with model parameters that generalize
+across markets. Most relevant to this paper is the work of Moskowitz et al. [47] who document a persistent
+nonlinear relationship between time series momentum features and forward volatility-adjusted returns. The
+authors explore kernel regression and neural networks, and demonstrate that nonlinear models fit across
+2
+
+=== page 3 ===
+all markets within a given sector can result in improved out-of-sample performance in comparison to the
+traditional linear model.
+The remainder of the paper is outlined as follows. In Section 2 we follow the work of Moskowitz et al. [47]
+and present a framework for fitting regression models to forecast forward volatility-adjusted market returns.
+We limit our exploration to simple linear regression and non-parametric kernel regression, acknowledging
+that alternative techniques such as local regression (LOESS), neural networks, random forest and gradient
+boosting regression are equally valid. In Section 3 we present motivating examples, and in Section 4 we
+perform a walk-forward analysis across 50 global futures markets, spanning over 30 years of market data. In
+contrast to the factor literature, where a single model is fit to generalize across a group of markets, we explore
+fitting prediction models at the individual market level. In general, we confirm the findings from Schmidhuber
+[49], Carver [18] and Moskowitz et al. [47] and demonstrate empirically that market forward returns are a
+nonlinear function of the time series momentum feature values. Moreover, when fit in aggregate across all
+markets, the response functions converge on the previously discovered linear and nonlinear model definitions
+[46, 47]. However, we show that when models are fit at the individual market level, they demonstrate a
+unique nonlinear response that varies across markets in both the strength and character of the signal. The
+proposed framework therefore enables each feature-market pair to express its unique prediction behaviour.
+This is in direct contrast to the traditional factor literature, which advocates for fitting a unified single model
+that generalizes across all markets within a group and therefore borrows statistical robustness by fitting
+over substantially larger sample sizes [6, 37, 46, 47]. Empirical results demonstrate that fitting nonlinear
+models to individual markets is an equally robust and often overlooked modelling approach. For the time
+series momentum factor explored in this paper, we demonstrate that, in aggregate, fitting to individual
+markets results in improved and differentiated out-of-sample performance at the margin. From a statistical
+standpoint, we find the total effect size to be small, with market mean returns that are statistically equivalent
+to those produced by both the linear and nonlinear global factor models. This is largely explained by the
+observation that most markets exhibit a linear forward response when feature values are within the normal
+range. Nonlinear effects therefore occur primarily at extreme feature values, which are observed much less
+frequently. Statistical analysis of realized market mean returns at feature extremes provides some evidence
+that the market-specific nonlinear response functions represent genuine market signal and are not purely an
+artifact of sampling error. Taken together, we are encouraged by the robustness of the proposed modelling
+approach as it enables data-driven factor exploration in settings that require a more fine-grained individual
+market perspective.
+2. Methodology
+We follow the work of Moskowitz et al. [47] and cast the market return forecast as an empirical conditional
+estimation problem. We denote the price of the market, k, at time t as pk (t). The associated return from
+period t − 1 to t is therefore rk(t) = pk (t) / pk (t−1) −1. Given that market volatility is known to be highly
+non-stationary [53], we choose to work with volatility-adjusted returns. Specifically, we let the estimated
+volatility of market k at time t be ˆσ(t) k . We therefore define the response variable, Y = {y(t)}T t=1, as the
+forward volatility-adjusted average market return, where
+yk (t) = 1√m
+m−1X
+i=0
+rk (t+i+l) / ˆσ(t+i) k , (1)
+3
+
+=== page 4 ===
+with forecast horizon, m, and lag time, l, between signal generation and trade execution. The associated
+feature variables, X = {x(t)}T t=1, consist of time series momentum feature values
+xk (t) = 1√n
+n−1X
+i=0
+rk (t−i) / σk (t), (2)
+where σk(t) denotes the realized market volatility over the lookback n. Note that both feature values and
+forward response are standardized to have approximately unit variance.
+We follow Moskowitz et al. [47] and enforce both symmetry and zero mean by augmenting each training
+observation (x(t), y(t)) with its negation (− x(t), − y(t)). Therefore, given the augmented training dataset
+D = {(˜x(t), ˜y(t))}T t=1, where ˜x(t) = [x(t), − x(t)] and ˜y(t) = [y(t), − y(t)], we seek to estimate a univariate
+prediction model f : R × Rdθ → R such that:
+ˆy(t) k = f (xk (t), θ) = ED [Y | X = xk (t)]. (3)
+In this paper, we consider two statistical models: simple linear regression and Nadaraya-Watson kernel
+regression [48, 60]. As we will see in Section 3, under the above assumptions, a simple linear regression model
+fit globally to all markets recovers the traditional time series momentum factor definition. Conversely, the
+kernel regression model produces locally weighted conditional expected values for each feature value, xk(t),
+and is therefore capable of modelling nonlinear response functions. In the following subsections we provide
+a brief description of the models and their associated parameterization.
+2.1. Linear regression
+We consider a simple univariate linear regression model which models the response function as a multiple
+of the feature variable:
+yk (t) = β xk (t) + ϵ(t), (4)
+with noise ϵ(t) ∼ N (0, σ2). In least-squares regression, the objective is to determine the coefficient, ˆβ, that
+minimizes the least-squares loss:
+ˆβ = argmin
+β
+TX
+t=1
+(yk (t) −β xk (t))2, (5)
+with least-squares estimate ˆy(t) k = ˆβ xk(t) and optimal coefficient ˆβ = PT t=1 xk(t) yk (t) / PT t=1(xk(t))2.
+2.2. Kernel regression
+The Nadaraya-Watson kernel regression [48, 60] is a non-parametric method that models the response
+function, yk (t), as a convex combination of response values, {yk (t)}T t=1, in the neighbourhood of xk(t). We
+define a non-negative weight in the neighbourhood of xk(t) as:
+ω(xk (j) − xk (t)) = κb(xk(j) − xk(t))PT
+i=1 κb(xk(i) − xk(t)) , (6)
+where κb : R → R is a kernel with bandwidth parameter b > 0. The final regression estimate is therefore:
+ˆy(t) k =
+TX
+j=1
+ω(xk (j) − xk (t)) yk (j) . (7)
+4
+
+=== page 5 ===
+The kernel function, κb(xk(j) − xk(t)), assigns a non-negative weight to all observations, {xk(t)}T t=1, that
+decreases with the distance to the observation xk(t), whereas the bandwidth controls the span of the local
+neighbourhood. There are many choices of kernel function, such as uniform, κb(x) = I(|| x b || ≤ 1), Epanech-
+nikov, κb(x) = (1 − || x b ||2)I(|| x b || ≤ 1) and Gaussian, κb(x) = 1√ 2π e−0.5|| x b ||2 . The choice of kernel function
+and bandwidth is important as it determines the degree of nonlinearity in the model. A small bandwidth
+will result in a model that closely fits the data, potentially capturing fine-grained patterns but also being
+more susceptible to noise. A large bandwidth, on the other hand, will produce a smoother model that may
+overlook subtle patterns.
+3. Experimental Results
+Experiment data: We consider an asset universe of 50 global futures markets, described in Table A1.
+Daily price data is provided by Commodity Systems Inc and is available as early as January 1950 and ex-
+tends through June 2026. Each futures market is rolled on a calendar basis in order to remain invested in
+the nearest most liquid available contract.
+Feature variables: As described in Section 2 we define the time series momentum feature as the volatility-
+adjusted average return observed over lookbacks n ∈ {21, 126, 252}, corresponding approximately to 1, 6 and
+12 month momentum:
+xk (t) = 1√n
+n−1X
+i=0
+rk (t−i) / σk (t), (8)
+where σk(t) denotes the realized market volatility over the lookback horizon n. Feature values are winsorized
+at a value of ±10 and are further binned into 256 equally spaced bins in order to reduce complexity and the
+propensity for overfitting.
+Response variables: Similarly, we define the response variable for each market as the forward volatility-
+adjusted average return
+yk (t) = 1√m
+m−1X
+i=0
+rk (t+i+l) / ˆσ(t+i) k , (9)
+with lag time l = 2, executing the trade signal at the closing price the day after the feature calculation, and
+m ∈ {1, 5, 21}, corresponding to daily, weekly and monthly forecast horizons. Recall that the volatility of
+market k at time t is denoted as ˆσ(t) k , and is estimated using a 40-day exponential moving average.
+Model specification: For each market and forecast horizon, models are fit on one feature at a time (1-
+dimensional). Kernel regression models use a Gaussian kernel with bandwidth of 0.30. In general we find
+that a Gaussian kernel with a bandwidth in the range of 0.20–0.50 produces consistent results. Finally, each
+model is trained using a bootstrap aggregation (bagging) of the in-sample training data in order to attenuate
+the impact of outliers on the model fit [14]. Bagging is performed using an average of 100 models, each fit
+on 10% of the training data. We compare 4 models:
+1. Global Linear: a univariate linear OLS regression model fit globally across all markets.
+2. Global Nonlinear: a univariate kernel regression model fit globally across all markets.
+3. Sector Nonlinear: a univariate kernel regression model fit across all markets within a sector.
+4. Market Nonlinear: a univariate kernel regression model fit locally to each individual market.
+5
+
+=== page 6 ===
+3.1. Motivating examples
+We begin with some examples to help illustrate the idiosyncratic behaviour of the nonlinear models in
+comparison to the global linear and nonlinear factor definitions. Note that models shown below are fit using
+all available training data from January 1950 through June 2026. Figure 1 plots the estimated response
+curve as a function of the 12-month time series momentum factor. Recall that the Global Linear and Global
+Nonlinear models are fit using all market data. As expected, the empirical linear model perfectly recovers
+the traditional time series momentum factor definition where historical average returns positively predict
+forward expected returns [46]. We observe that the magnitude of the slope varies slightly across forecast
+horizons; weekly forecast horizons exhibit the strongest positive slope and in contrast daily horizons exhibit
+the weakest positive slope. The response function of the Global Nonlinear model is provided in Figure 1b.
+First, we observe that for all forecast horizons, the Global Nonlinear model exhibits a positive and monotonic
+relationship for feature values in the range −2 ≤ x(t) ≤ 2 (hereafter referred to as the ‘normal range’).
+This is a commonly observed effect for most model variants and helps to explain why nonlinear models
+correlate strongly with their linear counterpart: the range −2 ≤ x(t) ≤ 2 spans over 95% of the time series
+momentum distribution and therefore for most feature values the linear and nonlinear models will produce
+similar forecasts. However, for daily and weekly forecasts, the nonlinear model exhibits a modest sigmoidal
+relationship with marginally decreasing response values as feature values become strongly positive (x(t) > 3)
+or strongly negative (x(t) < −3). For monthly forecasts, the response relationship begins to flatten as feature
+values approach ±3 and then begins to invert as feature values exceed the extreme level | x(t) | ≥ 3.
+6
+ 4
+ 2
+ 0 2 4 6
+12-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) Global Linear Model
+6
+ 4
+ 2
+ 0 2 4 6
+12-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) Global Nonlinear Model
+Figure 1: Estimated forward vol-adjusted returns as a function of the 12-month time series momentum factor for Global Linear
+and Global Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+6
+
+=== page 7 ===
+Figure 3 plots the estimated response curve as a function of the 12-month time series momentum factor
+for the Sector Nonlinear models. Note that the majority of Sector Nonlinear models exhibit traditional time
+series momentum factor behaviour across most forecast horizons when feature values are in the normal range.
+However, there are notable differences in the response function strength and character across various sectors,
+particularly at extreme feature values. For example, the metal and grain sectors exhibit predominantly
+linear time series momentum behaviour across the entire feature range. In contrast, currency and equity
+sectors display strong mean-reversion characteristics across all forecast horizons when feature values exceed
+| x(t) | ≈ 3. Moreover, grain predictions range between ±0.30, indicating a strong predictive response to
+the time series momentum feature, whereas bond predictions are notably weaker and range between ±0.10.
+From an empirical perspective, it would be easy to dismiss these observed differences as mere sampling error
+around a global time series momentum model. Alternatively, a causal explanation for the differences across
+sectors may arise from the composition and behaviour of the market participants within each sector. Hedgers,
+speculators and financial actors may respond to changes in prices with different objectives and time horizons.
+For example, in Figure 2 we observe that commodity markets produce consistent trend-like behaviour, even
+at price extremes, whereas financial markets mean-revert. Indeed, in commodity markets, speculative trading
+and hedging, in combination with unique supply-demand dynamics, may reinforce one another, resulting in
+sustained trends at price extremes. Conversely, in financial markets, policy-driven rebalancing may trade
+against extended prices, resulting in a negative feedback that manifests as mean-reversion.
+6
+ 4
+ 2
+ 0 2 4 6
+12-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) Nonlinear Model: Commodity Sectors
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) Nonlinear Model: Financial Sectors
+Figure 2: Estimated forward vol-adjusted returns as a function of the 12-month time series momentum factor for Nonlinear
+models fit across commodity sectors (energy, metal, grain, soft) and financial sectors (bond, currency, equity). Models are fit
+using all available training data from January 1950 through June 2026.
+7
+
+=== page 8 ===
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) Nonlinear Model: Bond Sector
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) Nonlinear Model: Currency Sector
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(c) Nonlinear Model: Energy Sector
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (d) Nonlinear Model: Equity Sector
+6
+ 4
+ 2
+ 0 2 4 6
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(e) Nonlinear Model: Metal Sector
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.3
+0.2
+0.1
+0.0
+0.1
+0.2
+0.3
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (f) Nonlinear Model: Grain Sector
+Figure 3: Estimated forward vol-adjusted returns as a function of the 12-month time series momentum factor for Sector Nonlinear
+models. Models are fit using all available training data from January 1950 through June 2026.
+8
+
+=== page 9 ===
+The observation that response curves vary on a per sector basis motivates the empirical question: do
+individual markets within a sector display idiosyncratic forward return dynamics in response to their observed
+historical performance? In general we find that for the 12-month time series momentum feature, financial
+sectors tend to display consistent response functions at the individual market level. As illustrated in Appendix
+A, this does not necessarily hold true for all time series momentum features. In contrast, as depicted in Figure
+4, commodity markets tend to exhibit more idiosyncratic response functions. For example, within the energy
+sector, markets like Brent, crude and natural gas tend to exhibit traditional trend behaviour across the entire
+12-month time series momentum range. In contrast, refined products such as gasoil, gasoline and heating
+oil display mean-reverting characteristics at price extremes. Similarly, in agriculture, markets such as coffee
+and cocoa exhibit more linear time series momentum response functions, whereas cotton markets exhibit
+strong mean-reversion characteristics at the extremes. Moreover, the strength of the prediction response also
+varies across markets. For example, both natural gas and coffee exhibit a fairly linear response character but
+with very different intensities: the monthly response predictions in natural gas are generally weak, ranging
+between ±0.08, whereas the monthly response predictions in coffee are approximately 4 times stronger, and
+range between ±0.30. A full catalogue of all feature-market pair models is presented in Appendix A.
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) Nonlinear Model: Natural Gas Market
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) Nonlinear Model: Heating Oil Market
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.3
+0.2
+0.1
+0.0
+0.1
+0.2
+0.3
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(c) Nonlinear Model: Coffee Market
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (d) Nonlinear Model: Cotton Market
+Figure 4: Estimated forward vol-adjusted returns as a function of the 12-month time series momentum factor for Nonlinear
+models fit at the individual market level. Models are fit using all available training data from January 1950 through June 2026.
+9
+
+=== page 10 ===
+It is difficult to determine with certainty whether the observed differences in response function strength
+and character are a result of sampling error, or indicate genuine differences in market response dynamics. We
+hypothesize that the differences in commodity markets’ supply and demand dynamics, as well as inventory
+availability, product substitution effects, and sensitivity to seasonality may serve as reasonable candidate
+explanations for the differing trend and mean-reversion behaviour observed across individual markets within
+a given sector.
+4. Historical Analysis
+Fitting nonlinear models at the individual market level allows for the expression of idiosyncratic market
+dynamics, but may be vulnerable to sampling error as a result of small sample sizes. In contrast, fitting a
+single model across all markets garners robustness from increased sample sizes, but fails to capture unique
+market response characteristics. In this section we test the validity of a framework that fits models at the
+market level. Historical model performance is evaluated using the following experiment design: for each
+market, feature and forecast horizon, models are fit using all available data prior to January 1, 1995. We
+then apply walk-forward training and testing: each model is refit every year using all available data and
+model predictions are applied to the next year’s out-of-sample segment. To ensure no training data overlap,
+we apply a 22-day embargo period between model training and next-year predictions. The testing period is
+between January 1, 1995 and June 30, 2026. Portfolios are formed by averaging the predictions across forecast
+horizons. The predictions for weekly and monthly forecast horizons are smoothed using a simple 5-day and
+21-day moving average, respectively. Individual market positions are formed by dividing the average market
+prediction by the 40-day market volatility estimate. Portfolios are rebalanced on a daily basis, assuming
+formation at the market close, and trade execution at the next-day market closing price. Results are scaled
+to a volatility of 20% and are net of slippage and commission transaction costs, described in more detail in
+Table A1.
+4.1. 1-Month Time Series Momentum
+Figure 5 reports the out-of-sample equity growth and Sharpe ratio for models fit using the 1-month time
+series momentum feature. We observe that the Global Linear model exhibits a near-zero Sharpe ratio over
+the entire test horizon. In contrast, the nonlinear models produce Sharpe ratios in the 0.10–0.20 range.
+Moreover, for all models, the Sharpe ratios in the 1990s and early 2000s are significantly higher than Sharpe
+ratios exhibited over the most recent decade; a common theme observed across all testing. Importantly, we
+observe that over every evaluation decade, the models fit on individual markets exhibit the highest Sharpe
+ratio. Notably, between 1995 and 2004, the Market Nonlinear model yields a Sharpe ratio of 0.57, whereas
+the Global Nonlinear model and Sector Nonlinear model yield Sharpe ratios of 0.38 and 0.44, respectively.
+Table 1 reports the annualized market mean returns, averaged across individual sectors and the total
+portfolio, for the 1-month time series momentum models. All results are net of transaction costs. The values
+in parentheses report the t-statistic from a paired t-test of the null hypothesis that the average market return
+of the stated model is equal to the average market return produced by the Market Nonlinear model. First, we
+note that, in aggregate, the average market return of the Market Nonlinear model is greater than the average
+market return of all other models. Moreover, the effect is monotonic: models specified with finer-grained
+precision result in higher average market returns. However, the effect size is small and inconsistent across
+market sectors; for example in currencies and metals, the Market Nonlinear model produces the lowest mean
+return. Statistically, we are unable to reject the null hypothesis that all models produce equivalent market
+mean returns.
+10
+
+=== page 11 ===
+1996 2000 2004 2008 2012 2016 2020 2024 2028
+0.00
+0.25
+0.50
+0.75
+1.00
+1.25
+1.50
+1.75Total Return
+Global Linear
+Global Nonlinear
+Sector Nonlinear
+Market Nonlinear
+(a) Net out-of-sample total return.
+1995-2004 2005-2014 2015-2026 Full Period
+0.4
+0.2
+0.0
+0.2
+0.4
+0.6
+Sharpe Ratio
+Global Linear
+Global Nonlinear
+Sector Nonlinear
+Market Nonlinear (b) Net out-of-sample Sharpe ratio.
+Figure 5: Out-of-sample equity growth and Sharpe ratio for models fit using the 1-month time series momentum feature. Results
+are net of estimated slippage and commission transaction costs. The out-of-sample period is January 1995 through June 2026.
+Global Linear Global Nonlinear Sector Nonlinear Market Nonlinear
+Bond 0.001878 (1.1686) 0.002145 (0.8479) 0.002438 (0.2126) 0.002505 (0.0)
+Currency 0.001223 (-0.3144) 0.001524 (-0.8204) 0.00128 (-0.5772) 0.001016 (0.0)
+Energy 0.002668 (1.3615) 0.002748 (1.2117) 0.003231 (0.296) 0.003362 (0.0)
+Equity -0.000858 (0.4027) -0.000576 (0.0578) -0.000302 (-0.5874) -0.00053 (0.0)
+Grain 0.000973 (1.0539) 0.001152 (0.9229) 0.001135 (0.9026) 0.002200 (0.0)
+Metal -0.002341* (-2.2542) -0.002025 (-1.7555) -0.002618 (-1.8833) -0.003488 (0.0)
+Soft -0.003394 (1.0236) -0.003087 (0.7901) -0.002747 (0.5927) -0.001956 (0.0)
+Portfolio 0.000126 (1.4425) 0.000374 (0.7042) 0.00047 (0.4881) 0.000611 (0.0)
+Table 1: Annualized market mean returns, net of transaction costs, and reported at the individual sector and total portfolio
+level for models fit using the 1-month time series momentum feature. Values in parentheses denote the t-statistic from a paired
+t-test of the null hypothesis that the average market return of the stated model is equal to the average market return produced
+by the Market Nonlinear model. Statistical significance at the 0.10, 0.05 and 0.01 level is denoted by ∗, ∗∗ and ∗ ∗ ∗, respectively.
+The analysis period is January 1995 through June 2026.
+4.2. 6-Month Time Series Momentum
+Figure 6 reports the out-of-sample equity growth and Sharpe ratio for models fit using the 6-month
+time series momentum feature. In contrast to the 1-month feature, here we observe no advantage to fitting
+nonlinear models at the individual market level. In fact, over the full test horizon, the Market Nonlinear
+model yields the lowest (though statistically equal) Sharpe ratio of 0.47, in comparison to a Sharpe ratio of
+0.48 exhibited by the Global Linear model and the Sector Nonlinear model and a modestly higher Sharpe
+ratio of 0.52 exhibited by the Global Nonlinear model. Consistent with the findings above, we observe a
+decline in Sharpe ratios over the most recent decade, with all models producing net Sharpe ratios near zero.
+Table 2 reports the annualized market mean returns, averaged across individual sectors and the total
+portfolio, for the 6-month time series momentum models. We observe that, in aggregate, the average market
+return of the Market Nonlinear model is less than the average market return of all other models. Again,
+however, we note that the effect is inconsistent across market sectors, and, with the exception of a handful of
+sector-level comparisons (bond, energy, equity and soft), all other tests, including at the portfolio level, are
+statistically insignificant. In totality we fail to reject the null hypothesis that all models produce equivalent
+market mean returns.
+11
+
+=== page 12 ===
+1996 2000 2004 2008 2012 2016 2020 2024 2028
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+3.5Total Return
+Global Linear
+Global Nonlinear
+Sector Nonlinear
+Market Nonlinear
+(a) Net out-of-sample total return.
+1995-2004 2005-2014 2015-2026 Full Period
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Sharpe Ratio
+Global Linear
+Global Nonlinear
+Sector Nonlinear
+Market Nonlinear (b) Net out-of-sample Sharpe ratio.
+Figure 6: Out-of-sample equity growth and Sharpe ratio for models fit using the 6-month time series momentum feature. Results
+are net of estimated slippage and commission transaction costs. The out-of-sample period is January 1995 through June 2026.
+Global Linear Global Nonlinear Sector Nonlinear Market Nonlinear
+Bond 0.002318* (1.9936) 0.002705 (1.5295) 0.002462 (1.6477) 0.003787 (0.0)
+Currency 0.001813 (0.1072) 0.002036 (-0.3195) 0.002501 (-1.1108) 0.001869 (0.0)
+Energy 0.004699* (-2.3217) 0.004572* (-2.1228) 0.004026 (-1.5147) 0.002688 (0.0)
+Equity 0.001945 (-1.7546) 0.002302** (-2.4285) 0.001342 (-0.5598) 0.001019 (0.0)
+Grain 0.000131 (-0.3668) -0.000118 (0.0304) 0.000065 (-0.2437) -0.000100 (0.0)
+Metal 0.002537 (1.0097) 0.002667 (0.8632) 0.001529 (1.4464) 0.003261 (0.0)
+Soft 0.000835 (-0.1781) 0.001017 (-0.6312) 0.001538* (-2.0017) 0.000782 (0.0)
+Portfolio 0.001928 (-0.4454) 0.002066 (-0.9972) 0.001871 (-0.2091) 0.00181 (0.0)
+Table 2: Annualized market mean returns, net of transaction costs, and reported at the individual sector and total portfolio
+level for models fit using the 6-month time series momentum feature. Values in parentheses denote the t-statistic from a paired
+t-test of the null hypothesis that the average market return of the stated model is equal to the average market return produced
+by the Market Nonlinear model. Statistical significance at the 0.10, 0.05 and 0.01 level is denoted by ∗, ∗∗ and ∗ ∗ ∗, respectively.
+The analysis period is January 1995 through June 2026.
+4.3. 12-Month Time Series Momentum
+Figure 7 reports the out-of-sample equity growth and Sharpe ratio for models fit using the 12-month time
+series momentum feature. Consistent with the 1-month results, we observe that the Market Nonlinear models
+produce a marginally higher Sharpe ratio over the 1995–2004 and 2005–2014 periods. Moreover, the Market
+Nonlinear model yields the highest Sharpe ratio over the entire test horizon, while simultaneously producing
+strategy characteristics that are highly correlated with the Global Linear and Global Nonlinear time series
+momentum models. In contrast, however, the Global Linear model exhibits the best performance over the
+most recent decade, a result that is generally consistent with Moskowitz et al. [47].
+Table 3 reports the annualized market mean returns and paired t-statistic for the 12-month time series
+momentum models. Once again, we observe a statistically insignificant difference in market mean returns
+and are therefore unable to reject the null hypothesis that, in aggregate, each model produces statistically
+equivalent out-of-sample market performance. In comparison to the 1-month and 6-month models, we find
+that the 12-month time series momentum models produce the smallest portfolio-level t-statistics, indicating
+a strong statistical equivalence across each model. As illustrated above, and highlighted in more detail in
+Appendix A, this is expected and is a direct result of the dominant linear relationship displayed by most
+models when the feature values are in the normal range.
+12
+
+=== page 13 ===
+1996 2000 2004 2008 2012 2016 2020 2024 2028
+0
+1
+2
+3
+4
+5Total Return
+Global Linear
+Global Nonlinear
+Sector Nonlinear
+Market Nonlinear
+(a) Net out-of-sample total return.
+1995-2004 2005-2014 2015-2026 Full Period
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4
+1.6Sharpe Ratio
+Global Linear
+Global Nonlinear
+Sector Nonlinear
+Market Nonlinear (b) Net out-of-sample Sharpe ratio.
+Figure 7: Out-of-sample equity growth and Sharpe ratio for models fit using the 12-month time series momentum feature.
+Results are net of estimated slippage and commission transaction costs. The out-of-sample period is January 1995 through June
+2026.
+Global Linear Global Nonlinear Sector Nonlinear Market Nonlinear
+Bond 0.004084 (1.4606) 0.004271 (1.2825) 0.004675 (1.0093) 0.005712 (0.0)
+Currency 0.002738 (-0.2369) 0.002827 (-0.3735) 0.003024 (-1.0348) 0.002569 (0.0)
+Energy 0.005087 (-0.3636) 0.005064 (-0.3243) 0.005079 (-0.3532) 0.004858 (0.0)
+Equity 0.003207 (-1.2975) 0.003418 (-1.6922) 0.001985 (1.1041) 0.00237 (0.0)
+Grain 0.001349 (-1.5203) 0.001371 (-1.7279) 0.001394 (-1.6932) 0.000652 (0.0)
+Metal 0.00276 (0.7572) 0.002915 (0.6798) 0.002873 (0.8600) 0.003319 (0.0)
+Soft 0.001856 (0.6432) 0.001806 (0.7003) 0.002402 (-0.3800) 0.002182 (0.0)
+Portfolio 0.002967 (0.2176) 0.003054 (-0.0893) 0.003006 (0.0989) 0.003029 (0.0)
+Table 3: Annualized market mean returns, net of transaction costs, and reported at the individual sector and total portfolio
+level for models fit using the 12-month time series momentum feature. Values in parentheses denote the t-statistic from a paired
+t-test of the null hypothesis that the average market return of the stated model is equal to the average market return produced
+by the Market Nonlinear model. Statistical significance at the 0.10, 0.05 and 0.01 level is denoted by ∗, ∗∗ and ∗ ∗ ∗, respectively.
+The analysis period is January 1995 through June 2026.
+4.4. Average Time Series Momentum
+Next, Figure 8 reports the out-of-sample equity growth and Sharpe ratio for models fit using an average
+of the 1, 6 and 12-month time series momentum features. The average results provide clear positive evidence
+that fitting nonlinear models at the individual market level is a robust and often overlooked modelling
+alternative that can result in improved out-of-sample performance. We observe that over every evaluation
+decade, the Market Nonlinear model produces net Sharpe ratios that are no worse than the Global Linear
+and Nonlinear alternatives, and in fact over the majority of evaluation horizons produces a marginal Sharpe
+ratio improvement. With the exception of the 1995-2004 decade, the relationship between model precision
+and out-of-sample Sharpe ratio is not monotonic. Indeed, we observe that in the 2005-2014 period, fitting
+models at the sector level actually results in a slight decrease in net Sharpe ratio in comparison to the Global
+Linear and Global Nonlinear models. When averaged across all features and evaluated over the full period,
+the Global Linear model produces a net Sharpe ratio of 0.54, whereas the Global Nonlinear and Sector
+Nonlinear models produce net Sharpe ratios of 0.57. In contrast, the Market Nonlinear model produces a
+net Sharpe ratio of 0.60 when evaluated over the full test period. The Sharpe ratio error bars in Figure 8b
+indicate that this improvement is not statistically significant; but nonetheless provides evidence in support
+13
+
+=== page 14 ===
+of a framework that fits models at the individual market level as opposed to the traditional global factor
+approach. Lastly, we note that all models exhibit strong positive correlation to the Global Linear model, with
+correlations ranging from 0.95 in the case of the Market Nonlinear model, to 0.99 for the Global Nonlinear
+model. This realization is consistent with the observation that most markets exhibit traditional linear time
+series momentum behaviour in the normal feature range: −2 ≤ x(t) ≤ 2. The benefit of nonlinear models,
+therefore, occurs when feature values are at extreme levels, which occurs with a much lower frequency.
+1996 2000 2004 2008 2012 2016 2020 2024 2028
+0
+1
+2
+3
+4Total Return
+Global Linear
+Global Nonlinear
+Sector Nonlinear
+Market Nonlinear
+(a) Net out-of-sample total return.
+1995-2004 2005-2014 2015-2026 Full Period
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2Sharpe Ratio
+Global Linear
+Global Nonlinear
+Sector Nonlinear
+Market Nonlinear (b) Net out-of-sample Sharpe ratio.
+Figure 8: Out-of-sample equity growth and Sharpe ratio for portfolios formed using a simple average of the 1, 6 and 12-month
+time series momentum models. Results are net of estimated slippage and commission transaction costs. The out-of-sample
+period is January 1995 through June 2026.
+In Table 4 and Table 5 we test the hypothesis that the market-specific nonlinear response functions,
+predominantly observed outside of the feature normal range, represent genuine market signal and are not
+purely an artifact of sampling error. Specifically, Table 4 reports the annualized market mean returns formed
+using a simple average of the 1, 6 and 12-month time series momentum out-of-sample results, evaluated for
+all observations where the feature values fall immediately outside the normal range | x(t) | ≥ 2. Similarly,
+Table 5 reports the same results evaluated for all observations where the feature values are at extreme levels:
+| x(t) | ≥ 3. The conclusions are mixed: Table 4 reports positive paired t-statistics on average, indicating that
+the Market Nonlinear models produce positive excess mean market returns for feature values | x(t) | ≥ 2. The
+effect size, however, is not statistically significant and the results are inconsistent across sectors. Conversely,
+Table 5 demonstrates that the Market Nonlinear model produces a higher mean return than the Global Linear
+and Global Nonlinear models that is statistically significant at the 1% level, and significant at the 10% level in
+comparison to the Sector Nonlinear models. These results provide evidence that the unique market response
+characteristics, observed when feature values are at extreme levels (| x(t) | ≥ 3), are not purely an artifact of
+random sampling error. From a practitioner’s perspective, however, we should interpret these results with
+some reservation. Importantly, for all models, we observe a net negative portfolio return when feature values
+are at extreme levels that is generally consistent across all sectors. Therefore, from a practical standpoint
+there is evidence to suggest that, in expectation, it would be more favourable to completely exit the market
+position when the time series momentum values rise to extreme levels.
+14
+
+=== page 15 ===
+Global Linear Global Nonlinear Sector Nonlinear Market Nonlinear
+Bond -0.005801 (1.6733) -0.004403 (1.4709) -0.002216 (1.7925) 0.0021 (0.0)
+Currency 0.005317 (-0.6104) 0.005721 (-0.92) 0.004473 (-0.5044) 0.003433 (0.0)
+Energy 0.005988 (0.3261) 0.006609 (0.1235) 0.00567 (1.0829) 0.006856 (0.0)
+Equity -0.002702 (0.1405) -0.003124 (0.2398) -0.002325 (0.108) -0.002039 (0.0)
+Grain 0.004380 (-0.2133) 0.004465 (-0.2483) 0.004471 (-0.2187) 0.003456 (0.0)
+Metal 0.012087 (-0.8134) 0.011653 (-0.8843) 0.008563 (-0.3112) 0.007592 (0.0)
+Soft 0.010439 (0.606) 0.009475 (0.7883) 0.015235 (-0.3009) 0.013503 (0.0)
+Portfolio 0.003580 (0.6105) 0.003710 (0.5729) 0.004374 (0.165) 0.004585 (0.0)
+Table 4: Annualized market mean returns, net of transaction costs, and reported at the individual sector and total portfolio
+level, formed using a simple average of the 1, 6 and 12-month time series momentum results and evaluated for all observations
+outside the normal range | x(t) | ≥ 2. Values in parentheses denote the t-statistic from a paired t-test of the null hypothesis that
+the average market return of the stated model is equal to the average market return produced by the Market Nonlinear model.
+Statistical significance at the 0.10, 0.05 and 0.01 level is denoted by ∗, ∗∗ and ∗ ∗ ∗, respectively. The analysis period is January
+1995 through June 2026.
+Global Linear Global Nonlinear Sector Nonlinear Market Nonlinear
+Bond -0.097848 (1.802) -0.076609 (1.6412) -0.016211 (1.3119) 0.045998 (0.0)
+Currency -0.169342 (1.3222) -0.157799 (1.3237) -0.076206 (-0.7331) -0.087565 (0.0)
+Energy -0.108877 (1.854) -0.083548 (1.4831) -0.050413 (0.8084) -0.028639 (0.0)
+Equity -0.070390 (1.1868) -0.052659 (1.1321) -0.020043 (0.4898) -0.015157 (0.0)
+Grain -0.018701 (0.9167) -0.018596 (1.1518) -0.017806 (0.8176) -0.006307 (0.0)
+Metal -0.082016 (1.071) -0.066332 (1.1982) -0.026293 (1.1765) -0.002886 (0.0)
+Soft -0.055297* (2.3163) -0.040832 (1.1254) -0.032737 (0.4349) -0.026286 (0.0)
+Portfolio -0.086013*** (3.4612) -0.071282*** (3.1611) -0.034104* (1.7523) -0.01749 (0.0)
+Table 5: Annualized market mean returns, net of transaction costs, and reported at the individual sector and total portfolio
+level, formed using a simple average of the 1, 6 and 12-month time series momentum results and evaluated for all observations
+where feature values are at extreme levels | x(t) | ≥ 3. Values in parentheses denote the t-statistic from a paired t-test of the null
+hypothesis that the average market return of the stated model is equal to the average market return produced by the Market
+Nonlinear model. Statistical significance at the 0.10, 0.05 and 0.01 level is denoted by ∗, ∗∗ and ∗ ∗ ∗, respectively. The analysis
+period is January 1995 through June 2026.
+Finally, Table 6 reports the annualized market mean returns and paired t-statistic for the aggregate
+portfolios using a simple average of the 1, 6 and 12-month time series momentum features. In contrast to
+previous results, here we observe that, for bond and soft sectors, the Market Nonlinear model produces a
+higher mean return than the Global Linear model that is statistically significant at the 10% level. This result,
+however, is not consistent across all other sectors; notably in currency, energy and equity sectors the Market
+Nonlinear model produces marginally smaller mean returns in comparison to all other models. Moreover,
+we observe a statistically insignificant difference in market mean returns when evaluated across all markets
+in the portfolio. Therefore, when aggregated across multiple features and forecast horizons, a time series
+momentum portfolio formed by fitting nonlinear models at the individual market level produces average
+market returns that are statistically equivalent to those produced by Global Linear, Global Nonlinear and
+Sector Nonlinear models. Taken together, it is difficult to state with statistical confidence that the unique
+response characteristics displayed by individual feature-market pairs are genuine signal, above sampling error.
+However, we are encouraged by the robustness of the proposed modelling approach; fitting models at the
+15
+
+=== page 16 ===
+individual market level is as valid as the grouped factor approach and therefore enables data-driven factor
+exploration in settings that may require a more fine-grained individual market perspective.
+Global Linear Global Nonlinear Sector Nonlinear Market Nonlinear
+Bond 0.003185* (2.3106) 0.003511 (1.87) 0.00374 (1.5091) 0.004774 (0.0)
+Currency 0.00222 (-0.0875) 0.002459 (-0.4865) 0.002658 (-0.9568) 0.002169 (0.0)
+Energy 0.004789 (-0.8858) 0.004767 (-0.7789) 0.004818 (-0.8475) 0.004337 (0.0)
+Equity 0.001651 (-0.9948) 0.00198 (-1.6475) 0.001181 (-0.1498) 0.001137 (0.0)
+Grain 0.000943 (0.2113) 0.000926 (0.2364) 0.001014 (0.109) 0.001094 (0.0)
+Metal 0.001136 (0.229) 0.001369 (-0.7076) 0.000697 (1.1373) 0.00123 (0.0)
+Soft -0.00027* (2.1819) -0.000101 (1.7939) 0.000466 (-0.2268) 0.000401 (0.0)
+Portfolio 0.00193 (1.0332) 0.002115 (0.2327) 0.002088 (0.3794) 0.002167 (0.0)
+Table 6: Annualized market mean returns, net of transaction costs, and reported at the individual sector and total portfolio
+level, formed using a simple average of the 1, 6 and 12-month time series momentum model results. Values in parentheses
+denote the t-statistic from a paired t-test of the null hypothesis that the average market return of the stated model is equal to
+the average market return produced by the Market Nonlinear model. Statistical significance at the 0.10, 0.05 and 0.01 level is
+denoted by ∗, ∗∗ and ∗ ∗ ∗, respectively. The analysis period is January 1995 through June 2026.
+Global Linear Global Nonlinear Sector Nonlinear Market Nonlinear
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Correlation to Global Linear Model
+Figure 9: Average out-of-sample correlation to the Global Linear model, evaluated across 1, 6 and 12-month time series
+momentum features. The out-of-sample period is January 1995 through June 2026.
+16
+
+=== page 17 ===
+5. Conclusion
+We extended the work of Moskowitz et al. [47] and demonstrated that models fit at the individual market
+level exhibit idiosyncratic forward return characteristics that are distinct from the global linear and nonlinear
+time series momentum factor models. Nonlinear models were fit using non-parametric kernel regression
+and provide a framework that enables each feature-market pair to express its potentially unique prediction
+behaviour. A comprehensive catalogue of model response curves is provided in Appendix A and helps to
+illustrate that, even within sectors, individual markets can display heterogeneous forward return behaviour.
+We provided two primary empirical findings. First, financial markets, such as bonds, currencies and equities,
+tend to display stronger mean-reversion characteristics when the time series momentum factor is at extreme
+levels. In contrast, commodity markets, such as energies, metals, grains and softs, typically exhibit more
+traditional linear time series momentum effects, on average and across the entire feature range. Second, for
+commodity markets, we also observed differences in the prediction strength and response behaviour at the
+individual market level. We hypothesize that the tendency for markets to display sustained trends or mean
+reversion at the extremes may be governed by both economic feedback mechanisms and the participants
+specific to each market.
+Empirical results demonstrated that, despite substantially smaller sample sizes, fitting nonlinear models
+to individual markets is a robust alternative to the traditional global modelling approach that preserves the
+characteristics of the time series momentum strategy with a high degree of correlation. Historical walk-
+forward simulations, spanning over 30 years of market data, indicated that, despite increased complexity,
+models fit at the individual market level generalized to the out-of-sample period. Portfolio-level results
+exhibited positive out-of-sample net Sharpe ratios and, on average, demonstrated that fitting models at the
+individual market level has the potential to provide differentiated and improved out-of-sample performance
+at the margin. In general, all nonlinear models were found to be strongly positively correlated with the
+Global Linear factor model, indicating that they build upon traditional factor intuitions, while also allowing
+for the expression of idiosyncratic nonlinear response characteristics.
+Statistical tests of paired differences in mean returns across markets provided mixed results. When
+evaluated over the entire feature range, we demonstrated that models fit at the individual market level
+produce average market returns that are statistically equivalent to those generated by the grouped linear
+and nonlinear models. We observed a statistically significant increase in market mean returns when out-of-
+sample results were isolated to periods of extreme feature values. However, under such circumstances, all
+models displayed negative expected portfolio returns; therefore, a higher-expected-value decision would be to
+completely exit the market position when feature values are at extreme levels. In totality, we are unable to
+claim with statistical confidence that the unique response functions displayed by individual markets represent
+genuine signal and therefore recommend further testing and analysis.
+This paper serves as an initial proof-of-concept showcasing the potential of machine learning techniques for
+advancing factor-based investment modelling at the individual market level. There are many promising future
+extensions and areas for exploration. Indeed, fitting models at the individual market level is generally robust
+and enables factor discovery that requires market-level analysis, such as seasonality [52, 45] or Commitments
+of Traders (COT) data [12]. Machine learning techniques may also be well suited to discovering conditional
+multivariate relationships that exist globally or at the individual market level. Recent advances in deep
+learning and causal inference also offer avenues for uncovering subtle factor relationships amidst market noise
+[1, 27, 59]. The results suggest that machine learning can empirically derive factor relationships directly
+from market data, with the potential for flexibility and specificity exceeding that of the traditional factor
+modelling approach. This framework establishes a starting point for the continued exploration of machine
+learning’s benefits for data-driven factor discovery in market forecasting.
+17
+
+=== page 18 ===
+Appendix A. Time Series Momentum Models
+Appendix A.1. Global Linear Models
+7.5
+ 5.0
+ 2.5
+ 0.0 2.5 5.0 7.5
+1-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+6
+ 4
+ 2
+ 0 2 4 6
+6-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+6
+ 4
+ 2
+ 0 2 4 6
+12-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A1: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Global Linear models. Models are fit using all available training data from January 1950 through June 2026.
+Appendix A.2. Global Nonlinear Models
+7.5
+ 5.0
+ 2.5
+ 0.0 2.5 5.0 7.5
+1-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+6
+ 4
+ 2
+ 0 2 4 6
+6-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+6
+ 4
+ 2
+ 0 2 4 6
+12-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A2: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Global Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+18
+
+=== page 19 ===
+Appendix A.3. Bond Sector Nonlinear Models
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A3: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Bond Sector Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Canadian 10 Year Bond
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.04
+0.03
+0.02
+0.01
+0.00
+0.01
+0.02
+0.03
+0.04
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+2
+ 1
+ 0 1 2
+12-Month Vol-Adjusted Momentum
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A4: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Canadian 10 Year Bond Nonlinear models. Models are fit using all available training data from January 1950 through June
+2026.
+Gilts
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.04
+0.03
+0.02
+0.01
+0.00
+0.01
+0.02
+0.03
+0.04
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A5: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Gilts Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+19
+
+=== page 20 ===
+Japan 10 Year Bond
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A6: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Japan 10 Year Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Bobl
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.100
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+0.100
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A7: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Bobl Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Bund
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A8: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Bund Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+20
+
+=== page 21 ===
+US 5 Year Bond
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A9: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for US
+5 Year Bond Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+US 10 Year Bond
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A10: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+US 10 Year Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+US 30 Year Bond
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.04
+0.02
+0.00
+0.02
+0.04
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A11: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+US 30 Year Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+21
+
+=== page 22 ===
+Appendix A.4. Currency Sector Nonlinear Models
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A12: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Currency Sector Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Australian Dollar
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A13: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Australian Dollar Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+British Pound
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A14: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+British Pound Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+22
+
+=== page 23 ===
+Canadian Dollar
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A15: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Canadian Dollar Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+US Dollar
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A16: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+US Dollar Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Euro
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A17: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Euro Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+23
+
+=== page 24 ===
+Japanese Yen
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A18: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Japanese Yen Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+New Zealand Dollar
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.04
+0.02
+0.00
+0.02
+0.04
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A19: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+New Zealand Dollar Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Swiss Franc
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.03
+0.02
+0.01
+0.00
+0.01
+0.02
+0.03
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A20: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Swiss Franc Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+24
+
+=== page 25 ===
+Appendix A.5. Energy Sector Nonlinear Models
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 2
+ 0 2 4
+6-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A21: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Energy Sector Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Crude Oil
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A22: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Crude Oil Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Brent Crude
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A23: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Brent Crude Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+25
+
+=== page 26 ===
+Heating Oil
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.100
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+0.100
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A24: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Heating Oil Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Natural Gas
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A25: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Natural Gas Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Gasoil
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 2
+ 0 2 4
+6-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A26: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Gasoil Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+26
+
+=== page 27 ===
+Gasoline
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.04
+0.02
+0.00
+0.02
+0.04
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.100
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+0.100
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A27: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Gasoline Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Appendix A.6. Equity Sector Nonlinear Models
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A28: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Equity Sector Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+CAC 40
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.02
+0.01
+0.00
+0.01
+0.02
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.03
+0.02
+0.01
+0.00
+0.01
+0.02
+0.03
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+2
+ 1
+ 0 1 2
+12-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A29: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+CAC 40 Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+27
+
+=== page 28 ===
+S&P 500
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.04
+0.02
+0.00
+0.02
+0.04
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A30: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+S&P 500 Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+DAX
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.100
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+0.100
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A31: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+DAX Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Hang Seng
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.04
+0.02
+0.00
+0.02
+0.04
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A32: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Hang Seng Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+28
+
+=== page 29 ===
+Nikkei
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A33: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Nikkei Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+TSX 60
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A34: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+TSX 60 Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+ASX 200
+3
+ 2
+ 1
+ 0 1 2 3
+1-Month Vol-Adjusted Momentum
+0.03
+0.02
+0.01
+0.00
+0.01
+0.02
+0.03
+Forward Vol-Adjusted Returns daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.03
+0.02
+0.01
+0.00
+0.01
+0.02
+0.03
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.100
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+0.100
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A35: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+ASX 200 Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+29
+
+=== page 30 ===
+FTSE 100
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+2
+ 1
+ 0 1 2
+12-Month Vol-Adjusted Momentum
+0.4
+0.3
+0.2
+0.1
+0.0
+0.1
+0.2
+0.3
+0.4
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A36: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+FTSE 100 Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Appendix A.7. Grain Sector Nonlinear Models
+8
+ 6
+ 4
+ 2
+ 0 2 4 6 8
+1-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 2
+ 0 2 4
+6-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.3
+0.2
+0.1
+0.0
+0.1
+0.2
+0.3
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A37: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Grain Sector Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Bean Oil
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.04
+0.02
+0.00
+0.02
+0.04
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A38: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Bean Oil Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+30
+
+=== page 31 ===
+Corn
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.08
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A39: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Corn Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Palm Oil
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A40: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Palm Oil Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+KC Wheat
+6
+ 4
+ 2
+ 0 2 4 6
+1-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A41: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+KC Wheat Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+31
+
+=== page 32 ===
+Canola
+6
+ 4
+ 2
+ 0 2 4 6
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A42: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Canola Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Soybean
+6
+ 4
+ 2
+ 0 2 4 6
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 2
+ 0 2 4
+6-Month Vol-Adjusted Momentum
+0.3
+0.2
+0.1
+0.0
+0.1
+0.2
+0.3
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A43: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Soybean Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Soy Meal
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 2
+ 0 2 4
+6-Month Vol-Adjusted Momentum
+0.3
+0.2
+0.1
+0.0
+0.1
+0.2
+0.3
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.3
+0.2
+0.1
+0.0
+0.1
+0.2
+0.3
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A44: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Soy Meal Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+32
+
+=== page 33 ===
+Wheat
+6
+ 4
+ 2
+ 0 2 4 6
+1-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A45: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Wheat Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Appendix A.8. Metal Sector Nonlinear Models
+8
+ 6
+ 4
+ 2
+ 0 2 4 6 8
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+6
+ 4
+ 2
+ 0 2 4 6
+6-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+6
+ 4
+ 2
+ 0 2 4 6
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A46: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Metal Sector Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Gold
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.100
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+0.100
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A47: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Gold Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+33
+
+=== page 34 ===
+Copper
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A48: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Copper Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Palladium
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+12-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A49: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Palladium Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Platinum
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.100
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+0.100
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A50: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Platinum Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+34
+
+=== page 35 ===
+Silver
+7.5
+ 5.0
+ 2.5
+ 0.0 2.5 5.0 7.5
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+6
+ 4
+ 2
+ 0 2 4 6
+6-Month Vol-Adjusted Momentum
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+6
+ 4
+ 2
+ 0 2 4 6
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A51: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Silver Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Appendix A.9. Soft Sector Nonlinear Models
+6
+ 4
+ 2
+ 0 2 4 6
+1-Month Vol-Adjusted Momentum
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 2
+ 0 2 4
+6-Month Vol-Adjusted Momentum
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.4
+0.3
+0.2
+0.1
+0.0
+0.1
+0.2
+0.3
+0.4
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A52: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Soft Sector Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Cocoa
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.06
+0.04
+0.02
+0.00
+0.02
+0.04
+0.06
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 2
+ 0 2 4
+6-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A53: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Cocoa Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+35
+
+=== page 36 ===
+Cotton
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.100
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+0.100
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A54: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Cotton Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Robusta Coffee
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+6-Month Vol-Adjusted Momentum
+0.2
+0.1
+0.0
+0.1
+0.2
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.4
+0.2
+0.0
+0.2
+0.4
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A55: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Robusta Coffee Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Coffee
+6
+ 4
+ 2
+ 0 2 4 6
+1-Month Vol-Adjusted Momentum
+0.03
+0.02
+0.01
+0.00
+0.01
+0.02
+0.03
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 2
+ 0 2 4
+6-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.3
+0.2
+0.1
+0.0
+0.1
+0.2
+0.3
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A56: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Coffee Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+36
+
+=== page 37 ===
+UK Cocoa
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 2
+ 0 2 4
+6-Month Vol-Adjusted Momentum
+0.3
+0.2
+0.1
+0.0
+0.1
+0.2
+0.3
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.4
+0.2
+0.0
+0.2
+0.4
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A57: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+UK Cocoa Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+UK Sugar
+4
+ 3
+ 2
+ 1
+ 0 1 2 3 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+6-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+3
+ 2
+ 1
+ 0 1 2 3
+12-Month Vol-Adjusted Momentum
+0.100
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+0.075
+0.100
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A58: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+UK Sugar Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+Sugar
+4
+ 2
+ 0 2 4
+1-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly
+(a) 1-Month Momentum
+4
+ 2
+ 0 2 4
+6-Month Vol-Adjusted Momentum
+0.10
+0.05
+0.00
+0.05
+0.10
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (b) 6-Month Momentum
+4
+ 2
+ 0 2 4
+12-Month Vol-Adjusted Momentum
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+Forward Vol-Adjusted Returns
+daily
+weekly
+monthly (c) 12-Month Momentum
+Figure A59: Estimated forward vol-adjusted returns as a function of the 1, 6 and 12-month time series momentum factor for
+Sugar Nonlinear models. Models are fit using all available training data from January 1950 through June 2026.
+37
+
+=== page 38 ===
+Appendix B. Futures Market Data
+Symbol Market Tick Size Trade Slippage Cost Commission Cost
+Bond
+CN Cdn 10Yr 0.01 1.0 4.94
+FV US 5Yr 0.0078125 1.0 4.34
+G Gilts 0.01 1.0 4.18
+JB JGB 0.01 1.0 10.58
+OE Bobl 0.01 1.0 3.70
+RX Bund 0.01 1.0 3.70
+TY US 10Yr 0.015625 1.0 4.54
+US US 30Yr 0.03125 1.0 4.64
+Currency
+AD AUD 0.005 1.0 6.24
+BP GBP 0.01 1.0 6.24
+CD CAD 0.005 2.0 6.24
+DX USD 0.005 1.0 6.24
+EC EUR 0.005 2.0 6.24
+JY JPY 0.005 1.0 6.24
+NV NZD 0.01 1.0 6.24
+SF CHF 0.01 3.0 6.24
+Energy
+CL Crude 0.01 2.0 6.04
+CO Brent Crude 0.01 3.0 4.64
+HO Heating Oil 0.01 3.0 6.04
+NG Nat Gas 0.001 3.0 6.04
+QS Gasoil 0.25 2.0 4.64
+XB RBOB 0.01 7.0 6.04
+Equity
+CF CAC 40 0.50 5.0 3.96
+ES S&P 500 0.25 1.0 5.50
+GX DAX 1.0 2.0 5.42
+HI Hang Seng 1.0 5.0 9.14
+NI Nikkei 5.0 1.0 4.00
+PT TSX 60 0.10 3.0 5.30
+XP ASX 200 1.0 1.0 3.78
+Z FTSE 100 0.50 2.0 4.24
+Grain
+BO Bean Oil 0.01 3.0 6.94
+C Corn 0.25 1.0 6.94
+KO Palm Oil 1.0 1.0 14.48
+KW KC Wheat 0.25 2.0 6.94
+RS Canola 0.10 5.0 4.94
+S Soybean 0.25 3.0 6.94
+SM Soy Meal 0.10 2.0 6.94
+W Wheat 0.25 1.0 6.94
+Metal
+GC Gold 0.10 2.0 6.14
+HG Copper 0.05 4.0 6.14
+PA Palladium 0.50 5.0 6.14
+PL Platinum 0.10 9.0 6.14
+SI Silver 0.005 2.0 6.14
+Soft
+CC Cocoa 1.0 4.0 7.24
+CT Cotton 0.01 6.0 7.24
+DF Robusta Coffee 1.0 3.0 1.56
+KC Coffee 0.05 5.0 7.24
+QC UK Cocoa 1.0 2.0 4.24
+QW UK Sugar 0.10 7.0 4.24
+SB Sugar 0.01 2.0 7.24
+Table A1: Futures market universe and trade cost assumptions. Symbols follow Bloomberg market symbology. Data is provided
+by Commodity Systems Inc (CSI). Trade slippage cost is expressed in number of ticks per contract traded whereas commission
+cost is expressed in USD per contract traded. Costs are estimated from live trading results on a global futures strategy with an
+AUM of approximately $100 million USD and an annualized volatility of approximately 20%.
+38
+
+=== page 39 ===
+References
+[1] Hassan T. Anis and Roy H. Kwon. A sparse regression and neural net-
+work approach for financial factor modeling. Applied Soft Computing, 113:107983,
+2021. ISSN 1568-4946. doi: https://doi.org/10.1016/j.asoc.2021.107983. URL
+https://www.sciencedirect.com/science/article/pii/S1568494621009054.
+[2] Clifford S. Asness, Tobias J. Moskowitz, and Lasse Heje Pedersen. Value and momentum everywhere.
+The Journal of Finance, 68(3):929 – 985, 2013.
+[3] Clifford S. Asness, Tobias J. Moskowitz, R Israel, and A Ilmanen. Investing with style. Journal of
+Investment Management, 68(1):27–63, 2015.
+[4] Nick Baltas and Robert Kosowski. Momentum strategies in futures markets and trend-following funds.
+SSRN Electronic Journal, 2012. doi: 10.2139/ssrn.1968996.
+[5] Nick Baltas and Robert Kosowski. Demystifying time-series momentum strategies: Volatility estimators,
+trading rules and pairwise correlations. SSRN Electronic Journal, 05 2017. doi: 10.2139/ssrn.2140091.
+[6] Nick Baltas and Gabriel Salinas. Cross-asset skew. The Journal of Portfolio Management, 2022. doi:
+10.3905/jpm.2022.1.335.
+[7] David Blitz, Matthias Xaver Hanauer, Tobias Hoogteijling, and Clint Howard. The term structure of
+machine learning alpha. SSRN, 2023. URL https://ssrn.com/abstract=447463.
+[8] Nicolas P. B. Bollen, Mark C. Hutchinson, and John O’Brien. When it pays to follow the crowd:
+Strategy conformity and cta performance. Journal of Futures Markets, 41(6):875–894, 2021. doi:
+https://doi.org/10.1002/fut.22199.
+[9] Tim Bollerslev. Generalized autoregressive conditional heteroskedasticity. Journal of Econometrics, 31
+(3):307 – 327, 1986. ISSN 0304-4076.
+[10] Tim Bollerslev. Modelling the coherence in short-run nominal exchange rates: A multivariate generalized
+arch model. The Review of Economics and Statistics, 72(3):498–505, 1990. ISSN 00346535, 15309142.
+URL http://www.jstor.org/stable/2109358.
+[11] Tim Bollerslev, Robert Engle, and Daniel B. Nelson. Arch models. In R. F. Engle and D. McFadden,
+editors, Handbook of Econometrics, volume 4, pages 2961–3031. Elsevier, 1 edition, 1994.
+[12] Dominik Boos and Linus Grob. Tracking speculative trading. Journal of Financial Markets,
+64:100774, 2023. ISSN 1386-4181. doi: https://doi.org/10.1016/j.finmar.2022.100774. URL
+https://www.sciencedirect.com/science/article/pii/S1386418122000635.
+[13] G. Box and G Jenkins. Time series analysis: Forecasting and control. 1970.
+[14] Leo Breiman. Bagging predictors. Machine Learning, 24(2):123–140, 1996.
+[15] Jonathan Brogaard and Abalfazl Zareei. Machine learning and the stock market. 2018.
+[16] John Y Campbell, Andrew W Lo, and A Craig MacKinlay. The Econometrics of Financial Markets.
+Princeton University Press, 1997.
+39
+
+=== page 40 ===
+[17] Mark M Carhart. On persistence in mutual fund performance. The Journal of Finance, 52(1):57–82,
+1997.
+[18] R. Carver. Advanced Futures Trading Strategies. Harriman House, 2023. ISBN 9780857199683. URL
+https://books.google.ca/books?id=rrN4EAAAQBAJ.
+[19] Louis K. C. Chan, Narasimhan Jegadeesh, and Josef Lakonishok. Momentum strategies. The Journal
+of Finance, 51(5):1681–1713, 1996.
+[20] Wei Chen, Haoyu Zhang, Mukesh Kumar Mehlawat, and Lifen Jia. Mean variance portfolio optimization
+using machine learning based stock prediction. Applied Soft Computing, 100:106943, 2021. ISSN 1568-
+4946.
+[21] Robert F. Engle. Autoregressive conditional heteroskedasticity with estimates of the variance of uk
+inflation. Econometrica, 50(1):987–1008, 1982.
+[22] Eugene F. Fama and Kenneth R. French. Dividend yields and expected stock returns. Journal of
+Financial Economics, 22(1):3 – 25, 1988.
+[23] Eugene F. Fama and Kenneth R. French. The cross section of expected stock returns. Journal of
+Financial Finance, 47(2), 1992.
+[24] Eugene F. Fama and Kenneth R. French. Common risk factors in the returns on stocks and bonds.
+Journal of Financial Economics, 33(3):3–56, 1993.
+[25] Eugene F. Fama and Kenneth R. French. A five-factor asset pricing model. Journal of Financial
+Economics, 116(1):1 – 22, 2015. ISSN 0304-405X.
+[26] Wayne E. Ferson and Andrew F. Siegel. The efficient use of conditioning information in
+portfolios. The Journal of Finance, 56(3):967–982, 2001. ISSN 00221082, 15406261. URL
+http://www.jstor.org/stable/222538.
+[27] Thomas Fischer and Christopher Krauss. Deep learning with long short-term memory networks for
+financial market predictions. European Journal of Operational Research, 270(2):654–669, 2018. ISSN
+0377-2217. doi: https://doi.org/10.1016/j.ejor.2017.11.054.
+[28] Gary B. Gorton, Fumio Hayashi, and K. Geert Rouwenhorst. The Fundamentals of Commodity Futures
+Returns. Review of Finance, 17(1):35–105, 08 2012. ISSN 1572-3097. doi: 10.1093/rof/rfs019. URL
+https://doi.org/10.1093/rof/rfs019.
+[29] Winfried George Hallerbach and Paul Beekhuizen. Time series momentum. The Journal of Alternative
+Investments, 20(2), 2017.
+[30] Xue-Zhong He and Kai Li. Profitability of time series momentum. Journal of Banking & Finance, 53:
+140 – 157, 2015.
+[31] Harrison Hong and Jeremy C. Stein. A unified theory of underreaction, momentum trading and overre-
+action in asset markets. Journal of Finance, LIV(6):2143–2184., 1999.
+[32] K. J. Hong and S. Satchell. Time series momentum trading strategy and autocorrelation amplification.
+Quantitative Finance, 15(9):1471–1487, 2015.
+40
+
+=== page 41 ===
+[33] Narasimhan Jegadeesh and Sheridan Titman. Returns to buying winners and selling losers: Implications
+for stock market efficiency. The Journal of Finance, 48(1):65–91, 1993.
+[34] Abby Y. Kim, Yiuman Tse, and John K. Wald. Time series momentum and volatility scaling. Journal
+of Financial Markets, 30:103 – 124, 2016.
+[35] Kyoung Jae Kim. Financial time series forecasting using support vector machines. Neurocomputing, 55
+(1):307 – 319, 2003.
+[36] A. Kirman. Epidemics of opinion and speculative bubbles in financial markets. Money and financial
+market, 1991.
+[37] Ralph S.J. Koijen, Tobias J. Moskowitz, Lasse Heje Pedersen, and Evert B. Vrugt. Carry. Journal of
+Financial Economics, 127(2):197–225, 2018.
+[38] Ioannis Kyriakou, Parastoo Mousavi, Jens Perch Nielsen, and Michael Scholz. Machine learning for
+forecasting excess stock returns:the five-year-view. Technical report, University of Graz, Department of
+Economics, 2019. URL https://EconPapers.repec.org/RePEc:grz:wpaper:2019-06.
+[39] Yves Lemperiere, Cyril Deremble, Philip Seager, Marc Potters, and Jean-Philippe Bouchaud. Two
+centuries of trend following. The Journal of Investment Strategies, 3, 04 2014.
+[40] Jim Kyung-Soo Liew and Boris Mayster. Forecasting etfs with machine learning algorithms. The Journal
+of Alternative Investments, 20(3):58–78, 2017.
+[41] John Lintner. The valuation of risk assets and the selection of risky investments in stock portfolios and
+capital budgets. The Review of Economics and Statistics, 47(1):13–37, 1965.
+[42] Yilin Ma, Ruizhu Han, and Weizhong Wang. Portfolio optimization with return predic-
+tion using deep learning and machine learning. Expert Systems with Applications, 165:
+113973, 2021. ISSN 0957-4174. doi: https://doi.org/10.1016/j.eswa.2020.113973. URL
+https://www.sciencedirect.com/science/article/pii/S0957417420307521.
+[43] Burton G. Malkiel and Eugene F. Fama. Efficient capital markets: A review of theory and empirical
+work*. The Journal of Finance, 25(2):383–417, 1970.
+[44] Ben R. Marshall, Nhut H. Nguyen, and Nuttawat Visaltanachoti. Time series momentum and moving
+average trading rules. Quantitative Finance, 17(3):405–421, 2017.
+[45] Aleksander Mercik, Daniel Cupriak, and Adam Zaremba. Factor seasonali-
+ties: International and further evidence. Finance Research Letters, 58:104293,
+2023. ISSN 1544-6123. doi: https://doi.org/10.1016/j.frl.2023.104293. URL
+https://www.sciencedirect.com/science/article/pii/S1544612323006657.
+[46] Tobias J. Moskowitz, Yao Hua Ooi, and Lasse Pedersen. Time series momentum. Journal of Financial
+Economics, 104(2):228–250, 2012.
+[47] Tobias J. Moskowitz, Riccardo Sabbatucci, Andrea Tamoni, and Bjorn Uhl. Nonlinear time series
+momentum. SSRN Electronic Journal, December 2025.
+[48] E. A. Nadaraya. On estimating regression. Theory of Probability & Its Applications, 9(1):141–142, 1964.
+doi: 10.1137/1109020.
+41
+
+=== page 42 ===
+[49] Christof Schmidhuber. Trends, reversion, and critical phenomena in finan-
+cial markets. Physica A: Statistical Mechanics and its Applications, 566:125642,
+2021. ISSN 0378-4371. doi: https://doi.org/10.1016/j.physa.2020.125642. URL
+https://www.sciencedirect.com/science/article/pii/S0378437120309407.
+[50] William F. Sharpe. A simplified model for portfolio analysis. Management Science, 9:277–293, 1963.
+[51] Andrei Shleifer and Robert W. Vishny. The limits of arbitrage. The Journal of Finance, 52(1):35–55,
+1997.
+[52] Carsten Sorensen. Modeling seasonality in agricultural commodity futures. The Journal of Futures
+Markets, 22(5):393–426, 05 2002.
+[53] Catalin Starica. Is GARCH(1,1) as good a model as the Nobel prize accolades would imply? Econo-
+metrics, University Library of Munich, Germany, 2004.
+[54] Marta Szymanowska, Frans De Roon, Theo Nijman, and Rob Van Den Goor-
+bergh. An anatomy of commodity futures risk premia. The Journal of Fi-
+nance, 69(1):453–482, 2014. doi: https://doi.org/10.1111/jofi.12096. URL
+https://onlinelibrary.wiley.com/doi/abs/10.1111/jofi.12096.
+[55] Van-Dai Ta, Chuan-Ming Liu, and Direselign Addis. Prediction and portfolio optimization in
+quantitative trading using machine learning techniques. New York, NY, USA, 2018. Associa-
+tion for Computing Machinery. ISBN 9781450365390. doi: 10.1145/3287921.3287963. URL
+https://doi.org/10.1145/3287921.3287963.
+[56] Jack Treynor. Toward a theory of market value of risky assets. Unpublished manuscript, 1962.
+[57] Jules H. van Binsbergen and Ralph S.J. Koijen. The term structure of returns: Facts and theory. Journal
+of Financial Economics, 124(1):1–21, 2017. ISSN 0304-405X.
+[58] Fabian Waldow, Matthias Schnaubelt, Christopher Krauss, and Thomas G¨unter Fischer. Machine learn-
+ing in futures markets. Journal of Risk and Financial Management, 14(3), 2021. ISSN 1911-8074. doi:
+10.3390/jrfm14030119. URL https://www.mdpi.com/1911-8074/14/3/119.
+[59] Jia Wang, Tong Sun, Benyuan Liu, Yu Cao, and Degang Wang. Financial markets prediction with deep
+learning. In 2018 17th IEEE International Conference on Machine Learning and Applications (ICMLA).
+IEEE, dec 2018. doi: 10.1109/icmla.2018.00022.
+[60] Geoffrey S. Watson. Smooth regression analysis. Sankhy?: The Indian Journal of Statistics, Series A
+(1961-2002), 26(4):359–372, 1964. ISSN 0581572X. URL http://www.jstor.org/stable/25049340.
+42

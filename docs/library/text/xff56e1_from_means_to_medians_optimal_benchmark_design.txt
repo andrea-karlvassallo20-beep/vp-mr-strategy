@@ -1,0 +1,1148 @@
+=== page 1 ===
+From Means to Medians: Optimal Benchmark Design∗
+´Angel Hernando-Veciana†
+Universidad Carlos III de Madrid
+June 9, 2026
+Abstract
+Manipulation of price benchmarks has cost hundreds of millions of dollars, making manipulation-
+resistant design a first-order question. A puzzling empirical pattern offers a starting point: bench-
+marks in traditional finance are typically means, those in decentralised finance medians. I rationalise
+this divide with a variable cost rising in each price distortion’s size and a fixed cost per manipulated
+price. The optimal benchmark is a mean when fixed costs are negligible and variable costs convex,
+a median when variable costs are negligible, and otherwise a trimmed mean, with weights reflecting
+cost heterogeneity.
+Key Words: Financial benchmarks, oracles, decentralised finance.
+JEL Classification: G14, D47, D82, D86.
+∗The author declares that he has no known competing financial interests or personal relationships that could have
+appeared to influence the work reported in this paper.
+†Universidad Carlos III de Madrid, calle Madrid 126, Getafe (Madrid) 28903, Spain. Email: angel.hernando@uc3m.es.
+I would like to thank Marcelo Bagnulo, William Fuchs, Efthymios Smyrniotis and seminar participants for their
+comments and suggestions. This research is part of the project I+D+i TED2021-131844B-I00, funded by MCIN/
+AEI/10.13039/501100011033 and the European Union NextGeneration EU/PRTR.
+1
+arXiv:2506.22142v2  [q-fin.TR]  8 Jun 2026
+
+=== page 2 ===
+1 Introduction
+A (price) benchmark provides a summary measure of the prices prevailing in a given market at a point
+in time. Benchmarks are computed for most major financial markets; prominent examples include the
+“4pm Fix,” which reports daily exchange rates from foreign-exchange transactions sampled around
+4pm London time, see Michelberger and Witte (2016), and the original LIBOR and EURIBOR, derived
+from opinion polls of panel banks, see Hernando-Veciana and Tr¨oge (2020).1
+By allowing contracts to be indexed to prevailing market prices, benchmarks underpin a wide
+range of financial instruments, including derivatives, floating-rate loans, and portfolio valuations. The
+notional value of such contracts can be large enough that one contracting party may have an incentive
+to shift the benchmark in its favour. There is ample evidence that such manipulation has occurred; see
+Sch¨afer et al. (2008) for prominent media accounts and Evans (2018) for an academic investigation.
+More recently, the advent of decentralised finance (DeFi) has significantly amplified these concerns.
+The combination of large contract values, automated execution, and limited legal enforceability makes
+manipulation of price oracles potentially profitable and difficult to deter. In this environment, smart
+contracts rely critically on external inputs in the form of financial benchmarks, commonly referred to
+as price oracles.2 The most widely used platform for these applications is the Ethereum blockchain,
+which processes millions of transactions per day and supports very large gross on-chain transfer flows.
+Consider, for instance, one of the most basic financial contracts: lending. Due to the lack of
+enforcing courts, lending is always collateralised and an oracle is used to determine the value of the
+collateral. This creates two distinct manipulation incentives. First, a borrower may inflate the oracle
+to borrow more than the collateral is worth. In a well documented case, the Mango Markets exploit, a
+trader used $10 million to manipulate the platform’s price oracle, inflating the value of a token used as
+1Opinion-based benchmarks are also used in some smart contracts; see Williams and Peterson (2019). A well-known
+example is Augur; see Peterson and Krug (2015).
+2Angeris and Chitra (2020) studies in detail examples of price oracles computed using transaction prices, including
+the Uniswap oracle developed in Adams et al. (2020). The term “price oracle” is sometimes used narrowly to refer to
+protocols that import external information into a blockchain, and more broadly to any protocol broadcasting benchmark
+values within the blockchain ecosystem. Under the latter interpretation, one can distinguish between on-chain and
+off-chain oracles; see Werner et al. (2022).
+2
+
+=== page 3 ===
+collateral, to borrow and withdraw over $116 million and then defaulted leading to significant platform
+losses.3 Second, since lending contracts have automatic liquidation clauses that can be triggered by
+any external party when the collateral value falls below a threshold, it may equally be profitable to
+deflate the oracle to activate liquidation against another party, see Werner et al. (2022) for documented
+examples.
+More broadly, the development of DeFi hinges on the availability of reliable oracles that can be
+safely incorporated into smart contracts. As the Financial Conduct Authority, a regulatory body of
+the UK Government, puts it:4
+“Oracles and bridges are two of the most significant vulnerabilities that exist in the DeFi
+world today,” and “any inaccuracies in the information that oracles provide can instantly
+impact downstream applications that rely on the oracle.”
+Manipulation is therefore not a theoretical curiosity but a first-order concern in benchmark design,
+with documented losses running into hundreds of millions of dollars.5 This paper asks directly: what
+benchmark formula best resists manipulation?
+My model answers this question by establishing a general correspondence between the cost struc-
+ture of manipulation and the optimal benchmark. This framework yields, as a natural corollary, an
+explanation for why the mean is more prevalent in traditional finance whereas the median dominates
+in DeFi.6
+Unlike Baldauf et al. (2022), whose analysis focuses exclusively on convex variable manipulation
+costs, costs that increase with the magnitude of the price distortion at an increasing rate, I recognise
+two further features of manipulation costs that are relevant in practice. First, manipulation may
+3See https://infotrend.com/mango-markets-madness-a-case-study-on-the-mango-markets-exploit/ and
+https://www.sec.gov/newsroom/press-releases/2023-13 for a description.
+4See Humphry et al. (2024).
+5Chainalysis (2023) report that DeFi protocols lost $403.2 million across 41 oracle manipulation attacks in 2022 alone.
+6For instance, the 4pm Fix (see https://www.lseg.com/en/ftse-russell), the EURIBOR (see https://
+www.emmi-benchmarks.eu/benchmarks/euribor/methodology/) and the USD LIBOR (see https://www.ice.com/
+publicdocs/USD_LIBOR_Methodology.pdf) use a (weighted) mean, see Baldauf et al. (2022), whereas popular oracles
+like MakerDAO or Tellor use the median, see Eskandari et al. (2021).
+3
+
+=== page 4 ===
+also entail fixed costs that are independent of the size of the distortion but increase with the number
+of prices manipulated. This is particularly relevant when prices are determined on decentralised
+exchanges on a blockchain, which is the typical setting in DeFi. In this environment, manipulating
+each price requires submitting at least one transaction to the blockchain, incurring a cost that is
+independent of the extent of the price manipulation.7 Remarkably, variable manipulation costs may
+be negligible in DeFi due to the availability of tools such as flash loans, as argued by Oosthoek (2021)
+and Arora et al. (2024).8 By contrast, fixed manipulation costs may be very large, often far exceeding
+standard transaction fees, as extensively documented in the MEV literature; see Wahrst¨atter et al.
+(2023) and Eskandari et al. (2021). Second, convexity of the variable costs is not always well-founded:
+as I show in Appendix B, when variable costs stem from the trading fee charged by a constant-product
+automated market maker, they turn out to be concave in the magnitude of manipulation.
+My first main result (Proposition 2) establishes that the optimal benchmark is the median when
+variable costs are negligible, and the mean when fixed costs are negligible and variable costs are
+convex. This result is intuitive. When variable costs are negligible, the main concern arises from
+large distortions in a small number of prices, which are better mitigated by the median than by
+the mean. When fixed costs are negligible and variable costs are convex, the cheapest manipulation
+strategy is instead to spread the bias uniformly across all prices, concentrating it on a few would entail
+disproportionately high marginal costs. The mean is maximally robust to such uniform manipulation,
+whereas the median is highly sensitive to manipulations that affect a large fraction of prices.
+Establishing this result in full generality is technically challenging, as the problem formally corre-
+sponds to an optimal contracting problem with multitask moral hazard. In this setting, the manipula-
+tor plays the role of the agent and chooses how much to distort each of the market prices that enter the
+7While the most visible component is the so-called gas cost (see Perez and Livshits (2019)), the economically more
+significant costs in many manipulative attacks are bribes to miners. These consist of direct payments conditional on
+enforcing a particular transaction ordering within a block. In current blockchain systems, such payments are largely
+mediated through MEV auctions; see Daian et al. (2020) and Wahrst¨atter et al. (2023).
+8That said, Adams et al. (2020) argues that the presence of variable manipulation costs may depend on the type of
+prices used in the benchmark, and that such costs are more likely to arise when end-of-block prices are employed.
+4
+
+=== page 5 ===
+benchmark. The analysis becomes even more involved in the presence of fixed costs or concave vari-
+able costs, since the manipulator’s objective function is non-convex, even under linear contracts. As
+a result, the manipulator’s optimal behavior cannot be fully characterized using first-order conditions
+alone.
+My approach takes a different perspective. Consider, first, the case in which fixed costs are absent
+and the benchmark is the mean. With convex variable manipulation costs, the optimal strategy for the
+manipulator consists of uniformly increasing all market prices by the same amount. Such a uniform
+manipulation would increase by the same amount any benchmark satisfying basic and reasonable
+properties. For example, symmetric benchmarks, those that coincide with the point of symmetry
+when the underlying price distribution is symmetric, would also increase by the same amount if the
+original distribution were symmetric. However, other symmetric benchmarks may admit alternative
+manipulation strategies that achieve the same effect at a lower cost. In this sense, the mean is optimal,
+as it maximizes the cost of manipulation among all symmetric benchmarks.
+The case without variable costs is analogous, though slightly more complex. In this case, the
+optimal manipulation strategy of the median involves increasing a sufficient mass of prices so that
+only half of the total mass remains below the target value for the benchmark. With an appropriate
+adjustment, this minimal mass can be shifted in a way that preserves symmetry, ensuring that if
+the original price distribution is symmetric, the manipulated distribution remains symmetric as well.
+As in the previous case, this implies that the median maximizes the cost of manipulation among all
+symmetric benchmarks, and is therefore optimal in this sense.
+Extending the analysis beyond these extreme cases is challenging. However, in the specific scenario
+where the initial distribution of prices is concentrated at a single point, one can generally characterize
+benchmarks that induce optimal manipulations that preserve symmetry, thereby ensuring optimality
+among symmetric benchmarks. For the case of convex variable costs, this turns out to be trimmed
+means9, where the extent of trimming increases as the fixed costs grow larger relative to the variable
+9A trimmed mean is calculated by excluding all values below and above a given quantile from the computation of the
+5
+
+=== page 6 ===
+costs. For the case of concave manipulation costs, the result is qualitatively similar: the optimal
+benchmark is again a trimmed mean, with the degree of trimming increasing in the size of the fixed
+costs. The key difference from the convex case is that some trimming is optimal even in the absence
+of fixed costs. A comparative static concerning market depth further sharpens the picture: when
+the variable cost arises from trading against a constant-product market maker, the optimal degree of
+trimming decreases with the liquidity of the pool, so prices from deeper pools, where manipulation
+is more costly at the margin, are aggregated closer to the mean, while shallower pools call for more
+trimming and, in the limit, the median.
+The results above assume that all prices in the sample are drawn from the same population
+and face the same manipulation costs. In practice, however, benchmarks are often computed from
+samples that span different market conditions, for instance transactions recorded at different times
+of day when liquidity and trading costs vary. Such variation naturally translates into heterogeneity
+in manipulation costs: prices sampled during illiquid periods are cheaper to distort, while the cost of
+securing transaction ordering in a blockchain can fluctuate sharply across time. A natural question is
+whether a benchmark designer can exploit this heterogeneity to further deter manipulation.
+My analysis shows that the answer is yes, and the optimal adjustment is intuitive. When manipu-
+lation costs are purely variable and convex, the benchmark should downweight prices that are cheaper
+to manipulate at the margin, leading to a weighted mean with weights proportional to marginal ma-
+nipulation costs. When costs are purely fixed, what matters instead is how costly it is to include a
+given price in a manipulation campaign at all, leading to a weighted median in the spirit of Edge-
+worth (1888),10 with weights proportional to the fixed costs of manipulation. I also show how these
+insights generalize when both cost components are present, yielding a trimmed mean whose weights
+and trimming parameter reflect both variable and fixed costs.
+mean.
+10Edgeworth (1888) proposed combining observations from populations with different dispersions by assigning greater
+weight to more precisely measured sources. My weighted median is in this spirit: prices from subpopulations with higher
+fixed manipulation costs are harder to include in a manipulation campaign and therefore receive greater weight. The key
+difference is that my weights follow from a formal manipulation-resistance criterion rather than from statistical efficiency.
+6
+
+=== page 7 ===
+The most closely related paper is that of Baldauf et al. (2022), to which I have already referred.
+The main differences are twofold. First, it assumes that manipulation entails no fixed costs that grow
+with the number of prices manipulated. Second, it restricts attention to convex variable costs, whereas
+I show that concavity is the empirically relevant case when variable costs stem from the trading fee
+of a constant-product automated market maker. Extending the analysis along either dimension is
+technically challenging: once fixed costs are present the manipulator’s problem is no longer convex,
+ruling out the first-order approach standard in the optimal contract design literature, see Bolton and
+Dewatripont (2004).
+Also closely related are Duffie and Dworczak (2021) and Frei and Mitra (2021), who study bench-
+mark design when the manipulator’s only margin is the volume of distorting trades. In Duffie and
+Dworczak (2021) the manipulator chooses the volume of its orders, which are all executed at a common
+distorted price, at a cost linear in that volume; in Frei and Mitra (2021) it allocates an exogenously
+fixed total volume of distorting trades across periods. In both, manipulation is parameterised by
+traded volume, whereas in my model the manipulator chooses the magnitude of each individual price
+distortion subject to an explicit cost of manipulation comprising variable and fixed components.
+More broadly, my work connects to the economics literature on decision-making from manipulable
+data, which stresses that when allocations depend on data, the agents who generate that data distort
+it in anticipation of how it will be used; see, for instance, Frankel and Kartik (2022). A benchmark
+is precisely such a data-dependent decision rule, and my analysis asks how its design shapes the
+incentives to manipulate the underlying prices.
+My work is also related to the literature on robust statistics, see Huber (2004) for a comprehensive
+review. This literature studies the statistic that minimizes deviations from the true value subject to a
+perturbation chosen to maximize deviations. This problem, like mine, is formulated as a minimax, but
+the difference is that the assumptions that define the set of feasible deviations are reasonable for exoge-
+nous outliers but not for the manipulation problems that arise in financial markets. In particular, these
+deviations are not consistent with the existence of a fixed cost of manipulation, one of the main ele-
+7
+
+=== page 8 ===
+ments of my analysis. A second difference is that robust statistics weighs robustness against statistical
+efficiency: the precision of the estimator when the model holds and no contamination occurs. I, in-
+stead, focus exclusively on robustness to manipulation, taking the point of symmetry as the target and
+asking which benchmark is hardest to manipulate. These two concerns are complementary rather than
+competing. Because the benchmarks that emerge as manipulation-optimal (means, trimmed means,
+and medians, possibly weighted) are exactly the L-estimators11 for which the efficiency–robustness
+trade-off is classically understood, my manipulation-resistance criterion can be combined with the
+asymptotic- or minimax-efficiency criteria of robust statistics to discipline benchmark design along
+both dimensions at once.
+My work is also related to the fast growing literature on DeFi and in particular to the analysis of
+oracles and their vulnerabilities, see Werner et al. (2022). This literature, however, does not analyse
+the performance of the possible rules used to aggregate prices but instead focuses on an empirical
+investigation of the performance of the different oracles used in reality, see Liu et al. (2021), or classify
+the different oracles used in practice with respect to different technical aspects of their protocols,
+see Pasdar et al. (2021) for a comprehensive discussion. This literature is also interested in the
+implementation of price oracles not based on transactions but on honest reporting by trusted parties,
+see for instance Buterin (2014).
+Finally, my analysis also complements work on securing specific DeFi applications, such as Arora
+et al. (2024), who deter over-borrowing in protocols for loanable funds by wrapping the oracle in an
+asymmetric rule that caps upward moves in collateral value, at the cost of distorting its valuation.
+A benchmark that is already optimally manipulation-resistant reduces the distortion such a wrapper
+must impose, and analogous wrappers could address strategic liquidations or other directional attacks.
+The remainder of the paper is organised as follows. Section 2 presents the model. Section 3 derives
+11An L-estimator is a linear combination of order statistics; equivalently, a location functional of the formR 1
+0 J (u) G−1(u) du for a weight function J on the quantiles. The mean, median, and trimmed means are the lead-
+ing examples, corresponding to uniform weights, all weight at the median, and uniform weights on a central quantile
+range, respectively.
+8
+
+=== page 9 ===
+the optimal benchmark in the baseline case of a homogeneous market, characterising the mean, median,
+and trimmed mean as optimal depending on the relative importance of fixed and variable manipulation
+costs. Section 4 extends the analysis to heterogeneous markets and establishes the optimality of
+weighted means, weighted medians, and weighted trimmed means. Section 5 concludes. All proofs
+are in Appendix A. Appendix B derives the manipulation cost function implied by a constant-product
+market maker and verifies that it satisfies the concavity and regularity conditions used in the analysis.
+2 The Model
+I assume a population of unmanipulated prices described by a probability distribution F . For some
+results I assume that the distribution is a degenerate distribution at a price; I refer to this case as
+the case of no dispersion. For the rest of the paper, I assume that F has a symmetric and strictly
+single-peaked12 density f .
+The restriction to symmetric distributions is both natural and well-motivated. For asymmetric
+distributions, standard location functionals, such as the mean, median, and trimmed mean, generally
+disagree, and there is no canonical choice: the very meaning of “location” depends on the purpose
+of the analysis rather than being an intrinsic property of the distribution. Restricting to symmetric
+distributions thus isolates the comparison of benchmarks to their manipulation-resistance properties,
+without conflating it with the separate question of which functional best represents location under
+asymmetry.
+A strategic agent, the manipulator, can manipulate these prices at a cost. In particular, the
+manipulator’s strategy can be described with a conditional distribution function Gc(·|p), for any
+p ∈ R, that describes how the prices of all the markets with unmanipulated price p are shifted into a
+new distribution of prices. In the case of no manipulation, Gc(·|p) is simply a degenerate distribution
+12A function u : R → R is strictly single-peaked if there exists a unique point x∗ ∈ R such that
+• for all x < y ≤ x∗, u(x) < u(y),
+• for all x∗ ≤ y < z, u(y) > u(z).
+9
+
+=== page 10 ===
+at p. The manipulator’s strategy gives rise to the distribution of manipulated prices:
+G(p) ≡
+Z
+Gc(p|˜p)dF (˜p).
+A benchmark is a locational functional applied to a distribution of prices. In my analysis, I either
+require very little structure on the set of rules that may be used to compute the benchmark or restrict
+attention to particular families of rules that have been used in practice. In particular, I call symmetric
+benchmarks those that are equal to the point of symmetry in the case of a symmetric distribution of
+prices. This is a minimal restriction imposed on location functionals, see for instance Jaeckel (1971).
+Besides, it does not impose any structure on distributions that are not symmetric. I define the τ -
+trimmed mean, for τ ∈ [0, 0.5], as the average calculated over the modified distribution obtained by
+truncating the original distribution at the τ and 1 − τ quantiles. Clearly, τ = 0 and τ = 1/2 render
+the τ -trimmed mean equal to the standard mean and the median, respectively. The τ -trimmed means
+are symmetric benchmarks.13
+As a realistic example, one can think of the distribution of prices as the marginal prices offered
+by a set of AMMs at different moments in time. These marginal prices can be manipulated by
+submitting trade orders to the AMM whose only purpose is to upset the computed benchmark. Thus,
+the manipulated prices correspond to the marginal prices displayed by the AMM’s and used in the
+computation of the benchmark and the unmanipulated prices refer to the counterfactual of what could
+have been the marginal prices if there were no manipulation. Alternatively, one could assume that the
+benchmark is computed out of a sample of transaction prices and manipulation is done by submitting
+additional trades.
+Manipulating a price is costly. In particular, the cost of a manipulating strategy Gc(·|p) is equal
+13The trimmed means form a canonical family in robust statistics, where the trimming fraction τ parameterises a
+trade-off between statistical efficiency, maximised by the mean (τ = 0) under light-tailed price noise, and robustness,
+which increases with τ . The same family parameterises the trade-off relevant here, between resistance to manipulation
+under variable versus fixed costs.
+10
+
+=== page 11 ===
+to: Z Z
+˜p̸=p
+(c(˜p − p) + k) dGc(˜p|p)dF (p),
+where c is a twice differentiable and strictly increasing function (except when c(·) = 0 is assumed),
+equal to zero at zero and symmetric around zero,14 and k ≥ 0. Thus, c is the variable cost of
+manipulation and k the fixed cost of manipulation.15 The cost of manipulation is explained in that
+manipulating a price requires trading the asset. The variable cost arises because greater manipulation
+requires larger orders, which typically implies higher costs.16 Fixed costs, instead, stem from the need
+to secure transaction inclusion or priority independently of the size of the trade. For instance, in the
+context of blockchains, manipulating a price immediately before it is fed into a benchmark requires
+enforcing a particular ordering of transactions within a block. As explained in the introduction, this
+typically entails paying a potentially large fee to the block builder.
+When the distribution of unmanipulated prices is symmetric, any symmetric benchmark coincides
+with the axis of symmetry. The bias induced by manipulation is therefore given by the difference
+between the value of the benchmark under the manipulated distribution and the axis of symmetry of
+the unmanipulated distribution of prices. The focus on symmetric benchmarks allows me to abstract
+from normative questions about how benchmarks should respond to price asymmetries and ensures
+that differences in manipulability arise solely from strategic distortions.
+14The symmetry of c around zero means that the variable cost of a price distortion depends only on its magnitude, not
+its direction. This is natural when manipulation requires trading an asset: buying or selling the same quantity incurs
+the same transaction cost, and the resulting price impact is symmetric in absolute terms.
+15The fixed cost k is incurred once per manipulated price, irrespective of the size of the distortion. This per-price
+structure is natural in the DeFi context. Benchmarks typically aggregate prices sampled at different times or across
+different venues, so each manipulated observation requires securing a separate, independently arranged transaction
+ordering, often in a different block. Even when multiple manipulated transactions fall within the same block, the cost of
+securing their combined ordering scales with the number of such transactions.
+16Duffie and Dworczak (2021) assumes variable manipulation costs that are linear in the traded volume, and Baldauf
+et al. (2022) provides examples in which they are increasing and convex. I show in Appendix B that for the particular
+problem of variable costs originated by the trading fee charged by an automated market maker (AMM), the variable
+costs turn out to be concave if the AMM uses the constant product market maker.
+11
+
+=== page 12 ===
+3 Optimal Benchmarks
+The criterion I use to evaluate a benchmark is the minimum cost of manipulation necessary to im-
+plement a given bias ∆: the larger this minimum cost, the better the benchmark. This criterion is
+consistent with the collateralised lending example discussed in the introduction, where the manipulator
+minimizes the cost of triggering the liquidation clause while the benchmark designer seeks to maximize
+it. This perspective is closely related to the Grossman–Hart approach to moral hazard (Grossman
+and Hart, 1983), in which the principal first characterizes the minimum payment required to induce
+each effort level, then selects the effort level that maximizes profits. Analogously, each benchmark
+generates an endogenous cost function that determines, for any target bias ∆, the minimum cost a
+manipulator must incur to implement it.
+Definition:
+• A benchmark is optimal at ∆ if it is the symmetric benchmark that maximizes the minimum
+cost of inducing bias ∆. A benchmark is optimal if it is optimal at every ∆.
+• A benchmark dominates another benchmark at ∆ if the former has a greater minimum cost
+of implementing the bias ∆ than the latter. A benchmark dominates another benchmark if it
+dominates the latter for every ∆.
+By the symmetry of c around zero and of F around its centre, the minimum cost of implementing
+bias −∆ equals that of implementing +∆. It therefore suffices to characterise optimal benchmarks for
+∆ > 0, which is what I do throughout.
+The analysis is based on the following family of manipulative strategies.
+Definition: A manipulative strategy is symmetric if it preserves the symmetry of the distribution of
+prices, i.e. it induces a distribution of manipulated prices that is symmetric.
+The following natural result will be used throughout the analysis.
+12
+
+=== page 13 ===
+Proposition 1. A benchmark B is optimal at ∆ if there exists a manipulation strategy that (i) is cost-
+minimising for B at ∆, i.e. achieves bias ∆ for B at the lowest possible cost, and (ii) is symmetric,
+i.e. induces a symmetric distribution of manipulated prices.
+A manipulator employing such strategy implements the bias ∆ in any symmetric benchmark, but
+it is only cost minimizing in the proposed benchmark, and thus any other symmetric benchmark can
+be manipulated at a potentially lower cost.
+Note that the proposition does not rule out optimal manipulation strategies that are asymmetric.
+Indeed, the most natural manipulation may not be symmetric. I discuss this point in detail, with a
+concrete example, after Proposition 2 below.
+My first main result covers the polar cases in which either fixed costs or variable costs are absent,
+where the case of no fixed costs requires the additional assumption of convex variable costs.
+Proposition 2. The mean is an optimal benchmark in the absence of fixed costs, i.e. k = 0, provided
+variable costs are convex. The median is an optimal benchmark in the absence of variable costs, i.e.
+c(·) = 0.
+A few remarks on Proposition 2 are in order. The proof identifies, in each case, a symmetric cost-
+minimizing manipulation strategy, which by Proposition 1 suffices to establish optimality. However,
+the result does not claim that this strategy is the only cost-minimizing one, nor that the optimal
+manipulation must be symmetric. To see this concretely, consider the median in the absence of
+variable costs. As the proof makes explicit, any manipulation strategy that transfers exactly F (P +
+∆) − 1/2 mass from strictly below P + ∆ to points weakly above it achieves the same minimum
+cost, regardless of how the destinations are chosen; the proof simply selects one such strategy that
+happens to preserve symmetry. Now suppose a small variable cost is added. Because the variable
+cost is strictly increasing in the distance moved, it becomes strictly cheaper to relocate each source as
+little as possible. The optimal strategy therefore concentrates all manipulated mass at P + ∆ itself,
+producing a final distribution that is highly asymmetric.
+13
+
+=== page 14 ===
+One might therefore worry that the optimality result is fragile: if the symmetric manipulation
+strategy is not the unique optimum, perhaps a small perturbation of the environment would cause
+the median to lose its optimality. This concern does not arise. The symmetric strategy from the un-
+perturbed problem remains feasible under the perturbation, and its cost increases by at most a term
+proportional to the size of the perturbation. Since no symmetric benchmark can have a higher mini-
+mum manipulation cost than this, the median remains approximately optimal, with the approximation
+error vanishing as the perturbation vanishes.
+The general case in which both fixed and variable manipulation costs are present is substantially
+more complex. Intuitively, it corresponds to a multitask moral hazard problem in which the agent
+faces nonconvex preferences, even under linear contracts. Nevertheless, there are two particular cases
+in which Proposition 2 can be extended and Proposition 1 continues to apply.
+Let
+c(q) ≡ k + c(q) |q|
+denote the average cost of manipulating a single price by an amount q, and let δmin denote the
+minimum of c(q) over q ∈ [0, ∞). Strict convexity of c implies that this minimum is attained at a
+unique q unless c is everywhere decreasing, in which case I set δmin = ∞. Similarly, strict concavity
+of c implies that δmin = ∞.17
+Proposition 3. The mean is an optimal benchmark if variable costs are convex and either δmin ≤ ∆
+or δmin = 2∆.
+In both cases covered by the proposition, the mean admits an optimal manipulation strategy
+that preserves the symmetry of the price distribution. This property generally fails when either
+17Note that ¯c′(q) = c′(q)−¯c(q) q , so at any critical point q0 where ¯c′(q0) = 0 one has c′(q0) = ¯c(q0) and thus ¯c′′(q0) = c′′(q0 ) q0 , which is strictly positive under convexity and strictly negative under concavity. Hence, under convexity every critical
+point is a strict local minimum, whereas under concavity every critical point is a strict local maximum. In either case,
+two critical points would require a critical point of the opposite kind in between, so there is at most one critical point.
+Under concavity, ¯c′(q) = (c′(q)q − k − c(q))/q2. Strict concavity with c(0) = 0 gives c(q) > qc′(q) for all q > 0, so
+c′(q)q − c(q) < 0; together with k ≥ 0 this yields ¯c′(q) < 0 for all q > 0. Hence ¯c is strictly decreasing and δmin = ∞.
+Under convexity, if no critical point exists, an analogous argument shows that ¯c must be strictly decreasing, and the
+convention δmin = ∞ applies again.
+14
+
+=== page 15 ===
+δmin ∈ (∆, 2∆) or δmin > 2∆. The intuition is easiest to see in the case in which the unmanipulated
+price distribution exhibits no dispersion. Strict convexity of the variable cost function implies that the
+cost-minimizing manipulation of the mean consists of increasing all manipulated prices by the same
+amount. If δmin ≥ ∆, the optimal strategy is therefore to raise a mass ∆/δmin of prices by δmin. Hence,
+when δmin ∈ (∆, 2∆) the measure of manipulated prices satisfies µ ∈ (1/2, 1), whereas when δmin > 2∆
+one has µ < 1/2. In both cases, the resulting distribution of manipulated prices has two atoms, one
+at P and one at P + δmin, and is therefore not symmetric. The next proposition characterizes the
+optimal benchmark in the latter case.18
+Proposition 4. Suppose the distribution of unmanipulated prices has no dispersion. Then the optimal
+symmetric benchmark is the τ ∗-trimmed mean where
+τ ∗ ≡ 1 2  1 − c′(2∆) c(2∆)  ∈ (0, 1/2),
+if either:
+• c is strictly convex, k > 0, and δmin > 2∆;
+• c is strictly concave, k ≥ 0, and c′(q)/c′(q) is strictly increasing.
+When fixed manipulation costs are large relative to the target price increase (δmin > 2∆) and
+variable costs are convex, the optimal manipulation of the mean concentrates on less than half the
+prices, breaking the symmetry that makes the mean optimal when δmin = 2∆. A τ -trimmed mean
+counteracts this incentive by discarding extreme prices, thereby forcing the manipulator to trade off
+the gains from concentrating manipulation against the higher average cost of doing so. Convexity of
+the variable cost implies that any optimal manipulation raises all affected prices by the same amount,
+and the optimal trimming parameter τ ∗ is precisely such that this amount equals 2∆. At this value,
+18Extending this analysis to more general price distributions is challenging. Even when restricting attention to com-
+monly used benchmarks such as τ -trimmed or τ -Winsorized means, characterizing the optimal manipulation strategy is
+difficult, as the manipulator’s problem becomes a nonseparable and nonconvex functional optimization problem.
+15
+
+=== page 16 ===
+the least-cost manipulation strategy shifts exactly half of the prices by 2∆, restoring symmetry around
+∆ and allowing Proposition 1 to apply. This logic fails when δmin ∈ (∆, 2∆): in that case, the optimal
+manipulation for any trimmed mean raises prices by less than 2∆, so the mass of manipulated prices
+is strictly above one half and symmetry cannot be achieved. Nevertheless, even in this intermediate
+region the mean dominates all other trimmed means, consistent with Propositions 3 and 4 (note that
+δmin = 2∆ implies τ ∗ = 0):
+Proposition 5. Suppose c is strictly convex and δmin ∈ (∆, 2∆). Then the untrimmed mean dom-
+inates, at ∆, any τ -trimmed mean when the distribution of unmanipulated prices has no dispersion.
+A similar conclusion holds, perhaps surprisingly, when variable costs are concave. In this case
+the optimal manipulation again raises all manipulated prices by a common amount. The reason is
+that concavity of c makes it suboptimal to place any manipulated mass strictly between zero and the
+upper trimming point: the manipulator can lower cost through a mean-preserving spread that shifts
+this mass to the two extremes, zero and the trimming point, leaving the trimmed mean unchanged.
+Once the manipulated mass is concentrated at the trimming point, the optimal trimming parameter
+τ ∗ is the one for which the manipulator finds it optimal to locate that point at 2∆, which in turn
+makes the manipulated distribution symmetric around ∆. The condition that c′(q)/c′(q) is strictly
+increasing guarantees that the manipulator’s objective function has a unique interior minimum, so
+that the first-order condition fully characterises the global optimum. Economically, it requires that
+either fixed costs are sufficiently large or that the marginal cost of manipulation diminishes sufficiently
+fast as the size of distortion grows. This is a mild restriction: I verify in Appendix B that it is satisfied
+by the cost function generated by a CPMM, which is the empirically relevant case in DeFi, even when
+there are no fixed costs. A simple parametric family that also satisfies the condition is the class of
+16
+
+=== page 17 ===
+power costs c(q) = qα with α ∈ (0, 1). For this family, one can compute directly that
+c′(q)
+c′(q) = (α − 1)qα − k α qα+1 ,
+whose derivative with respect to q equals
+
+(1 − α)qα + k(1 + α)  /(αqα+2) > 0 for all q > 0 and k ≥ 0,
+confirming that the condition holds throughout this class.
+Remark 1. Two comparative statics of the optimal trimming τ ∗ in Proposition 4 are worth noting.
+First, τ ∗ rises with the fixed cost of manipulation, approaching the median as fixed costs grow large
+relative to variable costs. Second, when the variable cost arises from trading against a constant-product
+market maker, τ ∗ falls with the liquidity of the pool: prices from deeper pools, where manipulation is
+more costly at the margin, are aggregated with less trimming, hence closer to the mean, whereas prices
+from shallower pools call for more trimming and, in the limit, the median. The first claim is direct
+while the second is formalised in Appendix B.
+Although the focus on the case of no dispersion is driven by tractability, the prevalence of extensive
+arbitrage facilitated by bots, as discussed in Daian et al. (2020), implies that prices in practice often
+cluster tightly around their central value, making this a reasonable assumption in the context of
+DeFi. Moreover, by the same continuity argument as for Proposition 2, the ranking established in
+Proposition 4 is robust to small amounts of dispersion: the τ ∗-trimmed mean remains approximately
+optimal when the unmanipulated prices are concentrated within an ϵ of P , with an approximation
+error that vanishes as ϵ goes to zero.
+4 Benchmarks Based on Data from a Heterogeneous Market
+In this section, I consider the case in which the price distribution is generated by different subpopu-
+lations that may differ in their manipulation costs. Such heterogeneity may arise, for instance, when
+the benchmark is computed using prices observed at different points in time and manipulation costs
+17
+
+=== page 18 ===
+vary over time. A natural example is time-varying liquidity: when liquidity is lower, a given price
+distortion can be achieved with smaller orders and therefore lower variable costs. Another example,
+in the context of blockchains, is time variation in the costs of transaction inclusion and ordering like
+gas fees and the price in MEV auctions; see Footnote 7.
+I also allow for limited heterogeneity across subpopulations in the distribution of unmanipulated
+prices. Formally, I assume a countable set of subpopulations I, where subpopulation i ∈ I has mass
+µi19 and is described by a probability distribution Fi. As before, I consider two cases: the case in
+which each Fi has a density fi that is single-peaked and symmetric around a common point P , and
+the case with no dispersion in which each Fi is degenerate at a common point P .
+The manipulator’s strategy is described by a family, one per subpopulation, of conditional distri-
+bution functions {Gc i (·|p)}i∈I , that describe how each price in each subpopulation is shifted by the
+manipulator. The manipulator’s strategy gives rise to a final distribution of prices for each subpopu-
+lation i:
+Gi(p) ≡
+Z
+Gc i (p|˜p) µi Fi (d˜p) .
+The cost of a manipulating strategy {Gc i (·|·)}i∈I is equal to:
+X
+i∈I
+Z Z
+p̸=˜p
+(ci(p − ˜p) + ki) Gc i (dp|˜p) µi Fi (d˜p) ,
+where the ci’s are continuous, strictly increasing functions (except when ci(·) = 0), equal to zero at
+zero and symmetric around zero, and ki ≥ 0. Thus, the ci’s are the variable costs of manipulation and
+the ki’s the fixed costs of manipulation.
+A benchmark in this section is again a unidimensional statistic that summarizes the distribution of
+prices. The novelty in this section is that the benchmark is allowed to depend on the whole vector of
+19µi represents the frequency (total mass) of prices drawn from subpopulation i. These masses need not sum to one;
+they appear in the analysis only through the normalized per-price weights in Proposition 6, which are constructed to
+integrate to one across all prices. Interpreting µi as the fraction of prices from subpopulation i (so that P i∈I µi = 1) is
+the leading case and involves no loss of generality.
+18
+
+=== page 19 ===
+distributions of final prices of all subpopulations, (Gi(p))i∈I , rather than on the population distribution
+G. One such example is a weighted mean of the medians of each of the subpopulations. More generally,
+a weighted benchmark can be defined using some positive weights {wi}i∈I . These weights aggregate
+the subpopulation distributions into a single pooled probability distribution
+¯G(w) ≡ 1P
+j∈I wj µj
+X
+i∈I
+wiµi Gi,
+and standard statistics of ¯G(w) (e.g. mean, median, or τ -trimmed mean) yield well-defined benchmarks.
+I call symmetric∗ benchmarks those that are equal to the point of symmetry whenever all subpop-
+ulations are symmetric around the same point. This is clearly a larger family of benchmarks than the
+symmetric benchmarks. For instance, the mean of medians is not symmetric but it is symmetric∗.
+Still, for the distributions of the subpopulations of unmanipulated prices any symmetric∗ benchmark
+is equal to P . Thus, the bias created by manipulation can be measured as deviations from P .
+Definition: A benchmark is optimal∗ at ∆ if it is the symmetric∗ benchmark that maximizes the
+minimum cost of inducing bias ∆. A benchmark is optimal∗ if it is optimal∗ for every ∆.
+The first main result of this section characterizes the optimal benchmark in two polar cases: when
+manipulation involves no fixed costs and variable costs are convex, and when it involves no variable
+costs.
+Proposition 6. The mean of ¯G(w) with weights wi = c′ i(∆) is an optimal∗ benchmark in the absence
+of fixed costs, i.e. ki = 0 for all i ∈ I, provided variable costs are convex.20 The median of ¯G(w) with
+weights wi = ki is an optimal∗ benchmark in the absence of variable costs, i.e. ci(·) = 0 for all i ∈ I.
+When manipulation entails only convex variable costs, the marginal cost of distorting prices differs
+across subpopulations, and the manipulator optimally reallocates manipulation toward those for which
+20As is immediate, the proposed benchmark is independent of ∆ whenever the variable cost functions satisfy ci(x) =
+βic(x) for some common function c.
+19
+
+=== page 20 ===
+distortions are cheapest at the margin. An optimal benchmark therefore assigns lower weight to prices
+that are easier to manipulate at the margin and higher weight to prices that are more costly to distort,
+which leads to a weighted mean with weights proportional to marginal manipulation costs. In contrast,
+when manipulation entails only fixed costs, the relevant trade-off is not how much to manipulate a
+given price but whether to manipulate it at all. In this case, robustness requires limiting the influence
+of prices that are cheap to include in a manipulation. Accordingly, the optimal weights are proportional
+to the fixed costs of manipulation.
+Proposition 6 characterises the optimal∗ benchmark in the two polar cases. When both fixed and
+variable costs are present, a further characterisation is available in the proportional sub-case in which
+the ratio of fixed to variable cost is the same across all subpopulations.
+Proposition 7. Suppose the distribution of unmanipulated prices has no dispersion, variable and fixed
+costs are proportional, i.e. ci = αic and ki = αi κ for c strictly increasing, symmetric with c(0) = 0
+and κ ≥ 0. Let cκ(q) ≡ (c(q) + κ)/q and δκ,min its minimum. Then the optimal∗ benchmark is the
+τ ∗-trimmed mean of ¯G(w) with wi = αi, where
+τ ∗ = 1 2  1 − c′(2∆) cκ(2∆)  ,
+if either:
+• c is strictly convex, κ > 0, and δκ,min > 2∆;
+• c is strictly concave, κ ≥ 0, and c′ κ(q)/c′(q) is strictly increasing.
+The key to the proof is that the proportionality condition ci = αi c and ki = καi makes the
+manipulation cost depend on the strategy only through ¯G(α): A R ˜p̸=P [c(˜p − P ) + κ] d ¯G(α)(˜p). Since the
+proposed benchmark is the τ ∗-trimmed mean of ¯G(α), there exists an optimal manipulative strategy
+that just shifts half the mass an amount 2∆ by application of the results of the homogeneous case of
+Proposition 4. This optimal symmetric manipulation can be implemented by shifting half the mass of
+20
+
+=== page 21 ===
+each subpopulation 2∆, which is a symmetric∗ strategy, and thus implies the result by a generalisation
+of Proposition 1.
+When the proportionality condition fails, the analysis becomes substantially harder. The manip-
+ulation cost decomposes into two separately weighted aggregations of the per-subpopulation strategy:
+one weighted by marginal costs and one weighted by fixed costs. When these weighting schemes dis-
+agree, a single benchmark cannot simultaneously induce optimality under both, and no choice of τ
+resolves the tension. Characterising the optimal∗ benchmark in the general intermediate case is left
+for future work.
+5 Conclusion
+This paper links the optimal benchmark formula to the cost of its manipulation. When only variable
+costs matter, the mean maximises resistance to manipulation; when only fixed costs matter, the median
+does so; and when both are present, a trimmed mean interpolates between the two, with the degree
+of trimming increasing in the relative importance of fixed costs. This correspondence provides an
+explanation for an empirical pattern: benchmarks in traditional finance, where manipulation requires
+sustained trading, tend to be means, while those in DeFi, where flash loans can eliminate variable
+costs but securing transaction ordering is costly, tend to be medians.
+A few simplifying assumptions bound the scope of the analysis. My characterisations of optimal
+benchmarks rely on the assumption that the distribution of unmanipulated prices is symmetric or has
+no dispersion. This allows for clear cut results in a tractable setting. Extending the analysis to either
+asymmetric distribution of prices or dispersed price distributions is challenging, as the manipulator’s
+problem becomes a non-separable functional optimisation problem. In the heterogeneous setting,
+Proposition 7 requires that fixed and variable costs are proportional across subpopulations: when
+fixed and variable costs vary independently the optimal benchmark remains uncharacterised, because
+the manipulation cost decomposes into two separately weighted aggregations that no single benchmark
+21
+
+=== page 22 ===
+can reconcile.
+Several directions for future research stand out. One speaks directly to the limitations just dis-
+cussed. Restricting attention to linear variable costs, at some cost in empirical grounding, would recast
+the benchmark design problem as a maximin variant of the optimal partial transport problem. This
+would not by itself restore separability, but it would bring the problem within reach of duality-based
+methods, which may permit progress on asymmetric price distributions.
+Two further directions broaden the framework rather than relax its assumptions. The first concerns
+the sampling of prices: this paper takes the set of sampled prices as given and optimises only the
+aggregation formula, whereas jointly optimising the sampling protocol and the formula (for example,
+choosing which transaction times or which liquidity pools to include) could yield additional gains in
+manipulation resistance, especially in decentralised exchanges where liquidity varies sharply across
+time and venue. The second concerns statistical efficiency: this paper isolates the manipulation-
+resistance margin and takes the point of symmetry as the estimation target, setting aside the precision
+of the benchmark when prices are noisy but unmanipulated. Because the optimal benchmarks belong
+to the L-estimator family, a natural next step is to choose the trimming fraction and weights so as
+to balance manipulation resistance against asymptotic efficiency. This would trace out the frontier
+between efficiency and robustness studied in robust statistics, see Huber (2004), connecting the present
+analysis to the trade-off between efficiency and manipulation emphasised by Duffie and Dworczak
+(2021).
+A Proofs
+A.1 Proof of Proposition 1
+Proof. Consider a benchmark for which there exists such cost-minimizing manipulation strategy. Since
+the strategy induces a symmetric distribution of manipulated prices, it should implement ∆ not only for
+this benchmark, but for any symmetric benchmark. Hence, the minimum cost required to implement
+22
+
+=== page 23 ===
+∆ under any symmetric benchmark is weakly bounded above by the cost of this strategy, which implies
+the result. ■
+A.2 Proof of Proposition 2
+Proof. Begin with the case k = 0 and fix an arbitrary bias ∆ > 0 (recall that the analysis for ∆ < 0
+is symmetric). In the absence of fixed costs and given the convexity of c, the cost-minimizing way
+to raise the mean in ∆ is to increase all prices by the same amount ∆. This uniform shift raises the
+entire distribution by ∆ and therefore preserves symmetry. The first result then follows directly from
+Proposition 1.
+Next consider the case c(·) = 0 and an arbitrary bias ∆ > 0. Let P denote the point of symmetry
+of the distribution of unmanipulated prices. For any y ∈ R, define,
+˜g(y) ≡ f (y) + f (y − 2∆) 2 ,
+and for any y < P + ∆,
+α(y) ≡ ˜g(y) f (y) , A(y) ≡
+R ∞
+P +∆
+f (z−2∆)−f (z)
+2 dz
+1 − α(y) .
+The symmetry of f around P and its strict single-peakedness imply that f (y) > f (y − 2∆) for all
+y < P + ∆: since y − 2∆ is further from P than y whenever y < P + ∆ and ∆ > 0, single-peakedness
+gives f (y − 2∆) < f (y), so α(y) ∈ (0, 1).
+The manipulation strategy is defined as follows. For any y ≥ P + ∆, the conditional distribution
+Gc(· | y) is degenerate at y, i.e. there is no manipulation. For any y < P + ∆, Gc(· | y) has a mass
+point α(y) at y and density:
+˜g(x) − f (x)
+A(y) for x ∈ [P + ∆, ∞).
+23
+
+=== page 24 ===
+The total mass shifted by this strategy is:
+Z P +∆
+−∞
+Z ∞
+P +∆
+˜g(x) − f (x)
+A(y) dx f (y) dy =
+Z P +∆
+−∞
+(1 − α(y))
+R ∞
+P +∆ (˜g(x) − f (x)) dx R ∞
+P +∆
+f (z−2∆)−f (z)
+2 dz
+f (y) dy
+=
+Z P +∆
+−∞
+(1 − α(y))f (y) dy
+=
+Z P +∆
+−∞
+f (y) − f (y − 2∆)
+2 dy
+= F (P + ∆) − F (P − ∆) 2 = F (P + ∆) − 1 2 ,
+where the equalities use, respectively, the definition of A(y), the definition of ˜g, the definitions of α(y)
+and ˜g(y), and finally the symmetry of f around P .
+To conclude, it remains to verify that the induced distribution of manipulated prices is symmetric
+around P +∆. First, we show that this density is ˜g. For x < P +∆, the density equals α(x)f (x) = ˜g(x).
+For x ≥ P + ∆, it is given by
+f (x) +
+Z P +∆
+−∞
+˜g(x) − f (x)
+A(y) f (y) dy = f (x) +
+ 
+˜g(x) − f (x)
+
+R P +∆
+−∞ (1 − α(y))f (y) dy R ∞
+P +∆
+f (z−2∆)−f (z)
+2 dz
+= f (x) +
+ 
+˜g(x) − f (x)
+
+R P +∆
+−∞ (f (y) − f (y − 2∆)) dyR ∞
+P +∆ (f (z − 2∆) − f (z)) dz
+= ˜g(x),
+where the derivation again uses the definitions of A(y), α(y), and ˜g, together with the identity:
+R P +∆
+−∞ (f (y) − f (y − 2∆)) dyR ∞
+P +∆ (f (z − 2∆) − f (z)) dz =
+R ∞
+∆ (f (P + 2∆ − t) − f (P − t)) dtR ∞
+∆ (f (P + s − 2∆) − f (P + s)) ds = 1,
+where the first step follows from the change of variables t = P + 2∆ − y and s = z − P , and the second
+from the symmetry of f (P + x) = f (P − x) by symmetry around P .
+24
+
+=== page 25 ===
+Finally, we show that ˜g is symmetric around P + ∆:
+˜g(P + ∆ − x) = f (P + ∆ − x) + f (P − ∆ − x) 2
+= f (P − ∆ + x) + f (P + ∆ + x) 2
+= ˜g(P + ∆ + x),
+where the first step and last step follows from the definition of ˜g, the second from the symmetry of f
+around P .
+This completes the proof. ■
+A.3 Proof of Proposition 3
+Proof. The strict convexity of the variable cost function implies that any cost-minimizing manipulation
+of the mean must increase all manipulated prices by the same amount. Let δ denote this increase and
+let µ denote the measure of manipulated prices. The optimal manipulation then solves
+
+
+
+min
+δ∈R+, µ∈[0,1]
+µ
+ 
+k + c(δ)
+
+s.t. δ µ = ∆.
+Using the constraint to eliminate µ, this problem can be written as
+min
+δ∈[∆,∞)
+∆ c(δ).
+If δmin ≤ ∆, the solution is δ = ∆ and µ = 1. If instead δmin = 2∆, the solution is δ = δmin
+and µ = 1/2. In both cases, the corresponding manipulation strategy can induce a final distribution
+of prices that is symmetric around ∆. In the former case, symmetry follows because the entire
+distribution is shifted by the same amount and the original distribution is symmetric. In the latter
+case, symmetry follows because it suffices to shift exactly the upper half of the price distribution.
+25
+
+=== page 26 ===
+Proposition 1 therefore applies, which establishes the result. ■
+A.4 Proof of Proposition 4
+Proof. As a preliminary step we argue that τ ∗ ∈ (0, 1/2). That τ ∗ < 1/2 follows immediately from
+c′(2∆) > 0. That τ ∗ > 0, i.e. c(2∆) > c′(2∆), is verified separately in each case below. We also
+argue in each of the two cases that any cost-minimizing manipulation takes the form of increasing
+a mass µ of prices by a common amount δ. Raising the benchmark from P to P + ∆ then requires
+δ(µ − τ ∗)/(1 − 2τ ∗) = ∆ with µ ∈ (τ ∗, 1 − τ ∗]. Eliminating µ = τ ∗ + (1 − 2τ ∗)∆/δ, the feasibility
+condition µ ≤ 1 − τ ∗ reduces to δ ≥ ∆, and the manipulation problem becomes
+min
+δ≥∆
+
+∆(1 − 2τ ∗) c(δ) + τ ∗  k + c(δ) 	 , (1)
+whose derivative with respect to δ is
+c′(δ) ∆(1 − 2τ ∗)
+ c′(δ)
+c′(δ) + τ ∗ ∆(1 − 2τ ∗)  . (2)
+The definition of τ ∗ together with c′(δ) = (c′(δ) − c(δ))/δ means that δ = 2∆ makes this derivative
+equal to zero. We show in the two cases below, that δ = 2∆ is not only a local but a global minimizer.
+So the optimally manipulated distribution places mass 1/2 at P and mass 1/2 at P + 2∆. This
+distribution is symmetric around P + ∆, so the optimality of the τ ∗-trimmed mean follows from
+Proposition 1.
+Case 1: c strictly convex. Strict convexity implies that a cost-minimizing manipulation sets a common
+δ across all manipulated prices. Since δmin > 2∆, c(δ) > c′(δ) for all δ ∈ (0, δmin), so in particular
+c(2∆) > c′(2∆) and τ ∗ > 0. For the global minimum: strict convexity implies c(δ) − c′(δ) is positive
+and strictly decreasing on (0, δmin), so (2) is strictly negative for δ ∈ (0, 2∆) and strictly positive for
+δ ∈ (2∆, δmin); for δ ≥ δmin, c(δ) ≤ c′(δ) so (2) is strictly positive. Hence the objective in (1) is strictly
+26
+
+=== page 27 ===
+decreasing then strictly increasing, and δ = 2∆ is its unique global minimiser.
+Case 2: c strictly concave. For any given manipulation, let p∗ be the (1 − τ ∗)-quantile of the final
+price distribution. It is never optimal to place manipulated mass above p∗, as doing so is costly
+without raising the τ ∗-trimmed mean. For the untrimmed mass in (0, p∗), concentrating it onto {0, p∗}
+while preserving its conditional mean is a mean-preserving spread, which strictly decreases expected
+variable cost when c is concave and also reduces expected fixed cost, while leaving the τ ∗-trimmed
+mean unchanged. Hence a common δ is again optimal and the problem reduces to (1). Strict concavity
+of c with c(0) = 0 gives c(2∆) > 2∆c′(2∆), and therefore c(2∆) = (k + c(2∆))/(2∆) > c′(2∆) for all
+k ≥ 0, so τ ∗ > 0. For the global minimum: since c′(δ) > 0 and ∆(1 − 2τ ∗) > 0, the sign of (2) is
+determined by the bracket, which is strictly increasing in δ by assumption, equals zero at δ = 2∆, and
+therefore is strictly negative for δ < 2∆ and strictly positive for δ > 2∆. Hence the objective in (1) is
+strictly decreasing then strictly increasing, and δ = 2∆ is its unique global minimiser. ■
+A.5 Proof of Proposition 5
+Proof. The argument follows the proof of Proposition 4. Strict convexity of c implies that, for a
+τ -trimmed mean, the cost-minimizing manipulation consists of increasing a measure of prices
+µ = τ + (1 − 2τ ) ∆ δ∗
+by a common amount δ∗ ∈ [∆, δmin], where δ∗ solves (1). The value of the objective in (1), evaluated
+at δ∗, equals the minimum cost of manipulating the τ -trimmed mean.
+It is immediate from (1) that this cost is strictly decreasing in τ in the case of the corner solution
+δ∗ = ∆. If instead δ∗ > ∆, then necessarily δ∗ ≤ δmin: for δ > δmin, c′(δ) > 0 so the bracket in (2) is
+strictly positive and the objective in (1) is strictly increasing, ruling out an interior minimum above
+δmin. In this case the envelope theorem implies that the derivative of the minimum manipulation cost
+27
+
+=== page 28 ===
+with respect to τ is
+− k + c(δ∗) δ∗ (2∆ − δ∗) < 0,
+where the inequality follows from δ∗ ≤ δmin < 2∆. Hence, in all cases, increasing τ strictly reduces
+the minimum cost of manipulation. It follows that the untrimmed mean (τ = 0) maximizes the cost
+of manipulation at ∆ and therefore dominates any trimmed mean. ■
+A.6 Proof of Proposition 6
+Proof. Consider, first, the case of strictly convex variable costs and no fixed costs. The argument
+characterizes the optimal manipulation strategy for the proposed benchmark. Since manipulation
+costs are strictly convex, it is optimal to increase all prices within the same subpopulation by the
+same amount. Let δi denote the increase applied to prices in subpopulation i. The optimal vector
+{δi}i∈I solves
+min
+{δi}i∈I
+P
+i∈I ci(δi) µi
+s.t. P i∈I c′ i(∆)P j∈I c′ j (∆)µj µi δi = ∆.
+This problem has a convex objective function with a linear constraint, and thus it is sufficient to
+check the first-order conditions, which are readily verified to hold at δi = ∆ for all i ∈ I. Hence, the
+optimal manipulation consists of shifting all prices by the same amount ∆. Because each subpopulation
+of unmanipulated prices is symmetric around P , the corresponding distributions of manipulated prices
+are symmetric around P + ∆. Consequently, this manipulation implements the value ∆ for any
+symmetric∗ benchmark, which implies that the proposed benchmark is optimal∗ at ∆.
+Consider next the case of no variable costs. Let
+F (P + ∆) ≡
+X
+i∈I
+kiP
+j∈I kj µj
+µi Fi(P + ∆)
+28
+
+=== page 29 ===
+denote the weighted fraction of unmanipulated prices lying below P +∆ under the proposed benchmark.
+Since each Fi is symmetric around P , Fi(P + ∆) > 1 2 for all ∆ > 0, so F (P + ∆) > 1 2 . The least
+costly way to raise the proposed benchmark to P + ∆ requires shifting a weighted mass of prices from
+strictly below P + ∆ to weakly above P + ∆ until the cumulative weighted mass weakly below P + ∆
+is exactly 1/2. That is, the mass of prices mi in each subpopulation i that is shifted from strictly
+below P + ∆ to weakly above P + ∆ must satisfy:
+X
+i∈I
+kiP
+j∈I kj µj
+mi = F (P + ∆) − 1 2 .
+Hence, the cost of any such manipulation strategy is equal to:
+X
+i∈I
+ki mi =
+
+F (P + ∆) − 1 2  X i∈I ki µi,
+and therefore does not depend on how the total weighted mass F (P + ∆) − 1/2 is allocated across
+subpopulations.
+One feasible manipulation satisfying this condition is obtained by setting:
+mi = µi
+
+Fi(P + ∆) − 1 2 
+and applying, within each subpopulation, an adaptation of the optimal manipulation strategy used in
+the proof of Proposition 2. In particular, for any i ∈ I and y ∈ R, define:
+˜gi(y) ≡ fi(y) + fi(y − 2∆) 2 ,
+and for any y < P + ∆,
+αi(y) ≡ ˜gi(y) fi(y) , Ai(y) ≡
+R ∞
+P +∆
+fi(z−2∆)−fi(z)
+2 dz
+1 − αi(y) .
+29
+
+=== page 30 ===
+The manipulation strategy for subpopulation i is defined as follows. For any y ≥ P + ∆, the
+conditional distribution Gc i (· | y) is degenerate at y, i.e. prices are left unchanged. For any y < P + ∆,
+Gc i (· | y) assigns probability αi(y) to y and has density
+˜gi(x) − fi(x)
+Ai(y) for x ∈ [P + ∆, ∞).
+The same arguments as in Proposition 2 imply that the total mass shifted in subpopulation i from
+strictly below P + ∆ to weakly above P + ∆ is µi
+ 
+Fi(P + ∆) − 1 2  , and that the induced distribution
+of manipulated prices within each subpopulation is symmetric around P + ∆. Consequently, this ma-
+nipulation implements ∆ for any symmetric∗ benchmark, which implies that the proposed benchmark
+is optimal∗ by an adaptation of the arguments in Proposition 1. ■
+A.7 Proof of Proposition 7
+Proof. Since the distribution of unmanipulated prices is degenerate at P , any manipulation strategy
+has total cost:
+C =
+X
+i∈I
+µi
+Z
+˜p̸=P
+
+αi c(˜p − P ) + αiκ
+
+dGi(˜p)
+=
+
+X
+j
+αj µj
+
+
+Z
+˜p̸=P
+
+c(˜p − P ) + κ
+
+d ¯G(α)(˜p),
+The cost depends on the strategy only through ¯G(α). The proposed benchmark is the τ -trimmed mean
+of ¯G(α) by definition, so the benchmark value also depends on the strategy only through ¯G(α).
+The problem therefore reduces to: choose τ to maximise the minimum cost of making the τ -
+trimmed mean of ¯G(α) equal to P + ∆, where the cost per unit mass of ¯G(α) displaced from P
+is
+P
+j αj µj
+
+(c(˜p − P ) + κ). Every symmetric distribution of ¯G(α) around P + ∆ is achievable by
+setting each Gc i (·|P ) equal to that distribution, so this is identical to the homogeneous problem of
+30
+
+=== page 31 ===
+Proposition 4 with variable cost c and fixed cost κ. Under the stated regularity condition, that
+proposition yields τ ∗ = 1 2 (1 − c′(2∆)/cκ(2∆)) as desired. ■
+B The Manipulation Cost of the CPMM
+A constant-product market maker (CPMM) is an automated liquidity pool that holds reserves of two
+assets, say X and Y . Any trader may swap one asset for the other: given a deposit of ∆y units of
+Y , the pool releases however much X is needed to keep the product of the two reserve quantities
+constant. A proportional fee rate f ∈ (0, 1) is applied to every trade, so that only the effective input
+(1 − f )∆y counts toward the constant-product invariant that determines how much X is released; the
+remaining fraction f ∆y stays in the pool as revenue for the liquidity providers. The fee makes the
+round-trip cost of a manipulation that pushes the price upward and then unwinds it strictly positive,
+even when the price is fully restored to its original level. This appendix computes this round-trip cost
+as a function of the price distortion q and verifies that it is strictly concave and satisfies the regularity
+condition required by Proposition 4.
+Consider a CPMM pool, where a constant-product market maker maintains reserves (x, y) of assets
+X and Y satisfying the invariant xy = κ for some κ > 0. The marginal price of X in terms of Y
+is given by the ratio of reserves y/x, which follows directly from differentiating the invariant. With
+initial reserves (x0, y0) and fee rate f ∈ (0, 1), let P0 ≡ y0/x0 denote the initial marginal price. A
+manipulator submits a push order that buys X to raise the marginal price to P0 + q where q > 0,
+followed by an unwind order that sells X to restore the price to P0.21
+21One could consider two alternative unwinding rules for manipulation. The first is that the manipulator sells back
+exactly the quantity of X received from the push order. This leaves a residual price P2 = P0(1 + v)/[1 + (1 − f )2v] > P0,
+so the manipulation is only partially reversed. The second is that the unwinding manipulation minimises the cost of
+the manipulation valued at P0. Again, this yields a final price P2 > P0 and thus there is no price restoration. Either
+alternative delivers similar outcomes but requires a slightly more convoluted analysis.
+31
+
+=== page 32 ===
+Push. After the submission of an order that sends ∆y in units of Y to the AMM, the CPMM algorithm
+updates the reserves to:
+(x1, y1) ≡
+ x0
+1 + (1 − f )δy
+, y0(1 + δy)
+
+, δy ≡ ∆y in y0 .
+The amount of X obtained is ∆x out = (1−f )δy 1+(1−f )δy x0 and the new marginal price is P0(1+δy)(1+(1−f )δy).
+Setting this equal to P0 + q requires δy = δ(q), the positive root of:
+(1 + δ)(1 + (1 − f )δ) = 1 + q P0 . (3)
+Unwind. The unwind order sends ∆x in units of X to the AMM. Setting δx ≡ ∆x in/x1, the CPMM
+algorithm gives post-unwind reserves:
+(x2, y2) ≡
+
+x1(1 + δx), y1 1 + (1 − f )δx
+
+,
+and a new marginal price of P0(1 + δy)(1 + (1 − f )δy)/[(1 + δx)(1 + (1 − f )δx)]. Setting this equal to
+P0 gives (1 + δx)(1 + (1 − f )δx) = 1 + q/P0, so δx = δ(q) and
+∆x in = δ(q) 1 + (1 − f )δ(q) x0, ∆y out = (1 − f )δ(q) 1 + (1 − f )δ(q) (1 + δ(q))y0.
+Cost. The net inflows (to the AMM) across both trades of Y is:
+∆y in − ∆y out = f δ(q) 1 + (1 − f )δ(q) y0,
+and of X inflow:
+∆x in − ∆x out = f δ(q) 1 + (1 − f )δ(q) x0.
+32
+
+=== page 33 ===
+Since a net inflow to the AMM is a cost to the trader, the total cost for the manipulator in units of
+Y (evaluating the position in X at price P0 = y0/x0) is:
+c(q) = 2f δ(q) 1 + (1 − f )δ(q) y0. (4)
+Concavity. Implicit differentiation of (3) gives
+δ′(q) = 1 P0   (2 − f ) + 2(1 − f )δ(q)  ,
+which is strictly decreasing in q, so δ is strictly concave in q. The map g(δ) ≡ 2f δy0/(1 + (1 − f )δ)
+satisfies g′ > 0 and g′′ < 0, so it is strictly increasing and concave. Since c = g ◦ δ, the chain rule gives
+c′′(q) = g′′(δ(q)) δ′(q)2 + g′(δ(q)) δ′′(q) < 0,
+establishing strict concavity of c.
+Monotonicity of c′/c′. This paragraph verifies that c′(q)/c′(q) is strictly increasing in q. First note
+that
+c′(q)
+c′(q) = −
+
+ k q2c′(q)| {z }
+fixed term
++ c(q) − qc′(q) q2c′(q)| {z }
+variable term
+
+ .
+Both terms are positive, the variable term because c is concave with c(0) = 0, so c(q) ≥ qc′(q). It
+therefore suffices to show that each term is strictly decreasing in q. Substitute
+c(q) = 2f y0 δ(q) 1 + (1 − f )δ(q) , c′(q) = 2f y0   1 + (1 − f )δ(q) 2 δ′(q),
+33
+
+=== page 34 ===
+and change variable to d = δ(q), which is strictly increasing in q. Letting
+ν(d) ≡ δ−1(d) = P0   (1 + d)(1 + (1 − f )d) − 1  = P0 d   2 − f + (1 − f )d  ,
+one has δ(ν(d)) = d and
+δ′(ν(d)) = 1 ν′(d) = 1 P0   2 − f + 2(1 − f )d  .
+Fixed term. Substituting,
+k
+ν(d)2 c′(ν(d)) s = k P 2 0 d2  2 − f + (1 − f )d 2 · 2f y0 (1+(1−f )d)2 1 P0(2−f +2(1−f )d)
+= k 2f y0P0 ·  1 + (1 − f )d d 2 · 2 − f + 2(1 − f )d  2 − f + (1 − f )d 2 .
+The first factor is constant, the second is decreasing because (1 + (1 − f )d)/d = (1/d) + (1 − f ) is, and
+the third is decreasing because its logarithmic derivative equals 2(1−f )
+  1
+2−f +2(1−f )d − 1 2−f +(1−f )d  < 0.
+Hence the fixed term is strictly decreasing in d.
+Variable term. Substituting,
+c(ν(d)) − ν(d)c′(ν(d))
+ν(d)2c′(ν(d)) =
+2f y0d
+1+(1−f )d − P0d(2 − f + (1 − f )d) · 2f y0 (1+(1−f )d)2 1 P0(2−f +2(1−f )d)
+P 2 0 d2(2 − f + (1 − f )d)2 · 2f y0 (1+(1−f )d)2 1 P0(2−f +2(1−f )d)
+=
+(1 + (1 − f )d) − 2−f +(1−f )d 2−f +2(1−f )d
+P0d(2 − f + (1 − f )d)2 · 1 2−f +2(1−f )d
+=
+(1 − f )d + (1−f )d 2−f +2(1−f )d
+P0d(2 − f + (1 − f )d)2 · 1 2−f +2(1−f )d
+= (1 − f ) (3 − f + 2(1 − f )d) P0(2 − f + (1 − f )d)2
+= 1 − f P0   2 − f + (1 − f )d   2 − 1 − f 2 − f + (1 − f )d  .
+The first equality uses the definitions of c, ν, and δ′. The second cancels the common factor 2f y0d (1+(1−f )d)2
+34
+
+=== page 35 ===
+and simplifies the terms in P0. The third uses 2 − f + (1 − f )d =
+ 
+2 − f + 2(1 − f )d
+
+− (1 − f )d. The
+fourth multiplies through by 2 − f + 2(1 − f )d, factors (1 − f )d from the numerator, and cancels d.
+The fifth rewrites 3 − f + 2(1 − f )d = 2
+ 
+2 − f + (1 − f )d
+
+− (1 − f ) and factors out 1−f P0(2−f +(1−f )d) .
+Writing u(d) ≡ (1 − f )/
+ 
+2 − f + (1 − f )d
+
+, the last expression equals 1 P0 u(d)   2 − u(d)  . Since
+u(d) < 1 and u′(d) < 0, and h(u) = u(2 − u) is strictly increasing for u < 1, the variable term is
+strictly decreasing in d.
+Since both terms are strictly decreasing in d, and δ(q) is strictly increasing in q, c′(q)/c′(q) is
+strictly increasing in q, as required.
+Comparative statics of the optimal trimming. By Proposition 4, the optimal trimming is
+τ ∗ = 1 2 − ∆ c′(2∆) c(2∆) + k ,
+where c(q) = y0 γ(q) with:
+γ(q) ≡ 2f δ(q) 1 + (1 − f )δ(q)
+the cost per unit of liquidity. Holding the marginal price P0 fixed, δ(·), and hence γ, is independent
+of y0, so c′(q) = y0 γ′(q) with γ′ > 0, and
+τ ∗ = 1 2 − ∆ y0 γ′(2∆) y0 γ(2∆) + k ,
+which is stricly decreasing in y0 whenever k > 0. Hence τ ∗ is non-increasing in the liquidity y0, strictly
+so when k > 0; as y0 → ∞ it converges to 1 2 − ∆ γ′(2∆)/γ(2∆), the level induced by the variable cost
+alone, and as y0 → 0 it converges to 1/2.
+References
+Adams, H., N. Zinsmeister, and D. Robinson. 2020. Uniswap v2 Core. Tech. rep., Uniswap.
+35
+
+=== page 36 ===
+Angeris, G., and T. Chitra. 2020. Improved price oracles: Constant function market makers. In
+Proceedings of the 2nd ACM Conference on Advances in Financial Technologies, pp. 80–91.
+Arora, S., Y. Li, Y. Feng, and J. Xu. 2024. SecPLF: Secure Protocols for Loanable Funds against
+Oracle Manipulation Attacks. arXiv preprint arXiv:2401.08520 .
+Baldauf, M., C. Frei, and J. Mollner. 2022. Principal Trading Arrangements: When Are Common
+Contracts Optimal? Management Science 68:3112–3128.
+Bolton, P., and M. Dewatripont. 2004. Contract theory. MIT press.
+Buterin, V. 2014. Schellingcoin: A minimal-trust universal data feed. Ethereum blog .
+Chainalysis. 2023. Oracle Manipulation Attacks Rising: A Unique Concern for DeFi. Chainalysis
+Blog. URL https://www.chainalysis.com/blog/oracle-manipulation-attacks-rising/. Re-
+ports $403.2 million lost across 41 oracle manipulation attacks in 2022.
+Daian, P., S. Goldfeder, T. Kell, Y. Li, X. Zhao, I. Bentov, L. Breidenbach, and A. Juels. 2020.
+Flash boys 2.0: Frontrunning in decentralized exchanges, miner extractable value, and consensus
+instability. In 2020 IEEE Symposium on Security and Privacy (SP), pp. 910–927. IEEE.
+Duffie, D., and P. Dworczak. 2021. Robust benchmark design. Journal of Financial Economics
+142:775–802.
+Edgeworth, F. Y. 1888. XXII. On a new method of reducing observations relating to several quantities.
+The London, Edinburgh, and Dublin Philosophical Magazine and Journal of Science 25:184–191.
+Eskandari, S., M. Salehi, W. C. Gu, and J. Clark. 2021. Sok: Oracles from the ground truth to market
+manipulation. In Proceedings of the 3rd ACM Conference on Advances in Financial Technologies,
+pp. 127–141.
+Evans, M. D. 2018. Forex trading and the WMR fix. Journal of Banking & Finance 87:233–247.
+36
+
+=== page 37 ===
+Frankel, A., and N. Kartik. 2022. Improving Information from Manipulable Data. Journal of the
+European Economic Association 20:79–115.
+Frei, C., and J. Mitra. 2021. Optimal closing benchmarks. Finance Research Letters 40:101674.
+Grossman, S. J., and O. D. Hart. 1983. An Analysis of the Principal-Agent Problem. Econometrica
+51:7–46.
+Hernando-Veciana, ´A., and M. Tr¨oge. 2020. Cheap talk and strategic rounding in Libor submissions.
+The Review of Financial Studies 33:2585–2621.
+Huber, P. J. 2004. Robust statistics, vol. 523. John Wiley & Sons.
+Humphry, R., P. Avramovic, F. Acevedo, S. Alkhair, and A. Gervais. 2024. Review of Maximal
+Extractable Value & Blockchain Oracles. Tech. rep., Financial Conduct Authority.
+Jaeckel, L. A. 1971. Robust Estimates of Location: Symmetry and Asymmetric Contamination. The
+Annals of Mathematical Statistics 42:1020–1034.
+Liu, B., P. Szalachowski, and J. Zhou. 2021. A first look into defi oracles. In 2021 IEEE International
+Conference on Decentralized Applications and Infrastructures (DAPPS), pp. 39–48. IEEE.
+Michelberger, P. S., and J. H. Witte. 2016. Foreign exchange market microstructure and the
+WM/Reuters 4 pm fix. The Journal of Finance and Data Science 2:26–41.
+Oosthoek, K. 2021. Flash crash for cash: Cyber threats in decentralized finance. arXiv preprint
+arXiv:2106.10740 .
+Pasdar, A., Z. Dong, and Y. C. Lee. 2021. Blockchain oracle design patterns. arXiv preprint
+arXiv:2106.09349 .
+Perez, D., and B. Livshits. 2019. Broken metre: Attacking resource metering in EVM. arXiv preprint
+arXiv:1909.07220 .
+37
+
+=== page 38 ===
+Peterson, J., and J. Krug. 2015. Augur: a decentralized, open-source platform for prediction markets.
+arXiv preprint arXiv:1501.01042 507.
+Sch¨afer, D., A. Ross, and D. Strauss. 2008. Foreign exchange: The big fix. Wall Street Journal 29.
+Wahrst¨atter, A., L. Heimbach, K. Qin, D. Svetinovic, R. Wattenhofer, A. Luzio, A. Bracciali,
+P. Moreno-Sanchez, and A. Gervais. 2023. Time to Bribe: Measuring Block Construction Market.
+In Proceedings of the 2023 ACM SIGSAC Conference on Computer and Communications Security,
+CCS ’23, pp. 1370–1384. ACM.
+Werner, S., D. Perez, L. Gudgeon, A. Klages-Mundt, D. Harz, and W. Knottenbelt. 2022. Sok:
+Decentralized finance (defi). In Proceedings of the 4th ACM Conference on Advances in Financial
+Technologies, pp. 30–46.
+Williams, A. K., and J. Peterson. 2019. Decentralized common knowledge oracles. arXiv preprint
+arXiv:1912.01215 .
+38

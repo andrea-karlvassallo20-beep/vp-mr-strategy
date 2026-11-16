@@ -1,0 +1,2126 @@
+=== page 1 ===
+Leveraging IS and TC: Optimal order execution subject to
+reference strategies
+Xue Cheng1, Peng Guo1, and Tai-Ho Wang2
+1LMEQF, Department of Financial Mathematics, School of Mathematical Sciences, Peking University, Beijing 100871, China.
+2Department of Mathematics, Baruch College, CUNY, 1 Bernard Baruch Way, New York, NY 10010, USA
+March 5, 2025
+Abstract
+The paper addresses the problem of meta order execution from a broker-dealer’s point of view in
+Almgren-Chriss model under execution risk. A broker-dealer agency is authorized to execute an order
+of trading on some client’s behalf. The strategies that the agent is allowed to deploy is subject to a
+benchmark, referred to as the reference strategy, regulated by the client. We formulate the broker’s
+problem as a utility maximization problem in which the broker seeks to maximize his utility of excess
+profit-and-loss at the execution horizon, of which optimal feedback strategies are obtained in closed form.
+In the absence of execution risk, the optimal strategies subject to reference strategies are deterministic.
+We establish an affine structure among the trading trajectories under optimal strategies subject to general
+reference strategies using implementation shortfall (IS) and target close (TC) orders as basis. Furthermore,
+an approximation theorem is proposed to show that with small error, general reference strategies can be
+approximated by piece-wise constant ones, of which the optimal strategy is piece-wise linear combination
+between IS and TC orders. We conclude the paper with numerical experiments illustrating the trading
+trajectories as well as histograms of terminal wealth and utility at investment horizon under optimal
+strategies versus those under TWAP strategies.
+Keywords: Optimal execution; Price impact; Execution risk; Utility maximization; Reference strategy;
+Affine structure; Implementation shortfall order; Target close order
+Contents
+1 Introduction 3
+2 Model setup 5
+2.1 Price impact model . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+2.2 Reference strategy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
+3 Optimal execution as utility maximizing 7
+3.1 Optimal execution with risk aversion . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+1
+arXiv:2401.03305v2  [q-fin.TR]  4 Mar 2025
+
+=== page 2 ===
+4 Zero execution risk 10
+4.1 General reference strategy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+4.2 Implementation shortfall (IS) order and target close (TC) order . . . . . . . . . . . . . . . . . . 12
+4.3 Endpoints-only reference strategy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+4.4 Piece-wise constant reference strategy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+5 Numerical examples 18
+5.1 Sample trading trajectories . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 18
+5.2 Performance analysis and stress test . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 22
+6 Conclusion 25
+A Appendix 25
+2
+
+=== page 3 ===
+1 Introduction
+In the financial industry, large position holders such as pension funds or investment banks for various reasons
+are required to trade in or trade out from their current position to an updated target, possibly subject to a
+given execution horizon which may vary from days to weeks. The net holdings to be adjusted between the
+current and the target positions are usually too large to be simply dumped to the market without a priori
+deliberately assessing the trade’s market impact. Untamed price impact by trading may result in significant
+transaction cost, potentially turned into a substantial loss. Such an execution risk requires to be properly
+managed and controlled; otherwise it would eventually influence the position holder’s overall profit and loss
+(P&L). A common practice is to delegate the execution to the firm’s order execution department or outsource
+to a broker-dealer agency.
+The large position holders, while delegating their tasks to an agency for execution, may have in mind
+their own preferred strategies or benchmarks that they would like the delegated agent to closely track along.
+For instance, implementation shortfall (IS) orders [1] are frequently employed by managers for the purpose
+of short-term alpha pursuit. IS orders are constructed with a pre-trade benchmark price in mind, aiming at
+executing orders at an average price that remains relatively close to the market price at the beginning of the
+trade. Managers can often use arrival prices to help measure total trading costs: the closer the execution
+price is to the arrival price, the lower the associated costs (see CFA-level-II [2]). On the contrary, target close
+(TC) orders [3], often deployed by index-fund managers for the purpose of minimizing fund risk and tracking
+error, are formulated with a post-trade benchmark price in order to secure a price in average that remains
+relatively close to the closing price. This is often important for mutual fund managers who manage funds
+that only calculate NAV once daily at closing. Volume weighted average price (VWAP) and Time weighted
+average price (TWAP) strategies are benchmarks specified for trading sequences with constant trading rate
+in wall clock time (TWAP) and in volume time (VWAP) respectively. These algorithmic trading strategies
+are examples of benchmarks that may be imposed as trading constraints to the agent who is missioned to
+trade in or trade out the position. We shall delve into this type of order execution problems subject to a
+pre-specified benchmark strategy, which we refer to as the reference strategy (RS for short), as a stochastic
+control problem and determine their corresponding optimal strategies in feedback form.
+The pioneering works in [4], [1], [5] and [6] are among the first to deal with the problem of order execution
+under price impact. Since its introduction to the order execution problem, numerous progresses and extensions
+on the classical Almgren-Chriss framework have been made extensively. For instance, [7] and [8] introduced
+the notion of transient impact to account for the dissipation of price impacts from the past trades. [9]
+discusses the objective in the optimization problem, while [10] extends the classical mean-variance framework
+first considered in [4] to encompass general risk measures as penalty for risk aversion. [11], [12], [13] solve the
+optimal execution problem in relation to a VWAP benchmark, while [14] asserts the use of the arrival price
+as a benchmark within the Almgren-Chriss framework. In fact, the arrival price, also known as “pre-trade
+benchmark”, appears to be the most commonly used benchmark in academic papers. The closing price is
+the value of a security at its last transaction during a trading session [3] [15]. Average price benchmarks
+may also appear in accelerated share repurchase (ASR) contracts [16][17], which can be regarded as optimal
+execution problems with optimal stopping. Above all, [18] introduces the concept of execution risk, that
+3
+
+=== page 4 ===
+pre-scheduled orders may not be fully executed, of which the empirical evidence is confirmed by [19] that
+the inventory processes of traders invariably contain a Brownian motion term, which contradicts the common
+assumption adopted in most optimal execution models that the inventory process is absolute continuous.
+Another perspective on introducing the noise term into the inventory process is that when a centralized
+trading desk aggregates order flows within a financial institution, stochastic order flow arises [20] [21]. The
+aforementioned papers are by no means meant for an exhausting list in literature on this line of active research.
+In the current paper, we consider the order execution problem from a broker-dealer’s point of view. Assume
+that a broker is delegated to reallocate a client’s holdings of a certain stock under the Almgren-Chriss model
+with execution risk. The broker is regulated by his client to track a benchmark strategy, i.e., the reference
+strategy, to the client’s preference. The broker’s incentive of executing client’s order in this circumstance is to
+maximize his own expected P&L excess to that of the reference strategy, marked-to-market. To account for
+risk aversion, we recast the broker’s order execution problem as a utility maximization problem and, in certain
+cases, are able to solve the problem in closed form. In particular, when execution risk vanishes, or becomes
+negligible, we show that there exists an “affine structure” among the optimal strategies induced from various
+reference strategies. This algebraic structure is supposed to help the broker for concocting and understanding
+optimal strategies subject to client’s general reference strategies. We argue that the framework is highly
+versatile in the sense that it encompasses commonly deployed execution strategies such as IS, TC as well as
+TWAP and VWAP orders as special cases for benchmarking. As per the algebraic structure, it follows that,
+for any given continuous reference strategy which can be approximated by a piece-wise constant function, we
+show that its corresponding optimal strategy can also be approximated by those induced from the piece-wise
+constant strategies.
+The rest of the paper is organized as follows. In Section 2, we lay out the price impact model of Almgren-
+Chriss under execution risk and incorporate reference strategies into the problem of order execution. Section 3
+presents the optimal feedback control of the order execution problem in Theorem 1 as one of the main results
+in the paper. Section 4 focuses and provides detailed discussions on the optimal strategies when execution
+risk vanishes. Reference strategies and their associated optimal strategies considered in Section 4 include IS
+and TC orders as well as piece-wise constant strategies. The emphasis is put on an “affine structure” among
+the trading trajectories induced by general reference strategies using unit IS and unit TC orders as a basis.
+Numerical examples illustrating the trading trajectories and the performance analysis under the optimal and
+TWAP strategies are shown and discussed in Section 5. For the sake of smooth reading, technical proofs of all
+the theorems, propositions and lemmas are postponed and collected till the end of the paper as an appendix
+in Section A.
+Throughout the paper, (Ω, F , P) denotes a complete probability space equipped with a filtration describing
+the information structure F := {Ft}t∈[0,T ], where t is the time variable and T > 0 the fixed finite liquidation
+horizon. Let {Wt, Zt}t∈[0,T ] be a two-dimensional Brownian motion with constant correlation ρ defined on
+(Ω, F , P). The filtration F is generated by the trajectories of the above Brownian motion, completed with all
+P-null measure sets of F .
+4
+
+=== page 5 ===
+2 Model setup
+2.1 Price impact model
+Assume a broker is delegated to reallocate a client’s holdings of a certain stock from x0 shares to A shares
+within a given horizon T . Let xt be the number of shares the broker holds at time t ∈ [0, T ] during the
+reallocation process and eSt the transacted price at time t. The price dynamic is assumed to follow the
+Almgren–Chriss model [4] [1] [5]. In the Almgren–Chriss framework, the transacted price eSt consists of the
+fair price St and a slippage. The fair price St is driven by the SDE
+dSt = µdt + γdxt + σdWt,
+or equivalently,
+St = S0 + µt + γ(xt − x0) + σWt,
+where µt describes the tendency of the stock and (Wt)t∈[0,T ] is a standard Brownian motion. The term
+γ(xt − x0), for γ ≥ 0, is usually referred to as the permanent impact. Penalized by a price slippage, the
+transacted price is thus given by
+eSt = St − ηvt,
+where vt denotes the broker’s intended trading rate at the instant t. The slippage −ηvt, for η ≥ 0, is
+also referred to as the temporary impact. We remark that in the original setting of Almgren-Chriss and
+its extensions, the trading rate vt plays a dual role. On the one hand, it serves as the realized trading
+rate per the relationship vt = − ˙xt between xt and vt. On the other hand, it is regarded as the control
+variable in the problem of optimal execution. These two seemingly distinct roles coincide if all the scheduled
+orders are guaranteed fully executed. However, in reality it is well noticed among practitioners that, while
+executing a sequence of pre-scheduled orders, the orders in the sequence may not be fully executed, resulting
+in an uncontrollable realized order flow. This introduces an additional risk to the order execution problem,
+the execution risk. To account for this uncertainty, we introduce a noise component driven by a correlated
+Brownian motion Zt into the dynamic of the position xt as
+dxt = −vtdt + m(vt)dZt.
+The diffusion term m(v) characterizes the magnitude of execution risk. It is worth to reiterate that in a
+recent work in [19], the authors showed that the presence of a Brownian component in the broker’s inventory
+during reallocation process is statistically significant. Moreover, because of this execution risk, the broker is
+no longer guaranteed to achieve his intended position at the terminal time T , which gives rise to an additional
+opportunity cost. As a result, the broker is obligated to take a final block trade at time T at a worse price.
+Overall, the realised P&L at the horizon T is given by
+Π := (xT − A)ST − β(xT − A)2 +
+Z T
+0
+
+− ˜St
+
+dxt,
+5
+
+=== page 6 ===
+where the term β(xT − A)2, for β ≥ 0, penalizes the discrepency from a final block trade.
+The following proposition shows that the P&L can be written as an Itô process.
+Proposition 1. The realised P&L can be rewritten as
+Π =(x0 − A)S0 − β(xT − A)2 +
+Z T
+0
+ 
+µ(xt − A) + ρσm(vt) − ηv2 t − γvt(xt − A)  dt
++
+Z T
+0
+σ(xt − A)dWt +
+Z T
+0
+(ηvt + γ(xt − A))m(vt)dZt.
+2.2 Reference strategy
+A common practice in order execution brokerage is that clients may come forward to brokers with their
+own preferred strategies for benchmarking. These benchmark strategies can be either strategies suggested
+by elite investors or commonly used ones such as TWAP strategies. We shall refer to these pre-specified
+benchmark strategies as reference strategies. We consider the reference strategies that can be represented by
+a deterministic function (Rt)t∈[0,T ] with R0 ≡ x0 and RT ≡ A hereafter. Moreover, we assume that Rt is
+a differentiable a.e. function. The broker’s incentive of executing client’s order is thus to maximize his own
+expected P&L excess to that of the reference strategy, marked-to-market. Specifically, by disregarding the
+price impact and slippages incurred from order execution, the stock price S0 t reads
+S0 t = S0 + µt + σWt.
+The marked-to-market P&L ΠR for the reference strategy R is evaluated as
+ΠR :=
+Z T
+0
+ 
+−S0 t  dRt
+= − (S0 t Rt) T 0 + Z T 0 Rt(µdt + σdWt)
+= − AS0 T + x0S0 +
+Z T
+0
+µRtdt +
+Z T
+0
+σRtdWt
+=(x0 − A)S0 +
+Z T
+0
+µ(Rt − A)dt +
+Z T
+0
+σ(Rt − A)dWt.
+Hence, the broker’s excess P&L ˜Π, defined by the difference between Π and ΠR, is given by
+˜Π :=Π − ΠR
+= − β(xT − A)2 +
+Z T
+0
+ 
+µ(xt − Rt) + ρσm(vt) − ηv2 t − γvt(xt − A)  dt
++
+Z T
+0
+σ(xt − Rt)dWt +
+Z T
+0
+(ηvt + γ(xt − A))m(vt)dZt.
+(1)
+The broker’s goal is thus to maximize his expected excess P&L in a risk aversion manner which we recast as
+a utility maximization problem in the section that follows.
+6
+
+=== page 7 ===
+3 Optimal execution as utility maximizing
+In this section, we recast the problem of order execution as a utility maximization problem as follows. Recall
+that (Ω, F , P ) denotes a complete probability space equipped with a filtration (Ft)t≥0 satisfying the usual
+conditions. We assume that all random variables and stochastic processes are defined on (Ω, F , (Ft)t≥0, P).
+Thesetofallreal-valuedprogressivelymeasurableprocessesaredenoteby M, whilethecollectionofadmissible
+controls A is set as
+A :=
+(
+v ∈ M :
+Z T
+0
+E[v2 t ]dt < ∞
+)
+.
+to meet the assumptions given in [22] and [23], which assure the solvability of both the risk-neutral problem
+and the risk-aversion one. The broker’s problem is to determine an optimal admissible strategy v∗ that
+maximizes his expected exponential utility at the horizon T , i.e.,
+sup
+v∈A
+E
+h
+u
+
+˜Π
+i
+, (2)
+where the utility function u(x) := 1 θ (1 − e−θx), θ > 0 represents the broker’s preference following CARA
+(Constant Absolute Risk Aversion) preference and θ > 0 is the risk-aversion parameter. Note that as θ ↓ 0,
+the utility function u(x) = limθ↓0 1 θ (1 − e−θx) = x reflects a risk-neutral preference. When the utility function
+is selected as u(x) = x, we solve the stochastic control problem and give the close form of the value function
+E
+h
+˜Π
+i 
+v=v∗∗
+= supv∈A E
+h
+˜Π
+i
+< ∞, where v∗∗ ∈ A is the optimal feedback control in the risk-neutral case, see
+in Appendix A.2. Moreover, when u(x) = 1 θ (1 − e−θx), u′(x) = e−θx > 0, u′′(x) = −θe−θx < 0, so u(·) is a
+increasing concave function. For any admissible control ˜v, by Jensen’s inequality,
+E
+h
+u
+
+˜Π
+i 
+v=˜v
+≤ u
+
+E
+h
+˜Π
+i 
+v=˜v
+
+≤ u
+
+E
+h
+˜Π
+i 
+v=v∗∗
+
+< ∞,
+which shows the finiteness of the utility maximizing problem. In the following, we solve the utility maximiza-
+tion problem (2) and present solutions in closed form in the cases where the execution risk m(v) is either a
+constant or zero. The case of zero execution risk is postponed and will be discussed in more details in Section
+4.
+3.1 Optimal execution with risk aversion
+When the execution risk is constant, i.e., m(v) ≡ m0 for some fixed constant m0, the utility maximizing
+problem reduces to the following Stochastic Linear Exponential Quadratic (SLEQ) control problem [23] [24]
+
+
+
+sup
+v∈A
+E
+h
+u
+
+˜Π
+i
+= sup
+v∈A
+E
+"
+1
+θ
+ 
+1 − exp
+ 
+θβ(xT − A)2 −
+Z T
+0
+θ
+ 
+µ(xt − Rt) + ρσm0 − ηv2 t − γvt(xt − A)  dt
+−
+Z T
+0
+θσ(xt − Rt)dWt −
+Z T
+0
+θ(ηvt + γ(xt − A))m0dZt
+!!#
+,
+s.t. xt = x0 −
+Z t
+0
+vsds + m0Zt.
+(3)
+7
+
+=== page 8 ===
+Define the value function of the problem by
+V (t, x) := sup
+v∈A
+E
+"
+1
+θ
+ 
+1 − exp
+ 
+θβ(xT − A)2 −
+Z T
+t
+θ
+ 
+µ(xs − Rs) + ρσm0 − ηv2 s − γvs(xs − A)  ds
+−
+Z T
+t
+θσ(xs − Rs)dWs −
+Z T
+t
+θ(ηvs + γ(xs − A))m0dZs
+!!xt = x # , (4)
+where At :=
+n
+v is progressively measurable in [t, T ] and
+R T
+t E[v2 s ]ds < ∞ o . The optimal feedback control
+can be obtained in closed form. We summarize the result in the following theorem.
+Theorem 1. The value function (4) of the utility maximization problem has the closed form expression
+V (t, x) = 1 θ  1 − exp  b2(t) + θγ 2  (x − A)2 + b1(t)(x − A) + b0(t)  .
+where the parameters H, l1, and l3 are given by
+
+
+
+H = θη + 1 2 θ2η2m2 0,
+l3 = 1 2 m0ηθ2ρσ,
+l1 = θ2σ2 2 H.
+The time dependent function b2 is given in closed form by
+b2(t) :=
+p
+l1 coth
+
+A0 +
+√l1
+H (T − t)
+
+− l3, where A0 := coth−1
+ 
+l3 + θ 2 (2β − γ)√l1
+!
+,
+b1 is the solution to the following terminal value problem
+b′ 1(t) = θµ + 1 H b1(t)  b2(t) + l3  + ηθ2σ H (Rt − A)  θσ + 1 2 m2 0θ2ησ(1 − ρ2) − ρm0b2(t)  , b1(T ) = 0,
+and
+b0(t) :=
+Z T
+t
+ l1 − l2 3
+H (Rs − A)2 +
+
+θµ + l3
+H b1
+
+(Rs − A) +
+
+− b2 1
+4H + m2 0
+
+b2 + θγ 2  − ρm0θσ  ds.
+Moreover, the optimal feedback control v∗ ∈ A of the utility maximization problem (2) is given by
+v∗ t = (1 + θηm2 0)b2(t) H · (xt − A) + 1 + θηm2 0 2H · b1(t) + l3 H · (Rt − xt), (5)
+It’s worth mentioning that this theorem does not contain much mathematical breakthrough, instead, we
+regard it as a fundamental result to introduce valuable results in section 4, where the affine structure is what
+we find the most interesting.
+Remark 1. The optimal feedback control v∗ t in (5) consists of three parts:
+• The first part (1+θηm2 0 )b2 H · (xt − A) has the same sign as xt − A. Without loss of generality, we assume
+that x0 > A, when xt ≥ A, which implies the reallocation process has not finished, so the broker should
+8
+
+=== page 9 ===
+continue to sell the stock. Conversely, when xt < A, which implies the strategy is over-shooting, so the
+broker should buy some shares of the stock back.
+• The second part 1+θηm2 0 2H · b1, which is a pre-specified deterministic function in time t, does not depend
+on the state variable xt.
+• The third part l3 H · (Rt − xt) has the same sign as ρ(Rt − xt), where ρ is the correlation between the stock
+price process and the execution risk. The discussions in [25] state the fact that the sign of ρ depends on
+the order type adopted by the trader due to adverse selection: when the trader uses market orders, the
+correlation ρ is negative while ρ is positive whenever trading with limit orders. In this paper, we regard
+ρ as a market parameter reflecting whether the market is trader-friendly or not.
+– When ρ ≥ 0, the stock price and execution risk tend to increase or decrease together: when the stock
+price increases, execution risk makes traders buy more or sell less than the amount they submit,
+which is benefit to the traders; when the stock price decreases, execution risk forces traders to buy
+less or sell more, which is also benefit to the traders. In such trader-friendly market, like the figure
+(1a), the broker should keep away from the reference strategy Rt because an overly conservative
+strategy is not necessary.
+– On the contrary, ρ < 0 implies a trader-harmful market: when the stock price increases, execution
+risk makes traders buy less or sell more than the amount they submit, which is harm to the traders;
+when the stock price decreases, execution risk forces traders to buy more or sell less, which is also
+harm to the traders. In such trader-harmful market, like the figure (1b), the broker should keep
+close to the reference strategy Rt to attain lower risk.
+(a) A trader-friendly market
+ (b) A trader-harmful market
+Figure 1: Market parameter ρ
+Remark 2. By applying the optimal strategy (5), one obtains the optimal liquidation trajectory x∗ t as follows.
+For simplicity, take the parameters A = ρ = 0, Rt ≡ 0 and µ = 0, x∗ t satisfies the SDE
+dx∗ t = −
+ (1 + θηm2 0)b2
+H x∗ t + (1 + θηm2 0)b1 2H  dt + m0dZt,
+as β → +∞, x∗ t has the limit
+x∗∗ t =
+
+
+sinh
+ √l1
+H (T − t)
+
+sinh
+ √l1
+H T
+
+
+
+2H
+θη −1
+x0 + m0
+Z t
+0
+
+
+sinh
+ √l1
+H (T − t)
+
+sinh
+ √l1
+H (T − s)
+
+
+
+2H
+θη −1
+dZs.
+9
+
+=== page 10 ===
+Furthermore, when m0 → 0, H → θη, the limit of the expression above is
+lim
+m0 →0
+x∗∗ t = sinh(κ(T − t)) sinh(κT ) x0,
+where κ =
+q
+θσ2
+2η . It recovers the classical implementation shortfall (IS) strategy (see in section 4.2), which
+implies the fact that our strategy can be regarded as a version of adaptive IS strategy. Furthermore, we may
+find that
+lim
+m0 →0
+x∗∗ t − sinh(κ(T −t)) sinh(κT ) x0
+m0
+=
+Z t
+0
+sinh (κ(T − t))
+sinh (κ(T − s)) dZs,
+which is an Ornstein-Uhlenbeck bridge [26]. Therefore, when m0 is small, one may find an approximation to
+the optimal strategy
+x∗∗ t ≈ sinh(κ(T − t)) sinh(κT ) x0 + m0
+Z t
+0
+sinh (κ(T − t))
+sinh (κ(T − s)) dZs,
+which is a classical IS strategy plus an Ornstein-Uhlenbeck bridge, which reduces the strategy’s inventory risk.
+Figure (2) shows the inventory risk of the optimal strategy and the classical IS strategy, which shows the fact
+that our optimal strategy has lower inventory risk than the classical IS strategy, especially at the end of the
+trading process.
+Figure 2: Inventory risk of the optimal strategy and the classical IS strategy
+To summary the section, it should be emphasized that despite the optimal feedback control behaves linearly
+in the states carries a certain meaning which we discuss in Remark 1, however, the case which we care most
+is where the execution risk does not exist, which is a limit case of Theorem 1, discussed in the next section.
+4 Zero execution risk
+For the purpose of better understanding as well as visualizing the optimal strategy obtained in (5), we present
+in this section the trading trajectory xt under optimal strategy in the case when m0 = 0 for various reference
+strategies. In Section 4.1, we give the optimal strategy for general reference strategies. In Section 4.2, we
+present two classic trading strategies: IS order and TC order, both widely used in the market, and show that
+10
+
+=== page 11 ===
+they are special cases of our model. Next, we consider the case when the reference strategy is an endpoints-
+only one in Section 4.3, of which the optimal strategy has a heuristic form. Last but not least, piece-wise
+constant reference strategies are studied in Section 4.4.
+Notice that in this case the setting of the problem reduces to that of the Almgren-Chriss but subject to
+a reference strategy. Furthermore, we shall set the final penalty parameter β → +∞, indicating that a final
+block trade at terminal time T is strictly prohibited.
+4.1 General reference strategy
+For a given generic reference strategy Rt, the following theorem shows a representation for the trading tra-
+jectory xt under optimal control v∗.
+Theorem 2. Let m(v) ≡ 0 and β → +∞. The trajectory xt under the solution to the optimization problem
+(2) is given by
+xt = κ sinh κT Z T 0  Rs sinh(κ min(s, t)) sinh(κ(T − max(s, t)))  ds
++
+
+x0 − µ θσ2  · sinh κ(T − t) sinh κT + A +  −A + µ θσ2  · sinh κT − sinh κt sinh κT ,
+with the tuning parameter κ :=
+q
+θσ2
+2η .
+A few remarks on the trajectory xt shown in Theorem 2 are in order.
+Remark 3. The parameter κ can be regarded as a tuning parameter between the TWAP and the reference
+strategies if µ = 0. Specifically, in the limit as κ approaches zero, the optimal strategy converges to the TWAP
+strategy, i.e., for any t ∈ [0, T ], we have
+lim
+κ→0
+xt = A + (x0 − A) ·
+
+1 − t T  .
+On the other extreme as κ → ∞, the optimal trajectory converges to the reference strategy Rt itself
+lim
+κ→∞
+xt = Rt
+for any t ∈ [0, T ].
+Remark 4. The optimal trajectory may also be written as an “affine transformation” as
+xt = µ θσ2 + at · sinh κ(T − t) sinh κT + bt · sinh κt sinh κT ,
+where
+at = x0 − µ θσ2 + Z t 0 κRs sinh κsds,
+bt = A − µ θσ2 + Z T t κRs sinh κ(T − s)ds.
+A more detailed discussion on this affine transformation can be found in Section 4.4.
+11
+
+=== page 12 ===
+Next, we further specialize the reference strategies and present their corresponding trajectories in the
+following sections.
+4.2 Implementation shortfall (IS) order and target close (TC) order
+Assume µ = 0 and the broker is asked to take as the reference strategy a block trade of size |A − x0| at t = 0,
+i.e.,
+RIS t =
+
+
+
+x0, t = 0,
+A, 0 < t ≤ T.
+The corresponding marked-to-market P&L of the reference strategy RIS is given by
+ΠIS :=
+Z T
+0
+ 
+−SIS t  dRIS t = − (x0 − A) · SIS 0− + SIS 0+ 2
+= − (x0 − A)S0 + γ 2 (x0 − A)2,
+which is equivalent to choosing the initial price S0 as reference price. This model is referred to as an imple-
+mentation shortfall model in [27], of which the optimal strategy is
+xt = A + (x0 − A) · ISt, (6)
+where
+ISt := sinh κ(T − t) sinh κT . (7)
+We shall refer to the strategy ISt as the unit implementation shortfall (IS) order. Hence, the trajectory in
+(6) can be interpreted as executing x0 − A unit IS orders if a broker is missioned to make transition of his
+position from x0 to A shares. We remark that, as we will show in Section 4.4, the unit IS orders are used as
+one of the building blocks for the construction of optimal trajectories for more general reference strategies.
+(a) Unit implementation shortfall orders
+ (b) Unit target close orders
+Figure 3: Basic strategies in varying parameter κ.
+Figure (3a) shows examples of the unit implementation shortfall orders under various values of κ. Notice
+that, since κ =
+q
+θσ2
+2η , as θ, σ increase or η decreases, thus κ increases, the trajectories suggest the broker
+12
+
+=== page 13 ===
+trade faster at the beginning and more slowly for the rest of the reallocation process. Indeed, the larger the
+κ, the faster the trading at the beginning. The financial rationale is as follows. Recall that θ is the coefficient
+of relative risk aversion for the utility function and σ is the volatility of stock price. Hence, if either of the
+parameters increases, the broker is more concerned with the price risk than the execution risk, he tends toward
+trading faster at the beginning and more slowly thereafter. Also, since η is the coefficient of slippage, as it
+decreases, the slippage decreases as well, resulting in lower cost from faster transactions. Therefore, again
+to mitigate the concern of price risk during reallocation process, the broker should also trade faster at the
+beginning as well.
+Finally, we remark that, as κ → 0, the unit IS order (7) converges to the TWAP (Time-Weight-Average-
+Price) strategy: for any t ∈ [0, T ],
+lim
+κ→0
+ISt = lim κ→0
+sinh κ(T − t)
+sinh κT = T − t T .
+On the flip side, as κ → +∞, the optimal trajectory (7) converges to a block trade at time 0:
+lim
+κ→∞
+ISt = lim κ→∞
+sinh κ(T − t)
+sinh κT = lim κ→∞ e−κt · 1 − e−2κ(T −t) 1 − e−2κT =
+
+
+
+1, t = 0,
+0, 0 < t ≤ T.
+Assume again that µ = 0. Here the broker is given as the reference strategy to take only a block trade of size
+|A − x0| at terminal time T . That is,
+RTC t =
+
+
+
+x0, 0 ≤ t < T,
+A, t = T.
+The marked-to-market P&L ΠTC for this reference strategy is given by
+ΠTC =
+Z T
+0
+ 
+−STC t  dRTC t = − (x0 − A) · STC T − − STC T + 2
+= − (x0 − A)STC T + − γ 2 (x0 − A)2,
+which is equivalent to choosing the stock price ST at terminal time as the reference price. This model is
+referred to as an target close model [27][3], of which the optimal strategy is given by
+xt = A + (x0 − A) · TCt, (8)
+where
+TCt := sinh κT − sinh κt sinh κT . (9)
+We refer to the strategy TCt in (9) as the unit target close (TC) order. Thus, similar to the case of imple-
+mentation shortfall order in Section 4.2, the trajectory in (8) can be interpreted as executing x0 − A unit TC
+orders if a broker is missioned to make transition of his position from x0 to A shares. Likewise as for the
+unit IS orders, we show in Section 4.4 that the unit TC orders are used as the other building blocks for the
+13
+
+=== page 14 ===
+construction of optimal trajectories for more general reference strategies.
+Figure (3b) shows examples of plots for unit target close orders in different values of κ. We observe that
+the trading trajectories are concave in time as opposed to convex in time as that of the unit IS orders. Also,
+as κ increases, the optimal trajectory moves towards the reference strategy and towards the TWAP trajectory
+as κ decreases. In fact, similar to the case for implementation shortfall, in the limit as κ → 0, the unit TC
+order (9) converges to the TWAP strategy: for any t ∈ [0, T ],
+lim
+κ→0
+TCt = lim κ→0
+sinh κT − sinh κt
+sinh κT = 1 − t T ;
+whereas in the other extreme as κ → +∞, the optimal trajectory converges to a block trade at terminal time
+T :
+lim
+κ→∞
+TCt = lim κ→∞
+sinh κT − sinh κt
+sinh κT = 1 − lim κ→∞ e−κ(t−T ) · 1 − e−κt 1 − e−κT =
+
+
+
+0, 0 ≤ t < T,
+1, t = T.
+4.3 Endpoints-only reference strategy
+In this section, we consider the following reference strategy Rt, which we called the endpoints-only.
+Rt =
+
+
+
+x0, t = 0,
+R, 0 < t < T,
+A, t = T.
+(10)
+The strategy is simply to hold R shares during the entire reallocation process, except at the initial and terminal
+times,.
+The following lemma will prove itself useful in the determination of the optimal strategy subject to the
+reference strategy (10).
+Lemma 1. We have that
+κ
+sinh κT
+Z T
+0
+
+sinh(κ min(s, t)) sinh(κ(T − max(s, t)))
+
+ds
+= sinh κT − sinh κt sinh κT − sinh κ(T − t) sinh κT
+=TCt − ISt.
+In other words, the given integral can be written as the difference between a unit TC and a unit IS order.
+We summarize the result for optimal strategies subject to (10) in the proposition that follows.
+Proposition 2. With the reference strategy given in (10), the optimal trajectory is given by an affine combi-
+nation of a unit IS order and a unit TC order as
+xt =
+
+x0 − µ θσ2 − R  · ISt +  −A + µ θσ2 + R  · TCt + A. (11)
+14
+
+=== page 15 ===
+Note that when µ = 0 and R = x0, the optimal strategy reduces to the following TC strategy as in (8)
+xt = (x0 − A) · TCt + A;
+whereas when µ = 0 and R = A, the optimal strategy reduces to the following IS strategy as in (6)
+xt = (x0 − A) · ISt + A.
+Note that for any given reference level R, the optimal trajectory in (11) at any point in time is an affine
+combination of a unit IS order and a unit TC order. The coefficients represent a trade-off between the two
+strategies. For example, if R is closer to the initial position x0 and further away from the target position A,
+the strategy in (11) suggests we weigh in more on the unit TC order and less on the unit IS order; conversely,
+one should then weigh in more on the unit IS order. Figure (4) shows the plots of optimal trajectories in
+different reference levels R, assuming x0 = 1 and A = 0. Again, we end up with a unit TC order when R = x0
+and a unit IS order when R = A.
+Figure 4: Optimal strategies in different reference levels R.
+As shown in Figure 4, when R > x0 = 1 the optimal strategy suggest overshoot the target, meaning
+buying more than needed then sell back later and quicker when time approaches the terminal time. On the
+other hand, if R < A = 0, the optimal strategy suggests undershoots the target. We provide conditions on
+the parameters under which an overshooting or an undershooting occur in the following proposition.
+Proposition 3. Without loss of generality, assume x0 > A. Let xt be the optimal strategy given in (11). We
+have that, if R + µ θσ2 > x0, then xt is concave in t and it becomes convex in t if R + µ θσ2 < A. It follows that
+xt overshoots if and only if
+R + µ θσ2 > x0 + 1 cosh κT − 1 · (x0 − A)
+15
+
+=== page 16 ===
+and it undershoots if and only if
+R + µ θσ2 < A − 1 cosh κT − 1 · (x0 − A).
+It appears that, when µ is nonzero, the terms in the optimal trajectory (11) that have µ involved always
+come in the form of µ θσ2 . We provide a financial rationale of this combination of parameters as follows.
+Note that the combination resembles the Merton ratio in Merton’s optimal portfolio problem in the market
+consisting of two assets: one risky and the other risk-less. The agent is risk averse with power utility u(x) = xγ
+and the dynamic of risky asset is governed by a geometric Brownian motion with expected return µ and
+volatility σ. The risk-less asset is assumed accruing zero interest. In this setting, the Merton ratio, which
+represents the percentage of wealth invested in the risky asset, is given by µ (1−γ)σ2 . In our setting, the broker
+is with exponential utility u(x) = 1 θ (1 − e−θx) and the stock price St is assumed following an arithmetic
+Brownian motion with drift µ and volatility σ, i.e.,
+dSt = µdt + σdWt.
+As in the derivation of the Merton ratio in Merton’s problem, one may show that the “Merton ratio” [28] in
+this case is given by µ θσ2 except that this ratio does not represent the percentage of wealth invested in the
+risky asset as in the original Merton’s problem. Indeed, this ratio represents the number of shares to be held
+in the optimal portfolio.
+4.4 Piece-wise constant reference strategy
+We consider in this section the reference strategies that are piece-wise constant across time. The consideration
+is that, to possibly account for real time market environments during the entire reallocation process, the
+broker’s strategies may be subject to interval TWAP or VWAP strategies. For example, in an intraday
+trading activity, it is documented that the market trades much more actively at the times close to opening
+and closing than that in the middle of common trading days. Also, in the case where trading horizon across
+multiple days, the broker is most likely treating each trading day individually. In these regards, a piece-wise
+constant reference strategy is considered plausible.
+Theoretically, as will be demonstrated, optimal trajectories subject to piece-wise constant reference strate-
+gies exhibit an elegant algebraic structure, derived from the unit IS and unit TC orders discussed in Sections
+4.2. By applying standard approximation and limiting processes for integrable functions, this structure of-
+fers practical and insightful guidance for developing optimal strategies under general integrable reference
+strategies. Concretely, a generic piece-wise constant reference strategy Rt is defined as
+Rt = (x0 − R(1)) 1{t=0} +
+nX
+k=1
+R(k) 1{ (k−1)T n ≤t< kT n } + A 1{t=T }, (12)
+where 1{·} denotes the indicator function, n is the number of periods, and the R(k)’s are fixed constants. The
+following proposition summarizes the optimal trajectory under the piece-wise constant reference strategy in
+(12).
+16
+
+=== page 17 ===
+Proposition 4. When µ = m0 = 0, β → +∞, denote R(0) := x0 and R(n+1) := A, the solution to the previous
+optimization problem under the piece-wise constant reference strategy given in (12) is of the following form,
+for 1 ≤ k ≤ n,
+xt =
+n
+ak +
+
+R(k) − ak
+
+TCt− (k−1)T n +
+
+ak−1 − R(k)
+
+ISt− (k−1)T n
+o
+1{ (k−1)T n ≤t< kT n }, (13)
+with κ :=
+q
+θσ2
+2η ,
+ISt := sinh κ
+  T
+n − t
+
+sinh κ T n , TCt := sinh κ T n − sinh κt sinh κ T n ,
+and ak is denoted as a weighted average of R(i)’s:
+ak := sinh κ
+ 
+T − kT n 
+sinh κT ·
+kX
+i=0
+biR(i) + sinh κ kT n sinh κT · n+1X i=k+1 bn−i+1R(i), 1 ≤ k ≤ n − 1,
+where
+bi =
+
+
+
+1, i = 0,
+cosh
+ 
+κ iT n  − cosh  κ (i−1)T n  , 1 ≤ i ≤ n − 1.
+Notice that the ISt and TCt in Proposition 4 are indeed respectively the unit IS order given in (7) and the
+unit TC order in (9). Proposition 4 essentially states that, for a given piece-wise constant reference strategy, its
+corresponding optimal solution in each sub-interval is given by an affine transformation of a unit IS order and
+a unit TC order. In this sense we may regard the unit IS orders and the unit TC orders obtained in Sections
+4.2 as the building blocks or bases for optimal trajectories under piece-wise constant reference strategies. The
+algebraic structure of the optimal trajectories is thus depicted by the affine space generated by the unit IS
+and unit TC orders. What are left to be determined are the coefficients that are sub-interval dependent. In
+practice, one should firstly calculate ak’s by linear combinations of R(i)’s, then optimal strategy is obtained by
+connecting ak’s using unit IS and unit TC orders. As an example, Figure (5) shows the plots of a piece-wise
+constant reference strategy (in dotted red) its optimal trajectory (in blue) with three sub-intervals n = 3, the
+other parameters are given by T = 3, κ = 5, R(1) = 15 2 , R(2) = 9 2 , R(3) = 3 2 , x0 = 9, A = 0. To conclude the
+Figure 5: A three-period piece-wise constant reference strategy and its corresponding optimal trajectory.
+17
+
+=== page 18 ===
+section, we show in Theorem 3 a stability theorem for optimal strategies subject to general, smooth enough,
+reference strategies.
+Theorem 3. For any given reference strategies Rt and eRt satisfying
+Z T
+0
+
+Rt − eRt
+2
+dt < ε,
+for some ε > 0. Let xt and ext be the corresponding optimal trajectories for Rt and eRt, respectively. We have
+that, for any 0 ≤ t ≤ T ,
+|xt − ext| < 1 2 √κε.
+The above theorem basically states the fact that when two reference strategies are close in the L2 sense,
+their corresponding optimal strategies remain close in the sup norm sense. Note that for any ε > 0 and an
+almost everywhere continuous bounded RS Rt, there exists a piece-wise constant RS eRt such that
+Z T
+0
+
+Rt − eRt
+2
+dt < ε,
+It follows that the optimal trajectory in (13) for eRt, which is an affine transformation of unit IS and unit
+TC orders in each sub-interval, can be applied as an approximation to the optimal trajectory under reference
+strategy Rt, with error estimate given in Theorem 3.
+5 Numerical examples
+We conduct in this section numerical experiments on the implementation of optimal strategy obtained in The-
+orem 1 and stress testing the strategy against various parameters. Monte Carlo simulations are implemented
+to illustrate sample trading trajectories and the performances criteria of the optimal strategy versus those
+of a related TWAP strategy. The performance of the optimal and TWAP strategies are then stress tested
+against certain extreme parameters. We remark that the parameters chosen for the numerical examples in
+this section are for convenience only. In practice, parameters are supposedly calibrated to market data prior
+to implementation, causing possible issues associated with estimation risk.
+5.1 Sample trading trajectories
+We present in Figures (6) through (11) sample trading trajectories under the optimal and a related TWAP
+strategiesinvariousparameters. Parameterschosenasbasecaseare (m0, η, ρ, θ, σ, β) = (0.05, 10, 0, 0.002, 200, 1000).
+Table 1 summarizes the parameters that vary, while the others are held fixed, in each case and their corre-
+sponding figures. The reference strategy Rt is selected as a block trade at t = 0, as shown in Section 4.2.
+Figure (6) illustrates sample trading trajectories for the optimal and the TWAP strategies in different
+values of m0. We note that, since m0 quantifies the execution risk, as m0 increases both trajectories become
+more volatile and fluctuating.
+18
+
+=== page 19 ===
+Table 1: Sample trading trajectory in varying parameters
+Figure number Parameter Case 1 Case 2 Case 3
+Figure 6 m0 0.00 0.05 0.10
+Figure 7 η 5 10 20
+Figure 8 ρ -0.9 0 0.9
+Figure 9 θ 0.001 0.002 0.004
+Figure 10 σ 100 200 400
+Figure 11 β 100 1000 10000
+Figure 6: Sample trading trajectories in different m0
+Figure (7) exhibits sample trading trajectories in varying values of η. It is worth mentioning that, since η
+reflects the level of transaction costs, as the value of η increases, transaction cost becomes more significant in
+the determination of optimal strategies. Consequently, the optimal strategy tends to align more closely with
+the classical TWAP strategy. In other words, a higher η places greater emphasis on minimizing transaction
+costs, motivating the adoption of a strategy that mirrors the TWAP approach, which aims for consistent
+execution over time.
+Figure (8) shows optimal strategies in the values of ρ = −0.5, 0, 0.5. Recall that ρ denotes the correlation
+between the stock price and the execution risk. We note that there seems no significant dependence of the
+optimal strategies on ρ within this set of parameters.
+19
+
+=== page 20 ===
+Figure 7: Sample trading trajectories in different η
+Figure 8: Sample trading trajectories in different ρ
+20
+
+=== page 21 ===
+Figure (9) illustrates the optimal strategies in the values of θ = 0.001, 0.002, 0.004, which represents the
+broker’s taste of risk aversion. The larger the value of θ, the more risk averse the broker tends to be. It follows
+that the sample trading trajectory under optimal strategy gradually converges towards the reference strategy
+as θ increases, indicating the broker’s inclination to adopt a more conservative and risk-averse approach.
+Figure 9: Sample trading trajectories in different θ
+Figure (10) shows sample trading trajectories under optimal strategies with respect to the stock volatility
+σ = 100, 200, 400. As σ increases, the price risk increases. Thus, to mitigate the risk incurred from the price
+volatility during execution, the optimal strategy tracks more closely to the reference strategy.
+Figure 10: Sample trading trajectories in different σ
+21
+
+=== page 22 ===
+Figure (11) presents the optimal strategies in the values of β = 100, 1000, 10000, which quantifies the
+penalty of block trade at terminal time. Large β indicates that any remaining inventory at terminal time is
+unfavorable. Therefore, it is seen in the figure that the terminal inventory x∗ T of the sample trading trajectories
+under optimal strategy gradually approaches zero. It is thus fathomable that, as β approaches infinity, a final
+block trade at terminal time turns into strictly prohibited.
+Figure 11: Sample trading trajectories in different β
+5.2 Performance analysis and stress test
+To demonstrate the performance of the optimal strategy against TWAP, we implement the strategies using
+Monte Carlo simulations and present the resulting histograms and boxplots of the terminal wealths as well
+as the utilities at the investment horizon. This performance analysis serves to illustrate the optimality and
+robustness of the optimal strategy.
+Figure 12: Histograms and boxplots of terminal wealths and utilities under the optimal and the TWAP
+strategies. Terminal wealth on the left, utility on the right. Vertical dashed lines indicate sample means.
+Figure (12) exhibits the histograms and boxplots of the terminal P&L (on the left) and the utility (on
+the left) at investment horizon for the optimal and the TWAP strategies. We observe that the optimal
+22
+
+=== page 23 ===
+Table 2: Stress testing parameters
+m0 η ρ θ σ β
+Baseline 0.05 10 0 0.002 200 1e6
+Scenario 1 (large σ) 0.05 10 0 0.002 2000 1e6
+Scenario 2 (large β) 0.05 10 0 0.002 200 1e7
+Scenario 3 (large m0) 5 10 0 0.002 200 1e6
+Scenario 4 (small η) 0.05 0.1 0 0.002 200 1e6
+strategy not only consistently achieves higher average terminal wealth and utility than those under TWAP
+but also bears lower variability. Furthermore, an intriguing observation is made regarding the tail ends of the
+distribution. Specifically, the TWAP strategy demonstrates a greater density in these tail regions, indicating
+a higher likelihood of incurring significant losses when compared to our optimal strategy. This discrepancy
+in density at the tail end reinforces the notion that the TWAP strategy may accentuate the potential for
+unfavorable outcomes, thus reflecting a subpar approach to risk management.
+Finally, we stress test the optimal and the TWAP strategies against extreme parameters. While the
+remaining parameters are held the same as in the benchmark case, the stock volatility σ is scaled up by ten
+folds in Scenario 1, the terminal penalty coefficient β up by ten folds in Scenario 2, the execution risk m0 up
+by a hundred folds in Scenario 3, and lastly in Scenario 4 down by 0.1 hundred folds the temporary cost η.
+Table 2 summarizes the parameters that are stress tested in each scenario and Figure 13 shows the histograms
+and boxplots of P&Ls at the terminal time under the optimal and the TWAP strategies.
+Apparently, in all the scenarios the histograms under optimal strategies are concentrated around zero
+whereas those under TWAP strategies are much more widely spreading. Also, the sample means under optimal
+strategies are higher than those of TWAP strategies. We conclude that, even under extreme situations, the
+optimal strategies outperform TWAP strategies not only in higher averaged P&L but also with lower volatility
+risk, which shows the robustness of our results.
+23
+
+=== page 24 ===
+Figure 13: Histograms and boxplots of terminal P&L under stress tests. Scenarios 1 on the top left, 2 on the
+top right, 3 on the bottom left, and 4 on the bottom right. Vertical dashed lines indicate sample means.
+24
+
+=== page 25 ===
+6 Conclusion
+In this article, we showed how the broker’s order execution problem under execution risk subject to client’s
+reference strategy can be recast as a utility maximization problem. The optimal solution to the utility
+maximization problem was obtained by solving an associated Riccati differential equation and was presented
+in feedback form. When execution risk vanishes, the optimal strategies become deterministic and were given
+in closed form. We showed that trading trajectories subject to the unit IS and the unit TC orders form
+a basis of an affine structure for trading trajectories under optimal strategies subject to general piece-wise
+constant reference strategies. As for general continuous reference strategies, we proved an approximation and
+stability theorem for the trading trajectory under the corresponding optimal strategy via the trajectories from
+piece-wise constant reference strategies.
+Numerical experiments showed that the optimal strategies not only achieve higher expected values but
+also bear lower variabilities as opposed to those under TWAP strategies. Numerical performance analysis and
+stress tests confirmed that optimal strategies outperform TWAP strategies, by a wide margin in certain cases.
+Possible extensions of the framework considered in the paper include (a) a stochastic component to the price
+evolution reflecting the overall market activity such macroeconomics factors or news; (b) the price impact,
+rather than permanent, being transient with proper decay kernel. We leave these considerations to a future
+study.
+Acknowledgement
+This research is supported by the National Natural Science Foundation of China (Grants No.11971040).
+A Appendix
+A.1 Proof to Proposition 1
+By Itô’s formula,
+(xT − A)ST =(x0 − A)S0 +
+Z T
+0
+Stdxt +
+Z T
+0
+(µ(xt − A) + ρσm(vt) − γvt(xt − A)) dt
++
+Z T
+0
+σ(xt − A)dWt +
+Z T
+0
+γ(xt − A)m(vt)dZt.
+Furthermore, note that ˜St = St + ηvt,
+Z T
+0
+
+− ˜St
+
+dxt = −
+Z T
+0
+Stdxt −
+Z T
+0
+ηv2 t dt +
+Z T
+0
+ηvtm(vt)dZt,
+25
+
+=== page 26 ===
+in summary,
+Π =(xT − A)ST − β(xT − A)2 +
+Z T
+0
+
+− ˜St
+
+dxt
+=(x0 − A)S0 − β(xT − A)2 +
+Z T
+0
+ 
+µ(xt − A) + ρσm(vt) − ηv2 t − γvt(xt − A)  dt
++
+Z T
+0
+σ(xt − A)dWt +
+Z T
+0
+(ηvt + γ(xt − A))m(vt)dZt.
+□
+A.2 Risk-Neutral Case of Theorem 1
+In Section (3) we recast the optimal execution problem as a utility maximization problem with the CARA
+preference u(x) = 1 θ (1 − e−θx) with parameter θ > 0, which reflects the broker’s risk aversion. As θ → 0, the
+utility function u(x) = limθ→0 1 θ (1 − e−θx) = x describes a risk-neutral preference. With the admissible set A
+and the excess P&L ˜Π given in Section (2.2) and Section (3), the risk-neutral expected utility is given by
+E
+h
+u
+
+˜Π
+i
+= E
+h
+˜Π
+i
+=E
+"
+− β(xT − A)2 +
+Z T
+0
+ 
+µ(xt − Rt) + ρσm(vt) − ηv2 t − γvt(xt − A)  dt
++
+Z T
+0
+σ(xt − Rt)dWt +
+Z T
+0
+(ηvt + γ(xt − A))m(vt)dZt
+#
+=E
+"
+−β(xT − A)2 +
+Z T
+0
+ 
+µ(xt − Rt) + ρσm(vt) − ηv2 t − γvt(xt − A)  dt
+#
+.
+When the execution risk is constant (i.e. m(·) ≡ m0 for some m0 ≥ 0), the utility maximization problem
+reduces to the following Stochastic Linear Quadratic (SLQ) control problem [22]:
+
+
+
+supv∈A E
+h
+−β(xT − A)2 + R T 0   µ(xt − Rt) + ρσm0 − ηv2 t − γvt(xt − A)  dt i ,
+s.t. xt = x0 −
+R t
+0 vsds + m0Zt.
+Define the value function V (t, x) as
+V (t, x) = sup
+v∈At
+E
+"
+−β(xT − A)2 +
+Z T
+t
+ 
+µ(xs − Rs) + ρσm0 − ηv2 s − γvs(xs − A)  ds
+xt = x # ,
+where At :=
+n
+v is progressively measurable in [t, T ] and
+R T
+t E[v2 s ]ds < ∞ o . Note that our problem satisfies
+assumption (L1) given in Section 3.1 of [22] due to the boundedness of the coefficients, so the problem is
+solvable, and by the dynamic programming principle, the value function V is unique satisfying the Hamilton-
+Jacobi-Bellman (HJB hereafter) equation
+Vt + 1 2 m2 0Vxx + sup v∈R  −ηv2 − v (γ(x − A) + Vx) 	 + µ(x − Rt) + ρσm0 = 0
+26
+
+=== page 27 ===
+with terminal condition v(T, x) = −β(x − A)2. With first order criterion, the optimal feedback control is
+given by v∗ = − 1 2η (γ(x − A) + Vx), hence the HJB equation reduces to
+Vt + 1 2 m2 0Vxx + 1 4η (γ(x − A) + Vx)2 + µ(x − Rt) + ρσm0 = 0, v(T, x) = −β(x − A)2.
+Assume the Ansarz for value function V
+V (t, x) = a(t)x2 + b(t)x + c(t).
+Plug the Ansarz into the HJB equation yields the Riccati ODE system
+
+
+
+a′(t) + 1 4η (2a(t) + γ)2 = 0, a(T ) = −β,
+b′(t) + 1 2η (2a(t) + γ)(b(t) − γA) + µ = 0, b(T ) = 2βA,
+c′(t) + m2 0a(t) + 1 4η (b(t) − γA)2 − µRt + ρσm0 = 0, c(T ) = −βA2.
+By solving the ODE system, the deterministic functions a, b, c of time t are given by
+a(t) = − η T − t + α − γ 2 ,
+b(t) = µ 2 (T − t + α) − 1 2 µα2 − 2Aη T − t + α + γA,
+c(t) = − m2 0η log T − t + α α +  ρσm0 − γ 2 m2 0  (T − t)
+− µ2α3
+16η
+ α
+T − t + α + 2(T − t + α) α − (T − t + α)3 3α3 − 8 3 
+− A2η − 1 2 µAα2
+T − t + α − γA2 + µA(T − t + α) 2 + Z T t µ(A − Rs)ds
+where α := 2η 2β−γ > 0. Note that V (t, x) = a(t)x2 + b(t)x + c(t) is continuous on [0, T ] × R and continuously
+differentiable on (0, T ) × R satisfying the HJB equation, therefore it must be the value function by the
+uniqueness of solutions to the HJB equation. Then the verification theorem gives rise to the optimal feedback
+control
+v∗∗ t = xt − A T − t + α − µ 4η  (T − t + α) − α2 T − t + α  .
+Due to the boundedness of 1 T −t+α and − A T −t+α − µ 4η  (T −t+α)− α2 T −t+α  , v∗∗ ∈ A, which implies that the optimal
+control v∗∗ lies in the admissible set. Moreover, the maximal risk-neutral expected utility is given by
+sup
+v∈A
+E
+h
+˜Π
+i
+=E
+h
+˜Π
+i 
+v=v∗∗
+= V (0, x0) = a(0)x2 0 + b(0)x0 + c(0)
+=
+
+− η T + α − γ 2  x2 0 +  µ 2 (T + α) − 1 2 µα2 − 2Aη T + α + γA  x0
+− m2 0η log T + α α +  ρσm0 − γ 2 m2 0  T − µ2α3 16η  α T + α + 2(T + α) α − (T + α)3 3α3 − 8 3 
+− A2η − 1 2 µAα2
+T + α − γA2 + µA(T + α) 2 + Z T 0 µ(A − Rs)ds < ∞.
+27
+
+=== page 28 ===
+A.3 Proof to Theorem 1
+Note that xt = x0 −
+R t
+0 vsds + m0dZt, by Itô’s formula,
+(xT − A)2 = (xt − A)2 +
+Z T
+t
+ 
+−2(xs − A)vs + m2 0  ds + Z T
+t
+(2m0(xs − A)) dZs.
+Furthermore, note that standard Brownian motions Wt and Zt have constant correlation ρ, denote stan-
+dard Brownian motion W 1 t = Zt −ρWt√ 1−ρ2 , then W 1 t and Wt are independent. By extracting the constants and
+deterministic parts out of the expectation, the value function is given by
+V (t, x) = 1 θ − 1 θ · exp
+ 
+−
+Z T
+t
+θ
+ 
+µ(A − Rs) + ρσm0 − βm2 0  ds + θβ(x − A)2
+!
+· V0(t, x),
+where we observe the equivalent optimization problem
+V0(t, x) = inf v∈At EP
+"
+exp
+( Z T
+t
+
+−θµ(xs − A) + θηv2 s − θ(2β − γ)vs(xs − A)  ds
++
+Z T
+t
+[(−θσ − θ(γ − 2β)m0ρ) (xs − A) − θηm0ρvs + θσ(Rs − A)] dWs
++
+Z T
+t
+h
+−θ(γ − 2β)m0
+p
+1 − ρ2(xs − A) − θηm0
+p
+1 − ρ2vs
+i
+dW 1 s
+)xt = x # .
+=: inf
+v∈At
+EP [exp {J(t, T )} |xt = x]
+Our stochastic control problem has a similar form as stochastic linear exponential quadratic (SLEQ) control
+problems given in [23] and [24], however, due to the constants and stochastic integrals appearing in our
+exponential function, these existing results can’t be used directly. Instead, we follow the “completing the
+square” technique used in [23], which is used to transform the integrand into a square form by introducing
+a Radon-Nikodym derivative. In this paper, we eliminate the stochastic integrals and “complete the square”
+simultaneously by Girsanov’s theorem. More precisely, we manage to find some probability measure Q ≪ P
+such that
+EP [exp {J(t, T )} |xt = x] = EQ
+ 1
+L(t, T ) · exp {J(t, T )}
+xt = x  ,
+where 1 L(t,T ) · exp {J(t, T )} can be transformed into a square form without Itô integrals. Concretely, suppose
+the Radon-Nikodym derivative is given by
+dQ
+dP
+
+Ft
+= L(t, T ) := exp
+(
+−
+Z T
+t
+Ψ1(s, xs, vs)dWs −
+Z T
+t
+Ψ2(s, xs, vs)dW 1 s
+− 1 2 Z T t   Ψ2 1(s, xs, vs) + Ψ2 2(s, xs, vs)  ds ) ,
+28
+
+=== page 29 ===
+where Ψ1 and Ψ2 are L2-functions to be determined. At the same time, for some deterministic function G1(t)
+and G2(t) such that G1(T ) = G2(T ) = 0, by Ito’s lemma,
+−G1(t)(xt − A)2 − 2G2(t)(xt − A)
+=(G1(T )(xT − A)2 + 2G2(T )(xT − A)) − (G1(t)(xt − A)2 + 2G2(t)(xt − A))
+=
+Z T
+t
+ 
+G′ 1(s)(xs − A)2 + 2G′ 2(s)(xs − A) − 2(G1(s)(xs − A) + G2(s))vs + m2 0G1(s)  ds
++
+Z T
+t
+2ρm0(G1(s)(xs − A) + G2(s))dWs +
+Z T
+t
+2
+p
+1 − ρ2m0(G1(s)(xs − A) + G2(s))dW 1 s .
+Hence,
+1
+L(t, T ) · exp {J(t, T )}
+= exp
+
+J(t, T ) − log L(t, T ) +
+ 
+−G1(t)(xt − A)2 − 2G2(t)(xt − A)  +   G1(t)(xt − A)2 + 2G2(t)(xt − A)  	
+=exp
+( Z T
+t
+
+−θµ(xs − A) + θηv2 s − θ(2β − γ)vs(xs − A) + 1 2 Ψ2 1(s, xs, vs) + 1 2 Ψ2 2(s, xs, vs)
++
+ 
+G′ 1(s)(xs − A)2 + 2G′ 2(s)(xs − A) − 2(G1(s)(xs − A) + G2(s))vs + m2 0G1(s)  ds
++
+Z T
+t
+
+(−θσ − θ(γ − 2β)m0ρ) (xs − A) − θηm0ρvs + θσ(Rs − A) + Ψ1(s, xs, vs)
++ 2ρm0(G1(s)(xs − A) + G2(s))
+
+dWs
++
+Z T
+t
+
+−θ(γ − 2β)m0
+p
+1 − ρ2(xs − A) − θηm0
+p
+1 − ρ2vs + Ψ2(s, xs, vs)
++ 2
+p
+1 − ρ2m0(G1(s)(xs − A) + G2(s))
+
+dW 1 s
++
+ 
+G1(t)(xt − A)2 + 2G2(t)(xt − A) 
+)
+By setting
+
+
+
+Ψ1(s, xs, vs) =(θσ + m0ρ(θ(γ − 2β) − 2G1(s))) (xs − A)+ θηm0ρvs − 2m0ρG2(s) − θσ(Rs − A),
+Ψ2(s, xs, vs) = (θ(γ − 2β) − 2G1(s)) m0
+p
+1 − ρ2 (xs − A)+ θηm0
+p
+1 − ρ2vs − 2m0
+p
+1 − ρ2G2(s),
+the stochastic integrals
+R T
+t · · · dWs and
+R T
+t · · · dW 1 s appear to be zero. Moreover,
+1
+L(t, T ) · exp {J(t, T )}
+= exp
+( Z T
+t
+ 
+A(s)v2 s + B(s)(xs − A)vs + C(s)(xs − A)2 + D(s)vs + E(s)(xs − A) + F (s)  dt
++
+ 
+G1(t)(xt − A)2 + 2G2(t)(xt − A) 
+)
+, (14)
+29
+
+=== page 30 ===
+where the coefficients are given by
+
+
+
+H ≡ A(s) :=θη + 1 2 θ2η2m2 0 > 0,
+B(s) = − θ(2β − γ) − 2G1(s) + m0ηθ2ρσ + θηm2 0(θ(γ − 2β) − 2G1(s)),
+C(s) =G′ 1(s) + 1 2 m2 0 (θ(γ − 2β) − 2G1(s))2 + 1 2 θ2σ2 + θσρm0 (θ(γ − 2β) − 2G1(s)) ,
+D(s) = − 2G2(s) − 2m2 0θηG2(s) − m0ηθ2ρσ(Rs − A),
+E(s) = − θµ + 2G′ 2(s) − 2m2 0(θ(γ − 2β) − 2G1(s))G2(s) − θ2σ2(Rs − A) − 2m0ρθσG2(s)
+− m0ρθσ (θ(γ − 2β) − 2G1(s)) (Rs − A)
+F (s) =m2 0G1(s) + 2m2 0G2 2(s) + 2ρm0θσ(Rs − A)G2(s) + 1 2 θ2σ2(Rs − A)2.
+To make sure the integrand in (14) behaves as a square form (plus constants), we rewrite it as a quadratic
+function of vs:
+A(s)v2 s + (B(s)(xs − A) + D(s)) vs +   C(s)(xs − A)2 + E(s)(xs − A) + F0(s)  + (F (s) − F0(s)) ,
+of which the discriminant is set to be zero:
+0 = ∆ = (B(s)(xs − A) + D(s))2 − 4A(s)   C(s)(xs − A)2 + E(s)(xs − A) + F0(s)  ,
+hence, 
+
+
+0 =B2(s) − 4A(s)C(s),
+0 =B(s)D(s) − 2A(s)E(s),
+0 =D2(s) − 4A(s)F0(s) =⇒ F0(s) = D2(s) 4A(s) .
+Denote b2(s) := G1(s) + θ 2 (2β − γ) and b1(s) := 2G2(s), we may solve the ODEs b2(·) and b1(·) satisfy:
+b′ 2 = 1 H ((b2 + l3)2 − l1), b2(T ) = θ 2 (2β − γ),
+where l3 = 1 2 m0ηθ2ρσ and l1 = θ2 σ2 2 H. We may solve that
+b2(t) =
+p
+l1 coth
+
+A0 +
+√l1
+H (T − t)
+
+− l3,
+where
+A0 := coth−1
+ 
+l3 + θ 2 (2β − γ)√l1
+!
+.
+Moreover, we have b1 solves the ODE
+b′ 1 = θµ + 1 H b1(b2 + l3) + ηθ2σ H (Rt − A)  θσ + 1 2 m2 0θ2ησ(1 − ρ2) − ρm0b2  , b1(T ) = 0.
+30
+
+=== page 31 ===
+With b1 and b2 solved, we may rewrite the integrand in (14) as
+A(s)v2 s + B(s)(xs − A)vs + C(s)(xs − A)2 + D(s)vs + E(s)(xs − A) + F (s)
+=H (vs − g1(s)(xs − A) − g0(s))2 +
+
+F (s) − D2(s) 4H 
+=H (vs − g1(s)(xs − A) − g0(s))2 +
+
+m2 0
+
+b2 − θ 2 (2β − γ)  + θ2σ2 2 (Rs − A)2 − 1 4H   b1 − ρm0θ2ση(Rs − A) 2  ,
+where
+g1(t) := (1 + m2 0θη)b2 − l3 H , g0(t) := (1 + θηm2 0)b1 + 2l3(Ru − A) 2H .
+Denote
+c(s) := m2 0
+
+b2 − θ 2 (2β − γ)  + θ2σ2 2 (Rs − A)2 − 1 4H   b1 − ρm0θ2ση(Rs − A) 2 , 0 ≤ s ≤ T,
+we have
+EP [exp {J(t, T )} |xt = x] = EQ
+ 1
+L(t, T ) · exp {J(t, T )}
+xt = x 
+=EQ
+"
+exp
+( Z T
+t
+H(vs − g1(s)(xs − A) − g0(s))2ds
+)
+· exp
+( 
+b2(t) − θ 2 (2β − γ)  (xt − A)2 + b1(t)(xt − A) + Z T t c(s)ds )xt = x #
+=EQ
+"
+exp
+( Z T
+t
+H(vs − g1(s)(xs − A) − g0(s))2ds
+)xt = x #
+· exp
+( 
+b2(t) − θ 2 (2β − γ)  (x − A)2 + b1(t)(x − A) + Z T t c(s)ds )
+≥ exp
+( 
+b2(t) − θ 2 (2β − γ)  (x − A)2 + b1(t)(x − A) + Z T t c(s)ds ) ,
+where the equation holds when vs = v∗ s := g1(s)(xs − A) + g0(s). Note that g1 and g0 are bounded and
+continuous on [0, T ], so v∗ ∈ At, hence,
+V0(t, x) = inf v∈At EP [exp {J(t, T )} |xt = x] = inf v∈At EQ
+ 1
+L(t, T ) · exp {J(t, T )}
+xt = x 
+=EQ
+ 1
+L(t, T ) · exp {J(t, T )}
+xt = x  
+v=v∗
+= exp
+( 
+b2(t) − θ 2 (2β − γ)  (x − A)2 + b1(t)(x − A) + Z T t c(s)ds ) .
+31
+
+=== page 32 ===
+Furthermore, the value function is given by
+V (t, x) = 1 θ − 1 θ · exp
+(
+−
+Z T
+t
+θ
+ 
+µ(A − Rs) + ρσm0 − βm2 0  ds + θβ(x − A)2
+)
+· V0(t, x)
+= 1 θ − 1 θ · exp
+( 
+b2(t) + θγ 2  (x − A)2 + b1(t)(x − A)
++
+Z T
+t
+
+c(s) − θµ(A − Rs) − θρσm0 + θβm2 0  ds
+)
+.
+= 1 θ  1 − exp  b2(t) + θγ 2  (x − A)2 + b1(t)(x − A) + b0(t)  ,
+where
+b0(t) :=
+Z T
+t
+
+c(s) − θµ(A − Rs) − θρσm0 + θβm2 0  ds
+=
+Z T
+t
+ l1 − l2 3
+H (Rs − A)2 +
+
+θµ + l3
+H b1
+
+(Rs − A) +
+
+− b2 1
+4H + m2 0
+
+b2 + θγ 2  − ρm0θσ  ds.
+In summary, the optimal feedback control is given by
+v∗ t =g1(t)(xt − A) + g0(t)
+= (1 + m2 0θη)b2 − l3
+H · (xt − A) + l3 H · (Rt − A) + (1 + m2 0θη)b1 2H .
+□
+A.4 Proof to Theorem 2
+When m(v) = m0 = 0 and β = 0, dxt = −vtdt, according to Theorem 1, H = θη, l3 = 0, l1 = θ3 σ2 η 2 , A0 = 0,
+and
+b2(t) =
+r
+θ3σ2η
+2 · coth
+ s
+θσ2
+2η (T − t)
+!
+.
+Furthermore, b1 solves the backward ODE
+b′ 1 = θµ + 1 H b1b2 + θ2σ2(Rt − A), b1(T ) = 0.
+Note that
+ 
+b1 · sinh
+ s
+θσ2
+2η (T − t)
+!!′
+= sinh
+ s
+θσ2
+2η (T − t)
+!
+· b′ 1 − b1 ·
+s
+θσ2
+2η · cosh
+ s
+θσ2
+2η (T − t)
+!
+= sinh
+ s
+θσ2
+2η (T − t)
+!
+·
+ 
+θµ + θ2σ2(Rt − A)  .
+32
+
+=== page 33 ===
+Integrate on both sides,
+−b1(t) · sinh
+ s
+θσ2
+2η (T − t)
+!
+=
+Z T
+t
+sinh
+ s
+θσ2
+2η (T − s)
+!
+·
+ 
+θµ + θ2σ2(Rs − A)  ds.
+⇒ b1(t) = − 1
+sinh
+q
+θσ2
+2η (T − t)
+ ·
+Z T
+t
+sinh
+ s
+θσ2
+2η (T − s)
+!
+·
+ 
+θµ + θ2σ2(Rs − A)  ds.
+Note that now
+vt = −x′ t = −(xt − A)′ = b2 H (xt − A) + b1 2H ,
+hence,
+
+ xt − A
+sinh
+q
+θσ2
+2η (T − t)
+
+
+
+′
+=
+(xt − A)′ · sinh q θσ2 2η (T − t)  + (xt − A) · q θσ2 2η · cosh q θσ2 2η (T − t) 
+sinh2
+q
+θσ2
+2η (T − t)
+
+=
+R T
+t sinh
+q
+θσ2
+2η (T − s)
+
+·
+ 
+θµ + θ2σ2(Rs − A)  ds
+2H sinh2
+q
+θσ2
+2η (T − t)
+ .
+Integrate on both sides then integrate by parts, we have
+xt − A
+sinh
+q
+θσ2
+2η (T − t)
+ − x0 − A
+sinh
+q
+θσ2
+2η T
+ =
+Z t
+0
+Z T
+s
+sinh
+q
+θσ2
+2η (T − u)
+
+2H · sinh2
+q
+θσ2
+2η (T − s)
+ ·   θµ + θ2σ2(Ru − A)  duds
+= 1
+sinh
+q
+θσ2
+2η T
+ ·
+Z t
+0
+1p
+2θ3σ2η sinh
+ s
+θσ2
+2η s
+!
+·
+ 
+θµ + θ2σ2(Rs − A)  ds + sinh
+q
+θσ2
+2η t
+
+sinh
+q
+θσ2
+2η T
+ · 1
+sinh
+q
+θσ2
+2η (T − t)
+
+·
+Z T
+t
+1p
+2θ3σ2η · sinh
+ s
+θσ2
+2η (T − s)
+!
+·
+ 
+θµ + θ2σ2(Rs − A)  ds.
+Denote
+θ2σ2
+p
+2θ3σ2η =
+s
+θσ2
+2η =: κ,
+we can solve that
+xt = κ sinh κT Z T 0  Rs sinh(κ min(s, t)) sinh(κ(T − max(s, t)))  ds
++
+
+x0 − µ θσ2  · sinh κ(T − t) sinh κT + A +  −A + µ θσ2  · sinh κT − sinh κt sinh κT .
+Furthermore,
+xt = µ θσ2 +  x0 − µ θσ2  · sinh κ(T − t) sinh κT +  A − µ θσ2  · sinh κt sinh κT
++ sinh κ(T − t) sinh κT · Z t 0 κ sinh κsRsds + sinh κt sinh κT · Z T t κ sinh κ(T − s)Rsds
+= µ θσ2 + sinh κ(T − t) sinh κT ·  x0 − µ θσ2 + Z t 0 κ sinh κsRsds  + sinh κt sinh κT ·  A − µ θσ2 + Z T t κ sinh κ(T − s)Rsds !
+33
+
+=== page 34 ===
+□
+A.5 Proof to Lemma 1
+κ
+sinh κT
+Z T
+0
+
+sinh(κ min(s, t)) sinh(κ(T − max(s, t)))
+
+ds
+= κ sinh κT · Z t 0 sinh κsds · sinh(κ(T − t)) + κ sinh κT · Z T t sinh κ(T − s)ds · sinh κt
+= sinh(κ(T − t)) sinh κT · (cosh κt − 1) + sinh κt sinh κT · (cosh κ(T − t) − 1)
+= sinh κT − sinh κt sinh κT − sinh κ(T − t) sinh κT = TCt − ISt.
+□
+A.6 Proof to Proposition 2
+By Theorem 2 and Lemma 1,
+xt = κ sinh κT Z T 0  R sinh(κ min(s, t)) sinh(κ(T − max(s, t)))  ds
++
+
+x0 − µ θσ2  · sinh κ(T − t) sinh κT + A +  −A + µ θσ2  · sinh κT − sinh κt sinh κT
+=
+
+x0 − µ θσ2 − R  · ISt +  −A + µ θσ2 + R  · TCt + A.
+□
+A.7 Proof to Proposition 3
+Note that R + µ θσ2 appears as a whole, so WLOG, we may assume that µ ≡ 0. When the reference strategy
+is R, the optimal strategy is given by
+xt = A + (R − A) · TCt + (x0 − R) · ISt,
+then
+vt = −x′ t = − (R − A) · TC′ t − (x0 − R) · IS′ t
+= − (R − A) · −κ cosh κt sinh κT − (x0 − R) · −κ cosh κ(T − t) sinh κT ,
+note that 0 ≤ t ≤ T , then cosh κt ≥ 0 and cosh κ(T − t) ≥ 0, so when A ≤ R ≤ x0, vt ≥ 0, which represents
+that the optimal strategy does not contain overshooting. Note that
+x′′ t = −v′ t = (R − A) · −κ2 sinh κt sinh κT + (x0 − R) · κ2 sinh κ(T − t) sinh κT ,
+so when R > x0 > A, x′′ t = −v′ t ≤ 0, which implies that the optimal strategy is a concave function, so
+min
+0≤t≤T
+vt =v0 = −(R − A) · −κ sinh κT − (x0 − R) · −κ cosh κT sinh κT
+= κ sinh κT · [(1 − cosh κT )R + (x0 cosh κT − A)] ,
+34
+
+=== page 35 ===
+so when
+R > x0 cosh κT − A cosh κT − 1 = x0 + 1 cosh κT − 1 · (x0 − A),
+the optimal strategy contains overshooting, and when x0 < R ≤ x0 + 1 cosh κT −1 · (x0 − A), the optimal strategy
+does not contains overshooting. Similarly, when R < A < x0, q′′ t = −v′ t ≥ 0, which implies that the optimal
+strategy is a convex function, so
+min
+0≤t≤T
+vt =vT = −(R − A) · −κ cosh κT sinh κT − (x0 − R) · −κ sinh κT
+= κ sinh κT · [(cosh κT − 1)R − (x0 − A cosh κT )] ,
+so when
+R < A cosh κT − x0
+cosh κT − 1 = A − 1 cosh κT − 1 · (x0 − A),
+the optimal strategy contains overshooting.
+□
+A.8 Proof to Proposition 4
+By the results given in Theorem 2, the optimal strategy is a deterministic one. In other words, when µ =
+m0 = 0,
+sup
+v∈A
+E
+h
+u
+
+˜Π
+i
+= sup
+v∈Adet
+E
+h
+u
+
+˜Π
+i
+,
+where Adet = {v ∈ A : v is deterministic}. When v ∈ Adet, xt = x0 −
+R t
+0 vsds is also deterministic, hence,
+E
+h
+u
+
+˜Π
+i
+=E
+"
+1
+θ
+ 
+1 − exp
+(
+θβ(xT − A)2 −
+Z T
+0
+θ
+ 
+−ηv2 t − γvt(xt − A)  dt − Z T
+0
+θσ(xt − Rt)dWt
+)!#
+= 1 θ − 1 θ · exp
+(
+θβ(xT − A)2 −
+Z T
+0
+
+θ
+ 
+−ηv2 t − γvt(xt − A)  − 1 2 θ2σ2(xt − Rt)2
+
+dt
+)
+.
+Subject to xT = A (or β → +∞),
+R T
+0 vt(xt − A)dt = 1 2 (x0 − A)2 is a constant, hence, maximizing the expected
+utility is equivalent to a typical variational problem
+
+
+
+inf
+v∈Adet
+Z T
+0
+
+ηv2 t + θσ2 2 (xt − Rt)2  dt
+s.t. xt = x0 −
+Z t
+0
+vsds, xT = A,
+Note that the objective can be divided into n parts, each with a constant RS:
+Z T
+0
+
+ηv2 t + γ 2 σ2(xt − Rt)2  dt = nX k=1 Z kT n (k−1)T n  ηv2 t + γ 2 σ2  xt − R(k) 2 dt.
+We divide the optimization problem into three steps:
+• Find the optimal value of x∗ kT
+n
+, 1 ≤ k ≤ n − 1. We can directly use Theorem 2: suppose the optimal
+35
+
+=== page 36 ===
+strategy is x∗ t , note that µ = 0,
+x∗ t = κ sinh κT Z T 0  Rs sinh(κ min(s, t)) sinh(κ(T − max(s, t)))  ds
++ x0 · sinh κ(T − t) sinh κT + A − A · sinh κT − sinh κt sinh κT ,
+where R is the given piece-wise constant RS. For 1 ≤ k ≤ n − 1,
+x∗ kT
+n
+=x0 · sinh κ(T − kT n ) sinh κT + A · sinh κ kT n sinh κT + κ sinh κ   T − kT n  sinh κT · kX i=1 R(i) · Z iT n (i−1)T n sinh(κs)ds
++ κ sinh κ kT n
+sinh κT ·
+nX
+i=k+1
+R(i) ·
+Z iT
+n
+(i−1)T
+n
+sinh (κ (T − s)) ds
+=x0 · sinh κ(T − kT n ) sinh κT + A · sinh κ kT n sinh κT
++ sinh κ
+ 
+T − kT n 
+sinh κT ·
+kX
+i=1
+R(i) ·
+
+cosh
+
+κ iT n  − cosh  κ (i − 1)T n 
++ κ sinh κ kT n
+sinh κT ·
+nX
+i=k+1
+R(i) ·
+
+cosh
+
+κ (n − i + 1)T n  − cosh  κ (n − i)T n  .
+Denote R(0) := x0, R(n+1) := A, and
+bi =
+
+
+
+1, i = 0,
+cosh
+ 
+κ iT n  − cosh  κ (i−1)T n  , 1 ≤ i ≤ n − 1,
+we can rewrite
+x∗ kT
+n
+= sinh κ
+ 
+T − kT n 
+sinh κT ·
+kX
+i=0
+biR(i) + sinh κ kT n sinh κT · n+1X i=k+1 bn−i+1R(i), 1 ≤ k ≤ n − 1.
+Furthermore, we denote the optimal values ak := x∗ kT
+n
+, 1 ≤ k ≤ n − 1. Note that the sum of coefficients
+in ak is
+sinh κ
+ 
+T − kT n 
+sinh κT ·
+kX
+i=0
+bi + sinh κ kT n sinh κT · n+1X i=k+1 bn−i+1
+= sinh κ
+ 
+T − kT n 
+sinh κT · cosh κ kT n + sinh κ kT n sinh κT · cosh κ (n − k)T n = 1,
+so ak is a weighted average of R(i)’s.
+• Note that we already know the value of optimal strategy x kT
+n
+, so the optimization problem is equivalent
+to the following optimization problem with extra constraints:
+
+
+
+inf
+v∈Adet
+Z T
+0
+
+ηv2 t + θσ2 2 (xt − Rt)2  dt = inf v∈Adet nX k=1 Z kT n (k−1)T n  ηv2 t + γ 2 σ2  xt − R(k) 2
+s.t. xt = x0 −
+Z t
+0
+vsds, xT = A,
+x kT
+n
+= ak, 1 ≤ k ≤ n − 1.
+36
+
+=== page 37 ===
+Denote a0 = x0 and an = A, inheriting from the spirit of dynamic programming, we can further divide
+the optimization problem into n parts: for 1 ≤ k ≤ n, where the k-th sub-problem is given by
+
+
+
+inf
+v∈Adet
+Z kT
+n
+(k−1)T
+n
+
+ηv2 t + θσ2 2  xt − R(k) 2 dt
+s.t. xt = ak−1 −
+Z t
+(k−1)T
+n
+vsds, (k − 1)T n ≤ t ≤ kT n , x kT n = ak,
+which is a constant RS problem with time period
+h
+(k−1)T
+n , kT n
+i
+, of which the optimal strategy is given
+by
+x(k) t = ak +  R(k) − ak  TCt− (k−1)T n +  ak−1 − R(k)  ISt− (k−1)T n , (k − 1)T n ≤ t ≤ kT n ,
+where κ :=
+q
+θσ2
+2η and
+ISt := sinh κ
+  T
+n − t
+
+sinh κ T n , TCt := sinh κ T n − sinh κt sinh κ T n .
+• Connect n optimal strategies to obtain the optimal strategy of the original optimization problem. Denote
+x∗∗ t =
+nX
+k=1
+x(k) t 1{ (k−1)T n ≤t< kT n } + A 1{t=T },
+then by the results of constant reference strategies, for any strategy xt,
+Z T
+0
+
+ηv2 t + θσ2 2 (xt − Rt)2  dt = nX k=1 Z kT n (k−1)T n  ηv2 t + γ 2 σ2  xt − R(k) 2
+≥
+nX
+k=1
+Z kT
+n
+(k−1)T
+n
+
+η
+
+− ˙x(k) t
+2
++ γ 2 σ2  x(k) t − R(k) 2
+=
+Z T
+0
+
+η (− ˙x∗∗ t )2 + θσ2 2 (x∗∗ t − Rt)2  dt,
+where implies that the optimal value is obtained when xt = x∗∗ t , in other words, x∗∗ t is the optimal
+strategy.
+□
+A.9 Proof to Theorem 3
+According to Theorem 2, the optimal strategies xt and ext can be given by
+xt = κ sinh κT Z T 0  Rs sinh(κ min(s, t)) sinh(κ(T − max(s, t)))  ds
++
+
+x0 − µ θσ2  · sinh κ(T − t) sinh κT + A +  −A + µ θσ2  · sinh κT − sinh κt sinh κT ,
+and
+ext = κ sinh κT Z T 0  eRt sinh(κ min(s, t)) sinh(κ(T − max(s, t)))  ds
++
+
+x0 − µ θσ2  · sinh κ(T − t) sinh κT + A +  −A + µ θσ2  · sinh κT − sinh κt sinh κT ,
+37
+
+=== page 38 ===
+where xt, ext are the optimal strategy with respect to reference strategies Rt and eRt respectively. Hence, by
+Jensen’s inequality,
+(xt − ext)2 = κ2
+sinh2 κT
+ Z T
+0
+ 
+R(1) s − R(2) s
+
+sinh(κ min(s, t)) sinh(κ(T − max(s, t)))
+
+ds
+!2
+≤ κ2
+sinh2 κT
+Z T
+0
+
+R(1) s − R(2) s
+2
+ds ·
+Z T
+0
+sinh2(κ min(s, t)) sinh2(κ(T − max(s, t)))ds
+< κ2
+sinh2 κT · ε · 1 4κ   sinh2(κt) (sinh(2κ(T − t)) − 2κ(T − t)) + sinh2(κ(T − t)) (sinh(2κt) − 2κt) 
+≤ κ2
+sinh2 κT · ε · 1 2κ sinh2
+
+κ T 2  (sinh κT − κT ) = κ (sinh κT − κT ) 4 (cosh κT + 1) · ε < κε 4
+which implies the fact that when ε → 0, ext → xt. So we may use the optimal strategy by a piece-wise constant
+RS to approximate the general RS, with small error
+|xt − ext| < 1 2 √κε.
+□
+38
+
+=== page 39 ===
+References
+[1] R. Almgren and N. Chriss, “Optimal execution of portfolio transactions,” Journal of Risk, vol. 3, pp.
+5–40, 2001.
+[2] C. Institute, CFA Program Curriculum 2018 Level II. John Wiley & Sons, 2017.
+[3] O. Guéant, “Target close execution strategies.” [Online]. Available: https://www.oliviergueant.com/
+uploads/4/3/0/9/4309511/targetclose.pdf
+[4] R. Almgren and N. Chriss, “Value under liquidation,” Risk, vol. 12, no. 12, pp. 61–63, 1999.
+[5] R. F. Almgren, “Optimal execution with nonlinear impact functions and trading-enhanced risk,” Applied
+Mathematical Finance, vol. 10, no. 1, pp. 1–18, 2003.
+[6] D. Bertsimas and A. W. Lo, “Optimal control of execution costs,” Journal of Financial Markets, vol. 1,
+no. 1, pp. 1–50, 1998.
+[7] J. Gatheral, “No-dynamic-arbitrage and market impact,” Quantitative finance, vol. 10, no. 7, pp. 749–759,
+2010.
+[8] J. Gatheral, A. Schied, and A. Slynko, “Transient linear price impact and fredholm integral equations,”
+Mathematical Finance: An International Journal of Mathematics, Statistics and Financial Economics,
+vol. 22, no. 3, pp. 445–474, 2012.
+[9] S. Tse, P. Forsyth, J. Kennedy, and H. Windcliff, “Comparison between the mean-variance optimal and
+the mean-quadratic-variation optimal trading strategies,” Applied Mathematical Finance, vol. 20, no. 5,
+pp. 415–449, 2013.
+[10] X. Cheng, M. Di Giacinto, and T.-H. Wang, “Optimal execution with dynamic risk adjustment,” Journal
+of the Operational Research Society, vol. 70, no. 10, pp. 1662–1677, 2019.
+[11] C. Frei and N. Westray, “Optimal execution of a vwap order: a stochastic control approach,” Mathematical
+Finance, vol. 25, no. 3, pp. 612–639, 2015.
+[12] Á. Cartea and S. Jaimungal, “A closed-form execution strategy to target volume weighted average price,”
+SIAM Journal on Financial Mathematics, vol. 7, no. 1, pp. 760–785, 2016.
+[13] O. Guéant and G. Royer, “Vwap execution and guaranteed vwap,” SIAM Journal on Financial Mathe-
+matics, vol. 5, no. 1, pp. 445–471, 2014.
+[14] R. Almgren and J. Lorenz, “Adaptive arrival price,” Trading, vol. 2007, no. 1, pp. 59–66, 2007.
+[15] C. Frei and N. Westray, “Optimal execution in hong kong given a market-on-close benchmark,” Quanti-
+tative Finance, vol. 18, no. 4, pp. 655–671, 2018.
+[16] O. Guéant, J. Pu, and G. Royer, “Accelerated share repurchase: pricing and execution strategy,” Inter-
+national Journal of Theoretical and Applied Finance, vol. 18, no. 03, p. 1550019, 2015.
+39
+
+=== page 40 ===
+[17] L. Bargeron, M. Kulchania, and S. Thomas, “Accelerated share repurchases,” Journal of Financial Eco-
+nomics, vol. 101, no. 1, pp. 69–89, 2011.
+[18] X. Cheng, M. Di Giacinto, and T.-H. Wang, “Optimal execution with uncertain order fills in almgren–
+chriss framework,” Quantitative Finance, vol. 17, no. 1, pp. 55–69, 2017.
+[19] R. Carmona and L. Leal, “Optimal execution with quadratic variation inventories,” SIAM Journal on
+Financial Mathematics, vol. 14, no. 3, pp. 751–776, 2023.
+[20] M. Nutz, K. Webster, and L. Zhao, “Unwinding stochastic order flow: When to warehouse trades,” arXiv
+preprint arXiv:2310.14144, 2023.
+[21] Á. Cartea and L. Sánchez-Betancourt, “Brokers and informed traders: dealing with toxic flow and ex-
+tracting trading signals,” Available at SSRN 4265814, 2022.
+[22] J. Yong and X. Y. Zhou, Stochastic controls: Hamiltonian systems and HJB equations. Springer Science
+& Business Media, 2012, vol. 43.
+[23] T. E. Duncan, “Linear-exponential-quadratic gaussian control,” IEEE Transactions on Automatic Con-
+trol, vol. 58, no. 11, pp. 2910–2911, 2013.
+[24] A. E. Lim and X. Y. Zhou, “A new risk-sensitive maximum principle,” IEEE transactions on automatic
+control, vol. 50, no. 7, pp. 958–966, 2005.
+[25] R. Carmona and K. Webster, “The self-financing equation in limit order book markets,” Finance and
+Stochastics, vol. 23, no. 3, pp. 729–759, Jul. 2019.
+[26] A. Mazzolo, “Constraint Ornstein-Uhlenbeck bridges,” Journal of Mathematical Physics, vol. 58, no. 9,
+p. 093302, 09 2017.
+[27] O. Guéant, The Financial Mathematics of Market Liquidity: From optimal execution to market making.
+CRC Press, 2016, vol. 33.
+[28] R. C. Merton, “Optimum consumption and portfolio rules in a continuous-time model,” in Stochastic
+optimization models in finance. Elsevier, 1975, pp. 621–661.
+40

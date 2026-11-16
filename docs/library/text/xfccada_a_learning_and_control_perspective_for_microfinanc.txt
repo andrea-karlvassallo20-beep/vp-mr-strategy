@@ -1,0 +1,1544 @@
+=== page 1 ===
+A LEARNING AND CONTROL PERSPECTIVE FOR MICROFINANCE
+A PREPRINT
+Christian Kurniawan+
+Department of Electrical and Computer Engineering
+Carnegie Mellon University
+Pittsburgh, Pennsylvania, United States
+christian.paryoto@gmail.com
+Xiyu Deng+
+Department of Electrical and Computer Engineering
+Carnegie Mellon University
+Pittsburgh, Pennsylvania, United States
+xiyud@andrew.cmu.edu
+Adhiraj Chakraborty
+Carnegie Mellon University Silicon Valley
+California, United States
+adhirajc@alumni.cmu.edu
+Assane Gueye
+Carnegie Mellon University Africa
+Kigali, Rwanda
+assaneg@andrew.cmu.edu
+Niangjun Chen
+Information Systems Technology and Design
+Singapore University of Technology and Design
+Singapore
+niangjun_chen@sutd.edu.sg
+Yorie Nakahira
+Department of Electrical and Computer Engineering
+Carnegie Mellon University
+Pittsburgh, Pennsylvania, United States
+ynakahir@andrew.cmu.edu
+ABSTRACT
+Microﬁnance, despite its signiﬁcant potential for poverty reduction, is facing sustainability hardships
+due to high default rates. Although many methods in regular ﬁnance can estimate credit scores
+and default probabilities, these methods are not directly applicable to microﬁnance due to the
+following unique characteristics: a) under-explored (developing) areas such as rural Africa do not
+have sufﬁcient prior loan data for microﬁnance institutions (MFIs) to establish a credit scoring system;
+b) microﬁnance applicants may have difﬁculty providing sufﬁcient information for MFIs to accurately
+predict default probabilities; and c) many MFIs use group liability (instead of collateral) to secure
+repayment. Here, we present a novel control-theoretic model of microﬁnance that accounts for
+these characteristics. We construct an algorithm to learn microﬁnance decision policies that achieve
+ﬁnancial inclusion, fairness, social welfare, and sustainability. We characterize the convergence
+conditions to Pareto-optimum and the convergence speeds. We demonstrate, in numerous real and
+synthetic datasets, that the proposed method accounts for the complexities induced by group liability
+to produce robust decisions before sufﬁcient loans are given to establish credit scoring systems and
+for applicants whose default probability cannot be accurately estimated due to missing information.
+To the best of our knowledge, this paper is the ﬁrst to connect microﬁnance and control theory. We
+envision that the connection will enable safe learning and control techniques to help modernize
+microﬁnance and alleviate poverty.
+Keywords Microﬁnance · Control System · Learning
+1 Introduction
+Potential and challenges in microﬁnance. Microﬁnance is a category of ﬁnancial services that gives small loans
+to low-income people who may not have access to or be eligible for conventional ﬁnance [1–3]. Microﬁnance has
+demonstrated potential for poverty reduction, ﬁnancial inclusion, and economic development [4, 5]. Despite the proven
+potential, microﬁnance has experienced several hardships, primarily due to the increase in loan default rates [6, 7].
++These authors contributed equally to this work.
+arXiv:2207.12631v2  [q-fin.GN]  12 Dec 2022
+
+=== page 2 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+Although there are many lending strategies and risk control methods in regular ﬁnance, they cannot be directly applied
+to microﬁnance for the following reasons. First, most existing methods use credit scores to predict the loan default
+probability when making lending decisions [8–10]. However, under-explored (developing) areas without prior loan
+histories or proper ﬁnancial systems have insufﬁcient data to establish such credit-scoring procedures. Second, due to the
+lack of proper state mechanisms, it is difﬁcult for some applicants to provide sufﬁcient information for estimating their
+credit scores and default probability accurately1. Third, regular loans are given to individuals with collateral, whereas
+microﬁnance often uses group liability, where all individuals in the group are liable if any borrower defaults, to secure
+repayment [11–13]. Group liability can improve the repayment rate by incentivizing members to look after each other,
+but it has the pitfalls of inducing defaults for borrowers who otherwise have the ability to repay. However, because the
+approaches for granting regular loans do not sufﬁciently account for the complexities of group liability, group loans have
+tended to result in greater default rates [14, 15]. Fourth, there is increasing evidence that loan approval algorithms based
+on black-box machine learning techniques may be biased and discriminatory against minorities [16, 17]. Such biases
+are particularly problematic in fulﬁlling the objectives of microﬁnance to provide more opportunities for disadvantaged
+populations and underdeveloped regions. The complexities of having multiple such populations/regions also imposed
+additional challenges in allocating microﬁnance resources to balance different fairness/inclusion objectives. Due to the
+lack of methodologies that can systematically balance the risks, fairness, and multi-faceted objectives of microﬁnance,
+microﬁnance has relied heavily on the judgment of loan ofﬁcers. Such operations have sometimes resulted in decisions
+that let Portfolio at Risk (PAR)2 exceed a level that is sustainable for continuing microﬁnance operations3 [19–21].
+Our focus and contributions. There is an urgent need to modernize microﬁnance by establishing models and
+algorithms that account for the aforementioned characteristics and challenges. In this paper, we establish a novel
+microﬁnance model and propose an algorithm for learning loan approval policies. We summarize the features of the
+proposed techniques below.
+(i) Our methods can make robust decisions before enough loans are given to accurately estimate the default
+probability and credit scores (Figure 3(f)) by directly learning the optimal policy parameters without the
+intermediate step of default probability estimation.
+(ii) Our methods degrade more gracefully for increasing levels of missing information in the applications (Fig-
+ure 3(a)) and exploit the potential of group liability while avoiding its pitfalls (Figure 3(d)). The microﬁnance
+model accounts for missing information and group liability, and policy learning processes converge to optimal
+policy parameters in the presence of both.
+(iii) Our methods can systematically optimize competing objectives such as risks, socio-economic impacts, and
+active and passive fairness among different groups (Figures 3(b) and 3(c)). The prioritization among different
+objectives can be speciﬁed in the utility function, and the policy has an interpretable structure that informs
+which factors contributed positively/negatively to applicant approvals.
+To the best of our knowledge, this paper is the ﬁrst to use control-theoretic techniques to learn microﬁnance policy
+parameters without relying on credit scores directly. Our presentation of microﬁnance models as a control problem
+opens the door to using modern control and learning theory to modernize microﬁnance, which in turn helps to achieve 8
+of 17 Sustainable Development Goals adopted by the United Nations [22].
+Figure 1: Features of the proposed algorithm and their technical enablers.
+1 For example, it may be costly for some applicants in Africa to obtain proof of residence.
+2PAR is deﬁned as the percentage of overdue loans.
+3World Bank suggested 5% as the upper bound of PAR for sustainability [18].
+2
+
+=== page 3 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+Related Works
+Tools developed for regular ﬁnance. The most standard approach to decide regular ﬁnance is based on credit scores,
+which inform the likelihood of each application to default [23, 24]. Other approaches consider the loan approval process
+as a binary classiﬁcation problem to be solved using machine learning methods such as discriminant analysis [25],
+logistic regression [8, 26], and neural networks [27–29]. Multi-layers perceptron neural networks are widely used in
+automatic credit scoring systems with high accuracy and efﬁciency [30, 31]. To achieve a higher prediction accuracy,
+some studies utilize the random forest approach with feature selection and grid search to reduce the inﬂuence of
+irrelevant and redundant features [32, 33]. Other studies adopt the SVM (support vector machine) algorithm to also
+improve the prediction accuracy with fewer features [34, 35]. In a different direction, some studies predict the default
+probability of the applicants utilizing logistic regression and its extensions [36, 37]. In addition, works such as [10]
+examine and compare various machine learning algorithms to classify borrowers into various credit categories. However,
+as mentioned, these approaches mostly focused on ofﬂine learning, assuming that accurate homogeneous data is
+abundantly available. These assumptions may not hold in many under-explored (developing) regions, such as rural
+Africa, where most of the clients’ data is missing. Furthermore, collecting such information might be expensive and the
+data might be unreliable because of the lack of proper state mechanisms.
+Fairness in machine learning. Moreover, machine learning approaches may also introduce fairness issues as it is
+known to be a controversial topic in the ﬁeld. Especially for the black-box decision-making tool as it will introduce
+several explicit and implicit biases to the results [38, 17, 39–41]. A few recent works suggested that the decisions made
+by these black-box processes may have hidden biases and discrimination against under-served populations [42, 43].
+Existing approaches to deal with these biases include modiﬁcation in the data generation process to ensure the data sets
+have sufﬁcient diversity [44], as well as pre-, mid-, and post-processing. For example, [45] introduced a pre-processing
+approach called LFR (Learned Fair Representations), a discriminative clustering model in which the initial data
+point is mapped to the distribution in a new input space to conceal any information regarding the data point being a
+member of a protected subgroup, preserving individual fairness. In another example, [46] proposed the Fairness-Aware
+BPRMF method as a mid-prepossessing approach by pairing the Bayesian Personalized Ranking Model (BPR) with a
+combination of matrix factorization (MF). [47] proposed a post-processing algorithm, MULTIACCURACY-BOOST,
+that contains an auditor algorithm that iteratively makes mistakes on every sub-population in the black box’s classiﬁed
+data until the multi-accuracy constraints of equality are satisﬁed.
+Optimization methods. To ﬁnd the optimal decision policies, the learning algorithms employ existing optimization
+techniques in stochastic gradient descent (SGD) [48], reinforcement learning, and optimal control. For instance, bandit
+algorithms such as AdaGrad [49], AdaDelta [50], RMSProp [51], and Adam [52] are commonly employed. While
+there is no guarantee for the ﬁrst-order methods to converge to the optimal solution in general, they will converge to the
+global optimum solution when the objective function is convex or strongly convex [53, 54].
+Handling missing data The learning frameworks need to also handle the missing data problem separately. As missing
+data is a common real-world problem, there is a rich line of literature dealing with it. The classical methods such
+as mean imputation [55], expectation maximization [56–58], least squares [59, 60], K-nearest neighbors [61], and
+regression tree [62], are commonly employed. Recently, an optimization-based approach [63] has also been considered.
+Empirical investigation into microﬁnance. Extensive efforts have also been devoted to understanding the economics
+of microﬁnance and its sustainability [2, 64–68]. The loan default probability has been determined as one key challenge
+for microﬁnance’s sustainability. Thus, numerous studies have been carried out to identify the contributing factors
+to microﬁnance default behaviors [3, 69–72]. Some features, such as the borrower’s gender, education level, family
+size, residential distance to the institution, lending method, activities ﬁnanced by the loan, total loan received, and loan
+monitoring method, among others, have been observed to affect the repayment performance signiﬁcantly [73–76].
+Group lending in microﬁnance. The studies have also identiﬁed that group lending is an essential cornerstone of
+microﬁnance. Here, loans are made to small groups or cooperatives that made the members share the liability jointly [77–
+79]. This joint-liability model uses social, rather than material, collateral, leveraging peer pressure and community
+information to overcome asymmetric information in microﬁnance, leading to better repayment behavior [80]. In this
+model, when one group member defaults, other members jointly bear the cost. Since members of the group are supposed
+to know each other, this liability structure will help to overcome the information asymmetrical, inherent in lending to
+poor borrowers, making group-based lending efﬁcient and effective with low transaction costs for the provider [81, 82].
+A study carried out in Pakistan concluded that with group lending, borrowers are about 60% times as likely to miss
+a payment in any given month under joint liability relative to individual liability [80]. In Africa, there has been also
+an increasing interest to gear group lending toward traditional group savings structures such as "tontines" in Senegal,
+"esusu" in Nigeria, "ekub" in Sudan, Eritrea, and Cameroon, or "jangi" in Cameroon [83]. In these Rotating Savings and
+Credit Associations (ROSCAs), members meet regularly and pay a predetermined sum of money at each meeting [84].
+The sum of the payments is then given to a group member (usually the host of the meeting), determined via a lottery
+3
+
+=== page 4 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+in the previous meeting, to pay out the loan of this member [85]. Among these ROSCAs, the women’s association,
+despite its informal nature, has been one of the most resilient communities where they have survived in many areas
+where formal microﬁnancing communities have failed. Because of that, microﬁnancing through women’s associations
+has recently attracted a lot of interest [86–88].
+2 Problem Statement
+In this section, we introduce a novel microﬁnance model and deﬁne the design objectives of the microﬁnance decision
+policy.
+2.1 Notation
+We use capital letters for random variables, e.g., A, and lowercase letters for their speciﬁc realization, e.g., a. A square
+bracket is used to represent the entries of a vector, e.g., s = [s[1],s[2],··· ,s[n]]⊺, and a regular bracket is used for
+the input of a function, e.g., f(x). We use P(E) to denote the probability of an event E or the density function of a
+random variable E. Lastly, we use Z, Z+, R, R+ to denote the sets of integers, non-negative integers, real numbers,
+and non-negative real numbers.
+2.2 Microﬁnance model
+A microﬁnance application can be modeled by application properties, an MFI’s decision, and outcomes. The MFI
+receives applications from individuals or groups of applicants. An application is parameterized by the group size M
+(M = 1 for individual applicants), intrinsic features that govern default probability S ∈S, and the MFI’s accessible
+information ˆS ∈ ˆS. We consider the setting that MFI receives applications and makes decisions at each lending period,
+indexed by t∈{1, 2,··· ,T}, and continuously learns more optimal policies over the time horizon T as follows. At the
+beginning of each lending period t, the MFI receives Nt ﬁnancing applications, indexed by i∈Nt = {1, 2,··· ,Nt}.
+Application i has group size mi,t
+i.i.d
+∼ P(M = mi,t), unobserved underlying features si,t
+i.i.d
+∼ P(S), and accessible
+information ˆsi,t ∼ P( ˆS | S = si,t). When some information in S is unavailable, it corresponds to the empty value
+∅ entries in ˆS. The set of the available information in ˆS is denoted by U( ˆS) = {j : ˆS[j] ⁄= ∅}. The MFI’s lending
+decision is denoted by a random variable A:
+A =
+{1 for approval,
+0 for rejection. (1)
+The MFI’s approval/reject probability, P(A| ˆS,M), for a certain application is based on the lending policy πZ, i.e.,
+P(A| ˆS,M) = πZ( ˆS,M,A). (2)
+Here, πZ is controlled by policy parameter Z, deﬁned later in (16).
+As the amount of loans given out by MFIs is normally small for each individual, we assume the amount of loan and
+its interest rate are identical among members within the group and, without loss of generality, are set as 1 and r,
+respectively. Thus, an approved application of group size M receives a loan of size M and must return the principal
+and interest of M· (r + 1) at the end of the lending period, where the loan liability is imposed on the whole group. The
+outcome of the loan (the ability of the applicant to return) is given by
+B =
+{1 for return,
+0 for default. (3)
+We assume S is independently drawn from some underlying population feature distribution P(S); ˆS is determined based
+on how features are reﬂected in the accessible information P( ˆS |S); and the outcome of the application is governed by
+P(B |S,M) = P(B |S, ˆS,M), which does not depend on ˆS given S and M.
+2.3 Microﬁnance decision criteria
+The MFI uses policy πzt to decide on MFI’s action ai,t ∼ P(A | ˆS = ˆsi,t, M = mi,t) = πzt(ˆsi,t,mi,t,ai,t). At
+the end of the lending period, the MFI observes the loan outcome bi,t
+i.i.d
+∼ P(B | S = si,t, M = mi,t) and learns
+(updates) the policy parameter to zt+1, which is to be used in the next lending period. Here, zt represents the learned
+4
+
+=== page 5 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+policy parameter at time t and is updated to minimize the objectives speciﬁed by MFIs. Microﬁnance has multifaceted
+(non-mutually exclusive) objectives such as ﬁnancial inclusion, fairness, social and economic impact, and sustainability.
+These objectives are captured by a utility function R({ˆsi,t,mi,t,ai,t,bi,t}i∈Nt) of all applications i∈Nt.
+We deﬁned V (zt) as the expected utility of the lending period t with policy πzt and control parameter zt, i.e.,
+V (zt) = E(R({ˆsi,t,mi,t,ai,t,bi,t}i∈Nt)). (4)
+We then consider two types of utility rewards: decomposable and non-decomposable.
+2.3.1 Case 1: Decomposable rewards
+Here, we do not consider any external effects of decisions. Therefore, the total reward at time t can be decomposed as
+the sum of individual rewards, i.e.,
+R ({si,t,mi,t,ai,t,bi,t}i∈Nt) = 1 Nt Nt∑ i=1 R (si,t,mi,t,ai,t,bi,t) , (5)
+for some function R. For example, we considered the utility function for each application, R(ˆs,m,a,b), in the following
+form,
+R(ˆs,m,a,b) =
+
+
+
+m(r + e); a = 1,b = 1,
+m(−1 + e); a = 1,b = 0,
+0; a = 0.
+(6)
+Here, e∈ R+ is the ﬁnancial inclusion factor to motivate the MFI toward approving more applications4.
+2.3.2 Case 2: Non-decomposable rewards
+Here, we consider the external effects of MFI’s decision. Thus, the total reward cannot be decomposed as the sum of
+individual rewards, but R({ˆsi,t,mi,t,ai,t,bi,t}i∈Nt) will be a function of R(ˆs,m,a,b) and other objectives. This is
+particularly useful when we design reward functions that account for the social impact on individual decisions such as
+fairness among different demographics.
+Accounting for fairness. Microﬁnance decisions should be fair and avoid discrimination against certain populations or
+regions. Besides the explicit discrimination feature that we could remove directly, we also consider the following two
+types of implicit fairness.
+Type 1 (Outcome fairness): Type 1 fairness actively sets a target approval rate Π∗(ξ) for the desired approval rate for
+applications with attribute ξ. For example, the loan approval policy of an MFI has a target of at least Π∗ approval rate
+for female applicants as a criterion for gender equality ([89]). For type 1 fairness, we want to have
+P (ai,t = 1 |i∈Nt,ξ) ≥ Π∗(ξ),∀ξ∈ Ξ, (7)
+where Ξ = {ξ,ξ′,···} is the set of attributes for which we have a target approval rate and Nt,ξ = {i ∈ N : i ∈
+Nt, ˆSξ ∈ ˆS} is the set of applications with attribute ξ at time t. To achieve type 1 fairness, we can design the reward
+function as
+R ({si,t,mi,t,ai,t,bi,t}i∈Nt) = other objectives −F1 ·
+∑
+ξ∈Ξ
+(Π∗(ξ) −ρξ,t)+ , (8)
+where F1 ∈ R+ is a weighing factor that reﬂects the relative importance placed upon type 1 fairness, and ρξ,t is the
+current approval rate for applications with ξ, i.e.,
+ρξ,t = 1 |Nt,ξ| ∑ i∈Nt,ξ ai,t. (9)
+We use the notion (x)+ to be max(0,x).
+Type 2 (Statistical parity): Type 2 fairness enforces fairness among applications with different attributes, for example,
+male and female. If we would like to have type 2 fairness among applications with attributes ξ and ξ′, then we should
+have
+P (ai = 1 |i∈Gξ) ≈ P (ai = 1 |i∈Gξ′ ) . (10)
+4MFIs often receive subsidies from international development agencies and governments to help offset high risks of lending
+without collateral.
+5
+
+=== page 6 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+To enforce type 2 fairness, we can adjust our reward as,
+R ({si,t,mi,t,ai,t,bi,t}i∈Nt) = other objectives −F2 ·‖ρξ,t −ρξ′ ,t‖, (11)
+where a larger value of F2 indicates more emphasis is put on type 2 fairness.
+2.4 Policy learning objectives
+The MFIs update the policy parameter zt to converge to the optimal parameters,
+z∗ = arg max
+z
+V (z), (12)
+and the cumulative utility converges to the optimal policy fast with low policy exploration cost, quantiﬁed by
+V (z∗) − E
+[
+1
+T
+T∑
+t=1
+V (zt)
+]
+. (13)
+The expectation in V (z) is taken over the probability measure involving group liability and missing information. Thus,
+by construction, the optimization of (12) and (13) also accounts for the above-mentioned challenges. Additionally, we
+take interpretability into the design consideration by imposing structures in policy πz so that the parameter z informs
+how much each entry of available information ˆS and the group size M have contributed toward approvals or denials.
+3 Methodology
+3.1 Proposed algorithm
+Here, we will introduce novel learning techniques that can produce optimal and fair microﬁnance decisions when
+credit-scoring systems cannot function properly due to the scarcity of prior loan data and the uncertainty of missing
+data. We propose a lending policy πz and consider the decision policy in the form
+πz(ˆs,m,a) = L(q). (14)
+L(q) can be any continuously-differentiable monotonically-increasing function of q that map the domain of q to (0, 1).
+For example, we consider the following choice of L(q):
+L(q) = 2 exp(q) 1 + exp(q) − 1. (15)
+Here, L(q) can be thought of as the activation function of the neural networks. However, the traditional approaches to
+directly employing the neural networks for lending decisions can aggregate the biases toward the initial choice of the
+approved applicants because populations who never get loan approval are not contained in the data used to learn the
+decision policy. Unlike the traditional approach, under our proposed policy, people who are less likely to get approved
+have a non-zero probability of approval to ensure diversity in the training data.
+Here, πz is parameterized by
+z = [φ⊺,ϵ⊺,γ⊺]⊺ ∈Z⊂ R2n+|Ξ|, (16)
+where n is the number of features. Intuitively, φ∈Rn gives weight to the relative importance of each feature to the
+decision, ϵ∈Rn accounts for missing information, and γ ∈R|Ξ| handles the fairness considerations. We update the
+policy parameter zt according to:
+ˆzt+1 = zt + αtFzt, (17)
+zt+1 = proj
+Z
+(ˆzt+1). (18)
+Readers familiar with learning theory would anticipate that Fzt is the gradient of the objective. This is indeed the case
+as shown in Lemmas 3.3 and 3.4. In the following, we give the explicit form of Fzt that is dependent on the rewards,
+while the algorithm and theoretical analysis can be found in Section 3.2.
+For the decomposable rewards, we consider
+q = 1 n ∑ j∈U(ˆs) φ[j]ˆs[j] + ϵ[j]. (19)
+6
+
+=== page 7 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+In this case, z = [φ⊺,ϵ⊺,γ⊺] = [φ⊺,ϵ⊺] as γξ = 0,∀ξ and Fzt = [ Fzt[1],Fzt[2],···Fzt[2n] ]⊺ is given by
+Fzt[k] = 1 Nt Nt∑ i=1 wi,t[k] ( R(ˆsi,t,mi,t,ai,t,bi,t) − ¯Rt ) , (20)
+wi,t[k] = 1 πzt(ˆsi,t,mi,t,ai,t) ∂πz(ˆsi,t,mi,t,ai,t) ∂z[k] , (21)
+¯Rt = 1 t− 1 t−1∑ τ=1 1 Nτ Nτ∑ i=1 R(ˆsi,τ,mi,τ,ai,τ,bi,τ). (22)
+Here, ∂πzt(ˆsi,t,mi,t,ai,t) ∂z[k] = g(ˆs,k)dL(q) dq is the partial derivative of πz(ˆsi,t,mi,t,ai,t) with respect to the k-th entry
+of z evaluated at zt, where g is deﬁned to be
+g(ˆs,k) =
+
+
+
+ˆs[k]; k≤n,k∈U(ˆs),
+1; k≥n + 1,k∈U(ˆs),
+0; otherwise.
+(23)
+For the non-decomposable rewards, we consider
+q = 1 n ∑ j∈U(ˆs) φ[j]ˆs[j] + ϵ[j] + ∑ ξ γξ 1 {ˆs∈ ˆSξ}, (24)
+where 1 {ˆs ∈ ˆSξ} is an fairness indicator function of (ˆs ∈ ˆSξ). ˆSξ refers to feature values that may introduce
+discrimination in microﬁnance lending decisions, such as gender, race, ethnicity, etc. In this case, z = [φ⊺,ϵ⊺,γ⊺]⊺,
+γ = [γ1,γ2,γ3,··· ]⊺, and Fzt = [ Fzt[1],Fzt[2],···Fzt[2n],··· ,Fzt[2n + |Ξ|] ]⊺ , where Fzt is given by
+Fzt[k] =
+(
+R({si,t,mi,t,ai,t,bi,t}i∈Nt) − ¯Rt ) wt[k], (25)
+wt[k] =
+Nt∑
+i=1
+wi,t[k], (26)
+wi,t[k] = 1 πzt(ˆsi,t,mi,t,ai,t) ∂πz(ˆsi,t,mi,t,ai,t) ∂z[k] , (27)
+¯Rt = 1 t− 1
+t−1∑
+τ=1
+R({si,t,mi,t,ai,t,bi,t}i∈Nt). (28)
+Here, ∂πzt(ˆsi,t,mi,t,ai,t) ∂z[k] = g(ˆs,k)dL(q) dq with g is deﬁned to be
+g(ˆs,k) =
+
+
+
+ˆs[k]; k≤n,k∈U(ˆs),
+1; n + 1 ≤k≤ 2n,k∈U(ˆs),
+γk−2n; 2n + 1 ≤k≤ 2n + |Ξ|,
+0; otherwise.
+(29)
+In both cases, the value of R(ˆsi,t,mi,t,ai,t,bi,t)− ¯Rt and the update size of zt will become small when ¯Rt is sufﬁciently
+close to the sample average. The above procedures are summarized in Algorithm 1. The value of αt > 0 is the step size
+to update the parameters at lending period t. The choice of αt is crucial for the convergence and learning speed of the
+algorithm and is studied theoretically in Corollary 3.2 and empirically in Section 4.2.3. To make sure that the updated
+parameters stay in the allowable domain Z, step (18) projects ˆzt+1 onto domain Z.
+Our proposed algorithm has the following features:
+(i) Financial inclusion and exploration. The stochastic policy provides approval probability P(A| ˆS) rather than a
+speciﬁc lending decision (approve or reject), which ensures sufﬁcient diversity in samples.
+(ii) Account for missing data. The model contains parameter ϵ[j] to differentiate zero-value data and empty data.
+7
+
+=== page 8 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+Algorithm 1 Policy Update
+Initialized z1
+for each lending period t do
+for each application i do
+Generate the decision of application i with:
+ai,t =
+{1; with probability πzt(ˆsi,t, 1),
+0; with probability πzt(ˆsi,t, 0).
+Observe outcome bi,t ∈{0, 1}.
+Gain utility R(ˆsi,t,ai,t,bi,t).
+end for
+Compute Fzt from (20) when choosing general case, or (25) when choosing fairness case.
+Update zt+1 based on (17) and (18).
+end for
+(iii) Fairness consideration for heterogeneous features. We consider three types of fairness: independence, outcome
+fairness, and statistical parity which may introduce discrimination against applicants of certain types. Our
+decision framework explicitly models fairness types 2 and 3 by using the parameter γ. We also consider their
+solutions for the fair allocation of resources for different groups of applicants.
+(iv) Each piece of accessible information contributes to the policy. Each feature will either positively or negatively
+contribute to the probability of approval.
+(v) Convergence under mild assumptions. Speciﬁcally, we will show that the average utility approaches the
+optimum in the long run (see Theorem 3.1 and Corollary 3.2).
+(vi) Parameters learned directly from the algorithm.
+3.2 Optimality and convergence analysis
+This section provides conditions that ensure the proposed algorithm converges to optimal parameters (Theorem 3.1).
+Along the way, we explain the ideas behind the updating rules (17) in Lemma 3.3. we also ﬁnd an appropriate choice
+for the step size αt in Corollary 3.2, based on the results of Theorem 3.1.
+Convergence condition. Algorithm 1 converges to the optimal parameters when the following conditions are fulﬁlled:
+(i) L(q) is concave over the domain of z.
+(ii) The set of admissible policy parameters Z satisﬁes
+E
+[
+‖zt1 −zt2 ‖2] ≤D2, ∀zt1 ,zt2 ∈Z. (30)
+(iii) The second moment of the stochastic gradient is bounded,
+E
+[
+‖Fzt‖2 |zt ] ≤G2. (31)
+The convergence conditions are formally stated in the theorem below.
+Theorem 3.1. Assuming conditions (i), (ii), and (iii) hold, let C(T ) be deﬁned by
+C(T ) =
+T∑
+t=1
+αt, (32)
+and z∗ = (φ∗,ϵ∗,γ∗) be deﬁned in (12). Then, Algorithm 1 gives the following performance:
+E
+[ T∑
+t=1
+(
+V (z∗) −V (zt) )
+]
+≤ 1 2 ( 1 αT D2 + G2C(T ) ) . (33)
+Theorem 3.1 gives the following relation between step size and convergence speed.
+Corollary 3.2. When step size is chosen to be αt = D G √ t , we have
+E
+[
+1
+T
+T∑
+t=1
+(V (z∗) −V (zt))
+]
+≤ 3DG
+2
+√
+T
+. (34)
+8
+
+=== page 9 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+Theorem 3.1 relies on the property that
+E [Fzt |zt] = ∇zV (zt). (35)
+Lemma 3.3. When the total reward can be decomposed as the sum of rewards from individual applicants as in (5), the
+updating rules (17) and (18) given (20) - (23) satisfy (35).
+Lemma 3.4. When the total reward cannot be decomposed as the sum of rewards from individual applicants, the
+updating rules (17) and (18) given (25) - (29) will also satisfy (35).
+Here, from an online learning perspective, one can interpret that the algorithm performs a form of stochastic gradient on
+reward function V in the presence of missing information where, from a control perspective, V (z) can be interpreted as
+a Lyapunov function. From Theorem 3.1, optimization problem (12) converges to the optimal parameters as T →∞
+for the concave utility function. When the utility function of interest is not concave, further care might be needed. The
+Proposition 3.5 gives conditions under which the utility function is concave.
+Proposition 3.5. If the approval probability L(q) is a concave function of q, then the objective function V (z) is concave
+in z.
+The decision rule (15) in Section 2 is an example of concave function in q over the positive domain. Proposition 3.5 and
+condition (i) imply the expected rewards derived from concave decision rules such as (15) are also concave. The proofs
+of the above theorem, corollary, lemma, and proposition are derived in Appendix A.
+4 Experimental Settings
+We considered the utility function (5) and set r = 0.35 [90]. The simulations were performed on a computer with an
+Intel Core i7-10875H processor with 32 GB of Random Access Memory (RAM).
+4.1 Generating application data pools
+To investigate the empirical behaviors of the proposed methods, we generated synthetic and artiﬁcial data pools from
+more than 30 different distributions where each data pool contains 106 data samples. The data generation process is
+described below:
+4.1.1 Realistic synthetic dataset from Kiva dataset
+We augmented a real microﬁnance loan dataset based on applicants’ features and information from the Kiva plat-
+form [91]5. The Kiva dataset contains the features and returns/default information of N = 3, 182 approved loan
+applications in 2011. There are 41 features in the raw Kiva dataset, and we considered the features that do
+not conﬂict with our assumptions (see Table 1 for the description of the features and our decision). To be spe-
+ciﬁc, we used the following labels: "id", "description.languages", "activity", "sector", "location.country_code",
+"location.country", "location.town", "location.geo.level", "partner_id", "borrowers.gender", "borrowers.pictured",
+"terms.disbursal_currency", "terms.loss_liability.nonpayment", "terms.loss_liability.currency_exchange", "posted_date",
+"funded_date", "video.youtube_id", "lat", and "lon". We used the "posted_date" and "funded_date" information to
+obtain the duration until the loan is funded from the date when the application is posted on the platform. After ﬁltering
+the features, we ﬁrst converted all the descriptive features into numerical values based on the default rate of applications.
+To ease the optimization process, we map the numerical values with a maximum possible value above 4 to the [0, 4]
+range, utilizing the following process,
+sscaled[k] = 4 ·skiva[k] max(skiva[k]), (36)
+after shifting features with negative values up, such that the lowest values equal to zero. Here, max(s[k]) refers to
+the maximum value of the k feature. We then employed the Synthetic Data Vault (SDV) algorithm [92], available at
+https://sdv.dev/, to generate synthetic data from the Kiva dataset.
+We augmented the pre-processed data by creating a model using TabularPreset() function from the sdv.lite
+library. We chose to use the available FAST_ML preset to ﬁt the data. Then, we generated a pool of 106 synthetic data by
+inputting all 3, 182 applications data into the fit() function of the model from TabularPreset() and generated the
+synthetics data using the sample() function of the model. To simulate situations with various different paid rates, we
+5The original kiva dataset can be accessed through https://stat.duke.edu/datasets/kiva-loans
+9
+
+=== page 10 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+also generated pools of synthetics data with 10%, 20%, 30%, 40%, and 50% defaulted rates. Here, we ﬁrst differentiate
+the data into two categories, defaulted and paid. We then generated pools of 106 defaulted and paid datasets each
+by inputting the defaulted and paid data into the fit() function of the model, respectively. The pools of data with
+desired defaulted rate are then created by randomly drawing applications from both defaulted and paid synthetics data
+separately.
+4.1.2 Artiﬁcial distributions
+We generated artiﬁcial data pools on 30 different distribution types. We considered the feature vector S of 100-features
+information from each loan application. Each feature contains a non-negative number that represents the applicant’s
+information. Those features could go from personal information, including age range, income level, education level,
+language skill, etc., to household information such as household type, number of bedrooms, internet accessibility, etc.
+We considered 26 distribution types with bounded values of feature information in the range of [0, 4] and 4 distribution
+types with unbounded values of feature information. From the 26 bounded distributions, 8 of them have negative
+weight for the features. The speciﬁc form of the feature information distributions P (S)l and the return probability
+P(B = 1 | ˆS,M) can be seen in Tables 2 to 4.
+Each application i comes with group size m. We assume that the group size is uniformly distributed among G =
+{1, 2,··· , 100},
+P(M = m) =
+{1/|G| if m∈G
+0 otherwise. (37)
+The liability for the loan repayment is imposed on the group by obligating the members of the group to cover the other
+members who cannot return the loan and its interest, 1 + r. At the end of the lending period, each applicant j in the
+group i holds θi,j unit of money, which is the principal plus gains or loss. We assume that θi,j is an i.i.d. Gaussian
+random variable, i.e.,
+θi,j
+i.i.d.
+∼ N (µ(ˆsi),σ2). (38)
+where N (µ,σ2) refers to a Gaussian distribution with mean µ and standard deviation σ. Thus, at the end of the lending
+period, the group i holds ∑mi j=1 max{θi,j, 0} units of money in total. Here, we assumed that the members with θi,j < 0,
+who hold debts from elsewhere, do not have the capability to return any money but will not transfer the other debts to
+the group. Because group i must return mi · (1 + r), the group will default if
+mi∑
+j=1
+max(θi,j, 0) <mi · (1 + r). (39)
+Accordingly, the return probability for group application with mi members is given by
+P(B = 1 | ˆS = ˆsi,M = mi) = P
+
+
+mi∑
+j=1
+max(θi,j, 0) ≥mi · (1 + r)
+
+. (40)
+We considered the repayment probability in Tables 2 to 4, where we modeled µ(ˆs) = ∆ + P(B = 1 | ˆS = ˆs,M = m)
+and σ = 0.5 given ∆ = 0.5 + r for r = 0.35, that helped to center µ around a reasonable repaid amount.
+4.2 Simulation Setting
+We performed simulations for lending periods of t = 1 to t = 500. At each lending period, we choose Nt = 10
+applicants, taken from the pool of applicants generated using methods described in Section 4.1. Here, we have the
+observable information ˆsi,t.
+4.2.1 Algorithms to compare
+We compared our proposed algorithm against several existing algorithms. As the base ideal performance, the best
+scenario to decide on loan approval is when perfect knowledge of repayment probability is available. Here, for the
+perfect decision making, (6) can be rewritten as
+R( ˆS,M,A,B)
+=
+
+
+
+(r + e) ·m; P(B = 1 |A = 1,S,M = m),
+(−1 + e) ·m; P(B = 0 |A = 1,S,M = m),
+0; A = 0,B = 0,
+(41)
+10
+
+=== page 11 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+for P(B = 0 | A = 1,S,M) = 1 − P(B = 1 | A = 1,S,M). The expectation of the utility given the decision to
+approve a given application can then be expressed as
+E
+[
+R(ˆsi,t,mi,t,ai,t,bi,t) |ai,t = 1
+]
+= mi,t
+(
+(r + 1)P(bi,t = 1 |ai,t = 1,si,t,mi,t) + e− 1
+)
+. (42)
+The algorithm will approve an application when
+E
+[
+R(ˆsi,t,mi,t,ai,t,bi,t) |ai,t = 1
+]
+≥ 0 (43)
+=⇒ P(bi,t = 1 |ai,t = 1,si,t,mi,t) ≥ 1 −e 1 + r. (44)
+Thus, in this perfect information scenario, the decision rule can be written as
+A =
+
+
+
+1 if P(B = 1 |A = 1,S,M) ≥ 1 −e 1 + r
+0 otherwise.
+(45)
+Credit score based method. In real life scenario, we cannot access the actual value for the repayment probability
+P(B = 1 |A = 1,S). Here, the credit score based method is commonly employed to predict the repayment probability.
+In our study, we implemented credit score based method by ﬁnding the best ﬁt model for the data from the previous
+lending period to predict the repayment probability. Speciﬁcally, we ﬁt the data into the ﬁrst-order Gaussian model,
+ˆP(B = 1 |A = 1, ˆS,M) = ag exp
+(
+−
+(qg −bg
+cg
+)2)
+, (46)
+where
+qg = 1 n ∑ j∈U(ˆs) ˆs[j]. (47)
+Here, ˆP(B = 1 |A = 1, ˆS) is the predicted repayment probability parameterized by constants ag, bg, and cg. The
+constants ag, bg, and cg are obtained by minimizing the non-linear least square of the difference between the predicted
+and the actual repayment probability, i.e.,
+{ag,bg,cg}
+= arg min
+{ag,bg,cg}
+∑ ‖‖ˆP(B = 1 |A = 1, ˆS,M)
+− P(B = 1 |A = 1,S,M)
+‖‖
+2. (48)
+We can then rewrite the decision rule (45) as
+A =
+
+
+
+1 if ˆP(B = 1 |A = 1, ˆS,M) ≥ 1 −e 1 + r
+0 otherwise.
+(49)
+The procedure is executed by employing the fit() [93] function in MATLAB. For this approach, we assume that the
+true value for the repayment probability is available at the end of every lending period. The MFI approves all applicant
+during the ﬁrst lending period and then store the features data together with the actual repayment probability at the end
+of the lending period to be ﬁtted to the model for the next lending period. Then, at the end of each lending period after
+the ﬁrst, we revise the model by adding more data points using the current data. We repeat the process until the tenth
+lending period as we observed that there isn’t a signiﬁcant difference in the performance after the tenth lending period.
+Other algorithms compared. We also compared the performance of the proposed algorithm against perceptron,
+random forest, support machine vector (SVM), and logistic regression algorithms. In our study, we compared the
+proposed algorithm against a single-layer perceptron [94] as a classic learning algorithm for binary classiﬁcation
+(i.e., approve or decline applications). We employed the MATLAB [93] built-in functions for the random forest,
+SVM, and logistic regression decision making. To be speciﬁc, we utilized fitctree() function as the decision tree
+classiﬁcation, and fitclinear() function with 'svm' and 'logistic' as the 'Learner' option for the SVM and
+logistic regression implementation, respectively. We let both functions optimize its hyper-parameters automatically and
+11
+
+=== page 12 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+all other parameters utilize its default values. The decision models were trained at every loan period using the available
+feature information ˆS and the boolean return/default data collected from previous lending periods. Here, at the ﬁrst
+lending period, the MFI will approve all applicants and then store the data at the end of the lending period to be used as
+the training data for the next lending period. Then, at the end of the next lending period, we add the new data to the
+training data. To save computational costs from training the model, we perform the training only until the tenth lending
+period.
+4.2.2 Multi-optimization for improved learning speed
+We initiated the optimization scheme with 10 initial random points and kept ﬁve of the best result for the next lending
+period. To explore the landscape, we then chose additional ﬁve random points for the next iteration and performed the
+optimization iteration for these 10 points. To reduce the computational cost of the multi-optimization scheme, we only
+repeated this procedure for the ﬁrst 50 lending period and then only performed the gradient optimization for the best
+result afterward.
+4.2.3 Step size, learning speed, and convergence
+The choice of step size αt is crucial for the convergence and learning speed of the proposed algorithm. We
+studied the effect of different choices of αt in our proposed algorithm by varying the constant value of D G ∈ {0.01, 0.05, 0.1, 0.5, 1, 5, 10, 50, 100, 500, 1000, 5000, 10000, 50000} from Corollary 3.2. A small step size will con-
+verge to non-optimum results, while a large step size will produce an overshoot and hinder convergence as can be
+seen in Figure 2. Corollary 3.2 suggest decreasing the step size with speed O(1/
+√
+t) which prevents the algorithm to
+overshoot when the optimum policy has been found.
+Figure 2: Convergence rate comparison of using different step sizes. For this comparison we consider case A as the
+form of L(q) with repayment probability distribution type 5 without missing information. We run the simulation 50
+times and the shaded regions show the area within one standard deviation of the average cumulative utilities. For this
+particular case, the optimal step size is achieved when αt = 10√ t.
+5 Performance Comparison
+5.1 Robustness against missing data
+In this study, we set e = 0, and performed the simulation 50 times for each case. We simulated missing information
+by choosing a missing probability Pmissing. Here, the feature information si,t still had all information, but the
+corresponding observed entry in ˆsi,t was empty with probability Pmissing. We varied the missing probability equal to
+0, 10%, 25%, and 50%. Figure 3(a) shows the performance degradation of the algorithms to a varying level of missing
+feature information. While the performance of all algorithms decreased with the ratio of missing entries, the proposed
+algorithm degraded more gracefully than others. This is because, unlike the other algorithms, the proposed algorithm is
+designed to differentiate the empty entry so that the missing information does not affect the decision policy as much
+(see Section 2), resulting in an approach that is robust against missing information.
+5.2 Ensuring fairness among different groups
+To investigate the fairness of our algorithm, we introduced a supposedly discriminative feature to the feature vector.
+This discriminative feature had three discrete values {0, 2, 4} and did not affect the actual repayment probability. The
+12
+
+=== page 13 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+(a) robustness against missing data
+(b) fairness
+(c) default risk vs ﬁnancial inclusion
+(d) artiﬁcial data
+ (e) data from kiva.org
+ (f) adaptation
+Figure 3: (a) Average converged cumulative normalized utilities of 50 simulations are shown for varying rates of
+missing data. The utility values are normalized by the utility when the exact return/default probability is known. (b)
+Acceptance ratio statistics of the discriminative features to show fairness types 1 and 2. (c) Tradeoffs between default
+probability (risk) vs approval rate (ﬁnancial inclusion). The statistics of the steady state utility for (d) diverse applicant
+distributions and (e) dataset from kiva. (f) The average utility when the distribution changes at the 150th lending period.
+In subﬁgures (b), (d), and (e) the mean values are shown by ’×’, and the ﬁrst, second, and third quartiles, as well as
+the maximum and minimum values, are shown as the boxplot. Except for subﬁgure (a) and the result from the kiva
+dataset, the results were generated for 10% of missing information. 20% missing information was considered for the
+Kiva dataset. Except for (c), we set e = 0. We consider group liability for all the subﬁgures.
+algorithm then ran for some target ratio of the discriminative feature with a value of 0 to investigate the outcome fairness
+(type 1). To investigate statistical parity (type 2) fairness, we considered the discriminative feature with values 0 and 4.
+Figure 3(b) shows the box plot for the acceptance rate for the minority group over the course of the simulation. For type
+1 fairness, we can see that by setting the target ratio Π(ξ) = 0.4, the mean of the acceptance rate is above 0.4. For type
+2 fairness, the acceptance rate gap for both groups stays relatively small throughout.
+5.3 Improved tradeoffs between default risk vs. ﬁnancial inclusion
+There is a tradeoff between default risk vs. ﬁnancial inclusion because a higher approval rate comes at the expense of
+higher default risk. To investigate this property, we varied the loan subsidy level e from 0 to 1 with a 0.05 interval. We
+then recorded the ﬁnal approval and default rates of each value of e. Figure 3(c) shows such tradeoffs for the algorithms
+tested. The proposed algorithm allows us to systematically tradeoff default risk and ﬁnancial inclusion by varying the
+loan subsidy level e. The perceptron, random forest, SVM, and logistic regression algorithms do not have the ﬂexibility
+to do so because they cannot be optimized for a utility function. The credit score based method is not visible in the
+13
+
+=== page 14 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+current plot range due to large performance degradation in the presence of missing data (10% missing information).
+The proposed algorithm achieves a reduced default rate for an identical approval rate.
+5.4 Ability to deal with diverse microﬁnance distributions
+We examined the performance of the compared algorithms using the dataset generated from 30 different distributions
+and the Kiva dataset as mentioned previously. We ran the simulation 50 times and took the average of the converged
+utility values V (z∗) of each distribution type. We then normalized the utilities as follows,
+{˜V(z∗)} = 2
+({V(z∗)}− min{V(z∗)}
+Vperfect
+)
+− 1, (50)
+where Vperfect is the utility when perfect knowledge of repayment probability is available, {V(z∗)} is a set of
+converged utilities of all compared algorithms, and {˜V(z∗)} is a set of normalized converged utilities of all compared
+algorithms. Here, we considered the cases with 10% and 20% missing information on the artiﬁcial and synthetic
+datasets, respectively. Figures 3(d) and 3(e) capture the statistic of the normalized steady-state utilities. On average, our
+algorithm converges to a higher utility than the other algorithms, suggesting that our algorithm can learn a more optimal
+policy even with incomplete information, achieving our ﬁrst design goal. This result also shows that the proposed
+approach can better seize and learn the inﬂuence caused by different group sizes.
+5.5 Adaptation to changes
+We studied the adaptability of the proposed algorithm to the dynamics in social and economic conditions by changing
+the distribution of the dataset in the middle of the simulation. To highlight the behavior of the algorithms in adapting to
+the changes, we chose the distributions that would have similar repayment probability distributions but need to have
+opposite feature weights. We retrained the credit score based method, random forest, SVM, and logistic regression
+algorithms at the end of each lending period. Figure 3(f) shows the performance when application distribution changes
+at the 150th lending period, without the knowledge of if and when the distribution has changed. As can be seen, the
+proposed algorithm recovers faster than the other algorithms as it uses immediate feedback from the latest samples to
+perform quick adaptation. In contrast, the other algorithms, which are primarily designed for ofﬂine use, end up putting
+the same emphasis on data that contains the samples from both before and after the changes.
+6 Conclusion
+In this work, we presented a novel control-theoretic model for microﬁnance lending strategy. The model solves three
+main challenges in microﬁnance: a) the insufﬁcient past data problem, b) the missing applicants’ information problem,
+and c) the group liability structure. Extensive empirical results from numerous artiﬁcial and synthetic datasets showed
+several notable performances upon benchmark models, such as robustness against missing data, adaption to changes,
+and default risk vs. ﬁnancial inclusion tradeoff. In addition, we proposed several penalty methods for different fairness
+scenarios to avoid discrimination in decisions. We hope our model will be useful for achieving the United Nation’s
+Sustainable Development Goals and could help more people in underdeveloped regions to have better life.
+References
+[1] M. Yunus, Banker to the poor: Micro-lending and the battle against world poverty. PublicAffairs, 2007.
+[2] B. Armendáriz and J. Morduch, The Economics of Microﬁnance. No. 0262014106 in MIT Press Books, The MIT
+Press, 2nd ed., December 2010.
+[3] R. M. Kamanza, “Causes of default on micro - credit among women micro - entrepreneurs in kenya. a case
+study of women enterprise development fund (wedf) msambweni constituency,” IOSR Journal of Economics and
+Finance, vol. 3, pp. 32–47, 2014.
+[4] M. Schreiner, “Seven aspects of loan size,” Journal of Microﬁnance/ESR Review, vol. 3, no. 2, p. 3, 2001.
+[5] R. Mersland and R. Ø. Strøm, “Microﬁnance mission drift?,” World development, vol. 38, no. 1, pp. 28–36, 2010.
+[6] N. Nawai and M. N. M. Shariff, “Factors affecting repayment performance in microﬁnance programs in malaysia,”
+Procedia-Social and Behavioral Sciences, vol. 62, pp. 806–811, 2012.
+[7] A. Addae-Korankye, “Causes and control of loan default/delinquency in microﬁnance institutions in ghana,”
+American International Journal of Contemporary Research, vol. 4, no. 12, pp. 36–45, 2014.
+14
+
+=== page 15 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+[8] M. Ala’raj and M. F. Abbod, “Classiﬁers consensus system approach for credit scoring,” Knowledge-Based
+Systems, vol. 104, pp. 89–105, 2016.
+[9] B. Shi, X. Zhao, B. Wu, and Y. Dong, “Credit rating and microﬁnance lending decisions based on loss given
+default (lgd),” Finance Research Letters, vol. 30, pp. 124–129, 2019.
+[10] A. Ampountolas, T. Nyarko Nde, P. Date, and C. Constantinescu, “A machine learning approach for micro-credit
+scoring,” Risks, vol. 9, no. 3, 2021.
+[11] M. Lehner, “Group lending versus individual lending in microﬁnance,” tech. rep., SFB/TR 15 Discussion Paper,
+2009.
+[12] O. Kodongo and L. G. Kendi, “Individual lending versus group lending: An evaluation with kenya’s microﬁnance
+data,” Review of Development Finance, vol. 3, no. 2, pp. 99–108, 2013.
+[13] A. Haldar and J. E. Stiglitz, “Group lending, joint liability, and social capital: Insights from the indian microﬁnance
+crisis,” Politics & Society, vol. 44, no. 4, pp. 459–497, 2016.
+[14] M. A. Nandhi, “Incidence of loan default in group lending programme,” CMFWorking Paper, 2012.
+[15] T. Allen, “Optimal (partial) group liability in microﬁnance lending,” Journal of Development Economics, vol. 121,
+pp. 201–216, 2016.
+[16] I. Zliobaite, “A survey on measuring indirect discrimination in machine learning,” arXiv preprint arXiv:1511.00148,
+2015.
+[17] S. Corbett-Davies and S. Goel, “The measure and mismeasure of fairness: A critical review of fair machine
+learning,” arXiv preprint arXiv:1808.00023, 2018.
+[18] J. Ledgerwood, J. Earne, and C. Nelson, The new microﬁnance handbook: A ﬁnancial market system perspective.
+World Bank Publications, 2013.
+[19] J. Yimga, “The impact of high microﬁnance growth on loan portfolio,” Journal of International Development,
+vol. 28, no. 5, pp. 697–714, 2016.
+[20] X. Huo and F. Fu, “Risk-aware multi-armed bandit problem with application to portfolio selection,” Royal Society
+open science, vol. 4, no. 11, p. 171377, 2017.
+[21] S. Chikalipah, “Credit risk in microﬁnance industry: Evidence from sub-saharan africa,” Review of Development
+Finance, vol. 8, no. 1, pp. 38–48, 2018.
+[22] “The 17 Goals | Sustainable Development,” 2015.
+[23] L. G. Klaff, “New internal hiring systems reduce cost and boost morale,” Workforce, 2004.
+[24] L. Puro, J. E. Teich, H. Wallenius, and J. Wallenius, “Borrower decision aid for people-to-people lending,”
+Decision Support Systems, vol. 49, no. 1, pp. 52–60, 2010.
+[25] B. Baesens, T. Van Gestel, S. Viaene, M. Stepanova, J. Suykens, and J. Vanthienen, “Benchmarking state-of-the-art
+classiﬁcation algorithms for credit scoring,” Journal of the operational research society, vol. 54, no. 6, pp. 627–635,
+2003.
+[26] A. Vaidya, “Predictive and probabilistic approach using logistic regression: application to prediction of loan
+approval,” in 2017 8th International Conference on Computing, Communication and Networking Technologies
+(ICCCNT), pp. 1–6, IEEE, 2017.
+[27] H. Abdou, J. Pointon, and A. El-Masry, “Neural nets versus conventional techniques in credit scoring in egyptian
+banking,” Expert Systems with Applications, vol. 35, no. 3, pp. 1275–1292, 2008.
+[28] Y.-Q. Chen, J. Zhang, and W. W. Ng, “Loan default prediction using diversiﬁed sensitivity undersampling,” in
+2018 International Conference on Machine Learning and Cybernetics (ICMLC), vol. 1, pp. 240–245, IEEE, 2018.
+[29] H. I. Condori-Alejo, M. R. Aceituno-Rojo, and G. S. Alzamora, “Rural micro credit assessment using machine
+learning in a peruvian microﬁnance institution,” Procedia Computer Science, vol. 187, pp. 408–413, 2021.
+[30] Z. Zhao, S. Xu, B. H. Kang, M. M. J. Kabir, Y. Liu, and R. Wasinger, “Investigation and improvement of
+multi-layer perceptron neural networks for credit scoring,” Expert Systems with Applications, vol. 42, no. 7,
+pp. 3508–3516, 2015.
+[31] A. Correa, A. Gonzalez, and C. Ladino, “Genetic algorithm optimization for selecting the best architecture of a
+multi-layer perceptron neural network: a credit scoring case,” in SAS Global Forum, Citeseer, 2011.
+[32] G. Wang, J. Ma, L. Huang, and K. Xu, “Two credit scoring models based on dual strategy ensemble trees,”
+Knowledge-Based Systems, vol. 26, pp. 61–68, 2012.
+15
+
+=== page 16 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+[33] H. Van Sang, N. H. Nam, and N. D. Nhan, “A novel credit scoring prediction model based on feature selection
+approach and parallel random forest,” Indian Journal of Science and Technology, vol. 9, no. 20, pp. 1–6, 2016.
+[34] C.-L. Huang, M.-C. Chen, and C.-J. Wang, “Credit scoring with a data mining approach based on support vector
+machines,” Expert systems with applications, vol. 33, no. 4, pp. 847–856, 2007.
+[35] F.-L. Chen and F.-C. Li, “Combination of feature selection approaches with svm in credit scoring,” Expert systems
+with applications, vol. 37, no. 7, pp. 4902–4909, 2010.
+[36] C. Bolton et al., Logistic regression and its application in credit scoring. PhD thesis, University of Pretoria, 2010.
+[37] S. Y. Sohn, D. H. Kim, and J. H. Yoon, “Technology credit scoring model with fuzzy logistic regression,” Applied
+Soft Computing, vol. 43, pp. 150–158, 2016.
+[38] A. D’Amour, H. Srinivasan, J. Atwood, P. Baljekar, D. Sculley, and Y. Halpern, “Fairness is not static: deeper
+understanding of long term fairness via simulation studies,” in Proceedings of the 2020 Conference on Fairness,
+Accountability, and Transparency, pp. 525–534, 2020.
+[39] S. Agarwal, “Trade-offs between fairness and interpretability in machine learning,” in IJCAI 2021 Workshop on AI
+for Social Good, 2021.
+[40] N. Bantilan, “Themis-ml: A fairness-aware machine learning interface for end-to-end discrimination discovery
+and mitigation,” Journal of Technology in Human Services, vol. 36, no. 1, pp. 15–30, 2018.
+[41] J. Burrell, “How the machine ‘thinks’: Understanding opacity in machine learning algorithms,” Big data & society,
+vol. 3, no. 1, p. 2053951715622512, 2016.
+[42] P. Hall, B. Cox, S. Dickerson, A. Ravi Kannan, R. Kulkarni, and N. Schmidt, “A united states fair lending
+perspective on machine learning,” Frontiers in Artiﬁcial Intelligence, vol. 4, p. 695301, 2021.
+[43] J. Chen, N. Kallus, X. Mao, G. Svacha, and M. Udell, “Fairness under unawareness: Assessing disparity when
+protected class is unobserved,” in Proceedings of the conference on fairness, accountability, and transparency,
+pp. 339–348, 2019.
+[44] E. Barbierato, M. L. D. Vedova, D. Tessera, D. Toti, and N. Vanoli, “A methodology for controlling bias and
+fairness in synthetic data generation,” Applied Sciences, vol. 12, no. 9, p. 4619, 2022.
+[45] R. Zemel, Y. Wu, K. Swersky, T. Pitassi, and C. Dwork, “Learning fair representations,” in International conference
+on machine learning, pp. 325–333, PMLR, 2013.
+[46] E. L. Lee, J.-K. Lou, W.-M. Chen, Y.-C. Chen, S.-D. Lin, Y.-S. Chiang, and K.-T. Chen, “Fairness-aware loan
+recommendation for microﬁnance services,” in Proceedings of the 2014 international conference on social
+computing, pp. 1–4, 2014.
+[47] M. P. Kim, A. Ghorbani, and J. Zou, “Multiaccuracy: Black-box post-processing for fairness in classiﬁcation,” in
+Proceedings of the 2019 AAAI/ACM Conference on AI, Ethics, and Society, pp. 247–254, 2019.
+[48] H. Robbins and S. Monro, “A stochastic approximation method,” The annals of mathematical statistics, pp. 400–
+407, 1951.
+[49] J. Duchi, E. Hazan, and Y. Singer, “Adaptive subgradient methods for online learning and stochastic optimization.,”
+Journal of machine learning research, vol. 12, no. 7, 2011.
+[50] M. D. Zeiler, “Adadelta: an adaptive learning rate method,” arXiv preprint arXiv:1212.5701, 2012.
+[51] M. C. Mukkamala and M. Hein, “Variants of rmsprop and adagrad with logarithmic regret bounds,” in International
+Conference on Machine Learning, pp. 2545–2553, PMLR, 2017.
+[52] D. P. Kingma and J. Ba, “Adam: A method for stochastic optimization,” arXiv preprint arXiv:1412.6980, 2014.
+[53] M. Zinkevich, “Online convex programming and generalized inﬁnitesimal gradient ascent,” in Proceedings of the
+20th international conference on machine learning (icml-03), pp. 928–936, 2003.
+[54] E. Hazan, A. Agarwal, and S. Kale, “Logarithmic regret algorithms for online convex optimization,” Machine
+Learning, vol. 69, no. 2-3, pp. 169–192, 2007.
+[55] R. J. Little and D. B. Rubin, “Statistical analysis with missing data. john wiley & sons,” New York, 2002.
+[56] A. P. Dempster, N. M. Laird, and D. B. Rubin, “Maximum likelihood from incomplete data via the em algorithm,”
+Journal of the Royal Statistical Society: Series B (Methodological), vol. 39, no. 1, pp. 1–22, 1977.
+[57] Z. Ghahramani and M. Jordan, “Supervised learning from incomplete data via an em approach,” Advances in
+neural information processing systems, vol. 6, 1993.
+[58] J. Honaker, G. King, and M. Blackwell, “Amelia ii: A program for missing data,” Journal of statistical software,
+vol. 45, pp. 1–47, 2011.
+16
+
+=== page 17 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+[59] S. Van Buuren and K. Groothuis-Oudshoorn, “mice: Multivariate imputation by chained equations in r,” Journal
+of statistical software, vol. 45, pp. 1–67, 2011.
+[60] T. H. Bø, B. Dysvik, and I. Jonassen, “Lsimpute: accurate estimation of missing values in microarray data with
+least squares methods,” Nucleic acids research, vol. 32, no. 3, pp. e34–e34, 2004.
+[61] O. Troyanskaya, M. Cantor, G. Sherlock, P. Brown, T. Hastie, R. Tibshirani, D. Botstein, and R. B. Altman,
+“Missing value estimation methods for dna microarrays,” Bioinformatics, vol. 17, no. 6, pp. 520–525, 2001.
+[62] L. F. Burgette and J. P. Reiter, “Multiple imputation for missing data via sequential regression trees,” American
+journal of epidemiology, vol. 172, no. 9, pp. 1070–1076, 2010.
+[63] D. Bertsimas, C. Pawlowski, and Y. D. Zhuo, “From predictive methods to missing data imputation: an optimization
+approach,” The Journal of Machine Learning Research, vol. 18, no. 1, pp. 7133–7171, 2017.
+[64] CERISE, “Social Performance Management in Microﬁnance: Practices, Results and Challenges,” 2019.
+[65] A. G. Ayayi and M. Sene, “What drives microﬁnance institution’s ﬁnancial sustainability,” The Journal of
+Developing Areas, vol. 44, no. 1, pp. 303–324, 2010.
+[66] R. Cull, A. Demirgüç-Kunt, and J. Morduch, “The Microﬁnance Business Model: Enduring Subsidy and Modest
+Proﬁt,” The World Bank Economic Review, vol. 32, pp. 221–244, 04 2018.
+[67] C. Van Rooyen, R. Stewart, and T. De Wet, “The impact of microﬁnance in sub-saharan africa: a systematic review
+of the evidence,” World development, vol. 40, no. 11, pp. 2249–2262, 2012.
+[68] M. Duvendack, R. Palmer-Jones, J. G. Copestake, L. Hooper, Y. Loke, and N. Rao, “What is the evidence of the
+impact of microﬁnance on the well-being of poor people?,” tech. rep., EPPI-Centre, Social Science Research Unit,
+Institute of Education, University of London, London, 2011.
+[69] M. P. Muthoni, “Assessing institutional characteristics on microcredit default in kenya: a comparative analysis of
+microﬁnance institutions and ﬁnancial intermediaries,” Journal of Education and Practice, vol. 7, pp. 178–198,
+2016.
+[70] A. Asongo and A. Idama, “The causes of loan default in microﬁnance banks: The experience of standard
+microﬁnance bank, yola, adamawa state, nigeria,” IOSR Journal of Business and Management, vol. 16, pp. 74–81,
+2014.
+[71] E. K. Boadi, Y. Li, V. C. Lartey, and V. C. Lartey, “Role of Bank Speciﬁc, Macroeconomic and Risk Determinants
+of Banks Proﬁtability: Empirical Evidence from Ghana’s Rural Banking Industry,” International Journal of
+Economics and Financial Issues, vol. 6, no. 2, pp. 813–823, 2016.
+[72] G. Dorﬂeitner and E.-M. Oswald, “Repayment behavior in peer-to-peer microﬁnancing: Empirical evidence from
+kiva,” Review of Financial Economics, vol. 30, no. 1, pp. 45–59, 2016.
+[73] E. Field and R. Pande, “Repayment frequency and default in microﬁnance: evidence from india,” Journal of the
+European Economic Association, vol. 6, no. 2-3, pp. 501–509, 2008.
+[74] H. Mpogole, I. Mwaungulu, S. Mlasu, and G. Lubawa, “Multiple borrowing and loan repayment: A study of
+microﬁnance clients at iringa, tanzania,” Global Journal of Management and Business Research, vol. 12, no. 4,
+pp. 97–102, 2012.
+[75] G. G. Jote, “Determinants of loan repayment: the case of microﬁnance institutions in gedeo zone, snnprs, ethiopia,”
+Universal Journal of Accounting and Finance, vol. 6, no. 3, pp. 108–122, 2018.
+[76] N. Nawai and M. N. M. Shariff, “Determinants of repayment performance in microcredit programs: A review of
+literature,” International Journal of Business and Social Science, vol. 1, no. 2, 2010.
+[77] A. T. Schurmann and H. B. Johnston, “The group-lending model and social closure: Microcredit, exclusion, and
+health in bangladesh,” Journal of Health, Population and Nutrition, vol. 27, p. 518–527, Sep. 2009.
+[78] T. Besley and S. Coate, “Group lending, repayment incentives and social collateral,” Journal of development
+economics, vol. 46, no. 1, pp. 1–18, 1995.
+[79] M. Ghatak, “Group lending, local information and peer selection,” Journal of development Economics, vol. 60,
+no. 1, pp. 27–50, 1999.
+[80] M. Mahmud, “Repaying microcredit loans: A natural experiment on liability structure,” The Journal of Develop-
+ment Studies, vol. 56, no. 6, pp. 1161–1176, 2020.
+[81] B. Armendáriz de Aghion and J. Morduch, “Microﬁnance beyond group lending,” Economics of transition, vol. 8,
+no. 2, pp. 401–420, 2000.
+17
+
+=== page 18 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+[82] L. Postelnicu, N. Hermes, and A. Szafarz, “Deﬁning social collateral in microﬁnance group lending,” in Microﬁ-
+nance Institutions, pp. 187–207, Springer, 2014.
+[83] A. R. Johnson1, F. A. Depesquidoux, and D. K. V. Verges, “Group Borrowing : Microﬁnance-Tontine Sustainable
+Co-Existence. Case Of Cameroon,” Journal of Economics, Finance And Management Studies, vol. 4, pp. 2345–
+2355, nov 2021.
+[84] P. K. Kimuyu, “Rotating saving and credit associations in rural east africa,” World Development, vol. 27, no. 7,
+pp. 1299–1308, 1999.
+[85] M. A. Owen, “ Debt and Development: Exploring the microﬁnance debate in Senegal,” CUREJ: College
+Undergraduate Research Electronic Journal, University of Pennsylvania, December 2006.
+[86] D. Perry, “Microcredit and women moneylenders: The shifting terrain of credit in rural senegal,” Human
+Organization, vol. 61, no. 1, pp. 30–40, 2002.
+[87] L. Mayoux, “Micro-ﬁnance and the empowerment of women: a review of the key issues,” ilo working papers,
+International Labour Organization, 2000.
+[88] M. Abdallah Ali, M. Mughal, and D. Chhorn, “Empowering Women through Microﬁnance in Djibouti,” Oct. 2021.
+working paper or preprint.
+[89] A. Khaleghi, Towards Achieving Gender Equality in Automated Loan Approval Processes. Master thesis, Delft
+University of Technology, 2020.
+[90] C. Kneiding and R. Rosenberg, “Variations in microcredit interest rates,” Consultative Group to Assist the Poor
+(CGAP), 2008.
+[91] S. E. Hartley, “Kiva. org: Crowd-sourced microﬁnance and cooperation in group lending,” Available at SSRN
+1572182, 2010.
+[92] N. Patki, R. Wedge, and K. Veeramachaneni, “The synthetic data vault,” in 2016 IEEE International Conference
+on Data Science and Advanced Analytics (DSAA), pp. 399–410, Oct 2016.
+[93] The MathWorks, “MATLAB 2019b,” 2019.
+[94] F. Rosenblatt, The Perceptron, a Perceiving and Recognizing Automaton Project Para. Report: Cornell Aeronauti-
+cal Laboratory, Cornell Aeronautical Laboratory, 1957.
+A Proofs
+Proof of Proposition 3.5
+For the decomposable case, we have
+V (z) = E
+[
+R( ˆS,M,A,B)
+]
+(51)
+= E
+[∑
+a=0,1
+E[R( ˆS,M,A,B) |A = a]πz( ˆS,M,a)
+]
+(52)
+= E
+[
+E[R( ˆS,M,A,B) |A = 1]πz( ˆS,M, 1)
+]
+(53)
+= E
+[
+E[R( ˆS,M,A,B) |A = 1]L(q)
+]
+, (54)
+where (53) is because E[R( ˆS,M,A,B) |A = 0] = 0. Since E[R( ˆS,M,A,B |A = 1] is independent from z, we can
+see from (54) that V (z) is a linear combination of L(q) and from (19), q is a linear function of z. Therefore, if q is a
+concave function of z, then L(q) and V (z) are concave functions of z.
+18
+
+=== page 19 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+In the non-decomposable case, we have
+V (z) = E
+[
+R( ˆS,M,A,B)
+]
+(55)
+= E
+[∑
+a=0,1
+E[R( ˆS,M,A,B) |A = a]πz( ˆS,M,a)
+]
+(56)
+= E
+[
+E[R( ˆS,M,A,B) |A = 1]πz( ˆS,M, 1) + E[R( ˆS,M,A,B) |A = 0](1 −πz( ˆS,M, 1))
+]
+(57)
+= E
+[(
+E[R( ˆS,M,A,B) |A = 1] − E[R( ˆS,M,A,B) |A = 0]
+)
+L(q) + E[R( ˆS,M,A,B) |A = 0]
+]
+. (58)
+Since E[R( ˆS,M,A,B) |A = 0] and E[R( ˆS,M,A,B) |A = 1] are independent from z, we can see that V (z) is a
+linear combination of L(q). Therefore, V (z) is concave with respect to z when L(q) is concave.
+Proof of Lemma 3.3. Let N = {1, 2,...,N} be the index of the applications in one lending period. Then, let
+ˆs = {ˆs1, ˆs2,..., ˆsN}, m = {m1,m2,...,mN}, a = {a1,a2,...,aN}, and b = {b1,b2,...,bN} be the vectors
+containing the accessible information, group size, lending decision, and outcomes of all applicants, respectively. For all
+k∈{1,..., 2N}, we have
+E
+[
+Fz[k] |z
+]
+= E
+[
+(
+R(ˆs, m, a, b) − ¯R ) N∑
+i−1
+1
+πz(ˆsi,mi,ai)
+∂πz(ˆsi,mi,ai)
+∂z[k] |z
+]
+(59)
+= E
+
+ ( R(ˆs, m, a, b) − ¯R )
+
+
+∂
+∂z[k]πz
+(
+ˆS,M,A
+)
+πz
+(
+ˆS,M,A
+)
+
+
+
+ (60)
+= E
+
+ ∑
+a
+
+
+
+ πz
+(
+ˆS,m,a
+)
+πz
+(
+ˆS,m,a
+)
+
+ E [ R(ˆs, m, a, b) − ¯R|A,M, ˆS ]( ∂ ∂z[k] πz ( ˆS,M,A ))
+
+
+
+
+(61)
+= E
+
+ E
+[∑
+a
+(
+R(ˆs, m, a, b) − ¯R ) ∂ ∂z[k] πz ( A,M, ˆS ) |A,M, ˆS ]  (62)
+= ∂ ∂z[k] E
+[
+E
+[∑
+a
+(
+R(ˆs, m, a, b) − ¯R ) πz ( A,M, ˆS ) |A,M, ˆS ]] (63)
+= ∂ ∂z[k] E [ R(ˆs, m, a, b) ] (64)
+= ∂V (z) ∂z[k] . (65)
+Equality (61) is by law of total probability, (62) is because of the fact that ¯R is independent of z while
+∑
+A∈{0,1}
+∂
+∂z[k]πz( ˆS,A) = 0, and (63) is by linearity of expectation. Here, the expectations in (60) and (64)
+are taken over P(S, ˆS,A,B). The ﬁrst expectations in (61), (62), and (63) are taken over P(S, ˆS) while the second
+expectations are taken over P(B |A, ˆS).
+19
+
+=== page 20 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+Proof of Lemma 3.4. Using the same notation as in the Proof of Lemma 3.3, we have,
+E [Fz[k] |z] = E
+[(
+R(ˆs, m, a, b) − ¯R
+) N∑
+i=1
+1
+πz(si,mi,ai)
+∂πz(si,mi,ai)
+∂z[k]
+]
+(66)
+= E
+[∑
+a
+E
+[
+R(ˆs, m, a, b) − ¯R| ˆs, m, a, b
+] N∑
+i=1
+πz(si,mi,ai)
+πz(si,mi,ai)
+∂πz(si,mi,ai)
+∂z[k]
+]
+(67)
+= E
+[∑
+a
+E
+[
+R(ˆs, m, a, b) − ¯R| ˆs, m, a, b
+] N∑
+i=1
+∂πz(si,mi,ai)
+∂z[k]
+]
+(68)
+= E
+[∑
+a
+E
+[
+R(ˆs, m, a, b) | ˆs, m, a, b
+] N∑
+i=1
+∂πz(si,mi,ai)
+∂z[k]
+]
+(69)
+= ∂ ∂z[k] E
+[∑
+a
+E
+[
+R(ˆs, m, a, b) | ˆs, m, a, b
+] N∑
+i=1
+πz(si,mi,ai)
+]
+(70)
+= ∂ ∂z[k] E [ R(ˆs, m, a, b) ] (71)
+= ∂V (z) ∂z[k] . (72)
+Here, (66) is the expectation taken over ˆs, m, a, and b; the ﬁrst expectation in (67) is taken over ˆs and m while the
+second expectation is taken over b; (71) holds because ∑ ai∈{0,1}πz(si,mi,ai) = 1; (72) is due to the deﬁnition of
+V (z).
+Gradient inequality lemma. To bound the regret of a telescoping sum, we present the following:
+Lemma A.1. The following condition holds:
+E
+[
+2∇zV (zt) · (zt −z∗) |zt
+]
+≤ 1 αt ( E [ ‖zt −z∗‖2 −‖zt+1 −z∗‖2 |zt ]) + αtG2, (73)
+where V is deﬁned in Section 2.
+Proof. Let us consider E
+[
+‖zt+1 −z∗‖2 |zt
+]
+, where
+E
+[
+‖zt+1 −z∗‖2 |zt
+]
+= E
+[
+‖ proj
+Z
+(zt + αtFzt) −z∗‖2 |zt
+]
+(74)
+≤ E
+[
+‖zt + αtFzt −z∗‖2 |zt
+]
+(75)
+≤ E
+[
+‖zt −z∗‖2 + α2 t‖Fzt‖2 − 2αtFzt · (z∗−zt) |zt
+]
+(76)
+= E
+[
+‖zt −z∗‖2 + α2 t‖Fzt‖2 |zt
+]
+− E
+[
+2αtFzt · (z∗−zt) |zt
+]
+(77)
+= ‖zt −z∗‖2 + α2 t E [ ‖Fzt‖2 |zt ] − 2αtE [ Fzt · (z∗−zt) |zt ] (78)
+= ‖zt −z∗‖2 + α2 t E [ ‖Fzt‖2 |zt ] − 2αt∇ztV (zt) · (z∗−zt), (79)
+therefore,
+2∇ztV (zt) · (z∗−zt) ≤ − E
+[
+‖zt+1 −z∗‖2 |zt
+]
++ ‖zt −z∗‖2
+αt
++
+α2 t E [ ‖Fzt‖2 |zt ]
+αt
+(80)
+≤
+− E
+[
+‖zt+1 −z∗‖2 |zt
+]
++ ‖zt −z∗‖2
+αt
++ αtG2, (81)
+20
+
+=== page 21 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+thus,
+E
+[
+2∇ztV (zt) · (z∗−zt) |zt
+]
+≤
+− E
+[
+‖zt+1 −z∗‖2 |zt
+]
++ ‖zt −z∗‖2
+αt
++ αtG2. (82)
+Here, (79) is due to Lemma 3.3 and (81) is due to the assumption E
+[
+‖Fzt‖2 |zt ] ≤G2. Thus, we can then recover
+(73).
+Proof of Theorem 3.1. Given Lemmas 3.3 and A.1, we can proof Theorem 3.1:
+E
+[
+2
+T∑
+t=1
+(
+V (z∗) −V (zt) )
+]
+≤ E
+[
+2
+T∑
+t=1
+(
+∇zV (zt) · (z∗−zt) )
+]
+(83)
+≤ E
+[
+2
+T∑
+t=1
+E
+[
+∇zV (zt) · (z∗−zt) |zt
+]]
+(84)
+≤ E
+[ T∑
+t=1
+E
+[
+‖zt+1 −z∗‖2 + ‖zt −z∗‖2 |zt ]
+αt
++ G2
+T∑
+t=1
+αt
+]
+(85)
+≤
+T∑
+t=1
+E
+[
+‖zt −z∗‖2]( 1 αt − 1 αt−1 ) + G2 T∑ t=1 αt (86)
+≤D2
+T∑
+t=1
+( 1
+αt
+− 1 αt−1
+)
++ G2
+T∑
+t=1
+αt (87)
+≤ 1 αT D2 + G2C(T ). (88)
+Here, (83) is due to the concavity of V (zt); (84) is due to the law of total expectation; (85) is due to Lemma A.1; (86)
+is due to the law of total expectation; (87) is due to assumption (30); and (88) is due to assumption (32).
+Proof of Corollary 3.2. We have
+E
+[ T∑
+t=1
+(V (z∗) −V (zt))
+]
+≤ 1 2
+(
+D2
+T∑
+t=1
+( 1
+αt
+− 1 αt−1
+)
++ G2
+T∑
+t=1
+αt
+)
+(89)
+≤ 1 2
+(
+D2 G
+√
+T
+D + G2 D G2 √ T
+)
+(90)
+= 1 2 ( DG √ T + 2GD √ T ) (91)
+= 3 2DG √ T, (92)
+where (89) is due to (87); (90) is due to ∑T t=1 1√ t≤ 2 √ T . We recover (34) by dividing (92) by T .
+B Tables of Data
+Here, we present the description of the features in the kiva data together with our decision in Table 1. We also present
+30 different distributions to generate the artiﬁcial data pools. The 18 bounded distribution with positive weighting
+features can be seen in Table 2, the 8 distributions with negative weight for the features are shown in Table 3, and
+Table 4 shows the 4 unbounded distributions.
+21
+
+=== page 22 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+Feature Number Feature Name Feature Description Data Preprocessing Decision
+1 id loan ID used
+2 description.languages language of loan description used
+3 funded_amount amount of loan has been collected by lenders not available in the beginning
+4 paid_amount amount of the loan which has been paid off not available in the beginning
+5 activity activity for requested loan used
+6 Sector sector for requested loan used
+7 location.country_code country code used
+8 location.country country name used
+9 location.town town name used
+10 location.geo.level latitude and longitude indicator for country or town used
+11 partner_id partner ID used
+12 borrowers.ﬁrst_name ﬁrst name of borrower hard to convert
+13 borrowers.last_name last name of borrower hard to convert
+14 borrowers.gender gender of borrower used
+15 borrowers.pictured borrowers’ picture availability used
+16 terms.disbursal_amount distributed amount in the local currency conﬂict with our assumption
+17 terms.disbursal_currency distributed currency used
+18 terms.disbursal_date distributed date conﬂict with our assumption
+19 paid_date Fully paid date not available in the beginning
+20 defaulted_date defaulted date not available in the beginning
+21 terms.loan_amount the amount of money distributed conﬂict with our assumption
+22 terms.loss_liability.nonpayment who is liable for non repayment used
+23 terms.loss_liability.currency_exchange who is liable for currency exchange loss used
+24 posted_date loan posted date on Kiva to calculate the duration: used25 funded_date fully funded date
+26 journal_total.entries number of updates by borrower not available in the beginning
+27 terms.local_payments.due_date payment is due date to the ﬁeld partner conﬂict with our assumption
+28 terms.local_payments.amount amount due to the ﬁeld partner conﬂict with our assumption
+29 terms.scheduled_payments.due_date scheduled payment due date conﬂict with our assumption
+30 terms.scheduled_payments.amount scheduled payment due amount conﬂict with our assumption
+31 delinquent whether has become delinquent not available in the beginning
+32 video.youtube_id youtube id if provide a video used
+33 basket_amount amount of loan saved but not conﬁrmed conﬂict with our assumption
+34 amount payment amount in US dollars conﬂict with our assumption
+35 payment_id payment ID conﬂict with our assumption
+36 local_amount payment amount in local currency conﬂict with our assumption
+37 processed_date processed date conﬂict with our assumption
+38 rounded_local_amount rounded local payment amount conﬂict with our assumption
+39 settlement_date payment settlement date conﬂict with our assumption
+40 lat latitude of loan location used
+41 lon longitude of loan location used
+42 status paid or defaulted status label
+Table 1: Description of the features and data pre-processing decision of the Kiva dataset. In our study, we only
+considered the features with the "used" label.
+22
+
+=== page 23 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+repayment
+probability,
+P
+(
+B = 1 | ˆS,M
+)
+features
+distribution,
+P (S)
+qB = 1 n ∑n j=1 s[j]
+P
+(
+B = 1 | ˆS,M
+)
+= 1 4qB
+qB = 1 n ∑n j=1 s[j]
+P
+(
+B = 1 | ˆS,M
+)
+= − 1 16q2 B + 1 2qB
+qB = 1 n ∑n j=1 2s[j] − 4
+P
+(
+B = 1 | ˆS,M
+)
+= exp(qB) 1 + exp(qB)
+qB = 1 n ∑n j=1 2.5s[j] − 4
+P
+(
+B = 1 | ˆS,M
+)
+= exp(qB) 1 + exp(qB)
+qB = 1 n ∑n j=1 3s[j] − 4
+P
+(
+B = 1 | ˆS,M
+)
+= exp(qB) 1 + exp(qB)
+{W [1],..., W [n]}∼N (2, 42)
+qB = 1 n ∑n j=1 W [j]s[j] − 4
+P
+(
+B = 1 | ˆS,M
+)
+= exp(qB) 1 + exp(qB)
+Table 2: List of the repayment probability distributions considered in our study.
+23
+
+=== page 24 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+repayment
+probability,
+P
+(
+B = 1 | ˆS,M
+)
+features
+distribution,
+P (S)
+P (S)l = 2 99 − binl 4950
+ P (S)l = 1 99 − binl 9900
+qB = 1 n ∑n j=1 −s[j]
+P
+(
+B = 1 | ˆS,M
+)
+= 1 4qB + 1
+qB = 1 n ∑n j=1 −2s[j]
+P
+(
+B = 1 | ˆS,M
+)
+= − 1 128q2 B + 1 16qB + 1
+qB = 1 n ∑n j=1 −3s[j] + 7
+P
+(
+B = 1 | ˆS,M
+)
+= exp(qB) 1 + exp(qB)
+{W [1],..., W [n]}∼N (−3, 42)
+qB = 1 n ∑n j=1 W [j]s[j] + 7
+P
+(
+B = 1 | ˆS,M
+)
+= exp(qB) 1 + exp(qB)
+Table 3: List of the repayment probability distributions considered in our study with more negative weights for the
+features.
+24
+
+=== page 25 ===
+A Learning and Control Perspective for Microﬁnance A PREPRINT
+features distribution,
+P(S) repayment probability, P
+(
+B = 1 | ˆS,M
+)
+S ∼N
+(
+2, 0.252)
+W [j] = 5 99(j− 1)
+qB = 1 n ∑n j=1 W [j]s[j] − 4
+P
+(
+B = 1 | ˆS,M
+)
+= exp(qB) 1 + exp(qB)
+S ∼N
+(
+6, 12)
+W [j] =
+
+
+
+1.5 − 7 495 (j− 1) , j ≤ n 2
+0.1 + 7 495 ( j− n 2 − 1 ) , j > n 2
+qB = 1 n ∑n j=1 W [j]s[j] − 4
+P
+(
+B = 1 | ˆS,M
+)
+= exp(qB) 1 + exp(qB)
+S ∼
+⏐⏐N ( 0, 12)⏐⏐
+W [j] = 20 − 25 99(j− 1)
+qB = 1 n ∑n j=1 W [j]s[j] − 4
+P
+(
+B = 1 | ˆS,M
+)
+= exp(qB) 1 + exp(qB)
+S ∼ exp
+(
+N
+(
+0, 0.252))
+W [j] = 10 99(j− 1)
+qB = 1 n ∑n j=1 W [j]s[j] − 4
+P
+(
+B = 1 | ˆS,M
+)
+= exp(qB) 1 + exp(qB)
+Table 4: List of the repayment probability distributions considered in our study with unbounded features distributions.
+25

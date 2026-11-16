@@ -1,0 +1,2233 @@
+=== page 1 ===
+THE SHORT-TERM PREDICTABILITY OF RETURNS IN ORDER
+BOOK MARKETS: A DEEP LEARNING PERSPECTIVE
+Lorenzo Lucchese∗
+Department of Mathematics
+Imperial College London
+lorenzo.lucchese17@imperial.ac.uk
+Mikko S. Pakkanen
+Department of Statistics and Actuarial Science
+University of Waterloo
+and
+Department of Mathematics
+Imperial College London
+mikko.pakkanen@uwaterloo.ca
+Almut E. D. Veraart
+Department of Mathematics
+Imperial College London
+a.veraart@imperial.ac.uk
+October 10, 2023
+ABSTRACT
+In this paper, we conduct a systematic large-scale analysis of order book-driven predictability in
+high-frequency returns by leveraging deep learning techniques. First, we introduce a new and
+robust representation of the order book, the volume representation. Next, we carry out an extensive
+empirical experiment to address various questions regarding predictability. We investigate if and how
+far ahead there is predictability, the importance of a robust data representation, the advantages of
+multi-horizon modeling, and the presence of universal trading patterns. We use model confidence
+sets, which provide a formalized statistical inference framework particularly well suited to answer
+these questions. Our findings show that at high frequencies predictability in mid-price returns is not
+just present, but ubiquitous. The performance of the deep learning models is strongly dependent on
+the choice of order book representation, and in this respect, the volume representation appears to
+have multiple practical advantages.
+1 Introduction
+1.1 Financial markets and exchanges: the rise of High-Frequency traders
+A financial market is an ensemble of market agents willing to buy or sell a certain financial security, such as a stock,
+bond, or derivative. Today most trades take place on electronic exchanges, virtual places that bring together buyers
+and sellers, facilitating the occurrence of transactions. At the time of writing, the two largest U.S. equity exchanges
+by market capitalization are the NYSE, a hybrid (floor and electronic) auction market accounting for 20% of the U.S.
+equities market transactions, and the Nasdaq, a fully electronic dealer market executing about 16% of such trades
+(source: Cboe Exchange, Inc.). Both of these markets allow traders to access live order book information, i.e. the
+collection of all standing orders for a given security. In theory, this allows for symmetric information across traders,
+which should all have access to the same data regarding market depth, liquidity, and price discovery dynamics.
+In practice, traders have access to different technology, receiving market data and submitting orders at different latencies.
+In the quest to exploit the advantages gained by faster access to markets, almost two decades ago, a new market
+∗This research has been supported by the EPSRC Centre for Doctoral Training in Mathematics of Random Systems: Analysis,
+Modelling and Simulation (EP/S023925/1). We would like to thank Thomas Oliver (InferStat) for helpful discussions on the subject.
+arXiv:2211.13777v3  [q-fin.CP]  8 Oct 2023
+
+=== page 2 ===
+The Short-Term Predictability of Returns in Order Book Markets
+participant emerged. These market players are today known as High-Frequency Traders (HFTs) and, over the years,
+have rapidly grown to represent a significant share of the market (Abergel et al., 2014). Their role has since been the
+object of a fierce debate: their critics claim HFTs engage in predatory – and sometimes illegal – behavior, while their
+supporters believe HFTs to be overall beneficial to the market by providing liquidity, reducing spreads, and helping
+price discovery dynamics. In this paper, we will not delve into questions regarding the legitimacy of HFT practices, but
+we will instead aim to independently analyze the value of immediate access to order book information. Over the past
+few decades, HFT companies have engaged in a fierce race to zero latency, making vast economic efforts to reduce their
+latency by just a few microseconds. What we aim to explore in this research is one of the possible reasons why such a
+race happened in the first place. Specifically, we will be analyzing the predictive value of order book data, i.e. to what
+extent can a trader with immediate access to the order book predict the future direction of the market?
+It is also important to note that, over the past couple of decades, the trading process has become increasingly complex
+due to market fragmentation, availability of new technologies such as smart order routers (SORs), and – sometimes
+controversial – regulation, e.g. RegNMS (US Securities and Exchange Commission, 2005) and MiFID (European
+Parliament and Council, 2004). While practices that exploit arbitrage between competing trading venues exist, in this
+research, we will assume the trader has access to a single electronic order book-based exchange, namely the Nasdaq.
+1.2 Order book predictability: asking the right questions
+As discussed in the opening paragraph, we would like to explore whether, contrary to low-frequency returns, ultra-
+high-frequency returns tend to display predictability. Empirical studies (Sirignano and Cont, 2019) have shown that
+price formation dynamics, i.e. next mid-price moves, are predictable. In this paper, we will try to understand whether
+such predictability persists at longer horizons. Intuitively, predictability in high-frequency returns may be understood
+to arise simply from the way an order book market is structured, i.e. the side of the order book with less liquidity is
+more likely to erode faster, resulting in a price increase/decrease, or as the product of recurring trading patterns in
+response to liquidity information. The approaches considered in the literature for forecasting high-frequency returns
+from order book data can be roughly divided into two categories: relatively simple models built on carefully handcrafted
+features (Aït-Sahalia et al., 2022) and more sophisticated architectures applied directly to raw order book data (Zhang
+et al., 2019; Zhang and Zohren, 2021; Kolm et al., 2021). In this research, we will focus on the latter class of models,
+leveraging the ability of deep learning techniques to learn complex dependence structures. We will consider a specific
+class of deep learning models, introduced by Zhang et al. (2019), designed to extract features from order book data.
+There is empirical evidence (Bengio et al., 2013) which suggests that, although deep learning models can extract
+complex features, the way data is represented may have a significant impact on model performance. We will hence
+explore how model performance varies when changing the way the order book data is arranged. Equipped with this
+class of models, we will aim to investigate the following questions, which naturally arise from our preceding discussion:
+1. Do high-frequency returns display order book-driven predictability? If so, how far ahead can we predict?
+2. Which order book representations perform best?
+3. Can we use a single model across multiple horizons?
+4. Can we use a single model across multiple stocks?
+We aim to answer all these questions in a formalized statistical inference framework based on model confidence sets
+(Hansen et al., 2011).
+1.3 Related work and contributions
+It is important to note that mathematical modeling of order book dynamics is a very broad and active area of research:
+ranging from Hawkes process models for order and trade events in continuous time (Bacry and Muzy, 2014; Large,
+2007) to discrete-time synthetic data-driven order book generation (Byrd et al., 2020; Coletta et al., 2022). The work
+presented in this paper can be seen as contributing to two parallel research streams in the literature for order book-driven
+mid-price predictions. On one hand, we expand on the deep learning ideas discussed in Zhang et al. (2019); Zhang and
+Zohren (2021); Kolm et al. (2021) by introducing new data representations and carrying out a disciplined comparison
+between the specifications. On the other, we explore a set of questions related to short-term price predictability in a
+similar spirit to Aït-Sahalia et al. (2022) but under a different class of models.
+In the broader context of the questions addressed in this paper, related works are those of Sirignano and Cont (2019),
+exploring the universality of order book dynamics, and Wu et al. (2021), advocating for robust representations of order
+books. We base our experimental procedure on model confidence sets, introduced by Hansen et al. (2011). We believe
+this formalized statistical inference framework perfectly suits our aim of addressing questions that require comparisons
+between multiple models and benchmarks.
+2
+
+=== page 3 ===
+The Short-Term Predictability of Returns in Order Book Markets
+The two main contributions of this paper are summarized as follows. First, we introduce a deep learning model for
+mid-price forecasting based on a more robust representation of the order book, which we will refer to as deepVOL. This
+representation allows us to easily adapt the model to the setting where more granular L3 data2 is available. Second, we
+provide new empirical results addressing essential questions regarding short-term price predictability in a disciplined
+experimental framework.
+2 The space of models under consideration
+2.1 The order book
+At a given point in time, an order book contains all the (visible) buy and sell orders placed for a given security on a
+specific exchange. The lowest ask price, resp. the highest bid price, is known as the first ask order book level, resp. the
+first bid order book level. Subsequent levels are defined accordingly. An example of a 10-level order book snapshot
+is displayed in Figure 1. We note that in electronic exchanges, orders can be submitted on an evenly spaced discrete
+set of prices, known as ticks. The smallest price increment is known as the tick size, for most U.S. traded stocks, it
+corresponds to $0.01. It is important to note that not all tick prices may have standing orders; therefore, the first 10-level
+ask/bid prices may not coincide with the first 10 ask/bid tick prices.
+11.76 11.77 11.78 11.79 11.80 11.81 11.82 11.83 11.84 11.85 11.86 11.87 11.88 11.89 11.90 11.91 11.92 11.93 11.94 11.95
+price ($)
+0
+5000
+10000
+15000
+20000
+25000
+volumes
+Figure 1: A sample snapshot of an order book. Ask (resp. bid) volumes are denoted by red (resp. green) bars. The
+lighter green shaded area represents the change in the order book shape when some of the liquidity at the best bid price
+is removed.
+There are three main types of actions that traders can request on an exchange:
+• a limit order: an order to buy a given quantity of the security at a given price;
+• a market order: an order to buy a given quantity of the security at the best available price;
+• a cancellation or partial deletion: an order to fully or partially delete a standing limit order.
+Note that while market orders are always immediately executed once posted, passive limit orders, i.e. orders which do
+not cross the spread, will sit in the order book until they are matched. A limit order entering the market at a tick price
+where other limit orders are already present will be added at the end of the standing queue. Trades occur each time a
+market order or aggressive limit order is posted, the requested volume is matched to the standing limit orders according
+to price-time priority. We will not delve into the detailed characteristics of all the different order types which exist, but
+it suffices to point out that the three actions described above represent the fundamental drivers of the evolution of order
+books. For example, in Figure 1, the change in order book shape may be due to either a (partial) deletion of a first-level
+buy limit order or the execution of a sell order (either a market order or an aggressive limit order).
+During trading hours, electronic exchanges operate continuously, and for this reason, order books are sometimes referred
+to as continuous books. Exchanges such as the Nasdaq time stamp each event at nanosecond precision. Between
+different stocks, the level of trading activity may vary significantly, and the time elapsed between consecutive events
+may differ by orders of magnitude. For this reason, we define an alternative time clock: a discrete order book clock,
+which increments by one each time an action is executed on the order book. Throughout our discussion, we will explore
+questions of predictability with respect to this order book clock, which is the same as the one considered in Ntakaris
+et al. (2018). Some authors, for example, Aït-Sahalia et al. (2022) consider alternative order book-driven time clocks,
+such as transaction clocks and volume clocks.
+2See Section 2.1 for the definitions of L1, L2 and L3 order book data.
+3
+
+=== page 4 ===
+The Short-Term Predictability of Returns in Order Book Markets
+We understand that models based on order book-specific clocks might be challenging to use in practical trading
+applications. However, we believe order book-based clocks provide a more natural measure of time for exploring
+predictability and are more suitable for comparing results across stocks than physical time: a 100ms time horizon has a
+significantly different meaning for stocks with different levels of trading activity.
+Another important observation is that order book data might not be accessed by all market participants at the same level
+of granularity. The Nasdaq Quotation Dissemination Service makes the following distinctions:
+• L1 data: the best bid and ask prices and corresponding volumes;
+• L2 data: all available bid and ask prices and corresponding volumes;
+• L3 data: all available bid and ask prices and corresponding volumes split among the orders in the queue.
+We will be comparing the performance of models when different levels of data granularity are available. Figure 2
+provides a visual comparison of L1, L2, and L3 data.
+11.76 11.77 11.78 11.79 11.8 11.81 11.82 11.83 11.84 11.85 11.86 11.87 11.88 11.89 11.9 11.91 11.92 11.93 11.94 11.95
+0
+5000
+10000
+15000
+20000
+25000
+volumes
+L1 data
+11.76 11.77 11.78 11.79 11.8 11.81 11.82 11.83 11.84 11.85 11.86 11.87 11.88 11.89 11.9 11.91 11.92 11.93 11.94 11.95
+0
+5000
+10000
+15000
+20000
+25000
+volumes
+L2 data
+11.76 11.77 11.78 11.79 11.80 11.81 11.82 11.83 11.84 11.85 11.86 11.87 11.88 11.89 11.90 11.91 11.92 11.93 11.94 11.95
+price ($)
+0
+5000
+10000
+15000
+20000
+25000
+volumes
+L3 data
+Figure 2: L1, L2 and L3 representations of the order book in Figure 1.
+We introduce the following notation: at time t ∈ Z we denote by
+• p(l) x,t, v(l) x,t for l = 1, 2, . . . the l-th level ask/bid price and volume, for x ∈ {a, b};
+• mt =
+p(1) b,t + p(1) a,t
+2 the mid-price;
+4
+
+=== page 5 ===
+The Short-Term Predictability of Returns in Order Book Markets
+• π(j) x,t , s(j) x,t for j = 1, 2, . . . the j-th ask/bid tick price from the mid and corresponding volume for x ∈ {a, b},
+i.e. this is defined recursively as
+π(1) x,t =
+mt if mt ∈ T ,
+mt ± ϑ 2 if mt /∈ T ,
+π(j) x,t = π(j−1) x,t ± ϑ for j = 2, 3, . . . ,
+where ϑ is the tick size, T = {kϑ : k ∈ N} is the set of possible tick prices and ± depends on x ∈ {a, b}.
+• q(i,k) x,t for k = 1, 2, . . . the queue corresponding to volume s(i) x,t and ordered by time priority.
+2.2 Predictability of returns
+We will explore models that aim to identify short-term predictability in returns. We first introduce the familiar regression
+framework for return predictions. We then rephrase the task in terms of a classification problem, extending the definition
+of predictability to this setting.
+We will be exploring predictability arising from past order book data and thus we define the information σ-algebra Ft
+to be
+Ft = σ(xt, . . . , xt−T +1),
+where xt, . . . , xt−T +1 are order book derived features at times t, . . . , t − T + 1 for some look-back window of length
+T .
+Predictions in the regression framework Let us first consider the regression setting. At time t we denote by
+rt,t+h ∈ R the h-step ahead mid-price return, as defined in 3.2.2. Given order book information at time t, Ft, there
+exists a measurable function g such that
+E[rt,t+h|Ft] = g(xt, . . . , xt−T +1),
+or, equivalently,
+rt,t+h = g(xt, . . . , xt−T +1) + ϵt,
+for some mean-zero noise variable ϵt orthogonal to the space of Ft-measurable random variables. A prediction is
+defined to be any Ft-measurable random variable and the best prediction is the Ft-measurable random variable r(t) t,t+h
+which minimizes the expected cost
+E[C(r(t) t,t+h, rt,t+h)],
+for some appropriate cost function C : R × R → R. In the case of quadratic cost C(r1, r2) = (r1 − r2)2, we have
+r(t) t,t+h = E[rt,t+h|Ft] = g(xt, . . . , xt−T +1).
+Different choices of cost function are possible, for example, when C is absolute cost, i.e. C(r1, r2) = |r1 − r2|, the best
+prediction is given by the conditional median of rt,t+h given Ft. Given a parametric family of models {gθ (·)}θ∈Θ and
+an observed training data set Dtrain = {(xt, . . . , xt−T +1, rt,t+h)}t∈Itrain one can first learn a function gˆθ approximating g and then produce the return predictions
+ˆr(t) t,t+h = gˆθ (xt, . . . , xt−T +1),
+for test data points Dtest = {(xt, . . . , xt−T +1, rt,t+h)}t∈Itest . Assuming returns to be stationary, we say that there is
+order book-driven predictability if the learned predictions outperform an unpredictive benchmark prediction on the
+testing set with respect to the chosen cost function C(·, ·).
+Predictions in the classification framework In this paper, we will discretize the space of returns by grouping
+mid-price movements as downward, no-change, and upward3. We hence introduce the discretized return random
+variable
+ct,t+h =
+
+
+
+↓ if rt,t+h ∈ (−∞, −γ),
+= if rt,t+h ∈ [−γ, +γ],
+↑ if rt,t+h ∈ (+γ, +∞),
+3We believe that, for high-frequency returns, a classification framework is more natural: mid-prices move in (half)-tick increments,
+and hence the corresponding returns live on a discrete lattice (see Section 3.2.2). Moreover, grouping returns in three classes
+(downward, no-change, and upward) significantly reduces the effects of idiosyncratic noise while preserving the ability to investigate
+questions regarding predictability.
+5
+
+=== page 6 ===
+The Short-Term Predictability of Returns in Order Book Markets
+for an appropriate choice of γ > 0, cf. Section 3.2.2. Instead of modeling only the expected conditional return, in
+the classification setting, one aims to approximate the whole conditional distribution, i.e. find measurable functions
+p↓, p=, p↑ such that
+P(ct,t+h = ∗|Ft) = p∗(xt, . . . , xt−T +1),
+for ∗ ∈ {↓, =, ↑}. The discretized return prediction for an unobserved sample is then given by the minimizer of the
+expected misclassification cost:
+ˆct,t+h = argmin
+∗∈{↓,=,↑}
+X
+⋆∈{↓,=,↑}
+c∗|⋆p⋆,ˆθ (xt, . . . , xt−T +1),
+where the parametric conditional probabilities p↓,ˆθ , p=,ˆθ , p↑,ˆθ are learnt from a training data set Dtrain =
+{(xt, . . . , xt−T +1, ct,t+h)}t∈Itrain and c∗|⋆ is the misclassification cost of a ∗ observation classified as a ⋆. Assuming the
+return process is stationary, we say that there is order book-driven predictability if the learned predictions outperform
+an unpredictive benchmark prediction on a test set in terms of total misclassification cost.
+Specifying an appropriate cost function is task-dependent. For example, a trader using the predictions as trading
+signals might be more interested in the correctness of up and down predictions than no-change ones. On the other
+hand, a market maker might prioritize the correctness of no-change predictions when using these to decide whether to
+tighten quoted spreads. In both cases, the consequences of different types of errors are asymmetric and heavily impact
+the choice of the cost matrix C = {c∗|⋆}∗,⋆∈{↓,=,↑}. In the classification framework an alternative approach is to
+compare the predicted conditional distributions, {p∗(xt, . . . , xt−T +1)}∗∈{↓,=,↑} to the realized outcomes directly. This
+approach does not require specifying a cost matrix C nor a return prediction. The predicted conditional distribution (the
+output of our model) is directly compared with the observed data via a suitable “distance” on the space of probability
+measures P({↓, =, ↑}), where realized returns are encoded as Dirac measures. A natural choice of such “distance” is
+given by the categorical cross-entropy, as this can be interpreted (under appropriate assumptions) as the (log)-likelihood
+of the test set:
+− log P(Dtest|θ) ∝ − 1 |Itest| X t∈Itest X ∗∈{↓,=,↑} 1{ct,t+h =∗} log p∗,ˆθ (xt, . . . , xt−T +1),
+where the model parameters ˆθ are learnt from the training set Dtrain. As this paper does not target a specific trading
+strategy but is more concerned with general predictability questions, we will be evaluating our models based on the
+categorical cross-entropy loss. In the following, we will thus say that there is order book-driven predictability if the
+learned conditional distributions outperform an unpredictive benchmark distribution on a test set relative to categorical
+cross-entropy loss. As discussed in Appendix A.1, the natural choice for the loss used in training will also be categorical
+cross-entropy.
+Note that in both the regression and classification framework, we compare the learned predictions with those obtained
+from an unpredictive benchmark model to determine whether there is predictability by using a score/cost function.
+Simply comparing point estimates of the scores does not provide a sound statistical argument answering the question of
+whether there is predictability: the difference in score may simply be due to statistical variability. This is where the
+model confidence set (Hansen et al., 2011) procedure comes in. As we will discuss in Section 4 this provides a statistical
+testing framework to determine whether the learned models statistically outperform the unpredictive benchmark, i.e.
+whether there is predictability.
+Remark 2.1. It is clear that the definition of predictability is intrinsically tied to that of unpredictive benchmark.
+Different choices for unpredictive benchmark models are possible, for example, in the regression framework, a natural
+choice is given by (a version of) the efficient market hypothesis (EMH) (Fama, 1970). In this case, the unpredictive
+hypothesis assumes the conditional expected return to be 0. Under the classification framework, the simple EMH does
+not translate into a clear-cut model for the conditional distribution of returns. In this setting, we consider as a natural
+unpredictive hypothesis a slightly stronger version of the EMH: under the unpredictive benchmark, returns are assumed
+to be IID and independent of any information up to time t. The unpredictive benchmark conditional distribution will
+therefore be given by the empirical distribution of the training set. As a side remark, we believe it is important to note
+the EMH was originally proposed in a very different market environment and at significantly higher latencies than the
+ones considered in this paper. Nevertheless, we believe the EMH provides a natural unpredictive benchmark hypothesis
+when testing for predictability.
+As mentioned in Section 1.2, there are two main approaches considered in the literature for exploring the short-term
+predictability of returns in order book markets: the first considers carefully handcrafted features xt, . . . , xt−T and
+relatively simple specifications for the prediction functions g or (p↓, p=, p↑), e.g. linear specifications or decision trees,
+the second – which we will explore in this paper – uses raw order book features xt, . . . , xt−T as inputs to more complex
+6
+
+=== page 7 ===
+The Short-Term Predictability of Returns in Order Book Markets
+prediction functions, e.g. deep neural network architectures. We will assume the reader is familiar with deep learning
+techniques and thus give a brief overview of the relevant concepts in Appendix A.1, more detailed expositions can be
+found in Goodfellow et al. (2016).
+2.3 Deep learning models for short-term return predictions in order book markets
+In the previous section, we set up the learning framework for the return prediction task. We now discuss how the neural
+networks covered in Appendix A.1 can be combined to model price formation mechanisms and predict h-step ahead
+high-frequency returns. We will consider a specific class of deep learning models based on the deepLOB architecture
+(Zhang et al., 2019).
+2.3.1 deepLOB, (Zhang et al., 2019)
+This network acts on raw order book input. A CNN module and an inception module feed into an LSTM layer which
+produces the final classification output. The CNN and inception module aim to extract short-term spatio-temporal
+features in the data, while the LSTM module works on longer-term dependencies.
+Figure 3: Core modules of network architectures.
+The deepLOB architecture is summarized in Figure 3 and is made up of the following components:
+• Input. The first L level raw order book information - price and volume - with a look-back window of length T
+is used as input. The input at time t is thus a (T × 4L) array given by
+{xt−τ }τ =0,...,T −1 =
+n
+p(l) a,t−τ , v(l) a,t−τ , p(l) b,t−τ , v(l) b,t−τ
+o
+τ =0,...,T −1, l=1,...,L
+∈ RT ×4L.
+A feature-wise rolling window z-score standardization is applied to the input, i.e. v(1) a,t−τ is standardized using
+the mean and standard deviation of the first level ask volumes over the previous five days.
+• CNN module. Convolutions are applied to the data in both the spatial and temporal dimensions. The spatial
+convolutions aim to aggregate information across order book levels, and the temporal convolutions can be
+understood as smoothing operations. The CNN module is summarized in Figure 4.
+• Inception module. This module up-samples the convoluted data by applying various temporal convolutions
+with different filter lengths (time-window). Each temporal convolution can be interpreted as a (weighted)
+moving average. It is similar in spirit to the computation of technical indicators, but the frequencies at which
+this is applied are substantially different.
+• LSTM. The Long Short-Term Memory layer takes the multidimensional time series produced by the inception
+module and feeds it through a recurrent network structure aimed at extracting longer-term dependencies among
+the data. The last hidden state of the LSTM is passed through a dense layer with a softmax activation function
+to produce the h-step ahead return prediction ↓, = or ↑.
+The exact details of the deepLOB architecture can be found in Table 13.
+2.3.2 deepOF, (Kolm et al., 2021)
+In the deepLOB model order book states, which are non-stationary, are mapped to a stationary quantity, returns. While
+in theory, this shouldn’t be a problem (due to universality property of deep neural networks), Kolm et al. (2021) argue
+that using some form of stationary input might improve model performance by facilitating the training procedure.
+7
+
+=== page 8 ===
+The Short-Term Predictability of Returns in Order Book Markets
+Figure 4: CNN module deepLOB.
+Figure 5: Inception module and LSTM layer.
+A stationary order book quantity is order flow. First-level order flow describes the net flow of orders at the best bid and
+ask. This was introduced in Cont et al. (2013) to explore the price impact of order book events. This single quantity
+parsimoniously models the instantaneous effect of order book events on prices. The first-level bid and ask order flows
+corresponding to the order book event occurring at time t (in order book time) are defined by:
+bOF (1) t =
+
+
+
+v(1) b,t if p(1) b,t > p(1) b,t−1,
+v(1) b,t − v(1) b,t−1 if p(1) b,t = p(1) b,t−1,
+−v(1) b,t−1 if p(1) b,t < p(1) b,t−1,
+and aOF (1) t =
+
+
+
+−v(1) a,t−1 if p(1) a,t > p(1) a,t−1,
+v(1) a,t − v(1) a,t−1 if p(1) a,t = p(1) a,t−1,
+v(1) b,t if p(1) a,t < p(1) a,t−1.
+8
+
+=== page 9 ===
+The Short-Term Predictability of Returns in Order Book Markets
+The difference between the two is known as order flow imbalance:
+OF I (1) t = bOF (1) t − aOF (1) t .
+Bid order flow corresponds to the net change in volume at the best bid level; the three cases in the definition can be
+understood as:
+• a new bid order being placed at a higher price than the current best bid;
+• the order volume at the best bid price increasing or decreasing;
+• the entire volume at the best bid price being consumed, thus decreasing the best bid price.
+Note that, as discussed in Section 2.1, volumes can increase or decrease due to orders being placed, executed, or
+canceled. A similar interpretation holds for ask order flow.
+In Xu et al. (2019) the authors explore flows of volumes at deeper levels in the order book, by introducing multi-level
+order flow. The definitions are exactly as above with superscript (1) replaced by general (l). We note that in both Cont
+et al. (2013) and Xu et al. (2019) the authors investigate the explanatory power of (multi-level) order flow imbalance for
+price changes, i.e. the relationship between contemporaneous order flow imbalance and price changes.
+In our setting, as in Kolm et al. (2021), we are instead interested in exploring the predictive power of order flow, i.e.
+the relationship between past order flow and future price changes. We will hence refer to deepOF as the deepLOB
+architecture with stationary order flow input, i.e. a (T × 2L) array given by
+{xt−τ }τ =0,...,T −1 =
+n
+aOF (l) t−τ , bOF (l) t−τ
+o
+τ =0,...,T −1, l=1,...,L
+∈ RT ×2L.
+The order flow input enters the CNN module in Figure 4 at the second convolutional layer. The rest of the architecture
+is exactly the same as deepLOB, as detailed in Table 13. We note that the first convolutions applied to the order flow
+input, i.e. the second convolutional layer in Figure 4, aggregate information across bid and ask order flows, essentially
+computing a weighted order flow imbalance.
+Remark 2.2. The original deepOF specification in Kolm et al. (2021) was structured as a (multi-horizon) regression
+task. In their setting, the last layer of the deep neural network maps each prediction to R instead of P({↓, =, ↑}).
+Moreover, as discussed in Section 2.5, the way multi-horizon predictions are produced in the original work does not rely
+on the encoder-decoder structure we use for our multi-horizon models. Another slight difference with the experiments
+in Kolm et al. (2021) is in the standardization procedure: instead of standardizing each feature by its training mean and
+standard deviation, we use a rolling window approach.
+2.4 deepVOL
+2.4.1 The need for a robust representation
+As discussed in the previous Section the main difference between deepLOB and deepOF is in the way the data is fed
+into the model. While deepLOB uses raw order book data as input, deepOF uses a derived quantity, order flow. In
+general, the success of deep learning tasks is highly dependent on the way the data is represented. The task of predicting
+returns in order book markets is no exception. In order to achieve the best possible results, one should adopt a robust
+representation of the data. Wu et al. (2021) identify five main desiderata for a robust representation of order book data:
+• Region of interest: the entire order book may contain a wide range of prices, the data representation should
+select a region of interest based on a complexity-performance trade-off.
+• Efficiency: the data representation should avoid excessive dimensionality.
+• Validity: the data representation should have a simple definition of valid manipulations.
+• Smoothness: the data representation should be robust to small perturbations.
+• Compatibility: the data representation should be compatible with the deep learning architecture.
+We note the order book representations used in deepLOB and deepOF do not conform to these desiderata. Order book
+states organized by ‘level’ do not have a simple validity (price and volume information are intrinsically tangled and
+would loose their significance if treated separately in a black box algorithm), are not robust to small perturbation (small
+orders added at empty ticks completely change the order book feature vector), and are incompatible with deepLOB’s
+CNN module (the spatial structure is not homogeneous as there is no fixed interval between levels). It turns out that
+while the ‘level’ representation of the order book may be easily understandable by humans it is less so for statistical
+9
+
+=== page 10 ===
+The Short-Term Predictability of Returns in Order Book Markets
+models. In addition to not satisfying the desiderata, this representation does not respect the following fundamental but
+implicit assumption of deep learning models: signals at the same entry of the input should come from the same source.
+In the ‘level’ representation, as new order book events happen, the same signal (i.e. a posted order) may move between
+levels.
+We, therefore, introduce volume features, which provide a robust representation of order book data. Fixing a window of
+size W > 0 we define:
+{xt−τ }τ =0,...,T −1 =
+n
+s(W ) b,t−τ , . . . , s(1) b,t−τ , s(1) a,t−τ , . . . , s(W ) a,t−τ
+o
+τ =0,...,T −1
+,
+where s(j) x,t−τ for x ∈ {a, b} are the bid/ask volumes corresponding to the j-th price from the mid π(j) x,t−τ , as defined in
+Section 2.1. We note that the volume representation indeed satisfies the five desiderata: a region of interest is identified
+(via the window W > 0), it is efficient (for the same dimension of input it may convey more or less information than
+the ‘level’ representation, depending on how sparse the orders are placed in the order book), it has a simple validity
+(all entries are in the same units), it is robust to small perturbations (new orders at empty levels minimally affect
+the feature) and is compatible with the CNN architecture (the spatial structure of the volumes is homogeneous). An
+intuitive visualization of this representation as a one-dimensional gray-scale strip is given in Figure 6, when including
+a time dimension this naturally becomes a two-dimensional gray-scale image. The main drawback of the volume
+representation is that when orders are placed far apart in the order book it is sparse and a larger window W > 0 may
+be required. Our definition of volume features is similar to the mid-price-centered moving window representation of
+Wu et al. (2021), with the latter living in R2W +1 instead of R2W and using ± signs to distinguish between bid and ask
+volumes. The need for a new, more robust representation of the order book was reached independently.
+Figure 6: Gray-scale visualization of the volume representation of the order book in Figure 1.
+In order to use the deepLOB architecture with this new data representation, we must adapt the CNN module. In
+particular, we fold the volume input into a three-dimensional array
+n
+s(j) x,t−τ
+o
+τ =0,...,T −1, j=1,...,W, x∈{a,b}
+∈ RT ×W ×2,
+and feed this into a three-dimensional convolutional layer with a (2 × 2 × 1) filter and (1 × 1 × 1) stride. This layer
+aims to extract imbalances in the order book by comparing volumes on the two sides of the mid-price. The CNN
+module with the appropriate changes is depicted in Figure 7. The rest of the deepVOL architecture is exactly the same
+as deepLOB with one slight difference in the way the data is normalized. Thinking of the volume representation as a
+gray-scale image a natural choice of normalization is
+n
+s(j) x,t−τ
+o
+τ,j,x
+7→ 1
+max
+τ,j,x
+s(j) x,t−τ
+n
+s(j) x,t−τ
+o
+τ,j,x
+,
+instead of the rolling window standardization we apply to deepLOB and deepOF features.
+Remark 2.3. One could define a volume flow quantity based on the distance from the mid, in the same way order flow
+describes the flow of orders based on the level. Following the same motivation for considering order flow in deepOF
+presented in Section 2.3.2, one could consider using a volume flow quantity as input to the deep learning architectures
+with the desired robust representation properties.
+2.4.2 L3 volume features
+All models considered so far, deepLOB, deepOF, and deepVOL use L2 data as input. If one has access to more granular
+data, i.e. L3 data breaking down each volume queue into single orders, one might be interested in trying to leverage this
+information to obtain higher predictive performance. We thus define a natural extension of the volume representation
+considered in the previous section.
+Let us denote by (q(j,1) x,t , q(j,2) x,t , . . .) ∈ RN for x ∈ {a, b} the queue at the j-th bid/ask price from the mid π(j) x,t as
+introduced in Section 2.1. Here q(j,k) x,t denotes the volume of the k-th order in the queue sorted by time priority and is
+10
+
+=== page 11 ===
+The Short-Term Predictability of Returns in Order Book Markets
+Figure 7: CNN module deepVOL.
+set to zero if there is no such order. The aggregated volume at π(j) x,t is given by:
+s(j) x,t = X
+k≥1
+q(j,k) x,t .
+A natural extension of the volume representation would therefore be to consider
+{(q(j,1) x,t−τ , q(j,2) x,t−τ , . . .)}τ =0,...,T −1, j=1,...,W, x∈{a,b} ∈ RT ×W ×2×N.
+Unfortunately, this is an infinite-dimensional array that cannot be directly fed into machine learning models. We
+therefore cut off the queue at a given depth level. In order to avoid discarding precious information, we aggregate all
+orders sitting past the maximum depth level at the end of the queue. For a given depth level D > 0, we thus consider
+the L3 volume feature
+
+
+
+
+q(j,1) x,t−τ , . . . , q(j,D−1) x,t−τ , X
+k≥D
+q(j,k) x,t−τ
+
+
+
+
+
+τ =0,...,T −1, j=1,...,W, x∈{a,b}
+∈ RT ×W ×2×D .
+Remark 2.4. A similar approach to the one used for cutting off the queue might be applied to aggregate volumes sitting
+deeper in the order book when deriving L2 representations. This would give a better idea of the total liquidity in the
+order book.
+In order to extract relevant information from the queue, we add an initial convolutional layer, which maps each queue to
+a weighted sum of the order sizes. The weighted aggregated volumes are then fed into the deepVOL architecture as
+above. The resulting CNN module is summarized in Figure 8.
+Figure 8: CNN module deepVOL L3. Abusing notation slightly we denote P k≥D q(j,k) x,t−τ by q(j,D) x,t−τ .
+The full architectures for deepVOL and deepVOL L3 are detailed in Table 14.
+11
+
+=== page 12 ===
+The Short-Term Predictability of Returns in Order Book Markets
+2.5 Multi-horizon models
+So far we considered single horizon models, i.e. order book input xt is mapped to a three class distribution (p↓, p=, p↑)
+corresponding to the discretized return ct,t+h at fixed horizon h. In the following, we consider a generalization of the
+architectures considered thus far to the setting where the forecasting horizon is a vector h = (h1, . . . , hK ). In this case
+the modelling task consists in predicting the distributions of the discretized returns ct,t+h = (ct,t+h1 , . . . , ct,t+hK ).
+The simplest way of adjusting the current models to the multi-horizon framework would be to replace the last softmax
+layer in Figure 5 with K parallel dense softmax layers. The last hidden state of the LSTM module would hence be
+mapped to an array of size 3 × K, corresponding to K distributions over three classes. A similar architecture – though
+in the regression framework – is considered in Kolm et al. (2021). While this approach is perfectly valid it does not
+make use of the sequential nature of the task, potentially neglecting an important structural feature of the data.
+In this paper, we will be leveraging architectures inspired by machine translation which are naturally suited for sequential
+forecasting. Specifically, we will be considering encoder-decoder models: an encoder maps the input data to a latent
+summary state (also known as context vector) and then a decoder rolls forward predictions sequentially. In this context
+let zt−T +1, . . . , zt denote the last T hidden states of an encoder at time t, then a decoder rolls forward predictions by:
+z′ 0 = zt, p0 = ˆp0,
+ck = h(zt−T +1, . . . , zt), z′ k = f ([z′ k−1, ck], pk−1), pk = g(z′ k−1, ck),
+for k = 1, . . . , K. Here h(·) is a function acting on the hidden states of the encoder to extract the context vector ck
+(this may possibly depend on other inputs as well, such as previous hidden states of the decoder), f (r, p) is a recurrent
+layer with recurrent input r and exogenous input p, g(·) is an output layer depending on both the decoder hidden state
+and the context. The general mechanism of such encoder-decoder architecture is visualized in Figure 9.
+Figure 9: A general encoder-decoder architecture.
+In our experiments, we will consider a sequence-to-sequence decoder (Cho et al., 2014), the simplest example of such
+architecture. In this setting we set ck ≡ zt, implicitly assuming that at every forecasting horizon, the last hidden state
+of the encoder summarizes all the relevant information required to make the prediction. More complex architectures
+exist, for example, Luong et al. (2015) introduce an attention-based decoder that uses a weighted combination of all
+the hidden states of the encoder as context vector. In this setting different weights are used at different forecasting
+horizons, selectively accessing hidden states of the encoder during decoding. While attention-based networks have been
+successfully applied for high-frequency mid-price predictions, cf. Zhang and Zohren (2021) and Tran et al. (2019), in
+this work, we wish to exemplify the potential of multi-horizon models and thus restrict ourselves to simple seq2seq
+decoders only.
+In the experiments, we set f (·) to be an LSTM and g(·) to be a dense layer with softmax activation. Moreover p0 is
+initialized at ˆp0 = (0, 1, 0).
+Using multi-horizon forecasting was first proposed for deepLOB in Zhang and Zohren (2021): the LSTM module of the
+deepLOB architecture discussed in Section 2.3.1 acts as an encoder, mapping order book states to the LSTM final latent
+vector zt = [ht, st]. A seq2seq decoder then rolls forward the prediction producing distributional forecasts at horizons
+h = (h1, . . . , hK ). The LSTM module with seq2seq decoder is illustrated in Figure 10. Clearly, there is nothing
+12
+
+=== page 13 ===
+The Short-Term Predictability of Returns in Order Book Markets
+stopping us from applying the same multi-horizon structure to the output of deepOF and deepVOL convolutional
+modules.
+Full details of the multi-horizon architectures can be found in Table 13 and Table 14.
+Remark 2.5. We adopt the same multi-horizon framework as in Zhang and Zohren (2021), where the response ct,t+hk
+at horizon hk ∈ {h1, . . . , hK } corresponds to the return from time t to time t + hk. Alternatively, one might wish to
+consider as multi-horizon responses the subsequent incremental returns ct+hk−1 ,t+hk , i.e. the returns between time
+t + hk−1 and time t + hk. By choosing evenly spaced hk’s one would obtain more consistent responses across prediction
+time steps {1, . . . , K} and possibly improve the performance of the multi-horizon models.
+Figure 10: Inception module and LSTM layer with seq2seq decoder for multi-horizon forecasting.
+3 Data set
+In this section, we introduce the data set used in the experiments presented in Section 4. First, we briefly describe how
+LOBSTER order book data is related to the Nasdaq ITCH feed. Next, we give details of how we process LOBSTER
+data to obtain features and responses for the experiments. We also provide some descriptive statistics of the data.
+We consider the same universe of stocks and trading period as in Kolm et al. (2021): through LOBSTER (Huang and
+Polak, 2011) we access one year of open (9:30 EST) to close (16:00 EST) trading data for 115 Nasdaq tickers from
+January 2, 2019, to January 31, 2020. To produce results in feasible computational time, we select a subset of 10 stocks,
+trying to preserve a sufficiently varied set of liquidity characteristics. The ten tickers and their liquidity characteristics
+are summarized in Table 1. For full details on how the 10 stocks were selected, see Appendix A.8.
+13
+
+=== page 14 ===
+The Short-Term Predictability of Returns in Order Book Markets
+Ticker Updates (000) Trades (000) Price Changes (000) Price (USD) Spread (bps) Volume (USD MM)
+LILAK 49.89 1.81 3.77 18.09 15.92 2.63
+QRTEA 121.32 5.23 2.79 13.54 9.75 9.53
+XRAY 83.07 5.41 7.11 52.32 4.35 21.67
+CHTR 80.97 6.75 19.21 400.68 6.22 111.71
+PCAR 131.38 6.85 13.03 70.63 3.82 34.43
+EXC 298.32 7.58 7.21 47.35 2.45 37.55
+AAL 398.13 13.15 10.99 30.65 3.88 50.29
+WBA 328.5 13.2 15.18 57.81 2.54 75.19
+ATVI 423.01 17.97 20.25 49.87 2.81 91.82
+AAPL 1137.36 64.19 127.86 215.8 0.99 1156.3
+Table 1: Selected stocks’ characteristics, daily averages.
+3.1 LOBSTER data, Huang and Polak (2011)
+In Section 2.1 we described the basic mechanisms governing electronic exchanges such as the Nasdaq. Every day,
+trading activity on the Nasdaq alone results in hundreds of thousands of order book updates for each stock, cf. Table
+1. To keep track of all events occurring on the exchange and communicate them efficiently to (subscribed) market
+participants the Nasdaq uses the TotalView-ITCH protocol. For efficiency, instead of streaming the entire state of the
+order book after each update, only information on the event changing the order book is sent out to market participants.
+An example of a (decoded) ITCH message is reported in Table 2, note these are timestamped at nanosecond precision.
+It is up to each market participant to store the current state of the order book and update it each time a new message
+arrives.
+Event ID Timestamp (sec) Event Type Order ID Size (shares) Price Direction
+... ... ... ... ... ... ...
+1312 34714.133632201 deletion 206833312 2516 $11.86 sell
+... ... ... ... ... ...
+Table 2: Example message from a LOBSTER message file. This example corresponds to the order book dynamics
+shown in Figure 1.
+The service LOBSTER provides to academic researchers is to reconstruct the historic order book from Nasdaq’s
+Historical TotalView-ITCH data. For each selected ticker and date, LOBSTER returns message and order book files
+subsampled at a given granularity. In practical terms, a 10-level data granularity yields the set of messages corresponding
+to order book updates in the first 10 levels along with the corresponding reconstructed order book ‘chopped at 10 levels’.
+The evolution of the order book determined by the message in Table 2 is reported in Table 3. More information on the
+order book reconstruction algorithm used by LOBSTER can be found in Huang and Polak (2011) and on the website
+www.lobsterdata.com.
+Event ID Timestamp (sec) p(1) a v(1) a p(1) b v(1) b · · · p(10) a v(10) a p(10) b v(10) b
+... ... ... ... ... ... · · · ... ... ... ...
+1311 34713.685155243 $11.86 12000 $11.85 8800 · · · $11.95 500 $11.73 5500
+1312 34714.133632201 $11.86 9484 $11.85 8800 · · · $11.95 500 $11.73 5500
+... ... ... ... ... ... · · · ... ... ... ...
+Table 3: Example order book update from a LOBSTER order book file. This example corresponds to the order book
+dynamics shown in Figure 1.
+14
+
+=== page 15 ===
+The Short-Term Predictability of Returns in Order Book Markets
+3.2 Processed data
+From the historic LOBSTER order book data we build the features xt, . . . , xt−T +1 and the target responses ct,t+h. In
+the experiments in Section 4 we apply the learning framework of Section 2.2 with the deep learning models introduced in
+Section 2.3 to these feature-response pairs, using the model confidence set (MCS) procedure for model comparison. As
+previously discussed in Section 2.1 we will be measuring time t (and prediction horizons h) using an order book-driven
+clock, ticking every time an event occurs on the order book. This clock corresponds to the Event ID in Table 2 and
+Table 3. Note we access LOBSTER data up to level 10, thus our order book clock is conditional on the updating
+event being in the first 10 levels. By construction, the data contains all information on new limit orders, market orders,
+and cancellations restricted to the first 10 levels. We apply some minor pre-processing steps to the LOBSTER data,
+summarized in Appendix A.3.
+3.2.1 Features: order book, order flow and volume
+We start by discussing how to derive the features xt at each time point t from the raw LOBSTER data, i.e. from Table 2
+and Table 3. While it is quite simple to build L1/L2 order book, order flow and volume features, reconstructing L3
+volume data requires a bit more work.
+The raw order book input xt used in deepLOB (Zhang et al., 2019) and described is Section 2.3.1 simply corresponds
+to the LOBSTER data in Table 3, i.e. at t = 1312 the 10-level order book feature is given by
+xt =
+
+p(1) a,t , v(1) a,t , p(1) b,t , v(1) b,t , . . . , p(10) b,t , v(10) b,t
+
+= (11.86, 9484, 11.85, 8800, . . . , 11.73, 5500).
+The features are standardized using a 5-day rolling window.
+To compute the order flow input xt used in deepOF (Kolm et al., 2021) we apply the equations given in Section 2.3.2 to
+the LOBSTER data in Table 3, i.e. at t = 1312 the 10-level order flow feature is given by
+xt =
+
+aOF (1) t , bOF (1) t , . . . , bOF (10) t
+
+= (−2516, 0, . . . , 0).
+Again, the features are standardized using a 5-day rolling window.
+To construct the volume input xt at L2 granularity for the deepVOL model described in Section 2.4, we select only
+the volume information from Table 3 adding in zeros corresponding to empty price ticks, i.e. at t = 1312 the volume
+feature with window size W = 10 is given by
+xt =
+
+s(10) b,t , . . . , s(1) b,t , s(1) a,t , . . . , s(10) a,t
+
+= (1400, . . . , 8800, 9484, . . . , 500).
+Note that, in this example, s(10) b,t = 1400 ̸= 5500 = v(10) b,t since some bid price ticks are empty, cf. Figure 1. As discussed
+in Section 2.4, volume features are normalized using max-scaling over the whole input array (xt, . . . , xt−T +1).
+Finally, to construct the L3 volume features, one needs to work with the message file in Table 2 to keep track of the
+queues. For example, the volume queue at the first ask price, i.e. π(1) a,t = $11.86, given at time t = 1311 by 
+q(1,1) a,t , q(1,2) a,t , q(1,3) a,t , q(1,4) a,t , q(1,5) a,t
+
+= (2516, 2000, 1484, 4500, 1500),
+is updated at time t = 1312 to
+
+q(1,1) a,t , q(1,2) a,t , q(1,3) a,t , q(1,4) a,t
+
+= (2000, 1484, 4500, 1500),
+by the deletion in Table 2. All other queues are left unchanged. For more details on the complexities of reconstructing
+volume features from LOBSTER data see Appendix A.3.1. A deep dive into the distributions of the processed order
+book, order flow, and volume features is carried out in Appendix A.4.1.
+3.2.2 Responses: categorical mid-price returns
+In this paper, we are interested in answering questions regarding the predictability of market returns. Inevitably, the
+way returns, i.e. the target responses, are defined has a profound effect on this analysis. Here, in line with the related
+literature, we treat the mid-price as the “true” price and define returns relative to it, but it is important to note that, by
+definition, this is not a tradable price. We define the return at horizon h as
+rt,t+h = m(k) t+h − mt mt , m(k) t+h = 1 2k + 1 kX i=−k mt+h+i,
+15
+
+=== page 16 ===
+The Short-Term Predictability of Returns in Order Book Markets
+where mt denotes the mid-price at time t and k is a fixed smoothing window. The mid-price mt is computed
+from Table 3 by 1 2  p(1) b,t + p(1) a,t  , i.e. at times t = 1311 and t = 1312 we have mt = $11.855. This definition is subject to two possible interpretations. Treating the smoothed mid-price as a de-noised estimate of the true (latent)
+price h steps ahead, we can understand the return as the percentage change of the true (latent) price relative to the
+current mid. Alternatively, the return can be understood as the average return one would experience by entering a
+position at the current mid and exiting it roughly h steps ahead (assuming mid-mid trading). For all the horizons
+h ∈ {10, 20, 30, 50, 100, 200, 300, 500, 1000} which are considered in Section 4 we fix k = 5. In Appendix A.6 we
+discuss other methods for defining mid-price returns and their shortcomings.
+Remark 3.1. When defining the returns we assume immediate access to the order book. In practice though, hardware
+and software constraints lead to non-zero time lags when receiving messages and sending orders to the exchange. While,
+in our setting, such latencies have a negligible impact on the definition of returns, we discuss how their presence could
+be more precisely accounted for in Appendix A.7.
+All our experiments are carried out in a classification framework where the discretized returns are defined as
+ct,t+h =
+
+
+
+↓ if rt,t+h ∈ (−∞, −γ),
+= if rt,t+h ∈ [−γ, +γ],
+↑ if rt,t+h ∈ (+γ, +∞),
+for some γ > 0. In order to make the three classes roughly symmetric and as balanced4 as possible, we empirically
+choose γ from the training set Dtrain by
+ˆγh = | ˆQh(0.33)| + ˆQh(0.66) 2 ,
+where ˆQh is the empirical quantile function of the training set returns {rt,t+h}t∈Itrain . As discussed in Section 4, we
+will be splitting our data D in disjoint windows Dw = Dw,train ∪ Dw,val ∪ Dw,test for w = 1, . . . , W . The choice of γ
+will, therefore, be window w and horizon h specific. Descriptive statistics of the target return labels for the first window
+w = 1 are reported in Appendix A.4.2.
+We note that, since stocks trade on a discrete grid of prices determined by the tick size5 ϑ, also the mid-price mt evolves
+on a discrete price (with steps of size ϑ/2). One could thus define the dollar return from t to t + h by the number of
+(half) ticks the mid-price moves, i.e.
+Rt,t+h = mt+h − mt ∈ {. . . , −ϑ, −ϑ/2, 0, ϑ/2, ϑ, . . .} ≡ {. . . , −2, −1, 0, +1, +2, . . .}.
+This return is by definition discretized, and thus one could directly apply classification models (grouping large negative
+and positive returns to obtain a finite number of classes). A similar approach is used in Sirignano and Cont (2019) when
+predicting the next change in mid-price. In our work, we consider the estimate for the “true” mid-price to be
+m(k) t+h = 1 2k + 1
+kX
+i=−k
+mt+h+i,
+which lives on a much finer grid than mt+h: over the, possibly quite long, time horizon h multiple changes to the
+mid-price might occur. In this case the smallest change has little meaning and so we group the dollar returns
+Rt,t+h = m(k) t+h − mt ∈
+
+. . . , − ϑ 2k + 1 , − ϑ 4k + 2 , 0, ϑ 4k + 2 , ϑ 2k + 1 , . . .  ,
+into larger classes given by
+(−∞, −mtγ), [−mtγ, +mtγ], (+mtγ, +∞).
+4 Experiments
+In this section, we explore the four questions introduced in Section 1.2 and attempt to answer them via the statistical
+framework provided by model confidence sets (MCS). This inference procedure allows to compare a set of competing
+models M0 based on observed loss time series {Li,w}W w=1 where Li,w denotes the loss of model i ∈ M0 at time
+w ∈ W . To apply the model confidence set procedure to the data described in Section 3, we divide the 55 weeks from
+January 14, 2019 to January 31, 2020 into W = 11 five-week periods6, as represented in Figure 11. Each window of
+4Note that, especially for short horizons h, many of the returns rt,t+h can be exactly zero, leading to ˆQh(0.33) = ˆQh(0.66) = 0.
+When this happens the three classes are unbalanced.
+5ϑ = $0.01 for many US listed stocks and all the stocks considered in this paper.
+6Data from the week starting on January 7, 2019, is used to start the rolling window standardization required for deepLOB and
+deepOF architectures
+16
+
+=== page 17 ===
+The Short-Term Predictability of Returns in Order Book Markets
+data Dw is divided into a training-validation set Dw,train ∪ Dw,val, the first four weeks, and a test set Dw,test, the fifth
+week. The joint training-validation set is then further split into training and validation sets by randomly selecting 5 days
+out of the four weeks for validation. First, the training dataset Dw,train is used to choose the γ threshold for defining the
+return labels, as detailed in Section 3.2.2 (note that the choice of γ is specific to the choice of window, horizon, and
+ticker). Then, the joint training-validation dataset Dw,train ∪ Dw,val is used to train the models. For the unpredictive
+benchmark model, this simply means determining the empirical distribution of returns in Dw,train ∪ Dw,val, cf. Appendix
+A.4.2. For the deep neural network architectures, this amounts to finding the optimal parameters which minimize the
+training weighted cross-entropy loss. To do so, we use Adam optimization with validation-based early stopping as
+described in Appendix A.1. Once the model has been trained we compute the out-of-sample losses on Dw,test, i.e. for
+period w ∈ {1, . . . , 11} and model i ∈ M0
+Li,w = −cce(ˆpi w,test, cw,test) = − 1 |Iw,test| X t∈Iw,test X ∗∈{↓,=,↑} 1{ct,w,test=∗} log ˆpi ∗,t,
+is the categorical cross-entropy loss corresponding to the estimated probabilities ˆpi w,test when compared with the
+observations cw,test. ˆpi w,test are the class probabilities produced by model i on the testing set Dw,test after being trained
+on the training-validation set Dw,train ∪ Dw,val. The time series of test losses {Li,w}11 w=1 are then “fed through” the
+MCS procedure described in Appendix A.2 to obtain the set of MCS p-values {pMCS i }i∈M0 . The intuitive interpretation
+of these p-values is: if model i ∈ M0 has an MCS p-value lower than a prescribed confidence level then it is deemed
+statistically inferior to other models in M0 at that confidence level. This naturally justifies the following definition of
+order book-driven predictability.
+Definition 4.1. For α ∈ (0, 1) we say that there is order book-driven predictability at confidence level 1 − α if
+pMCS benchmark < α.
+In other words, if the unpredictive benchmark is deemed to be statistically inferior to some of the other models in M0
+at least one order book-driven model does better than the unpredictive benchmark, i.e. such model is predictive.
+Figure 11: Data set windowing for experiments.
+One of the strengths of the way we apply the model confidence set procedure in this context is that it allows to fully
+account for parameter estimation error, while classic methods for comparing deep learning models do not. To make this
+statement precise let us make explicit the dependence of the test loss
+Li,w = −cce(pi(Xw,test; ˆθi(Dw,train ∪ Dw,val, ϵi,w)), cw,test),
+on the training-validation data Dw,train ∪ Dw,val, the fitting procedure initialization seed ϵi,w and the testing data
+Dw,test = {Xw,test, cw,test}. In the related literature, deep learning models are often compared by fitting the model
+to the same data Dtrain ∪ Dval starting with different seeds and reporting the out-of-sample average loss and standard
+error, This accounts only for the uncertainty in ϵ and not in the sampled training and testing data sets (cf. Remark A.1).
+Our approach instead naturally considers overall parameter estimation uncertainty, comprised of both statistical and
+optimization errors, by comparing model losses as functions of the random processes Dw,train ∪ Dw,val, ϵw,i and Dw,test.
+This provides a more robust comparison of model performance, i.e. specification error.
+Remark 4.1. Note that not all training procedures may converge to the optimal combination of parameters. This is
+a characteristic of any model learned via numerical optimization methods. We further note that in our experimental
+setup, no hyperparameter tuning is carried out for any of the models. When using these models in a production setting,
+one may obtain better results by selecting parameters using cross-validation on the training-validation set. Parameters
+which one may investigate tuning include:
+• Architecture hyperparameters:
+– number of filters in each convolutional layer (we fix 32 channels);
+17
+
+=== page 18 ===
+The Short-Term Predictability of Returns in Order Book Markets
+– number of weighted averages and lengths of averaging windows;
+– number of LSTM hidden nodes (we fix 64 hidden nodes);
+– decoder type for multi-horizon models (we use seq2seq).
+• Feature hyper-parameters:
+– number of levels in features (we fix L = 10 levels);
+– queue depth in deepVOL(L3) (we fix queue depth D = 10);
+– look back window length (we fix T = 100);
+• Training/Optimization hyper-parameters:
+– Adam learning rate (we fix η = 0.01);
+– Adam parameters (we fix ϵ = 1, β1 = 0.9, β2 = 0.999);
+– batch size (we fix batch size 256);
+– number of epochs (we fix 50 epochs);
+– early stopping patience (we fix 10 epochs validation patience);
+– training set downscale factor7 (we subset the training dataset by a factor of 10).
+Here we are not interested in obtaining the best fit possible for a specific model but in comparing different mod-
+els/benchmarks on a level playing field. We thus leave questions related to hyper-parameter tuning for future work.
+All code is developed in Python with the tensorflow library and the keras API, with some layers requiring custom
+tensorflow methods. Due to the computationally intensive nature of the experiments, specialized infrastructure was
+required to store the data (5TB) and train the models (GPUs). All computations were carried out on Imperial College’s
+High-Performance Computing cluster (Imperial College Research Computing Service, 2022), which provides access to
+several RTX6000 GPUs.
+The results discussed hereafter are specific to the experimental setup under consideration, i.e. they are specific to the
+selected stocks, time period, and models. Different experimental setups may lead to different results.
+4.1 Do high-frequency returns display predictability? If so, how far ahead can we predict?
+In order to understand whether high-frequency returns display predictability we consider the following set of models:
+M0 =
+
+benchmark, deepLOB(L1), deepOF(L1), deepLOB(L2), deepOF(L2), deepVOL(L2), deepVOL(L3)
+	
+,
+where L1 models only use the first level of the order book, while L2 and L3 models use the first 10 levels. For
+each return horizon h ∈ {10, 20, 30, 50, 100, 200, 300, 500, 1000} and TICKER ∈ {LILAK, QRTEA, XRAY, CHTR,
+PCAR, EXC, AAL, WBA, ATVI, AAPL} we determine the MCS p-value of each model in M0. The MCS p-value for
+the unpredictive benchmark model are reported in Table 4. Lighter green shading corresponds to α = 0.05 while darker
+green is α = 0.01.
+From the results reported in Table 4 we see that at high frequencies predictability is systematically present. For most of
+the stocks under consideration, we were able to identify predictability up to 50 order book events ahead at the 99%
+confidence level.
+Except for LILAK, which is the most illiquid stock, we observe a substantial correlation between the persistence in
+predictability and the average Updates to Price Changes ratio, cf. Table 1. Recalling that in our setting the horizon h is
+measured in order book updates, this can be interpreted as it being easier for the deep learning models to predict returns
+that are the result of fewer price changes. One might thus expect to obtain a more consistent maximum predictable
+horizon across stocks when using a price change-driven clock to measure time.
+7It is worth noting that in all our experiments, we subset the training dataset by a factor of 10, i.e. subsequent feature-response
+observations in the dataset are obtained by sliding forward by 10 order book events. This serves multiple purposes: on one hand, it
+significantly reduces the computational effort required to train the models, on the other, it helps to prevent the risk of overfitting to
+specific patterns arising in the training dataset. Down-sampling the dataset might also have adverse effects, for example, reducing
+the available training data of an illiquid stock by a factor of 10 might result in insufficient information to robustly train these
+data-intensive models.
+18
+
+=== page 19 ===
+The Short-Term Predictability of Returns in Order Book Markets
+h = 10 h = 20 h = 30 h = 50 h = 100 h = 200 h = 300 h = 500 h = 1000
+LILAK 0.00 0.00 0.42 1.00 1.00 1.00 1.00 1.00 1.00
+QRTEA 1.00 0.01 0.01 0.00 0.00 0.00 0.08 0.77 0.54
+XRAY 0.00 0.00 0.00 0.01 0.10 0.23 0.48 1.00 0.93
+CHTR 0.00 0.00 0.04 0.00 0.42 1.00 1.00 1.00 0.97
+PCAR 0.00 0.00 0.00 0.00 1.00 1.00 0.60 1.00 1.00
+EXC 0.26 0.00 0.00 0.00 0.00 0.00 0.00 0.51 1.00
+AAL 0.11 0.00 0.00 0.00 0.00 0.71 1.00 1.00 1.00
+WBA 0.00 0.00 0.00 0.00 0.02 0.27 0.13 0.01 1.00
+ATVI 0.00 0.00 0.00 0.00 0.00 0.78 1.00 1.00 1.00
+AAPL 0.00 0.00 0.00 0.23 1.00 1.00 1.00 1.00 1.00
+Table 4: MCS p-values of the unpredictive benchmark model for the 10 tickers and 9 horizons under consideration.
+When the p-value is low at least one of the order book-driven models statistically outperforms the unpredictive
+benchmark, i.e. there is order book-driven predictability according to Definition 4.1.
+4.2 Which order book representations perform the best?
+Having discussed the extent to which the class of models under consideration can identify predictability, it is now
+natural to ask which of these models performs best. In the MCS framework, this corresponds to determining the
+specifications which are consistently placed in the set of superior models. We restrict our attention to the horizons and
+stocks at which predictability is identified and, for each model in consideration, we count the number of times it is
+identified as a superior model. The results are reported in Table 5.
+α = 0.05 α = 0.01
+benchmark 0% 0%
+deepLOB(L1) 7% 11%
+deepOF(L1) 23% 22%
+deepLOB(L2) 5% 11%
+deepOF(L2) 88% 89%
+deepVOL(L2) 65% 84%
+deepVOL(L3) 77% 86%
+Table 5: % of times the model is in the α-MCS when predictability is identified at the corresponding level α.
+From the results in Table 5 (at the 99% confidence level) we can make the following observations on the way order
+book representations influence model performance. When considering deep learning models for short-term return
+prediction having access to L2 data provides a significant advantage over L1 data. We see that models with L1 data
+are rarely placed in the set of superior models when predictability is identified. When going from L2 to L3 data
+instead, the increased granularity does not seem to provide a clear advantage: deepVOL(L2) and deepVOL(L3) display
+similar performance. Our experiment, therefore, suggests that L3 data might be excessively granular when predicting
+high-frequency returns from order books.
+The choice of features used to represent the order book is also crucial when leveraging deep learning methods for return
+prediction. Using order flow or volume representations provides a significant improvement in performance: the basic
+deepLOB model ends up being included in the set of best models only 10% of the time and is outperformed even by the
+model with only first-level (L1) order flow. Volume- and order flow-based models (with L2/L3 data granularity) display
+comparable performance, being placed in the set of superior models in 85-90% of the predictable horizons.
+4.3 Can we use a single model across multiple horizons?
+In this section, we explore whether using a seq2seq decoder to produce multi-horizon predictions is beneficial. Such
+models have the clear advantages of having a single set of weights (the network size is only slightly bigger than single
+horizon networks) and output multiple predictions in very similar run times. This significantly reduces both the memory
+required to store the models and the time needed to train them. But how do they perform when compared to their
+single-horizon counterparts?
+19
+
+=== page 20 ===
+The Short-Term Predictability of Returns in Order Book Markets
+To answer this question we run the same experiment as in Section 4.1 and Section 4.2 but enlarge the set of models with
+the seq2seq specifications. We focus only on prediction horizons h ∈ {10, 20, 30, 50}. The results are reported in Table
+6 and Table 7.
+From Table 7 we note that, for each input type, the seq2seq specifications outperform their single horizon counterparts.
+We suggest this behavior might be due to the increased availability of information in a multi-horizon setting. For a
+given input-target pair, when targets are multi-horizon, more information is available on the “order book regime” the
+inputs should be mapped to. Multi-horizon models can thus learn a more granular map from the input variables to the
+latent space of “order book regimes”, which might be beneficial for producing predictions.
+Remark 4.2. Note that running the model confidence set procedure again with a larger set of models leads to a
+counter-intuitive situation where fewer prediction horizons are identified. One would expect that adding models could
+only increase the number of horizons at which predictability is identified. While this is true in the limit as the number
+of horizons increases to infinity, it does not hold in the setting where we have access to a finite set of observations. With
+this observation in mind, we note that results in Table 6 are consistent with those in Table 4.
+h = 10 h = 20 h = 30 h = 50
+LILAK 0.00 0.00 0.31 0.55
+QRTEA 1.00 0.10 0.06 0.00
+XRAY 0.00 0.00 0.00 0.00
+CHTR 0.00 0.00 0.01 0.01
+PCAR 0.00 0.00 0.00 0.00
+EXC 0.23 0.00 0.00 0.00
+AAL 0.08 0.00 0.00 0.00
+WBA 0.00 0.00 0.00 0.00
+ATVI 0.01 0.00 0.00 0.00
+AAPL 0.00 0.00 0.00 0.07
+Table 6: MCS p-values of the unpredictive benchmark model for the 10 tickers and 9 horizons under consideration when
+seq2seq models are also considered. When the p-value is low at least one of the order book-driven models statistically
+outperforms the unpredictive benchmark, i.e. there is order book-driven predictability according to Definition 4.1.
+α = 0.05 α = 0.01
+benchmark 0% 0%
+deepLOB(L1) 6% 10%
+deepOF(L1) 13% 16%
+deepLOB(L2) 6% 13%
+deepOF(L2) 63% 71%
+deepVOL(L2) 63% 74%
+deepVOL(L3) 75% 84%
+deepLOB(L1, seq2seq) 13% 26%
+deepOF(L1, seq2seq) 16% 16%
+deepLOB(L2, seq2seq) 16% 39%
+deepOF(L2, seq2seq) 91% 97%
+deepVOL(L2, seq2seq) 78% 84%
+deepVOL(L3, seq2seq) 81% 87%
+Table 7: % of times the model is in the α-MCS when predictability is identified at the corresponding level α.
+4.4 Can we use a single model across multiple stocks?
+In a similar spirit to Sirignano and Cont (2019), we investigate questions regarding the universality of order book
+dynamics. Intuitively, at a microstructural level, securities which are traded by market participants with similar
+20
+
+=== page 21 ===
+The Short-Term Predictability of Returns in Order Book Markets
+characteristics may be subject to the same trading patterns, independently of the underlying stock’s properties. In
+Sirignano and Cont (2019), the authors observe that price formation dynamics driven by past order book information,
+i.e. next mid-price moves, display common patterns across different stocks. In this paper, we explore whether similar
+results hold over longer horizons.
+We run the same experiment as in Section 4.1 but train the models on multiple stocks simultaneously. Specifically, we
+split the set of 10 stocks under consideration into two; a first “in-sample” set of stocks given by {QRTEA, CHTR, EXC,
+WBA, AAPL}, and a second “out-of-sample” set {LILAK, XRAY, PCAR, AAL, ATVI}. For each window w, we use
+all the training-validation data for the “in-sample” stocks to train (and validate) the models. We then evaluate the trained
+models on the test data of both the “in-sample” and the “out-of-sample” stocks. The results are reported in Table 8.
+h = 10 h = 20 h = 30 h = 50 h = 100 h = 200 h = 300 h = 500 h = 1000
+LILAK 0.98 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00
+QRTEA(∗) 0.00 0.00 0.01 0.06 0.00 0.13 0.59 0.34 1.00
+XRAY 0.03 1.00 1.00 1.00 1.00 1.00 0.62 0.81 1.00
+CHTR(∗) 1.00 1.00 1.00 1.00 1.00 1.00 0.94 1.00 1.00
+PCAR 0.08 1.00 1.00 1.00 1.00 1.00 1.00 1.00 1.00
+EXC(∗) 0.00 0.00 0.00 0.00 0.00 0.39 0.69 1.00 1.00
+AAL 0.00 0.00 0.00 0.00 0.00 0.58 0.60 1.00 1.00
+WBA(∗) 0.00 0.00 0.00 0.00 0.02 0.58 0.36 0.14 1.00
+ATVI 0.00 0.00 0.00 0.00 0.60 0.74 0.88 1.00 1.00
+AAPL (∗) 0.07 1.00 1.00 1.00 1.00 0.59 1.00 0.65 1.00
+Table 8: MCS p-values of the unpredictive benchmark model for the 10 tickers and 9 horizons under consideration,
+universal models only. When the p-value is low at least one of the order book-driven models statistically outperforms
+the unpredictive benchmark, i.e. there is order book-driven predictability according to Definition 4.1. (∗) are
+“in-sample” stocks.
+Focusing on “in-sample” stocks, we note that using universal models leads to results that are partially inconsistent with
+those in Table 4. A possible interpretation for this is that universal models may be picking up different order book
+dynamics from those identified by stock-specific models. In this sense, relatively illiquid stocks with overall “standard”
+trading behavior might benefit from universal models thanks to the greater availability of data. We suggest this might be
+the case for QRTEA and EXC at horizon h = 10. When, instead, the ticker is mainly subject to stock-specific trading
+patterns, universal models have a hard time detecting predictability – we believe this might be the case for CHTR and
+AAPL. These results are intrinsically tied to the observations of Remark 4.3.
+It is rather remarkable that universal models can identify predictability for “out-of-sample” stocks. This provides
+evidence of the presence of common trading patterns in the order books of different tickers. For AAL and ATVI,
+universal models can consistently outperform the unpredictive benchmark predictions without ever learning from the
+stock’s past order book data.
+α = 0.05 α = 0.01
+benchmark 0% 0%
+deepLOB(L1, universal) 0% 0%
+deepOF(L1, universal) 0% 0%
+deepLOB(L2, universal) 8% 24%
+deepOF(L2, universal) 42% 62%
+deepVOL(L2, universal) 71% 81%
+deepVOL(L3, universal) 92% 100%
+Table 9: % of times each model is in the α-MCS when predictability is identified at the corresponding level α.
+Since we believe universal and stock-specific models may be picking up different trading patterns, a natural question to
+ask is whether the conclusions from Section 4.2 carry over to the universal setting. The results in Table 9 suggest the
+superior power of L2 over L1 data is retained for universal models. In this case, though, the increased granularity of
+L3 data appears to be actually beneficial. Moreover, when considering universal models, the volume representation
+appears to outperform both order book and order flow inputs. These results thus suggest that some predictive universal
+21
+
+=== page 22 ===
+The Short-Term Predictability of Returns in Order Book Markets
+patterns can be extracted only from the most granular data. This contrasts with stock-specific models which achieve
+good predictive performance simply based on order flow information (which is, by construction, also contained in
+volume-based features).
+Remark 4.3. As discussed in Section 3.2.2, the choice of γ used to define the return classes is stock-specific. This
+means that up/down labels for different securities may correspond to different numbers of mid-price changes. This is in
+line with our choice of order book-driven clock, which is by definition also stock-specific. It is important to note that
+the choices of γ and clock t might not entirely account for structural trading differences of stocks, making it harder to
+identify universal trading patterns. This contrasts with Sirignano and Cont (2019), where the next mid-price move has a
+straightforward universal structural interpretation. There are a couple more differences with Sirignano and Cont (2019)
+we want to point out:
+• First, in Sirignano and Cont (2019), the authors consider a much bigger set of stocks, comprised of 500
+“in-sample” stocks used for training and 500 “out-of-sample” stocks, making their model more general and
+thus more universal.
+• Second, in that paper, the authors also investigate questions regarding the stationarity of price formation
+dynamics. This entails using a single long training window: the greater availability of data leads to more stable
+results. To employ the model confidence set procedure and allow the models to capture patterns specific to
+different economic regimes, we did not adopt this approach in our work.
+• The LSTM model considered in that paper differs from the deepLOB/deepOF/deepVOL architectures. In
+Sirignano and Cont (2019), the LSTM specification is an online model, i.e. inputs at time t represent the order
+book state at time t only and are fed through an LSTM-based architecture updating the stored hidden state
+and producing output predictions. In our models, instead, there is no storage of hidden units between one
+prediction and the next, i.e. at each time step t, we input the order book history between t − T + 1 and t (in the
+form of raw order books, order flow or volumes) and, after appropriate convolutional feature extraction, apply
+an LSTM to the processed sequential data to produce the prediction. When studying dependence on order
+book history T , Sirignano and Cont (2019) refer to the cut-off horizon used in the backpropagation through
+time computation of gradients during the training procedure.
+5 Conclusions and Outlook
+In this paper, we explored empirical questions regarding the predictability of mid-price returns driven by order book
+data in centralized exchanges. The predictability in price formation dynamics, already considered in the sense of next
+mid-price change in Sirignano and Cont (2019), was found to persist up to 50-300 order book updates ahead, horizons
+over which multiple mid-price changes may occur. Such predictable horizons might vary from a few milliseconds to
+nearly half a second, depending on the stock under consideration. These results contrast with low-frequency returns,
+where predictability is much harder to identify but easier to trade once discovered. In fact, in the high-frequency context,
+predictability is not always exploitable due to technological limitations and market microstructure issues. A related
+and more challenging question is, therefore, to understand whether the predictability identified in this paper is actually
+tradable.
+The experiments were carried out using specific deep learning architectures. Other than identifying predictable horizons,
+we aimed to answer questions related to the models under consideration. In particular, we found strong empirical
+evidence for using L2 data over L1 data. But, from the results presented in this paper, using even more granular order
+book information (L3) seems to benefit only universal models. The experiments also highlight the importance of
+carefully choosing a data representation: models based on the basic order book level representation are considerably
+outperformed by those with order flow or volume inputs. Finally, we found empirical evidence for the presence of
+universal trading patterns in order book dynamics. Our preliminary results suggest that deep learning architectures may
+pick up different predictable order book patterns when trained on a pool of stocks instead of a single one. The volume
+representation has some considerable theoretical advantages, in particular, it is robust to small perturbations, which
+might explain its superior predictive ability when considering universal models.
+Many further theoretical questions regarding predictability which we believe to be of research interest remain unan-
+swered. First, it would be natural to explore whether predictability in returns can be entirely explained by order book
+structure or if recurring trading patterns play a relevant role. Next, one could compare the predictive performance of
+the deep learning architectures discussed in this paper to that of the models based on carefully engineered features
+considered in Aït-Sahalia et al. (2022). Finally, only Nasdaq-traded stocks were considered in this paper. This is a
+centralized electronic dealer market on which relatively big companies are listed. It would be interesting to explore
+whether similar results are obtained for securities traded on exchanges with different market structures. With appropriate
+22
+
+=== page 23 ===
+The Short-Term Predictability of Returns in Order Book Markets
+experimental setups, we believe the model confidence set procedure used in this paper provides a solid framework to
+tackle all these questions.
+On the practical side, there are some relevant issues one should consider. First, it is essential to note that in this paper
+we focus on mid-to-mid returns, which are not tradable in practice. When considering specific trading applications, one
+should thus define the return labels appropriately, for example, working with ask-to-bid returns. Second, in this paper,
+we use an order book-driven clock. In practice, this means the prediction horizon is intrinsically stochastic, which might
+be a problem in execution. Another critical aspect that would need to be accounted for in practical high-frequency
+trading is total execution speed. This consists of order book information latency, model prediction run time, and order
+submission speed. Zhang et al. (2019) and Kolm et al. (2021) argue that their models (which are also considered in
+this paper) are sufficiently fast to be used by traders with good connections: see Appendix A.7 for a discussion on the
+effects of infrastructure latency.
+As with any trading application, one must also account for the impact his own trade will have on the order book.
+Moreover, if many traders exploit the same inefficiencies, this might erode all predictive power above the lowest tradable
+latencies. Overall we believe that while the predictability identified in this paper might not be directly tradable through
+a standalone strategy, it might still help some market players, such as market makers, to gauge the direction of the
+market and adjust their quotes accordingly.
+23
+
+=== page 24 ===
+The Short-Term Predictability of Returns in Order Book Markets
+A Appendix
+A.1 Deep Learning
+A.1.1 Deep Neural Network Architectures
+When approximating a function8 f from a set of models {fθ }θ∈Θ, such as in the return prediction task introduced
+in Section 2.2, a quite common approach is to consider a parametric family of deep neural networks. Theoretically
+motivated by the universality of such models, this approach does not rely on the functional form of f being correctly
+specified.
+The main idea behind deep neural networks is to lift the input into a higher dimensional space to extract relevant
+latent features before projecting onto output space. Mathematically a neural network consists of a composition of
+functions, known as layers, fl : Rdl−1 → Rdl for l = 1, . . . , L where d0 is the dimensionality of input space and dL is
+the dimensionality of the output space, for example dL = 3 in our three-class classification task. A neural network is
+considered deep if the number of layers L is large.
+In the simplest case the layers fl’s are “activated” affine transformations, i.e. for input zl−1 ∈ Rdl−1
+fl(zl−1) = σl(Wlzl−1 + bl),
+where Wl ∈ Rdl ×dl−1 and bl ∈ Rdl are learnable parameters, also known as weights, and σl is a non-linear activation
+function applied element-wise. Neural networks of the form f = fL ◦ · · · ◦ f1 such that each fl is of this form have been
+shown to be universal for the class of continuous functions (Cybenko, 1989; Hornik et al., 1990), i.e. any continuous
+function (on a bounded domain) can be approximated arbitrarily well by a large enough network in the supremum
+norm9. Related works have shown the representational benefits of depth: there are functions that deep networks can
+construct with polynomially many parameters, which instead require exponentially many parameters when considering
+shallow networks (Telgarsky, 2015). More complex and domain-specific forms of layers fl exist; we briefly introduce
+convolutional and recurrent/LSTM layers.
+Convolutional layers Convolutional layers are a natural choice when the input is an image, i.e.
+zl−1 ∈ Rdl−1 = Rhl−1 ×wl−1 ×cl−1 ,
+where hl−1 is the height in pixels, wl−1 is the width in pixels and cl−1 is the number of channels, for example cl−1 = 3
+if the image is in RGB. A convolutional layer is a specific case of a generic dense layer with parameter restrictions
+to account for adjacencies in the input’s structure. It consists of kl weight kernels, also known as filters, which are
+convoluted with the input image to produce the output. Mathematically a 2-dimensional convolution with kl (nl × ml)
+filters and stride (sl × tl) is described by
+[fl(zl−1)]i,j,k =
+nlX
+n=1
+mlX
+m=1
+cl−1X
+c=1
+n
+[W (k) l ]n,m,c[zl−1]sl (i−1)+n,tl (j−1)+m,c + b(k) l
+o
+,
+where W (k) l ∈ Rnl ×ml ×cl−1 , for k = 1, . . . , kl, are the kl filters, b(k) l ∈ R are bias terms and [·]i,j,k denotes the
+i, j, k-th entry of a three dimensional tensor. The output then lives in Rhl ×wl ×kl , where hl = (hl−1 − nl)/sl + 1 and
+wl = (wl−1 − ml)/tl + 1, assuming that sl|(hl−1 − nl) and tl|(wl−1 − ml). While this equation might look a bit
+daunting, convolutional layers are often easily understood via a graphical depiction, as in Figure 12. Many empirical
+studies (Krizhevsky et al., 2012; He et al., 2016) have investigated the ability of convolutional layers to extract relevant
+features from input with grid-like topologies. In Section 2.3, we discuss how this ability might be leveraged to extract
+relevant features from order books.
+Recurrent/LSTM layers When the input has a built-in temporal structure, this can be quite naturally accounted for
+by recurrent layers. This type of layer retains information over time, discovering temporal dependencies in the data.
+Recurrent layers may be used with streaming data to obtain online predictions or applied to a whole time series yielding
+a single output. We focus on the latter case, i.e. assuming the input zl−1 ∈ Rdl−1 has a temporal structure of the form
+zl−1 =
+
+z(1) l−1, . . . , z(Tl−1 ) l−1
+T
+∈ RTl−1 ×nl−1 ,
+8This notation covers both regression f (·) = g(·) and classification f (·) = (p↓(·), p=(·), p↑(·)) tasks.
+9It follows directly that the class of neural networks is dense in Lp(X ) space, for bounded X ⊆ Rd.
+24
+
+=== page 25 ===
+The Short-Term Predictability of Returns in Order Book Markets
+Figure 12: Convolutional layer, input zl−1 ∈ R8×8×3, filter size (nl × ml) = (4 × 4), stride (sl × tl) = (2 × 2) and
+number of filters kl = 32.
+the recurrent layer zl = fl(zl−1) is given by
+h(0) l−1 ∈ Rml−1 , h(t) l−1 = ϕl
+
+h(t−1) l−1 , z(t) l−1
+
+for t = 1, . . . , Tl−1, zl = h(Tl−1 ) l−1 ,
+where ϕl : Rml−1 × Rnl−1 → Rml−1 is a parameterized recurrent function and the h(t) l−1’s are known as hidden states. The most widely used type of recurrent layer is Long Short-Term Memory (LSTM) (Hochreiter and Schmidhuber,
+1997). While other types of recurrent layers may suffer from vanishing or exploding gradients when training, the
+specific structure of LSTMs largely prevents such problems (Hochreiter et al., 2001). In an LSTM layer each hidden
+state h is augmented with a memory state s, and hence the recurrence becomes
+
+h(t) l−1, s(t) l−1
+
+= ϕl
+
+h(t−1) l−1 , s(t−1) l−1 , z(t) l−1
+
+.
+The equations governing the LSTM recurrence are given by
+h(t) l−1 = o(t) l−1 ⊙ tanh(s(t) l−1),
+s(t) l−1 = g(t) l−1 ⊙ σ  bl + Ulz(t) l−1 + Wlh(t−1) l−1  + f (t) l−1 ⊙ s(t−1) l−1 ,
+where the input, forget and output gates depend on the context, i.e. on h(t−1) l−1 , z(t) l−1, via:
+g(t) l−1 = σ  bg l + U g l z(t) l−1 + W g l h(t−1) l−1  ,
+f (t) l−1 = σ  bf l + U f l z(t) l−1 + W f l h(t−1) l−1  ,
+o(t) l−1 = σ  bo l + U o l z(t) l−1 + W o l h(t−1) l−1  ,
+for sigmoid activation function σ, element-wise product ⊙ and parameters bl, bg l , bf l , bo l ∈ Rml−1 , Ul, U g l , U f l , U o l ∈
+Rml−1 ×nl−1 and Wl, W g l , W f l , W o l ∈ Rml−1 ×ml−1 . The network diagram of an LSTM layer is given in Figure 13.
+LSTMs summarize relevant context information in the memory cell s(t) l−1, performing exceptionally well on tasks with a strong temporal dependency (Melis et al., 2017).
+A.1.2 Training Deep Neural Networks
+As discussed in Section 2.2, once we have specified a parametric model for approximating the prediction function f ≈ fθ
+we wish to learn the best approximation to f from a training set of observed input-output data Dtrain = {(xi, yi)}i∈Itrain .
+To do so, we aim to find the parameter combination θ which yields predictions closest to the observations:
+ˆθ = argmin
+θ∈Θ
+L(θ|Dtrain) = argmin
+θ∈Θ
+n 1
+|Itrain|
+X
+i∈Itrain
+L
+ 
+fθ (xi), yi
+o
+,
+where L(·, ·) is a loss function quantifying the distance between the prediction and the observed value, and θ contains
+all network parameters (weights matrices, bias terms, CNN filters...). The form of L may be chosen using probabilistic
+arguments or according to some other task-specific criteria.
+25
+
+=== page 26 ===
+The Short-Term Predictability of Returns in Order Book Markets
+Figure 13: LSTM layer network diagram.
+When the model fθ is a deep neural network the loss landscape L(θ) = L(θ|Dtrain) may be very complex and finding a
+“good” minimizer is often a difficult task. The most widely used approach is to use (some variant of) gradient descent in
+which the model parameters are iteratively updated by
+θ(n+1) = θ(n) − η∇θ L   θ(n) ,
+until a convergence criterion is met. Here η > 0 is a fixed learning rate, and the weights θ(0) are chosen according to an
+appropriate initialization rule. When considering deep neural network architectures, the number of parameters is often
+very large, and therefore second-order methods are often intractable or computationally infeasible. Many variants of
+the first order gradient descent algorithm exist though. For example, the stochastic gradient descent algorithm updates
+parameter values based on estimates of the gradient ∇θ L(θ(n)) computed from a random subset (known as a batch) of
+the training data set. More advanced first-order optimizers consider momentum and/or use adaptive learning rates. In
+our experiments, we use the Adam optimizer (Kingma and Ba, 2015) which updates the parameters based on adaptive
+estimates of first and second-order moments:
+m(n+1) = 1 1 − βn 1 n β1m(n) + (1 − β1)∇θ L   θ(n)o ,
+v(n+1) = 1 1 − βn 2 n β2v(n) + (1 − β2)  ∇θ L   θ(n)2o ,
+θ(n+1) = θ(n) − η m(n+1) √
+v(n+1) + ϵ ,
+for parameters η, β1, β2, ϵ > 0.
+Remark A.1. Note that, contrary to other model specifications, such as linear models, the fitting procedure of deep
+neural networks is not closed form. This adds a further layer of uncertainty. Any model is subject to the following two
+sources of uncertainty: one due to model specification (i.e. f ≈ fθ ) and one due to parameter estimation uncertainty
+(i.e. statistical error arising from estimating θ from a finite sample). Models that do not have closed forms for ˆθ from
+observed data are further subject to numerical optimization error in the parameter estimation phase. Sometimes, the
+optimization procedure may not even converge to a (global) minimum. With deep neural networks, we thus trade off
+smaller model uncertainty (at least theoretically due to the universality property) for larger parameter estimation error.
+When the task is a classification problem fθ is usually chosen so that it maps to {p ∈ [0, 1]C : ∥p∥1 = 1}, where C is
+the number of classes in the set C. This allows to give a probabilistic interpretation of the deep neural network outputs,
+i.e.
+fθ (x) = {pc,θ (x)}c∈C , where pc,θ (x) = P(y = c|x, θ).
+In this case, a natural choice of loss function to use during training is the cross-entropy loss, which can be understood
+by maximum likelihood arguments: assuming the responses are independent given the features and the distribution of
+the features is independent of the parameters θ the negative log-likelihood is
+L(θ|Dtrain) = − log P(Dtrain|θ) ∝ − 1 |Itrain| X i∈Itrain X c∈C 1{yi =c} log pc,θ (xi).
+26
+
+=== page 27 ===
+The Short-Term Predictability of Returns in Order Book Markets
+When training samples for the classes are unbalanced, say class ¯c ∈ C has many more samples than all other classes,
+the optimization algorithm tends to get stuck in the trivial minimum given by the Dirac measure at ¯c ∈ C. One way to
+mitigate this effect is to re-weight the categorical cross entropy loss such that the network is less incentivized to move
+towards the trivial minimum. With appropriate weighting, ¯c ∈ C observations influence the direction of the gradient
+less, thus reducing the strength of the attraction towards the trivial minimum. Mathematically one uses the following
+weighted categorical cross-entropy loss
+L(θ|Dtrain) = − 1 |Itrain| X i∈Itrain X c∈C wc1{yi =c} log pc,θ (xi),
+where the weights wc are chosen to be inversely proportional to the class’s training set density. For example, in our
+experiments, we set:
+wc = wc(Dtrain) = |Itrain| #{ci ∈ Dtrain : ci = c} .
+A.2 Model Confidence Sets
+The model confidence set procedure introduced by Hansen et al. (2011) provides a formalized statistical inference
+framework in which to compare competing models. It does not assume that any of the models is the true data generating
+process but simply aims to identify a set of models that will contain the best model with a given level of confidence,
+known as model confidence set, MCS. A model confidence set is, therefore, analogous to a confidence interval for a
+parameter. To identify the best models, one must compare the model outputs (either as estimated class probabilities or
+as forecasts) by selecting an appropriate loss/score function.
+Let us denote by M0 the set of models under consideration and by {Li,w}W w=1 for i ∈ M0 the time series of losses. In
+the MCS framework for models i, j ∈ M0 and window w ∈ {1, . . . , W } we define:
+dij,w = Li,w − Lj,w .
+Under a stationarity assumption on the (dij,w )w≥1, we define the set of best models among those in M0 as
+M∗ = {i ∈ M0 : E[dij ] ≤ 0 ∀j ∈ M0}.
+This is the set we want to identify by using the MCS procedure. The MCS algorithm is then defined as follows.
+Definition A.1. Let δM and eM be an equivalence test and an elimination rule.
+Step 0. Initially set M = M0.
+Step 1. Test H0,M : E[dij ] = 0, ∀i, j ∈ M using δM at level α.
+Step 2. If H0,M is accepted, set ˆM∗ 1−α = M; otherwise, use eM to eliminate an object from M and repeat
+the procedure from Step 1.
+Under appropriate assumptions on the equivalence test and elimination rule10, the model confidence set ˆM∗ 1−α has the
+following asymptotic properties:
+(i) lim inf
+W →∞
+P(M∗ ⊂ ˆM∗ 1−α) ≥ 1 − α,
+(ii) lim
+W →∞
+P(i ∈ ˆM∗ 1−α) = 0 for i /∈ M∗,
+where W → ∞ denotes the number of sample periods. If furthermore, the equivalence test and elimination rule satisfy
+a coherency condition11, we have the following finite sample property:
+(iii) P(M∗ ⊂ ˆM∗ 1−α) ≥ 1 − α.
+10We require the equivalence test δM to have asymptotic level α and asymptotic power 1, while the elimination rule eM needs to
+satisfy limW →0 P(eM ∈ M∗|H1,M) = 0.
+11The required coherency condition is P(δM = 1, eM ∈ M∗) ≤ α.
+27
+
+=== page 28 ===
+The Short-Term Predictability of Returns in Order Book Markets
+In Hansen et al. (2011), the authors give multiple practical examples of equivalence tests and elimination rules. We focus
+on implementing the MCS procedure with tests constructed from t-statistics and bootstrap estimators. This choice of
+equivalence test and elimination rule has two practical advantages: it does not require estimating a variance-covariance
+matrix for the time series {(dij,w )i,j∈M0 , w ≥ 1} which might be difficult when |M0| ≈ W and it satisfies the
+coherency condition required for the finite sample property (iii) of the MCS procedure. Let us assume the following
+holds:
+Assumption A.1. For some r > 2 and γ > 0, it holds that that {(dij,w )i,j∈M0 , w ≥ 1} is strictly stationary, α-mixing
+of order −r/(r − 2) and Var(dij,w ) > 0, E|dij,w |r+γ < ∞ for all i, j ∈ M0.
+For a set of models M ⊂ M0 with time series of relative performances {(dij,w )i,j∈M, w ≥ 1} define the following
+quantities ∀i, j ∈ M:
+¯dij = 1 W
+WX
+w=1
+dij,w , ¯di· = 1 |M| X j∈M ¯dij ,
+respectively measuring the sample relative performance of the models i and j and the sample relative performance of
+model i and all other models in M. We can then introduce the following t-statistics ∀i ∈ M:
+ti· =
+¯di·q
+cVar( ¯di·)
+,
+where cVar( ¯di·) are appropriate estimators of the variances of the ¯di·’s. The associated test statistic is Tmax,M =
+maxi∈M ti·. The equivalence test and elimination rule are given by:
+(δM) Reject H0,M if Tmax,M > F −1 ϱ (1 − α) where Tmax ∼ Fϱ.
+(eM) Eliminate argmaxi∈Mti·.
+The asymptotic distribution of the test statistic Tmax,M is nonstandard because it depends on the (usually unknown)
+nuisance parameter ϱ under the null. The value of ϱ is not strictly necessary since we can consistently estimate the
+distribution of Tmax,M by using a bootstrapping procedure. In this case, the equivalence test compares the observed
+value Tmax,M with the bootstrap empirical quantile. The resulting procedure preserves the asymptotic12 properties (i)
+and (ii) and the finite sample property (iii) under Assumption A.1. For details of the bootstrapping procedure see the
+Appendix of Hansen et al. (2011).
+Remark A.2. The test based on the t-statistic discussed above relies on the fact that the null hypothesis H0,M can be
+equivalently rewritten as
+H0,M : E[di·] = 0, ∀i ∈ M, where di· = 1 |M| X j∈M dij .
+In this paper, we present results using MCS p-values, which are defined as follows.
+Definition A.2. Let (δM, eM) be the equivalence test and elimination rule associated with a MCS procedure as defined
+in Definition A.1. The elimination rule defines a decreasing sequence of random sets M0 ⊃ M1 ⊃ . . . ⊃ M|M0 | by
+successively eliminating models eM0 , . . . , e|M0 |. Let pH0,M denote the p-value associated with the null hypothesis
+H0,M under the equivalence test δM with the convention that pH0,M|M0 | ≡ 1. Then for model i = eMk ∈ M0 the MCS p-value is defined as
+pMCS i = max k′ ≤k pH0,Mk′ .
+Note that the definition of MCS p-value is such that for i ∈ M0 pMCS i ≥ α ⇐⇒ i ∈ ˆM∗ 1−α.
+Remark A.3. The MCS procedure is quite flexible. It allows to compare models between each other and to compare
+them to an unpredictive benchmark model (by including the unpredictive benchmark in M0). When only two models
+are considered, i.e. |M0| = 2, the MCS procedure reduces to testing the null hypothesis H0 : E[di1 i2 ] = 0.
+The model confidence set procedure relies on the assumption that the loss differences time series {(dij,w )i,j∈M0 , w ≥
+1} is stationary and α-mixing. This means that even when the loss process {(Li,w)i∈M0 , w ≥ 1} is non-stationary, e.g.
+model performance is tied to regime changes, the model confidence set procedure might still be applicable. In Section
+12As both the sample size W and the number of bootstrap samples B increase.
+28
+
+=== page 29 ===
+The Short-Term Predictability of Returns in Order Book Markets
+4, we assume the time series {(dij,w )i,j∈M0 , w ≥ 1} to be stationary based on intuitive arguments, but we discuss
+some statistical checks which might be carried out to provide further evidence in this context. First of all, it is worth
+noting that general tests for stationarity are not available: most tests require assuming a parametric form on the time
+series. The simplest example would be to impose a linear structure on the time series, i.e. assume the difference time
+series {dw, w ≥ 1} = {(dij,w )i,j∈M0 , w ≥ 1} follows a Vector Auto-Regressive process of order 1:
+dw = Γdw−1 + ηw,
+where ηw ∼ N (0, Ση ) are serially uncorrelated. In this setting, one can consider various tests to determine whether
+the process is stationary. For example, one may apply multivariate homogeneous Dickey-Fuller tests (Harvey and
+Bates, 2003) to test the null of a unit root against the alternative of stationarity or a multivariate KPSS test to test
+(short-memory) stationarity as the null and the presence of a unit root as the alternative (Nyblom and Harvey, 2000).
+A.3 Data Processing
+From LOBSTER (Huang and Polak, 2011) we obtain the order book and message files introduced in Section 3.1. These
+files are jointly processed to obtain the desired order book features, i.e. raw order books, order flow and volumes, and
+responses as described in Section 3.2. Before extracting the feature-response pairs the data is treated in the following
+way:
+1. order book states with crossed quotes are removed;
+2. states occurring at the same time stamp (at nanosecond precision) are collapsed onto the last state, e.g. an
+aggressive order executing against multiple resting limit orders;
+3. the first and last 10 minutes of market activity are dropped;
+4. the smoothed returns at the requested horizons – as defined in Section 3.2.2 – are computed and matched to
+the corresponding features.
+The data provided by LOBSTER is easily accessible and does not exhibit significant anomalies. The only data inconsis-
+tencies we found were on 2019-11-05 for the WBA ticker after the trading halt occurring between 13:32:50.233001415
+and 13:37:50.2335639.
+A.3.1 Volume data processing
+LOBSTER provides level-based data in a form that can be easily manipulated to derive order book and order flow
+features (we access the first L = 10 levels). Deriving the volume features from LOBSTER data instead is a non-trivial
+task. If we set a window W > L for the volume representation, some levels past L = 10 might have prices that fall in
+the volume window, i.e. p(L+1) x,t ∈ {π(1) x,t , . . . , π(W ) x,t }, and we won’t have the required information. To avoid this issue
+in all our experiments we set W = L = 10. Reconstruction of L3 queue data has a further complication: every time a
+quoting price leaves the 10-level range, all orders submitted/canceled at this price are not recorded. Therefore there
+is no way of reconstructing what happens at such a price level while it is outside of the 10-level range. To minimize
+the effect of this shortcoming, we adopt the following systematic approach: each time a quoting price (re-)enters the
+10-level range, we initialize the corresponding queue with a single order of size given by the total liquidity available at
+that price level (even if it may be made up of multiple independent orders).
+These issues could be mitigated by accessing data deeper in the order book from LOBSTER, say L = 50 or 100, while
+keeping a relatively small window W << L.
+A.4 Data set descriptive statistics: ATVI deep dive
+In this section, we report some descriptive statistics of the processed data used for the experiments. We focus on one
+representative stock, Activision Blizzard Inc. (ATVI). First, we explore the distribution of the order book, order flow,
+and volume features. For each level/price tick, we report the aggregated distributional boxplot. Moreover, in order to
+understand the temporal behavior of the data, we fix one specific level/ price tick and look at how the distribution varies
+day by day. Finally, we analyze the distribution of the target categorical returns. To do so we fix the first window in the
+experiment procedure, i.e. w = 1 in Section 4, and plot the unconditional train, validation, and test distributions at each
+prediction horizon h ∈ {10, 20, 30, 50, 100, 200, 300, 500, 1000}.
+A.4.1 Features
+In Figures 14–18 we plot the aggregate and temporal distributions of the features xt described in Section 3.2.1. We note
+the following:
+29
+
+=== page 30 ===
+The Short-Term Predictability of Returns in Order Book Markets
+• As expected, order book prices display significant non-stationarity, cf. Figure 14.
+• The difference between order book volumes v(l) t,x, Figure 15, and volumes s(w) t,x , Figure 17, is that in the former
+we measure the distance from the mid in levels, i.e. the volume is strictly positive, while in the latter we use
+all, i.e. also possibly empty, price ticks.
+• In Figure 16 we note that order flow is zero most of the time. By definition, we have non-zero flow only when
+an event affects exactly that level or the whole order book shifts.
+• To provide some insight on the distribution of L3 volume features, we plot queue depth statistics in Figure 18.
+We note that most queue depths are less than 9 orders long, this justifies the queue depth cutoff of length 10
+chosen in our experiments.
+• Finally, looking at Figure 15, Figure 17 and Figure 18, one can clearly note the difference between first
+level/price tick dynamics and those of the rest of the order book: active price discovery leads to lower volumes
+and shorter queues.
+BID10 BID9 BID8 BID7 BID6 BID5 BID4 BID3 BID2 BID1 ASK1 ASK2 ASK3 ASK4 ASK5 ASK6 ASK7 ASK8 ASK9 ASK10
+level
+40
+45
+50
+55
+60
+price  ($)
+Aggregated distributions
+2019-01-02 2019-03-06 2019-05-06 2019-07-05 2019-09-04 2019-11-01 2020-01-03
+40
+45
+50
+55
+60
+price ($)
+ASK1 daily distributions
+min-max
+Q1- Q3
+median
+ATVI orderbook price
+Figure 14: ATVI order book prices during the period from January 2nd, 2019 to Januray 31st, 2020.
+A.4.2 Responses
+In Figure 19 we plot the unconditional empirical distributions of the target responses defined in Section 3.2.2 for the
+first window w = 1. Note that the threshold ˆγh is based on the training data set only. As detailed in Section 4, the train
+and validation sets are randomly partitioned from a four week period, i.e. Dw,train ∪ Dw,val, and thus are likely to display
+similar volatility regimes. On the other hand, the test set Dw,test corresponds to the following week, cf. Figure 11, and
+thus may exhibit a different volatility profile. By joining the train and validation distribution we obtain the unpredictive
+benchmark described in Remark 2.1 and used to define predictability in the experiments in Section 4.
+In Figure 20 we explore the dependence structure of the return labels by plotting13 the previous h-step return ct−h,t
+against the next h-step return ct,t+h. We note that for all horizons h ∈ {10, 20, 30, 50, 100, 200, 300, 500, 1000}
+the null hypothesis of independence is rejected by a contingency chi-square test. The fact that return labels display
+13To be more precise, we plot ct−h−k,t against ct,t+h in order to avoid any kind of overlap between the labels, cf. Section 3.2.2.
+We drop the k for clarity of exposition and notational convenience.
+30
+
+=== page 31 ===
+The Short-Term Predictability of Returns in Order Book Markets
+BID10 BID9 BID8 BID7 BID6 BID5 BID4 BID3 BID2 BID1 ASK1 ASK2 ASK3 ASK4 ASK5 ASK6 ASK7 ASK8 ASK9 ASK10
+level
+0
+10
+0
+10
+1
+10
+2
+10
+3
+10
+4
+10
+5
+10
+6
+volume  (shares)
+Aggregated distributions
+2019-01-02 2019-03-06 2019-05-06 2019-07-05 2019-09-04 2019-11-01 2020-01-03
+0
+10
+0
+10
+1
+10
+2
+10
+3
+10
+4
+10
+5
+10
+6
+volume (shares)
+ASK1 daily distributions
+min-max
+Q1- Q3
+median
+ATVI orderbook volume
+Figure 15: ATVI order book volumes during the period from January 2nd, 2019 to Januray 31st, 2020.
+some form of persistency has a two-fold interpretation. On one hand, it provides evidence towards the existence of
+predictability in the data, i.e. against the i.i.d. Efficient Market Hypothesis on which the unpredictive benchmark is
+based, cf. Remark 2.1. On the other, it suggests that a simple one-step ahead Markovian model of returns may display
+predictive power, i.e. a model which predicts the next price move ct,t+h conditional on the last return ct−h,t only. In this
+respect, we note the return label ct−h,t can be computed from the features (xt−T +1, . . . , xt) for T sufficiently large. In
+view of the universal approximation property of neural networks, any such simple model can thus be considered as
+‘nested’ in the deep learning models treated in this paper. In Appendix A.5 we explore how well a specific model based
+on ct−h,t only performs when compared to the more complex deep learning models considered in this paper.
+A.5 Simpler predictive models: an empirical auto-regressive specification
+In this section, we explore how a simple model performs when compared to the deep learning architectures considered in
+this paper. We base the model on the simple empirical observation that the target return labels display time-dependence,
+cf. Appendix A.4.2 and Figure 20. We consider a one-step ahead14 auto-regressive (AR) model, i.e. we aim to estimate
+p∗(⋆) = P(ct,t+h = ∗|ct−h,t = ⋆) for ∗, ⋆ ∈ {↓, =, ↑}. We use a non-parametric approach, setting ˆp∗(⋆) in period
+w ∈ {1, . . . , 11} to be the empirical distribution of ct,t+h = ∗ ∈ {↓, =, ↑} given the previous return label was
+ct−h,t = ⋆ ∈ {↓, =, ↑} in the training and validation set Dw,train ∪ Dw,val, i.e. the row normalised matrices displayed in
+Figure 20. Formally, this is the maximum likelihood estimator of the conditional probabilities P(ct,t+h = ∗|ct−h,t = ⋆)
+given the data set Dw,train ∪ Dw,val. We repeat the experiments of Sections 4.1 and 4.2 with this empirical AR model in
+the set M0. The updated results are reported in Table 10 and Table 11 (we only report results at the 99% confidence
+level, i.e. α = 0.01).
+14To avoid any look-ahead bias we actually condition on ct−h−k,t where k is the smoothing factor introduced in Section 3.2.2.
+We write ct−h,t for clarity of exposition.
+31
+
+=== page 32 ===
+The Short-Term Predictability of Returns in Order Book Markets
+BID10 BID9 BID8 BID7 BID6 BID5 BID4 BID3 BID2 BID1 ASK1 ASK2 ASK3 ASK4 ASK5 ASK6 ASK7 ASK8 ASK9 ASK10
+level
+−200000
+−150000
+−100000
+−50000
+0
+50000
+100000
+150000
+200000
+volume  (shares)
+Aggregated distributions
+2019-01-02 2019-03-06 2019-05-06 2019-07-05 2019-09-04 2019-11-01 2020-01-03
+−40000
+−20000
+0
+20000
+40000
+volume  (shares)
+ASK1 daily distributions
+min-max
+Q1- Q3
+median
+ATVI orderflow
+Figure 16: ATVI order flow during the period from January 2nd, 2019 to Januray 31st, 2020.
+h = 10 h = 20 h = 30 h = 50 h = 100 h = 200 h = 300 h = 500 h = 1000
+LILAK 0.00 0.00 0.38 0.40 0.04 0.08 0.00 0.01 1.00
+QRTEA 0.00 0.01 0.03 0.00 0.00 0.00 0.06 0.85 0.26
+XRAY 0.00 0.00 0.00 0.01 0.09 0.35 0.35 0.73 0.85
+CHTR 0.00 0.00 0.03 0.00 0.00 0.00 0.06 0.14 0.56
+PCAR 0.00 0.00 0.00 0.00 0.86 0.42 0.31 0.17 1.00
+EXC 0.12 0.00 0.00 0.00 0.00 0.00 0.00 0.46 0.38
+AAL 0.04 0.00 0.00 0.00 0.00 0.65 0.70 0.10 0.38
+WBA 0.00 0.00 0.00 0.00 0.01 0.23 0.04 0.00 0.18
+ATVI 0.00 0.00 0.00 0.00 0.01 0.61 0.34 0.12 0.03
+AAPL 0.00 0.00 0.00 0.16 0.08 0.03 0.05 0.06 0.09
+Table 10: MCS p-values of the unpredictive benchmark model for the 10 tickers and 9 horizons under consideration.
+When the p-value is low at least one of the order book-driven models statistically outperforms the unpredictive
+benchmark, i.e. there is order book-driven predictability according to Definition 4.1.
+The results reported in Table 10 are consistent with those in Table 4. The main differences are due to some additional
+predictable horizons identified by including the empirical auto-regressive model. This mostly occurs for stocks with
+low liquidity (LILAK, QRTEA, and CHTR) where the low data regime makes it more challenging for deep learning
+models to train effectively.
+In Table 11 we note the greater expressivity of deep learning models provides a significant advantage compared to
+the simple empirical auto-regressive model. While the simple AR model does display predictive power, it is often
+outperformed by the order book-driven deep learning models deepOF(L2) and deepVOL(L2/L3). In Table 12 we
+dive deeper into this analysis by reporting for each ticker-horizon combination whether the simple AR model or
+deepVOL(L3) is in the MCS of best models.
+32
+
+=== page 33 ===
+The Short-Term Predictability of Returns in Order Book Markets
+BID10 BID9 BID8 BID7 BID6 BID5 BID4 BID3 BID2 BID1 ASK1 ASK2 ASK3 ASK4 ASK5 ASK6 ASK7 ASK8 ASK9 ASK10
+ticks  from mid
+0
+10
+0
+10
+1
+10
+2
+10
+3
+10
+4
+10
+5
+10
+6
+volume (shares)
+Aggregated distributions
+2019-01-02 2019-03-06 2019-05-06 2019-07-05 2019-09-04 2019-11-01 2020-01-03
+0
+10
+0
+10
+1
+10
+2
+10
+3
+10
+4
+10
+5
+10
+6
+volume (shares)
+ASK1 daily distributions
+min-max
+Q1- Q3
+median
+ATVI volume
+Figure 17: ATVI volumes during the period from January 2nd, 2019 to Januray 31st, 2020.
+α = 0.01
+benchmark 0%
+empirical AR model 28%
+deepOF(L1) 12%
+deepOF(L1) 26%
+deepLOB(L2) 12%
+deepOF(L2) 81%
+deepVOL(L2) 77%
+deepVOL(L3) 79%
+Table 11: % of times the model is in the α-MCS when predictability is identified at the level α = 0.01.
+While our results suggest deepOF and deepVOL architectures significantly outperform the simple AR model, a more
+in-depth study comparing these specifications to the models in Aït-Sahalia et al. (2022) is required to shed some light on
+the question of whether the expressivity of deep learning techniques is the key to producing good predictive models or if
+careful feature engineering can be as effective. This analysis is of particular relevance in applications where prediction
+speed plays a fundamental role, see Appendix A.7.
+33
+
+=== page 34 ===
+The Short-Term Predictability of Returns in Order Book Markets
+BID10 BID9 BID8 BID7 BID6 BID5 BID4 BID3 BID2 BID1 ASK1 ASK2 ASK3 ASK4 ASK5 ASK6 ASK7 ASK8 ASK9 ASK10
+ticks  from mid
+0
+2
+4
+6
+8
+10
+# of orders in the queue
+Aggregated distributions
+02/01/2019 06/03/2019 06/05/2019 05/07/2019 04/09/2019 01/11/2019 03/01/2020
+0
+2
+4
+6
+8
+10
+# of orders in queue
+ASK1 daily distributions
+min-max
+Q1- Q3
+median
+ATVI queue depth
+Figure 18: ATVI queue depths during the period from January 2nd, 2019 to Januray 31st, 2020.
+h = 10 h = 20 h = 30 h = 50 h = 100 h = 200 h = 300 h = 500 h = 1000
+LILAK
+QRTEA
+XRAY
+CHTR
+PCAR
+EXC
+AAL
+WBA
+ATVI
+AAPL
+Table 12: Comparison between emprical AR model and deepVOL(L3) MCS results, α = 0.01. Shading indicates
+whether the empirical AR model and/or deepVOL(L3) is in the set of best models. White: neither, light blue: empirical
+AR model only, blue: deepVOL(L3), dark blue: both. Grey shading indicates the ticker-horizon combination was not
+deemed predictable at the 99% confidence level.
+A.6 Return definition
+The way returns are defined is often an overlooked topic which inevitably has a significant effect on model evaluation.
+Here we state two alternative definitions to that given in Section 3.2.2 taken from the literature and discuss their
+properties. In all cases, the mid-price is treated as the “true” price and returns are defined relative to it. Recall this is not
+a tradable price.
+34
+
+=== page 35 ===
+The Short-Term Predictability of Returns in Order Book Markets
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+train
+h = 10
+ 
+̂
+γ
+h
+ = 0.0×10
+4
+h = 20
+ 
+̂
+γ
+h
+ = 0.0×10
+4
+h = 30
+ 
+̂
+γ
+h
+ = 0.0×10
+4
+h = 50
+ 
+̂
+γ
+h
+ = 0.05×10
+4
+h = 100
+ 
+̂
+γ
+h
+ = 0.97×10
+4
+h = 200
+ 
+̂
+γ
+h
+ = 1.23×10
+4
+h = 300
+ 
+̂
+γ
+h
+ = 1.92×10
+4
+h = 500
+ 
+̂
+γ
+h
+ = 2.13×10
+4
+h = 1000
+ 
+̂
+γ
+h
+ = 2.45×10
+4
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+ al
+down
+stationary
+up
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+test
+down
+stationary
+up
+down
+stationary
+up
+down
+stationary
+up
+down
+stationary
+up
+down
+stationary
+up
+down
+stationary
+up
+down
+stationary
+up
+down
+stationary
+up
+ATVI, w = 1
+Figure 19: ATVI return labels during the first window of the experiment, i.e. from January 14th, 2019 to February 15th,
+2019.
+• In Ntakaris et al. (2018) the authors define the return at horizon h as
+rt,t+h = mt,t+h − mt mt , mt,t+h = 1 h
+hX
+i=1
+mt+i,
+where mt denotes the mid-price at time t. This definition of return compares the smoothed mid-price over
+the next h time steps to the current mid-price. In this case, the return can be equivalently understood as the
+average mid-to-mid return over the next h time steps. As the horizon h becomes longer, so does the window
+over which we smooth the returns. This has a couple of practical disadvantages in terms of the predictability
+questions we wish to explore. First, predictability over h = 100 time steps might be due to changes of the
+mid-price over the first, say, h = 50 time steps, and thus it becomes difficult to discuss questions of persistency
+in predictability. Second, the definition produces correlation between returns at different horizons, rt+h1 and
+rt+h2 , inducing a hidden bias in multi-horizon models.
+• In Zhang et al. (2019) and Zhang and Zohren (2021) the authors define the return at horizon h by
+rt,t+h = mt,t+h − mt−h,t mt−h,t , mt,t+h = 1 h
+hX
+i=1
+mt+i, mt−h,t = 1 h
+h−1X
+i=0
+mt−i,
+where mt denotes the mid-price at time t. This definition has similar drawbacks to the previous one. But,
+additionally, we believe it may suffer from look-ahead bias: for example, if the mid-price has been going up in
+the past h steps (an information which is included in our covariates), then it is more likely the return rt,t+h
+will be positive.
+The definition of returns used in this paper, cf. Section 3.2.2, does not suffer from the issues identified for these two
+return specifications.
+Remark A.4. The definition of returns intrinsically depends on the clock used to measure time. Note that in Kolm
+et al. (2021) the authors use a physical time clock with stock-specific horizon h. In their setting, the authors use simple
+un-smoothed mid-price returns,
+rt,t+h = mt+h − mt mt .
+35
+
+=== page 36 ===
+The Short-Term Predictability of Returns in Order Book Markets
+down stationary up
+c
+t , t + h
+downstationaryup
+c
+t − h , t
+465524 827206 320486
+792670 3655781 835439
+354928 801040 479019
+h  = 10, p
+χ
+2
+ = 0.00
+down stationary  p
+c
+t , t + h
+downstationary p
+c
+t − h , t
+698989 880988 537214
+817912 2560125 888339
+600132 825490 722714
+h = 20, p
+χ
+2
+ = 0.00
+down stationary  p
+c
+t , t + h
+downstationary p
+c
+t − h , t
+848500 880088 715450
+801100 1930262 881927
+794272 803280 876834
+h = 30, p
+χ
+2
+ = 0.00
+down stationary  p
+c
+t , t + h
+downstationary p
+c
+t − h , t
+1068955 817866 964513
+745709 1240086 814149
+1036334 742576 1101145
+h = 50, p
+χ
+2
+ = 0.00
+down stationary  p
+c
+t , t + h
+downstationary p
+c
+t − h , t
+1058251 901429 952851
+874352 996223 868104
+979360 841883 1057930
+h = 100, p
+χ
+2
+ = 0.00
+down stationary  p
+c
+t , t + h
+downstationary p
+c
+t − h , t
+1016910 902114 906735
+907904 1093696 902711
+900774 909588 988051
+h = 200, p
+χ
+2
+ = 0.00
+down stationary  p
+c
+t , t + h
+downstationary p
+c
+t − h , t
+1062102 872462 967552
+892340 990958 868761
+947657 889794 1034957
+h = 300, p
+χ
+2
+ = 0.00
+down stationary  p
+c
+t , t + h
+downstationary p
+c
+t − h , t
+1039185 844456 979685
+869816 1118419 834811
+953558 862917 1019936
+h = 500, p
+χ
+2
+ = 0.00
+down stationary  p
+c
+t , t + h
+downstationary p
+c
+t − h , t
+975145 892553 966634
+904152 1152358 845149
+952242 863836 961214
+h = 1000, p
+χ
+2
+ = 0.00
+ATVI, w = 1, trainval dataset
+Figure 20: ATVI return labels dependence in the joint training and validation data set during the first window of the
+experiment, i.e. from January 14th, 2019 to February 15th, 2019.
+With our choice of order book-driven clock, even assuming mid-mid trading, there is no way of placing a trade exactly
+h order book events ahead, i.e. the prediction horizon is random. Smoothing the exit price can thus be understood as
+averaging out the uncertainty in the execution time. Moreover, in our work, we aim to investigate questions regarding
+structural market predictability. In our setting, smoothing mid-prices leads to better estimates of the true (latent) prices
+by weakening idiosyncratic noise effects. As pointed out in the conclusions in Section 5 though, in practical trading
+applications it may be more appropriate to consider a physical time clock and un-smoothed returns.
+A.7 Infrastructure latency
+In this paper, we explored the predictive value of order book data by assuming instantaneous access to such information.
+In practice, due to technological constraints, market participants experience varying degrees of delay when engaging
+36
+
+=== page 37 ===
+The Short-Term Predictability of Returns in Order Book Markets
+with the order book. Let us write λn,view and λn,act for the latencies that market participant n experiences when viewing
+and acting on the order book respectively. For x ∈ {view, act} we can decompose
+λn,x = λx 0 + λn,x + ,
+where λact 0 is the time it takes the financial entity running the market, e.g. the Nasdaq, to execute an action on the
+order book once received and λview 0 is the time it takes the market entity to send out the information regarding an order
+book update. Market participants make large efforts to reduce their idiosyncratic latencies λn,x + for x ∈ {view, act} by
+optimizing software and hardware, one prototypical example being co-location. Note that λn,act + also includes the time
+needed to take a trading decision which, in our setting, requires a forward pass through a pre-trained predictive model,
+e.g. deepLOB/deepOF/deepVOL. Figure 21 represents how market-wide and idiosyncratic latencies affect market
+participants.
+Action executed
+on order book
+↓
+λview 0
+↑
+Action broadcasted
+to market participants
+λn,view +
+Action viewed by
+market participant n
+↓
+Action initiated by
+market participant n
+↓
+λn,act +
+↑
+Action received
+by market entity
+λact 0
+Action executed
+on order book
+↓
+Figure 21: Market-wide and idiosyncratic latencies.
+When considering practical trading applications one should thus take into account the effect these latencies may have
+on the definition of returns, cf. Section 3.2.2 and Appendix A.6. For example, denoting by t = 1, 2, . . . the order
+book-driven clock considered in this paper, one may want to predict the return between physical times τt + λn,tot and
+τt+h + λn,tot where
+λn,tot = λn,view + λn,act = λtot 0 + λn,tot + ,
+is the total round trip latency time to view and act once the order book clock ticks and τ : N → [0, ∞) is the increasing
+random function mapping the order book clock to physical time. An interesting analysis in this setting would be to
+analyze how predictability varies as a function of λn,tot + = λn,view + + λn,act + .
+In order to quantify the magnitude of these time lags and better understand their impact we briefly summarize some
+infrastructure tests published by market participants.
+• As of 2023, the Nasdaq reports the door-to-door speed of its matching engine, i.e. λtot 0 = λact 0 + λview 0 , to be
+‘sub-40 µs, with the fastest production implementation at 14 µs’ (Nasdaq, 2023). Studies from 2015 report the
+door-to-door latencies of Brazilian and European futures exchanges in the order of a few hundred microseconds
+(Kirilenko and Lamacie, 2015; Menkveld and Zoican, 2017).
+• Leading industry producers of co-located network adapters and feed handlers report the total speed for
+processing an order book message and sending a trade action, i.e. tick-to-trade latency λn,tot + = λn,view + + λn,act + ,
+to be of the order of a couple of microseconds (µs) (Enyx, 2020; CSPi, 2023). This is achieved via the use of
+specific hardware known as FPGA cards. These figures assume relatively simple trading decision applications,
+when working with more sophisticated predictive models, such as the ones considered in this paper, one should
+account for a couple of hundred microseconds in tick-to-trade latency, see Table III in Zhang et al. (2019) for
+unoptimized forward-pass run times.
+The total latency λk,tot is thus less than a fraction of a millisecond (ms) while the average time elapsed between
+consecutive price changes in our data ranges from 0.18 to 8.38 seconds depending on the liquidity of the stock, cf. Table
+1. The effect of infrastructural latencies on the definition of returns, cf. Section 3.2.2, is thus negligible.
+A.8 Stock selection
+Ideally, we would like to work with the same set of stocks as in Kolm et al. (2021). Due to computational limitations,
+we were able to conduct experiments only on a subset of 10 tickers from the total 115 NASDAQ stocks considered
+in the original paper. We selected 10 stocks with diverse liquidity characteristics, hopefully providing a sufficiently
+representative sub-sample of the whole set.
+37
+
+=== page 38 ===
+The Short-Term Predictability of Returns in Order Book Markets
+To choose the sub-sample, we use the stock characteristics provided in Kolm et al. (2021), Table 6. For each of the
+liquidity characteristics – Updates, Trades, Price Changes, Spread – we compute a sub-score based on the characteristic’s
+rank. For example, the stock with the most updates is assigned an updates score of 1, while the stock with the least
+number of updates is assigned an updates score of 0. The characteristic-specific scores are then averaged to obtain a
+general “liquidity score” for each stock. The 10 chosen stocks correspond to the 10 evenly spaced quantiles of the
+“liquidity score”. The liquidity characteristics of the 10 chosen stocks are reported in Table 1.
+A.9 Model details
+In the experiments we use the model architectures reported in Table 13 and Table 14. To speed up the training procedure,
+we use batch normalization (Ioffe and Szegedy, 2015) (with momentum = 0.6) after every convolutional layer and
+inception block. To prevent overfitting, we use a dropout layer (Srivastava et al., 2014) (with noise = 0.2) positioned
+after the inception module.
+All the models are implemented with float32 precision policy: at every layer float32 is used as computation and variable
+data type. Loss and gradient computations are also carried out with float32 precision.
+38
+
+=== page 39 ===
+Model Architectures
+Model DeepLOB DeepOF
+Architecture Description Output Size Architecture Description Output Size
+Input Layer
+Raw order book states,n
+(p(l) a,t−τ , v(l) a,t−τ , p(l) b,t−τ , v(l) b,t−τ ) o τ =0,...,T −1
+l=1,...,L (T , 4L, 1)
+Multi-level order flow,n
+(aOF (l) t−τ , bOF (l) t−τ ) o τ =0,...,T −1
+l=1,...,L (T , 2L, 1)
+First Convolutional layer
+Spatial convolution 32 (1×2) filters, (1×2) stride Convolve price and volume information (T , 2L, 32)
+Temporal convolution 32 (4×1) filters, padding Convolve through four time-steps (T , 2L, 32)
+Temporal convolution 32 (4×1) filters, padding Convolve through four time-steps (T , 2L, 32)
+Second Convolutional layer
+Spatial convolution 32 (1×2) filters, (1×2) stride Convolve bid and ask price-volume information (T , L, 32) 32 (1×2) filters, (1×2) stride Convolve order flow information (T , L, 32)
+Temporal convolution 32 (4×1) filters, padding Convolve through four time-steps (T , L, 32) 32 (4×1) filters, padding Convolve through four time-steps (T , L, 32)
+Temporal convolution 32 (4×1) filters, padding Convolve through four time-steps (T , L, 32) 32 (4×1) filters, padding Convolve through four time-steps (T , L, 32)
+Third Convolutional layer
+Spatial convolution 32 (1×L) filters, (1×1) stride Convolve information through the whole order book (T , 1, 32) 32 (1×L) filters, (1×1) stride Convolve information through the whole order book (T , 1, 32)
+Temporal convolution 32 (4×1) filters, padding Convolve through four time-steps (T , 1, 32) 32 (4×1) filters, padding Convolve through four time-steps (T , 1, 32)
+Temporal convolution 32 (4×1) filters, padding Convolve through four time-steps (T , 1, 32) 32 (4×1) filters, padding Convolve through four time-steps (T , 1, 32)
+Inception module
+(parallel blocks)
+Temporal convolution 64 (1×1) filters Increase dimensionality (Network-in-Network) (T , 1, 64) 64 (1×1) filters Increase dimensionality (Network-in-Network) (T , 1, 64)
+Temporal convolution 64 (3×1) filters, padding Convolve through three time-steps, "MA(3)" (T , 1, 64) 64 (3×1) filters, padding Convolve through three time-steps, "MA(3)" (T , 1, 64)
+Temporal convolution 64 (1×1) filters Increase dimensionality (Network-in-Network) (T , 1, 64) 64 (1×1) filters Increase dimensionality (Network-in-Network) (T , 1, 64)
+Temporal convolution 64 (5×1) filters, padding Convolve through five time-steps, "MA(5)" (T , 1, 64) 64 (5×1) filters, padding Convolve through five time-steps, "MA(5)" (T , 1, 64)
+Temporal maxpooling (3×1) pool size, (1×1) stride & padding Rolling maximum, three time-steps (T , 1, 32) (3×1) pool size, (1×1) stride & padding Rolling maximum, three time-steps (T , 1, 32)
+Temporal convolution 64 (1×1) filters Increase dimensionality (Network-in-Network) (T , 1, 64) 64 (4×1) filters Increase dimensionality (Network-in-Network) (T , 1, 64)
+Concatenate and reshape Concatenate and reshape the outputs of the inception module to
+obtain an R192 -valued time series of length T
+(T , 192) Concatenate and reshape the outputs of the inception module to
+obtain an R192 -valued time series of length T
+(T , 192)
+LSTM module LSTM 64 hidden units Capture longer term dependencies (64) 64 hidden units Capture longer term dependencies (64)
+(a) Output layer Dense layer Softmax activation Produce classification output (3) Softmax activation Produce classification output (3)
+(b) Decoder module
+LSTM decoder
+(seq2seq/attention)
+64 hidden units,
+softmax activation Produce sequential classification output (5, 3)
+64 hidden units,
+softmax activation Produce sequential classification output (5, 3)
+Table 13: DeepLOB and DeepOF network description.
+(a) Single horizon, (b) Multi-horizon.
+
+=== page 40 ===
+Model Architectures
+Model DeepVOL DeepVOL L3
+Architecture Description Output Size Architecture Description Output Size
+Input Layer
+Volume representation,n
+s(j) x,t−τ o τ =0,...,T −1, j=1,...,W
+x∈{a,b}
+(T , W, 2, 1)
+L3 volume representation,n
+(q(j,k) x,t−τ o τ =0,...,T −1, j=1,...,W
+x∈{a,b},k=1,...,D (T , W, 2, D, 1)
+First Convolutional layer Spatial convolution 32 (1×1×D) filters, (1×1×1) stride At each price, convolve the queue volumes (T , W, 2, 32)
+Second Convolutional layer
+Spatial convolution 32 (1×2×2) filters, (1×1×1) stride Convolve volumes on opposite sides of the mid (T , W − 1, 32) 32 (1×2×2) filters, (1×1×1) stride Convolve volumes on opposite sides of the mid (T , W − 1, 32)
+Temporal convolution 32 (4×1) filters, padding Convolve through four time-steps (T , W − 1, 32) 32 (4×1) filters, padding Convolve through four time-steps (T , W − 1, 32)
+Temporal convolution 32 (4×1) filters, padding Convolve through four time-steps (T , W − 1, 32) 32 (4×1) filters, padding Convolve through four time-steps (T , W − 1, 32)
+Third Convolutional layer
+Spatial convolution 32 (1×W-1) filters, (1×1) stride Convolve information through the whole order book (T , 1, 32) 32 (1×W-1) filters, (1×1) stride Convolve information through the whole order book (T , 1, 32)
+Temporal convolution 32 (4×1) filters, padding Convolve through four time-steps (T , 1, 32) 32 (4×1) filters, padding Convolve through four time-steps (T , 1, 32)
+Temporal convolution 32 (4×1) filters, padding Convolve through four time-steps (T , 1, 32) 32 (4×1) filters, padding Convolve through four time-steps (T , 1, 32)
+Inception module
+(parallel blocks)
+Temporal convolution 64 (1×1) filters Increase dimensionality (Network-in-Network) (T , 1, 64) 64 (1×1) filters Increase dimensionality (Network-in-Network) (T , 1, 64)
+Temporal convolution 64 (3×1) filters, padding Convolve through three time-steps, "MA(3)" (T , 1, 64) 64 (3×1) filters, padding Convolve through three time-steps, "MA(3)" (T , 1, 64)
+Temporal convolution 64 (1×1) filters Increase dimensionality (Network-in-Network) (T , 1, 64) 64 (1×1) filters Increase dimensionality (Network-in-Network) (T , 1, 64)
+Temporal convolution 64 (5×1) filters, padding Convolve through five time-steps, "MA(5)" (T , 1, 64) 64 (5×1) filters, padding Convolve through five time-steps, "MA(5)" (T , 1, 64)
+Temporal maxpooling (3×1) pool size, (1×1) stride & padding Rolling maximum, three time-steps (T , 1, 32) (3×1) pool size, (1×1) stride & padding Rolling maximum, three time-steps (T , 1, 32)
+Temporal convolution 64 (1×1) filters Increase dimensionality (Network-in-Network) (T , 1, 64) 64 (4×1) filters Increase dimensionality (Network-in-Network) (T , 1, 64)
+Concatenate and reshape Concatenate and reshape the outputs of the inception module to
+obtain an R192 -valued time series of length T
+(T , 192) Concatenate and reshape the outputs of the inception module to
+obtain an R192 -valued time series of length T
+(T , 192)
+LSTM module LSTM 64 hidden units Capture longer term dependencies (64) 64 hidden units Capture longer term dependencies (64)
+(a) Output layer Dense layer Softmax activation Produce classification output (3) Softmax activation Produce classification output (3)
+(b) Decoder module
+LSTM decoder
+(seq2seq/attention)
+64 hidden units,
+softmax activation Produce sequential classification output (5, 3)
+64 hidden units,
+softmax activation Produce sequential classification output (5, 3)
+Table 14: DeepVOL and DeepVOL L3 network description.
+(a) Single horizon, (b) Multi-horizon.
+
+=== page 41 ===
+References
+Abergel, F., Lehalle, C.-A., and Rosenbaum, M. (2014). Understanding the Stakes of High-Frequency Trading. The
+Journal of Trading, 9(4):49–73.
+Aït-Sahalia, Y., Fan, J., Xue, L., and Zhou, Y. (2022). How and When are High-Frequency Stock Returns Predictable?
+NBER Working Papers 30366, National Bureau of Economic Research, Inc.
+Bacry, E. and Muzy, J.-F. (2014). Hawkes model for price and trades high-frequency dynamics. Quantitative Finance,
+14(7):1147–1166.
+Bengio, Y., Courville, A. C., and Vincent, P. (2013). Representation Learning: A Review and New Perspectives. IEEE
+Transactions on Pattern Analysis and Machine Intelligence (TPAMI), 35(8):1798–1828.
+Byrd, D., Hybinette, M., and Balch, T. H. (2020). ABIDES: Towards High-Fidelity Multi-Agent Market Simulation. In
+Proceedings of the 2020 ACM SIGSIM Conference on Principles of Advanced Discrete Simulation, pages 11–22,
+Miami FL Spain. ACM.
+Cho, K., van Merriënboer, B., Gulcehre, C., Bahdanau, D., Bougares, F., Schwenk, H., and Bengio, Y. (2014). Learning
+Phrase Representations using RNN Encoder–Decoder for Statistical Machine Translation. In Proceedings of the
+2014 Conference on Empirical Methods in Natural Language Processing (EMNLP), pages 1724–1734. Association
+for Computational Linguistics.
+Coletta, A., Moulin, A., Vyetrenko, S., and Balch, T. (2022). Learning to simulate realistic limit order book markets
+from data as a World Agent. In Proceedings of the Third ACM International Conference on AI in Finance, pages
+428–436, New York NY USA. ACM.
+Cont, R., Kukanov, A., and Stoikov, S. (2013). The Price Impact of Order Book Events. Journal of Financial
+Econometrics, 12(1):47–88.
+CSPi (2023). Tick-to-Trade Latency, Accessed: 2023-08-30.
+Cybenko, G. V. (1989). Approximation by Superpositions of a Sigmoidal Function. Mathematics of Control, Signals
+and Systems, 2:303–314.
+Enyx (2020). NASDAQ Totalview Latency Tests, Accessed: 2023-08-30.
+European Parliament and Council (2004). Directive 2004/39/EC on markets in financial instruments amending Council
+Directives 85/611/EEC and 93/6/EEC and Directive 2000/12/EC of the European Parliament and of the Council and
+repealing Council Directive 93/22/EEC.
+Fama, E. F. (1970). Efficient Capital Markets: A Review of Theory and Empirical Work. The Journal of Finance,
+25(2):383–417.
+Goodfellow, I., Bengio, Y., and Courville, A. (2016). Deep Learning. MIT Press. http://www.deeplearningbook.
+org.
+Hansen, P. R., Lunde, A., and Nason, J. M. (2011). The Model Confidence Set. Econometrica, 79(2):453–497.
+Harvey, A. and Bates, D. (2003). Multivariate Unit Root Tests and Testing for Convergence. Cambridge Working
+Papers in Economics 0301, Faculty of Economics, University of Cambridge.
+He, K., Zhang, X., Ren, S., and Sun, J. (2016). Deep Residual Learning for Image Recognition. In 2016 IEEE
+Conference on Computer Vision and Pattern Recognition (CVPR), pages 770–778, Los Alamitos, CA, USA. IEEE
+Computer Society.
+Hochreiter, S., Bengio, Y., Frasconi, P., and Schmidhuber, J. (2001). Gradient Flow in Recurrent Nets: the Difficulty of
+Learning Long-Term Dependencies.
+Hochreiter, S. and Schmidhuber, J. (1997). Long Short-Term Memory. Neural Computation, 9(8):1735–1780.
+Hornik, K., Stinchcombe, M., and White, H. (1990). Universal Approximation of an Unknown Mapping and its
+Derivatives using Multilayer Feedforward Networks. Neural Networks, 3(5):551–560.
+Huang, R. and Polak, T. (2011). LOBSTER: Limit Order Book Reconstruction System. Information Systems &
+Economics eJournal.
+Imperial College Research Computing Service (2022). High-Performance Computing Cluster.
+Ioffe, S. and Szegedy, C. (2015). Batch Normalization: Accelerating Deep Network Training by Reducing Internal
+Covariate Shift. In Proceedings of the 32nd International Conference on Machine Learning, volume 37 of Proceedings
+of Machine Learning Research, pages 448–456, Lille, France. PMLR.
+Kingma, D. P. and Ba, J. (2015). Adam: A Method for Stochastic Optimization. CoRR, abs/1412.6980.
+41
+
+=== page 42 ===
+Kirilenko, A. A. and Lamacie, G. (2015). Latency and Asset Prices.
+Kolm, P. N., Turiel, J. D., and Westray, N. (2021). Deep Order Flow Imbalance: Extracting Alpha at Multiple Horizons
+from the Limit Order Book. Econometric Modeling: Capital Markets - Portfolio Theory eJournal.
+Krizhevsky, A., Sutskever, I., and Hinton, G. E. (2012). ImageNet Classification with Deep Convolutional Neural
+Networks. In Pereira, F., Burges, C., Bottou, L., and Weinberger, K., editors, Advances in Neural Information
+Processing Systems, volume 25. Curran Associates, Inc.
+Large, J. (2007). Measuring the resiliency of an electronic limit order book. Journal of Financial Markets, 10(1):1–25.
+Luong, T., Pham, H., and Manning, C. D. (2015). Effective Approaches to Attention-based Neural Machine Translation.
+In Proceedings of the 2015 Conference on Empirical Methods in Natural Language Processing, pages 1412–1421,
+Lisbon, Portugal. Association for Computational Linguistics.
+Melis, G., Dyer, C., and Blunsom, P. (2017). On the State of the Art of Evaluation in Neural Language Models. CoRR,
+abs/1707.05589.
+Menkveld, A. J. and Zoican, M. A. (2017). Need for Speed? Exchange Latency and Liquidity. The Review of Financial
+Studies, 30(4):1188–1228.
+Nasdaq (2023). Exchange Trading Technology, Accessed: 2023-08-30.
+Ntakaris, A., Magris, M., Kanniainen, J., Gabbouj, M., and Iosifidis, A. (2018). Benchmark dataset for mid-price
+forecasting of limit order book data with machine learning methods. Journal of Forecasting, 37(8):852–866.
+Nyblom, J. and Harvey, A. (2000). Tests of Common Stochastic Trends. Econometric Theory, 16(2):176–199.
+Sirignano, J. and Cont, R. (2019). Universal Features of Price Formation in Financial Markets: Perspectives from Deep
+Learning. Quantitative Finance, 19(9):1449–1459.
+Srivastava, N., Hinton, G., Krizhevsky, A., Sutskever, I., and Salakhutdinov, R. (2014). Dropout: A Simple Way to
+Prevent Neural Networks from Overfitting. Journal of Machine Learning Research, 15(56):1929–1958.
+Telgarsky, M. (2015). Representation Benefits of Deep Feedforward Networks. arXiv e-prints, page arXiv:1509.08101.
+Tran, D. T., Iosifidis, A., Kanniainen, J., and Gabbouj, M. (2019). Temporal Attention-Augmented Bilinear Network
+for Financial Time-Series Data Analysis. IEEE Transactions on Neural Networks and Learning Systems, 30(5):1407–
+1418.
+US Securities and Exchange Commission (2005). Regulation NMS - Proposed rules and amendments to joint industry
+plans.
+Wu, Y., Mahfouz, M., Magazzeni, D., and Veloso, M. (2021). Towards Robust Representation of Limit Orders Books
+for Deep Learning Models. Papers 2110.05479, arXiv.org.
+Xu, K., Gould, M. D., and Howison, S. D. (2019). Multi-level Order-flow Imbalance in a Limit Order Book. Market
+Microstructure and Liquidity, 4.
+Zhang, Z. and Zohren, S. (2021). Multi-Horizon Forecasting for Limit Order Books: Novel Deep Learning Approaches
+and Hardware Acceleration using Intelligent Processing Units. Papers 2105.10430, arXiv.org.
+Zhang, Z., Zohren, S., and Roberts, S. (2019). DeepLOB: Deep Convolutional Neural Networks for Limit Order Books.
+IEEE Transactions on Signal Processing, 67(11):3001–3012.
+42

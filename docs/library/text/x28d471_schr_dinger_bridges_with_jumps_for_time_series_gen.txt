@@ -1,0 +1,2509 @@
+=== page 1 ===
+Schrödinger bridges with jumps for time series generation ∗
+Stefano De Marco † Huyên Pham ‡ Davide Zanni §
+October 14, 2026
+Abstract
+We study generative modeling for time series using entropic optimal transport and the Schrödinger
+bridge (SB) framework, with a focus on applications in finance and energy modeling. Extending the
+diffusion-based approach of Hamdouche, Henry-Labordère, Pham, [17], we introduce a jump–diffusion
+Schrödinger bridge model that allows for discontinuities in the generative dynamics. Starting from
+a Schrödinger bridge entropy minimization problem, we reformulate the task as a stochastic control
+problem whose solution characterizes the optimal controlled jump–diffusion process. When sampled
+on a fixed time grid, this process generates synthetic time series matching the joint distributions of
+the observed data.
+The model is fully data-driven, as both the drift and the jump intensity are learned directly from
+the data. We propose practical algorithms for training, sampling, and hyperparameter calibration.
+Numerical experiments on simulated and real datasets, including financial and energy time series,
+show that incorporating jumps substantially improves the realism of the generated data, in particular
+by capturing abrupt movements, heavy tails, and regime changes that diffusion-only models fail to
+reproduce. Comparisons with state-of-the-art generative models highlight the benefits and limitations
+of the proposed approach.
+Keywords: Schrödinger bridge; entropic optimal transport; jump processes; stochastic control; Lévy-
+driven dynamics; time series generation.
+Mathematics Subject Classification: 91G80, 49Q22.
+1 Introduction
+The generative modeling task. Generative models have gained increasing attention in machine
+learning and applied probability. The task of learning the underlying data distribution to synthesize real-
+istic and novel samples has become crucial across diverse domains, such as the generation of high-fidelity
+images, coherent text, complex videos or molecular structures. Contemporary architectures generally fall
+into three categories: flow-matching models [26], based on learning a velocity field to find a deterministic
+flow which moves a source distribution (usually Gaussian) to the target distribution; denoising diffusion
+models [19, 34], built through the reversion of a Markov chain or a diffusion SDE, often relying on learning
+the score function of the data distribution; Generative Adversarial Networks (GANs) [15], written as a
+zero-sum game between a generator and a discriminator. In quantitative finance, the realistic simulation
+of financial time series has attracted increasing interest in risk management, portfolio construction, stress
+testing, and scenario generation. Traditional parametric models frequently fail to capture the complex
+and empirical stylized facts of financial data, thereby motivating the shift toward data-driven generative
+approaches. However, faithfully reproducing these temporal dependencies remains a significant challenge,
+and universally accepted evaluation metrics for synthetic financial data are still missing. See [7] for a
+complete overview.
+∗This work is supported by the Chair Deep Learning and Statistics Qube RT, the BNP-PAR Chair “Futures of Quan-
+titative Finance", the Chair “Risques Financiers", by FiME, Laboratoire de Finance des Marchés de l’Energie, and the
+“Finance and Sustainable Development” EDF - CACIB Chair.
+†CMAP, École Polytechnique, Institut Polytechnique de Paris, Email: stefano.de-marco@polytechnique.edu
+‡CMAP, École Polytechnique, Institut Polytechnique de Paris, Email: huyen.pham@polytechnique.edu
+§CMAP, École Polytechnique, Institut Polytechnique de Paris, Email: davide.zanni@polytechnique.edu
+1
+arXiv:2602.20011v2  [q-fin.MF]  11 Oct 2026
+
+=== page 2 ===
+In this work, we focus on generative modeling for time series based on optimal transport (OT) tech-
+niques. OT-based approaches seek to identify a transport mechanism that optimally moves a reference
+distribution into the empirical data distribution, minimizing a transport cost while preserving the struc-
+ture of the data. This framework enables generative modeling by directly learning an optimal transport
+map or coupling, bypassing the need for adversarial training or the inversion of complex stochastic dynam-
+ics. Early explorations of this idea include training generative models by minimizing OT-based metrics
+like Sinkhorn divergences [13]. Subsequent works have aimed to directly learn the optimal transport
+maps, such as through continuous-time Neural ODE flows [30] or neural approximations of the Monge
+map [22]. Specifically for time series, causal optimal transport has been introduced to reproduce temporal
+dependencies and causal structures rather than merely matching static marginal distributions [35]. Our
+work extends this domain by proposing a novel generative model built upon a specific, powerful optimal
+transport technique: the Schrödinger bridge (SB) problem.
+The Schrödinger bridge problem. The Schrödinger bridge problem, first introduced by E.
+Schrödinger in the 1930s, is an entropy minimization problem that seeks to find the probability mea-
+sure that is "as close as possible" to another reference probability, while satisfying prescribed marginal
+distributions. Formally, consider a reference path measure Q on the space Ω = C([0, 1], Rd), typically
+fixed as the Wiener measure, under which the canonical processX = (Xt)t≥0 is a Brownian motion. The
+dynamic Schrödinger bridge problem is then formulated as
+inf
+P∈P(Ω):P0=µ0,P1=µ1
+H(P|Q),
+where H(P|Q) is the relative entropy (Kullback-Leibler divergence) between the two path measures,
+P0 = P◦X−1 0 ,P1 = P◦X−1 1 , andµ0 andµ1 are the prescribed initial and terminal marginal distributions
+belonging toP(Rd). The solution P∗ is the probability law of a unique, constrained stochastic process
+that transports the initial distributionµ0 to the target distributionµ1 in an entropy-optimal way relative
+to the reference measure Q. The static counterpart of the problem is defined on the space of probabilities
+P(Rd) as
+inf
+π∈Π(µ0,µ1)
+H(π|Q01),
+where Q01(dx dy) = Q((X0,X1)∈ dx dy) is the joint law of the initial and final position of the reference
+process, and Π(µ0,µ1) denotes the set of couplings with marginals µ0 and µ1. The classical Schrödinger
+bridge problem has been extensively studied: we refer to Léonard [24] for a comprehensive overview of
+the Schrödinger bridge problem, including classical solution methods, dual formulation, and the char-
+acterization of the solution in terms of Schrödinger potentials. In this paper, we are interested in the
+application of the Schrödinger bridge problem to financial modeling and its extension to processes with
+discontinuities. This extension has been recently explored in depth in [38, 39], where the authors define
+the minimization problem over the space of path measures on càdlàg trajectories, choosing as reference
+measure the law of a Lévy-Itô process. They provide the explicit characterization of the solution via the
+associated Schrödinger system and its potentials.
+An important connection is given by the interpretation of the Schrödinger bridge problem as entropic
+optimal transport (EOT) problem, which can be viewed as a computationally tractable relaxation of
+classical optimal transport. Indeed, consider the static Schrödinger bridge problem with a reference
+measure R∈P(Rd × Rd) of the form
+dR(x,y)∝ exp
+(
+−1 εc(x,y) ) d(µ0 ⊗µ1)(x,y).
+Then minimizing the relative entropy with respect to R over couplings Π(µ0,µ1) is equivalent, up to an
+additive constant, to the problem
+inf
+π∈Π(µ0,µ1)
+∫
+c(x,y)π(dx, dy) +εH(π|µ0 ⊗µ1),
+where c is a given cost function and H the Kullback-Leibler divergence. This formulation, combining a
+transport cost with an entropic regularization term, is precisely the EOT problem; popularized by the
+work of Cuturi [9], it provides the foundation for the well-known Sinkhorn algorithm, which allows to
+numerically compute the entropy-regularized optimal coupling. By leveraging this connection, various
+2
+
+=== page 3 ===
+numerical methods for approximating the SB solution have been developed: the Iterative Proportional
+Fitting (IPF) [28], that it is based on the Sinkhorn algorithm, the Iterative Markovian Fitting (IMF)
+[33], and faster techniques like the Light SB algorithm [16]. These numerical algorithms are essential for
+turning the Schrödinger bridge problem theory into a practical tool for generative modeling.
+Generative models based on Schrödinger bridges. The Schrödinger bridge technology provides
+a powerful foundation for the design of generative models. De Bortoli et al. [12] was among the first to
+establish a rigorous connection between the SB problem and score-based generative models, introducing
+the Diffusion SB as a novel implementation of the IPF algorithm using score-based diffusion techniques.
+This approach enables the construction of bridges between arbitrary distributions over a finite time
+horizon, and leads to improved sampling efficiency compared with classical score-based methods. Shi
+et al. [33] further developed this line of work by proposing Diffusion Schrödinger Bridge Matching, an
+algorithm which refines the practical approximation of Schrödinger bridges and offers a more scalable
+and robust alternative to IPF in high-dimensional settings.
+In the context of time series, the Schrödinger bridge problem naturally induces a generative model on
+the path space. The resulting optimal stochastic process interpolates the joint distribution at fixed dates
+and, when sampled, produces synthetic time series whose joint finite-dimensional distribution matches
+those of the observed data. This dynamic optimal transport perspective combines the interpretability of
+OT with the flexibility of stochastic modeling, making it particularly well suited for generating realistic
+time series while preserving both distributional and temporal consistency. In financial applications,
+[18] introduced a martingale formulation of the Schrödinger bridge problem within an entropic optimal
+transport framework, incorporating martingale constraints that are essential for asset price modeling.
+Building on this idea, Hamdouche et al. [17] rigorously defined and implemented a numerical algorithm
+to reproduce the joint distribution of financial time series using Schrödinger bridges.
+In this paper, we extend the work of Hamdouche et al. [17] to the setting of jump-diffusion processes.
+Extensions of generative models to dynamics with jumps have been explored, notably by generalizing
+diffusion-based stochastic differential equations to Lévy-driven dynamics [36, 3]. Such extensions are
+crucial for capturing heavy-tailed distributions and abrupt movements commonly observed in financial
+and energy time series. We adopt a similar strategy within the Schrödinger bridge framework by moving
+beyond the standard Wiener reference and instead considering the law of a process composed of a Brow-
+nian motion and a compound Poisson process. This leads to a Schrödinger bridge problem defined on
+the space of càdlàg paths, and requires new theoretical results for the SB problem to discontinuous dy-
+namics. Beyond its theoretical interest, this extension is strongly motivated by practical considerations:
+our numerical experiments demonstrate that incorporating jumps substantially improves the realism of
+the generated time series compared with diffusion-only Schrödinger bridge models, particularly in terms
+of tail behavior, abrupt variations, and regime changes.
+Our contributions and organization of the paper. This paper makes three main contributions:
+• First, we introduce a new Schrödinger bridge–based generative model for time series driven by
+jump–diffusion dynamics. Extending the framework of Hamdouche et al. [17], we formulate the
+Schrödinger bridge problem on the space of probability laws of càdlàg processes, allowing the
+reference measure to be the law of a jump–diffusion process rather than a purely diffusive one.
+• Second, we propose a systematic calibration procedure for identifying the key hyperparameters
+of the Schrödinger bridge generative model, which is essential to ensure numerical stability and
+robustness across different financial datasets.
+• Third, through extensive numerical experiments on both financial and energy time series, we show
+that incorporating jumps leads to a substantial improvement in generative performance compared
+with diffusion-only Schrödinger bridge models, notably by better capturing fat tails, abrupt varia-
+tions, and regime changes observed in real data.
+The paper is organized as follows: in Section 2, we formulate the Schrödinger bridge problem for time
+series, and extend it to the setting of jump-diffusion processes. Section 3 presents the main theoretical re-
+sult: Theorem 3.1 characterizes the solution of the problem and explicitly identifies the optimal controlled
+dynamics of the generative process used to simulate synthetic time series on a fixed time grid. In Section
+4, we develop the methodology for estimating the drift and jump intensity of the optimal dynamics, with
+3
+
+=== page 4 ===
+particular attention to the case where the reference jump component is Gaussian. Section 5 introduces
+two simulation schemes designed for sampling trajectories of the optimal jump-diffusion process, and
+Section 6 describes the calibration procedure used to select the model hyperparameters. In Section 7, we
+report numerical experiments on both simulated and real-world datasets, including financial and energy
+time series, presenting qualitative simulations, quantitative performance metrics, and comparisons with
+state-of-the-art generative models. Finally, Appendix A recalls some notions on the predictability of
+stochastic processes, and Appendix B reports some additional numerical tests.
+2 Setting and problem formulation
+Letd,N∈ N, andletµdenoteaprobabilitydistributiononthespace (Rd)N. Assumethatthedistribution
+µ is only accessible through a finite set of samples x(1),...,x(M), each observed on a discrete time grid
+T :={ti}i=1,...,N, where we set T := tN as the terminal observation horizon. Our aim is to develop a
+method that enables the generation of new samples from this unknown target distribution µ.
+Consider the space Ω = D([0,T ]; Rd) of the càdlàg functions ω : [0,T ]→ Rd, endowed with the
+Skorokhod topology, and letF denote its Borelσ-algebra. Consider the canonical processX = (Xt)t∈[0,T ]
+with càdlàg paths defined by Xt(ω) = ω(t). Let F0 = (F0 t )t∈[0,T ] be the canonical filtration, that is,
+F0 t = σ(Xs, 0≤ s≤ t). LetP(Ω) denote the space of probability measures on Ω. We let P0 ∈P(Ω)
+denote the law of a process satisfying
+Xt =X0 +σW 0 t +
+∫
+(0,t]×Rd
+zN(ds, dz), t∈ [0,T ], (2.1)
+where X0 = 0, W 0 is a d-dimensional Brownian motion, σ∈ Rd×d is an invertible matrix, and N(dt, dz)
+is a Poisson random measure on [0,T ]× Rd independent of W 0, and with intensity measure
+λ0ν0(dz)dt,
+where λ0 > 0 is a constant jump intensity and ν0 ∈ P(Rd) is the jump size distribution satisfying
+ν0({0}) = 0. In particular, the jump component has finite activity. LetN P0 denotes the collection of all
+subsets ofF-measurable P0-null sets. We consider the augmented filtration F = (Ft)t∈[0,T ] defined by
+Ft := ⋂ s>t ( F0 s ∨N P0) , fort∈ [0,T ), andFT =F0 T ∨N P0 . Hence, the filtration F is complete and right-
+continuous. Throughout the paper we work under the standing assumption thatσ is non-degenerate and
+λ0 ̸= 0, unless explicitly stated otherwise. Our goal is to solve the following Schrödinger bridge problem
+with jumps for time series, which will be denoted by SBJTS.
+SBJTS problem. Find P∗∈P(Ω) solution to
+P∗∈ arg min
+P∈Pµ T (Ω) H(P|P0)
+wherePµ T (Ω) ={P∈P(Ω) : P◦ (Xt1,...,XtN )−1 = µ}, and H(·|·) is the Kullback-Leibler divergence
+between two probability measures defined by
+H(P|P0) =
+{
+EP [ ln dP dP0 ] if P≪ P0,
++∞ otherwise.
+We remark that the structure of our problem coincides with the one introduced in [17], except that
+we include an additional compound Poisson term in the dynamics of the process X under the reference
+measure P0. This modification provides a natural extension of the original framework, allowing for the
+presence of jumps.
+To solve the SBJTS problem, we consider a stochastic control formulation, following the classical
+approach of [10]. Indeed, given P ∈ P(Ω) with finite relative entropy H(P|P0) < ∞, by Girsanov’s
+theorem (see [23, 21]) we can associate to P an Rd valued adapted process α = (αt)t∈[0,T ] and an R+
+valued predictable process λ = (λt)t∈[0,T ] with finite energy
+EP
+[
+1
+2
+∫ T
+0
+∥σ−1αt∥2dt +
+∫
+(0,T ]×Rd
+(
+λt(z) ln
+(λt(z)
+λ0
+)
++λ0 −λt(z)
+)
+ν0(dz)dt
+]
+<∞, (2.2)
+4
+
+=== page 5 ===
+such that the Radon–Nikodym derivative corresponding to this change of measure satisfies
+dP
+dP0 = exp
+(∫ T
+0
+(σ−1αt) ⊺ dW 0 t − 1 2 ∫ T 0 ∥σ−1αt∥2dt
++
+∫
+(0,T ]×Rd
+ln
+(λt(z)
+λ0
+)
+N(dt, dz)−
+∫
+(0,T ]×Rd
+(λt(z)−λ0)ν0(dz)dt
+)
+1 { dP dP0 >0}. (2.3)
+Moreover, the process defined by
+Wt :=W 0 t −
+∫ t
+0
+σ−1αsds, t∈ [0,T ] (2.4)
+is a P-Brownian motion, and the process
+∫
+(0,t]×Rd
+ln
+(λs(z)
+λ0
+)(
+N(ds, dz)−λs(z)ν0(dz)ds ) , t∈ [0,T ] (2.5)
+is a P-martingale.
+Remark 2.1. Expression (2.3) is obtained by the combination of the results of C. Léonard for the con-
+tinuous case (Theorem 2.3 in [24]) and the jump case (Theorem 2.9 in [24]). In particular, under the
+reference measure P0, the Brownian motion W 0 and the Poisson random measure N(dt, dz) are inde-
+pendent. Consequently, the continuous martingale Mc t = ∫t 0 (σ−1αs)⊺ dW 0 s and the purely discontinuous
+martingale Md t = ∫ (0,t]×Rd ( λs(z) λ0 − 1 ) (N(ds, dz)−λ0ν0(dz)ds) have quadratic covariation satisfying
+[Mc,Md]t = 0, P0-a.s. By the multiplicative property of the Doléans-Dade exponential for orthogonal
+semimartingales, the joint density process is the product of the two exponential martingales.
+It follows that we can write the entropy H(P|P0) as
+H(P|P0) = EP
+[
+ln
+(
+1 { dP dP0 >0}
+)
++ 1 2 ∫ T 0 ∥σ−1αt∥2dt + ∫ (0,T ]×Rd ( λt(z) ln (λt(z) λ0 ) −λt(z) +λ0 ) ν0(dz)dt ]
+and, using that dP dP0 > 0, P−a.s., we get H(P|P0) =J(α,λ), where J(α,λ) is the functional
+J(α,λ) = EP
+[
+1
+2
+∫ T
+0
+∥σ−1αt∥2dt +
+∫
+(0,T ]×Rd
+(
+λt(z) ln
+(λt(z)
+λ0
+)
+−λt(z) +λ0
+)
+ν0(dz)dt
+]
+.
+Hence the SBJTS problem is equivalent to the following formulation
+(P)
+
+
+
+minimize over (α,λ)∈A the functional J(α,λ)
+subject to: Xt =X0 +
+∫t
+0 αs ds +σWt +
+∫
+(0,t]×Rd zN(ds, dz), X0 = 0, P−a.s.
+P◦ (Xt1,...,XtN )−1 =µ
+where
+A =
+{
+(α,λ) :α : Ω× [0,T ]→ Rd adapted, λ : Ω× [0,T ]× Rd → R+ predictable, J(α,λ)<∞ } ,
+W is P-Brownian motion and N(dt, dz) is the random counting measure of a marked point process with
+predictable compensator λt(z)ν0(dz)dt under P. We denote by VSBJTS the infimum of this stochastic
+control problem:
+VSBJTS = inf
+α,λ∈Aµ T J(α,λ)
+whereAµ T is the set of controls (α,λ)∈A such that P◦ (Xt1,...,XtN )−1 =µ and dXt =αt dt +σ dWt +∫
+Rd zN(dt, dz), for t≤T, X0 = 0.
+Our goal is to prove the existence of an optimal pair (α∗,λ∗)∈Aµ T with an explicit representation
+that can eventually be estimated from empirical observations. Once identified, these optimal drift and
+intensity can be used to simulate the corresponding controlled jump-diffusion process X, thereby gen-
+erating samples from the time series distribution µ from the probability measure P∗ on the path space
+Ω.
+5
+
+=== page 6 ===
+3 Solution of the Schrödinger bridge problem with jumps for
+time series
+Let µ0 T = P0 ◦ (Xt1,...,XtN )−1 be the distribution of the time series under the reference measure P0.
+We introduce the following assumptions on the target distribution µ and µ0 T.
+Assumption 1. Assume that H(µ|µ0 T )<∞.
+Observe that Assumption 1 implies that µ≪µ0 T: we denote the corresponding Radon–Nikodym deriva-
+tive as dµ dµ0 T . Assumption 1 is sufficient to guarantee that the SBJTS problem is well posed and that a
+minimizerexists. Weset Xti := (Xt1,...,Xti), xi := (x1,...,xi)forall (x1,...,xN)∈ (Rd)N,t0 = 0, and
+we denote byXt− the left limit of the processX int. Fori = 0,...,N−1,t∈ [ti,ti+1],x1,...,xi,x∈ Rd
+consider the function
+hi(t,x; xi) = EP0
+[ dµ
+dµ0 T (Xt1,...,XtN )
+⏐⏐ Xti = xi, Xt =x ] . (3.1)
+The solution of the SBJTS problem is provided in the following theorem.
+Theorem 3.1. The probability measure P∗∈P(Ω) defined by
+dP∗
+dP0 = dµ dµ0 T (Xt1,...,XtN ) (3.2)
+is the unique solution of the SBJTS problem and it is the law of the optimal process
+Xt =X0 +
+∫ t
+0
+α∗ sds +σWt +
+∫
+(0,t]×Rd
+zN(ds, dz), t∈ [0,T ], (3.3)
+with X0 = 0, where (Wt)t∈[0,T ] is a P∗-Brownian motion, and N(dt, dz) is an integer-valued random
+measure with predictable compensator λ∗ t (z)ν0(dz)dt under P∗. For i = 0,...,N− 1, t∈ (ti,ti+1], the
+drift α∗ t and the intensity λ∗ t (z) are given by
+α∗ t =a(t,Xt; Xti), (3.4)
+λ∗ t (z) = Λ(t,Xt−,z; Xti), (3.5)
+where, for x1,...,xi,x∈ Rd, and z∈ Rd, we set
+a(t,x; xi) =σσ
+⊺
+∇x lnhi(t,x; xi),
+Λ(t,x,z; xi) =λ0 hi(t,x +z; xi) hi(t,x; xi) .
+The pair (α∗,λ∗)∈A achieves the minimum of the problem (P), which satisfies
+VSBJTS =H(P∗|P0) =H(µ|µ0 T ).
+Proof. Step 1: definition of the candidate optimal measure P∗. Following the approach of [17], we begin
+by introducing the definition of the probability measure P∗ such that P∗≪ P0. Observe that
+EP0
+[ dµ
+dµ0 T (Xt1,...,XtN )
+]
+=
+∫
+(Rd)N
+dµ
+dµ0 T (x1,...,xN)µ0 T (dx1,..., dxN) = 1.
+This suggests the existence of a probability P∗≪ P0 defined by
+dP∗
+dP0 = dµ dµ0 T (Xt1,...,XtN )
+onFT, and we can define the martingale given by
+Zt = EP0
+[dP∗
+dP0
+⏐⏐Ft ] , 0≤t≤T, (3.6)
+6
+
+=== page 7 ===
+with Z0 = 1.
+Step 2: expression of the martingaleZ as a Doléans-Dade exponential martingale. For any fixed index
+i∈{0,...,N− 1}, and t∈ [ti,ti+1], using the tower property of the conditional expectation and the
+Markovianity of the process X under P0, we can write
+hi(t,x; xi) = EP0 [ hi+1(ti+1,Xti+1 ; xi,Xti+1 ) ⏐⏐Xt =x ] ,
+for x1,...,xi,x∈ Rd, and so, in particular,
+hi(ti+1,x; xi) =hi+1(ti+1,x; xi,x), (3.7)
+with the convention that hN(tN,x; xN−1,x) = dµ dµ0 T (x1,...,xN−1,x). By Markov property, we get that
+Zt =hi(t,Xt; Xti),
+and, by the independence and stationarity of the increments of the Lévy process under P0, it holds
+hi(t,x; xi) = Eξi+1,...,ξN
+
+ dµ
+dµ0 T (x1,...,xi,x +ξi+1,..., x +
+N∑
+j=i+1
+ξj)
+
+, (3.8)
+where
+ξi+1 =σ
+√
+ti+1 −tYi+1 +
+¯Nti+1−t ∑
+n=1
+J(i+1) n ,
+ξj =σ
+√
+tj −tj−1 Yj +
+¯Ntj−tj−1∑
+n=1
+J(j) n , for all j =i + 2,...,N,
+whereYj, j =i+2,...,N, are i.i.d.N (0,Id), ¯N is a Poisson process with intensityλ0, (J(j) n )n≥1,j=i+1,...,N
+are i.i.d. random variables distributed according to ν0, independent of Yj and ¯N. Thanks to (3.8), the
+function hi(t,x; xi) is given by an integral with respect to a smooth density, that is the convolution of
+the Gaussian density with the jump distribution ν0. Therefore, the function (t,x)↦→hi(t,x; xi) belongs
+toC1,2([ti,ti+1]× Rd), and we can apply Itô’s formula under the measure P0 toZt =hi(t,Xt; Xti). Since
+Z is a P0-martingale, its predictable finite-variation part must vanish. Moreover, consider the stopping
+times
+τi = inf{t∈ (ti,ti+1] :Zt = 0 or Zt− = 0}, i = 0,...,N− 1
+with the standard convention that inf∅ = +∞. Then, for t∈ (ti,ti+1] we have:
+dZt =
+(
+∇xhi(t,Xt−; Xti)
+⊺
+σdW 0 t +
+∫
+Rd
+(hi(t,Xt− +z; Xti)−hi(t,Xt−; Xti)) ˜N(dt, dz)
+)
+1 {t≤τi} (3.9)
+where ˜N(dt, dz) := N(dt, dz)−λ0ν0(dz)dt denotes the compensated Poisson random measure. On the
+interval (ti,τi], the left limit Zt− =hi(t,Xt−; Xti) is strictly positive P0-a.s., hence we have
+dZt =Zt−
+(
+∇x lnhi(t,Xt−; Xti)
+⊺
+σdW 0 t +
+∫
+Rd
+(
+λ0 hi(t,Xt− +z; Xti) hi(t,Xt−; Xti) −λ0
+)(N(dt, dz)
+λ0 −ν0(dz)dt
+))
+1 {t≤τi}.
+By defining the processes α∗ t =∇x lnhi(t,Xt; Xti) and λ∗ t (z) =λ0 hi(t,Xt−+z;Xti) hi(t,Xt−;Xti) , we get
+dZt =Zt−
+(
+(σ−1α∗ t ) ⊺ dW 0 t +
+∫
+Rd
+(λ∗ t (z)−λ0)
+(N(dt, dz)
+λ0 −ν0(dz)dt
+))
+1 {t≤τi}
+whose solution is given by the stochastic exponential
+Zt =Zti exp
+(∫ t
+ti
+(σ−1α∗ s) ⊺ dW 0 s − 1 2 ∫ t ti ∥σ−1α∗ s∥2ds
++
+∫
+(ti,t]×Rd
+ln
+(λ∗ s(z)
+λ0
+)
+N(ds, dz)−
+∫
+(ti,t]×Rd
+(λ∗ s(z)−λ0)ν0(dz)ds
+)
+1 {t≤τi}.
+7
+
+=== page 8 ===
+In order now to recover the expression of dP∗ dP0 =ZT, we must concatenate these piecewise solutions over
+the grid 0 =t0 <t1 <...<tN =T. This step relies on the following standard properties of non-negative
+martingales (see, e.g., [32]):
+1. The density process Z = (Zt)t∈[0,T ] is a non-negative P0-martingale. Because we only assume
+absolute continuity P∗ ≪ P0 (and not strict equivalence), the event{ZT = 0} may occur with
+positive P0-probability.
+2. If τi(ω) = t∗ < +∞, for i∈{0,...,N− 1}, ω ∈ Ω, then Zt(ω) = 0 for all t∈ [t∗,T ], P0-a.s.
+Consequently, ZT > 0 almost surely if and only if τi =∞ for all i∈{0,...,N− 1}.
+By concatenating the intervals, the exact global representation over [0,T ] is obtained by multiplying the
+standard stochastic exponential by the indicator function 1 {ZT>0} = 1 { dP∗ dP0 >0}. Eventually, the Radon-
+Nikodym derivative of P∗ with respect to P0 is given by
+dP∗
+dP0 =ZT = exp
+(∫ T
+0
+(σ−1α∗ s) ⊺ dW 0 s − 1 2 ∫ T 0 ∥σ−1α∗ s∥2ds
++
+∫
+(0,T ]×Rd
+ln
+(λ∗ s(z)
+λ0
+)
+N(ds, dz)−
+∫
+(0,T ]×Rd
+(λ∗ s(z)−λ0)ν0(dz)ds
+)
+1 { dP∗ dP0 >0}.
+Step 3: application of Girsanov’s theorem. Under the assumption thatH(P∗| P0)<∞, by Girsanov’s
+theorem the processes
+W 0 t −
+∫ t
+0
+σ−1α∗ sds, (3.10)
+∫
+(0,t]×Rd
+ln
+(λ∗ s(z)
+λ0
+)(
+N(ds, dz)−λ∗ s(z)ν0(dz)ds ) , (3.11)
+for t∈ [0,T ], are P∗-martingales: (3.10) defines a new P∗-Brownian motion that we denote by W, while
+from (3.11) we get thatλ∗ t (z)ν0(dz)dt is the new compensator of the random counting measureN(dt, dz)
+under P∗. Hence, we can derive the dynamics of the process X = (Xt)t∈[0,T ] under the probability P∗:
+Xt =X0 +
+∫ t
+0
+α∗ s ds +σWt +
+∫
+(0,t]×Rd
+zN(ds, dz), t∈ [0,T ],
+where N(dt, dz) has compensator λ∗ t (z)ν0(dz)dt.
+Step 4: optimality of P∗. We show now that the processes α∗ and λ∗(z) are optimal for the mini-
+mization of J(α,λ). By definition we have that J(α∗,λ∗) =H(P∗|P0) =H(µ|µ0 T ). Let α,λ be the drift
+and the intensity associated to another probability P, with H(P|P0)<∞, and let W P = (W P t )t∈[0,T ] be
+a P-Brownian motion. Then using Jensen’s inequality and that dP dP0 is strictly positive P−a.s., we have:
+1 = EP0
+[ dµ
+dµ0 T (Xt1,...,XtN )
+]
+= EP
+[ dµ
+dµ0 T (Xt1,...,XtN )·
+( dP
+dP0
+)−1]
+= EP
+[
+exp
+(
+ln dµ dµ0 T (Xt1,...,XtN )− ∫ T 0 (σ−1αt) ⊺ dW 0 t + 1 2 ∫ T 0 ∥σ−1αt∥2dt− ∫ (0,T ]×Rd ln λt(z) λ0 N(dt, dz)
++
+∫
+(0,T ]×Rd
+(λt(z)−λ0)ν0(dz)dt
+)]
+≥ exp
+(
+EP
+[
+ln dµ dµ0 T (Xt1,...,XtN )− ∫ T 0 (σ−1αt) ⊺ dW P t − 1 2 ∫ T 0 ∥σ−1αt∥2dt + ∫ (0,T ]×Rd (λt(z)−λ0)ν0(dz)dt
+−
+∫
+(0,T ]×Rd
+ln λt(z) λ0 λt(z)ν0(dz)dt− ∫ (0,T ]×Rd ln λt(z) λ0 (N(dt, dz)−λt(z)ν0(dz)dt) ])
+= exp
+(
+H(µ|µ0 T )− EP
+[∫
+(0,T ]×Rd
+(
+λt(z) ln λt(z) λ0 −λt(z) +λ0
+)
+ν0(dz)dt + 1 2 ∫ T 0 ∥σ−1αt∥2dt ])
+= exp
+(
+H(µ|µ0 T )−J(α,λ)
+)
+.
+8
+
+=== page 9 ===
+Hence
+J(α∗,λ∗) =H(µ|µ0 T )≤J(α,λ),
+and therefore also
+H(P∗|P0)≤H(P|P0), ∀P∈Pµ T (Ω).
+This shows that P∗ realizes the minimum in the SBJTS problem. The uniqueness of the minimizer P∗
+follows by the strict convexity of H(·|P0) and the convexity of the set of admissible measuresPµ T.
+Step 5: check the constraint on the joint law. Finally we check that the constraint on the joint
+distribution is satisfied. For any function ϕ bounded measurable on (Rd)N:
+EP∗ [ϕ(Xt1,...,XtN )] = EP0
+[ dµ
+dµ0 T (Xt1,...,XtN )ϕ(Xt1,...,XtN )
+]
+=
+∫
+(Rd)N
+dµ
+dµ0 T (x1,...,xN)ϕ(x1,...,xN)µ0 T (dx1,..., dxN)
+=
+∫
+(Rd)N
+ϕ(x1,...,xN)µ (dx1,..., dxN).
+This proves that P∗◦ (Xt1,...,XtN )−1 =µ and completes the proof.
+Remark 3.1. We justify here the decomposition of the stochastic integral with respect to the compensated
+Poisson random measure ˜N(dt, dz) appearing in expression (3.9) into the difference of an integral with
+respect to the counting measure N(dt, dz) and an integral with respect to its compensator λ0ν0(dz)dt.
+More precisely, we want to show that, on the event{t≤τi}:
+∫ t
+ti
+∫
+Rd
+⏐⏐⏐λ∗ s(z) λ0 − 1 ⏐⏐⏐λ0ν0(dz)ds<∞, P0 −a.s.
+First, using the inequality|y− 1|≤ C(f(y) + 1) for a sufficiently large constant C > 0, where f(y) =
+y lny−y + 1, we get
+∫ t
+ti
+∫
+Rd
+⏐⏐⏐λ∗ s(z) λ0 − 1 ⏐⏐⏐λ0ν0(dz)ds≤CIt +Cλ0(t−ti), P0 −a.s.
+whereIt =
+∫t
+ti
+∫
+Rd f
+(
+λ∗ s(z)
+λ0
+)
+λ0ν0(dz)ds. Since (It)t is non-decreasing, fors<t we haveIt ≥Is, and thus
+EP0 [ZtIt |Fs]≥ EP0 [ZtIs |Fs] =IsEP0 [Zt |Fs] =ZsIs
+where we used that (Zt)t is a P0-martingale. Hence (ZtIt)t is a P0-submartingale. Applying the sub-
+martingale property in the expectation yields:
+EP0 [ZtIt]≤ EP0 [ZTIT ] = EP∗ [IT ]≤H(P∗| P0)<∞.
+Consequently, the random variable ZtIt is finite P0 −a.s. Finally, since Zt > 0 on the event{t≤τi}, we
+obtain that It <∞, P0 −a.s. in{t≤τi}, which allows to conclude.
+Pure jump case. Theorem 3.1 holds also in the pure jump case. Indeed, if we assume that σ is null,
+i.e. that P0 is the law of a compound Poisson process with jumps distributed according to ν0, then we
+can still write the SBJTS problem, define the solution as in (3.2) and the martingale
+Zt = EP0
+[ dµ
+dµ0 T (Xt1,...,XtN )
+⏐⏐Ft ] , t≤T.
+By Markov property we haveZt =hi(t,Xt; Xti), fort∈ (ti,ti+1], i = 0,...,N−1, and sinceX = (Xt)t≥0
+is a pure jump process, it holds
+hi(t,Xt; Xti) =hi(ti,Xti; Xti) +
+∑
+ti<s≤t
+hi(s,Xs; Xti)−hi(s,Xs−; Xti)
+9
+
+=== page 10 ===
+which gives
+dZt = 1 {t≤τi}
+∫
+Rd
+(
+hi(t,Xt− +z; Xti)−hi(t,Xt−; Xti)
+)(
+N(dt, dz)−λ0ν0(dz)dt )
+as Z is martingale, where the stopping time τi is defined as in the proof of Theorem 3.1. Hence we
+get that the new compensator of the random measure N(dt, dz) under the measure P∗ is λ∗ t (z)ν0(dz)dt,
+where
+λ∗ t (z) =λ0 hi(t,Xt− +z; Xti) hi(t,Xt−; Xti) ,
+and the dynamics of the optimal process under P∗ is
+Xt =X0 +
+∫
+(0,t]×Rd
+zN(ds, dz), t∈ [0,T ].
+Thanks to Theorem 3.1, we obtain the dynamics (3.3) of the optimal processX under the probability
+measure P∗ which solves the SBJTS problem. Our objective is to simulate this optimal dynamics. As
+follows from (3.4) and (3.5), both the drift and the jump intensity are time, state and path dependent.
+This path dependence is essential, as it requires the construction of estimators to approximate the optimal
+drift and jump intensity that have to be evaluated along each simulated trajectory.
+4 Approximation of the optimal drift and intensity
+In this section, we focus on the expressions of the optimal drift and intensity of jumps to highlight how
+we can get fully data driven estimators that allow the simulation of the generative process (3.3). We
+first derive an explicit expression for the functionhi(t,x; xi), and then we present the estimators that are
+used in practice.
+4.1 Explicit formula for the drift and intensity of jumps
+First, using the notation introduced in the proof of Theorem 3.1, we have that the increments of the
+process X under P0 satisfy
+Xti+1 −Xt
+law
+= σ
+√
+ti+1 −tY +
+¯Nti+1−t ∑
+n=1
+Jn (4.1)
+fort∈ [ti,ti+1),i = 0,...,N−1, whereY is a standard Gaussian random variableN (0,Id), ¯N is a Poisson
+process with intensityλ0, (Jn)n≥1 are i.i.d. random variables distributed according toν0, independent of
+Y and ¯N. Conditioning on the values of ¯N, we can explicitly write the density function of the increment
+Xti+1 −Xt as
+f0 ti+1−t(z) = e−λ0(ti+1−t)
+(2π(ti+1 −t))
+d
+2 | detσ|
+∑
+k≥0
+(λ0(ti+1 −t))k
+k!
+∫
+Rd
+exp
+(
+−∥σ−1(z−y)∥2
+2(ti+1 −t)
+)
+(ν0)∗k(dy), (4.2)
+for z∈ Rd, where we denote by (ν0)∗k the k-times convolution product of the measure ν0.
+We state the following proposition using that µ0 T admits a density with respect to the Lebesgue
+measure, as by definition µ0 T = P0 ◦ (Xt1,...,XtN )−1, where X follows the dynamics (2.1). Moreover, as
+µ≪µ0 T by hypothesis, µ admits also a density with respect to the Lebesgue measure. By a slight abuse
+of notation, we denote these densities respectively by (x1,...,xN)↦→µ0 T (x1,...,xN) and (x1,...,xN)↦→
+µ(x1,...,xN). We introduce a further assumption on the measure µ to derive expressions of the optimal
+drift and intensity of jumps involving conditional expectations under µ.
+Assumption 2. Assume that Eµ
+[
+1
+f0 ti+1−ti (Xti+1 −xi)
+]
+<∞, for i = 0,...,N− 1, and xi ∈ Rd.
+Remark 4.1 (Probabilistic interpretation and validity of Assumption 2). Assumption 2 is a tail-
+compatibility requirement on the target distribution µ relative to the reference transition density f 0 ∆ti,
+ensuring the applicability of the Dominated Convergence Theorem in Proposition 4.1. We give some
+examples to provide concrete probabilistic intuition of this assumption.
+10
+
+=== page 11 ===
+1. Pure diffusion case: If λ0 = 0, the transition density f 0 ∆ti is purely Gaussian. Up to a constant,
+Assumption 2 reduces to the exponential-quadratic moment condition
+Eµ
+[
+exp
+(∥σ−1(Xti+1 −xi)∥2
+2∆ti
+)]
+<∞.
+This is strictly stronger than sub-Gaussianity; for instance, in dimensiond = 1 with Gaussian target
+Xti+1 ∼N (0,v), it requires v < σ2∆ti, meaning the target marginal must have lighter tails than
+the reference transition.
+2. Gaussian jump distribution. If λ0 > 0,ν0 ∼N (0, Γ), by lower-bounding f 0 ∆ti by the k-th term
+of the sum (4.2), it suffices that Eµ
+[
+exp
+( 1
+2 (Xti+1 −xi)⊺ Σ−1 k (Xti+1 −xi) )] <∞ holds for at least
+one k ≥ 0, where Σk = ∆tiσσ⊺ +kΓ. For example, in dimension d = 1 with Gaussian target
+Xti+1 ∼N (0,v), this requires v < σ2∆ti +kγ2. Since k∈ N can be chosen arbitrarily large, the
+term σ2∆ti +kγ2 can always exceed any finite target variance v, guaranteeing that Assumption 2
+holds.
+3. Heavy-tailed jumps: Suppose that the jump size distribution ν0 admits a density satisfying a
+polynomial lower bound of order γ > 1, namely pν0(z)≥ c 1+|z|γ, z∈ R, for some c > 0. Then the
+convolution structure of the transition density implies that 1 f0 ∆ti (z) ≤C(1 +|z|γ) for some constant
+C > 0. Consequently, Assumption 2 is satisfied once that the moment condition Eµ[|Xti+1 |γ]<∞
+holds, significantly weakening the integrability requirement on µ.
+4. Compact support: If µ has bounded support, z ↦→ 1 f0 ∆ti (z) attains a finite supremum on the support domain, making Assumption 2 trivially satisfied.
+Proposition 4.1. For i = 0,...,N− 1, xi ∈ (Rd)i, x∈ Rd and z∈ Rd, the functions a(t,x; xi) and
+Λ(t,x,z; xi) defined in Theorem 3.1 are given by
+a(t,x; xi) =σσ
+⊺ Eµ[∇xFi(t,xi,x,Xti+1 )|Xti = xi]
+Eµ[Fi(t,xi,x,Xti+1 )|Xti = xi] , t∈ [ti,ti+1), (4.3)
+Λ(t,x,z; xi) =λ0 Eµ[Fi(t,xi,x +z,Xti+1 )|Xti = xi] Eµ[Fi(t,xi,x,Xti+1 )|Xti = xi] , t∈ (ti,ti+1), (4.4)
+where
+Fi(t,xi,x,xi+1) =
+f0 ti+1−t(xi+1 −x)
+f0 ti+1−ti(xi+1 −xi), (4.5)
+the function f0 ti+1−t defined in (4.2) is the density of the increment Xti+1 −Xt, for t∈ [ti,ti+1), under
+the reference measure P0, and Eµ denotes the expectation under µ.
+Proof. Consider µ0 T (x1,...,xN) the density with respect to the Lebesgue measure of the vector
+(Xt1,...,XtN ) under P0. By independence of the increments, we can write
+µ0 T (x1,...,xN) =
+N−1∏
+j=0
+f0 tj+1−tj(xj+1 −xj), (4.6)
+where we set x0 = 0 and t0 = 0. For fixed i = 0,...,N− 1, t∈ (ti,ti+1), xi ∈ (Rd)i, and x∈ Rd, we can
+rewrite the function hi(t,x; xi) using (4.6) as
+hi(t,x; xi) = EP0
+[ dµ
+dµ0 T (x1,...,xi,Xti+1 ,...,XtN )
+⏐⏐Xt =x ]
+=
+∫
+(Rd)N−i
+µ(x1,...,xN)
+µ0 i (x1,...,xi)
+f0 ti+1−t(xi+1 −x)
+f0 ti+1−ti(xi+1 −xi) dxi+1 ··· dxN
+11
+
+=== page 12 ===
+where we call µ0 i (x1,...,xi) the density of (Xt1,...,Xti) under µ0 T. Hence, if we introduce the function
+Fi(t,xi,x,xi+1) =
+f0 ti+1−t(xi+1 −x)
+f0 ti+1−ti(xi+1 −xi),
+and we denote by µi(x1,...,xi) the density of (Xt1,...,Xti) under µ with respect to the Lebesgue
+measure, i.e.
+µi(x1,...,xi) =
+∫
+(Rd)N−i
+µ(x1,...,xN) dxi+1 ··· dxN,
+we obtain
+hi(t,x; xi) =
+∫
+(Rd)N−i
+Fi(t,xi,x,xi+1) µi(x1,...,xi) µ0 i (x1,...,xi) µ(x1,...,xN) µi(x1,...,xi) dxi+1 ··· dxN
+=C
+∫
+(Rd)N−i
+Fi(t,xi,x,xi+1)µ(x1,...,xN) µi(x1,...,xi) dxi+1 ··· dxN,
+with C a constant depending only on (x1,...,xi). Therefore,
+hi(t,x; xi) =C Eµ[Fi(t,xi,x,Xti+1 )|Xti = xi]. (4.7)
+This allows to get the expression
+a(t,x; xi) =σσ
+⊺ ∇xhi(t,x; xi)
+hi(t,x; xi) =σσ
+⊺ Eµ[∇xFi(t,xi,x,Xti+1 )|Xti = xi]
+Eµ[Fi(t,xi,x,Xti+1 )|Xti = xi] , (4.8)
+which is also well defined at t =ti thanks to (3.7), and
+Λ(t,x,z; xi) =λ0 hi(t,x +z; xi) hi(t,x; xi) =λ0 Eµ[Fi(t,xi,x +z,Xti+1 )|Xti = xi] Eµ[Fi(t,xi,x,Xti+1 )|Xti = xi] . (4.9)
+We conclude the proof showing that we can interchange the gradient operator∇x and the conditional
+expectation Eµ in (4.8), as a consequence of the Dominated Convergence Theorem. First, the differentia-
+bility of the map x↦→ Fi(t,xi,x,Xti+1 ) follows directly from the smoothness of the reference transition
+density function f 0 ti+1−t(·) for all t < ti+1. Moreover, for fixed t∈ [ti,ti+1) and x∈ Rd, relation (4.7)
+guarantees that the conditional expectation is finite:
+Eµ[Fi(t,xi,x,Xti+1 )| Xti = xi] = 1 Chi(t,x; xi)<∞.
+Next, we must find an integrable dominating function b(xi,Xti+1 ), independent of x, such that
+|∇xFi(t,xi,x,Xti+1 )|≤b(xi,Xti+1 ), µ-a.s.
+Using the derivative properties of the jump-diffusion convolution structure, the gradient of the numerator
+with respect to x yields:
+∇xf0 ti+1−t(Xti+1 −x) = ∑
+k≥0
+wk
+∫
+Rd
+σ−1 Xti+1 −x−y ti+1 −t gσ(Xti+1 −x−y)(ν0)∗k(dy)
+wherewk =e−λ0(ti+1−t) (λ0(ti+1−t))k k! andgσ denotes the Gaussian density. Taking the absolute value and
+applying the triangle inequality, we obtain:
+|∇xFi(t,xi,x,Xti+1 )|≤ 1 f0 ti+1−ti(Xti+1 −xi) ∑ k≥0 wk ∫ Rd ∥σ−1∥|Xti+1 −x−y| ti+1 −t gσ(Xti+1 −x−y)(ν0)∗k(dy)
+≤ 1 f0 ti+1−ti(Xti+1 −xi) sup z∈Rd
+{
+∥σ−1∥ |z| ti+1 −tgσ(z) }
+as the functionz↦→∥σ−1∥ |z| ti+1−tgσ(z) is continuous and decays exponentially fast at infinity, hence it has
+a finite global supremum over Rd. Finally, we can use a global constant to bound the numerator and get
+|∇xFi(t,xi,x,Xti+1 )|≤
+¯C
+f0 ti+1−ti(Xti+1 −xi) =:b(xi,Xti+1 ).
+Thanks to Assumption 2, we conclude that b(xi,Xti+1 )∈L1(µ).
+12
+
+=== page 13 ===
+Remark 4.2. At the time values {ti}i=1,...,N−1 the value of the intensity function λ∗ ti+1 (z) =
+Λ(ti+1,Xt− i+1 ,z; Xti) is given by following expression:
+Λ(ti+1,x,z; xi) =λ0
+EP0
+[
+dµ
+dµ0 T (x1,...,xi,Xti+1 ,...,XtN )
+⏐⏐Xti+1 =x +z ]
+EP0
+[
+dµ
+dµ0 T (x1,...,xi,Xti+1 ,...,XtN )
+⏐⏐Xti+1 =x ]
+=λ0 µi+1(x1,...,xi,x +z) µ0 i+1(x1,...,xi,x +z) µ0 i+1(x1,...,xi,x) µi+1(x1,...,xi,x)
+hence we get
+Λ(ti+1,x,z; xi) =λ0 f0 ti+1−ti(x−xi) f0 ti+1−ti(x +z−xi) µi+1(x1,...,xi,x +z) µi+1(x1,...,xi,x) . (4.10)
+Notice that by Theorem 3.1 we get that λ∗ t (z) = Λ(t,Xt−,z; Xti) is well-defined and predictable
+with respect to the natural filtration of the process, as required for the construction of the controlled
+jump–diffusion. This predictability property is explicit in (4.4) and (4.10), where the dependence on the
+past is expressed exclusively through values of the time series observed at strictly earlier times.
+Proposition 4.1 gives expressions of the drift and intensity of jumps involving the expectation with
+respect to µ. This is particularly convenient as this formulation allows to construct estimators in which
+the expectation underµ is approximated using the initial time series sampled from the target distribution.
+Plugging the density (4.2) into the functionFi(t,xi,x,xti+1 ), we achieve the expressions for the drift and
+intensity of jumps. In the numerical simulations we will fix a particular choice for the distribution ν0 in
+order to have tractable estimators.
+4.2 Kernel regression estimators
+We derive the approximation through classical kernel methods of the conditional expectation under the
+target distribution µ that appears in the expressions of the optimal drift and intensity. Consider data
+samples X(m) = (X(m) t1 ,...,X(m) tN ), m = 1,...,M from µ. Starting from the expressions (4.3) and (4.4),
+we can estimate the conditional expectation under µ using the Nadaraya-Watson kernel estimator. For
+i = 0,...,N− 1 fixed, xi ∈ (Rd)i, x,z∈ Rd we get
+ˆa(t,x; xi) =σσ
+⊺
+M∑
+m=1
+∇xFi(t,xi,x,X(m) ti+1 ) Ki hi(xi − X(m) ti )
+M∑
+m=1
+Fi(t,xi,x,X(m) ti+1 ) Ki hi(xi − X(m) ti )
+, t∈ [ti,ti+1), (4.11)
+and
+ˆΛ(t,x,z; xi) =λ0
+M∑
+m=1
+Fi(t,xi,x +z,X(m) ti+1 ) Ki hi(xi − X(m) ti )
+M∑
+m=1
+Fi(t,xi,x,X(m) ti+1 ) Ki hi(xi − X(m) ti )
+, t∈ (ti,ti+1). (4.12)
+Here Ki is a multivariate kernel function operating on i arguments of dimension d. Given a bandwidth
+vector hi = (h1,...,hi)∈ (0,∞)i, we define the rescaled kernel by Ki hi(xi) = 1 hd 1···hd i Ki(x1 h1 ,..., xi hi ). In our simulations, we take hj =h for all j = 1,...,i and the standard multiplicative kernel
+Ki(x1,...,xi) =
+i∏
+j=1
+K(xj) (4.13)
+where K : Rd → R is the kernel function
+K(x) = (1−∥x∥2)21 ∥x∥≤1 .
+13
+
+=== page 14 ===
+This choice of kernel function is mainly motivated by considerations of computational convenience, as
+this simple polynomial form with compact support is less computationally demanding than, for instance,
+exponential kernels. Finally, in the same way we can derive the estimator for the intensity at times ti,
+for i = 1,...,N, starting from (4.10) and deriving the corresponding kernel estimator. This gives fully
+data-driven estimators that we can compute to simulate the generative process.
+5 Simulation techniques
+In this section, we develop the main tools to perform the simulation of the optimal generative process
+(3.3). We first focus on the jump term, which is no longer independent of the Brownian term under P∗,
+hence it must be approximated iteratively along each simulated trajectory. We present a methodology to
+compute the instantaneous intensity, then we propose two algorithms for the SBJTS generative model,
+based on different simulation schemes for the jump-diffusion optimal process (3.3). We refer to [4, 8] for
+the theory of the simulation of non-homogeneous jump processes.
+5.1 Gaussian jump distribution
+In order to derive tractable estimators of the drift and intensity of jumps for the numerical simulations,
+we want an easy expression for the function (4.5), and so in particular for the density of the increments
+(4.2). This means that we need a distribution ν0 whose convolutions admit explicit expressions. We
+could take for example a Dirac distribution, allowing for jumps with constant amplitude, but this choice
+is not very flexible. For this reason, in our simulations we work with Gaussian distributions.
+Let ν0 be a multivariate Gaussian measure with mean c∈ Rd and covariance matrix Γ∈ Rd×d, i.e.
+ν0(A) =
+∫
+A
+1
+(2π)
+d
+2 det(Γ)
+1
+2
+exp
+(
+−1 2(z−c) ⊺ Γ−1(z−c) ) dz, A∈B(Rd).
+Then, in (4.1) there are all independent Gaussian random variables, so using the properties of convolution
+we get an explicit formula for the density function (4.2) of the increments of the process X under the
+reference probability measure P0. Moreover, we make the following assumption:
+• σ =diag(σ1,...,σd), with σp > 0, p = 1,...,d;
+• Γ =diag(γ2 1,...,γ2 d), with γp > 0, p = 1,...,d.
+Hence, fort∈ [ti,ti+1),i = 0...,N− 1, the expression of the densityf 0 ti+1−t of the incrementXti+1 −Xt
+is
+f0 ti+1−t(z) = ∑
+k≥0
+(λ0(ti+1 −t))k
+k!
+e−λ0(ti+1−t)
+(2π)
+d
+2
+∏d
+p=1
+√
+σ2p(ti+1 −t) +kγ2p
+exp
+(
+−1 2
+d∑
+p=1
+(zp −kcp)2
+σ2p(ti+1 −t) +kγ2p
+)
+(5.1)
+for z∈ Rd. For fixed i = 0,...,N− 1, t∈ [ti,ti+1), xi ∈ (Rd)i, x∈ Rd, we get an explicit expression for
+the function Fi(t,xi,x,xi+1) defined in (4.5), which allows to compute
+a(t,x; xi) =σσ
+⊺ Eµ
+[
+∇xFi(t,xi,x,Xti+1 )|Xti = xi
+]
+Eµ[Fi(t,xi,x,Xti+1 )|Xti = xi] ,
+where the computation of∇xFi(t,xi,x,xi+1) is immediate as the only term to differentiate in the function
+Fi(t,xi,x,xi+1) is the exponential term at numerator, and for
+Λ(t,x,z; xi) =λ0 Eµ[Fi(t,xi,x +z,Xti+1 )|Xti = xi] Eµ[Fi(t,xi,x,Xti+1 )|Xti = xi] .
+Then using estimators (4.11) and (4.12), we approximate the optimal drift α∗ t = a(t,Xt; Xti) and the
+optimal intensity λ∗ t (z) = Λ(t,Xt−,z; Xti).
+In particular, this framework implies that the components of the Brownian motion and of the jump
+term of the process X under P0 are assumed to be independent from each other, as we take diagonal
+matrices for σ and Γ to remove the correlation terms and have more tractable expressions. Nevertheless,
+14
+
+=== page 15 ===
+we will show in the numerical simulations that this simplification is not restrictive, as the proposed
+generative model is still able to effectively capture the correlations among the different components of
+the datasets that we consider in Section 7. Furthermore, the marginal distribution ofXt under P0, which
+now takes the form of an infinite Poisson mixture of Gaussians f 0 t (x) = ∑∞ k=0 e−λ0t (λ0t)k k! N (x; 0, σσ⊺ t +
+kΣJ), allows the model to better capture fatter tails than in the pure diffusion case, where the marginal
+distribution is restricted to a single GaussianN (x; 0,σσ ⊺ t).
+Remark 5.1 (Integrability under Assumption 1). When ν0 is Gaussian, Assumption 1 imposes a second-
+moment constraint on µ via the finiteness of the relative entropy H(µ|µ0) <∞. Lower-bounding the
+reference density yields µ0(x) ≥ C0 exp(−c|x|2) for positive constants C0,c > 0, which implies that
+− logµ0(x)≤c|x|2 − logC0. Decomposing the KL divergence gives:
+H(µ|µ0) =−h(µ)−
+∫
+Rd
+µ(x) logµ0(x)dx≤−h(µ) +c Eµ[|X|2]− logC0
+where h(µ) :=−
+∫
+µ(x) logµ(x)dx denotes the entropy of µ. Thus, assuming h(µ)>−∞, Assumption 1
+is satisfied whenever the target distribution µ has a finite second moment Eµ[|X|2]<∞.
+Remark 5.2 (Heavy-Tailed Targets). In order to capture a target distribution µ with heavy tails, the
+reference jump distribution ν0 should be chosen such that its tail heaviness matches or exceeds that
+of the target. For example, suppose the target distribution µ has finite moments up to order β > 1,
+meaning:
+Eµ[|X|p]<∞ for all p≤β,
+andsupposeweselectareferencejumpdistributionν0 (withdensitypν0)suchthatitsconvolutionwiththe
+Gaussian componentgσ√∆ti has polynomial tail decay of orderγ > 1: (gσ√∆ti∗pν0)(z)∼ ci |z|γ as|z|→∞,
+for some constantci > 0. To satisfy Assumption 1, we consider the cross-entropy term, and we use the fact
+that its negative logarithm grows at most logarithmically:− logf 0 ∆ti(x) ≲ 1 +γ log(1 +|x|). We get that
+a sufficient condition for Assumption 1 is Eµ[log(1+|X|)]<∞. Becauseµ has finite polynomial moments
+up to order β, the target trivially possesses a finite logarithmic moment. Regarding Assumption 2, the
+polynomial tail yields the upper bound 1/f 0 ∆ti(x)≤C(1 +|x|γ) for some constantC > 0. Evaluating the
+expectation under µ, the requirement that the reciprocal transition density be integrable reduces to the
+polynomial moment condition Eµ[|X|γ] <∞. By choosing a reference jump tail exponent γ such that
+1<γ≤β, both assumptions are satisfied simultaneously.
+In practice, sinceµ is the empirical distribution of the initial time series, we do not explicitly evaluate
+moment conditions or polynomial decays to ensure that the theoretical assumptions hold. We consistently
+chooseν0 to be Gaussian to simplify both the analytical expression of the density (4.2) and the generation
+of synthetic time series, while still benefiting from the fatter tails provided by the jump mechanism.
+5.2 Simulation of the jump term
+Once that we have fixed the distribution ν0 to be a Gaussian distribution, we focus on the non-
+homogeneous jump process, whose instantaneous rate at any time t is given by
+Lt :=
+∫
+Rd
+λ∗ t (z)ν0(dz),
+and the size of the jumps follows the distribution
+λ∗ t (z)ν0
+Lt
+.
+In order to simulate this jump term, for t∈ (ti,ti+1), i = 0,...,N− 1, and given the value Xt− =x, we
+approximate λ∗ t (z) using the kernel estimator (4.12) and Lt with
+ˆL(t,x; xi) :=
+∫
+Rd
+ˆΛ(t,x,z; xi)ν0(dz), (5.2)
+which for example can be computed using the Gauss-Hermite quadrature formula. Then we can sample
+the jump amplitude according to the distribution
+ˆΛ(t,x,z;xi)ν0
+ˆL(t,x;xi) with different numerical methods.
+15
+
+=== page 16 ===
+However, in our simulations we consider the following strategy to rewrite the term λ∗ t (z)ν0, which
+enables both a more efficient computation of ˆL(t,x; xi) and an easy way to sample the jump amplitude.
+Denoting by g(z) the density of the Gaussian measure ν0 with respect to the Lebesgue measure, and
+using the estimator (4.12), we have
+ˆΛ(t,x,z; xi)g(z) = λ0 D M∑ m=1 ∑ j≥0 wj,m (2π) d 2 ∏d p=1 √ σ2p(ti+1 −t) +jγ2p exp ( −1 2 d∑ p=1 (zp − (X(m) ti+1,p −xp −jcp))2 σ2p(ti+1 −t) +jγ2p )
+· 1
+(2π)
+d
+2
+∏d
+p=1 γp
+exp
+(
+−1 2
+d∑
+p=1
+(zp −cp)2
+γ2p
+)
+(5.3)
+where D is the denominator in the formula (4.12), and
+wj,m =
+(λ0(ti+1−t))j
+j! e−λ0(ti+1−t) Ki hi(xi − X(m) ti )
+∑
+k≥0
+(λ0(ti+1 −ti))k
+k!
+e−λ0(ti+1−ti)
+(2π)
+d
+2
+∏d
+p=1
+√
+σ2p(ti+1 −ti) +kγ2p
+exp
+(
+−1 2
+d∑
+p=1
+(X(m) ti+1,p −xi,p −kcp)2
+σ2p(ti+1 −ti) +kγ2p
+)
+(5.4)
+Using the properties of Gaussian densities, we can rewrite each product of the sum in (5.3) to get
+ˆΛ(t,x,z; xi)g(z) = λ0 D M∑ m=1 ∑ j≥0 wj,mCj,mgj,m(z), (5.5)
+where we denote by gj,m the density of the multivariate Gaussian
+Nj,m :=N (ξj,m, Σj),
+where ξj,m ∈ Rd, Σj ∈ Rd × Rd are defined by
+ξj,m =
+(
+(X(m) ti+1,p −xp −jcp)γ2 p +cp(σ2 p(ti+1 −t) +jγ2 p)
+σ2p(ti+1 −t) + (j + 1)γ2p
+)
+p=1,...,d
+Σj =diag
+(
+γ2 p(σ2 p(ti+1 −t) +jγ2 p)
+σ2p(ti+1 −t) + (j + 1)γ2p
+)
+p=1,...,d
+and by Cj,m the normalizing constant
+Cj,m =
+d∏
+p=1
+1√
+2π(σ2p(ti+1 −t) + (j + 1)γ2p) exp
+(
+−
+(X(m) ti+1,p −xp − (j + 1)cp)2
+2(σ2p(ti+1 −t) + (j + 1)γ2p)
+)
+,
+for m = 1,...,M, j≥ 0. Therefore we get the Gaussian mixture (5.5). Substituting this mixture into
+(5.2), the evaluation of the integral
+ˆL(t,x; xi) =
+∫
+Rd
+λ0
+D
+M∑
+m=1
+∑
+j≥0
+wj,mCj,mgj,m(z)dz
+leads to
+ˆL(t,x; xi) = λ0 D M∑ m=1 ∑ j≥0 wj,mCj,m. (5.6)
+Also the simulation of the jump size J ∼
+ˆΛ(t,x,z;xi)ν0
+ˆL(t,x;xi) is now straightforward, as we choose a pair of
+indices (j,m) according to the probabilities wj,mCj,m∑
+j,mwj,mCj,m
+, and generate the random variableJ from the
+corresponding multivariate Gaussian distributionNj,m. Notice that this methodology yields a reduction
+in computational complexity while maintaining the accuracy, as it allows to avoid numerical quadrature
+in (5.2) to sample efficiently the jump sizes, hence we use it in all the numerical simulations.
+16
+
+=== page 17 ===
+Algorithm 1: SBJTS simulation with Euler scheme
+1: Input: data samples of time series (X(m) t1 ,...,X(m) tN ), m = 1,...,M
+2: Initialization: initial state x0 = 0
+3: for i = 0,...,N− 1 do
+4: Initialize state xi,0 =xi
+5: for k = 0,...,Nπ − 1 do
+6: Compute ˆa(ti,k,xi,k; xi) by kernel estimator (4.11)
+7: Sample εk ∼N (0,Id)
+8: Compute ˆL(ti,k,xi,k; xi) by kernel estimator (5.6)
+9: Generate ¯Ni,k ∼ Poi((ti,k+1 −ti,k)ˆL(ti,k,xi,k; xi))
+10: Generate Jn ∼
+ˆΛ(ti,k,xi,k,z;xi)ν0(dz)
+ˆL(ti,k,xi,k;xi) , n = 1,..., ¯Ni,k
+11: Compute
+xi,k+1 =xi,k + ∆ti Nπ ˆa(ti,k,xi,k; xi) +σ
+√
+∆ti
+Nπ
+εk +
+¯Ni,k∑
+n=1
+Jn
+12: end for
+13: Set xi+1 =xi,Nπ
+14: end for
+15: Return: (x1,...,xN)
+Remark 5.3. Whenever numerical evaluation of the estimators is required in the simulations, the density
+of the increments (5.1) is approximated by truncating the infinite sum to a finite number of jumpsnJ ∈ N,
+i.e. we consider
+ˆf0ti+1−t(z) =
+nJ∑
+k≥0
+(λ0(ti+1 −t))k
+k!
+e−λ0(ti+1−t)
+(2π)
+d
+2
+∏d
+p=1
+√
+σ2p(ti+1 −t) +kγ2p
+exp
+(
+−1 2
+d∑
+p=1
+(zp −kcp)2
+σ2p(ti+1 −t) +kγ2p
+)
+.
+Then we can derive the truncated versions of (4.11) and (5.6), which are the final expressions used in our
+numerical simulations.
+5.3 Euler scheme with Gaussian jumps
+The first simulation scheme that we propose is a classical Euler scheme for the simulation of the optimal
+process (3.3): more details for the Euler scheme for jump-diffusion processes can be found for example
+in [14, 31]. Given the set of observation times{t0 = 0,t1,...,tN}, we fix a discretization π inside each
+interval [ti,ti+1],i = 0,...,N− 1, given byti,k =ti + k Nπ ∆ti, fork = 0,...,Nπ− 1, where ∆ti =ti+1 −ti
+and Nπ is the number of uniform time steps. From equation (3.3) we have
+Xti,k+1 −Xti,k =
+∫ ti,k+1
+ti,k
+α∗ t dt +
+∫ ti,k+1
+ti,k
+σdWt +
+∫ ti,k+1
+ti,k
+∫
+R
+zN(dt, dz)
+for i = 0,...,N− 1 and k = 0,...,Nπ − 1. We denote by xi,k the Euler approximation of Xti,k, and
+by xi = (x1,...,xi) the values attained at the grid times (t1,...,ti). Notice that the approximation of
+Xti,k+1 is performed using the information available at ti,k, in particular the value xi,k of Xti,k. In our
+setting this means that both the drift and the jump intensity are evaluated at (ti,k,xi,k) and assumed
+to be constant in the whole time interval (ti,k,ti,k+1). The drift α∗ t is approximated by ˆa(ti,k,xi,k; xi)
+given by the kernel estimator (4.11), while for the jump component the instantaneous rate ˆL(t,x; xi) is
+approximated by ˆL(ti,k,xi,k; xi) via (5.6). This results in a constant intensity over each Euler time step,
+allowing to simulate the number of jumps in (ti,k,ti,k+1) as
+¯Ni,k ∼ Poi((ti,k+1 −ti,k)ˆL(ti,k,xi,k; xi)).
+Finally, for the size of the jumps, we simulate i.i.d. random variables (Jn)n=1,..., ¯Ni,k with distribution
+Jn ∼
+ˆΛ(ti,k,xi,k,z; xi)ν0
+ˆL(ti,k,xi,k; xi) , (5.7)
+17
+
+=== page 18 ===
+using the model (5.5) with Gaussian densitiesNj,m =N (ξj,m, Σj) defined by
+ξj,m =
+(
+(X(m) ti+1,p −xi,k,p −jcp)γ2 p +cp(σ2 p(ti+1 −ti,k) +jγ2 p)
+σ2p(ti+1 −ti,k) + (j + 1)γ2p
+)
+p=1,...,d
+Σj =diag
+(
+γ2 p(σ2 p(ti+1 −ti,k) +jγ2 p)
+σ2p(ti+1 −ti,k) + (j + 1)γ2p
+)
+p=1,...,d
+where xi,k,p denotes the p-th component of xi,k ∈ Rd. The complete Euler scheme of the process X is
+then given by
+xi,k+1 =xi,k + (ti,k+1 −ti,k) ˆa(ti,k,xi,k; xi) +σ(Wti,k+1 −Wti,k) +
+¯Ni,k∑
+n=1
+Jn
+The pseudo-code of the complete generative model is presented in Algorithm 1.
+5.4 Jump-adapted version of the Euler scheme
+We propose an alternative simulation method of the process (3.3) based on the so called jump-adapted
+Euler scheme for jump-diffusion SDEs (for details see [5]). We consider the jump-adapted time discretiza-
+tion{τ0 = 0, τ1,...,τn =T}, which is constructed taking the equidistant time discretization π given by
+{ti,k}i=0,...,N−1,k=0...,Nπ−1 and adding the jump times given by the marked point process. In this way,
+we can simulate only the diffusion part of the process X when there are no jumps, and add the jump
+increment only at the jump times. In particular, we use the following scheme:
+
+
+
+Xτ− n+1 =Xτn +α∗ τn(τn+1 −τn) +σ(Wτn+1 −Wτn)
+Xτn+1 =Xτ− n+1 +J if τn+1 is a jump time
+Xτn+1 =Xτ− n+1 if τn+1 is not a jump time
+(5.8)
+where J denotes the jump size at each jump time. Once again, the simulation of the jump times is
+performed during the simulation of the process as we work with time, state and path dependent intensity.
+Classical methods for simulating this type of jump-diffusion processes are based on the thinning algorithm
+(by Ogata [29, 14]), which consists in taking an upper bound M of the intensity function, simulating the
+jump times of a Poisson process with constant rate M, and then perform an acceptance-rejection step
+to select only the jump times of the time inhomogeneous Poisson process. Improvements of the Ogata’s
+formulation in the case of a time and state dependent intensity allow to take a local bound which is an
+upper bound in space, but still a function of time (see [11]).
+However, the main difficulty in our case lies in the fact that it is not straightforward to determine
+a uniform upper bound in both time and space for the function (5.6). Moreover, working with state-
+dependent intensity, before performing the acceptance-rejection step we should simulate the continuous
+part of the process (which in particular involves the drift estimation) until each candidate jump time:
+to reduce at most the rejections, which generates additional computational time, we should find a strict
+upper bound of the intensity, which makes the problem still more complicated. For these reasons, we
+choose an approach that differs from the thinning method, and it is based on an approximation of the
+intensity function. Indeed, at each jump timeτn we simulate the following jump timeτn+1 taking as time
+interval an exponential random variable with rate ˆL evaluated atτn. This means that we approximate the
+intensity function by a piecewise constant function, evaluating it only at the jump times. Consequently,
+the simulation of the jump component in the continuous-time generative processX inevitably introduces
+a simulation error. However, rather than analyzing the error at the level of the SDE, we evaluate the
+performance of the generative model directly in terms of its ability to produce realistic synthetic time
+series, looking at specific metrics. In addition, this simulation strategy substantially reduces the compu-
+tational cost of the generative model compared with the classical Euler scheme employed in Algorithm
+1, making it particularly suitable for repeated generation tasks. We present the complete jump-adapted
+scheme in Algorithm 2.
+This jump-adapted method has an average number of operations depending on the intensity of jumps
+as the number of points in the time discretization increases with the intensity. This means that it is not
+18
+
+=== page 19 ===
+Algorithm 2: SBJTS simulation with jump-adapted Euler scheme
+1: Input: data samples of time series (X(m) 1 ,...,X(m) N ), m = 1,...,M
+2: Initialization: initial x0 = 0, tcurrent = 0
+3: Generate the first jump time tjump ∼ Exp(ˆL(tcurrent,x0; x0))
+4: for i = 0,...,N− 1 do
+5: Initialize state x =xi
+6: if tjump =ti then
+7: tjump ∼ti +Exp(ˆL(ti,xi; xi))
+8: end if
+9: for k = 0,...,Nπ − 1 do
+10: while tjump ≤ti,k+1 and ti <tjump <ti+1 do
+11: ∆t =tjump −tcurrent
+12: Compute ˆa(tcurrent,x; xi) by kernel estimator (4.11) and sample ε∼N (0,Id)
+13: x←x + ∆t ˆa(tcurrent,x; xi) +σ
+√
+∆tε
+14: tcurrent =tjump
+15: Generate J∼ ˆΛ(tcurrent,x,z; xi)ν0(dz)
+16: Compute ˆL(tcurrent,x; xi) by kernel estimator (5.6)
+17: Generate tjump ∼tcurrent +Exp(ˆL(tcurrent,x; xi))
+18: x←x +J
+19: end while
+20: ∆t =ti,k+1 −tcurrent
+21: Compute ˆa(tcurrent,x; xi) by kernel estimator (4.11) and sample ε∼N (0,Id)
+22: x←x + ∆t ˆa(tcurrent,x; xi) +σ
+√
+∆tε
+23: tcurrent =ti,k+1
+24: end for
+25: Set xi+1 =x
+26: end for
+27: Return: (x1,...,xN)
+efficient in the case of a large intensity, whereas the standard Euler scheme is not affected. But in the
+simulations that we consider in the following sections, we work with an average small number of jumps,
+making Algorithm 2 much faster than Algorithm 1. Moreover, in this case we manage to always guarantee
+the predictability of the intensity function (t,z)↦→λ∗ t (z), as the estimator ˆL(t,x; xi) is computed before
+updating the Euler scheme with the jump occurring at time t. Finally, we assume that no jumps occur
+exactly at the observation times{ti}i=1,...,N as jumps are generated only within each interval (ti,ti+1).
+This is consistent with the classical Euler scheme, where it is natural to treat jumps as occurring strictly
+between discretization points.
+6 Hyperparameter tuning
+We outline the methodology for selecting appropriate values for the hyperparameters of our generative
+model. We describe a systematic approach that balances model performance and computational effi-
+ciency, ensuring that the chosen hyperparameters lead to accurate generative behavior. We present our
+calibration procedure in the one-dimensional setting. Specifically, we consider the optimal process (3.3)
+taking values in R, with hyperparameters σ > 0, ν0 =N (c,γ2), where c∈ R, γ > 0, and λ0 > 0.
+Although our analysis is carried out in dimension one, the same procedure will be applied componentwise
+in the multidimensional case (see Section 7.3).
+6.1 Selection of the kernel bandwidth and Markovianity order
+At each time, the kernel estimators presented above require to take into account the whole past values of
+the time series in order to compute the drift and intensity. In the presence of long time series, this results
+in an increasing number of factors Ki hi(xi− X(m) ti ) equal to zero as we look at further dates. In order to
+solve this problem, we can force a shorter memory in the estimators, asking that the drift and intensity
+19
+
+=== page 20 ===
+depend on k < N past values. We follow the approach of [1], where the authors propose a test to fix
+the window of past values dependence, also called Markovianity order. In addition, this test allows to
+calibrate also the bandwidth h of the kernel (4.13): this parameter has a direct impact on the amount of
+data that are involved in the kernel estimation, hence it is important to perform a bias-variance tradeoff
+to achieve a good performance in the generation of time series.
+Following the cross-validation test proposed in [1], fix a train set X = (X(m) t1 ,...,X(m) tN )m=1,...,M and
+a test set Y = (Y (q) t1 ,...,Y (q) tN )q=1,...,Q of real data. For each q, we take the time series Y (q) of the test
+set at the first N− 1 dates (Y (q) t1 ,...,Y (q) tN−1 ) and we generate L realizations of the last value ˆY (q),l tN using
+the Schrödinger bridge generative model and the train set X. We do this for each couple (h,k) varying
+in a grid of values, and we compute
+MSEh,k = 1 Q
+Q∑
+q=1
+⏐⏐⏐⏐⏐ 1 L L∑ l=1 ˆY (q),l tN −Y (q) tN ⏐⏐⏐⏐⏐ 2 (6.1)
+In this way we can select the optimal (h∗,k∗) which gives the minimum value of the previous mean
+square error function. In practice, at time ti, with i>k∗, we will work with the kernel product ¯K(m) i =∏i
+j=i−k∗+1 Kh∗(xj −X(m) tj ). In the following numerical simulations, we use this test when we generate
+synthetic time series with both the SBTS algorithm [17] and our SBJTS algorithm.
+6.2 Selection of the parameters σ, λ0, c and γ
+We propose two possible tests that we can use to determine appropriate values of σ, λ0, c and γ. Each
+method is implemented after generating synthetic time series: for a given set of parameters, synthetic
+series are produced, a suitable loss function or metric is computed, and the results are compared with the
+corresponding statistics of the original data to identify the parameters that achieve the best performance.
+This procedure implies that we need to fix a grid of pre-specified parameter values over which the test is
+conducted. We proceed with the following two tests:
+• Test on the distribution of the quadratic variation: we consider the empirical distribution of
+the quadratic variation of the time series, computed summing the squared increments for each path,
+both for the initial time series (giving the distributionporig) and for the synthetic time series (psynt).
+We aim to minimize the Wasserstein-2 distance of these two distributions numerically estimated:
+W2(porig,psynt) =
+(
+inf
+π∈Π(porig ,psynt )
+∫
+|x−y|2dπ(x,y)
+) 1
+2
+For each set of parameter values, we select the one that minimizes this loss function.
+• Test on the discriminative score: we consider the metric of the discriminative score to assess
+how distinguishable generated time series are from real ones. It works by training a recurrent neural
+network discriminator that learns to classify sequences as real or synthetic. Then the final score is
+defined as the absolute difference between 0.5 and the accuracy of classification. If the discriminator
+can easily separate the two classes, its accuracy is close to 1, and the discriminative score is close
+to 0.5. Conversely, if the generated data closely mimics the real distribution, the discriminator
+performs no better than random guessing (≈ 50% accuracy), yielding a score near zero. Thus, the
+test provides a quantitative way to evaluate the realism of generated time series. For each set of
+parameter values, we select the one that minimizes the score.
+In the following section we explain how we can combine these two tests to choose the parameters.
+6.3 Calibration procedure
+Our first step concerns the choice of the parameterc, the mean of the Gaussian distributionν0. In all our
+numerical experiments, we set c = 0: this is motivated by the fact that the considered datasets do not
+exhibit a pronounced upward or downward trend, and alternative values ofc did not appear necessary to
+improve the performance of the generative model. To determine suitable values for the other parameters,
+we first look at the quadratic variation of the time series which we aim to simulate under the measure
+20
+
+=== page 21 ===
+P∗. The quadratic variation is a natural quantity to consider, as it captures an important aspect of the
+variability of the time series and is closely related to the volatility of the underlying process. Moreover, it
+is straightforward to estimate from the data and provides an informative statistic of the path behavior.
+Hence, in order to calibrate the model parameters, we compare the empirical quadratic variation of the
+original data with that of the generated samples and seek parameter values that reproduce this feature
+as accurately as possible. However, as under P∗ we have all expressions depending on the estimators,
+it is more practical to consider first the optimal process under P0 to obtain a preliminary selection of
+appropriate parameter values for σ, λ0, and γ. In particular, we look at the following expression, for
+i = 0,...,N− 1,
+Varµ(Xti+1 −Xti) = ∆ti(σ2 +λ0γ2) (6.2)
+where on the left hand side we have the empirical variance under the measure µ of the increments of
+the time series data, and on the right hand side the theoretical variance of the increment of the optimal
+process under the reference probability P0 in the time interval [ti,ti+1) of length ∆ti = ti+1 −ti. In
+practice, in our setting all time increments have a fixed length ∆t, and on the left hand side we consider
+the average of the empirical variances computed over these intervals. In this way, we can select a reference
+measure P0 under which the increments of the optimal process have already a variance close to the one of
+the initial data. Moreover, we can easily find some upper bounds for σ and γ, using (6.2), and excluding
+values which cause instability of the algorithm. For each set of parameters satisfying condition (6.2), we
+then generate synthetic time series using the SBJTS generative model.
+However, considering only the variance under P0 does not ensure that the variance of the increments
+of the time series generated under P∗ is close to the one of the data. To address this limitation, we can
+calibrate better the parameters directly under the measure P∗. For each couple (σ,γ) fixed, we tune the
+parameterλ0 to minimize the Wasserstein-2 distance between the empirical distribution of the quadratic
+variation of the simulated time series under P∗ and the one of the initial data. This refinement results
+in a more effective calibration procedure for the generative model. Finally, among the candidate sets of
+parameters, we choose the set minimizing the discriminative score computed between the real and the
+synthetic time series. We describe the calibration procedure in detail below.
+Calibration procedure for the parameters h, k, σ, λ0 and γ:
+• Fix initial kernel bandwidthh and Markovianity orderk: choose initial values forh andk, allowing
+for a reasonable bias-variance tradeoff in the kernel estimators.
+• Preliminary parameter selection under P0: using relation (6.2), determine suitable values of (σ,γ)
+which do not cause instability of the algorithm.
+• Parameter selection under P∗: for each couple (σ, γ) determined at the previous point, tune the
+value of λ0 to minimize the Wasserstein-2 distance of the empirical distributions of the time series
+quadratic variation.
+• Minimization of the discriminative score: for each candidate (σ,γ,λ0), generate synthetic time series
+and select the triplet that minimizes the discriminative score.
+• Validate the initial parameters: run again the Markovianity-bandwidth test with the selected
+(σ,γ,λ0) to confirm that the initial choice of h and k remains appropriate.
+• Final generation: use the finalized parameter set to perform the generation of synthetic time series.
+Remark 6.1. We emphasize that, in theory, the SBJTS generative model can operate for any choice of
+parameters, as no specific restrictions are imposed on their values. However, in practice, the model’s
+performance varies significantly across different parameter configurations. It is therefore important to
+devote attention to the preliminary calibration phase in order to identify suitable parameters. This aspect
+becomes particularly crucial when dealing with time series derived from real datasets rather than those
+simulated from parametric models. Nevertheless, this calibration step is not intended to determine the
+optimal set of parameters, as it is always performed as a grid search on some fixed candidates, but rather
+to identify reasonable configurations that ensure good performance.
+21
+
+=== page 22 ===
+Figure 7.1: Simulated trajectories of Merton process (7.1) with parametersa = 0,b = 2,λη = 10,mJ = 0
+and vJ = 0.8.
+7 Numerical tests
+7.1 Test on simulated data: Merton model
+As a preliminary illustrative example, we propose to test our generative model starting from time series
+obtained by the simulation of trajectories of a Merton-type process in dimension 1. Let (ηt)t≥0 be a
+Poisson process of constant intensity λη, and denote by{τi}i≥1 its jump times. Consider the process
+defined by
+Yt =Y0 +at +bWt +
+ηt∑
+i=1
+Ji(Yτ− i ), t∈ [0,T ]. (7.1)
+with Y0 = 1, where a and b are fixed parameters and W = (Wt)t≥0 is a standard Brownian motion. The
+jump sizes are sampled with the following rule:
+Ji(Yτ− i ) =
+{
+|Zi| if Yτ− i <Y0
+−|Zi| if Yτ− i ≥Y0
+where Zi ∼ N (mJ,v2 J). This state-dependent sign rule induces a mean-reverting effect around the
+level Y0, as upward (resp. downward) jumps are sampled when the process is below (resp. above) the
+initial value. We adopt this mechanism to have an initial dataset which allows numerical stability of the
+algorithm, without the need for additional processing or correction steps. We present the case where
+the volatility b is moderate and the variance of the jump term permits the occurrence of relatively large
+jumps. Specifically, we fix the parameters a = 0, b = 2, λη = 10, mJ = 0 and vJ = 0.8. Figure 7.1
+displays the sample paths obtained from five simulated realizations of the process. This configuration is
+intended to represent a realistic scenario in which the average jump frequency remains relatively low. We
+simulate M = 1000 sample paths and then discretize the trajectories on the uniform grid t1,...,tN with
+ti+1 −ti = 1 252 , for i = 0,...,N− 1, T = tN and N = 100; to run the simulation scheme, we discretize
+again each interval [ti,ti+1] with Nπ = 100 steps. We test both the SBTS model (taken from [17]) and
+our SBJTS model using Algorithm 2, to compare the resulting metrics on 500 synthetic time series.
+7.1.1 For comparison: SBTS generation using the algorithm from [Hamdouche, Henry-
+Labordère and Pham, 2023]
+To evaluate the performance of the SBTS algorithm on Merton-generated time series, we adopt the
+procedure described in [1, 17]. Starting from the original time series (Xti)i=0,...,N, we compute the
+increments Rti =Xti −Xti−1 for i = 1,...,N, and apply the rescaling
+˜Rt1:tN =Rt1:tN ·
+√
+∆t
+σ(Rt1:tN ) (7.2)
+22
+
+=== page 23 ===
+Figure 7.2: Generation of synthetic time series by SBTS model: sample paths of real time series (left)
+and sample paths of synthetic time series with h = 0.1 and k = 1 (right).
+where ∆t = 1 252 is the interval between two consecutive dates, Rt1:tN = (Rt1,...,RtN ) denotes the entire
+series of increments, and σ(Rt1:tN ) their empirical standard deviation. This normalization ensures that
+the rescaled time series have increments with empirical variance approximately equal to ∆t. We consider
+the diffusion process defined by
+dXt =α∗ t dt + dWt, t∈ [0,T ],
+where the driftα∗ t is defined as in (3.4) and (4.3), but in this case the expression of (4.5) involves only the
+Gaussian densities given by the increments of the Brownian motion, without Poisson terms. To generate
+synthetic time series we use the Algorithm 1 of [17], then it is sufficient to multiply by
+σ(Rt1:tN )√
+∆t to get to
+the initial scale. We remark that in the aforementioned works, the generative model is performed using
+the log-return series (Rti)i=1,...,N, while here we perform the test taking only the increments of the initial
+time series, as the result of the generative model does not particularly change in this example.
+The only hyperparameters required are the kernel bandwidth h and the Markovianity order k of the
+time series. Using the test described in Section 6.1 combined with the SBTS model, we get k = 1,
+consistent with the assumption of a Markovian model, and h = 0.1. We stress that when the time series
+have relatively low variance, very small values of h may lead to the generation of trajectories that nearly
+replicate the original data. To prevent this issue, we select a range of h values for the bandwidth test
+that ensures an adequate number of observations within the kernel estimators.
+However, this generative model does not succeed in reproducing time series comparable to the original
+dataset. In Figure 7.2 we display the first five simulated trajectories to have a qualitative representation
+of the behaviour of the synthetic time series: it is evident that working with a diffusion process, the
+generative model struggles to reproduce the large increments of the initial data attributed to the jump
+term. To illustrate this more clearly, we look at the distribution of Xti, for some ti fixed. Indeed, even
+if the constraint of the Schrödinger bridge problem is on the joint distribution of the time series, we can
+check whether the generative model captures also the marginal distributions. We compare the real and
+synthetic time series by examining the empirical quantiles of Xt50 and representing them in a QQ-plot
+in Figure 7.7a. The deviation of the points from the reference diagonal clearly indicates that the SBTS
+model fails to reproduce the distribution at this time: the empirical quantiles of the synthetic data are
+systematically different from those of the real data, revealing a significant mismatch between the two
+distributions.
+7.1.2 SBJTS generation
+To assess the performance of the SBJTS model, we directly use the time series sampled from the Merton
+processwithoutanyrescaling. Instead, wecalibratethehyperparametersofthegenerativemodeltorepro-
+duce the key statistical characteristics of the original data. In this case, we consider the optimal process
+(3.3) in dimension 1, henceσ∈ R+, andν0 =N (c,γ2) is a Gaussian distribution withc∈ R,γ∈ R+. We
+generate synthetic time series and present numerical experiments evaluating the algorithm’s performance.
+Calibration of the hyperparameters. Following the calibration procedure outlined in Section 6.3, we
+aim to determine suitable values for the parameters h, k, σ, λ0, c and γ. In this example using Merton
+time series, we begin by setting k = 1, consistent with the Markovian nature of the Merton model, and
+chooseh∈ [0.1, 0.3]. We fixc = 0. Empirically, values ofσ < 0.5 orσ > 3 fail to reproduce the empirical
+23
+
+=== page 24 ===
+0.5 1.0 1.5 2.0 2.5 3.0
+Values of 
+0.03
+0.04
+0.05
+0.06
+0.07Discriminative score
+Discriminative score with  = 0.5
+Discriminative score with  = 1
+Discriminative score with  = 2
+Discriminative score with  = 3
+Figure 7.3: Discriminative scores tested on real time series and synthetic time series generated with
+different values of the hyperparameters (σ,γ,λ0).
+Figure 7.4: Generation of synthetic time series by SBJTS model: sample paths of real time series (left),
+sample paths of synthetic time series with the choice h = 0.3, k = 1, σ = 2, λ0 = 5, c = 0, and γ = 0.8
+(case (i) - middle), sample paths of synthetic time series with the choice h = 0.3, k = 1, σ = 1, λ0 = 70,
+c = 0, and γ = 1 (case (ii) - right).
+quadratic variation of the increments and result in synthetic time series with high discriminative scores.
+Accordingly, we test σ ∈{0.5, 1, 2, 3}. For each value of σ, using relation (6.2), we identify suitable
+values of γ (and a corresponding λ0); moreover, we find that γ < 1 leads to numerical instability, while
+γ > 1.5 produces synthetic series with excessively large jumps, causing the kernel estimators to vanish.
+Therefore, we test γ∈{0.5, 0.8, 1, 1.5, 2, 3}. For each pair (σ,γ), we tune the value λ0 via the test on
+the distribution of the quadratic variation (see Section 6.2): in this way, we identify parameter triples
+(σ,γ,λ0) for which the synthetic time series have quadratic variation distribution close to the same dis-
+tribution on real time series. Finally, for each choice of (σ,γ,λ0) among these candidates, we run the
+generative model and compute the discriminative score comparing the synthetic data to the real data.
+Figure 7.3 reports the scores obtained for the different tested parameters in a calibration test: we observe
+that the parameter combinations (σ,γ,λ0) yielding the lowest scores are those close to the true Merton
+parametersa,b,λη,mJ,vJ used to generate the initial time series. This behaviour is expected, and we in-
+deed use this toy example to validate the calibration procedure. However, the dynamics (3.3) induced by
+our generative model differ from the original Merton process: in particular, the Schrödinger-bridge con-
+struction introduces a generally non-zero drift, typically adding extra variability, and a data-dependent
+jump term that does not coincide with the one in (7.1). Consequently, the fact that we can find a slight
+discrepancy between the score minimizers and the true parameter values is not contradictory. In this
+simulation, the lowest discriminative score is obtained testing the generative model with the following
+choice of hyperparameters: h = 0.3, k = 1, σ = 1, λ0 = 70, c = 0, γ = 1.
+Numerical results. We present now the results of the SBJTS generative model. We fix h = 0.3, k = 1
+and the two following set of hyperparameters:
+(i) σ = 2, λ0 = 5, c = 0, and γ = 0.8: this choice corresponds exactly to the same volatility, mean and
+24
+
+=== page 25 ===
+Figure 7.5: Generation of synthetic time series by SBJTS model: QQ-plot between the quantiles of the
+increments of initial time series and synthetic time series generated by SBTS and SBJTS in case (i) (left)
+and in case (ii) (right).
+Figure 7.6: Comparison between the empirical distribution of the increments of real data and synthetic
+data generated via SBJTS model in case (ii): distribution of increments larger than 0.7 (left) and smaller
+than 0.7 (right).
+variance of jump sizes of the initial Merton process defined in (7.1), with the intensity λ0 fixed to
+match the quadratic variation distribution;
+(ii) σ = 1, λ0 = 70, c = 0, and γ = 1: this choice is set to match the distribution of the quadratic
+variation of the initial time series, and it corresponds to the lowest value of discriminative score in
+Figure 7.3 (≈ 0.023).
+As a first visual check of the trajectories, in Figure 7.4 we can see that the generated time series by SBJTS
+model have a general behaviour that is closed to the initial dataset and, in contrast with the simulation
+presented in Figure 7.2 for the SBTS case, now it is evident the presence of jumps. The QQ-plots in
+Figure 7.5 is built starting from the computation of the quantiles on all the increments of the time series:
+we can see that the distribution of the increments generated by SBJTS model has quantiles that closely
+match those of the original data, while the same quantiles on synthetic series produced by SBTS model
+exhibit significant discrepancy.
+To provide additional metrics in case (ii), we plot in Figure 7.6 the overall distribution of increments,
+where we fix a threshold of 0.7 to distinguish between small and large increments in both the original and
+generated time series. In this way, we can see that our generative model not only accurately captures
+the distribution of the small increments, but also the tails of the distribution, i.e. the large increments.
+This is particularly important as the jump term primarily affect this part of the distribution: at discrete
+sampling times, small jumps are essentially indistinguishable from diffusion-driven increments, whereas
+large jumps are much easier to identify. Examining the tail behaviour shows that the jump component
+is indeed well reproduced by our generative model. In Figure 7.7b, we focus on the marginal distribution
+of Xt50 : once again we can notice the improvement in the QQ-plot with respect to the SBTS model. In
+25
+
+=== page 26 ===
+(a) Generation via SBTS model.
+ (b) Generation via SBJTS model.
+Figure 7.7: QQ-plot between the quantiles of the empirical distributions of Xt50 on real and synthetic
+time series generated via SBTS model (left) and SBJTS model in case (ii) (right).
+Appendix B.1 we present additional tests on the Merton time series.
+7.2 Pure jump case
+In this section, we provide an example in dimension one dropping the assumption on σ to be non-
+degenerate, as we consider σ = 0. In this way we recover the pure jump case, as we consider the solution
+P∗ of the SBJTS problem to be the law of the process X with dynamics
+{
+dXt =
+∫
+R zN(dt, dz), t∈ [0,T ],
+X0 = 1
+whereN has intensity measureλ∗ t (z)ν0(dz)dt. In this case, the expressions (4.3) and (4.4) can be derived
+working directly with the measures µ0 T (dx1,..., dxN) and µ(dx1,..., dxN), using the decomposition
+µ0 T (dx1,..., dxN) =
+N−1∏
+i=0
+µ0 i+1|i(dxi+1), (7.3)
+where µ0 i+1|i(dxi+1) denotes the conditional law of Xti+1 under P0, given the value of Xti. Making the
+choice ν0 =N (c,γ) with c∈ R and γ∈ R+, we have
+µ0 i+1|i(dz) =e−λ0(ti+1−ti)δ0(dz) + ∑
+k≥1
+e−λ0(ti+1−ti)(λ0(ti+1 −ti))k
+k!
+√
+2πkγ2 exp
+(
+−|z−kc|2
+2kγ2
+)
+dz.
+Hence, if we consider
+f0 ti+1−t(xi+1 −x) =
+
+
+
+e−λ0(ti+1−t), if xi+1 −x = 0, ∑
+k≥1
+(λ0(ti+1−t))k
+k!
+e−λ0(ti+1−t) √
+2πkγ2 exp
+(
+−|xi+1−x−kc|2 2kγ2 ) , otherwise,
+for t∈ [ti,ti+1), i = 0,...,N1, then we get the expressions of Fi(t,xi,x,xi+1) defined in (4.5) and the
+estimators of the drift and jump intensity. Moreover, also in this case we can use the Gaussian mixture
+model to simulate jump sizes: when we have a jump J at time t∈ (ti,ti+1) and Xt− =x, we sample the
+amplitude of jump from the following distribution
+J∼
+M∑
+m=1
+∑
+j≥0
+wj,mNj,m
+26
+
+=== page 27 ===
+0 20 40 60 80 100
+Time
+1.0
+0.5
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+Value
+0 20 40 60 80 100
+Time
+1.0
+0.5
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+Value
+Figure 7.8: Paths of initial time series sampled by the trajectories of the OU process (left), and generated
+time series by SBJTS model in the case of pure jump generative process (right).
+(a) Quadratic variation distributions.
+ (b) CDFs of increment distributions.
+Figure 7.9: Metrics to compare real and synthetic datasets generated by the SBJTS model in the pure
+jump case.
+where
+wj,m =
+(λ0(ti+1−t))j
+j!
+e−λ0(ti+1−t) √
+2π(j+1)γ2 exp
+(
+−
+|X(m) ti+1 −x−(j+1)c|2
+2(j+1)γ2
+)
+e−λ0(ti+1−ti)1 {xi=X(m) ti+1 } + ∑ k≥1 (λ0(ti+1−ti))k k! e−λ0(ti+1−ti) √ 2πkγ2 exp ( − |X(m) ti+1 −xi−kc|2 2kγ2 )Kh(xi − X(m) ti )
+and
+N0,m =δ{0}(X(m) ti+1 −x),
+Nj,m =N
+(
+X(m) ti+1 −x
+j + 1 , jγ2 j + 1 ) , if j≥ 1.
+Inthispurejumpcase, wetesttheSBJTSmodelstartingfromsimulatedtimeseriesbuiltasdiscretization
+of the sample paths of Ornstein–Uhlenbeck process. We consider the process in dimension d = 1 defined
+by {
+dYt =θ(a−Yt) dt +b dWt, t∈ [0,T ],
+Y0 = 1 (7.4)
+and we fixθ = 100,a = 1,b = 10,T = 100 252 in order to have strongly mean reverting trajectories also when
+we look at time series sampled at low frequency. We want to show that working with our state-dependent
+jump process properly calibrated we can still generate synthetic time series sampled from the trajectories
+of the pure jump process X with metrics close to the ones of the initial time series. With respect to the
+previous example where there was also the diffusion term (and in particular the drift) which contributes
+to replicate the correct behaviour of the time series, here we focus on the jump term. In this case we use
+Algorithm 1 to generate synthetic time series.
+27
+
+=== page 28 ===
+Numerical results. Starting from the trajectories of the process (7.4), we fix ∆ti = 1 252 to get initial
+time series of length N = 100. We then generate 500 synthetic time series, choosing as hyperparameters
+of the generative model h = 0.3, k = 1, λ0 = 0.001, c = 0 and γ = 0.1: see Figure 7.8 to compare the
+trajectories of 5 realizations of real and synthetic time series. In Figure 7.9a we first plot the empirical
+distribution of the quadratic variation computed along the real and synthetic time series to show that the
+chosen hyperparameters yield closely matching distributions. Then we compare the empirical cumulative
+distribution functions of the increments for the real and synthetic time series. In the pure-jump setting,
+this provides a global assessment of the model’s ability to reproduce the distribution of both small and
+large jumps over the entire time series. As shown in Figure 7.9b, the empirical CDFs of the real and
+synthetic increments closely overlap, indicating that the proposed generative model accurately captures
+the jump dynamics. In Appendix B.2, we present the same test taking a finer time discretization: in this
+way we look at the time series obtained from the same trajectories but working at high frequency.
+7.3 Test on real data: Stock and Energy dataset
+In this section, we apply the SBJTS generative model to the case of real datasets which store histori-
+cal observations of multiple variables related to specific domains, hence we adopt the multidimensional
+formulation of the problem. From the historical observations we construct time series samples by ap-
+plying a sliding-window procedure with overlapping windows. In this way we construct time series
+Xt0:tN = (Xt0,...,XtN ), and then we use the following two normalizations:
+• Base one normalization:
+(Xt0:tN,p
+Xt0,p
+)
+, for p = 1,...,d;
+• Standard normalization:
+(Xt1:tN,p−m(Xt1:tN,p)
+v(Xt1:tN,p)
+)
+, for p = 1,...,d, where we denote the empirical
+mean of the p-th component of the entire time series by m(Xt1:tN,p) and the empirical standard
+deviation by σ(Xt1:tN,p).
+Henceweproceedwiththecalibrationofthehyperparametersthroughagrid–searchprocedure. Toreduce
+the computational complexity, we first tune the parameters component-wise in dimension 1, following the
+methodology described in Section 6. Once suitable parameter candidates have been identified, we can
+perform a full d-dimensional calibration, where synthetic multivariate time series are generated for each
+candidate combination, and the set achieving the lowest discriminative score is selected. The parameters
+h, k and λ0 are finally fixed globally through d-dimensional generation. We run all the tests using
+Algorithm 2. After obtaining new time series, we invert the standard normalization to return to the
+base-one scale, in order to compare them to the original data.
+We test our generative model on two distinct datasets, and we compare our results with several state-
+of-the-art generative models for time series that are evaluated in the literature in terms of both generation
+quality and predictive performance. In particular, we consider models based on GAN architectures [37],
+flow-matching approaches [20], optimal transport methods [35], and diffusion-based generative models
+employing score-matching techniques [25, 27]. For consistency with the existing benchmark, we compare
+real and synthetic time series of fixed length N = 24.
+• Stock dataset: daily historical Google stock data from 2004 to 2019, including six features: open,
+high, low, close, adjustedcloseprices, andvolume, henced = 6. Wechoosethefollowingparameters:
+σp = 0.7 forp = 1,...,d− 1, σd = 1, λ0 = 0.2, cp = 0 forp = 1,...,d, γp = 0.1 forp = 1,...,d− 1,
+γd = 0.6. We generate 2000 synthetic time series.
+• Energy dataset: electricity consumption and environmental conditions of a low-energy residen-
+tial building over time, taken from [6]. Its main target variable is the total energy consumed by
+household appliances. The dataset includes a variety of environmental and indoor features like the
+temperature readings from multiple rooms, relative humidity levels in the same areas, and outdoor
+measurements such as temperature, relative humidity, wind speed, atmospheric pressure. The data
+were collected every 10 minutes for 137 days. This dataset has 28 features, hence d = 28, and we
+select the parameters σ1 = σ2 = 1.2, σp = 1 for p = 3,...,d, λ0 = 0.5, cp = 0 for p = 1,...,d,
+γ1 =γ2 = 0.3 and γp = 0.1, p = 3,...,d. We generate 1000 synthetic time series.
+Once that we perform the generation of synthetic time series, we measure the quality of the synthetic
+data using the following two metrics:
+28
+
+=== page 29 ===
+Stock Energy
+Model Disc.↓ Pred.↓ Disc.↓ Pred.↓
+TSGM-VP 0.022± 0.005 0.037± 0.000 0.221± 0.025 0.257± 0.000
+TSGM-subVP 0.021± 0.008 0.037± 0.000 0.198± 0.025 0.252± 0.000
+ImagenTime 0.037± 0.006 0.036± 0.000 0.040± 0.004 0.250± 0.000
+T-Forcing 0.226± 0.035 0.038± 0.001 0.483± 0.004 0.315± 0.005
+P-Forcing 0.257± 0.026 0.043± 0.001 0.412± 0.006 0.303± 0.006
+TimeGAN 0.102± 0.031 0.038± 0.001 0.236± 0.012 0.273± 0.004
+RCGAN 0.196± 0.027 0.040± 0.001 0.336± 0.017 0.292± 0.005
+C-RNN-GAN 0.399± 0.028 0.038± 0.000 0.499± 0.001 0.483± 0.005
+TimeVAE 0.175± 0.031 0.042± 0.002 0.498± 0.006 0.268± 0.004
+WaveGAN 0.217± 0.022 0.041± 0.001 0.363± 0.012 0.307± 0.007
+COT-GAN 0.285± 0.030 0.044± 0.000 0.498± 0.000 0.260± 0.000
+FlowTS 0.019± 0.013 0.036± 0.000 0.053± 0.010 0.250± 0.000
+SBTS 0.010± 0.008 0.017± 0.000 0.356± 0.020 0.072± 0.001
+SBJTS 0.036± 0.031 0.018± 0.005 0.065± 0.031 0.080± 0.011
+Table 7.1: Benchmark on discriminative and predictive scores for Stock and Energy datasets: comparison
+of the performance of the SBJTS model with other generative models. In bold: the lowest discriminative
+and predictive score among the benchmark and the scores for the SBJTS model.
+• Discriminative score: see Section 6.2.
+• Predictive score: we aim to determine whether the synthetic data preserve the predictive struc-
+ture of the real sequences. The idea is that, if the generative model is well trained, the synthetic
+samples should capture the temporal dependencies and conditional distributions present in the orig-
+inal data. Concretely, we train on the synthetic dataset a recurrent neural network, which learns
+to predict thed-th component from time stepst2 totN, given the firstd− 1 components fromt1 to
+tN−1, minimizing the mean absolute error. Then the trained predictor is tested on the real dataset,
+and the global mean absolute error gives the final score.
+Following the benchmark literature, we compute the scores using post-hoc recurrent neural networks
+(GRU type) with batch size 128 and hidden dimension max( d 2 , 1), using a single layer for the predictive
+score and two layers for the discriminative score. To determine a value of the scores, we compare the
+same number of synthetic time series and randomly selected real samples; for each dataset, the final score
+is the mean of the results of 10 runs of the test, the error is the standard deviation. In Table 7.1 we report
+the discriminative and predictive scores obtained using the SBJTS generative model on the Stock and
+Energy datasets compared to the scores of the other generative models taken from the aforementioned
+papers. In both cases, we underline in bold the scores obtained with our generative model and the lowest
+scores among the state-of-the-art benchmark. We can conclude that the SBJTS has a very competitive
+performance on the two datasets. Indeed, in the case of the Stock dataset, the scores are really close to
+the ones obtained for the SBTS model, which has already a very good performance compared to the other
+generative models. On the other hand, in the case of the Energy dataset we manage to definitely improve
+the discriminative score obtained with the SBTS generative model, without deteriorating the predictive
+score. This is motivated by the fact that the dataset presents some components whose behaviour can
+be better reproduced adding the jump term in the generative process, leading to higher accuracy on the
+generation of synthetic time series using our generative model, and therefore a low discriminative score.
+8 Conclusion
+In this work, we addressed the problem of generating realistic time series by extending Schrödinger
+bridge–based generative models to stochastic dynamics with jumps. Our main contribution is the gener-
+alization of the continuous-time framework of Hamdouche et al. [17] to probability measures defined on
+the space of càdlàg paths, allowing the reference process to be a jump–diffusion. Under a finite Kullback-
+Leibler divergence assumption, we characterized the solution of the resulting Schrödinger bridge problem,
+and explicitly identified the dynamics of the optimal controlled process which, sampled at the observation
+dates, generates synthetic time series with joint distribution matching a prescribed target distribution.
+We further proposed a systematic hyperparameter calibration strategy that improves the numerical effi-
+ciency and robustness of the generative model.
+29
+
+=== page 30 ===
+The proposed framework nevertheless presents some limitations. In particular, the choice of the
+reference measure remains restrictive, and while the model learns jump sizes from the data, it does
+not explicitly aim to reproduce the empirical distribution of jump times. Addressing these aspects
+— by allowing for more flexible reference dynamics or by directly modeling jump-time distributions —
+constitutes a natural direction for future research. Despite these limitations, the extension of Schrödinger
+bridge generative models to jump–diffusion dynamics leads to consistent improvements in numerical
+experiments on both simulated and real-world datasets. In particular, the proposed approach shows
+competitive performance compared with state-of-the-art generative models, notably in capturing heavy-
+tailed behavior, abrupt variations, and regime changes in realistic time series.
+Appendix A Predictability and Random Measures
+In this appendix, we recall the foundational definitions and structural results concerning predictability
+and random measures operating on a filtered probability space (Ω,F, (Ft)t≥0, P) satisfying the usual
+conditions. These notions are essential for setting up the rigorous framework of Schrödinger bridges for
+jump-diffusions. For a comprehensive treatment, we refer the reader to [2, 21].
+Predictable functions. Let (E,E) be a measurable space representing the mark space (typically a
+Borel subset of Rd). The predictable σ-algebraPpred on Ω× R+ is defined as the σ-algebra generated by
+all left-continuous, (Ft)-adapted processes. Equivalently,Ppred is generated by sets of the form A×{0}
+for A∈F0 and A× (s,t] for 0≤s<t and A∈Fs. A stochastic process defined on Ω× R+ ×E is called
+predictable if it is measurable with respect to the productσ-algebraPpred ⊗E. An integer-valued random
+measure N on R+ ×E is a random measure such that N(ω,B)∈ N∪{+∞} for every B∈B(R+)⊗E.
+We write it as N(dt, dz).
+Case 1: Poisson Random Measures (Deterministic Intensity). We first introduce the concept
+of Poisson random measure. An integer-valued random measure N is a Poisson random measure with a
+σ-finite, deterministic intensity measure µ onB(R+)×E if:
+• for any measurable setB∈B(R+)⊗E withµ(B)<∞, the random variableN(B) follows a Poisson
+distribution with mean µ(B);
+• for any finite collection of disjoint measurable sets B1,...,Bk ∈B(R+)⊗E, the random variables
+N(B1),...,N(Bk) are mutually independent.
+In the standard time-homogeneous setting, the deterministic intensity factorizes as µ(dt, dz) =ν(dz)dt,
+where ν is a σ-finite measure on (E,E). With respect to the natural filtration of N, the increments of N
+are independent of the past. Hence, whenever ν(A)<∞,
+E [N((s,t]×A)|Fs] = (t−s)ν(A), 0≤s<t.
+Case 2: Integer-Valued Random Measures with Stochastic Intensity. In the context of jump-
+diffusions or marked point processes where jump rates change dynamically based on the state or history,
+the increments of N need not be independent of the past. Instead, the behavior of N is governed
+by a predictable compensator. Under the stochastic-intensity framework, we assume the compensator
+µ(ω; dt, dz) is absolutely continuous with respect to a deterministic measure ν(dz)dt, taking the form:
+µ(ω; dt, dz) =λt(ω,z)ν(dz)dt,
+whereλ : Ω× R+ ×E→ R+ is a non-negative,Ppred ⊗E-measurable process. Becauseµ is the predictable
+compensator ofN, the relation to the filtration (Ft)t≥0 is explicitly captured via conditional expectations
+over increments:
+E [N((s,t]×A)|Fs] = E
+[∫ t
+s
+∫
+A
+λu(z)ν(dz)du
+⏐⏐⏐⏐⏐Fs ] ,
+for any 0≤s<t and A∈E.
+30
+
+=== page 31 ===
+Compensated Measures and Stochastic Integration. For both settings described above, we define
+the compensated random measure ˜N by subtracting the predictable compensator from the raw counting
+measure:
+˜N(dt, dz) =N(dt, dz)−λt(z)ν(dz)dt,
+whereλt(z)isdeterministicinCase1, andapredictablerandomprocessinCase2. LetF : Ω×R+×E→ R
+be aPpred ⊗E-measurable function satisfying the square-integrability condition on a finite horizon [0,T ]:
+E
+[∫ T
+0
+∫
+E
+|F (s,z)|2λs(z)ν(dz)ds
+]
+<∞.
+Then, the stochastic integral process M = (Mt)t∈[0,T ] defined by:
+Mt =
+∫ t
+0
+∫
+E
+F (s,z) ˜N(ds, dz)
+is a well-defined, square-integrable martingale with respect to (Ft)t≥0.
+Appendix B Additional numerical tests
+B.1 Merton time series: distribution of jumps and simulated trajectories
+Figure B.1: Comparison between the quadratic variation distribution of the initial time series and the
+generated time series in case (i) (left) and in case (ii) (right).
+Figure B.2: Empirical distribution of the generated jump sizes in case (i) (left) and in case (ii) (right)
+estimated over 500 synthetic time series.
+31
+
+=== page 32 ===
+We report here additional plots obtained in the generation of time series starting from the Merton model.
+In Figure B.1 we can see that the two choices of parameters presented in Section 7.1 (denoted always
+with case (i) and (ii)) allow to generate time series whose quadratic variation distribution matches the
+quadratic variation distribution of the initial data. Figure B.2 displays the empirical distribution of the
+generated jump sizes in case (i) and (ii). In both cases the distribution of jump sizes is bimodal. This
+suggests that the generative model captures small increments of the original data primarily with the
+diffusion component, while the larger jumps are captured by the jump mechanism.
+B.2 Pure jump generative model
+In this appendix we provide further simulations using Algorithm 1 for our generative model: first we look
+at Ornstein-Uhlenbeck time series in a high-frequency case, then we consider time series from the price
+process of a Heston model.
+Ornstein-Uhlenbeck process. Starting from the same trajectories of the Ornstein-Uhlenbeck process
+(7.4) sampled for the numerical test in Section 7.2, we change the time discretization of the interval [0,T ]
+decreasing the time step ∆ti = ti+1 −ti: we consider ∆ti = 1 252 · 1 10 , hence we have time series with
+length N = 1000 (see Figure B.3). We fix h = 0.15, k = 1 and, for the jump term, λ0 = 0.005, c = 0 and
+γ = 0.1.
+To assess the fidelity of the synthetic time series, we first compare the empirical marginal distributions
+by considering the quantiles at different time points. Figure B.4 presents QQ-plots of the distributions of
+Xt100 ,Xt600 ,Xt800 for the real and synthetic data. We then examine the temporal dependence structure
+through the empirical autocorrelation function (ACF). Specifically, Figure B.5 reports the average ACF
+computed over the real and synthetic time series for lags in{1,..., 40}. The synthetic data successfully
+reproduce the main autocorrelation patterns observed in the real data, showing good agreement in the
+magnitude of the correlations across the different lags. For completeness, Figure B.5 also includes the
+ACF corresponding to the experiment presented in Section 7.2.
+0 200 400 600 800 1000
+Time
+1
+0
+1
+2
+3
+Value
+0 200 400 600 800 1000
+Time
+1
+0
+1
+2
+3
+Value
+Figure B.3: Sample paths of initial time series from trajectories of Ornstein–Uhlenbeck process (left) and
+generated time series by SBJTS (right) using the pure jump model.
+0.5
+ 0.0 0.5 1.0 1.5 2.0 2.5
+Quantiles on real time series
+0.5
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+Quantiles on synthetic time series
+0.5
+ 0.0 0.5 1.0 1.5 2.0 2.5
+Quantiles on real time series
+0.5
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+Quantiles on synthetic time series
+0.5
+ 0.0 0.5 1.0 1.5 2.0 2.5
+Quantiles on real time series
+1.0
+0.5
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+Quantiles on synthetic time series
+Figure B.4: QQ-plots: comparison between the quantiles of marginal distributions at timest100,t600,t800
+for real and synthetic data, in the case of OU time series of length N = 1000.
+32
+
+=== page 33 ===
+0 5 10 15 20 25 30 35 40
+Lag 
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Autocorrelation
+Real
+Synthetic
+0 5 10 15 20 25 30 35 40
+Lag 
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Autocorrelation
+Real
+Synthetic
+Figure B.5: Empirical autocorrelation function (ACF) for the real and synthetic data (OU time series),
+in the low-frequency case (introduced in Section 7.2) (left) and high-frequency case (right).
+Heston process. We evaluate the proposed pure jump model on time series generated from the tra-
+jectories of a Heston price process (Yt)t∈[0,T ] given by:
+{
+dYt =rYtdt + √vtYtdWY t
+dvt =κ(θ−vt)dt +ξ√vtdWv t
+where we set Y0 = 100, v0 = 0.06, r = 0.06, κ = 1.5, θ = 0.06, and ξ = 0.4. The correlation between
+the two Brownian motions is set to ρ =−0.8. Using the simulated paths of the process Y, we construct
+the initial time series and we generate synthetic time series via the pure jump model (see Figure B.6).
+In this case, our choice of the parameters is λ0 = 0.08, c = 0, γ = 1.
+In this case, we analyze the autocorrelation functions (ACF) of both the raw returns and the squared
+returns. As illustrated in Figure B.7, both the reference data and the synthetic outputs successfully
+replicatethereturnACFsfluctuatingcloselyaroundzeroacrossallevaluatedlags. However, adiscrepancy
+emerges in the ACF of the squared returns, which serves as a standard metric for volatility clustering.
+In the reference Heston dataset, the squared returns ACF exhibits an initial correlation of approximately
+0.09, followed by a slow decay over a 40-day horizon. Conversely, the synthetic trajectories generated by
+our model display a significantly muted squared returns ACF, starting at roughly 0.03 and decaying to
+zero. We attribute this discrepancy to the fundamental structural difference between the two systems:
+the baseline data is driven by a stochastic volatility process, whereas the synthetic data is generated by
+a pure jump model where the memory feedback is localized within the past-dependent kernel estimators.
+0 50 100 150 200 250
+Time
+60
+70
+80
+90
+100
+110
+120
+130
+140Value
+0 50 100 150 200 250
+Time
+60
+70
+80
+90
+100
+110
+120
+130
+140Value
+Figure B.6: Sample paths of initial time series from trajectories of Heston price process (left) and gener-
+ated time series by SBJTS (right) using the pure jump model.
+33
+
+=== page 34 ===
+0 5 10 15 20 25 30 35 40
+Lag (time steps)
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+Autocorrelation
+Returns real data
+Squared returns real data
+0 5 10 15 20 25 30 35 40
+Lag (time steps)
+0.02
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+Autocorrelation
+Returns synthetic data
+Squared returns synthetic data
+Figure B.7: Empirical autocorrelation function (ACF) for the real (left) and synthetic (right) data, in
+the case of time series of a Heston price process, for both the returns and squared returns.
+B.3 Real Datasets: Qualitative and Quantitative Results
+In addition to the tests reported in Section 7.3, this appendix presents further quantitative metrics
+assessing the generative fidelity of the SBJTS framework. We provide additional comparisons for the
+real datasets: for the Energy dataset we use the synthetic time series generated in Section 7.3. For the
+Google dataset we perform the generation using the return series Rti =
+Xti+1 −Xti
+Xti , which allows us to better assess statistics specifically related to returns; in this setting, the discriminative score is 0.019±
+0.013, while the predictive score is 0.040± 0.001, indicating that the proposed framework continues to
+generate high-quality synthetic data.
+MarginalDistributions. Toseeifthesynthesizedpathsaccuratelyreconstructthetargetdistribution,
+wefirstevaluatethealignmentbetweenthemarginaldistributionoftherealdataandthatofthegenerated
+trajectories. In Table B.1, we report the 5% and 95% quantiles of the empirical distribution of the
+random variable Xt12 computed on real values and on synthetic values, in the case of the Stock dataset.
+Overall, the synthetic data closely match the empirical quantiles across all components, also in the case
+of the sixth component, which presents large fluctuations. In Table B.2 we compare the increments
+distribution between real (R) and synthetic (S) time series for the Energy dataset for three components
+exhibiting different dynamical regimes, namely components 2 (with large fluctuations), 15 and 28 (with
+mean-reverting behaviour). Notably, both small increments (central quantiles) and large increments (tail
+quantiles) are well reproduced across all cases, highlighting the model’s ability to capture both diffusive
+and jump-driven dynamics.
+Component 5% Data 5% SBJTS 95% Data 95% SBJTS
+1 0.960 0.958 1.039 1.039
+2 0.968 0.967 1.034 1.032
+3 0.964 0.961 1.038 1.036
+4 0.962 0.962 1.040 1.039
+5 0.962 0.960 1.040 1.039
+6 0.433 0.454 2.261 2.288
+Table B.1: Quantiles of the marginal distribution at timet12 for the Stock dataset over its 6 components:
+comparison between real and synthetic data.
+Correlation Matrices. Figures B.9 and B.10 illustrate the empirical correlation matrices evaluated
+across the components of the Stock dataset and the first 5 components of the Energy dataset, respectively.
+As discussed in Section 7.3, the generative processX under the reference measure P0 assumes independent
+Brownian and jump components across dimensions. This architectural choice is primarily motivated
+by the simplification of the calibration procedure, as it drastically reduces the number of parameters
+requiring initial estimation. However, this choice does not limit the performance of the generative model
+in capturing the final correlations. Indeed, under the optimal probability measure P∗, the dynamics of
+the process X are governed by a state-dependent drift vector α∗ t and a jump intensity kernel λ∗ t, where
+34
+
+=== page 35 ===
+Quantile Component 2 Component 15 Component 28
+R S R S R S
+1% -3.62 -3.53 -2.07 -2.13 -2.98 -3.00
+5% -1.73 -1.68 -1.04 -1.12 -2.40 -2.40
+25% 0.00 -0.20 0.00 -0.20 -1.04 -1.03
+50% 0.00 -0.01 0.00 -0.01 0.01 0.02
+75% 0.00 0.18 0.00 0.17 1.04 1.04
+95% 1.77 1.77 1.05 1.12 2.37 2.34
+99% 3.62 3.63 2.14 2.18 2.99 2.99
+Table B.2: Quantiles of the increments distributions (R = real, S = synthetic) for components 2, 15, 28
+of the Energy dataset.
+each component i∈{1,...,d} is explicitly defined as a function of the entire joint state vector. Because
+our non-parametric kernel estimators are evaluated over the full d-dimensional historical state space,
+the estimated drift corrects the trajectories during path simulation, allowing the model to accurately
+synthesize off-diagonal cross-correlations without the need for a coupled reference covariance matrix.
+Autocorrelation function for Google returns. In Figure B.8, we report the empirical autocorre-
+lation function of the open, high, low, and close returns for Google stock. Specifically, we compute the
+autocorrelation between Rti and Rti+k for lags k∈{1,..., 10}, averaging the estimates over the time
+series. The synthetic data are able to reproduce the main autocorrelation patterns observed in the real
+data, with a good agreement in the magnitude of the correlations across the different lags.
+Empirical joint distributions in dimension 2. To analyze the cross-temporal structure of the
+generated data, we plot the empirical joint distributions of two random variables (Xti,Xtj), with i,j∈
+{1, 12, 24}, for component 1 of the Stock dataset in Figure B.11, and component 2 of the Energy dataset
+in Figure B.12.
+Trajectories of Energy time series. For illustrative purposes, in Figure B.13 we present the trajec-
+tories of 20 real and synthetic time series from the Energy dataset for variables with indices 1, 7, and 27,
+to provide an intuitive check of the generation accuracy more than a rigorous validation test. These plots
+highlight how the SBJTS generative model is able to reproduce the qualitative behavior of the different
+variables: it adapts to time series with stronger mean reversion, it captures varying levels of volatility or
+the presence of peaks, that can be attributed to a jump dynamics.
+2 4 6 8 10
+Lag (Time Steps)
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Autocorrelation Returns
+Open
+High
+Low
+Close
+2 4 6 8 10
+Lag (Time Steps)
+0.20
+0.15
+0.10
+0.05
+0.00
+0.05
+0.10
+0.15
+0.20
+Autocorrelation Returns
+Open
+High
+Low
+Close
+Figure B.8: Autocorrelation function of Google returns: comparison between real and synthetic data for
+open, high, low, close prices.
+35
+
+=== page 36 ===
+Feature 1
+Feature 2
+Feature 3
+Feature 4
+Feature 5
+Feature 6
+Feature 1
+Feature 2
+Feature 3
+Feature 4
+Feature 5
+Feature 6
+1 0.75 0.7 0.32 0.32 0.019
+0.75 1 0.74 0.7 0.7 0.16
+0.7 0.74 1 0.71 0.71 -0.16
+0.32 0.7 0.71 1 1 0.0025
+0.32 0.7 0.71 1 1 0.0025
+0.019 0.16 -0.16 0.0025 0.0025 1
+Feature 1
+Feature 2
+Feature 3
+Feature 4
+Feature 5
+Feature 6
+Feature 1
+Feature 2
+Feature 3
+Feature 4
+Feature 5
+Feature 6
+1 0.69 0.66 0.25 0.25 0.036
+0.69 1 0.69 0.68 0.68 0.17
+0.66 0.69 1 0.67 0.67 -0.16
+0.25 0.68 0.67 1 1 0.0051
+0.25 0.68 0.67 1 1 0.0054
+0.036 0.17 -0.16 0.0051 0.0054 1
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Figure B.9: Correlation matrix among the components of the real dataset (left) and synthetic dataset
+(right) in the case of Stock time series.
+Feature 1
+Feature 2
+Feature 3
+Feature 4
+Feature 5
+Feature 1
+Feature 2
+Feature 3
+Feature 4
+Feature 5
+1 0.17 0.06 0.11 0.096
+0.17 1 0.087 0.076 0.037
+0.06 0.087 1 -0.011 0.5
+0.11 0.076 -0.011 1 0.06
+0.096 0.037 0.5 0.06 1
+Feature 1
+Feature 2
+Feature 3
+Feature 4
+Feature 5
+Feature 1
+Feature 2
+Feature 3
+Feature 4
+Feature 5
+1 0.12 0.029 0.089 0.1
+0.12 1 0.084 0.087 0.016
+0.029 0.084 1 -0.0021 0.39
+0.089 0.087 -0.0021 1 0.053
+0.1 0.016 0.39 0.053 1
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Figure B.10: Correlation matrix among 5 components of the real dataset (left) and synthetic dataset
+(right) in the case of Energy time series.
+0.90 0.95 1.00 1.05 1.10 1.15 1.20
+Marginal at time t1
+0.85
+0.90
+0.95
+1.00
+1.05
+1.10
+1.15
+1.20Marginal at time t12
+Real Data
+Synthetic Data
+0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20
+Marginal at time t12
+0.85
+0.90
+0.95
+1.00
+1.05
+1.10
+1.15Marginal at time t24
+Real Data
+Synthetic Data
+0.85 0.90 0.95 1.00 1.05 1.10 1.15
+Marginal at time t24
+0.90
+0.95
+1.00
+1.05
+1.10
+1.15
+1.20Marginal at time t1
+Real Data
+Synthetic Data
+Figure B.11: Empirical joint distributions (Xti,Xtj) for component 1 of the Stock dataset, with i,j∈
+{1, 12, 24}: comparison between real and synthetic distributions.
+36
+
+=== page 37 ===
+0 2 4 6
+Marginal at time t1
+0
+1
+2
+3
+4
+5
+6
+7
+8Marginal at time t12
+Real Data
+Synthetic Data
+0 2 4 6 8
+Marginal at time t12
+0
+2
+4
+6
+8Marginal at time t24
+Real Data
+Synthetic Data
+0 2 4 6 8
+Marginal at time t24
+1
+0
+1
+2
+3
+4
+5
+6
+7
+Marginal at time t1
+Real Data
+Synthetic Data
+Figure B.12: Empirical joint distributions (Xti,Xtj) for component 2 of the Energy dataset, with i,j∈
+{1, 12, 24}: comparison between real and synthetic distributions.
+(a) Trajectories of 20 real time series (left) and synthetic time series (right) for the variable
+1 (appliances energy consumption) of the dataset Energy.
+(b) Trajectories of 20 real time series (left) and synthetic time series (right) for the variable
+7 (temperature in laundry room area) of the dataset Energy.
+(c) Trajectories of 20 real time series (left) and synthetic time series (right) for the variable
+27 (random variable 1) of the dataset Energy.
+Figure B.13: Trajectories of time series from the Energy dataset.
+37
+
+=== page 38 ===
+References
+[1] A. Alouadi, B. Barreau, L. Carlier, and H. Pham. Robust time series generation via Schrödinger
+Bridge: a comprehensive evaluation. In Proceedings of the 6th ACM International Conference on AI
+in Finance, pages 906–914, 2025.
+[2] D. Applebaum. Lévy processes and stochastic calculus. Cambridge university press, 2009.
+[3] A. Baule. Generative modelling with jump-diffusions. Journal of Statistical Mechanics: Theory and
+Experiment, 2026(5):054002, 2026.
+[4] P. Brémaud. Probability theory and stochastic processes. Springer, 2020.
+[5] N. Bruti-Liberati and E. Platen. Strong approximations of stochastic differential equations with
+jumps. Journal of Computational and Applied Mathematics, 205(2):982–1001, 2007.
+[6] L. M. Candanedo, V. Feldheim, and D. Deramaix. Data driven prediction models of energy use of
+appliances in a low-energy house. Energy and buildings, 140:81–97, 2017.
+[7] A. R. Cetingoz and C.-A. Lehalle. Synthetic data for portfolios: a throw of the dice will never abolish
+chance. Quantitative Finance, pages 1–32, 2026.
+[8] R. Cont and P. Tankov. Financial modelling with jump processes. Chapman and Hall/CRC, 2003.
+[9] M. Cuturi. Sinkhorn distances: Lightspeed computation of optimal transport. Advances in neural
+information processing systems, 26, 2013.
+[10] P. Dai Pra. A stochastic control approach to reciprocal diffusion processes. Applied mathematics
+and Optimization, 23(1):313–329, 1991.
+[11] D. J. Daley and D. Vere-Jones. An introduction to the theory of point processes: volume I: elementary
+theory and methods. Springer, 2003.
+[12] V. De Bortoli, J. Thornton, J. Heng, and A. Doucet. Diffusion Schrödinger bridge with applications
+to score-based generative modeling. Advances in Neural Information Processing Systems, 34:17695–
+17709, 2021.
+[13] A. Genevay, G. Peyré, and M. Cuturi. Learning generative models with Sinkhorn divergences. In
+International Conference on Artificial Intelligence and Statistics, pages 1608–1617. PMLR, 2018.
+[14] P. Glasserman and N. Merener. Convergence of a discretization scheme for jump-diffusion processes
+with state–dependent intensities. Proceedings of the Royal Society of London. Series A: Mathemat-
+ical, Physical and Engineering Sciences, 460(2041):111–127, 2004.
+[15] I. J. Goodfellow, J. Pouget-Abadie, M. Mirza, B. Xu, D. Warde-Farley, S. Ozair, A. Courville, and
+Y. Bengio. Generative adversarial nets. Advances in neural information processing systems, 27, 2014.
+[16] N. Gushchin, S. Kholkin, E. Burnaev, and A. Korotin. Light and optimal schrödinger bridge match-
+ing. In Forty-first International Conference on Machine Learning, 2024.
+[17] M. Hamdouche, P. Henry-Labordere, and H. Pham. Nonparametric generative modeling for time
+series via Schrödinger bridge. Journal of Machine Learning Research (JMLR), 27(58):1–23, 2026.
+[18] P. Henry-Labordere. From (Martingale) Schrödinger bridges to a new class of Stochastic Volatility
+Models. arXiv preprint arXiv:1904.04554, 2019.
+[19] J. Ho, A. Jain, and P. Abbeel. Denoising diffusion probabilistic models. Advances in neural infor-
+mation processing systems, 33:6840–6851, 2020.
+[20] Y. Hu, X. Wang, Z. Ding, L. Wu, H. Zhang, S. Z. Li, S. Wang, J. Zhang, Z. Li, and T. Chen.
+FlowTS: Time series generation via rectified flow. arXiv preprint arXiv:2411.07506, 2024.
+[21] J. Jacod and A. Shiryaev. Limit theorems for stochastic processes, volume 288. Springer Science &
+Business Media, 2013.
+38
+
+=== page 39 ===
+[22] A. Korotin, D. Selikhanovych, and E. Burnaev. Neural optimal transport. arXiv preprint
+arXiv:2201.12220, 2022.
+[23] C. Léonard. Girsanov theory under a finite entropy condition. In Séminaire de Probabilités XLIV,
+Lecture Notes in Mathematics, pages 429–465. Springer, 2012.
+[24] C. Léonard. A survey of the Schrödinger problem and some of its connections with optimal transport.
+Discrete and Continuous Dynamical Systems, 34(4):1533–1574, 2014.
+[25] H. Lim, J. Lee, S. Park, M. Kim, and N. Park. TSGM: Regular and irregular time-series generation
+using score-based generative models. In 2025 IEEE International Conference on Big Data (BigData),
+pages 54–63. IEEE, 2025.
+[26] Y. Lipman, R. T. Chen, H. Ben-Hamu, M. Nickel, and M. Le. Flow matching for generative modeling.
+arXiv preprint arXiv:2210.02747, 2022.
+[27] I. Naiman, N. Berman, I. Pemper, I. Arbiv, G. Fadlon, and O. Azencot. Utilizing image transforms
+and diffusion models for generative modeling of short and long time series. Advances in Neural
+Information Processing Systems, 37:121699–121730, 2024.
+[28] M. Nutz. Introduction to entropic optimal transport. Lecture notes, Columbia University, 2021.
+[29] Y. Ogata. On Lewis’ simulation method for point processes. IEEE transactions on information
+theory, 27(1):23–31, 1981.
+[30] D. Onken, S. W. Fung, X. Li, and L. Ruthotto. Ot-flow: Fast and accurate continuous normal-
+izing flows via optimal transport. Proceedings of the AAAI Conference on Artificial Intelligence,
+35(10):9223–9232, 2021.
+[31] P. Protter and D. Talay. The Euler scheme for Lévy driven stochastic differential equations. The
+Annals of Probability, 25(1):393–423, 1997.
+[32] D. Revuz and M. Yor. Continuous martingales and Brownian motion. Springer Science & Business
+Media, 2013.
+[33] Y. Shi, V. De Bortoli, A. Campbell, and A. Doucet. Diffusion Schrödinger bridge matching. Advances
+in Neural Information Processing Systems, 36:62183–62223, 2023.
+[34] Y. Song, S. Ermon, D. P. Kingma, and B. Poole. Score-based generative modeling through stochastic
+differential equations. In International Conference on Learning Representations, 2021.
+[35] T. Xu, L. K. Wenliang, M. Munn, and B. Acciaio. Cot-gan: Generating sequential data via causal
+optimal transport. Advances in neural information processing systems, 33:8798–8809, 2020.
+[36] E. B. Yoon, K. Park, S. Kim, and S. Lim. Score-based generative models with Lévy processes.
+Advances in Neural Information Processing Systems, 36:40694–40707, 2023.
+[37] J. Yoon, D. Jarrett, and M. Van der Schaar. Time-series generative adversarial networks. Advances
+in Neural Information Processing Systems, 32, 2019.
+[38] A. Zlotchevski and L. Chen. Schrödinger Bridge Problem for Jump Diffusions. arXiv preprint
+arXiv:2411.13765, 2024.
+[39] A. Zlotchevski and L. Chen. The Schrödinger Bridge Problem for Jump Diffusions with Regime
+Switching. arXiv preprint arXiv:2511.06079, 2025.
+39

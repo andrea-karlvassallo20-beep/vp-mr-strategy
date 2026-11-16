@@ -1,0 +1,802 @@
+=== page 1 ===
+Financial LPPL Bubbles with Mean-Reverting Noise in the
+Frequency Domain
+Vincenzo Liberatore ∗
+September 8, 2021
+Abstract
+The log-periodic power law (LPPL) is a model of asset prices during endogenous bubbles.
+A major open issue is to verify the presence of LPPL in price sequences and to estimate the
+LPPL parameters. Estimation is complicated by the fact that daily LPPL returns are typically
+orders of magnitude smaller than measured price returns, suggesting that noise obscures the
+underlying LPPL dynamics. However, if noise is mean-reverting, it would quickly cancel out
+over subsequent measurements. In this paper, we attempt to reject mean-reverting noise from
+price sequences by exploiting frequency-domain properties of LPPL and of mean reversion. First,
+we calculate the spectrum of mean-reverting Ornstein-Uhlenbeck noise and devise estimators for
+the noise’s parameters. Then, we derive the LPPL spectrum by breaking it down into its two
+main characteristics of power law and of log-periodicity. We compare price spectra with noise
+spectra during historical bubbles. In general, noise was strong also at low frequencies and, even
+if LPPL underlied price dynamics, LPPL would be obscured by noise.
+1 Introduction
+Financial bubbles and busts have devastating eﬀect on the economy and on markets. However,
+the existence and characteristics of bubbles are notoriously hard to ascertain if not with hind-
+sight. This paper contributes to the investigation of ﬁnancial bubbles within the LPPL frame-
+work [Sornette, 2004], and speciﬁcally it examines its frequency-domain properties under a mean-
+reverting noise model.
+Endogenous ﬁnancial bubbles have been modeled as a log-periodic power law (LPPL) [Sornette, 2004].
+The LPPL model has two main characteristics:
+• Super-exponential growth, leading to a critical time at which the asset price will burst (power
+law), and
+• Oscillations that become progressively faster as the critical time approaches (log-periodicity).
+Super-exponential growth is a sign that price growth is unsustainable. The oscillatory behavior
+indicates an incipient system failure, and is often associated with increasingly more rapid and
+pronounced swings in investor sentiment [Stauﬀer and Sornette, 1998].
+∗Division of Computer Science, Case Western Reserve University, 10900 Euclid Avenue, Cleveland, Ohio 44106-
+7071, USA. E-mail: vl@case.edu. URL: http://vincenzo.liberatore.org/.
+1
+arXiv:1009.4835v2  [q-fin.ST]  30 Jan 2011
+
+=== page 2 ===
+Previous work has paid considerable attention to ﬁtting the LPPL law to historical time series
+of ﬁnancial bubbles, and a recent summary reviews the state of the art [Jiang et al., 2010]. Current
+methods for LPPL bubble detection have been tested in an on-line experiment [Sornette et al., 2009].
+Previous work mostly focus on the two related issues of statistical signiﬁcance and of noise in the
+data. The LPPL model parameters can be ﬁt to the price sequences via non-linear least-squares
+[Jiang et al., 2010], and we have previously proposed eﬃcient parallel algorithms for least-square
+ﬁtting [Liberatore, 2010]. The least-square algorithm returns an estimate for the LPPL parameters
+as well as a residual error. However, least squares always estimate parameters for the LPPL model,
+regardless of whether LPPL underlies actual price dynamics or not. The least square residual er-
+ror gives a sense of the presence of LPPL: if the ﬁnal mean squared error is signiﬁcantly smaller
+than the error at the beginning of the numerical ﬁt, then there is some evidence for an underlying
+LPPL process. However, reliance on mean squared errors can produce spuriously high goodness
+of ﬁt [Granger and Newbold, 1974, Phillips, 1986]. Although LPPL is often visible intuitively in
+price series and non-linear least squares substantially reduce the mean squared error over an initial
+exponential ﬁt, the log-periodic component of the S&P 500 is not statistically signiﬁcant prior
+to the 1987 crash if the last year of data is removed [Feigenbaum, 2001]. Furthermore, Bayesian
+methods fundamentally reject the hypothesis that LPPL underlies price dynamics during a bubble
+[Chang and Feigenbaum, 2006]. An alternative approach is to verify the non-linear least squares
+using unrelated tests, such as bounding the range of acceptable LPPL parameters or using a Lomb
+transform [Jiang et al., 2010]. However, log-periodic variations prior to large drawdowns fail to
+satisfy the parameter restrictions in the LPPL model [Chang and Feigenbaum, 2008].
+In ﬁtting LPPL to prices, the fundamental problem is that the daily LPPL returns are typically
+orders of magnitude smaller than the measured price returns. In other words, a hypothetical LPPL
+signal would be swamped by overwhelming noise, and thus it is diﬃcult to ascertain its presence
+and its parameter values. Furthermore, it is also possible that the noise variance increases over
+time, in which case the observed prices tend to progressively diﬀer more signiﬁcantly from an
+underlying deterministic LPPL. When noise variance increases, the noise eﬀectively becomes the
+signal. As such, LPPL estimation is plagued by a low signal-to-noise ratio, which additionally
+may be decreasing over time. However, an LPPL model with mean-reverting noise (e.g., Ornstein-
+Uhlenbeck) has been recently proposed [Lin et al., 2009]. If noise is mean-reverting, it has bounded
+variance, and thus the measured prices ﬁts more tightly around the underlying LPPL. Furthermore,
+although a mean-reverting process may be characterized by large daily return, the daily gyrations
+will rapidly cancel each other out. In other words, mean-reverting noise is characterized by relatively
+low power at low frequencies. Thus, mean-reversion would make it possible to reconstruct the
+underlying LPPL by focusing on the lower frequency components of measured prices.
+In this paper, we examine LPPL with mean-reverting Ornstein-Uhlenbeck noise in the frequency
+domain. The paper investigates the mean-reverting properties of the noise, and whether the de-
+noised power spectrum shows a deterministic LPPL signature. Section 2 describes the LPPL model.
+Section 3 gives the necessary background on Ornstein-Uhlenbeck processes, analyzes its spectrum,
+and discusses two methods for estimating its parameters. Section 4 gives our methodology for
+calculating spectra of ﬁnite price sequences. Section 5 discusses the LPPL spectrum by breaking
+it down into its two main features of power law and log-periodicity. Section 6 discusses noise
+rejection in noisy LPPL price sequences. Section 7 evaluates the approach on major historical
+bubbles. Section 8 concludes the paper and outlines possible future work.
+2
+
+=== page 3 ===
+ 1000
+ 0  200  400  600  800  1000
+time (day)
+S&P 500
+LPPL
+Figure 1: Log-scale S&P 500 and an LPPL ﬁt from July 2003 to June 2007.
+2 LPPL
+The log-periodic power law is a function:
+𝓁(t) = A−B(T −t)m(1 + C cos(ω ln(T −t) + φ)) , (1)
+where B > 0 and 0 < m ≤ 1. The LPPL function is a model for a sequence of price logarithms
+p(0),p(1),...,p(n− 1) in the sense that p(i) = 𝓁(i) + ν(i), where ν(i) is random noise independent
+of 𝓁. If we assume that 𝓁(T ) = A, the LPPL function 𝓁 is deﬁned for t≤T . In particular, since 𝓁
+is a model for a ﬁnite sequence of prices, we will also restrict 𝓁 over t≥ 0. As matter of notational
+convention, we remark that we call price sequence and denote as p(0),p(1),...,p(n− 1) what in
+reality is the natural logarithm of prices. The convention makes our notation more compact, but it
+should be kept in mind that, for example, our daily price returns are basically price ratios. Figure
+1 shows the S&P 500 daily closing prices and a least squares LPPL ﬁt for the four years between
+July 2003 and June 2007. If m = 1,C = 0, LPPL reduces to an exponential model of the price
+sequence. If m < 1, then LPPL grows super-exponentially until the critical time T . If C,ω > 0,
+then LPPL exhibits oscillations that become progressively more frequent as t approaches the critical
+time. Since 𝓁 is a deterministic signal and ν is a wide-sense stationary process independent of 𝓁,
+most properties of stationary signals can be applied [Pollock, 2001]. Since ν is independent of 𝓁,
+|P (f)|2 = |L(f)|2 + S(f), where L(f) is the transform of 𝓁, P (f) is the transform of p, and S(f) is
+the noise power.
+3 Ornstein-Uhlenbeck Noise
+3.1 Background
+The Ornstein-Uhlenbeck process ν(t) is the solution of the stochastic diﬀerential equation:
+ν′(t) = −ν(t) τ + σΓ(t) ,
+3
+
+=== page 4 ===
+where Γ(t) is Gaussian white noise, τ ≥ 0 is called the relaxation time, and σ ≥ 0 is called the
+diﬀusion constant [Bibbona et al., 2008]. The Ornstein-Uhlenbeck process can be interpreted as
+white noise that has been ﬁltered by a ﬁrst-order system with cut-oﬀ frequency fc = 1/(2πτ). When
+τ →∞, the Ornstein-Uhlenbeck process reduces to a Weiner process. As t→∞, Var[ν(t)] = σ2τ/2
+and Cov[ν(t + h),ν(t)] = σ2τe−|h|/τ/2 [Bibbona et al., 2008]. A Ornstein-Uhlenbeck process can
+be simulated by means of:
+ν(t + 1) = ν(t)e−1/τ +
+√
+σ2τ
+2 (1 −e−2/τ)ut , (2)
+where ut is a sample value of a normal random variable [Gillespie, 1991]. The stationary Ornstein-
+Uhlenbeck process can be simulated by using recurrence (2) starting from ν(0) being the sample of
+a Gaussian random variable with variance equal to limt→∞ Var[ν(t)] = σ2τ/2.
+3.2 Spectrum
+The two-sided power spectrum is deﬁned for t→∞, is equal to [Wang and Uhlenbeck, 1945]:
+T (f) = σ2τ 2
+1 + 4π2τ 2f 2
+(
+0 ≤f ≤ 1 2 )
+and it is the same as that of a ﬁrst-order low-pass ﬁlter with cut-oﬀ frequency fc. Since we will be
+dealing with sampled Ornstein-Uhlenbeck processes, it is also useful to derive the spectrum of the
+discrete-time Fourier transform. The transform of the auto-correlation function is
+S(ω) =
+∞∑
+h=−∞
+σ2τ
+2 e−|h|/τe−jωh
+= σ2τ 2 ( −1 + ∞∑ h=0 e−h/τ(e−jωh + ejωh) )
+= −σ2τ 2 + σ2τ ∞∑ h=0 ah cos(ωh) ,
+where a = e−1/τ. Since, it is known that for |r|< 1 [R˚ade and Westergren, 1999, eq. 13.2(29)]
+∞∑
+h=0
+rh cos(hk) = 1 −r cos k 1 − 2r cos k + r2 ,
+we have that
+S(ω) = σ2τ 2 ( −1 + 2 1 −a cos ω 1 − 2a cos ω + a2 ) = σ2τ 2 1 −a2 1 − 2a cos ω + a2 .
+In terms of frequency f = ω/(2π),
+S(f) = σ2τ 2 1 −a2 1 − 2a cos(2πf) + a2 .
+Figure 2 shows the power of the discrete-time Fourier transform S(f) and of the continuous Fourier
+transform T (f) for τ = 5 and σ = 1/5. The power spectra are similar except at the highest
+frequencies. At low frequencies, since a≃ 1 − 1/τ and a2 ≃ 1 − 2/τ, T (f) ≃S(f) ≃σ2/(1 −a)2 ≃
+σ2τ 2.
+4
+
+=== page 5 ===
+ 0.01
+ 0.1
+ 1
+ 10
+ 1e-05  0.0001  0.001  0.01  0.1
+f
+S(f)
+T(f)S(f) (DTFT)
+T(f)
+Figure 2: Power spectrum of the Fourier and discrete-time Fourier transform for τ = 5, σ = 1/5.
+3.3 Ornstein-Uhlenbeck Estimation
+We now turn to the estimation of the parameters σ and τ in the Ornstein-Uhlenbeck noise. We will
+follow two approaches for parameter estimation. The ﬁrst approach is based on the intuition that
+on short time frames the noise dominates the LPPL signal (e.g., [Chang and Feigenbaum, 2006]).
+Therefore, the noise parameters could be determined with high accuracy by looking at diﬀusion and
+mean reversal over short intervals, possibly corrected by a ﬁrst-order trend estimate. The second
+approach is pessimistic: it assumes τ →∞ and ﬁnds the largest value of σ that is consistent with
+the observed signal. In other words, the pessimistic approach attempts to explain the observed
+signal as much as possible as Weiner noise.
+3.3.1 Maximum Likelihood
+High-frequency estimation is based on the assumption that over short time scales the signal is
+completely dominated by noise. In this case, 𝓁(t + 1) ≃𝓁(t), and since p(t) = 𝓁(t) + ν(t), we have
+that ν(t + 1) −ν(t) ≃p(t + 1) −p(t).
+Given a sequence of observations ν(0),ν(1),...,ν(n− 1) of an Ornstein-Uhlenbeck process, the
+maximum likelihood estimates of τ and σ2 are
+ˆτ = ln Sxx
+Sxy
+,
+ˆσ2 = 2ˆτ 1 − ˆa2 1 n− 1(Syy − 2ˆaSxy + ˆa2Sxx) ,
+where ˆa = e−1/ˆτ, Sxx = ∑n−1 i=1 ν2(i − 1), Sxy = ∑n−1 i=1 ν(i − 1)ν(i), and Syy = ∑n−1 i=1 ν2(i)
+[van den Berg, 2007]. Maximum likelihood estimation is an estimation technique that operates
+exclusively in the time-domain.
+However, the ν values are only known indirectly through the diﬀerences ν(t + 1) −ν(t). Deﬁne
+αt = ν(t) −ν(0) and observe that αt is known via the telescoping summation ν(t) = ν(0) +∑t−1
+i=0(ν(i + 1) −ν(i)). Since the Ornstein-Uhlenbeck process has no drift, SxSxy = SySxx, where
+5
+
+=== page 6 ===
+ 0.1
+ 1
+ 10
+ 100
+ 1000
+ 10000
+ 1  10  100  1000
+τ (estimate)
+τ
+Figure 3: Estimate ˆτ versus its underlying value τ. For each value of τ, 30 Monte Carlo simulations
+were executed over intervals of length n = 25000.
+Sx = ∑n−1 i=1 ν(i− 1) and Sy = ∑n−1 i=1 ν(i) [van den Berg, 2007]. Therefore,
+0 =
+n−1∑
+i=1
+(ν(0) + αi−1)
+n−1∑
+j=1
+(ν(0) + αj−1)(ν(0) + αj) −
+n−1∑
+i=1
+(ν(0) + αi)
+n−1∑
+j=1
+(ν(0) + αj−1)2
+=
+n−1∑
+i=1
+n−1∑
+j=1
+(ν(0)3 + ν(0)2(αj + αj−1 + αi−1) + ν(0)(αjαj−1 + αi−1αj + αi−1αj−1)
++αi−1αjαj−1)
+−
+n−1∑
+i=1
+n−1∑
+j=1
+ν(0)3 + ν(0)2(2αj−1 + αi) + ν(0)(α2 j−1 + 2αiαj−1) + αiα2 j−1
+= (n− 1)ν(0)Axy + ν(0)A2 x + AxAxy − (n− 1)ν(0)Axx −ν(0)AxAy −AyAxx ,
+where Ax = ∑n−1 i=1 αi−1, Ay = ∑n−1 i=1 αi, Axy = ∑n−1 i=1 αiαi−1, and Ayy = ∑n−1 i=1 αiαi, Solving for
+ν(0) now gives
+ν(0) = AyAxx −AxAxy
+(n− 1)Axy − (n− 1)Axx + A2x −AyAx .
+Given the estimate for ν(0) and the αi’s, the ν(i)’s can be estimated, and thus τ and σ2.
+To increase the estimate accuracy in the presence of an underlying deterministic trend 𝓁, we
+estimate a linear ﬁt to the log-prices p and subtract it from p(t).
+Monte Carlo simulations were conducted to ascertain the accuracy of the maximum likelihood
+estimation. The estimation was quite accurate when the underlying LPPL trend gave negligible
+contributions to the αi’s, but less accurate otherwise. Additionally, even in the complete absence of
+an underlying trend, the estimate ˆτ of τ became progressively less accurate as τ gets larger (Figure
+3). An intuitive explanation is that when τ is large, then mean reversion aﬀects only slightly the
+αi’s, making it hard to obtain an accurate ﬁx on τ. In principle, the problem could be obviated by
+formulating an estimate with returns over longer periods of time (i.e., ˜ν(i) = ν(ki),k> 1). However,
+the problem is compounded if an underlying trend 𝓁 has relatively large power at frequencies smaller
+6
+
+=== page 7 ===
+than the critical frequency fc = 1/(2πτ). In this case, the underlying trend 𝓁 aﬀects the signal at
+the same frequencies at which the relaxation term does, thus obscuring the exact contribution of
+the relaxation constant. The case when τ is large will be addressed by pessimistic estimation.
+3.4 Pessimistic Estimation
+In pessimistic estimation, we assume that the noise is generated by a Weiner process (i.e., τ →∞)
+and estimate σ using the constraint |P|2 = |L|2 + S ≥ S that the noise power should not exceed
+the observed signal power. The estimate is pessimistic in that it assumes no mean reversion and
+thus strong noise even at low frequencies.
+Let Sτ(f) be the power spectrum of an Ornstein-Uhlenbeck process when the relaxation constant
+is τ and deﬁne S∞(f) = limτ→∞Sτ(f). Then, if f > 0,
+S∞(f) = lim τ→∞ Sτ(f) = σ2 4(1 − cos(2πf)) lim τ→∞ τ ( 1 −e−2/τ ) = σ2 2(1 − cos(2πf)) ,
+and
+S∞(0) = lim τ→∞
+σ2τ
+2
+1 −a2
+(1 −a)2 = σ2 .
+It should be the case that P (f) ≤S∞(f) for all f’s. In practice, however, the observed signal is the
+realization of a stochastic signal, and so P (f) may or may not exceed S∞(f) [Lo`eve, 1978]. Hence,
+we only impose integral constraints of the form
+∫ f +
+f −
+S∞(f)df ≤
+∫ f +
+f −
+P (f)df ,
+where f− and f + are parameters to be determined with 0 < f− < f + ≤ 1/2. Furthermore, the
+spectrum P is calculated only at the discrete points fi = i/n, so the constraint becomes
+k∑
+i=h
+S∞(fi) ≤
+k∑
+i=h
+P (fi) ,
+which then leads to
+σ2 ≤ 2 ∑k i=hP (fi)∑k
+i=h 1/(1 − cos(2πfi))
+. (3)
+A pessimistic estimate can be obtained by calculating the bounds for h0 = 1, kj = hj+1 = (1+α)hj
+(for some constant α> 0, e.g., α = 1) and then taking the most conservative bound.
+The numerical calculation of the bounds is complicated by the fact that the summations in (3)
+involve terms whose value can diﬀer by orders of magnitude. In this case, if the largest terms are
+added ﬁrst, due to the ﬁnite representation precision, the smallest terms are likely to be truncated.
+In an extreme scenario, many small terms could collectively dominate the value of the summation
+but since they are added individually to a larger partial sum, their contribution would be lost.
+In general, a summation is numerically more accurate when it always adds terms of comparable
+magnitude. Since S∞ is a decreasing function (and the same holds in the expectation for P ), the
+numerical calculation should always start from the largest frequency fk and proceed backward to
+fh. (As an aside, however, the numerical calculation is only needed for the numerator, since the
+denominator could be replaced by an integral that is solvable analytically.)
+7
+
+=== page 8 ===
+10-8
+10-7
+10-6
+10-5
+10-4
+10-3
+10-2
+10-1
+100
+101
+102
+103
+10-5 10-4 10-3 10-2 10-1
+sqrt(P(f))
+sqrt(S(f))
+sqrt(S∞(f))
+Figure 4: DFT amplitude of a log-periodic function, (A = 10,B = 0.008,T = 26000,m = 0.7,n =
+25000,C = 0.4,ω = 2π,φ = π), underlying Ornstein-Uhlenbeck noise (σ2 = .000015,τ = 2000,fc =
+7.96 · 10−5), and pessimistic estimate (α = 1, σ2 = .0000145).
+Figure 4 shows an example of pessimistic estimate in a case when τ = 2000 is relatively large
+and diﬃcult to estimate because P (fc) is dominated by the power of the underlying signal 𝓁. The
+pessimistic estimate was quite accurate, and S∞ diﬀers from the underlying S(f) only for the
+smallest frequency values. Similar conclusions were supported by several additional Monte Carlo
+simulations.
+4 Reﬂection
+The Ornstein-Uhlenbeck process describes an inﬁnitely long signal. On the contrary, p(0),p(1),...,p(n−
+1) is a ﬁnite sequence. Similarly, 𝓁 is deﬁned in the ﬁnite interval [0,T ]. In the calculation of the
+spectrum, an ambiguity arises regarding the behavior of p and 𝓁 outside of their deﬁnition interval.
+In many applications, ﬁnite sequences are multiplied by a window function, or they are implicitly
+assumed to be periodic. Implicit periodization matches directly the discrete Fourier transform
+(DFT), in the sense that, given the sequence p(0),p(1),...,p(n− 1), the DFT assumes that the
+signal is inﬁnite, periodic, with period n, and that p(i) = p(i−n) for i = 0,±1,±2,... . In typical
+log-periodic sequences, p(n− 1) ≫p(0), and if the signal were viewed as periodic, then there would
+be a large step between p(n− 1) and p(n) = p(0). The step is primarily an artifact of the implicit
+DFT assumption of periodicity, but the large artiﬁcial step could dominate the behavior of the
+power spectrum. As for windowing, typical window functions either leave a large boundary step
+(e.g., rectangular window) or disregard the fact that the LPPL behavior becomes more pronounced
+at the boundaries of the observation window (e.g., Hann).
+In this paper, the discontinuity is obviated by reﬂection: given a sequence p(0),p(1),...,p(n−1),
+a new sequence is constructed by juxtaposing the original sequence and a reverse version of the
+same sequence: p(n− 1),...,p(1),p(0),p(1),...,p(n− 2), and assuming that the new sequence is
+periodic with period 2(n− 1). The reﬂected sequence has no abrupt discontinuity between the
+ﬁrst and last element, and thus no such step is visible in its spectrum. We also tried alternative
+approaches, such as appending after p(n−1) values that smoothly interpolate between p(n−1) and
+8
+
+=== page 9 ===
+10-6
+10-5
+10-4
+10-3
+10-2
+10-1
+100
+101
+10-5 10-4 10-3 10-2 10-1
+f
+reflected
+original
+sqrt(S(f)) (DTFT)
+Figure 5: DFT amplitude of a realization (σ = .2, τ = 5) of the Ornstein-Uhlenbeck process, of its
+reﬂection, and
+√
+S(f).
+p(0) over a long time frame, but we did not ﬁnd signiﬁcant diﬀerences between these alternatives
+and reﬂection.
+To reiterate, given a ﬁnite sequence or a function deﬁned over a ﬁnite interval, the Fourier
+transform always requires an assumption of some sort on the sequence behavior outside the given
+interval. For example, if the sequence is left unchanged, the DFT implicitly assumes that the
+sequence is periodic. In this light, reﬂection is a natural choice because, unlike implicit periodization
+or windowing, it eliminates abrupt discontinuities at the boundaries. Reﬂection also lead to a
+symmetrical analysis of bubbles and anti-bubbles (i.e., a bubble-like behavior in reverse with rapidly
+decreasing prices [Sornette, 2004]).
+If reﬂection is applied to a sequence p = 𝓁 + ν that is the sum of a log-periodic component
+and a noise component, reﬂection will apply indiscriminately to both components. Thus, it is
+possible in principle that reﬂection would alter the power spectrum of noise. However, several
+Monte Carlo simulations showed that reﬂection leaves the power spectrum of Ornstein-Uhlenbeck
+noise practically unaﬀected. For example, Figure 5 gives the DFT amplitude of a realization of an
+Ornstein-Uhlenbeck process, the DFT amplitude of the reﬂection of the same process, and
+√
+S(f).
+Reﬂection leaves the same general spectral behavior because, intuitively, the autocorrelation of
+stochastic signals is invariant to time reversal and the autocorrelation of an Ornstein-Uhlenbeck
+process decays exponentially.
+5 Log-Periodic Spectra
+To derive the LPPL spectrum, we will break down the LPPL model into its two main components of
+power law (without oscillations) and log-periodicity (without super-exponential growth). Then, we
+will return to the general case with the insight gained from the special cases, and verify numerically
+its spectral behavior.
+9
+
+=== page 10 ===
+Figure 6: DFT amplitude of the power law 𝓁m.
+5.1 Power Law
+Consider ﬁrst the case when C = 0, i.e., the LPPL function is completely determined by its power
+law behavior. If m = C = 0 (or if B = 0), 𝓁 reduces to a constant, and its transform L(f) = 0 for
+f ⁄= 0. If C = 0,m = 1, the reﬂected LPPL reduces to a triangular wave, for which it is known
+that |L(fi)|∝ 1/f 2 i when i is odd and L(fi) = 0 when i> 0 is even.
+The super-exponential behavior is the most pronounced when m→ 0+, and A,B change as a
+function of m so that 𝓁 is not a constant. First, suppose for the time being that T = n (the same
+result will hold for T >n except for changes in the normalization constants). If A is multiplied by
+a factor independent of t, L(f) remains unchanged (f ⁄= 0). Similarly, if B is multiplied by a factor
+independent of t, L(f) is multiplied by the same factor (f ⁄= 0). In other words, a normalization of
+the constants A and B renormalizes L(f) but does not alter its qualitative behavior. Assume that
+A and B are renormalized so that 𝓁(0) = 0 and
+∫T
+0 𝓁(t)dt = 1/2. Thus, A = ˆA(m) = (1+1/m)/(2T )
+and B = ˆB(m) = A/Tm. Let 𝓁m(t) = ˆA(m) − ˆB(m)(T −t)m. Note that limm→0+ ˆA(m) = ∞ and
+that we take the transform of reﬂected signals. Hence, limm→0+ 𝓁m(t) is the delta function, and its
+spectrum is a constant (speciﬁcally, 1/2T with the common conventions on the DFT normalization
+factor). Figure 6 depicts the convergence of 𝓁m to the delta function in the frequency domain.
+When m⁄= 0 is small, a ﬂat spectrum characterizes the higher frequencies. As m→ 0+, a constant
+spectrum is found in a progressively larger frequency interval. Meanwhile, the spectrum at low
+frequencies has an increasingly ﬂatter slope: |L(f)|∝ 1/f 2 at m = 1, |L(f)|∝ 1/f at m ≃ 0.1,
+and so on. The amplitude |L(f)| decreases faster than 1/f for the range m≥ 0.1 that deﬁnes the
+“stylized features of LPPL” [Lin et al., 2009].
+The same behavior holds also when n<T by appropriately scaling the normalization constants
+of A and B. The same results hold qualitatively for A,B constant: the spectrum is ﬂat although
+the absolute values do change depending on the normalization factor (see, for example, Figure 7).
+5.2 Log-Periodicity
+If m = 0, then 𝓁(t) = A−B(1+C cos(ω ln(T−t)+φ)) (see Figure 8 for an example). By discounting
+the constant terms, the resulting signal is ˜𝓁(t) = cos(ω ln(T −t) + φ). The signal ˜𝓁(t) includes a
+10
+
+=== page 11 ===
+Figure 7: DFT amplitude of an LPPL function for various values of m (A = 10,B = 0.01,T = n =
+25000,C = 0).
+-1
+-0.5
+ 0
+ 0.5
+ 1
+ 0  5000  10000  15000  20000  25000
+Figure 8: An LPPL function that highlights the oscillatory term as a function of non-linear time
+scaling (A = 1, B = 1, C = −1, m = 0, ω = 3π, n = 25000, T = n/(1−e−11π/ω), φ = −ω ln(T−n)).
+11
+
+=== page 12 ===
+10-8
+10-7
+10-6
+10-5
+10-4
+10-3
+10-2
+10-1
+100
+101
+102
+10-5 10-4 10-3 10-2 10-1
+Figure 9: The DFT amplitude of the LPPL function in Figure 8, with arrows pointing to the
+minimum and maximum frequencies of the log-periodic spectrum.
+non-linear time scaling, which can be interpreted as the frequency modulation of a carrier signal
+sin(2πf(t)t + α) with some underlying signal f(t). Given a frequency modulated signal, such as
+˜𝓁(t), its power spectrum resides almost entirely in the band between the maximum and minimum
+value of the modulating signal [Carson, 1922]. In practice, the diﬀerential frequency at time t is
+given by the derivative of phase ω ln(T−t)+φ normalized by 2π, and is thus equal to ω/(2π(T−t)).
+Hence, the minimum frequency is ω/(2πT ) and the maximum frequency is ω/(2π(T −n)). Figure
+9 shows an example along with the predicted frequency bounds.
+Frequency-modulated signals are known to be resilient to changes in signal amplitude. In
+particular, the spectrum of ˜𝓁m(t) = (T −t)m cos(ω ln(T −t) + φ) should be qualitatively close
+to the spectrum of ˜𝓁0(t). For example, Figure 10 shows the spectrum of Figure 9 except that
+now m = 0.3. The maximum and minimum frequencies still delimit the area where the frequency
+modulated signal has predominant power.
+Incidentally, the critical time T is in a special position in that it aﬀects both power law (due to
+(T−t)m term) and log-periodicity (due to the ln(T−t) term). Correspondingly, T determines both
+the maximum frequency ω/(2π(T−n)) in the frequency modulated spectrum and the normalization
+constants ˆA(m), ˆB(m) in the power law spectrum. In both cases, the eﬀect of T is similar in that,
+when T approaches n, the maximum frequency and the normalization constants both increase.
+Frequency modulation analysis could be regarded as the dual of the Lomb transform of the de-
+trended signal [Jiang et al., 2010] in that the frequency bounds are useful to estimate log-periodicity,
+whereas Lomb analysis is useful to conﬁrm it after the LPPL parameters have already been esti-
+mated.
+5.3 Combined LPPL
+The two LPPL hallmarks are power law and log-periodicity. Each translates directly into the
+frequency domain. The power law implies a ﬂat spectrum at high frequencies and moderate slope
+at low frequencies. Log-periodicity implies a bounded spectrum similar to that of a frequency
+modulated signal. Given the spectrum |P|2 of prices during a bubble, we would expect to ﬁnd
+either (or both) signatures of LPPL in the frequency domain.
+12
+
+=== page 13 ===
+10-8
+10-6
+10-4
+10-2
+100
+102
+104
+10-5 10-4 10-3 10-2 10-1
+C=-1
+C=0
+Figure 10: The DFT amplitude of the LPPL function in Figure 8 but with m = 0.3, with arrows
+pointing to the minimum and maximum frequencies of the log-periodic spectrum.
+The general LPPL spectrum is analytically intractable, and it was estimated numerically. Se-
+quences were generated for hundreds of diﬀerent LPPL parameter sets, the respective spectra
+were calculated numerically and plotted. In general, to make sense of the spectrum, it is helpful
+to interpret it qualitatively in terms of the two main features of power law and log-periodicity.
+Speciﬁcally, a LPPL spectrum can be thought as the superposition of a power law spectrum and
+a log-periodic spectrum, where the superposition is weighted by the parameter C. For example,
+Figure 10 compares an LPPL spectrum with that of a pure power law with the same parameter
+values (but C = 0). As another example, Figure 11 shows the spectrum for a pure power law func-
+tion (m = 0.7,C = 0), a pure log-periodic function (m = 0,C = 0.5), and two intermediate cases
+(m = 0.7,C = 0.01, 0.05). The intermediate cases have a spectrum that is visually the superposi-
+tion of the two extreme spectra. Furthermore, higher values of C make the log-periodic component
+more visible. If C is small, the frequency modulation lobes are typically visible around the trend
+rather than above it (e.g., Figure 12). Results were similar for all other combinations of parameters,
+and omitted. Although it is helpful to comprehend a general LPPL spectrum as a superposition
+of feature, the intuition can seldom be translated into a closed expression. However, it is always
+useful to think the LPPL spectrum as the combination of two broad features. In particular, given
+a noisy LPPL, we would expect to ﬁnd the two LPPL signatures in the frequency domain.
+6 De-Noising
+We now turn to discuss the extent to which it is possible to extract an underlying LPPL signal
+from noisy price measurements. The expectation would intuitively be that the mean-reverting
+noise smooths out relatively quickly so that the underlying LPPL behavior should be visible at the
+lower frequencies. More precisely, the potential for de-noising depends on achieving high values
+of the signal-to-noise ratio R(f) = |L(f)|2/S(f). The signal-to-noise ratio R(f) is related to the
+non-causal Weiner ﬁlter K(f) = 1/(1 + 1/R(f)). The Weiner ﬁlter K has the property that the
+ﬁltered signal ˆ𝓁(i) = ∑∞ j=−∞k(j)p(i−j) minimizes the mean square error ∑(𝓁(i) − ˆ𝓁(i))2 among
+all linear ﬁlters, where the k’s are the inverse transform of K and p is the reﬂected and periodicized
+13
+
+=== page 14 ===
+10-8
+10-6
+10-4
+10-2
+100
+102
+104
+10-5 10-4 10-3 10-2 10-1
+C=0.5
+m=0
+C=0
+C=0 (power law)
+C=0.01
+C=0.5
+m=0 (log-periodicity)
+Figure 11: |L(f)| for A = 100,B = 0.01,T = 26000,n = 25000,ω = 2π,φ = 0 in the cases of pure
+power law (m = 0.7,C = 0), pure log-periodicity (m = 0,C = 0.5), and two intermediate cases
+(m = 0.7,C = 0.01, 0.5).
+10-10
+10-8
+10-6
+10-4
+10-2
+100
+102
+104
+10-5 10-4 10-3 10-2 10-1
+LPPL
+C=0 (power law)
+m=0 (log periodicity)
+Figure 12: |L(f)| for A = 100,B = 0.01,T = 26000,n = 25000,ω = 2π,φ = 0 in the cases of
+pure power law (m = 0.7,C = 0), pure log-periodicity (m = 0,C = 0.05), and combined case
+(m = 0.7,C = 0.05).
+14
+
+=== page 15 ===
+10-11
+10-10
+10-9
+10-8
+10-7
+10-6
+10-5
+10-4
+10-3
+10-2
+10-5 10-4 10-3 10-2 10-1
+LPPL with noise
+Pessimistic noise estimate
+LPPL (no noise)
+Figure 13: Spectrum |L(f)| of 𝓁0.1 with and without noise, and pessimistic noise estimate.
+time series of prices. If R(f) decreases with f, then K(f) is a low pass ﬁlter and, intuitively, the
+ﬁlter replace each price p(i) with a smoothed combination of its neighbors so as to reject the noise.
+The signal-to-noise ratio is a function of frequency and can take various shapes depending on the
+parameters of the underlying LPPL 𝓁 and Ornstein-Uhlenbeck noise.
+In the stylized LPPL, m ≥ 0.1, and, with a pure power law (C = 0), |L|2 always decreases
+faster than the slope of S. Hence, the power law contributes to de-noising only if |L(f)|2 > S(f)
+at low frequencies. In pure log-periodicity (m = 0), |L(f)| is signiﬁcant only for frequencies
+f ≤ω/(2π(T −n)). Again, log-periodicity contributes to de-noising only if |L(f)|2 >S(f) at low
+frequencies.
+It is useful to examine the special case when |L(f)|∝ 1/f at low frequencies since |L|’s slope
+matches exactly the slope of S∞. In this case, it may be hard to ascertain the presence of a signal
+𝓁 if Weiner noise is also present since the LPPL spectrum almost perfectly overlaps with the noise
+spectrum. Figure 13 shows the amplitude |L| of an LPPL 𝓁0.1 without noise. Then, Gaussian white
+noise was generated with variance σ2 chosen so that the corresponding spectrum S∞ matches closely
+|L|2 at low frequencies. The amplitude of the resulting price transform is shown in Figure 13 along
+with the pessimistic estimate deﬁned in Section 3.4. The pessimistic estimate overlapped almost
+exactly the true noise spectrum (whereas the maximum likelihood estimate did not produce ﬁnite
+parameter estimates). The spectra |L|2, |P|2, and S∞ were practically identical at low frequencies,
+but at high frequencies |P| followed the larger |L|. We conclude that even in the special case when
+the LPPL is hidden under the noise because m makes |L(f)|∝ 1/f and σ2 makes |L(f)|2 ≃S∞ at
+low frequencies, LPPL and noise can be distinguished by extracting a pessimistic noise estimate.
+However, in this case, the diﬀerence is noticeable at high frequencies.
+In summary, the intuition was that LPPL should be visible at the low frequencies, and it is
+correct in most cases. Then, de-noising should be possible when the spectrum looks qualitatively
+as in Figure 4, with the price spectrum clearly above the noise estimate for a signiﬁcant range of
+frequencies at the low end of the spectrum. However, we found special combinations of parameters
+(e.g., Figure 13) where the presence of LPPL is visible only from the highest frequencies.
+If the time horizon n approaches the critical time T , intuition would suggest that it should
+be easier to detect an LPPL trend. Indeed, if the critical time T is approaching, then the max-
+15
+
+=== page 16 ===
+Series Period Data Points
+Dow Jones Industrial Average June 1921-July 1929 2440
+S&P 500 July 1985–July 1987 527
+NASDAQ Composite January 1994–February 2000 1555
+S&P 500 July 2003–June 2007 1000
+GLD March 2009–October 2009 171
+Table 1: Price time series used in the evaluation.
+imum log-periodic frequency is higher resulting into a wider frequency modulated spectrum, and
+the normalization constant ˆB is larger, shifting the spectrum upward. In other words, when the
+critical time approaches, the LPPL function resembles more closely an impulse and additionally its
+oscillations are wilder, so that it is hard for mean-reverting noise to disguise the underlying LPPL
+trend.
+7 Evaluation
+Data sets are daily closing values of the major indexes and securities shown in Table 1. The ﬁrst
+four data sets are associated with major historical bubbles in the U.S. stock market. The last data
+set is a recent bubble in gold prices that burst in November 2009 [Sornette et al., 2009]. These
+prices sequences stop closely before the time at which the price reached its maximum level during
+the bubble episode. Therefore, the detection of an underlying LPPL trend should be relatively
+easy. We have additionally considered individual stocks. For example, we have investigated various
+tech stocks during the 1998-2000 bubble and the Netﬂix stock in the 2005-10 period. The results
+are qualitatively similar to those reported here, and omitted.
+The maximum likelihood and pessimistic noise estimates were close to each other, providing
+evidence that mean reversion is weak. Both estimates ﬁt well the price spectrum, a sign that
+prices can be explained primarily as a Weiner process. In most cases, the spectrum deviates from
+the pessimistic estimate only at f = 0, 1/(2n), which is consistent with adding Weiner noise to
+deterministic exponential price trajectory.
+As for the maximum likelihood estimate, the diﬀusion constant is relatively large. The maximum
+likelihood estimate was slightly but consistently smaller at low frequencies than the price spectrum
+in two cases: Dow Jones 1929 and gold 2009. The discrepancy was investigated with a ﬁlter to
+remove the maximum likelihood noise. The ﬁlter is non-causal and produces a signal ˜𝓁 with the
+property that ˜L(f) = L(f) if f < ˜f and ˜L(f) = 0 otherwise, where ˜f is the smallest frequency
+f at which |L(f)|2 < S(f). The intuition is that the underlying LPPL spectrum |L|2 decreases
+faster than the noise spectrum S, so if one takes the smallest frequency f at which |L(f)|2 ≥S(f),
+the resulting low-pass ﬁlter approximates a Weiner ﬁlter. Figures 19 and 20 show the original and
+ﬁltered series. Both ﬁltered series show signiﬁcant oscillations at the beginning and slight super-
+exponential growth throughout. However, the oscillations are absent toward the end of the ﬁltered
+sequence. Since log-periodic oscillations become progressively more rapid toward the critical time,
+even if log-periodicity were present in these price sequences, oscillations would be blocked by the
+ﬁlter at the highest log-periodic frequencies. However, the ﬁlter only blocks frequencies when noise
+dominate the signal, and so we conclude that log-periodicity, if at all present, has been disrupted by
+16
+
+=== page 17 ===
+10-6
+10-5
+10-4
+10-3
+10-2
+10-1
+100
+101
+102
+10-4 10-3 10-2 10-1
+Dow Jones 1929
+Max Likelihood
+Pessimistic
+Figure 14: Spectrum of the Dow Jones 1929 price sequence.
+10-6
+10-5
+10-4
+10-3
+10-2
+10-1
+100
+101
+10-4 10-3 10-2 10-1
+S&P 500 1987
+Max Likelihood
+Pessimistic
+Figure 15: Spectrum of the S&P 500 1987 price sequence.
+noise. Similarly, super-exponential growth is visually unclear both in the time and in the frequency
+domain.
+In summary, noise had at best weak mean reversion and relatively high variance, so that, even
+if LPPL underlied price dynamics, it was obscured by noise.
+8 Conclusions
+The estimators show that mean reversion is weak, and Ornstein-Uhlenbeck noise is close to a
+non-mean-reverting Weiner process. Furthermore, the signal-to-noise ratio R(f) is low, and it
+mostly makes it possible to reconstruct an underlying exponential trend. Even in those cases
+where R(f) > 0 for a range of low frequencies, noise makes it impossible to reconstruct either
+log-periodicity or a power law. In short, due to noise, there is no trace of LPPL during bubbles.
+However, it is possible in principle that LPPL underlies price dynamics, but that it cannot
+be isolated with pure frequency methods. Future work will investigate diﬀerent transforms, such
+17
+
+=== page 18 ===
+10-6
+10-5
+10-4
+10-3
+10-2
+10-1
+100
+101
+102
+10-4 10-3 10-2 10-1
+Nasdaq 1994-2000
+Max Likelihood
+Pessimistic
+Figure 16: Spectrum of the NASDAQ Composite 1994-2000 price sequence.
+10-6
+10-5
+10-4
+10-3
+10-2
+10-1
+100
+101
+10-4 10-3 10-2 10-1
+S&P 500 2003-7
+Max Likelihood
+Pessimistic
+Figure 17: Spectrum of the S&P 500 2003-07 price sequence.
+10-6
+10-5
+10-4
+10-3
+10-2
+10-1
+100
+10-3 10-2 10-1
+GLD 2009
+Max Likelihood
+Pessimistic
+Figure 18: Spectrum of the GLD (gold) 2009 price sequence.
+18
+
+=== page 19 ===
+ 100
+ 0  500  1000  1500  2000  2500
+DJIA (filtered)
+DJIA
+Figure 19: Dow Jones 1929 with ﬁltered price sequence ( ˜f = f9).
+ 100
+ 0  20  40  60  80  100  120  140  160  180
+GLD (filtered)
+GLD
+Figure 20: Gold 2009 with ﬁltered price sequence ( ˜f = f6).
+19
+
+=== page 20 ===
+as wavelets, that may make it possible to discern explosive bubble growth. Furthermore, if the
+underlying LPPL were expressed as a dynamic system with known parameters, it would be possible
+to use the additional information in de-noising ﬁlters that extend a pure frequency approach.
+References
+[Bibbona et al., 2008] Bibbona, E., Panﬁlo, G., and Tavella, P. (2008). The Ornstein-Uhlenbeck
+process as a model of a low pass ﬁltered white noise. Metrologia, 45:S117–S126.
+[Br`ee et al., 2010] Br`ee, D., Challet, D., and Peirano, P. (2010). Prediction accuracy and sloppiness
+of log-periodic functions. Technical Report 1006:2010v1, arXiv.
+[Carson, 1922] Carson, J. R. (1922). Notes on the theory of modulation. Proc. IRE, 10(1):57–64.
+[Chang and Feigenbaum, 2006] Chang, G. and Feigenbaum, J. (2006). A Bayesian analysis of log-
+periodic precursors to ﬁnancial crashes. Quantitative Finance, 6(1):15–36.
+[Chang and Feigenbaum, 2008] Chang, G. and Feigenbaum, J. (2008). Detecting log-periodicity in
+a regime-switching model of stock returns. Quantitative Finance, 8:723–738.
+[Feigenbaum, 2001] Feigenbaum, J. A. (2001). A statistical analysis of log-periodic precursors to
+ﬁnancial crashes. Quantitative Finance, 1:346–360.
+[Gillespie, 1991] Gillespie, D. (1991). Markov processes: An introduction for physical scientists.
+Academic Pr.
+[Granger and Newbold, 1974] Granger, C. W. J. and Newbold, P. (1974). Spurious regressions in
+econometrics. Journal of Econometrics, 2:111–120.
+[Jiang et al., 2010] Jiang, Z.-Q., Zhou, W.-X., Sornette, D., Woodard, R., Bastiaensen, K., and
+Cauwels, P. (2010). Bubble diagnosis and prediction of the 2005-2007 and 2008-2009 Chinese
+stock market bubbles. Economic Behavior and Organization, 74:149–162.
+[Liberatore, 2010] Liberatore, V. (2010). Computational LPPL ﬁt to ﬁnancial bubbles. Technical
+Report 1003.2920, ArXiv.
+[Lin et al., 2009] Lin, L., E, R. R., and Sornette, D. (2009). A Consistent Model of ‘Explosive’
+Financial Bubbles With Mean-Reversing Residuals. ArXiv e-prints.
+[Lo`eve, 1978] Lo`eve, M. (1978). Probability theory II, volume 46 of Graduate Texts in Mathematics.
+Springer-Verlag, 4 edition.
+[Phillips, 1986] Phillips, P. (1986). Understanding spurious regressions in econometrics. Journal
+of Econometrics, 31:311–340.
+[Pollock, 2001] Pollock, D. S. G. (2001). Methodology for trend estimation. Economic Modelling,
+18(1):75 – 96.
+[R˚ade and Westergren, 1999] R˚ade, L. and Westergren, B. (1999). Mathematics Handbook for Sci-
+ence and Engineering. Springer, Berlin.
+20
+
+=== page 21 ===
+[Sornette, 2004] Sornette, D. (2004). Critical phenomena in natural sciences: chaos, fractals, self-
+organization, and disorder: concepts and tools. Springer.
+[Sornette et al., 2009] Sornette, D., Woodard, R., Fedorovsky, M., Reimann, S., Woodard, H., and
+Zhou, W.-X. (2009). The ﬁnancial bubble experiment: advanced diagnostics and forecasts of
+bubble terminations.
+[Stauﬀer and Sornette, 1998] Stauﬀer, D. and Sornette, D. (1998). Log-periodic oscillations for
+biased diﬀusion on random lattice. Physica A, 252:271–277.
+[van den Berg, 2007] van den Berg, M. (2007). Calibrating the Ornstein-Uhlenbeck model.
+[Wang and Uhlenbeck, 1945] Wang, M. C. and Uhlenbeck, G. E. (1945). On the theory of Brownian
+motion II. Rev. Mod. Phys., 17:323–342.
+21

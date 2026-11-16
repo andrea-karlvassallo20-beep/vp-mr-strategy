@@ -1,0 +1,1461 @@
+=== page 1 ===
+arXiv:2405.03496v3  [q-fin.TR]  18 May 2024
+Price-Aware Automated Market Makers: Models Beyond Brownian
+Prices and Static Liquidity
+Philippe Bergault∗ Louis Bertucci† David Bouba‡ Olivier Guéant§
+Julien Guilbert¶
+Abstract
+In this paper, we introduce a suite of models for price-aware automated market making platforms
+willing to optimize their quotes. These models incorporate advanced price dynamics, including stochastic
+volatility, jumps, and microstructural price models based on Hawkes processes. Additionally, we address
+the variability in demand from liquidity takers through models that employ either Hawkes or Markov-
+modulated Poisson processes. Each model is analyzed with particular emphasis placed on the complexity
+of the numerical methods required to compute optimal quotes.
+Keywords: AMM, DeFi, stochastic optimal control, Heston-Bates model, Stein-Stein model, Hawkes
+processes, Markov-modulated Poisson processes.
+1 Introduction
+Market makers, including both human agents and algorithms, are key participants in ﬁnancial markets stand-
+ing ready to buy and sell securities or currency pairs. They are crucial in facilitating transactions by bridging
+the gap between buyers and sellers, whose requests or orders may not coincide due to asynchronous submissions.
+The challenges faced by market makers, and the broader microeconomics of market making, have been rigor-
+ously examined since the 1980s from two perspectives. The ﬁrst is information asymmetries, initially explored
+by Copeland and Galai [16] and subsequently by Glosten and Milgrom [18]. The second perspective focuses
+on inventory management, as initially investigated by Ho and Stoll [23, 24].
+In the literature concerning information asymmetries, the bid-ask spread is primarily viewed as an informa-
+tional phenomenon. Faced with the risk of adverse selection by informed traders, market makers – even those
+who are risk-neutral – must maintain a bid-ask spread to sustain their viability. This body of literature of-
+ten employs metaphorical (toy) models to elucidate the fundamental informational factors that drive bid-ask
+spreads.
+When holding inventory, market makers are confronted with risks arising from uncertainties about future prices
+and the trading willingness of other market participants. Within this context, the bid-ask spread is utilized as
+a premium to compensate for the risks incurred while holding inventory. Quantitative models in the inventory
+management literature are often designed to maximize the expected proﬁt and loss (PnL) of market makers,
+∗ Université Paris Dauphine-PSL, Ceremade, Place du Maréchal de Lattre de Tassigny, 75116 Paris, France,
+bergault@ceremade.dauphine.fr.
+†Institut Louis Bachelier, Palais Brongniart, 28 Place de la Bourse, 75002 Paris, France,
+louis.bertucci@institutlouisbachelier.org.
+‡Swaap Labs, d@swaap.ﬁnance.
+§Université Paris 1 Panthéon-Sorbonne, Centre d’Economie de la Sorbonne, 106 Boulevard de l’Hôpital, 75642 Paris Cedex 13,
+France, olivier.gueant@univ-paris1.fr.
+¶Swaap Labs, julien@swaap.ﬁnance.
+1
+
+=== page 2 ===
+while also managing inventory levels to remain as close to zero as possible, primarily through the strategic set-
+ting of their quotes. The body of literature on inventory management has seen signiﬁcant advancements since
+Avellaneda and Stoikov’s 2008 article [1], which reinvigorated the modeling framework originally introduced by
+Ho and Stoll nearly three decades earlier. Within the quantitative ﬁnance community, researchers have built
+upon the foundational elements of Ho and Stoll’s seminal works, enriching models with increasingly sophisti-
+cated features over the years. These enhancements include the integration of alpha signals, varying order sizes,
+client tiering strategies, the internalization-versus-externalization dilemma, consideration of market impact,
+introduction of uncertainty in parameters, and attempts to address the challenges of adverse selection (see
+[2, 4, 8, 12, 14, 15, 19, 21]). Furthermore, there has been an eﬀort to extend these models to multi-asset set-
+tings, alongside the development of sophisticated numerical and approximation techniques (see [3, 7, 8, 20, 22]).
+These market making models have shown eﬀectiveness in over-the-counter (OTC) markets, such as those for
+corporate bonds and foreign exchange. With the recent rise of decentralized ﬁnance (DeFi) and the emergence
+of Automated Market Makers (AMMs) in cryptocurrency markets – which provide alternatives to centralized
+exchange platforms based on limit order books – it appears promising that these models could be adapted
+to optimize price-aware AMMs.1 Price-aware AMMs mark a new generation in the DeFi arena. Unlike the
+classical Constant Function Market Makers (CFMMs), which leave price discovery to liquidity takers, includ-
+ing arbitrageurs, and stay passive in the price formation process, price-aware AMMs utilize current market
+estimates to inform their pricing strategies. A leading study in this new direction is [6], which also coined the
+concept of eﬃcient market making strategies. In [6], however, the model assumes log-normal price dynamics
+and static liquidity, which do not optimally represent the characteristics of many cryptocurrency pairs. This
+paper aims therefore to exhibit a suite of models extending that introduced in [6] by incorporating more com-
+plex price dynamics and dynamic liquidity.
+In the literature on market making, asset prices are commonly modeled using Brownian motions or geometric
+Brownian motions, sometimes with a drift or a stochastic alpha component. There are exceptions, however.
+For instance, [17] examines a multidimensional Ornstein-Uhlenbeck dynamics suitable for cointegrated assets,
+and [27] attempts to integrate stochastic volatility into market making models. Our paper explores the eﬀects
+of employing models with price jumps and stochastic volatility on market making equations. Our primary
+focus is on dynamics from the option pricing literature, particularly the Heston-Bates model (see [5]) and
+the Stein-Stein model with jumps (see [29]). We demonstrate that while these models necessitate the addi-
+tion of a state variable, they do not preclude the use of the quadratic Hamiltonian approximation technique
+introduced in [7] to approximate value functions. However, the resulting Riccati equations are replaced by
+nonlinear parabolic partial diﬀerential equations. We also show that the quadratic Hamiltonian approximation
+technique can be applied to several price models based on Hawkes processes recently introduced in the market
+microstructure literature.
+Besides price dynamics, we address the impact of stochastic liquidity, diverging from the common assump-
+tion in most market making models of a constant ﬂow of liquidity takers for ﬁxed bid-ask spread and skew.
+Given the stochastic nature of liquidity and the observed autocorrelation in trade signs, Hawkes processes
+represent a natural choice beyond traditional Poisson processes (see, for instance, [25]). However, employing
+Hawkes processes presents a challenge as it conﬂicts with the quadratic Hamiltonian approximation technique,
+which reduces computational complexity. As an alternative, we propose Markov-modulated Poisson processes
+(MMPPs), as explored in the recent paper [9].
+In this paper, we present a comprehensive suite of models for automated market makers. Our primary focus
+is on detailing the Hamilton-Jacobi-Bellman equations that characterize the value function of price-aware
+automated market makers and the associated optimal quotes, exploring diﬀerent models for price and liquidity
+dynamics. Section 2 introduces the general modeling framework that underpins all the models we discuss.
+Then, Section 3 explores various models for price dynamics, while Section 4 examines two ways to model
+stochastic liquidity.
+1Such adaptations must take into account speciﬁc characteristics like the use of the buy-and-hold (Hodl) benchmark and the
+requirement for inventories to remain nonnegative.
+2
+
+=== page 3 ===
+2 General modelling framework
+In this paper, we consider a ﬁltered probability space (Ω, F, P; F = (Ft)t≥0) satisfying the usual conditions.
+All the random variables and stochastic processes are deﬁned on this probability space.
+We consider a two-currency automated market maker which oﬀers quotes to liquidity takers (LTs) based on a
+reference price2 and markups3. Throughout this paper, the two currencies will be referred to as currency 0 and
+currency 1, with currency 0 serving as the accounting currency. The process (St)t∈R+ denotes the reference
+price, expressing the value of currency 1 in terms of currency 0.
+Our goal in all the models presented below is to develop eﬃcient markups for liquidity providers (LPs) as
+deﬁned in [6]. Speciﬁcally, we seek to ﬁnd markups that maximize the expected excess Proﬁt and Loss (PnL)
+of LPs relative to the Hodl benchmark,4 while ensuring that the variance of this excess PnL remains below a
+predetermined level.
+Regarding transactions, we consider the same kind of models as in [6]. Transaction sizes are labelled in the
+accounting currency and transaction prices are decomposed into two parts: one part corresponding to the
+reference exchange rate and another part corresponding to a markup (that might very rarely be a discount)
+that is accounted in currency 0, whatever the side of the transaction, for the sake of simplicity. More precisely,
+if a liquidity taker wants to sell z coins of currency 0 at time t, then z/St coins of currency 1 will be oﬀered
+to them and zδ0,1(t, z) extra coins of currency 0 will be asked as a markup. Symmetrically, if a liquidity taker
+wants to buy z coins of currency 0 at time t, then z/St coins of currency 1 will be asked and zδ1,0(t, z) out of
+the total of z coins of currency 0 will not be transferred to them.
+We assume that the markups
+(
+δ0,1, δ1,0) belong to
+A :=
+{
+(
+δ0,1, δ1,0) : Ω × [0, T ] × R∗ + ↦→ R2
+⏐⏐⏐⏐ ( δ0,1, δ1,0) is P ⊗ B(R∗ +)-measurable } ,
+where P denotes the σ-algebra of F-predictable subsets of Ω×[0, T ] and B(R∗ +) denotes the Borelian sets of R∗ +.
+To simplify the analysis, we accumulate these markups in a process (Xt)t∈[0,T ], separated from the pool
+reserves, whose dynamics is
+dXt =
+∫
+z∈R∗ +
+zδ0,1(t, z)J 0,1(dt, dz) +
+∫
+z∈R∗ +
+zδ1,0(t, z)J 1,0(dt, dz),
+with X0 = 0, where J 0,1(dt, dz) and J 1,0(dt, dz) are two R∗ +-marked point processes modelling respectively
+transactions through which the AMM sells currency 1 and receives currency 0 (for J 0,1(dt, dz)) and transac-
+tions through which the AMM sells currency 0 and receives currency 1 (for J 1,0(dt, dz)).
+The dynamics of the reserves are then given by:
+dq0 t =
+∫
+z∈R∗ +
+z
+(
+J 0,1(dt, dz) − J 1,0(dt, dz) ) and dq1 t = ∫
+z∈R∗ +
+z
+St
+(
+J 1,0(dt, dz) − J 0,1(dt, dz) ) .
+2This reference price may be derived from an oﬀ-chain market feed or from an on-chain price oracle, depending on the setup.
+3The markups are typically computed oﬀchain whenever the computational complexity becomes high. The underlying algo-
+rithm can be public or private depending on the setup.
+4The excess PnL relative to Hodl represents the PnL of a representative liquidity provider between two liquidity provision or
+redemption events, compared to the PnL that would have been realized had the LP remained outside the pool. Other benchmarks
+and decompositions of LPs’ PnL have been proposed in the literature. For CFMMs, a notable decomposition is presented in [13],
+introducing the concept of predictable loss. In a speciﬁc model, [26] introduced the related concept of loss-versus-rebalancing and
+regarded it as a benchmark, albeit an extreme one due to its assumption of back-to-back trading. In the context of price-aware
+AMMs, the relevant benchmark remains Hodl. However, the idea of reducing risk by enabling AMMs to trade on other platforms
+is highly relevant. This strategy is reminiscent of the classical internalization versus externalization trade-oﬀ in traditional market
+making (see [3, 4]).
+3
+
+=== page 4 ===
+We assume that the processes J 0,1(dt, dz) and J 1,0(dt, dz) have known intensity kernels given respectively by
+(ζ 0,1 t (dz))t∈R+ and (ζ 1,0 t (dz))t∈R+ , verifying
+ζ 0,1 t (dz) = Λ0,1 ( t, z, δ0,1(t, z) ) 1{q1 t− ≥ z St }m(dz) and ζ 1,0 t (dz) = Λ1,0 ( t, z, δ1,0(t, z) ) 1{q0 t− ≥z}m(dz),
+where:
+• Λ0,1 : (t, z, δ) ∈ R+ × R∗ + × R ↦→ R∗ + and Λ1,0 : (t, z, δ) ∈ R+ × R∗ + × R ↦→ R∗ + are intensity functions
+decreasing in δ and satisfying the classical technical assumptions of intensity functions in the market
+making literature (see [8]);
+• the indicator functions represent the impossibility for the AMM to propose exchange rates for transactions
+that cannot occur because reserves are too low in the demanded currency;
+• m is a measure on R+ (typically Lebesgue or discrete).
+In the standard literature on OTC market making (see [4] or [8], for instance), these intensity functions (which
+correspond to the demand curve of LTs) are assumed of the logistic type. In our general framework where
+liquidity may not be constant, we consider
+Λ0,1(t, z, δ) = λ0,1 t φ0,1(z)f 0,1(z, δ) and Λ1,0(t, z, δ) = λ1,0 t φ1,0(z)f 1,0(z, δ)
+where:
+• λ0,1 t and λ1,0 t describe the height of the demand curve;
+• φ0,1(z) and φ1,0(z) are the probability density functions (with respect to m) of the size of trade inquiries;
+• f 0,1 : (z, δ) ∈ R∗ + × R ↦→ 1 1+ea0,1 (z)+b0,1(z)δ and f 1,0 : (z, δ) ∈ R∗ + × R ↦→ 1 1+ea1,0 (z)+b1,0 (z)δ describe the
+logistic shape of the demand curve, in particular the sensitivity to the markups which may depend on
+sizes.
+If we mark the reserve of currency 1 with the reference exchange rate, the total value associated with the
+markups and the reserves in the pool at time T is given by XT + q0 T + q1 T ST . To evaluate the PnL of a liquidity
+provider compared to that of an agent who would have held the coins outside of the AMM (Hodl benchmark),
+we need to subtract the current value of the initial reserves, i.e., q0 0 + q1 0 ST . Therefore, the excess PnL with
+respect to Hodl at time T is expressed as:
+ΠT = XT +
+(
+q0 T − q0 0 ) + ( q1 T − q1 0 ) ST
+=
+∫ T
+0
+∫
+z∈R∗ +
+zδ0,1(t, z)J 0,1(dt, dz) +
+∫ T
+0
+∫
+z∈R∗ +
+zδ1,0(t, z)J 1,0(dt, dz)
++
+∫ T
+0
+∫
+z∈R∗ +
+z
+(
+J 0,1(dt, dz) − J 1,0(dt, dz) ) + ∫ T
+0
+(q1 t − q1 0 )dSt
++
+∫ T
+0
+∫
+z∈R∗ +
+z
+(
+J 1,0(dt, dz) − J 0,1(dt, dz) )
+=
+∫ T
+0
+∫
+z∈R∗ +
+zδ0,1(t, z)J 0,1(dt, dz) +
+∫ T
+0
+∫
+z∈R∗ +
+zδ1,0(t, z)J 1,0(dt, dz) +
+∫ T
+0
+(q1 t − q1 0 )dSt. (1)
+Given a time horizon T , we can deﬁne eﬃcient market making strategies as those maximising the expected
+value of the above excess PnL, subject to an upper bound on its variance. These strategies correspond to
+those maximizing expressions of the form
+E[ΠT ] − γ 2 V[ΠT ],
+for γ spanning R+. Traditional optimization problems of this form are known to suﬀer from time inconsistency
+due to the variance term. To address this issue, we adopt very close but alternative objective functions that
+penalize risk. In Eq. (1), risk originates from two main sources: the stochastic nature of trade arrivals and
+4
+
+=== page 5 ===
+price ﬂuctuations. Existing literature on market making (such as [20] or more recently [4]) suggests that price
+risk is the dominant factor. Consequently, our subsequent analysis focuses on mitigating price risk. To work
+with a time-consistent objective function, we replace the variance of ΠT in the original optimization problems
+with the quadratic variation of
+∫ T
+0 (q1 t − q1 0 )dSt, i.e.,
+T∫
+0
+(q1 t − q1 0 )2d⟨St⟩. This modiﬁcation leads to the following
+objective functions (for γ ≥ 0):
+E
+[ T∫
+0
+{∫
+z∈R∗ +
+(
+zδ0,1(t, z)Λ0,1(t, z, δ0,1(t, z))1{q1 t− ≥ z St } + zδ1,0(t, z)Λ1,0(t, z, δ1,0(t, z))1{q0 t− ≥z}
+)
+m(dz)
+}
+dt
++
+T∫
+0
+(q1 t − q1 0 )dSt − γ 2
+T∫
+0
+(q1 t − q1 0 )2d⟨St⟩
+]
+.
+In the presence of the penalty term γ 2
+T∫
+0
+(q1 t − q1 0 )2d⟨St⟩ – at least for γ > 0 – the market making strategy is
+naturally inclined to adjust prices such that the reserves remain close to their initial values. Therefore, it is
+justiﬁed, following the approach by [6], to simplify the problem by omitting the indicator functions.5 This
+removal of indicator functions also reduces the dimensionality of the problem, as it decreases the number of
+state variables required. The stochastic optimal control problems are then formulated (for γ ≥ 0) as follows:
+sup
+(δ0,1 ,δ1,0)∈A
+E
+[ T∫
+0
+{∫
+z∈R∗ +
+(
+zδ0,1(t, z)Λ0,1(t, z, δ0,1(t, z)) + zδ1,0(t, z)Λ1,0(t, z, δ1,0(t, z)) ) m(dz) } dt
++
+T∫
+0
+(q1 t − q1 0 )dSt − γ 2
+T∫
+0
+(q1 t − q1 0 )2d⟨St⟩
+]
+. (2)
+The nature and dimensionality of the stochastic optimal control problems (2) are inﬂuenced by two types of
+assumptions: (i) assumptions regarding the dynamics of (St)t, and (ii) assumptions concerning the dynamics of
+liquidity, speciﬁcally (λ0,1 t )t and (λ1,0 t )t. Section 3 is dedicated to discussing models for the dynamics of (St)t.
+In Section 4, we explore dynamic models for liquidity.
+3 Eﬃcient market making strategies with advanced price models
+3.1 Introduction
+The recent paper [6] introduces eﬃcient price-aware market making strategies within a framework assuming
+constant liquidity and log-normal price distributions. In this section, we retain the assumption of constant
+liquidity, meaning that λ0,1 t = λ0,1 and λ1,0 t = λ1,0 are held constant,6 but we broaden our analysis to include
+models beyond log-normal price distributions. To eﬀectively integrate a dynamic price model into our optimal
+control framework and avoid the curse of dimensionality, it is crucial to employ continuous-time price models
+that are both Markovian and low-dimensional.
+In the ﬁeld of derivatives pricing, the Heston model is among the most well-known stochastic volatility mod-
+els. It employs a Cox-Ingersoll-Ross (CIR) process to model the square of the volatility. This model has been
+further extended to incorporate jumps in price dynamics, resulting in what is commonly referred to as the
+Heston-Bates model. In Section 3.2, we explore the stochastic optimal control problems (2) within the context
+of Heston-Bates price dynamics. Another seminal model in the option pricing literature is the Stein-Stein
+model, which uses an Ornstein-Uhlenbeck process to model volatility. Section 3.3 examines the stochastic op-
+timal control problems (2) within the Stein-Stein framework, speciﬁcally in its Schöbel and Zhu extension [28],
+to which we have added jumps. In addition to models from the derivatives pricing literature, continuous-time
+5In practical applications, requests that would deplete the reserves on one side of the pool can simply be prohibited.
+6Throughout Section 3, we omit the time variable in the intensity functions Λ0,1 and Λ1,0 .
+5
+
+=== page 6 ===
+models have also been proposed in the market microstructure literature. Section 3.4 examines the stochastic
+optimal control problems (2) within the framework of a Hawkes model for price dynamics. Section 3.5 proposes
+an extension with Z-Hawkes processes following a microstructural model proposed in [10].
+3.2 Introducing stochastic volatility and jumps through the Heston-Bates model
+3.2.1 Model, Hamilton-Jacobi-Bellman equation and optimal markups
+In this section, we consider for the price process (St)t∈R+ the following model:
+{
+dSt = µStdt + √νtStdW S t + St ∫ η∈R η ¯J (dt, dη)
+dνt = k(¯ν − νt)dt + √νtξdW ν t
+where:
+• µ ∈ R is a known deterministic drift;
+• (νt)t∈R+ is the instantaneous variance process with values in R+;
+• ¯J is a marked point process with constant-in-time kernel ¯λζ(dη) where ¯λ is the rate of jumps and ζ the
+probability measure of jump sizes in relative value (assumed to be such that
+∫
+η∈R ηζ(dη) = 0);
+• k > 0 is the rate of mean reversion of the instantaneous variance;
+• ξ > 0 measures the stochasticity of the instantaneous variance process;
+• ¯ν > 0 is the long-term instantaneous variance;
+•
+(
+W S t , W ν t ) t∈R+ is a 2-dimensional standard Brownian motion independent of ¯J with d⟨W S , W ν ⟩t = ρdt
+for ρ ∈ [−1, 1].
+In this framework, it is interesting to introduce Yt = (q1 t −q1 0 )St. We have indeed that (Yt, νt)t∈R+ is Markovian
+since
+dYt = µYtdt + √νtYtdW S t + Yt
+∫
+η∈R
+η ¯J(dt, dη) +
+∫
+z∈R∗ +
+z
+(
+J 1,0(dt, dz) − J 0,1(dt, dz) )
+and (2) writes
+sup
+(δ0,1,δ1,0 )∈A
+E
+[ T∫
+0
+{∫
+z∈R∗ +
+(
+zδ0,1(t, z)Λ0,1(z, δ0,1(t, z)) + zδ1,0(t, z)Λ1,0(z, δ1,0(t, z)) ) m(dz) } dt
++
+T∫
+0
+µYtdt − γ 2
+T∫
+0
+(
+νt + ¯λ¯η2) Y 2 t dt
+]
+, (3)
+where ¯η =
+(∫
+η∈R η2ζ(dη) ) 1 2 .
+For a given γ, we associate with (3) a value function θ : [0, T ] × R × R+ → R and the following Hamilton-
+Jacobi-Bellman equation:
+
+
+
+0 = ∂tθ(t, y, ν) + µy (1 + ∂y θ(t, y, ν)) − γ 2 ( ν + ¯λ¯η2) y2 + 1 2 νy2∂2 yy θ(t, y, ν)
++k(¯ν − ν)∂ν θ(t, y, ν) + 1 2 νξ2∂2 νν θ(t, y, ν) + ρνyξ∂2 yν θ(t, y, ν)
++¯λ ∫ η∈R(θ(t, y(1 + η), ν) − θ(t, y, ν))ζ(dη)
++
+∫
+R∗ +
+(
+zλ0,1φ0,1(z)H 0,1
+(
+z, θ(t,y,ν)−θ(t,y−z,ν) z
+)
++ zλ1,0φ1,0(z)H 1,0
+(
+z, θ(t,y,ν)−θ(t,y+z,ν) z
+))
+m(dz),
+θ(T, y, ν) = 0,
+(4)
+6
+
+=== page 7 ===
+where
+H 0,1 : (z, p) ∈ R∗ + × R ↦→ sup
+δ
+f 0,1(z, δ)(δ − p) = sup
+δ
+1
+1 + ea0,1(z)+b0,1 (z)δ (δ − p)
+and
+H 1,0 : (z, p) ∈ R∗ + × R ↦→ sup
+δ
+f 1,0(z, δ)(δ − p) = sup
+δ
+1
+1 + ea1,0 (z)+b1,0 (z)δ (δ − p).
+Using the same ideas as in [20], we see that for i ⁄= j ∈ {0, 1}, the supremum in the deﬁnition of H i,j (z, p) is
+reached at a unique ¯δi,j (z, p) given by
+¯δi,j (z, p) = (f i,j )−1 ( z, −∂pH i,j (z, p) )
+where for all z, (f i,j )−1(z, .) denotes the inverse function of f i,j (z, .). Moreover, the markups that maximize
+our modiﬁed objective function are obtained in the following form
+δ0,1∗(t, z) = ¯δ0,1
+(
+z, θ(t, Yt−, νt) − θ(t, Yt− − z, νt) z ) (5)
+and
+δ1,0∗(t, z) = ¯δ1,0
+(
+z, θ(t, Yt−, νt) − θ(t, Yt− + z, νt) z ) . (6)
+3.2.2 Discussion and numerical methods
+Under Heston-Bates dynamics for the price, computing the optimal markups primarily involves solving the
+partial integro-diﬀerential equation (4) to derive the value function θ, which depends on time and two state
+variables: the spread to Hodl y and the instantaneous variance ν. Then, one can substitute the current value
+of y and an estimate of the current value of ν (which is not directly observable) into Eqs. (5) and (6) to
+determine the optimal markups.
+However, the value function θ cannot be determined in closed form and must instead be approximated numer-
+ically. This approximation can be achieved using a ﬁnite diﬀerence scheme on a rectangular grid, employing
+classical numerical methods such as operator splitting, discrete approximation of the integral terms, and an
+implicit scheme for the diﬀerential terms. It is therefore feasible to base a market making strategy on the
+numerical resolution of Eq. (4). However, when |ρ| is close to 1, the use of an isotropic 9-point stencil is
+recommended to handle the high correlation scenarios more eﬀectively.
+Another possibility consists in using a quadratic Hamiltonian approximation as suggested in [7] to reduce
+the dimensionality of the problem. We can indeed approximate the Hamiltonian functions H 0,1 and H 1,0 by
+quadratic functions:
+ˇH 0,1 : (z, p) ↦→ α0,1 0 (z) + α0,1 1 (z)p + 1 2 α0,1 2 (z)p2 and ˇH 1,0 : (z, p) ↦→ α1,0 0 (z) + α1,0 1 (z)p + 1 2 α1,0 2 (z)p2.
+A natural choice for the functions ˇH 0,1 and ˇH 1,0 derives from Taylor expansions around p = 0.
+We then denote by ˇθ the approximation of θ associated with the functions ˇH 0,1 and ˇH 1,0, i.e. ˇθ solves
+
+
+
+0 = ∂t ˇθ(t, y, ν) + µy ( 1 + ∂y ˇθ(t, y, ν) ) − γ 2 ( ν + ¯λ¯η2) y2 + 1 2 νy2∂2 yy ˇθ(t, y, ν)
++k(¯ν − ν)∂ν ˇθ(t, y, ν) + 1 2 νξ2∂2 νν ˇθ(t, y, ν) + ρνyξ∂2 yν ˇθ(t, y, ν)
++¯λ ∫ η∈R(ˇθ(t, y(1 + η), ν) − ˇθ(t, y, ν))ζ(dη)
++
+∫
+R∗ +
+(
+zλ0,1φ0,1(z) ˇH 0,1
+(
+z,
+ˇθ(t,y,ν)− ˇθ(t,y−z,ν)
+z
+)
++ zλ1,0φ1,0(z) ˇH 1,0
+(
+z,
+ˇθ(t,y,ν)− ˇθ(t,y+z,ν)
+z
+))
+m(dz),
+ˇθ(T, y, ν) = 0.
+(7)
+7
+
+=== page 8 ===
+The interest of this quadratic approximation is that Eq. (7) has a solution in the form of a quadratic polynomial
+in y, i.e. ˇθ(t, y, ν) = −A(t, ν)y2 − B(t, ν)y − C(t, ν), where (t, ν) ↦→ A(t, ν) ∈ R, (t, ν) ↦→ B(t, ν) ∈ R and
+(t, ν) ↦→ C(t, ν) ∈ R solve a system of PDEs. As the value of C is irrelevant for what follows, we only report
+here the equations for A and B:
+
+
+
+∂tA(t, ν) = 2A(t, ν)2
+∫
+R∗ +
+z
+(
+λ0,1φ0,1(z)α0,1 2 (z) + λ1,0φ1,0(z)α1,0 2 (z) ) m(dz) − (2µ + ν + ¯λ¯η2)A(t, ν)
+− (2ρνξ + k(¯ν − ν)) ∂ν A(t, ν) − 1 2 νξ2∂2 νν A(t, ν) − γ 2 ( ν + ¯λ¯η2) ,
+∂tB(t, ν) = µ (1 − B(t, ν)) − (ρνξ + k(¯ν − ν)) ∂ν B(t, ν) − 1 2 νξ2∂2 νν B(t, ν)
++2A(t, ν)
+∫
+R∗ +
+z
+(
+λ0,1φ0,1(z)α0,1 1 (z) − λ1,0φ1,0(z)α1,0 1 (z) ) m(dz)
+−2A(t, ν)2
+∫
+R∗ +
+z2
+(
+λ0,1φ0,1(z)α0,1 2 (z) − λ1,0φ1,0(z)α1,0 2 (z) ) m(dz)
++2A(t, ν)B(t, ν)
+∫
+R∗ +
+z
+(
+λ0,1φ0,1(z)α0,1 2 (z) + λ1,0φ1,0(z)α1,0 2 (z) ) m(dz),
+A(T, ν) = 0,
+B(T, ν) = 0.
+(8)
+The PDE system (8) can be solved numerically far more easily than Eq. (4). Indeed, the dimensionality
+of the problem has been reduced and there is no more cross derivatives terms, hence no more geometric
+problem related to the numerical grid. Furthermore, the system is triangular. One can ﬁrst solve numerically
+the equation for A which is a nonlinear parabolic PDE with one state variable whose only nonlinear term
+is of order 0. An implicit scheme is therefore perfectly suited to approximate A. Once A is approximated
+numerically, B can be approximated numerically very easily since it is the solution of a linear parabolic PDE
+with one state variable. Once we have A and B, approximations of the optimal markups can be computed by
+replacing θ by ˇθ in Eqs. (5) and (6). We thereby obtain
+ˇδ0,1∗(t, z) = ¯δ0,1
+(
+z, A(t, νt) (z − 2Yt−) − B(t, νt)
+)
+(9)
+and
+ˇδ1,0∗(t, z) = ¯δ1,0
+(
+z, A(t, νt) (z + 2Yt−) + B(t, νt)
+)
+. (10)
+3.3 A Stein-Stein volatility model with jumps
+3.3.1 Model, Hamilton-Jacobi-Bellman equation and optimal markups
+Stochastic volatility models were initially introduced in the 1990s as extensions of the Black-Scholes model,
+designed to capture the volatility smile or skew observed in option prices. The Heston model describes the
+dynamics of the instantaneous variance using a square-root (CIR) process, whereas the Stein-Stein model
+utilizes an Ornstein-Uhlenbeck process to model the instantaneous volatility. In the subsequent discussion,
+we explore an extension of the Stein-Stein model in two directions: (i) the extension à la Schöbel and Zhu
+[28], which permits any correlation coeﬃcient between the Brownian motions driving the price and volatility
+processes, and (ii) the addition of price jumps.
+Mathematically, the price process (St)t∈R+ has the following dynamics:
+{
+dSt = µStdt + σtStdW S t + St ∫ η∈R η ¯J(dt, dη),
+dσt = k(¯σ − σt)dt + ξdW σ t
+where:
+• µ ∈ R is a known deterministic drift;
+8
+
+=== page 9 ===
+• (σt)t∈R+ is the instantaneous volatility process with values in R;
+• ¯J is a marked point process with constant-in-time kernel ¯λζ(dη) where ¯λ is the rate of jumps and ζ the
+probability measure of jump sizes in relative value (assumed to be such that
+∫
+η∈R ηζ(dη) = 0);
+• k > 0 is the rate of mean reversion of the instantaneous volatility;
+• ξ > 0 measures the stochasticity of the instantaneous volatility process;
+• ¯σ > 0 is the long-term instantaneous volatility;
+•
+(
+W S t , W σ t ) t∈R+ is a 2-dimensional standard Brownian motion independent of ¯J with d⟨W S , W σ ⟩t = ρdt
+for ρ ∈ [−1, 1].
+Like in the Heston-Bates case, it is interesting in this framework to introduce Yt = (q1 t − q1 0 )St. We have indeed
+that (Yt, σt)t∈R+ is Markovian since
+dYt = µYtdt + σtYtdW S t + Yt
+∫
+η∈R
+η ¯J(dt, dη) +
+∫
+z∈R∗ +
+z
+(
+J 1,0(dt, dz) − J 0,1(dt, dz) )
+and (2) writes
+sup
+(δ0,1,δ1,0 )∈A
+E
+[ T∫
+0
+{∫
+z∈R∗ +
+(
+zδ0,1(t, z)Λ0,1(z, δ0,1(t, z)) + zδ1,0(t, z)Λ1,0(z, δ1,0(t, z)) ) m(dz) } dt
++
+T∫
+0
+µYtdt − γ 2
+T∫
+0
+(
+σ2 t + ¯λ¯η2) Y 2 t dt
+]
+, (11)
+where ¯η =
+(∫
+η∈R η2ζ(dη) ) 1 2 .
+For a given γ, we associate with (11) a value function θ : [0, T ] × R × R → R and the following Hamilton-
+Jacobi-Bellman equation:
+
+
+
+0 = ∂tθ(t, y, σ) + µy (1 + ∂y θ(t, y, σ)) − γ 2 ( σ2 + ¯λ¯η2) y2 + 1 2 σ2y2∂2 yy θ(t, y, σ)
++k(¯σ − σ)∂σ θ(t, y, σ) + 1 2 ξ2∂2 σσ θ(t, y, σ) + ρσyξ∂2 yσ θ(t, y, σ)
++¯λ ∫ η∈R(θ(t, y(1 + η), σ) − θ(t, y, σ))ζ(dη)
++
+∫
+R∗ +
+(
+zλ0,1φ0,1(z)H 0,1
+(
+z, θ(t,y,σ)−θ(t,y−z,σ) z
+)
++ zλ1,0φ1,0(z)H 1,0
+(
+z, θ(t,y,σ)−θ(t,y+z,σ) z
+))
+m(dz),
+θ(T, y, σ) = 0,
+(12)
+where H 0,1 and H 1,0 are deﬁned as above.
+Using the same ideas as in [20] and with the same notations as above, we ﬁnd that the markups that maximize
+our modiﬁed objective function are
+δ0,1∗(t, z) = ¯δ0,1
+(
+z, θ(t, Yt−, σt) − θ(t, Yt− − z, σt) z ) (13)
+and
+δ1,0∗(t, z) = ¯δ1,0
+(
+z, θ(t, Yt−, σt) − θ(t, Yt− + z, σt) z ) . (14)
+9
+
+=== page 10 ===
+3.3.2 Discussion and numerical methods
+Under Stein-Stein dynamics with jumps for the price, computing the optimal markups primarily involves solv-
+ing the partial integro-diﬀerential equation (12) to obtain the value function θ. The nature of this equation
+closely mirrors that of the Heston-Bates case, and the number of state variables remains the same, with the
+instantaneous volatility σ replacing the instantaneous variance ν. Subsequently, one can substitute the cur-
+rent value of y and an estimate of the current value of the instantaneous volatility σ (which is not directly
+observable) into Eqs. (13) and (14) to determine the optimal markups.
+As with the Heston-Bates model, θ cannot be found in closed form and must be approximated numerically. The
+considerations applicable to the Heston-Bates case are also relevant here. In particular, the quadratic Hamil-
+tonian approximation technique introduced in [7] is applicable: we obtain a simpler PDE when approximating
+the Hamiltonian functions H 0,1 and H 1,0 by the quadratic functions
+ˇH 0,1 : (z, p) ↦→ α0,1 0 (z) + α0,1 1 (z)p + 1 2 α0,1 2 (z)p2 and ˇH 1,0 : (z, p) ↦→ α1,0 0 (z) + α1,0 1 (z)p + 1 2 α1,0 2 (z)p2.
+Let us introduce ˇθ the approximation of θ associated with the functions ˇH 0,1 and ˇH 1,0. ˇθ then solves
+
+
+
+0 = ∂t ˇθ(t, y, σ) + µy ( 1 + ∂y ˇθ(t, y, σ) ) − γ 2 ( σ2 + 2¯λ¯η2) y2 + 1 2 σ2y2∂2 yy ˇθ(t, y, σ)
++k(¯σ − σ)∂σ ˇθ(t, y, σ) + 1 2 ξ2∂2 σσ ˇθ(t, y, σ) + ρσyξ∂2 yσ ˇθ(t, y, σ)
++¯λ ∫ η∈R(ˇθ(t, y(1 + η), ν) − ˇθ(t, y, ν))ζ(dη)
++
+∫
+R∗ +
+(
+zλ0,1φ0,1(z) ˇH 0,1
+(
+z,
+ˇθ(t,y,σ)− ˇθ(t,y−z,σ)
+z
+)
++ zλ1,0φ1,0(z) ˇH 1,0
+(
+z,
+ˇθ(t,y,σ)− ˇθ(t,y+z,σ)
+z
+))
+m(dz),
+ˇθ(T, y, σ) = 0,
+(15)
+As in the Heston-Bates case, Eq. (15) has a solution in the form of a polynomial of degree 2 in y: ˇθ(t, y, σ) =
+−A(t, σ)y2 − B(t, σ)y − C(t, σ), where (t, σ) ↦→ A(t, σ) ∈ R, (t, σ) ↦→ B(t, σ) ∈ R and (t, σ) ↦→ C(t, σ) ∈ R
+solve a system of PDEs. As the value of C is irrelevant for what follows, we only report here the equations for
+A and B:
+
+
+
+∂tA(t, σ) = 2A(t, σ)2
+∫
+R∗ +
+z
+(
+λ0,1φ0,1(z)α0,1 2 (z) + λ1,0φ1,0(z)α1,0 2 (z) ) m(dz) − (2µ + σ2 + ¯λ¯η2)A(t, σ)
+− (2ρσξ + k(¯σ − σ)) ∂σ A(t, σ) − 1 2 ξ2∂2 σσ A(t, σ) − γ 2 ( σ2 + ¯λ¯η2) ,
+∂tB(t, σ) = µ (1 − B(t, σ)) − (ρσξ + k(¯σ − σ)) ∂σ B(t, σ) − 1 2 ξ2∂2 σσ B(t, σ)
++2A(t, σ)
+∫
+R∗ +
+z
+(
+λ0,1φ0,1(z)α0,1 1 (z) − λ1,0φ1,0(z)α1,0 1 (z) ) m(dz)
+−2A(t, σ)2
+∫
+R∗ +
+z2
+(
+λ0,1φ0,1(z)α0,1 2 (z) − λ1,0φ1,0(z)α1,0 2 (z) ) m(dz)
++2A(t, σ)B(t, σ)
+∫
+R∗ +
+z
+(
+λ0,1φ0,1(z)α0,1 2 (z) + λ1,0φ1,0(z)α1,0 2 (z) ) m(dz),
+A(T, σ) = 0,
+B(T, σ) = 0.
+(16)
+The PDE system (16) can be approximated very easily using an implicit scheme. Once A and B are obtained,
+approximations of the optimal strategies can be computed by replacing θ by ˇθ in Eqs. (13) and (14). We
+thereby obtain
+ˇδ0,1∗(t, z) = ¯δ0,1
+(
+z, A(t, σt) (z − 2Yt−) − B(t, σt)
+)
+(17)
+and
+ˇδ1,0∗(t, z) = ¯δ1,0
+(
+z, A(t, σt) (z + 2Yt−) + B(t, σt)
+)
+. (18)
+10
+
+=== page 11 ===
+3.4 Beyond stochastic volatility models: the use of a simple Markovian Hawkes
+framework
+3.4.1 Model, Hamilton-Jacobi-Bellman equation and optimal markups
+Beyond stochastic volatility models, there exists a rich landscape of alternative frameworks for price dynamics,
+especially those emerging from the ﬁeld of market microstructure. One prominent category of these models
+extensively utilizes Hawkes processes to capture the self-exciting nature of market events and their inﬂuence on
+asset prices. These models provide a distinct perspective on price evolution in ﬁnancial markets and can more
+eﬀectively capture certain stylized facts, like time reversal asymmetries, compared to traditional stochastic
+volatility models (see [11]).
+In what follows, we propose one of the simplest pure jump models, which relies on Hawkes processes for the
+price dynamics. Mathematically, the dynamics of (St)t∈R+ writes as follows:7
+dSt = St
+∫
+η∈R
+η ¯J (dt, dη)
+where ¯J is a marked point process with dynamic kernel ¯λtζ(dη) with ζ the probability measure of jump sizes
+in relative value (assumed to be such that
+∫
+η∈R ηζ(dη) = 0) and (¯λt)t∈R+ following the dynamics8
+d¯λt = −β(¯λt − ¯λ∞)dt + βn
+∫
+η∈R
+¯J(dt, dη)
+with ¯λ0 higher than the long-term limit ¯λ∞ in the absence of jumps, β > 0 controlling the memory of the
+process and n ∈ (0, 1) corresponding to the percentage of price moves that are purely endogenous.
+As above, we introduce Yt = (q1 t − q1 0 )St and observe that the pair (Yt, ¯λt)t∈R+ is Markovian since
+dYt = Yt
+∫
+η∈R
+η ¯J(dt, dη) +
+∫
+z∈R∗ +
+z
+(
+J 1,0(dt, dz) − J 0,1(dt, dz) ) .
+and (2) writes therefore as
+sup
+(δ0,1,δ1,0 )∈A
+E
+[ T∫
+0
+{∫
+z∈R∗ +
+(
+zδ0,1(t, z)Λ0,1(z, δ0,1(t, z)) + zδ1,0(t, z)Λ1,0(z, δ1,0(t, z)) ) m(dz) } dt
+− γ 2
+T∫
+0
+¯λt ¯η2Y 2 t dt
+]
+, (19)
+where ¯η =
+(∫
+η∈R η2ζ(dη) ) 1 2 .
+For a given γ, we associate with (19) a value function θ : [0, T ] × R × R∗ + → R and the following Hamilton-
+Jacobi-Bellman equation:
+
+
+
+0 = ∂tθ(t, y, ¯λ) − γ 2 ¯λ¯η2y2 − β(¯λ − ¯λ∞)∂¯λθ(t, y, ¯λ) + ¯λ ∫ η∈R(θ(t, y(1 + η), ¯λ + βn) − θ(t, y, ¯λ))ζ(dη)
++
+∫
+R∗ +
+(
+zλ0,1φ0,1(z)H 0,1
+(
+z, θ(t,y,¯λ)−θ(t,y−z,¯λ) z ) + zλ1,0φ1,0(z)H 1,0H 1,0 ( z, θ(t,y,¯λ)−θ(t,y+z,¯λ) z )) m(dz),
+θ(T, y, λ) = 0,
+(20)
+where H 0,1 and H 1,0 are deﬁned as above.
+7In this model, we consider zero drift.
+8Power law kernels may be more realistic than exponential ones, but they do not lead to Markovian setups.
+11
+
+=== page 12 ===
+Using the same ideas as in [20] and with the same notations as above, we ﬁnd that the markups that maximize
+our modiﬁed objective function are
+δ0,1∗(t, z) = ¯δ0,1
+(
+z, θ(t, Yt−, ¯λt−) − θ(t, Yt− − z, ¯λt−) z ) (21)
+and
+δ1,0∗(t, z) = ¯δ1,0
+(
+z, θ(t, Yt−, ¯λt−) − θ(t, Yt− + z, ¯λt−) z ) . (22)
+3.4.2 Discussion and numerical methods
+Under the Hawkes dynamics speciﬁed for the price, computing the optimal markups primarily requires solving
+a partial integro-diﬀerential equation – here (20) – to derive the value function θ. This function depends on
+time and two state variables: the spread to Hodl y and the intensity ¯λ. Subsequently, one can substitute
+the current values of y and ¯λ into Eqs. (21) and (22) to determine the optimal markups. It is important
+to note that there are two diﬀerent approaches for determining the current value of ¯λ. The ﬁrst approach
+starts with an initial value ¯λ0 (whose inﬂuence diminishes over time) and treats ¯λ as an observable variable
+that evolves in real-time with market dynamics. The second approach uses statistical methods to estimate the
+current value of ¯λ based on recent historical price data. In this scenario, ¯λ is not treated as an observable vari-
+able, but rather similarly to how instantaneous volatility was treated in the case of stochastic volatility models.
+It is possible to approximate θ numerically and subsequently make a market making strategy rely on the
+resolution of Eq. (20). However, to reduce the dimensionality of equations by 1, one can again use the
+quadratic Hamiltonian approximation technique, although it leads to more complex equations than in the case
+of stochastic volatility models because of the nonlocal term in ¯λ. Let us indeed deﬁne ˇθ as the approximation
+of θ associated with the functions
+ˇH 0,1 : (z, p) ↦→ α0,1 0 (z) + α0,1 1 (z)p + 1 2 α0,1 2 (z)p2 and ˇH 1,0 : (z, p) ↦→ α1,0 0 (z) + α1,0 1 (z)p + 1 2 α1,0 2 (z)p2.
+ˇθ solves
+
+
+0 = ∂t ˇθ(t, y, ¯λ) − γ 2 ¯λ¯η2y2 − β(¯λ − ¯λ∞)∂¯λ ˇθ(t, y, ¯λ) + ¯λ ∫ η∈R(ˇθ(t, y(1 + η), ¯λ + βn) − ˇθ(t, y, ¯λ))ζ(dη)
++
+∫
+R∗ +
+(
+zλ0,1φ0,1(z) ˇH 0,1
+(
+z,
+ˇθ(t,y,¯λ)− ˇθ(t,y−z,¯λ)
+z
+)
++ zλ1,0φ1,0(z) ˇH 1,0
+(
+z,
+ˇθ(t,y,¯λ)− ˇθ(t,y+z,¯λ)
+z
+))
+m(dz),
+ˇθ(T, y, ¯λ) = 0.
+(23)
+As above, Eq. (23) has a solution of the form ˇθ(t, y, ¯λ) = −A(t, ¯λ)y2 − B(t, ¯λ)y − C(t, ¯λ), where (t, ¯λ) ↦→
+A(t, ¯λ) ∈ R, (t, ¯λ) ↦→ B(t, ¯λ) ∈ R and (t, ¯λ) ↦→ C(t, ¯λ) ∈ R solve a system of PDEs, but this time with nonlocal
+terms. As the value of C is irrelevant for what follows, we only report the equations for A and B:
+
+
+
+∂tA(t, ¯λ) = 2A(t, ¯λ)2
+∫
+R∗ +
+z
+(
+λ0,1φ0,1(z)α0,1 2 (z) + λ1,0φ1,0(z)α1,0 2 (z) ) m(dz) − γ 2 ¯λ¯η2
++β(¯λ − ¯λ∞)∂¯λA(t, ¯λ) − ¯λ ( A(t, ¯λ + βn)(1 + ¯η2) − A(t, ¯λ) ) ,
+∂tB(t, ¯λ) = β(¯λ − ¯λ∞)∂¯λB(t, ¯λ) − ¯λ ( B(t, ¯λ + βn) − B(t, ¯λ) )
++2A(t, ¯λ)
+∫
+R∗ +
+z
+(
+λ0,1φ0,1(z)α0,1 1 (z) − λ1,0φ1,0(z)α1,0 1 (z) ) m(dz)
+−2A(t, ¯λ)2
+∫
+R∗ +
+z2
+(
+λ0,1φ0,1(z)α0,1 2 (z) − λ1,0φ1,0(z)α1,0 2 (z) ) m(dz)
++2A(t, ¯λ)B(t, ¯λ)
+∫
+R∗ +
+z
+(
+λ0,1φ0,1(z)α0,1 2 (z) + λ1,0φ1,0(z)α1,0 2 (z) ) m(dz),
+A(T, ¯λ) = 0,
+B(T, ¯λ) = 0.
+(24)
+12
+
+=== page 13 ===
+The triangular system of PDEs with nonlocal terms (24) can be approximated using an implicit scheme. Once
+A and B are obtained, approximations of the optimal strategies can be computed by replacing θ by ˇθ in
+Eqs. (21) and (22). We thereby obtain
+ˇδ0,1∗(t, z) = ¯δ0,1
+(
+z, A(t, ¯λt−) (z − 2Yt−) − B(t, ¯λt−)
+)
+(25)
+and
+ˇδ1,0∗(t, z) = ¯δ1,0
+(
+z, A(t, ¯λt−) (z + 2Yt−) + B(t, ¯λt−)
+)
+. (26)
+3.5 Extension to quadratic Hawkes processes
+3.5.1 Model, Hamilton-Jacobi-Bellman equation and optimal markups
+Extensions of Hawkes processes have been proposed in the market microstructure literature to model intraday
+eﬀects such as the Zumbach eﬀect. In particular, [10] introduced what they termed Z-Hawkes, which are
+low-rank quadratic Hawkes processes. Inspired by this approach, we consider in this section that the price
+process (St)t∈R+ is a pure jump process,9 i.e.
+dSt = St
+∫
+η∈R
+η ¯J (dt, dη)
+where ¯J is a marked point process with dynamic kernel ¯λtζ(dη) where ζ is the probability measure of jump
+sizes in relative value (assumed to be such that
+∫
+η∈R ηζ(dη) = 0), but where the process (¯λt)t∈R+ is now deﬁned
+by
+¯λt = ¯λ∞ + ht + ξ2 t
+where
+dht = −κhtdt + κnH
+∫
+η∈R
+¯J(dt, dη),
+dξt = −ωξtdt + √2nZ ω ∫
+η∈R
+sign(η) ¯J (dt, dη)
+with κ, ω, nH , nZ > 0 and nH + nZ < 1.10
+Introducing as above Yt = (q1 t − q1 0 )St, we see that
+dYt = Yt
+∫
+η∈R
+η ¯J(dt, dη) +
+∫
+z∈R∗ +
+z
+(
+J 1,0(dt, dz) − J 0,1(dt, dz) ) .
+Subsequently, the triplet (Yt, ht, ξt)t∈R+ is Markovian.
+The stochastic optimal control problems (2) then write
+sup
+(δ0,1,δ1,0 )∈A
+E
+[ T∫
+0
+{∫
+z∈R∗ +
+(
+zδ0,1(t, z)Λ0,1(z, δ0,1(t, z)) + zδ1,0(t, z)Λ1,0(z, δ1,0(t, z)) ) m(dz) } dt
+− γ 2
+T∫
+0
+(¯λ∞ + ht + ξ2 t )¯η2Y 2 t dt
+]
+, (27)
+where ¯η =
+(∫
+η∈R η2ζ(dη) ) 1 2 .
+9Here again, we consider zero drift.
+10 This model is an extension of the model of Section 3.4 since we recover it when ξ0 = ω = 0.
+13
+
+=== page 14 ===
+For a given γ, we associate with (27) a value function θ : [0, T ] × R × R∗ + × R → R and the following
+Hamilton-Jacobi-Bellman equation:
+
+
+
+0 = ∂tθ(t, y, h, ξ) − γ 2 (λ∞ + h + ξ2)¯η2y2 − κh∂hθ(t, y, h, ξ) − ωξ∂ξ θ(t, y, h, ξ)
++(¯λ∞ + h + ξ2) (∫ η>0(θ(t, y(1 + η), h + κnH , ξ + √2nZ ω) − θ(t, y, λ))ζ(dη)
++
+∫
+η<0(θ(t, y(1 + η), h + κnH , ξ − √2nZ ω) − θ(t, y, λ))ζ(dη) )
++
+∫
+R∗ +
+(
+zλ0,1φ0,1(z)H 0,1
+(
+z, θ(t,y,λ)−θ(t,y−z,λ) z
+)
++ zλ1,0φ1,0(z)H 1,0
+(
+z, θ(t,y,λ)−θ(t,y+z,λ) z
+))
+m(dz),
+θ(T, y, λ) = 0,
+(28)
+where H 0,1 and H 1,0 are deﬁned as above.
+Using the same ideas as in [20] and with the same notations as above, we ﬁnd that the optimal markups are
+given by
+δ0,1∗(t, z) = ¯δ0,1
+(
+z, θ(t, Yt−, ht−, ξt−) − θ(t, Yt− − z, ht−, ξt−) z ) (29)
+and
+δ1,0∗(t, z) = ¯δ1,0
+(
+z, θ(t, Yt−, ht−, ξt−) − θ(t, Yt− + z, ht−, ξt−) z ) . (30)
+3.5.2 Discussion and numerical methods
+Under the speciﬁed dynamics for the price, computing the optimal markups largely entails solving the partial
+integro-diﬀerential equation (28) to determine the value function θ, which is dependent on time and three
+state variables: the spread to Hodl y, and the intensity drivers h and ξ.11 Due to its high dimensionality,
+this equation poses signiﬁcant challenges for numerical solutions. However, the dimensionality can be reduced
+by one using the quadratic Hamiltonian approximation technique, though this approach still results in more
+complex equations compared to those found in stochastic volatility models. Let us indeed deﬁne ˇθ as the
+approximation of θ associated with the functions
+ˇH 0,1 : (z, p) ↦→ α0,1 0 (z) + α0,1 1 (z)p + 1 2 α0,1 2 (z)p2 and ˇH 1,0 : (z, p) ↦→ α1,0 0 (z) + α1,0 1 (z)p + 1 2 α1,0 2 (z)p2.
+ˇθ then solves
+
+
+
+0 = ∂t ˇθ(t, y, h, ξ) − γ 2 (λ∞ + h + ξ2)¯η2y2 − κh∂h ˇθ(t, y, h, ξ) − ωξ∂ξ ˇθ(t, y, h, ξ)
++(¯λ∞ + h + ξ2) (∫ η>0(ˇθ(t, y(1 + η), h + κnH , ξ + √2nZ ω) − ˇθ(t, y, λ))ζ(dη)
++ ∫ η<0(ˇθ(t, y(1 + η), h + κnH , ξ − √2nZ ω) − ˇθ(t, y, λ))ζ(dη) )
++
+∫
+R∗ +
+(
+zλ0,1φ0,1(z) ˇH 0,1
+(
+z,
+ˇθ(t,y,h,ξ)− ˇθ(t,y−z,h,ξ)
+z
+)
++ zλ1,0φ1,0(z) ˇH 1,0
+(
+z,
+ˇθ(t,y,h,ξ)− ˇθ(t,y+z,h,ξ)
+z
+))
+m(dz),
+ˇθ(T, y, h, ξ) = 0.
+(31)
+As above, Eq. (31) has a quadratic solution of the form ˇθ(t, y, h, ξ) = −A(t, h, ξ)y2 − B(t, h, ξ)y − C(t, h, ξ),
+where (t, h, ξ) ↦→ A(t, h, ξ) ∈ R, (t, h, ξ) ↦→ B(t, h, ξ) ∈ R and (t, h, ξ) ↦→ C(t, h, ξ) ∈ R solve a system of PDEs
+with nonlocal terms. As the value of C is irrelevant for what follows, we only report the equations for A and B:
+11 Similar to the intensity in the classical Hawkes model, h and ξ can be regarded as observable variables.
+14
+
+=== page 15 ===
+
+
+
+∂tA(t, h, ξ) = 2A(t, h, ξ)2
+∫
+R∗ +
+z
+(
+λ0,1φ0,1(z)α0,1 2 (z) + λ1,0φ1,0(z)α1,0 2 (z) ) m(dz) − γ 2 (λ∞ + h + ξ2)¯η2
++κh∂hA(t, h, ξ) + ωξ∂ξ A(t, h, ξ)
+−(λ∞ + h + ξ2) ((∫ η>0(1 + η)2ζ(dη) ) A(t, h + κnH , ξ + √2nZ ω)
++
+(∫
+η<0(1 + η)2ζ(dη) ) A(t, h + κnH , ξ − √2nZ ω) − A(t, h, ξ) ) ,
+∂tB(t, h, ξ) = κh∂hB(t, h, ξ) + ωξ∂ξ B(t, h, ξ)
+−(λ∞ + h + ξ2) ((∫ η>0(1 + η)ζ(dη) ) B(t, h + κnH , ξ + √2nZ ω)
++
+(∫
+η<0(1 + η)ζ(dη)
+)
+B(t, h + κnH , ξ − √2nZ ω) − B(t, h, ξ) )
++2A(t, h, ξ)
+∫
+R∗ +
+z
+(
+λ0,1φ0,1(z)α0,1 1 (z) − λ1,0φ1,0(z)α1,0 1 (z) ) m(dz)
+−2A(t, h, ξ)2
+∫
+R∗ +
+z2
+(
+λ0,1φ0,1(z)α0,1 2 (z) − λ1,0φ1,0(z)α1,0 2 (z) ) m(dz)
++2A(t, h, ξ)B(t, h, ξ)
+∫
+R∗ +
+z
+(
+λ0,1φ0,1(z)α0,1 2 (z) + λ1,0φ1,0(z)α1,0 2 (z) ) m(dz),
+A(T, h, ξ) = B(T, h, ξ) = 0.
+(32)
+The triangular system of PDEs with nonlocal terms (32) can be approximated using an implicit scheme. Once
+A and B are obtained, approximations of the optimal strategies can be computed by replacing θ by ˇθ in Eqs.
+(29) and (30). We thereby obtain
+ˇδ0,1∗(t, z) = ¯δ0,1
+(
+z, A(t, ht−, ξt−) (z − 2Yt−) − B(t, ht−, ξt−)
+)
+(33)
+and
+ˇδ1,0∗(t, z) = ¯δ1,0
+(
+z, A(t, ht−, ξt−) (z + 2Yt−) + B(t, ht−, ξt−)
+)
+. (34)
+3.6 Conclusion on advanced price dynamics models
+In this section, we have addressed two stochastic volatility models from the derivatives pricing literature and
+two Hawkes-based models from the market microstructure literature. Utilizing these models to compute opti-
+mal quotes for a price-aware automated market maker (AMM) requires solving a partial diﬀerential equation
+(PDE). Once the quadratic Hamiltonian approximation technique is applied, for the ﬁrst three models, these
+PDEs involve time and one spatial dimension, enabling the use of fast numerical methods. However, this task
+becomes more complex with models such as the quadratic Hawkes model, which presents greater computa-
+tional challenges to be used in practice.
+Like all automated market makers, price-aware AMMs can oﬀer swaps across a vast spectrum of cryptocur-
+rencies. The selection of an appropriate model for determining price dynamics is crucial and depends on the
+speciﬁc cryptocurrency pair involved. For instance, pools involving a stablecoin and a major cryptocurrency
+might utilize a diﬀerent model than pools for two independent cryptocurrencies, or pairs of cryptocurrencies
+that are highly correlated due to shared risk factors.
+For each cryptocurrency pair, there is a signiﬁcant trade-oﬀ between the simplicity of the model and its capacity
+to realistically capture market dynamics. This trade-oﬀ not only inﬂuences the computational eﬃciency of
+the AMM but also aﬀects its eﬀectiveness in accurately reﬂecting the inherent market dynamics of each asset
+pair, and thus its ability to manage risk appropriately.
+15
+
+=== page 16 ===
+4 Eﬃcient market making strategies with varying liquidity
+4.1 Introduction
+In most academic papers on market making, liquidity at the bid and the oﬀer is assumed to be constant.
+However, this simpliﬁcation can be detrimental when ﬂuctuations in liquidity are signiﬁcant. In reality, liquid-
+ity experiences ﬂuctuations: there are periods of high liquidity as well as periods of low liquidity. Moreover,
+there may be times when buyers signiﬁcantly outnumber sellers, or vice versa, underscoring the fundamental
+role of market makers. Despite the practical relevance of these variations, they have largely been overlooked
+in the existing literature on market making. Notable exceptions include the MRR model discussed in [11],
+which explores autocorrelation in the signs of trades, and the more recent paper [9], which employs a Markov-
+modulated Poisson process to capture these dynamics.
+Our objective in this section is twofold. First, we examine the use of Hawkes processes for modeling liquidity
+dynamics – an approach that might seem natural to many scholars and practitioners. However, this method
+leads to equations of high dimensionality, thereby making the use of Hawkes processes for modeling liquidity
+impractical for the stochastic optimal control problems at hand. Second, we suggest that Markov-modulated
+Poisson processes represent a compelling alternative, capable of capturing the stochastic dynamics of liquidity
+while avoiding the dimensionality issues that hamper models based on Hawkes processes.12
+4.2 Hawkes models for liquidity and the curse of dimensionality
+4.2.1 Model, Hamilton-Jacobi-Bellman equation and optimal markups
+Throughout Section 3, we assumed λ0,1 t and λ1,0 t were constant. Instead, it is natural to assume that (λ0,1 t )t∈R+
+and (λ1,0 t )t∈R+ are stochastic processes impacted by trades themselves. In a typical Hawkes setting,13 we can
+assume that {
+dλ0,1 t = −κ(λ0,1 t − λ0,1 ∞ )dt + κm ∫ z∈R J 0,1(dt, dz)
+dλ1,0 t = −κ(λ1,0 t − λ1,0 ∞ )dt + κm ∫ z∈R J 1,0(dt, dz)
+with κ > 0 and 0 < m < 1.
+Assuming that the price process is a geometric Brownian motion with drift,14 i.e. dSt = µStdt + σStdWt,
+Yt = (q1 t − q1 0 )St has the dynamics
+dYt = µYtdt + σYtdWt +
+∫
+z∈R∗ +
+z
+(
+J 1,0(dt, dz) − J 0,1(dt, dz) )
+and we see therefore that (Yt, λ0,1 t , λ1,0 t )t∈R+ is Markovian.
+The stochastic optimal control problems (2) write therefore
+sup
+(δ0,1 ,δ1,0)∈A
+E
+[ T∫
+0
+{∫
+z∈R∗ +
+(
+zδ0,1(t, z)Λ0,1(t, z, δ0,1(t, z)) + zδ1,0(t, z)Λ1,0(t, z, δ1,0(t, z)) ) m(dz) } dt
++
+T∫
+0
+µYtdt − γ 2 σ2
+T∫
+0
+Y 2 t dt
+]
+. (35)
+For a given γ, we associate with (35) a value function θ : [0, T ] × R × R∗ + × R∗ + → R and the following
+12 Deterministic ﬂuctuations of liquidity, such as those linked to intraday patterns, can be incorporated without increasing
+modeling complexity.
+13 More complex settings can be considered but they all suﬀer from the curse of dimensionality.
+14 The extensions of Section 3 can of course be considered but we go back to the simplest price model for the sake of parsimony.
+16
+
+=== page 17 ===
+Hamilton-Jacobi-Bellman equation:
+
+
+
+0 = ∂tθ(t, y, λ0,1, λ1,0) + µy ( 1 + ∂y θ(t, y, λ0,1, λ1,0) ) − γ 2 σ2y2 + 1 2 σ2y2∂2 yy θ(t, y, λ0,1, λ1,0)
+−κ(λ0,1 − λ0,1 ∞ )∂λ0,1 θ(t, y, λ0,1, λ1,0) − κ(λ1,0 − λ1,0 ∞ )∂λ1,0 θ(t, y, λ0,1, λ1,0)
++
+∫
+R∗ +
+(
+zλ0,1φ0,1(z)H 0,1
+(
+z, θ(t,y,λ0,1,λ1,0 )−θ(t,y−z,λ0,1+κm,λ1,0) z )
++zλ1,0φ1,0(z)H 1,0
+(
+z, θ(t,y,λ0,1,λ1,0 )−θ(t,y+z,λ0,1,λ1,0 +κm) z )) m(dz),
+θ(T, y, λ0,1, λ1,0) = 0,
+(36)
+where H 0,1 and H 1,0 are deﬁned as in Section 3.
+Using the same ideas as in [20] and with the same notations as above, we ﬁnd that the markups that maximize
+our modiﬁed objective function are
+δ0,1∗(t, z) = ¯δ0,1
+(
+z, θ(t, Yt−, λ0,1 t− , λ1,0 t− ) − θ(t, Yt− − z, λ0,1 t− , λ1,0 t− ) z ) (37)
+and
+δ1,0∗(t, z) = ¯δ1,0
+(
+z, θ(t, Yt−, λ0,1 t− , λ1,0 t− ) − θ(t, Yt− + z, λ0,1 t− , λ1,0 t− ) z ) . (38)
+4.2.2 Curse of dimensionality
+The principal challenge with the above model is its dimensionality. In the basic geometric Brownian setting for
+prices, solving the optimal stochastic control problems (35) necessitates a value function with time and three
+state variables. Incorporating the models from Section 3 would increase the number of state variables to four
+or even ﬁve. Relying on such high-dimensional equations for a market making strategy is highly problematic.
+Moreover, the situation becomes even more critical as the quadratic Hamiltonian approximation technique, of-
+ten utilized in Section 3, does not provide a means to reduce this dimensionality. This limitation arises because
+assuming the value function to be quadratic in y does not result in linear terms in y when computing ﬁnite dif-
+ferences in the Hamiltonian terms, due to simultaneous jumps in both the y variable and the intensity variables.
+While liquidity models based on Hawkes processes may oﬀer a good statistical representation, they prove
+inadequate for our stochastic optimal control problems. The next section presents an alternative approach that
+eﬀectively sidesteps the complications associated with Hawkes processes, thereby providing a more tractable
+solution for incorporating varying liquidity into our quoting strategies.
+4.3 Markov-modulated Poisson processes as a reasonable alternative
+4.3.1 Model, Hamilton-Jacobi-Bellman equation and optimal markups
+The main challenge with the liquidity model based on Hawkes processes is the simultaneity of trades and
+changes in intensities. To disentangle these two aspects and thus circumvent the curse of dimensionality, we can
+adopt a framework involving Markov-modulated Poisson processes, as proposed in [9]. This approach implies
+that the process (λ0,1 t , λ1,0 t )t∈R+ is a continuous-time Markov chain, taking values in a ﬁnite set {λ1, . . . , λp}2
+– where p is small, typically 2 or 3, to represent low, high, and possibly medium levels of liquidity. The
+transitions between these states are governed by a rate matrix Q ∈ Mp2 .15
+15 In what follows, we shall order the states in lexicographic order, i.e.
+(λ1 , λ1 ), . . . , (λ1 , λp ), . . . , (λp , λ1 ), . . . , (λp , λp ).
+17
+
+=== page 18 ===
+Assuming that the price process is a geometric Brownian motion with drift, i.e. dSt = µStdt + σStdWt,
+Yt = (q1 t − q1 0 )St has the dynamics
+dYt = µYtdt + σYtdWt +
+∫
+z∈R∗ +
+z
+(
+J 1,0(dt, dz) − J 0,1(dt, dz) )
+and we see therefore that (Yt, λ0,1 t , λ1,0 t )t∈R+ is Markovian as above.
+The stochastic optimal control problems (2) writes (35) as above but the nature of the value function and
+the Hamilton-Jacobi-Bellman are diﬀerent. For a given γ, the value function is a function θ : [0, T ] × R ×
+{λ1, . . . , λp} × {λ1, . . . , λp} → R and the associated Hamilton-Jacobi-Bellman equation is
+
+
+
+0 = ∂tθ(t, y, λj0,1 , λj1,0 ) + µy ( 1 + ∂y θ(t, y, λj0,1 , λj1,0 ) ) − γ 2 σ2y2 + 1 2 σ2y2∂2 yyθ(t, y, λj0,1 , λj1,0 )
++ ∑
+1≤k0,1 ,k1,0 ≤p
+Q(j0,1 −1)p+j1,0 ,(k0,1 −1)p+k1,0 θ(t, y, λk0,1 , λk1,0 )
++
+∫
+R∗ +
+(
+zλj0,1 φ0,1(z)H 0,1
+(
+z,
+θ(t,y,λj0,1 ,λj1,0 )−θ(t,y−z,λj0,1 ,λj1,0 )
+z
+)
++zλj1,0 φ1,0(z)H 1,0
+(
+z,
+θ(t,y,λj0,1 ,λj1,0 )−θ(t,y+z,λj0,1 ,λj1,0 )
+z
+))
+m(dz),
+θ(T, y, λj0,1 , λj1,0 ) = 0,
+(39)
+for all λj0,1 , λj1,0 ∈ {λ1, . . . , λp}, where H 0,1 and H 1,0 are deﬁned as in Section 3.
+Using the same ideas as in [20] and with the same notations as above, we ﬁnd that the markups that maximize
+our modiﬁed objective function are
+δ0,1∗(t, z) = ¯δ0,1
+(
+z, θ(t, Yt−, λ0,1 t− , λ1,0 t− ) − θ(t, Yt− − z, λ0,1 t− , λ1,0 t− ) z ) (40)
+and
+δ1,0∗(t, z) = ¯δ1,0
+(
+z, θ(t, Yt−, λ0,1 t− , λ1,0 t− ) − θ(t, Yt− + z, λ0,1 t− , λ1,0 t− ) z ) . (41)
+4.3.2 Discussion and numerical methods
+Under the above dynamics for the intensities, computing the optimal markups primarily involves solving the
+partial integro-diﬀerential equations (39) to derive the value function θ, which depends on time and three state
+variables: the spread to Hodl y, and the two intensities λ0,1 and λ1,0. While this setup may appear similar
+to the liquidity model based on Hawkes processes, here the signiﬁcant diﬀerence is that the two intensities
+take a very limited number of values, p each. Notably, there are no partial derivative terms with respect to
+the intensities. Consequently, Eq. (39) should be regarded as a system of partial integro-diﬀerential equations
+in two dimensions: time and the spread to Hodl (y). This simpliﬁcation eﬀectively removes the issue of high
+dimensionality, and one could even consider extending the price model using those discussed in Section 3.
+Once θ is computed using for instance operator splitting and an implicit scheme on a set of p2 rectangular
+grids, one can plug the current value of y and an estimate16 of the current value of (λ0,1, λ1,0) in Eqs. (37)
+and (38) to get the optimal markups.
+Interestingly, the quadratic Hamiltonian approximation technique works very well here and it leads to a system
+of ODEs when prices are log-normal (we would obtain PDEs with the price models of Section 3). Let us indeed
+deﬁne ˇθ as the approximation of θ associated with the functions
+ˇH 0,1 : p ↦→ α0,1 0 + α0,1 1 p + 1 2 α0,1 2 p2 and ˇH 1,0 : p ↦→ α1,0 0 + α1,0 1 p + 1 2 α1,0 2 p2.
+16 See [9] for estimation techniques.
+18
+
+=== page 19 ===
+ˇθ solves for all λj0,1 , λj1,0 ∈ {λ1, . . . , λp}
+
+
+
+0 = ∂t ˇθ(t, y, λj0,1 , λj1,0 ) + µy ( 1 + ∂y ˇθ(t, y, λj0,1 , λj1,0 ) ) − γ 2 σ2y2 + 1 2 σ2y2∂2 yy ˇθ(t, y, λj0,1 , λj1,0 )
++ ∑
+1≤k0,1 ,k1,0 ≤p
+Q(j0,1 −1)p+j1,0 ,(k0,1 −1)p+k1,0 ˇθ(t, y, λk0,1 , λk1,0 )
++
+∫
+R∗ +
+(
+zλj0,1 φ0,1(z) ˇH 0,1
+(
+z,
+ˇθ(t,y,λj0,1 ,λj1,0 )− ˇθ(t,y−z,λj0,1 ,λj1,0 )
+z
+)
++zλj1,0 φ1,0(z) ˇH 1,0
+(
+z,
+ˇθ(t,y,λj0,1 ,λj1,0 )− ˇθ(t,y+z,λj0,1 ,λj1,0 )
+z
+))
+m(dz),
+ˇθ(T, y, λj0,1 , λj1,0 ) = 0.
+(42)
+Eq. (42) has a solution of the form ˇθ(t, y, λj0,1 , λj1,0 ) = −A(t, λj0,1 , λj1,0 )y2−B(t, λj0,1 , λj1,0 )y−C(t, λj0,1 , λj1,0 ),
+where (t, λj0,1 , λj1,0 ) ↦→ A(t, λj0,1 , λj1,0 ) ∈ R, (t, λj0,1 , λj1,0 ) ↦→ B(t, λj0,1 , λj1,0 ) ∈ R and (t, λj0,1 , λj1,0 ) ↦→
+C(t, λj0,1 , λj1,0 ) ∈ R solve a system of ODEs. As the value of C is irrelevant for what follows, we only report
+the equations for A and B:
+
+
+
+∂tA(t, λj0,1 , λj1,0 ) = 2A(t, λj0,1 , λj1,0 )2
+∫
+R∗ +
+z
+(
+λj0,1 φ0,1(z)α0,1 2 (z) + λj1,0 φ1,0(z)α1,0 2 (z) ) m(dz) − γ 2 σ2
+− ∑
+1≤k0,1 ,k1,0 ≤p
+Q(j0,1 −1)p+j1,0 ,(k0,1 −1)p+k1,0 A(t, λk0,1 , λk1,0 ),
+∂tB(t, λj0,1 , λj1,0 ) = − ∑
+1≤k0,1 ,k1,0 ≤p
+Q(j0,1 −1)p+j1,0 ,(k0,1 −1)p+k1,0 B(t, λk0,1 , λk1,0 )
++2A(t, λj0,1 , λj1,0 )
+∫
+R∗ +
+z
+(
+λj0,1 φ0,1(z)α0,1 1 (z) − λj1,0 φ1,0(z)α1,0 1 (z) ) m(dz)
+−2A(t, λj0,1 , λj1,0 )2
+∫
+R∗ +
+z2
+(
+λj0,1 φ0,1(z)α0,1 2 (z) − λj1,0 φ1,0(z)α1,0 2 (z) ) m(dz)
++2A(t, λj0,1 , λj1,0 )B(t, λj0,1 , λj1,0 )
+×
+∫
+R∗ +
+z
+(
+λj0,1 φ0,1(z)α0,1 2 (z) + λj1,0 φ1,0(z)α1,0 2 (z) ) m(dz),
+A(T, λj0,1 , λj1,0 ) = 0,
+B(T, λj0,1 , λj1,0 ) = 0,
+(43)
+for all λj0,1 , λj1,0 ∈ {λ1, . . . , λp}.
+The system of ODEs (43) can be solved straightforwardly. Once A and B are obtained, approximations of the
+optimal strategies can be computed by replacing θ by ˇθ in Eqs. (40) and (41). We thereby obtain
+ˇδ0,1∗(t, z) = ¯δ0,1
+(
+z, A(t, λ0,1 t− , λ1,0 t− ) (z − 2Yt−) − B(t, λ0,1 t− , λ1,0 t− ) ) (44)
+and
+ˇδ1,0∗(t, z) = ¯δ1,0
+(
+z, A(t, λ0,1 t− , λ1,0 t− ) (z + 2Yt−) + B(t, λ0,1 t− , λ1,0 t− ) ) . (45)
+Conclusion
+In this paper, we introduced a comprehensive suite of models tailored for price-aware automated market makers
+designed to optimize their quoting strategies. Our exploration spanned a variety of advanced price dynamics,
+including stochastic volatility, price jumps, and microstructural models based on Hawkes processes. However,
+the adoption of these sophisticated models brings challenges, particularly in terms of higher computational
+costs, which must be considered as they can restrict practical application. Additionally, we addressed issues
+19
+
+=== page 20 ===
+related to liquidity modeling, speciﬁcally the challenges associated with the use of Hawkes processes and pro-
+posed a viable alternative through Markov-modulated Poisson processes.
+The selection of an appropriate model, whether for prices or liquidity dynamics, depends on the speciﬁc cryp-
+tocurrency pair involved and ultimately lies in the hands of the developers of these AMMs. They must balance
+the beneﬁts of detailed, complex modeling against computational eﬃciency and the operational constraints
+of their systems. The analyses presented in this paper should illuminate the path forward for the industry,
+guiding the integration of these advanced models into practical, real-world applications.
+Acknowledgement
+The authors wish to express their gratitude to the management of Swaap Labs for their support throughout
+the research process. They presented their work at several conferences and seminars, beneﬁting greatly from
+the audiences’ insightful remarks. Special thanks are also extended to Álvaro Cartea and Fayçal Drissi for
+their valuable comments on a previous version of the manuscript.
+Statement on funding
+The research carried out for this paper beneﬁted from the support of the Research Program “Decentralized
+Finance and Automated Market Makers”, a Research Program under the aegis of Institut Europlace de Finance,
+in partnership with Swaap Labs. David Bouba and Julien Guilbert are both members of the Swaap Labs team
+which is an actor of the DeFi industry.
+Statement on data availability
+No data involved in this study.
+References
+[1] Marco Avellaneda and Sasha Stoikov. High-frequency trading in a limit order book. Quantitative Finance,
+8(3):217–224, 2008.
+[2] Alexander Barzykin, Philippe Bergault, and Olivier Guéant. Algorithmic market making in dealer markets
+with hedging and market impact. Mathematical Finance, 33(1):41–79, 2023.
+[3] Alexander Barzykin, Philippe Bergault, and Olivier Guéant. Dealing with multi-currency inventory risk
+in FX cash markets. Risk Magazine, March 2023.
+[4] Alexander Barzykin, Philippe Bergault, and Olivier Guéant. Market-making by a foreign exchange dealer.
+Risk Magazine, September 2022.
+[5] David S Bates. Jumps and stochastic volatility: Exchange rate processes implicit in deutsche mark
+options. The Review of Financial Studies, 9(1):69–107, 1996.
+[6] Philippe Bergault, Louis Bertucci, David Bouba, and Olivier Guéant. Automated market makers: Mean-
+variance analysis of LPs payoﬀs and design of pricing functions. Digital Finance, 2023.
+[7] Philippe Bergault, David Evangelista, Olivier Guéant, and Douglas Vieira. Closed-form approximations
+in multi-asset market making. Applied Mathematical Finance, 28(2):101–142, 2021.
+[8] Philippe Bergault and Olivier Guéant. Size matters for OTC market makers: general results and dimen-
+sionality reduction techniques. Mathematical Finance, 31(1):279–322, 2021.
+[9] Philippe Bergault and Olivier Guéant. Modeling liquidity in corporate bond markets: applications to
+price adjustments. arXiv preprint arXiv:2309.04216, 2023.
+20
+
+=== page 21 ===
+[10] Pierre Blanc, Jonathan Donier, and J-P Bouchaud. Quadratic Hawkes processes for ﬁnancial prices.
+Quantitative Finance, 17(2):171–188, 2017.
+[11] Jean-Philippe Bouchaud, Julius Bonart, Jonathan Donier, and Martin Gould. Trades, quotes and prices:
+ﬁnancial markets under the microscope. Cambridge University Press, 2018.
+[12] Álvaro Cartea, Ryan Donnelly, and Sebastian Jaimungal. Algorithmic trading with model uncertainty.
+SIAM Journal on Financial Mathematics, 8(1):635–671, 2017.
+[13] Álvaro Cartea, Fayçal Drissi, and Marcello Monga. Predictable losses of liquidity provision in constant
+function markets and concentrated liquidity markets. Applied Mathematical Finance, 30(2):69–93, 2023.
+[14] Álvaro Cartea, Sebastian Jaimungal, and José Penalva. Algorithmic and high-frequency trading. Cam-
+bridge University Press, 2015.
+[15] Álvaro Cartea, Sebastian Jaimungal, and Jason Ricci. Buy low, sell high: A high frequency trading
+perspective. SIAM Journal on Financial Mathematics, 5(1):415–444, 2014.
+[16] Thomas E Copeland and Dan Galai. Information eﬀects on the bid-ask spread. The Journal of Finance,
+38(5):1457–1469, 1983.
+[17] Fayçal Drissi. Solvability of diﬀerential Riccati equations and applications to algorithmic trading with
+signals. Applied Mathematical Finance, 29(6):457–493, 2022.
+[18] Lawrence R Glosten and Paul R Milgrom. Bid, ask and transaction prices in a specialist market with
+heterogeneously informed traders. Journal of Financial Economics, 14(1):71–100, 1985.
+[19] Olivier Guéant. The Financial Mathematics of Market Liquidity: From optimal execution to market
+making, volume 33. CRC Press, 2016.
+[20] Olivier Guéant. Optimal market making. Applied Mathematical Finance, 24(2):112–154, 2017.
+[21] Olivier Guéant, Charles-Albert Lehalle, and Joaquin Fernandez-Tapia. Dealing with the inventory risk:
+a solution to the market making problem. Mathematics and Financial Economics, 7:477–507, 2013.
+[22] Olivier Guéant and Iuliia Manziuk. Deep reinforcement learning for market making in corporate bonds:
+beating the curse of dimensionality. Applied Mathematical Finance, 26(5):387–452, 2019.
+[23] Thomas Ho and Hans R Stoll. Optimal dealer pricing under transactions and return uncertainty. Journal
+of Financial Economics, 9(1):47–73, 1981.
+[24] Thomas Ho and Hans R Stoll. The dynamics of dealer markets under competition. The Journal of
+Finance, 38(4):1053–1074, 1983.
+[25] Paul Jusselin. Optimal market making with persistent order ﬂow. SIAM Journal on Financial Mathe-
+matics, 12(3):1150–1200, 2021.
+[26] Jason Milionis, Ciamac C Moallemi, Tim Roughgarden, and Anthony Lee Zhang. Automated market
+making and loss-versus-rebalancing. arXiv preprint arXiv:2208.06046, 2022.
+[27] Mathieu Rosenbaum and Jianfei Zhang. Multi-asset market making under the quadratic rough heston.
+arXiv preprint arXiv:2212.10164, 2022.
+[28] Rainer Schöbel and Jianwei Zhu. Stochastic volatility with an Ornstein-Uhlenbeck process: an extension.
+Review of Finance, 3(1):23–46, 1999.
+[29] Elias M Stein and Jeremy C Stein. Stock price distributions with stochastic volatility: an analytic
+approach. The Review of Financial Studies, 4(4):727–752, 1991.
+21

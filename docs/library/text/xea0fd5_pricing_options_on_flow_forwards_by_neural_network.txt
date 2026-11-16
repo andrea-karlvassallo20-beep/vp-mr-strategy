@@ -1,0 +1,1230 @@
+=== page 1 ===
+PRICING OPTIONS ON FLOW FORWARDS BY NEURAL NETWORKS
+IN HILBERT SPACE
+FRED ESPEN BENTH, NILS DETERING, LUCA GALIMBERTI
+Abstract. We propose a new methodology for pricing options on ﬂow forwards by
+applying inﬁnite-dimensional neural networks. We recast the pricing problem as an
+optimization problem in a Hilbert space of real-valued function on the positive real line,
+which is the state space for the term structure dynamics. This optimization problem
+is solved by facilitating a novel feedforward neural network architecture designed for
+approximating continuous functions on the state space. The proposed neural net is built
+upon the basis of the Hilbert space. We provide an extensive case study that shows
+excellent numerical eﬃciency, with superior performance over that of a classical neural
+net trained on sampling the term structure curves.
+1. Introduction
+In commodity markets, options are typically written on forward and futures contracts
+(see e.g. Geman [20]). In some markets, like for example electricity and gas, as well as
+freight and weather markets on temperature and wind, the forwards deliver the underlying
+commodity or service over a contracted delivery period, and not at a speciﬁed delivery time
+in the future (see e.g. Benth, ˇSaltyt˙e Benth and Koekebakker [13]). Such forwards are
+sometimes referred to as ﬂow forwards. Also, futures contracts on the Secured Overnight
+Financing Rate (SOFR) fall into this class of ﬂow forwards, as they are written on the
+average of the underlying SOFR over contracted periods of time (see Skov and Skovmand
+[27]).
+There is a large literature on neural networks and ﬁnancial derivatives, mostly focusing
+on approximating option prices. We refer to the recent survey by Ruf and Wang [26] for
+an extensive historical account of the various papers and their results and methodology.
+As is well-known in mathematical ﬁnance, option prices can be re-cast as solutions of par-
+tial diﬀerential equations based on Feynman-Kac formulae for diﬀusion processes (see e.g.,
+Karatzas and Shreve [24] and Bj¨ork [14]). This connection has been utilised in, say, Beck
+et al. [3, 4], Han, Jentzen and E [22] and Hutzenthaler et al. [23] in studying deep neural
+network approximations. Gonon and Schwab [21] have in a recent paper extended this the-
+ory to a study of expression rates for deep neural network approximations of option prices
+on L´evy-based asset prices. In all these papers, the main argument for introducing deep
+neural networks is to overcome the curse of dimensionality. Thus, deep neural networks can
+be applied to price options on a high-dimensional underlying, like basket options, say.
+In this paper we bring this to the ”ultimate” high-dimensional case, considering deep
+neural networks approximating option prices on inﬁnite-dimensional underlyings. Indeed,
+option prices on ﬂow forwards are in general functions of functions, as the underlying will be
+a curve (i.e., the term structure) rather than a vector of points (i.e., prices of the underlying
+assets). We propose to approximate this non-linear option price functional by a neural
+network in Hilbert space.
+Facilitating neural network in the context of ﬂow forwards has ﬁrst been proposed in
+Benth, Detering and Lavagnini [7] where a classical neural network has been used for cali-
+brating parameters. Motivated by the approach of Beck et al. [3], we generalise the option
+Date: February 24, 2022.
+Fred Espen Benth acknowledges support from SPATUS, a Thematic Research Group funded by
+UiO:Energy.
+Luca Galimberti has been supported in part by the grant Waves and Nonlinear Phenomena (WaNP) from
+the Research Council of Norway.
+1
+arXiv:2202.11606v1  [q-fin.PR]  17 Feb 2022
+
+=== page 2 ===
+2 FRED ESPEN BENTH, NILS DETERING, LUCA GALIMBERTI
+pricing problem to deep neural networks in Hilbert space, appealing to the general neural
+nets in Fr´echet space and their universal approximation of continuous mappings developed
+in Benth, Detering and Galimberti [5]. We also mention in passing the recent interest in
+applying neural networks to compute the implied volatility in connection with rough volatil-
+ity models, see Bayer and Stemper [2] and Bayer et al. [1]. Rough volatility models are
+non-Markovian, however, can be viewed as inﬁnite-dimensional objects. We refer to Benth,
+Eyjolfsson and Veraart [8] for more on this latter perspective for general Volterra processes
+and pricing in energy markets.
+To be more speciﬁc about the problem we are dealing with and the motivation for our
+approach, we discuss brieﬂy options on power. In electricity markets, such as the European
+Energy Exchange (EEX) and Nord Pool one can trade in call and put options written on
+forward contracts delivering power over a contracted period of time. I.e., for a contracted
+delivery period [T1,T2], where 0 ≤T1 <T2, we denote the price at time t≤T by ˆF (t,T1,T2).
+The delivery period for forward contracts underlying an option are typically a month, say
+July, so that for example T1 = July1 and T2 = July31. For a strike price K and exercise
+time τ ≤T1, the price of a call option at time t≤τ is deﬁned as
+(1) V (t,τ) = E[max( ˆF (τ,T1,T2) −K, 0) |Ft]
+Here, we have chosen r = 0, and assume that we are working directly under the martingale
+measure Q so that V (t,τ) is the arbitrage-free price. In the market place, a usual exercise
+time is τ = T1, and the strikes of the most liquid options are close to current forward prices.
+In this paper we shall not make any distinction between forwards and futures, and focus
+solely on the forward contracts.
+One would like to have a model for the forward prices across diﬀerent delivery periods
+which avoids calendar arbitrage, that is, arbitrage from investing in forwards with diﬀerent
+delivery periods. As discussed in Benth and Koekebakker [9], the most convenient way to
+do this is via ﬁxed-delivery forwards. To this end, assume that F (t,T ) is the price of a
+forward at time t delivering the underlying commodity at time T ≥t. Of course, in power
+markets, such a forward only makes sense as a modeling device. The following relationship
+holds then true (see Benth, ˇSaltyt˙e Benth and Koekebakker [13, Prop. 4.1.]):
+(2) ˆF (t,T1,T2) = 1 T2 −T1
+∫ T2
+T1
+F (t,T )dT
+The forward price is denoted in power markets per MWh, which is the reason for dividing
+by the length of delivery, i.e., deﬁning ˆF as the average of F over the delivery period.
+If one now has a dynamic model for the forward curve F (t,·), then prices for related
+forwards and options can be obtained via the relationship (1) and (2). Dynamic models for
+the forward curve have been proposed and analysed in, say, Clewlow and Strickland [15],
+Benth and Koekebakker [9] and Benth and Kr¨uhner [10]. Such a dynamic is usually deﬁned
+in terms of some stochastic partial diﬀerential equation (SPDE). However, while models for
+the forward curve lead to coherent arbitrage free prices across options with diﬀerent delivery
+periods, they pose computational challenges because of their inﬁnite dimensional nature.
+This paper tries to overcome some of these challenges by proposing a numerical method
+for pricing options on ﬂow forwards based on neural networks. We ﬁrst derive properties of
+the pricing function which ensure that one can actually recast the pricing problem (1) into
+an optimization problem over a space of continuous functions deﬁned on a Hilbert space of
+functions. We then show by a density argument that it is actually suﬃcient to optimize only
+over a restricted set of continuous functions, namely Hilbert space neural networks. These
+neural networks have been proposed in [5] for approximating functionals deﬁned on a Fr´echet
+space X. We show how one can eﬃciently implement these neural networks by standard
+machine learning packages as TensorFlow/Keras and use the stochastic gradient descent
+algorithm for the optimization task. Our method delivers option prices automatically for a
+wide range of initial market conditions. This has the tremendous advantage that expensive
+simulations are performed only once for the training step of the neural network, and they
+do not have to be repeated if market conditions change.
+
+=== page 3 ===
+PRICING OPTIONS ON FLOW FORWARDS BY NEURAL NETWORKS IN HILBERT SPACE 3
+We test our methodology in some numerical case studies, and ﬁnd that it works very well
+with high dimensional noise which is in line with the general perception that numerical meth-
+ods based on neural networks can often overcome the course of dimensionality. In the case
+studies, we also compare our approach with the direct classical neural network approxima-
+tion where the term structure curves are simply sampled and turned into high-dimensional
+input objects. Numerical evidence talks strongly in favour of our inﬁnite-dimensional net-
+work in Hilbert space as being superior. Using the inﬁnite-dimensional methodology we
+propose in this paper is also advantageous when approximating the Greeks of the option.
+As the network approximation is in terms of interpretable factors, like level, slope and cur-
+vature of the term structure, (numerical or analytical) diﬀerentiation of the network easily
+captures sensitivities with respect to these. Using a classical network trained by sampling,
+it is not easy to obtain approximations of the Greeks from the neural net.
+The outline of this paper is as follows: In Section 2 we present and adapt results from [5]
+for the Hilbert spaces one typically deals with when pricing ﬂow derivatives. In Section 3
+we state two possible dynamics for the ﬂow forward curve. In Section 4 we derive required
+continuity properties of the pricing functional in both models. In Section 5 we study the
+related optimization problem. Finally, Section 6 contains an extensive numerical case study.
+2. An introduction to feedforward neural networks on Hilbert spaces
+As anticipated in the Introduction, our strategy is based on neural networks in inﬁnite di-
+mensional vector spaces X and on an abstract approximation result for continuous functions
+f : X → R; these kind of architectures have been introduced in the paper Benth, Detering
+and Galimberti [5] with X being a Fr´echet space. Here we are going to brieﬂy outline their
+deﬁnition and their most salient properties.
+We recall that the classical universal approximation theorem shows that any continuous
+function from Rn to R can be approximated arbitrary well with a one layer neural network.
+More precisely, for a ﬁxed continuous function σ : R → R and a ∈ Rn,𝓁,b ∈ R, a neuron
+is a function N𝓁,a,b ∈C(Rn; R) deﬁned by x↦→𝓁σ(a⊤x + b). The universal approximation
+theorem then states conditions on the activation function σ such that the linear space of
+functions generated by the neurons
+N(σ) := span{N𝓁,a,b; 𝓁,b∈ R,a∈ Rn}
+is dense with respect to the topology of uniform convergence on compacts. This means that
+for every f ∈C(Rn; R) and compact subset K ⊂ Rn and a given ε> 0, there exists N ∈ N
+and 𝓁i,bi ∈ R,ai ∈ Rn for i = 1,...,N such that
+sup
+x∈K
+⏐⏐⏐⏐⏐f(x) − N∑ i=1 N𝓁i,ai,bi(x) ⏐⏐⏐⏐⏐<ε.
+For the sake of concreteness (but we remark that the following results are proved in [5] in
+much wider generality) let (H,⟨·,·⟩) now be an arbitrary real Hilbert space (not necessarily
+separable at this stage), where ⟨·,·⟩ denotes its scalar product. Its topological dual H∗ can
+be identiﬁed via Riesz’s isomorphism with H itself, and therefore in the sequel with a slight
+abuse of notation the symbol ⟨·,·⟩ will denote both the scalar product of H and the canonical
+pairing between H∗ and H.
+In order to deﬁne the inﬁnite-dimensional analogue of a neuron, a⊤x + b is replaced by
+an aﬃne function on H, the activation function σ : R → R by a function in C(H; H), and
+the scalar 𝓁 by a continuous linear form. For 𝓁 ∈ H∗,A ∈L(H),b ∈ H a neuron, N𝓁,A,b is
+then deﬁned by
+N𝓁,A,b(x) = ⟨𝓁,σ(Ax + b)⟩
+and one asks for conditions on σ : H → H that ensure that N(σ) := span{N𝓁,A,b; 𝓁 ∈
+H∗,A∈L(H),b∈H} is dense in C(H; R) under some suitable topology.
+In [5], the following separating property for the activation function σ, which can be seen
+as the inﬁnite-dimensional counterpart to the well known sigmoidal property for functions
+from R to R (see [16]), was introduced:
+
+=== page 4 ===
+4 FRED ESPEN BENTH, NILS DETERING, LUCA GALIMBERTI
+Deﬁnition 2.1. Separating property from Benth, Detering and Galimberti [5]: There exist
+ψ∈H∗\{0} and u+,u−,u0 ∈H such that either u+ /∈ span{u0,u−} or u− /∈ span{u0,u+}
+and such that
+(3)
+
+
+
+limλ→∞σ(λx) = u+, if x∈ Ψ+
+limλ→∞σ(λx) = u−, if x∈ Ψ−
+limλ→∞σ(λx) = u0, if x∈ Ψ0
+where we have set
+Ψ+ = {x∈H; ⟨ψ,x⟩> 0}, Ψ− = {x∈H; ⟨ψ,x⟩< 0}
+and Ψ0 = ker(ψ).
+We point out that as a particular case of the separating property one may choose u0 =
+u− = 0 and u+ ⁄= 0 for instance.
+The following result shows the density of N(σ) if the activation function σ satisﬁes the
+separating property.
+Theorem 2.2. (Adapted from Benth, Detering and Galimberti [5, Thm. 2.3 and 2.8]) Let
+(H,⟨·,·⟩) be a real Hilbert space, and let σ : H →H be continuous, satisfying (3) and with
+bounded range σ(H) ⊂H. Then N(σ) is dense in C(H; R) when equipped with the topology
+of uniform convergence on compacts. In other words, given f ∈ C(H; R), then, for any
+compact subset K of H, and any ε> 0, there exists ∑M m=1 N𝓁m,Am,bm ∈ N(σ) with suitable
+𝓁m ∈H∗,Am ∈L(H) and bm ∈H such that
+sup
+x∈K
+⏐⏐⏐⏐⏐f(x) − M∑ m=1 N𝓁m,Am,bm(x) ⏐⏐⏐⏐⏐<ε.
+Moreover, the following result, ensuring that one can approximate a given abstract neural
+net arbitrary well via a neural network that is constructed from ﬁnite dimensional maps and
+that can thus be trained, is valid, as soon as one imposes that the Hilbert space H is
+separable: for an in-depth discussion about this condition, we refer to Benth, Detering and
+Galimberti [5].
+Proposition 2.3. (Adapted from Benth, Detering and Galimberti [5, Prop. 4.1]) Let
+(H,⟨·,·⟩) be a real separable Hilbert space and let (ek)k∈N be a an orthonormal basis for
+H. For each N ∈ N let
+ΠN : H → span{e1,...,eN}
+be the orthogonal projection on the ﬁrst N elements of the basis. Let σ : H →H be Lipschitz.
+Let f ∈C(H; R), K ⊂H compact and ε> 0. Assume
+Nϵ(x) =
+M∑
+j=1
+⟨𝓁j,σ(Ajx + bj)⟩, x∈H
+with 𝓁j ∈H∗,Aj ∈L(H) and bj ∈H such that
+sup
+x∈K
+|f(x) −Nϵ(x)|<ε.
+Fix δ > 0. Then there exists N∗ = N∗(Nϵ,δ) ∈ N such that for N ≥N∗
+(4) sup
+x∈K
+⏐⏐⏐⏐⏐⏐ f(x) − M∑ j=1 ⟨𝓁j ◦ ΠN,σ(ΠNAjΠNx + ΠNbj)⟩ ⏐⏐⏐⏐⏐⏐ <ε + δ.
+We mention that the function Nε : H → R, which is required in the proposition above,
+exists for instance in view of Theorem 2.2, as soon as one assumes additionally that σ
+satisﬁes (3) and has bounded range σ(H) ⊂ H. Observe that if σ is Lipschitz continuous,
+then every g∈ N(σ) is also Lipschitz continuous.
+
+=== page 5 ===
+PRICING OPTIONS ON FLOW FORWARDS BY NEURAL NETWORKS IN HILBERT SPACE 5
+Remark 2.4. The terms appearing in the sum in (4) can now easily be programmed in a
+computer. We see that for large N, it is suﬃcient to consider the ﬁnite dimensional input
+values ΠN(x) instead of x, and then successively the restriction of the operators ΠNAj,σ
+and 𝓁j to span{e1,...,eN} instead of the maps Aj,σ and 𝓁j for j = 1,...,M. The maps
+ΠNAj,σ and 𝓁j are ﬁnite dimensional when restricted to span{e1,...,eN} and the sum above
+thus resembles a classical neural network. However, instead of the typical one dimensional
+activation function, the function ΠN ◦σ restricted to span{e1,...,eN} is multidimensional.
+We notice that the basis functions {ei}i∈N incorporate structural information about the
+objects in the Hilbert space. In applications, this may provide an advantage in training a
+neural net in Hilbert space rather than using classical sampling, and, moreover, it provides
+a net that is trained as functions on the basis expansion rather than on sampling the input
+functions. Furthermore, if the activation function σ is (Fr´echet) diﬀerentiable, the neural
+network will be (Fr´echet) diﬀerentiable, and we may derive analytic expressions for the
+sensitivities in directions along basis functions, say, avoiding numerical diﬀerentiation.
+3. Modeling the flow forward price dynamics
+Let (Ω,F, (Ft), Q) be a ﬁltered probability space satisfying the usual conditions (see
+Deﬁnition 2.25 in Karatzas and Shreve [24]). In our analysis of option prices, we assume
+right away that we work under the risk neutral probability Q.
+Furthermore, as state space of our stochastic models for the ﬂow forwards, let H be a
+separable Hilbert space of measurable functions f : R+ → R, with inner product ⟨·,·⟩ and
+induced norm |·|. We assume that the evaluation functionals δξ ∈H∗ for any ξ∈ R+, with
+δξ(f) := f(ξ), and that the family of (right-)shift operators (St)t∈R+ , with Stf := f(t + ·)
+forms a C0-semigroup on H which is quasi-contractive. Its densely deﬁned generator is
+the derivative operator ∂ξ. Finally, H is supposed to be a Banach algebra under pointwise
+multiplication of functions where the constant unit function ξ ↦→ 1 ∈ H. We include the
+important example of the Filipovi´c space next:
+Example 3.1. An example of a separable Hilbert space of measurable real-valued functions
+on R+ is given by the Filipovi´c space, which was introduced in Filipovi´c [18]. Denote by Hw
+the space of absolutely continuous functions x : R+ → R satisfying the norm
+|x|2 w = x(0)2 +
+∫ ∞
+0
+w(ξ)x′(ξ)2dξ <∞.
+The weight function w : R+ → [1,∞) is non-decreasing and measurable with w(0) = 1.
+Under integrability of w−1, the shift semigroup (St)t≥0 associated to the densely deﬁned
+generator ∂ξ is a C0-semigroup. Moreover, Hw is a Banach algebra with respect to pointwise
+multiplication (see Prop. 4.18 in Benth and Kr¨uhner [10]) supporting constant functions.
+Furthermore, the shift-semigroup is quasi-contractive (see Prop. 4.4 in Benth, Detering and
+Kr¨uhner [6]).
+3.1. Stochastic modeling of ﬁxed-delivery forwards. Assume that (X(t))t≥0 satisﬁes
+the stochastic partial diﬀerential equation (SPDE)
+(5) dX(t) = ∂ξX(t)dt + α(t,X(t))dt + η(t,X(t))dW (t) +
+∫
+H
+γ(t,X(t),z) ~N(dt,dz)
+with X(0) := X0 for an F0-measurable H-valued square integrable random variable. Here
+W is a Wiener process in H with a positive deﬁnite trace class (covariance) operator Q, and
+~N(dt,dz) := N(dt,dz)−dt⊗ν(dz) for a homogeneous Poisson random measure N(dt,dz) on
+R+ ×H with compensator dt⊗ν(dz). Here, ν is a σ-ﬁnite L´evy measure on H. Furthermore,
+we have measurable coeﬃcients α : R+ ×H →H, η : R+ ×H →LHS(H) and γ : R+ ×H×
+H →H, where LHS(H) is the space of Hilbert-Schmidt operators on H.
+Following Filipovi´c, Tappe and Teichmann [19], one can show under rather mild conditions
+on the coeﬃcient functions that there exists a unique mild solution of the SPDE (5). We
+describe this in more detail: for p ∈ N, let Lp loc(R+) be the space of locally p-integrable
+real-valued functions on R+. Assume that
+|α(·, 0)|∈L2 loc(R+)
+
+=== page 6 ===
+6 FRED ESPEN BENTH, NILS DETERING, LUCA GALIMBERTI
+‖η(·, 0)‖HS ∈L2 loc(R+) ∫
+H
+|γ(·, 0,z)|2ν(dz) ∈L1 loc(R+),
+where ‖·‖HS denotes the Hilbert-Schmidt norm. Further, there exists a function C ∈
+L2 loc(R+) such that the following Lipschitz continuity holds,
+|α(t,x) −α(t,y)|≤C(t)|x−y|
+‖η(t,x) −η(t,y)‖HS ≤C(t)|x−y| ∫
+H
+|γ(t,x,z) −γ(t,y,z)|2ν(dz) ≤C(t)2|x−y|2
+Under these conditions we recall Corollary 10.6 from Filipovi´c, Tappe and Teichmann [19]:
+Theorem 3.2. There exists a unique adapted mean-square continuous H-valued stochastic
+process (X(t))t≥0 which is right-continuous with left-limits (RCLL) being a mild solution of
+(5), i.e., solving the integral equation
+X(t) = StX0 +
+∫ t
+0
+St−sα(s,X(s))ds +
+∫ t
+0
+St−sη(s,X(s))dW (s)
++
+∫ t
+0
+∫
+H
+St−sγ(s,X(s−),z) ~N(ds,dz),(6)
+where X(s−) = limu↑sX(u). Moreover,
+E
+[
+sup
+0≤t≤τ
+|X(t)|2
+]
+<∞
+for all τ > 0.
+Remark 3.3. Notice that in Filipovi´c, Tappe and Teichmann [19], the class of SPDEs
+analysed is more general than (5). The Hilbert space H is not restricted to real-valued
+functions on R+. Furthermore, they treat general unbounded operators A rather than merely
+A = ∂ξ as we focus on here. The operators A must generate a C0 quasi-contractive semigroup
+in their context. Next, the Wiener process W can take values in a diﬀerent Hilbert space
+than H, with the natural modiﬁcation that η is a Hilbert-Schmidt operator mapping from
+this space into H. Finally, they let the mark space of the Poisson random measure be a
+Blackwell space (again with appropriate modiﬁcation of the function γ). Also, we remark in
+passing that Tappe [28] has relaxed the conditions on the parameter functions to be of local
+Lipschitz continuity and linear growth. We focus in the present paper on a special case to
+tailormake the situation to our application to ﬁnancial forward contracts.
+We note that in the case α,η and γ are not state dependent, we demand only local
+integrability on the coeﬃcient functions as Lipschitz continuity is trivially fulﬁlled. We
+denote the mild solution Y (and the initial condition Y0 being H-valued F0-measurable
+random variable) in this case, which is explicitly given by
+(7) Y (t) = StY0 +
+∫ t
+0
+St−sα(s)ds +
+∫ t
+0
+St−sη(s)dW (s) +
+∫ t
+0
+∫
+H
+St−sγ(s,z) ~N(ds,dz).
+We emphasise that Y is not a solution of an integral equation, but explicitly given in (7) in
+terms of (stochastic) integrals of the coeﬃcient functions.
+We deﬁne the forward price dynamics under the Musiela parametrisation as follows: with
+F (t,T ) being the forward price at time t ≥ 0 for a contract delivering the underlying
+commodity at time T ≥t, let
+(8) X(t,ξ) := F (t,t + ξ)
+where ξ := T −t ∈ R+. Or, we may express the forward price in terms of the evaluation
+functional applied to X,
+(9) F (t,T ) = δT−tX(t) = X(t,T −t).
+From arbitrage theory (see e.g. Duﬃe [17]), the process t↦→ ˆF (t,T1,T2) for t≤T1 must be
+a (local) martingale to ensure no-arbitrage in the market. To ensure this, it is convenient
+
+=== page 7 ===
+PRICING OPTIONS ON FLOW FORWARDS BY NEURAL NETWORKS IN HILBERT SPACE 7
+to assume that t↦→F (t,T ) for t≤T is a (local) martingale. It is readily seen that µ = 0 is
+a suﬃcient condition guaranteeing this, and we assume so in the sequel.
+One may also consider an alternative geometric model based on the situation where the
+coeﬃcient functions are not state-dependent. Supposing that Y is given by (7), we deﬁne
+t↦→X(t) := exp(Y (t)) as the price dynamics. Recall that H is a Banach algebra, and thus
+exp(Y (t)) ∈H. We have that
+(10) F (t,T ) = δT−tX(t) = δT−t exp(Y (t)) = exp(Y (t,T −t)).
+Thus, we ensure by the exponential modelling that the forward prices F (t,T ) are positive.
+Also, appealing to the algebra structure of H, we can express X(t) as
+(11) X(t) = exp(Y (t)) = exp(StY0) exp(Y 0(t)) = (StX0) exp(Y 0(t))
+where Y 0(t) is Y (t) with initial condition being zero. To have an arbitrage-free forward price
+dynamics t ↦→ F (t,T ),t ≤ T , we must in this case demand that (see Benth and Kr¨uhner
+[12, Prop. 6.3])
+(12) α(t,·) := −1 2|Q1/2η∗(t)(δ∗ · 1)|2 − ∫ H (exp(γ(t,z)) − 1 −γ(t,z)) ν(dz)
+and that α(t) ∈ H for the non-state dependent case. It is also worth noticing that the
+no-arbitrage condition relies on the ﬁnite exponential moment integrability condition of ν,
+which yields that exp(Y 0(τ)) is integrable.
+Example 3.4. Recall the Filipovi´c space Hw introduced in Example 3.1. Indeed, it is possible
+to show that α(t) ∈Hw (see Prop. 6.3 and the following discussion in Benth and Kr¨uhner
+[12]). Here, notice that hξ(u) := δ∗ ξ1(u) is the representative of the linear functional δξ in
+Hw, meaning that δξx = ⟨hξ,x⟩w. This function is explicitly given in Hw as
+hξ(u) = 1 +
+∫ ξ∧u
+0
+w−1(v)dv
+A natural speciﬁcation of σ could be simply a model of the Samuelson eﬀect, i.e., η(t)x(ξ) :=
+a exp(−bξ)x(ξ). Hence, we specify the operator η(t) to be constant in time, but a simple
+multiplication operator on Hw by the function ξ↦→a exp(−bξ), (with the constants a,b> 0)
+which is an element of Hw under some natural conditions of the scale w of Hw (see Thm.
+4.17 in Benth and Kr¨uhner [10]).
+Before continuing, we emphasise that in the sequel of this paper we shall consider two
+forward price models, one being (9) based on X solving the SPDE (5) under the condition
+that µ = 0, or the geometric model (10) where Y is the dynamics in (7) satisfying the
+no-arbitrage condition in (12).
+3.2. Stochastic modelling of ﬂow forwards. Let us now consider a ﬂow forward with
+delivery over the time interval [T1,T2]. Recalling the ﬂow forward price at time t ≤ T1 by
+ˆF (t,T1,T2), where,
+(13) ˆF (t,T1,T2) = 1 T2 −T1
+∫ T2
+T1
+F (t,T )dT.
+Writing ξ := T1 −t and λ := T2 −T1, we ﬁnd
+(14) ˆXλ(t,ξ) := ˆF (t,t + ξ,t + ξ + λ) = 1 λ ∫ ∞ 0 1[0,λ](u−ξ)X(t,u)du.
+Here, X is the process for the ﬁxed-delivery forward in the previous Subsection. Hence,
+the ﬂow forward price can be deﬁned as a stochastic process ˆXλ(t) taking values in a space
+of measurable real-valued functions on R+, ξ ↦→ ˆXλ(t,ξ). Indeed, we can write ˆXλ(t) =
+Dλ(X(t)), for an integral operator deﬁned from (14) by
+(15) Dλ(f) = 1 λ ∫ ∞ 0 1[0,λ](u−·)f(u)du,
+with f ∈H. From now on, we assume that Dλ ∈L(H), i.e., a bounded linear operator on
+H, such that ˆXλ(t) becomes an H-valued stochastic process.
+
+=== page 8 ===
+8 FRED ESPEN BENTH, NILS DETERING, LUCA GALIMBERTI
+Remark 3.5. In Benth and Kr¨uhner [11, Prop. 2.1.], it is shown that Dλ ∈L(Hw). In fact,
+this holds for more general ﬂow forward integral operators associated with relations with the
+ﬁxed-delivery forward beyond (13).
+4. The option price functional
+Consider an option written on a ﬂow forward contract delivering over [T1,T2], where
+we assume that the option has exercise time τ ≤ T1 with payoﬀ deﬁned by a measurable
+function P : R → R. Assuming that P( ˆF (τ,T1,T2)) is integrable, the no-arbitrage price at
+time t≤τ of the option is given by (see e.g. Bj¨ork [14])
+V (t) := e−r(τ−t)E [ P( ˆF (τ,T1,T2)) |Ft ] .
+Here and in the sequel we assume for simplicity that the risk-free interest rate r > 0 is
+constant and deterministic.
+Using the deﬁnitions in the previous Section, the option payoﬀ can be written
+P( ˆF (τ,T1,T2)) = P( ˆF (τ,τ + (T1 −τ),τ + (T1 −τ) + T2 −T1))
+= P(δT1 −τDT2 −T1 (X(τ))).
+Hence, the price becomes
+(16) V (t) = e−r(τ−t)E [P (δT1 −τDT2 −T1 (X(τ)) |Ft] .
+We have the following:
+Proposition 4.1. Let X be given by the dynamics in (5), and assume that the coeﬃcient
+functions α, η and γ are independent of time (i.e., only state dependent). It then holds that
+V (t) := V (t,X(t)) where
+(17) V (t,x) = e−r(τ−t)E [ P ( δT1 −τDT2 −T1 (Xt,x(τ)) )] .
+Here, Xt,x(τ) means that Xt,x(t) = x∈H.
+Proof. This follows from the Markovian property of X in the case of coeﬃcients being
+independent of time, see e.g., Th. 9.30 in Peszat and Zabczyk [25]. □
+I.e., we have that the price of the option becomes a functional of X(t). Recall (11) for
+the exponential price deﬁned in (10). Hence, from (7) we ﬁnd for Y (τ) given Y (t), τ ≥t,
+Y (τ) = Sτ−tY (t) +
+∫ τ
+t
+Sτ−sα(s)ds +
+∫ τ
+t
+Sτ−sη(s)dW (s) +
+∫ τ
+t
+∫
+H
+γ(s,z) ~N(ds,dz).
+Therefore,
+X(τ) = exp(Sτ−tY (t)) exp(Zt,τ)
+where Zt,τ is deﬁned as
+(18) Zt,τ :=
+∫ τ
+t
+Sτ−sα(s)ds +
+∫ τ
+t
+Sτ−sη(s)dW (s) +
+∫ τ
+t
+∫
+H
+γ(s,z) ~N(ds,dz)
+with the no-arbitrage condition (12) in place for α. Thus, Zt,τ is a random variable in H
+independent of Ft by the independent increment property of the Wiener process and the
+jump measure. Furthermore, the no-arbitrage condition (12) involves an exponential inte-
+grability condition on the L´evy measure, which, together with Fernique’s Theorem implies
+that exp(Zt,τ) is integrable. Moreover, by using the shift semigroup,
+exp(Sτ−tY (t)) = Sτ−t exp(Y (t)) = Sτ−tX(t)
+Thus, also in this case we ﬁnd V (t) = V (t,X(t)) where
+(19) V (t,x) = e−r(τ−t)E [P (δT1 −τDT2 −T1 ((Sτ−tx) exp(Zt,τ)))] .
+Remark 4.2. Notice that the X(t) is a positive-valued function in our Hilbert space as it
+is deﬁned by X(t) = exp(Y (t)). Thus, V (t,x) in (19) is deﬁned on the domain H+, that is,
+the subset of H consisting of positive-valued functions in H, when we assume that this is the
+price of the option. However, looking at the actual expression in (19), it obviously makes
+sense as it stands for all x∈H. We shall understand V (t,·) as a function deﬁned on all of
+H.
+
+=== page 9 ===
+PRICING OPTIONS ON FLOW FORWARDS BY NEURAL NETWORKS IN HILBERT SPACE 9
+Hence, for both our dynamical models of the ﬂow forward price, the corresponding option
+price is a functional V : [0,τ] ×H → R.
+The following is an important motivation for the studies in this paper: Notice that for
+the geometric model with Zt,τ given in (18)
+δT1 −τDT2 −T1 ((Sτ−tx) exp(Zt,τ)) = 1 T2 −T1
+∫ T2 −τ
+T1 −τ
+x(u + τ −t)eZt,τ (u)du
+= 1 T2 −T1
+∫ T2 −t
+T1 −t
+x(v)eZt,τ (v−(τ−t))dv.
+From this it is evident that the option price does not depend on ˆF (t,T1,T2) only, but rather
+the whole curve ξ ↦→ X(t,ξ), that is, the term structure of ﬁxed-forward prices. I.e., the
+option price is a functional V (t,·) : H → R and cannot be reduced to a function depending
+only on ˆF (t,T1,T2).
+We continue analysing the price functional V in (17) and (19), ﬁrst showing the cru-
+cial property of Lipschitz continuity of x ↦→ V (t,x). This is fundamental in applying a
+feedforward neural network to compute V .
+Proposition 4.3. Assume P is Lipschitz continuous. Then V is well-deﬁned and Lipschitz
+continuous, i.e., for any x,y∈H and t∈ [0,τ],
+|V (t,x) −V (t,y)|≤K|x−y|
+for some constant K > 0.
+Proof. As P is Lipschitz continuous,
+|P(u)|≤K|u| + |P(0)|
+for some constant K > 0. Therefore, from the boundedness of the operators δξ, Dλ
+|P(δT1 −τDT2 −T1 (X(τ)))|≤K‖δT1 −τ‖op‖DT2 −T1 ‖op|X(τ)| + |P(0)|.
+From the uniform L2-bound on X(τ) in Thm. 3.2 the well-deﬁnedness of V follows when X
+is given by (5). When X(τ) = exp(Y (τ)) with Y as in (7), then from (11) and the deﬁnitions
+of the operators δξ and Dλ,
+δT1 −τDT2 −T1 (X(τ)) = 1 T2 −T1
+∫ ∞
+0
+1[0,T2 −T1 ](u− (T1 −τ)) exp(y(τ + u)) exp(Y 0(τ,u))du.
+By the no-arbitrage drift condition E[exp(Y 0(τ,u))] = 1, we have by Tonelli’s theorem
+E[δT1 −τDT2 −T1 (X(τ))] = δT1 −τDT2 −T1 (exp(Sτy))
+which is ﬁnite as Dλ ∈L(H). Thus, from the linear growth of P the well-deﬁnedness of V
+also follows for the exponential model.
+To show Lipschitz continuity, consider ﬁrst the case of V in the exponential model (19).
+By Lipschitz continuity of P,
+|V (t,x) −V (t,y)|
+≤KE[|δT1 −τDT2 −T1 (Sτ−t(x−y)eZt,τ )|]
+≤K‖δT1 −τ‖op‖DT2 −T1 ‖op‖Sτ−t‖opE[| exp(|Zt,τ)|]|x−y|.
+Again, as all the involved operators are bounded and Zt,τ is an exponentially integrable
+random variable, the assertion holds. In the Markovian model, we appeal again to the
+Lipschitz continuity of P, and using the Cauchy-Schwarz inequality we reach
+|V (t,x) −V (t,y)|≤K‖δT1 −τ‖op‖DT2 −T1 ‖opE
+[
+|Xt,x(τ) −Xt,y(τ)|2]1/2 .
+By Thm. 9.29 (part (1.ii)) in Peszat and Zabczyk [25], the latter expectation is bounded by
+|x−y|. Thus, we ﬁnd the desired Lipschitz continuity of V . □
+Remark 4.4. When pricing an option on a given ﬂow forward, one may ask the question
+why model the whole curve and not simply only t↦→ ˆF (t,T1,T2) directly and then price the
+option? An argument for modeling the whole term-structure curve is that we may have many
+forward contracts and diﬀerent options on these. It is desirable that all the option prices are
+
+=== page 10 ===
+10 FRED ESPEN BENTH, NILS DETERING, LUCA GALIMBERTI
+internally consistent, in the sense that one cannot obtain arbitrage. This will be guaranteed
+when modelling the whole forward curve dynamics. Of course, one could model all the (ﬁnite
+number) of forwards as a multi-dimensional process, but then one looses the possibility to
+also include other forwards, possibly not listed in the market. For the latter case, imagine
+a trader getting an oﬀer of an option on a new forward not part of her multivariate model.
+Then the whole model must be re-deﬁned, to include the new forward into the pricing.
+Remark 4.5. Considering V as in (19), it holds that H ∋y↦→V (t,ey) is locally Lipschitz
+continuous, since the map y ↦→ ey is locally Lipschitz continuous. Notice that with the
+exponential model, we can consider the option price V (t,X(t)) as a functional of Y (t), i.e.,
+V (t) = V (t, exp(Y (t)).
+5. Approximating the price functional by neural networks
+To prepare for approximating the option price V (t,x) by a neural network, we recast it
+as a solution of an optimization problem following Beck et al. [3]. First, we notice that both
+in the Markovian and geometric forward price models, the option price functional may be
+expressed generically as a functional V : H → R,
+(20) V (x) = E[X (x)]
+where X is a random ﬁeld on H. Indeed, from (19) we ﬁnd for the geometric model that
+(21) X (x) = e−r(τ−t)P(δT1 −τDT2 −T1 ((Sτ−tx) exp(Zt,τ)))
+with Zt,τ in (18), and for the Markovian model we derive from (17)
+(22) X (x) = e−r(τ−t)P(δT1 −τDT2 −T1 (Xt,x(τ))
+Notice that we have ignored the dependency on t, T1, T2 and τ here, as these do not play a
+role in what follows. We recall that V is a Lipschitz continuous mapping on H (see Prop.
+4.3).
+To this end, introduce a measure µ : B(H) → [0,∞] and assume
+(23) E
+[∫
+H
+X 2(x)µ(dx)
+]
+<∞.
+This assumption is a joint condition on the the measure µ and the random ﬁeld X (x). In
+the next Lemma, we state a suﬃcient condition on µ:
+Lemma 5.1. Assume for the exponential model that exp(2|Zt,τ|) is integrable, with Zt,τ
+deﬁned in (18). If ∫
+H
+max(1,|x|2)µ(dx) <∞
+then condition (23) holds.
+Proof. For simplicity, we suppose that r = 0, and recall the Lipschitz continuity of P
+resulting in the linear growth bound
+|P(z)|2 ≤C1 + C2z2
+for positive constants C1,C2.
+Consider ﬁrst the Markovian case of X (x) in (22): using L := δT1 −τDT2 −T1 as short-hand
+notation, we have
+E[X 2(x)] = E[P2(L(Xt,x(τ))] ≤C1 + C2‖L‖2 opE[|Xt,x(τ)|2].
+Thm. 9.29(ii) of Peszat and Zabczyk [25] along with the uniform L2-bound in Thm. 3.2
+yield, after using the triangle inequality,
+E[|Xt,x(τ)|2] ≤ 2E[|Xt,0(τ)|2] + 2E[|Xt,x(τ) −Xt,0(τ)|2]
+≤ 2C(1 + |x|2),
+for some positive constant C. Hence, by Tonelli’s Theorem (and with C now denoting a
+generic constant)
+E[
+∫
+H
+X 2(x)µ(dx)] =
+∫
+H
+E[X 2(x)]µ(dx) ≤C
+∫
+H
+1 + |x|2µ(dx).
+
+=== page 11 ===
+PRICING OPTIONS ON FLOW FORWARDS BY NEURAL NETWORKS IN HILBERT SPACE 11
+Thus the claim follows for the Markovian case.
+Next, consider the exponential model for X (x) in (21). Then it follows that
+E[X 2(x)] = E[P2(L((Sτ−tx)) exp(Zt,τ))] ≤C1 + C2‖L‖2 op‖Sτ−t‖2 op|x|2E[exp(2|Zt,τ|)].
+By the integrability assumption on Zt,τ, the claim follows. □
+In the case of an exponential model without jumps, Fernique’s Theorem (see e.g. Thm.
+3.31 in Peszat and Zabczyk [25]) ensures that exp(2|Zt,τ|) is integrable. This is readily seen
+from the elementary inequality 2ab≤a2ϵ−2 + ϵ2b2 for any ϵ> 0, yielding
+2|Zt,τ|≤ϵ−2 + ϵ2|Zt,τ|2.
+If we have jumps in the model, the exponential integrability of 2|Zt,τ| can be translated into
+an exponential integrability condition on the L´evy measure.
+In the application to neural nets, it is the case of µ having compact support which is
+of interest to us. We see from the Lemma above that under mild additional integrability
+hypotheses for the exponential model in the jump case, condition (23) is satisﬁed in this
+case as x↦→ max(1,|x|2) is a continuous function on H.
+Consider the class of functions g ∈ CL2 lip(µ), where CL2 lip(µ) is the set of real-valued
+Lipschitz continuous functions on H where
+∫
+H g2(x)µ(dx) < ∞. Obviously, CL2 lip(µ) ⊂
+L2(µ). Furthermore, under the conditions of Lemma 5.1, it follows that V ∈CL2 lip(µ). The
+following Lemma shows that V is the global minimizer on L2(µ):
+Lemma 5.2. It holds that
+(24) V (·) = arg min
+g∈L2 (µ) E
+[∫
+H
+|X (x) −g(x)|2µ(dx)
+]
+.
+Proof. Suppose g∈L2(µ): a direct calculation shows that
+E
+[∫
+H
+|X (x) −g(x)|2µ(dx)
+]
+= E
+[∫
+H
+X 2(x)µ(dx)
+]
+− 2E
+[∫
+H
+X (x)g(x)µ(dx)
+]
++
+∫
+H
+g2(x)µ(dx)
+= E
+[∫
+H
+X 2(x)µ(dx)
+]
+− 2
+∫
+H
+V (x)g(x)µ(dx) +
+∫
+H
+g2(x)µ(dx)
+=
+∫
+H
+E[(X 2(x) − E[X (x)]2)]µ(dx) +
+∫
+H
+|V (x) −g(x)|2µ(dx)
+=
+∫
+H
+Var(X (x))µ(dx) +
+∫
+H
+|V (x) −g(x)|2µ(dx).
+The result follows. □
+In Prop. 2.2 of Beck et al. [3], a ﬁnite-dimensional analogue of the above Lemma is shown.
+They use this as the motivation for approximating the minimizer by neural networks. Below
+we provide a rigorous argument for why one can minimize over the subset of ”all” neural
+networks rather than L2(µ):
+First of all, we recall the following easy fact. If (T,τ) is a topological space, U⊂T such
+that cl(U) ∩T = T (i.e. U is dense in T ), and I : T → R is continuous, then
+inf
+T
+I = inf
+U
+I ∈ [−∞,∞).
+Let us embed our current setup in this framework.
+Lemma 5.3. Let µ : B(H) → [0,∞] be a measure. Then the map
+I : L2(µ) → R, g↦→ E
+[∫
+H
+|X (x) −g(x)|2µ(dx)
+]
+is locally Lipschitz continuous
+
+=== page 12 ===
+12 FRED ESPEN BENTH, NILS DETERING, LUCA GALIMBERTI
+Proof. Denote by ‖·‖µ the norm in L2(µ). Observe that
+|a−b|2 −|a−c|2 = 2a(c−b) + (b + c)(b−c)
+for any constants a,b,c∈ R. Hence, for a = X (x), b = g(x) and c = h(x) for g,h∈L2(µ),
+we ﬁnd
+|I(g) −I(h)|≤ 2E
+[∫
+H
+|X (x)||g(x) −h(x)|µ(dx)
+]
++
+∫
+H
+|g(x) + h(x)||g(x) −h(x)|µ(dx)
+≤ 2E
+[∫
+H
+X 2(x)µ(dx)
+]1/2 ∫
+H
+|g(x) −h(x)|2µ(dx)1/2
++
+∫
+H
+|g(x) + h(x)|2µ(dx)1/2
+∫
+H
+|g(x) −h(x)|2µ(dx)1/2
+after using the Cauchy-Schwarz inequality. The claim follows by assumption (23). □
+Therefore, a fortiori, the map I deﬁned in Lemma 5.3 above is continuous on CL2 lip(µ). We
+now ﬁx a compact subset K ⊂ H, and assume that supp µ = K and µ(K) = 1. Recalling
+our standard assumptions on the neural network from Section 2 (in particular assuming
+that the activation function σ is Lipschitz, so that the resulting neural networks become
+Lipschitz), our abstract result Prop. 2.2 ensures that
+cl(N(σ)) ∩CL2 lip(µ) = CL2 lip(µ)
+with respect to the topology of convergence on compacts. Since µ(K) <∞, it follows that
+this last equation holds good even with respect to the L2(µ)-topology. Therefore,
+I(V ) = min
+L2 (µ) I = min CL2 lip(µ) I = inf CL2 lip(µ) I = inf N(σ) I.
+Hence, we have justiﬁed the procedure in ﬁnite dimensions of Beck et al. [3] for approxi-
+mating the minimizer by neural networks. And even more, we have demonstrated that ¯V
+can be approximated arbitrary well by our inﬁnite-dimensional neural networks.
+Observe that if we consider the function R ∋ ε ↦→ I(g + εv) with g,v ∈ L2(µ) and we
+compute its second derivative we get 2 ‖v‖2 L2 (µ), showing that I is (strictly) convex on L2(µ).
+It might be worth noticing that for each g∈L2(µ) it holds in view of H¨older’s inequality
+I(g) = E
+[∫
+H
+X 2(x)µ(dx)
+]
+− 2E
+[∫
+H
+X (x)g(x)µ(dx)
+]
++
+∫
+H
+g2(x)µ(dx)
+≥ E
+[∫
+H
+X 2(x)µ(dx)
+]
+− 2
+(
+E
+[∫
+H
+X (x)2µ(dx)
+])1/2
+‖g‖L2 (µ) + ‖g‖2 L2 (µ)
+and thus I(g) →∞ as ‖g‖L2 (µ) →∞, i.e. I is coercive on L2(µ). Moreover, from the above
+we see that
+I(g) −I(V ) =
+‖‖g−V ‖‖2 L2 (µ) , g∈L2(µ).
+Therefore, we get the following ”sharp” approximation error: given an arbitrary ε > 0, by
+deﬁnition of inf, we may ﬁnd gε ∈ N(σ) such that I(gε) −I(V ) <ε2. This in turn produces
+‖‖gε −V ‖‖ L2 (µ) <ε.
+Thus, if we have found a neural network gε whose energy I is at most ε2 away from that of
+the inﬁmum, then this gε is away from V at most ε in the L2-sense.
+Following the idea of Beck et al. [3], the procedure now is to substitute any g with a
+neural network approximation, and minimize over these instead (we can assess this error as
+the error between a given g and an approximated neural net). As neural nets approximate
+over compacts, we let µ be a measure supported on a compact in H, let us say K ⊂ H.
+Then, we ﬁt the network by virtue of
+(25) inf
+g∈N(σ)
+E
+[∫
+H
+|X (x) −g(x)|2µ(dx)
+]
+≡ inf
+g∈N(σ)
+I(g).
+
+=== page 13 ===
+PRICING OPTIONS ON FLOW FORWARDS BY NEURAL NETWORKS IN HILBERT SPACE 13
+If µ(K) <∞, we can scale it to achieve a probability measure on K, so that we can draw
+random samples x(1),...,x(N ) from it. Equally, randomly drawing M samples of X (x(i))
+for each x(i), denoted χ(j)(x(i)), we ﬁnd
+(26) inf
+g∈N(σ)
+1
+N + M
+M∑
+j=1
+N∑
+i=1
+|χ(j)(x(i)) −g(x(i))|2
+The underlying intuition here is that we are using the strong law of large numbers applied
+to the probability space (Ω ×K, P ⊗µ) in order to approximate the minimization problem
+(25) by (26). Alternatively, one could sample jointly from µ and X , reducing the double
+summation above to just one. In fact, this is what we do in the numerical studies.
+If we have given an ONB {ei}i∈N on H, then we can deﬁne a compact set KL as
+(27) KL := {x∈H; x =
+L∑
+k=1
+xkek,xk ∈ [ak,bk],ak <bk],
+and a natural measure µ is the uniform measure on KL. We trivially extend this to the
+whole Borel σ-algebra of H. We can accomplish this because B(KL) = B(H) ∩KL.
+Remark 5.4. In derivatives markets, one is concerned with the Greeks, that is, the sensi-
+tivities of the option price with respect to changes in the underlying. Such sensitivities are
+important in hedging questions. If we have trained a neural network g∈ N(σ) to the pricing
+functional V , we have accessible fast and eﬃcient ways to derive sensitivities with respect
+to structural changes in the current term structure. The so-called Delta of an option is the
+derivative of the option price with respect to the underlying asset price. In our context, the
+”asset price” is the complete term structure curve, and we can be interested in many diﬀer-
+ent ”Deltas”, like for example a shift in the term structure. If the ﬁrst basis function e1 ∈H
+measures the level of the term structure, then, if the activation function is (Fr´echet) diﬀeren-
+tiable, we can ﬁnd an analytic expression for ∂1g(x), where ∂1 is the derivative with respect
+to the ﬁrst coordinate of x. This provides us with an eﬃciently computable approximation
+of the ”level-Delta” of the option.
+6. Numerical pricing by feedforward neural networks in Hilbert space
+We now test the numerical procedure introduced in Section 5 for pricing options on the
+forward curve. As a state space we use the Filipovi´c space, denoted by Hw, introduced in
+Example 3.1.
+We will ﬁrst need to derive a basis for this space. For this, let {˜ei}i∈N deﬁned by ˜e1(τ) = 1,
+and for k> 1
+(28) ˜ei(ξ) = ξ(i−2) exp(−ξ).
+Then {˜ei}i∈N is a set of linearly independent vectors in Hw. Observe that the ﬁrst vector
+is the level of the term structure, while the second and third vectors can be associated with
+slope and curvature.
+In order to derive from {˜ei}i∈N a set of orthonormal vectors we specify the weight func-
+tion w(ξ) := exp(ξ) in Hw. We can now apply the Gram-Schmidt algorithm to obtain an
+orthonormal basis. In the next Lemma we present the 7 ﬁrst basis vectors resulting from
+this algorithm (which will be used in our numerical studies):
+Lemma 6.1. From {˜ei}i∈N in (28) the ﬁrst 7 vectors in the orthonormal basis {ei}i∈N
+derived by the Gram-Schmidt algorithm are
+e1(ξ) = 1
+e2(ξ) = exp(−ξ) − 1
+e3(ξ) = ξ exp(−ξ)
+e4(ξ) = 1 2 ( ξ2 − 2ξ ) e−ξ
+e5(ξ) = ξ3 − 36ξ2 − 6ξ 42 √ 5 e−ξ
+
+=== page 14 ===
+14 FRED ESPEN BENTH, NILS DETERING, LUCA GALIMBERTI
+(a)
+ (b)
+Figure 1. (a) Functions ˜e1,..., ˜e7. (b) Functions e1,...,e7
+e6(ξ) = ξ4 − 1440ξ3 − 192ξ2 − 24ξ 24 √ 806115 e−ξ
+e7(ξ) = ξ5 − 100800ξ4 − 10800ξ3 − 1200ξ2 − 120ξ 1560 √ 49407661 e−ξ.
+Proof. First, recall that
+∫ ∞
+0
+ξk exp(−ξ) dξ = Γ(k + 1) = k!.
+For i = 1, let ˆe1 := ˜e1 = 1 and using that |ˆe1|w = 1, we deﬁne e1 = ˆe1/|ˆe1|w = 1. Next we
+calculate
+ˆe2 := ˜e2 − Πˆe1 (˜e2) = ˜e2 −⟨˜e2, ˆe1⟩wˆe1 = ˜e2 − ˆe1
+and using that |ˆe2|2 w = ∫∞ 0 exp(−ξ)dξ = Γ(0 + 1) = 1 we deﬁne
+e2(ξ) := ˆe2(ξ)/|ˆe2|w = exp(−ξ) − 1.
+For i = 3,
+ˆe3 := ˜e3 − Πˆe1 (˜e3) − Πˆe2 (˜e3) = ˜e3 −⟨˜e3, ˆe1⟩wˆe1 −⟨˜e3, ˆe2⟩wˆe2
+which gives ˆe3(ξ) = ξ exp(−ξ). Furthermore, |ˆe3|2 w = Γ(2 + 1) − 2Γ(1 + 1) + Γ(0 + 1) = 1,
+and thus e3 := ˆe3. Continuing with this procedure, tedious technical calculations yield the
+remaining 4 basis vectors. □
+See Figure 1 for a plot of the functions ˜e1,..., ˜e7 and the orthonormal functions e1,...,e7.
+We consider a speciﬁcation of the exponential model (7) and (11) for the forward curve,
+i.e., we assume that the instantaneous forward curve is described by X(t) = exp(Y (t)) with
+Y as in (11). The price of the instantaneous forward delivering at the ﬁxed time T can
+then be obtained by F (t,T ) = δT−tX(t). We consider a call option on a ﬂow forward with
+strike K, that is, we introduce the payoﬀ function P(y) := max{z−K, 0}. Recalling the ﬂow
+forward price ˆF (t,T1,T2) in (13), the option pays at time τ ≤T1 the amount P( ˆF (τ,T1,T2).
+Following the derivations in Sections 4 and 5, we recall the price as V (x) := E[X (x)] with
+X (x) deﬁned in (21). In our numerical case studies, we shall ﬁx our attention to options
+on monthly ﬂow forwards, with exercise time at the beginning of the delivery period. More
+speciﬁcally, we assume τ = T1 = 1/12 and T2 = 2/12, with time being measured in months.
+We price the option at current time t = 0 with a strike of K = 1. We set the risk free interest
+rate r = 0.
+Following Section 5 we want to obtain a numerical approximation of V : Hw → R. As
+described in Section 5 we can only expect to approximate the true pricing function V well
+on some compact subset of Hw. As proposed in (27) we choose K7 ⊂H by
+K7 := {x∈Hw; x =
+7∑
+k=1
+xiei,xi ∈ [−1/2, 1/2]}.
+
+=== page 15 ===
+PRICING OPTIONS ON FLOW FORWARDS BY NEURAL NETWORKS IN HILBERT SPACE 15
+The functions e8,e9,... have very low absolute value in the short end (ξ ≤ 2/12, corre-
+sponding to the ﬁrst two month), which is the reason why we only use the subspace spanned
+by e1,...,e7. Let µ be the uniform measure on K7.
+We now describe the practical implementation of the neural network architecture ex-
+plained in Section 2. By Proposition 2.3 we know that for any given δ > 0 and a discrimi-
+natory σ∈C(Hw,Hw) there exists N∗ = N∗(p,σ,δ) ∈ N,M ∈ N and Aj ∈L(Hw),bj ∈Hw
+for j = 1,...,M such that for any N ≥N∗
+sup
+x∈K
+⏐⏐⏐⏐⏐⏐ V (x) − M∑ j=1 ⟨𝓁j ◦ ΠN,σ(ΠNAjΠNx + ΠNbj)⟩ ⏐⏐⏐⏐⏐⏐ <δ,
+where ΠN : X → span{e1,...,eN} is the orthogonal projection. Let us now ﬁx such
+N ≥ max{N∗, 7}. We deﬁne ¯Aj to be the restriction of ΠNAj to HN w := span{e1,...,eN}
+and ¯bj := ΠNbj for j = 1,...,M. Then, clearly ¯Aj ∈L(HN w ) and ¯Aj can be associated with
+a matrix RN×N. Further ¯bj ∈ HN w and it can be associated with an element in RN. We
+further deﬁne ¯𝓁j ∈L(HN w, R) for j = 1,...,M to be the restriction of 𝓁j to HN w . If now our
+activation function σ has an image Im(σ) such that Im(σ) ⊂HN w , then the restriction of σ
+to HN w deﬁnes an element ¯σ∈C(HN w,HN w ). We obtain that for x∈HN w it holds that
+(29) ⟨𝓁j ◦ ΠN,σ(ΠNAjΠNx + ΠNbj)⟩ = ⟨¯𝓁j, ¯σ( ¯Ajx + ¯bj)⟩.
+In particular all quantities appearing on the right hand side are ﬁnite dimensional. After
+projecting onto the subspace HN w , the one layer neural network becomes:
+(30)
+M∑
+j=1
+⟨¯𝓁j, ¯σ( ¯Ajx + ¯bj)⟩.
+In Figure 6 we present a picture of the neural network architecture. We implement this
+neural network in Python using the TensorFlow and Keras libraries. The code is available on
+GitHub1. In contrast to classical neural networks where every node has an output dimension
+of 1, in our network every node in the main aﬃne layer computes the map ¯Ajx + ¯bj with
+output dimension N. In our implementation we therefore represent each of these nodes as
+a dense layer. Each of these dense layers then has input and output dimension equal to
+N and is connected to every node in the input layer. This means that the hidden layer
+depicted in Figure 6 actually consists of M vertically arranged dense layers, each with input
+and output dimension equal to N. Similarly each node in the activation layer receives input
+of dimension N and produces output of dimension N. We use M vertically arranged Keras
+Lambda layers to implement this tailor made activation layer. The nodes in the linear
+forms receive N dimensional input and produce 1 dimensional output. Internally this is
+implemented as M vertically arranged dense layers with input dimension N and output
+dimension equal to 1. The single node in the last layer is just implementing the summation.
+The activation function σ that we use follows Example 4.4 in Benth, Detering and Galim-
+berti [5]. Speciﬁcally, we choose it of the form σ(x) = β(ψ(x))z for some map ψ∈L(Hw, R),
+z ∈ Hw and β ∈ Lip(R; R) such that limξ→∞β(ξ) = 1, limξ→−∞β(ξ) = 0 and β(0) = 0.
+To ensure that Im(σ) ⊂ HN w we choose z ∈ HN w but we note that we could start with a
+general z∈Hw (before determining N) and then after determining N for the ﬁnite network
+implementation, we replace it with ΠN(z). We further specify β(y) := max{0, 1−exp(−y)}.
+Because ¯σ = β(ψ(ΠN(x)))ΠN(z) we can interpret ψ as a map in L(RN, R) that acts on the
+ﬁrst N coeﬃcients of x.
+We consider two speciﬁcations for the coeﬃcients and for the Wiener process in (7)
+deﬁning the exponential model in (11):
+One dimensional noise: In this ﬁrst example we consider a setup with a simple one
+dimensional noise. To specify the coeﬃcients in the mild solution (7), we choose W (t) =
+B(t)e1 with B a standard Brownian motion. Then it follows for the covariance operator
+Q of W that Q = ΠH 1w where H 1 w = span{e1}. Moreover we choose η(s) = id. Then
+1https://github.com/ncdetering/FlowForwardsNumerics
+
+=== page 16 ===
+16 FRED ESPEN BENTH, NILS DETERING, LUCA GALIMBERTI
+x1
+x2
+...
+xN
+¯A1x + ¯b1
+¯A2x + ¯b2
+...
+¯AMx + ¯bM
+¯σ
+¯σ
+...
+¯σ
+¯𝓁1
+¯𝓁2
+...
+¯𝓁M
+∑
+input layer
+aﬃne layer
+activation layer linear form
+output layer
+Figure 2. Illustration of the structure of the neural network. A red arrow
+between two nodes means that one dimensional information at the tail of
+the arrow (here the values xk) is carried to a node at the head of the
+arrow in which this one dimensional information is internally processed by
+a function of output dimension N. A blue arrow between two nodes means
+that it carries N dimensional information from the tail to a node that has
+also N dimensional output dimension. A black arrow corresponds to the
+standard setting where one dimensional information is carried to a node
+that has a one dimensional output.
+α(s) = −(1/2)e1 ensures that we obtain an arbitrage free model for the forward curve
+dynamics.
+Then, for x = ∑7 k=1 xkek we get that
+Stx = x1e1(·) +
+7∑
+k=2
+xkek(· + t)
+and thus Y (t)(ξ) = x1 − (1/2)t + B(t) −B(0) + ∑7 k=2 xkek(ξ + t).
+Multi dimensional noise: Let the Wiener process now be given by
+W (t) = B1(t)e1 + ··· + B7(t)e7
+with Bi, 1 ≤i≤ 7 independent standard Brownian motions and let η = η∗ = id. We need
+to calculate the drift α that leads to an arbitrage free model. According to (12) the drift is
+α(t,ξ) = −1 2|Q1/2η∗(t)(δ∗ ξ1)|2 w.
+By deﬁnition of W , we then get that Q = Q1/2 = id◦ΠK7 = ΠK7 with K7 = span{e1,...,e7}
+and thus by δ∗ ξ1 = hξ we get that
+α(t,ξ) = −1 2|ΠK7 (hξ)|2 w.
+with
+hξ(u) = 1 +
+∫ ξ∧u
+0
+w−1(v)dv.
+
+=== page 17 ===
+PRICING OPTIONS ON FLOW FORWARDS BY NEURAL NETWORKS IN HILBERT SPACE 17
+Because hξ is the representation for δξ, it follows that ΠK7 (hξ) = e1(ξ) ·e1 + ··· + e7(ξ) ·e7
+and therefore by orthonomality of e1,...,e7
+α(t,ξ) = −1 2|ΠK7 (hξ)|2 w = −1 2(e1(ξ)2 + ··· + e7(ξ)2).
+It follows that
+Y (t) = StY0 +
+∫ t
+0
+St−sαds +
+∫ t
+0
+St−sηdW (s)
+= Y0(· + t) +
+∫ t
+0
+α(· + (t−s))ds +
+∫ t
+0
+St−sdW (s)
+= Y0(· + t) − 1 2 ∫ t 0 e1(· + (t−s))2 + ··· + e7(· + (t−s))2ds
++
+7∑
+i=1
+∫ t
+0
+ei(· + (t−s))dBi(s)
+We are pricing an option with maturity in one month and one month delivery. So we need
+to simulate from Y (1/12). For this we ﬁx a discretization size L and put 0 = s0 < s1 <
+···<sL = t and approximate
+−1 2 ∫ t 0 e1(· + (t−s))2 + ··· + e7(· + (t−s))2ds≈−1 2 7∑ i=1 L∑ j=1 ei(· + (t−sj))2(sj −sj−1)
+7∑
+i=1
+∫ t
+0
+ei(· + (t−s))dBi(s) ≈
+7∑
+i=1
+L∑
+j=1
+ei(· + (t−sj))(Bi(sj) −Bi(sj−1)).
+We then generate our training set of size n = 10, 000, 000. For this let
+x(k) = (x(k) 1 ,...,x(k) 7 ) ∈ [−1/2, 1/2]7
+for k = 1,...,n be the i.i.d. realizations of coeﬃcients for our initial curves so that each
+x(k) can be seen as sampled from µ.
+We now compute the payoﬀ X (x(k)) of the option as deﬁned in (21) under both the
+one- and multi-dimensional noise models described above based on one realization of the
+respective Wiener processes W . So X (x(k)) is computed as the time τ = 1/12 value under
+the model (7) and (10) with the initial curve (starting value) x(k) and based on a realization
+of the process W that is independent of the starting values x(k). We stress that by x(k) we
+actually mean the vector ∑7 i=1 x(k) i ei ∈ Hw. Our training set then consists of the input-
+output pairs (x(k),X (x(k)) ∈ [−1/2, 1/2]7 × R for k = 1,...,n.
+We use this training set to ﬁt several neural networks with the number of hidden nodes
+ranging from 1 to 30. For the training with stochastic gradient descent we use a batch size
+of 10, 000 and 50 epochs. We then generate a test set of size 10, 000. In contrast to the
+training set, the test set is composed of pairs consisting of starting values x(k) test, and option
+prices E[X (x(k) test)] for k = 1,..., 10, 000. The calculation of the benchmark prices E[X (x(k))]
+is based on a Monte Carlo simulation with 100, 000 simulations each. We then calculate for
+each of the ﬁtted models the mean squared error with respect to the test set.
+The results are shown in Figure 3 for both, the model with one dimensional noise, and
+the model with 7 dimensional noise. Except for networks with a very small number of
+nodes (≤ 5), the mean squared error is of the order 10−5 both for the speciﬁcation with one
+dimensional noise and for the one with 7 dimensional noise. For the one dimensional noise
+setting the average error over the networks with the number of nodes ranging from 10 to 30
+is 2.047 · 10−5 and for the multi dimensional noise it is 1.859 · 10−5. This error is ﬂuctuating
+due to randomly assigned initial network weights but is always within the range 1.5 · 10−5
+to 2.5 · 10−5.
+In Figure 4 we plot the option price for initial log forward curves with varying basis
+coeﬃcient x1 and all other coeﬃcients are set to 0. The green line describes the option price
+as determined by the neural network while the red stars are option prices as determined by
+Monte Carlo simulations. Similarly in Figure 5 we vary the coeﬃcient x2 instead and keep
+
+=== page 18 ===
+18 FRED ESPEN BENTH, NILS DETERING, LUCA GALIMBERTI
+(a)
+ (b)
+Figure 3. Mean squared error for network architecture presented in Sec-
+tion 2 with number of neurons ranging from 1 to 30 (a) One dimensional
+noise speciﬁcation. (b) Multi dimensional noise speciﬁcation.
+(a)
+ (b)
+Figure 4. (1) (a) Option price with varying coeﬃcient x1 for the model
+with one dimensional noise. (b) Option price with varying coeﬃcient x1 for
+the model with multi dimensional noise. The green line marks the option
+price determined by the neural network. The red stars are option prices
+determined by Monte Carlo simulations.
+the other coeﬃcients equal to 0. While for the ﬁrst coeﬃcient the ﬁt seems almost perfect,
+for the second coeﬃcient the ﬁt looks worse. This is due to the lower option price. Because
+in this case x1 = 0, the options are not as deep in the money and the option price depends
+more on the tail of the distribution of W . To achieve a better ﬁt for these options one would
+have to increase the training size to include more samples of W . One can also observe that
+the red stars still show some noisy behaviour due to the limited number of only 100, 000
+simulations.
+We next compare the accuracy of our Hilbert space neural network architecture to the one
+obtained with a classical neural network with one dimensional activation and where instead
+of using the basis coeﬃcients as inputs to the network we discretize the initial function x
+on an equally spaced grid. For this, recall that each sample x(k) represents the function
+x(k)(ξ) = ∑7 i=1 x(k) i ei(ξ). We evaluate the function on a grid of equally spaced points
+0 = ξ0 <···<ξD and analyze the accuracy with a standard one layer neural network with
+input dimension D trained with the input-output pairs (x(k)(ξ0),...,x(k)(ξD)),X (x(k))).
+We consider D = 10 and D = 20. We ﬁt neural networks with the number of hidden
+nodes ranging from 5 to 150. For D = 10 the number of parameters to be ﬁtted for these
+networks ranges from 60 (5 nodes) to 1, 800 (150 nodes) which is comparable to the previous
+setting where the number of parameters ranged from 63 (1 node) to 1, 890 (30 nodes). For
+D = 10 the parameters range from 110 (5 nodes) to 3, 300 (150 nodes). We display the
+resulting mean squared errors in Figure 6. As one can see in the ﬁgure, the mean squared
+
+=== page 19 ===
+PRICING OPTIONS ON FLOW FORWARDS BY NEURAL NETWORKS IN HILBERT SPACE 19
+(a)
+ (b)
+Figure 5. (1) (a) Option price with varying coeﬃcient x2 for the model
+with one dimensional noise. (b) Option price with varying coeﬃcient x2 for
+the model with multi dimensional noise. The green line marks the option
+price determined by the neural network. The red stars are option prices
+determined by Monte Carlo simulations.
+(a)
+ (b)
+Figure 6. Mean squared error for classical neural network architecture
+with number of neurons ranging from 5 to 150 (a) One dimensional noise
+speciﬁcation. (b) Multi dimensional noise speciﬁcation.
+error is signiﬁcantly larger than with the Hilbert space neural network. Averaging over the
+networks with at least 20 nodes, the average mean square error is 1.251 · 10−3 (gridsize 10)
+and 1.550 · 10−3 (gridsize 20) for the one dimensional noise, and 1.075 · 10−3 (gridsize 10)
+and 1.827 · 10−3 (gridsize 20) for the multi dimensional noise.
+Run-time. We perform our numerical analysis on a virtual machine provided by Letters &
+Science IT at the University of California, Santa Barbara. The virtual machine provides 32
+CPU cores with speed 2.1GHz. The generation of training set and test set is done parallel
+across all cores by using the python multiprocessing package. The training of the neural
+networks facilitates the standard parallel computing capability of the TensorFlow library.
+The generation of the training set takes less than 1 minute for the speciﬁcation with one
+dimensional noise and 27 minutes for the speciﬁcation of multi dimensional noise. Generation
+of the test set requires the most computational resources due to the Monte Carlo simulation
+performed for each initial curve in the training set resulting in a total of 1 billion simulations.
+For the model with one dimensional noise, this takes 1 hour and 33 minutes, and for the
+model with multidimensional noise it takes 43 hours and 35 minutes. The reason for the
+signiﬁcantly longer run-time of the multi dimensional setting is mainly the discretisation
+that is required for simulating from Y (t) in this case. In the one dimensional noise setting
+this is not necessary because the Wiener process is of the particular form W (t) = B(t)e1
+where e1 is the function constantly equal to 1 on which the semi group St acts as the identity.
+The training time of the neural networks is independent of the speciﬁcation of the noise and
+
+=== page 20 ===
+20 FRED ESPEN BENTH, NILS DETERING, LUCA GALIMBERTI
+takes from 5 minutes to 24 minutes where the time increases with the number of parameters
+of the network.
+In conclusion, run time is not a limiting factor for turning this pricing routine into pro-
+duction for two reasons:
+(1) The computing resources used for this study are limited and comparable to a modern
+laptop computer. They can be easily scaled up by a ﬁnancial institution. Moreover,
+the generation of the training and test set, could be programmed in C++, and be
+compiled into executable code that does not require interpretation at run time. This
+leads to a signiﬁcant speed improvement over the Jupyter notebooks used in this
+study which are interpreted at run time.
+(2) We derive the pricing function automatically for all initial curves in K7. For that
+reason, it is not necessary to retrain the network when the market changes. In
+fact, generating a new training and test set, and retraining the network can be done
+either over night or over the weekend. This is a common practice in banks for pricing
+routines that are more complex.
+References
+[1] C. Bayer, B. Horvath, A. Muguruza, B. Stemper, and M. Tomas. On deep calibration of (rough)
+stochastic volatility models, 2019.
+[2] C. Bayer and B. Stemper. Deep calibration of rough stochastic volatility models, 2018.
+[3] C. Beck, S. Becker, P. Grohs, N. Jaafari, and A. Jentzen. Solving the Kolmogorov PDE by means of
+deep learning. Journal of Scientiﬁc Computing, 88(3), Jul 2021.
+[4] C. Beck, M. Hutzenthaler, A. Jentzen, and B. Kuckuck. An overview on deep learning-based approxi-
+mation methods for partial diﬀerential equations, 2021.
+[5] F. E. Benth, N. Detering, and L. Galimberti. Neural networks in Fr´echet spaces, 2021.
+[6] F. E. Benth, N. Detering, and P. Kr¨uhner. Stochastic Volterra integral equations and a class of ﬁrst
+order stochastic partial diﬀerential equations. Stochastics (to appear), 2022+.
+[7] F. E. Benth, N. Detering, and S. Lavagnini. Accuracy of deep learning in calibrating HJM forward
+curves. Digital Finance, 3(3):209–248, 2021.
+[8] F. E. Benth, H. Eyjolfsson, and A. Veraart. Approximating L´evy semistationary processes via Fourier
+methods in the context of power markets. SIAM Journal of Financial Mathematics, 5:71–98, 2014.
+[9] F. E. Benth and S. Koekebakker. Stochastic modeling of ﬁnancial electricity contracts. Energy Econom-
+ics, 30(3):1116–1157, 2008.
+[10] F. E. Benth and P. Kr¨uhner. Representation of inﬁnite dimensional forward price models in commodity
+markets. Communications in Mathematics and Statistics, 2(1):47–106, 2014.
+[11] F. E. Benth and P. Kr¨uhner. Representation of inﬁnite dimensional forward price models in commodity
+markets. SIAM Journal of Financial Mathematics, 6:825–869, 2015.
+[12] F. E. Benth and P. Kr¨uhner. The Stochastics of Prices in Commodity and Energy Markets – an Inﬁnite
+Dimensional View. Book manuscript edition, 2022+.
+[13] F. E. Benth, J. ˇSaltyt˙e Benth, and S. Koekebakker. Stochastic Modelling of Electricity and Related
+Markets. World Scientiﬁc, Singapore, 2008.
+[14] T. Bj¨ork. Arbitrage Theory in Continuous Time. Oxford University Press, Oxford, 1998.
+[15] L. Clewlow and C. Strickland. Energy Derivatives – Pricing and Risk Management. Lacima Publica-
+tions, London, 2000.
+[16] G. Cybenko. Approximation by superpositions of a sigmoidal function. Mathematics of Control, Signals
+and Systems, 2(4):303–314, 1989.
+[17] D. Duﬃe. Dynamic Asset Pricing Theory. Princeton University Press, Princeton, 1992.
+[18] D. Filipovi´c. Consistency Problems for Heath-Jarrow-Morton Interest Rate Models. Springer-Verlag,
+2001.
+[19] D. Filipovi´c, S. Tappe, and J. Teichmann. Jump-diﬀusions in Hilbert spaces: existence, stability and
+numerics. Stochastics, 82:475–520, 2010.
+[20] H. Geman. Commodities and Commodity Derivatives. John Wiley & Sons, Chichester, 2005.
+[21] L. Gonon and C. Schwab. Deep ReLU network expression rates for option prices in high-dimensional,
+exponential L´evy models. Finance and Stochastics, 25(4):615–657, October 2021.
+[22] J. Han, A. Jentzen, and W. E. Solving high-dimensional partial diﬀerential equations using deep learn-
+ing. Proceedings of the National Academy of Sciences, 115(34):8505–8510, 2018.
+[23] M. Hutzenthaler, A. Jentzen, T. Kruse, and T. A. Nguyen. A proof that rectiﬁed deep neural networks
+overcome the curse of dimensionality in the numerical approximation of semilinear heat equations. SN
+Partial Diﬀerential Equations and Applications, 1:10, 2020.
+[24] I. Karatzas and S. E. Shreve. Brownian Motion and Stochastic Calculus. Springer-Verlag, 2nd edition,
+1991.
+[25] D. Peszat and J. Zabczyk. Stochastic Partial Diﬀerential Equations with L´evy Noise. Cambridge Uni-
+versity Press, Cambridge, 2007.
+
+=== page 21 ===
+PRICING OPTIONS ON FLOW FORWARDS BY NEURAL NETWORKS IN HILBERT SPACE 21
+[26] J. Ruf and W. Wang. Neural networks for option pricing and hedging: a literature review. Journal of
+Computational Finance, 24(1):1–45, 2020.
+[27] J. B. Skov and D. Skovmand. Dynamic term structure models for SOFR futures. Journal of Futures
+Markets, 41(10):1520–1544, October 2021.
+[28] S. Tappe. Some reﬁnements of existence results for SPDEs driven by Wiener processes and Poisson
+random measures. International Journal of Stochastic Analysis, 2012:Article ID236327, 24 pages, 2012.
+Fred Espen Benth, University of Oslo, Department of Mathematics, P.O. Box 1053, Blindern,
+N–0316 Oslo, Norway
+Email address: fredb@math.uio.no
+Nils Detering, University of California at Santa Barbara, Department of Statistics and
+Applied Probability, CA 93106 Santa Barbara, USA
+Email address: detering@pstat.ucsb.edu
+Luca Galimberti, Norwegian University of Science and Technology, Department of Mathe-
+matical Sciences, Sentralbygg 2, Gløshaugen, Trondheim, Norway
+Email address: luca.galimberti@ntnu.no

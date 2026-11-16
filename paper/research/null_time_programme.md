@@ -370,3 +370,57 @@ armed. The owner's word is the only trigger.
   Next in the queue: the library ritual's second paper (Hawkes branching —
   the beta lesson's other half), then the remaining prose pages against the
   ledger.
+
+## 9. Null-time session 5 (2026-11-16): the 500-paper edge triage and deep-read session 3
+
+Owner directive: "go through 500 PDFs for edge." Executed in three
+layers, honoring the frozen protocols (no L2 run, no new data, no
+new claims, no kill lines armed without the owner's word):
+
+- **Acquisition to 500**: `src/library_expand.py` widened (25 new
+  arXiv query families: manipulation/spoofing detection,
+  execution, microstructure noise, self-exciting jumps, stablecoin/
+  DeFi, tick size, market making, lead-lag, prediction markets,
+  deep-learning-on-returns, and more). The expanded library now
+  holds **500 papers** (176 previously tracked + 324 new), all
+  legal OA, all text-extracted with page markers. The repo-weight
+  policy (roadmap improvement 3) was EXECUTED first: new raw PDFs
+  land in git-ignored `data/library_pdfs/` (local to the
+  codespace); the extracted texts and the index stay versioned.
+  Zero off-topic strays (filter re-run).
+- **Mechanical edge triage of all 500**
+  (`docs/library/edge_triage_500.md`, scores in
+  `edge_triage_scores.json`): every text's title/abstract/intro
+  region scored for content that could kill or sharpen C1-L2/C8
+  (Hawkes/branching/criticality, OFI/LOB, impact, flash events,
+  crypto microstructure, overfitting discipline). The result is a
+  ranked 40-paper deep-read queue, not a verdict.
+- **Deep-read session 3** (rank 1 of the triage):
+  `paper/research/library/2026-11-16_mmhp_manipulation_deep_read.md`
+  on Fabre & Muni Toke, "High-Frequency Market Manipulation
+  Detection with a Markov-modulated Hawkes process"
+  (arXiv:2502.04027, 2025; crypto trade data). Grade: NO kill line
+  changed; the proxy-refusal/gate layer gains a candidate
+  wash-trading audit, PENDING OWNER RATIFICATION — the paper's
+  signature is trade bursts WITHOUT price changes (wash trading)
+  on a top crypto exchange; if such bursts contaminate the perps
+  feed, the branching-ratio trigger measures the manipulator's
+  clustering, not reflexivity, and no clean-stretch placebo would
+  catch it because the contamination is not random. Candidate
+  pre-declaration: audit trigger windows for
+  burst-without-price-change events and report the fraction; a
+  contaminated window is missing, not zero. Companion evidence
+  queued at the top: Aloosh & Li (2024), "Direct evidence of
+  bitcoin wash trading" (Management Science). Gifts recorded: the
+  MMHP (hidden-Markov-modulated Hawkes, EM + ODE likelihood) is
+  C8's structure already built and tested on crypto; their
+  seasonality protocol (stable 05:00-12:00 UTC window,
+  weekday-matched estimation/testing) is a cheap answer to the
+  intraday confound; their own honest limits (the piecewise kernel
+  cannot compute endogeneity ratios - so it cannot replace the
+  standard Hawkes trigger; indirect detection is false-positive
+  prone) protect the C8 layer boundaries.
+
+Ratification queue after this session: six candidate sharpenings
+(sessions 3, 4/4b, and this one), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked.

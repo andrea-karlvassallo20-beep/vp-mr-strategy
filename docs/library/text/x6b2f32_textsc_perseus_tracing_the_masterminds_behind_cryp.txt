@@ -1,0 +1,1431 @@
+=== page 1 ===
+1
+PERSEUS: Tracing the Masterminds Behind Cryptocurrency
+Pump-and-Dump Schemes
+Honglin Fu, Yebo Feng, Cong Wu, Jiahua Xu
+Abstract—Masterminds are entities organizing, coordinating,
+and orchestrating cryptocurrency pump-and-dump schemes, a
+form of trade-based manipulation undermining market integrity
+and causing financial losses for unwitting investors. Previous
+research detects pump-and-dump activities in the market, pre-
+dicts the target cryptocurrency, and examines investors and
+online social network (OSN) entities. However, these solutions
+do not address the root cause of the problem. There is a
+critical gap in identifying and tracing the masterminds involved
+in these schemes. In this research, we develop a detection
+system PERSEUS, which collects real-time data from the OSN
+and cryptocurrency markets. PERSEUS then constructs temporal
+attributed graphs that preserve the direction of information
+diffusion and the structure of the community while leveraging
+graph neural network (GNN) to identify the masterminds behind
+pump-and-dump activities. Our design of PERSEUS leads to
+higher F1 scores and precision than the state-of-the-art (SOTA)
+fraud detection method, achieving fast training and inferring
+speeds. Deployed in the real world from February 16 to October
+9 2024, PERSEUS successfully detects 438 masterminds who are
+efficient in the pump-and-dump information diffusion networks.
+PERSEUS provides regulators with an explanation of the risks
+of masterminds and oversight capabilities to mitigate the pump-
+and-dump schemes of cryptocurrency.
+Index Terms: Cryptocurrency Market Forensics, Pump-and-
+Dump Schemes, Machine Learning and Artificial Intelligence
+I. INTRODUCTION
+In the cryptocurrency market, a pump-and-dump is a trade-
+based manipulation tactic in which individuals or groups
+artificially inflate the price of a cryptocurrency to sell it for
+a profit, ultimately causing significant losses for investors [1],
+[2], [3]. In 2023 alone, pump-and-dump manipulators swindled
+$241.6 million in profit through decentralized exchanges [4],
+which account for only about 10% of the total trading vol-
+ume compared to centralized exchanges [5]. This highlights
+the more substantial impact of pump-and-dump activities on
+centralized exchanges, drawing the attention of regulators.
+OSNs are largely exploited by pump-and-dump schemes.
+The spreaders—OSN entities such as Telegram channels, X
+accounts, chatbots, etc.—disseminate pump-and-dump mes-
+sages and coordinate investors to buy a specific cryptocurrency
+collectively through exchanges. As a result of this coordinated
+buying, the price of cryptocurrency is artificially inflated, al-
+lowing some early investors to sell their holdings for profit [6].
+Spreaders can be classified into two categories based on their
+role in the scheme: masterminds and accomplices. Master-
+minds broadcast crowd-pump messages, and accomplices fur-
+ther propagate them. Normally, masterminds campaign for the
+pump-and-dump and dominate the entire operation, occupying
+upstream positions in the information diffusion process. In
+contrast, accomplices follow the lead of the masterminds and
+retransmit messages to as many investors as possible, forming
+a community around their respective masterminds [7].
+Previous research has explored the issue of cryptocurrency
+pump-and-dump schemes, yet a fundamental solution remains
+elusive. Various rule-based and machine-learning methods
+have been used to detect and predict pump-and-dump schemes
+in exchanges [6], [8], [9], [10], [2], [11]. However, such
+research does not provide actionable strategies to mitigate
+the effects of detected or predicted pump-and-dump events.
+In a notable study, Chen et al. [12] applied an enhanced
+apriori algorithm to identify exchange users involved in pump-
+and-dump schemes, suggesting banning involved accounts’
+transactions. However, this approach risks affecting legitimate
+transactions and does not prevent masterminds from luring
+new accounts to continue their fraudulent activities. More
+recently, researchers have begun linking OSN entities with
+pump-and-dump spreaders [13], [14], [7] through empirical
+market analyses tied to user activities. This line of research
+points toward the necessity of identifying the masterminds
+behind these schemes; without such identification, efforts to
+mitigate pump-and-dumps by targeting numerous spreaders
+remain incomplete and less effective.
+This study introduces PERSEUS, a system that fundamen-
+tally addresses the issue of pump-and-dump schemes by
+tracing the masterminds within OSNs. PERSEUS is designed
+to pinpoint masterminds effectively and efficiently, offering
+a solution to mitigate such schemes with minimal collateral
+damages and adherence to high ethical standards. To this
+end, we have developed temporal attributed graph networks
+to discern masterminds from accomplices. The deployment
+of PERSEUS involves several key steps. Initially, we scrape
+real-time data from Telegram channels and the cryptocurrency
+market. Subsequently, we construct temporal graphs while
+incorporating OSN, topological, and market features. In the
+final step, we apply GNN to temporal attributed graphs to
+detect masterminds.
+To deploy PERSEUS, we use real-world data scraped from
+April 2018 to February 2024 for evaluation. During this period,
+660 cryptocurrencies and 2, 103 Telegram channels have been
+monitored by PERSEUS. We employ regular expressions for
+the 27, 365, 232 messages, extracting the 733, 128 pump-and-
+dump-related messages. By grouping messages, we compile
+4, 101 instances of pump-and-dump events. PERSEUS then
+processes these instances, generating 920 temporal attributed
+graphs with 9, 666 nodes and 23, 293 edges. We evaluate
+PERSEUS’s ability to identify masterminds and find PERSEUS
+beats the benchmark in F1 score, precision, accuracy, and
+Matthews Correlation Coefficient (MCC) and demonstrates
+arXiv:2503.01686v1  [cs.CY]  3 Mar 2025
+
+=== page 2 ===
+2
+rapid training and stable inference speeds. In addition, we
+document the characteristics of masterminds detected and
+present two case studies to illustrate how PERSEUS detects
+masterminds. From February 16 to October 9 2024, PERSEUS
+successfully identified 290 masterminds involved in pump-
+and-dump activities, potentially reducing the related trading
+volume impacts by approximately $3.24 trillion.
+Our paper makes the following contributions:
+• We are the first to investigate the masterminds of cryp-
+tocurrency pump-and-dump and offers a framework PERSEUS
+detecting 438 masterminds across 322 cryptocurrencies, with
+high efficacy and efficiency.
+• PERSEUS assembles data from the OSN and cryptocurrency
+market and processes an unprecedented dataset of cryptocur-
+rency pump-and-dump schemes from 2, 103 channels, exceed-
+ing the scope of prior studies that examined between 50 to 700
+channels [11], [15], [16], [2].
+• We allow for an explanation of the risk of masterminds.
+Masterminds are efficient in their information diffusion net-
+works, and accomplices get crowd-pump information directly
+from them.
+II. BACKGROUND
+A. Pump-and-dump Schemes
+In the cryptocurrency market, a pump-and-dump is a form
+of market manipulation similar to a trade-based pump-and-
+dump in traditional financial markets, where individuals or
+groups purchase a cryptocurrency, artificially inflating its price
+through strategic trading rather than spreading false rumors,
+and subsequently sell it for profit [3]. Importantly, all illicit
+pump activities include a dumping phase, during which the
+sell-off begins, often leading to a price drop and financial
+losses for unsuspecting investors.
+Pump-and-dump schemes, which manipulate targeted cryp-
+tocurrencies through coordinated buying and selling, are di-
+vided into time-pumps, which synchronize trading activi-
+ties [2], [11], and crowd-pumps, which organize trades through
+predefined price boundaries [17], [18]. Because crowd-pumps
+do not need precise timing coordination, they are more preva-
+lent than time-pumps, as depicted in Figure 1. The crowd-
+pump is a pump whose messages have prices specifying when
+to dump the cryptocurrency. Figure 2 provides an example of
+a crowd-pump, including its messages, characterized by the
+specified trading pair and the predefined buying and selling
+prices, and its market impact.
+B. Crowd-Pump and OSN
+OSNs are increasingly exploited by spreaders to enhance
+the effects of crowd-pumps. Specifically, on platforms like
+Telegram, spreaders establish channels where only they can
+talk to coordinate investors to align their trades with the
+crowd-pump messages. Masterminds broadcast crowd-pump
+messages and accomplices further propagate them, thus form-
+ing a community around their respective masterminds [7]. This
+process mirrors the diffusion of information, where crowd-
+pump messages diffuse from masterminds to their accom-
+plices, resulting in a coordinated crowd-pump event.
+2018201920202021202220232024
+0
+25
+50
+75
+100Proportion Crowd Pump
+Time Pump
+(a) Proportion of Pumps Over
+Time.
+101 104
+Number of Signals
+10 4
+10 2
+100
+Density Crowd Pump
+Time Pump
+(b) Kernel Density of Pumps per
+Channel.
+Figure 1: PERSEUS assembles the most comprehensive pump-
+and-dump data with 2103 pump-and-dump channels, showing
+that crowd-pumps are more prevalent than time-pumps.
+C. Regulatory Action
+The prevalence of crowd-pumps messages across OSN
+have drawn attention from regulators. Authorities such as the
+Financial Conduct Authority, the European Union, and the
+U.S. Senate are exploring methods to counteract the impact
+of pump-and-dump schemes on OSN. The Financial Conduct
+Authority defines financial crimes as criminal activities related
+to money, financial services, or markets, including fraud
+and market misconduct [19]. The European Union assesses
+fraudulent cryptocurrency marketing and defines market ma-
+nipulation as deceptive trading, biased media statements, and
+false information to influence prices [20]. Meanwhile, the U.S.
+is considering legislation to clarify regulatory jurisdiction over
+cryptocurrency [21].
+III. SYSTEM DESIGN
+A. System Overview
+Since crowd-pumps are much more prevalent than time-
+pumps, we design PERSEUS based on the characteristics of
+crowd-pumps to detect masterminds. We design PERSEUS’
+pipeline as three integral components: real-time fetcher, tem-
+poral attributed graph generator, and mastermind detector. The
+real-time fetcher gathers data, which is passed to the temporal
+attributed graph generator for producing the information diffu-
+sion graphs and node features. Finally, the mastermind detector
+builds temporal attributed graph networks to classify spreaders
+into masterminds and accomplices. In particular, the real-time
+fetcher and temporal attributed graph generator parallel mine
+data from OSN platforms and cryptocurrency markets. An
+overview of PERSEUS is presented in Figure 3.
+B. Real-time Fetcher
+We collaborate with Cloudburst [22] to deploy the real-
+time fetcher. The real-time fetcher is divided into two parallel
+streams: one focusing on the cryptocurrency market and the
+other on OSN platforms.
+1) OSN Real-time Scrapping: Previous research shows that
+Telegram [23] hosts the most pump-and-dump groups and
+messages compared to other OSNs [2]. Consequently, we
+choose Telegram as the primary source to collect OSN data. To
+collect data from Telegram, we search for keywords commonly
+
+=== page 3 ===
+3
+(a) The crowd-pump message coordinates in-
+vestors to purchase the cryptocurrency when
+the price is within the entry prices and sell
+them at the target prices.
+(b) The market reaction to the crowd-pump message in Figure 2a.
+Figure 2: A crowd-pump on VET, the native token for Vechain, a public blockchain secured by a proof of authority consensus
+mechanism. Note that the example shows a pump-and-dump on a short contract, a financial instrument profiting from a decline
+in the value of an asset. In this case, masterminds encourage investors to buy the short contract and sell the spot cryptocurrency.
+found in the names of pump-and-dump groups in a disclosed
+database published by Morgia [9]. The terms “pump” and
+“signal” emerge as the most prevalent. As a result, we employ
+search queries “crypto pump Telegram” and “crypto signal
+Telegram” on search engines Google and Bing.
+The initial search yields 216 channels. We then deploy
+bots to scrape real-time raw text messages from each channel,
+including invitation links to additional Telegram channels. This
+facilitates an iterative process in which following these links
+expands our channel list. Through this method, we assemble
+a collection of 2, 103 channels. The bots also collect metadata
+for each channel, including the timestamp of each message
+and the channel identifier.
+We acknowledge that our search strategy might overlook
+some Telegram channels and other social media platforms.
+However, we are confident that this approach helps us identify
+the most representative and popular channels. With their high-
+est numbers of group members and messages, the Telegram
+channels we’ve collected are sufficient to find the masterminds.
+2) Cryptocurrency Market Real-time Monitoring: For each
+cryptocurrency, we retrieve trade-by-trade price data covering
+three days before and after each crowd-pump message. We
+choose three days as the window size because the reported
+duration of the crowd-pump messages usually will not exceed
+three days. Given the substantial volume of trades with Bitcoin
+and Ethereum, we capture data at one-minute intervals to
+reflect market reactions to crowd-pumps.
+C. Temporal Attributed Graph Generator
+The temporal attributed graph generator processes both OSN
+and cryptocurrency data like the real-time fetcher. For the
+OSN data, we extract crucial information from crowd-pump
+messages through Named Entity Recognition (NER). Then,
+we establish crowd-pump events based on time gaps used
+to construct information diffusion graphs. In parallel, for the
+cryptocurrency market data, we calculate the maximum return
+for each crowd-pump. Ultimately, we engineer market, OSN,
+and topological features with the processed data.
+1) OSN Processing:
+a) Named Entity Recognition: The raw text data from
+the OSN channels undergo a NER process using regular
+expressions. NER is an information extraction technique to
+identify predefined semantic types [24]. We focus on ex-
+tracting key details such as timestamps, channel identifiers,
+names of cryptocurrencies, entry prices, target prices, and the
+recommended trading positions (either long or short). Listing 1
+shows an example of this structured data in JSON format.
+b) Crowd-pump Event Establishment: A crowd-pump
+event is a series of crowd-pumps. We establish crowd-pump
+events based on the time gaps between messages. To achieve
+this, we group messages observed within a period of time
+according to cryptocurrency and trade direction. Within each
+group, messages are segmented into events using a time gap
+threshold, the lesser of the 95th percentile of time gaps of
+the group, or a three-day cap, as reported crowd-pumps rarely
+[
+{
+”PID”:398868,
+”entity id”:”−1001313911314”,
+”trade direction”:”Short”,
+”source datetime”:”05−01−2024 03:14:42”,
+”exchange”:”Unspecified”,
+”crytpocurrency”:”VET”,
+”channel participants”:38046,
+”entry prices”:[0.03518, 0.03528],
+”target prices”:[0.035004, 0.034828, 0.034476, 0.034124, 0.033772, 0.033421, 0
+.033069, 0.032717],
+”stop loss”:0.037994,
+”message text”:”SCAPING300. VETUSDT. Direction: SHORT. Leverage: Cross
+20x. Entry: 0.03518, 0.03528. Stoploss: 0.037994. SCALPING: Target1− 0
+.035004, Target2− 0.034828, Target3− 0.034476. DAY TRADING: Target4
+− 0.034124, Target5− 0.033772, Target6− 0.033421. SWING TRADING:
+Target7− 0.033069, Target8− 0.032717”
+}
+]
+Listing 1 NER extracted JSON data for the crowd-pump in
+Figure 2. PID is the crowd-pump message ID. Entity ID
+identifies the broadcasting channel. Trade direction indicates
+position. Source datetime is the message timestamp. Exchange
+and commodity specify where and what is pumped. Channel
+participants show group size. Entry, target, and stop-loss prices
+are instructional trade levels.
+
+=== page 4 ===
+4
+zz
+Real-Time
+MonitoringCrypto 
+Market
+Real-Time Fetcher
+Metric 
+Calculation
+Raw Price
+Graph
+Construction OSN 
+Platform
+NERReal-Time
+Scrapping
+M M
+A
+C
+Temporal Attributed Graph Generator
+Raw Text
+Mastermind Detector
+Text
+Impact
+Measurement
+Text
+Text
+Text
+TextText
+Text
+Text
+Text
+Max Return
+OSN
+Gauging
+A
+C
+B
+D
+Topological Features
+OSN Features
+D
+A
+B C
+M
+A
+B
+CM
+A
+B C
+M D
+Market Features
+A
+B
+CM
+Topology
+ Analysis
+Weighted Diffusion
+Directed Diffusion
+`
+`
+GAT GraphSAGE
+B
+GNN
+Deployment
+Node
+Classification
+Accomplices
+Mastermind
+Mastermind Labeling
+Crowd-Pump Events
+Time
+Time
+Time
+T
+Time
+Time
+Time
+T
+M A C D T
+A C T
+M A
+C
+T
+M A B T
+B A T
+C M T
+M A B T
+M C T
+ID, Time, Prices, Crypto
+Event
+Establishment Model
+Training
+Figure 3: PERSEUS consists of three components: real-time fetcher, temporal attributed graph generator, and mastermind
+detector. The real-time fetcher collects data from OSN and the cryptocurrency market, which is processed by temporal attributed
+graph generators to create information diffusion graphs that serve as input for the mastermind detector to identify masterminds.
+The real-time fetcher and temporal attributed graph generator concurrently process data from OSN and cryptocurrency markets.
+last longer. If a spreader sends multiple messages in an event,
+only the first is retained. Messages in the same event may have
+different entry or target prices.
+c) Crowd Pump Events: A crowd-pump labeled c in-
+cludes a detailed message. Each message is associated with the
+target cryptocurrency x, the time t at which it was posted, and
+the identity v of the spreader who sent it. Thus, we denote a
+crowd-pump as a tuple (vx, tx). When a crowd-pump message
+is sent on an OSN, other spreaders read and retransmit
+it, passing on the information. We refer to this process of
+crowd-pump information diffusion as a crowd-pump event d.
+Let T be a continuous time interval in which crowd-pump
+messages are observed where T = [t1, tn]. A crowd-pump
+event d targeting cryptocurrency x can be formalized as dx T =
+{(c1), (c2), . . . , (cn)} = {(vx 1 , tx 1 ), (vx 2 , tx 2 ), . . . , (vx n, tx n)}. Let
+the overall observation period τ be the union of several disjoint
+or contiguous time intervals where τ = T1 ∪ T2 ∪ . . . ∪ Tn.
+Each Ti is a continuous time interval during which crowd-
+pump messages are collected. For the target cryptocurrency x,
+the collection of crowd-pump events over the entire period τ
+is defined as: Dx τ = {dx T1 , dx T2 , . . . , dx Tn }, where each dx Ti is
+the crowd-pump events observed in the time interval Ti.
+d) Graph Construction: Let V represent the set of
+spreaders divided into masterminds Vm and accomplices Vn,
+such that V = Vm ∪ Vn. Define Vm as the set of master-
+minds {vm1 , vm2 , . . . , vmi } and Vn as the set of accomplices
+{vn1 , vn2 , . . . , vnj }. The spreaders utilize OSNs to propagate
+crowd-pumps messages, forming information diffusion path-
+ways as edges E on a graph G. Thus, the graph G = (V, E)
+defines the crowd-pump information diffusion network among
+spreaders. We construct the crowd-pump spreader network G
+by inferring the edges E from the patterns of information
+diffusion Dx τ .
+We construct temporal graphs in each period by cus-
+tomizing the Diffusion Aware Network Inference Algorithm
+(DANI) [25]. Temporal graphs, where nodes are entities and
+temporal edges are relationships between entities over time,
+are often used to model networks that evolve [26]. DANI
+is used to infer the latent network structure by evaluat-
+ing information diffusion patterns, which are sequences of
+message propagation [27], [28]. We choose this algorithm
+because it preserves the direction of information diffusion
+and community structure, which is crucial in cryptocurrency
+trading, where communities shape the information flow.
+Over a period τ , we observe a set of crowd-pump events
+Dx τ . We infer the structure of the hidden diffusion network
+G∗ Dx τ for a cryptocurrency x by maximizing the likelihood of
+2. Information Directionality Parameter
+M A B
+T
+1. Announcement Time Ranking Vector
+M A
+T
+4. Information Diffusion Graph
+Diffusion
+Direction
+Parameter
+B
+TC M
+T
+C
+B A
+3. Community Structure Parameter
+Order
+Ranking
+Vector
+Community
+Structure
+Parameter
+Entry of
+Combined
+Paremeter Matrix
+A
+B
+CM
+A
+B
+CM
+A
+B
+CM
+Figure 4: Illustration of graph construction for Ethereum
+spreaders in Figure 3. In step 1, we sort the crowd-pump
+messages chronologically. In step 2, we derive the direction
+of information diffusion. In step 3, we infer the community
+structure. In step 4, we integrate the parameters of community
+structure and information direction together.
+
+=== page 5 ===
+5
+P (Dx τ |G) for crowd-pump events occurring over the period
+τ . After processing all crowd-pump events in Dx τ targeting
+cryptocurrency x over the period τ , we get dynamic graphs
+GDxτ .
+GDx τ = (E(Dx τ ), V (Dx τ )) represents the underlying infor-
+mation diffusion network for crowd-pump events Dx τ . V (Dx τ )
+is the set of nodes representing the spreaders participating
+in crowd-pump Dx τ , and E(Dx τ ) is the edge set denoting
+the direction of information diffusion and the structure of
+the community. We infer the network GDxτ by maximizing
+the likelihood of message passing in crowd-pump events Dx τ
+through the Markov chain. Adapting the proof of DANI, we
+prove G′ ∝ argmax
+G
+P
+(r,s)∈G
+P
+di ∈Dxτ
+
+θrs
+λ(i) rs
+
+. Then we
+compute the adjacent matrix by maximizing the likelihood of
+the above: G′ = argmax
+G|0≤W ≤1
+P (Dx τ |G), where wrs = θrs λrs is
+a weighted adjacent matrix. θrs = |In (r)∩In (s)| |In (r)∪In (s)| and λ(i) rs =
+h(i) rsP
+y∈VDxτ h(i) ry are two parameters used to preserve the structure of the community and the directionality of the diffusion of
+information. In in θ is used to calculate the Jaccard similarity
+coefficient between two spreaders r and s. For each crowd-
+pump, h in λ is computed using the spreader ranking vector
+sorted on the time of the announcement of the message, l.
+Specifically, h(i) rs = [l(i) s × (l(i) s − l(i) r )]−1.
+Figure 4 outlines the computation of the adjacency matrix.
+In Step 1, ranking vectors l are created by sorting message
+times of spreaders during crowd-pump events, capturing the
+diffusion order. Step 2 quantifies information directionality
+using parameters h and λ, where h represents the diffusion
+strength between spreaders, and λ adjusts h based on the
+number of connections a spreader has, ensuring influence
+is proportionally distributed. Step 3 determines community
+structure through parameters In and θ, measuring event par-
+ticipation and spreader overlap. Step 4 integrates λ and θ to
+compute diffusion weights w, combining community structure
+and directionality.
+We construct two temporal attributed graphs for each cryp-
+tocurrency x during the period τ : a weighted diffusion graph
+and a directed diffusion graph. The weighted diffusion graph is
+the adjacent matrix Wrs, and directed diffusion W ∗ rs is created
+as follows: W ∗ rs =
+(
+1 if Wrs > Wsr
+0 otherwise. . The matrix W ∗ rs is
+constructed by comparing the probabilities of diffusion from
+one spreader to another and designating the direction of the
+edge from the spreader with a higher probability of sending
+messages to the lesser one, capturing the main direction of
+diffusion of information between spreaders.
+2) Market processing:
+a) Max Return: To assess the impact of each crowd-
+pump message, we calculate the maximum return within three
+days after the announcement. This is the return from the price
+at the announcement time to the highest price within this
+window, assuming an immediate market reaction. The three-
+day window is chosen because crowd-pump effects typically
+do not last longer.
+BINANCE USDT_SUI...
+BINANCE BTC_SUI...
+SUIUSDT
+...
+SUIUSDT...
+SUIUSDT
+...
+New FREE signal BUY SUIUSDT...
+BINANCE USDT_SUI... BINANCE BTC_SUI... SUIUSDT...
+CQSScalpingFree
+cryptotipstrick
+MCY_TRADINGS
+Cryptotegic1
+Spreader Investor
+Sell
+BuyCoin SUIUSDT...
+QualitySignalsChannel
+wallstreetqueenofﬁcialtm
+Market
+Coin SUIUSDT...
+Coin SUIUSDT...
+Figure 5: SUI crowd-pump illustration. Red Telegram icons
+represent masterminds, and green ones represent accomplices.
+Color in block indicate community. Masterminds broadcast
+crowd-pump messages to accomplices who further propagate
+the information, instructing investors to buy and sell cryptocur-
+rency.
+3) Node Features: With the NER extracted data from
+OSN, the return of each message, and constructed graphs, we
+engineer the OSN, market, and topological features for each
+spreader within τ .
+a) OSN Feature: We define two features: total targets
+achieved, the number of target prices met per spreader, and
+rating, the ratio of targets achieved to the total number of
+targets within τ . A target is considered achieved if its price
+falls below the maximum price within three days of the
+announcement.
+b) Market Features: We engineer the market feature
+average increase, the average return of all crowd-pump
+messages a spreader sends within τ .
+c) Topological Features: Over period τ , we construct
+directed and weighted information diffusion graphs for cryp-
+tocurrency x and engineer unweighted and weighted features
+for each spreader. Clustering coefficient, closeness central-
+ity, betweenness centrality, and pagerank are computed for
+each node on the whole graph. In-ratio, out degree, out-ratio,
+efficiency, effective size, and density are calculated in the
+ego network of each node. An ego network is a network that
+focuses on a single node (the ego) and the immediate direct
+connections that node has with other nodes (the alters) [29].
+For the one-step degree-in ego network, we calculate the in-
+ratio. For the one-step degree-out ego network, we calculate
+out degree, out-ratio, efficiency, effective size, and density
+features. The formulas for these features of the ego network
+are detailed in Table I.
+D. Mastermind Detector
+1) Mastermind Labeling: To identify the masterminds, we
+perform financial forensic analyses. We use the Louvain
+algorithm to analyze community structures, check the main
+direction of information diffusion, examine each message’s
+market impact, and verify pump timing to see if a suspected
+mastermind is upstream in crowd-pump events. After iden-
+tifying potential masterminds, we rule out spreaders if they
+exhibit inconsistent and fragmented thoughts, unclear purpose,
+vague and ambiguous statements, inaccuracies, sporadic use
+of technical terms, humorous and playful tone, random and
+unrelated references, and lack of grammar and punctuation.
+
+=== page 6 ===
+6
+Table I: Features for unweighted and weighted graphs for node (v) in its ego network. Variables include number of nodes (n)
+and others as specified in the descriptions.
+Ego Network Feature Unweighted Formula Weighted Formula Description of Variables
+Degree-out
+Effective size n − 1 n P ti n − 1 n P wi ti : the number of ties that alter i has with other alters within the ego network of node v wi : the sum of weights of all outwards edges that a specific alter i has with other alters within the ego network of node vEfficiency 1 − 1 n2 P ti 1 − 1 n2 P wi
+Out degree q Q q: total one-degree out edges for ego v
+Q: total sum of one-degree out weights of edges for ego vOut-ratio q n Q n
+Density 2m n(n−1) 2M n(n−1) m: total unweighted edges for the ego network of v M : total weight sum for the ego network of v
+Degree-in In-ratio indeg(v) n indegw (v) n indeg(v): unweighted in-degree indegw (v): weighted in-degree
+To elaborate the investigation, we construct the underly-
+ing crowd-pump information diffusion network in Figure 5
+with the details of the crowd-pump presented in Table Va.
+Our investigation focuses on identifying masterminds behind
+the cryptocurrency SUI during the period from February 6
+to February 13 2024. We analyze two crowd-pump events,
+denoted as d1 and d2. The crowd-pump events involving SUI
+are led by two masterminds, supported by four accomplices.
+In Figure 5, there are two communities. Focusing on the
+yellow community, the spreader CQSScalpingFree emerges as
+a key figure, initiating and participating in d1 and d2 crowd-
+pump events. Given the extent of its influence in two crowd-
+pump events, we identify CQSScalpingFree as the mastermind
+within the yellow community. In the green community, cryp-
+totipstrick follows the lead of CQSScalpingFree in crowd-
+pump event d2. Although CQSScalpingFree is the initiator,
+cryptotipstrick exerts a greater influence by influencing three
+spreaders. This level of influence establishes cryptotipstrick as
+the mastermind within the yellow community.
+For one crowd-pump event, there could be multiple mas-
+terminds or none. The first spreader of a crowd-pump event
+is not necessarily identified as the mastermind, as timing
+alone is insufficient. The mastermind must also coordinate the
+accomplices and direct the campaign.
+The above selection rules are made because the masterminds
+are professionals with years of crowd-pump broadcasting
+records and desire their crowd-pump messages to be clear
+and effective. Such filtration rules help us design mastermind
+detection as a node classification task within temporal at-
+tributed graphs, as inspired by various studies applying graphs
+to perform forensics on blockchain [30], [31], [32], [33].
+2) GNN in Mastermind Detection: For a cryptocurrency x
+over the period of time τ , we construct the temporal attributed
+graph GDxτ = (E(Dx τ ), V (Dx τ )). We assume that at least one
+node, vm ∈ V (Dx τ ), is the mastermind organizing crowd-pump
+events. Each node vi ∈ V (Dx τ ) is associated with a feature
+vector zi ∈ Rn. Given the labels {yi}|V | i=1, where yi represents
+the label of node vi, 1 for mastermind and 0 for accomplices,
+PERSEUS’ objective is to learn a mapping function f : Rd →
+R that assigns a probability score to each node, representing
+how likely it is to be a mastermind. To achieve that, we apply
+Graph Attention Networks (GAT) [34] and GraphSAGE [35].
+These architectures are chosen because we need to classify
+spreaders for unseen cryptocurrency networks, which suggests
+that an inductive task model is preferred [36].
+3) Graph Attention Networks: GAT introduces an atten-
+tion mechanism useful to detect masterminds, enabling the
+model to focus on key information diffusion pathways. The
+adaptability of GAT allows us to emphasize the most relevant
+spreaders–central to information diffusion–while downplaying
+the less relevant ones.
+In the mastermind detection task, GAT updates each
+node’s features by aggregating information from its neighbors,
+weighed by learned attention coefficients. This enables the
+network to identify spreaders with significant influence and
+typical information diffusion patterns of masterminds. The
+node feature update formula in a GAT layer is given by:
+h′ i = σ P j∈N (i) αij W hj  , where αij represents the atten-
+tion weight between node i and its neighbor j, and N (i) is the
+set of neighbors of node i. These learned weights prioritize the
+most critical nodes for the task, allowing GAT to differentiate
+between masterminds and accomplices based on their roles in
+the graph.
+4) GraphSAGE: GraphSAGE aggregates information from
+a node’s local neighborhood iteratively, generating node em-
+bedding that captures both local and global structure. This
+iterative process is key to detecting masterminds, as it allows
+nodes to incorporate information from increasingly larger
+neighborhoods, capturing the extended influence of a master-
+mind over the network.
+In mastermind detection, GraphSAGE can effectively
+combine features from masterminds’ immediate neighbors
+as well as those farther away, capturing the diffusion
+influence that masterminds may exert. The update for-
+mula for each node’s features in a GraphSAGE layer
+is: h′ i = σ (W · AGGREGATE ({hi} ∪ {hj , ∀j ∈ N (i)})),
+where AGGREGATE is an aggregation function. In our case,
+mean pooling combines the node’s features with those of its
+neighbors.
+IV. EVALUATION
+This section evaluates PERSEUS’ performance, real-world
+deployment, and detected mastermind characteristics, followed
+by two case studies illustrating its detection intuitively. Finally,
+evasion possibility examines mastermind evasion strategies
+and our countermeasure.
+A. Test Scope
+To deploy PERSEUS to detect crowd-pump masterminds in
+the real world, we collaborate with Cloudburst [22] to scrape
+Telegram OSN messages and monitor real-time cryptocurrency
+market transactions from Kaiko [37]. We then test PERSEUS
+using the real-world data the real-time fetcher collected from
+
+=== page 7 ===
+7
+0.00 0.25 0.50 0.75 1.00
+Threshold
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Precision
+D A
+W A
+D S
+W S
+(a) Precision.
+0.00 0.25 0.50 0.75 1.00
+Threshold
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0F1
+D A
+W A
+D S
+W S (b) F1.
+0.00 0.25 0.50 0.75 1.00
+False Positive Rate
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0True Positive Rate
+D A AUC: 0.84
+W A AUC: 0.87
+D S AUC: 0.92
+W S AUC: 0.93 (c) AUC.
+0.13 0.18 0.24 0.33 0.45
+Time per Epoch (seconds)
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0CDF D A
+W A
+D S
+W S (d) Training Speed.
+5 10 15
+Number of Nodes
+0.9
+1.2
+1.5
+1.8
+2.1
+2.4
+Inference Speed (sec)
+×10 4
+D A
+W A
+D S
+W S (e) Inferring Speed.
+Figure 6: Efficacy and efficiency plots. D: directed diffusion. W: weighted diffusion. A: GAT. S: GraphSAGE.
+April 2018 to October 2024. In total, PERSEUS supervises
+2, 103 channels and monitors 660 cryptocurrency market trans-
+actions. From the 27, 365, 232 messages it scrapped, PERSEUS
+extracts 733, 128 crowd-pump-related messages through NER.
+We focus on messages with valid market transactions to ensure
+relevance, resulting in 49, 235 unique messages.
+For model training and evaluation, we select two times-
+tamps to recursively split real-world data chronologically into
+training, validation, and testing sets. This process continues
+until we achieve an approximate distribution of 70%, 15%,
+and 15% by the number of tokens, with each token being
+targeted at least by four spreaders. The process splits the data
+into three periods of time: April 13 2018 to January 9 2024,
+January 10 to February 4 2024, and February 5 to February
+16 2024.
+We establish the crowd-pump events for each period, con-
+struct temporal attributed graphs, and identify masterminds.
+Table II presents a summary statistics of crowd-pump data.
+Note that the number of graphs does not match the number
+of cryptocurrencies because some messages are too separated
+to form crowd-pump events, or the graphs do not have at
+least four spreaders. In each dataset, the percentage of labeled
+masterminds varies. Specifically, they are 13.0% (489) in the
+training set, 21.4% (110) in the validation set, and 24.5% (136)
+in the test set. The ratio of masterminds in the validation and
+test set is higher because they cover shorter periods that do
+not allow enough time for masterminds to spread information
+to more accomplices.
+B. Evaluation Setup
+We evaluate PERSEUS based on the F1 score, precision,
+accuracy, recall, and the area under the receiver operating
+characteristic curve (ROC AUC). We use MCC for cases with
+close performance due to its previous usage in cryptocurrency
+financial fraud [38], [39]. We evaluate the cumulative density
+Table II: Summary statistics for real-world crowd-pump data.
+04-13-2018 to 01-09-2024 01-10-2024 to 02-04-2024 02-05-2024 to 02-16-2024
+Train Validate Test
+Cryptocurrency 358 208 208
+Crowd-pump 41,329 4,447 3,459
+Crowd-pump event 3,523 304 274
+Graph 306 81 73
+Mastermind 489 110 136
+Accomplice 4,300 427 441
+Node 3,764 515 554
+Directed edge 7,893 1,610 1,786
+Weighted edge 8,601 1,633 1,788
+function of the training time and the time to infer each epoch
+for the detection speed.
+We benchmark PERSEUS with the approach described in
+[40], which focuses on identifying critical actors in insider
+threat and financial fraud using GCN and a graph construc-
+tion method integrating direct linkages and cosine similarity
+between nodes.
+We create two adjacency matrices in the Networkx package
+to represent graph construction methods, directed diffusion
+and weighted diffusion. We then transform the adjacency
+matrices into edge lists, combined with node features and
+one-dimensional labels to form PyTorch geometric objects as
+inputs for the mastermind detector module. The entire graph
+for a cryptocurrency forms a batch. We implement GAT and
+GraphSAGE with a sigmoid activation function, and then we
+apply thresholds to obtain binary classifications.
+The experimental setup is an Apple M2 Max CPU with
+32GB memory and Python 3.10. We adjust the embedding
+dimensions and learning rate to optimize the system’s per-
+formance. For each setting, the experiments are run for 100
+epochs. The training and validation phases use the Adam opti-
+mizer and employ Binary Cross Entropy as the loss function.
+C. Experiment Results
+In this section, we first evaluate different combinations
+of graph construction methods and GNN architectures. After
+identifying the optimal combination, we fine-tune the model
+using various parameter settings. Once we determine the best-
+performing configuration, we benchmark it against the SOTA
+detection method. Finally, we deploy the model in a the
+real world and analyze the characteristics of the detected
+masterminds. To illustrate its algorithm, we present two case
+studies based on real-world detection results.
+1) Model Efficacy and Efficiency: In Figure 6, to measure
+efficacy, we plot F1, precision, accuracy, recall, and ROC
+AUC, and to measure efficiency. we plot training and inferring
+speeds.
+Precision measures the proportion of correctly predicted
+positives among all positive predictions. As shown in Fig-
+ure 6a, GraphSAGE outperforms GAT in precision within the
+0.50–0.6 threshold range, with similar performance elsewhere.
+The F1 score, which balances precision and recall, follows
+a similar trend, with GraphSAGE exceeding GAT between
+0.5 and 0.7 (Figure 6b). Both models show a sharp rise in
+precision (around 0.55) and F1 score (around 0.5), suggesting
+
+=== page 8 ===
+8
+a natural grouping of spreaders sharing similar characteristics
+that make them more easily distinguishable by the models at
+specific thresholds. The ROC AUC further confirms Graph-
+SAGE’s superior classification ability across false positive
+rates as shown in Figure 6c. Overall, GraphSAGE proves
+more effective than GAT for mastermind detection. Weighted
+diffusion graphs also outperform directed ones, with weighted
+diffusion GraphSAGE achieving the highest ROC AUC (0.93
+vs. 0.92 for directed), and weighted diffusion GAT (0.87)
+surpassing its directed counterpart (0.84). Thus, weighted
+diffusion GraphSAGE is the best model.
+Figure 6d indicates the proportion of epochs completed
+within a specific time threshold. GraphSAGE models take
+approximately 0.13 to 0.18 seconds to train each epoch,
+while the GAT models take more time, around 0.23 to 0.36
+seconds. Figure 6e plots the inference speed of models in
+different node sizes for a batch. Across all node sizes, the
+GAT and GraphSAGE maintain a stable inference speed, while
+the GraphSAGE architectures are faster. Together, Figure 6d
+and Figure 6e demonstrate that the GraphSAGE architecture
+is more efficient in mastermind detection, while the differ-
+ence between directed and weighted diffusion is negligible.
+Importantly, it takes less than a second to train and infer
+a cryptocurrency crowd-pump information diffusion graph,
+indicating that PERSEUS can detect masterminds in the fast-
+changing cryptocurrency market.
+2) Model Tuning: Our assessments of accuracy, training,
+and inferring speed show that the weighted diffusion Graph-
+SAGE model is more robust in the mastermind detection task,
+so we tune its parameters accordingly. We experiment with
+varying hidden channels at 2, 8, 32, 128, and 512, the number
+of layers at 2, 3, 4, 5, and 6, and learning rates at 0.05,
+0.005, 0.0005, 0.00005, and 0.000005. Figure 7 shows that
+the models at 0.000005 and 0.05 learning rates are not as
+good as the rest. Figure 7 also shows that the models don’t
+perform well for 2 or 512 hidden channels, indicating that
+either the large or small model in terms of the hidden channels
+performs well. Lastly, by looking at the number of layers for
+the model at a learning rate of 0.05, we find that the model
+performs better at two layers. For best performance, lighter
+computational load, and avoidance of corner cases, we choose
+8 hidden channels, 2 layers, and a learning rate of 0.0005 as
+our final model.
+3) Comparing With the SOTA Detection Method: We assess
+PERSEUS against the existing method proposed by Jiang [40].
+Since crowd-pump spreaders, in our case, do not exhibit
+directly linked relationships, we adapt Jiang’s approach by
+exclusively using the cosine similarity of node features to
+construct the graphs. In addition, we also apply random forest
+as a comparison as it is popular in the crypto pump-and-dump
+event detection [2], [9], [15]. Table III shows that weighted dif-
+fusion GraphSAGE achieves the highest precision (80.0%), F1
+score (75.2%), accuracy (90.3%), and MCC (69.4%), though
+with slightly lower recall (71.0%). The directed diffusion
+GraphSAGE follows closely, while GAT models underper-
+form. Weighted diffusion GraphSAGE demonstrates superior
+mastermind detection, validating PERSEUS’ effectiveness.
+2 - 2
+2 - 3
+2 - 4
+2 - 5
+2 - 6
+8 - 2
+8 - 3
+8 - 4
+8 - 5
+8 - 6
+32 - 2
+32 - 3
+32 - 4
+32 - 5
+32 - 6
+128 - 2
+128 - 3
+128 - 4
+128 - 5
+128 - 6
+512 - 2
+512 - 3
+512 - 4
+512 - 5
+512 - 6
+Hidden Channels - Layers
+5e-06
+5e-05
+5e-04
+5e-03
+5e-02Learning Rate
+0.5
+0.6
+0.7
+0.8
+0.9
+Figure 7: AUC scores for different parameters. In the heat
+maps, dark green indicates better performance. The cross
+marks the best parameter setting.
+Table III: Performance comparison of various models.
+Model precision F1 accuracy recall MCC
+Weighted diffusion GraphSAGE 0.800 0.752 0.903 0.710 0.694
+Directed diffusion GraphSAGE 0.757 0.743 0.895 0.729 0.677
+Directed diffusion GAT 0.568 0.642 0.829 0.738 0.540
+Weighted diffusion GAT 0.646 0.664 0.856 0.682 0.573
+SOTA with directed diffusion 0.768 0.667 0.878 0.589 0.601
+SOTA with weighted diffusion 0.694 0.698 0.874 0.701 0.618
+Random Forest with weighted diffusion 0.800 0.731 0.897 0.673 0.672
+Random Forest with directed diffusion 0.738 0.724 0.887 0.710 0.653
+4) Real-world detection: We deploy PERSEUS in real-
+world and report its performance from February 16 to October
+9 2024. During that period, masterminds significantly impact
+the market, driving a 167% increase in trading volumes. We
+define crowd-pump duration as the period within three days
+from the time of announcement to when the price peaks, and
+the total crowd-pump trading volumes as the sum of volumes
+traded during this period. Regular trading volumes are esti-
+mated by calculating the average trading volume per minute
+over the three days before the crowd-pump announcement and
+multiplying it by the crowd-pump duration. The total crowd-
+pump trading volumes reached $8.07 trillion, compared to an
+estimated $4.83 trillion in regular trading, increasing by $3.24
+trillion (67%).
+During the period, PERSEUS identifies 438 masterminds
+associated with 322 distinct cryptocurrencies. The distribution
+of masterminds across cryptocurrencies varies. In particular,
+192 cryptocurrencies are targeted by only one mastermind,
+72 are targeted by two masterminds, and 23 are linked to
+three masterminds. Remarkably, four masterminds target the
+following cryptocurrencies: AAVE, ATOM, BAKE, BCH, COTI,
+FIL, and LINK. The most frequently targeted cryptocurrency
+is BTC with five masterminds identified.
+Furthermore, we conducted a t-test on the topological
+features for masterminds and accomplices on the directed
+Table IV: T-statistical Test for masterminds and accomplices.
+*** marks significant at 0.001, ** marks significant at 0.01.
+Metric Statistic P-value
+Clustering coefficient 37.5*** 3.12e-176
+Betweenness centrality -22.0*** 1.37e-73
+Closeness centrality 3.79*** 5.65e-4
+Effective size -30.2*** 1.31e-109
+Out degree -28.6*** 1.71e-103
+Metric Statistic P-value
+Pagerank -3.96*** 1.36e-4
+Out ratio -47.8*** 6.41e-188
+In ratio 2.9** 5.50e-3
+Efficiency -28.0*** 1.17e-147
+Density 16.5*** 1.69e-59
+
+=== page 9 ===
+9
+0.0 0.2 0.4 0.6
+Value
+0
+2
+4
+6
+8
+10Clustering Coefficient
+0.420.24
+Mastermind
+(a) Probability Density Distribu-
+tion for Clustering Coefficient.
+0.0 0.5 1.0
+Value
+0
+1
+2
+3
+4Efficiency
+0.790.60
+Accomplices
+(b) Probability Density Distribu-
+tion for Efficiency.
+Figure 8: Distributions of topological features. The dashed
+vertical lines indicate the mean.
+diffusion graphs and documented the results in Table IV.
+The t-test is used to determine whether there is a significant
+difference between the means of the two groups. Table IV
+shows distinct network characteristics between masterminds
+and accomplices. We select the two significant features and
+plot their probability density distributions in Figure 8. Fig-
+ure 8a shows that the accomplices have a higher mean
+clustering coefficient at 0.42 with a variance of 0.02, indi-
+cating that they operate within tightly connected local clusters
+and propagate information within. In Figure 8b, mastermind
+demonstrates a sharply concentrated distribution around a high
+mean efficiency of 0.84 with a minimal variance of 0.02. This
+shows that the mastermind is superiorly efficient in their ego
+information diffusion network, indicating that the accomplices
+are more likely to get the crowd-pump information directly
+from masterminds than their peer accomplices.
+5) Case Study: In Figure 9, we apply the Louvain commu-
+nity detection algorithm on the weighted diffusion graph to
+infer communities and plot the main direction of information
+diffusion using the directed diffusion graph.
+a) Case SUI: Figure 5 illustrates how crowd-pumps on
+SUI impact the market. The detailed crowd-pump messages
+can be found in Table Va. We find two masterminds in the
+crowd-pump events on SUI from February 6 to February 13
+2024. SUI is the native token built for a layer one blockchain
+optimizing for low latency [41]. There are two masterminds
+in SUI crowd-pumps, cryptotipstrick and CQSScalpingFree.
+From Figure 9a, in community 2, CQSScalpingFree’s edges
+are all outward, meaning that the mastermind only distributes
+the information rather than receives it. This allows PERSEUS to
+identify it as the mastermind. Connected to two communities,
+cryptotipstrick has three outward edges in community 1,
+allowing PERSEUS to detect it as the mastermind.
+b) Case STORJ: From the investigation in Table Vb, we
+find two masterminds in the crowd-pump events on STORJ
+from February 13 to February 14 2024. STORJ is a cryp-
+tocurrency token used to power the STORJ decentralized cloud
+storage network [42]. In Figure 9b, PERSUES fails to detect
+masterminds because the spreaders broadcast the messages
+simultaneously, making PERSEUS unable to construct repre-
+sentative graphs of the information diffusion network.
+1
+11
+1
+2 2
+MCY_TRADINGS
+Cryptotegic1wallstreetqueenofficialtm
+cryptotipstrick
+CQSScalpingFree QualitySignalsChannel
+Node Labels
+True Positive True Negative
+Node Labels
+True Positive True Negative
+(a) Case SUI.
+3
+3
+34
+5
+5
+4 5
+5
+VIPExpertSignals
+CryptoMarketSignalz
+CryptoGuruSignalCryptoTradingExpertz
+CQSScalpingFree
+binance_360
+GoldenSignalzQualitySignalsChannel
+CoinCoachSignals
+False Negative False PositiveFalse Negative False Positive (b) Case STORJ.
+Figure 9: Case studies illustration. The edges come from di-
+rected diffusion graph. Community are inferred from weighted
+diffusion graph. Numbers represent different communities.
+D. Evasion Possibility
+To avoid the detection system, masterminds can utilize
+the following strategy. (i) Node addition: masterminds create
+off-scope channels, adding a new node vnew to V , altering the
+graph G’s topology; (ii) Edge manipulation: masterminds and
+accomplices broadcast crowd-pump messages simultaneously,
+adding misleading edges Econcurrent to E, distorting the network
+structure; and (iii) Identity manipulation: masterminds use bots
+to spread messages, introducing disguised nodes Vbot into V ,
+concealing their identity without exposing metadata.
+To counteract strategy (i), we can expand the scope of moni-
+toring by continuously identifying new channels. If an unusual
+number of crowd-pump messages appear simultaneously or
+bots are detected as described in strategies (ii) and (iii), the
+system can flag them for further human inspection.
+V. RELATED WORK
+PERSUES is the first study to address pump-and-dump
+schemes at the root by pinpointing masterminds who are at
+the source of crowd-pumps, as shown in Figure 5. Since 2018
+when Kamps et al. [6] first introduced the cryptocurrency
+pump-and-dump detection, various studies have used time
+series analysis, regression, and machine learning [8], [9], [10],
+[2], [11], [43], [15] to improve detection, offering solutions
+at the exchange market level. Hamrick and Nghiem [18],
+[16] used OSN signals and market data to predict pump-and-
+dump success and target cryptocurrencies, highlighting OSN
+collaboration but still focusing on the exchange market level.
+Chen et al. [12] proposed an improved apriori algorithm to
+detect the major investors, while Yahya [13], [14] examined
+the spreaders on OSN without identifying the masterminds.
+In Table VI, we present the comparison of our research with
+others.
+VI. DISCUSSION AND CONCLUSION
+In this research, we passively collect data without inter-
+acting with pump-and-dump schemes. Once masterminds are
+identified, their publicly available information (e.g., nick-
+names, emails, phone numbers) can be shared with authorities.
+
+=== page 10 ===
+10
+Table V: The crowd-pump event tables for SUI and STORJ, outlining the channels, timing, specific messages sent, and their
+corresponding returns. d1, d2, and d3 denote individual crowd-pump events. Red texts highlight the crowd-pump events in
+which masterminds participate. Blue texts highlight the crowd-pump events in which accomplices participate. Orange texts
+represent false positive cases. Return is the maximum return achieved within three days after the announcement of the message.
+Events Telegram Channels Timestamps Messages Returns
+d1 CQSScalpingFree 2024-02-06 18:25:40 BINANCE USDT SUI LONG 3415609 Ask 1.53360000 Target 1.55481690 TP 1.4 SL 4.0 1.28%
+QualitySignalsChannel 2024-02-08 10:44:14 New FREE signal BUY SUIUSDT at BINANCE Leverage SPOT 1x 2491497 08Feb2024
+104410 UTC Entry Zone 1.44130249 1.545329 Current ask 1.5346 Target 1 1.60319 4.47
+Target 2 1.62418999 5.84 Target 3 1.64518999 7.21 Stop loss 1.40876999 8.20 Volume SUI
+48952889.700000 Volume USDT 75163544.712950 SHORT TERM up to 7 days Risk 35 Medium
+Invest up to 5 of your portfolio RR ratio 0.7 Chart SUIUSDT can also be traded on BINANCE,
+BINANCEUS, BINANCE FUTURES, BITGET, BYBIT, HUOBI, KUCOIN, OKEX, POLONIEX
+The information here is not financial advice. It comes without any guarantees. Invest wisely and
+manage your risks.
+7.25%
+d2 CQSScalpingFree 2024-02-11 01:05:53 BINANCE BTC SUI LONG 3418235 Ask 0.00003647 Target 0.00003687 TP 1.1 SL 4.0 1.04%
+cryptotipstrick 2024-02-13 18:35:58 SUIUSDT Exchanges Binance Futures Signal Type Regular Long Leverage Cross 50x Entry Targets
+1.8225 TakeProfit Targets 11.85 21.87 31.89 41.91 51.93 61.96 7 Stop Targets 510
+7.52%
+wallstreetqueenofficialtm 2024-02-13 20:09:16 Coin SUIUSDT Exchange Binance Futures Signal Type Regular Long Leverage Cross 50x ENTRY
+Targets 1.8225 TAKE PROFIT Targets 11.85 21.87 31.89 41.91 51.93 61.96 STOP LOSS Target
+510 Binance Pumps
+5.95%
+MCY TRADINGS 2024-02-13 20:13:17 SUIUSDT Exchanges Binance Futures Signal Type Regular Long Leverage Cross 50x Entry Targets
+1.8225 TakeProfit Targets 11.85 21.87 31.89 41.91 51.93 61.96 7 Stop Targets 510
+6.06%
+Cryptotegic1 2024-02-13 20:14:28 SUIUSDT Exchanges Binance Futures Signal Type Regular Long Leverage Cross 50x Entry Targets
+1.8225 TakeProfit Targets 11.85 21.87 31.89 41.91 51.93 61.96 7 Stop Targets 510
+5.95%
+(a) Case SUI.
+Events Telegram Channels Timestamps Messages Returns
+d3 CQSScalpingFree 2024-02-13 10:44:46 BINANCE BTC STORJ LONG 3419859 Ask 0.00001347 Target 0.00001362 TP 1.1 SL 4.0 1.11%
+binance 360 2024-02-14 08:00:24 Futures Free Signal Long STORJUSDT Entry zone 0.6466 0.6598 Targets
+0.6643 0.6775 0.6907 0.7038 0.7170 0.7301 0.7433 0.7564 Stop loss 0.6136 Leverage 5x 10x
+binance 360
+10.72%
+QualitySignalsChannel 2024-02-14 12:58:30 New FREE signal BUY STORJUSDT at BINANCE US Leverage SPOT 1x 2492909 14Feb2024
+125304 UTC Entry Zone 0.62734751 0.664945 Current ask 0.6606 Target 1 0.67885 2.76 Target 2
+0.68674001 3.96 Target 3 0.69463001 5.15 Stop loss 0.61533001 6.85 Volume STORJ 20909.000000
+Volume USDT 13786.841400 SHORT TERM up to 7 days Risk 35 Medium Invest up to 5 of
+your portfolio RR ratio 0.6 Chart STORJUSDT can also be traded on BINANCE, BINANCEUS,
+BINANCE FUTURES, BITGET, HUOBI, KUCOIN, OKEX, POLONIEX The information here is
+not financial advice. It comes without any guarantees. Invest wisely and manage your risks.
+5.29%
+CoinCoachSignals 2024-02-14 13:07:17 CAPTION STORJUSDT LONG ENTRY 0.6620 0.6508 Leverage Cross 10X TAKE PROFIT 1 0.6750
+2 0.6827 3 0.6950 4 0.7059 5 0.7155 Stop Loss 0.6235
+8.05%
+GoldenSignalz 2024-02-14 13:07:17 CAPTION STORJUSDT LONG ENTRY 0.6620 0.6508 Leverage Cross 10X TAKE PROFIT 1 0.6750
+2 0.6827 3 0.6950 4 0.7059 5 0.7155 Stop Loss 0.6235
+8.05%
+CryptoTradingExpertz 2024-02-14 13:07:17 CAPTION STORJUSDT LONG ENTRY 0.6620 0.6508 Leverage Cross 10X TAKE PROFIT 1 0.6750
+2 0.6827 3 0.6950 4 0.7059 5 0.7155 Stop Loss 0.6235
+8.05%
+CryptoGuruSignal 2024-02-14 13:07:17 CAPTION STORJUSDT LONG ENTRY 0.6620 0.6508 Leverage Cross 10X TAKE PROFIT 1 0.6750
+2 0.6827 3 0.6950 4 0.7059 5 0.7155 Stop Loss 0.6235
+8.05%
+VIPExpertSignals 2024-02-14 13:07:17 CAPTION STORJUSDT LONG ENTRY 0.6620 0.6508 Leverage Cross 10X TAKE PROFIT 1 0.6750
+2 0.6827 3 0.6950 4 0.7059 5 0.7155 Stop Loss 0.6235
+8.05%
+CryptoMarketSignalz 2024-02-14 13:07:17 CAPTION STORJUSDT LONG ENTRY 0.6620 0.6508 Leverage Cross 10X TAKE PROFIT 1 0.6750
+2 0.6827 3 0.6950 4 0.7059 5 0.7155 Stop Loss 0.6235
+8.05%
+(b) Case STORJ.
+Table VI: Related work comparison table shows that our study
+is the first work on mastermind detection with topological
+features.
+Reference Methods Features Crowd-pump Mastermind Detection
+Market OSN Topology
+[2] Random Forest  # # # #
+[9] Random Forest   # # #
+[10] CLSTM and Anomaly  # # # #
+[8] LTSM  # # # #
+[11] SNN   # # #
+[6] Threshold algorithm  # # # #
+[12] Apriori algorithm  # # # #
+[18] Threshold algorithm   #  #
+[16] CNN, BLSTM, and CLSTM   # # #
+[43] XGBoost   # # #
+[15] Random Forest   #  #
+PERSUES GNN      
+Since we focus on identifying major entities across OSNs, our
+study raises no ethical disclosure concerns.
+However, limitations exist. Some pump events may lack
+labeled masterminds due to undemonstrative influence, and
+discrepancies between reality and human labeling remain, as
+true masterminds are often unknown. Additionally, detection is
+time- and token-specific, and we extract only key information
+from each message. Future work could aggregate pump events
+across tokens and leverage large language models which have
+shown strong results in various domains.
+VII. CONCLUSION
+Pump-and-dump schemes in the cryptocurrency market pose
+a significant threat to investors. Our research is the first to
+pinpoint the masterminds behind such schemes and document
+their characteristics. First, we gather data from the OSNs and
+cryptocurrency markets. Then we construct temporal attributed
+graphs to capture the direction of information diffusion and
+community structure among spreaders. Subsequently, we de-
+velop a GNN network to detect masterminds and provide
+explanation on their risks. Our research detects mastermind
+efficiently and effectively and finds them responsible for
+passing the crowd-pump messages directly to accomplices.
+Leveraging our innovative approaches, regulators can signif-
+
+=== page 11 ===
+11
+icantly enhance their oversight capabilities, reinforcing the
+integrity and stability of cryptocurrency markets.
+REFERENCES
+[1] J. Hamrick, F. Rouhi, A. Mukherjee, A. Feder, N. Gandal, T. Moore, and M. Vasek,
+“The Economics of Cryptocurrency Pump and Dump Schemes,” SSRN Electronic
+Journal, 1 2019. [Online]. Available: https://www.researchgate.net/publication/
+330264829 The Economics of Cryptocurrency Pump and Dump Schemes
+[2] J. Xu and B. Livshits, “The Anatomy of a Cryptocurrency Pump-and-Dump
+Scheme,” in 28th USENIX Security Symposium (USENIX Security 19). Santa
+Clara, CA: USENIX Association, 2019, pp. 1609–1625. [Online]. Available:
+https://www.usenix.org/system/files/sec19-xu-jiahua 0.pdf
+[3] E. J. Lee, Y. K. Lee, and R. Kim, “Profitability and herding of trade-based pump-
+and-dump manipulation,” Applied Economics, vol. 56, no. 20, pp. 2375–2385, 4
+2024.
+[4] Chainalysis, “54% of erc-20 tokens listed on dexes in 2023 display pat-
+terns that may be suggestive of pump and dump schemes, but represent
+just 1.3% of dex trading volume,” 2 2024, https://www.chainalysis.com/blog/
+crypto-crime-2024-pump-and-dump/.
+[5] T. Block, “The Block,” 2024, https://www.theblock.co/data/decentralized-finance/
+dex-non-custodial.
+[6] J. Kamps and B. Kleinberg, “To the moon: defining and detecting
+cryptocurrency pump-and-dumps,” Crime Science, vol. 7, no. 1, p. 18, 12
+2018. [Online]. Available: https://crimesciencejournal.biomedcentral.com/articles/
+10.1186/s40163-018-0093-5
+[7] D. Ardia and K. Bluteau, “Twitter and cryptocurrency pump-and-dumps,” Interna-
+tional Review of Financial Analysis, vol. 95, p. 103479, 10 2024.
+[8] A. I. Nilsen, “Limelight: Real-Time Detection of Pump-and-Dump Events on
+Cryptocurrency Exchanges Using Deep Learning,” Ph.D. dissertation, 2019.
+[Online]. Available: http://github.com/egraff/uit-thesis
+[9] M. La Morgia, A. Mei, F. Sassi, and J. Stefa, “Pump and Dumps in the
+Bitcoin Era: Real Time Detection of Cryptocurrency Market Manipulations,”
+in International Conference on Computer Communications and Networks
+(ICCCN), vol. 2020-Augus. IEEE, 8 2020, pp. 1–9. [Online]. Available:
+https://ieeexplore.ieee.org/document/9209660/
+[10] V. Chadalapaka, K. Chang, G. Mahajan, and A. Vasil, “Crypto Pump and
+Dump Detection via Deep Learning Techniques,” 5 2022. [Online]. Available:
+http://arxiv.org/abs/2205.04646
+[11] S. Hu, Z. Zhang, S. Lu, B. He, and Z. Li, “Sequence-based target coin prediction
+for cryptocurrency pump-and-dump,” arXiv preprint arXiv:2204.12929, 4 2022.
+[Online]. Available: https://arxiv.org/abs/2204.12929v1
+[12] W. Chen, Y. Xu, Z. Zheng, Y. Zhou, J. E. Yang, and J. Bian, “Detecting ’Pump &
+dump schemes’ on cryptocurrency market using an improved apriori algorithm,” in
+International Conference on Service-Oriented System Engineering,. IEEE, 4 2019,
+pp. 293–298. [Online]. Available: https://ieeexplore.ieee.org/document/8705858/
+[13] M. A. Yahya and N. Pecharsky, “Crypto-influencer liability,” 16 William and Mary
+Business Law Review, p. 41, 2024, https://ssrn.com/abstract=4787495.
+[14] K. J. Merkley, J. Pacelli, M. Piorkowski, and B. Williams, “Crypto-influencers,”
+Review of Accounting Studies, vol. 29, no. 3, pp. 2254–2297, 9 2024.
+[15] M. Mirtaheri, S. Abu-El-Haija, F. Morstatter, G. V. Steeg, and A. Galstyan,
+“Identifying and Analyzing Cryptocurrency Manipulations in Social Media,” IEEE
+Transactions on Computational Social Systems, vol. 8, no. 3, pp. 607–617, 6
+2021. [Online]. Available: https://ieeexplore.ieee.org/document/9371307/
+[16] H. Nghiem, G. Muric, F. Morstatter, and E. Ferrara, “Detecting cryptocurrency
+pump-and-dump frauds using market and social signals,” Expert Systems
+with Applications, vol. 182, p. 115284, 11 2021. [Online]. Available:
+https://linkinghub.elsevier.com/retrieve/pii/S0957417421007156
+[17] M. L. Morgia, A. Mei, F. Sassi, and J. Stefa, “The Doge of Wall Street:
+Analysis and Detection of Pump and Dump Cryptocurrency Manipulations,”
+ACM Transactions on Internet Technology, 9 2022. [Online]. Available:
+https://dl.acm.org/doi/10.1145/3561300
+[18] J. Hamrick, F. Rouhi, A. Mukherjee, M. Vasek, T. Moore, and N. Gandal,
+“Analyzing Target-Based Cryptocurrency Pump and Dump Schemes,” in CCS
+Workshop on Decentralized Finance and Security. New York, NY, USA: ACM,
+11 2021, pp. 21–27. [Online]. Available: https://dl.acm.org/doi/10.1145/3464967.
+3488591
+[19] Financial Conduct Authority, “Financial Conduct Authority Handbook.” [Online].
+Available: https://www.legislation.gov.uk/ukpga/2000/8/contents
+[20] EUR-Lex, “Regulation (EU) 2023/1114 of the European Parliament and of the
+Council of 31 May 2023 on markets in crypto-assets, and amending Regulations
+(EU) No 1093/2010 and (EU) No 1095/2010 and Directives 2013/36/EU
+and (EU) 2019/1937 (Text with EEA relevance),” 2023. [Online]. Available:
+http://data.europa.eu/eli/reg/2023/1114/oj
+[21] “Text of H.R. 4763, The Financial Innovation and Technology for the 21st Century
+Act,” Rules Committee Print 118-33, 2024.
+[22] Cloudburst, “Cloudburst,” 2024, https://burst.cloud.
+[23] Telegram, “Telegram,” 2024, https://www.telegram.org.
+[24] J. Li, A. Sun, J. Han, and C. Li, “A Survey on Deep Learning for Named Entity
+Recognition,” IEEE Transactions on Knowledge and Data Engineering, vol. 34,
+no. 1, pp. 50–70, 1 2022.
+[25] M. Ramezani, H. R. Rabiee, M. Tahani, and A. Rajabi, “DANI: A Fast Diffusion
+Aware Network Inference Algorithm,” 6 2017.
+[26] S. Huang, F. Poursafaei, J. Danovitch, M. Fey, W. Hu, E. Rossi, J. Leskovec,
+M. Bronstein, G. Rabusseau, and R. Rabbany, “Temporal Graph Benchmark for
+Machine Learning on Temporal Graphs,” 7 2023.
+[27] M. Ramezani, A. Ahadinia, A. Ziaei Bideh, and H. R. Rabiee, “Joint Inference
+of Diffusion and Structure in Partially Observed Social Networks Using Coupled
+Matrix Factorization,” ACM Transactions on Knowledge Discovery from Data,
+vol. 17, no. 9, pp. 1–28, 11 2023.
+[28] C. Gao, Y. Wang, Z. Wang, X. Li, and X. Li, “Pairwise-interactions-based Bayesian
+Inference of Network Structure from Information Cascades,” in Proceedings of the
+ACM Web Conference 2023. New York, NY, USA: ACM, 4 2023, pp. 102–110.
+[29] R. Li, C. Wang, and K. C.-C. Chang, “User profiling in an ego network,” in
+Proceedings of the 23rd international conference on World wide web. New York,
+NY, USA: ACM, 4 2014, pp. 819–830.
+[30] J. Song, S. Zhang, P. Zhang, J. Park, Y. Gu, and G. Yu, “Illicit Social Accounts?
+Anti-Money Laundering for Transactional Blockchains,” IEEE Transactions on
+Information Forensics and Security, vol. 20, pp. 391–404, 2025.
+[31] H. Du, Z. Che, M. Shen, L. Zhu, and J. Hu, “Breaking the Anonymity of
+Ethereum Mixing Services Using Graph Feature Learning,” IEEE Transactions
+on Information Forensics and Security, vol. 19, pp. 616–631, 2024.
+[32] Z. Guo, X. Li, J. Liu, Z. Zhang, M. Li, J. Hu, and L. Zhu, “Graph-Based
+Covert Transaction Detection and Protection in Blockchain,” IEEE Transactions
+on Information Forensics and Security, vol. 19, pp. 2244–2257, 2024.
+[33] J. Liu, J. Chen, J. Wu, Z. Wu, J. Fang, and Z. Zheng, “Fishing for Fraudsters:
+Uncovering Ethereum Phishing Gangs With Blockchain Data,” IEEE Transactions
+on Information Forensics and Security, vol. 19, pp. 3038–3050, 2024.
+[34] P. Veliˇckovi´c, G. Cucurull, A. Casanova, A. Romero, P. Li`o, and Y. Bengio, “Graph
+Attention Networks,” 10 2017.
+[35] W. L. Hamilton, R. Ying, and J. Leskovec, “Inductive Representation Learning on
+Large Graphs,” 6 2017.
+[36] D. Xu, C. Ruan, E. Korpeoglu, S. Kumar, and K. Achan, “Inductive Representation
+Learning on Temporal Graphs,” 2 2020.
+[37] Kaiko, “Kaiko,” 2024, https://www.kaiko.com.
+[38] R. Agarwal, S. Barve, and S. K. Shukla, “Detecting malicious accounts in
+permissionless blockchains using temporal graph properties,” Applied Network
+Science, vol. 6, no. 1, p. 9, 12 2021.
+[39] F. Zola, M. Eguimendia, J. L. Bruse, and R. Orduna Urrutia, “Cascading Machine
+Learning to Attack Bitcoin Anonymity,” in 2019 IEEE International Conference
+on Blockchain (Blockchain). IEEE, 7 2019, pp. 10–17.
+[40] J. Jiang, J. Chen, T. Gu, K.-K. R. Choo, C. Liu, M. Yu, W. Huang, and P. Mohapatra,
+“Anomaly Detection with Graph Convolutional Networks for Insider Threat and
+Fraud Detection,” in MILCOM 2019 - 2019 IEEE Military Communications
+Conference (MILCOM). IEEE, 11 2019, pp. 109–114.
+[41] Sui, “Sui,” 2024, https://sui.io/.
+[42] STOJR, “STOJR,” 2024, https://www.storj.io/.
+[43] F. Victor and T. Hagemann, “Cryptocurrency Pump and Dump Schemes:
+Quantification and Detection,” in International Conference on Data Mining
+Workshops (ICDMW), vol. 2019-Novem. IEEE, 11 2019, pp. 244–251. [Online].
+Available: https://ieeexplore.ieee.org/document/8955594/
+ACRONYMS
+DANI Diffusion Aware Network Inference Algorithm
+GAT Graph Attention Networks
+GCN Graph Convolutional Networks
+GNN graph neural network
+GraphSAGE GraphSAGE
+MCC Matthews Correlation Coefficient
+NER Named Entity Recognition
+OSN online social network
+ROC AUC area under the receiver operating characteristic
+curve
+SOTA state-of-the-art

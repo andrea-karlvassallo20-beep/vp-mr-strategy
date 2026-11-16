@@ -1,0 +1,612 @@
+=== page 1 ===
+EX-DRL: HEDGING AGAINST HEAVY LOSSES WITH EXTREME
+DISTRIBUTIONAL REINFORCEMENT LEARNING
+Parvin Malekzadeh
+University of Toronto
+p.malekzadeh@mail.utoronto.ca
+Zissis Poulos
+York University
+Jacky Chen
+University of Toronto
+Zeyu Wang
+University of Toronto
+Konstantinos N. Plataniotis
+University of Toronto
+ABSTRACT
+Recent advancements in Distributional Reinforcement Learning (DRL) for modeling loss distribu-
+tions have shown promise in developing hedging strategies in derivatives markets. A common ap-
+proach in DRL involves learning the quantiles of loss distributions at specified levels using Quantile
+Regression (QR). This method is particularly effective in option hedging due to its direct quantile-
+based risk assessment, such as Value at Risk (VaR) and Conditional Value at Risk (CVaR). However,
+these risk measures depend on the accurate estimation of extreme quantiles in the loss distribution’s
+tail, which can be imprecise in QR-based DRL due to the rarity and extremity of tail data, as high-
+lighted in the literature. To address this issue, we propose EXtreme DRL (EX-DRL), which en-
+hances extreme quantile prediction by modeling the tail of the loss distribution with a Generalized
+Pareto Distribution (GPD). This method introduces supplementary data to mitigate the scarcity of
+extreme quantile observations, thereby improving estimation accuracy through QR. Comprehensive
+experiments on gamma hedging options demonstrate that EX-DRL improves existing QR-based
+models by providing more precise estimates of extreme quantiles, thereby improving the computa-
+tion and reliability of risk metrics for complex financial risk management. The code is available at
+https://github.com/pmalekzadeh/EX-DRL.
+Keywords Distributional Reinforcement Learning · Generalized Pareto Distribution · Option Hedging
+1 Introduction
+Option trading desks, especially in high-volume environments like banks, must engage in frequent (e.g., daily) hedging
+to manage risk and maintain profitability. Specifically, traders try to minimize the sensitivity of their option portfolios
+to sharp or broad movements in the underlying stock price, as well as to the stock’s volatility. These sensitivities,
+known as the ‘Greeks,’ when reduced or eliminated, incur costs and directly affect the expected value and distribution
+of losses from hedging over time. Ideally, traders aim for minimal expected losses and narrower loss distributions,
+indicating reduced risk exposure. However, the typical hedging strategies employed are ‘myopic’—they make deci-
+sions based on current conditions without considering future implications, leading to suboptimal risk management,
+particularly in the presence of trading frictions.
+To alleviate this problem, a recent thread of research has proposed an alternative take by exploring the application
+of Reinforcement Learning (RL) to option hedging [6, 33, 7, 8, 26], since RL can efficiently learn long-horizon
+strategies in a stochastic environment. More recent advancements, as demonstrated in [9], show that Distributional
+RL (DRL) [11, 3]—which models the entire loss (negative reward) distribution for every potential hedging state and
+action—can surpass classical RL strategies for European options, which typically focuses on expected loss as a mini-
+mization criterion.
+Quantile Regression (QR) is typically used in DRL algorithms to approximate the loss distribution. Specifically, the
+loss is modeled as a quantile distribution, represented by a uniform mixture of Dirac deltas at locations corresponding
+arXiv:2408.12446v2  [q-fin.RM]  27 Aug 2024
+
+=== page 2 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+to quantile values. These quantile values are derived using the QR loss function, which is applied within the framework
+of the distributional Bellman equation. QR is conceptually straightforward and directly assesses risk measures such
+as Value-at-Risk (VaR) and Conditional Value-at-Risk (CVaR) through the quantile-based representation it creates.
+However, as highlighted in several studies [2, 27, 4], the accuracy of these quantile value estimates, especially those
+representing extreme values, relies on observations from the distribution’s tails. These observations are infrequent
+yet carry high severity, making the estimation of extreme quantile values inaccurate and prone to under-coverage bias
+compared to the desired coverage level in practice [2]. Consequently, sparse data in the extreme tail ends of the
+distribution render the resulting risk measures unreliable.
+To enhance the ability of DRL to model the tails of loss distributions effectively while maintaining scalability and
+fidelity in representing the rest of the distribution, this paper presents a hybrid model. In this model, the tail of the
+loss distribution is separately modeled using a Generalized Pareto Distribution (GPD), recognized for its efficiency in
+capturing extreme values in time series analysis [27, 4, 31], while the main body of the distribution remains a quantile
+distribution. Termed Extreme-DRL (EX-DRL), our proposed approach is compatible with any QR-based DRL method
+and substantially enhances the estimation of extreme quantiles, which is crucial for hedging portfolios of options. In
+our experiments, we combine our hybrid model with QR-Distributed Distributional Deterministic Policy Gradients
+(QR-D4PG), a recently introduced QR-based DRL algorithm. We refer to the proposed algorithm as EX-D4PG and
+compare its performance to that of QR-D4PG [9]. The findings across a wide range of market scenarios are:
+• EX-D4PG learns a better policy by improved estimates of VaR and CVaR, highlighting the agent’s enhanced
+capability to minimize extreme losses and strengthen risk management.
+• EX-D4PG achieves a better Profit and Loss (PnL) distribution with a higher mean and a narrower spread than
+QR-D4PG.
+• The hedging policy of the EX-D4PG agent demonstrates increased sensitivity to changes in the volatility of
+the underlying assets, enabling more responsive adjustments.
+The rest of the paper is organized as follows. Section 2 discusses related work in RL-based option hedging and GPD-
+based extreme modelling. Section 3 provides background on QR-based DRL and GPDs. Section 4 explains how DRL
+can be used for option hedging. Finally, Section 5 describes the proposed EX-DRL framework in detail, and Section
+6 presents empirical results.
+2 Related Work
+The concept of using RL as an effective policy optimization framework for option hedging dates back to 2009
+[19]. However, it was not until more recently that a broader array of RL-based hedging strategies began to emerge
+[15, 18, 6, 24, 8, 33, 26, 14, 12], leveraging advances in deep learning and modern RL algorithms. In terms of
+the optimization mechanism, these methods vary: some [15] adopt value-based algorithms that directly optimize the
+expected loss, others [33, 12] directly optimize the hedging policy using policy-based methods, while the majority
+[18, 8, 26, 14] implement actor-critic methods that optimize both the hedging policy and the expected loss. These
+diverse approaches have solidified RL as a compelling alternative to traditional hedging strategies. A critical design
+decision in these methods is the selection of the objective function, which significantly influences the reward function.
+Common choices include VaR or a convex risk measure such as CVaR and dynamic expectiles. The selection among
+these objective functions and optimization mechanisms presents distinct trade-offs in terms of scalability, optimality,
+and time-consistency.
+While RL has brought improvements in several domains within risk management, risk-averse formulations based
+on DRL have exhibited superior scalability in multi-option hedging and have empirically outperformed traditional
+Greek-neutral hedging strategies under various volatility scenarios [9, 30]. In DRL, the entire loss distribution is
+estimated using a categorical, normal, or quantile representation combined with QR. Quantile representation provides
+the flexibility to stochastically adjust the quantile values at desired levels and has been successfully applied towards
+learning risk-averse policies in domains such as Atari games and sports [22, 20, 23, 21]. However, these applications
+typically do not encounter events of extreme risk, which are prevalent in option hedging. Consequently, while DRL
+approaches provide a broad framework to incorporate various risk-return measures, they tend to yield inaccuracies in
+the tails of the return distribution. This, in turn, affects the accuracy of extreme quantile estimates, including VaR and
+CVaR, which are of paramount importance in financial risk management.
+In the context of modeling extreme values, GPD from extreme value theory [29], offers a way to describe the asymp-
+totic behavior of the distribution of data extremes. A large body of research has leveraged the benefits of GPD to
+model extreme events in time series and financial analysis [28, 1, 34, 16, 4]. However, its applicability in the context
+of DRL-based hedging remains under-explored.
+2
+
+=== page 3 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+Complementary to our framework is the formulation by [13]. Both methods utilize GPDs to model the tails of distri-
+butions in DRL. However, in [13], the methodology relies on Monte Carlo simulations to estimate the loss and finite
+difference approximations to compute gradients, which is a suitable approach for low-dimensional policy spaces.
+Our method, on the other hand, uses deep neural networks to parameterize the policy and improve it via distribu-
+tional Bellman updates, making it suitable for multi-option hedging scenarios involving large action spaces (thus
+high-dimensional policy spaces).
+3 Background
+In this section, we provide a brief background on DRL, focusing on QR-based algorithms, and then discuss GPDs
+before turning to our specific use case of hedging derivatives portfolios.
+3.1 Distributional Reinforcement Learning
+We consider the problem of sequential decision-making of an agent acting in an environment over discrete time steps
+t within a time horizon T , i.e., t ∈ {1, 2, ..., T }. We formulate this as a Markov Decision Process (MDP) specified by
+(S, A, PS , R, γ), where S is the state space, A is the action space, PS (.|s, a) is the Markovian transition function that
+assigns to each state-action pair (s, a) ∈ S × A the probability of reaching the next state s′ ∈ S, R(s, a) is the reward
+function, and 0 < γ < 1 denotes the discount factor. The policy of an agent is formulated as a = π(s), which maps
+state s to action a and we assume to be deterministic.
+In DRL, the goal is to learn the distribution of the random variable return Gπ (s, a) = PT t=1 γt−1R(st, at), where s1 = s, a1 = a, st ∼ PS (.|st−1, at−1), and at = π(st). In this paper, we use Z π to denote the distribution of the
+return Gπ . It has been shown that Z π can be updated using the distributional Bellman equation [3] as:
+Z π (s, a) = T π Z(s, a) := R(s, a) + γZ π (s′, a′), (1)
+where s′∼ PS (.|s, a), a′= π(s′), and R = R(s, a).1
+QR-based DRL: One of the popular methods to model and learn the return distribution Z π (s, a) in DRL is the QR
+framework, which was first proposed by [11]. QR methods approximate Z π (s, a) using a discrete set of N quantile
+values {θτn w (s, a)}N −1 n=0 , parameterized with w, at specific quantile levels {τn = n N }N −1 n=0 :
+Zw(s, a) =
+N −1X
+n=0
+1
+N δθτnw (s,a), (2)
+where δθτnw (s,a) is the Dirac delta function located at θτn w (s, a).2
+QR-based DRL learns the parameters w by minimizing the QR loss:
+LQR(w) =
+N −1X
+n=0
+Ez∼ ˆZ(s,a) [ρτn (z − θτn w (s, a))] , (3)
+where ρτn (e) = e × (τn − 1 {e<0}). The QR loss can be minimized stochasticity by sampling M values {zm}M m=1
+from the target distribution ˆZ(s, a), which serves as the benchmark for Z π (s, a) during the learning updates. Given
+a transition tuple (s, a, R, s′, a′), DRL methods, including QR, derive the target distribution ˆZ(s, a) based on the
+distribution of Z(s′, a′) using distributional Bellman equation. QR models Z(s′, a′) as a mixture of N quantile values
+ϕτn w′ (s′, a′) parametrized with w′:
+Zw′ (s′, a′) =
+N −1X
+n=0
+1
+N δϕτn w′ (s′ ,a′). (4)
+Using the distributional Bellman equation, the target distribution ˆZ(s, a) in QR approaches is thus computed based on
+w′ as
+ˆZw′ (s, a) = R + γZw′ (s′, a′) =
+N −1X
+n=0
+1
+N δyn , (5)
+1In the rest of the paper, we simplify notation by using R instead of R(s, a).
+2Throughout this paper, we use δx to denote a Dirac delta function located at x.
+3
+
+=== page 4 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+where yn = R + γϕτn w′ (s′, a′). Thus, sampling M values {zm}M m=1 from ˆZw′ (s, a) corresponds to sampling from
+{yn}N n=1. After updating w via a gradient step on LQR(w), the parameter w′ defining the target distribution is updated
+with the new value of w. Doing so ensures that the improvements made to the model’s understanding of Zw(s, a) are
+carried forward to the target distribution ˆZw′ (s, a).
+QR algorithms were initially applied in value-based DRL algorithms [11, 10], where only the return distribution is
+learned via the distributional Bellman equation, and actions are selected based on this learned distribution. However,
+value-based methods are limited to discrete state and action spaces and cannot be applied to continuous spaces. Re-
+cently, the use of QR in actor-critic DRL methods [9, 30] has been proposed, where both the return distribution and
+the policy are parameterized and learned, making it applicable to continuous state and action spaces.
+3.2 Generalized Pareto Distribution
+Originating from the peaks over thresholds approach in extreme value theory [29], the GPD is commonly employed
+to model the right-tail probabilities of various distributions. However, it can also be adapted to analyze extremely low
+values or the left tail, which is our focus here. Below, we detail the adaptation of the GPD for modeling the left tail,
+accompanied by a formal specification:
+Definition 3.1. Let X1, X2, ... be independent random variables with Cumulative Distribution Function (CDF) F .
+Given a small threshold u, the CDF of threshold exceedance u − X conditioned on X < u follows a GPD distribu-
+tion [29],
+p(u − X ≤ x|X < u) = H(x), (6)
+where H(x) is the CDF of the GPD:
+H(x) =
+1 − (1 + εx σ )−1/ε if ε ̸= 0
+1 − e− x σ if ε = 0, (7)
+where −∞ < ε < ∞ and 0 < σ < ∞ are the shape and the scale parameters of GP D.
+When ε = 0, the GPD is light-tailed with an exponential decay tail. If ε < 0, the distribution has a bounded upper limit,
+and the tail decays exponentially. When ε > 0, the GPD is considered heavy-tailed [32]. In this case, the distribution
+exhibits a power-law tail, meaning that the probabilities of observing very small values decay polynomially rather than
+exponentially. This type of tail behavior is associated with ‘fat tails,’ indicating a higher likelihood of extreme events
+compared to a normal distribution. Research has demonstrated the efficacy of the heavy-tailed GPD for capturing
+extreme values theoretically [27, 4, 31]; therefore, it has been leveraged for measuring extreme events in time series
+and financial analysis [28, 1, 34, 16].
+4 Formulating Hedging with Distributional Reinforcement Learning
+In this section, we explain how we formulate the problem of hedging an options portfolio using DRL.
+The environment, similar to that in [9], simulates a 30-day hedging problem that the trading desk of a bank will have to
+manage to hedge their options exposure resulting from client orders. We assume that the trader rebalances her position
+at fixed intervals of dt = 1 day leading up to the maturity of the option at T = 30 days. Moreover, we set γ = 1 as T
+is relatively short.
+The price of the underlying asset, S, is assumed to follow a Brownian motion and risk-neutral behavior governed by:
+dS = (r − q)S dt + σS dz, (8)
+where dz is a Wiener process, and σ is the volatility of the underlying asset. The risk-free interest rate r and the
+dividend yield q are assumed to be constant. Additionally, we assume that the real-world expected return µ is also
+constant. The real-world process for the asset price is the same as that given above, with r − q replaced by µ.
+The value of the option is given by the Black–Scholes–Merton option pricing model developed by [5] and [25]:
+S0N (d1)e−qT − Ke−rT N (d2), (9)
+where
+d1 =
+ln
+  S0
+K
+
++
+
+r − q + σ2 2  T
+σ
+√
+T
+, (10)
+d2 = d1 − σ
+√
+T , (11)
+4
+
+=== page 5 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+and S0 represents the initial price of the underlying asset, K is the strike price of the option, and N (·) denotes the
+CDF of the standard normal distribution.
+Delta (∆) is the first partial derivative of the option price with respect to the asset price, and gamma (Γ) is the second
+partial derivative with respect to the asset price. Under this model, a natural idea is to regard the value of a European
+option as a function of S and σ for the calculation of these partial derivatives:
+∆ = N (d1)e−qT , (12)
+and Γ = N ′(d1)e−qT
+S0σ
+√
+T
+. (13)
+The delta and gamma of a portfolio are calculated by summing those for the individual options in the portfolio.
+State: The state variable st at time step t consists of:
+• The price of the underlying asset.
+• The gamma of the portfolio.
+• The gamma of the at-the-money option used for hedging.
+Action: The agent is allowed to trade an at-the-money call option once every day to maximize the utility against the
+objective function. Daily, the agent’s action at is to determine the proportion of maximum hedging done against the
+total gamma exposure. In other words, the portfolio gamma after hedging relative to gamma before hedging has to be
+between 0 and 1. This constraint effectively forces the agent to consider hedging as opposed to speculating. Once the
+agent determines the gamma hedging ratio for the day, the resulting delta will be rebalanced to 0 automatically.
+Reward: Each day, we assume new options orders arrive following a Poisson process with a 50/50 chance of being
+long or short. Following market convention, the options provide the holder the right to buy or sell 100 units of the
+underlying assets. The reward (negative cost) R(st, at) is therefore
+R(st, at) = −κ |VtHt| + (Pt − Pt−1) , (14)
+where Vt is the value of the option used for hedging at time t, Ht is the position taken in the option used for hedging at
+time t, κ is the transaction cost associated with the option used for hedging as a proportion of the value of the option,
+and Pt and Pt−1 are the portfolio’s market values at time t and t − 1, respectively, that have not previously expired. If
+an option expires at time t, its value at time t is set equal to its intrinsic value max(S − K, 0).
+Risk Measure: Traditionally, financial risk management focuses on minimizing risk measures derived from the loss
+distribution, particularly managing risks associated with high-cost outcomes in the right tail of the loss distribution.
+However, to align with DRL standard, we redefine our approach based on the reward (return) distribution Z π (s, a) of
+G(s, a) = PT t=1 γt−1R(st, at), effectively shifting our focus to the left side of Z π (s, a) where potential low-return, high-risk scenarios occur. We adapt VaR and CVaR to this context for a specific quantile level α ∈ (0, 1), denoted as
+VaRα and CVaRα. VaRα reflects the quantile at which the CDF of Z π (s, a) reaches 1 − α, and CVaRα calculates the
+expected returns below VaRα.
+QR is particularly useful here as it directly measures VaR and CVaR through the quantile-based representations of
+Zw(s, a). Specifically, VaRα(Zw(s, a)) directly corresponds to the quantile value θ1−α w (s, a), and CVaRα is calcu-
+lated as the average of quantile values θτn w (s, a) that are less than or equal to VaRα(Zw(s, a)).
+However, estimating VaR and CVaR via QR becomes challenging when α approaches 1. This difficulty arises because
+observations for extreme quantile values in the tail of the distribution are scarce in samples from the target distribution
+(i.e., {yn}N n=1), leading to volatile estimates of these values (i.e., θ1−α w ) and consequently, the risk measures [2,
+4]. Evaluating the probability of extreme events has become a pivotal issue in financial risk management, often
+requiring high α values (e.g., 0.95, 0.99). While increasing the number of quantiles N can theoretically enhance the
+estimation of extreme quantiles by providing more observations at extreme values, this approach has its challenges.
+Each additional quantile represents new parameters to estimate, potentially leading to a high-dimensional parameter
+space. This parameter increase complicates the model, heightens the risk of overfitting, and escalates the computational
+demands. These complexities highlight the need for more robust methods to handle extreme values in DRL for risk
+management.
+Given the success of the QR framework in risk assessment and the effectiveness of the GPD in modeling distribution
+tails, the subsequent section will introduce our framework, EX-DRL, for options hedging. This framework leverages
+GPD in conjunction with QR to accurately capture the extreme quantile values of the return distribution Z(s, a).
+5
+
+=== page 6 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+5 EX-DRL: EXtreme Distributional Reinforcement Learning
+EX-DRL enriches samples in the tail regions of the return distribution, by not imposing rigid distributional assumptions
+on the central part of the target distribution of ˆZ(s, a) and focusing instead on the extreme values in its left tail modeled
+with a heavy-tailed GPD. This provides more robust estimates for extreme quantile values and allows us to obtain
+quantile values directly using the QR method while enhancing their estimation through extensive sampling from the
+GPD, without the need to increase the number of quantiles N .
+To benefit from directly measuring VaR and CVaR from the estimated return distribution, we model it as Zw(s, a),
+a mixture of N quantile values {θτn w (s, a)}N −1 n=0 similar to QR-based DRL, as expressed in Eq. (2). However, the
+target distribution ˆZ(s, a) is modeled as a mixture distribution consisting of the tail distribution for extreme values,
+represented using a heavy-tailed GPD, and an unknown body distribution for non-extreme values modeled as a quantile
+distribution.
+Given that the target distribution ˆZ(s, a) is derived from Z(s′, a′), it follows that Z(s′, a′) must also present a mixture
+distribution. To facilitate this, we introduce a threshold u(s′, a′), defining the demarcation between extreme and non-
+extreme values. This threshold is crucial as it determines the separation point in the distribution Z(s′, a′), which is
+then partitioned into two distinct components:
+1. Tail Component Z T ail(s′, a′): Represents the behavior of extreme values below u(s′, a′). It employs a
+GPD, denoted as GP Dψ (s′, a′), where the scale parameter σψ (s′, a′) and the shape εψ (s′, a′) parameter are
+defined by ψ. This GPD is negated and shifted so that its endpoint aligns with the threshold u(s′, a′):
+Z T ail ψ (s′, a′) = −GP Dψ (s′, a′) + u(s′, a′). (15)
+2. Body Component Z Body (s′, a′): Encompasses the bulk of the distribution greater than or equal to u(s′, a′)
+and is modeled as a mixture of NBody < N quantiles {ϕτj w′ (s′, a′)}NBody−1 j=0 greater than or equal to the
+threshold u(s′, a′), as
+Z Body w′ (s′, a′) =
+NBody −1X
+j=0
+1
+N δϕ τj w′ (s′ ,a′ ). (16)
+The relative proportions of Z Body w′ (s′, a′) and Z T ail ψ (s′, a′) are adjusted such that the entire distribution Z(s′, a′) sums
+to unity, integrating both components seamlessly. Thus, the composition of Z(s′, a′) is parameterized with w′ and ψ
+and is expressed as
+Zψ,w′ (s′, a′) = (1 − β)Z T ail ψ (s′, a′) + Z Body w′ (s′, a′), (17)
+where β ∈ (0, 1) defines the proportion of Zψ,w′ (s′, a′) considered as the body of the distribution, referred to as the
+‘body proportion.’
+Given this mixture model configuration in Eq. (17), the target distribution ˆZψ,w′ (s, a) is achieved using the distribu-
+tional Bellman equation as
+ˆZψ,w′ (s, a)=R + γZψ,w′ (s′, a′) (18)
+=R + γ
+
+(1 − β)Z T ail ψ (s′, a′) + Z Body w′ (s′, a′)  . (19)
+The proposed mixture model for Zψ,w′ (s′, a′) and ˆZψ,w′ (s, a) is illustrated in Figure 1.
+5.1 Sampling from the target distribution
+We now focus on learning the parameters w of the quantiles {θτn w (s, a)}N −1 n=0 of Zw(s, a) using samples from the target
+distribution ˆZψ,w′ (s, a) defined in Eq. (19). To achieve this, we first sample from the tail and body components of
+Zψ,w′ (s′, a′) as follows:
+1. Sampling from Z T ail ψ (s′, a′): To better estimate quantiles in the tail of the distribution, we generate a
+specific number MTail of samples from Z T ail ψ (s′, a′) = −GP Dψ (s′, a′) + u(s′, a′). We achieve this by first
+generating MTail samples from GP Dψ (s′, a′), then negating each sample and shifting it by u(s′, a′).
+6
+
+=== page 7 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+Figure 1: The proposed mixture distribution for the target distribution ˆZψ,w′ (s, a).
+2. Sampling from Z Body w′ (s′, a′): Given the proportional weight of the body and tail components in
+ˆZψ,w′ (s, a), the number of samples from Z Body w′ (s′, a′) must be MBody = round( MTail×β 1−β ). Sampling from
+Z Body w′ (s′, a′) corresponds selecting MBody samples from {ϕτj w′ (s′, a′)}NBody −1 j=0 , as specified in Eq. (16).
+By combining samples from Z T ail ψ (s′, a′) and Z Body w′ (s′, a′) and applying the distributional Bellman equation, we
+obtain samples
+n
+{zTail k }MTail k=1 , {zBody l }MBody l=1 o from the target distribution ˆZψ,w′ (s, a).
+5.2 Updating return distribution parameters
+Given the samples
+n
+{zTail k }MTail k=1 , {zBody l }MBody l=1 o , the quantile parameters w of Zw(s, a) are updated using the QR loss
+as:
+LQR(w) =
+N −1X
+n=0
+ 1
+MBody
+MBodyX
+l=1
+ρτn
+
+zBody l − θτn w (s, a) 
++ 1 MTail
+MTailX
+k=1
+ρτn
+ 
+zTail k − θτn w (s, a)   . (20)
+The QR loss function integrates contributions from both the body and tail of the return distribution. By explicitly
+incorporating MTail samples from the tail, the model better addresses rare but potentially significant events, which
+are often under-represented in standard QR-based methods. Thus, this approach leverages the QR method to directly
+provide quantile values, while the GPD model of the tail enhances the accuracy of these estimates by generating MTail
+samples in the extreme tail segment of the return distribution.
+5.3 Updating target distribution’s parameters
+In the previous subsection, we utilized samples from the target distribution ˆZψ,w′ to update the quantile parameters w.
+With these updated parameters w (and thus the updated quantile values θτn w ), we now focus on updating parameters
+7
+
+=== page 8 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+of the target distribution ˆZψ,w′ . This update specifically targets the parameters ψ of the tail component Z T ail ψ and the
+parameters w′ of the body component Z Body w′ .
+To accomplish this, we consider any tuple (s′′, a′′ = π(s′′)) where s′′ ∈ S, and proceed as follows:
+1. Updating Parameters of Z T ail ψ (s′′, a′′): As Z T ail ψ (s′′, a′′) is modeled using GP Dψ (s′′, a′′), updating its
+parameters ψ involves adjusting the parameters of GP Dψ (s′′, a′′). To accomplish this, we follow these steps:
+• Identify the quantiles values {θτi w (s′′, a′′)}NTail−1 i=0 among {θτn w (s′′, a′′)}N −1 n=0 that are below the threshold
+u(s′′, a′′).
+• Transform these values by negating them and shifting them by u(s′′, a′′) to ensure they fall within the
+support range of the GPD.
+• Apply Maximum Likelihood Estimation (MLE) to these transformed values to update the parameters ψ.
+2. Updating Parameters of Z Body w′ (s′′, a′′): Consistent with QR-based practices, we update the parameters
+w′ of Z Body w′ (s′′, a′′) using the most recent values w.
+5.4 Selection of threshold u
+Until now, we have assumed the existence of a unique threshold u(s′′, a′′) for each tuple (s′′, a′′). Depending on the
+specific application, a fixed proportion β ∈ (0, 1) is used to define the segment of the mixed distribution Zψ,w′ (s′′, a′′)
+considered as the body, occurring at or above u(s′′, a′′). Thus, the threshold u(s′′, a′′) corresponds to the quantile
+value where the CDF of Zψ,w′ (s′′, a′′) is 1 − β, i.e., u(s′′, a′′) = ϕ1−β w′ (s′′, a′′). This method ensures that u(s′′, a′′)
+accurately separates the most extreme values from the body based on the predefined proportion β.
+5.5 Hedging with EX-DRL
+Our proposed EX-DRL approach is compatible with any QR-based method. As described in Section 4, our option
+hedging problem employs continuous state and action spaces; thus; we implement EX-DRL within an actor-critic
+fashion. Here, the return distribution Zw(s, a) acts as the critic, modeled via a neural network with parameters w.
+Simultaneously, the policy πξ (s), parameterized by ξ, is represented by a separate neural network (the actor). Both
+actor and critic parameters are iteratively updated until convergence.
+Drawing inspiration from the effectiveness of QR-D4PG [9], a recent actor-critic QR-based DRL method, we propose
+an extension, EX-D4PG, which replaces the quantile distribution used for the target distribution in QR-D4PG with
+our mixture model target distribution. Unlike QR-D4PG, EX-D4PG’s critic not only reflects the usual dynamics of
+the return distribution but also emphasizes extreme event modeling. During training, the critic’s parameters Zw(s, a)
+are updated using gradient descent on the QR loss defined in Eq. (20). Concurrently, the actor network adjusts its
+parameters ξ through gradient ascent to maximize its risk measure, i.e., VaRα(Zw(s, a)) or CVaRα(Zw(s, a)).
+Compared to QR-D4PG, our method includes an additional neural network, parameterized by ψ, which models the
+scale σψ and shape εψ parameters of the GPD. As noted in [32], a GPD with ε > 1 results in an infinite mean,
+which would imply that the CVaR could also be infinite. Therefore, to effectively adapt to markets with heavy-tailed
+distributions, our neural network is specifically designed to ensure that 0 < εψ < 1, maintaining a finite expectation
+for the CVaR and ensuring stability in estimation under extreme market conditions. The pseudocode of our proposed
+EX-D4PG is given in Algorithm 1.
+6 Experimental Results
+To evaluate the performance of EX-D4PG in capturing extreme losses, we conducted a series of hedging experiments
+and compared the results with those of QR-D4PG [9].
+Setup
+The experimental parameters mirror those used in the gamma hedging experiments described in [9], enabling direct
+comparisons between the EX-D4PG and QR-D4PG agents. In this setup, client orders arrive according to a Poisson
+process at an intensity of 1.0 option per day. Each order typically involves a 60-day option on 100 units of the
+underlying asset, with an equal likelihood of being a long or short position. We assume transaction costs at 1% of the
+option price. Hedging is conducted using a 30-day at-the-money option. The initial stock price is set at $10, with an
+8
+
+=== page 9 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+Algorithm 1 THE PROPOSED EX-D4PG FRAMEWORK.
+1: Input: N : number of quantiles, MTail: number of samples from target distribution’s tail, β: body proportion, α:
+learning rate
+2: Initialize: w: critic’s parameters, w′: target’s body parameters, ψ: target’s tail (i.e., GPD) parameters, ξ: actor’s
+parameters
+3: for t = 0, 1, ..., T do
+4: Make transition (s, a, R, s′, a′ = πξ (s′))
+5: Select threshold u(s′, a′) = ϕ1−β w′ (s′, a′).
+Sampling from the target distribution:
+6: Sample {xk}MTail k=1 from GP Dψ (s′, a′)
+7: Define {yTail k = −xk + u(s′, a′)}MTail k=1
+8: Generate tail samples {zTail k = R + γyTail k }MTail k=1
+9: Define MBody = round( MTail×β 1−β )
+10: Sample {yBody l }MBody l=1 from {ϕτj w′ (s′, a′)}NBody −1 j=0 for τj = j N + 1 − β
+11: Create body samples {zBody l = R + γyBody l }MBody l=1
+Update critic’s parameters:
+12: Compute QR loss LQR(w) according to Eq. (20).
+13: Update w as w ← w − α∇wLQR(w)
+Update actor’s parameters:
+14: ξ ← ξ + α∇ξ (C)VaRα(Zw(s, πξ (s)))
+Update the target distribution’s parameters:
+15: Consider tuple (s′′, a′′ = πξ (s′′))
+16: Generate {θτi w (s′′, a′′)}NTail−1 i=0 for τi = i N
+17: Define L(ψ) as the log-likelihood of GP Dψ (s′′, a′′)
+fitted to {θτi w (s′′, a′′)}NTail−1 i=0
+18: Update target’s tail (GPD) parameters as ψ ← ψ + α∇ψ L(ψ)
+19: Update target’s body parameters as w′ ← w
+20: end for
+annual volatility of 0.3. We evaluated the performance across 5000 test scenarios. The hedge ratio is calculated as the
+reduction in gamma exposure post-hedging relative to pre-hedging:
+Gamma Hedge Ratio = 1 −
+P sign(T )T +
+P sign(T )|T | . (21)
+A higher gamma hedge ratio indicates that the agent is more likely to hedge away all its gamma exposure, and a
+gamma hedge ratio of 1 means the agent always fully hedges its gamma exposure. To determine the value of the
+body proportion β for our mixed distribution model, we tested values {0.94, 0.95, 0.96, 0.99} across various volatility
+levels. The value β = 0.95 was chosen for its superior performance across several test scenarios.
+Results
+Figure 2 compares the performance of QR-D4PG and EX-D4PG at volatility levels of 0.3 and 0.5 for the underlying
+asset. The figure shows that the EX-D4PG outperforms QR-D4PG across all evaluated risk measures, i.e., VaRα or
+CVaRα for α = {0.95, 0.99}.
+Further analysis of the PnL distribution, as depicted in Figure 3, is supported by the corresponding statistics in Table 1.
+These results reveal that the EX-D4PG model incurs fewer extreme losses compared to QR-D4PG. Additionally, the
+PnL distribution for EX-D4PG is more on the positive side of the graph, indicating improved mean performance and
+exhibiting a narrower spread of results, as evidenced by reduced standard deviations.
+Moreover, we tested the performance of both RL agents under varying volatility conditions, ranging from 0.1 to 0.8,
+using VaR95 and CVaR95 as the risk measures. The results are shown in Figure 4. The EX-D4PG agent performs com-
+parably to the QR-D4PG at low to medium volatility levels. However, as volatility increases, EX-D4PG demonstrates
+markedly better performance, underscoring the effectiveness of explicitly modeling the tail distribution in enhancing
+the agent’s performance under extreme conditions.
+Finally, Figure 5 analyzes the hedging behavior of the RL agents by comparing the gamma hedge ratio, as defined in
+Eq. (21). The results show that while both agents generally under-hedge their gamma exposure (indicated by a gamma
+9
+
+=== page 10 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+Figure 2: VaR and CVaR values when volatility = 0.3 (left) and volatility = 0.5 (right).
+hedge ratio of less than 1), the EX-D4PG agent demonstrates more adaptive hedging behavior. It adjusts its hedge ratio
+downward as volatility increases, which helps to reduce hedging costs and improve overall financial performance.
+It is important to note from Figure 5 that QR-D4PG slightly outperforms EX-D4PG at volatility levels of 0.1 and 0.4.
+This is due to using a fixed value of β = 0.95 across all levels to balance model performance with generalizability.
+Optimizing β individually for each level could enhance EX-D4PG’s performance, consistently surpassing QR-D4PG.
+Due to space constraints only outcomes for a fixed β are shown.
+7 Conclusion and Future Work
+In this paper, we introduced EX-DRL, a novel DRL algorithm designed to enhance the estimation of extreme quantiles
+in option hedging. EX-DRL employs a GPD to model the tail of the target distribution and is compatible with QR-
+based DRL methods, thereby enabling direct estimation of risk measures such as VaR and CVaR. For experimental
+validation, we integrated the GPD-based tail modeling within a recently proposed QR-based method, QR-D4PG,
+and termed this integration EX-D4PG. The results confirmed that EX-D4PG outperforms QR-D4PG in precision in
+extreme quantile predictions, thus providing a more reliable measure of extreme losses.
+While our approach currently employs MLE for parameter estimation of the GPD, recent studies [32, 17] suggested
+more advanced estimation techniques that could potentially enhance parameter accuracy. As a direction for future
+research, integrating these advanced estimation methods into our EX-DRL framework could further refine the accuracy
+of extreme quantile estimation.
+Table 1: PnL distribution statistics for different risk measures when volatility = 0.5.
+Risk Measure Metric EX-D4PG QR-D4PG
+VaR95
+Mean -4.67 -5.10
+Standard Deviation 2.84 2.94
+VaR95 -9.51 -9.86
+CVaR95
+Mean -5.07 -5.22
+Standard Deviation 2.72 3.44
+VaR95 -9.68 -10.66
+VaR99
+Mean -5.00 -5.08
+Standard Deviation 2.62 3.82
+VaR99 -12.66 -14.47
+CVaR99
+Mean -5.35 -5.25
+Standard Deviation 2.65 3.50
+VaR99 -13.00 -14.58
+10
+
+=== page 11 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+(a) Risk measure = VaR95
+(b) Risk measure = CVaR95
+(c) Risk measure = VaR99
+(d) Risk measure = CVaR99
+Figure 3: PnL distributions for different risk measures when volatility = 0.5.
+11
+
+=== page 12 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+Figure 4: Comparison of VaR95 (left) and CVaR95 (right) at different volatility levels.
+Figure 5: Comparison of gamma hedge ratio using VaR95 (left) and CVaR95 (right) at various volatility levels.
+References
+[1] S. Abilasha, S. Bhadra, A. Z. Dadarkar, and P. Deepak. Deep extreme mixture model for time series forecasting.
+In CIKM, pages 1726–1735, 2022.
+[2] Y. Bai, S. Mei, H. Wang, and C. Xiong. Understanding the under-coverage bias in uncertainty estimation.
+Advances in Neural Information Processing Systems, 34:18307–18319, 2021.
+[3] M. G. Bellemare, W. Dabney, and R. Munos. A distributional perspective on reinforcement learning. In Interna-
+tional conference on machine learning, pages 449–458. PMLR, 2017.
+[4] B. Beranger, S. A. Padoan, and S. A. Sisson. Estimation and uncertainty quantification for extreme quantile
+regions. Extremes, 24(2):349–375, 2021.
+[5] F. Black and M. Scholes. The pricing of options and corporate liabilities. Journal of political economy, 81(3):
+637–654, 1973.
+[6] H. Buehler, L. Gonon, J. Teichmann, and B. Wood. Deep hedging. Quantitative Finance, 19(8):1271–1291,
+2019.
+[7] H. Buehler, P. Murray, and B. Wood. Deep bellman hedging. arXiv preprint arXiv:2207.00932, 2022.
+[8] J. Cao, J. Chen, J. Hull, and Z. Poulos. Deep hedging of derivatives using reinforcement learning. The Journal
+of Financial Data Science, 3(1):10–27, 2021.
+[9] J. Cao, J. Chen, S. Farghadani, J. Hull, Z. Poulos, Z. Wang, and J. Yuan. Gamma and vega hedging using deep
+distributional reinforcement learning. Frontiers in Artificial Intelligence, 6:1129370, 2023.
+12
+
+=== page 13 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+[10] W. Dabney, G. Ostrovski, D. Silver, and R. Munos. Implicit quantile networks for distributional reinforcement
+learning. In International conference on machine learning, pages 1096–1105. PMLR, 2018.
+[11] W. Dabney, M. Rowland, M. Bellemare, and R. Munos. Distributional reinforcement learning with quantile
+regression. In Proceedings of the AAAI conference on artificial intelligence, volume 32, 2018.
+[12] R. Daluiso, M. Pinciroli, M. Trapletti, and E. Vittori. Cva hedging with reinforcement learning. In Proceedings
+of the Fourth ACM International Conference on AI in Finance, pages 261–269, 2023.
+[13] P. Davar, F. Godin, and J. Garrido. Catastrophic-risk-aware reinforcement learning with extreme-value-theory-
+based policy gradients. arXiv preprint arXiv:2406.15612, 2024.
+[14] K. Gao, S. Weston, P. Vytelingum, N. Stillman, W. Luk, and C. Guo. Deeper hedging: A new agent-based model
+for effective deep hedging. In Proceedings of the Fourth ACM International Conference on AI in Finance, pages
+270–278, 2023.
+[15] I. Halperin. Qlbs: Q-learner in the black-scholes (-merton) worlds. The Journal of Derivatives, 28(1):99–122,
+2020.
+[16] Y. He, L. Peng, D. Zhang, and Z. Zhao. Risk analysis via generalized pareto distributions. Journal of Business
+& Economic Statistics, 40(2):852–867, 2022.
+[17] Y. Huang, F. Du, J. Chen, Y. Chen, Q. Wang, and M. Li. Generalized pareto model based on particle swarm
+optimization for anomaly detection. IEEE Access, 7:176329–176338, 2019.
+[18] P. N. Kolm and G. Ritter. Dynamic replication and hedging: A reinforcement learning approach. The Journal of
+Financial Data Science, 1(1):159–171, 2019.
+[19] Y. Li, C. Szepesvari, and D. Schuurmans. Learning exercise policies for american options. In Artificial intelli-
+gence and statistics, pages 352–359. PMLR, 2009.
+[20] G. Liu, Y. Luo, O. Schulte, and P. Poupart. Uncertainty-aware reinforcement learning for risk-sensitive player
+evaluation in sports game. Advances in Neural Information Processing Systems, 35:20218–20231, 2022.
+[21] Y. Luo, G. Liu, P. Poupart, and Y. Pan. An alternative to variance: Gini deviation for risk-averse policy gradient.
+Advances in Neural Information Processing Systems, 36:60922–60946, 2023.
+[22] Y. Ma, D. Jayaraman, and O. Bastani. Conservative offline distributional reinforcement learning. Advances in
+neural information processing systems, 34:19235–19247, 2021.
+[23] P. Malekzadeh, K. N. Plataniotis, Z. Poulos, and Z. Wang. A robust quantile huber loss with interpretable
+parameter adjustment in distributional reinforcement learning. In IEEE International Conference on Acoustics,
+Speech and Signal Processing, pages 6120–6124, 2024.
+[24] S. Marzban, E. Delage, and J. Y.-M. Li. Equal risk pricing and hedging of financial derivatives with convex risk
+measures. Quantitative Finance, 22(1):47–73, 2022.
+[25] R. C. Merton. Theory of rational option pricing. The Bell Journal of economics and management science, pages
+141–183, 1973.
+[26] P. Murray, B. Wood, H. Buehler, M. Wiese, and M. Pakkanen. Deep hedging: Continuous reinforcement learning
+for hedging of general portfolios across multiple risk aversions. In Proceedings of the Third ACM International
+Conference on AI in Finance, pages 361–368, 2022.
+[27] Q. Pan, Y. M. Ko, and E. Byon. Uncertainty quantification for extreme quantile estimation with stochastic
+computer models. IEEE Transactions on Reliability, 70(1):134–145, 2020.
+[28] S. Peng, S. Yang, and J. Yao. Improving value-at-risk prediction under model uncertainty. Journal of Financial
+Econometrics, 21(1):228–259, 2023.
+[29] J. Pickands III. Statistical inference using extreme order statistics. the Annals of Statistics, pages 119–131, 1975.
+[30] A. Sharma, F. Chen, J. Noh, J. DeJesus, and M. Schlener. Hedging beyond the mean: A distributional reinforce-
+ment learning perspective for hedging portfolios with structured products. arXiv preprint arXiv:2407.10903,
+2024.
+[31] A. K. Singh, D. E. Allen, and P. J. Robert. Extreme market risk and extreme value theory. Mathematics and
+computers in simulation, 94:310–328, 2013.
+[32] D. Troop. Bias-Corrected Peaks-Over-Threshold Estimation of the CVaR and Application to Multi-Armed Ban-
+dits. PhD thesis, Concordia University, 2021.
+[33] E. Vittori, M. Trapletti, and M. Restelli. Option hedging with risk averse reinforcement learning. In Proceedings
+of the first ACM international conference on AI in finance, pages 1–8, 2020.
+13
+
+=== page 14 ===
+EX-DRL: Hedging Against Heavy Losses with EXtreme Distributional Reinforcement Learning
+[34] W. Xu, H. J. Wang, and D. Li. Extreme quantile estimation based on the tail single-index model. Statistica
+Sinica, 32(2):893–914, 2022.
+14

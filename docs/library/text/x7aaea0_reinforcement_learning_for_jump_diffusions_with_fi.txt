@@ -1,0 +1,2995 @@
+=== page 1 ===
+Reinforcement Learning for Jump-Diffusions, with Financial
+Applications
+Xuefeng Gao∗ Lingfei Li† Xun Yu Zhou‡
+August 26, 2025
+Abstract
+We study continuous-time reinforcement learning (RL) for stochastic control in which sys-
+tem dynamics are governed by jump-diffusion processes. We formulate an entropy-regularized
+exploratory control problem with stochastic policies to capture the exploration–exploitation
+balance essential for RL. Unlike the pure diffusion case initially studied by Wang et al. (2020),
+the derivation of the exploratory dynamics under jump-diffusions calls for a careful formulation
+of the jump part. Through a theoretical analysis, we find that one can simply use the same
+policy evaluation and q-learning algorithms in Jia and Zhou (2022a, 2023), originally developed
+for controlled diffusions, without needing to check a priori whether the underlying data come
+from a pure diffusion or a jump-diffusion. However, we show that the presence of jumps ought
+to affect parameterizations of actors and critics in general. We investigate as an application
+the mean–variance portfolio selection problem with stock price modelled as a jump-diffusion,
+and show that both RL algorithms and parameterizations are invariant with respect to jumps.
+Finally, we present a detailed study on applying the general theory to option hedging.
+Keywords. Reinforcement learning, continuous time, jump-diffusions, exploratory formulation,
+well-posedness, Hamiltonian, martingale, q-learning.
+1 Introduction
+Recently there is an upsurge of interest in continuous-time reinforcement learning (RL) with con-
+tinuous state spaces and possibly continuous action spaces. Continuous RL problems are important
+because: 1) many if not most practical problems are naturally continuous in time (and in space),
+such as autonomous driving, robot navigation, video game play and high frequency trading; 2) while
+one can discretize time upfront and turn a continuous-time problem into a discrete-time MDP, it
+has been known, indeed shown experimentally in e.g., Munos (2006), Tallec et al. (2019) and Park
+et al. (2021), that this approach is very sensitive to time discretization and performs poorly with
+small time steps; 3) there are more analytical tools available for the continuous setting that enable a
+∗Department of Systems Engineering and Engineering Management, The Chinese University of Hong Kong, Hong
+Kong, China. E-mail: xfgao@se.cuhk.edu.hk
+†Department of Systems Engineering and Engineering Management, The Chinese University of Hong Kong, Hong
+Kong, China. E-mail: lfli@se.cuhk.edu.hk
+‡Department of Industrial Engineering and Operations Research and The Data Science Institute, Columbia Uni-
+versity, New York, NY 10027, USA. Email: xz2574@columbia.edu
+1
+arXiv:2405.16449v5  [cs.LG]  25 Aug 2025
+
+=== page 2 ===
+rigorous and thorough analysis leading to interpretable (instead of black-box) and general (instead
+of ad hoc) RL algorithms.
+Compared with the vast literature of RL for MDPs, continuous-time RL research is still in
+its infancy with the latest study focusing on establishing a rigorous mathematical theory and
+devising resulting RL algorithms. This strand of research starts with Wang et al. (2020) that
+introduces a mathematical formulation to capture the essence of RL – the exploration–exploitation
+tradeoff – in the continuous setting, followed by a “trilogy” (Jia and Zhou 2022a,b, 2023) that
+develops intertwining theories on policy evaluation, policy gradient and q-learning, respectively.
+The common underpinning of the entire theory is the martingale property of certain stochastic
+processes, the enforcement of which naturally leads to various temporal difference algorithms to
+train and learn q-functions, value functions and optimal (stochastic) policies. The research is
+characterized by carrying out all the analysis in the continuous setting, and discretizing time only
+at the final, implementation stage for approximating the integrated rewards and the temporal
+difference. The theory has been adapted and extended in different directions; see e.g. Reisinger
+and Zhang (2021), Guo et al. (2022), Dai et al. (2023), as well as employed for applications; see
+e.g. Wang and Zhou (2020), Huang et al. (2022), Gao et al. (2022), Wang et al. (2023), and Wu
+and Li (2024).
+The study so far has been predominantly on pure diffusion processes, namely the state processes
+are governed by controlled stochastic differential equations (SDEs) with a drift part and a diffusion
+one. While it is reasonable to model the underlying data generating processes as diffusions within
+a short period of time, sudden and drastic changes can and do happen over time. An example is
+a stock price process: Although it is approximately a diffusion over a sufficiently short period, it
+may respond dramatically to a surprisingly good or bad earning report. Other examples include
+neuron dynamics (Giraudo and Sacerdote 1997), stochastic resonance (Gammaitoni et al. 1998) and
+climate data (Goswami et al. 2018). It is therefore natural and necessary to extend the continuous
+RL theory and algorithms to the case when jumps are present. This is particularly important
+for decision makings in financial markets, where it has been well recognized that using jumps to
+capture large sudden movements provides a more realistic way to model market dynamics; see the
+discussions in Chapter 1 of Cont and Tankov (2004). The financial modeling literature with jumps
+dates back to the seminal work of Merton (1976), who extends the classical Black–Scholes model
+by introducing a compound Poisson process with normally distributed jumps in the log returns.
+Since then alternative jump size distributions have been proposed in e.g. Kou (2002) and Cai
+and Kou (2011). Empirical success of jump-diffusion models has been documented for many asset
+classes; see Bates (1991), Andersen et al. (2002), and A¨ıt-Sahalia et al. (2012) for stocks and stock
+indices, Bates (1996) for exchange rates, Das (2002) for interest rates, and Li and Linetsky (2014)
+for commodities, among many others.
+This paper makes two major contributions. The first is several mathematical results that form
+the foundation of the RL theory for jump-diffusions, including a suitable exploratory formulation,
+a well-posedness proof of the resulting exploratory SDE, and the convergence of the value functions
+of the grid sample state processes to the exploratory value function. Wang et al. (2020) apply the
+classical stochastic relaxed control to model the exploration or randomization prevalent in RL, and
+derive an exploratory state equation that dictates the dynamics of the “average” of infinitely many
+state processes generated by repeatedly sampling from the same exploratory, stochastic policy. The
+drift and variance coefficients of the exploratory SDE are the means of those coefficients against
+the given stochastic policy (which is a probability distribution) respectively. The derivation therein
+2
+
+=== page 3 ===
+is based on a law of large number (LLN) argument to the first two moments of the diffusion
+process. That argument fails for jump-diffusions which are not uniquely determined by the first
+two moments. We overcome this difficulty by analyzing instead the infinitesimal behavior of the
+grid sample state process, which is obtained by sampling the stochastic policy on a discrete time
+grid. Based on this analysis, we identify the dynamic of the exploratory state process. Inspired
+by Kushner (2000) who studies relaxed control for jump-diffusions, we formulate the exploratory
+SDE by extending the original Poisson random measures for jumps to capture the effect of random
+exploration. It should be noted that, like almost all the earlier works on relaxed control, Kushner
+(2000) is motivated by answering the theoretical question of whether an optimal control exists,
+as randomization convexifies the universe of control strategies. In comparison, our formulation
+is guided by the practical motivation of exploration for learning. There is also another subtle
+but important difference. We consider stochastic feedback policies while Kushner (2000) does not.
+This in turn creates technical issues in studying the well-posedness of the exploratory SDE in our
+framework. Although the exploratory state process plays an important role in theoretical analysis,
+it is unobservable and hence cannot be used in the implementation of any RL algorithm. Instead,
+we consider the grid sample state processes, which is what one obtains from the environment by
+following the stochastic policy on a discrete time grid. We prove that the value functions of grid
+sample state processes converge to that of the exploratory state process at first order as the grid size
+shrinks to zero, which extends a major result in Jia et al. (2025) from diffusions to jump-diffusions.
+The second main contribution is several implications regarding the impact of jumps on RL al-
+gorithm design. Thanks to the established exploratory formulation, we can define the Hamiltonian
+that, compared with the pure diffusion counterpart, has to include an additional term correspond-
+ing to the jumps. The resulting HJB equation – called the exploratory HJB – is now a partial
+integro-differential equation (PIDE) instead of a PDE due to that additional term. However, when
+expressed in terms of the Hamiltonian, the exploratory HJB equation has exactly the same form
+as that in the diffusion case. This leads to several completely identical statements of important
+results, including the optimality of the Gibbs exploration, definition of a q-function, and martingale
+characterizations of value functions and q-functions. Here by “identical” we mean in terms of the
+Hamiltonian; in other words, these statements differ between diffusions and jump-diffusions entirely
+because the Hamiltonian is defined differently (which also causes some differences in the proofs of
+the results concerned). Most important of all, in the resulting RL algorithms, the Hamiltonian (or
+equivalently the q-function) can be computed using temporal difference of the value function by
+virtue of the Itˆo lemma; as a result the algorithms are completely identical no matter whether or
+not there are jumps. This has a significant practical implication: we can just use the same RL
+algorithms without the need of checking in advance whether the underlying data come from a pure
+diffusion or a jump-diffusion. It is significant for the following reason. In practice, data are always
+observed or sampled at discrete times, no matter how frequent they arrive. Thus, we encounter
+successive discontinuities along the sample trajectory even when the data actually come from a
+diffusion process. There are some criteria that can be used to check whether the underlying process
+is a diffusion or a jump-diffusion, e.g. A¨ıt-Sahalia et al. (2012), Wang and Zheng (2022). But these
+methods typically require data with very high frequency to be effective, which may not always be
+available. In addition, noises must be properly handled for them to work.
+Even though we can apply the same RL algorithms irrespective of the presence of jumps, the
+parametrization of the policy and value function may still depend on it, if we try to exploit certain
+special structure of the problem instead of using general neural networks for parameterization. In-
+3
+
+=== page 4 ===
+deed, we give an example in which the optimal exploratory policy is Gaussian when there are no
+jumps, whereas an optimal policy either does not exist or becomes non-Gaussian when there are
+jumps. However, in the mean–variance (MV) portfolio selection problem we present as a concrete
+application, the optimal Gibbs exploration measure again reduces to Gaussian and the value func-
+tion is quadratic as in Wang and Zhou (2020), both owing to the inherent linear–quadratic (LQ)
+structure of the problem. Hence in this particular case jumps do not even affect the parametrization
+of the policy and value function/q-function for learning.
+We also consider MV hedging of options as another application. This is a non-LQ problem
+and hence more difficult to solve than MV portfolio selection. The MV hedging problem has been
+studied in various early works, such as Schweizer (1996, 2001) and Lim (2005). Here, we introduce
+the entropy-regularized MV hedging objective for an asset following a jump-diffusion and derive
+analytical representations for the optimal stochastic policy, which is again Gaussian, as well as the
+optimal value function. We use these representations to devise an actor–critic algorithm to learn
+the optimal hedging policy from data.
+We compare our work with five recent related papers. (1) Bender and Thuan (2023) consider the
+continuous-time MV portfolio selection problem with exploration under a jump-diffusion setting.
+Our paper differs from theirs in two main aspects. First, they consider the specific MV problem only
+while we study RL for general controlled jump-diffusions with MV as an instance of application.
+Second, they do not develop algorithms based on their solution of the exploratory MV portfolio
+selection, which we do in this paper. (2) During the revision process of our paper, we became
+aware of the concurrent study Bender and Thuan (2024), which independently investigates RL for
+jump-diffusions using a randon measure approach. Specifically, they derive a grid sample state
+process as an equation driven by suitable random measures and establish a limit theorem for these
+measures as the sampling grid size approaches zero. By contrast, our work focuses on developing
+q-learning theory and algorithms for jump-diffusions, with a particular emphasis on applying this
+general framework to two financial applications. (3) Bo et al. (2024) develop q-learning for jump-
+diffusions by using Tsallis’ entropy for regularization instead of Shannon’s entropy considered in
+our paper and Jia and Zhou (2022b, 2023).1 While this entropy presents an interesting alternative
+for developing RL algorithms, it may make the exploratory control problem less tractable to solve
+and lead to policy distributions that are inefficient to sample for exploration in certain applications.
+(4) Guo et al. (2023) consider continuous-time RL for linear–convex models with jumps. The scope
+and motivation are different from ours: They focus on the Lipschitz stability of feedback controls
+for this special class of control problems where the diffusion and jump terms are not controlled,
+and propose a least-square model-based algorithm and obtain sublinear regret guarantees in the
+episodic setting. By contrast, we consider RL for general jump-diffusions and develop model-free
+algorithms without considering regret bounds. (5) Denkert et al. (2024) aim to unify certain types
+of stochastic control problems by considering the so-called randomized control formulation which
+leads to the same optimal value functions as those of the original problems. They develop a policy
+gradient representation and actor–critic algorithms for RL. The randomized control formulation is
+fundamentally different from the framework we are considering: therein the control is applied at a
+set of random time points generated by a random point process.
+The remainder of the paper is organized as follows. In Section 2, we discuss the formulation
+of the control problem and the exploratory state process. In Section 3, we present the theory
+1The paper Bo et al. (2024) came to our attention after a previous version of our paper was completed and posted.
+4
+
+=== page 5 ===
+of q-learning for jump-diffusions, followed by the discussion of q-learning algorithms in Section 4.
+In Section 5, we apply the general theory and algorithms to a mean–variance portfolio selection
+problem, and discuss the impact of jumps. Section 6 presents the application to a mean–variance
+option hedging problem. Finally, Section 7 concludes. The appendix contains the proofs and some
+results regarding the convergence of the value functions of the grid sample state processes to the
+value function of the exploratory state process.
+2 Problem Formulation and Preliminaries
+For readers’ convenience, we first recall some basic concepts for one-dimensional (1D) L´evy pro-
+cesses, which can be found in standard references such as Sato (1999) and Applebaum (2009).
+A 1D process L = {Lt : t ≥ 0} is a L´evy process if it is continuous in probability, has station-
+ary and independent increments, and L0 = 0 almost surely. Denote the jump of L at time t by
+∆Lt = Lt − Lt−, and let BBB0 be the collection of Borel sets of R whose closure does not contain 0.
+The Poisson random measure (or jump measure) of L is defined as
+N (t, B) =
+X
+s:0<s≤t
+1B (∆Ls), B ∈ BBB0,
+which gives the number of jumps up to time t with jump size in a Borel set B away from 0. The
+L´evy measure ν of L is defined by ν(B) = E[N (1, B)] for B ∈ BBB0, which shows the expected number
+of jumps in B in unit time, and ν(B) is finite. For any B ∈ BBB0, {N (t, B) : t ≥ 0} is a Poisson
+process with intensity given by ν(B). The differential forms of these two measures are written as
+N (dt, dz) and ν(dz), respectively. If ν is absolutely continuous, we write ν(dz) = ν(z)dz by using
+the same letter for the measure and its density function. The L´evy measure ν must satisfy the
+integrability condition Z
+R
+min{z2, 1}ν(dz) < ∞. (1)
+However, it is not necessarily a finite measure on R/{0} but always a σ-finite measure. The L´evy
+process L is said to have jumps of finite (infinite activity) if
+R
+R ν(dz) < ∞ (= ∞). The number of
+jumps on any finite time interval is finite in the former case but infinite in the latter. For any Borel
+set B with its closure including 0, ν(B) is finite in the finite activity case but infinite otherwise.
+Finally, the compensated Poisson random measure is defined as eN (dt, dz) = N (dt, dz) − ν(dz)dt.
+For any B ∈ BBB0, the process { eN (t, B) : t ≥ 0} is a martingale.
+Throughout the paper, we use the following notations. By convention, all vectors are column
+vectors unless otherwise specified. We use Rk and Rk×ℓ to denote the space of k-dimensional
+vectors and k × ℓ matrices, respectively. For matrix A, we use A⊤ for its transpose, |A| for its
+Euclidean/Frobenius norm, and write A2 := AA⊤. Given two matrices A and B of the same
+size, we denote by A ◦ B the inner product between A and B, which is given by tr(AB⊤). For a
+positive semidefinite matrix A, we write
+√
+A = U D1/2V ⊤, where A = U DV ⊤ is its singular value
+decomposition with U, V as two orthogonal matrices and D as a diagonal matrix, and D1/2 is the
+diagonal matrix whose entries are the square root of those of D. We use f = f (·) to denote the
+function f , and f (x) to denote the function value of f at x. We use ∂xf, ∂2 xf for the first and
+second partial derivatives of a function f with respect to x. We write the minimum of two values
+a and b as a ∧ b. The notation U (B) denotes the uniform distribution over set B while N (µ, Σ)
+refers to the Gaussian distribution with mean vector µ and covariance matrix Σ.
+5
+
+=== page 6 ===
+2.1 Classical stochastic control of jump-diffusions
+Consider a filtered probability space (Ω, F , {Ft}, P) satisfying the usual hypothesis. Assume that
+this space is rich enough to support W = {Wt : t ≥ 0}, a standard Brownian motion in Rm, and
+ℓ independent one-dimensional (1D) L´evy processes L1, · · · , Lℓ, which are also independent of W .
+Let N (dt, dz) = (N1(dt, dz1), · · · , Nℓ(dt, dzℓ))⊤ be the vector of their Poisson random measures,
+and similarly define ν(dz) and eN (dt, dz). The controlled system dynamics are governed by the
+following L´evy SDE (Øksendal and Sulem 2007, Chapter 3):
+dX a s = b(s, X a s−, as)ds + σ(s, X a s−, as)dWs +
+Z
+Rℓ
+γ(s, X a s−, as, z) eN (ds, dz), s ∈ [0, T ], (2)
+where
+b : [0, T ] × Rd × A → Rd, σ : [0, T ] × Rd × A → Rd×m and γ : [0, T ] × Rd × A × Rℓ → Rd×ℓ,
+as is the control or action at time s, A ⊆ Rn is the control space, and a = {as : s ∈ [0, T ]} is the
+control process assumed to be predictable with respect to {Fs : s ∈ [0, T ]}. We denote the k-th
+column of the matrix γ by γk. The goal of stochastic control is, for each initial time-state pair (t, x)
+of (2), to find the optimal control process a that maximizes the expected total reward:
+E
+Z T
+t
+e−β(s−t)r(s, X a s , as)ds + e−β(T −t)h(X a T ) X a t = x  , (3)
+where β ≥ 0 is a discount factor that measures the time value of the payoff.
+The stochastic control problem (2)–(3) is very general; in particular, control processes affect
+the drift, diffusion and jump coefficients. We now make the following assumption to ensure well-
+posedness of the problem. Define Rd K := {x ∈ Rd : |x| ≤ K}.
+Assumption 1. Suppose the following conditions are satisfied by the state dynamics and reward
+functions:
+(i) b, σ, γ, r, h are all continuous functions in their respective arguments;
+(ii) (local Lipschitz continuity) for any K > 0 and any p ≥ 2, there exist positive constants CK
+and CK,p such that ∀(t, a) ∈ [0, T ] × A, (x, x′) ∈ Rd K ,
+|b(t, x, a) − b(t, x′, a)| + |σ(t, x, a) − σ(t, x′, a)| ≤ CK |x − x′|,
+ℓX
+k=1
+Z
+R
+|γk(t, x, a, zk) − γk(t, x′, a, zk)|pνk(dz) ≤ CK,p|x − x′|p;
+(iii) (linear growth in x) for any p ≥ 1, there exist positive constants C and Cp such that ∀(t, x, a) ∈
+[0, T ] × Rd × A,
+|b(t, x, a)| + |σ(t, x, a)| ≤ C(1 + |x| + |a|),
+ℓX
+k=1
+Z
+R
+|γk(t, x, a, z)|pνk(dz) ≤ Cp(1 + |x|p + |a|p);
+6
+
+=== page 7 ===
+(iv) there exists a constant C > 0 such that
+|r(t, x, a)| ≤ C (1 + |x|p + |a|q) , |h(x)| ≤ C (1 + |x|p) , ∀(t, x, a) ∈ [0, T ] × Rd × A
+for some p ≥ 2 and some q ≥ 1.
+A control process a is admissible if E[
+R T
+0 |as|pds] is finite for any p ≥ 1. Conditions (i)-(iii)
+guarantee the existence of a unique strong solution to the controlled L´evy SDE (2) with initial
+condition X a t = x ∈ Rd for any admissible control process. Furthermore, for any p ≥ 2, there exists
+a constant Cp > 0 such that
+Et,x
+h
+sup
+t≤s≤T
+|X a s |p
+i
+≤ Cp(1 + |x|p); (4)
+see (Kunita 2004, Theorem 3.2) and (Situ 2006, Theorem 119). With the moment estimate (4), it
+follows from condition (iv) and the admissibility condition that the expected value in (3) is finite.
+Let La be the infinitesimal generator associated with the L´evy SDE (2). Under condition (iii),
+we have
+R
+R |γk(t, x, a, z)|νk(dz) < ∞ for k = 1, · · · , ℓ. Thus, we can write La in the following form:
+Laf (t, x) = ∂tf (t, x) + b(t, x, a) ◦ ∂xf (t, x) + 1 2 σ2(t, x, a) ◦ ∂2 xf (t, x)
++
+ℓX
+k=1
+Z
+R
+(f (t, x + γk(t, x, a, z)) − f (t, x) − γk(t, x, a, z) ◦ ∂xf (t, x)) νk(dz), (5)
+where ∂xf ∈ Rd is the gradient and ∂2 xf ∈ Rd×d is the Hessian matrix.
+We recall Itˆo’s formula, which will be frequently used in our analysis; see e.g. (Øksendal and
+Sulem 2007, Theorem 1.16). Let X a be the unique strong solution to (2). For any f ∈ C1,2(R+×Rd),
+we have
+df (t, X a t ) = ∂tf (t, X a t−)dt + b(t, X a t−, at) ◦ ∂xf (t, X a t−)dt + 1 2 σ2(t, X a t−, at) ◦ ∂2 xf (t, X a t−)dt
++
+ℓX
+k=1
+Z
+R
+ 
+f (t, X a t− + γk(t, X a t−, at, z)) − f (t, X a t−) − γk(t, X a t−, at, z) ◦ ∂xf (t, X a t−)  νk(dz)dt
++∂xf (t, X a t−) ◦ σ(t, X a t−, at)dWt +
+ℓX
+k=1
+Z
+R
+ 
+f (t, X a t− + γk(t, X a t−, at, z)) − f (t, X a t−)  eNk(dt, dz).(6)
+It is known that the Hamilton–Jacobi–Bellman (HJB) equation for the control problem (2)–(3)
+is given by
+sup
+a∈A
+{r(t, x, a) + LaV (t, x)} − βV (t, x) = 0, (t, x) ∈ [0, T ) × Rd, (7)
+V (T, x) = h(x),
+where La is given in (5). Under proper conditions, the solution to the above equation is the
+optimal value function V ∗ for control problem (3). Moreover, the following function, which maps
+a time–state pair to an action:
+a∗(t, x) = arg max
+a∈A
+{r(t, x, a) + LaV ∗(t, x)} (8)
+7
+
+=== page 8 ===
+is the optimal feedback control policy of the problem, a result called the verification theorem.
+Given a smooth function V (t, x) ∈ C1,2([0, T ] × Rd), we define the Hamiltonian H by
+H
+ 
+t, x, a, ∂xV, ∂2 xV, V  = r(t, x, a) + b(t, x, a) ◦ ∂xV (t, x) + 1 2 σ2(t, x, a) ◦ ∂2 xV (t, x)
++
+ℓX
+k=1
+Z
+Rd
+(V (t, x + γk(t, x, a, z)) − V (t, x) − γk(t, x, a, z) ◦ ∂xV (t, x)) νk(dz). (9)
+Then, the HJB equation (7) can be recast as
+∂tV (t, x) + sup
+a∈A
+{H(t, x, a, ∂xV, ∂2 xV, V )} − βV (t, x) = 0, (t, x) ∈ [0, T ) × Rd,
+V (T, x) = h(x).
+What we have just outlined above is the classical model-based approach to solving the stochastic
+control problem (2)–(3), under the assumption that the model primitives b, σ, γ, r, h are known
+functions. When they are not known, there is no HJB equation (7) to solve and no verification
+condition (8) to apply, in which case we resort to RL.
+2.2 Randomized control and the grid sample state process
+A key idea of RL is to explore the unknown environment by randomizing the actions. Let π :
+(t, x) ∈ [0, T ] × Rd → π(·|t, x) ∈ P(A) be a given stochastic feedback policy, where P(A) is the
+set of probability density functions defined on A. An action a ∈ A sampled from π(·|t, x) can be
+expressed as a = Gπ(t, x, U ) for some measurable function Gπ and some U following the uniform
+distribution over [0, 1]n (n is the dimension of the control space). In the following, we will also
+interchangeably use the more compact notations πt,x(·) for π(·|t, x) and Gπt,x (·) for Gπ(t, x, U ).
+When it comes to randomizing actions in continuous time, a subtle measurability issue arises
+from continuum (uncountable in particular) and independent samplings from the stochastic policy;
+see, e.g. Szpruch et al. (2024) and Bender and Thuan (2024) for detailed discussions. To avoid such
+issues, we follow Jia et al. (2025) to only consider randomization on a time grid and use piecewise
+constant actions.
+Let S = {0 = t0 < t1 < . . . < tN = T } be a time grid of [0, T ] with N ∈ N and |S| =
+maxi=1,...,N (ti − ti−1). Given a stochastic feedback policy π, we follow a grid sampling scheme
+where action randomization occurs at the grid points only. Specifically, to define the state dynamic
+under such a scheme, we introduce the grid sampling process:
+U S s = U1 · 1[0,t1](s) +
+NX
+i=2
+Ui · 1(ti−1,ti](s), s ∈ [0, T ]. (10)
+Here (Ui) are i.i.d random vectors uniformly distributed over [0, 1]n, which are independent of W
+and L1, · · · , Lℓ, assuming that the original probability space (Ω, F , P) is rich enough to support
+these random elements. This process essentially describes sampling from Ui at time ti−1. We
+now enlarge the original filtration to include the additional randomness from sampling actions.
+Denote by GS = (GS t )t∈[0,T ] the right-continuous, augmented version of the filtration generated
+by W , L1, · · · , Lℓ and the grid sampling process U S. The new filtered probability space is now
+(Ω, F , GS, P).
+8
+
+=== page 9 ===
+Fix an initial system state x0 at time 0, a time grid S of [0, T ] and a stochastic feedback
+policy π. Under a grid sampling scheme, the state dynamic X π,S = {X π,S s : 0 ≤ s ≤ T }, which
+will be henceforth referred to as the grid sample state process, satisfies the following SDE: for all
+i = 0, ..., n − 1 and all s ∈ (ti, ti+1],
+dX π,S s = b(s, X π,S s− , Gπ(ti, X π,S ti , U S s ))ds + σ(s, X π,S s− , Gπ(ti, X π,S ti , U S s ))dWs
++
+Z
+Rℓ
+γ(s, X π,S s− , Gπ(ti, X π,S ti , U S s ), z) eN (ds, dz), (11)
+where U S s = Ui+1 for s ∈ (ti, ti+1]. This means a random action Gπ(ti, X π,S ti , Ui+1) is generated
+at ti and remains unchanged over (ti, ti+1].2 Under appropriate technical assumptions on π, we
+will show later that the SDE (11) admits a unique strong solution that has a desirable moment
+estimate; see Proposition 2 for details.
+2.3 Exploratory state process
+For theoretical analysis, we need to formulate the so-called exploratory state process, which rep-
+resents the averaged controlled dynamic over infinitely many randomized actions. In the case of
+diffusions, Wang et al. (2020) heuristically formulated such exploratory dynamics by applying an
+LLN (Law of Large Numbers) argument to the first two moments of the diffusion processes. We
+will still use the same heuristic approach based on LLN here, but the first two moments cannot
+determine a jump-diffusion. Instead, we study the infinitesimal behavior of the grid sample state
+process by averaging randomized actions, based on which we will formulate the exploratory state
+process.
+To this end, let f ∈ C1,2 0 ([0, T ) × Rd) be continuously differentiable in t and twice continuously
+differentiable in x with compact support. Let t = tk, for some k, be a grid point of S and fix x.
+Consider the SDE (11) starting from X π,S t = x. Let s > 0 be very small such that [t, t+s] lies within
+[tk, tk+1]. We apply the random action Gπ(tk, X π,S tk , Uk+1) throughout (t, t + s]. Let a1, · · · , aN be
+N independent samples of this random action. With a slight abuse of notations, denote by X ai t+s
+the value of the state process corresponding to ai at t + s. We consider Et,x[f (t + s, X π,S t+s)], where
+the expectation, conditional on X π,S t = x, is taken over the randomness caused by Uk+1 as well as
+W , L1, · · · , Lℓ. Then
+lim
+s→0
+Et,x[f (t + s, X π,S t+s)] − f (t, x)
+s
+= lim
+s→0
+limN →∞ 1 N PN i=1 Et,x[f (t + s, X ai t+s)] − f (t, x)
+s
+= lim
+N →∞
+1
+N
+NX
+i=1
+lim
+s→0
+Et,x[f (t + s, X ai t+s)] − f (t, x)
+s
+= lim
+N →∞
+1
+N
+NX
+i=1
+ 
+∂tf (t, x) + b(t, x, ai) ◦ ∂xf (t, x) + 1 2 σ2(t, x, ai) ◦ ∂2 xf (t, x)  (12)
+2To define the grid sample state process, one can alternatively consider an action process given by
+Gπ (s, X π,S s− , U S s ) = Gπ (s, X π,S s− , Ui+1) for s ∈ (ti, ti+1] as in Bender and Thuan (2024). In this paper we choose
+to work with the piecewise constant action process given in (11) because it is simpler and indeed is the actual
+implemented control process in our RL algorithms.
+9
+
+=== page 10 ===
++ lim
+N →∞
+1
+N
+NX
+i=1
+ℓX
+k=1
+Z
+R
+(f (t, x + γk(t, x, ai, z)) − f (t, x) − γk(t, x, ai, z) ◦ ∂xf (t, x)) νk(dz). (13)
+Using LLN, we obtain
+(12) = ∂tf (t, x) + ˜b(t, x, πt,x) ◦ ∂xf (t, x) + 1 2 ˜σ2(t, x, πt,x) ◦ ∂2 xf (t, x), (14)
+where
+˜b(t, x, πt,x) :=
+Z
+A
+b(t, x, a)π(a|t, x)da, ˜σ(t, x, πt,x) :=
+ Z
+A
+σ2(t, x, a)π(a|t, x)da 1/2 . (15)
+These “exploratory” drift and diffusion coefficients are consistent with those in Wang et al. (2020).
+It is thus tempting to think the exploratory jump coefficient ˜γ is similarly the average of γ with
+respect to π; but unfortunately it is generally not true. This in turn is one of the main distinctive
+features in studying RL for jump-diffusions.
+We approach the problem by analyzing the integrals in (13). Using the second-order Taylor
+expansion, the boundedness of ∂2 xf (t, x) for x ∈ Rd and condition (iii) of Assumption 1, we obtain
+that for fixed (t, x) and each k,
+ Z
+R
+ 
+f (t, x + γk(t, x, a, z)) − f (t, x) − γk(t, x, a, z) ◦ ∂xf (t, x)
+
+νk(dz)
+
+≤ C
+Z
+R
+|γk(t, x, a, z)|2νk(dz) ≤ C(1 + |x|2)
+for some constant C > 0, which is independent of a. It follows that
+(13) =
+ℓX
+k=1
+Z
+A
+Z
+R
+ 
+f (t, x + γk(t, x, a, z)) − f (t, x) − γk(t, x, a, z) ◦ ∂xf (t, x)
+
+νk(dz)π(a|t, x)da. (16)
+Combining (14) and (16), the infinitesimal behavior of the grid sample state process (at grid
+points) can be characterized by the operator Lπ, which is given by the probability weighted average
+of the generator La of the classical controlled jump-diffusion, i.e.,
+Lπf (t, x) := lim
+s→0
+Et,x[f (t + s, X π,S t+s)] − f (t, x)
+s =
+Z
+A
+Laf (t, x)π(a|t, x)da.
+We now reformulate the integrals in (13) to convert them to the same form as (5). Note that
+Z
+A
+Z
+R
+ 
+f (t, x + γk(t, x, a, z)) − f (t, x) − γk(t, x, a, z) ◦ ∂xf (t, x)
+
+νk(dz)π(a|t, x)da
+=
+Z
+R×[0,1]n
+ 
+f (t, x + γk (t, x, Gπt,x (u), z)) − f (t, x) − γk (t, x, Gπt,x (u), z) ◦ ∂xf (t, x)  νk(dz)du.
+It follows that Lπ can be written as
+Lπf (t, x) = ∂tf (t, x) + ˜b(s, x, πt,x) ◦ ∂xf (t, x) + 1 2 ˜σ2(s, x, πt,x) ◦ ∂2 xf (t, x)
+10
+
+=== page 11 ===
++
+ℓX
+k=1
+Z
+R×[0,1]n
+ 
+f (t, x + γk (t, x, Gπt,x (u), z)) − f (t, x) − γk (t, x, Gπt,x (u), z) ◦ ∂xf (t, x)  νk(dz)du.
+(17)
+For each k = 1, · · · , ℓ, we can view νk(dz)du as the intensity measure of a new Poisson random
+measure, denoted by N ′ k(dt, dz, du), defined on the product space [0, T ] × R × [0, 1]n. We let
+N ′(dt, dz, du) = (N ′ 1(dt, dz1, du), · · · , N ′ ℓ(dt, dzℓ, du))⊤.3
+Based on (17), we formulate the exploratory state process as the solution to the following SDE:
+dX π s = ˜b(s, X π s−, π(·|s, X π s−))ds + ˜σ(s, X π s−, π(·|s, X π s−))dWs
++
+Z
+R×[0,1]n
+γ
+ 
+s, X π s−, Gπ(s, X π s−, u), z  eN ′(ds, dz, du), X π t = x, s ∈ [t, T ], (18)
+which we call the exploratory L´evy SDE. The solution process, should it exist, is denoted by ˜X π
+and called the exploratory (state) process. It is a semimartingale by (18) and determined by
+three characteristics: the drift, the quadratic variation of the continuous local martingale, and the
+compensator of the random measure associated with the process’s jumps; see Jacod and Shiryaev
+(2013) for detailed discussions of semimartingales and their characteristics. Given ˜X π s− = x, the
+semimartingale characteristics of ˜X π over an infinitesimally small time interval [s, s + ds] are given
+by the triplet (˜b(s, x, πs,x)ds, ˜σ2(s, x, πs,x)ds, Pℓ k=1 R [0,1]n γk(s, x, Gπ(s, x, u), z)du·νk(dz)ds), where
+the third characteristic is obtained by calculating E[Pℓ k=1 γk (s, x, Gπ(s, x, u), z) Nk(ds, dz, du)] for
+L´evy jumps with size from [z, z + dz]. Using (15), we have
+˜b(s, x, πs,x)ds =
+Z
+A
+b(s, x, a)π(a|s, x)dads, ˜σ2(s, x, πs,x)ds =
+Z
+A
+σ2(s, x, a)π(a|s, x)dads,
+ℓX
+k=1
+Z
+[0,1]n
+γk(s, x, Gπ(s, x, u), z)du · νk(dz)ds =
+ℓX
+k=1
+Z
+A
+γk (s, x, a, z) νk(dz)ds · π(a|s, x)da.
+Thus, the semimartingale characteristics of the exploratory state process are the averages of those
+of the original controlled state process (2) over action randomization.
+A technical yet foundational question is the well-posedness (i.e. existence and uniqueness of
+solution) of the exploratory SDE (18), which we now address. For that we first specify the class
+of admissible strategies, which is the same as that considered in Jia and Zhou (2023) for pure
+diffusions.
+Definition 1. A policy π = π(·|·, ·) is called admissible, if
+(i) π(·|t, x) ∈ P(A), suppπ(·|t, x) = A for every (t, x) ∈ [0, T ] × Rd and π(a|t, x) : (t, x, a) ∈
+[0, T ] × Rd × A → R is measurable;
+(ii) π(a|t, x) is continuous in (t, x), i.e.,
+R
+A |π(a|t, x) − π(a|t′, x′)| da → 0 as (t′, x′) → (t, x).
+Furthermore, for any K > 0, there is a constant CK > 0 independent of (t, a) such that
+Z
+A
+π(a|t, x) − π(a|t, x′)  da ≤ CK |x − x′|, ∀x, x′ ∈ Rd K ;
+3We assume the original probability space (Ω, F , P) is rich enough to support N ′.
+11
+
+=== page 12 ===
+(iii) ∀(t, x),
+R
+A | log π(a|t, x)|π(a|t, x)da ≤ C(1 + |x|p) for some p ≥ 2 and some positive constant
+C. Moreover,
+R
+A |a|pπ(a|t, x)da ≤ Cp(1 + |x|p) for any p ≥ 1 and some positive constant Cp.
+Next, we establish the well-posedness of (18) under any given admissible policy. The result of
+the next lemma regarding ˜b and ˜σ is provided in the proof of Lemma 2 in Jia and Zhou (2022b),
+which uses property (ii) of admissibility.
+Lemma 1. Under Assumption 1, for any admissible policy π, the functions ˜b(t, x, πt,x) and
+˜σ(t, x, πt,x) have the following properties:
+(i) (local Lipschitz continuity) for K > 0, there exists a constant CK > 0 such that ∀t ∈
+[0, T ], (x, x′) ∈ Rd K ,
+|˜b(t, x, πt,x) − ˜b(t, x′, πt,x′ )| + |˜σ(t, x, πt,x) − ˜σ(t, x′, πt,x′ )| ≤ CK |x − x′| ;
+(ii) (linear growth in x) there exists a constant C > 0 such that ∀(t, x) ∈ [0, T ] × Rd,
+|˜b(t, x, πt,x)| + |˜σ(t, x, πt,x)| ≤ C(1 + |x|).
+We now establish analogous properties for γ(t, x, Gπt,x (u), z) in the following lemmas, whose
+proofs are relegated to the appendix.
+Lemma 2 (linear growth in x). Under Assumption 1, for any admissible π and any p ≥ 2, there
+exists a constant Cp > 0 that can depend on p such that ∀(t, x) ∈ [0, T ] × Rd,
+ℓX
+k=1
+Z
+R×[0,1]n
+|γk (t, x, Gπt,x (u), z)|p νk(dz)du ≤ Cp(1 + |x|p).
+For the local Lipschitz continuity of γk(t, x, Gπt,x (u), z), we make an additional assumption.
+Assumption 2. For k = 1, · · · , ℓ, the following conditions hold.
+(i) For any K > 0 and any p ≥ 2, there exists a constant CK,p > 0 that can depend on K and p
+such that
+Z
+R
+γk(t, x, a, z) − γk(t, x, a′, z) p νk(dz) ≤ CK,p|a−a′|p, ∀t ∈ [0, T ], a, a′ ∈ A, x ∈ Rd K , z ∈ R.
+(ii) For any K > 0 and any p ≥ 2, there exists a constant CK,p > 0 that can depend on K and p
+such that
+Z
+[0,1]n
+Gπ(t, x, u) − Gπ(t, x′, u) p du ≤ CK,p|x − x′|p, ∀t ∈ [0, T ], x, x′ ∈ Rd K .
+For a stochastic feedback policy πt,x ∼ N (µ(t, x), A(t, x)A(t, x)⊤), we have Gπ(t, x, u) =
+µ(t, x) + A(t, x)Φ−1(u). Clearly, Assumption 2-(ii) holds provided that µ(t, x) and A(t, x) are
+locally Lipschitz continuous in x.
+12
+
+=== page 13 ===
+Lemma 3 (local Lipschitz continuity). Under Assumptions 1 and 2, for any admissible policy π,
+any K > 0, and any p ≥ 2, there exists a constant CK,p > 0 that can depend on K and p such that
+∀t ∈ [0, T ], (x, x′) ∈ Rd K ,
+ℓX
+k=1
+Z
+R×[0,1]n
+γk (t, x, Gπt,x (u), z) − γk   t, x′, Gπt,x′ (u), z p νk(dz)du ≤ CK,p|x − x′|p.
+With Lemmas 1 to 3, we can now apply (Kunita 2004, Theorem 3.2) and (Situ 2006, Theorem
+119) to obtain the well-posedness of (18) along with the moment estimate of its solution.
+Proposition 1. Under Assumptions 1 and 2, for any admissible policy π, there exists a unique
+strong solution { ˜X π t , 0 ≤ t ≤ T } to the exploratory L´evy SDE (18). Furthermore, for any p ≥ 2,
+there exists a constant Cp > 0 such that
+Et,x
+h
+sup
+t≤s≤T
+| ˜X π s |p
+i
+≤ Cp(1 + |x|p). (19)
+It should be noted that the conditions imposed in Assumptions 1 and 2 are sufficient but not
+necessary for obtaining the well-posedness and moment estimate of the exploratory L´evy SDE (18).
+For a specific problem, weaker conditions may suffice for these results if we exploit special structures
+of the problem.
+Remark 1. Bender and Thuan (2024) formulate the grid sample state process as an equation
+driven by certain random measures, and prove a limit theorem for these random measures as the
+size of the sampling grid goes to zero. This limit theorem in turn motivates a limiting formulation
+of the grid sample state process, which is referred to as the grid-sampling limit SDE in their paper.
+Based on the discussion in Section 6.2 of Bender and Thuan (2024), this limiting SDE turns out to
+have the same probability law as our exploratory SDE, even though it has a different representation.
+2.4 Exploratory HJB equation
+Given the exploratory dynamic (18), we now define the (exploratory) value function for any given
+admissible stochastic policy π. To encourage exploration, we follow Wang et al. (2020) to add an
+entropy regularizer to the running reward of the orginal control problem, and set
+J(t, x; π) = Et,x
+ Z T
+t
+e−β(s−t)
+Z
+A
+ 
+r(s, ˜X π s , a) − θ log π(a|s, ˜X π s−)  π(a|s, ˜X π s−)dads
++ e−β(T −t)h( ˜X π T )
+
+, (20)
+where the expectation is conditioned on ˜X π t = x. Here θ > 0 is the temperature parameter that
+controls the level of exploration. The function J(·, ·; π) is called the (exploratory) value function
+of the policy π. The goal of RL is to find the policy that maximizes the value function among
+admissible policies specified in Definition 1.
+Under Assumption 1 and using the admissibility of π and (19), it is easy to see that J has
+polynomial growth in x. We provide the Feynman–Kac formula for this function in Lemma 4 by
+13
+
+=== page 14 ===
+working with the representation (20). In the proof, we consider the finite and infinite jump activity
+cases separately because special care is needed in the latter. We revise Assumption 1 by adding
+one more condition for this case.
+Assumption 1′. Conditions (i) to (iv) in Assumption 1 hold. We further assume condition (v):
+if
+R
+R νk(dz) = ∞, then |γk(t, x, a, z)| is bounded for any |z| ≤ 1, t ∈ [0, T ], x ∈ Rd K and a ∈ A.
+For Lemma 4, Lemma 5 and Theorem 1, we impose Assumption 1′ and assume that the ex-
+ploratory SDE (18) is well-posed with the moment estimate (19). For simplicity, we do not explicitly
+mention these assumptions in the statement of the results.
+Lemma 4. Given an admissible stochastic policy π, suppose there exists a solution ϕ ∈ C1,2([0, T )×
+Rd)∩C([0, T ]×Rd) to the following partial integro-differential equation (PIDE): ∀(t, x) ∈ [0, T )×Rd,
+∂tϕ(t, x) +
+Z
+A
+ 
+H(t, x, a, ∂xϕ, ∂2 xϕ, ϕ) − θ log π(a|t, x)  π(a|t, x)da − βϕ(t, x) = 0, (21)
+with terminal condition ϕ(T, x) = h(x), x ∈ Rd. Moreover, for some p ≥ 2, ϕ satisfies
+|ϕ(t, x)| ≤ C(1 + |x|p), ∀(t, x) ∈ [0, T ] × Rd. (22)
+Then ϕ is the value function of the policy π, i.e. J(t, x; π) = ϕ(t, x).
+For ease of presentation, we henceforth assume the value function J(·, ·; π) ∈ C1,2([0, T ) × Rd) ∩
+C([0, T ] × Rd) for any admissible stochastic policy π.
+Remark 2. The conclusion in Lemma 4 still holds if we assume ∂xϕ(t, x) has polynomial growth
+in x instead of Assumption 1′-(v).
+Next, we consider the optimal value function defined by
+J ∗(t, x) = sup
+π∈Π
+J(t, x; π),
+where Π is the class of admissible strategies. The following result characterizes J ∗ and the optimal
+stochastic policy through the so-called exploratory HJB equation.
+Lemma 5. Suppose there exists a solution ψ ∈ C1,2([0, T ) × Rd) ∩ C([0, T ] × Rd) to the exploratory
+HJB equation:
+∂tψ(t, x) + sup
+π∈P(A)
+Z
+A
+ 
+H(t, x, a, ∂xψ, ∂2 xψ, ψ) − θ log π(a|t, x)  π(a|t, x)da − βψ(t, x) = 0, (23)
+with the terminal condition ψ(T, x) = h(x), where H is the Hamiltonian defined in (9). Moreover,
+for some p ≥ 2, ψ satisfies
+|ψ(t, x)| ≤ C(1 + |x|p), ∀(t, x) ∈ [0, T ] × Rd,
+and it holds that Z
+A
+exp
+ 1
+θ H(t, x, a, ∂xψ, ∂2 xψ, ψ)  da < ∞.
+Then, the Gibbs measure or Boltzman distribution
+π∗(a|t, x) ∝ exp  1 θ H(t, x, a, ∂xψ, ∂2 xψ, ψ)  (24)
+is the optimal stochastic policy and J ∗(t, x) = ψ(t, x) provided that π∗ is admissible.
+14
+
+=== page 15 ===
+Plugging the optimal stochastic policy (24) into Eq. (23) to remove the supremum operator, we
+obtain the following nonlinear PIDE for the optimal value function J ∗: ∀(t, x) ∈ [0, T ) × Rd,
+∂tJ ∗(t, x) + θ log
+ Z
+A
+exp
+ 1
+θ H(t, x, a, ∂xJ ∗, ∂2 xJ ∗, J ∗)  da  − βJ ∗(t, x) = 0, (25)
+with terminal condition J ∗(T, x) = h(x), x ∈ Rd.
+Remark 3. The optimal value function J ∗ in (25) for the exploratory control problem is expected
+to converge to the optimal value function V ∗ for the classical control problem (3) when θ → 0 under
+certain technical conditions. In the case of pure diffusions without jumps, this has been proved
+in Tang et al. (2022) for infinite-horizon problems. Establishing such a result for general jump-
+diffusions necessitates a careful analysis of the dependency of PIDE (25) on θ, which falls beyond
+the scope of this paper. However, we will see that in each of the two applications considered in
+this paper (see Sections 5 and 6), the optimal value function J ∗ of the exploratory problem indeed
+converges to the classical optimal value function V ∗ as θ → 0, due to the convergence of the optimal
+stochastic feedback policy to the optimal deterministic feedback policy.
+3 q-Learning Theory
+3.1 q-function and policy improvement
+We present the q-learning theory for jump-diffusions that includes both policy evaluation and policy
+improvement, now that the exploratory formulation has been set up. The theory can be developed
+similarly to Jia and Zhou (2023, 2025); so we will just highlight the main differences in the analysis,
+skipping the parts that are similar.4
+Definition 2. The q-function of the problem (2)–(3) associated with a given policy π ∈ Π is defined
+by
+q(t, x, a; π) = ∂tJ(t, x; π) + H(t, x, a, ∂xJ, ∂2 xJ, J) − βJ(t, x; π), (t, x, a) ∈ [0, T ] × Rd × A,
+where J is given in (20) and the Hamiltonian function H is defined in (9).
+It is an immediate consequence of Lemma 4 that the q-function satisfies
+Z
+A
+ 
+q(t, x, a; π) − θ log π(a|t, x)
+
+π(a|t, x)da = 0, ∀(t, x) ∈ [0, T ] × Rd.
+The following policy improvement theorem can be proved similarly as in (Jia and Zhou 2023,
+Theorem 2) by using the arguments in the proof of Lemma 4.
+4The q-learning theory for pure diffusions is established originally in Jia and Zhou (2023). In the wake of the
+observations of the aforementioned measurability issue, an erratum that works with grid sample state processes is
+put forth in Jia and Zhou (2025).
+15
+
+=== page 16 ===
+Theorem 1 (Policy Improvement). For any given π ∈ Π, define
+π′(·|t, x) ∝ exp  1 γ H   t, x, ·, ∂xJ(t, x; π), ∂2 xJ(t, x; π), J(t, ·; π)  ∝ exp  1 γ q(t, x, ·; π)  .
+If π′ ∈ Π, then
+J(t, x, π′) ≥ J(t, x, π).
+Moreover, if the following map
+I(π) = exp( 1 θ H(t, x, ·, ∂xJ(t, x; π), ∂2 xJ(t, x; π), J(t, ·; π)))R
+A exp( 1 θ H(t, x, a, ∂xJ(t, x; π), ∂2xJ(t, x; π), J(t, ·; π)))da , π ∈ Π
+= exp( 1 θ q(t, x, ·; π))R
+A exp( 1 θ q(t, x, a; π))da
+has a fixed point π∗, then π∗ is an optimal policy.
+3.2 Martingale characterization of the q-function
+In this section, we derive the martingale characterization of the q-function associated with a policy
+π ∈ Π, which will be used for on-policy and off-policy learning. We cannot work with the ex-
+ploratory process directly because it is unobservable (i.e. it does not constitute data). We consider
+the grid sample state process instead, which is what one obtains from the environment by following
+a stochastic policy.
+For any t ∈ [0, T ), in the following we consider a grid on [t, T ], which will still be denoted by S
+for notational simplicity (though it depends on t). That is, S = {t = t0 < t1 < . . . < tN = T } for
+some N . The grid sampling process on [t, T ] can be defined analogously as in (10):
+U S s = U1 · 1[t0,t1](s) +
+NX
+i=2
+Ui · 1(ti−1,ti](s), s ∈ [t, T ],
+where the first uniform random vector U1 is sampled at t = t0. The grid sample state process X π,S =
+{X π,S s : t ≤ s ≤ T } starts from t and satisfies the SDE (11). The action process aπ,S = {aπ,S s :
+t ≤ s ≤ T } satisfies aπ,S s = aπ,S tn for s ∈ (tn, tn+1], where aπ,S tn := Gπ(tn, X π,S tn , Un+1) is applied over
+(tn, tn+1]. With a slight abuse of notations, we still denote by GS the right-continuous, augmented
+version of the filtration generated by the Brownian motion W , L´evy processes L1, · · · , Lℓ, and the
+grid sampling process on [t, T ].
+We need the following result for the grid sample state process X π,S = {X π,S s : t ≤ s ≤ T }.
+Proposition 2. Fix any (t, x) ∈ [0, T ] × Rd. Under Assumption 1, for any admissible policy π and
+any time grid S of [t, T ], there exists a unique strong solution {X π,S s , t ≤ s ≤ T } to the grid sample
+state SDE (11) with the initial condition X π,S t = x. Furthermore, for any p ≥ 2, there exists a
+constant Cp that is independent of the grid S such that
+Et,x
+h
+sup
+t≤s≤T
+|X π,S s |p
+i
+≤ Cp(1 + |x|p). (26)
+16
+
+=== page 17 ===
+We now state in Theorem 2 the martingale characterization of the q-function associated with
+a policy π ∈ Π, assuming that its value function has already been learned and known. Note that
+for Theorems 2–4 below, we impose Assumption 1 without explicitly mentioning it in the theorem
+statements .
+Theorem 2. Let a policy π ∈ Π, its value function J(·, ·; π) ∈ C1,2([0, T ) × Rd) ∩ C([0, T ] × Rd)
+and a continuous function ˆq : [0, T ] × Rd × A → R be given. Assume that J(t, x; π) and Jx(t, x; π)
+both have polynomial growth in x. Then the following results hold.
+(i) ˆq(t, x, a) = q(t, x, a; π) for all (t, x, a) if and only if for any (t, x) and any grid S of [t, T ], the
+following process
+e−βsJ(s, X π,S s ; π) +
+Z s
+t
+e−βτ   r(τ, X π,S τ , aπ,S τ ) − ˆq(τ, X π,S τ , aπ,S τ )  dτ (27)
+is a GS-martingale, where X π,S = {X π,S s : t ≤ s ≤ T } is the grid sample state process defined
+in (11) with X π,S t = x.
+(ii) If ˆq(t, x, a) = q(t, x, a; π) for all (t, x, a), then for any π′ ∈ Π, any (t, x) and any grid S of
+[t, T ], the following process
+e−βsJ(t, X π′,S s ; π) + Z s
+t
+e−βτ   r(τ, X π′,S τ , aπ′,S τ ) − ˆq(τ, X π′,S τ , aπ′,S τ )  dτ (28)
+is a GS-martingale, where {X π′,S s : t ≤ s ≤ T } is the solution to (11) under π′ with initial
+condition X π′,S t = x.
+(iii) If there exists π′ ∈ Π such that for all (t, x) and any grid S of [t, T ], the process (28) is a
+GS-martingale where X π′,S t = x, then we have ˆq(t, x, a) = q(t, x, a; π) for all (t, x, a).
+Moreover, in any of the three cases above, the q-function satisfies
+Z
+A
+ 
+q(t, x, a; π) − θ log π(a|t, x)
+
+π(a|t, x)da = 0, for all (t, x) ∈ [0, T ] × Rd.
+Remark 4. Similar to Jia and Zhou (2023, 2025), Theorem 2-(i) facilitates on-policy learning,
+where learning the q-function of the given target policy π is based on data {(s, X π,S s , aπ,S s ), t ≤ s ≤ T }
+generated by π. On the other hand, Theorem 2-(ii) and -(iii) are for off-policy learning, where
+learning the q-function of π is based on data generated by a different, called behavior policy, π′.
+Next, we extend Theorem 7 in Jia and Zhou (2023, 2025) and obtain a martingale characteri-
+zation of the value function and the q-function simultaneously.
+Theorem 3. Let a policy π ∈ Π, a function ˆJ ∈ C1,2([0, T )×Rd)∩C([0, T ]×Rd) and a continuous
+function ˆq : [0, T ] × Rd × A → R be given satisfying
+ˆJ(T, x) = h(x),
+Z
+A
+ 
+ˆq(t, x, a) − θ log π(a|t, x)
+
+π(a|t, x)da = 0, ∀(t, x) ∈ [0, T ] × Rd. (29)
+Assume that ˆJ and ˆJx both have polynomial growth in x. Then
+17
+
+=== page 18 ===
+(i) ˆJ and ˆq are respectively the value function and the q-function associated with π if and only
+if for any (t, x) ∈ [0, T ] × Rd and any grid S of [t, T ], the following process
+e−βs ˆJ(s, X π,S s ) +
+Z s
+t
+e−βτ   r(τ, X π,S τ , aπ,S τ ) − ˆq(τ, X π,S τ , aπ,S τ )  dτ
+is a GS-martingale, where X π,S = {X π,S s : t ≤ s ≤ T } satisfies (11) with X π,S t = x.
+(ii) If ˆJ and ˆq are respectively the value function and the q-function associated with π, then for
+any π′ ∈ Π, any (t, x) ∈ [0, T ] × Rd and any grid S of [t, T ], the following process
+e−βs ˆJ(s, X π′,S s ) + Z s
+t
+e−βτ   r(τ, X π′,S τ , aπ′,S τ ) − ˆq(τ, X π′,S τ , aπ′,S τ )  dτ (30)
+is a GS-martingale, where {X π′,S s : t ≤ s ≤ T } satisfies (11) with X π′,S t = x.
+(iii) If there exists π′ ∈ Π such that for all (t, x) and any grid S of [t, T ], the process (30) is a
+GS-martingale where X π′,S t = x, then we have ˆJ(t, x) = J(t, x; π) and ˆq(t, x, a) = q(t, x, a; π)
+for all (t, x, a).
+In any of the three cases above, if it holds that π(a|t, x) =
+exp( 1 θ ˆq(t,x,a))R
+A exp( 1 θ ˆq(t,x,a))da , then π is the optimal
+policy and ˆJ is the optimal value function.
+3.3 Optimal q-function
+We consider in this section the optimal q-function, i.e., the q-function associated with the optimal
+policy π∗ in (24). Based on Definition 2, we can write it as
+q∗(t, x, a) = ∂tJ ∗(t, x) + H(t, x, a, ∂xJ ∗, ∂2 xJ ∗, J ∗) − βJ ∗(t, x),
+where J ∗ is the optimal value function that solves the exploratory HJB equation in (23).
+The following is the martingale condition that characterizes the optimal value function J ∗ and
+the optimal q-function.
+Theorem 4. Let a function ˆJ ∗ ∈ C1,2([0, T ) × Rd) ∩ C([0, T ] × Rd) and a continuous function
+ˆq∗ : [0, T ] × Rd × A → R be given satisfying
+ˆJ ∗(T, x) = h(x),
+Z
+A
+exp
+ 1
+θ ˆq∗(t, x, a)  da = 1, for all (t, x) ∈ [0, T ] × Rd.
+Assume that ˆJ ∗(t, x) and ˆJ ∗ x (t, x) both have polynomial growth in x. Then
+(i) If ˆJ ∗ and ˆq∗ are respectively the optimal value function and the optimal q-function, then for
+any π ∈ Π , for all (t, x) ∈ [0, T ] × Rd and any grid S of [t, T ], the following process
+e−βs ˆJ ∗(s, X π,S s ) +
+Z s
+t
+e−βτ   r(τ, X π,S τ , aπ,S τ ) − ˆq∗(τ, X π,S τ , aπ,S τ )  dτ (31)
+is a GS-martingale, where X π,S = {X π,S s : t ≤ s ≤ T } satisfies (11) with X π,S t = x. Moreover,
+in this case, ˆπ∗(a|t, x) = exp( 1 θ ˆq∗(t, x, a)) is the optimal stochastic policy.
+(ii) If there exists π ∈ Π such that for all (t, x) and any grid S of [t, T ], the process (31) is a
+GS-martingale where X π,S t = x, then ˆJ ∗ and ˆq∗ are respectively the optimal value function
+and the optimal q-function.
+18
+
+=== page 19 ===
+4 q-Learning Algorithms
+In this section we present learning algorithms based on the martingale characterization of the q-
+function discussed in the previous section. We need to distinguish two cases, depending on whether
+or not the density function of the Gibbs measure generated from the q-function can be computed
+and integrated explicitly.
+We first discuss the case when the normalizing constant in the Gibbs measure can be computed
+explicitly. We denote by J ψ and qϕ the parameterized function approximators for the optimal
+value function and optimal q-function, respectively. In view of Theorem 4, these approximators are
+chosen to satisfy
+J ψ(T, x) = h(x),
+Z
+A
+exp
+ 1
+θ qϕ(t, x, a)  da = 1. (32)
+We can then update (ψ, ϕ) by enforcing the martingale condition discussed in Theorem 4 and
+applying the techniques developed in Jia and Zhou (2022a). This procedure has been discussed in
+details in Section 4.1 of Jia and Zhou (2023), and hence we omit the details.
+For reader’s convenience, we present Algorithms 1 and 2, which summarize the offline and
+online q-learning algorithms respectively. In the algorithmic implementation, we execute stochastic
+policies on a uniform time grid with step size ∆t. That is, the grid S = {0 = t0 < t1 < . . . <
+tK = T }, where ti+1 − ti = ∆t for all i. Algorithms 1 and 2 are based on the so-called martingale
+orthogonality condition in Jia and Zhou (2022a), where the typical choices of test functions in these
+algorithms are ξt = ∂ψJ ψ(t, X πϕ t ), and ζt = ∂ϕqϕ(t, X πϕ t , aπϕ t ). Here, πϕ is the policy generated by
+qϕ, and we use X πϕ t to denote the grid sample state process X πϕ,S t for notational simplicity. Note
+that these two algorithms are identical to Algorithms 2 and 3 in Jia and Zhou (2023).
+When the normalizing constant in the Gibbs measure is not available, we take the same approach
+as in Jia and Zhou (2023) to develop learning algorithms. Specifically, we consider {πϕ(·|t, x)}ϕ∈Φ,
+which is a family of density functions of some tractable distributions, e.g. multivariate normal dis-
+tributions. Starting from a stochastic policy πϕ in this family, we update the policy by considering
+the optimization problem
+min
+ϕ′∈Φ KL
+
+πϕ′ (·|t, x)  exp  1 θ q(t, x, ·; πϕ)  .
+Specifically, using gradient descent, we can update ϕ as in Jia and Zhou (2023), by
+ϕ ← ϕ − θαϕdt
+
+log πϕ(aπϕ t |t, X πϕ t− ) − 1 θ q(t, X πϕ t , aπϕ t ; πϕ)  ∂ϕ log πϕ(aπϕ t |t, X πϕ t− ). (33)
+In the above updating rule, we need only the values of the q-function along the trajectory – the
+“data” – {(t, X πϕ t , aπϕ t ); 0 ≤ t ≤ T }, instead of its full functional form. These values can be learned
+through the “temporal difference” of the value function along the data. To see this, applying Itˆo’s
+formula (6) to J(·, ·; πϕ), we have
+q(t, X πϕ t , aπϕ t ; πϕ)dt = dJ(t, X πϕ t ; πϕ) +   r(t, X πϕ t , aπϕ t ) − βJ(t, X πϕ t ; πϕ)  dt
++ ∂xJ(t, X πϕ t− ; πϕ) ◦ σ(t, X πϕ t− , aπϕ t )dWt
++
+Z
+Rd
+ 
+J(t, X πϕ t− + γ(t, X πϕ t− , aπϕ t , z)) − J(t, X πϕ t− ; πϕ)  eN (dt, dz),
+19
+
+=== page 20 ===
+Algorithm 1 Offline–Episodic q-Learning Algorithm
+Inputs: initial state x0, horizon T , time step ∆t, number of episodes N , number of mesh grids K,
+initial learning rates αψ, αϕ and a learning rate schedule function l(·) (a function of the number
+of episodes), functional forms of parameterized value function J ψ(·, ·) and q-function qϕ(·, ·, ·) sat-
+isfying (32), functional forms of test functions ξ(t, x·∧t, a·∧t) and ζ(t, x·∧t, a·∧t), and temperature
+parameter θ.
+Required program (on-policy): environment simulator (x′, r) = Environment∆t(t, x, a) that
+takes current time–state pair (t, x) and action a as inputs and generates state x′ at time t + ∆t and
+instantaneous reward r at time t as outputs. Policy πϕ(a|t, x) = exp( 1 γ qϕ(t, x, a)).
+Required program (off-policy): observations {atk , rtk , xtk+1 }k=0,··· ,K−1 ∪ {xtK , h(xtK )} =
+Observation(∆t) including the observed actions, rewards, and state trajectories under the given
+behavior policy at the sampling time grid with step size ∆t.
+Learning procedure:
+Initialize ψ, ϕ.
+for episode j = 1 to N do
+Initialize k = 0. Observe initial state x0 and store xtk ← x0.
+{On-policy case
+while k < K do
+Generate action atk ∼ πϕ(·|tk, xtk ).
+Apply atk to environment simulator (x, r) = Environment∆t(tk, xtk , atk ), and observe new
+state x and reward r as outputs. Store xtk+1 ← x and rtk ← r.
+Update k ← k + 1.
+end while
+}
+{Off-policy case Obtain one observation {atk , rtk , xtk+1 }k=0,··· ,K−1 ∪ {xtK , h(xtK )} =
+Observation(∆t).
+}
+For every k = 0, 1, · · · , K − 1, compute and store test functions ξtk =
+ξ(tk, xt0 , · · · , xtk , at0 , · · · , atk ), ζtk = ζ(tk, xt0 , · · · , xtk , at0 , · · · , atk ).
+Compute
+∆ψ =
+K−1X
+i=0
+ξti
+ 
+J ψ(ti+1, xti+1 ) − J ψ(ti, xti ) + rti ∆t − qϕ(ti, xti , ati )∆t − βJ ψ(ti, xti )∆t  ,
+∆ϕ =
+K−1X
+i=0
+ζti
+ 
+J ψ(ti+1, xti+1 ) − J ψ(ti, xti ) + rti ∆t − qϕ(ti, xti , ati )∆t − βJ ψ(ti, xti )∆t  .
+Update ψ and ϕ by
+ψ ← ψ + l(j)αψ∆ψ.
+ϕ ← ϕ + l(j)αϕ∆ϕ.
+end for
+20
+
+=== page 21 ===
+Algorithm 2 Online-Incremental q-Learning Algorithm
+Inputs: initial state x0, horizon T , time step ∆t, number of mesh grids K, initial learning rates
+αψ, αϕ and learning rate schedule function l(·) (a function of the number of episodes), functional
+forms of parameterized value function J ψ(·, ·) and q-function qϕ(·, ·, ·) satisfying (32), functional
+forms of test functions ξ(t, x·∧t, a·∧t) and ζ(t, x·∧t, a·∧t), and temperature parameter θ.
+Required program (on-policy): environment simulator (x′, r) = Environment∆t(t, x, a) that
+takes current time–state pair (t, x) and action a as inputs and generates state x′ at time t + ∆t and
+instantaneous reward r at time t as outputs. Policy πϕ(a|t, x) = exp( 1 θ qϕ(t, x, a)).
+Required program (off-policy): observations {a, r, x′} = Observation(t, x; ∆t) including the
+observed actions, rewards, and state when the current time-state pair is (t, x) under the given
+behavior policy at the sampling time grid with step size ∆t.
+Learning procedure:
+Initialize ψ, ϕ.
+for episode j = 1 to ∞ do
+Initialize k = 0. Observe initial state x0 and store xtk ← x0.
+while k < K do
+{On-policy case
+Generate action atk ∼ πϕ(·|tk, xtk ).
+Apply atk to environment simulator (x, r) = Environment∆t(tk, xtk , atk ), and observe new
+state x and reward r as outputs. Store xtk+1 ← x and rtk ← r.
+}
+{Off-policy case
+Obtain one observation atk , rtk , xtk+1 = Observation(tk, xtk ; ∆t).
+}
+Compute test functions ξtk = ξ(tk, xt0 , · · · , xtk , at0 , · · · , atk ), ζtk =
+ζ(tk, xt0 , · · · , xtk , at0 , · · · , atk ).
+Compute
+δ = J ψ(tk+1, xtk+1 ) − J ψ(tk, xtk ) + rtk ∆t − qϕ(tk, xtk , atk )∆t − βJ ψ(tk, xtk )∆t,
+∆ψ = ξtk δ,
+∆ϕ = ζtk δ.
+Update ψ and ϕ by
+ψ ← ψ + l(j)αψ∆ψ.
+ϕ ← ϕ + l(j)αϕ∆ϕ.
+Update k ← k + 1
+end while
+end for
+21
+
+=== page 22 ===
+where we also use aπϕ t to denote the action process aπϕ,S t for notational simplicity. We may ignore the
+dWt and eN (dt, dz) terms which are martingale differences with mean zero, and then the updating
+rule in (33) becomes
+ϕ ← ϕ + αϕ
+
+dJ(t, X πϕ t ; πϕ) +   r(t, X πϕ t , aπϕ t ) − βJ(t, X πϕ t ; πϕ)  dt − θ log πϕ(aπϕ t |t, X πϕ t− )dt 
+· ∂ϕ log πϕ(aπϕ t |t, X πϕ t− ).
+Using J ψ(·, ·) as the parameterized function approximator for J(·, ·; πϕ), we arrive at the updating
+rule for the policy parameter ϕ:
+ϕ ← ϕ + αϕ
+
+dJ ψ(t, X πϕ t ) +   r(t, X πϕ t , aπϕ t ) − βJ ψ(t, X πϕ t )  dt − θ log πϕ(aπϕ t |t, X πϕ t− )dt 
+· ∂ϕ log πϕ(aπϕ t |t, X πϕ t− ). (34)
+Therefore, we can update ψ using the PE methods in Jia and Zhou (2022a), and update ϕ using
+the above rule, leading to actor–critic type of algorithms.
+To conclude, we are able to use the same RL algorithms to learn the optimal policy and optimal
+value function, without having to know a priori whether the unknown environment entails a pure
+diffusion or a jump-diffusion. This important conclusion is based on the theoretical analysis carried
+out in the previous sections.
+5 Application: Mean–Variance Portfolio Selection
+We now present an applied example of the general theory and algorithms derived. Consider investing
+in a market where there are a risk-free asset and a risky asset (e.g. a stock or an index). The risk-free
+rate is given by a constant rf and the risky asset price process follows
+dSt = St−
+
+µdt + σdWt +
+Z
+R
+(exp(z) − 1) eN (dt, dz)
+
+. (35)
+Let Xt be the discounted wealth value at time t, and at is the discounted dollar value of the
+investment in the risky asset. The self-financing discounted wealth process follows
+dX a t = atσρdt + atσdWt + at
+Z
+R
+(exp(z) − 1) eN (dt, dz), (36)
+where ρ is the Sharpe ratio of the risky asset and given by
+ρ = µ − rf
+σ . (37)
+We assume
+Z
+|z|>1
+exp(2z)ν(dz) < ∞. (38)
+Condition (38) implies that E[St] and E[S2 t ] are finite for every t ≥ 0; see (Cont and Tankov 2004,
+Proposition 3.14). We set
+σ2 J :=
+Z
+R
+(exp(z) − 1)2ν(dz),
+22
+
+=== page 23 ===
+which is finite by conditions (1) and (38).
+Fix the investment horizon as [0, T ]. The MV portfolio selection problem considers
+min
+a
+Var [X a T ] subject to E [X a T ] = z.
+We seek the optimal pre-committed strategy for the MV problem as in Zhou and Li (2000). We
+can transform the above constrained problem into an unconstrained one by introducing a Lagrange
+multiplier, which yields
+min
+a
+E[(X a T )2] − z2 − 2ω(E[X a T ] − z) = min a E[(X a T − ω)2] − (ω − z)2. (39)
+Note that the optimal solution to the unconstrained minimization problem depends on ω, and we
+can obtain the optimal multiplier ω∗ by solving E  X a∗ T (ω)  = z, which is given by
+ω∗ =
+
+z exp
+ ρ2σ2
+σ2 + σ2 J T
+
+− x0
+
+exp
+ ρ2σ2
+σ2 + σ2 J T
+
+− 1
+
+, (40)
+where x0 is the initial wealth. The optimal deterministic control policy is given by
+a∗(t, x) = − σρ σ2 + σ2 J (x − ω∗). (41)
+The exploratory formulation of the control problem is
+min
+π
+E
+
+( ˜X π T − ω)2 + θ
+Z T
+0
+Z
+A
+log π(a|t, ˜X π t−)π(a|t, ˜X π t−)dadt
+
+− (ω − z)2, (42)
+where the exploratory discounted wealth under a stochastic policy π follows
+d ˜X π t = σρ
+Z
+A
+aπ(a|t, ˜X π t−)dadt + σ
+sZ
+A
+a2π(a|t, ˜X π t−)dadWt
++
+Z
+R×[0,1]n
+Gπ(t, ˜X π t−, u)(exp(z) − 1) eN ′(dt, dz, du), t ∈ [0, T ]. (43)
+As will be explained shortly, we only need to consider stochastic feedback policies of the form
+N (·|α(t)(x − β(t)), γ(t)), where α(t), β(t) and γ(t) are continuous functions of t. Such a policy π
+clearly fulfills the requirements in Definition 1 and hence is admissible. It also satisfies condition
+(ii) in Assumption 2.
+We next discuss the well-posedness of the exploratory SDE (43). While Assumptions 1 and
+2 are imposed to ensure the moment estimate (19) holds for any p ≥ 2 in the general setting,
+we only need such an estimate for the second moment of the exploratory state in the particular
+MV application. To have such a property, we only need to require the conditions involving p in
+Assumptions 1 and 2 to hold up to p = 2, which are clearly satisfied in the problem under (38). The
+other requirements in Assumption 1 are also fulfilled. Thus, the exploratory SDE (43) is well-posed
+for the π mentioned above and Eq. (19) holds for p = 2.
+23
+
+=== page 24 ===
+5.1 Solution of the exploratory control problem
+We consider the HJB equation for problem (42):
+∂tV (t, x) + inf π∈P(R)
+Z
+R
+ 
+H(t, x, a, ∂xV, ∂2 xV, V ) + θ log π(a|t, x)  π(a|t, x)da = 0, (44)
+with the terminal condition V (T, x) = (x − ω)2 − (ω − z)2. Note that supremum becomes infimum
+and the sign before θ log π(a|t, x) flips compared with (23) because we consider minimization here.
+The Hamiltonian of the problem is given by
+H(t, x, a, ∂xV, ∂2 xV, V ) = aσρ∂xV (t, x) + 1 2 a2σ2∂2 xV (t, x)
++
+Z
+R
+ 
+V (t, x + γ(a, z)) − V (t, x) − γ(a, z)∂xV (t, x)
+
+ν(dz),
+where γ(a, z) = a(ez − 1). We take the following ansatz for the solution of the HJB equation (44):
+V (t, x) = (x − ω)2f (t) + g(t) − (ω − z)2. (45)
+As V (t, x) is quadratic in x, we can easily calculate the integral term in the Hamiltonian and obtain
+H(t, x, a, ∂xV, ∂2 xV, V ) = aσρ∂xV (t, x) + 1 2 a2(σ2 + σ2 J )∂2 xV (t, x). (46)
+The probability density function that minimizes the integral in (44) is given by
+πc(·|t, x) ∝ exp
+
+− 1 θ H(t, x, a, ∂xV, ∂2 xV, V )  ,
+which is a candidate for the optimal stochastic policy. From (46), we obtain
+πc(·|t, x) ∼ N
+
+·
+ − σρ∂xV (σ2 + σ2 J )∂2xV , θ (σ2 + σ2 J )∂2xV  .
+Substituting it back to the HJB equation (44), we obtain a nonlinear PDE as
+∂tV − ρ2σ2 2(σ2 + σ2 J ) (∂xV )2 ∂2xV − θ 2 ln 2πθ (σ2 + σ2 J )∂2xV = 0, (t, x) ∈ [0, T ) × R,
+V (T, x) = (x − ω)2 − (ω − z)2.
+We plug in the ansatz (45) to the above PDE and obtain that f (t) satisfies
+f ′(t) − ρ2σ2
+σ2 + σ2 J f (t) = 0, f (T ) = 1,
+and g(t) satisfies
+g′(t) − θ 2 ln πθ (σ2 + σ2 J )f (t) = 0, g(T ) = 0.
+24
+
+=== page 25 ===
+These two ordinary differential equations can be solved analytically, and we obtain
+V (t, x) =(x − ω)2 exp
+
+− ρ2σ2
+σ2 + σ2 J (T − t)
+
++ θρ2σ2
+4(σ2 + σ2 J ) (T 2 − t2)
+− θ 2  ρ2σ2 σ2 + σ2 J T + ln πθ σ2 + σ2 J  (T − t) − (ω − z)2.
+It follows that
+πc(·|t, x) ∼ N
+
+·
+ − σρ σ2 + σ2 J (x − ω), θ 2(σ2 + σ2 J ) exp  ρ2σ2 σ2 + σ2 J (T − t)  , (47)
+and it is admissible. Furthermore, V solves the HJB equation (44) and shows quadratic growth.
+Therefore, by Lemma 5, we have the following conclusion.
+Proposition 3. For the unconstrained MV problem (39), the optimal value function J ∗(t, x) =
+V (t, x) and the optimal stochastic policy π∗ = πc.
+When there is no jump, we have σ2 J = 0 and thus recover the expressions of the optimal value
+function and optimal policy derived in Wang and Zhou (2020) for the unconstrained MV problem
+in the pure diffusion setting.
+5.2 Parametrizations for q-learning
+It is important to observe that the optimal value function, optimal policy and the Hamiltonian (46)
+take the same structural forms regardless of the presence of jumps, while the only differences are
+the constant coefficients in those functions. However, those coefficients are unknown anyway and
+will be parameterized in the implementation of our RL algorithms. Consequently, we can use the
+same parameterizations for the optimal value function and optimal q-function for learning as in the
+diffusion setting of Jia and Zhou (2023). This important insight, concluded only after a rigorous
+theoretical analysis, shows that the continuous-time RL algorithms are robust to the presence of
+jumps and essentially model-free, at least for the MV portfolio selection problem.
+Following Jia and Zhou (2023), we parametrize the value function as
+J ψ(t, x; ω) = (x − ω)2e−ψ3(T −t) + ψ2(t2 − T 2) + ψ1(t − T ) − (ω − z)2,
+and the q-function as
+qϕ(t, x, a; ω) = − e−ϕ2−ϕ3(T −t)
+2
+ 
+a + ϕ1(x − ω)
+2 − θ 2   log(2πθ) + ϕ2 + ϕ3(T − t)  .
+Let ψ = (ψ1, ψ2, ψ3)⊤ and ϕ = (ϕ1, ϕ2, ϕ3)⊤. The policy associated with the parametric q-function
+is πϕ(· | t, x; ω) = N (−ϕ1(x − ω), θeϕ2+ϕ3(T −t)). In addition to ψ and ϕ, we learn the Lagrange
+multiplier ω in the same way as in Jia and Zhou (2023) by the stochastic approximation algorithm
+that updates ω with a learning rate after a fixed number of iterations.
+25
+
+=== page 26 ===
+5.3 Simulation study
+We assess the effect of jumps on the convergence behavior of our algorithms via a simulation study.
+We assume the risk-free rate is zero and use the same basic setting as in Jia and Zhou (2023):
+x0 = 1, z = 1.4, T = 1 year, ∆t = 1/252 years (corresponding to one trading day), and a chosen
+temperature parameter θ = 0.1. We consider two market simulators: one is given by the Black–
+Scholes (BS) model and the other is Merton’s jump-diffusion (MJD) model in which the L´evy
+density is a scaled Gaussian density, i.e.,
+ν(z) = λ 1√
+2πδ2 exp
+
+− (z − m)2
+2δ2
+
+, λ > 0, δ > 0, m ∈ R, (48)
+where λ is the arrival rate of the Poisson jumps. The Gaussian assumption is a common choice in
+the finance literature for modeling the jump-size distribution (see e.g. Merton 1976, Bates 1991,
+Das 2002), partly due to its tractability for statistical estimation and partly because heavy-tailed
+distributions may not be easily identified from real data when the number of jumps is limited (see
+Heyde and Kou 2004).
+Under the latter model, we have
+σ2 J = λ
+
+exp(2m + 2δ2) − 2 exp
+
+m + 1 2 δ2
+
++ 1
+
+.
+To mimic the real market, we set the parameters of these two simulators by estimating them from
+the daily data of the S&P 500 index using maximum likelihood estimation (MLE). Our estimation
+data cover a long period from the beginning of 2000 to the end of 2023. In Table 1, we summarize
+the estimated parameter values used for the simulators.
+Simulator Parameters
+BS µ = 0.0690, σ = 0.1965
+MJD µ = 0.0636, σ = 0.1347, λ = 28.4910, m = −0.0039, δ = 0.0275
+Table 1: Parameters used in the two simulators
+For offline learning (Algorithm 1), the Lagrange multiplier ω is updated after every 10 iterations,
+and the parameter vectors ψ and ϕ are initialized as zero vectors. For the learning rates, we set
+αω = 0.05, αψ = 0.001, αϕ = (0.12, 1.5, 0.15) for the BS simulator, and αω = 0.06, αψ = 0.001,
+αϕ = (0.06, 1.3, 0.11) for the MJD one. We apply a decay rate l(j) = j−0.51 to the learning rates,
+where j is the iteration index. In each iteration, we generate 32 independent T -year trajectories to
+update the parameters. We train the model for N = 20000 iterations.
+We also consider online learning (Algorithm 2) with ∆t equal to one trading day. We select
+a batch size of 128 trading days and update the parameters after having obtained this number of
+observations. We update ω after collecting 252 trading days of observations and initialize ψ and ϕ
+as zero vectors. For the learning rates, we set αω = 0.005, αψ = 0.001, αϕ = (0.12, 2.9, 0.16) for
+the BS simulator, and αω = 0.01, αψ = 0.001, αϕ = (0.027, 1.05, 0.45) for the MJD one. We apply
+the same decay scheme as the offline case. The model is again trained for N = 20000 iterations.
+We display in Table 2 the learned results for the parameters ϕ1, ϕ2 and ϕ3 as well as the true
+values of these parameters calculated by plugging the BS/MJD model parameters into (47). For
+26
+
+=== page 27 ===
+both offline and online learning, the learned results of the four parameters are close to their true
+values. In practice, learning ϕ1 and ω (parameters in the policy’s mean) is more important than
+ϕ2 and ϕ3 (parameters in the policy’s variance). Although we use a stochastic policy to interact
+with the environment during training to update the policy parameters, for actual execution of
+portfolio selection we apply a deterministic policy which is the mean part of the optimal stochastic
+policy after it has been learned. This renders an off-policy learning. An advantage of doing so
+among others is to reduce the variance of the final wealth; see Huang et al. (2022) for a discussion.
+Furthermore, the deterministic policy given by (41) is the one that optimizes the original MV
+objective (without entropy regularization). Hence, it makes sense to apply the mean part of the
+learned stochastic policy for execution, which theoretically is identical to the optimal deterministic
+policy (compare (41) and (47)).
+ϕ1 ϕ2 ϕ3 ω
+BS simulator
+True 1.7869 2.5610 0.1233 4.4481
+RL-Offline 1.7613 2.5651 0.1241 4.4886
+RL-Online 1.7693 2.6158 0.1217 4.3864
+MJD simulator
+True 1.5940 2.5282 0.1013 5.1489
+RL-Offline 1.5871 2.5451 0.1043 5.1776
+RL-Online 1.5873 2.5050 0.0998 5.1840
+Table 2: Learned parameters after 20000 iterations from the offline and online q-learning algorithms
+under two market simulators
+Figure 1 plots the learning curves of ϕ1 for both offline and online learning and under both
+simulators (one with jumps and one without). All the curves eventually converge, whether jumps are
+present or not. This demonstrates that convergence of the offline and online q-learning algorithms
+proposed in Jia and Zhou (2023) under the diffusion setting is robust to the presence of jumps for
+mean–variance portfolio selection.
+5.4 Empirical Study
+In this section we report an empirical study on investing in the S&P 500 index for one year. We
+obtain daily observations of the index value from the beginning of 2000 to the end of 2023, and
+split them into two periods: the training period (the first 20 years) and the test period (the last
+4 years). Recall that the test period includes the U.S. stock market meltdown at the onset of the
+pandemic in 2020, the 2022 bear period as well as various bull subperiods.
+We assume the risk-free rate is zero and perform daily rebalancing. We compare our offline and
+online RL algorithms with the plug-in approach based on MLE estimates. In the latter, we consider
+both BS and MJD models and fit them to daily returns of the index in the training period. The
+MLE estimates are plugged into (40) to obtain the respective optimal Lagrange multipliers and
+into (41) to obtain the corresponding optimal deterministic policies, which are then applied on the
+test data. To generate episodes for training the two RL algorithms, we bootstrap index returns in
+27
+
+=== page 28 ===
+Figure 1: Convergence of the offline and online q-learning algorithms under two market simulators
+for the policy parameter ϕ1 (iteration index on the x-axis)
+the training period to create one-year episodes of index prices. We initialize the policy parameter
+ϕ1 by using the MLE estimates of the MJD model parameters in the formula σρ/(σ2 + σ2 J ). The
+implementation of RL follows the same practice in our simulation study and the mean part of the
+learned stochastic policy is applied on the test data. To create the test data, we generate a set of
+5000 one-year episodes of index prices by bootstrapping index returns in the test period, which is
+used for testing the RL algorithms and the plug-in method.
+Table 3 compares the out-of-sample test performances of the four methods with different levels of
+the target wealth. As a natural benchmark, we also report the annualized mean return, volatility
+and Sharpe ratio of the index in the 4-year test period, which corresponds to a buy-and-hold
+strategy. It is clear that in terms of the Sharpe ratio, all the methods beat the index yet the
+two RL algorithms outperform the MLE method significantly. A closer examination shows that
+this outperformance arises from RL’s decisive lower volatilities in all the cases. Indeed, in the case
+when z = 1.1 representing a (reasonably targeted) 10% expected annual return, both RL strategies’
+volatilities are smaller than that of the index, and the online one is less than half of those of the
+MLE!
+28
+
+=== page 29 ===
+ϕ1 ω MR Vol SR
+z = 1.4
+RL-Offline 3.0507 2.8560 0.6823 0.7765 0.8788
+RL-Online 2.7079 2.5421 0.5062 0.6011 0.8422
+MLE-BS 1.6203 5.4748 0.8938 1.2038 0.7425
+MLE-MJD 1.3877 6.7992 0.9954 1.3752 0.7238
+z = 1.3
+RL-Offline 2.8040 2.5218 0.5165 0.6061 0.8522
+RL-Online 2.6593 2.1760 0.3794 0.4532 0.8373
+MLE-BS 1.6203 4.3561 0.6704 0.9029 0.7425
+MLE-MJD 1.3877 5.3494 0.7466 1.0314 0.7238
+z = 1.2
+RL-Offline 3.0599 1.9130 0.3366 0.3826 0.8798
+RL-Online 2.4275 1.8672 0.2564 0.3148 0.8143
+MLE-BS 1.6203 3.2374 0.4469 0.6019 0.7425
+MLE-MJD 1.3877 3.8996 0.4977 0.6876 0.7238
+z = 1.1
+RL-Offline 2.9130 1.4729 0.1664 0.1926 0.8637
+RL-Online 2.5111 1.4031 0.1231 0.1497 0.8224
+MLE-BS 1.6203 2.1187 0.2234 0.3010 0.7425
+MLE-MJD 1.3877 2.4498 0.2489 0.3438 0.7238
+Buy-and-hold N.A. N.A. 0.0984 0.2312 0.4256
+Table 3: Mean return (MR), volatility (Vol), and Sharpe ratio (SR) of investment portfolios ob-
+tained by four methods on 5000 test episodes. We show the learned ϕ1 and ω under each ap-
+proach. For MLE-BS and MLE-MJD, ϕ1 and ω are calculated by plugging the MLE estimates to
+ϕ1 = σρ/(σ2 + σ2 J ) and (40), respectively.
+29
+
+=== page 30 ===
+5.5 Effects of jumps
+The theoretical analysis so far in this section shows that, for the MV portfolio selection problem,
+one does not need to know in advance whether or not the stock prices have jumps in order to
+carry out the RL task, because the optimal stochastic policy is Gaussian and the corresponding
+value function and q-function have the same structures for parameterization irrespective of the
+presence of jumps. However, we stress that this is rather an exception than a rule. Here we give a
+counterexample.
+Consider a modification of the MV portfolio selection problem where the controlled state follows
+dX a t = atσρdt + atσdBt +
+Z
+R
+γ(at, z) eN (dt, dz), (49)
+with
+γ(a, z) = a2. (50)
+The exploratory value function is given by
+J ∗(t, x; w) = min
+π
+Et,x
+
+( ˜X π T − w)2 + θ
+Z T
+t
+Z
+A
+log π(a|s, ˜X π s−)π(a|s, ˜X π s−)dads
+
+− (ω − z)2.
+Note that this is not an MV portfolio selection problem because (49) does not correspond to a
+self-financed wealth equation with a reasonably modelled stock price process.
+The Hamiltonian is given by
+H(t, x, a, ∂xv, ∂2 xv, v) = aσρ∂xv(t, x) + 1 2 a2σ2∂2 xv(t, x) (51)
++
+Z
+R
+ 
+v(t, x + a2) − v(t, x) − a2 · ∂xv(t, x)  ν(dz).
+If an optimal stochastic policy exists, then it must be
+π∗(a|t, x) ∝ exp
+
+− 1 θ H(t, x, a, ∂xJ ∗, ∂2 xJ ∗, J ∗)  . (52)
+We show by contradiction that the optimal stochastic policy can not be Gaussian in this case. Note
+that if there is no optimal stochastic policy, then it would already demonstrate that jumps matter
+because the optimal stochastic policy for the case of no jumps exists and is Gaussian.
+Remark 5. The existence of optimal stochastic policy in (52) is equivalent to the integrability of
+the quantity exp( 1 θ H(t, x, a, ∂xJ ∗, ∂2 xJ ∗, J ∗)) over a ∈ A = (−∞, ∞). This integrability depends on
+the tail behavior of the Hamiltonian and, in particular, the behavior of J ∗(t, x + a2) when a2 is
+large.
+Suppose the optimal stochastic policy π∗(·|t, x) is Gaussian for all (t, x), implying that the
+Hamilitonian H(t, x, a, ∂xJ ∗, ∂2 xJ ∗, J ∗) is a quadratic function of a. It then follows from (51) that
+there exist functions h1(t, x) and h2(t, x) such that
+J ∗(t, x + a2) − J ∗(t, x) − a2∂xJ ∗(t, x) = a2 · h1(t, x) + a · h2(t, x), for all (t, x, a). (53)
+30
+
+=== page 31 ===
+We do not put a term independent of a on the right-hand side because the left-hand side is zero
+when a = 0. Taking derivative with respect to a, we obtain
+∂xJ ∗(t, x + a2) · 2a − 2a∂xJ ∗(t, x) = 2a · h1(t, x) + h2(t, x), for all (t, x, a).
+Setting a = 0, we get h2 = 0. It follows that
+a ·
+
+∂xJ ∗(t, x + a2) − ∂xJ ∗(t, x) − h1(t, x)  = 0 for all (t, x, a).
+Hence, we have h1(t, x) = ∂xJ ∗(t, x + a2) − ∂xJ ∗(t, x) for any a ̸= 0. Sending a to zero yields
+h1(t, x) = 0 for all (t, x). Therefore, we obtain from (53) that
+J ∗(t, x + a2) − J ∗(t, x) − a2∂xJ ∗(t, x) = 0, for all (t, x, a).
+Taking derivative in a in the above we have
+∂xJ ∗(t, x + a2) − ∂xJ ∗(t, x) = 0, for all (t, x, a).
+Thus, ∂xJ ∗ is constant in x or J ∗ is affine in x, leading to J ∗(t, x) = g1(t)x+g2(t) for some functions
+g1(t) and g2(t). The resulting Hamiltonian becomes
+H(t, x, a, ∂xJ ∗, ∂2 xJ ∗, J ∗) = aσρg1(t).
+This is linear in a ∈ A = (−∞, ∞) and hence the integral
+R
+A exp(− 1 θ H(t, x, a, ∂xJ ∗, ∂2 xJ ∗, J ∗))da
+does not exist. It follows that π∗(·|t, x) does not exist, which is a contradiction. Therefore, we have
+shown that under (50), the optimal stochastic policy either does not exist or is not Gaussian when
+it exists.
+Remark 6. The argument above works for γ(a, z) = am for any m > 1.
+6 Application: Mean–Variance Hedging of Options
+The MV portfolio selection problem considered in Section 5 is an LQ problem. In this section, we
+present another application that is non-LQ. Consider an option seller who needs to hedge a short
+position in a European-style option that expires at time T . The option is written on a risky asset
+whose price process S is described by the SDE (35) with condition (38) satisfied. At the terminal
+time T , the seller pays G(ST ) to the option holder. We assume that the seller’s hedging activity
+will not affect the risky asset price.
+To hedge the random payoff, the seller constructs a portfolio consisting of the underlying risky
+asset and cash. We consider discounted quantities in the problem: the discounted risky asset
+price ˆSt := e−rf tSt and discounted payoff ˆG( ˆST ) := e−rf T G(ST ), where rf is again the constant
+risk-free interest rate. As an example, for a put option with strike price K, G(ST ) = (K − ST )+
+(x+ := max(x, 0)), and ˆG( ˆST ) = ( ˆK − ˆST )+, where ˆK := e−rf T K. Here ˆS follows the SDE
+d ˆSt = ˆSt−
+
+ρσdt + σdWt +
+Z
+R
+(exp(z) − 1) eN (dt, dz)
+
+,
+where ρ is defined in (37).
+31
+
+=== page 32 ===
+We denote the discounted dollar value in the risky asset and the discounted value of the hedging
+portfolio at time t by at and Xt, respectively. As in the MV portfolio selection problem, a is the
+control variable and X follows the SDE (36). The seller seeks a hedging policy to minimize the
+deviation from the terminal payoff. A popular formulation is mean–variance hedging (also known
+as quadratic hedging), which considers the objective
+min
+a
+E
+h 
+X a T − ˆG( ˆST ) 2i . (54)
+Note that this expectation is taken under the real-world probability measure, rather than under
+any martingale measure for option pricing. An advantage of this formulation is that relevant data
+are observable in the real world (but not necessarily in a risk-neutral world). Although objective
+(54) looks similar to that of the MV portfolio selection problem, the target the hedging portfolio
+tries to meet is now random instead of constant. Furthermore, the payoff is generally nonlinear
+in ˆST . Thus, MV hedging is not an LQ problem. Also, both ˆSt and X a t matter for the hedging
+decision at time t, whereas ˆSt is irrelevant for decision in the MV portfolio selection problem. This
+increase in the state dimension makes the hedging problem much more difficult to solve.
+We consider the following exploratory formulation to encourage exploration for learning:
+min
+π
+E
+  ˜X π T − ˆG( ˆST ) 2 + θ Z T
+0
+Z
+A
+log π(a|t, X π t−)π(a|t, X π t−)dadt
+
+, (55)
+where the discounted value of the hedging portfolio under a stochastic policy π follows (43).
+6.1 Solution of the exploratory control problem
+We consider the HJB equation for problem (55):
+∂tV + inf π∈P(R)
+Z
+R
+ 
+H(t, S, x, a, ∂S V, ∂2 S V, ∂xV, ∂2 xV, ∂S ∂xV, V ) + θ log π(a|t, S, x)  π(a|t, S, x)da = 0,
+(56)
+with terminal condition V (T, S, x) = (x − ˆG(S))2. The Hamiltonian of the problem is given by
+H(t, S, x, a, ∂S V, ∂2 S V, ∂xV, ∂2 xV, ∂S ∂xV, V )
+= ρσS∂S V + 1 2 σ2S2∂2 S V + aρσ∂xV + 1 2 a2σ2∂2 xV + aσ2S∂S ∂xV
++
+Z
+R
+ 
+V (t, S + ˜γ(S, z), x + γ(a, z)) − V (t, S, x) − ˜γ(S, z)∂S V (t, S, x) − γ(a, z)∂xV (t, S, x)
+
+ν(dz)
+with γ(a, z) = a(exp(z) − 1) and ˜γ(S, z) = S(exp(z) − 1).
+We make the following ansatz for the solution of the HJB equation (56):
+V (t, S, x) = (x − h(t, S))2f (t) + g(t, S). (57)
+With this, we can simplify the integral term in the Hamiltonian and obtain
+H(t, S, x, a, ∂S V, ∂2 S V, ∂xV, ∂2 xV, ∂S ∂xV, V )
+= ρσS∂S V + 1 2 σ2S2∂2 S V + 1 2 a2(σ2 + σ2 J )∂2 xV
+32
+
+=== page 33 ===
++ a
+
+ρσ∂xV + σ2S∂S ∂xV −
+Z
+R
+(exp(z) − 1)
+ 
+h(t, S exp(z)) − h(t, S)
+
+ν(dz)
+
++
+Z
+R
+ 
+V (t, S exp(z), x) − V (t, S, x) − S(exp(z) − 1)∂S V (t, S, x)
+
+ν(dz). (58)
+The probability density function that minimizes the integral in (56) is given by
+πc(·|t, S, x) ∝ exp
+
+− 1 θ H(t, S, x, a, ∂S V, ∂2 S V, ∂xV, ∂2 xV, ∂S ∂xV, V )  ,
+which is a candidate for the optimal stochastic policy. From (58), we obtain that πc(·|t, S, x) is
+given by
+N
+
+·
+ − ρσ∂xV + σ2S∂S ∂xV − R R(exp(z) − 1)(h(t, S exp(z)) − h(t, S))ν(dz)∂2 xV (σ2 + σ2 J )∂2xV , θ (σ2 + σ2 J )∂2xV  .
+Substituting it back to the HJB equation (56), we obtain a nonlinear PIDE
+∂tV + ρσS∂S V + 1 2 σ2S2∂2 S V
++
+Z
+R
+ 
+V (t, S exp(z), x) − V (t, S, x) − S(exp(z) − 1)∂S V (t, S, x)
+
+ν(dz)
+− (ρσ∂X V + σ2S∂S ∂xV − R R(exp(z) − 1)(h(t, S exp(z)) − h(t, S))ν(dz)∂2 xV )2
+2(σ2 + σ2 J )∂2xV
+− θ 2 ln 2πθ (σ2 + σ2 J )∂2xV = 0, (t, S, x) ∈ [0, T ) × R+ × R, V (T, x) = (x − ˆG(S))2.
+We plug in the ansatz (57) to the above PIDE. After some lengthy calculations, we can collect
+similar terms and obtain the following equations satisfied by f , h and g:
+f ′(t) − ρ2σ2
+σ2 + σ2 J f (t) = 0, f (T ) = 1,
+∂th +
+Z
+R
+ 
+h(t, S exp(z)) − h(t, S) − S(exp(z) − 1)∂S h(t, S)
+
+1 − ρσ σ2 + σ2 J (exp(z) − 1)  ν(dz)
++ 1 2 σ2S2∂2 S h = 0, (t, S) ∈ [0, T ) × R+, h(T, S) = ˆG(S), (59)
+∂tg + ρσS∂S g + 1 2 σ2S2∂2 S g + Z R   g(t, S exp(z)) − g(t, S) − S(exp(z) − 1)∂S g(t, S)  ν(dz)
++ σ2S2(∂S h)2f (t) +
+Z
+R
+ 
+h(t, S exp(z)) − h(t, S)
+2f (t)ν(dz)
+− f (t) σ2 + σ2 J
+
+σ2S∂S h +
+Z
+R
+(exp(z) − 1)
+ 
+h(t, S exp(z)) − h(t, S)
+
+ν(dz)
+2
+− θ 2 ln πθ (σ2 + σ2 J )f (t) = 0, (t, S) ∈ [0, T ) × R+, g(T, S) = 0. (60)
+The function f is given by
+f (t) = exp
+
+− ρ2σ2
+σ2 + σ2 J (T − t)
+
+. (61)
+33
+
+=== page 34 ===
+However, the two PIDEs cannot be solved in closed form in general. Below we first present some
+properties of h and g.
+Lemma 6. Assume σ > 0 and ˆG(S) is Lipschitz continuous in S. The PIDE (59) has a unique
+solution in C1,2([0, T ) × R+) ∩ C([0, T ] × R+) that is Lipschitz continuous in S. The PIDE (60)
+also has a unique solution in C1,2([0, T ) × R+) ∩ C([0, T ] × R+). Moreover, there exists a constant
+C > 0 such that
+|h(t, S)| ≤ C(1 + S), |g(t, S)| ≤ C(1 + S2) for any (t, S) ∈ [0, T ] × R+.
+Next, we provide stochastic representations for the solutions to PIDEs (59) and (60), which
+will be subsequently exploited for our RL study. Construct a new probability measure Q from the
+given probability measure P with the Radon–Nikodym density process Λs := dQ dP |Fs defined by
+dΛs = − ρσ σ2 + σ2 J Λs−
+
+σdWs +
+Z
+R
+(exp(z) − 1) eN (ds, dz)
+
+, Λt = 1.
+Condition (38) guarantees that {Λs : t ≤ s ≤ T } is a true martingale with unit expectation. The
+standard measure change results yield that, under Q,
+W ′ s := Ws + ρσ2 σ2 + σ2 J (s − t), eN ′(ds, dz) := N (ds, dz) −  1 − ρσ σ2 + σ2 J (exp(z) − 1)  ν(dz)ds (62)
+are standard Brownian motion and compensated Poisson random measure, respectively. Using
+them we can rewrite the SDE for ˆS as
+d ˆSs = ˆSs−
+
+σdW ′ s +
+Z
+R
+(exp(z) − 1) eN ′(ds, dz)
+
+.
+Let Yt := 1 + σWt +
+R t
+0
+R
+R(exp(z) − 1) eN ′(ds, dz). Clearly, it is a L´evy process and also a martingale
+under condition (38). Process ˆS is the stochastic exponential of Y and it follows from (Cont and
+Tankov 2004, Proposition 8.23) that ˆS is also a martingale under Q. The Feynman–Kac theorem
+gives the representation of the solution h to PIDE (59) as
+h(t, S) = EQ[ ˆG( ˆST )  ˆSt = S], t ∈ [0, T ]. (63)
+We can view Q as the martingale measure for option valuation and interpret h(t, S) as the option
+price at time t and underlying price S. For PIDE (60), again by the Feynman–Kac theorem we
+obtain that its solution g is given by
+g(t, S) = ge(t, S) −
+Z T
+t
+θ
+2 ln πθ (σ2 + σ2 J )f (s) ds
+= ge(t, S) − θ 2  ln  πθ σ2 + σ2 J  (T − t) + ρ2σ2 2(σ2 + σ2 J ) (T − t)2  , (64)
+where
+ge(t, S) := EP
+ Z T
+t
+f (s)
+
+σ2 ˆS2 s (∂S h(s, ˆSs))2 +
+Z
+R
+ 
+h(s, ˆSs exp(z)) − h(s, ˆSs) 2ν(dz)  ds
+34
+
+=== page 35 ===
+−
+Z T
+t
+f (s)
+σ2 + σ2 J
+
+σ2 ˆSs∂S h(s, ˆSs) +
+Z
+R
+(exp(z) − 1)
+ 
+h(s, ˆSs exp(z)) − h(s, ˆSs)  ν(dz) 2 ds  ˆSt = S  .(65)
+Using the expression for V (t, S, x), we obtain πc(·|t, S, x) as
+πc(·|t, S, x) ∼ N
+
+·
+ M∗(t, S, x), θ 2(σ2 + σ2 J ) exp  ρ2σ2 σ2 + σ2 J (T − t)  , (66)
+where
+M∗(t, S, x) = σ2S∂S h(t, S) + R R(exp(z) − 1)(h(t, S exp(z)) − h(t, S))ν(dz) − ρσ(x − h(t, S)) σ2 + σ2 J .
+(67)
+Using Lemma 6, we can directly verify that πc is admissible. It is also obvious to see that V (t, S, x)
+given by (57) has quadratic growth in S and x. Therefore, by Lemma 5, we have the following
+conclusion.
+Proposition 4. For the MV hedging problem (54), the optimal value function J ∗(t, S, x) = V (t, S, x)
+and the optimal stochastic policy π∗ = πc under the assumptions that σ > 0 and ˆG(S) is Lipschitz
+continuous in S.
+The mean part of π∗, M∗(t, S, x), comprises three terms. The quantity ∂S h(t, S) is the delta
+of the option and hence S∂S h(t, S) gives the dollar amount of the risky asset as required by delta
+hedging, which is used to hedge continuous price movements. The integral term shows the dollar
+amount of the risky asset that should be held to hedge discontinuous changes. The two hedges are
+combined using weights σ2/(σ2 + σ2 J ) and 1/(σ2 + σ2 J ). The last term reflects the adjustment that
+needs to be made due to the discrepancy between the hedging portfolio value and option price. It
+is easy to show that M∗(t, S, x) is the optimal deterministic policy of problem (54).
+The variance of π∗ is the same as that in the MV portfolio selection problem (c.f. (47)), which
+decreases as t approaches the terminal time T . This implies that one gradually reduces exploration
+over time.
+6.2 Parametrizations and actor–critic learning
+We use the previously derived solution of the exploratory problem as knowledge for RL. As we will
+see, the exploratory solution lends itself to natural parametrizations for the policy (“actor”) and
+value function (“critic”), but less so for parametrizing the q-function.
+To simplify the integral in M∗(t, S, x) defined in (67), we first parametrize the L´evy density
+ν(z) as in (48) where we have three parameters: λ is the jump arrival rate, and m and δ are
+the mean and standard deviation of the normal distribution for the jump size. We then use the
+Fourier-cosine method developed in Fang and Oosterlee (2009) to obtain an expression for h(t, S).
+Let Yt := log( ˆSt/ ˆS0). Applying Itˆo’s formula, under P we obtain
+d log ˆSt =
+
+ρσ − 1 2 σ2 − λ  exp  m + 1 2 δ2  − 1  dt + σdWt + Z R zN (dt, dz).
+Noting (62), under Q we have
+d log ˆSt =
+
+ρσ σ2 J
+σ2 + σ2 J − 1 2 σ2 − λ  exp  m + 1 2 δ2  − 1  dt + σdW ′ t + Z R zN (dt, dz),
+35
+
+=== page 36 ===
+where the L´evy measure of N (dt, dz) becomes
+ν′(dz) =
+
+1 − ρσ σ2 + σ2 J   exp(z) − 1  λ√ 2πδ2 exp  − (z − m)2 2δ2  dz.
+The characteristic function of Yt under Q is given by
+ΦQ Yt (u) = exp
+
+iut
+
+ρσ σ2 J
+σ2 + σ2 J − 1 2 σ2 − λ  exp  m + 1 2 δ2  − 1  − 1 2 σ2u2t + tA(u)  ,
+where
+A(u) =
+Z
+R
+ 
+exp(iuz) − 1
+
+ν′(dz)
+=λ
+
+exp
+
+ium − 1 2 δ2u2
+
+− 1
+
+− λρσ σ2 + σ2 J × 
+exp
+
+m + 1 2 δ2 + iu(m + δ2) − 1 2 δ2u2
+
+− exp
+
+ium − 1 2 δ2u2
+
+− exp
+
+m + 1 2 δ2
+
++ 1
+
+.
+The Fourier-cosine method then calculates h(t, S) as
+ˆh(t, S) :=
+N −1X′
+k=0
+ℜ
+
+ΦQ Yt
+ kπ
+b − a
+
+exp
+
+ikπ ln(S/ ˆK) − a b − a  Vk. (68)
+Here, ℜ(x) denotes the real part of complex number x, Σ′ indicates the first term in the sum is
+halved, ˆK is the discounted strike price of the call or put option under consideration, and [a, b] is
+the truncation region for YT (chosen wide enough so that the probability of YT going outside under
+Q can be neglected). The expression of Vk is given by Eqs. (24) and (25) in Fang and Oosterlee
+(2009) for call and put options, respectively, and it only depends on a, b, ˆK. We can also calculate
+∂S h(t, S) by differentiating ˆh(t, S) w.r.t. S, which yields
+∂S ˆh(t, S) :=
+N −1X′
+k=0
+ℜ
+
+ΦQ Yt
+ kπ
+b − a
+ ikπ
+(b − a)S exp
+
+ikπ ln(S/ ˆK) − a b − a  Vk. (69)
+Actor parametrization. We follow the form of the optimal stochastic policy given in (66) to
+parametrize our policy. To obtain a parsimonious parametrization, we introduce ϕ1, ϕ2, ϕ3, ϕ4, ϕ5,
+which respectively represent the agent’s understanding – relative to her learning – of drift µ,
+volatility σ, jump arrival rate λ, mean m and standard deviation δ of the jump size of the risky asset.
+We emphasize that in our learning algorithm these parameters are not estimated by any statistical
+method (and hence they do not necessarily correspond to the true dynamics of the risky asset);
+rather they will be updated based on the hedging experiences (via exploration and exploitation)
+from the real environment. To implement (66), we also need two dependent parameters ϕ6 and ϕ7
+that are calculated by
+ϕ6 = ϕ1 − rf ϕ2 , ϕ7 =
+s
+ϕ3
+
+exp(2ϕ4 + 2ϕ2 5) − 2 exp
+
+ϕ4 + 1 2 ϕ2 5
+
++ 1
+
+.
+36
+
+=== page 37 ===
+These two parameters show the agent’s understanding of ρ and σJ , and they will be updated in
+the learning process by the above equations with the update of the independent parameters ϕ1 to
+ϕ5. Denote ϕ = (ϕi)7 i=1.
+We use ϕ1, ϕ2, ϕ3, ϕ4, ϕ5, ϕ6, ϕ7 to replace their counterparts µ, σ, λ, m, δ, ρ, σJ in (66) to obtain
+a parametrized policy. For the mean part, we calculate the option price and its delta by plugging ϕ
+into (68) and (69), with the results denoted by ˆhϕ(t, S) and ˆhϕ S (t, S) respectively, and approximate
+the integral by Gauss-Hermite (G-H) quadrature, which yields
+Mϕ(t, S, x) =
+ϕ2 2S∂S ˆhϕ(t, S) + ϕ3√ 2π QP q=1 wq(exp(zq) − 1)  ˆhϕ(t, S exp(zq)) − ˆhϕ(t, S)  − ϕ2ϕ6(x − ˆhϕ(t, S))
+ϕ2 2 + ϕ2 7 ,
+where zq = ϕ4 + ϕ5uq and {(wq, uq), q = 1, · · · , Q} are the weights and abscissa of the Q-point G-H
+rule that are predetermined and independent of ϕ. For the variance part, we use ϕ in (61) to obtain
+f ϕ(t). Thus, our parametrized policy is given by
+πϕ(·|t, S, x) ∼ N
+
+·
+ Mϕ(t, S, x), θ 2(ϕ2 2 + ϕ2 7)f ϕ(t)  .
+Critic parametrization. For the value function of πϕ, following (57) we parametrize it as
+J ψ,ϕ(t, S, x) = (x − ˆhϕ(t, S))2f ϕ(t) + gψ e (t, S) − θ 2  ln  πθ ϕ2 2 + ϕ2 7  (T − t) + ϕ2 2ϕ2 6 2(ϕ2 2 + ϕ2 7) (T − t)2  .
+We do not specify any parametric form for gψ e (t, S), but will learn it using Gaussian process regres-
+sion (Williams and Rasmussen 2006), where ψ denotes its parameters. We choose Gaussian process
+for our problem because it is able to generate flexible shapes and can often achieve a reasonably
+good fit with a moderate amount of data.
+Actor–critic learning. Consider a time grid {tk}K k=0 with t0 = 0, tK = T , and time step ∆t. In
+an iteration, we start with a given policy πϕ and use it to collect M episodes from the environment,
+where the m-th episode is given by {(tk, ˆS(m) tk , X πϕ,(m) tk , aπϕ,(m) tk )}K k=0. We then perform two steps.
+In the critic step, the main task is to learn gψ e (tk, S) as a function of S for each tk. The stochastic
+representation (65) shows that ge can be viewed as the value function of a stream of rewards that
+depend on time and the risky asset price; so the task is a policy evaluation problem. We first obtain
+the running reward path in every episode, where the integral involving the L´evy measure is again
+calculated by the Q-point G-H rule. Specifically, the reward at time tk for k = 0, · · · , K − 1 is given
+by
+Rg tk := f ϕ(tk)
+
+ϕ2 2 ˆS2 tk (∂S ˆhϕ(tk, ˆStk ))2 + ϕ3√ 2π
+QX
+q=1
+wq
+ ˆhϕ(tk, ˆStk exp(zq)) − ˆhϕ(tk, ˆStk ) 2
+
+∆t
+− f ϕ(tk) ϕ2 2 + ϕ2 7  ϕ2 2 ˆStk ∂S ˆhϕ(tk, ˆStk ) + ϕ3√ 2π QX q=1 wq(exp(zq) − 1)  ˆhϕ(tk, ˆStk exp(zq)) − ˆhϕ(tk, ˆStk ) 2 ∆t,
+where the risky asset price path {( ˆStk )}K−1 k=0 is collected from the real environment. We stress again
+that the above calculation uses the agent’s parameters ϕ and does not involve any parameters
+37
+
+=== page 38 ===
+of the true dynamics. We then fit a Gaussian process to the sample of the cumulative rewards
+{PK−1 ℓ=k Rg,(m) tℓ }M m=1 to estimate gψ e (tk, S). Figure 2 illustrates the fit at three time points with the
+radial basis kernel. The Gaussian process is able to provide a good fit to the shape of ge(t, S) as a
+function of S for each given t.
+In the actor step, we update the policy parameter ϕi for i = 1, · · · , 5 by
+ϕi ← ϕi − αϕi
+M
+MX
+m=1
+K−1X
+k=0
+
+θ log πϕ(aπϕ,(m) tk | tk, ˆS(m) tk , X πϕ,(m) tk )∆t − βJ ψ,ϕ(tk, X πϕ,(m) tk )∆t
++ J ψ,ϕ(tk+1, ˆS(m) tk+1 , X πϕ,(m) tk+1 ) − J ψ,ϕ(tk, ˆS(m) tk , X πϕ,(m) tk ) 
+· ∂ϕi log πϕ(aπϕ,(m) tk | tk, ˆS(m) tk , X πϕ,(m) tk ).
+This update essentially follows from (34); the difference is that we do batch processing and update
+the parameters only after observing all the episodes in a batch. Furthermore, we flip the sign
+before αϕi and θ as we consider minimization here while the problem in the general discussion is
+for maximization.
+Figure 2: Fit of Gaussian process to the cumulative reward data for ge at tk (k = 0, 10, 20) for
+a one-month put option with strike K = 100. The variable S is on the x-axis. We use the MLE
+estimates of the MJD model shown in Table 4 to calculate the rewards for ge from the sampled
+index price paths.
+6.3 Simulation study
+We check the convergence behavior of our actor–critic algorithm in a simulation study. We assume
+the environment is described by an MJD model with its true parameters shown in the upper row of
+Table 4.5 We consider hedging a 4-month put option with strike price K = 100 because short-term
+options with maturity of a few months are typically traded much more actively than longer-term
+options. We assume the risk-free rate is zero and implement daily rebalancing.
+5These values are chosen close to the estimates obtained from the market data of S&P 500 in Table 1 to make the
+MJD model better resemble the reality in the simulation study.
+38
+
+=== page 39 ===
+We use 20 quadrature points for the G-H rule, which suffices for high accuracy. In each iteration,
+we sample M = 32 episodes from the environment simulated by the MJD model. The learning
+rates are chosen to be αϕ1 = 5e−3, αϕ2 = 2e−5, αϕ3 = 15, αϕ4 = 1e−6, αϕ5 = 1e−6, while the
+temperature parameter θ = 0.1. We keep the learning rates constant in the first 30 iterations
+and then they decay at rate l(j) = j−0.5, where j is the iteration index. Before our actor–critic
+learning, we sample a 15-year path from the MJD model as data for MLE and obtain estimates of
+the parameters shown in Table 4. MLE estimates all the parameters quite well except the drift µ,
+where the estimate is more than twice the true value.6 We then use these estimates as initial values
+of ϕ1 to ϕ5 for learning. Figure 3 clearly shows that our RL algorithm is able to converge near the
+true values. In particular, the estimate of µ eventually moves closely around the true level despite
+being distant to it initially.
+Parameters
+True µ = 0.06, σ = 0.13, λ = 28, m = −0.004, δ = 0.03
+MLE µ = 0.1289, σ = 0.1331, λ = 26.1091, m = −0.0033, δ = 0.0317
+Table 4: Parameters of the true MJD model and MLE estimates from 15 years of data
+Figure 3: Training paths of five parameters (iteration index on the x-axis)
+6.4 Empirical study
+In the empirical study we consider hedging a European put option written on the S&P 500 index.
+This type of option is popular in the financial market as a tool for investors to protect their high
+beta investment. We assume the risk-free rate is zero, implement daily rebalancing and use the
+same S&P 500 data as in Section 5.4 with the first 20 years as the training period and the last 4
+years as the test period.
+We use the MLE estimates from the first 20 years of observations to initialize ϕ1 to ϕ5 for
+learning. To sample an episode from the environment for training our RL algorithm, we bootstrap
+index returns from the training period. Similarly, we bootstrap index returns from the test period
+to generate index price paths to test the learned policy. We use the 20-point G-H rule with M = 32
+episodes in each training iteration. The learning rates are set as αϕ1 = 5e−3, αϕ2 = 5e−4, αϕ3 = 50,
+αϕ4 = 5e−6, αϕ5 = 1e−5 with the same learning rate decay schedule as in the simulation study.
+We set the temperature parameter θ = 0.1.
+6This is expected due to the well-known mean-blur problem, as 15 years of data are insufficient to obtain a
+reasonably accurate estimate of the mean using statistical methods.
+39
+
+=== page 40 ===
+We consider four maturities ranging from 1 to 4 months for the put option. For a standard
+S&P500 index option traded on CBOE, in practice its strike is quoted in points commensurate
+with the scale of the index level and converted to dollar amount by a multiplier of 100. That is,
+the dollar strike K = 100Kp, where Kp is the strike in points.7 Let St be the index level at time t
+converted to dollars by the multiplier of 100. We sample S0 uniformly from the range [0.7K, 1.3K]
+to generate training and test episodes. This allows us to include scenarios where the option is deep
+out of money or in the money. We train our algorithm for 100 iterations and then test it on 5000
+index price episodes. Finally, although we use a stochastic policy to interact with the environment
+for learning/updating the parameters during training, in the test stage we apply a deterministic
+policy which is the mean of the learned stochastic policy. This can reduce the variance of the final
+hedging error.
+To measure the test performance, we consider the mean squared hedging error (denominated
+in squared dollars) divided by K2 p. This effectively normalizes the contract’s scale; so we can just
+set Kp = 1 in our implementation. The test result can be interpreted as the average mean squared
+hedging error in squared dollars for every point of strike price.
+We compare the performances of the policy learned by our RL algorithm and the one obtained
+by plugging the MLE estimates from the training period data to (67). Both policies are tested on
+the same index price episodes. We check the statistical significance of the difference in the squared
+hedging errors of the two policies by applying the t-test. Table 5 reports the mean squared hedging
+error for each policy as well as the p-value of the t-test. Not surprisingly, the hedging error of each
+policy increases as the maturity becomes longer due to greater uncertainty in the problem. In every
+case, the RL policy achieves notable reduction in the hedging error compared with the MLE-based
+policy. The p-value further shows the outperformance of the former is statistically significant.
+Maturity RL policy MLE policy p-value
+1 month 0.3513 (0.034) 0.4006 (0.043) 3.2e-7
+2 months 0.5668 (0.029) 0.6796 (0.050) 1.2e-5
+3 months 0.8283 (0.031) 1.0080 (0.060) 1.6e-5
+4 months 0.8649 (0.047) 1.1544 (0.068) 4.2e-13
+Table 5: Mean squared hedging errors of the two policies in the empirical test with their standard
+errors shown in parenthesis
+7 Conclusions
+Fluctuations in data or time series coming from nonlinear, complex dynamic systems are char-
+acterized by two types: slow changes and sudden jumps, the latter occurring much rarely than
+the former. Hence jump-diffusions capture the key structural characteristics of many data gen-
+erating processes in areas such as physics, astrophysics, earth science, engineering, finance, and
+medicine. As a result, RL for jump-diffusions is important both theoretically and practically. This
+paper endeavors to lay a theoretical foundation for the study. A key insight from this research is
+that temporal–difference algorithms designed for diffusions can work seamlessly for jump-diffusions.
+7For example, for an at-the-money option contract where the current index is 5000 points, we have Kp = 5000.
+The contract’s notional size is 500000 dollars.
+40
+
+=== page 41 ===
+However, unless using general neural networks, policy parameterization does need to respond to
+the presence of jumps if one is to take advantage of any special structure of an underlying problem.
+There are plenty of open questions starting from here, including convergence of the exploratory
+HJB equation as the temperature parameter decays to zero, convergence of the RL algorithms,
+regret bounds, decaying rates of the temperature parameters, and learning rates of the gradient
+decent and/or stochastic approximation procedures involved.
+References
+A¨ıt-Sahalia, Y., J. Jacod, and J. Li (2012). Testing for jumps in noisy high frequency data. Journal of
+Econometrics 168 (2), 207–222.
+Andersen, T. G., L. Benzoni, and J. Lund (2002). An empirical investigation of continuous-time equity
+return models. The Journal of Finance 57 (3), 1239–1284.
+Applebaum, D. (2009). L´evy Processes and Stochastic Calculus. Cambridge University Press.
+Bates, D. S. (1991). The crash of 87: was it expected? The evidence from options markets. The Journal of
+Finance 46 (3), 1009–1044.
+Bates, D. S. (1996). Jumps and stochastic volatility: Exchange rate processes implicit in Deutsche Mark
+options. The Review of Financial Studies 9 (1), 69–107.
+Bender, C. and N. T. Thuan (2023). Entropy-regularized mean-variance portfolio optimization with jumps.
+arXiv preprint arXiv:2312.13409 .
+Bender, C. and N. T. Thuan (2024). Continuous time reinforcement learning: A random measure approach.
+Preprint.
+Bo, L., Y. Huang, X. Yu, and T. Zhang (2024). Continuous-time q-learning for jump-diffusion models under
+Tsallis entropy. arXiv preprint arXiv:2407.03888 .
+Cai, N. and S. G. Kou (2011). Option pricing under a mixed-exponential jump diffusion model. Management
+Science 57 (11), 2067–2081.
+Cont, R. and P. Tankov (2004). Financial Modelling with Jump Processes. Chapman and Hall/CRC.
+Dai, M., Y. Dong, and Y. Jia (2023). Learning equilibrium mean–variance strategy. Mathematical Fi-
+nance 33 (4), 1166–1212.
+Das, S. R. (2002). The surprise element: Jumps in interest rates. Journal of Econometrics 106 (1), 27–65.
+Denkert, R., H. Pham, and X. Warin (2024). Control randomisation approach for policy gradient and
+application to reinforcement learning in optimal switching. arXiv preprint arXiv:2404.17939 .
+Fang, F. and C. W. Oosterlee (2009). A novel pricing method for European options based on Fourier-cosine
+series expansions. SIAM Journal on Scientific Computing 31 (2), 826–848.
+Gammaitoni, L., P. H¨anggi, P. Jung, and F. Marchesoni (1998). Stochastic resonance. Reviews of Modern
+Physics 70 (1), 223–287.
+Gao, X., Z. Q. Xu, and X. Y. Zhou (2022). State-dependent temperature control for langevin diffusions.
+SIAM Journal on Control and Optimization 60 (3), 1250–1268.
+Giraudo, M. T. and L. Sacerdote (1997). Jump-diffusion processes as models for neuronal activity. Biosys-
+tems 40 (1-2), 75–82.
+Goswami, B., N. Boers, A. Rheinwalt, N. Marwan, J. Heitzig, S. Breitenbach, and J. Kurths (2018). Abrupt
+transitions in time series with uncertainties. Nature Communications 9 (1), 48–57.
+Guo, X., A. Hu, and Y. Zhang (2023). Reinforcement learning for linear-convex models with jumps via
+stability analysis of feedback controls. SIAM Journal on Control and Optimization 61 (2), 755–787.
+Guo, X., R. Xu, and T. Zariphopoulou (2022). Entropy regularization for mean field games with learning.
+Mathematics of Operations research 47 (4), 3239–3260.
+Heyde, C. C. and S. G. Kou (2004). On the controversy over tailweight of distributions. Operations Research
+Letters 32 (5), 399–408.
+41
+
+=== page 42 ===
+Huang, Y., Y. Jia, and X. Zhou (2022). Achieving mean–variance efficiency by continuous-time reinforcement
+learning. In Proceedings of the Third ACM International Conference on AI in Finance, pp. 377–385.
+Jacod, J. and A. Shiryaev (2013). Limit Theorems for Stochastic Processes. Springer.
+Jia, Y., D. Ouyang, and Y. Zhang (2025). Accuracy of discretely sampled stochastic policies in continuous-
+time reinforcement learning. arXiv preprint arXiv:2503.09981 .
+Jia, Y. and X. Y. Zhou (2022a). Policy evaluation and temporal-difference learning in continuous time and
+space: A martingale approach. Journal of Machine Learning Research 23 (154), 1–55.
+Jia, Y. and X. Y. Zhou (2022b). Policy gradient and actor-critic learning in continuous time and space:
+Theory and algorithms. Journal of Machine Learning Research 23 (154), 1–55.
+Jia, Y. and X. Y. Zhou (2023). q-learning in continuous time. Journal of Machine Learning Research 24 (161),
+1–61.
+Jia, Y. and X. Y. Zhou (2025). Erratum to “q-learning in continuous time”. forthcoming in Journal
+of Machine Learning Research; available at https: // www. columbia. edu/ ~ xz2574/ download/ err.
+pdf .
+Kou, S. G. (2002). A jump-diffusion model for option pricing. Management Science 48 (8), 1086–1101.
+Kunita, H. (2004). Stochastic differential equations based on L´evy processes and stochastic flows of dif-
+feomorphisms. In M. M. Rao (Ed.), Real and Stochastic Analysis: New Perspectives, pp. 305–373.
+Birkh¨auser.
+Kushner, H. J. (2000). Jump-diffusions with controlled jumps: Existence and numerical methods. Journal
+of Mathematical Analysis and Applications 249 (1), 179–198.
+Li, L. and V. Linetsky (2014). Time-changed Ornstein–Uhlenbeck processes and their applications in com-
+modity derivative models. Mathematical Finance 24 (2), 289–330.
+Lim, A. E. (2005). Mean-variance hedging when there are jumps. SIAM Journal on Control and Optimiza-
+tion 44 (5), 1893–1922.
+Merton, R. C. (1976). Option pricing when underlying stock returns are discontinuous. Journal of Financial
+Economics 3 (1-2), 125–144.
+Munos, R. (2006). Policy gradient in continuous time. Journal of Machine Learning Research 7, 771–791.
+Øksendal, B. K. and A. Sulem (2007). Applied Stochastic Control of Jump Diffusions, Volume 498. Springer.
+Park, S., J. Kim, and G. Kim (2021). Time discretization-invariant safe action repetition for policy gradient
+methods. Advances in Neural Information Processing Systems 34, 267–279.
+Reisinger, C. and Y. Zhang (2021). Regularity and stability of feedback relaxed controls. SIAM Journal on
+Control and Optimization 59 (5), 3118–3151.
+Sato, K.-I. (1999). L´evy Processes and Infinitely Divisible Distributions. Cambridge University Press.
+Schweizer, M. (1996). Approximation pricing and the variance-optimal martingale measure. The Annals of
+Probability 24 (1), 206–236.
+Schweizer, M. (2001). A guided tour through quadratic hedging approaches. In E. Jouini, J. Cvitanic,
+and M. Musiela (Eds.), Handbooks in Mathematical Finance: Option Pricing, Interest Rates and Risk
+Management, pp. 538–74. Cambridge University Press.
+Situ, R. (2006). Theory of Stochastic Differential Equations with Jumps and Applications. Springer.
+Szpruch, L., T. Treetanthiploet, and Y. Zhang (2024). Optimal scheduling of entropy regularizer for
+continuous-time linear-quadratic reinforcement learning. SIAM Journal on Control and Optimiza-
+tion 62 (1), 135–166.
+Tallec, C., L. Blier, and Y. Ollivier (2019). Making deep q-learning methods robust to time discretization.
+arXiv preprint arXiv:1901.09732 .
+Tang, W., Y. P. Zhang, and X. Y. Zhou (2022). Exploratory HJB equations and their convergence. SIAM
+Journal on Control and Optimization 60 (6), 3191–3216.
+Wang, B., X. Gao, and L. Li (2023). Reinforcement learning for continuous-time optimal execution: actor-
+critic algorithm and error analysis. Available at SSRN 4378950 .
+Wang, B. and X. Zheng (2022). Testing for the presence of jump components in jump diffusion models.
+Journal of Econometrics 230 (2), 483–509.
+Wang, H., T. Zariphopoulou, and X. Y. Zhou (2020). Reinforcement learning in continuous time and space:
+42
+
+=== page 43 ===
+A stochastic control approach. Journal of Machine Learning Research 21 (198), 1–34.
+Wang, H. and X. Y. Zhou (2020). Continuous-time mean–variance portfolio selection: A reinforcement
+learning framework. Mathematical Finance 30 (4), 1273–1308.
+Williams, C. K. and C. E. Rasmussen (2006). Gaussian Processes for Machine Learning. MIT Press.
+Wu, B. and L. Li (2024). Reinforcement learning for continuous-time mean–variance portfolio selection in a
+regime-switching market. Journal of Economic Dynamics and Control 158, 104787.
+Zhou, X. Y. and D. Li (2000). Continuous-time mean-variance portfolio selection: A stochastic LQ frame-
+work. Applied Mathematics and Optimization 42 (1), 19–33.
+Zhu, C., G. Yin, and N. A. Baran (2015). Feynman–Kac formulas for regime-switching jump diffusions and
+their applications. Stochastics 87 (6), 1000–1032.
+A Proofs
+Proof of Lemma 2. We observe that for each k = 1, · · · , ℓ,
+Z
+R×[0,1]n
+|γk (t, x, Gπt,x (u), z)|p νk(dz)du =
+Z
+A
+Z
+R
+|γk(t, x, a, z)|pνk(dz)π(a|t, x)da.
+From Assumption 1-(iii), we have Pℓ k=1 R R |γk(t, x, a, z)|pνk(dz) ≤ Cp(1 + |x|p + |a|p) for any
+(t, x, a) ∈ [0, T ] × Rd × A. It follows from condition (iii) of admissibility (see Definition 1) that the
+desired result holds.
+Proof of Lemma 3. We consider
+Z
+R×[0,1]n
+γk (t, x, Gπt,x (u), z) − γk   t, x′, Gπt,x′ (u), z p νk(dz)du,
+which is bounded by
+Cp
+ Z
+R×[0,1]n
+|γk (t, x, Gπt,x (u), z) − γk (t, x, Gπt,x′ (u), z)|p νk(dz)du
++
+Z
+R×[0,1]n
+γk (t, x, Gπt,x′ (u), z) − γk   t, x′, Gπt,x′ (u), z p νk(dz)du 
+for some constant Cp > 0.
+For the first integral, using Assumption 2 we obtain
+Z
+R×[0,1]n
+|γk (t, x, Gπt,x (u), z) − γk (t, x, Gπt,x′ (u), z)|p νk(dz)du
+≤CK,p
+Z
+[0,1]n
+Gπ(t, x, u) − Gπ(t, x′, u) p du ≤ C′ K,p|x − x′|p.
+For the second integral, we have
+Z
+R×[0,1]n
+γk (t, x, Gπt,x′ (u), z) − γk   t, x′, Gπt,x′ (u), z p νk(dz)du
+=
+Z
+A
+Z
+R
+γk (t, x, a, z) − γk   t, x′, a, z p νk(dz)π(a|t, x′)da
+43
+
+=== page 44 ===
+≤
+Z
+A
+C′′ K,p|x − x′|pπ(a|t, x′)da
+=C′′ K,p|x − x′|p,
+where we used Assumption 1-(ii) and C′′ K,p is the constant there. The desired claim is obtained by
+combining these results.
+Proof of Lemma 4. Fix t ∈ [0, T ) and suppose ˜X π t = x. Let aπ s (u) = Gπ(s, ˜X π s−, u). Define a
+sequence of stopping times τn = inf{s ≥ t : | ˜X π s | ≥ n} for n ∈ N. Applying Itˆo’s formula (6) to the
+process e−βsϕ(s, ˜X π s ), where ˜X π s follows the exploratory SDE (18), we obtain ∀t′ ∈ [t, T ],
+e−β(t′∧τn)ϕ(t′ ∧ τn, ˜X π r∧τn ) − e−βtϕ(t, x)
+=
+Z t′∧τn
+t
+e−βs
+
+Lπϕ(s, ˜X π s−) − βϕ(s, ˜X π s−)  ds
++
+Z t′∧τn
+t
+e−βs∂xϕ(s, ˜X π s−) ◦ ˜σ(s, ˜X π s−, π(·|s, ˜X π s−))dWs (70)
++
+Z t′∧τn
+t
+e−βs
+ℓX
+k=1
+Z
+R×[0,1]n
+
+ϕ(s, ˜X π s− + γk(s, ˜X π s−, aπ s (u), z)) − ϕ(s, ˜X π s−)  eN ′ k(ds, dz, du),
+(71)
+where Lπ is given in (17). We next show that the expectations of (70) and (71) are zero.
+Note that for s ∈ [t, t′ ∧ τn], | ˜X π s−| ≤ n. Thus, ∂xϕ(s, ˜X π s−) is also bounded. Using the linear
+growth of ˜σ(s, ˜X π s−, π(·|s, ˜X π s−)) in Lemma 1 and the moment estimate (19), we can see that (70)
+is a square-integrable martingale and hence its expectation is zero.
+Next, we analyze the following stochastic integral:
+Z t′∧τn
+t
+e−βs
+Z
+R×[0,1]n
+
+ϕ(s, ˜X π s− + γk(s, ˜X π s−, aπ s (u), z)) − ϕ(s, ˜X π s−)  eNk(ds, dz, du). (72)
+We consider the finite and infinite jump activity cases separately.
+Case 1:
+R
+R νk(dz) < ∞. In this case, both of the processes
+Z t′∧τn
+t
+e−βs
+Z
+R×[0,1]n
+ϕ(s, ˜X π s− + γk(s, ˜X π s−, aπ s (u), z)) eNk(ds, dz, du), (73)
+Z t′∧τn
+t
+e−βs
+Z
+R×[0,1]n
+ϕ(s, ˜X π s−) eNk(ds, dz, du), (74)
+are square-integrable martingales and hence have zero expectations. We prove this claim for (73)
+and analyzing (74) is entirely analogous.
+Using the polynomial growth of ϕ, Lemma 2, and | ˜X π s−| ≤ n for s ∈ [t, t′ ∧ τn], we obtain
+Et,x
+"Z t′∧τn
+t
+e−2βs
+Z
+R×[0,1]n
+ϕ(s, ˜X π s− + γk(s, ˜X π s−, aπ s (u), z))  2 νk(dz)duds #
+44
+
+=== page 45 ===
+≤Cp · Et,x
+"Z t′∧τn
+t
+Z
+R×[0,1]n
+
+1 + | ˜X π s−|2p + |γk(s, ˜X π s−, aπ s (u), z))|2p
+
+νk(dz)duds
+#
+≤C′ p · Et,x
+"Z t′∧τn
+t
+(1 + | ˜X π s−|2p)ds
+#
+< ∞.
+This implies the process (73) is a square-integrable martingale; see e.g. (Situ 2006, Section 1.9) for
+square-integrability of stochastic integrals with respect to compensated Poisson random measures.
+Case 2:
+R
+R νk(dz) = ∞. Let B1 = {|z| ≤ 1} × [0, 1]n and Bc 1 = {|z| > 1} × [0, 1]n. The stochastic
+integral (72) can be written as the sum of two integrals:
+Z t′∧τn
+t
+e−βs
+Z
+B1
+ 
+ϕ(s, ˜X π s− + γk(s, ˜X π s−, aπ s (u), z)) − ϕ(s, ˜X π s−)  eNk(ds, dz, du) (75)
++
+Z t′∧τn
+t
+e−βs
+Z
+Bc 1
+ 
+ϕ(s, ˜X π s− + γk(s, ˜X π s−, aπ s (u), z)) − ϕ(s, ˜X π s−)  eNk(ds, dz, du). (76)
+Using the mean-value theorem, the stochastic integral (75) is equal to
+Z t′∧τn
+t
+e−βs
+Z
+B1
+∂xϕ(s, ˜X π s− + αsγk(s, ˜X π s−, aπ s (u), z)) ◦ γk(s, ˜X π s−, aπ s (u), z) eNk(ds, dz, du)
+for some αs ∈ [0, 1]. For s ∈ [t, t′ ∧ τn], | ˜X π s−| ≤ n. By Assumption 1′-(v), |γk(s, ˜X π s−, aπ s (u), z)| is
+bounded for any |z| ≤ 1, s ∈ [t, t′ ∧ τn] and u ∈ [0, 1]n, which further implies the boundedness of
+|ϕx(s, ˜X π s− + αsγk(s, ˜X π s−, aπ s (u), z))|. Now, for each j = 1, · · · , d,
+Z t′∧τn
+t
+e−βs
+Z
+B1
+∂xj ϕ(s, ˜X π s− + αsγk(s, ˜X π s−, aπ s (u), z))γjk(s, ˜X π s−, aπ s (u), z) eNk(ds, dz, du)
+is a square-integrable martingale because
+Et,x
+"Z t′∧τn
+t
+Z
+B1
+ 
+∂xj ϕ(s, ˜X π s− + αsγk(s, ˜X π s−, aπ s (u), z)) 2γ2 jk(s, ˜X π s−, aπ s (u), z)νk(dz)duds
+#
+≤C · Et,x
+"Z t′∧τn
+t
+Z
+B1
+γ2 jk(s, ˜X π s−, aπ s (u), z)νk(dz)duds
+#
+≤C′ · Et,x
+"Z t′∧τn
+t
+(1 + | ˜X π s−|2)ds
+#
+< ∞,
+where we used Lemma 2 and boundedness of | ˜X π s−| in the above. Thus, (75) is a square-integrable
+martingale with mean zero.
+For (76), we can use the same arguments as in the finite activity case by observing
+R
+|z|>1 νk(dz) <
+∞ to show that each of the two processes in (76) is a square-integrable martingale with mean zero.
+Combining the results above, setting t′ = T , and taking expectation, we obtain
+Et,x[e−β(T ∧τn)ϕ( ˜X π T ∧τn )] − e−βtϕ(t, x) = E ¯P t,x
+ Z T ∧τn
+t
+e−βs  Lπϕ(s, ˜X π s−) − βϕ(s, ˜X π s−)  ds  .
+45
+
+=== page 46 ===
+As ϕ(s, x) satisfies Eq. (21), it follows from (9) that
+ϕ(t, x) = Et,x
+ Z T ∧τn
+t
+e−β(s−t)
+Z
+A
+ 
+r(s, ˜X π s−, a) − θ log π(a|s, ˜X π s−)  π(a|s, ˜X π s−)dads
++ e−β(T ∧τn−t)ϕ( ˜X π T ∧τn )
+
+. (77)
+It follows from Assumption 1-(iv), Definition 1-(iii), and Eq. (22) that the term on the right-hand
+side of (77) is dominated by C(1 + supt≤s≤T | ˜X π s |p) for some p ≥ 2, which has finite expectation
+from the moment estimate (19). Therefore, sending n to infinity in (77) and applying the dominated
+convergence theorem, we obtain ϕ(t, x) = J(t, x, π).
+Proof of Lemma 5. We first maximize the integral in (23). Applying (Jia and Zhou 2023, Lemma
+13), we deduce that π∗ given by (24) is the unique maximizer. Next, we show that ψ(t, x) is the
+optimal value function.
+On one hand, given any admissible stochastic policy π ∈ Π, from (23) we have
+∂tψ(t, x) +
+Z
+A
+ 
+H(t, x, a, ∂xψ, ∂2 xψ, ψ) − θ log π(a|t, x)  π(a|t, x)da − βψ(t, x) ≤ 0.
+Using similar arguments as in the proof of Lemma 4, we obtain J(t, x, π) ≤ ψ(t, x) for any π ∈ Π.
+Thus, J ∗(t, x) ≤ ψ(t, x).
+On the other hand, Eq. (23) becomes
+∂tψ(t, x) +
+Z
+A
+ 
+H(t, x, a, ∂xψ, ∂2 xψ, ψ) − θ log π∗(a)  π∗(a)da − βψ(t, x) = 0,
+with ψ(T, x) = h(x). By Lemma 4, we obtain that J(t, x, π∗) = ψ(t, x). It follows that J ∗(t, x) ≥
+ψ(t, x).
+Combining these results, we conclude that J ∗(t, x) = ψ(t, x) and π∗ is the optimal stochastic
+policy.
+Proof of Proposition 2. In this proof, Cp is a generic positive constant that depends on p, which
+may take different values each time it occurs. Consider the grid S = {t = t0 < t1 < . . . < tN = T }.
+We prove the well-posedness by induction. Suppose for i = 0, · · · , n, the SDE (11) admits a
+unique strong solution on [t0, ti] satisfying Et,x[supt≤s≤ti |X π,S s |p] < ∞ for any p ≥ 2. Now consider
+the equation on (tn, tn+1]. Note that the random action aπ,S tn := Gπ(tn, X π,S tn , Un+1) is applied
+throughout (tn, tn+1]. For any p ≥ 2, we have
+Et,x
+
+|aπ,S tn |p = Et,x  Et,x  |Gπ(tn, X π,S tn , Un+1)|p|X π,S tn 
+= Et,x
+h Z
+A
+|a|pπ(a|tn, X π,S tn )da i
+≤ Cp(1 + Et,x[|X π,S tn |p]), (by Definition 1-(iii)) (78)
+which is finite. This result together with Assumption 1 is sufficient for us to use the arguments
+in Kunita (2004) and Situ (2006) to show the existence and uniqueness of the strong solution on
+(tn, tn+1] that satisfies Et,x[suptn≤s≤tn+1 |X π,S s |p] < ∞ for any p ≥ 2.
+46
+
+=== page 47 ===
+Recall the action process aπ,S satisfies aπ,S τ = aπ,S tn for τ ∈ (tn, tn+1]. The SDE can be written
+as
+X π,S s = x +
+Z s
+t
+b(τ, X π,S τ − , aπ,S τ )dτ +
+Z s
+t
+σ(τ, X π,S τ − , aπ,S τ )dWτ +
+Z s
+t
+Z
+Rℓ
+γ(τ, X π,S τ − , aπ,S τ , z) eN (dτ, dz).
+Using (Kunita 2004, Theorem 2.11), for any p ≥ 2 we obtain
+Et,x
+h
+sup
+t≤τ ≤s
+|X π,S τ |p
+i
+≤ Cp
+
+|x|p + E h Z s
+t
+|b(τ, X π,S τ − , aπ,S τ )|dτ pi + E h Z s
+t
+|σ(τ, X π,S τ − , aπ,S τ )|2dτ p/2i
++ E
+h Z s
+t
+Z
+Rℓ
+|γ(τ, X π,S τ − , aπ,S τ , z)|2ν(dz)dτ p/2i + E h Z s
+t
+Z
+Rℓ
+|γ(τ, X π,S τ − , aπ,S τ , z)|pν(dz)dτ i .
+Then
+E
+h Z s
+t
+|b(τ, X π,S τ − , aπ,S τ |dτ pi ≤ CpE h Z s
+t
+|b(τ, X π,S τ − , aπ,S τ )|pdτ i
+≤ Cp
+Z s
+t
+E
+h
+|b(τ, X π,S τ − , aπ,S τ )|p
+i
+dτ
+≤ Cp
+Z s
+t
+ 
+1 + E
+
+|X π,S τ − |p + E  |X π,S δ(τ )|p dτ
+≤ Cp
+Z s
+t
+
+1 + 2E
+h
+sup
+t≤u≤τ
+|X π,S u |p
+i
+dτ,
+where δ(τ ) := tn for τ ∈ (tn, tn+1], and we have used the linear growth property in Assumption
+1-(iii) and (78). We can also obtain similar estimates for the other three terms. Together, we have
+Et,x
+h
+sup
+t≤τ ≤s
+|X π,S τ |p
+i
+≤ Cp(1 + |x|p) + Cp
+Z s
+t
+E
+h
+sup
+t≤u≤τ
+|X π,S u |p
+i
+dτ.
+The estimate (26) then follows from Gronwall’s inequality.
+Proof of Theorem 2. In this proof, C is a generic constant whose values may vary from line to
+line. Consider part (i). Applying Itˆo’s formula to the value function (20) of policy π over the grid
+sample state process (11) and using the definition of q-function, we obtain that for 0 ≤ t < s ≤ T ,
+e−βsJ(s, X π,S s ; π) − e−βtJ(t, x; π) +
+Z s
+t
+e−βτ   r(τ, X π,S τ − , aπ,S τ ) − ˆq(τ, X π,S τ − , aπ,S τ )  dτ
+=
+Z s
+t
+e−βτ   q(τ, X π,S τ − , aπ,S τ ; π) − ˆq(τ, X π,S τ − , aπ,S τ )  dτ + Z s
+t
+e−βτ ∂xJ(τ, X π,S τ − ; π) ◦ σ(τ, X π,S τ − , aπ,S τ )dWτ
++
+ℓX
+k=1
+Z s
+t
+e−βτ
+Z
+R
+ 
+J(τ, X π,S τ − + γk(τ, X π,S τ − , aπ,S τ , z)) − J(τ, X π,S τ − ; π)  eNk(dτ, dz). (79)
+Suppose ˆq(t, x, a) = q(t, x, a; π) for all (t, x, a). Then the first term on the right-hand side of (79)
+is zero. We verify the following two conditions:
+Et,x
+ Z T
+t
+e−2βτ |Jx(τ, X π,S τ − ; π) ◦ σ(τ, X π,S τ − , aπ,S τ )|2dτ
+
+< ∞, (80)
+47
+
+=== page 48 ===
+Et,x
+ Z T
+t
+e−2βτ
+Z
+R
+|J(τ, X π,S τ − + γk(τ, X π,S τ − , aπ,S τ , z); π) − J(τ, X π,S τ − ; π)|2νk(dz)dτ
+
+< ∞. (81)
+Equality (80) follows from Assumption 1-(iii), the polynomial growth of ∂xJ in x, and the moment
+estimate (26). For (81), we apply the mean-value theorem to turn the integral to
+Z T
+t
+e−2βτ
+Z
+R
+|∂xJ(τ, X π,S τ − + ατ γk(τ, X π,S τ − , aπ,S τ , z); π) ◦ γk(τ, X π,S τ − , aπ,S τ , z)|2νk(dz)dτ
+for some ατ ∈ [0, 1]. Using the polynomial growth of ∂xJ in x, we can bound the integral by
+Z T
+t
+e−2βτ
+Z
+R
+|∂xJ(τ, X π,S τ − + ατ γk(τ, X π,S τ − , aπ,S τ , z); π)|2 · |γk(τ, X π,S τ − , aπ,S τ , z)|2νk(dz)dτ
+≤ C
+Z T
+t
+e−2βτ
+Z
+R
+(1 + |X π,S τ − + ατ γk(τ, X π,S τ − , aπ,S τ , z)|p)2 · |γk(τ, X π,S τ − , aπ,S τ , z)|2νk(dz)dτ
+≤ C
+Z T
+t
+e−2βτ
+Z
+R
+(1 + |X π,S τ − |p + |γk(τ, X π,S τ − , aπ,S τ , z)|p)2 · |γk(τ, X π,S τ − , aπ,S τ , z)|2νk(dz)dτ
+≤ C
+Z T
+t
+(1 + |X π,S τ − |p)2
+Z
+R
+|γk(τ, X π,S τ − , aπ,S τ , z)|2νk(dz)dτ
++ C
+Z T
+t
+Z
+R
+|γk(τ, X π,S τ − , aπ,S τ , z)|2p+2νk(dz)dτ
++ 2C
+Z T
+t
+(1 + |X π,S τ − |p)
+Z
+R
+|γk(τ, X π,S τ − , aπ,S τ , z)|p+2νk(dz)dτ.
+Using Assumption 1-(iii) and the moment estimate (26), we obtain (81). It follows that the second
+and third processes on the right-hand side of (79) are GS-martingales. Thus, we have the martingale
+property of the process given by (27).
+Conversely, suppose (27) is a GS-martingale for any (t, x) and any grid S of [t, T ]. We can infer
+from (79) that the process
+Z s
+t
+e−βτ   q(τ, X π,S τ − , aπ,S τ ; π) − ˆq(τ, X π,S τ − , aπ,S τ )  dτ
+is also a GS-martingale. Furthermore, it has continuous sample paths and finite variation and thus
+is zero almost surely. That is, for any t < s,
+Z s
+t
+e−βτ f (τ, X π,S τ − , aπ,S τ )dτ = 0, almost surely, (82)
+where f (t, x, a) := q(t, x, a; π) − ˆq(t, x, a), and it is a continuous function by our assumption. We
+need to show that f (t, x, a) = 0 for every (t, x, a), and we prove this by contradiction. Suppose
+that there exists some time-state action (t∗, x∗, a∗) such that f (t∗, x∗, a∗) is nonzero. Without loss
+of generality, we suppose f (t∗, x∗, a∗) > ϵ for some ϵ > 0. Then there exists some δ∗ > 0 such that
+f (t, x, a) > ϵ/2 for all (u, x′, a′) with |u − t∗| ∨ |x′ − x∗| ∨ |a′ − a∗| ≤ δ∗.
+Fix δ ∈ (0, δ∗) and choose a grid S of [t∗, T ] such that [t∗, t∗ + δ] is within the first subinterval
+of the grid. Consider the grid sample state process X π,S starting from (t∗, x∗), with X π,S t∗ = x∗.
+48
+
+=== page 49 ===
+By the definition of the action process, the action at time s ∈ [t∗, t∗ + δ] is given by aπ,S s = aπ,S t∗ =
+Gπ(t∗, x∗, U ), where U is an uniform random vector on [0, 1]n. Define
+Tδ,S = inf{t′ ≥ t∗ : |X π,S t′ − x∗| > δ} ∧ (t∗ + δ).
+We can see that Tδ,S > t∗, P-almost surely. That is, Tδ,S(ω) > t∗ for all ω ∈ Ω\Ω0 where P(Ω0) = 0.
+This is because the L´evy processes that drive the controlled grid sample state X π,S are stochastic
+continuous, i.e., the probability of having a jump at the fixed time t∗ is zero. Now for ω ∈ Ω\Ω0
+and s ∈ [t∗, Tδ,S(ω)] ⊂ [t∗, t∗ + δ], the action is given by aπ,S s (ω) = aπ,S t∗ (ω) = Gπ(t∗, x∗, U (ω)) . By
+Definition 1-(i), if we let Z = {ω ∈ Ω : |aπ,S t∗ (ω) − a∗| ≤ δ}, then P(Z) > 0. This implies that for
+ω ∈ Z\Ω0 and τ ∈ [t∗, Tδ,S(ω)], we have f (τ, X π,S τ − (ω), aπ,S τ (ω)) > ϵ/2. This leads to a contradiction
+to (82).
+Part (ii) directly follows from applying Itˆo’s formula to J(s, X π′,S s ; π) and together with a
+similar argument in proving part (i). For part (iii), again a similar argument in proving part (i)
+deduces that the process
+Z s
+t
+e−βτ   q(τ, X π′,S τ − , aπ′,S τ ; π) − ˆq(τ, X π′,S τ − , aπ′,S τ )  dτ
+is a GS-martingale. Then the same argument in part (i) applies to obtain the desired conclusion.
+Proof of Theorem 3. (i) The “if” part directly follows from the argument in the proof of Theo-
+rem 2. In the following, we prove the “only if” part.
+Assume for any (t, x) ∈ [0, T ] × Rd and any grid S of [t, T ], the following process
+e−βs ˆJ(s, X π,S s ) +
+Z s
+t
+e−βτ   r(τ, X π,S τ , aπ,S τ ) − ˆq(τ, X π,S τ , aπ,S τ )  dτ
+is a GS-martingale. Applying Itˆo’s formula to ˆJ over the grid sample state process (X π,S s ) similarly
+as in the proof of part (i) of Theorem 2, and letting g(t, x, a) := La ˆJ(t, x) − β ˆJ(t, x) where the
+operator La is given in (5), we obtain
+e−βs ˆJ(s, X π,S s ) −
+Z s
+t
+e−βτ g(τ, X π,S τ , aπ,S τ )dτ
+is a GS-martingale. Therefore,
+Z s
+t
+e−βτ (r − ˆq + g)(τ, X π,S τ , aπ,S τ )dτ
+is a GS-martingale, which further implies that (r − ˆq + g)(t, x, a) = 0 for all (t, x, a) by a similar
+argument as in the proof of Theorem 2. Hence we have
+ˆq(t, x, a) = r(t, x, a) + La ˆJ(t, x) − β ˆJ(t, x) = ∂t ˆJ(t, x) + H(t, x, a, ∂x ˆJ , ∂2 x ˆJ , ˆJ) − β ˆJ(t, x).
+The constraint for ˆq in (29) then implies that
+Z
+A
+n
+∂t ˆJ(t, x) + H(t, x, a, ∂x ˆJ , ∂2 x ˆJ , ˆJ) − β ˆJ(t, x) − θ log π(a|t, x) o π(a|t, x)da = 0,
+49
+
+=== page 50 ===
+for all (t, x) ∈ [0, T ] × Rd. Because ˆJ(T, x) = h(x), by Lemma 4, we deduce that ˆJ(t, x) = J(t, x; π)
+for all (t, x). Then it follows from Theorem 2-(iii) that ˆq(t, x, a) = q(t, x, a; π) for all (t, x, a).
+Part (ii) follows directly from part (ii) of Theorem 2. Part (iii) follows from a similar argument
+as in the proof of part (i), by applying Itˆo’s formula to ˆJ over the grid sample state process (X π′,S s )
+under π′. Finally, if π(a|t, x) = exp( 1 θ ˆq(t,x,a))R
+A exp( 1 θ ˆq(t,x,a))da , then it follows from Theorem 1 that π is the
+optimal policy and ˆJ is the optimal value function.
+Proof of Theorem 4. Part (i) directly follows from Part (ii) of Theorem 3. The proof of part (ii)
+follows the same argument as in the proof of part (ii) of Theorem 9 in Jia and Zhou (2025).
+Proof of Lemma 6. (1) Consider the function h′(t, S) defined by the RHS of (63). Proposition
+12.1 in Cont and Tankov (2004) shows that h′ ∈ C1,2([0, T ) × R+) ∩ C([0, T ] × R+) and it satisfies
+the PIDE (59). Furthermore, h′(t, S) is Lipschitz continuous in S. The Lipschitz continuity of
+function ˆG also implies | ˆG( ˆST )| ≤ C(1 + ˆST ) for some constant C > 0. It follows that
+|h′(t, S)| ≤ C(1 + EQ[ ˆST | ˆSt = S]) ≤ C(1 + S),
+where we used the martingale property of ˆS under Q. The Feynman-Kac Theorem (see Zhu et al.
+(2015)) implies uniqueness of classical solutions satisfying the linear growth condition.
+(2) To study the PIDE (60), we consider the function g′(t, S) defined by the RHS of (64). Under
+the assumption of Lemma 6, the arguments of Proposition 12.1 in Cont and Tankov (2004) can
+be used to show that g′ ∈ C1,2([0, T ) × R+) ∩ C([0, T ] × R+) and it satisfies the PIDE (60). The
+Lipschits continuity of h(t, S) in S implies that ∂S h(t, S) is bounded and |h(t, S exp(z)) − h(t, S)| ≤
+C(exp(z) − 1). We also have E[supt≤s≤T ˆS2 s | ˆSt = S] ≤ C(1 + S2) (Kunita 2004, Theorem 3.2).
+Combining these results, we see that g′(t, S) shows quadratic growth in S. Again the Feynman-Kac
+Theorem implies uniqueness of classical solutions satisfying the quadratic growth condition.
+B Convergence of value functions with grid sample state processes
+In this section, we show that, under appropriate conditions, the value functions with grid sample
+state processes converge to the value function of the exploratory state process, and the convergence
+rate is of the same order in the mesh size of the time grid.
+Consider the time grid S = {0 = t0 < t1 < . . . < tN = T } with its mesh size |S| :=
+max1≤n≤N |tn − tn−1|. Define
+g(t, x, a) := r(t, x, a) − θ log π(a|t, x), ˜g(t, x) :=
+Z
+A
+g(t, x, a)π(a|t, x)da.
+At t = 0, the value function associated with the grid sample state process following SDE (11) is
+J π,S(0, x) := E0,x
+Z T
+0
+e−βtg(t, X π,S t− , aπ,S t )dt + e−βT h(X π,S T )
+
+.
+For the exploratory state process following SDE (18), the corresponding (initial) value function is
+J π(0, x) := E0,x
+Z T
+0
+e−βt ˜g(t, ˜X π t−)dt + e−βT h( ˜X π T )
+
+.
+50
+
+=== page 51 ===
+In the above, E0,x denotes taking expectation given the initial state is x.
+For further analysis, we introduce some terminology and function spaces. When we say a
+function f (t, x) shows polynomial growth in x, we mean sup0≤t≤T |f (t, x)| ≤ C(1 + |x|p) for some
+p ≥ 2. Additionally, a function f (t, x, a) has polynomial growth in x and a if sup0≤t≤T |f (t, x, a)| ≤
+C(1+|x|p+|a|p) for some p ≥ 2. Let Ck p ([0, T ]×Rd) be the space of functions f : [0, T ]×Rd 7→ R such
+that for nonnegative integer i and multi-index j with 2i + |j| ≤ k, ∂i t ∂j xf (t, x) is continuous and has
+polynomial growth in x. Let Ck,0 p ([0, T ] × Rd × A) be the space of functions f : [0, T ] × Rd × A 7→ R
+such that for nonnegative integer i and multi-index j with 2i + |j| ≤ k, ∂i t ∂j xf (t, x, a) is continuous
+and shows polynomial growth in x and a. We impose the following assumption.
+Assumption 3. We assume
+(i) b, σ2 ∈ C2,0 p ([0, T ] × Rd × A);
+(ii) for any t ∈ (0, T ], the PIDE
+Lπϕ(s, x) = 0, (s, x) ∈ [0, t) × Rd, (83)
+ϕ(t, x) = f (x), x ∈ Rd,
+has a unique solution ϕ ∈ C4 p ([0, t] × Rd) for f = h, ˜g(t, ·), where Lπ is given by (17);
+(iii) for k = 1, · · · , ℓ and p ∈ {0, 1} ∪ [2, ∞),
+R
+R γk(t, x, a, z)pφ(t, x, a, z)νk(dz) has polynomial
+growth in x and a for φ = ∂tγk, ∂xγk, (∂xγk)2, ∂2 xγk;
+(iv) g ∈ C2,0 p ([0, T ] × Rd × A) and ˜g ∈ C2 p ([0, T ] × Rd).
+In the two applications considered in Sections 5 and 6, conditions (i) and (iii) clearly hold and
+condition (iv) can be verified for the Gaussian policies studied. Condition (ii) can be easily verified
+in the MV portfolio selection problem for the Gaussian policies due to the LQ structure of the
+problem (the solution is quadratic in x and has smooth dependence on t). It is more difficult to
+check this condition in the MV hedging problem, but for the optimal stochastic policy given by
+(66) it should be possible to verify the required polynomial growth of the derivatives for calls and
+puts based on the representations (63) and (64) under additional assumptions on the derivatives of
+the transition density of the L´evy process that models the log stock price.
+The following result shows the convergence of the value functions with grid sample state pro-
+cesses to that of the exploratory SDE, which extends Theorem 4.1 and Proposition 5.1 of Jia et al.
+(2025) from diffusions to jump-diffusions.
+Theorem 5. Suppose Assumptions 1–3 hold. For any admissible stochastic policy π, we have
+|J π,S(0, x) − J π(0, x)| ≤ C|S|
+for some positive constant C which may depend on x.
+We need the following lemma for proving the theorem.
+Lemma 7. For ϕ ∈ C4 p ([0, t] × Rd) and k = 1, · · · , ℓ, let
+I ϕ k (τ, x, a) :=
+Z
+R
+ 
+ϕ(τ, x + γk(τ, x, a, z)) − ϕ(τ, x) − γk(τ, x, a, z) ◦ ∂xϕ(τ, x)
+
+νk(dz), τ ∈ [0, t]. (84)
+Under Assumption 1-(iii) and Assumption 3-(iii), ∂τ I ϕ k , ∂xI ϕ k , ∂2 xI ϕ k have polynomial growth in x
+and a.
+51
+
+=== page 52 ===
+Proof. Without loss of generality we only consider d = 1 for notational simplicity. Consider
+ψ(τ, x, a) :=
+Z
+R
+ 
+∂τ ϕ(τ, x + γk(τ, x, a, z)) + ∂xϕ(τ, x + γk(τ, x, a, z))∂τ γk(τ, x, a, z)
+− ∂τ ϕ(τ, x) − ∂τ γk(τ, x, a, z)∂xϕ(τ, x) − γk(τ, x, a, z)∂τ ∂xϕ(τ, x)
+
+νk(dz)
+=
+Z
+R
+ 
+∂τ ∂xϕ(τ, x + αγk(τ, x, a, z))γk(τ, x, a, z) − ∂τ ∂xϕ(τ, x)γk(τ, x, a, z)
++ ∂2 xϕ(τ, x + α′γk(τ, x, a, z))γk(τ, x, a, z)∂τ γk(τ, x, a, z)  νk(dz)
+for some α, α′ ∈ (0, 1) by the mean-value theorem. Using ϕ ∈ C4 p ([0, t] × Rd), Assumption 1-(iii)
+and Assumption 3-(iii), we obtain that ψ(τ, x, a) has polynomial growth in x and a (and hence has
+finite values). The interchangeability of the differentiation and integration thus follows leading to
+∂τ I ϕ k = ψ(τ, x, a).
+Using the same argument, we obtain
+∂xI ϕ k (τ, x, a) =
+Z
+R
+ 
+∂xϕ(τ, x + γk(τ, x, a, z))(1 + ∂xγk(τ, x, a, z)) − ∂xϕ(τ, x)
+− ∂xγk(τ, x, a, z)∂xϕ(τ, x) − γk(τ, x, a, z)∂2 xϕ(τ, x)  νk(dz),
+∂2 xI ϕ k (τ, x, a) =
+Z
+R
+ 
+∂2 xϕ(τ, x + γk(τ, x, a, z))(1 + ∂xγk(τ, x, a, z))2 − ∂2 xϕ(τ, x)
++ ∂xϕ(τ, x + γk(τ, x, a, z))∂2 xγk(τ, x, a, z) − ∂xϕ(τ, x)∂2 xγk(τ, x, a, z)
+− 2∂xγk(τ, x, a, z)∂2 xϕ(τ, x) − γk(τ, x, a, z)∂3 xϕ(τ, x)  νk(dz),
+which show polynomial growth in x and a.
+Proof of Theorem 5. In this proof, C is a generic constant independent of n, whose values may
+vary from line to line. We consider β = 0 for simplicity, but the proof can be easily adapted to
+accommodate discounting.
+(1) Suppose t = ti ∈ S. We first show that for f = h, ˜g(t, ·),
+|E0,x[f (X π,S t )] − E0,x[f ( ˜X π t )]| ≤ C|S|.
+To this end, consider the PIDE (83). By the Feynman–Kac formula, we have ϕ(0, x) =
+E0,x[f ( ˜X π t )] . We also have
+E0,x[f (X π,S t )] − E0,x[f ( ˜X π T )] = E0,x[ϕ(t, X π,S t )] − ϕ(0, x)
+=
+iX
+j=1
+E0,x[ϕ(tj , X π,S tj ) − ϕ(tj−1, X π,S tj−1 )].
+Itˆo’s formula yileds
+ϕ(tj , X π,S tj ) − ϕ(tj−1, X π,S tj−1 )
+52
+
+=== page 53 ===
+=
+Z tj
+tj−1
+Laj ϕ(τ, X π,S τ − )dτ +
+Z tj
+tj−1
+∂xϕ(τ, X π,S τ − ) ◦ σ(τ, X π,S τ − , aj )dWτ
++
+ℓX
+k=1
+Z tj
+tj−1
+Z
+R
+ 
+ϕ(τ, X π,S τ − + γk(τ, X π,S τ − , aj , z)) − ϕ(τ, X π,S τ − )  eNk(dτ, dz),
+where aj = Gπ(tj−1, X π,S tj−1 , Uj ) and the operator Laj is given by (5). Assumption 1 implies that the
+two stochastic integrals driven by the Brownian motion and compensated Poisson random measure
+are martingales. It follows that
+E0,x[ϕ(tj , X π,S tj ) − ϕ(tj−1, X π,S tj−1 )] = E0,x
+h Z tj
+tj−1
+Laj ϕ(τ, X π,S τ − )dτ i .
+As aj ∼ π(·|tj−1, X π,S tj−1 ), we have
+E0,x
+h Z tj
+tj−1
+Laj ϕ(tj−1, X π,S tj−1 )dτ i = E0,x h E0,x h Z tj
+tj−1
+Laj ϕ(tj−1, X π,S tj−1 )dτ X π,S tj−1 ii
+= E0,x
+h Z tj
+tj−1
+Lπϕ(tj−1, X π,S tj−1 )dτ i
+= 0,
+where the last equality follows from (83). Hence, we can write
+E0,x[ϕ(tj , X π,S tj ) − ϕ(tj−1, X π,S tj−1 )] = E0,x[ej ], ej :=
+Z tj
+tj−1
+ 
+Laj ϕ(τ, X π,S τ − ) − Laj ϕ(tj−1, X π,S tj−1 )  dτ.
+Using the expression of Laj , we obtain
+E0,x[ej ] = E0,x
+h Z tj
+tj−1
+ 
+∂τ ϕ(τ, X π,S τ − ) − ∂τ ϕ(tj−1, X π,S tj−1 )  dτ i
++ E0,x
+h Z tj
+tj−1
+b(τ, X π,S τ − , aj ) ◦   ∂xϕ(τ, X π,S τ − ) − ∂xϕ(tj−1, X π,S tj−1 )  dτ i
++ E0,x
+h Z tj
+tj−1
+1
+2 σ2(τ, X π,S τ − , aj ) ◦   ∂2 xϕ(τ, X π,S τ − ) − ∂2 xϕ(tj−1, X π,S tj−1 )  dτ i
++ E0,x
+h Z tj
+tj−1
+ 
+b(τ, X π,S τ − , aj ) − b(tj−1, X π,S tj−1 , aj )  ◦ ∂xϕ(tj−1, X π,S tj−1 )dτ i
++ E0,x
+h Z tj
+tj−1
+1
+2
+ 
+σ2(τ, X π,S τ − , aj ) − σ2(tj−1, X π,S tj−1 , aj )  ◦ ∂2 xϕ(tj−1, X π,S tj−1 )dτ i
++
+ℓX
+k=1
+E0,x
+h Z tj
+tj−1
+ 
+I ϕ k (τ, X π,S τ − , aj ) − I ϕ k (tj−1, X π,S tj−1 , aj )  dτ i ,
+where I ϕ k is defined by (84). The first five terms can be analyzed using the arguments in Jia et al.
+(2025), which show that their sum is bounded by C(tj − tj−1)2. For the last term, we obtain from
+Itˆo’s formula that
+I ϕ k (τ, X π,S τ − , aj ) − I ϕ k (tj−1, X π,S tj−1 , aj )
+53
+
+=== page 54 ===
+=
+Z τ
+tj−1
+ 
+∂sI ϕ k (s, X π,S s− , aj ) + b(s, X π,S s− , aj ) ◦ ∂xI ϕ k (s, X π,S s− , aj )  ds
++
+Z τ
+tj−1
+1
+2 σ2(s, X π,S s− , aj ) ◦ ∂2 xI ϕ k (s, X π,S s− , aj )  ds
++
+Z τ
+tj−1
+Z
+R
+ 
+I ϕ k (s, X π,S s− + γk(s, X π,S s− , aj , z), aj ) − I ϕ k (s, X π,S s− , aj )
+− γk(s, X π,S s− , aj , z) ◦ ∂xI ϕ k (s, X π,S s− , aj )  νk(dz)ds
++
+Z τ
+tj−1
+∂xI ϕ k (s, X π,S s− , aj ) ◦ σ(s, X π,S s− , aj )dWs
++
+ℓX
+k=1
+Z τ
+tj−1
+Z
+R
+ 
+I ϕ k (s, X π,S s− + γk(s, X π,S s− , aj , z), aj ) − I ϕ k (s, X π,S s− , aj )  eNk(ds, dz).
+By Lemma 7 and Proposition 2, the last two terms are martingales and hence their expectations are
+zero. By Assumptions 1 and 3, the admissibility of π, Lemma 7 and Proposition 2, the expectations
+of the first three terms are finite and bounded by C(τ − tj−1). It follows that
+E0,x h Z tj
+tj−1
+ 
+I ϕ k (τ, X π,S τ − , aj ) − I ϕ k (tj−1, X π,S tj−1 , aj )  dτ i
+≤
+Z tj
+tj−1
+E0,x
+hI ϕ k (τ, X π,S τ − , aj ) − I ϕ k (tj−1, X π,S tj−1 , aj )  i dτ
+≤ C
+Z tj
+tj−1
+Z τ
+tj−1
+(τ − tj−1)dsdτ
+≤ C(tj − tj−1)2.
+Putting these estimates together, we have |E[ej ]| ≤ C(tj − tj−1)2. Finally, we obtain
+E0,x[f (X π,S t )] − E0,x[f ( ˜X π t )]  ≤ iX
+j=1
+E0,x[ej ]  ≤ C|S|.
+(2) We estimate the difference between J π,S(0, x) and J π(0, x). Note that
+J π,S(0, x)−J π(0, x) =   E0,x[h(X π,S T )]−E0,x[h( ˜X π T )]  + NX
+i=1
+E
+h Z ti
+ti−1
+ 
+g(τ, X π,S τ , ai)− ˜g(τ, ˜X π τ )  dτ i ,
+where ai = Gπ(ti−1, X π,S ti−1 , Ui). We have already analyzed the first term in part (1), which is
+bounded by C|S|. For the second term, we have for τ ∈ (ti−1, ti],
+E0,x[g(τ, X π,S τ , ai) − ˜g(τ, ˜X π τ )]
+= E0,x[g(τ, X π,S τ , ai) − g(ti−1, X π,S ti−1 , ai)] + E0,x[g(ti−1, X π,S ti−1 , ai) − ˜g(τ, ˜X π τ )]
+= E0,x[g(τ, X π,S τ , ai) − g(ti−1, X π,S ti−1 , ai)] + E0,x[˜g(ti−1, X π,S ti−1 ) − ˜g(ti−1, ˜X π ti−1 )]
+54
+
+=== page 55 ===
++ E0,x[˜g(ti−1, ˜X π ti−1 ) − ˜g(τ, ˜X π τ )]
+where we noted E0,x[g(ti−1, X π,S ti−1 , ai)] = E0,x[E0,x[g(ti−1, X π,S ti−1 , ai)|X π,S ti−1 ]] = E0,x[˜g(ti−1, X π,S ti−1 )]. As
+g ∈ C2,0 p ([0, T ] × Rd × A), it follows from Itˆo’s formula, Assumption 1 and Proposition 2 that
+E0,x[g(τ, X π,S τ , ai) − g(ti−1, X π,S ti−1 , ai)]  ≤ C|S|.
+Part (1) shows E0,x[˜g(ti−1, X π,S ti−1 ) − ˜g(ti−1, ˜X π ti−1 )]  ≤ C|S|.
+As ˜g ∈ C2 p ([0, T ] × Rd), using Itˆo’s formula, Lemma 1, Lemma 2 and Proposition 1 yields
+E0,x[˜g(ti−1, ˜X π ti−1 ) − ˜g(τ, ˜X π τ )]  ≤ C|S|.
+Combining these results, we obtain
+ NX
+i=1
+E0,x
+h Z ti
+ti−1
+ 
+g(τ, X π,S τ , ai) − ˜g(τ, ˜X π τ )  dτ i ≤ C|S|.
+The proof of the theorem is now complete.
+55

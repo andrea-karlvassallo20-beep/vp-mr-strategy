@@ -1,0 +1,1153 @@
+=== page 1 ===
+Cost of Manipulation in AMM-Based Oracles
+Sebastian Müller1,2, Nordine Moumeni1, and Adel Messaoudi1
+1 Aix Marseille Univ, CNRS, I2M, Marseille, France
+2 IOTA Foundation, Germany
+Abstract. We study the robustness of AMM-based on-chain price oracles
+to strategic manipulation. An attacker trades against constant product
+automated market makers (CPMMs) to distort an on-chain oracle, ar-
+bitrageurs restore cross-pool and cross-venue consistency, and an oracle
+designer chooses how to aggregate pool quotes.
+Taking an efficient-market-hypothesis (EMH) view of the off-chain “true”
+price, we define the cost of manipulation as the minimal mark-to-market
+loss that an attacker must incur to move the oracle by a given multiplica-
+tive factor. For independent CPMMs, we derive closed-form single-pool
+manipulation formulas and solve the attacker–designer game for weighted
+means and weighted medians, showing that liquidity weights maximize
+the minimum cost of manipulation within these classes for weighted me-
+dians (for any distortion level) and, for weighted means, locally as the
+distortion tends to zero. For larger distortions, weighted means become
+more fragile: optimal weights can depend on the target distortion and no
+single choice is uniformly optimal across distortion levels. In a frictionless
+CPMM model with cross-pool arbitrage, the manipulation cost depends
+only on the total quote depth and coincides across symmetric aggregators.
+We extend this framework to multi-asset star architectures, confirming
+that liquidity weights remain optimal in the same sense. Finally, we
+bridge theory and practice by incorporating dwell times and rate limits,
+providing a quantitative yardstick to size oracles against the explicit
+economic costs of attack.
+Keywords: Automated market makers · Price oracles · Decentralized finance ·
+Market manipulation · Liquidity-weighted aggregation · Robust statistics
+1 Introduction
+Automated market makers (AMMs) have become core infrastructure in decen-
+tralized finance (DeFi), serving as venues for liquidity provision and as a source
+of on-chain price information. Lending protocols, derivatives platforms, and
+stablecoins routinely rely on on-chain oracles to trigger liquidations, margin
+calls, and redemptions, often for large notional exposures. In current practice,
+most production oracles still aggregate off-chain data from centralized exchanges,
+APIs, or market makers, but a smaller and conceptually important class of “pure
+on-chain” oracles derives prices solely from AMM activity. These designs improve
+arXiv:2606.03548v1  [cs.CE]  2 Jun 2026
+
+=== page 2 ===
+2 Sebastian Müller, Nordine Moumeni, and Adel Messaoudi
+decentralization and verifiability by avoiding external data feeds, yet their security
+and robustness against manipulation remain only partially understood.
+We develop a model of the cost of manipulation for such AMM-based oracles.
+An attacker strategically trades against constant-product market makers (CP-
+MMs) in order to push the oracle away from a latent efficient price, an oracle
+designer chooses how to aggregate pool quotes, and arbitrageurs trade across
+pools and external venues to restore price consistency. Adopting an efficient-
+market-hypothesis (EMH) view of the off-chain price, we measure manipulation
+cost as the mark-to-market economic loss that an attacker must realize in order to
+move the oracle by a prescribed multiplicative factor r ≥ 1, upward or downward.
+Our goal is to provide simple, closed-form benchmarks for the robustness of pure
+on-chain CPMM-based oracles that can serve as a foundation for more elaborate
+oracle designs.
+At a high level, our results show that in CPMMs the cost of manipulating
+an oracle admits simple expressions that depend only on liquidity depth and
+aggregation weights, and that within natural mean- and median-type aggregators,
+liquidity-proportional weights are max–min optimal (exactly for weighted medians
+and to second order in a small-distortion expansion for weighted means). The rest
+of the paper makes this statement precise in single-pool, multi-pool, and multi-
+asset settings and quantifies the resulting robustness benchmarks for AMM-based
+oracles.
+Mean vs. median across distortion levels. For small distortions r = 1+ε, liquidity-
+weightedmeansaremoreexpensivetomanipulatethanliquidity-weightedmedians
+at leading order, reflecting that means “use” all pools while medians require only
+a majority-weight cover. For larger distortions, however, weighted means can
+become substantially more fragile because per-pool CPMM manipulation cost
+grows sublinearly once a pool is pushed beyond the inflection threshold of the
+single-pool factor. In this regime, designer-optimal mean weights can depend
+on the target distortion and there is generally no distortion-uniform max–min
+choice.
+Contributions and Organization. Formally, the paper makes five contributions:
+– We recall closed-form single-pool formulas for trade size and economic loss as
+functions of the relative distortion factor r under a CPMM, and extend them
+to include proportional swap fees via a simple rescaling of inputs (Section 2.1,
+Appendix B, and Section 5).
+– We characterize the optimal attacker strategies for multi-pool oracles based on
+weighted means and weighted medians and solve the corresponding designer’s
+problem. Liquidity weights are max–min optimal for weighted medians for
+any distortion level, and are locally max–min optimal for weighted means as
+r → 1; we also provide an explicit counterexample showing that weighted
+means admit no distortion-uniform max–min choice beyond small distortions
+(Section 3, Section 3.2, Theorems 1 and 2, and Appendices C–D).
+
+=== page 3 ===
+Cost of Manipulation in AMM-Based Oracles 3
+– We analyze frictionless cross-pool arbitrage and swap fees, noting that under
+perfect equalization any symmetric aggregator yields the same oracle price
+and that manipulation cost depends only on total depth, while fees induce
+no-arbitrage bands that jointly affect arbitrage efficiency and attack cost
+(Sections 2.2, 3, and 5).
+– We sketch a multi-asset extension for star architectures around a numéraire
+and show that liquidity weights remain optimal asset-by-asset (Section 4 and
+Appendix E).
+– We discuss practical extensions that embed our static cost benchmarks into
+dynamic and implementation-aware settings, introducing a dwell-time metric
+CostA(r, τ )andoutlininghowplatform-specificratelimitsandgascostsinteract
+with manipulation incentives in practice (Section 7).
+Relation to prior work. Our analysis lies at the intersection of CFMM microstruc-
+ture, oracle manipulation in DeFi, and robust aggregation. On the CFMM side,
+Uniswap v2/v3 and the CFMM literature [2,3,6] characterize invariant-based pric-
+ing, slippage, and arbitrage but do not formulate a general cost of manipulation
+metric or a max–min designer problem over cross-pool weights. Oracle-security
+work [26,21,24,8,1,13] studies concrete mechanisms such as TWAPs and docu-
+ments manipulation events and capital requirements, while treating AMM pricing
+largely as a black box. Robust-aggregation results [16,5,22] motivate volume-
+and liquidity-weighted means and medians statistically but abstract away from
+bonding-curve mechanics and strategic attackers. Our contribution is to connect
+these strands by deriving closed-form CPMM manipulation costs, solving the
+associated attacker–designer games for weighted means and medians (in single-
+asset and star-architecture settings), and showing that liquidity-proportional
+weights are max–min optimal for weighted medians (for any distortion level) and
+locally max–min optimal for weighted means near r = 1, while weighted means
+admit no distortion-uniform max–min weights in general. We refer to Section 6
+for a more detailed discussion of related literature.
+2 Background and Model
+2.1 Primer on CPMMs and Notation
+This subsection collects standard definitions and single-pool formulas for constant-
+product market makers and fixes the notation used throughout the paper. In this
+paper we focus exclusively on Uniswap v2–style constant-product AMMs, which
+we refer to as constant-product market makers (CPMMs): pools whose reserves
+(x, y) satisfy the invariant xy = k [2,6].
+Constant-product invariant and marginal price. Consider a trading pair (X, Y )
+with reserves (x, y) in a CPMM pool. The invariant is
+k = x y, k > 0,
+
+=== page 4 ===
+4 Sebastian Müller, Nordine Moumeni, and Adel Messaoudi
+dy
+dx = − y x
+(x0, y0)
+(x1, y1)
+∆xout
+∆yin
+x (base reserves)
+y (quote reserves)
+Fig.1. The CPMM bonding curve xy = k and a Y → X trade that increases the
+marginal price p = y/x.
+so any trade moves (x, y) along the curve xy = k. The marginal price of X in
+units of Y is the rate at which the reserves trade locally:
+marginal price of X in Y = − dy dx = y x .
+Thus the reserve ratio
+p := y x (Y per X)
+is exactly the marginal price on the CPMM curve. This is why on-chain “spot
+prices” for CPMMs are typically read as p = y/x.
+Liquidity depth and the role of k. For a fixed external (efficient) price p⋆, the
+invariant k encodes the pool’s liquidity depth. At equilibrium p = p⋆ we have
+x0 =
+s
+k
+p⋆ , y0 =
+p
+k p⋆,
+so both reserves scale as
+√
+k. Moving the on-chain price from p0 to a new level p1
+requires a finite trade that shifts reserves along the same curve. We parametrize
+distortions multiplicatively: for a factor r ≥ 1, an “upward” move targets p1 = r p0
+and a “downward” move targets p1 = p0/r. This yields a symmetric notion of
+manipulation,sincetherelevantcostfactorsatisfies f (r) = √r+1/√r−2 = f (1/r)
+as shown below.
+Baseline single-pool formulas (as functions of a multiplicative distortion r ≥ 1).
+Consider a CPMM initially at price p0 with reserves (x0, y0) and invariant
+k = x0y0.
+– Upward move (factor r). To move the on-chain price to p1 = r p0 with a Y → X
+trade, the attacker must supply
+yin ↑ (r) = y0  √r − 1  . (1)
+– Downward move (factor 1/r). To move the price to p1 = p0/r with an X → Y
+trade, the attacker must supply
+xin ↓ (r) = x0  √r − 1  . (2)
+
+=== page 5 ===
+Cost of Manipulation in AMM-Based Oracles 5
+– Economic cost (mark-to-market at p⋆ = p0). When the reference price equals
+the pre-trade pool price, the economic loss in units of Y is
+C ↑ Y (r) = y0
+√r + 1√r − 2  , (3)
+C ↓ Y (r) = y0
+√r + 1√r − 2  . (4)
+The trade sizes (1)–(2) reflect the
+√
+k-scaling of liquidity depth, and the cost
+formulas (3)–(4) encode the realized slippage loss relative to the efficient price.
+Detailed derivations are recalled in Appendix B. These CPMM price-impact and
+slippage expressions coincide with the formulas used in protocol documentation
+and CFMM analyses; see, for example, the Uniswap v2 and v3 whitepapers [2,3]
+and the CFMM framework of Angeris and Chitra [6].
+Notation and reference price. Throughout, we use:
+– (X, Y ): base and quote assets.
+– (x, y): current pool reserves; k = xy the CPMM invariant.
+– p = y/x: on-chain marginal price (Y per unit X).
+– p⋆: external “fair” or efficient price, unaffected by on-chain trades (e.g., a robust
+cross-venue midprice).
+When we consider several pools for the same pair, we write (xi, yi), ki, and
+pi = yi/xi for pool i, and collect pool prices into a vector p = (pi)i. An oracle
+or price aggregator applies a deterministic functional A (e.g., liquidity-weighted
+mean, weighted median, trimmed mean) to p to obtain the reported oracle price
+ˆp = A(p).
+Agents and manipulation cost. The strategic agents in our model are:
+– an oracle designer, who chooses the aggregation rule A and fee/parameter
+settings;
+– an attacker, who submits trades to CPMM pools with the goal of pushing ˆp
+away from p⋆;
+– arbitrageurs, who trade across pools (and vs. external venues) whenever price
+discrepancies exceed their frictions.
+We measure manipulation cost in units of the quote asset Y as the mark-to-
+market loss of the attacker’s trades when valued at p⋆ (slippage loss relative to
+the efficient price). This quantity underlies the “adversarial cost” or “manipulation
+cost” studied in the rest of the paper.
+2.2 Robustness Metric: Cost of Manipulation
+We formalize the notion of manipulation cost used throughout the paper. Let
+p⋆ denote the efficient price of a given asset in units of a reference asset, and
+let A be an aggregation rule mapping observed pool quotes (and possibly other
+on-chain data) to an oracle output ˆp. We consider a one-shot setting first and
+then indicate how to extend to a multi-step dwell requirement.
+
+=== page 6 ===
+6 Sebastian Müller, Nordine Moumeni, and Adel Messaoudi
+Definition 1 (Cost of manipulation). Fix an aggregation rule A, an efficient
+price p⋆, a distortion factor r ≥ 1, and a reference asset (e.g., the quote asset Y
+or a numéraire). Let U denote the set of admissible attack strategies (collections
+of on-chain trades on the relevant pools), and write C(u) for the mark-to-market
+economic loss of an attack u ∈ U measured in the reference asset at the efficient
+prices. The cost of manipulation at level r is
+CostA(r) := inf
+n
+C(u) : u ∈ U , max
+n ˆp(u)
+p⋆ , p⋆ ˆp(u) o ≥ r o ,
+where ˆp(u) := A(quotes after u) is the oracle output after the attack has been
+executed and before any corrective arbitrage.
+In words, CostA(r) is the minimal economic loss an attacker must incur
+to move the oracle by a factor of at least r up or down relative to p⋆. In the
+single-CPMM setting with A equal to the pool price, CostA(r) reduces to the
+one-pool formulas C ↑,↓ Y (r) in (3)–(4). In the multi-pool mean and median settings,
+CostA(r) is given by the solutions of the corresponding multi-pool optimization
+problems. In the rest of the paper we focus on this “one-step” notion under static
+efficient prices; a dynamic extension with dwell-time constraints is discussed in
+the outlook section.
+3 Manipulation of Single-Pair Oracles
+Having fixed notation and the robustness metric, we now analyze how much
+economic loss an attacker must incur to manipulate oracles built from one or
+several CPMM pools that all trade the same asset pair. We start with two pools,
+then consider the general case of N independent pools aggregated by means or
+medians, and finally incorporate cross-pool arbitrage.
+We will repeatedly use the single-pool cost factor
+f (r) := √r + 1√r − 2,
+so that, when p⋆ = p0, moving a CPMM price from p0 to r p0 (or to p0/r) costs
+CY (r) = y0f (r) in quote units; see (1)–(4).
+3.1 Two CPMM Pools
+As a warm-up and to illustrate the main ideas for the general N -pool setting,
+we first analyze the case of two independent CPMM pools aggregated by a
+deterministic oracle A. We index pools by a subscript and indicate time by a
+superscript in parentheses. Initial (pre-attack) reserves and prices are (x(0) i , y(0) i )
+with invariant ki = x(0) i y(0) i and price p(0) i = y(0) i /x(0) i . An attacker produces
+post-trade quotes p(1) i . The oracle aggregates the updated {p(1) i } with one of the
+following methods.
+
+=== page 7 ===
+Cost of Manipulation in AMM-Based Oracles 7
+1 3 5 7 9
+0
+0.05
+0.1
+0.15
+0.2
+t = 3
+increasing
+decreasing
+Price multiplier t = p(1)/p0
+f ′(t)
+Fig.2. Marginal manipulation cost f ′(t) = (t − 1)/(2t3/2) for a single CPMM pool.
+Marginal cost peaks at t = 3 and declines thereafter, which makes concentrated mean
+attacks attractive once some pools are pushed beyond 3× their initial price.
+Weighted Mean Let weights w1, w2 > 0 with w1 + w2 = 1 (e.g., by liquidity
+depth wi ∝ √ki, equivalently wi ∝ y(0) i when pre-trade prices match). The
+aggregated post-trade price is
+ˆp(1) = w1 p(1) 1 + w2 p(1) 2 .
+If the attacker manipulates only pool 1, the aggregator sensitivity is ∂ ˆp(1)/∂p(1) 1 =
+w1. To move ˆp(1) by ∆, one needs ∆p(1) 1 = ∆/w1. Plugging p(1) 1 7→ p(1) 1 + ∆/w1
+into (1) or (2) gives the required trade amounts per direction. We now turn to
+the question of how an attacker can influence the aggregated price at lowest cost.
+We start with the optimal attacker strategy for any given weights w1 and w2.
+Optimal Manipulation. Assume both pools start at the same fair price p0 = p⋆,
+so p(0) 1 = p(0) 2 = p0. Fix a target distortion factor r ≥ 1. Write p(1) i = s2 i p0 with
+si > 0. Achieving ˆp(1) = r p0 at minimum cost reduces to the program
+min
+s1 ,s2 >0
+y(0) 1 f (s2 1) + y(0) 2 f (s2 2) s.t. w1s2 1 + w2s2 2 = r,
+where f (·) is the single-pool factor from (3). A downward distortion ˆp(1) = p0/r
+corresponds to replacing r by 1/r; since f (r) = f (1/r), the minimal cost is
+the same in both directions. At an interior optimum, the Lagrange first-order
+conditions take the form
+y(0) i f ′(ti) = λ wi, ti := s2 i ,
+for some multiplier λ > 0. Thus the marginal cost f ′(ti) is proportional to the
+weight-to-liquidity ratio wi/y(0) i . In particular, whenever the relevant multipliers
+lie in the convex range ti ∈ (0, 3] (so f ′ is increasing, see Figure 2), pools with
+larger wi/y(0) i are pushed to larger ti, i.e., manipulated more aggressively.
+Weighted Median Let p(1) ≤ p(2) be the sorted quotes and corresponding
+weights w(1), w(2) normalized so that w(1) + w(2) = 1. We use the lower weighted
+
+=== page 8 ===
+8 Sebastian Müller, Nordine Moumeni, and Adel Messaoudi
+median, defined as the smallest price level whose cumulative weight is at least
+1/2. Thus ˜p = p(1) if w(1) ≥ 1/2 and ˜p = p(2) otherwise; under the exact tie
+w(1) = w(2) = 1/2, this convention returns ˜p = p(1).
+Optimal Manipulation. Withtwopools,theweightedmedianispiecewiseconstant:
+the aggregator output is the price of whichever pool carries the majority weight.
+To move ˜p, the attacker must either (i) manipulate the dominating pool, or (ii)
+push the manipulated pool past the other so that the majority-weight index flips.
+In either subcase, the required trade sizes and costs follow from the single-pool
+formulas with the appropriate target price level.
+3.2 Multiple CPMM Pools
+We now turn to the general setting of N independent pools. Throughout this
+subsection, let
+ytot :=
+NX
+i=1
+y(0) i
+denote the total quote depth across pools.
+Weighted Mean We first define the minimal cost of manipulation FN (w; r) for
+a specific choice of aggregation weights w and target factor r ≥ 1. This is the
+economic loss an attacker must incur to achieve ˆp(1) = r p0 when they optimize
+their trades across pools to minimize cost. With si representing the square root
+of the per-pool price multiplier (i.e., p(1) i = s2 i p0), define
+FN (w; r) := min {si >0}
+NX
+i=1
+y(0) i   si + s−1 i − 2  s.t. NX
+i=1
+wis2 i = r.
+The oracle designer’s problem is to choose w to maximize this adversarial cost.
+The following theorem gives a small-distortion (second-order) characterization
+and identifies liquidity weights as locally max–min optimal for weighted-mean
+oracles near r = 1.
+Theorem 1. Fix r = 1 + ε with ε → 0+. Then, uniformly over weight vectors
+w = (wi)N i=1 with wi ≥ 0 and P i wi = 1,
+FN (w; 1 + ε) = ε2 4 1 PN i=1 w2 i /y(0) i + o(ε2).
+Consequently,
+sup
+wi ≥0, P i wi =1 FN (w; 1 + ε) = ε2 4 ytot + o(ε2),
+and the leading-order term is uniquely maximized by the liquidity weights w⋆ i =
+y(0) i /ytot.
+Proof. Deferred to Appendix C.
+
+=== page 9 ===
+Cost of Manipulation in AMM-Based Oracles 9
+Convex regime (exact benchmark under a per-pool cap). Fix an upward target
+r ∈ [1, 3] and consider attacks constrained by ti := p(1) i /p0 ∈ [1, 3]. On this range
+f is convex. Under liquidity weights w⋆ i = y(0) i /ytot, Jensen’s inequality implies
+NX
+i=1
+y(0) i f (ti) ≥ ytot f (r),
+with equality at ti ≡ r. Since ti ≡ r is feasible for every weight vector, no
+designer can force manipulation cost above ytotf (r), and thus liquidity weights
+are max–min optimal within this capped convex regime. In the unconstrained
+model, by contrast, the aggregate condition r < 3 does not preclude concentrated
+attacks with some ti > 3 when some weights are small.
+Convexity threshold and concentrated attacks. The per-pool cost factor f (t) =√
+t + 1/
+√
+t − 2 has a crucial inflection point at t = 3, since
+f ′′(t) = 3 − t 4t5/2 ,
+so f is convex on (0, 3] and concave on [3, ∞). Equivalently, the marginal cost
+f ′(t) = (t − 1)/(2t3/2) peaks at t = 3 and decreases thereafter; see Fig. 2.
+This implies a qualitative shift in attacker incentives: attacks are dispersed
+when the relevant multipliers remain in (0, 3], but can become concentrated once
+some pool is pushed beyond t = 3. In particular, if r > 3 then any feasible (ti)i
+must satisfy maxi ti ≥ r > 3, and even if r < 3 a concentrated mean attack may
+still push some pools past t = 3 when some weights wi are small. We leave a full
+max–min characterization of optimal weighted-mean weights outside the small-
+distortion regime to future work; Appendix C gives a simple counterexample
+showing that liquidity weights need not be max–min optimal at large distortion
+levels and discusses alternative weight choices.
+Weighted Median Let N ≥ 2 pools start at a common price p0. Write y(0) i for
+the quote reserve of pool i and let wi > 0 be the aggregation weights normalized
+so that P i wi = 1. Fix a target distortion factor r ≥ 1 and define the per-pool
+cost factor
+f (r) := √r + 1√r − 2, Ci(r) = y(0) i f (r).
+The weighted median ep at t is the smallest price level such that the cumulative
+weight at or below that level is at least 1/2. With all quotes initially at p0, to
+enforce an upward distortion ep ≥ r p0 it is necessary and sufficient to move a
+subset of pools S ⊂ {1, . . . , N } to r p0 so that their cumulative weight covers
+half the mass: X
+i∈S
+wi ≥ 1 2 ⇐⇒ ep ≥ r p0 . (5)
+
+=== page 10 ===
+10 Sebastian Müller, Nordine Moumeni, and Adel Messaoudi
+Any pool not in S can remain at p0 (moving it to an intermediate price in
+(p0, rp0) does not change the median). Hence the attacker’s problem reduces to
+the one-constraint covering program
+Cmed(r; w) = min S⊂{1,...,N }
+X
+i∈S
+y(0) i f (r) s.t. X
+i∈S
+wi ≥ 1 2 . (6)
+There is no closed form in general because the feasible set depends on the discrete
+weight configuration {wi}. Nevertheless, the structure is simple and yields an
+explicit strategy:
+Optimal strategy (set form). Because Cmed(r; w) is additive across selected pools,
+it suffices to choose a subset S with total weight at least 1/2 that minimizesP
+i∈S y(0) i . This “minimum-cost cover” is easy to compute for the pool counts
+that arise in practice, and its structure is transparent: optimal attacks prioritize
+pools with small depth per unit of weight, i.e., small ratios y(0) i /wi. A simple
+greedy candidate is to sort pools by y(0) i /wi and add them in this order until
+the 1/2 threshold is reached; this is exact in the two-pool and equal-weight cases
+below. In particular, there is never a reason to overshoot rp0 on any selected
+pool.
+Special cases and bounds.
+1. Two pools: assume without loss of generality that w1 ≥ w2. If w1 > 1 2 , then
+the weighted median equals the quote of pool 1, so an optimal attack sets
+p1 = rp0 and leaves p2 = p0, yielding C med = y(0) 1 f (r) = y(0) majorf (r). In the tie
+case w1 = w2 = 1 2 , our lower-median convention returns the smaller quote, so
+to enforce ˜p ≥ rp0 one must move both pools to rp0, giving C med = ytotf (r).
+If instead ties are resolved by interpolation (e.g., ˜p = (p(1) + p(2))/2), then
+in the tie case it also suffices to leave one pool at p0 and move the other
+to (2r − 1)p0; choosing the cheaper pool yields cost y(0) minf (2r − 1) with
+y(0) min := min(y(0) 1 , y(0) 2 ). Hence, under midpoint interpolation, the tie-case cost
+is min{ytotf (r), y(0) minf (2r − 1)}.
+2. Equal weights (wi = 1/N ): let k = ⌈N/2⌉ and order depths as y(0) (1) ≤ · · · ≤
+y(0) (N ). An optimal attack moves the k pools with smallest depths to rp0
+(leaving the others at p0), giving the closed form
+C med(r) = f (r)
+kX
+j=1
+y(0) (j) .
+3. Liquidity weights (wi ∝ y(0) i ): covering 1/2 of the total weight requires at
+least half the total quote depth, so
+1
+2 ytot ≤ min S: P wi ≥1/2
+X
+i∈S
+y(0) i ≤ 1 2 ytot + y(0) max,
+
+=== page 11 ===
+Cost of Manipulation in AMM-Based Oracles 11
+implying the median manipulation cost satisfies the exact bounds
+1
+2 f (r) ytot ≤ Cmed(r; w⋆) ≤ f (r)  1 2 ytot + y(0) max  .
+For comparison, for the weighted mean with the same liquidity weights,
+Theorem 1 yields the small-distortion expansion FN (w⋆; 1 + ε) = (ε2/4) ytot +
+o(ε2). Table 1 summarizes the contrast between mean- and median-based
+aggregation across distortion regimes.
+We now show that, within the class of weighted-median oracles, liquidity
+weighting maximizes the attacker’s minimal cost.
+Theorem 2. Let y = (y(0) 1 , . . . , y(0) N ). Define
+Θ(y) := min
+nX
+i∈S
+y(0) i : S ⊂ {1, . . . , N }, X
+i∈S
+y(0) i ≥ 1 2 ytot
+o
+.
+Then for any r ≥ 1,
+sup
+w≥0, P wi =1 Cmed(r; w) = f (r) Θ(y),
+attained by the liquidity weights w⋆ i = y(0) i /ytot. Moreover, 1 2 ytot ≤ Θ(y) ≤
+1
+2 ytot + y(0) max, and for N = 2, Θ(y) = max(y(0) 1 , y(0) 2 ).
+Proof. Deferred to Appendix D.
+3.3 Arbitrage Across Pools
+We now consider frictionless, immediate arbitrage between CPMM pools that all
+trade the same pair. Any configuration in which some pools are more distorted
+than others creates an immediate arbitrage opportunity: an arbitrageur can buy
+in the cheap pool and sell in the expensive one until prices equalize, earning
+additional profit at the attacker’s expense and partially undoing the oracle
+distortion. Hence, in any minimal-cost attack under perfect arbitrage, we may
+restrict attention to equalized terminal configurations in which all pools end at
+the same target price ptar = r p0 (or ptar = p0/r).
+Assume the system starts at a common efficient price p0, so y(0) i /x(0) i = p0
+and ki = x(0) i y(0) i . In the equalized state, each pool is shifted by the same price
+multiplier, so the total economic loss is the sum of the single-pool costs, yielding
+C ⋆(r) = ytot f (r). (7)
+Thus, under perfect cross-pool arbitrage, the N CPMMs behave like a single
+effective pool whose quote reserve equals the total depth ytot: the cost (7) is
+exactly the single-pool expression with y0 replaced by ytot. Because equalization
+forces all post-arbitrage quotes to coincide, any symmetric aggregator (weighted
+mean, median, trimmed mean, etc.) returns ptar, so the cost (7) is independent
+of the particular symmetric aggregation rule.
+
+=== page 12 ===
+12 Sebastian Müller, Nordine Moumeni, and Adel Messaoudi
+Table 1. Summary of manipulation costs and optimal weight designs. Here ti := p(1) i /p0
+is the per-pool price multiplier, and Θ(y) is the minimum depth of a majority-weight
+subset.
+Scenario Designer Takeaway (Max–Min) Minimal Cost
+Independent Pools (No Arbitrage)
+Weighted Mean Local Optimality (r → 1): Liquidity
+weights wi ∝ y(0) i are optimal.
+Large Distortions: Fragile. Once
+some ti > 3, marginal costs decrease
+and concentrated attacks can dominate;
+no uniform max–min weights.
+Small distortions:
+∝ ytot;
+large distortions:
+sublinear
+Weighted
+Median
+Global Optimality (∀r ≥ 1):
+Liquidity weights wi ∝ y(0) i are optimal
+for any target distortion.
+Robust: requires manipulating a
+majority-weight subset.
+f (r) Θ(y)
+Perfect Cross-Pool Arbitrage
+Any Symmetric
+Aggregator
+Irrelevance: Arbitrage equalizes
+terminal prices pi → ptar. Aggregation
+rule does not affect cost.
+f (r) ytot
+4 Multi-Asset Extension
+We briefly sketch a multi-asset extension. A particularly clean setting is a star
+architecture around a numéraire, where each non-numéraire asset is priced by
+aggregating CPMM pools that trade against the numéraire and manipulation
+cost is measured in numéraire units. Appendix E states and proves that, in such
+architectures, liquidity-proportional weights remain optimal asset-by-asset (ex-
+actly for weighted medians and locally for weighted means as ra → 1). Extending
+this analysis to general CPMM graphs with cross pairs is left for future work.
+5 Incorporating Swap Fees
+Incorporating proportional swap fees into our CPMM cost formulas is straightfor-
+ward. With an input fee ϕ, only a fraction (1 − ϕ) of the gross input is credited to
+the pool, so achieving a fixed distortion factor r requires gross trade sizes larger
+by a factor 1/(1 − ϕ) than in (1)–(2). In our one-shot formulas, this acts as a
+simple multiplicative adjustment of the direct manipulation cost. In multi-pool
+settings, fees also widen classical no-arbitrage bands for cross-pool cycles (see [6]),
+so small cross-pool discrepancies can persist because arbitrage is unprofitable
+unless they exceed the fee wedge. This weakens corrective arbitrage and can
+
+=== page 13 ===
+Cost of Manipulation in AMM-Based Oracles 13
+reduce the gross volume required to sustain a discrepancy, even though each swap
+pays fees. Finally, implementation costs such as gas fees contribute an additive
+term per transaction. Since our goal is a clean depth-driven baseline, we focus on
+the zero-fee case and treat the interaction between fees, arbitrage efficiency, and
+gas costs as deployment-specific refinements.
+6 Related Work
+CFMM microstructure and AMM oracles. The Uniswap v2 and v3 whitepa-
+pers [2,3] and the CFMM framework of Angeris and Chitra [6] describe invariant-
+based pricing, depth, and arbitrage for production CPMMs. Subsequent work
+analyzes LP risk, fee design, and predictable losses [9,4,12], multi-token AMMs
+and closed-form arbitrage in N -asset pools [25], and routing and coupling effects
+across CFMM pools [7,23], as well as providing broader surveys of DeFi AMMs
+and CFMM mechanics [11]. These papers treat slippage and arbitrage primarily
+as descriptive properties or sources of LP risk; to the best of our knowledge, none
+defines a general, closed-form cost of manipulation metric of the form “minimal
+loss to move the price by a given factor” nor poses a max–min defender problem
+over cross-pool weights.
+Oracle manipulation, TWAPs, and DeFi security. Empirical and systems work
+documents oracle deviations and attacks in DeFi [26,21,24], and surveys oracle
+architectures and TWAP designs [8,27,14]. Uniswap v3 TWAP studies [1,13] com-
+pute capital requirements for TWAP manipulation, while large-scale evaluations
+of Chainlink and cross-chain oracles [20,15] and analysis frameworks such as
+OVer [18,10] provide risk metrics and stress tests under adversarial inputs. These
+contributions quantify attack costs for specific oracle mechanisms (primarily
+arithmetic TWAPs) and propose mitigations such as time windows and circuit
+breakers, but most treat AMM pricing as a black box or work numerically with
+particular TWAP implementations; they do not derive closed-form manipulation
+costs as explicit functions of liquidity and distortion, nor do they analyze a
+general multi-pool attacker–designer game over aggregation weights.
+Robust aggregation, liquidity weights, and positioning. Robust statistics offers
+general tools for aggregation under outliers [16,17,19], and recent crypto-specific
+work [5] derives nonasymptotic error bounds for weighted means and medians ap-
+plied to exchange price data. Industry indices such as the SIX Crypto Indices [22]
+implement volume- or liquidity-weighted medians to down-weight small venues.
+These works justify liquidity and volume weights from a statistical-error perspec-
+tive under contamination models, but do not model CFMM microstructure or a
+strategic attacker who must trade against bonding curves, and, to the best of our
+knowledge, they contain no CPMM-aware max–min optimality result for liquidity
+weights. Our contribution is deliberately basic: we take the standard CPMM price
+curve, define a general, closed-form cost of manipulation metric for single and
+multiple CPMM pools, and then solve the associated attacker–designer problems
+
+=== page 14 ===
+14 Sebastian Müller, Nordine Moumeni, and Adel Messaoudi
+for weighted means, weighted medians, and a multi-asset star architecture. To our
+knowledge, this is the first work to show that, in a CPMM microstructure-aware
+setting, liquidity weights are max–min optimal for weighted medians (for any
+distortion level) and locally max–min optimal for weighted means near r = 1,
+and to show by counterexample that weighted means admit no distortion-uniform
+max–min weights beyond small distortions.
+7 Discussion and Future Work
+Multi-pool aggregation and on-chain feasibility In the independent-pool regime,
+our analysis shows that liquidity-weighted medians maximize the minimal cost
+of manipulation for any distortion level, while liquidity-weighted means are
+locally optimal near r = 1 but can be substantially more fragile under large
+distortions; under perfect cross-pool arbitrage the effective depth entering the cost
+formulas is simply the total quote reserve across pools. Robustness is therefore
+primarily driven by how much CPMM depth backs the oracle and how that
+depth is distributed across pools, rather than by finer choices among symmetric
+aggregators.
+Dwell-time robustness and protocol interaction The static cost of manipulation
+CostA(r) studied in the main text can be embedded into a dynamic setting via
+the dwell-time extension CostA(r, τ ) (Appendix A). For any given application,
+one can compute or upper bound the maximal exploitable gain from a mispricing
+by a factor r maintained for a dwell τ ; denote this by B(r, τ ) (e.g., the largest
+profit from shifting a liquidation threshold or triggering a mispriced payoff). The
+deterrence criterion
+CostA(r, τ ) ≫ B(r, τ )
+then provides a quantitative notion of “economic safety margin”. Our CPMM
+cost formulas identify the per-block building blocks entering CostA(r, τ ); deriving
+sharp multi-block lower bounds in concrete latency and congestion-control models,
+and matching them against protocol-specific B(r, τ ), is an important avenue for
+future work.
+Aggregation rules under different fault models Our aggregation results highlight
+an important difference between CPMM-based on-chain oracles and the exchange-
+based setting studied by Allouche et al. [5], where trimmed medians are optimal
+under contamination. For our economic cost of manipulation metric on on-chain
+CPMM data, liquidity-weighted means are more expensive to manipulate than
+liquidity-weighted medians for small distortions in the independent-pool model,
+reflecting that means “use” all pools while medians only require a majority-weight
+cover. However, because per-pool CPMM manipulation cost grows sublinearly
+once a pool is pushed beyond the inflection threshold of the single-pool factor,
+weighted means can become significantly more fragile under large distortions; in
+this regime, designer-optimal mean weights can depend on the target distortion
+and there is no distortion-uniform max–min choice in general. Weighted medians
+
+=== page 15 ===
+Cost of Manipulation in AMM-Based Oracles 15
+retain a large-distortion guarantee: moving the oracle requires manipulating a
+subset covering at least half of the aggregation weight, regardless of how large
+r is. Smart-contract bugs, misconfigured pools, or governance attacks can still
+create persistently faulty on-chain venues. In such cases, median- or trimmed-
+mean aggregation over pools may be more appropriate to discount structurally
+broken pools while still using liquidity weights within the remaining set. Liquidity-
+weighted means remain natural when all CPMMs are correct and manipulation
+occurs only via trading.
+Beyond CPMMs In practice, concentrated-liquidity AMMs (CLMMs) such as
+Uniswap v3 are widely used. A convenient reduced-form view is that they induce
+a state-dependent effective depth yeff (p) aggregating all active liquidity at price
+p. The cost of moving the price from p0 to p1 = r p0 (or p1 = p0/r) is then
+obtained by integrating the CPMM slippage formulas along the path in price
+with y0 replaced locally by yeff (p), preserving the convexity and monotonicity
+properties that underpin our multi-pool optimization at the expense of simple
+closed forms in r. Extending our results to CLMMs requires modeling the effective
+depth profile yeff (p); we leave a full treatment of CLMM microstructure and tick
+dynamics to future work.
+8 Conclusion
+We introduced a quantitative notion of cost of manipulation for AMM-based
+oracles and analyzed how it depends on liquidity depth, aggregation rules, and
+arbitrage connectivity. For a single CPMM pool, we recalled closed-form formulas
+for the trade size and economic loss required to move prices by a factor r (upward
+or downward). In independent multi-pool settings, we solved the attacker–designer
+game for weighted medians (all distortion levels) and for weighted means locally
+near r = 1. We also showed by counterexample that weighted means admit
+no distortion-uniform optimal weights beyond small distortions, while under
+frictionlesscross-poolarbitragethecostcollapsestosimpletotal-depthexpressions
+that are independent of the particular symmetric aggregator. For weighted means,
+we also highlighted the inflection of the single-pool cost factor at multiplier t = 3,
+which induces a qualitative shift from dispersed to concentrated optimal attacks
+and motivates either median-type aggregation or distortion-aware weighting that
+down-weights shallow pools more aggressively in the large-distortion regime. We
+extended this analysis to a multi-asset star architecture and proved an analogous
+optimality result for per-asset weights. Finally, the dwell-time and rate-limit
+extensions illustrate how these static cost benchmarks can be combined with chain-
+and application-specific models to design AMM-based oracles whose manipulation
+cost dominates the economic gains available from induced mispricings.
+
+=== page 16 ===
+16 Sebastian Müller, Nordine Moumeni, and Adel Messaoudi
+References
+1. A. Adams. Uniswap v3 TWAP oracles in proof of stake. SSRN Working Paper
+4384409, 2022.
+2. H. Adams et al. Uniswap v2 core. Whitepaper, 2020.
+3. H. Adams et al. Uniswap v3 core. Whitepaper, 2021.
+4. AlgebraFinanceResearchTeam. Theimpactofmarketconditionsandfeealgorithms
+on the design of a competitive AMM. Whitepaper, 2022.
+5. M. Allouche, M. Echenim, E. Gobet, and A.-C. Maurice. Statistical error bounds for
+weighted mean and median, with application to robust aggregation of cryptocurrency
+data. Preprint, 2024.
+6. G. Angeris and T. Chitra. Improved price oracles: Constant function market makers.
+In Proceedings of the 2nd ACM Conference on Advances in Financial Technologies,
+pages 80–91. ACM, 2020.
+7. G. Angeris, T. Diamandis, M. Resnick, and T. Chitra. Optimal routing for constant
+function market makers. In Proceedings of the 23rd ACM Conference on Economics
+and Computation. ACM, 2022.
+8. A. T. Aspembitova et al. Oracles in decentralized finance: Attack costs, profits and
+mitigation. Applied Sciences, 12(24), 2022.
+9. P. Bergault et al. Automated market makers: Mean-variance analysis of LPs. arXiv
+preprint arXiv:2212.00336, 2022.
+10. J. Boe et al. Safeguarding DeFi smart contracts against oracle deviations. Proceed-
+ings of the ACM on Programming Languages, 2024.
+11. Á. Cartea, F. Drissi, and M. Monga. Decentralised finance and automated market
+making. Journal of Economic Dynamics and Control, 2025.
+12. Á. Cartea, F. Drissi, and M. Monga. Decentralised finance and automated market
+making: Predictable loss and optimal liquidity provision. Journal of Economic
+Dynamics and Control, 2025. Forthcoming; see also arXiv:2309.08431.
+13. ChaosLabs. Blockmanipulation:Marketriskofuniswapv3TWAPoracles. Research
+report, 2023.
+14. X. Deng, S. M. Beillahi, H. Du, P. Tiwari, and A. Veneris. Analysis of defi oracles.
+Staff Discussion Paper 2024-10, Bank of Canada, 2024.
+15. R. Gansäuer et al. Price oracle accuracy across blockchains. In Proceedings of
+CAAW 2025, 2025.
+16. F. R. Hampel. Robust statistics: A brief introduction and overview. Allgemeines
+Statistisches Archiv, 85(1):1–18, 2001.
+17. P. J. Huber. Robust Statistics. John Wiley & Sons, New York, 1981.
+18. Q. Luu et al. OVer: A framework for safeguarding DeFi smart contracts against
+oracle deviations. In Proceedings of the Web Conference, 2024.
+19. R. A. Maronna, R. D. Martin, and V. J. Yohai. Robust Statistics: Theory and
+Methods. John Wiley & Sons, Chichester, 2006.
+20. M. Nadler. Blockchain price oracles: Accuracy and violation recovery. Finance
+Research Letters, 2025.
+21. K. Qin, L. Zhou, B. Livshits, and A. Gervais. Attacking the DeFi ecosystem
+with flash loans for fun and profit. In Proceedings of the 3rd ACM Conference on
+Advances in Financial Technologies, 2021.
+22. SIXGroup. SIX Crypto Indices: Real-Time Median and Real-Time Volume-Weighted
+Median Methodology, 2020.
+23. A. Sterrett and A. Adams. A microstructure analysis of coupling in CFMMs. arXiv
+preprint arXiv:2510.06095, 2025.
+
+=== page 17 ===
+Cost of Manipulation in AMM-Based Oracles 17
+24. W. Yang et al. Flash loan attack is more than just price oracle manipulation. arXiv
+preprint arXiv:2105.XXX, 2021.
+25. X. Yang et al. Closed-form solutions for generic n-token AMM arbitrage. arXiv
+preprint arXiv:2402.06731, 2024.
+26. F. Zhang, E. Cecchetti, K. Croman, A. Juels, and E. Shi. A first look into DeFi
+oracles. In Proceedings of the IEEE Security and Privacy Workshops, 2020.
+27. Y. Zhao, X. Kang, T. Li, C.-K. Chu, and H. Wang. Towards trustworthy defi
+oracles: Past, present and future. arXiv preprint arXiv:2201.02358, 2022.
+A Sustained Manipulation and Protocol Constraints
+The one-step cost of manipulation considered above abstracts away from timing
+and protocol-level limits. In practice, block structure, rate limits on shared
+objects, and latency all constrain both attackers and arbitrageurs and motivate a
+dynamic extension of our metric and of the comparison with application-specific
+benefit functions B(r, τ ).
+Sustained distortions with dwell time. Let time be indexed by blocks t = 0, 1, . . .,
+and let At be the aggregation rule at time t, possibly incorporating time-windowed
+statistics (e.g., TWAPs). The attacker submits a sequence of trades u0, . . . , uT −1,
+incurring cumulative loss C(u0:T −1). For a dwell parameter τ , a natural extension
+of our robustness metric is the minimal cost needed to keep the oracle distorted
+by a factor of at least r for τ consecutive blocks:
+Dt := max
+n ˆpt
+p⋆ t , p⋆ t ˆpt o .
+CostA(r, τ ; T ) := inf
+n
+C(u0:T −1) : ∃t0 s.t. Dt ≥ r ∀t ∈ [t0, t0 + τ − 1]
+o
+,
+with ˆpt = At(quotes after u0, . . . , ut) and p⋆ t the efficient price process. The
+asymptotic cost CostA(r, τ ) is defined via a liminf as T → ∞. Our static results
+identify the per-block building blocks entering CostA(r, τ ); deriving sharp multi-
+blocklowerboundsinspecificlatencymodels,andmatchingthemagainstprotocol-
+specific upper bounds B(r, τ ), is a natural direction for further work and for
+quantitative risk budgeting.
+Rate limits and shared-object congestion (Sui example). On high-throughput
+platforms with parallel execution such as Sui, contention on shared objects
+(e.g., a CPMM pool) becomes a bottleneck, so protocols rate-control how many
+transactions per checkpoint may touch the same shared object. This interacts
+with the dwell-time notion of CostA(r, τ ) by limiting how quickly arbitrageurs
+can respond to distortions and how many manipulative trades an attacker can
+sustain per block. A detailed analysis of such rate limits—combining our static
+cost formulas with models of block-level access constraints, spam behavior, and
+explicit B(r, τ ) for concrete lending and derivatives protocols—is left for future
+work and is particularly relevant for Sui-style shared-object architectures.
+
+=== page 18 ===
+18 Sebastian Müller, Nordine Moumeni, and Adel Messaoudi
+B Derivations for Single-Pool Formulas
+We briefly derive the baseline single-pool manipulation formulas used throughout
+the paper.
+B.1 Trade needed to hit a relative price target
+Consider a CPMM with reserves (x0, y0), invariant k = x0y0 and initial price
+p0 = y0/x0. Fix a target factor r ≥ 1. For an upward move we target p1 = r p0,
+and for a downward move we target p1 = p0/r. Post-trade reserves (x1, y1) must
+satisfy
+p1 = y1 x1 , x1y1 = k.
+Solving these two equations yields
+x1 =
+s
+k
+p1
+, y1 =
+p
+k p1.
+Using y0 = √kp0 and x0 = p k/p0, write s = √r. Then:
+– Upward move (p1 = r p0): y1 = y0s, so yin ↑ (r) = y1 − y0 = y0(s − 1), which is
+(1).
+– Downward move (p1 = p0/r): x1 = x0s, so xin ↓ (r) = x1 − x0 = x0(s − 1), which
+is (2).
+These expressions make explicit that trade size scales like
+√
+k and depends on
+the target only through r.
+B.2 Economic cost at p⋆ = p0
+We mark attacker losses to market at a reference price p⋆ representing the external
+efficient value. For the baseline case p⋆ = p0:
+– Upward move. A Y → X trade of size yin ↑ sends reserves from (x0, y0) to (x1, y1)
+with x1y1 = k. The attacker receives
+xout = x0 − x1 = x0 − k y0 + yin ↑ .
+Valued at p⋆ = p0, the loss in Y units is
+C ↑ Y = yin ↑ − p0xout.
+Substituting yin ↑ = y0(s − 1), xout = x0(1 − 1/s) and p0x0 = y0 yields
+C ↑ Y (r) = y0   s + 1 s − 2  ,
+which is (3).
+
+=== page 19 ===
+Cost of Manipulation in AMM-Based Oracles 19
+– Downward move. An X → Y trade of size xin ↓ yields
+yout = y0 − y1 = y0 − k x0 + xin ↓ .
+The loss in Y units is
+C ↓ Y = p0xin ↓ − yout.
+With xin ↓ = x0(s − 1), yout = y0(1 − 1/s) and p0x0 = y0, we obtain
+C ↓ Y (r) = y0   s + 1 s − 2  ,
+which is (4).
+In both directions, CY coincides with the standard notion of slippage loss (dif-
+ference between what the attacker pays and the fair value of what they receive)
+used in CFMM analyses such as [6].
+C Weighted-Mean Multi-Pool Optimization
+In this appendix we provide a detailed proof of Theorem 1. We work with price
+multipliers ti := s2 i (so that ti = p(1) i /p0) and write the attacker’s problem as
+FN (w; r) = min
+n NX
+i=1
+y(0) i f (ti) : ti > 0,
+NX
+i=1
+witi = r
+o
+, f (t) =
+√
+t + 1√ t − 2.
+Why we focus on small distortions. The key technical feature is that the per-pool
+factor f is not globally convex: a direct calculation gives
+f ′′(t) = 3 − t 4t5/2 ,
+so f is convex on (0, 3] and concave on [3, ∞). Equivalently, the marginal cost
+f ′(t) = (t − 1)/(2t3/2) increases on (0, 3] and decreases on [3, ∞); see Fig. 2.
+When some pools are pushed beyond the inflection point t = 3, the attacker
+can benefit from concentrating distortion on a small-weight pool while leaving
+most pools close to t = 1; this may occur even for moderate aggregate targets r
+if some wi are small. For a concrete illustration, take N = 2 pools with quote
+depths (y(0) 1 , y(0) 2 ) = (1, M ) and liquidity weights w⋆ = ( 1 M +1 , M M +1 ). Fix any
+target r > 1 and set t2 = 1 and t1 = 1 + (r − 1)(M + 1); then
+w⋆ 1 t1 + w⋆ 2 t2 = 1 M + 1   1 + (r − 1)(M + 1)  + M M + 1 · 1 = r,
+so the attack is feasible at cost F2(w⋆; r) ≤ f (1 + (r − 1)(M + 1)), while the
+pooled benchmark costs (M + 1)f (r). Since f (t) ≤
+√
+t for all t ≥ 1 and f (t) ∼
+√
+t
+as t → ∞, the ratio between these two costs is O(M −1/2) as M → ∞. Thus
+
+=== page 20 ===
+20 Sebastian Müller, Nordine Moumeni, and Adel Messaoudi
+the pooled-liquidity benchmark ytotf (r) cannot hold uniformly in r away from
+r = 1. Moreover, the same example shows that liquidity weights need not be
+max–min optimal for weighted means at large distortion levels: if the designer
+instead ignores the shallow pool and sets weights ew = (0, 1), then the oracle
+depends only on pool 2 and any successful attack must set t2 = r, incurring
+cost F2( ew; r) = M f (r). For fixed r > 1 (in particular for r > 3), this scales
+like Θ(M ), while the feasible concentrated attack above achieves cost at most
+f (1 + (r − 1)(M + 1)) = O(
+√
+M ) under liquidity weights. Hence, for M sufficiently
+large, ew yields strictly larger minimal manipulation cost than w⋆. Accordingly,
+Theorem 1 is stated as a small-distortion result.
+A concentration bound and a large-distortion design heuristic. For any weights
+w and any target r ≥ 1, a feasible attack is to leave all pools at tj = 1 except
+one pool i, and set ti = 1 + (r − 1)/wi; this yields
+FN (w; r) ≤ min i y(0) i f  1 + r − 1 wi  .
+Since f (t) ∼
+√
+t as t → ∞, this upper bound behaves like √r − 1 mini y(0) i /√wi
+for large distortions, suggesting quadratic liquidity weights wi ∝ (y(0) i )2 as a
+conservative way to equalize the cost of such single-pool attacks.
+Second-order expansion and attacker optimum
+Fix weights wi ≥ 0 with P i wi = 1 and set r = 1 + ε with ε → 0+. Write
+ti = 1 + δi with δi > −1, so the constraint becomes
+NX
+i=1
+wiδi = ε.
+Since the constant choice δi ≡ ε is feasible, we have FN (w; 1 + ε) ≤ ytotf (1 + ε) =
+O(ε2) uniformly in w. Because f (1 + δ) → ∞ as δ ↓ −1 or δ → ∞, any minimizer
+must satisfy maxi |δi| → 0 as ε → 0 (otherwise the objective would be bounded
+below by a positive constant). Hence we may use the Taylor expansion
+f (1 + δ) = δ2
+4 + O(δ3) (δ → 0),
+to obtain
+FN (w; 1 + ε) = 1 4 min n NX i=1 y(0) i δ2 i : NX i=1 wiδi = ε o + o(ε2).
+The quadratic program is solved by Cauchy–Schwarz:
+ε2 =  NX
+i=1
+wiδi
+2
+≤
+ NX
+i=1
+w2 i
+y(0) i
+ NX
+i=1
+y(0) i δ2 i
+
+,
+
+=== page 21 ===
+Cost of Manipulation in AMM-Based Oracles 21
+with equality iff δi ∝ wi/y(0) i . Therefore,
+min
+n NX
+i=1
+y(0) i δ2 i :
+NX
+i=1
+wiδi = ε
+o
+= ε2 PN
+i=1 w2 i /y(0) i ,
+and thus
+FN (w; 1 + ε) = ε2 4 1 PN i=1 w2 i /y(0) i + o(ε2).
+Designer optimum
+To maximize the leading-order term, the oracle designer minimizes P i w2 i /y(0) i
+over all weights wi ≥ 0 with P i wi = 1. By Cauchy–Schwarz,
+1 =
+ NX
+i=1
+wi
+2
+≤
+ NX
+i=1
+w2 i
+y(0) i
+ NX
+i=1
+y(0) i
+
+= ytot
+NX
+i=1
+w2 i
+y(0) i ,
+with equality iff wi ∝ y(0) i . Hence P i w2 i /y(0) i ≥ 1/ytot, and the leading-order
+cost is uniquely maximized by the liquidity weights w⋆ i = y(0) i /ytot, giving
+sup
+wi ≥0, P i wi =1 FN (w; 1 + ε) = ε2 4 ytot + o(ε2).
+D Weighted-Median Multi-Pool Optimization
+We now prove the weighted-median weight-design result stated in Theorem 2.
+Recall the setup of the N -pool median: for quote reserves y(0) i > 0 and weights
+wi ≥ 0 with P i wi = 1, the attacker’s minimal cost to enforce a distortion factor
+r ≥ 1 is
+C med(r; w) = f (r) m(w),
+m(w) := min
+n X
+i∈S
+y(0) i : S ⊂ {1, . . . , N }, X
+i∈S
+wi ≥ 1 2
+o
+.
+Thus the oracle designer solves
+sup
+w∈∆N
+C med(r; w) = f (r) sup
+w∈∆N
+m(w), ∆N = {wi ≥ 0,
+X
+i
+wi = 1}.
+We therefore focus on the purely combinatorial quantity m(w).
+Let y = (y(0) 1 , . . . , y(0) N ) and ytot = P i y(0) i . Define
+Θ(y) := min
+n X
+i∈S
+y(0) i : S ⊂ {1, . . . , N }, X
+i∈S
+y(0) i ≥ 1 2 ytot
+o
+,
+i.e., the smallest total depth carried by any subset whose total depth is at least
+half of ytot.
+
+=== page 22 ===
+22 Sebastian Müller, Nordine Moumeni, and Adel Messaoudi
+Lemma 1. For any y as above,
+1
+2 ytot ≤ Θ(y) ≤ 1 2 ytot + y(0) max,
+where y(0) max := maxi y(0) i . Moreover, when N = 2 we have Θ(y) = max(y(0) 1 , y(0) 2 ).
+Proof. By definition, every admissible subset S satisfies P i∈S y(0) i ≥ 1 2 ytot, so
+the minimum is at least 1 2 ytot. For the upper bound, sort indices so that y(0) (1) ≤
+· · · ≤ y(0) (N ) and let k be the smallest index with Pk i=1 y(0) (i) ≥ 1 2 ytot. Then Θ(y) = Pk
+i=1 y(0) (i) and
+Θ(y) ≤ 1 2 ytot + y(0) (k) ≤ 1 2 ytot + y(0) max.
+When N = 2, either y(0) 1 ≥ 1 2 ytot or y(0) 2 ≥ 1 2 ytot (or both), and the minimal
+subset achieving the half-depth threshold is the index with larger depth, so
+Θ(y) = max(y(0) 1 , y(0) 2 ).
+Lemma 2. For any w ∈ ∆N and r > 0,
+Cmed(r; w) = f (r) m(w),
+with m(w) as defined above.
+Proof. By definition of the weighted median, moving the median from p0 to rp0
+requires the attacker to select a subset S of pools whose cumulative weight is
+at least 1/2 and move exactly those pools to rp0; moving any pool to a price in
+(p0, rp0) does not change the median level. Since all pools start at p0 and each
+moved pool must be at rp0, the attack cost is the sum of per-pool manipulation
+costs Ci(r) = y(0) i f (r) over i ∈ S. Minimizing over all subsets with P i∈S wi ≥ 1/2
+yields precisely the expression for m(w).
+Proposition 1. For any y as above and any r ≥ 1,
+sup
+w∈∆N
+Cmed(r; w) = f (r) Θ(y),
+attained by the liquidity weights w⋆ i = y(0) i /ytot. In particular,
+sup
+w∈∆N
+m(w) = Θ(y).
+Proof. By Lemma 2 it suffices to study supw∈∆N m(w).
+Lower bound and attainment. Take liquidity weights w⋆ i = y(0) i /ytot. For any
+subset S, X
+i∈S
+w⋆ i ≥ 1 2 ⇐⇒ X
+i∈S
+y(0) i ≥ 1 2 ytot.
+Thus
+m(w⋆) = min n X
+i∈S
+y(0) i : X
+i∈S
+y(0) i ≥ 1 2 ytot
+o
+= Θ(y),
+
+=== page 23 ===
+Cost of Manipulation in AMM-Based Oracles 23
+so supw m(w) ≥ m(w⋆) = Θ(y) and therefore
+sup
+w
+Cmed(r; w) ≥ f (r) Θ(y).
+Upper bound. Fix an arbitrary w ∈ ∆N . By definition of Θ(y) there are only
+finitely many candidate subsets S ⊂ {1, . . . , N }, so the minimum in its definition
+is attained. Let Sθ be any subset achieving this minimum, i.e.,
+X
+i∈Sθ
+y(0) i = Θ(y), X
+i∈Sθ
+y(0) i ≥ 1 2 ytot.
+There are two cases.
+– If P i∈Sθ wi ≥ 1 2 , then Sθ is feasible for m(w), so
+m(w) ≤
+X
+i∈Sθ
+y(0) i = Θ(y).
+– If P i∈Sθ wi < 1 2 , let Sc be its complement. Then
+X
+i∈Sc
+wi = 1 −
+X
+i∈Sθ
+wi > 1 2 ,
+so Sc is feasible for m(w). Its cost is
+X
+i∈Sc
+y(0) i = ytot − Θ(y) ≤ ytot − 1 2 ytot = 1 2 ytot ≤ Θ(y),
+where the first inequality uses the lower bound Θ(y) ≥ 1 2 ytot from Lemma 1
+(which implies ytot − Θ(y) ≤ ytot − 1 2 ytot), and the last inequality uses the
+same bound to conclude 1 2 ytot ≤ Θ(y). Hence
+m(w) ≤
+X
+i∈Sc
+y(0) i ≤ Θ(y).
+In all cases we have m(w) ≤ Θ(y), so supw m(w) ≤ Θ(y). Combined with the
+lower bound and attainment at w⋆, this proves the claim.
+E Star-Architecture Multi-Asset Extension
+Theorem 3 (Star-architecture optimal weights). Let the asset set be A =
+{0, 1, . . . , M }, with asset 0 a numéraire (e.g., a stablecoin). For each a ̸= 0,
+suppose there are CPMM pools indexed by i ∈ Ia,0 quoting a against the numéraire
+with quote reserves y(0) a,i , and let the oracle report
+ˆpa = Aa
+ 
+{p(1) a,i }i∈Ia,0  , a = 1, . . . , M,
+where each Aa is either a weighted mean or a weighted median with weights
+wa,i > 0, P i wa,i = 1.
+Fix target distortion factors ra = 1 + εa with εa → 0+ for a = 1, . . . , M , and
+write Costa(ra; wa,·) for the minimal economic loss required to distort ˆpa by a
+factor of at least ra (upward or downward). Then,
+
+=== page 24 ===
+24 Sebastian Müller, Nordine Moumeni, and Adel Messaoudi
+1. for each asset a, liquidity weights w⋆ a,i ∝ y(0) a,i maximize the leading-order
+(second-order in εa) term of Costa(1 + εa; wa,·) when Aa is a weighted mean,
+and
+2. maximize Costa(ra; wa,·) for any ra ≥ 1 when Aa is a weighted median
+Moreover, the star architecture decouples assets, so the minimal total cost to
+distort the vector (ˆpa)a̸=0 by factors ra equals PM a=1 Costa(ra; w⋆ a,·).
+Proof. Throughout, assets are indexed by a ∈ {1, . . . , M }, with asset 0 a
+numéraire. For each a we write Ia,0 for the set of CPMM pools quoting a
+against the numéraire, and we write p(t) a,i for the on-chain marginal price of one
+unit of a in numéraire units in pool i ∈ Ia,0 at time t ∈ {0, 1} (pre-attack t = 0,
+post-attack t = 1).
+Reduction to Single-Asset Problems
+Fix an asset a ̸= 0 and a target distortion factor ra = 1 + εa with εa → 0+. In
+the star architecture, the oracle price for a is
+ˆpa = Aa
+ 
+{p(1) a,i }i∈Ia,0  ,
+where Aa is either a weighted mean or a weighted median with weights wa,i > 0,P
+i wa,i = 1. By construction, ˆpa depends only on the pools in Ia,0, and trades
+on pools for other assets do not enter Aa.
+Let Costa(ra; wa,·) denote the minimal economic loss (in numéraire units)
+that an attacker must incur to enforce a distortion of at least ra on ˆpa (upward
+or downward) using trades on the CPMMs in Ia,0, holding all other assets fixed.
+This is exactly the single-asset multi-pool manipulation problem analyzed in the
+main text, with (X, Y ) replaced by (a, 0), quote reserves {y(0) a,i }, and aggregation
+weights {wa,i}.
+Consequently:
+– If Aa is a weighted mean, Theorem 1 applies (as εa → 0) and implies that the
+maximizing weights w⋆ a,i are the liquidity weights
+w⋆ a,i = y(0) a,i P
+j∈Ia,0 y(0) a,j .
+– If Aa is a weighted median, Theorem 2 yields the same conclusion: liquidity
+weights w⋆ a,i ∝ y(0) a,i maximize the minimal manipulation cost for ˆpa.
+Thus, for each asset separately, liquidity weights are max–min optimal within
+weighted medians and asymptotically max–min optimal within weighted means
+(as εa → 0).
+
+=== page 25 ===
+Cost of Manipulation in AMM-Based Oracles 25
+Separability Across Assets
+In the star architecture, the CPMM pools split into M disjoint groups {Ia,0}M a=1,
+one per asset–numéraire pair. The attacker’s total cost to distort a vector of
+prices (ˆpa)a̸=0 by factors ra is the sum of the per-asset costs:
+MX
+a=1
+Costa(ra; wa,·),
+because trades on Ia,0 affect only asset a and costs are measured in the common
+numéraire. There are no cross-terms in the objective, and no constraints couple
+trades across different Ia,0.
+The oracle designer’s max–min problem is therefore
+sup
+{wa,· }
+inf
+attacks
+MX
+a=1
+Costa(ra; wa,·) =
+MX
+a=1
+sup
+wa,·
+inf
+attacks on Ia,0
+Costa(ra; wa,·),
+where the equality follows from separability of both the cost and the admissible
+attack sets across assets. Maximizing each term on the right-hand side indepen-
+dently and using the single-asset results above shows that the joint optimizer is
+given by choosing, for every a, the liquidity weights w⋆ a,i ∝ y(0) a,i .
+With this choice, the minimal total cost decomposes as the sum of the optimal
+per-asset values Costa(ra; w⋆ a,·).

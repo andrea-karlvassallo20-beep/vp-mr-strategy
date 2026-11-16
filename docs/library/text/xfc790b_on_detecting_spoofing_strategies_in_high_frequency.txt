@@ -1,0 +1,1381 @@
+=== page 1 ===
+ON DETECTING SPOOFING STRATEGIES IN HIGH FREQUENCY
+TRADING
+XUAN TAO, ANDREW DAY, LAN LING, AND SAMUEL DRAPEAU
+ABSTRACT. Spooﬁng is an illegal act of artiﬁcially modifying the supply to drive tem-
+porarily prices in a given direction for proﬁt. In practice, detection of such an act is chal-
+lenging due to the complexity of modern electronic platforms and the high frequency at
+which orders are channeled. We present a micro-structural study of spooﬁng in a simple
+static setting. A multilevel imbalance which inﬂuences the resulting price movement is
+introduced upon which we describe the optimization strategy of a potential spoofer. We
+provide conditions under which a market is more likely to admit spooﬁng behavior as a
+function of the characteristics of the market. We describe the optimal spooﬁng strategy
+after optimization which allows us to quantify the resulting impact on the imbalance af-
+ter spooﬁng. Based on these results we calibrate the model to real Level 2 datasets from
+TMX, and provide some monitoring procedures based on the Wasserstein distance to detect
+spooﬁng strategies in real time.
+Keywords: Spooﬁng, High Frequency Trading, Imbalance, Limit Order Book.
+1. INTRODUCTION
+The act of spooﬁng is a speciﬁc trading activity that aims at artiﬁcially modifying the
+supply on the market, without intend to trade, to move it away from its equilibrium. One
+might proﬁt from the resulting short term price movement by canceling the previous supply
+while the market comes back to its equilibrium. Such a strategy implies that the spoofer
+should be able to act anonymously, fast and in a market where all the other agents react
+to offer and demand. In this regard, with the recent rise of centrally cleared venue and
+high frequency algo-trading, the ground for the existence of spooﬁng schemes is rising,
+see Shorter and Miller [22].1 In a competitive market where many potential spoofers are
+present, spooﬁng behavior might cancel out, but most regulations consider it as illegal. For
+instance, the 2010 Dodd-Frank Act prohibits spooﬁng – deﬁned as activity of bidding or
+offering with the intent to cancel before execution – that can be prosecuted as “a felony
+punishable by up to $1 million in penalties and up to ten years in prison for each spooﬁng
+count”.2
+Yet, for several reasons, detecting and prosecuting spooﬁng behavior is a challenging prob-
+lem. First is the sheer amount of data produced from high frequency trading across many
+ﬁnancial products and venues. Second, it is usually impossible to trace in real time who
+Date: December 11, 2020.
+We thank the Fields Institute for the organization of the many “Fields-China Joint Industrial Problem Solving
+Workshop” from which this problem stems. We also thank TMX and in particular the TMX Analytics Team for
+supporting this project with profound datasets, high performing computing facilities as well as precious market
+insights in high frequency trading. The ﬁnancial supports from the National Science Foundation of China, Grants
+Numbers: 11971310 and 11671257; as well as from Shanghai Jiao Tong University, Grant number AF0710020;
+are gratefully acknowledged. Andrew Day gratefully acknowledges the funding provided by Mitacs, the Ontario
+Graduate Scholarship (OGS), and the Natural Sciences and Engineering Research Council of Canada postgradu-
+ate scholarship (NSERC PGS) .
+1In 2010, trader Navinder Singh Sarao was accused of exacerbating a ﬂash crash by placing thousands of
+E-mini S&P 500 stock index futures contract orders in one day and changed or moved those orders more than 20
+million times before they were cancelled.
+2In 2019, the high frequency company Tower Research Capital agreed to pay a ﬁne of about $60 million over
+spooﬁng allegations. In 2020, JP Morgan settles spooﬁng lawsuit alleging fraud for about $920 million.
+1
+arXiv:2009.14818v2  [q-fin.TR]  10 Dec 2020
+
+=== page 2 ===
+is behind every trade. From a CCP viewpoint, they mainly have access to the broker ID
+through which the trade has been channeled resulting only in aggregated informations.
+Furthermore, a potential spoofer might post those trades through different venues and bro-
+kers. Third, aside from a loose deﬁnition, it is unclear how a spooﬁng strategy differs
+quantitatively from other strategies and what is the resulting impact: Thus, the complexity
+of quantifying and discriminating spooﬁng strategies from legitimate ones. Finally, due to
+the lack of information from the few regulatory cases, the problem amount to an unsuper-
+vised classiﬁcation problem. Based on the above points, it seems difﬁcult to provide an
+efﬁcient way to monitor the market for spooﬁng behavior.3 However, a potential spoofer is
+also confronted to the constraints of modern electronic trading platforms. Indeed, from the
+basic spooﬁng description, the spoofer has to act rapidly in a complex and high frequency
+environment. Therefore, it must rely on fast – henceforth simple – algorithmic strategies
+which, due to the complexity of the dynamic structure of a limit order book, is based on
+aggregated signal.
+Along these lines, and in view of this unsupervised classiﬁcation task, we intentionally
+address a quantitative analysis of spooﬁng in a simple setup. As a basis for this study, let
+us consider a simple example. We suppose that in the next period the limit order book shifts
+up by one unit with a probability ¯p and down by one unit otherwise. From the perspective
+of an agent whose objective is to purchase two shares, it faces the following three idealized
+situations.
+1 - Immediately post a buy market order for a total cost of
+ˆC = 10 + 11 = 21
+2 - Delay the buy market order for one period resulting in a total average cost of
+˜C = (1 − ¯p) (9 + 10) + ¯p (11 + 12) = (1 − ¯p) 19 + ¯p23
+which is smaller than ˆC if and only if ¯p< 1/2, hence a bearish market.
+1 − ¯p
+¯p
+3 - Delay the buy market order and post a sell limit order of one share at a distance of
+one unit from the best ask price to artiﬁcially modify the offer and demand resulting in a
+temporary more bearish state p < ¯p.4 Doing so, with a probability q, its sell limit order
+is executed through an incoming market order walking the limit order book beyond one
+unit. For this executed sell order, the agent receives an average price of q((1−p)10 +p12)
+3Aside from obvious cases or exogenous approaches as for insider prosecution.
+4We suppose that during this time period, if the market moves through limit order posting/canceling, the agent
+keeps its sell limit order one unit away from the best ask price by rapidly canceling and posting again.
+2
+
+=== page 3 ===
+while its inventory increases in average to 2 + q. The cost of buying back this increased
+inventory minus the gain from selling its limit order results in an average net cost of
+C = (1 −p) (9 + 10 + q11) + p (11 + 12 + q13) −q ((1 −p)10 + p12)
+= (1 −p)19 + p23 + q
+1 −p
+p
+From this simple situation, a proﬁtable spooﬁng situation depends on the value of ¯p, how
+bearish p< ¯p the market reacts to an increase of one share at a distance of one unit from the
+best ask price, as well as the probability q of being adversarially executed through a market
+order during this time. The bottom line is this paper is to study the interplay between these
+different factors and the resulting impact in view of detection procedure, in particular the
+impact on the price movement as a function of the spooﬁng size as well as the depth in the
+limit order book. Based on this theoretical approach, we present some approaches to track
+spooﬁng behavior and calibrate those to real market data.
+We model the impact of the offer and demand on the price through the volume imbalance
+often taken as the ratio of the volume of the best bid divided by the total volume on the
+best bid and ask. Since the spoofer never intends to have their orders executed, spooﬁng
+is more likely to happen beyond the top of the limit order book. Indeed, the probability of
+getting executed is too high, resulting in a negative payoff. To take this into account we
+weight the impact on the imbalance in terms of depth as follows
+¯ı =
+∑ ¯v− k wk∑( ¯v− k + ¯v+ k ) wk
+where ¯v± k represents the volume on the bid/ask k units away from the best bid/ask and wk
+is the relative impact on the imbalance at level k. If the agent posts a sell limit order v on
+the ask side at tick level k0, the imbalance moves to
+ı(v) =
+∑ ¯v− k wk∑( ¯v− k + ¯v+ k ) wk + wk0 v ≤ ¯ı
+If we denote by dpn the probability of a price deviation of n units, the dependence on the
+imbalance ı is given as follows
+dpn = ıdp+ n + (1 −ı)dp− n, n = ...,−2,−1, 0, 1, 2,...
+where dp± n represents the price deviation when the imbalance is at its extreme. When the
+imbalance ı is low/high – the offer/demand dominates – the price distribution is biased
+downwards/upwards through dp±. The agent can inﬂuence the price distribution in a non
+linear way through the volume it posts:
+v↦−→dp(v) := ı(v)dp+ + (1 −ı(v)) dp−
+3
+
+=== page 4 ===
+Given the probability dq of a sell limit order hitting the limit order book up to a given level
+the resulting net average cost of spooﬁng turns out to be
+C(v) = pH + (1 −Q)G(H)| {z }
+Cost for optimal situation
++ Hµ+ (2ı(v) − 1)| {z }
+Spooﬁng impact
++ QG(H + v) + vν| {z }
+Cost for being caught wrong way
+where H is the initial objective of shares to acquire, G is the liquidity costs from walking
+through the limit order book, µ+ > 0 is the mean of dp+, Q (resp ν) is the probability (resp
+mean beyond k0) of being executed beyond k0. From this expression, there is a competitive
+aspect between the risk of being caught on the wrong side and the fact of pushing ı(v) way
+beyond 1/2 to get Hµ+(2ı(v) − 1) ≤ 0.
+In a theoretical part we ﬁrst provide conditions for the limit order book to admit spooﬁng
+manipulation5 as a function of the initial imbalance ¯ı, local sensitivity of the imbalance w,
+overall price impact µ+, liquidity cost G, as well as the objective H. In short, this model
+conﬁrms several intuitive facts when spooﬁng is more likely to occur
+• if the probability Q for the spooﬁng order to be executed is small;
+• if the local sensitivity wk0 or the overall price impact µ+ is large;
+• if the amount of share H to buy is large with respect to the depth of the limit order
+book;
+• if the initial market imbalance is close to 1/2, that is, the market is equally bal-
+anced between offer and demand.
+• away from the top of the limit order book;
+As for the depth of the limit order book – how liquid the market is – the results are in-
+conclusive. For this to be taken into account, one should model how the above mentioned
+parameters depend on the liquidity of the limit order book. The subsequent empirical study
+shows that it is the case, but we can not derive conclusions from this model as in Shorter
+and Miller [22] where illiquid markets seems more prone to spooﬁng. We then address
+the impact of spooﬁng on the resulting imbalance ıspoof = ı(vspoof) and discuss its de-
+pendence as a function of the aforementioned parameters. We characterize and discuss the
+deviation for the imbalance as a function of the different parameters. In particular as a
+function of the depth where the spooﬁng order is posted. We ﬁnally address the situation
+of a market maker using spooﬁng strategies for a positive round trip payoffs.
+Based on this study, we can theoretically discriminate a spoofed imbalance ıspoof from the
+legitimate one ¯ı. Yet, from an outsider perspective, this is a hidden value since only the
+spoofer is aware of the actual imbalance. The main idea for the detection is to observe
+that a successful spooﬁng strategy requires the execution of a market order. We therefore
+compare the imbalance ı−(t) before a market order at time t with the imbalance ı+(t) after
+this market order. If the market order is legitimate, the behavior of these two imbalances
+should follow some steady state distribution (¯ı−,¯ı+). On the other hand, if the market
+order is the result of a spooﬁng strategy, the imbalance before the market order should be
+of the form
+ıspoof ≈ b b + a + wvspoof < b a + b = ¯ı−
+while returning to its steady state ¯ı+ as soon as the spoofed volumes are canceled. Hence, a
+quantiﬁcation approach is to compare the distance from the instant imbalance ı−(t) before
+a market order at time t with, one the one hand, the long term legitimate one ¯ı−, and with,
+on the other hand, the theoretical spoofed one ıspoof . This measure is done according to
+the current market state situation ı+(t). In other terms we measure and compare
+d (ı−(t),¯ı−|ı+(t))| {z }
+distance of instant imbalance ı− (t)
+before market order to legitimate imbalance ¯ı−
+given current market conditions ı+ (t)
+and d (ı−(t),ıspoof|ı+(t))| {z }
+distance of instant imbalance ı− (t)
+before market order to spooﬁng imbalance ıspoof
+given current market conditions ı+ (t)
+5In other words, better than immediate or delayed market order.
+4
+
+=== page 5 ===
+For the distance, we adopt the non parametric Wasserstein distance. The technical design,
+in particular in terms of conditioning, the calibration with market data, implementation as
+well as the reason for such an approach are explained and illustrated for several stocks
+from TMX.
+Before addressing the relevant literature, let us expose the shortcomings and modeling
+choices of this approach. The micro-structure dynamic of the limit order book at high
+frequency is complex. To excerpt some key impacts of spooﬁng behavior we deliberately
+focus on a static situation where the dynamic of the market is ignored.6 For instance, we
+do not consider situations where compound spooﬁng behavior happens. We furthermore
+assume that there exists a single potential spoofer and that the market is inﬁnitely reactive
+in the sense that it comes back to its steady state driven by the imbalance. There is no
+implicit game where the market acknowledges the existence of a potential spoofer, such
+as in Kyle [16] for instance. Finally, we assume that spooﬁng behavior is happening in a
+single market, while it has been documented and studied by van Kervel [24] that fast traders
+take advantage of multiple venues to post market orders in one while cancelling their limit
+orders in other venues. However, the present approach could also take into account an
+average imbalance over several venues. There is also no competitive game between two
+or more spoofers. Also, even though we shortly address the situation of a round trip for
+a market maker and the resulting optimal spooﬁng behavior, we take the viewpoint of a
+market taker willing to purchase/sell a given amount of shares. The overall goal being
+to understand the mechanism of spooﬁng in its most simple nature, quantify the resulting
+impact and derive potential detection procedures. Reﬁnement of this approach, other take
+on, as well as more adequate quantiﬁcation procedures are topics of further studies.
+1.1. Literature review. There exists a solid stream of research showing that even rational
+speculative activities might destabilize prices, have an adverse effect on market efﬁciency
+or eventually lead to different forms of arbitrage; From market speculation based on various
+form of information asymmetries, for instance Hart and Kreps [14], Allen and Gale [3]
+or Jarrow [15], to price manipulation in limit order books using different market impact
+assumptions and trading strategies, as studied in Alfonsi and Schied [1], Alfonsi et al.
+[2], Gatheral [10], Gatheral and Schied [11]. The speciﬁc case of spooﬁng behavior has
+not yet been the subject of much theoretical study.
+Although many high frequency trading strategies are legitimate, Shorter and Miller [22]
+point out that high frequency trading ﬁrms may engage in potentially manipulative strate-
+gies involving the usage of quote cancellations. Lee et al. [17] empirically study the change
+in spooﬁng behavior following a modiﬁcation in volume disclosure rules on the Korean
+Exchange (KRX) at the start of 2002. Up to the end of 2001 the KRX disclosed the total
+volume of shares on both sides of the book and also the volumes at each tick up to 5 ticks
+from the best ask/bid. At the start of 2002 the KRX stopped disclosing the total volume
+on both sides in an effort to stop spooﬁng, but increased the disclosed volumes at each
+tick from the ﬁrst 5 to the ﬁrst 10 ticks from the best ask/bid. They show that spooﬁng
+is proﬁtable and spoofers tend to prefer stocks with higher return volatility, lower mar-
+ket capitalization, lower price and lower managerial transparency. This study suggests the
+importance of the depth of book on spooﬁng strategies and potential price manipulation
+being carried out through a form of “volume imbalance”. Wang [26] followed a similar
+methodology in empirically studying spooﬁng on Taiwan’s index futures market. They
+found consistent results on the impact of spooﬁng on the market, but without the novel
+testing ground on changes in the disclosure of volumes deeper in the limit order book.
+Some other studies to detect price manipulations are mainly based on learning algorithms.
+Among other, Cao et al. [5, 6] based on the deﬁnition of spooﬁng in [18] use K-nearest
+6Since we consider the limit order book beyond its top, a dynamic version of the present approach would
+result into a fairly complex and high dimensional dynamic programing problem.
+5
+
+=== page 6 ===
+neighbour, one class support vector machine and adaptive hidden markov models to clas-
+sify the data. Miranda et al. [20] characterize spooﬁng and pinging as full and partial
+observability of Markov decision processes. Under a reinforcement learning framework,
+they ﬁnd that in order to maximise the investment growth, a trader will always employ
+spooﬁng or pinging orders except when market adds extra transaction costs or ﬁnes. In
+contrast to these empirical studies, our approach focuses on the micro economic features
+of spooﬁng behavior, in particular using our main stylized signal, the imbalance, which
+measures the difference between bid and ask side.
+Concerning the impact of the imbalance on direction of the price movement: Lipton et al.
+[18] use the deﬁnition on the top of the book for the imbalance and study the impact
+on the trade arrival dynamic and resulting price movement. They ﬁt a stochastic model
+for this behavior on real market data. Cartea et al. [7] employ volume imbalance as a
+signal to improve proﬁts on the liquidation of a collection of shares in a dynamic high-
+frequency trading environment. Gould and Bonart [12] ﬁt logistic regressions between the
+imbalance and the direction of the subsequent mid-price movement for each of 10 liquid
+stocks on Nasdaq, and illustrates the existence of a statistically signiﬁcant relationship.
+Xu et al. [28] compute the imbalance at multi position in the limit order book and ﬁt
+a linear relationship between this imbalance and the mid-price change. They ﬁnd that
+the goodness-of-ﬁt is considerably stronger for large-tick stocks than it is for small-tick
+stocks. The impact of order imbalance on prices has also been studied by Cont et al. [9] and
+Bechler and Ludkovski [4], for example. Bechler and Ludkovski also found that including
+characteristics of deeper parts of the book may be necessary for forecasting price impact.
+However, due to the nature of their dataset, they were only able to look at an aggregated
+form of the depth of book while we are able to use the exact volumes at all depths in
+the book. Sirignano [23] also used the book volumes beyond the touch to model price
+movements in a deep learning setting. Further suggesting the impact of depth of book on
+predicting future price movements.
+Finally, the closest work to the present one in terms of quantitative analysis of spooﬁng
+behavior in relationship with imbalance is from Cartea et al. [8]. They adopt a dynamic
+approach where the trader inﬂuences the imbalance to derive the optimal strategy. They
+calibrate their model to market data and provide trading trajectories for the spoofer showing
+that spooﬁng considerably increases the revenues from liquidating a position. While being
+in a dynamic setting, in contrast to the present study, everything happens at the top of the
+limit order book for the imbalance to be manipulated. Furthermore, we do not focus here
+on the resulting gains from the spoofer, be rather on the impact on the imbalance from
+spoofer as for detection purposes from a regulatory viewpoint.
+1.2. Organization of the paper. The ﬁrst Section introduces the model, the imbalance
+and the dependence of the price movement on that imbalance. The second Section presents
+the spooﬁng strategies, addresses the theoretical conditions for spooﬁng behavior to happen
+and provide the resulting imbalance after spooﬁng together with numerical illustrations.
+The third Section is dedicated to the calibration procedure of the model on real Level 2
+market data from TMX. The last Section discusses and introduces a quantitative approach
+to track spooﬁng behavior in real time illustrated on real datasets. Proofs, treatment of the
+round trip situation, calibration details and conditional distance speciﬁcation are content
+of the Appendix.
+2. LIMIT ORDER BOOK, LIQUIDITY COSTS AND IMBALANCE
+The ask price is denoted by p and the limit order book on the ask side by ¯v = (¯v0, ¯v1,...),
+that is, ¯v0 is the volume posted at ask price p, ¯v1 the volume posted at p + δ, etc. where δ
+is the tick size. We denote by ¯v− = (¯v− 0 , ¯v− 1 ,...) the limit order book on the bid side.7
+7That is ¯v− 0 is the volume posted at bid price p− <p, ¯v− 1 the volume posted at p−−δ, etc.
+6
+
+=== page 7 ===
+Given a limit order book inventory ¯v on the ask side, we deﬁne for an amount H ≥ 0 of
+shares the function
+F (H) := inf
+{
+x∈ N0 :
+x∑
+k=0
+¯vk ≥H
+}
+which represents how many positive price tick deviation an order of size H generates.
+Given an amount of shares H to buy, a bid price p and an ask limit order ¯v, the resulting
+costs of the market order is
+pH +
+F(H)∑
+k=0
+kδ¯vk −δF (H)
+
+
+F(H)∑
+k=0
+¯vk −H
+
+ = pH + δG(H)
+The term G on the right hand side represents the liquidity costs depending only on ¯v.
+Remark 2.1. Throughout the theoretical part of this work we assume that the limit order
+book is blocked shaped with an amount a> 0 of shares at each price level of the ask side.
+We then get the continuous approximation
+F (H) ≈ H a and G(H) ≈ H2 2a
+As for the imbalance of the limit order book, measure of the difference between offer and
+demand, we proceed as follows. Let w0, w1, . . . with ∑wk = 1 and wk ≥ 0, a weight for
+each tick level k, and a limit order book inventory ¯v−, ¯v on the bid and ask respectively,
+we denote by
+¯B = ∑ wk¯v− k = ⟨w, ¯v−⟩ ¯A = ∑ wk¯vk = ⟨w, ¯v⟩
+the weighted average bid and ask volumes. We deﬁne the imbalance as
+¯ı := B B + A ∈ (0, 1)
+Remark 2.2. In a blocked shaped setting, if b denotes the amount of orders on every price
+level on the bid side, we get
+¯ı =
+∑wkb∑wk(a + b) = b a + b
+which yields b = a¯ı/(1 − ¯ı).
+The price deviation in the next period can be triggered by two events. The posting and can-
+cellation of incoming limit orders as well as the posting of market orders. We distinguish
+between both, since the former does not have an impact on the execution of existing limit
+orders while the latter has. We generically denote by
+dp = {...,dp−1,dp0,dp1,...} µ =
+∑
+xdpx
+dq = {...,dq−1,dq0,dq1,...} ν =
+∑
+ydpy
+the distribution and mean, respectively, of the two possible price movement in the next
+period. For the sake of simplicity, we assume that the imbalance does not have an impact
+on incoming market orders and that the price deviation with respect to the market orders is
+neutral, that is ν = 0. We furthermore assume that they are independent of each others.8 To
+reﬂect the fact that the imbalance, as an indicator of the offer and demand on the market,
+has an impact on the market makers, we consider a parametrization ı↦→dp(ı) of the price
+movement driven by limit orders as a function of the imbalance ı. Since the imbalance
+8The subsequent theoretical study adapt to eventual joint distribution of price movement due to limit and
+market orders also jointly dependent on the imbalance. The exposition of which is no longer explicit but can be
+solved numerically.
+7
+
+=== page 8 ===
+moves between 0 and 1, we assume that the distribution dp moves as a convex combination
+of ı between the distribution dp− – distribution when the imbalance is close to 0, that is
+highly skewed to the left – and the distribution dp+ – distribution when the imbalance is
+close to 1, that is highly skewed to the right. Mathematically:
+dp(ı) = ıdp+ + (1 −ı)dp−
+From the skewness assumptions and symmetry of the imbalance indicator, we assume that
+dp+ x ≥dp− x for every x≥ 0 and dp+ x = dp− −x for every x
+which implies that
+µ(ı) :=
+∑
+xdpx(ı) = (2ı− 1)
+∑
+xdp+ x = µ+(2ı− 1)
+By assumption, µ+ is positive, showing that µ(i) moves between −µ+ and µ+ and is equal
+to 0 for an imbalance of 1/2 when offers equal demand.
+3. SPOOFING STRATEGY
+Suppose that at a given time we are given an ask price p and a limit order book inventory
+(¯v−, ¯v). A trader willing to buy an amount H of shares faces the following three options.
+• Immediate market order: for a total costs of
+pH + δG(H)
+• Delayed market order: for an average total cost of
+∑
+x,y
+[(p + δ(x + y)) H + G(H)] dpx (¯ı) dqy = pH + δ
+(
+G(H) + Hµ+ (2¯ı− 1) )
+Clearly if ¯ı< 1/2, then this second option is better than a direct buy.
+• Spooﬁng and delayed market order: Book ﬁrst an ask limit order v at a depth k in
+{0, 1,...,N} on top of the ask limit order book ¯vk to increase the liquidity on the ask side
+and signal a surge in supply to the market. In the next period the price deviates from p to
+p + δ(x + y) and two situations may happen:
+– y≤k: no market order of sufﬁcient magnitude hits the limit order book and therefore
+this limit order is not executed against an incoming market order. The previous limit
+order is canceled and the amount H of shares is acquired for a cost of
+(p + δ(x + y)) H + δG(H)
+– y > k: the limit order is executed against an incoming market order at a price level
+p + δ(x + k). The new objective moves to H + v resulting in a net cost of
+(p + δ(x + y)) (H + v) + δG (H + v) − (p + δ(x + k)) v
+= (p + xδ) H + δG(H + v) + δ(y−k)v
+It follows that the spooﬁng net cost for a price deviation of p + δ(x + y) is given by
+(3.1) Ck(v,x,y) = (p + (x + y)δ)H + δG
+(
+H + v1{y>k}
+)
++ δ(y−k)v1{y>k}
+However, the posting of the selling limit order modiﬁes the imbalance from ¯ı to
+ık(v) := B A + B + wkv
+In other words, the imbalance will move downwards, shifting the distribution dp to more
+favorable outcomes. Since we assume that ν = 0, it follows that the average net costs are
+8
+
+=== page 9 ===
+given by
+Ck(v) :=
+∑
+x,y
+Ck(v,x,y)dpx(ık(v))dqy
+=
+∑
+x
+(p + δx)Hdpx(ık(v)) + δ(1 −Qk)G(H) + δQkG(H + v) + δv
+∑
+y≥k+1
+(y−k)dqy
+= pH + δ(1 −Qk)G(H)| {z }
+Cost for optimal situation
++ δHµ+ (2ık(v) − 1)| {z }
+Spooﬁng impact
++ δQkG(H + v) + δvνk| {z }
+Cost for being caught wrong way
+where
+Qk =
+∑
+y≥k+1
+dqy and νk =
+∑
+y≥k+1
+(y−k)dqy
+Note that this cost functional is convex in v since G and ık are convex functions. Note
+also that in order to take advantage of this spooﬁng impact, it is necessary to drive the
+imbalance ık(v) below 1/2.
+Remark 3.1. Note that we implicitly assume that the spooﬁng only happens at a given
+depth k. It is possible to spoof simultaneously at different depths resulting in a slightly
+more complex cost function that can be solved numerically. The conclusions do not change
+qualitatively and we use the more general multi-depth spooﬁng for the analysis of data in
+the subsequent sections.
+3.1. Existence of Spooﬁng Manipulation. The question is whether it is possible to push
+the imbalance as much as possible to 0 in order to offset the costs of posting selling orders,
+they being executed and paying the liquidity costs of buying them back.
+Deﬁnition 3.2. We say that the limit order book (¯v−, ¯v) admits a (market taker) spooﬁng
+manipulation if there exists v > 0 and k∈{0, 1,...,N} such that
+(3.2)
+
+
+
+Ck(v) <pH + δ
+(
+G(H) + µ+H (2¯ı− 1) ) if ¯ı≤ 1/2
+Ck(v) <pH + δG(H) if ¯ı> 1/2
+According to the average costs of spooﬁng, these two inequalities turn into
+(3.3) Qk [G(H + v) −G(H)] < 2µ+H
+(
+¯ı∧ 1 2 −ık(v) ) −vνk
+The following results concerns the existence of spooﬁng manipulation in a blocked shaped
+setting where the volume on the ask side of the limit order book is a everywhere. For scal-
+ing reasons let H = ρa, where ρ represents the ratio of the shares to purchase to the depth
+of the limit order book. Our ﬁrst result concerns the existence of spooﬁng manipulation.
+Proposition 3.3. In a block shaped setting, where the volume on the ask side of the limit
+order book is a everywhere. The following assertions hold
+• If ¯ı ≤ 1/2, the limit order book admits no spooﬁng manipulation if and only if (3.4)
+holds;
+• If ¯ı> 1/2, the limit order book admits no spooﬁng manipulation if (3.4) holds.
+Where H = ρa and
+(3.4) 2ρµ+ (1 − ¯ı)¯ıwk ≤Qkρ + νk for all k
+For the proof, see Appendix A. From this proposition, we deduce that price manipulation
+is more likely to occur
+• if Qk is small – and as a byproduct νk. If the probability to get a spooﬁng order
+executed is small, there is relatively no downsize at spooﬁng.
+9
+
+=== page 10 ===
+• if ¯ı is close to 1/2. If the imbalance is close to 1/2, then ¯ı(1−¯ı) is maximum. The
+impact of moving the price in ones favor is maximal there.
+• if µ+ is large: µ+ represents the mean deviation sensitivity as a function of the im-
+balance. The more sensitive the price movement is with respect to the imbalance,
+the more likely spooﬁng strategies may occur.
+• If wk is large: wk represents the relative impact at tick level k of a spooﬁng volume
+to the imbalance. If one of wk is large with respect to the corresponding Qk, then
+spooﬁng is more likely to occur there.
+• if ρ is relatively large. If the amount of order to buy relative to the overall offer is
+very large, spooﬁng is more likely to happen.
+Figure 1 represents the existence of spooﬁng condition 3.4 in terms of the initial imbalance
+¯ı with varying market parameters.
+Figure 1. Spooﬁng condition (3.4) as a function of ¯ı and in (a) µ+ = 1,ρ =
+1,k = 3,wk = 0.2,dqy = 0.025 for all y ≥ k. One parameter is increased
+each time with respect to (a) where (b): dqy = 0.03 for all y≥k; (c): µ+ = 2;
+(d): ρ = 2; (e): wk = 0.5; (f): k = 4.
+3.2. Optimal Spooﬁng and Resulting Imbalance Impact. Let us now address the prob-
+lem of ﬁnding the optimal spooﬁng strategy. In particular as a function of the depth at
+which the spooﬁng order is placed.
+Proposition 3.4. The optimal spooﬁng volume vspoof at a given level k and resulting
+imbalance ıspoof – adopting the notations w := wk, Q := Qk and ν := νk – are given by:
+vspoof = a Q [ 2ρwµ+ 1 − ¯ı ¯ı ı2 spoof − (Qρ + ν) ]+
+where ıspoof is the unique cubic root solution in (0,¯ı] of
+¯ı
+ı = 1 + (1 − ¯ı)w Q [ 2ρwµ+ 1 − ¯ı ¯ı ı2 − (Qρ + ν) ]+
+For the proof, see Appendix A. Though the solution is implicit, we can inspect the spooﬁng
+behavior as a function of the distance to the top of the limit order book. Note ﬁrst that
+ıspoof = ¯ı if and only if 2ρwµ+(1 − ¯ı)¯ı ≤ Qρ + ν which results into vspoof = 0. This
+10
+
+=== page 11 ===
+coincide with the no spooﬁng condition of the previous proposition. We are interested in
+the relative spooﬁng size as a function of these parameters. From the deﬁnition of the
+imbalance, ı(v) increases if and only if v decreases, so we get more spooﬁng volume as
+ıspoof gets smaller. Now from the implicit function it holds that
+1
+ı = 1 ¯ı + w Q 1 − ¯ı ¯ı [ 2ρwµ+ 1 − ¯ı ¯ı ı2 − (Qρ + ν) ]+ =: f ( w,µ+,ν,Q,¯ı,ρ,ı )
+where the function f is an increasing function of ı greater than 1/¯ı.
+• Since f is increasing as a function of w and µ+, it follows that ıspoof is decreasing
+as a function of w and µ+. Hence, spooﬁng behavior increases as a function of the
+impact w at level k on the imbalance as well as a function of the overall sensitivity
+µ+ of the price movement with respect to the imbalance.
+• Since f is decreasing as a function of Q and ν, it follows that ıspoof is increasing
+as a function of Q and ν. From an empirical viewpoint, Q = Qk as well as
+ν = νk decreases as a function of the depth k. It follows that spooﬁng behavior is
+more likely to happen and increase deeper in the limit order book. However, this
+conclusion is short of the fact that local sensitivity of the imbalance w = wk also
+depends on the depth with an inverse impact. According to empirical analysis, it
+turns out that w does not exert this decreasing behavior as a function of k at least
+within a reasonable depth in the limit order book. It seems that spooﬁng behavior
+is more likely to happen at a reasonable distance from the top of the limit order
+book.
+The behavior of the resulting imbalance ıspoof as a function of the initial imbalance ¯ı is
+more difﬁcult to stress out. We know that ıspoof ≤ ¯ı and for the same reasons as before it
+is increasing as a function of ¯ı. The same holds for the dependence on the relative number
+of shares to purchase ρ. Figure 2 represents the curves of the spoofed imbalance ıspoof(¯ı)
+as a function of the initial imbalance ¯ı for different depths with varying market parameters.
+Figure 2. ı as a function of ¯ı and in (a) µ+ = 1,ρ = 1,wk = 0.2,dqy = 0.003
+for all y ≥ k. One parameter is increased each time with respect to (a) where
+(b): dqy = 0.006 for all y ≥k; (c): µ+ = 3; (d): ρ = 3; (e): wk = 0.5; Blue
+line :k = 0; red line: k = 2; orange line: k = 4.
+11
+
+=== page 12 ===
+Remark 3.5. Throughout, we mainly focus on the spooﬁng behavior from a market taker’s
+viewpoint. As for a market maker, spooﬁng behavior might be rewarding as well. It turns
+out that the rewards from spooﬁng are intertwined with the ones from pure market making.
+The resulting impact on the imbalance is however quite similar, up to the fact that the bid
+ask spread is an additional factor in the spooﬁng opportunity, since the market maker will
+have to cross the spread. In Appendix B, we derive the spooﬁng strategy in the round trip
+context, discuss the spooﬁng impact on the imbalance and numerical analysis in the same
+context as the present situation.
+4. CALIBRATION
+According to this model, we calibrate the imbalance as well as dp and dq on real data
+provided by TMX. These datasets consists of level 2 data from June to September 2017.
+Among the 1500 available equities we selected 10, varying in company background, mar-
+ket capitalization as well as trading frequency. The level 2 datasets include time, order
+price, volume, type,9 order ID and counterpart order ID in case of a trade, see Figure 3
+Figure 3. Original Level 2 dataset of stock AEM provided by TMX.
+Since these are provided in diff form, therefore a cumulative aggregation allows to con-
+struct the full limit order book at any time as in Figure 4
+Figure 4. Generation of the full limit order book out of the Level 2 data.
+This operation is computationally very intensive and therefore has been realized on a dis-
+tributed data cluster of TMX with spark.
+With the full limit order books at hand we divide the calibration into three steps:
+• Find a normalized sample frequency and choose a maximal depth for the support
+of the distributions dp± and dq;
+• Calibrate the imbalance generically, that is, as a function of the weights w =
+(w1,w2,...);
+• Estimate dq, dp± and weights w = (w1,w2,...).
+The sample frequency should be large enough such that there exists enough variance in
+price change, see Figure 5
+9Buy/sell; booked/cancelled/traded
+12
+
+=== page 13 ===
+Figure 5. Left panel: Histogram of original AEM price change. Right panel:
+Histogram of AEM price change after sampling.
+To compare across markets with different trading activity—and eventually time during
+the day—we ﬁx a target variance of σ2 for the price movement and select the optimal
+frequency f for each stock as to minimize the square distance between σf and σ. For a
+target variance σ2 = 2, Table 1 is the sample frequency for different stocks with a summary
+statistics of the average volume and arrival rate for Market/Limit Orders on the bid and ask
+side. As for the maximal depth for the support of the distribution, we take the 99% quantile
+of empirical sampled price change distribution. The depths are around 4 since we use the
+same σ2 = 2 to determine the sampling frequency. The sampling frequency is related to
+how fast limit orders arrive, not market orders. For most stocks, f is small when the arrival
+rate of limit orders is high.
+Stock f Depth
+Market Orders Limit Orders
+Buy Sell Buy Sell
+Vol Rate Vol Rate Vol Rate Vol Rate
+AEM 4 4 146 0.072 144 0.065 144 5.145 142 5.232
+BB 38 4 567 0.107 613 0.085 3257 3.034 3245 3.008
+BMO 11 4 171 0.107 168 0.134 149 2.482 151 2.553
+CNR 6 4 141 0.104 134 0.1 138 2.397 141 2.399
+CPG 53 5 356 0.13 349 0.115 866 1.762 879 1.741
+FNV 3 5 123 0.059 121 0.056 126 2.881 140 2.794
+FR 60 3 243 0.072 272 0.063 795 2.115 842 2.049
+PPL 26 4 142 0.101 152 0.11 165 2.31 183 2.469
+TD 20 4 223 0.205 213 0.218 277 3.87 278 3.866
+VET 6 5 127 0.07 152 0.069 130 2.474 137 2.439
+Table 1. Stock data from June 5, 2017 to June 9, 2017. The Vol columns cor-
+responds to the average volume of a single order during inspected time interval
+and the Rate columns corresponds to the number of orders per second.
+With the sampling frequency f and depth N, we deﬁne the average imbalance at time t as
+ˆı(w,t) =
+∑
+k≤N
+∑
+t−f≤s<t
+¯v− k (s)wk
+∑
+k≤N
+∑
+t−f≤s<t
+(
+¯v− k (s) + ¯vk(s) ) wk
+which sums up order book volumes within a certain time interval weighted by time dif-
+ference ∆si = si+1 −si. The weighting parameter w impacts the average imbalance
+distribution, see Figure 6.
+13
+
+=== page 14 ===
+Figure 6. Distribution of the average imbalance for different weights for the
+stock BMO.
+Nevertheless for each weight vector, the resulting distribution is close to a skewed normal
+distribution. For a given weight w, using maximum likelihood, we ﬁt the empirical dis-
+tribution to the corresponding skew normal distribution SN (α(w),ξ(w),ω(w)), the ﬁt of
+which is particularly good, see ﬁgure 7 for an example.
+Figure 7. Histogram of BMO average imbalance and ﬁtted skewnormal distri-
+bution: w = [0.2, 0.2, 0.2, 0.2, 0.2].
+The third step is to determine dq, dp± with the optimal weights w. As for dq, it is the
+probability that the price moves by k ticks triggered by market orders. Thus for each
+market order, compute
+F (H) = inf{x∈ N0 :
+x∑
+k=0
+vk ≥H}
+where H is the volume of the market order. This represents exactly how many positive
+tick price deviation an order of size H will produce. We derive dq from the empirical
+distribution.
+As for dp± and w, a maximum likelihood estimation is implemented to solve
+(4.1) dp∗,w∗ = arg min
+dp+ ,w
+[
+− 1 M
+M∑
+m=1
+log p (xm,ˆım)
+]
+where xm is the empirical price change, ˆım the average imbalance for a given weight w,
+p (xm,ˆım) = dpxm (ˆım) p(ˆım)
+where dpxm (ˆım) = ˆımdp+ xm + (1 − ˆım) dp− xm represents the conditional probability of
+price change equal to xm given ˆım, and p(ˆım) is the density of the ﬁtted skewnormal
+distribution evaluated at ˆım.
+Figure 8, illustrating the value of the optimal weights w for selected stocks, shows dif-
+ferent patterns. Overall, it turns out that the relative impact of the imbalance to the price
+distribution is more important away from the top of the limit order book.
+We also performed this calibration procedure on stock BMO weekly from June 5th to June
+30th, as well as for the ﬁrst hour of trading monthly from June to September. Figure 9
+provide the optimal weights in each case for BMO.
+14
+
+=== page 15 ===
+Figure 8. w for stock AEM, BB, BMO, CNR, CPG, FNV, FR, PPL, TD, VET
+from June 5th, 2017 to June 9th, 2017.
+Figure 9. Left panel: w for stock BMO each week in June 2017. Right panel:
+w for stock BMO each month in June 2017, only using ﬁrst hour trading data.
+Notice that for the ﬁrst hour of trading the optimal weights are more consistent across
+time, but all show that the weight impact on the price movement happens deeper in the
+limit order book.
+As for the corresponding dp+ and dq, they are represented in Figure 10 for stock BMO
+from June 5th, 2017 to June 9th, 2017. As expected, dp+, representing the price movement
+as the imbalance is large, is skewed to the right.
+Figure 10. dp+ and dq for BMO from June 5th to June 9th.
+Table 2 provides the moments of dp+ for each stock – in tick values. Skewness shows how
+much dp+ is skewed to right. When it is large, µ+ is also large and spooﬁng has a larger
+impact according to theoretical part. Except for CPG which is relatively small, all of the
+other stocks under study excerpt this pattern of right-skewness.
+15
+
+=== page 16 ===
+Stock µ+ Variance Skewness Kurtosis
+AEM 0.411 0.881 1.175 4.46
+BB 0.467 0.766 0.957 3.786
+BMO 0.103 1.087 0.095 4.263
+CNR 0.398 0.636 1.447 4.928
+CPG 0.100 1.171 -0.068 5.275
+FNV 0.404 0.850 2.038 7.169
+FR 0.209 1.033 0.532 2.203
+PPL 0.076 1.177 0.645 3.83
+TD 0.118 1.389 0.633 4.471
+VET 0.315 1.253 1.899 7.393
+Table 2. Moments of dp+.
+5. APPROACHES TO SPOOFING DETECTION
+For reasons mentioned in the introduction, it is difﬁcult from a regulatory viewpoint to
+ﬁgure out whether or not spooﬁng happened a-posteriori. According to the theoretical
+part, the act of spooﬁng will inﬂuence the resulting imbalance. However, to monitor the
+imbalance is akin to contemplate pure noise as shown in Figure 11.
+Figure 11. Imbalance of stock BMO from 09:30 to 16:00 on June, 7, 2017.
+In the following, we propose some possible ways to perform such a monitoring based on
+the theoretical results. The strategy comes from the following observation: For a spooﬁng
+strategy to be successfully fulﬁlled, a market order has to be executed.10 Hence when
+observing an executed market order two situations may happen:
+1- The market order is a legitimate one. In that case, the imbalance before this market
+order ı− and after ı+ should follow statistically the classical long run behavior. In
+other words, in a legitimate situation, we should observe statistically the pair
+(ı−,ı+)
+for each market order.
+2- The market order is the result of a spooﬁng behavior. The implicit equilibrium
+without spooﬁng would be the pair (ı−,ı+). After the market order is executed,
+the market imbalance should be back to its equilibrium ı+. However before the
+market order, the spoofer observes the implicit imbalance ı− and decides to spoof
+according to this information, sending to the market ıspoof(ı−) instead of ı−. The
+resulting observation for those spoofed market orders is therefore the pair
+(ıspoof(ı−),ı+)
+10In this paper, we do not consider spooﬁng strategies involving only limit orders.
+16
+
+=== page 17 ===
+Furthermore, spooﬁng strategies are supposed to happen sporadically but intensively within
+a short time horizon. Before presenting some strategies, let us ﬁx some notations:
+• Π = {t1 < t2 < ... < tM} represents the time stamps of each (buy) market
+orders in a long sample (several weeks).
+• ˆı−(t) and ˆı+(t) represents the imbalance before and after the market order hap-
+pening at time t in Π.
+• (ı−,ı+) represents the overall joint distribution of the imbalance right before and
+after each market orders ﬁtted to the overall data. We assume that these represents
+the stable behavior of the market without spooﬁng, and therefore representative of
+legitimate market orders.
+• (ˆıN −(t),ˆıN + (t)) represents the (short span) empirical distribution at time t in Π gen-
+erated by the last N market orders observed imbalances (ˆı−(s),ˆı+(s)), where
+N ≪M is a short horizon sample size (in our case about 100).
+• The previous theoretical part, even if not explicit in terms of solution allows us to
+compute numerically ıspoof(ı−) for a given implicit imbalance ı−.
+5.1. Monitoring ˆıN − . A ﬁrst idea is to monitor the behavior of the short term imbalance
+ˆıN −(t) as times passes to test whether it is statistically different from the equilibrium ı−.
+This is however not adequate for the following reasons. First, this is not related to spooﬁng
+behavior and might reﬂects some other market patterns. Second, and more importantly,
+the sequence of ˆı−(t) for each market order is highly dependent. Indeed, there might
+exists market conditions – bullish/bearish, etc – such that a short horizon sample ˆıN − differs
+strongly from the long term behavior. Figure 12 provides empirical evidence about the
+sequential dependence of the imbalance ˆı− as well as ˆı+ over time.
+Figure 12. Left panel: ˆı− autocorrelation of stock BMO on June 7, 2017. Right
+panel: ˆı+ autocorrelation of stock BMO on June 7, 2017. Red area is the 95%
+conﬁdence interval of the autocorrelation.
+5.2. Monitoring (ˆıN −,ˆıN + ). The statistical link towards discrimination of ıspoof(ı−) from
+ı− is the additional observation of the imbalance after the spooﬁng happen. This provides
+statistical a-posteriori information about the implicit market equilibrium before spooﬁng
+which in case of spooﬁng can not be directly observed. Figure 13 shows on the left panel
+the joint distribution (ı−,ı+) while the right panel represents, based on the model of the
+theoretical part and calibration, the joint distribution (ıspoof(ı−),ı+) in the case of spoof-
+ing. The spoofed joint distribution is skewed to the left in comparison to the non-spoofed
+one, in accordance to the theoretical analysis that spooﬁng decreases the imbalance – in
+the buy order case – before a market order.
+17
+
+=== page 18 ===
+Figure 13. Left panel: Empirical joint distribution of (ı−,ı+). Right panel:
+Joint distribution of (ıspoof (ı−),ı+)
+A possible way to detect spooﬁng is therefore to compare the long run distribution (ı−,ı+)
+with the short term empirical distribution (ˆıN −,ˆıN + ). These two distributions encode the
+possibility to disentangle legitimate market behavior from spoofed ones. However, as in
+the previous approach, the sequence of joint observation is once again not iid. For short
+time horizon, the market may be legitimate, though far away from the long run distribution.
+5.3. Monitoring ˆıN − conditioned on ˆıN + . To overcome the previous shortcomings, the next
+approach is to monitor ˆıN −(t) conditioned on the current market state ˆıN + (t). From our
+hypothesis, ı+ represents the steady state of the market at equilibrium after a market order.
+It turns out that conditioned on ˆı+(t) the sequence of ˆı−(t) is closer to iid.
+Figure 14. Left panel: Autocorrelation for 0.329 ≤ ˆıN −|ˆıN + ≤ 0.378 of stock
+BMO on June 7, 2017. Right panel: Autocorrelation for 0.561 ≤ ˆıN −|ˆıN + ≤ 0.61
+of stock BMO on June 7, 2017. Red area is the 95% conﬁdence interval of the
+autocorrelation.
+In order to detect spooﬁng behavior, instead of adopting a statistical test for which some
+parametric assumptions on the distribution has to be made, we measure the distance be-
+tween ı− and ˆıN − conditioned on the current observed imbalance ˆıN + using a non-parametric
+distance, the Wasserstein distance, see Appendix for precise deﬁnition of this distance.
+18
+
+=== page 19 ===
+On the one hand, we know the conditional distribution ı−|ı+ as well as ıspoof(ı−). Hence,
+we can deduce the conditional distribution of ıspoof|ı+. We monitor the following two
+quantities
+t↦−→d
+(
+ˆıN −(t),ı−|ıN + (t) ) | {z }
+Distance from the short term imbalance ˆıN − (t)
+to the legitimate imbalance ı−
+given that ı+ ∼ıN + (t)
+and t↦−→d
+(
+ˆıN −(t),ıspoof|ıN + (t) ) | {z }
+Distance from the short term imbalance ˆıN − (t)
+to the spoofed imbalance ıspoof
+given that ı+ ∼ıN + (t)
+In Figure 15 and Figure 16, are the plots thereof for the selected stocks. We mark in red the
+area where the distance of the short term imbalance to the spoofed one is smaller than the
+distance to the legitimate one. Since the spoofed imbalance is computed regardless whether
+spooﬁng is rewarding or not, we additionally mark in blue the area where spooﬁng is not
+worth according to Proposition 3.3, that is when
+(5.1) sup
+k
+{
+2¯ρµ+(1 − ¯ı)¯ıwk −Qk ¯ρ−νk } ≤ 0
+where ¯ρ represent the mean of the total volume of market orders purchased divided by the
+total volume available within N ticks on the limit order book, ¯ı is the mean of ıN + (t).
+According to Table 1, different stocks have different frequencies, depth of order book as
+well as volume of incoming market orders. Our approach does take these different factors
+into account and are reﬂected into the different plots. According to the previous results,
+spooﬁng is more likely to happen if either µ+ – the overall price impact – or if ρ – the
+relative size of the market orders with respect to the liquidity present in the limit order
+book – is large. We recap for the stocks under study some of their key aspects as well as ¯ρ,
+the total amount of market orders within the observed time window relative to the average
+liquidity available within the observed depth.
+Stock f Depth ¯ρ µ+
+AEM 4 4 54.1% 0.411
+BB 38 4 17.8% 0.467
+BMO 11 4 62.9% 0.103
+CNR 6 4 89.5% 0.398
+CPG 53 5 26.4% 0.100
+FNV 3 5 81.8% 0.404
+FR 60 3 21.4% 0.209
+PPL 26 4 54.1% 0.076
+TD 20 4 48.2% 0.118
+VET 6 5 75.4% 0.315
+Table 3. Frequency, depth, market order volume relative to liquidity available ¯ρ,
+price impact µ+ for the studied Stocks.
+Overall, we do not observe many crossings, if ever. If a signiﬁcant crossing happens, it is
+isolated showing some abnormal behavior. This is particularly obvious for CPG and PPL.
+An outlier in this series of observations is the stock TD where many crossings happens.
+TD is a stock which is particularly active with a high rate of market orders – the largest in
+our study group. Furthermore the price impact is particularly low 0.118. However, from
+these market speciﬁcities, according to the equation (5.1), most of the time it is not worth
+spooﬁng. Hence, there remain only one signiﬁcant crossing out of the area where spooﬁng
+would be worthwhile.
+19
+
+=== page 20 ===
+Figure 15. Time series of t ↦→ d
+(
+ı−,ˆıN −(t)|ˆıN + (t) ) (blue line) and tk ↦→
+d
+(
+ıspoof ,ˆıN −(t)|ˆıN + (t) ) (red line) from June 5, 2017 to June 9, 2017. Red area is
+where d
+(
+ıspoof ,ˆıN −|ˆıN + ) ≤d ( ı−,ˆıN −|ˆıN + ) over more than 10 consecutive times.
+Blue area is where supk
+{
+2¯ρµ+(1 − ¯ı)¯ıwk −Qk ¯ρ−νk } ≤ 0 and ¯ρ, ¯ı are the
+mean of ρ, ı+ N in each window respectively. From top to bottom are stock AEM,
+BB, BMO, CNR, and CPG respectively.
+20
+
+=== page 21 ===
+Figure 16. Time series of tk ↦→ d
+(
+ı−,ˆıN −(t)|ˆıN + (t) ) (blue line) and tk ↦→
+d
+(
+ıspoof ,ˆıN −(t)|ˆıN + (t) ) (red line) from June 5, 2017 to June 9, 2017. Red area is
+where d
+(
+ıspoof ,ˆıN −|ˆıN + ) ≤d ( ı−,ˆıN −|ˆıN + ) over more than 10 consecutive times.
+Blue area is where supk
+{
+2¯ρµ+(1 − ¯ı)¯ıwk −Qk ¯ρ−νk } ≤ 0 and ¯ρ, ¯ı are the
+mean of ρ, ı+ N in each window respectively. From top to bottom are stock FNV,
+FR, PPL, TD and VET respectively.
+6. CONCLUSION
+In this paper we address the question of assessing quantitatively eventual spooﬁng behav-
+ior in high frequency trading. In a stylised setting we present how a spooﬁng strategy from
+a market taker or maker is designed by manipulating the imbalance at different depth level
+to impact the subsequent price movement. We provide and discuss the conditions for the
+market to allow for spooﬁng manipulations. We subsequently solve the optimization prob-
+lem from a spoofer perspective and derive/discuss the resulting imbalance after spooﬁng
+as a function of the market parameters. We calibrate the weighted imbalance and price
+movement impact to Level 2 data provided by TMX. Using these results we propose a
+quantiﬁcation instrument to monitor in real time eventual spooﬁng behavior on the market
+using a conditional Wasserstein distance. We illustrate these results on the data provided
+by TMX.
+This approach is by no means a deﬁnitive answer to spooﬁng detection but rather a ﬁrst take
+on. The dynamic structure of the limit order book and strategy, the memory dependence
+21
+
+=== page 22 ===
+of the parameters over time, as well as the speciﬁcities of one market with respect to
+another one are left to further study. Also left to further studies is the consideration of
+multiple venue that could also be integrated into this framework. Furthermore, there might
+be alternative approaches subject to new research directions – monitoring arrival rates of
+orders, frequency of book/cancelling, etc. – that could complement such a monitoring
+approach.
+7. CREDITS
+We thank Fields Institute for the organization of the series “Fields-China Joint Industrial
+Problem Solving Workshop” through which we got involved into this problem. Thanks
+to TMX and their data analysis team for providing unique access to large datasets, high
+performance computing facilities as well as precious insights concerning high frequency
+trading. Finally, the data analysis could not have been performed without the outstand-
+ing work and dedication of the open source community for the development of scientiﬁc
+computing/visualisation libraries/platforms such as NumPy [13], SciPy [25], Mistic [19],
+Pandas [21, 27], Apache Spark, Plotly to name the most relevant for this work.
+APPENDIX A. PROOFS
+Proof of Proposition 3.3. Let H = ρa, and the imbalance ık(v) = b/(b + a + wkv) with
+b = a¯ı/(1 − ¯ı). It follows that the gradient of ık(v) is given by
+∇ık(v) = − b (a + b + wkv)2 wk = −(1 − ¯ı) a¯ı ı2 k(v)wk
+• If ¯ı ≤ 1/2, from the previous equations, since g(x) = x2/(2a), it follows that there is
+no spooﬁng manipulation if and only if
+f(v) := Qk
+v2
+2a + Qkρv + vνk − 2ρaµ+ (¯ı−ık(v)) ≥ 0
+for any v≥ 0. Taking the gradient for this function yields
+∇f(v) = Qk
+v
+a + Qkρ + νk − 2ρµ+ 1 − ¯ı ¯ı ı2 k(v)wk
+which is a monotone functional in v. Since f(0) = 0, it follows that f(v) ≥ 0 for any v if
+and only if ∇f(0) ≥ 0 which is equivalent to
+Qkρ + νk ≥ 2ρµ+(1 − ¯ı)¯ıwk
+• If ¯ı> 1/2, there is no spooﬁng manipulation if and only if
+f(v) := qk
+v2
+2a + ρqkv−qkkv− 2ρaµ+ (1/2 −ık(v)) ≥ 0
+for any v≥ 0 the gradient of which is given by
+∇f(v) = qk
+v
+a + ρqk −qkkv− 2ρµ+ 1 − ¯ı ¯ı ı2 k(v)wk
+Since f(0) > 0, as previously argued, it follows that f(v) ≥ 0 as soon as ∇f(0) > 0,
+which yields the same conditions.
+□
+Proof of Proposition 3.4. Adopting the notations Q := Qk, ν = νk, w = wk, H = ρa,
+the goal is to optimize over v≥ 0 the objective function
+f(v) = (1 −Q)(ρa)2
+2a + Q(ρa + v)2 2a + ρaµ+ (2ı(v) − 1) + vν
+= (ρa)2
+2a + Qv2 2a + (Qρ + ν) v + ρaµ+ (2ı(v) − 1)
+22
+
+=== page 23 ===
+First order condition with Lagrangian λ yields
+Qv a + (Qρ + ν) − 2ρwµ+ 1 − ¯ı ¯ı ı2 = λ
+where ı := ı(v). Solving as a function of ı in (0, 1), we get
+λ(ı) =
+[
+(Qρ + ν) − 2ρwµ+ 1 − ¯ı ¯ı ı2
+]+
+v(ı) = a Q [ 2ρwµ+ 1 − ¯ı ¯ı ı2 − (Qρ + ν) ]+
+Given now the optimal v(ı) as a function of ı, we solve for ı such that
+1
+ı = a + b + wv(ı) b = 1 ¯ı + w 1 − ¯ı a¯ı v (ı) = 1 ¯ı + w Q 1 − ¯ı ¯ı [ 2ρwµ+ 1 − ¯ı ¯ı ı2 − (Qρ + ν) ]+
+Since the left hand side in strictly decreasing on from ∞ to 1 ¯ı on (0,¯ı] and the right hand
+side is increasing from 1 ¯ı , on (0,¯ı], there exists a unique solution which is a cubic root. □
+APPENDIX B. ROUND TRIP SITUATION
+In this paper we mainly focus on the spooﬁng behavior from a market taker’s viewpoint.
+As for a market maker, spooﬁng behavior might be rewarding as well. However, as seen
+in the following subsection, the rewards from spooﬁng are intertwined with the ones from
+pure market making.
+We present a simple situation together with the numerical analysis in a blocked shape
+setting with the same model assumptions as before. We assume that the potential market
+maker spoofer acts as follows: At the ﬁrst stage it decides to spoof with a volume v at
+depth k on the ask side to drive the price down and acquire an amount H of shares after
+this price movement. When the market comes back to its steady state, it liquidates H and
+eventually buys back v if it has been executed. We assume that v and H are decided at the
+very beginning.11
+After spooﬁng a volume v at level k, as soon as the price moves the spoofer executes its
+market order H for a revenue of
+−
+(
+H−v1{y>k}
+)
+(p + δ∆ + δ(x + y)) −δGa(H) −δ(y−k)v1{y>k}
+where Ga(H) = H2/(2a), p = (p+ + p−)/2, and ∆ = (p+ −p−)/(2δ) is the effective
+spread in ticks. The spoofer then waits for the market to return to its steady state and
+liquidate the resulting inventory with market orders. For ease of computation, we assume
+that it executes two market orders: One for H and one for v if it has been executed12 for a
+revenue of
+Hp−δ∆H−Gb(H) − 1{y>k} (v(p + δ∆) + δGa(v))
+Adding both and integrating yields an average net revenue of
+R(H,v)
+δ = −H
+(
+2∆ + µ+ (2ık(v) − 1) ) −Ga(H) −Gb(H)
++ Qk
+[(
+k + µ+ (2ık(v) − 1) ) v−Ga(v) ]
+= −H
+(
+2∆ + µ+ (2ık(v) − 1) ) − 1 a¯ı H2 2 + Qkv [ k + µ+ (2ık(v) − 1) ] − Qk a v2 2
+11This stylised situation makes strong assumptions and simpliﬁcations. First H is decided at time 0 even if it
+is executed after the price movement. This is to prevent conditional optimization. Second, the liquidation of the
+inventory H and v occurs separately. Once again, to provide simpliﬁed optimization problem, while we could
+numerically consider a liquidation of the net inventory H −v. Finally, a second spooﬁng could happen at the
+second stage as in the previous section to liquidate the inventory.
+12Combining both in terms of H−v1{y>k} is cost effective but complicates the exposition of the result.
+23
+
+=== page 24 ===
+From this equation, we can derive the following remarks concerning the decision of the
+spoofer:
+• If v = 0: This corresponds to the classical situation where a market maker takes
+advantage of the temporary market movement to execute a market order and cash
+out at a later time when the market comes back to its steady state. Clearly, it gets
+a positive gain if and only if
+¯ı≤ 1 2 − ∆ µ+
+In particular, if the effective spread ∆ is large, or if µ+ is small, then it is impossi-
+ble or the initial imbalance should be very small. In the case where this happens,
+then ¯H∗ is given by
+¯H∗ = a¯ı ( 2∆ + µ+ (2¯ı− 1) )−
+with corresponding revenue of
+¯R∗ = 1 2 [ a¯ı ( 2∆ + µ+ (2¯ı− 1) )−]2
+• If H = 0: This corresponds to the classical situation where a market maker posts
+limit orders at a given depth to gain from possible ﬂuctuations. This results in
+corresponding average revenue given v of
+ˆR(v) = Qkv ( k + µ+ (2ık(v) − 1) ) − Qk a v2 2
+From this equation, even if the spoofer gets a positive gain of k ticks buy execut-
+ing its order, it will drive the imbalance ık(v) below 1/2 and face adverse price
+movement that will offset its gains. The optimal ˆv∗ = ˆv∗(¯ı) in that situation is not
+explicit, but can be easily numerically implemented and corresponds to an optimal
+revenue of
+ˆR∗ = Qkˆv∗( k + µ+ (2ık(ˆv∗) − 1) ) − Qk a ˆv2 2
+In general, solving for the optimal H is straightforward with
+H∗ = a¯ı ( 2∆ + µ+ (2ık(v) − 1) )−
+and corresponding average revenue:
+R(v)
+δ = 1 2 [ a¯ı ( 2∆ + µ+ (2ık(v) − 1) )−]2 + Qkv ( k + µ+ (2ık(v) − 1) ) − Qk a v2 2
+These two effects are difﬁcult to disentangle from a truly spooﬁng gain when H as well as
+v are strictly positive. However, this can be done numerically and the results are presented
+in Figure 17, where the spooﬁng region – H > 0 as well as v > 0 – is indicated.
+We can however draw some stylised facts about the spooﬁng behavior from this market
+maker viewpoint. The impact of the different parameters – initial imbalance ¯ı, probability
+of getting executed Qk, local sensitivity of imbalance on the price impact w = wk as well
+as overall price deviation µ+ are similar to the previous case. However, in addition to the
+previous part, the effective spread ∆ acts negatively on the spooﬁng opportunity in that
+context. Indeed, a positive market order H is only triggered if µ+(2ı∗−1) ≤−2∆, which
+requires a spoofed imbalance satisfying
+ıspoof ≤− ∆ µ+ + 1 2
+If ∆ is too large or µ+ too low, a spooﬁng strategy is no longer rewarding.
+24
+
+=== page 25 ===
+Figure 17. ıspoof as a function of ¯ı and in (a) µ+ = 3, ∆ = 0,k = 1,wk =
+0.1,dqy = 0.001 for all y ≥ k. One parameter is increased each time with
+respect to (a) where (b): dqy = 0.002 for all y ≥ k; (c): µ+ = 4; (d):
+∆ = 2; (e): wk = 0.4; (f): k = 4. Red area: v∗ = 0,H∗ = 0; Dark
+blue area: v∗ = 0,H∗ > 0; Light blue area: v∗ > 0,H∗ > 0; White area:
+v∗ > 0,H∗ = 0.
+APPENDIX C. GOODNESS OF FIT
+The model for the price movement is conditioned on the imbalance. So, as for the goodness
+of ﬁt, we compare the empirical price change distribution with the ﬁtted one conditioned
+on different level of imbalance.
+Figure 18. Empirical price change conditioned on the imbalance (blue) and
+¯ıdp+ + (1 − ¯ı)dp− (red). Left panel, ˆı < 0.298 and right panel, ˆı ≥ 0.648,
+which correspond to the low and top 5% quantiles.
+Since we ﬁt a conditional distribution, we bucket the observed imbalance into 20 equidis-
+tant quantile intervals and perform a X 2 test of goodness of ﬁt between the empirical
+distribution conditioned on the imbalance within this bucket and ¯ıdp+ + (1 −¯ı)dp− where
+¯ı is taken as the mid value of the imbalance for the corresponding bucket. For each bucket,
+we have about 500 data points which we test against the null hypothesis that the empir-
+ical price change distribution is consistent with ¯ıdp+ + (1 − ¯ı)dp−. Table 4 shows the
+X 2-statistics and p-values in each bucket.13 3 buckets exceed the bound (marked in black)
+where the null hypothesis is rejected while for the 17 others, the null hypothesis sustains.
+13Signiﬁcance level 0.05 corresponds to a X 2 6 (0.95) = 12.592.
+25
+
+=== page 26 ===
+l 1 2 3 4 5 6 7 8 9 10
+¯ıl 0.245 0.321 0.356 0.381 0.4 0.416 0.43 0.443 0.456 0.468
+X 2-statistic 7.112 7.635 12.476 6.253 6.658 8.041 4.089 2.814 12.56 4.177
+p-value 0.311 0.266 0.052 0.395 0.354 0.235 0.665 0.832 0.051 0.653
+l 11 12 13 14 15 16 17 18 19 20
+¯ıl 0.48 0.493 0.506 0.52 0.534 0.549 0.568 0.591 0.624 0.702
+X 2-statistic 9.372 8.775 5.219 3.014 7.634 16.046 2.334 17.835 6.949 17.953
+p-value 0.154 0.187 0.516 0.807 0.266 0.014 0.887 0.007 0.326 0.006
+Table 4. Chisquare test on stock BMO from June 5, 2017 to June 9, 2017.
+APPENDIX D. COMPUTATION OF ıspoof
+For t in Π, we compute ˆı−(t) and ˆı+(t), the imbalance before and after a market order, as
+follows:
+ˆı−(t) =
+∑
+k≤N
+∑
+t−f≤s<t
+wk¯v− k (s)
+∑
+k≤N
+∑
+t−f≤s<t
+wk
+(
+¯v− k (s) + ¯vk(s) )
+ˆı+(t) =
+∑
+k≤N
+∑
+t≤s<t+1
+wk¯v− k (s)
+∑
+k≤N
+∑
+t≤s<t+1
+wk
+(
+¯v− k (s) + ¯vk(s) )
+For each ˆı−(t), the optimal spooﬁng strategy vspoof can be solved explicitly from
+vspoof,k = 1 + (1 − ˆı−(t)) wk Q [ 2ρtwkµ+ 1 − ˆı−(t) ˆı−(t) ı2 − (Qkρt + ν) ]+
+where ı = bt bt +at +wk vspoof,k , at is the average size of the limit order book f seconds before
+a market order
+at =
+N∑
+k=1
+∑
+t−f≤s<t
+¯vk(s)∆s
+Nf
+ρt =
+N∑
+k=1
+∑
+t−f≤s<t
+Hs
+at
+where Hs is the market order volume at time s. In the same way, we can deﬁne bt and
+ıspoof(ˆı−(t)) = bt bt + at + ∑ kwkvspoof,k
+APPENDIX E. WASSERSTEIN DISTANCE, KERNEL APPROXIMATION AND
+CONDITIONAL ESTIMATION
+For two distributions µ and ν the 2-Wasserstein distance is deﬁned as
+W2 (µ,ν) =
+
+inf
+
+
+
+∫
+(x−y)2 π(dx,dy): π1 ∼µ,π2 ∼ν
+
+
+
+
+
+1/2
+=
+
+
+1∫
+0
+(qµ(α) −qν(α))2 dα
+
+
+1/2
+26
+
+=== page 27 ===
+From a generic perspective, the conditional distance we consider is as follows: If we as-
+sume that
+(ı−,ı+) ∼K(y,dx) ⊗µ(dy)
+where µ∼ı+ and K(y,·) ∼ı−|ı+ = y, it follows that
+(ıspoof (ı−) ,ı+) ∼Kspoof (y,dx) ⊗µ(dy) where Kspoof(y,·) = K (y,·) ◦ı−1 spoof
+Hence given ı+ = y, we have
+W2 (K(y,·),Kspoof(y,·)) =
+
+
+1∫
+0
+(
+qK(y,·)(α) −ıspoof
+(
+qK(y,·)(α)
+))2
+dα
+
+
+1/2
+Heuristically we wish to monitor the following two quantities
+W2
+(
+ı−,ˆıN − ) |ıN +| {z }
+Distance from the short term imbalance ˆıN −
+to the equilibrium imbalance ı−
+given that ı+ ∼ıN +
+and W2
+(
+ıspoof(ı−),ˆıN − ) |ıN +| {z }
+Distance from the short term imbalance ˆıN −
+to the spoofed imbalance ıspoof
+given that ı+ ∼ıN +
+From the data, we can calibrate the joint distribution (ı−,ı+) as well as (ıspoof(ı−),ı+).14
+Hence, we have a parametrization of K(y,dx) and Kspoof(y,dx) for every y. However
+for each value ˆı+(l) from the discrete distribution ˆıN + we only have a single sample point
+ˆı−(l) at hand. In order to overcome this problem we bucket the values of ˆı+(l) in the
+sample of ˆıN + into several equidistant quantile intervals to get a Kernel approximation of
+ˆıN − .
+The monitoring strategy at a given time tk in Π is given as follows
+1 - Consider the discrete short term joint distribution (ˆıN −(tk),ˆıN + (tk)) given by the sample
+(ı−(s),ı+(s)) , s = tk,...,tk−N+1
+of the last N pairs of imbalances before time t.
+2 - We deﬁne the following L buckets of equal cardinality N/L
+Jl =
+{
+s: s = tk,...,tk−N+1,qˆıN +
+(l− 1
+L
+)
+≤ı+(s) <qˆıN +
+(l
+L
+)}
+, l = 1 ...,L
+as well as the mid point of each
+ıl = L N ∑ s∈Jl ı+(s)
+3 - For each l, we generate a random sample ıN,L − and ıN,L spoof of N/L points each drawn
+from K(ıl,·) and Kspoof(ıl,·), respectively.
+4 - For each l we compute the Wasserstein distances
+W2
+(
+ıN,l − ,ˆıN,L −
+)
+and W2
+(
+ıN,l spoof,ˆıN,L −
+)
+where ˆıN,L − is the discrete distribution out of the sample ˆı−(s) for s in Jl. This is an
+approximation for the Wasserstein distance
+W2
+(
+ı−,ˆıN n ) |ıN + ≈ıl and W2 ( ıspoof,ˆıN n ) |ıN + ≈ıl
+14The former ﬁts well with a joint normal distribution, while the second one with a skewed normal distribu-
+tion, see Figure 19. Other parametrization could eventually be used too.
+27
+
+=== page 28 ===
+5 - we aggregate all together and deﬁne the indicators
+d
+(
+ı−,ˆıN −|ˆıN + ) := 1 L L∑ l=1 W2 ( ıN,l − ,ˆıN,L − )
+d
+(
+ıspoof,ˆıN −|ˆıN + ) := 1 L L∑ l=1 W2 ( ıN,l spoof,ˆıN,L − )
+Remark E.1. To enhance the accuracy of this indicator, we run step 3 to 5 a couple of
+times with different samples and average again.
+As for the Kernel approximation, we ﬁt (ı−,ı+) to a bivariate normal distribution
+(ı−,ı+) ∼N (µ1,µ2,σ1,σ2,ρ)
+thus the conditional distribution is also a normal distribution and K(y,·) is its density
+function
+ı−|ı+ = y∼N
+(
+µ1 + σ1 σ2 ρ(y−µ2), (1 −ρ2)σ2 1
+)
+Similarly, we ﬁt (ıspoof(ı−),ı+) to a bivariate skewnormal distribution
+(ıspoof(ı−),ı+) ∼SN (α,ξ, Ω)
+where α = [α1,α2]⊤, ξ = [ξ1,ξ2]⊤, Ω =
+[w1 w
+w w2
+]
+. It can be derived that
+Kspoof(y,·) = φ
+( ·−ξc 1√w11.2 ) Φ ( α1 √ω1(·−ξc 1) + x′ 0 ) Φ(x0)
+where φ, Φ are the density function and cumulative distribution function of a standard
+normal distribution, and
+ξc 1 = ξ1 + ω ω2 (y−ξ2), w11.2 = w1 − w2 w2
+¯α2 =
+α2 +
+√
+w2
+w1 w2 α1 √
+1 + w11.2 w1 α2 1
+, x0 = ¯α2 √w2 (y−ξ2)
+x′ 0 =
+√
+1 + w11.2
+w1
+α2 1x0
+Figure 19 shows that K and Kspoof ﬁt well with real data in Figure 13.
+Figure 19. Left panel: Empirical joint distribution of (ı−,ı+) and K (green
+contours) . Right panel: Joint distribution of (ıspoof (ı−),ı+) and Kspoof (green
+contours).
+28
+
+=== page 29 ===
+REFERENCES
+[1] A. Alfonsi and A. Schied. Optimal trade execution and absence of price manipula-
+tions in limit order book models. SSRN Electronic Journal, 02 2010.
+[2] A. Alfonsi, A. Fruth, and A. Schied. Optimal execution strategies in limit order books
+with general shape functions. Quantitative Finance, 10, 08 2007.
+[3] F. Allen and D. Gale. Stock-price manipulation. Review of Financial Studies, 5:
+503–29, 02 1992.
+[4] K. Bechler and M. Ludkovski. Order ﬂows and limit order book resiliency on the
+meso-scale. Market Microstructure and Liquidity, 3(03n04):1850006, 2017.
+[5] Y. Cao, Y. Li, S. Coleman, A. Belatreche, and T. M. McGinnity. Detecting price
+manipulation in the ﬁnancial market. In 2014 IEEE Conference on Computational
+Intelligence for Financial Engineering Economics (CIFEr), pages 77–84, 2014.
+[6] Y. Cao, Y. Li, S. Coleman, A. Belatreche, and T. M. McGinnity. Adaptive hidden
+markov model with anomaly states for price manipulation detection. IEEE Transac-
+tions on Neural Networks and Learning Systems, 26(2):318–330, 2015.
+[7] Á. Cartea, R. Donnelly, and S. Jaimungal. Enhancing trading strategies with order
+book signals. Applied Mathematical Finance, 25(1):1–35, 2018.
+[8] A. Cartea, S. Jaimungal, and Y. Wang. Spooﬁng and price manipulation in order-
+driven markets. Applied Mathematical Finance, pages 1–32, 02 2020. doi:
+10.1080/1350486X.2020.1726783.
+[9] R. Cont, A. Kukanov, and S. Stoikov. The price impact of order book events. Journal
+of Financial Econometrics, 12(1):47–88, 2014.
+[10] J. Gatheral. No-dynamic-arbitrage and market impact. Quantitative Finance, 10(7):
+749–759, 2010.
+[11] J. Gatheral and A. Schied. Dynamical models of market impact and algorithms for
+order execution. SSRN Electronic Journal, 01 2013.
+[12] M. Gould and J. Bonart. Queue imbalance as a one-tick-ahead price predictor in a
+limit order book. Market Microstructure and Liquidity, 12 2015.
+[13] C. R. Harris, K. J. Millman, S. J. van der Walt, R. Gommers, P. Virtanen, D. Courna-
+peau, E. Wieser, J. Taylor, S. Berg, N. J. Smith, R. Kern, M. Picus, S. Hoyer, M. H.
+van Kerkwijk, M. Brett, A. Haldane, J. F. del Río, M. Wiebe, P. Peterson, P. Gérard-
+Marchant, K. Sheppard, T. Reddy, W. Weckesser, H. Abbasi, C. Gohlke, and T. E.
+Oliphant. Array programming with NumPy. Nature, 585(7825):357–362, September
+2020. ISSN 1476-4687.
+[14] O. Hart and D. Kreps. Price destabilizing speculation. Journal of Political Economy,
+94(5):927–52, 1986.
+[15] R. Jarrow. Market manipulation, bubbles, corners, and short squeezes. Journal of
+Financial and Quantitative Analysis, 27:311–336, 09 1992.
+[16] A. Kyle. Continuous auctions and insider trading. Econometrica, 53:1315–1336,
+1985.
+[17] E. J. Lee, K. S. Eom, and K. S. Park. Microstructure-based manipulation: Strategic
+behavior and performance of spooﬁng traders. Journal of Financial Markets, 16(2):
+227–252, 2013.
+[18] A. Lipton, U. Pesavento, and M. Sotiropoulos. Trade arrival dynamics and quote
+imbalance in a limit order book. Preprint, 12 2013.
+[19] M. McKerns, L. Strand, T. Sullivan, A. Fang, and M. Aivazis. Building a framework
+for predictive science. Proceedings of the 10th Python in Science Conference, 2011,
+2011.
+[20] E. M. Miranda, P. McBurney, and M. J. Howard. Learning unfair trading: A market
+manipulation analysis from the reinforcement learning perspective. 2016 IEEE Con-
+ference on Evolving and Adaptive Intelligent Systems (EAIS), pages 103–109, 2016.
+29
+
+=== page 30 ===
+[21] J. Reback, W. McKinney, jbrockmendel, J. V. den Bossche, T. Augspurger, P. Cloud,
+gfyoung, Sinhrks, A. Klein, M. Roeschke, S. Hawkins, J. Tratner, C. She, W. Ayd,
+T. Petersen, M. Garcia, J. Schendel, A. Hayden, MomIsBestFriend, V. J. L. Rechen-
+zentrum, P. Battiston, S. Seabold, chris b1, h vetinari, S. Hoyer, W. Overmeire, alim-
+cmaster1, K. Dong, C. Whelan, and M. Mehyar. pandas-dev/pandas: Pandas. Soft-
+ware, Feb. 2020.
+[22] G. Shorter and R. Miller. High-frequency trading: Background, concerns, and regu-
+latory developments. Technical report, Congressional Research Service, 04 2015.
+[23] J. A. Sirignano. Deep learning for limit order books. Quantitative Finance, 19(4):
+549–570, 2019.
+[24] V. van Kervel. Competition for order ﬂow with fast and slow traders. The Review of
+Financial Studies, 28(7):2094–2127, 2015.
+[25] P. Virtanen, R. Gommers, T. E. Oliphant, M. Haberland, T. Reddy, D. Cournapeau,
+E. Burovski, P. Peterson, W. Weckesser, J. Bright, S. J. van der Walt, M. Brett, J. Wil-
+son, K. J. Millman, N. Mayorov, A. R. J. Nelson, E. Jones, R. Kern, E. Larson, C. J.
+Carey, ˙I. Polat, Y. Feng, E. W. Moore, J. VanderPlas, D. Laxalde, J. Perktold, R. Cim-
+rman, I. Henriksen, E. A. Quintero, C. R. Harris, A. M. Archibald, A. H. Ribeiro,
+F. Pedregosa, P. van Mulbregt, A. Vijaykumar, A. P. Bardelli, A. Rothberg, A. Hilboll,
+A. Kloeckner, A. Scopatz, A. Lee, A. Rokem, C. N. Woods, C. Fulton, C. Mas-
+son, C. Häggström, C. Fitzgerald, D. A. Nicholson, D. R. Hagen, D. V. Pasechnik,
+E. Olivetti, E. Martin, E. Wieser, F. Silva, F. Lenders, F. Wilhelm, G. Young, G. A.
+Price, G.-L. Ingold, G. E. Allen, G. R. Lee, H. Audren, I. Probst, J. P. Dietrich, J. Sil-
+terra, J. T. Webber, J. Slaviˇc, J. Nothman, J. Buchner, J. Kulick, J. L. Schönberger,
+J. V. de Miranda Cardoso, J. Reimer, J. Harrington, J. L. C. Rodríguez, J. Nunez-
+Iglesias, J. Kuczynski, K. Tritz, M. Thoma, M. Newville, M. Kümmerer, M. Boling-
+broke, M. Tartre, M. Pak, N. J. Smith, N. Nowaczyk, N. Shebanov, O. Pavlyk, P. A.
+Brodtkorb, P. Lee, R. T. McGibbon, R. Feldbauer, S. Lewis, S. Tygier, S. Sievert,
+S. Vigna, S. Peterson, S. More, T. Pudlik, T. Oshima, T. J. Pingel, T. P. Robitaille,
+T. Spura, T. R. Jones, T. Cera, T. Leslie, T. Zito, T. Krauss, U. Upadhyay, Y. O.
+Halchenko, Y. Vázquez-Baeza, and S. . Contributors. SciPy 1.0: fundamental algo-
+rithms for scientiﬁc computing in Python. Nature Methods, 17(3):261–272, March
+2020. ISSN 1548-7105.
+[26] Y. Wang. Strategic spooﬁng order trading by different types of investors in the futures
+markets. Wall Street Journal, 2015.
+[27] Wes McKinney. Data Structures for Statistical Computing in Python. In Stéfan
+van der Walt and Jarrod Millman, editors, Proceedings of the 9th Python in Science
+Conference, pages 56 – 61, 2010. doi: 10.25080/Majora-92bf1922-00a.
+[28] K. Xu, M. Gould, and S. Howison. Multi-level order-ﬂow imbalance in a limit order
+book. Preprint, 07 2019.
+SHANGHAI JIAO TONG UNIVERSITY, SHANGHAI, CHINA
+Email address: taoxuan@sjtu.edu.cn
+WESTERN UNIVERSITY, CANADA
+Email address: aday46@uwo.ca
+SHANGHAI JIAO TONG UNIVERSITY (NOW AT PING AN TECHNOLOGY), SHANGHAI, CHINA
+Email address: lan.ling@sjtu.edu.cn
+Email address: linglan987@pingan.com.cn
+SHANGHAI JIAO TONG UNIVERSITY, SHANGHAI, CHINA
+Email address: sdrapeau@saif.sjtu.edu.cn
+URL: http://www.samuel-drapeau.info
+30

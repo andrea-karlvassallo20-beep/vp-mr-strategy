@@ -1,0 +1,2579 @@
+=== page 1 ===
+Empirical Study of Market Impact Conditional on
+Order-Flow Imbalance
+Anastasia Bugaenko
+Supervisor: Dr Ankush Agarwal
+Word Count: 14300
+August 2019
+A dissertation submitted in part requirement for the Master of Science in
+Quantitative Finance
+Adam Smith Business School, University of Glasgow
+Ana@symbiotica.ai
+arXiv:2004.08290v2  [q-fin.CP]  24 Apr 2020
+
+=== page 2 ===
+Acknowledgements
+I would like to express my gratitude to my family and my partner for
+their endless support, love and patience.
+
+=== page 3 ===
+Abstract
+In this research, we have empirically investigated the key drivers aﬀecting
+liquidity in equity markets. We illustrated how theoretical models, such
+as Kyle’s model, of agents’ interplay in the ﬁnancial markets, are aligned
+with the phenomena observed in publicly available trades and quotes data.
+Speciﬁcally, we conﬁrmed that for small signed order-ﬂows, the price impact
+grows linearly with increase in the order-ﬂow imbalance. We have, further,
+implemented a machine learning algorithm to forecast market impact given
+a signed order-ﬂow. Our ﬁndings suggest that machine learning models can
+be used in estimation of ﬁnancial variables; and predictive accuracy of such
+learning algorithms can surpass the performance of traditional statistical
+approaches.
+Understanding the determinants of price impact is crucial for several rea-
+sons. From a theoretical stance, modelling the impact provides a statistical
+measure of liquidity. Practitioners adopt impact models as a pre-trade tool
+to estimate expected transaction costs and optimize the execution of their
+strategies. This further serves as a post-trade valuation benchmark as sub-
+optimal execution can signiﬁcantly deteriorate a portfolio performance.
+More broadly, the price impact reﬂects the balance of liquidity across mar-
+kets. This is of central importance to regulators as it provides an all-
+encompassing explanation of the correlation between market design and sys-
+
+=== page 4 ===
+temic risk, enabling regulators to design more stable and eﬃcient markets.
+Keywords: Market Impact, Liquidity, Order-Flow Imbalance, Machine Learning
+Note: This copy of the research does not include the source code. Please contact
+the author for reference to the source code at – Email: ana@symbiotica.ai
+
+=== page 5 ===
+Contents
+List Of Tables
+List Of Figures
+1 Introduction 1
+1.1 Background . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+1.1.1 Liquidity Providers: The Modern Market-Maker . . . . . . . 4
+1.1.2 Asymmetric Information and Adverse Selection . . . . . . . 6
+1.2 Motivation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+1.3 Research Objective . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+1.4 Thesis Structure . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+2 Literature Review 14
+2.1 A Brief Primer on Market Microstructure . . . . . . . . . . . . . . . 14
+2.2 Market Impact . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+2.2.1 Price Impact Models . . . . . . . . . . . . . . . . . . . . . . 20
+3 Data and Research Methodology 26
+3.1 Electronic Markets . . . . . . . . . . . . . . . . . . . . . . . . . . . 26
+3.1.1 Limit Orderbook (LOB) Trading . . . . . . . . . . . . . . . 26
+3.2 The Dataset . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30
+3.2.1 Lobster Data . . . . . . . . . . . . . . . . . . . . . . . . . . 30
+
+=== page 6 ===
+3.2.2 Output Format . . . . . . . . . . . . . . . . . . . . . . . . . 31
+3.2.3 Observed Stocks . . . . . . . . . . . . . . . . . . . . . . . . 35
+3.3 Method Development . . . . . . . . . . . . . . . . . . . . . . . . . . 37
+3.3.1 Machine Learning . . . . . . . . . . . . . . . . . . . . . . . . 38
+3.3.2 Goodness Of Fit . . . . . . . . . . . . . . . . . . . . . . . . 46
+3.3.3 Feature Engineering . . . . . . . . . . . . . . . . . . . . . . 48
+3.3.4 Cross–Validation . . . . . . . . . . . . . . . . . . . . . . . . 49
+4 Empirical Study 53
+4.1 Modelling Market Impact . . . . . . . . . . . . . . . . . . . . . . . 53
+4.1.1 Unconditional Lag-1 Impact . . . . . . . . . . . . . . . . . . 55
+4.1.2 Engineering Response Function . . . . . . . . . . . . . . . . 58
+4.1.3 Empirical Observations . . . . . . . . . . . . . . . . . . . . . 60
+4.1.4 2015 Financial Time Series . . . . . . . . . . . . . . . . . . . 62
+4.1.5 Conditioning on Trade Volume . . . . . . . . . . . . . . . . 64
+4.1.6 Order-Flow Imbalance . . . . . . . . . . . . . . . . . . . . . 70
+4.2 Results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 73
+4.2.1 Functional Form of Market Impact . . . . . . . . . . . . . . 74
+4.2.2 Kyle’s Lambda . . . . . . . . . . . . . . . . . . . . . . . . . 79
+5 Conclusion and Future Work 83
+5.1 Summary . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 83
+5.2 Future Work . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 84
+
+=== page 7 ===
+References 86
+Appendix A 92
+A.1 Market and Funding Liquidity . . . . . . . . . . . . . . . . . . . . . 92
+Appendix B 93
+B.1 Selective Liquidity Taking Under Market Fragmentation . . . . . . . 93
+B.2 Limit Orderbooks and Their Models . . . . . . . . . . . . . . . . . . 95
+Appendix C 97
+C.1 The NASDAQ . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 97
+C.2 Ordeerbook Reconstruction . . . . . . . . . . . . . . . . . . . . . . . 97
+C.3 Data Prepossessing . . . . . . . . . . . . . . . . . . . . . . . . . . . 99
+C.4 Machine Learning . . . . . . . . . . . . . . . . . . . . . . . . . . . . 105
+C.5 The Gauss–Markov Theorem . . . . . . . . . . . . . . . . . . . . . . 107
+C.6 Statistical Inference . . . . . . . . . . . . . . . . . . . . . . . . . . . 108
+C.7 AIC and BIC Goodness-of-Fit Measures . . . . . . . . . . . . . . . 109
+C.8 Hidden Orders . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 110
+C.9 Empirical Studies Review . . . . . . . . . . . . . . . . . . . . . . . 111
+Appendix D 114
+D.1 Future Work . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 114
+D.1.1 Alternative Data . . . . . . . . . . . . . . . . . . . . . . . . 114
+D.1.2 Illiquid Markets . . . . . . . . . . . . . . . . . . . . . . . . . 115
+
+=== page 8 ===
+D.1.3 Invariant Market Impact Function . . . . . . . . . . . . . . . 115
+D.1.4 Optimal Execution . . . . . . . . . . . . . . . . . . . . . . . 116
+D.1.5 Computational Resources . . . . . . . . . . . . . . . . . . . 118
+Appendix E 119
+
+=== page 9 ===
+List of Tables
+1 Financial Liquidity Regulations . . . . . . . . . . . . . . . . . . . . 8
+2 Sample entries in ‘message’ ﬁle . . . . . . . . . . . . . . . . . . . . . 32
+3 Sample entries in the ‘orderbook’ ﬁle at Level 1 . . . . . . . . . . . 32
+4 Event Types in LOBSTER data . . . . . . . . . . . . . . . . . . . . 35
+5 Average daily number of MOs for each stock . . . . . . . . . . . . . 36
+6 ⟨s⟩ Average spread; R (1) the lag-1 response function for all MOs;
+∑
+R standard deviation of price ﬂuctuations around the average
+price impact of MOs – all expressed in dollar cents; NMO total
+average number of MO per day between 10:30 and 15:00 on each
+trading day from 2nd of January to 30th of June 2015 for four large-
+and small- tick stocks. . . . . . . . . . . . . . . . . . . . . . . . . . 60
+7 ⟨s⟩ Average spread; R (1) the lag-1 response function for all MOs;
+∑
+R standard deviation of price ﬂuctuations around the average
+price impact of MOs – all expressed in dollar cents; NMO total
+average number of MO per day between 10:30 and 15:00 on each
+trading day from 30th of June to 31st of December 2015 for four
+large- and small- tick stocks . . . . . . . . . . . . . . . . . . . . . . 63
+8 In bold are empirical observations from the work of Bouchaud et al.
+(2018); in white results of the current study using market data from
+LOBSTER (measurement units are the same as in Tables 6 and 7) . 64
+
+=== page 10 ===
+9 Separate LO executions representing the same MO at the same
+timestamp . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 104
+10 Descriptive Statistics: Order-Flow Imbalance and Aggregated Mar-
+ket Impact. Order-Flow Imbalance measured in shared, Aggregated
+Market Impact is measured in dollar cents. . . . . . . . . . . . . . . 112
+11 MSE Cross Validation Scores run k×10 . MSE is measured in dollar
+cents. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 113
+
+=== page 11 ===
+List of Figures
+1 Illustration of LOB dynamics (Bonart and Gould, 2017). . . . . . . 28
+2 Method of OLS ﬁtting a line (described by the model) to the data
+by minimising the sum of squared residuals (Murphy, 2012). . . . . 44
+3 Schematic of 5-fold cross validation (Murphy, 2012). . . . . . . . . . 52
+4 Normalised volume distribution for PCLN. Yellow line representing
+the mean normilised volume. . . . . . . . . . . . . . . . . . . . . . . 67
+5 Lag-1 Response Function Conditioned on Normalised Trade Volume
+for PCLN (left) and EBAY (right) . . . . . . . . . . . . . . . . . . . 69
+6 Aggregate impact (in dollar cents) of order-ﬂow imbalance (in shares)
+(in over T=5 (top left), T=10 (top right), T=20 (bottom left) and
+T=50 (bottom right) for TSLA stock . . . . . . . . . . . . . . . . . 72
+7 Aggregate impact (in dollar cents) conditioned on order-ﬂow imbal-
+ance (in shares) for TSLA stock during 2015 after data pre-processing 74
+8 Aggregate impact (in dollar cents) and order-ﬂow imbalance (in
+shares) distributions for TSLA during 2015. Red lines representing
+means - for aggregate response two lines are positive and negative
+means. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 75
+
+=== page 12 ===
+9 Linear Regression model and true observations of market impact for
+TSLA (left). Decision Tree model and true observations of market
+impact for TSLA (right) (Decision Tree Regression only displaying
+testing observations). . . . . . . . . . . . . . . . . . . . . . . . . . . 77
+10 MSE (left) with average MSE for Linear Regression in blue, and
+average MSE for Decision Tree Regression in green; and R2 results
+(right) for Linear Regression and Decision Tree Regression. . . . . . 78
+11 Subsection of observation that demonstrate linearity between order-
+ﬂow imbalance and price impact for TSLA in 2015. . . . . . . . . . 80
+12 Top: models of Linear and Decision Tree Regressions for predicting
+market impact conditioned on order-ﬂow imbalance (Decision Tree
+Regression only displaying testing observations); bottom: measures
+of goodness of ﬁt for the two models (left: green line - average MSE
+for Decision Tree, blue line - average MSE for Linear Regression . . 81
+13 Latent Order Book in the presence of a meta-order, with bid orders
+(blue boxes) and ask orders (red boxes) sitting on opposite sides
+of the price line and subject to a stochastic evolution. (DONIER,
+Jonathan et al., 2015) . . . . . . . . . . . . . . . . . . . . . . . . . 95
+14 LOB reconstruction from NASDAQ data feed (HUANG, Ruihong
+and Polak, Tomas, 2011) . . . . . . . . . . . . . . . . . . . . . . . . 98
+15 Frequencies of market events of each type during trading day. . . . 101
+16 Box plot of trade volumes during the full trading day for TSLA stock102
+
+=== page 13 ===
+17 Box plot of trade volumes during 10:30-15:00 for TSLA stock . . . . 102
+18 Computational time in seconds for estimation of lag-1 unconditional
+impact for 2nd of January to 30th of June 2015 in light grey; and the
+computational time in seconds for estimation of lag-1 unconditional
+impact 30th of June to 31st of December 2015 in dark grey . . . . . 119
+
+=== page 14 ===
+1 Introduction
+A security marketplace broadly refers to any venue where buyers and sellers
+culminate to exchange resources, enabling prices to adapt to supply and demand
+(Bouchaud et al., 2018). Trading can take place in several possible ways; via
+broker-intermediated over-the-counter (OTC) deals, specialized broker-dealer net-
+works, decentralised internal chat rooms where traders engage in bilateral trans-
+actions, amongst others.
+In traditional quote-driven markets, all trading is enabled by designated market
+makers (MM or specialists liquidity providers) who quote their prices with corre-
+sponding volumes (the quantity to be bought/ sold), whilst other participants –
+market takers – submit their orders to either buy at quoted ask price or sell at
+the bid price posted by the market maker. In this respect, market makers oﬀer
+indicative prices to the whole market. However, today, most modern markets op-
+erate electronically across multiple venues, and center around a continuous-time
+double-auction (where participants can simultaneously auction buy and sell orders)
+mechanism, using a visible limit order book (LOB). The LOB mechanism allows
+any participant to quote bid/ ask prices, and a transaction takes place whenever
+a buyer and a seller agree on the price. The London, New York (NYSE), Swiss,
+Tokyo Stock Exchanges, NASDAQ, Euronext, and other smaller markets operate
+using some kind of LOB. These cover a range of liquid (traded in large volume)
+1
+
+=== page 15 ===
+products including stocks, futures, and foreign exchange. Market participants in
+such venues can see the proposed prices, submit their own oﬀers and execute trades
+by sending relevant messages to the LOB. Owing to technological developments,
+traders across the globe can access information about LOBs state in real-time and
+incorporate their observations when deciding on how to act. This transparency
+combined with low-latency, high liquidity and low trading costs of electronic ex-
+changes appeals to many individual and institutional traders (Hautsch and Huang,
+2011).
+The quality of a security market is often characterised by its liquidity. Never-
+theless, the term is not simple to deﬁne accurately, with precise deﬁnitions only
+existing in the context of particular models. Generally, liquidity is provided when
+counterparties enter into a ﬁrm commitment to trade. This ultimately results in
+an exchange of resources at a perceived free market fair price (market clearing, as
+described by general equilibrium pricing). In this regard, the term captures the
+usual economic concept of price elasticity – in a highly liquid market (where many
+participants are willing to trade) a small shift in supply (respectively demand)
+does not result in a large price change (Hasbrouck, 2007). Kyle (1985) more ade-
+quately describes liquidity by identifying three key properties of a liquid market:
+tightness – “the cost of turning around a position over a short period of time”,
+depth – “the size of an order-ﬂow innovation required to change the prices by a
+given amount” or the available volume at the quoted price, and resilience – “the
+2
+
+=== page 16 ===
+speed with which prices recover from a random, uninformative shock”.
+Despite these simplistic yet elusive deﬁnitions, in the marketplace, liquidity is a
+complex variable with multiple unobservable facets, and often the main contrib-
+utor to the non-stationarity of ﬁnancial time series (amongst other variables, i.e.,
+volatility). The diﬃculty in providing a more comprehensive deﬁnition of liquidity
+is exacerbated by the fact that academia has traditionally preferred to look at the
+world through the lens of a perfect, frictionless market with inﬁnite liquidity at the
+market price. Nonetheless, the qualities associated with the word are suﬃciently
+widely accepted and understood, making the term useful in practical discourse.
+In particular, practitioners discern market liquidity from that of funding liquidity.
+To capital market participants, liquidity generally refers to implicit or explicit
+transaction costs (arising from limited market depth in the security), bid-ask spread
+(i.e., quality spread – a diﬀerence in interest rates/ the diﬀerence in price at which
+one can buy or sell an asset) and price impact (a change in market price that
+follows a trade). This is colloquially referred to as market liquidity. Conversely,
+risk managers are often concerned with funding liquidity. This pertains to the ease
+at which a ﬁnancial institution can raise funds/ capital to meet cash shortfalls
+(Acharya, 2006).
+3
+
+=== page 17 ===
+1.1 Background
+1.1.1 Liquidity Providers: The Modern Market-Maker
+As outlined above, prior to the widespread adoption of LOBs, liquidity provision
+was traditionally designated to a small group of specialists. These specialists served
+as the exclusive source of liquidity for an entire market. This mechanism worked
+particularly well for quote-driven markets, granting these so-called MMs several
+privileges in exchange for immediate quotation and clearing services (i.e., ensuring
+settlement of transactions). To maintain eﬃciency under this market structure,
+dealers/ MMs must maintain undesirably large inventories (long position – assets
+that have been bought; short position – asset borrowed against a deposit known as
+collateral), accumulated whilst providing liquidity. This is problematic for MMs
+who typically aim to keep their net inventory as close to zero as possible, so as not
+to bear the risk of the assets’ price declining (Bouchaud et al., 2018).
+Alternatively, modern markets place no such restriction; in today’s electronic mar-
+kets, all agents can act as MM by oﬀering liquidity to other participants. This
+emerging complexity of electronic trading venues has intrinsically blurred the line
+between the usual distinction of liquidity provider (MM) and consumer. Nonethe-
+less, to assist our discussion we adopt a more concrete distinction of the type of
+participants, as outlined in the works of Cartea, Jaimungal and Penalva (2015)
+4
+
+=== page 18 ===
+and Bouchaud et al. (2018):
+1. Informed Traders – attributed to sophisticated traders who proﬁt from
+leveraging statistical information (i.e., private signal or prediction) about
+the future price of an asset, which may not be fully reﬂected in the assets
+spot price
+2. Uninformed Traders – attributed to either unsophisticated traders with
+no access to (or inability to correctly/ eﬃcient process) information, or mar-
+ket participants who are driven by economic fundamentals outside of the
+exchange. These traders are often labelled noise traders as a large fraction
+of their trades arise from portfolio management and risk-return trade-oﬀs
+that carry very little short-term price information
+3. Market makers (MMs) – attributed to (provisionally) uninformed pro-
+fessional traders who proﬁt from facilitating the exchange of a particular
+security and exploiting their skills in executing trades
+Clearly, the notion of information fundamentally underpins our classiﬁcation of
+each agent and deﬁnes their ability to accurately forecast price changes (Bouchaud
+et al., 2018). Considering the interactions and tensions amidst these groups pro-
+vides useful insights into the origins of many interesting observed phenomena in
+modern ﬁnancial markets.
+5
+
+=== page 19 ===
+1.1.2 Asymmetric Information and Adverse Selection
+The rate at which information is incorporated/ reﬂected in prices underpins the
+degree of eﬃciency in the market. In this regards, ﬁnancial markets are not
+generally classiﬁed purely at two extremes (eﬃcient or ineﬃcient) but have been
+shown to exhibit various degrees of eﬃciency (McMillan et al., 2011). In this
+view, market eﬃciency is observed as a continuum between extremes of completely
+eﬃcient, at one end, and ineﬃcient at the other. This is consistent with widespread
+empirical observations (see Finnerty (1976) and Seyhun (1986)), where the strong
+form eﬃciency has been shown not to hold in light of private information.
+As private information can consist of signals about the terminal value of the se-
+curity, information asymmetry is of fundamental importance to MMs (who often
+trade with highly informed participants) and is the prevailing consideration of our
+study. Whereas most small trades contain relatively little information and are
+thus innocuous for MMs providing liquidity; larger orders could be interpreted
+as stronger signals of an information advantage stemming from better predictive
+models.
+An imperative consequence of such informed order-ﬂows (trends in the direction
+of trading arising from more informed participants) is the resulting inventory im-
+balance, where MMs are forced to accumulate larger net positions in the short-run
+– i.e., MM receives many more buy orders than sell, with a high probability of
+6
+
+=== page 20 ===
+being on the wrong side of the trade. This is known as adverse selection and may
+cause MMs huge losses as they are “picked-oﬀ” by more informed traders when
+making binding quotes (Hasbrouck, 2007).
+To compensate for this information asymmetry (therefore mitigating the risk of
+being adversely selected), MMs choose how much liquidity to reveal and look to
+eﬃciently process any new piece of information by updating their bid/ ask quotes
+in response to the order-ﬂow imbalance. Such market friction results in Mean
+Field Games, where MMs adjusts their bid/ ask prices as more informed liquidity
+takers submit large trades. This leads to a worse execution price for the informed
+trader – the so-called market or price impact. Consequently, informed agents must
+selectively take liquidity using optimal execution strategies (i.e., split their large
+orders across time to match the liquidity volume revealed by MM) as described in
+the work of Almgren and Chriss (2001), see Appendix B.1.
+7
+
+=== page 21 ===
+1.2 Motivation
+Following the wake of the 2007 global credit crisis, there has been a myriad of
+regulations requiring institutional investors (both on the buy-side and sell-side) to
+meet several liquidity related policies (see Table 1). This stems from the general
+perceived reduction in the quality of liquidity across asset classes as per the report
+produced by Bloomberg (2016).
+Buy Side Sell Side
+Prudent Valuation MIFID II
+RRP SEC (22E-4)
+ILAAP AIFMD
+Basel 3 (LCR) UCITS
+FRTB (Basel 4) FORM PF
+Table 1: Financial Liquidity Regulations
+Liquidity risk is of special importance to practitioners because it might cause a
+bank to fail despite no trading losses (Murphy, 2008). This risk pertains to the
+ﬁrms’ ability to meet cash demands. These demands might be either known in
+advance, such as coupon payments; or unexpected, such as the early exercise of
+options or the need to liquidate portfolios of large positions. Therefore, inadequate
+funding and market liquidity may impair the ﬁrms’ ability to meet their payment
+obligations.
+Moreover, excess transaction costs arising from liquidity concerns are important
+8
+
+=== page 22 ===
+factors in determining investment ﬁrms’ performance. These costs can become
+very high, reducing any trading proﬁts. According to Jean-Philippe Bouchaud
+from Capital Fund Management, nearly two-thirds of trading proﬁts can be lost
+because of market impact costs (Day, 2017). Whilst explicit transaction costs
+can be accounted for, the implicit costs (such as market impact) cannot be esti-
+mated directly but can be approximated by measuring liquidity and minimized by
+adopting an optimal trading strategy.
+Within the microstructure of ﬁnancial markets, an optimal liquidation/ acquisition
+strategy delivers the minimum market impact for a particular order size and time
+horizon (the urgency at which an asset is to be bought/ sold). In this respect,
+Kyle and Obizhaeva (2018) deﬁne market impact as the expected adverse price
+movement from a pre-trade benchmark (the decision/ fair price for which a trader
+wishes to purchase an asset), upon execution. Consequently, accurate measure-
+ment of market impact is essential, possibly blurring the line between a proﬁtable
+and unproﬁtable strategy net of such transaction costs.
+However, the eﬀect of a ﬁrm’s own trading activity on the market prices is notori-
+ously diﬃcult to model as there is no standard formula that applies to every ﬁnan-
+cial asset or trading venue. Deriving such formula is a challenging task due to the
+lack of trade activity and data in various asset classes. For instance, investment-
+grade ﬁxed income securities are traded in quote driven over-the-counter markets
+(OTC), with no transaction visibility, whereas large common stocks are often found
+9
+
+=== page 23 ===
+in more liquid order driven electronic exchanges. Hence, the functional formula
+for the market impact would vary according to assets characteristics and trading
+pattern.
+Market microstructure literature has discussed a number of market impact/ cost
+functions, with theoretical studies arriving at a model of linear functional form,
+where price impact is said to be proportional to the volume of security traded in
+the market. On the other hand, an overwhelming number of practitioners have
+purported a square root model, which suggests a marginal price impact diminishes
+as the trade volume increases (Kyle and Obizhaeva, 2018). Despite the presence
+of some empirical evidence for the square root model of market impact, both
+practitioners and academics agree that the model is not exact and is not aligned
+with the theoretical research (Bouchaud, 2009).
+The purpose of this study, therefore, is to conduct a robust empirical analysis of
+the market impact functional form and validate it against existing models. The
+novelty of our methodology lies in the advanced statistical tools adopted. Speciﬁ-
+cally, the study will examine the application of machine learning techniques to the
+derivation of a market cost function. Unlike traditional regression analysis that
+suﬀers from limitations such as “curse of dimensionality” (the model becomes
+mathematically intractable when dealing with a large number of explanatory vari-
+ables), machine learning (ML) has been proven to provide robust results in many
+higher-dimensional ﬁnancial applications. This is because of its ability to ﬁt and
+10
+
+=== page 24 ===
+predict using complex data sets (Park, Lee and Son, 2016). With the increas-
+ing availability of high-frequency market trading data, we are now at an acute
+juncture where we can begin to conduct meaningful studies of the relationship
+between order ﬂow, liquidity and price impact in order-driven markets. In doing
+so we hope to facilitate a better understanding of market impact function given
+the gap between current empirical ﬁndings and the theory.
+Being able to model market impact more accurately is essential for a better under-
+standing of how trades aﬀect prices and how to quantify the degree of this impact
+as well as it’s dynamics (Gu´eant, 2016). This knowledge of the price formation
+process would empower both practitioners and academics to arrive at models that
+better depict observed market behaviour, further contributing to the eﬃciency and
+stability of modern market microstructure.
+1.3 Research Objective
+The focus of this research is to derive a functional form of market impact using
+parametric ML algorithm. To achieve this, a detailed investigation of the key
+drivers aﬀecting liquidity is required; with an emphasis on observing the conse-
+quences of executing large orders by exploiting data from a stock exchange.
+A series of experiments will be carried out using the scientiﬁc method to statis-
+11
+
+=== page 25 ===
+tically reconstruct the dynamics of NASDAQ Limit Order Book (LOB). LOBs
+contain detailed information about the interplay between liquidity providers (i.e.,
+market makers) and liquidity takers. This permits us to select microstructure fea-
+tures (explanatory variables) that underpin price impact, and thus, need to be
+included in its function deﬁnition. These features will then serve as input features
+to the ML algorithm.
+The work will be conducted in a controlled environment, examining liquid stocks.
+This allows for a vast and rich data set that can facilitate precise and robust
+numeric results. As parametric models are often prone to overﬁtting (thus, bad
+forecasting), we look to reduce both bias and variance errors by conducting cross-
+validation of the derived model. The latter involves dividing the training data set
+in random parts and ﬁtting the model on each partition (known as out-of-sample
+testing).
+To summarise, the aims of this study are:
+1. Investigate key drivers aﬀecting liquidity in equities markets
+2. Derive a functional form of market impact using machine learning algorithm
+3. Compare machine learning predictive performance against traditional statis-
+tical models using cross validation
+12
+
+=== page 26 ===
+1.4 Thesis Structure
+The structure of this thesis is organised as follows:
+• Chapter 2 - Background and Literature Review is a review of key terms and
+introduction to the research environment.
+• Chapter 3 - Data and Research Methodology describes the dataset and the
+approach adopted throughout the study.
+• Chapter 4 - Empirical Study illustrates the outcomes of our experiments;
+and discusses the implications of the ﬁndings.
+• Chapter 5 - Conclusion and Future Work is a summary of our key results
+and suggestions for future works.
+13
+
+=== page 27 ===
+2 Literature Review
+No respectable model exists without an appropriate understanding of the sys-
+tem rules and challenges faced by domain practitioners, as well as empirical facts.
+To facilitate a comprehensive study of the functional form of market impact, we
+must ﬁrst consider several key concepts present in the Market Microstructure lit-
+erature.
+Market microstructure forms a long and rich history of diﬀering viewpoints, with
+academics (economist, physicists, and mathematicians) and practitioners (regu-
+latory policymakers and investors) typically residing at two distinct ends of the
+spectrum. As we will discuss, all such perspectives have their conﬁnes and inter-
+sect. Developing a coherent understanding of these themes is a long and complex
+endeavour. This chapter serves to situate these issues within the current research
+anatomy.
+2.1 A Brief Primer on Market Microstructure
+The microstructure of a market is characterised by the interactions of the kinds of
+participants, and rules governed by regulators. These rules focus on minimizing
+any friction arising at the level of trading venues, as well as how the exchange of
+assets takes place in very speciﬁc settings.
+14
+
+=== page 28 ===
+The term market microstructure was ﬁrst coined by Garman (1976), in the paper
+of the same title, where he describes the moment-to-moment trading activities
+in asset markets. The ﬁeld has since emerged as an eﬀervescent research area
+of prominent importance. A substantial number of changes have occurred since
+the expressions ﬁrst usage. For example, the price formation process has been
+impacted by the fragmentation of markets in major ﬁnancial hubs such as the
+US and Europe (e.g., introduction of Dark Pools – alternative trading systems
+with no visible liquidity, for which market activities take place away from public
+exchanges), no doubt due to the abundance of technological advances (i.e., au-
+tomation of trading and the development of execution algorithms). These modern
+market designs have prompted new questions for modelers.
+However, information remains a key dimension at the heart of the prevailing mi-
+crostructure studies. The ﬁrst iterations of models embracing this notion of infor-
+mation were developed during the last quarter of the 20th century. Economists
+such as Kyle (1985), provided an in-depth analysis of how information is conveyed
+into prices; and the impact of asymmetric information on liquidity in general. This
+notion that “market prices are an eﬃcient way of transmitting the information re-
+quired to arrive at a Pareto optimal allocation of resources” (Grossman, 1976) –
+is a natural emerging property of microstructure studies that aim to identify how
+diﬀerent trading conditions and rules promote, or hinder, price eﬃciency. That is,
+many classical (static and dynamic) microstructure models describe the process
+15
+
+=== page 29 ===
+by which new information comes to be reﬂected in prices. This transmission of
+information into transactions and prices is deeply related to market impact, provi-
+sion of liquidity and determinants of the bid-ask spread. These topics were often
+the focus of much of the earlier academic literature.
+The ﬁrst academic papers focussing on optimal execution were those of Bertsimas
+and Lo (1998), Almgren and Chriss (1999) and Almgren and Chriss (2001), with
+interest in the subject only truly proliferating beyond 2000 (Gu´eant, 2016). Mod-
+els incorporating the use of limit orders (visible orders resting in the LOB) and
+dark pools soon followed. Appendix B.2 describes earlier LOB models and their
+evolution.
+These new models featured more complex variables such as trading volatility and
+involve coeﬃcients that need to be estimated using high-frequency datasets (time
+series of market data observed at extremely ﬁne scales, i.e., milliseconds). Many
+statisticians are now acutely involved in the study of market microstructure, bring-
+ing with them advanced methods based on stochastic calculus that allow for better
+estimation of parameters given the data. More speciﬁcally, there are several im-
+portant pieces of literature on high-frequency liquidity provision. This began in
+2008 with the publication of Avellaneda and Stoikov (2008) who presented a model
+of market dynamics, comprising of a complex partial diﬀerential equation (PDE)
+that was solved by Gu´eant, Lehalle and Fernandez Tapia (2013).
+16
+
+=== page 30 ===
+Today, quantitative research on market microstructures is more concerned with
+the importance of pre- and post- trade transparency, the optimal tick size, the role
+of alternative trading venues, clearing and settlement of standardized products,
+amongst others.
+Nonetheless, there remains room for improvements when it comes to more real-
+istic dynamic market models that better depict widely observed, but still poorly
+understood micro- and macro- structure phenomena (Bouchaud et al., 2018). To
+examine this relationship between market dynamics and some exogenous variables
+such as volume and order-ﬂow imbalance, we must ﬁrst review the properties of
+prominent models of market impact.
+2.2 Market Impact
+As we have deliberated, the notion of liquidity in ﬁnancial markets is an elusive
+concept. However, from a practical stance, one of its most important metrics is the
+response of price as a function of order-ﬂow imbalance (i.e., excess volume with
+respect to the order sign). This response is known as market impact.
+In much of the literature, there are three distinct strands of interpretation for the
+cause of market impact, which reﬂects the great divide between eﬃcient market
+enthusiasts and sceptics:
+17
+
+=== page 31 ===
+1. The Eﬃcient Market Hypothesis (EMH) posits that all available informa-
+tion is reﬂected in prices as rational agents immediately arbitrage away any
+deviation from the fair price. In the eﬃcient market framework, rational
+agents who believe that asset prices are always close to their fundamental
+value “successfully forecast short-term price movement”. This can result in
+a measurable correlation between trade sign and subsequent price change
+(Bouchaud, Farmer and Lillo, 2009). under this interpretation, as empha-
+sised by Hasbrouck (2007), “. . . orders do not impact prices. It is more accu-
+rate to state that orders forecast prices”, thus, noise-induced trades carrying
+no information yield no long-term price impact as prices would otherwise
+deviate from their fundamental value.
+2. The second picture reinforces the ﬁrst in that market impact is the apparatus
+by which prices adapt to new information as illustrated in the aforementioned
+Glosten and Milgrom (1985) and Kyle (1985) models; therefore permitting
+information about the fundamental value of the asset to be incorporated into
+prices.
+3. The third perspective resonates with that of the eﬃcient market sceptic.
+Here, in the absence of fundamental price nor private information, zero-
+intelligent models describe how prices impact is a reaction to order-ﬂow im-
+balance. In Farmer, Patelli and Zovko (2005) Santa Fe model, they delineate
+a completely stochastic order-ﬂow process by which the act of trading itself is
+18
+
+=== page 32 ===
+tautologically seen as the physical medium statistically interpreted as price
+impact.
+Though all three interpretations result in a positive correlation between trade signs,
+volume and price impact (response function), they are conceptually very distinct.
+In the ﬁrst two pictures, trades reveal private information about the fundamental
+value of assets, resulting in a price discovery process. In the latter mechanical
+interpretation, one should remain agnostic of the informational content of trades
+and should instead speak of price formation.
+Trading impacts prices – this is an undisputable empirical observation. However,
+the interpretation of this impact is still widely debated; whether prices are formed
+or discovered remains a topic of discussion with no clear consensus at this stage.
+But because of the unclear distinction between true information and noise, one
+can assume reality lies somewhere between all three extremes (Bouchaud et al.,
+2018).
+The concepts of adverse selection and market impact are often captured by asym-
+metric information models describing why liquidity providers actions should de-
+pend on the behaviour of other market participants. A key early reference on
+the subject is the seminal Kyle (1985), which provides an elegant explanation of
+how impact arises from liquidity providers fears of adverse selection when trading
+against highly informed traders. Albeit not very realistic, the model is a concrete
+19
+
+=== page 33 ===
+illustration of how private information comes to be reﬂected in the price of an asset.
+Moreover, economic models further provide important insights into the challenges
+faced by MM. In this regard, Glosten and Milgrom (1985) work demonstrate how
+the bid-ask spread must compensate MM for adverse selection when trading in a
+competitive market.
+2.2.1 Price Impact Models
+The market microstructure literature has studied a diverse range of market im-
+pact models. However, despite many decades of theoretical and empirical research,
+there remains a vast number of open questions regarding its functional form (Kyle
+and Obizhaeva, 2018). This is in part due to the varying characteristics of assets
+as dictated by their market microstructure. Moreover, as outlined in Almgren et
+al. (2005), there are diﬀerent classes of market impact that must be distinguished.
+Before presenting our empirical investigation, we consider some heuristic models
+of market price dynamics. These models intuitively encapsulate the strategic con-
+siderations of market participants by examining the delicate balance in liquidity
+maintained by ongoing competition between rational agents.
+20
+
+=== page 34 ===
+Linear and Permanent Impact: The Kyle Model
+Kyle (1985) proposed a classic toy model which seeks to shed light on the mech-
+anisms by which private information is gradually propagated into prices in an
+eﬃcient market. The model was further extended in (Kyle (1989) to account for
+the case of several competing informed traders. Kyle’s original model assumes
+the simple case of a normal distributed random variable (Kyle’s Lambda λ) and
+derives a single statistical measure of the impact that is both linear in traded vol-
+ume (order size) and permanent in time. In this framework, market dynamics are
+juxtaposed as a contest between an inside trader (who holds unique information
+regarding the fair price of an asset) and a noise trader (who submits random or-
+ders in the absence of actual knowledge) whom submit orders that are cleared by
+a Market Maker (MM) at every time step ∆t. In the model, the price adjustment
+rule ∆p of the MM must be linear in the total signed volume εv, i.e.,
+∆p = λεV (1)
+This gauges the market impact of a trade as a consequence of volume ﬂow imbal-
+ance, where λ is a measure of impact and is inversely proportional to the liquidity
+of the market. The consecutive price adjustment is further permanent, i.e., the
+price change between time t = 0 and t = T = N∆t is:
+21
+
+=== page 35 ===
+pt = p0 +
+N−1∑
+n=0
+pn = p0 + λ
+N−1∑
+n=0
+εnVn (2)
+Formula 2 assumes that the impact λnVn of trades in the nth time interval persists
+unconditionally unabated up to time T . It is clear that the signs of the trade
+must be serially uncorrelated if the price is to follow a stochastic path. Within the
+model’s framework, the trading schedule of the informed insider is precisely such
+that εn are uncorrelated (Kyle, 1985). Conversely, data from the real markets
+reveal autocorrelation in the signs of the traded volumes over prolonged time
+frames as empirically observed by Bouchaud et al. (2003).
+In summary, Kyle’s model elicits some elegant deep truths about how markets
+function, but also fails to capture the essence of important empirical properties
+of real markets. In the model, the mechanism by which information comes to be
+reﬂected in prices (price impact) is due to the MM’s attempt to predict the infor-
+mational content comprised in the order-ﬂow and adjusts their prices accordingly.
+Additionally, price impact is said to be linear (i.e., price changes are proportional
+to the order ﬂow imbalance) and permanent (i.e., there is no decay of impact ex-
+hibited). In the context of LOBs, linear impact is a generic consequence of a ﬁnite
+liquidity density (buy/ sell orders) in the vicinity of the price, and permanent im-
+pact is the outcome of liquidity immediately reﬁlling the subsequent consumption
+22
+
+=== page 36 ===
+gap caused by the market order, as demonstrated by Obizhaeva and Wang (2013).
+Because of impact, informed traders restrict their trading volume to optimise re-
+turns. Thus, despite private information, the amount of proﬁt that can be made
+by exploiting this insider knowledge is limited.
+Concave Transient Impact: The Square Root Model
+Kyle’s original model assumes a linear dependency of impact on traded volume, but
+this requires a variety of idealised assumptions that may be violated in real markets
+(Zarinell et al., 2015). A key ﬁnding is that impact is not only mechanical, but also
+dynamic, meaning it cannot simply be described by revealed supply or demand of a
+visible LOB (Weber and Rosenow, 2005). The impact is rather related to the latent
+underlying liquidity – hidden supply and demand, not reﬂected in the LOB. This
+stems from the fact that even highly liquid markets only oﬀer very small volumes
+of liquidity for immediate execution (see Appendix B.1). Consequently, trades
+must be fragmented creating long memory in the sign of the order-ﬂow as private
+information is slowly incorporated into prices. This, however, is incompatible with
+the permanent impact (as described by (Kyle (1985)), which would otherwise lead
+to trends, i.e., strong autocorrelated price changes (Bouchaud, 2009).
+As an alternative, the square root model of market impact was ﬁrst proposed by
+Torre (1997) based on empirical regularities observed by Loeb (1983). Empirical
+23
+
+=== page 37 ===
+studies have since ubiquitously found market impact to indeed be a non-linear
+concave function in the size of meta-orders (large orders fragmented into a number
+of smaller market orders) and fading in time (Bouchaud, 2009). This concave
+nature of market impact is universally observed over several heterogeneous datasets
+in terms of markets (including equities, FX, futures, bitcoins and even OTC credit
+markets as reported by Eisler, Bouchaud and Kockelkoren (2012), epochs and
+execution styles. On this note, it is worth mentioning that some studies report
+empirical deviations from the square-root law, e.g., Almgren et al. (2005) and
+Zarinell et al. (2015).
+Nonetheless, in all former cases, the square root model is consistently simple and
+empirically realistic. Let G denote the percentage cost of executing a meta-order
+of size Q shares of a stock with price P , expressed as a fraction of the value of the
+trade |P Q|. Let σ denote the assets return (daily) volatility, and let V denote
+the assets (average) daily traded volume in shares per day. The square root law
+of market impact is thus described by the relationship
+G = g(σ,P,V ; Q) ∼σ
+(|Q|
+V
+) 1
+2
+(3)
+where g(·) deﬁnes the functional form for the model and the notation ”∼” means
+“is proportional to”. The market impact G is a dimensionless (absolute) quantity,
+24
+
+=== page 38 ===
+which is the same regardless of the units of measurement for impact Q, V, and σ.
+Even though model (3) seems a reasonable indication of transaction costs, there
+still no consensus on whether or not price impact is indeed described by the square
+root function. The exponent varies within a range of 0.4 to 0.7. For example,
+empirical ﬁndings by Almgren et al. (2005) and Kyle and Obizhaeva (2016) ﬁnd
+an exponent closer to 0.6, but average observations suggest a power closer to 0.5
+(square root). We note that the only conditional variable is the total traded volume
+Q. This is surprising as it implies that the time taken to completely liquidate
+(respectively acquire) and execution path are not important factors in determining
+market impact. Nevertheless, real data shows that impact does depend on such
+dynamics, thus, power law, as often referenced, should, therefore, be seen as a good
+ﬁrst-order-approximation. Whilst this result is in stark contrast with classical
+economic literature (which asserts linear impact (Kyle, 1985)), it is perfectly in
+accordance with the fact that instantaneous observed liquidity is limited in real
+markets further indicating that markets may be inherently fragile.
+Our empirical study aims to quantify how liquidity providers react to the arrival
+of market orders. The following section provides the foundation of the statistical
+approaches employed in this research. By outlining the analysis methodology
+and exploring more recent developments in the area of data analytics, we hope
+to facilitate a practical solution for accurately measuring order-ﬂow, therefore,
+providing clarity on many obscurities surrounding price impact.
+25
+
+=== page 39 ===
+3 Data and Research Methodology
+3.1 Electronic Markets
+3.1.1 Limit Orderbook (LOB) Trading
+Digital markets, generally, facilitate trade by automatically matching those want-
+ing to sell with those wanting to buy. Market participants express their willingness
+to trade a speciﬁc quantity at a speciﬁc price by submitting orders to the exchange.
+At a high level, all orders are classiﬁed by their type as Market Orders (MO) or
+Limit Orders (LO). MOs indicate an immediate need to execute the trade. LOs,
+on the other hand, are known as passive orders because these usually do not re-
+sult in an instant execution. LOs are often submitted at a price worse than the
+current market price, and therefore, have to wait until either a new order arrives
+that matches LO price or the LO is withdrawn. All active (non-cancelled) LOs
+are placed in a queue according to their corresponding price. This order queue is
+managed within the LOB, whilst mapping of orders is conducted by the matching
+engine.
+LOB is deﬁned on a ﬁxed discrete grid of prices where submitted LOs are recorded
+in separate price level queues. Figure 1 illustrates a sample snapshot of LOB:
+vertical blue and red bars represent queues of LOs to buy and sell respectively.
+26
+
+=== page 40 ===
+The length of each queue is deﬁned by the number and sizes of orders that have
+been submitted at that price, but not yet matched for execution. The scale of
+price and volume axis is deﬁned by LOB resolution parameters – tick and lot sizes
+respectively. The tick size is the smallest possible change in the price of an asset.
+In other words, the tick size deﬁnes the precision of the quoted price. On the other
+hand, the lot size deﬁnes the smallest amount (expressed as the number of shares)
+of security that can be traded within the LOB.
+When a new buy or sell LO comes in, it is added to the end of the corresponding
+price queue – on the top of previous LOs at that level, see Figure 1. The diﬀerence
+between the best (lowest) ask and the best (highest) bid prices is known as the
+spread; while the arithmetic average of these best quotes is called the mid-price.
+Mid-price is often used to describe the LOB and its dynamics (as opposed to look-
+ing at individual behaviour of the bid and ask prices). Therefore, when examining
+the market impact of orders, we are interested in how mid-price had changed in
+response to the execution of MOs. Note that in some cases, it is more appropriate
+to examine micro-price – the weighted (by inverse volume) average of the bid and
+the ask. It comes to be more useful when the imbalance of the orderbook is used
+for prediction of the sign of future price changes as emphasised in Cartea, Jaimun-
+gal and Penalva (2015) and Bouchaud et al. (2018). In this study, however, we
+use mainly the mid-price.
+27
+
+=== page 41 ===
+Figure 1: Illustration of LOB dynamics (Bonart and Gould, 2017).
+Matching engine, or matching algorithm, is a well-deﬁned procedure on how to
+orders are select and execute. Predominantly, in electronic markets, the algorithm
+tries to map MOs ﬁrst – if two MOs match then these are executed immediately. If
+a new MO does not have an opposite side matching MO at the time of submission,
+it is executed against LOs in a price-time priority order. That is, an incoming
+MO is ﬁrst mapped to the oldest LO at the opposite side best price. Then, if
+the quantity demanded by MO is not fulﬁlled, it is executed against earlier LOs
+(still at the best available price). It is interesting to note that not all matching
+engines abide by a price-time priority queuing mechanism. Alternative matching
+engines such as the prorata rules are often found in alternative market structures
+(e.g., in money markets). Under the prorata model, there is no explicit time-
+priority rule. MOs are instead matched against LOs posted at the best opposite
+price – proportionate to the quantity posted. Moreover, there are other markets
+28
+
+=== page 42 ===
+that combine the two approaches, adopting both time-priority and pro-rate (i.e.,
+Futures).
+Traditionally, if the full size of MO cannot be fulﬁlled by LOs resting at the best
+price, the matching algorithm would try to execute the rest of MO against LOs
+at the second, third and so on best prices; until the full quantity of LO is ﬁlled
+(walking the book). However, modern ﬁnancial markets implement alternative
+procedures for handling situations where there is not enough liquidity at the best
+price to which the entire MO can be matched. For example, in the US, trading
+venues are obliged by regulators to provide participants with the best possible
+price for the asset. This means that, depending on the speciﬁc order type, the
+exchange may re-route the remaining units of an unfulﬁlled order to alternative
+venue displaying the same best quote. While re-routing can certainly aﬀect liq-
+uidity (thus price impact) in the market, empirical observations such as Bouchaud
+et al. (2018) ﬁnd that only a few orders are bigger than the available volume at
+the best quote. This indicates that traders try to adapt their order volumes to the
+available quotes.
+29
+
+=== page 43 ===
+3.2 The Dataset
+3.2.1 Lobster Data
+In our research, we will be speciﬁcally analysing trades and quotes data from the
+NASDAQ electronic stock exchange (for more information on NASDAQ please
+see Appendix C.1). The time-series data has been provisioned from the academic
+database LOBSTER (Limit Order Book System Eﬃcient Reconstructor) that of-
+fers on-demand LOB data, reconstructed from NASDAQ’s Historical TotalView-
+ITCH ﬁles. TotalView-ITCH is a standard NASDAQ data feed which illustrates
+the full depth of the order book (resting limit orders), as well as all market events.
+This data feed is consumed in a form of message ﬁles which record every state
+change to the order book, as opposed to recording timely snapshots. TotalView-
+ITCH message data contains all visible order activities, such as submission, can-
+cellation, and matching of limit orders. Therefore, as outlined in the paper by
+LOBSTER development team, the platform can reconstruct LOB for a NASDAQ
+stock at any required book depth level for the speciﬁed period (Huang, Lehalle
+and Rosenbaum, 2015). For a detailed procedure on how LOBSTER reconstructs
+LOB data, please refer to Appendix C.2.
+30
+
+=== page 44 ===
+3.2.2 Output Format
+Market activity for a stock on a trading day is organised into two LOBSTER
+output ﬁles:
+1. ‘Message’ ﬁle contains every arriving market and limit orders as well as
+cancellations and updates – in other words, all trades data
+2. ‘Orderbook’ ﬁle depicts the evolving state of the LOB. It describes how the
+total volume of buy or sell orders at corresponding price level changes after
+each market event. This information is displayed as a list of all successive
+quotes
+For every entry in the message ﬁle, there is a corresponding record in the orderbook
+ﬁle that describes how the order book advanced immediately after the message ﬁle
+event.
+Tables 2 and 3 correspond to snapshots of message and orderbook ﬁles for the
+same stock during the same time (measured in the number of market events). An
+event of type 4 at the timestamp of 43955.2426 (Table 2) illustrates the execution
+of a buy LO at the ask price 2158800. The size of this order is 10 shares; thus,
+we observe corresponding Bid Volume entry in the orderbook decreasing by 10.
+Furthermore, the next arriving MO (represented by LO execution at 43955.2426
+31
+
+=== page 45 ===
+Time–stamp Event Type Order ID Size Order Price Direction
+43955.2422 4 140339446 5 2158800 1
+43955.2426 4 140339446 10 2158800 1
+43955.2426 4 140339446 75 2158800 1
+43955.2426 3 140339455 100 2159600 -1
+43955.2426 1 140339468 100 2159500 -1
+43955.2442 3 140339468 100 2159500 -1
+43955.2468 1 140339505 100 2158900 -1
+43955.2484 5 0 300 2158800 -1
+43955.2512 3 140339505 100 2158800 -1
+43955.2513 1 140339541 100 2159600 -1
+Table 2: Sample entries in ‘message’ ﬁle
+Ask Price Ask Volume Bid Price Bid Volume
+2159600 100 2158800 85
+2159600 100 2158800 75
+2159600 100 2158300 20
+2160800 100 2158300 20
+2159500 100 2158300 20
+2160800 100 2158300 20
+2158900 100 2158300 20
+2158900 100 2158300 20
+2160800 100 2158300 20
+Table 3: Sample entries in the ‘orderbook’ ﬁle at Level 1
+in Table 2) consumes all available liquidity of 75 shares and the best bid price
+changes permanently to 2158300 (next best price level in the LOB). In this work, we
+implement an algorithm that detects this kind of price changing events and explores
+the causal relationship between market impact and observed LOB features.
+In summary, the information contained in output LOBSTER ﬁles has the below
+properties:
+32
+
+=== page 46 ===
+• All events have timestamps of seconds after midnight with the precision of at
+least milliseconds (nanoseconds depending on the requested period). When
+a market order is matched against several limit orders, each matching is
+recorded separately (both in message and orderbook ﬁles) but with the same
+timestamp. This allows reconstruction of the initial market order volume.
+• There are seven types of market events that are recorded in LOBSTER data
+(see Table 4 below). For this study, we are interested in market orders which
+correspond to event types 4 and 5 – execution of either visible or hidden
+limit orders. A more detailed explanation of why other types of events are
+out of scope follows in the Empirical Findings chapter.
+• Order ID corresponds to the unique order reference number. Zero reference
+number corresponds to a hidden limit order. Note that order ID is distinct
+from an ID of a trader/ broker who submitted the order. In other words,
+knowing the order ID does not allow to reconstruct the ownership of trades,
+but provides information about a lifespan of a single trade.
+• Size of a trade is measured in the number of shares.
+• Price is depicted in dollars times 10000. For instance, 2158800 corresponds
+to $215.88.
+• Direction indicates whether a buy or a sell order has been executed:
+33
+
+=== page 47 ===
+– -1: Execution of sell LO, therefore, a MO to buy has been matched at
+ask price
+– 1: Execution of buy LO, therefore, a MO to sell has been matched at
+the bid price
+The prevailing majority of microstructure literature that we have consulted
+during our study adopts the opposite nomenclature. To remain consistent
+with the subject expertise we follow earlier examples and use trade sign of
+-1 to indicate sell MO and 1 for buy MO.
+• Orderbook ﬁle entries are composed of the ask price and the corresponding
+volume, as well as the bid price and its volume. The best prices are Level 1
+oﬀerings – the cheapest price to buy at (ask), and the biggest price to sell at
+(bid) from a viewpoint of a trader submitting a MO. Typically, orderbook
+has several price levels: from the best Level 1 to the second-best, the third
+best and so on. However, as we recall from the earlier discussion of the LOB,
+in most electronic exchanges today, an order is re-routed to other markets
+if the available volume at the best price is less than the order size. Hence,
+nowadays, an order rarely “walks the book” (being matched with LOs at
+a worse price on a diﬀerent price level). Following suit, we will be looking
+primarily on the Level 1 price changes in the LOB.
+34
+
+=== page 48 ===
+Event Number Event Type
+1 Submission of a new limit order
+2 Cancellation (partial deletion of a limit order)
+3 Deletion (total deletion of a limit order)
+4 Execution of a visible limit order
+5 Execution of a hidden limit order
+6 Cross Trade (Auction Trade)
+7 Trading halt indicator
+Table 4: Event Types in LOBSTER data
+3.2.3 Observed Stocks
+The analysis is conducted on four NASDAQ stocks – large tick SIRI and EBAY;
+and small tick TSLA and PCLN. Conventionally, the tick size is the smallest
+movement in the price of an asset. On NASDAQ each asset is traded in its own
+book with the tick size of $0.01. Size of the tick is uniform across all NASDAQ
+listed securities, despite their prices varying signiﬁcantly across several magnitudes.
+Relative tick size, then, is deﬁned as a ratio between dollar tick size and the price of
+a stock. Securities with smaller traded prices have a large relative tick size, while
+those that trade at higher prices per share have a smaller ratio between tick size
+and stock price. Large tick stocks are known to have the bid-ask spread almost
+always equal to one tick, whilst smaller tick securities usually have spreads of a
+few ticks (Eisler, Bouchaud and Kockelkoren, 2012). The relative tick size and
+spread indicate how actively an asset is traded on an exchange.
+We have chosen to work with diﬀerent (in this regard) stocks to be able to quan-
+35
+
+=== page 49 ===
+titatively observe the inﬂuence of a tick size on trading features.
+The initial objective of our study was to use trades and quotes data for the selected
+stocks during the ﬁrst six months of 2015 (2nd of January to 30th of June 2015).
+Depending on the stock, the average number of daily market events varies from
+8,000 to over 200,000. Among these, we are interested in the price impact of MOs
+speciﬁcally. Table 5 lists an average daily number of MOs for each asset.
+Ticker Number of MOs
+SIRI 624
+EBAY 3540
+TSLA 3924
+PCLN 1333
+Table 5: Average daily number of MOs for each stock
+During the ﬁrst six months of 2015, there have been 124 NASDAQ trading days
+which gives us a total number of relevant MO events of the order of 105. This
+implies that our dataset is suﬃciently large, ensuring signiﬁcant robustness in any
+statistical ﬁndings. In the later empirical discussion, we elaborate further on the
+nature of what we have learned from the data and how our results compare to
+other studies that use similar LOBSTER dataset.
+36
+
+=== page 50 ===
+3.3 Method Development
+The methods employed in this research are solely based on the principles of the
+scientiﬁc method. The process of the scientiﬁc method begins with the formulation
+of a question based on observations. This allows a hypothesis to be formed that
+may explain an observed phenomenon. In this instance, a hypothesis may be ”do
+large orders impact prices?” The null hypothesis is large orders of size (traded
+volume) Q> Z do not impact prices, where Q denotes the order size.
+After formulation of a hypothesis, it is up to the scientist to disprove the null
+hypothesis and demonstrate that orders of a predeﬁned deﬁned (large) size do in
+fact impact prices. To carry this out a prediction must be deﬁned. To prove or
+disprove the hypothesis, the prediction is subject to testing.
+The results of the testing procedure will provide a statistical answer upon whether
+the null hypothesis can be rejected at a certain level of conﬁdence. If the null
+hypothesis cannot be rejected, which implies that there was no discernible rela-
+tionship between the size of an order and the price impact, it is still possible that
+the hypothesis is (partially) true. A larger set of data, a transformation of variables
+or incorporation of additional information can be used to optimise and improve
+the level of signiﬁcance. This is the process of analysis and it seeks to reject the
+null hypothesis after reﬁnement. For more details on statistical inference please
+refer to Appendix C.5 and Appendix C.6.
+37
+
+=== page 51 ===
+3.3.1 Machine Learning
+Machine learning (ML) is a subﬁeld of Artiﬁcial Intelligence (AI) that facilitates
+automated methods of data analysis. More broadly, ML deﬁnes a series of adaptive
+computational algorithms that automatically detect patterns in multi-dimensional
+datasets (panel or time-series data with a large number of observed variables) and
+makes use of these uncovered patterns to predict values of interest or perform other
+kinds of decision making under uncertainty (known as generalisation).
+The conventional tool of statistical analyses in ﬁnance – econometrics – mainly
+focuses on multivariate linear regression. Linear regression does not have memory
+(standard econometric models do not learn), thus fails to improve its performance
+with new observations. Consequently, econometric regression analysis often falls
+short in understanding the full spectrum of informational content present in the
+data. Moreover, when applied to complex problems, more traditional statistical
+tools often suﬀer from various limitations (i.e., the “curse of dimensionality” – the
+model becomes mathematically intractable when dealing with a large number of
+explanatory variables/ features), whilst ML algorithm can learn patterns in high-
+dimensional space without being speciﬁcally directed. In this regard, ML methods
+do not replace the theory and conventional wisdom of econometrics but simply
+enhance and guide them.
+The deﬁning attribute that diﬀerentiates ML from such conventional tools is the
+38
+
+=== page 52 ===
+algorithms’ ability to learn (i.e., improve predictive accuracy with time) from ex-
+perience with respect to a task and performance measure (Mitchell, 1997). Here,
+experience refers to the past information available to a learner (typically taking
+the form of electronic training data). Thus, ML algorithms learn patterns in a
+high-dimensional space without being explicitly directed (i.e., programmed with
+pre-speciﬁcations). Such algorithms are incredibly diverse, ranging from more
+traditional statistical models that emphasise inference to deep neural network ar-
+chitecture that excel at highly complex classiﬁcation and predictive tasks. As the
+success of learning is greatly dependant on the data used, ML most closely relates
+to statistics and data mining, though it has a diﬀerent emphasis and vocabulary.
+ML tasks are generally classiﬁed into three broad areas: Supervised Learning,
+Unsupervised Learning and Reinforcement Learning. In the current study, we
+speciﬁcally focus on Supervised Learning, which is the most commonly used class
+of ML. Please refer to Appendix C.4 for information on other forms of ML.
+Supervised Learning describes a set of predictive learning models for which the
+presence of outcome variables guides the learning process. That is, data annotated
+with values such as categories (as in supervised classiﬁcation) or numeric responses
+(as in supervised regression) facilitates external supervision of the learning process.
+The objective is to learn a mapping from inputs x to outputs y, given the labelled
+set of input-output pairs D = (xi,yi)N i=1. Here D represents the training set,
+and N is the number of training examples. Given the set of labelled examples,
+39
+
+=== page 53 ===
+the algorithm is trained on the data and learns which predictive factors are most
+inﬂuential to the responses. When applied to new unseen datasets, supervised
+learning algorithms attempt to make predictions based on their prior training
+experience. In the simplest setting, each training input xi corresponds to a D-
+dimensional vector of values that correspond to various attributes of the observed
+phenomenon. These are known as features and could range from a time-series of
+observations to more complex structured objects such as an image or a molecular
+shape.
+Similarly, the form of the output dependent variable (known as the response vari-
+able) can in principle take on any structure, however, most methods assume that
+yi is a categorical variable from some ﬁnite set yi ∈ 1,..., C or Yi ∈ R (a real-
+valued continuous scalar). This research makes explicit use of regression-based
+supervised algorithms, for which we will delineate the basic mechanisms below.
+40
+
+=== page 54 ===
+Multi-Linear Regression
+Linear regression is a familiar and widely adopted statistical technique. This
+asserts that a continuous scalar response y is the result of a linear combination
+of its feature inputs x. Unlike multivariate linear regression, where the model
+predicts multiple correlated dependent variables given multiple input variables,
+multi-linear models output a single real value scalar. That is:
+y (x) = βTx + ϵ =
+D∑
+j=1
+βjxj+ϵ (4)
+Where βT, x ∈ Rp+1 and ϵ ∼N (µ, σ2). That is, βT and x are both real-
+valued vectors of dimension p + 1, representing the inner scalar product between
+the input vector x and the models’ weight vector βT .ϵ, the residual error between
+our linear predictions and the true response, is normally distributed with mean µ
+and variance σ2. The multi-linear regression model makes the strong assumption
+of independent and identical distribution (IID) of errors. That is, the distribution
+of the errors is identical across observations and the errors are independent of
+each other (knowing one error does not assist in forecasting the next error). When
+plotted, such a distribution produces the well know Gaussian (normal) distribution.
+To make the connection between linear regression and Gaussian distributions more
+explicit, we can express the model in the form:
+41
+
+=== page 55 ===
+p (y|x,θ) = N (µ (x) , σ2 (x)) (5)
+This makes it clear that the model is a conditional probability density. In the
+simplest case, we assume µ is a linear function of x, thus µ = βTx; and the noise
+(as measured by variance) is ﬁxed as σ2(x) = σ2. In this case, θ = (β, σ2 are the
+parameters of the model.
+Multilinear regression forms the basis of many of the more sophisticated supervised
+ML techniques employed. From the deﬁned model speciﬁcation, it is intuitive to
+ask how the coeﬃcient β is estimated. Further, we introduce two methods for
+optimal β estimation.
+Least Squares
+The Least Squares is the most common approach to learn the parameters of a
+hyperplane by approximating coeﬃcients that best ﬁt the generated output for a
+speciﬁed input set. The diﬀerence between the model’s prediction and the actual
+outcome for a given data point denotes the residual, whereas the deviation of the
+model from the true population output is called the error. The method of Ordinary
+Least Squares (OLS – a type of Least Squares used for estimating the parameters
+42
+
+=== page 56 ===
+in a linear regression model) entails taking each vertical distance from a data point
+to the regression line (residual), squaring this distance (taking an absolute value
+by disregarding the sign) and then minimising the total sum of squared residuals,
+see Figure 2. In more formal terms, the least square estimation method chooses
+the coeﬃcient vector β to minimise the residual sum of squares (RSS, also known
+as the sum of squared errors SSE) so that the model ﬁts the data as closely as
+possible. Hence, the least-squares coeﬃcients βLS are computed as
+arg min
+βLS
+= RSS(β) :=
+N∑
+i=1
+(yi − βTxi)2 (6)
+The vertical distances are usually minimised as opposed to the horizontal distances
+or those taken perpendicular to the line. This arises as a result of the assumption
+that x is ﬁxed in repeated samples so that the problem becomes one of determining
+the appropriate model for y given (or conditional upon) the observed values of x.
+For simplicity, the latter term can be expressed in matrix form. By deﬁning the
+N × (p + 1) matrix x, it is possible to write the RSS term as:
+RSS(β) = (y − xβ)T (y− xβ) (7)
+43
+
+=== page 57 ===
+Figure 2: Method of OLS ﬁtting a line (described by the model) to the data by
+minimising the sum of squared residuals (Murphy, 2012).
+This term is now diﬀerentiated with respect to (w.r.t.) the parameter variable β:
+∂RSS
+∂β = −2xT (y − xβ) (8)
+A key assumption about the data is made here: the matrix xTx must be positive-
+deﬁnite, which is only true if there are more observational datapoints than there
+are dimensions. If this does not hold (as is often the case in high-dimensional
+data settings) then it is not possible to ﬁnd a unique β coeﬃcient, thus the above
+matrix equation cannot hold. Under the assumption of a positive-deﬁnite xTx the
+partial diﬀerential (PDE) is set to zero and solved for β:
+44
+
+=== page 58 ===
+xT (y−xβ) = 0 (9)
+The solution to this matrix equation provides ˆβOLS
+ˆβOLS = (xTx) −1 xTy (10)
+Maximum Likelihood
+An alternative to OLS, the Maximum Likelihood Estimator (MLE) is an optimi-
+sation process to estimate the coeﬃcients of a statistical model given a particular
+batch of data by maximizing the likelihood function (deﬁnes how likely a set of
+observations is to occur given the model parameters). The estimator diﬀers from
+probabilities in that it is not normalised to range from 0 to 1. MLE is a directed
+algorithmic search through a high-dimensional set of possible parameter choices,
+attempting to answer the question: If the data were to have been generated by
+the model, what parameter choices were most likely to have been used? (Murphy,
+2012).
+This reduces to a conditional likelihood problem of seeing the dataset D, given a
+speciﬁc set of parameters θ. The value sought is the θ that maximises p(D|θ). This
+45
+
+=== page 59 ===
+can be framed as searching for the mode of the p(D|θ) denoted by ˆθ, expressed as
+ˆθ ≜ arg max
+θ
+log p(D|θ) (11)
+In linear regression problems, we often assume that the errors are IID. This sim-
+pliﬁes the solution of the log-likelihood by making use of properties of the natural
+logarithms, permitting us to express it as
+𝓁ˆθ ≜ log p(D|θ) =
+N∑
+i=1
+log p(yi|xi, θ) (12)
+In the case of normal distribution of residuals, maximising the log-likelihood func-
+tion returns the same parameter solution as Least Squares.
+3.3.2 Goodness Of Fit
+It is often desirable to measure how well the regression line (described by the
+model) ﬁts the data (i.e., explains the variation in the outcome response func-
+tion). Goodness-of-ﬁt statistical measures rigorously assess the quality of the
+sample regression function (SRF) speciﬁcations, permitting us to select model de-
+46
+
+=== page 60 ===
+signs that best estimate the true relationship between observed variables. Promi-
+nent goodness-of-ﬁt measures, including the coeﬃcient of determination (R-squared
+(R2)) and adjusted R-squared, are based on maximising the outcome of least-square
+estimates.
+• R2 measures the proportion of total variation in the observed data explained
+by the model and ranges from 0 to 1. R2 is computed as R2 = 1 − RSS TSS ,
+where TSS is the total sum of squared deviations of the outcome from its
+mean, given by
+TSS =
+∑
+i
+(yi − 1 N
+N∑
+i=1
+yi)2 (13)
+and RSS is the residual sum of squares (the sum of all of the squared dif-
+ferences between the actual datapoints and the corresponding estimated val-
+ues), expressed as
+RSS =
+∑
+i
+(yi − ˆyi)2 (14)
+The objective is to maximise R2 - the closer the value of R2 is to 1 the
+47
+
+=== page 61 ===
+better the regression model ﬁts the data (when compared to the mean of the
+observation). R2 only illustrates how one variable explains the observation.
+When more explanatory variables are added to the model an alternative
+adjusted R2 should be used.
+• Adjusted R2 penalises for increasing the feature space with non-signiﬁcant
+explanatory variables, by reducing RSS to produce a superior goodness-of-ﬁt.
+Both R2 and adjusted R2 are not ideal for time-series predictive modelling as they
+only reﬂect the models’ precision in ﬁtting past values, which is not indicative of
+future predictions.
+Alternative prominent goodness-of-ﬁt measures are discussed in Appendix C.7.
+3.3.3 Feature Engineering
+ML algorithms are only capable of learning if the training set contains suﬃcient
+relevant variables in the feature space and minimum irrelevant ones. A critical
+aspect of a success ML initiative is producing a good set of features for which the
+algorithm can be trained on. This process is known as feature engineering and
+involves:
+1. Feature Extraction – combining existing features to produce a more useful
+variable
+48
+
+=== page 62 ===
+2. Feature Selection – selecting the most useful/ relevant features to train the
+algorithm on amongst an existing set of features.
+3.3.4 Cross–Validation
+It could be stated that the deﬁning quality of a successful ML algorithm is its abil-
+ity to generalise across future unseen datasets. To ensure accuracy and robustness
+of a model it is necessary to deﬁne a loss function which measures the predictive
+precision of our model, as a function of the generalisation error. In a regression
+setting, a common loss function is given by the Mean Squared Error (MSE) - a
+smaller MSE means the estimate is more accurate. It is deﬁned as:
+MSE := 1 N
+N∑
+i=1
+|yi − ˆyi|2 (15)
+This states that the generalisation error of a model, given a particular set of
+data, is the average of squared diﬀerences between the training values yi and their
+associated estimates ˆyi. This function heavily penalises estimate values that diﬀer
+greatly from the true observations (by squaring the diﬀerences). A small value of
+a loss function signiﬁes that the errors are not substantial and, thus, the model,
+theoretically, will perform similarly when exposed to unseen data.
+49
+
+=== page 63 ===
+It is important to note that the standard MSE value is computed only on the
+training dataset (the data for which the model was ﬁtted on) and is, therefore,
+referenced as the training MSE. This value is of little practical importance as it is
+merely representative of the past predictive accuracy; we are more concerned about
+how well the model performs given values of new unseen data. This is known as
+generalisation performance. Given a new prediction value x0 and a true response
+y0, we look to take the expectation across all such new prediction values, giving
+us the test MSE:
+MSEtest :=E
+[
+(y0 − ˆf(x0)) 2] (16)
+Where the expectation is taken across all unseen predictive pairs (y0,x0). The
+objective is to select the model that yields the lowest MSE. To do this, we can
+increase the ﬂexibility of the model (the degrees of freedom available to the model
+to ﬁt to the training dataset). In this regard, a linear model is very inﬂexible (it
+only has 2 degrees of freedom), whereas a polynomial is highly ﬂexible (it can have
+many degrees of freedom).
+However, if the loss function is minimised too severely, then generalisation perfor-
+mance of the model can decrease substantially. This is a major known concern
+and is referred to as the bias-variance trade-oﬀ – indicating that the model has
+50
+
+=== page 64 ===
+been over-ﬁt to the training data, and has not learned the general form of the re-
+sponse function. Whilst increasing the degrees of freedom helps the model adapt
+to more complex datasets, it is extremely important to recognise that there is an
+increased likelihood of over-ﬁtting, and a clear warning that the model is more
+closely aligned to minor variations in the training input set (noise) than any un-
+derlying true signal.
+A technique to mitigate the eﬀects of the bias-variance trade-oﬀ is to use a separate
+validation dataset (diﬀerent from training data) by randomly dividing observations
+in two partitions - in-sample (used for model training) and out-of-sample (used
+to examine the predictive estimates against the true values) sets. However, if we
+don’t have a separate set of reference out-of-sample data, we can adopt a technique
+known as cross-validation (CV). In the current study we make use of a speciﬁc
+implementation of CV known as k-Fold cross validation. k-Fold seeks to divide n
+observations of the data into k mutually exclusive and approximately equal sized
+folds (subsets). This is repeated k times, with each iteration holding out a fold as
+a validation set, whilst the remaining k− 1 are left for training. This permits us
+to calculate an overall estimate CVk, giving us the average of all individuals mean
+squared errors, MSEi. More formally, CVk is deﬁned as follows:
+CVk = 1 N
+N∑
+i=1
+MSEi (17)
+51
+
+=== page 65 ===
+Due to computational expenses, the optimal value for k has been empirically
+proven to be k = 5 or k = 10.
+Figure 3: Schematic of 5-fold cross validation (Murphy, 2012).
+52
+
+=== page 66 ===
+4 Empirical Study
+In this section, we deﬁne the methodology for the price impact analysis, while
+simultaneously introducing several key properties that are relevant to our investi-
+gation. In the earlier background and literature review section, we have discussed
+several popular market impact models such as the linear Kyle model and Square
+Root empirical functional form. Here, we develop a further understanding of price
+dynamics by exploring the functional relationships between change in price (im-
+pact) and state of the world before and after.
+Please note that the data used for our statistical analysis has been pre-processed
+to remove outliers. We further reconstruct original MOs that are represented as
+several LO executions within the LOBSTER dataset. Appendix C.3 describes in
+detail the applied pre-processing procedure.
+4.1 Modelling Market Impact
+In broad terms, price impact can be deﬁned as an incremental change in price
+caused by the execution of market buy orders, or a similar drop in price caused
+by the sell orders. Statistically, market impact relates to the positive correlation
+between the incoming MO sign and the price change that follows immediately, or
+sometime after MO execution (Bouchaud et al., 2018).
+53
+
+=== page 67 ===
+Therefore, in our study of price impact, we focus on the consequences of MOs.
+We recognise that all kinds of market events may impact prices, but we choose
+to concentrate on the eﬀect of MOs because it is conceptually and operationally
+intuitive to study initially – i.e., it suﬃces to use trades and quotes data from the
+exchange.
+In combination with earlier remarks about submitted order sizes rarely exceeding
+available volume at the opposite side best quote (LOBSTER output discussion
+in Section 3.2.2), we postulate the following two assumptions of our empirical
+analysis:
+1. Market orders never exceed available liquidity in the market
+2. Impact of arrivals and cancellations of LOs can be neglected
+These assumptions will help us understand the high-level dynamics of interactions
+in the marketplace without introducing unnecessary complexity to the decision-
+making process.
+With this in mind, we can begin to measure the impact of trades on prices.
+54
+
+=== page 68 ===
+4.1.1 Unconditional Lag-1 Impact
+Bouchaud et al. (2003) in their paper “Fluctuations and response in ﬁnancial
+markets: the subtle nature of ‘random’ price changes” postulate that the simplest
+quantity, that can assist in the study of price changes, is the mean squared ﬂuc-
+tuation of the prices between the given trade and the execution of the next one
+(correspondent to the execution of MOs in the context of LOB trading). They
+functionally deﬁne this degree of ﬂuctuation D (l) as:
+D (l) :=⟨(mt+1 −mt)⟩ (18)
+Where mt is the mid-price immediately before the tth MO:
+m (t) :=1 2(a (t) + b (t)) (19)
+a (t) and b (t) are the corresponding ask and bid prices.
+Whilst D (l) measures the degree of diﬀusive behaviour of market prices, authors
+propose a better alternative to examine speciﬁcally the eﬀect of trading on the
+change in prices - lagged response function R(). R(1) is the lagged by 1 response
+55
+
+=== page 69 ===
+function that measures the average diﬀerence between the mid-price just before
+the arrival of an original MO and the mid-price just before the arrival of the next
+MO:
+R(1):=⟨εt · (mt+1 −mt)⟩t, (20)
+In contrast to the previous diﬀusion estimation, the response function includes the
+order sign εt to account for the direction of MO. For instance, if a market sell
+order (direction -1) causes an asset price to decrease, the change in mid-price will
+be negative. To compensate for this, we incorporate the order sign -1 (given by εt).
+This allows the correct estimation of correlation between MO and subsequent price
+change. Speciﬁcally, R (1) measures how much, on average, the price increases
+given a buy order (or how sell order moves the price down).
+The lag-1 response is calculated as the empirical average of R (1) over all consec-
+utive MOs. This deﬁnition can be further extended to look at the relationship
+of MOs beyond lag-1; or conditioned on extra variables. However, initially, we
+explore the statistical properties of R (1) as deﬁned above.
+56
+
+=== page 70 ===
+Order Splitting
+Lag-1 response function measures market reaction to a single MO. In reality,
+traders wishing to execute large quantities have to split their orders into child
+MO to reduce the impact by matching available liquidity at the corresponding
+price level (please see Appendix B.1 for more detail). To study the dynamics of
+such meta-orders, it is necessary to know which child orders belong to the same
+meta-order. Such levels of information can only be found in specialised and/ or
+proprietary data sets. Due to such restrictions, this paper solely focuses on the
+impact of single independent MOs.
+57
+
+=== page 71 ===
+4.1.2 Engineering Response Function
+We calculate the lag-1 response function for each of our four stocks during the ﬁrst
+6 months of 2015 using uncond market impact.py script provided in the Appendix
+E. The general idea is demonstrated in algorithm 1 below:
+Algorithm 1: Calculate lag-1 response
+Input: A DataFrame set of trades and quotes entries D = {d1, d2, . . . , dr}, where
+∀t : dt entry contains the following information about the market event:
+{T ime, EventT ypeCode, OrderID, V olume, P rice,
+Direction, AskP rice, AskV olume, BidP rice, BidV olume,
+M id − price, Spread}
+Output: ⟨s⟩, R(1), Σr, NMO
+1 ⟨s⟩, R(1), Σr, NMO ← 0
+2 mt, mt+1, V (1) ← 0
+3 for i = 0, . . . , length (D) do
+4 if di[EventT ype] = 4 or di[EventT ype] = 5 then
+5 NMO+ = 1
+6 ⟨s⟩+ = di−1[Ask] − di−1[Bid]
+7 if mt = 0 then
+8 mt = di[M idprice]
+9 mt+1 = di+1[M idprice]
+10 R = max (0, (mt+1 − mt) ∗ sign)
+11 R(1)+ = R
+12 V (1)+ = (mt+1 − mt)2
+13 mt = mt+1
+14 ⟨s⟩ = ⟨s⟩/NMO
+15 R(1) = R(1)/NMO
+16 V (1) = V (1)/(NMO
+17 Σr =
+√
+V (1) − R(1)2
+18 return ⟨s⟩, R(1), Σr, NMO
+In addition to R (1) the script estimates:
+• ⟨s⟩ - average spread just before a MO
+58
+
+=== page 72 ===
+• ∑ R - standard deviation of price ﬂuctuations around the average price im-
+pact of a MO
+• NMO – number of MOs recorded during the day (excluding the auctions)
+A MO is said to be price-changing if its size is equal to or exceeds the volume at
+corresponding opposite-side best price in the LOB at the time of MO arrival; that
+is, MO execution changes the current price of an asset immediately to the next
+best bid (ask) respectively.
+In summary, the above algorithmic procedure iterates over daily market events
+and when it ﬁnds a MO execution (corresponding to the event of type 4 or 5),
+it records various statistics. Appendix C.8 explains speciﬁcally how the events of
+type 5 – execution of hidden orders - can aﬀect our measurement of market impact.
+For each trading days’ set of observations we calculate daily averages, and then
+use it to estimate descriptive statistics of our data for the entire period.
+59
+
+=== page 73 ===
+4.1.3 Empirical Observations
+The results of our calculations can be found in the below Table 6:
+Stock ⟨s⟩ R (1) ∑ R NMO
+SIRI 1.09 0.027 0.138 589
+EBAY 1.10 0.384 0.536 3802
+TSLA 10.82 2.05 3.636 3834
+PCLN 75.53 10.09 21.129 1409
+Table 6: ⟨s⟩ Average spread; R (1) the lag-1 response function for all MOs; ∑ R
+standard deviation of price ﬂuctuations around the average price impact of MOs
+– all expressed in dollar cents; NMO total average number of MO per day between
+10:30 and 15:00 on each trading day from 2nd of January to 30th of June 2015 for
+four large- and small- tick stocks.
+The following can be noted:
+• Lag-1 unconditional response R (1) is strongly positive for all stocks. This
+implies that on average, MOs are followed by a change in price.
+• For small tick stocks TSLA and PCLN, R (1) seems proportional to the
+average spread ⟨s⟩. This could be explained by our earlier discussion of
+market makers’ compensation for adverse selection – MMs attempt to earn
+the bid-ask spread but are challenged by adverse price movement caused by
+the MOs impact.
+• For large tick stocks, the spread is bound below by (and is often equal to) a
+single tick as can be noticed for SIRI and EBAY. When the bid-ask spread is
+60
+
+=== page 74 ===
+this small, neither of the best prices can improve as the two would otherwise
+merge. If we recall Figure 1 from the earlier discussion of the LOB, there was
+a gap of 4 ticks between the best ask and bid prices. In that case, submission
+of a new LO at a price lower than the current ask would update the best
+quote, thus the mid-price. Large tick stocks, on the other hand, do not have
+such a gap between the best bid and ask, therefore, the changes in mid-price
+are not aﬀected by LOs in the same manner. In this regard, Bonart and
+Gould (2017) argue that large tick stocks are more suited for the analyses of
+price queue dynamics.
+• For all stocks, the degree of dispersion ∑ R exceeds the mean impact R (1),
+meaning that R (1) varies greatly. This is due to the fact that, as we have
+observed from the data, MOs can not only change the price in the direction
+of demand, but have also been found, at times, to not aﬀect the LOB at
+all. Moreover, a MO can be followed by the opposite direction change in the
+mid-price. In this respect, R (1) incorporates the eﬀect of the full sequence
+of market events that have caused the asset price to change including sub-
+missions and cancellations of LOs. As pointed out earlier, small tick stocks’
+mid-prices are prone to be aﬀected by LOs to a larger degree than large-tick
+stocks.
+61
+
+=== page 75 ===
+4.1.4 2015 Financial Time Series
+Our choice of the observational period was partially inﬂuenced by the research of
+Bouchaud et al. (2018). Authors use LOBSTER data for 120 stocks traded on
+NASDAQ to measure and predict market impact. They have conducted compa-
+rable estimations for our selected securities during 2015.
+When we initially benchmarked our ﬁndings for the ﬁrst six months of 2015 to those
+of Bouchaud et al. (2018), our response function measurements were somewhat
+lesser. To understand this phenomenon, we conducted the same experiments on the
+dataset for the second half of 2015 (to obtain an entire year average as estimated
+in Bouchaud et al. (2018)).
+The results, presented in Table 7, indicate that trade activity in the second half of
+2015 was very distinct from the ﬁrst six months. This is in line with several public
+news archives, which report major ﬁnancial events that took place at the start of
+June 2015 and followed through to June 2016. During that period, now referred
+to as “2015-16 stock market sell-oﬀ”, stock prices around the world declined in
+value as traders were actively selling for a number of reasons including: slowing
+growth of Chinese GDP, falling petroleum prices, Greek debt default, sharp rise in
+bond yields and UK’s decision to leave the European Union among other factors
+(Randall and Gaﬀen, 2016).
+62
+
+=== page 76 ===
+Stock ⟨s⟩ R (1) ∑ R NMO
+SIRI 1.04 0.031 0.156 669
+EBAY 1.10 0.263 0.470 3320
+TSLA 15.05 2.568 4.984 4007
+PCLN 113.17 14.353 32.088 1273
+Table 7: ⟨s⟩ Average spread; R (1) the lag-1 response function for all MOs; ∑ R
+standard deviation of price ﬂuctuations around the average price impact of MOs
+– all expressed in dollar cents; NMO total average number of MO per day between
+10:30 and 15:00 on each trading day from 30th of June to 31st of December 2015
+for four large- and small- tick stocks
+The data adheres to the occurrence of such events – the average spread and price
+dispersion (as measured by the standard deviation) are evidently higher for the
+period of June to December 2015 (higher than the ﬁrst half). Although the fol-
+lowing year of 2016 is out of the scope of our research, we are conﬁdent similar
+trend continued through.
+When we average the outcome for the two halves of 2015, our results resemble
+closely those by Bouchaud et al. (2018). Table 8 contrasts our ﬁndings to those
+outlined in “Trades, Quotes and Prices” (Bouchaud et al., 2018).
+We prescribe some minor discrepancy in the reported results to the implementation
+approach. Some further discussion on this is presented in Appendix C.9.
+63
+
+=== page 77 ===
+Stock ⟨s⟩ R (1) ∑ R NMO
+SIRI 1.06 0.058 0.213 623
+SIRI* 1.06 0.029 0.147 629
+EBAY 1.10 0.348 0.502 3575
+EBAY* 1.10 0.324 0.503 3561
+TSLA 12.99 2.59 4.49 3932
+TSLA* 12.94 2.31 4.31 3921
+PCLN 94.68 15.30 28.77 1342
+PCLN* 94.35 12.22 26.61 1341
+Table 8: In bold are empirical observations from the work of Bouchaud et al.
+(2018); in white results of the current study using market data from LOBSTER
+(measurement units are the same as in Tables 6 and 7)
+4.1.5 Conditioning on Trade Volume
+In our earlier discussion of market impact, we looked at several economic reasons
+that drive this phenomenon – MOs revealing private information and MOs’ me-
+chanical consumption of available liquidity – both leading to the change in the
+best-quoted price (immediate or subsequent). It is, thus, intuitive to explore a re-
+lationship of how the size of MO can inﬂuence the degree of impact. Therefore, we
+deﬁne R (υ, 1) as a volume dependent lag-1 impact response function and further
+explore its’ functional form.
+64
+
+=== page 78 ===
+Feature Engineering: Extraction and Selection
+In this respect, our feature selection process throughout the study has been guided
+by economic intuition. That is, following a comprehensive study of subject liter-
+ature we have identiﬁed features that we believe can help explain market impact;
+as opposed to obtaining the inferred relationships between the price impact and
+various observed market variables using feature extraction techniques.
+To arrive at a point where we can examine the impact response function, we have
+also engineered several features such as mid-price, spread, the standard deviation
+of price ﬂuctuations, normalised trade volume and the response function itself.
+Whilst the former features are not going to be used directly for deﬁning price
+impacts functional form, quantities like spread and standard deviation illustrate
+important qualities of our dataset which we highlighted in the previous section.
+Normalised Volume
+To account for daily trends and to be able to compare response function behaviour
+among stock with diﬀerent average traded volume characteristics, we normalise
+the MO volume υ by the average volume at the opposite side best quote ¯Vbest.
+The mean volume used for normalisation is recalculated each day ensuring the
+robustness of the relative scale.
+65
+
+=== page 79 ===
+Descriptive Statistics
+For this exercise, we recorded the normalised volume of each MO and its cor-
+responding lag-1 response function R (1). As a part of data pre-processing, we
+have removed outliers and aggregated average response per observed values of
+normalised volume. Jupyter Notebook (document that illustrates the code and its
+execution) Conditioning on Trade Volume in Appendix E describes the detailed
+procedure.
+An initial analysis of distribution of normalised volume, showed that the major-
+ity of trades for both large tick EBAY and small tick PCLN have a relatively
+small normalised volume (example in Figure 4). This means we have many more
+observations for smaller trade volumes than for trades of a larger size.
+To regularise the data, we ordered the series by normalised volume and then split
+the dataset in two: trades with normalised volume less than 0.1 and the rest of
+observations. Then we subsampled each partition at diﬀerent frequencies.
+Subsampling
+The LOBSTER data represents the evolution of the LOB throughout each trading
+day sampled by the arrival of new events, as opposed to sampling at regular time
+intervals. In our study, we are similarly interested in the series of events as they
+66
+
+=== page 80 ===
+Figure 4: Normalised volume distribution for PCLN. Yellow line representing the
+mean normilised volume.
+arrive in the exchange, and more speciﬁcally MO executions.
+In our initial analysis of market data, we conducted several data subsampling
+experiments where we regularised time series by sampling at regular intervals in
+several feature spaces. The main purpose of subsampling is to transform a series
+of observations that arrive at irregular intervals (such as LOBSTER data) into
+a homogeneous series. Such form is akin to a tabular representation and is often
+referred to as bars. In the Jupyter Notebook Create Bars (see Appendix E) several
+standard bars are created including time, tick, volume and dollar bars. Volume
+bars, for example, sample data every time a certain threshold (number of shares)
+of the security has been exchanged. Similarly, other types of bars sample daily
+market data at regular intervals in tick, time and dollar dimensions.
+67
+
+=== page 81 ===
+To estimate the relationship between response function and trade volume, how-
+ever, we examine every market order – its corresponding normalised volume and
+lag-1 response. Therefore, a slightly diﬀerent kind of regularisation applies in this
+case: for trades with smaller trade volume we sample the data every 0.01 increment
+in the (ordered) series of normalised volume; for larger volume trades we sample
+the data every 0.1 increment in normalised volume observation. This approach
+to regularisation allows us to normalise the dataset according to the density of
+observations. An exact procedure is demonstrated in the Jupyter Notebook Con-
+ditioning on Trade Volume which shows how we have visualised lag-1 response
+function conditioned on normalised trade volume (we collected the data during
+execution of uncond market impact.py – available in Appendix E).
+68
+
+=== page 82 ===
+Lag-1 Response Function Conditioned on Normalised Trade Volume
+From our earlier discussions it was intuitive to assume that larger MOs would
+aﬀect the price more than smaller MOs. However, the empirical results in Figure
+5 demonstrate that the eﬀect of trade volume on the price is very faint: small tick
+stock PCLN exhibits almost constant monotonic relationship between normalised
+trade volume and the price impact (as measured by R (υ , 1)); whilst large tick
+stock EBAY illustrates some functional dependency for small volumes but it dilutes
+and becomes monotonous as the normalised volume increases.
+Figure 5: Lag-1 Response Function Conditioned on Normalised Trade Volume
+for PCLN (left) and EBAY (right)
+From this visual representation of lag-1 impact conditioned on the trade volume we
+note that the response function appears to be concave and even almost constant
+for small tick stocks such as PCLN. It would be necessary, however, to compare
+observations for a larger number of securities to conﬁrm the robustness of such
+ﬁndings. We refer to the works of Bouchaud et al. (2018) and Zarinell et al. (2015)
+69
+
+=== page 83 ===
+who obtained similar results. The former attribute concavity to a conditioning
+bias called selective liquidity taking. Appendix B.1 elaborates further on this
+phenomenon.
+4.1.6 Order-Flow Imbalance
+An alternative approach to measuring impact of trades on price is to observe
+market impact not at trade-by-trade level, as we were doing before, but instead at
+aggregated order-ﬂow scale. In other words, in contrast to looking at the individual
+impact of trades, we aggregate multiple MOs’ signed volumes as a single order-
+ﬂow imbalance and measure how the price has changed before and after. Recall ε
+as order sign (positive meaning buy MO, and negative – sell MO), and υ as the
+volume of an individual MO, we denote order-ﬂow imbalance ∆V as:
+∆V =
+∑
+n∈[t, t+T )
+εnυn (21)
+where T > 0 tells the eﬀect of how many events (MOs) is measured by ∆V .
+In this regard, ∆V indicates the proportions of buy and sell orders that arrive
+during a given period (as measured in the number of MOs observed). Positive
+∆V means there were more buy orders (in volume) during the speciﬁed period
+70
+
+=== page 84 ===
+(buy orders have positive sign and volume causing ∆V > 0 ), therefore the price
+is expected to rise (for reasons we have discussed earlier). Contrastingly, negative
+∆V implies more recent sell orders, hence the price is expected to decline. We
+further study the aggregate impact conditioned on this volume imbalance, deﬁned
+as:
+R(∆V,T ) := E[mt+T −mt|∆V ] (22)
+R(∆V,T ) measures change in the mid-price immediately before the original MO
+and after a sequence of T MOs (mt+T being a mid-price immediately before the
+next MO after T MOs).
+Aggregate Response Function Conditioned on Trade-Flow Imbalance
+We choose to investigate the relationship between aggregate impact (measured
+in dollar cents) and the order-ﬂow imbalance (measured in shares) over T =
+5, 10, 20, 50 for TSLA stock. Our approach is demonstrated in the Jupyter
+Notebook Conditioning on Order-Flow Imbalance in Appendix E.
+In this part of the study we did not normalise (by corresponding average daily
+statistics, as done in the previous section when conditioning on trade volume) ag-
+71
+
+=== page 85 ===
+Figure 6: Aggregate impact (in dollar cents) of order-ﬂow imbalance (in shares)
+(in over T=5 (top left), T=10 (top right), T=20 (bottom left) and T=50 (bottom
+right) for TSLA stock
+gregate impact or imbalance, therefore, each experiments’ results are presented in
+individual subplot. The main purpose of this exercise was to visually understand
+the functional form of relationship between order-ﬂow imbalance and the aggre-
+gated price response function. The following interesting properties can be noticed
+from Figure 6:
+• Imbalance amplitude increases with T – as we aggregate the eﬀect of more
+trades, the order-ﬂow imbalance increases in absolute value as well. For
+instance, when observing the impact of T = 5 MOs, imbalance ranges from
+72
+
+=== page 86 ===
+around -1500 to 1500 shares. However, once T is increased to 10, imbalance
+scope expands to reaching 6000 shares in absolute value. Interestingly, the
+functional form of relationship seems the same for all T despite diﬀerent
+scales.
+• For smaller ∆V the relationship with R(∆V,T ) appears to be linear for all
+observed T = 5, 10, 20, 50.
+• With increase in |∆V| (absolute value of order-ﬂow imbalance) the relation-
+ship takes on a more concave (rather than linear) form, similar to our pre-
+vious analysis of lag-1 response function conditioned on normalised volume.
+Again, this may be attributed to the selective liquidity bias, as described in
+Appendix B.1.
+4.2 Results
+In the previous section we stated that the dependency between order-ﬂow imbal-
+ance and corresponding aggregate price impact appears linear for smaller absolute
+values of ∆V . In this segment, we conduct statistical experiments, as outlined in
+the research methodology section, to quantitatively infer functional form of mar-
+ket impact conditional on order-ﬂow imbalance. Our approach is illustrated in the
+Jupyter Notebook Market Impact Functional Form in Appendix E.
+73
+
+=== page 87 ===
+4.2.1 Functional Form of Market Impact
+Descriptive Statistics
+We use the data collected for TSLA stock over the entire year of 2015 with order-
+ﬂow imbalance observed over T = 10 MOs with the total of 47,473 observations
+of ∆V and R(∆V,T ). We remove the outliers beyond 3 standard deviations and
+subsample the data to reduce the noise. Visually our dataset is described by Figure
+7. We also illustrate the distributions of R(∆V,T ) – aggregate impact, and ∆V –
+order-ﬂow imbalance in Figure 8.
+Figure 7: Aggregate impact (in dollar cents) conditioned on order-ﬂow imbalance
+(in shares) for TSLA stock during 2015 after data pre-processing
+74
+
+=== page 88 ===
+Figure 8: Aggregate impact (in dollar cents) and order-ﬂow imbalance (in shares)
+distributions for TSLA during 2015. Red lines representing means - for aggregate
+response two lines are positive and negative means.
+These are in accordance with the previous illustration – imbalance distribution is
+uniform, meaning that asymmetry (order-ﬂow imbalance) of every size on either
+direction of trade is equally likely. Aggregate impact, on the other hand, seems to
+have more observations for a speciﬁc absolute value of around 10 dollar cents. This
+concentration of aggregated price impact, again, can be explained by the selective
+liquidity bias - larger orders (therefore order-ﬂow imbalance) only consume the
+liquidity available at the best opposite-side quote, hence, the impact does not
+increase beyond certain margin (is concave).
+We further explore the correlation between the two observed variables and calculate
+the correlation coeﬃcient ρ = 0.8538 which indicates a strong positive relationship
+between order-ﬂow and price impact (i.e., the greater the imbalance the bigger the
+market impact).
+The summary of other statistics for order-ﬂow imbalance and aggregate impact is
+75
+
+=== page 89 ===
+presented in Appendix C - Table 9.
+Supervised Linear Regression
+We ﬁrst estimate functional relationship between ∆V and R(∆V,T ) using a Linear
+Regression model which employs the OLS approach.
+We split our dataset randomly into two partitions: the training data to ﬁt the
+model, and the test data reserved to verify predictive accuracy of our model on
+unseen data. To quantify this accuracy, Mean Squared Error (MSE) is calcu-
+lated to assess how values estimated by the regression model diﬀer from the true
+observations in the test dataset.
+In the case of Linear Regression, the MSE is 3.86 meaning that, on average, our
+predicted aggregated price impact was either above or below the true value by 3.86
+dollar cents. We graphically illustrate predictive linear model and true observations
+in the Figure 9.
+76
+
+=== page 90 ===
+Decision Tree
+As an alternative to Linear Regression, we estimate a model using Decision Tree
+Regression – a supervised learning technique that predicts values of regressand by
+learning decision rules derived from observations. In contrast to Linear Regres-
+sion, Decision Tree model is not linear in parameters, therefore, it utilises MLE
+for parameter estimation. Similarly, we train our model on one partition of the
+data and test it on another unseen dataset. The MSE for Decision Tree model
+is 2.5 dollar cents – a better estimate than Linear Regression model. A visual
+representation of predicted and observed values can be seen in Figure 9.
+Figure 9: Linear Regression model and true observations of market impact for
+TSLA (left). Decision Tree model and true observations of market impact for
+TSLA (right) (Decision Tree Regression only displaying testing observations).
+77
+
+=== page 91 ===
+Cross-Validation: Model Selection
+Splitting the dataset into two partitions – one for training and one for testing – is
+a na¨ıve approach to testing predicting accuracy. Thus, we employ cross-validation
+to determine which model produces better estimates.
+Cross-validation is conducted using a helper function that splits the data into
+training and test sets, ﬁts the model and calculates scores (MSE and R2 in our
+case) for a number of consecutive runs. We perform cross-validation using 10
+partitions on both models. Figure 10 demonstrate MSEs and R2 coeﬃcients for
+Linear Regression and Decision Tree Regression (Table 11 in Appendix C shows
+the exact details).
+Figure 10: MSE (left) with average MSE for Linear Regression in blue, and
+average MSE for Decision Tree Regression in green; and R2 results (right) for
+Linear Regression and Decision Tree Regression.
+78
+
+=== page 92 ===
+From the two ﬁgures it is evident that the Decision Tree Regression displayed
+better predictive performance - its average MSE is slightly lower than MSE of
+Linear Regression model; and the coeﬃcient R2 (proportion of variance in the ob-
+served data that is explained by the estimated model) is higher for Decision Tree
+regression as well. However, the results of cross-validation illustrate that Decision
+Tree Regression does not always produce more accurate predictions. Despite this,
+we strongly believe the performance of ML algorithm could be improved in fu-
+ture studies by exploring various other features, learning models and tuning the
+parameters.
+4.2.2 Kyle’s Lambda
+The functional linearity between price impact and order-ﬂow imbalance is an em-
+pirical illustration of Kyle’s model which was introduced in the earlier Literature
+Review chapter. As we recall, Kyle stated that the price adjustment must be linear
+in total signed volume, expressed as:
+∆p = λεV (23)
+Therefore, the slope of linear relationship that we have observed for smaller volume
+imbalances is, what’s known as, a Kyle’s lambda.
+79
+
+=== page 93 ===
+Model Estimation
+In order to estimate the slope of this linear region of R(∆V,T ), we train the model
+speciﬁcally on the subsection of our observations where the relationship appears
+linear (as illustrated in the Figure 11).
+Figure 11: Subsection of observation that demonstrate linearity between order-
+ﬂow imbalance and price impact for TSLA in 2015.
+Again, we use Linear Regression and Decision Tree Regression to ﬁt the model
+and cross-validate it. The models and corresponding statistics about prediction
+accuracy (MSE and R2) are illustrated in the Figure 12.
+In this instance, both models have a good performance according to R2 coeﬃcient
+(both Linear and Decision Tree Regressions seem to explain much of the variance in
+the observed data); however, Decision Tree Regression model demonstrates much
+80
+
+=== page 94 ===
+Figure 12: Top: models of Linear and Decision Tree Regressions for predicting
+market impact conditioned on order-ﬂow imbalance (Decision Tree Regression only
+displaying testing observations); bottom: measures of goodness of ﬁt for the two
+models (left: green line - average MSE for Decision Tree, blue line - average MSE
+for Linear Regression
+lower average MSE by almost 0.50 dollar cents. This supports our earlier remark
+about the potential for more accurate ML predictive models.
+81
+
+=== page 95 ===
+Measure of Market Liquidity
+The slope of our linear model, the Kyle’s λ, was estimated as 0.011. This is
+regarded as the measure of (il-)liquidity of a market. For TSLA, we can postulate
+that the market is quite liquid, since the value of λ is low. However, for more
+robust conclusions it is necessary to compare measurements of λ across multiple
+stocks and venues.
+82
+
+=== page 96 ===
+5 Conclusion and Future Work
+5.1 Summary
+The focus of this research was to ﬁnd a functional form of market impact using
+parametric machine learning algorithms. We began with an overview of the ﬁnan-
+cial market microstructure and the role of information (and more importantly in-
+formation asymmetry) in the price formation (discovery) process. We then looked
+at a number of models of the information eﬃciency in the market, and how agents’
+interactions inﬂuence trading. Naturally we arrived at the deﬁnition of market im-
+pact - the focal point of this study.
+Following suit, we used trades and quotes dataset from NASDAQ electronic ex-
+change to measure unconditional market impact, price impact conditioned on
+normilised trade volume and the aggregate price response as a function of order-
+ﬂow imbalance. We have learnt that the unconditional price impact of market
+orders is proportional to the average spread for the stock. Moreover, we observed
+no functional dependency between price response function and normilised trade
+volume - partially attributed to the selective liquidity bias. In our analysis of aggre-
+gate price impact conditioned on the order-ﬂow imbalance, we discerned sublinear
+relationship between these two observed variables.
+Consequently, we employed Linear Regression and Decision Tree Regression models
+83
+
+=== page 97 ===
+to quantitatively measure the functional form of such relationship. We used the
+two models to predict values of aggregated price impact of order-ﬂow imbalance
+after a number of consecutive market orders. Decision Tree Regression - a machine
+learning algorithm that is not linear in parameters, illustrated better predictive
+accuracy than traditional Linear Regression, during cross-validation.
+5.2 Future Work
+We identify a number of ways in which our study can be further developed. The
+below list provides a summary of our suggestions. These are further explained in
+the Appendix D.
+• To explore the statistical and practical application of ML models in estima-
+tion of market impact it would be necessary to conduct a comparison with
+performance of current standard (for academics and practitioners) measures
+of price impact (i.e., Volume Weighted Average Price, VWAP); as well as
+other theoretical and empirical formulas of market impact.
+• Alternative data sources can be used for study of the impact of meta-orders
+(see Appendix D.1.1).
+• It would be of acute importance to study liquidity dynamics and impact of
+trades in illiquid markets - for example, in stressed market conditions (see
+Appendix D.1.2).
+84
+
+=== page 98 ===
+• Furthermore, the study can be expanded to other ﬁnancial products (not
+just equities) (see Appendix D.1.3).
+• Accurate measure of liquidity (thus market impact) facilitates the under-
+standing of optimal execution, further contributing to the study of optimal
+trading strategies (see Appendix D.1.4).
+• Experimental part of this research has been computationally intensive - it
+would be beneﬁcial to adopt high-performance computational resources when
+analysing high-frequency data (see Appendix D.1.5).
+85
+
+=== page 99 ===
+References
+Acharya, Viral (2006). “Liquidity Risk: Causes, Consequences and Implications
+for Risk Management”. In: Economic and Political Weekly 41 (6),
+pp. 460–463.
+Almgren, Robert F. (2003). “Optimal execution with nmiscar impact functions
+and trading-enhanced risk”. In: Applied Mathematical Finance 10 (1),
+pp. 1–18.
+Almgren, Robert and Neil Chriss (1999). “Value Under Liquidation”. In: Risk 12,
+pp. 61–63.
+— (2001). “Optimal Execution of Portfolio Transactions”. In: Journal of Risk 3,
+pp. 5–39.
+Almgren, Robert, Chee Thum, et al. (2005). “Direct Estimation of Equity
+Market Impact”. In: Journal of Risk, p. 57.
+Avellaneda, Marco and Sasha F. Stoikov (2008). “High Frequency Trading in a
+Limit Order Book”. In: Quantitative Finance 8 (3), pp. 217–224.
+Bertsimas, Dimitris and Andrew W. Lo (1998). “Optimal control of execution
+costs”. In: Journal of Financial Market 1 (1), pp. 1–50.
+Bloomberg (2016). Bloomberg Liquidity Assessment LQA. url:
+https://data.bloomberglp.com/professional/sites/10/LQA-Fact-
+Sheet-1.pdf.
+86
+
+=== page 100 ===
+Bonart, Julius and Martin Gould (2017). “Latency and liquidity provision in a
+limit order book”. In: Quantitative Finance 17 (10), pp. 1601–1616.
+Bouchaud, Jean-Philippe (2009). “Price Impact”. In: Encyclopedia of
+Quantitative Finance; arXiv:0903.2428 [q-ﬁn.TR]; arXiv:0903.2428v1
+[q-ﬁn.TR.
+Bouchaud, Jean-Philippe, Julius Bonart, et al. (2018). Trades, Quotes and Prices
+Financial Markets Under the Microscope. Cambridge University Press.
+Bouchaud, Jean-Philippe, Doyne J. Farmer, and Fabrizio Lillo (2009). “How
+markets slowly digest changes in supply and demand”. In: Handbook of
+Financial Markets: Dynamics and Evolution, pp. 57–160.
+Bouchaud, Jean-Philippe, Yuval Gefen, et al. (2003). “Fluctuations and response
+in ﬁnancial markets: the subtle nature of ‘random’ price changes”. In:
+Quantitative Finance 4 (2), pp. 176–190.
+Cartea, Alvaro, Sebastian Jaimungal, and Jose Penalva (2015). Algorithmic and
+High-Frequency Trading. Cambridge: Cambridge University Press.
+Cont, Roma, Arseniy Kukanov, and Sasha Stoikov (2010). “The Price Impact of
+Order Book Events”. In: Journal of Financial Econometrics, pp. 1–26.
+Cont, Roma, Sasha Stoikov, and Rishi Talreja (2010). “A Stochastic Model for
+Order Book Dynamics”. In: Operations Research 58 (3), pp. 549–563.
+Day, Sebastian (2017). Risk.net. url:
+https://www.risk.net/asset-management/4644191/quants-turn-to-
+machine-learning-to-model-market-impact.
+87
+
+=== page 101 ===
+Eisler, Zoltan, Jean-Philippe Bouchaud, and Julien Kockelkoren (2012). “The
+price impact of order book events: market orders, limit orders and
+cancellations”. In: Quantitative Finance 12 (9), pp. 1395–1419.
+Farmer, Doyne J., Paolo Patelli, and Ilija J. Zovko (2005). “The predictive power
+of zero intelligence in ﬁnancial markets”. In: Proceedings of the National
+Academy of Sciences of the United States of America 102 (6), pp. 2254–2259.
+Finnerty, Joseph E. (1976). “INSIDERS AND MARKET EFFICIENCY”. In:
+The Journal of Finance 31 (4), pp. 1141–1148.
+Garman, Mark (1976). “Market Microstructure.” In: Journal of Financial
+Economics, pp. 257–275.
+Glosten, Lawrence R. and Paul R. Milgrom (1985). “Bid, ask and transaction
+prices in a specialist market with heterogeneously informed traders”. In:
+Journal of Financial Economics 14 (1), pp. 71–100.
+Gould, Martin D. et al. (2013). “Limit order books”. In: Quantitative Finance 13
+(11), pp. 1709–1742.
+Grossman, Sanford J. (1976). “On the Eﬃciency of Competitive Stock Markets
+Where Trades Have Diverse Information”. In: The Journal of Finance 31 (2),
+pp. 573–585.
+Gu´eant, Olivier (2016). The Financial Mathematics of Market Liquidity From
+Optimal Execution to Market Making. New York: Chapman and Hall/CRC.
+88
+
+=== page 102 ===
+Gu´eant, Olivier, Charles-Albert Lehalle, and Joaquin Fernandez Tapia (2013).
+“Dealing with the Inventory Risk. A solution to the market making problem”.
+In: Mathematics and Financial Economics 7 (4), pp. 477–507.
+Harris, Larry (2003). Trading and Exchanges: Market Microstructure for
+Practitioners. New York: Oxford University Press.
+Hasbrouck, Joel (2007). Empirical Market Microstructure: The Institutions,
+Economics, and Econometrics of Securities Trading. Oxford University Press.
+Hautsch, Nikolaus and Ruihong Huang (2011). Limit Order Flow, Market Impact
+and Optimal Order Sizes: Evidence from NASDAQ TotalView-ITCH Data.
+Huang, Ruihong and Tomas Polak (2011). LOBSTER: Limit Order Book
+Reconstruction System. url: http://dx.doi.org/10.2139/ssrn.1977207.
+Huang, Weibing, Charles-Albert Lehalle, and Mathieu Rosenbaum (2015).
+“Simulating and Analyzing Order Book Data: The Queue-Reactive Model”.
+In: Journal of the American Statistical Association 110 (509), pp. 107–112.
+Jansen, Stefan (2018). Hands-On Machine Learning for Algorithmic Trading.
+Packt Publishing.
+Jean-Philippe, Donier Jonathan Bonart Julius Mastromatteo Iacopo Bouchaud
+(2015). “A fully consistent, minimal model for non-linear market impact”. In:
+Quantitative Finance 15 (7), pp. 1109–1121.
+K.Brunnermeier, Markus and Lasse Heje Pedersen (2009). “Market Liquidity and
+Funding Liquidity”. In: Review of Financial Studies 22 (6), pp. 2201–2238.
+89
+
+=== page 103 ===
+Kyle, Albert S. (1985). “Continuous auctions and insider trading”. In:
+Econometrica vol. 53 (6), pp. 1315–1335.
+— (1989). “Informed Speculation with Imperfect Competition”. In: The Review
+of Economic Studies 56 (3), pp. 317–355.
+Kyle, Albert S. and Anna A. Obizhaeva (2016). “Market Microstructure
+Invariance: Empirical Hypotheses”. In: Econometrica 84 (4), pp. 1345–1404.
+— (2018). “The Market Impact Puzzle”. In: SSRN Electronic Journal, pp. 1–16.
+Lehalle, Charles-Albert and Sophie Laruelle (2018). Market Microstructure in
+Practice. World Scientiﬁc Publishing.
+Loeb, Thomas F. (1983). “Trading Cost: The Critical Link between Investment
+Information and Results”. In: Financial Analysts Journal 39 (3), pp. 39–44.
+Mastromatteo, Iacopo, Bence Toth, and Jean-Philippe Bouchaud (2014).
+“Agent-based models for latent liquidity and concave price impact”. In:
+Physical review E 89 (4), p. 042805.
+Michael, McMillan et al. (2011). Investments: Principles of Portfolio and Equity
+Analysis. Wiley.
+Mitchell, Thomas M. (1997). Machine Learning. New York: McGraw-Hill, Inc.
+Moro, Magro E. et al. (2009). “Market impact and trading proﬁle of large
+trading orders in stock markets”. In: arXiv:0908.0202 [q-ﬁn.TR];
+arXiv:0908.0202v1 [q-ﬁn.TR].
+Murphy, David (2008). Understanding Risk: The Theory and Practice of
+Financial Risk Management. New York: Chapman and Hall/CRC.
+90
+
+=== page 104 ===
+Murphy, Kevin P. (2012). Machine Learning: A Probabilistic Perspective. MIT
+Press.
+Obizhaeva, Anna A. and Jiang Wang (2013). “Optimal trading strategy and
+supply/demand dynamics”. In: Journal of Financial Markets 16 (1), pp. 1–32.
+Park, Saerom, Jaewook Lee, and Youngdoo Son (2016). “Predicting Market
+Impact Costs Using Nonparametric Machine Learning Models”. In: PLoS
+ONE 11(2):e0150243 - DOI: 10.1371/journal.pone.0150243.
+Randall, David and David Gaﬀen (2014). What’s behind the global stock market
+selloﬀ? url:
+https://www.reuters.com/article/us-usa-markets-idUSKCN0VL0XO.
+Rosenow, P. Weber B. (2005). “Order book approach to price impact”. In:
+Quantitative Finance 5 (4), pp. 357–364.
+Seyhun, Nejat H. (1986). “Insiders’ proﬁts, costs of trading, and market
+eﬃciency”. In: Journal of Financial Economics 16 (2).
+Smith, Eric et al. (2003). “Statistical theory of the continuous double auction”.
+In: Quantitative Finance 3 (6), pp. 481–514.
+Torre, N. (1997). Market Impact Model: Handbook. Berkeley: Barra Inc.
+Zarinelli, Elia et al. (2015). “Beyond the square root: Evidence for logarithmic
+dependence of market impact on size and participation rate”. In: Market
+Microstructure and Liquidity 1 (2), pp. 2424–8037.
+91
+
+=== page 105 ===
+Appendices
+A
+A.1 Market and Funding Liquidity
+As outlined by Brunnermeier and Pedersen (2009), the market and funding liq-
+uidity concepts are mutually reinforcing. Traders provide market liquidity, and
+their ability to do so is dependent on the availability of funds. Conversely, traders
+funding needs, such as margin and capital requirements (i.e., collateral needed to
+enter into a trade) depend on the market liquidity of the asset. More accurately,
+when funding liquidity becomes scarce, traders become reluctant to take on capital
+intensive positions, lowering market liquidity and increasing margin and capital
+requirements. This increased risk, and thus cost of ﬁnancing a trade (margin or
+haircut) is thus dependent on eﬃcient streams of market liquidity.
+92
+
+=== page 106 ===
+B
+B.1 Selective Liquidity Taking Under Market Fragmen-
+tation
+An imperative consequence of information asymmetry that is crucial to under-
+standing of how markets operate is that even highly liquid markets are in fact
+not suﬃciently liquid after all Bouchaud et al. (2018). That is, to minimise the
+risk of adverse selection, MMs providing liquidity operate in a regime of small re-
+vealed liquidity, and large latent liquidity. Consequently, the available liquidity at
+any given moment only reﬂects a small fraction of the potentially huge underlying
+supply and demand. This is often captured by general equilibrium models such
+as Kyle (1985), Mastromatteo, Toth and Bouchaud (2014), which are based on
+interactions between rational agents who take optimal decisions.
+The scarcity of liquidity has an immediate and important consequence: large
+trades, or meta-orders, must be fragmented into smaller child orders that can
+be slowly digested by markets. Empirical observations such as Bouchaud (2009)
+suggest that order splitting is a very common practice in a wide range of markets.
+In recent years, it has become common to trade assets on several diﬀerent electronic
+platforms simultaneously. This increased fragmentation means it is necessary to
+split an order not just through time, but also through space - to selectively consume
+93
+
+=== page 107 ===
+liquidity (submit trades no larger than the available liquidity at the corresponding
+price) across all available venues (Lehalle and Laruelle, 2018).
+In the earlier discussions of functional form of relationship between response func-
+tion and normalised volume, as well as, dependency of aggregate impact on order-
+ﬂow imbalance, we have attributed concavity to selective liquidity taking. This
+could be partially explained by the fact that the larger orders arrive only when
+there is a large volume available at the opposite side best quote. In other words,
+larger volume trades do not cause bigger impact because they only consume avail-
+able liquidity and no more. Therefore, the price impact remains monotonic (con-
+cave) for diﬀerent size trades.
+The study of meta-orders and hidden orders (hidden in the sense that the true
+order size is not made public to minimize information leakage) yields surprising
+empirical ﬁndings for the functional form of market impact. However, the existing
+empirical literature on the subject is limited, with Torre (1997), Almgren (2003),
+Moro et al. (2009), being the few publications in this area. This is attributed to
+the diﬃculty in obtaining access to data that could facilitate statistical reconstruc-
+tion of transactions against trading account member codes. This would otherwise
+permit us to identify the parent meta-orders to which a child belongs to. The
+limitation of our study stems from this lack of proprietary datasets which clearly
+identiﬁes the source of large orders. For this reason, latent liquidity and the impact
+of meta-orders are beyond the scope of this project.
+94
+
+=== page 108 ===
+Figure 13: Latent Order Book in the presence of a meta-order, with bid orders
+(blue boxes) and ask orders (red boxes) sitting on opposite sides of the price line
+and subject to a stochastic evolution. (DONIER, Jonathan et al., 2015)
+B.2 Limit Orderbooks and Their Models
+The LOB keeps a record of order-ﬂow events – the execution of trades (aggres-
+sive market orders) and the provision of liquidity (passive limit orders). These
+orders are managed by a matching engine in accordance with some well-deﬁned
+algorithm (i.e., price time priority or pro-rata rules). The unusually rich, detailed,
+and high-quality historic LOB data facilitates the ability to analyse complex global
+phenomena that emerge as a result of the local interactions between many hetero-
+geneous agents.
+The earliest models of LOB generally depicted the evolution of order ﬂow according
+95
+
+=== page 109 ===
+to simple stochastic processes with set parameters. Smith et al. (2003) introduced
+a model in which limit order queues, as well as counter executed market orders
+and cancellations, transpire as mutually exclusive Poisson processes with ﬁxed-
+rate parameters. The model has since been extended by Cont, Stoikov and Talreja
+(2010), who account for varying cancellation and limit order rates as a function of
+ﬂuctuating prices.
+Though these so-called zero intelligence models (models in which order ﬂows are
+assumed to be governed by speciﬁed stochastic processes) of LOBs perform rela-
+tively well at depicting some long-run statistical properties of genuine LOBs (see,
+e.g., Farmer, Patelli and Zovko (2005)); they are largely hindered by their ex-
+clusion of strategic considerations in which liquidity providers might adapt their
+ﬂows in response to the actions of others. This constraint was recently allevi-
+ated in the work of Huang, Lehalle and Rosenbaum (2015). By incorporating an
+agent’s strategic behaviour, they provide a more realistic picture of empirically
+observed facts about the price discovery and price formation processes, as well as,
+the general market quality.
+96
+
+=== page 110 ===
+C
+C.1 The NASDAQ
+NASDAQ stands for “National Association of Securities Dealers Automated Quo-
+tation” and was originally founded in 1971 in New York, USA. The initial idea
+behind NASDAQ stock exchange was to give dealers the ability to post quotes
+electronically, thus making the process of selling smaller stocks (previously sold
+OTC) more eﬃcient. This electriﬁcation of the trading process proved hugely
+successful. Today NASDAQ is the second-largest electronic exchange by market
+capitalisation in the world - currently exceeding 10 trillion US dollars. And the
+ﬁrst by overall trading volume.
+Unlike other major exchanges such as NYSE, NASDAQ does not have a physical
+location – it is an entirely digital marketplace. NASDAQ normal trading hours
+are between 9:30 am and 4:00 pm Eastern Time on a business day. Typically,
+NASDAQ operates around 253 days a year.
+C.2 Ordeerbook Reconstruction
+The order book dynamics are simulated by continuously updating known informa-
+tion about its state. For example, given the previous day state of LOB for a stock,
+each new TotalView-ITCH event message changes the state of the book according
+97
+
+=== page 111 ===
+to whether the message was an addition, update, cancellation or execution of the
+limit order. Figure 14 illustrates the incoming message “A” to add a limit order.
+In response, a new order is added to the pool and the LOB is updated at the cor-
+responding price level. In contrast, when an update message arrives – for example,
+cancellation “X” and “D”, the original order is found in the pool using order ID
+and updated accordingly.
+Figure 14: LOB reconstruction from NASDAQ data feed (HUANG, Ruihong
+and Polak, Tomas, 2011)
+For each LOBSTER data request, the LOB is reconstructed fully from the ex-
+change message data for the stock during the speciﬁed period. By choosing an
+appropriate level of depth, only the number of levels requested is saved to the
+output ﬁle.
+98
+
+=== page 112 ===
+LOBSTER data has been widely popular among academics in recent years. We
+ﬁnd studies of Bouchaud et al. (2018), Cartea, Jaimungal and Penalva (2015),
+Bonart and Gould (2017) and others using LOBSTER data for microstructure
+research. The pre-processed output LOB ﬁles are available to download via the
+Internet saving a lot of time and eﬀort, thus enabling academics to focus on the
+economic study.
+C.3 Data Prepossessing
+Python Data Analysis
+Once the data is downloaded from LOBSTER in CSV format, we deﬁne and deploy
+Python script to analyse and clean the data. Since each record in LOBSTER
+message ﬁle corresponds to exactly one record in orderbook ﬁle (and both ﬁles
+are ordered), we merge the data from messages and orderbook into one Python
+DataFrame object to be able to manipulate and analyse the data more eﬃciently.
+DataFrame is a two-dimensional tabular data structure with labelled rows and
+columns that can store data of various types - integer numbers, ﬂoating-point
+numbers, string characters and other. Throughout our empirical study we operate
+on market data using Python, and more speciﬁcally Python Pandas library which
+contains an extensive number of data science methods and functions implemented
+and available freely for use by academics and practitioners. Python has become
+99
+
+=== page 113 ===
+very popular and is increasingly recognised as the de-facto data science language
+among both in recent years because of it’s easy to read (thus use) syntax and
+multi-paradigm nature.
+Inspection and Cleaning
+To begin with, we investigate the properties of typical daily data. Our research
+objective is to deﬁne how various environment features, such as trade volume,
+inﬂuence the parameter of interest – market impact. To achieve this, we estimate
+the daily impact of MOs, and then calculate an average price impact for the total
+6 months set of observations (amounting to 248 trading days).
+When looking at the average daily data, we discover that a large portion of
+events during trading hours constitute submission and cancellation of LOs (events
+of type 1 and 3 respectively). These ﬁndings, illustrated in Figure 15, are aligned
+with previous microstructure research (see Bouchaud et al. (2018)). Therefore,
+given our particular interest in how executions of MOs inﬂuence the price, only
+a small fraction of a daily dataset is relevant for the purposes of our quantitative
+analysis. To compensate for this, the study examines daily dynamics throughout
+a suﬃciently long period of 6 months.
+100
+
+=== page 114 ===
+Figure 15: Frequencies of market events of each type during trading day.
+Next, when we examine the average trade volume for TSLA, some very unusual
+values are evident (Figure 16). Most electronic markets are known to operate
+during set time intervals throughout the day, where the beginning and end of
+the day are more generally reserved for auctions that result in the atypical trade
+activity. This might explain our ﬁndings of trade volume outliers.
+101
+
+=== page 115 ===
+Figure 16: Box plot of trade volumes during the full trading day for TSLA stock
+For each trading day, we remove the market activity for the ﬁrst and the last hour,
+e.g. only using data for 10:30-15:00. This eliminates some inconsistency noticed
+in the previous examination of trade volume range as per Figure 17.
+Figure 17: Box plot of trade volumes during 10:30-15:00 for TSLA stock
+At this point, it is important to consider that whenever a single MO matches
+several LOs in the book, each LO execution is listed as a separate record in both
+LOBSTER messages and orderbook ﬁles, albeit with the same timestamp. An
+example is illustrated in Table 9 where three consecutive executions of visible LOs
+(event type 4) have the same timestamp, therefore, represent a single MO being
+102
+
+=== page 116 ===
+matched with several LOs at that price. Interestingly, the execution of the last
+LO at the best ask price consumes all available liquidity at that level (33 shares)
+thus moving the ask price to the next best level – from 2058500 to 2058800. The
+next arriving MO to buy is most likely to be executed at this new price. This is an
+example of market impact, therefore, in our study, it is necessary to recognise that
+such multiple executions with the same timestamp correspond to a single MO.
+And the fact that it is the aggregated MO size that may have caused the price
+change, not just the latest matched LO that absorbed liquidity at the best quote.
+103
+
+=== page 117 ===
+Timestamp Event Type OrderID Size Direction Ask Price Ask Volume
+37837.0474 1 70920403 100 -1 2058500 100
+37837.0474 4 70920403 22 -1 2058500 78
+37837.0474 4 70920403 45 -1 2058500 33
+37837.0474 4 70920403 33 -1 2058800 69
+37837.0479 3 70920380 100 1 2058800 69
+37837.0479 1 70920420 100 1 2058800 69
+Table 9: Separate LO executions representing
+the same MO at the same timestamp
+104
+
+=== page 118 ===
+Consequently, we group LO executions that happened at exactly the same time,
+and aggregate individual LO volumes to reconstruct the size of the original MO.
+C.4 Machine Learning
+Unsupervised Learning
+Unsupervised learning describes a set of algorithms that do not make use of labelled
+responses associated with the data. They alternatively exploit the underlying data
+structure to draw inference. In this respect, there are no correct target variables,
+instead, we are only given inputs, D = {xi}N i=1, to deduce meaningful properties of
+the probability density of the dataset (given no training sample). This is sometimes
+referred to as knowledge discovery and is a much less well-deﬁned problem as there
+is no means of evaluating the learners’ performance given no obvious target metric.
+Reinforcement Learning
+Reinforcement learning constitutes the third class of ML. Reinforcement Learning
+(RL) attempts to learn a policy of how to take actions in a dynamic environment
+to maximise the discounted future reward criterion. To collect information the
+learner agent actively interacts with the environment (exploring unknown actions
+to gain new insight and exploiting the information already collated) and in some
+cases aﬀects the system.
+105
+
+=== page 119 ===
+Parametric and Non-Parametric Models
+• Parametric statistical learning involves a speciﬁed model of form f(y) with
+ﬁxed a ﬁxed number of parameters that deﬁne its behaviour. The canonical
+example of a parametric model is that of linear regression. This involves
+estimation of a set of p+1 coeﬃcients relating to the vector β = (β0,β1,...βp)
+whereby a response y is linearly proportional to each feature xj. Parametric
+models hold the advantage of being eﬃcient in use, but the disadvantage
+of making strong assumptions about the nature of the distribution of the
+dataset.
+• An alternative is to consider a form for f where the number of parameters
+grows with respect to the size of the dataset. Non-parametric models may not
+involve any parameters or may describe a distribution with a ﬁnite number
+of parameters. These are more ﬂexible but often computationally intractable
+given the large quantity of observational training data required to account for
+the lack of assumption. All models considered in this research fall under the
+parametric classiﬁcation. As always, by increasing the number parametric
+vectors in our feature space we risk the danger of overﬁtting the model as
+the model may follow the “noise” too closely as opposed to the “signal”.
+106
+
+=== page 120 ===
+C.5 The Gauss–Markov Theorem
+To assess the statistical signiﬁcance of the model and conduct inference, we make
+assumptions about the residuals – properties of the unexplained aspect of the input
+sample. The Gauss–Markov theorem (GMT) deﬁnes several assumptions required
+for OLS to generate unbiased estimates of the model parameters β. Under the
+standard GMT, the coeﬃcients’ best (optimal) linear unbiased estimator is given
+by OLS if and only if:
+1. The data for the input variables x,...,xk is a random sample from the
+population
+2. The errors have a conditional mean of zero given any of the inputs:
+E[ϵ|x,...,xk] = 0
+3. Homoskedasticity, the error term ϵ has a constant variance given the inputs:
+E[ϵ|x,...,xk] = σ2
+The best estimator is the one that yields the lowest standard error (variance) of
+the estimates. In addition to these GMT assumptions, the classical linear model
+assumes normality – the population error is normally distributed and independent
+of the input variables. This implies that the output variables are normally dis-
+tributed (conditional on the input variables) permitting the derivation of the exact
+distribution of coeﬃcients.
+107
+
+=== page 121 ===
+C.6 Statistical Inference
+The functional relationship produced by supervised learning algorithms can be
+used for inference (that is, to gain new insights into how the outcomes are gener-
+ated) or for prediction (that is, to generate accurate outcome estimates, represented
+by ˆy) for unknown or future inputs (x).
+In the context of regression, inference looks to draw conclusions about the true
+relationship of the population regression function (PRF) using the sample observa-
+tions. This means running tests of hypothesis about the signiﬁcance of the overall
+relationship estimated by SRF, as well as testing for the signiﬁcance of particular
+coeﬃcients. We also estimate conﬁdence intervals for the estimated model.
+An important component of statistical inference is a test statistic with a known
+distribution. This assumes, under the null hypothesis, the estimated statistic is
+similar to the true model; and computes the probability (given by the p-value) of
+observing the value for this statistic in the sample. If the p-value drops below a
+conﬁdence threshold – usually ﬁve percent – we reject the null hypothesis.
+In addition to GMT assumptions, we have the following distributional charac-
+teristics for test statistic exactly when normality holds: The test statistic for a
+hypothesis test given an individual coeﬃcient βj is
+108
+
+=== page 122 ===
+tj =
+ˆβj
+ˆσ√vj ∼tN −p− 1 (24)
+and follows a t distribution of N −p− 1 degrees of freedom, where vj is the jth
+element of the diagonal of (xTx)−1.
+C.7 AIC and BIC Goodness-of-Fit Measures
+Alternative prominent goodness-of-ﬁt measures are the Akaike Information Cri-
+terion and (AIC) and the Bayesian Information Criterion (BIC). The goal is to
+minimise these based on the MLE:
+• AIC = −2log(L∗) + 2k, where L∗ denotes the value of the maximised likeli-
+hood function and k is the number of parameters
+• BIC = 2log(L∗) + log(N)k, where N is the sample size
+Given a collection of estimated models, AIC determines the quality of a model by
+looking to ﬁnd the model that best describes an unknown data-generating process;
+whereas BIC aims to ﬁnd the best model amongst a ﬁnite set of candidates. Both
+provide a means of model selection. Each metric penalises for complexity. While
+AIC has a lower penalty, thus might overﬁt; BIC imposes a larger penalty so it
+109
+
+=== page 123 ===
+can underﬁt the data. In practice, AIC and BIC can be used jointly to guide
+the process of model selection if the objective is to ﬁt in-sample; otherwise, cross-
+validation is preferable.
+C.8 Hidden Orders
+The LOBSTER data provides information on hidden LO executions – market event
+of type 5. When reconstructing a MO that had been matched against several LOs
+in the book, we often observe a MO initially execute against hidden LO, only
+matching resting visible LOs at the best quote once it has consumed all hidden
+liquidity. Although we do not particularly speak of the eﬀect of hidden orders
+in this text, it is important to understand that the response (eﬀect) of some of
+the visible MOs is aﬀected by the hidden LOs at a better price. From the earlier
+description of NASDAQ electronic exchange, we recall that orders are executed in
+speciﬁc successions: orders with the best prices are matched ﬁrst, priority being
+given to the visible orders and the time of order submission. In other words, visible
+orders are always executed ﬁrst unless hidden LO has a better price. In such cases,
+hidden orders (hidden liquidity) dilute the eﬀect of aggressive MOs at the price
+that matches the best in the LOB.
+110
+
+=== page 124 ===
+C.9 Empirical Studies Review
+In our implementation of price response algorithm we followed a number of promi-
+nent (in the ﬁeld of ﬁnancial microstructure) research publications that worked
+with LOBSTER data such as Bouchaud et al. (2018) and Gould et al. (2013).
+Using the data for the same stocks, our results underestimate R (1) for all four
+observed tickers: SIRI, EBAY, TSLA, PCLN. Since our ﬁndings report average
+spread ⟨s⟩ exactly matching results of BBouchaud et al. (2018), we assume that
+the discrepancy in the calculated values of response function R (1) arises from dif-
+ferent approaches in dealing with a MO that matched a number of LOs in the LOB
+(therefore appears as multiple entries at the same time-stamp in the LOBSTER
+message ﬁle).
+111
+
+=== page 125 ===
+nobs min max mean variance skewness kurtosis
+Order-Flow
+Imbalance
+253 -2718.71 2330.0 -191.11 2142316.26 7.64 -1.20
+Aggregated
+Market Impact
+253 -21.625 19.33 0.58 62.91 -0.05 -1.31
+Table 10: Descriptive Statistics: Order-Flow Imbalance and Aggregated Market Impact. Order-Flow Imbalance
+measured in shared, Aggregated Market Impact is measured in dollar cents.
+112
+
+=== page 126 ===
+Linear Regression
+MSE 4.51 4.42 4.75 5.03 3.87 4.64 4.26 3.72 4.08 4.97
+Mean 4.42
+St.Dev 0.42
+Decision Tree
+MSE 2.91 4.77 6.00 4.08 2.47 3.98 4.51 2.94 3.91 5.44
+Mean 4.11
+St.Dev 1.07
+Table 11: MSE Cross Validation Scores run k× 10 . MSE is measured in dollar cents.
+113
+
+=== page 127 ===
+D
+D.1 Future Work
+D.1.1 Alternative Data
+When giving a functional deﬁnition of market impact we have emphasised that in
+this work we are looking speciﬁcally at the impact of individual market orders.
+This is partially due to the speciﬁcs of LOBSTER data set that does not identify
+meta-orders. However, as we later discovered, there are other free resources such
+as NASDAQ OMX NORDIC (or just OMX) online database where one can ac-
+cess trades and quotes data that identify market participants. This would enable
+reconstruction of meta-orders and thus study of the latent liquidity.
+Alternatively, as suggested by many similar empirical studies, having proprietary
+data makes a big diﬀerence for accurate research of ﬁnancial markets microstruc-
+ture. Previous empirical studies of market impact employed traditional statis-
+tical techniques with a few publications such as Nevmyvaka and Kearns (2016)
+and Lehalle (2018) discussing application of ML methods. The majority of such
+studies were conducted on clean academic historical datasets that often omit mi-
+crostructure nuances required for a deeper level investigation. Contrastingly, we
+seek collaboration with industry partners to support the vision of data driven re-
+114
+
+=== page 128 ===
+search, by providing real-time proprietary microstructure data. This can be used
+to simulate interesting game theory variations of agents behaviours in varying
+market conditions.
+D.1.2 Illiquid Markets
+One of the main distinguishing properties of diﬀerent markets is the availability and
+visibility of liquidity. Moreover, liquidity can change drastically for an asset class
+in times of stressed markets. Such events, characterised as black swan events, are
+challenging to model since they appear as outliers in the data, making it diﬃcult
+for practitioners to decide on the most optimal actions when facing such scenarios.
+The second motivation for this research is to investigate the key drivers aﬀecting
+liquidity dynamics, under stressed market conditions.
+D.1.3 Invariant Market Impact Function
+Kyle and Obizhaeva (2018), as well as, Eisler and Bouchaud (2016) have researched
+into a universal solution for price impact. In their paper, “The Market Impact
+Puzzle”, the former propose two conditions on the drivers of invariant formula
+which result in the tightly parameterized function. Eisler and Bouchaud (2016)
+have successfully applied the propagator technique to estimation of price impact
+in OTC credit index market, with their quantitative results being similar to those
+115
+
+=== page 129 ===
+in more traditional asset classes. Thus, conﬁrming that price impact is a universal
+phenomenon regardless of speciﬁcations of market microstructure.
+D.1.4 Optimal Execution
+Having a more comprehensive understanding of liquidity (ability to forecast liq-
+uidity more accurately) is imperative to measuring market impact of trades, hence
+associated transaction costs. This knowledge can help optimize a liquidation sched-
+ule for large block orders. Studies of optimal trading strategies have often solely
+focused on a single agent who desires to trade a certain amount of the security.
+When generalised to multiple agents, the resulting stochastic optimal control prob-
+lem is extremely diﬃcult to solve. One approach is to investigate a mean ﬁeld game
+framework in which the interactions of major and minor players are approximated
+by analysing how a ﬁnite subsample N , of the population of agents who seek to
+adopt optimal game strategy, are restricted in their behaviour as N−→∞. Such
+situations constitute Nash Equilibrium.
+In this context, an area of machine learning called Reinforcement Learning (which
+has roots in control theory) can be employed to solve the problem of optimised
+trade execution. Reinforcement Learning (RL) attempts to learn a policy of how
+to take actions in the environment in order to maximise the discounted future re-
+ward criterion. The key advantage of Reinforcement Learning over other Machine
+116
+
+=== page 130 ===
+Learning techniques, is that the agent learns directly how to make decisions, as
+opposed to predicting target values. In the framework of our stochastic control
+problem, the agent learns to optimize a trading path by dividing a speciﬁed order
+across time, and venues with potentially diﬀerent liquidity proﬁles.
+To supplement the learning process, we will look to explore further applications of
+Deep Neural Networks. As the agent accumulates the knowledge of which actions
+yield the highest reward, this information is continuously stored to assist future
+decision making ( trade-oﬀ between exploration and exploitation). However, as
+the learning process continues this knowledge space can become extremely large
+making it unfeasible for the algorithm to process (both mathematically and com-
+putationally intractable for partially-observable/ stochastic environments). An
+alternative to stowing all previously encountered states and their corresponding
+best actions is to generalise past experiences by creating a neural network to pre-
+dict the reward for a given input. This approach is more tractable than standard
+knowledge storing techniques, allowing RL to be applied to more complex problems
+where many network layers can capture the most intricate details, thus facilitating
+deep learning.
+To aﬃrm the validity of our ﬁndings, a series of experiments will be carried out
+using the scientiﬁc method. The work will be conducted in a controlled envi-
+ronment with initial oﬄine veriﬁcation of assumptions on historical data sets.
+Some properties of real time market dynamics, however, cannot be veriﬁed oﬄine;
+117
+
+=== page 131 ===
+therefore, should be validated at runtime. This might require high-performance
+computational resources. The success of derived optimal trading behaviour will
+be benchmark against traditional deﬁnitions of optimal execution such as arrival
+price, VWAP and participation percentage.
+D.1.5 Computational Resources
+High frequency and detailed precision of LOBSTER data imply that the amount
+of information about certain stocks’ trade activity easily exceeds several of Giga
+Bites (GBs). Such a high volume of data is best dealt with using high-performance
+computing resources that are optimised to improve on processing timings.
+We strongly believe that the pace of learning from data can be majorly improved by
+the usage of appropriate hardware designed for eﬃcient analysis of large quantities
+of information.
+The below chart illustrates the average computational time for estimation of the
+lag-1 unconditional impact of trades for four selected stocks. One of the challenges
+of the current study was the long time it took to test the algorithm and collect
+statistical information for further inference.
+118
+
+=== page 132 ===
+Figure 18: Computational time in seconds for estimation of lag-1 unconditional
+impact for 2nd of January to 30th of June 2015 in light grey; and the computational
+time in seconds for estimation of lag-1 unconditional impact 30th of June to 31st
+of December 2015 in dark grey
+It is evident that even for less actively traded stocks such as SIRI and PCLN an
+average running time of an algorithm that estimates lag-1 unconditional market
+impact for 6 months is above 1000 seconds (the equivalent of 15 min). For a stock
+that is traded heavily on NASDAQ, such as EBAY, estimation of the average
+response function for half a year worth of data can easily take over an hour.
+E
+119

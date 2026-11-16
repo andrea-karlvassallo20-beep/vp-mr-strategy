@@ -23,7 +23,8 @@ import urllib.request
 from pathlib import Path
 
 USER_AGENT = "vp-mr-strategy-library/1.0"
-PDF_DIR = Path("docs/library/pdfs")
+PDF_DIR = Path("data/library_pdfs")  # git-ignored (weight policy); texts are versioned
+LEGACY_PDF_DIR = Path("docs/library/pdfs")  # already-tracked first 186
 TEXT_DIR = Path("docs/library/text")
 INDEX_JSON = Path("docs/library/expanded_index.json")
 INDEX_MD = Path("docs/library/expanded_index.md")
@@ -104,6 +105,30 @@ ARXIV_QUERIES = [
     ("arxiv-micro2", "cat:q-fin.TR AND abs:microstructure"),
     ("arxiv-hawkes2", "cat:q-fin.ST AND abs:self-exciting"),
     ("arxiv-cp", "cat:q-fin.ST AND abs:regime change"),
+    ("arxiv-noise", "cat:q-fin.ST AND abs:microstructure noise"),
+    ("arxiv-mm", "cat:q-fin.MF AND abs:Hawkes"),
+    ("arxiv-jump", "cat:q-fin.MF AND abs:self-exciting jumps"),
+    ("arxiv-manip", "cat:q-fin.TR AND abs:manipulation"),
+    ("arxiv-spoof", "cat:q-fin.TR AND abs:spoofing"),
+    ("arxiv-exec", "cat:q-fin.TR AND abs:execution"),
+    ("arxiv-opt", "cat:q-fin.PR AND abs:order flow"),
+    ("arxiv-pm", "cat:q-fin.PM AND abs:momentum"),
+    ("arxiv-risk", "cat:q-fin.RM AND abs:extreme"),
+    ("arxiv-net", "cat:q-fin.GN AND abs:lead-lag"),
+    ("arxiv-lob2", "cat:q-fin.TR AND abs:order book AND abs:prediction"),
+    ("arxiv-imb", "cat:q-fin.TR AND abs:imbalance"),
+    ("arxiv-liq", "cat:q-fin.TR AND abs:liquidity"),
+    ("arxiv-crash", "cat:q-fin.ST AND abs:crash"),
+    ("arxiv-vol2", "cat:q-fin.ST AND abs:realized variance"),
+    ("arxiv-crypto2", "cat:q-fin.TR AND abs:bitcoin"),
+    ("arxiv-stable", "cat:q-fin.TR AND abs:stablecoin"),
+    ("arxiv-defi", "cat:q-fin.TR AND abs:DeFi"),
+    ("arxiv-hawkes3", "cat:q-fin.ST AND abs:branching"),
+    ("arxiv-impact2", "cat:q-fin.TR AND abs:transient impact"),
+    ("arxiv-mm2", "cat:q-fin.TR AND abs:market making"),
+    ("arxiv-tick", "cat:q-fin.TR AND abs:tick size"),
+    ("arxiv-pred", "cat:q-fin.CP AND abs:prediction market"),
+    ("arxiv-ml2", "cat:q-fin.CP AND abs:deep learning AND abs:returns"),
 ]
 
 
@@ -165,7 +190,7 @@ def openalex_search(query, limit=8):
     return out
 
 
-def arxiv_search(query, limit=15):
+def arxiv_search(query, limit=25):
     url = ("http://export.arxiv.org/api/query?search_query=" + urllib.parse.quote(query)
            + f"&max_results={limit}&sortBy=relevance")
     try:
@@ -215,7 +240,8 @@ def main():
         m = re.match(r"\d+ \w+ \| (.*?) \|", line)
         if m:
             seen.add(norm_title(m.group(1)))
-    for p in list(PDF_DIR.glob("*.pdf")) + list(PDF_DIR.glob("*.txt")):
+    for p in (list(PDF_DIR.glob("*.pdf")) + list(PDF_DIR.glob("*.txt"))
+              + list(LEGACY_PDF_DIR.glob("*.pdf")) + list(LEGACY_PDF_DIR.glob("*.txt"))):
         seen.add(p.stem)
 
     # carry over previously acquired expanded-library papers

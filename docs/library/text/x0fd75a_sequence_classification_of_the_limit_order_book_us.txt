@@ -1,0 +1,955 @@
+=== page 1 ===
+Sequence Classiﬁcation of the Limit Order Book using
+Recurrent Neural Networks
+Matthew Dixon1
+1Stuart School of Business,
+Illinois Institute of Technology,
+10 West 35th Street,
+Chicago, IL 60616,
+matthew.dixon@stuart.iit.edu
+July 14, 2017
+Abstract
+Recurrent neural networks (RNNs) are types of artiﬁcial neural networks (ANNs) that are
+well suited to forecasting and sequence classiﬁcation. They have been applied extensively to
+forecasting univariate ﬁnancial time series, however their application to high frequency trading
+has not been previously considered. This paper solves a sequence classiﬁcation problem in
+which a short sequence of observations of limit order book depths and market orders is used
+to predict a next event price-ﬂip. The capability to adjust quotes according to this prediction
+reduces the likelihood of adverse price selection. Our results demonstrate the ability of the RNN
+to capture the non-linear relationship between the near-term price-ﬂips and a spatio-temporal
+representation of the limit order book. The RNN compares favorably with other classiﬁers,
+including a linear Kalman ﬁlter, using S&P500 E-mini futures level II data over the month of
+August 2016. Further results assess the eﬀect of retraining the RNN daily and the sensitivity
+of the performance to trade latency.
+Keywords: Recurrent Neural Networks, Limit Order Book, Futures Markets.
+1 Introduction
+Many of the challenges facing methods of ﬁnancial econometrics include non-stationarity, non-
+linearity or noisiness of the time series. The application of artiﬁcial neural networks (ANNs) to
+uni-variate ﬁnancial time series methods are well documented (Faraway and Chatﬁeld, 1998; Refenes,
+1994; Trippi and DeSieno, 1992; Kaastra and Boyd, 1995). Their proneness to over-ﬁtting, conver-
+gence problems, and diﬃculty of implementation raised concerns that hampered their early adoption
+by ﬁnance industry practitioners in predicting low frequency volatility or price changes.
+Modeling and analysis of time-varying signals is an important subﬁeld of signal processing. One
+of the most successful algorithms to arise for dynamic systems is the classical Kalman ﬁlter (KF).
+KFs belong to a family of Bayes’ ﬁlters, which include particle ﬁltering and Hidden Markov Models.
+The basic approach performs minimum mean square error estimation of the hidden state of a time-
+varying linear system. There is ample evidence to suggest that Kalman ﬁlters are well suited to
+the prediction of low frequency univariate ﬁnancial time series, i.e. recorded either daily (Gultekin
+and Paisley, 2017) or even down to the resolution of a second. Micro-structural eﬀects start to
+dominate the signal at higher frequency, typically sub-millisecond level. Knowledge of the market
+1
+arXiv:1707.05642v1  [q-fin.TR]  14 Jul 2017
+
+=== page 2 ===
+micro-structure becomes fundamental for accurate prediction of price movements and the problem
+of time series prediction does not ﬁt squarely into the modeling of a time-varying signal.
+Modern ﬁnancial exchanges facilitate the electronic trading of instruments through an instanta-
+neous double auction. At each point in time, the market demand and the supply can be represented
+by an electronic limit order book, a cross section of orders to execute at various price levels away
+from the market price. The market price is closely linked to its liquidity - that is the immediacy
+in which the instrument can be converted into cash. The liquidity of markets are characterized by
+their depth, the total quantity of quoted buy and sell orders about the market price. The liquidity
+of the market evolves in response to trading activity (Bloomﬁeld et al., 2005); At any point in time,
+the amount of liquidity in the market can be characterized by the cross-section of book depths.
+Liquid markets are attractive to market participants as they permit the near instantaneous
+execution of large volume trades at the best available price, with marginal price impact. However,
+sometimes a large market order, or a succession of smaller markets orders, will consume an entire
+price level. This is why the market price ﬂuctuates in liquid markets - an eﬀect often referred to
+by practitioners as a ’price-ﬂip’. Price level consumption is followed by an initial widening of the
+bid-ask spread which quickly reverts as market makers exploit it, leading to a new mid-price.
+There appears to be no consensus, however, on the extent to which limit order books convey
+predictive information. Early seminal papers studying equities, including Glosten (1994); Seppi
+(1997), state that the limit orders beyond the insider market contain little information. In contrast,
+several other studies state that such limit orders are informative(Parlour, 1998; Bloomﬁeld et al.,
+2005; Cao et al., 2009; Zheng et al., 2013; Kearns and Nevmyvaka, 2013; Cont et al., 2014; D. and
+Pollak, 2014). In particular, Cao et al. (2009) study the information content of a limit-order book
+from the Australian Stock Exchange. They found that the book’s contribution to price discovery
+is approximately 22% while the remaining comes from the ﬁrst level data and transaction prices.
+They also demonstrate that order imbalances between the demand and supply exhibit a statistically
+signiﬁcantly relationship to short-term future returns. There is growing evidence that the study of
+microstructure is critical to ﬁnding longer term relations and even cross-market eﬀects (Dobrislav
+and Schaumburg, 2016).
+Many quantities, such as the probability of price movements given the state of the limit order,
+are relevant for trading and intraday risk management. The complex relation between order book
+dynamics and price movements has been the focus of econometric and stochastic modeling (see
+Engle and Russell (1998); Cont et al. (2010, 2014); Cont and de Larrard (2013); Chavez-Casillas
+and Figueroa-Lopez (2017) and references therein). For analytic tractability, these models assume
+a data generation process and typically estimate quantities based on asymptotic limits of diﬀusion
+processes.
+In a Markovian setting, and under further modeling assumptions, such as the treatment of the
+arrival rate of market orders as a poisson process, homogenous order sizes, and the assumption of
+independence of cancellations and orders, a probability of an up-tick is derived. However, these
+modeling assumptions made are likely too strong for describing micro-scale book dynamics (sub
+1ms). At this scale, price is not Markovian, increments are neither independent nor stationary and
+depend on the state of the order book. Attempts to relax the Markovian assumption, using for
+example the ’heavy traﬃc’ approximation approach (Cont and de Larrard, 2010; Chavez-Casillas
+and Figueroa-Lopez, 2017) are best suited for meso-scale analysis of the price movements, but not
+micro-scale.
+Guided by the reduced order book models of Cont and de Larrard (2013), our approach selects
+similar exogenous variables. In particular, we treat queue sizes at each price level as the independent
+variables. We additionally include properties of market orders, albeit in a form which we have
+observed to be most relevant to prediction the direction of price movements. In sharp contrast to
+stochastic modeling, we do not impose conditional distributional assumptions on the independent
+variables (a.k.a. features) nor assume that price movements are Markovian.
+Most of the aforementioned predictive modeling studies rely on regression for explanatory power
+2
+
+=== page 3 ===
+of liquidity on the continuous volume weighted average price (VWAP), a.k.a. ’smart price’. The
+utility of the smart price is limited for high frequency trading. So called ’market makers’ quote limit
+orders on both sides of the market in attempt to capture the spread. Their inability to pre-empt a
+price ﬂip, by adjusting their quotes, typically results in adverse price selection and a loss of proﬁt.
+A change in the smart price does not imply a price-ﬂip. For example, a change in the volume of
+the best bid quantity will result in a change in the smart price, but not necessarily a change in the
+mid-price, the latter eﬀect is attributed to price level consumption from incoming market orders.
+The successful prediction of a price ﬂip, and not the change in smart price, can therefore be directly
+used to avoid adverse price selection. Sudden price ﬂips in the the tick data are hard to capture
+with traditional modeling techniques which rely on instantaneous inside market liquidity imbalance
+alone.
+Breiman (Breiman, 2001) describes the two cultures of statistical modeling when deriving conclu-
+sions from data. One assumes a data generating process, the latter uses algorithmic models, treating
+the data mechanism as unknown. Machine learning falls into the algorithmic class of reduced model
+estimation procedures. It is designed to provide predictors in complex settings where relations be-
+tween input and output variables are nonlinear and input space is often high dimensional. A number
+of researchers have applied machine learning methods to the study of limit order book dynamics
+(Kearns and Nevmyvaka, 2013; Kercheval and Zhang, 2015; Sirignano, 2016; Dixon et al., 2017).
+This paper takes an algorithmic approach to predicting the next event price-ﬂip from a short
+sequence of observations of limit order book depths and market orders. We choose a spatio-temporal
+representation (Sirignano, 2016; Dixon et al., 2017) of the limit order book combined with history of
+the market orders as the predictors. Our approach solves a sequence classiﬁcation problem in which
+a short sequence of observations of book depths and market orders can be classiﬁed into directional
+mid-price movement. A sequence classiﬁer oﬀers potential signiﬁcant beneﬁt to market participants.
+For example, a market maker can use the classiﬁer to continuously adjust the quotes, potentially
+reducing the likelihood of adverse price selection. Sequence classiﬁcation has been considered else-
+where in the literature for lower frequency price movement prediction from historical prices (Leung
+et al., 2000; Dixon et al., 2016). The novelty of our approach therefore arises from the application
+of a recurrent neural network classiﬁer to a spatio-temporal representation of the limit order book
+combined with market order history in order to predict price-ﬂips.
+The main contribution of this paper is to describe and demonstrate the potential of recurrent neu-
+ral networks for classifying short-term price movements from limit order books of ﬁnancial futures.
+Training a recurrent neural network architecture can be performed with stochastic gradient descent
+(SGD) which learns the weights and oﬀsets in an architecture between the layers. Drop-out (DO)
+performs variable selection (Srivastava et al., 2014). RNNs rely on a moderate amount of training
+time series data together with a ﬂexible architecture to ’match’ in and out of sample performance as
+measured by mean error, area under the curve (AUC) or the F1 score, which is the harmonic mean
+of precision and recall. Our performance results demonstrate the ability of the RNN to capture the
+non-linear relationship between the near-term price-ﬂips and a spatio-temporal representation of the
+limit order book.
+The remainder of the paper is outlined as follows. Section 2 provides an introduction to sequence
+learning and RNN architectures. Section 2.3 describes the training, validating and testing process
+required to construct a RNN. Section 3 describes the high frequency classiﬁcation problem and
+presents a spatio-temporal formulation of the limit order book variables extracted from a market
+data feed. Section 4 describes the implementation and quantiﬁes the empirical gains using a RNN
+to capture discontinuities in the mid-price, versus a Kalman Filter method adapted for classiﬁcation
+and a logistic regression using S&P500 E-mini futures level II data. The RNN is shown to compare
+favorably with other classiﬁers on a spatio-temporal feature set. We further assess the robustness
+and stability of the RNN over a entire calendar month, where on any given day, the RNN may make
+millions of predictions. In particular, we characterize the eﬀect of daily retraining the RNN and it’s
+sensitivity to latency between the trade platform and the exchange. Section 5 concludes.
+3
+
+=== page 4 ===
+2 Machine Learning
+Machine learning addresses a fundamental prediction problem: Construct a nonlinear predictor,
+ˆY (X), of an output, Y , given a high dimensional input matrix X = (X (1),...,X (P )) of P variables.
+Machine learning can be simply viewed as the study and construction of an input-output map of
+the form
+Y = F (X) where X = (X (1),...,X (P )).
+The output variable, Y , can be continuous, discrete or mixed. For example, in a classiﬁcation
+problem, F : X → Y where Y ∈{1,...,K} and K is the number of categories. When Y is a
+continuous vector and f is a semi-aﬃne function, then we recover the linear model
+Y = AX + b.
+2.1 Sequence Learning
+If the input-output pairs D = {Xt,Yt}N t=1 are auto-correlated observations of X and Y at times
+t = 1,...,N, then the fundamental prediction problem can be expressed as a sequence predic-
+tion problem: construct a nonlinear times series predictor, ˆY (X ), of an output, Y , using a high
+dimensional input matrix of T length sub-sequences X :
+y = F (X ) where Xt = seqT (Xt) = (Xt−T +1,...,Xt)
+where Xt−j is a jth lagged observation of Xt, Xt−j = Lj [Xj ], for j = 0,...,T − 1. Sequence
+learning, then, is just a composition of a non-linear map and a vectorization of the lagged input
+variables. If the data is i.i.d., then no sequence is needed (i.e. T = 1), and we recover the standard
+prediction problem.
+2.2 Recurrent Neural Networks (RNNs)
+RNNs are sequence learners which have achieved much success in applications such as natural lan-
+guage understanding, language generation, video processing, and many other tasks Graves (2013).
+We will concentrate on simple RNN models for brevity of notation.
+A simple RNN is formed by a repeated application of a function Fh to the input sequence
+Xt = (X1,...,XT ). For each time step t = 1,...,T , the function generates a hidden state ht from
+the current input Xt and the previous output ht−1:
+ht = Fh(Xt,ht1 ) = σ(WhXt + Uhht1 + bh), (1)
+for some non-linear activation function σ(x). As illustrated in Figure 1, this simple RNN is an
+unfolding of a single hidden layer neural network (a.k.a. Elman network (Elman, 1991)) over all
+time steps.
+4
+
+=== page 5 ===
+h1 t−5
+hj t−5
+hH t−5
+Xt−5
+h1 t−4
+hj t−4
+hH t−4
+Xt−4
+h1 t−3
+hj t−3
+hH t−3
+Xt−3
+h1 t−2
+hj t−2
+hH t−2
+Xt−2
+h1 t−1
+hj t−1
+hH t−1
+Xt−1
+h1 t
+hj t
+hH t
+Xt
+Yt
+. . . . . .
+Figure 1: An illustrative example of a recurrent neural network with one hidden layer, unfolded over
+a sequence of six time steps. Each input Xt is in the sequence Xt. The hidden layer contains H
+units and the jth output at time step t is denoted by hj t . The connections between the hidden units
+are recurrent and are weighted by the matrix Wh. At the last time step t, the hidden units connect
+to a K unit output layer with a 1-of-K output vector Yt.
+When the output is continuous, the model output from the ﬁnal hidden state, Y = Fy (hT ), is
+given by the semi-aﬃne function:
+Y = Fy (hT ) = Wy hT + by , (2)
+and when the output is categorical, the output is given by
+Y = Fy (hT ) = softmax(Fy (hT )), (3)
+where Y has a ’one-hot’ encoding - a K-vector of zeros with 1 at a single position. Here W =
+(Wh,Uh,Wy ) and b = (bh,by ) are weight matrices and oﬀsets respectively. Wh ∈ RH×P denotes the
+weights of non-recurrent connections between the input Xt and the H hidden units. The weights
+of the recurrence connections between the hidden units is denoted by the recurrent weight matrix
+Uh ∈ RH×H . Without such a matrix, the architecture is simply an unfolded single layer feed-forward
+network without memory and each observation Xt is treated as an independent observation.
+Wy denotes the weights tied to the output of the hidden units at the last time step, ht, and
+the output layer. If the output variable is a continuous vector, Y ∈ RM then Wy ∈ RM ×H . If the
+output is categorical, with K states, then Wy ∈ RK×H .
+There are a number of issues in the RNN design. How many times should the network being
+unfolded? How many hidden neurons H in each hidden layer? How to perform ’variable selection’?
+Many of these problems can be solved by a stochastic search technique, called dropout (Srivastava
+et al., 2014), which we discuss in Section 2.4.
+5
+
+=== page 6 ===
+2.3 Training, Validation and Testing
+To construct and evaluate a learning machine, we start by controlled splitting of the data into train-
+ing, validation and test sets. The training data consists of input-output pairs D = {Yt,Xt}N t=1−(T −1).
+We then sequence the data to give Dseq = {Yt,Xt}N t=1.
+The goal is to ﬁnd the machine sequence learner Y = F (X ), where we have a loss function
+L(Y, ˆY ) for a predictor, ˆY , of the output signal, Y . In many cases, there’s an underlying probability
+model, p(Y | ˆY ), then the loss function is the negative log probability L(Y, ˆY ) = − log p(Y | ˆY ).
+For example, under a Gaussian model L(Y, ˆY ) = ||Y − ˆY||2 is a L2 norm, for binary classiﬁcation,
+L(Y, ˆY ) = −Y log ˆY is the negative cross-entropy.
+In its simplest form, we then solve an optimization problem
+minimize
+W,b
+f(W,b) + λφ(W,b)
+f(W,b) = 1 N
+N∑
+t=1
+L(Yt, ˆY (Xt))
+with a regularization penalty, φ(W,b).
+Here λ is a global regularization parameter which we tune using the out-of-sample predictive
+mean-squared error (MSE) of the model on the veriﬁcation data. The regularization penalty, φ(W,b),
+introduces a bias-variance tradeoﬀ. ∇L is given in closed form by a chain rule and, through back-
+propagation on the unfolded network, the weight matrices ˆW are ﬁtted with stochastic gradient
+descent. See Rojas (1996); Graves (2013) for a further description of stochastic gradient descent as
+it pertains to recurrent neural networks.
+A signiﬁcant factor raising the appeal of recurrent neural networks to practitioners is TensorFlow
+Abadi et al. (2016), an interface for easily expressing machine learning, and in particular deep
+learning, algorithms and mapping compute intensive operations onto a wide variety of diﬀerent
+hardware platforms and in particular GPU cards. Recently, TensorFlow has been augmented by
+Edward Tran et al. (2017) to combine concepts in Bayesian statistics and probabilistic programming
+with deep learning.
+2.4 Predictor Selection and Dropout
+Dropout is a model or variable selection technique. The input space X , needs dimension reduction
+techniques which are designed to avoid over-ﬁtting in the training process. Dropout works by
+removing input variables in Xt randomly with a given probability θ. The probability, θ, can be
+viewed as a further hyper-parameter (like λ) which can be tuned via cross-validation. Heuristically,
+if there are P = 100 variables in Xt, then a choice of θ = 0.1 will result in a search for models with
+10 variables. The dropout architecture with stochastic search for the predictors can be used
+Di ∼ Ber(θ),
+˜Xt = D⋆Xt, t = 1,...,T,
+ht = Fh
+(
+Wh ˜Xt + Uhht−1 + bh
+)
+.
+Eﬀectively, this replaces the input Xt by D⋆Xt, where ⋆ denotes the element-wise product and D is
+a ’drop-out operator’ - a vector of independent Bernoulli, Ber(θ), distributed random variables. The
+overall objective function is closely related to ridge regression with a g-prior (Heaton et al., 2017).
+Note that drop-out is not applied to the recurrent connections, only the non-recurrent connections.
+Graves (2013) provides evidence of the success in RNNs by applying drop-out only to the non-
+recurrent connections in a LSTM.
+6
+
+=== page 7 ===
+3 High Frequency Trading
+To further motivate why classiﬁcation is useful for high frequency trading, we shall consider the
+following instructive scenario. A market maker oﬀers to sell at price xt + s/2 and buy at price
+xt −s/2 in an attempt to capture the spread s, where xt is the mid-price at time t. The market
+maker runs the risk of an adverse mid-price movement between the ﬁll of the sell order and the
+buy order. For example, a buy market order matching with the entire resting ask quantity, at price
+xt + s/2, eﬀectively results in an up-tick of the mid-price, xt+1 = xt + s. The market maker has sold
+at xt + s/2 but can very likely not buy back at xt −s/2 as the bid is no longer at the inside market.
+Instead the market marker may systematically be forced to cancel the bid and buy back at a price
+higher than xt −s/2, taking a loss.
+Figure 2 (left) illustrates a typical mechanism resulting in an adverse price movement. A snapshot
+of the limit order book at time t, before the arrival of a market order, and after at time t + 1 are
+shown in the left and right panels respectively. The resting orders placed by the market marker are
+denoted with the ’+’ symbol- red denotes a buy limit order and blue denotes a sell limit order. A
+buy market order subsequently arrives and matches the entire resting quantity of best ask quotes.
+Then at event time t + 1 the limit order book is updated - the market maker’s sell limit order has
+been ﬁlled (blue minus symbol) and the buy order now rests away from the inside market. The
+mechanism is analogous for a down-tick of the book.
+In the above illustrated example, the market maker is assumed to have no knowledge of the
+future and therefore does not pre-empt the price movement by adjusting their quotes accordingly.
+But suppose now that the market maker reasonably suspects an up-tick and has the capacity to
+avoid a loss resulting from the adverse price movement.
+Figure 2 (right) illustrates the result of a market maker acting to prevent losing the spread -the
+sell limit order is adjusted to a higher ask price. In this illustration, the buy limit order is not
+replaced and the market maker may capture a tick more than the spread. However, it’s unlikely
+that the buy limit order will be ﬁlled and hence may also need to be adjusted up to the inside
+market, albeit with loss of queue position. Such trade-oﬀs are the focus of execution optimization
+and, although important, are not considered further here.
+Adverse price selection Avoiding adverse price selection.
+Figure 2: (left) Illustration of a typical mechanism resulting in adverse price selection. A snapshot
+of the limit order book is taken at time t. Limit orders placed by the market marker are denoted
+with the ’+’ symbol- red denotes a buy limit order and blue denotes a sell limit order. A buy market
+order subsequently arrives and matches the entire resting quantity of best ask quotes. Then at event
+time t + 1 the limit order book is updated. The market maker’s sell limit order has been ﬁlled (blue
+minus symbol) and the buy order now rests away from the inside market. (Right) A pre-emptive
+strategy for avoiding adverse price selection is illustrated. The sell limit order is requoted at a higher
+ask price. In this case, the buy limit order is not replaced and the market maker may capture a tick
+more than the spread if both orders are ﬁlled.
+3.1 High Frequency Data
+Our dataset is an archived Chicago Mercantile Exchange (CME) FIX format message feed captured
+from August 1, 2016 to August 31, 2016. This message feed records all transactions in the front
+month E-mini S&P 500 (ESU6) between the times of 12:00pm and 22:00 UTC. We extract details
+7
+
+=== page 8 ===
+of each limit order book update, including the nano-second resolution time-stamp, the quoted price
+and depth for each limit order book level.
+The E-mini S&P 500 (ES) tick size is a quarter of a point, or 12.50 per contract. Figure 3
+illustrates the intuition behind a typical mechanism resulting in mid-price movement. We restrict
+consideration to the top ﬁve levels of the ES futures limit order book, even though there are updates
+provided for ten levels. The chart on the left represents the state of the limit order book prior to
+the arrival of a sell market order (a.k.a. ’aggressor’). The x-axis represents the price levels and the
+y-axis represents the depth of book at each price level. Red denotes bid orders and blue denotes ask
+orders. The highest bid price (’best bid’) is quoted at $2175.75 with a depth of 103 contracts. The
+second highest bid is quoted at $2175.5 with a depth of 177 contracts. The lowest ask (’best ask’ or
+’best oﬀer’) is quoted at $2176 with 82 contracts and the second lowest ask is quoted at $2176.25
+with 162 contracts.
+The chart on the right shows the book update after a market order to sell 103 contracts at
+$2175.75. The aggressor is suﬃciently large to match all of the best bids. Once matched, the limit
+order is updated with a lower best bid of $2175.5. The gap between the best ask and best bid would
+widen if it weren’t for the arrival of 23 new contracts oﬀered at a lower ask price of $2175.75. The
+net eﬀect is a full down-tick of the mid-price.
+2174.75 2175 2175.25 2175.5 2175.75 2176 2176.25 2176.5 2176.75 2177
+price
+depth
+−150 −100 −50 0 50 100 150
+120
+124
+132
+177
+103
+−82
+−162
+−173
+−164
+−146
+2174.5 2174.75 2175 2175.25 2175.5 2175.75 2176 2176.25 2176.5 2176.75
+price
+depth
+−150 −100 −50 0 50 100 150
+78
+120
+124
+132
+177
+−23
+−82
+−162
+−173
+−164
+Timestamp:	  06:00:00.015	   Timestamp:	  06:00:00.036	  
+Trade	  103	  @	  
+2175.75	  (Sell)	  
+Figure 3: This ﬁgure illustrates a typical mechanism resulting in mid-price movement. The charts
+on the left and right respectively show the limit order book before and after the arrival of a large sell
+aggressor. The aggressor is suﬃciently large to match all of the best bids. Once matched, the limit
+order is updated with a lower best bid of $2175.5. The gap between the best ask and best bid would
+widen if it weren’t for the arrival of 23 new contracts oﬀered at a lower ask price of $2175.75. The
+net eﬀect is a full down-tick of the mid-price.
+Table 1 shows the limit order book before and after the arrival of the sell aggressor. The response
+8
+
+=== page 9 ===
+is mid-price movement, in units of ticks, over the subsequent interval. pb i,t and db i,t denote the level i
+quoted bid price and depth of the limit order book at time t. pa i,t and da i,t denote the corresponding
+level i quoted ask price and depth. Level i = 1 corresponds to the best ask and bid prices. The
+mid-price at time t is denoted by
+pt = pa 1,t + pb 1,t 2 . (4)
+This mid-price can evolve in minimum increments of half a tick but almost always is observed to
+move at increments of a tick over time intervals of a milli-second or less.
+Timestamp pb 1,t pb 2,t ... db 1,t db 2,t ... pa 1,t pa 2,t ... da 1,t da 2,t ... Response
+06:00:00.015 2175.75 2175.5 ... 103 177 ... 2176 2176.25 ... 82 162 ... -1
+06:00:00.036 2175.5 2175.25 ... 177 132 ... 2175.75 2176 ... 23 82 ... 0
+Table 1: This table shows the limit order book of ESU6 before and after the arrival of the sell
+aggressor listed in Figure 3. The response is the mid-price movement over the subsequent interval,
+in units of ticks. pb i,t and db i,t denote the level i quoted bid price and depth of the limit order book at
+time t. pa i,t and da i,t denote the corresponding level i quoted ask price and depth.
+Using a model to predict the next mid-price movement is well suited to futures markets which
+often experience a consistent surge of activity at particular times when participants enter into and
+close out their futures’ positions. The importance of predicting in event time can be observed from
+the hourly limit order book rates shown in Figure 4. In particular, a surge of quote adjustment and
+trading activity is consistently observed between the hours of 7-8am CST and 3-4pm CST. At these
+times, book updates may occur as often as every micro-second, where as at other times of the day,
+the book updates may occur every tenth of a milli-second. Put diﬀerently, the 1ms ahead prediction
+of the mid-price may be relevant for avoiding adverse selection at oﬀ-peak periods of the day, and
+less relevant at peak periods.
+Each limit order book update is recorded as an observation. The result of categorizing (a.k.a.
+labeling) each observation leads to a class imbalance problem, as approximately 99.9% of the ob-
+servations have a zero response. To construct a ’balanced’ training set, observations (sequences of
+input variables) labeled by the minority class are oversampled with replacement and the majority
+class observations are undersampled without replacement.
+9
+
+=== page 10 ===
+0e+00
+1e+05
+2e+05
+3e+05
+4e+05
+6−7am
+7−8am
+8−9am
+9−10am
+10−11am
+11−12pm
+12−1pm
+1−2pm
+2−3pm
+3−4pm
+hour
+Book updates/hour
+uncertainty
+Median
+Figure 4: The hourly limit order book rates of ESU6 are shown by time of day. A surge of quote
+adjustment and trading activity is consistently observed between the hours of 7-8am CST and 3-4pm
+CST.
+Partially following Kercheval and Zhang (2015), we compose our feature set of ﬁve levels of prices,
+volumes and number of limit orders on both the ask and bid side of the book. We additionally, and
+somewhat heuristically via a process of ’feature engineering’, characterize order ﬂow by the ratio
+of the number of market buy orders arriving in the prior 50 observations to the resting number
+of ask limit orders at the top of book. We construct the analogous ratio for the sell by orders.
+This rationale for this ratio is motivated by our observation that an increase in this ratio will more
+likely deplete the best ask level and the mid-price will up-tick, and vice-versa for a down-tick. The
+combination of this spatial representation of the limit order book and the order ﬂow gives a total of
+P = 32 features.
+4 Results
+The exact architecture and weight matrix sizes of our recurrent neural network are given by
+output : Y k = softmax(F k y (hT )) = exp(F k y (hT )) ∑K
+j=1 exp(F j y (hT )) ,
+hidden states : ht = max (WhXt + Uhht−1 + bh, 0) , t = 1,...,T,
+10
+
+=== page 11 ===
+ˆY = −1 ˆY = 0 ˆY = 1
+precision recall f1 precision recall f1 precision recall f1 size
+mean 0.092 0.830 0.165 0.996 0.793 0.881 0.090 0.838 0.161 99504.720
+std.dev 0.031 0.077 0.050 0.004 0.075 0.050 0.027 0.080 0.045 68034.218
+Table 2: This table summarizes the performance of the RNN over a 20 trading day test period. The
+RNN classiﬁer is used to predict the categories: {Y = −1,Y = 0,Y = 1}. The mean and standard
+deviation of the daily precision, recall and f1 scores of each model are shown together with the average
+and standard deviation of the training set sizes.
+where Wh ∈ R20×32,Uh ∈ R20×20 and Wy ∈ R3×20. We initialize the hidden states to zero. We use
+the SGD method, implemented in Python’s TensorFlow Abadi et al. (2016) framework, to ﬁnd the
+optimal network weights, bias terms and regularization parameters. We employ an exponentially
+decaying learning rate schedule with an initial value of 10−2. The optimal 𝓁2 regularization is found,
+via a grid-search, to be λ2 = 0.01. The Glorot and Bengio method is used to initialize the weights
+of the network Glorot and Bengio (2010).
+Times series cross-validation is performed over 20 consecutive trading days. Training sets are
+compiled from the previous 3 trading days and contain, on average, 5, 192, 822 observations. These
+sets are balanced resulting in a reduced training set size of typically just less than 100, 000 observa-
+tions. The validation and test sets are compiled for the next trading day following the 3 day training
+period. These are unbalanced, with the veriﬁcation set containing 2 × 105 observations and the re-
+maining test set, on average, containing approximately 1.5 × 106 observations. Each experiment is
+run for 1000 epochs with a mini-batch size of 500 drawn from the training set of 32 input variables.
+We follow the standard convention of choosing the number of epochs based on convergence of the
+cross-entropy and the mini-batch size is chosen for computational performance. Each sequence is
+chosen to be of length 10. The gridded search to ﬁnd the optimal network architecture and regu-
+larization parameters takes several hours on a modern graphics processing unit (GPU). The search
+yields several candidate architectures and parameter values.
+Table 2 summarizes the performance of the RNN over 20 trading days. To reliably measure
+performance on the unbalanced test set, we compute the F 1 score - the geometric mean of the
+precision and recall:
+F 1 = 2 precision · recall precision + recall.
+The F 1 score is designed for binary classiﬁcation problems. When the data has more than two
+classes, the F 1 score is provided for each class k by setting Y = k to the positive and all remain
+classes to the negative label. The score is highest for the zero label corresponding to a prediction
+of a stationary mid-price over the next interval. The F 1 scores for a predicted up-tick F 1(1) and
+down-tick F 1(−1) are also shown. We observe that the performance of the RNN when Y = −1 and
+when Y = 1 are the positive labels is comparable. As expected, the RNN can predict these classes
+with comparable recall but drastically less precision than for the Y = 0 positive label model. The
+average and standard deviation of the size of balanced training sets are shown by the size column.
+Table 3 studies the eﬀect of the number of time steps in the RNN model by performing time
+series cross-validation over the 20 training days. The performance is observed to increase as the
+number of time steps is increased from 1 to 10. This provides evidence for the need for recurrence
+in the neural network. While the diﬀerence between 10 and 20 steps is marginal, a sharp decline in
+performance is observed at 50 and 100 time steps. This suggests that short-term memory is adequate
+for sequence classiﬁcation. Although not shown here, we also observe that the number of hidden
+units should be between 10 and 20.
+Figure 5 shows some of the predictor variables used for the model comparison in Table 4. The
+11
+
+=== page 12 ===
+n steps ˆY = −1 ˆY = 0 ˆY = 1
+1 0.089 0.528 0.091
+2 0.097 0.837 0.103
+5 0.131 0.848 0.120
+10 0.165 0.881 0.161
+20 0.163 0.878 0.162
+50 0.151 0.836 0.144
+100 0.118 0.807 0.115
+Table 3: This table shows the eﬀect of the number of time steps in the RNN model on the average
+F1 score, as measure by time series cross-validation over the 20 testing days.
+black line represents the observed change in mid-price over a 34 milli-second period from 16:37:52.560
+to 16:37:52.594 on August 4th, 2016. We observe that the mid-price typically moves in two suc-
+cessive half-ticks. A price level is ﬁrst consumed and, with some small delay, a new price level is
+subsequently quoted. The liquidity imbalance (blue), scaled here to the [−1, 1] interval, although
+useful in predicting the direction of the next occurring price change, is generally a poor choice for
+predicting when the price change will occur. It is clear from the results in Table 4 and the visual-
+ization here that it’s inadequate for next-event price prediction. This order ﬂow approximation is
+a better predictor of next-event price movement, although used alone is diﬃcult to interpret when
+either of the buy (red) and sell order ﬂows (green) are small or comparable in size. Hence, in the
+spatio-temporal feature set, we combine the order ﬂow approximations with the liquidity imbalance,
+mid-prices and depths at other price levels.
+12
+
+=== page 13 ===
+−1.0 −0.5 0.0 0.5 1.0
+time
+Delta mid−price
+16:37:52.560
+16:37:52.565
+16:37:52.569
+16:37:52.573
+16:37:52.578
+16:37:52.581
+16:37:52.584
+6:37:52.590
+16:37:52.594
+Figure 5: This ﬁgure shows some of the predictor variables used for the model comparison in Table
+4. The black line represents the observed change in mid-price over a 34 milli-second period from
+16:37:52.560 to 16:37:52.594. The liquidity imbalance (blue), scaled here to the [−1, 1] interval,
+although useful in predicting the direction of the next occurring price change, is generally a poor
+choice for predicting when the price change will occur. This order ﬂow is a better predictor of next-
+event price movement, although is diﬃcult to interpret when either of the buy (red) and sell order
+ﬂows (green) are small.
+Table 4 compares the performance of a various classiﬁers on the following feature sets: (i) instan-
+taneous liquidity imbalance using the best bid to ask ratio; (ii) instantaneous order ﬂow using the
+liquidity imbalance, volume of buy or sell aggressors to resting quantity and mid-price; and (iii) the
+spatio-temporal representation of the order book combined with the history of the aggressors. We
+use uniform white noise as a control for the performance comparisons. First, the RNN is compared
+with a logistic regression (LR) and a linear Kalman ﬁlter (KF) model designed for observations of Y
+from the exponential family of distributions, for which the Bernoulli distribution is a member. We
+emphasis that no history is incorporated in either model applied to the ﬁrst two feature sets. As the
+latter two models only support the modeling of Bernoulli random variables, we follow a standard
+many-model representation of a multi-classiﬁer, training 3 separate binary classiﬁers to represent a
+3-state output. The probability threshold for predicting each positive state is set to 0.5.
+The LR model is implemented in the glm R package and the KF model is implemented in the
+KFAS R package (Helske, 2017). The KF model approximates the posterior density by simulating
+1000 trials over a section of a single test set of size 108, 035 and is considerably more compute
+and memory intensive to evaluate than the other classiﬁers. The recall and F1 scores of the KF
+model applied to the liquidity imbalance predictor, and separately to the order ﬂow predictors, are
+all higher than the RNN and LR models, although some of the precisions are not. All methods
+generally perform considerably better with order ﬂow predictors than liquidity imbalance alone.
+The spatio-temporal feature set contains 32 predictors, each lagged by up to ten times. To avoid
+a multi-collinearity problem with including multiple lagged features in a LR model, we use the elastic
+net method, implemented in the glmnet R package (Friedman et al., 2010; Simon et al., 2011). The
+13
+
+=== page 14 ===
+KF model does not scale to this feature set. The RNN is compared with a two layer feed-forward
+architecture with 200 hidden units in the ﬁrst hidden layer and 100 hidden units in the second.
+Feed-forward architectures are not designed explicitly for time series and so, as with the elastic net
+method, we ensure consistency in comparison with the RNN by lagging each of the features up to
+lag 9 resulting in 320 input variables. The choice of tuning parameters for the regularization and
+learning rate can lead to large performance variations. The results reported here using an initial
+learning rate of 0.01 and λ = 0.1, although several candidate values exist. In separate experiments,
+not reported here, we observe that the performance of a deep feed-forward architecture can perform
+as well as a RNN, however with so many more hidden units, the approach is more computationally
+intensive and less robust to the choice of initial parameters.
+Features Method
+ˆY = −1 ˆY = 0 ˆY = 1
+precision recall f1 precision recall f1 precision recall f1
+Liquidity Imbalance Logistic 0.010 0.603 0.019 0.995 0.620 0.764 0.013 0.588 0.025 Kalman Filter 0.051 0.540 0.093 0.998 0.682 0.810 0.055 0.557 0.100
+RNN 0.037 0.636 0.070 0.996 0.673 0.803 0.040 0.613 0.075
+Order Flow Logistic 0.042 0.711 0.079 0.991 0.590 0.740 0.047 0.688 0.088 Kalman Filter 0.068 0.594 0.122 0.996 0.615 0.751 0.071 0.661 0.128
+RNN 0.064 0.739 0.118 0.995 0.701 0.823 0.066 0.728 0.121
+Spatio-temporal
+Elastic Net 0.063 0.754 0.116 0.986 0.483 0.649 0.058 0.815 0.108
+RNN 0.084 0.788 0.153 0.999 0.729 0.843 0.075 0.818 0.137
+FFWD NN 0.066 0.758 0.121 0.999 0.657 0.795 0.065 0.796 0.120
+White Noise 0.004 0.333 0.007 0.993 0.333 0.499 0.003 0.333 0.007
+Table 4: This table shows the performance results of various classiﬁers on the following feature sets:
+(i) instantaneous liquidity imbalance using the best bid to ask ratio; (ii) instantaneous order ﬂow
+using the liquidity imbalance, volume of buy or sell aggressors to resting quantity and mid-price; and
+(iii) the spatio-temporal representation of the order book combined with the history of the aggressors.
+We use uniform white noise as a control for the performance comparisons. By setting the positive
+to {Y = −1,Y = 0,Y = 1}, the precision, recall and f1 score are each recorded over a single test set
+of size 108,035.
+Figure 6 compares the RNN and KF model estimated probabilities of a next event up-tick (red)
+or down-tick (green) over a 34 milli-second period from 16:37:52.560 to 16:37:52.594 on August 4th,
+2016. The top graph shows the estimated probabilities from a Kalman ﬁlter with just liquidity
+imbalance as the predictor. The black line represents the observed change in mid-price. The middle
+graph shows the estimated probabilities using a Kalman ﬁlter with the predictors: liquidity imbal-
+ance, mid-price and ratio of market orders to resting quantity. The bottom graph shows a RNN
+using the spatio-temporal order book representation and ratio of market orders to resting quantity.
+We observe that the RNN often correctly predicts the up-tick movement but also falsely predicts
+movements when the mid-price is neutral. These false positives (or negatives), when the observed
+mid-price is stationarity, oftentimes result in unnecessary order cancellations and loss of queue po-
+sition. While the false positive rates can be reduced by increasing the threshold probability for
+detecting a price movement, this may result in increased adverse price selection - the false predic-
+tion of a stationary mid-price when the observed mid-price ﬂips. Thus either the probability or the
+probability threshold should be used in a market marking strategy.
+14
+
+=== page 15 ===
+−1.0 −0.5 0.0 0.5 1.0
+time
+Delta mid−price
+16:37:52.560
+16:37:52.565
+16:37:52.569
+16:37:52.573
+16:37:52.578
+16:37:52.581
+16:37:52.584
+6:37:52.590
+16:37:52.594
+−1.0 −0.5 0.0 0.5 1.0
+time
+Delta mid−price
+16:37:52.560
+16:37:52.565
+16:37:52.569
+16:37:52.573
+16:37:52.578
+16:37:52.581
+16:37:52.584
+6:37:52.590
+16:37:52.594
+−1.0 −0.5 0.0 0.5 1.0
+time
+Delta mid−price
+16:37:52.560
+16:37:52.565
+16:37:52.569
+16:37:52.573
+16:37:52.578
+16:37:52.581
+16:37:52.584
+6:37:52.590
+16:37:52.594
+Figure 6: (top) Estimated probabilities of next-event up-ticks (red) or down-ticks (green) of the
+book using a Kalman ﬁlter with just liquidity imbalance as the predictor. The black line represents
+the observed change in mid-price over a 34 milli-second period from 16:37:52.560 to 16:37:52.594.
+(Middle) Estimated probabilities of next event up-ticks (red) or down-ticks (green) using a Kalman
+ﬁlter with the predictors: liquidity imbalance, mid-price and ratio of market orders to resting quantity.
+(Bottom) Estimated probabilities of next event up-ticks (red) or down-ticks (green) from a RNN using
+the spatio-temporal order book representation and ratio of market orders to resting quantity.
+Figure 7 shows the F1 scores of the RNN, measured on any hourly basis. We observe little
+variation in the F1 scores for up-tick and down-tick predictions and hence no evidence of secular F1
+score decay and hence the need to retrain the model intra-day. In fact when we observe the opposite
+15
+
+=== page 16 ===
+from the F1 score for predicting no book movement- the F1 score is observed to gradually increase
+over the course of the day.
+0.14
+0.16
+0.18
+0.20
+6−7am
+7−8am
+8−9am
+9−10am
+10−11am
+11−12pm
+12−1pm
+1−2pm
+2−3pm
+3−4pm
+days
+F1(−1)
+uncertainty
+Median
+0.6
+0.7
+0.8
+6−7am
+7−8am
+8−9am
+9−10am
+10−11am
+11−12pm
+12−1pm
+1−2pm
+2−3pm
+3−4pm
+days
+F1(0)
+uncertainty
+Median
+0.13
+0.15
+0.17
+0.19
+0.21
+6−7am
+7−8am
+8−9am
+9−10am
+10−11am
+11−12pm
+12−1pm
+1−2pm
+2−3pm
+3−4pm
+days
+F1(1)
+uncertainty
+Median
+(a) F1 score of ˆY = −1 (b) F1 score of ˆY = 0 (b) F1 score of ˆY = 1.
+Figure 7: The intra-day F1 scores are shown for (left) downward, (middle) neutral, or (right) upward
+next price movement prediction.
+Figure 8 shows the importance of retraining the model on a daily basis. The F1 scores are
+observed to exhibit a secular decay when the model is not re-trained on a daily basis but instead
+trained only at the beginning of the month. While the evidence for secular decay is clear, it is
+surprising to observe that a model trained at the beginning of the month can still be eﬀective weeks
+later. Typically econometrics models for non-stationary time series perform very poorly when not
+frequently re-ﬁtted to new data. This surprising model robustness, without re-training, suggests a
+robust relationship between the liquidity imbalance and price movements.
+Figure 9 compares the Receiver Operator Characteristic (ROC) curves of a binary RNN classiﬁer
+over varying prediction horizons. The plot is constructed by varying the probability threshold (a.k.a.
+cut-points) for positive classiﬁcation Y = 1 over the interval [0.5, 1) and estimating the true positive
+and true negative rate of each model. The dashed line shows the performance of a white-noise
+classiﬁer. We observe that the performance of the RNN decays as we increase the prediction horizon
+from the next book update event to 1s in the future. Latency between trading systems and the
+exchange is dependent on several factors including the execution platform, the distance of the co-
+located server to the exchange and even the amount of incoming traﬃc to the CME matching
+engines. It is commonplace however for this latency to lie in the range of 100 micro-seconds to 1ms.
+Our estimate, based on preliminary investigation, is that a c/c++ implementation of our RNN can
+predict in around 100 micro-seconds on a modern CPU with compiler optimizations but without
+low level programming techniques for code optimization.
+16
+
+=== page 17 ===
+0.10
+0.14
+0.18
+2016−08−04
+2016−08−05
+2016−08−08
+2016−08−09
+2016−08−10
+2016−08−11
+2016−08−12
+2016−08−15
+2016−08−16
+2016−08−17
+2016−08−18
+2016−08−19
+2016−08−22
+2016−08−23
+2016−08−24
+2016−08−25
+2016−08−26
+2016−08−29
+2016−08−30
+2016−08−31
+days
+F1(−1)
+Median (with)
+Median (without)
+0.70
+0.75
+0.80
+0.85
+0.90
+2016−08−04
+2016−08−05
+2016−08−08
+2016−08−09
+2016−08−10
+2016−08−11
+2016−08−12
+2016−08−15
+2016−08−16
+2016−08−17
+2016−08−18
+2016−08−19
+2016−08−22
+2016−08−23
+2016−08−24
+2016−08−25
+2016−08−26
+2016−08−29
+2016−08−30
+2016−08−31
+days
+F1(0)
+Median (with)
+Median (without)
+0.10
+0.15
+0.20
+2016−08−04
+2016−08−05
+2016−08−08
+2016−08−09
+2016−08−10
+2016−08−11
+2016−08−12
+2016−08−15
+2016−08−16
+2016−08−17
+2016−08−18
+2016−08−19
+2016−08−22
+2016−08−23
+2016−08−24
+2016−08−25
+2016−08−26
+2016−08−29
+2016−08−30
+2016−08−31
+days
+F1(1)
+Median (with)
+Median (without)
+(a) F1 score of ˆY = −1 (b) F1 score of ˆY = 0 (b) F1 score of ˆY = 1.
+Figure 8: The F1 scores over the calendar month, with (red) and without (blue) daily retraining of
+the RNN, are shown for (left) downward, (middle) neutral, or (right) upward next price movement
+prediction.
+Figure 9: The Receiver Operator Characteristic (ROC) curves of a binary RNN classiﬁer over vary-
+ing prediction horizons. In practice, the prediction horizon should be chosen to adequately account
+for latency between the trade execution platform and the exchange.
+17
+
+=== page 18 ===
+5 Conclusion
+Recurrent neural networks (RNNs) are types of artiﬁcial neural networks (ANNs) that are well
+suited to forecasting and sequence classiﬁcation. This paper solves a sequence classiﬁcation problem
+in which a short sequence of observations of limit order book depths and market orders is used to
+predict a next event price-ﬂip. The capability to adjust quotes according to this prediction reduces
+the likelihood of adverse price selection. Our results demonstrate the ability of the RNN to capture
+the non-linear relationship between the near-term price-ﬂips and a spatio-temporal representation
+of the limit order book.
+Our assessment, based on CME listed ESU6 level II data over the month of August 2016, is
+that RNNs are well suited to expressing the non-linear relationship when the next event mid-price
+movement and very recent history of the liquidity imbalance, order ﬂow and other properties of
+the limit order book. Since longer memory in our features appears negligible, we speculate that
+there is little to no beneﬁt in using a LSTM. In order for the RNN to be implemented for use in a
+HFT market making strategy, we recommend pursing the following: (i) ﬁrst design a market making
+strategy that is proﬁtable after accounting for additional latency resulting from the compute time
+of the RNN prediction; (ii) assess the proﬁt impact of false positives and false negatives during
+backtesting; and (iii) commensurately extend the strategy to ’weight’ the model probabilities of a
+book ﬂip with loss of queue position resulting from a cancellation.
+References
+M. Abadi, P. Barham, J. Chen, Z. Chen, A. Davis, J. Dean, et al. TensorFlow: A System for Large-
+scale Machine Learning. In Proceedings of the 12th USENIX Conference on Operating Systems
+Design and Implementation, OSDI’16, pages 265–283, 2016.
+R. Bloomﬁeld, M. O’Hara, and G. Saar. The ”make or take” decision in an electronic market:
+Evidence on the evolution of liquidity. Journal of Financial Economics, 75(1):165–199, 2005.
+L. Breiman. Statistical Modeling: The Two Cultures (with comments and a rejoinder by the author).
+Statistical Science, 16(3):199–231, 2001. ISSN 0883-4237, 2168-8745.
+C. Cao, O. Hansch, and X. Wang. The information content of an open limit order book. Journal of
+Futures Markets, 29:16–41, 2009.
+J. A. Chavez-Casillas and J. E. Figueroa-Lopez. A one-level limit order book model with
+memory and variable spread. Stochastic Processes and their Applications, 127(8):2447 –
+2481, 2017. ISSN 0304-4149. doi: http://dx.doi.org/10.1016/j.spa.2016.11.005. URL
+http://www.sciencedirect.com/science/article/pii/S0304414916302150.
+R. Cont and A. de Larrard. Linking volatility with order ﬂow: heavy traﬃc approximations anddif-
+fusion limits of order book dynamics. Working paper, 2010.
+R. Cont and A. de Larrard. Price dynamics in a markovian limit order market. SIAM
+Journal on Financial Mathematics, 4(1):1–25, 2013. doi: 10.1137/110856605. URL
+https://doi.org/10.1137/110856605.
+R. Cont, S. Stoikov, and R. Talreja. A stochastic model for order book dynam-
+ics. Operations Research, 58(3):549–563, 2010. ISSN 0030364X, 15265463. URL
+http://www.jstor.org/stable/40792679.
+R. Cont, S. Kukanov, and S. Stoikov. The price impact of order book events. Journal of Financial
+Econometrics, 12:47–88, 2014.
+18
+
+=== page 19 ===
+P. D. and I. Pollak. Mid-price prediction in a limit order book. IEEE Journal of Selected Topics in
+Signal Processing, 10, 2014.
+M. Dixon, D. Klabjan, and J. H. Bang. Classiﬁcation-based ﬁnancial markets prediction using deep
+neural networks. Algorithmic Finance, 2016.
+M. Dixon, N. Polson, and V. Sokolov. Deep learning for spatio-temporal modeling: Dynamic traﬃc
+ﬂows and high frequency trading. arXiv preprint arXiv:1705.09851, 2017.
+D. Dobrislav and E. Schaumburg. High-frequency cross-market trading: Model free measurement
+and applications. Technical report, Federal Reserve Bank of New York, 2016.
+J. L. Elman. Distributed representations, simple recurrent networks, and grammatical structure.
+Machine Learning, 7(2):195–225, Sep 1991. ISSN 1573-0565. doi: 10.1023/A:1022699029236. URL
+http://dx.doi.org/10.1023/A:1022699029236.
+R. F. Engle and J. R. Russell. Autoregressive conditional duration: A new model for irregularly
+spaced transaction data. Econometrica, 66(5):1127–1162, 1998. ISSN 00129682, 14680262. URL
+http://www.jstor.org/stable/2999632.
+J. Faraway and C. Chatﬁeld. Time series forecasting with neural networks: A comparative study
+using the air line data. Journal of the Royal Statistical Society: Series C (Applied Statistics), 47
+(2):231–250, 1998.
+J. Friedman, T. Hastie, and R. Tibshirani. Regularization paths for generalized linear models via
+coordinate descent. Journal of Statistical Software, 33(1):1–22, 2010.
+X. Glorot and Y. Bengio. Understanding the diﬃculty of training deep feedforward neural net-
+works. In In Proceedings of the International Conference on Artiﬁcial Intelligence and Statistics
+(AISTATS?10). Society for Artiﬁcial Intelligence and Statistics, 2010.
+L. Glosten. Is the electronic open limit order book inevitable? Journal of Finance, pages 1127–1161,
+1994.
+A. Graves. Generating sequences with recurrent neural networks. CoRR, abs/1308.0850, 2013. URL
+http://arxiv.org/abs/1308.0850.
+S. Gultekin and J. Paisley. Nonlinear Kalman Filtering with Divergence Minimization. arXiv preprint
+arXiv:1705.00722, 2017.
+J. B. Heaton, N. G. Polson, and J. H. Witte. Deep learning for ﬁnance: deep portfolios. Applied
+Stochastic Models in Business and Industry, 33(1):3–12, 2017.
+J. Helske. KFAS: Exponential family state space models in R. Journal of Statistical Software, 78
+(10):1–39, 2017. doi: 10.18637/jss.v078.i10.
+L. Kaastra and M. S. Boyd. Forecasting futures trading volume using neural networks. Journal of
+Futures Markets, 15(8):953–970, 1995. ISSN 1096-9934.
+M. Kearns and Y. Nevmyvaka. Machine learning for market microstructure and high frequency
+trading. High Frequency Trading - New Realities for Traders, 2013.
+A. Kercheval and Y. Zhang. Modeling high-frequency limit order book dynamics with support vector
+machines. Journal of Quantitative Finance, 15(8):1315–1329, 2015.
+M. Leung, H. Daouk, and A. Chen. Forecasting stock indices: A comparison of classiﬁcation and
+level estimation models. International Journal of Forecasting, 16(2):173–190, 2000.
+19
+
+=== page 20 ===
+C. Parlour. Price dynamics in limit order markets,. Review of Financial Studies, 11:789–816, 1998.
+A. Refenes. Neural Networks in the Capital Markets. John Wiley & Sons, Inc., New York, NY, USA,
+1994. ISBN 0471943649.
+R. Rojas. Neural Networks: A Systematic Introduction. Springer-Verlag New York, Inc., New York,
+NY, USA, 1996. ISBN 3-540-60505-3.
+D. Seppi. Liquidity provision with limit orders and a strategic specialist. 10:103–150, 1997.
+N. Simon, J. Friedman, T. Hastie, and R. Tibshirani. Regularization Paths for Cox’s Proportional
+Hazards Model via Coordinate Descent. Journal of Statistical Software, 39(5):1–13, 2011.
+J. A. Sirignano. Deep learning for limit order books. arXiv preprint arXiv:1601.01987, 2016.
+N. Srivastava, G. E. Hinton, A. Krizhevsky, I. Sutskever, and R. Salakhutdinov. Dropout: a simple
+way to prevent neural networks from overﬁtting. Journal of Machine Learning Research, 15(1):
+1929–1958, 2014.
+D. Tran, D. M. Hoﬀman, A. R. Saurous, E. Brevdo, K. Murphy, and M. D. Blei. Deep probabilistic
+programming. arXiv:1701.03757, 2017.
+R. Trippi and D. DeSieno. Trading equity index futures with a neural network. The Journal of
+Portfolio Management, 19(1):27–33, 1992.
+B. Zheng, E. Moulines, and F. Abergel. Price jump prediction in a limit order book. Journal of
+Mathematical Finance, 3:242–255, 2013.
+20

@@ -1,0 +1,559 @@
+=== page 1 ===
+Market-making with reinforcement-learning (SAC)
+Alexey Bakshaev
+alex.bakshaev@gmail.com
+August 28, 2020
+Abstract
+The paper explores the application of a continuous action space soft actor-critic (SAC) reinforcement learning
+model to the area of automated market-making. The reinforcement learning agent receives a simulated ﬂow of
+client trades, thus accruing a position in an asset, and learns to oﬀset this risk by either hedging at simulated
+”exchange” spreads or by attracting an oﬀsetting client ﬂow by changing oﬀered client spreads (skewing the
+oﬀered prices). The question of learning minimum spreads that compensate for the risk of taking the position is
+being investigated. Finally, the agent is posed with a problem of learning to hedge a blended client trade ﬂow
+resulting from independent price processes (a ”portfolio” position). The position penalty method is introduced
+to improve the convergence. An Open-AI gym-compatible hedge environment is introduced and the Open AI
+SAC baseline RL engine is being used as a learning baseline.
+1 Introduction
+Let’s assume that our goal is to train our agent in a way that it can perform market making eﬀectively. In
+this trading mode our agent puts out both the price it is willing its clients to buy at (”client” ask) and sell at
+(”client” bid), thereby accepting incoming ﬂow of client orders at those prices and proﬁting from the resulting
+spread (ask−bid> 0). Client order ﬂow would depend on a number of factors (explained in Environment section)
+making it non-symmetric, which results in our agent accruing a variable position in a traded asset with time. As
+the market price of the asset changes with time, this results in revaluation of the position, introducing uncertainty
+about the price the position would be closed at and hence the ﬁnal proﬁtability of transactions made over the
+lifetime of this position.
+To give an intuitive example of this, consider Figure 1 which displays the dynamics of market mid price as well as
+bid and ask prices our agent is making in the market.
+Figure 1: Example of unmanaged market risk
+ At a time t = 47 the agent buys from
+a client at a discount to mid market price (at
+”client bid”), makes a half-spread s1 and takes on
+a long position in an asset. If the agent was
+to get out of this position instantaneously at the
+same time t = 47 by selling to another client,
+it would have made the entire spread of ask −
+bid.
+Instead, however, the agent closes the position at
+time t = 50 at a lower market at a half-spread
+s2, and the sum of those half-spreads s1 + s2 is
+not suﬃcient to oﬀset the drop in mid market price
+that causes the negative revaluation of the posi-
+tion.
+This raises the need in risk-managing which our hedging agent can achieve by:
+• putting oﬀsetting orders out to exchange and hereby ”hedging” the position at the cost of paying exchange
+bid/ask spreads
+• decreasing client bid/ask spreads to attract more client ﬂow on a chosen side and hereby decreasing the
+position more quickly. This is known as ”skewing” the price under condition of client ﬂow (”demand”) being
+suﬃciently elastic to price changes.
+1
+arXiv:2008.12275v1  [q-fin.PR]  27 Aug 2020
+
+=== page 2 ===
+Hedging comes at a cost of decreased proﬁtability whereas not hedging introduces the risk of incurring losses in case
+of unfavorable price movements. Thus, given the net incoming client order ﬂow and the resulting accrued client
+position, the agent needs to learn to reason out its risk appetite: how much of the position to carry (in a hope it
+gets oﬀset by the future client order ﬂow) and how much of it to hedge either via an exchange or by oﬀering clients
+more attractive prices to attract more oﬀsetting client ﬂow.
+In a driftless environment where the asset price is a martingale, the expectation of the market price move with time
+is zero:
+E[St2 −St1 ] = 0 (t2 ≥t1 ≥ 0) (1)
+From this follows the ﬁrst challenge in setting up an eﬀective market-making ML framework: the agent needs to
+learn that there is no sense in entering speculative hedge positions that would try to proﬁt from market moves.
+Instead, in a very basic setting, the agent needs to learn to oﬀset the accrued client position with an opposite
+exchange (hedger) position. This is an inventory management problem that is very similar to a popular Pendulum
+environment where ML agent learns to balance the pendulum, or to Mountain car environment where the agent
+needs to learn to swing the car out of the bottom of the pit.
+Both observation space (the size of a position accrued by the agent) and action space (choice of an amount to hedge)
+are chosen to be continuous, and the asset price is driven by the drift-adjusted Brownian motion. This allows for an
+inﬁnite action search space and presents a challenging task. An extension of this problem is presented when price
+skew is added as an additional action available for an agent to take making the overall search space a box in R2.
+Assuming the agent has successfully learnt to balance the position to zero via choosing hedge / skew actions, we
+can now pose the following problem. In an environment where hedge spreads and client ﬂow are unknown, can the
+market making agent learn to oﬀer such spreads that would compensate it for the risk taking? In other words, can
+an agent learn the price of market risk, measured in terms of oﬀered client spreads?
+Another problem that naturally follows is that of portfolio management. The dynamics of the portfolio value is
+determined by the blended asset price process as well as the blended client trade ﬂow, both of which are driven
+by the underlying asset price processes, correlation coeﬃcients and asset weights. The learning agent does not
+know what correlations and asset weights have been used to build the portfolio and needs to work out the eﬀective
+hedge strategy that will maximize proﬁtablity and minimize the position involved. This makes it an inventory
+management problem with not just one asset but a portfolio of assets.
+2 Reinforcement learning and soft actor-critic (SAC)
+Reinforcement learning is becoming increasingly popular in the area of robotics and control automation. In the
+reinforcement learning setting there is a learning agent that can perpetually (i ∈ [1,N]) interact with the envi-
+ronment by performing an actioni and then observing the resulting statei of the environment and the associated
+reward ri. The main purpose of the reward function is to deﬁne the end goal of the learning process by rewarding
+”good” actions and penalizing for ”bad” ones. As a result, the agent learns how to sample from the action space in
+a way that maximizes cumulative discounted return over all steps within a simulation trajectory
+R(τ) =
+∑
+i
+γiri (2)
+where γ is a discount factor which puts more weight on nearest rewards. The learned probability distribution π
+for action sampling given reward increment and observation space state is called a policy. The goal of the learning
+process is to maximize the expected return over all simulation trajectories and to converge onto the optimal policy
+π∗:
+π∗ = arg max
+π
+Eτ ∼π
+[∑
+i
+γiri
+]
+(3)
+If an agent chooses actions according to some ﬁxed policy π starting from a given initial pair of state and action,
+the resulting expected return is known as ”value function”, representing the value of this policy. Naturally, as the
+network learns, the policy gets updated, resulting in a new value function on each step of a trajectory. A Q-function,
+or ”action-value” function is a value function where the ﬁrst action is being ﬁxed (e.g. sampled oﬀ-policy) before
+the policy is applied on consecutive steps of the trajectory.
+Soft actor-critic (SAC) algorithm introduced in [4], [5] and [6] oﬀered a few methods of improving stability of
+convergence to the optimal policy in case of continuous action and observation spaces:
+2
+
+=== page 3 ===
+• entropy maximization: entropy H(π(st)) of the action-generating distribution is being used as a part of the
+reward function. This leads to joined maximization of expected policy and return which encourages stochastic
+exploration and stability of convergence:
+π∗ = arg max
+π
+Eτ ∼π
+[∑
+i
+γi(R(si,ai,si+1) + αH(π(st)))
+]
+(4)
+where α is the temperature parameter which determines the trade-oﬀ between maximizing return vs maxi-
+mizing entropy (exploration)
+• actor-critic: the use of separate policy (”actor”) and value function (”critic”) networks. The policy π and
+two value (Q(s,a)) functions j = 1, 2 are being concurrently learned so as to minimize the respective loss
+functions
+Lj = E
+[
+(Qj(si,ai) −y(ri,si+1))2] (5)
+where the target y is approximated by sampling actions ˜ai+1 from the policy π(si+1), conditioned on state
+return r and next state si+1 coming from the replay buﬀer:
+y(r,si+1) = ri + γ(1 −d)
+(
+min
+j=1,2
+Qtarg j (si+1, ˜ai+1) −α log π(˜ai+1|si+1))
+)
+, ˜ai+1 ∼π(si+1) (6)
+The target value function (Qtarg j ) networks are being periodically updated from current value networks Qj
+in an exponential average fashion. Within the learning loop (see SAC algo) Q-functions are updated by
+gradient descent on the loss function 5 and the policy is updated by gradient ascent on the entropy-adjusted
+Q functions.
+• experience replay: the use of the replay buﬀer to simulate next states in an oﬀ-policy manner. Next actions
+are simulated from the current policy.
+These methods alongside with others were used for baseline implementation of SAC algorithm by OpenAI. It
+serves as a baseline RL engine used in this paper. The boxed network is a multi-layered ReLU perceptron with a
+linear input and output layers. Linear input layer transforms dimensionality from input (observation) space onto
+the ﬁrst perceptron layer. Linear output layer transforms dimensionality from the last perceptron layer onto the
+action space. E.g. when we have the action space deﬁned as position in an asset (dim = 1), and action space deﬁned
+as hedge amount (dim = 1) and 2 ReLU layers of 2048 units, we will write this as MLP Linear (1) x ReLU (2048)
+x ReLU (2048) x Linear (1). An additional dimension to all those would be the batch size.
+3 Environment
+Hedge environment is implemented to be Open AI Gym-compatible. It makes use of Pytorch Tensor framework for
+generating price processes and client ﬂows and is intended to be used with a Pytorch-based implementation. Hedge
+environment provides the standard members step() for updating the hedger state based on the action selected by
+the agent, reset() for re-setting the simulation and render() for displaying the dashboard with hedger statistics.
+Visualization of the hedging agent performance serves as a very important tool in understanding the progress (or
+lack thereof) of the hedging agent as well as assessing the overall correctness of the environment set-up.
+Project code for this paper is available under: https://github.com/bakalex/autohedger
+3.1 Market data
+Asset price process is generated as a standard Euler discretization of a log-normal price process:
+∆log(Si) = µ∆t− 1 2σ2∆t + σϵ √ ∆t (7)
+SN = S0 exp
+∑
+i
+∆log(Si) (8)
+For the inventory management problem we are trying to solve we don’t want our reinforcement learning agent to
+focus on market drift which would result in the hedger taking speculative directional positions in an asset. Instead,
+3
+
+=== page 4 ===
+we want it to focus on managing the position arising from the incoming client order ﬂow, so we assume no drift
+(µ = 0) which makes our price process a martingale (eq 1).
+For a given normally distributed variable ϵ1 and uncorrelated i.i.d variable ϵ a correlated normally distributed
+variable ϵ2 with correlation coeﬃcient ρ is generated as follows:
+ε2 = f(ε1,ρ) = ρε1 + (
+√
+1 −ρ2)ε (9)
+Generation of normally distributed variables as well as above discretization is done within Pytorch Tensor framework
+so that at the beginning of the learning process we have the market data set ready for the entire simulation.
+3.2 Stochastic spread model
+There are two types of oﬀered spreads δbid, δask deﬁned in the model: ”client” spreads that our market-making
+agent oﬀers clients to trade at (hence, ”client” bid / ask) and ”hedge” spreads that our agent trades at with an
+exchange (hence, ”hedge” bid/ask). Both those spreads are applied on the top of the same mid price process
+8. Generated spreads are based on the rolling mean volatility σroll avg of the mid price process plus log-normal
+stochastic spread add-on εL.
+Sbid = S−νδbid, Sask = S + νδask (10)
+δbid = σroll avg + εL 1 , δask = σroll avg + εL 2 (11)
+σroll avg = StDev(Si,window)√n steps (12)
+εL = LogNormal
+(
+0,γS0
+σ√n steps ) (13)
+where ν is spread multiplier determining the overall magnitude of the spread, γ is spread multiplier that determines
+the magnitude of the stochastic spread add-on, σ is ﬂat volatility driving the mid process and εL 1 and εL 2 are log-
+normal i.i.d variables.
+Given the fat-tailed nature of the log-normal distribution, stochastic spreads δbid, δask are being clamped between
+0.1 and 2.5 of mean simulation volatility. This helps to avoid unreasonable spikes and bid/ask prices.
+3.3 Client trade ﬂow model
+Client trade sizes hitting our oﬀered bid and ask prices are simulated as bid and ask Poisson processes. Magnitude
+of intensity of those processes is assumed to be a function of rolling volatility of the price process. Net trade ﬂow
+that determines how position changes on each step of the simulation is a function of imbalance of bid/ask Poisson
+intensities which is assumed to be correlated with the log-price process.
+TradeSizenet = TradeSizebid −TradeSizeask (14)
+TradeSizebid = Poisson(ClientTradeRate∗ ¯λbid) (15)
+TradeSizeask = Poisson(ClientTradeRate∗ ¯λask) (16)
+where ClientTradeRate determines the overall magnitude of the size Poisson process, and ¯λbid and ¯λask are trade
+ﬂow intensity multipliers.
+ClientTradeRate = C
+(
+α + σrolling
+σmean
+)
+(17)
+where α allows to deﬁne the vol-independent ”mean” client trade ﬂow, σrolling is the average volatility within a
+rolling window and σmean is mean volatility for the entire simulation. C is the ﬂow scaling factor and may be taken
+to be equal to the initial price of the asset S0.
+Trade ﬂow intensity multipliers are deﬁned as:
+¯λbid = max (1 −λ, 0) (18)
+4
+
+=== page 5 ===
+¯λask = max (1 + λ, 0) (19)
+where λ is the net intensity. It is deﬁned to be correlated with the log-price process as per eq 9:
+λ = β∗ε2(log Si,ρ) (20)
+where β is sensitivity of net client trade ﬂow towards log-returns and ρ deﬁnes correlation between net intensity
+process and log-price process. To smoothen out variance in intensity, a rolling average version of the log-price
+process may be used.
+3.4 Proﬁt and loss (PNL) model
+As explained in introduction, our hedging agent accepts client trades at ”client” spreads δclient it oﬀers to clients
+and then it may choose to hedge the accrued position out exchange ”hedge” spreads δhedge. Let’s assume a client
+sells to our agent at our oﬀered ask price and then the agent hedges out (sells) the accrued position to the exchange
+at exchange bid price. In a hypothetical setting where our hedger could have hedged instantaneously, it could have
+made the client half-spread and paid exchange half-spread, locking in the proﬁt.
+PNL = TradeSize(Sclient ask−Smid) −TradeSize(Shedge bid−Smid) = ( δclient ask −δhedge bid) TradeSize (21)
+In reality, having accrued the client trade at step t1, our hedger can only choose to hedge out on the next step t2
+of the simulation, or even later, which results in revaluation of the position at the market mid price between those
+steps.
+PNL = TradeSize(Sclient ask t1 −Smid t1 ) + TradeSize(Smid t2 −Smid t1 ) −TradeSize(Shedge bid t2 −Smid t2 ) (22)
+=
+(
+δclient ask t1 −δhedge bid t2 + ∆Smid t2 −t1
+)
+TradeSize (23)
+Given the martingale nature of the simulated price process E
+(
+∆Smid t2 −t1
+)
+= 0 our agent can only be proﬁtable if
+average oﬀered client spreads are greater than average paid hedge spreads. Note that our reinforcement agent does
+not know that the price process is a martingale, so as it begins to explore the action space initially, it would be
+sensitive to realized directional market moves of the mid process. With time, however, the agent needs to learn to
+focus on managing positions resulting from the client ﬂow instead of trying to capture directional moves of the mid
+process. Martingale formulation of the price process helps to achieve that.
+3.5 Elasticity of demand (skewing) model
+When demand is elastic, we may aﬀect the trade size a client is willing to trade with us by oﬀering a more attractive
+(”skewed”) price than the rest of the market. This can be used as means of position management: e.g. given a
+long position in an asset, we could lower our oﬀered price to entice the client to buy from us thus decreasing the
+position. Depending on the marginal proﬁtability of the transaction given the skewed price, such an action may be
+less expensive compared to executing the similar transaction on the exchange. We will be using the linear model in
+our experiments:
+∆size = skew∗β MaxHedgeSize ClientTradeRate (24)
+where ClientTradeRate is the mean trade rate from TradeFlowModel 3.3. MaxHedgeSize is the maximum hedge
+trade size constant deﬁned for the bounded action space for the hedger and skew is a bounded action skew ∈
+[−1.0, 1.0] resulting in the following client price adjustment:
+Sbid adj = Sbid −skew ( Smid −Sbid) , skew∈ [−1.0, 0.0] (25)
+Sask adj = Sask −skew ( Sask −Smid) , skew∈ (0.0, 1.0] (26)
+So, negative skew means our agent buys more expensively and attracts more client ﬂow on bid side. Positive skew
+means our agent sells cheaper and attracts more client ﬂow on ask side.
+β constant is speciﬁed to be large enough for the learning agent to prefer skewing over hedging. Setting β = 0
+makes the client ﬂow non-elastic and can be used for price discovery purposes such as ﬁnding market price of risk
+spreads in Marketpriceofrisk.
+5
+
+=== page 6 ===
+3.6 Dummy hedger and simulation dashboard
+It is of interest to set up the environment in such a way that the choice to oﬀset the accrued client position
+with hedge trades should follow naturally from the observed reward. An obvious choice would be to use strategy
+proﬁtability (PNL) as a basis for the reward function. Hence, we’d be using such parametrization of the environment
+that wrong hedging choices would result in adverse PNL. In particular, the ratio of mid process volatility σ and
+stochastic spread multiplier ν is such that for a given realization of the mid price process the decision not to hedge
+quickly becomes apparent in strategy PNL.
+To test this, let’s use a dummy hedging strategy that on each step targets to oﬀset the position accrued on the
+previous step. See hedging env.py: def heuristic action
+To compare performance of such a strategy to an alternative not to hedge at all we will be using a dashboard
+that shows the price process, the net position alongside hedge and client positions, net PNL of the strategy and
+its constituent components: client PNL, market PNL and hedge PNL. With our dummy strategy on Figure 2 it
+is seen that we are oﬀsetting the outstanding client position with the opposite hedge position and are making the
+diﬀerence of client and hedge spreads. It is seen that the strategy looses on unfavorable spikes of market data
+between consecutive steps which is a result of position revaluation between steps. Compared to unhedged case this
+strategy exhibits low variance in PNL since market exposure is limited to only unhedged position increment (net
+client size ﬂow) between steps.
+Figure 2: Dummy hedger dashboard
+In the case of unhedged client position the variance of strategy PNL is driven by the combined variance of the
+simulated position and market data process. PNL becomes hostage to directional market moves resulting in worst
+Sharpe ratios.
+6
+
+=== page 7 ===
+Figure 3: Unhedged client ﬂow
+4 Auto-hedging a single asset
+We want the learning agent to carry a position in time only if it is justiﬁed by the resulting PNL. As a matter of
+risk management we don’t want the agent to take on excessive positions, so we need to set up a risk limit system.
+To achieve this goal a position penalty component is introduced to the reward function. This penalty is deﬁned
+to be an exponential function of the position size, and is intended to make taking bigger positions increasingly
+more expensive for the agent in reward terms, forcing the agent to justify those by the resulting PNL. For small
+positions relative to MaxPosLimit the charge would be relatively small but would increase exponentially when
+position nears or overshoots MaxPosLimit. We can see this penalty as a ”spring” that would force the agent to
+bring the position back to zero unless having this position is proﬁtable enough.
+Penalty = γS0
+(
+e
+abs(Position)
+MaxPosLimit − 1
+)
+MaxPosLimit (27)
+where γ constant determines how harshly the position penalty w.r.t MaxPosLimit is enforced. To further dis-
+courage exploring unpromising trajectories the simulation is terminated when MaxPositionLimit breach exceeds
+a certain multiple, and additionally penalized reward is recorded.
+The following reward function is deﬁned:
+Rewardt = ClientPNLt + HedgePNLt + MarketPNLt −Penaltyt (28)
+Another technique to improve the convergence to the optimal policy is to limit the action space to a closed interval
+ai = hedgeAmounti ∈ [−MaxHedgeAmount,MaxHedgeAmount] (29)
+where MaxHedgeAmount is deﬁned to be of the same order as mean client trade size. This naturally limits the
+capacity of the learning agent to explore policies related to speculating on asset price movements and makes it focus
+on managing net position size instead.
+Network architecture:
+• action space: agent action ai = HedgeSize∈ [−MaxHedgeSize,MaxHedgeSize]
+7
+
+=== page 8 ===
+• observation space: cumulative net position of client trades and the hedger up until and including the last
+step NetPositioni = ∑i 0(NetClientTradeSizej + HedgePositionSizej) ∈R
+• network layers: MLP of Linear (1) x ReLU (1024) x ReLU (1024) x Linear (1) layers (x batch size)
+The agent successfully learns to hedge the client ﬂow as it could be seen from rewards statistics and the simulation
+dashboard:
+Figure 4: Autohegder single dashboard
+Figure 5: Autohedger single progress
+Listing 1: Training the single asset autohedger
+8
+
+=== page 9 ===
+cd stable −b a s e l i n e s 3 −autohedger−s i n g l e / autohedger−s i n g l e
+python3 autohedger ml . py
+5 Autohedging with skew
+Let’s now consider the setting where in addition to hedging on the market the agent can also apply skew i.e. adjust
+the oﬀered price on one side to attract more oﬀsetting client ﬂow instead of hedging all of the position on the
+market. For simplicity we will assume that the oﬀsetting client trade ﬂow size is a linear function of skew (see
+Skewing model 3.5). Architecture layout:
+• action space: agent action is a pair of {HedgeSize,Skew} rational numbers within a box bounded by
+HedgeSize∈ [−MaxHedgeSize,MaxHedgeSize] , Skew∈ [−1, 1]
+• observation space: net position
+• network layers: MLP of Linear (1) x ReLU (2048) x ReLU (2048) x Linear (2) layers
+It can be seen that the agent learns to make use of the skew in addition to utilizing hedge amounts to hedge the
+residual. This is useful as it allows us to raise the question of Market price of risk.
+Listing 2: Training the skew
+cd stable −b a s e l i n e s 3 −autohedger−s i n g l e / autohedger−s i n g l e
+python3 autohedger ml skew . py
+To gauge the performance of model with skew vs the model without skew it is useful to introduce a risk-weighted
+measure of reward. We’ll be using a measure similar to Sharpe-ratio of returns, where a return of a single step i is
+deﬁned as step return = PNLi −PNLi−1:
+Sharpe ratio = E[returns array] stdev(returns array) = ∑N steps i=1 (PNLi −PNLi−1) stdev(returns array) (30)
+To compare a non-skew and a skew model side-by-side those models are trained independently, saved, and then
+used on the same generated market data to compare the performance.
+Figure 6: Models with skew and without
+Depending on the magnitude of the chosen β in the Elasticity of demand (skewing) model it can be seen that
+skew-based model shows higher Sharpe ratios than a non-skew one. You can run the pre-trained models side-by-side
+on the same generated market data sets as per listing below:
+9
+
+=== page 10 ===
+Listing 3: Comparison of models with skew and without
+cd stable −b a s e l i n e s 3 −autohedger−s i n g l e / autohedger−s i n g l e
+python3 autohedger ml learned . py
+6 Market price of risk
+Let’s assume a setting where our market-making agent chooses which spreads to charge clients. It is of interest
+than to determine such minimum mean spread that would compensate the agent for the need of risk-managing a
+position in an asset resulting from the accumulation of the client trade ﬂow. Such spread would include the cost of
+heding the position in the market as well as the premium for any non-Brownian behavior of the market (e.g. jumps,
+volatility clustering, drifts etc). Having those ”hurdle” spreads calculated would allow the researcher to build the
+elasticity of demand spreading model on the top of them and to have a more clear idea of how to price the spreads
+being charged.
+Within our market model the price process is a martingale, so the expected revaluation of a position between any
+two future timestamps is zero:
+Positiont1 ∗E[St2 −St1 ] = 0 (t2 ≥t1 ≥ 0) (31)
+Within our PNL model this means that mean client spreads the agent should charge should be equal to mean hedge
+spreads paid on the exchange to oﬀset the position. Note however that our agent does not know what those hedge
+spreads are and needs to work them out by interacting with the market model.
+To achieve this goal the following reward function is deﬁned:
+Rewardt = max (−abs(ClientPNLt + HedgePNLt), 0) + MarketPNLt −PositionPenaltyt (32)
+This reward function makes the learning agent to come up with such client spreads that would oﬀset the cost of
+hedging the position on the exchange. As before, we introduce a charge on carrying a directional position via
+PositionPenalty. As the agent learns, at ﬁrst it incurs higher penalties due to exploring actions leading to larger
+positions. Once the agent learned to control the position, PositionPenalty becomes a lesser factor letting the agent
+to bring client spreads in line with the cost of hedging.
+We allow the learning agent to control client spreads via skew (see 3.5). In the context of this experiment we assume
+that client trade ﬂow is not elastic to price changes so β = 0 in eq. 24.
+Architecture layout:
+• action space: agent action is a pair of {HedgeSize,Skew} rational numbers within a box bounded by
+HedgeSize∈ [−MaxHedgeSize,MaxHedgeSize] , Skew∈ [−1, 1]
+• observation space: net position
+• network layers: MLP of Linear (1) x ReLU (2048) x ReLU (2048) x Linear (2) layers
+As a result of the learning process it is seen how rolling average spread charged by our agent (”maker” spread)
+converges onto the rolling average hedge spread (”taker” spread).
+10
+
+=== page 11 ===
+Figure 7: Discovering price of risk spreads
+On a sample PNL dashboard of the learned agent it is seen how the agent tries to keep ﬂat net PNL, at the
+same time continuing to oﬀset accrued client position with the hedger position.
+Figure 8: Price of risk dashboard
+Listing 4: Training Price of risk model
+cd stable −b a s e l i n e s 3 −autohedger−s i n g l e / autohedger−s i n g l e
+python3 a u t o h e d g e r m l p r i c e o f r i s k . py
+11
+
+=== page 12 ===
+7 Modeling portfolios
+Let’s assume we have two assets S1 and S2 which log increments 7 are correlated as in 9 with correlation coeﬃcient
+ρ. For simplicity let’s assume that log-increments have the same ﬂat volatility σ, so that the resulting log-normal
+price processes would have the same variance characteristics. Each of S1 and S2 processes would drive its own
+Client trade ﬂow model and Stochastic spread model. Naturally, each of those processes would imply its own
+Poisson intensity of arriving client trade sizes, as well as net imbalance of the arriving client trade ﬂow. ”Portfolio”
+is formed by blending these asset prices and net client trade size ﬂows 14 with a ﬁxed weight w:
+Sblended mid,bid,ask = wS1 mid,bid,ask + (1 −w)S2 mid,bid,ask (33)
+TradeSizeblended net = wTradeSize1 net + (1 −w)TradeSize2 net (34)
+As a result, the reinforcement learning agent accrues a position which gets incremented with the blended size and
+the blended price. The agent does not know what asset weights are being used (w and 1 −w), neither does it know
+the correlation coeﬃcient ρ. The agent needs to learn the optimal hedging strategy using hedge amounts for S1
+and S2.
+At any step the net position (”portfolio”) value is deﬁned as the sum of values of the blended client position and
+its hedges:
+Portfolio value(t) = Sblended mid (t)Positionblended Client (t) + S1 mid(t)PositionS1 Hedge(t) + S2 mid(t)PositionS2 Hedge(t) (35)
+The goal of the learning agent would be to maximize policy PNL whilst keeping the position value in check.
+The action space is now a R-valued square which bounds the sampled hedge amounts S1 and S2. As before, we
+will be using a penalty function to facilitate risk-management by the learning agent. However, a straightforward
+application of the exponential penalty function (see single-asset penalty function 27) to Portfolio value would not
+be as eﬀective. The reason is that by having the two-dimensional action space we are now allowing HedgeAmountS1
+and HedgeAmountS2 to oﬀset each other, thus introducing an additional degree of freedom to the action space.
+This shows up as a lower net portfolio value and contradicts the convex deﬁnition of the blended price 33. This
+could be remediated in a few ways.
+The ﬁrst approach of making the actions convex is to change the parametrization of the action space:
+HedgeAmountS1 = waction ∗hedge amountaction (36)
+HedgeAmountS2 = (1 −waction) ∗hedge amountaction (37)
+Here actual actions are the weight w and hedge amount, and the respective S1 and S2 hedge amounts are being
+calculated in a convex manner from those.
+A better approach would be to leave it for the learning agent to reason out but to introduce an additional ”over-
+hedge” penalty for when an individual hedge value overshoots the value of the blended client position or has the
+same sign (so leverages instead of oﬀsetting):
+Overhegdge =
+{
+abs(hedge value + client pos value) hedge overshoots or same sign
+0 other cases
+Then Overhedge is used as a part of the overall penalty function, where φ constant determines penalty tolerance to
+overhedge and γ determines the tolerance to overall portfolio value closing on MaxPosLimit or overshooting it:
+Penalty = γS0
+(
+e
+abs(Portfolio value)+φabs(Overhedge)
+S0 MaxPosLimit − 1
+)
+MaxPosLimit (38)
+Note that three positions are accrued over the simulation trajectory: the blended client position, S1 hedge position
+and S2 hedge position, where hedge positions are supposed to be oﬀsetting the blended client position. For each of
+those positions at each step we are tracking spread PNL (paid or received) as well as market revaluation PNL.
+Portfolio PNL is deﬁned as trajectory PNL consisting of blended client position PNL (client spread PNL and client
+position market revaluation) and the sum of S1 and S2 hedge positions PNL (hedge spread PNL and hedge position
+market revaluation). Reward function is deﬁned as portfolio PNL minus the penalty function:
+Reward portfolio = BlendedClientPosition PNL+HedgePositionS1 PNL+HedgePositionS2 PNL−Penalty
+(39)
+Architecture layout:
+12
+
+=== page 13 ===
+• action space: agent action is a pair of {HedgeSize S1,HedgeSize S2} rational numbers within a square
+box bounded by HedgeSize∈ [−MaxHedgeSize,MaxHedgeSize]
+• observation space: S1 hedger position value S1 midPositionS1 Hedge, S2 hedger position value S2 midPositionS2 Hedge
+and net Portfolio value(t) (see 35)
+• network layers: MLP of Linear (input: 3) x ReLU (8000) x ReLU (8000) x Linear (output: 2) layers
+Given the initial correlation ρ = 0, the agent is seen to learn to oﬀset the blended incoming client size ﬂow with
+the hedge positions. The agent seems to be able to deduce the implied weighting of assets within the blended client
+trade ﬂow, however, more work needs to be done on improving stability on farther epochs. One can ﬁnd sample
+dashboards for portfolio learning agents in Portfolio hedging dashboards.
+Listing 5: Training portfolio hedge model
+cd stable −b a s e l i n e s 3 −autohedger−p o r t f o l i o / autohedger−p o r t f o l i o
+python3 a u t o h e d g e r m l p o r t f o l i o . py
+A slower, more stable version:
+Listing 6: Training portfolio hedge model - slow
+cd stable −b a s e l i n e s 3 −autohedger−p o r t f o l i o / autohedger−p o r t f o l i o
+python3 a u t o h e d g e r m l p o r t f o l i o s l o w . py
+8 Conclusion
+Techniques explored in this paper could be used as a baseline for setting up a position management framework
+within an automated market-making system. More importantly, however, is that it could be used as a way of
+blending alpha-generation and position management into one reinforcement learning system. Let’s assume that
+we have a signal generating unit that is listening to the real-life price process as well as other information sources
+like order book, news feeds etc. Then the signal it generates could be plugged into our reinforcement learning
+agent. If (as a result of the learning process) our agent ﬁnds this signal to be beneﬁcial to the reward function,
+it would automatically learn to adjust its hedging decisions in line with that. Bridging signal-generation capacity
+with reinforcement-learning inventory management poses an interesting area of research.
+Automating portfolio management decisions by letting the agent infer correlations and weights while learning also
+proves to be a challenging area to be explored. In a more realistic setting for the portfolio management task we
+could deﬁne a risk-weighted reward function (e.g. based on Sharpe ratio 30) and let the agent pick from tens or
+hundreds of assets which would translate into the same dimensionality for observation and action spaces and would
+increase the complexity of stochatic policy search problem.
+Even in the current set-up more work needs to be done to increase learning stability and avoid intermittent oscil-
+lations of HedgeSize action between −MaxHedgeSize and MaxHedgeSize between consecutive steps on farther
+epochs. This is most likely related to diminished scale of rewards on farther epochs compared to large scale of
+penalties incurred while starting to train. Methods like normalization of rewards and entropy regularization could
+be used for this purpose, which would boil down to ﬁne-tuning the entropy maximization parametrization within
+SAC.
+9 Appendix
+9.1 Project repository
+Project code is available under https://github.com/bakalex/autohedger
+9.2 Physical environment
+Modeling was performed on Amazon EC2 g4dn.2xlarge machine with the use of Deep Learning AMI (Ubuntu 16.04)
+Version 30.0 (ami-02379288a3b4cbe7b). PyTorch 1.5 CUDA 10.1 is activated with:
+13
+
+=== page 14 ===
+Listing 7: Setting up PyTorch environment on EC2 AMI
+source a c t i v a t e p y t o r c h l a t e s t p 3 6
+g4dn.2xlarge allowed for research on MLPs as large as 10000 x 10000 x 8000 (x default batch size), but typically
+nets of no more than 8000 x 8000 units were used.
+Open AI baseline installed with:
+Listing 8: Installing Open AI baseline
+cd stable −b a s e l i n e s 3
+pip i n s t a l l .
+For the convenience of reproducing the results raised in this paper, a version of Open AI is supplied alongside the
+project code. It is a choice of the researcher to use it or to try a more recent version.
+9.3 SAC algo
+Soft actor-critic algorithm as listed in Open AI Spinning Up. A more succinct version is available in [6].
+Figure 9: Soft actor-critic RL algorithm
+14
+
+=== page 15 ===
+9.4 Portfolio hedging dashboards
+Figure 10: Learning to hedge portfolios, w=0.5
+Figure 11: Learning to hedge portfolios, w=0.0
+15
+
+=== page 16 ===
+References
+[1] Abbas Abdolmaleki, Jost Tobias Springenberg, Yuval Tassa, Remi Munos, Nicolas Heess, and Martin Riedmiller.
+Maximum a posteriori policy optimisation, 2018.
+[2] Roy Fox, Ari Pakman, and Naftali Tishby. Taming the noise in reinforcement learning via soft updates, 2015.
+[3] Scott Fujimoto, Herke van Hoof, and David Meger. Addressing function approximation error in actor-critic
+methods, 2018.
+[4] Tuomas Haarnoja, Sehoon Ha, Aurick Zhou, Jie Tan, George Tucker, and Sergey Levine. Learning to walk via
+deep reinforcement learning, 2018.
+[5] Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, and Sergey Levine. Soft actor-critic: Oﬀ-policy maximum
+entropy deep reinforcement learning with a stochastic actor, 2018.
+[6] Tuomas Haarnoja, Aurick Zhou, Kristian Hartikainen, George Tucker, Sehoon Ha, Jie Tan, Vikash Kumar,
+Henry Zhu, Abhishek Gupta, Pieter Abbeel, and Sergey Levine. Soft actor-critic algorithms and applications,
+2018.
+[7] Peter Henderson, Riashat Islam, Philip Bachman, Joelle Pineau, Doina Precup, and David Meger. Deep rein-
+forcement learning that matters, 2017.
+16

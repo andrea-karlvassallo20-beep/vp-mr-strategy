@@ -1,0 +1,874 @@
+=== page 1 ===
+Feasible Multi-Asset Optimal Execution under Cash Constraints
+Ryuji Hashimoto
+Simudyne
+UK
+Namid R. Stillman
+Simudyne
+UK
+namid@simudyne.com
+Abstract
+Optimal execution (OE) in multi-asset settings involves complex
+interactions across assets, particularly through shared capital con-
+straints during portfolio rebalancing. While existing models capture
+cross-impact and portfolio-level dynamics, they largely overlook
+the role of explicit cash constraints along the execution trajectory.
+As a result, the feasibility of execution strategies under limited
+capital remains poorly understood. In this paper, we extend the
+classical Almgren–Chriss framework to incorporate intertemporal
+constraints on expected cash consumption, requiring that the ex-
+pected cumulative cash spent does not exceed a prescribed budget
+at every trading period. We show that the resulting multi-asset
+OE problem can be equivalently formulated as a quadratically con-
+strained quadratic program (QCQP), and further establish that it ad-
+mits a convex representation under mild conditions. This provides
+a tractable framework for analyzing execution strategies under
+dynamic capital constraints. Through controlled synthetic experi-
+ments, we show that the proposed cash constraints qualitatively
+alter OE schedules toward cash-feasible sell-first executions as the
+constraints become tighter. Furthermore, evaluations in an out-of-
+sample agent-based market simulator demonstrate that our method
+substantially reduces peak cash drawdown while maintaining im-
+plementation shortfall comparable to existing execution strategies.
+Our results highlight the importance of explicitly modeling finan-
+cial feasibility in multi-asset execution and provide a foundation for
+bridging theoretical OE models with practical capital constraints.
+Keywords
+Multi-asset Optimal Execution, Portfolio Rebalancing, Cash Con-
+straints
+1 Introduction
+Optimal execution (OE) is a central problem in quantitative finance,
+aiming to execute large orders efficiently while accounting for
+market impact and price risk. A foundational framework is the
+Almgren–Chriss (AC) model [3] which explicitly formulates the
+trade-off between execution cost and risk. Building on this frame-
+work, a large body of literature has extended OE models to incor-
+porate more realistic market features [2, 6]. Recently, data-driven
+approaches have been proposed to design execution strategies di-
+rectly from market data [8, 16]. These developments have advanced
+the OE modeling toward more practical settings.
+Another important line of research extends OE to the multi-asset
+setting, where an investor tries to execute a portfolio simultane-
+ously. This problem is not a straightforward extension of the single-
+asset case. Prior work has emphasized asset interactions, including
+cross-impact [15] and covariance structures [19], which give rise
+to qualitatively new behaviors absent in single-asset models.
+However, existing studies on multi-asset OE largely overlook
+cash constraints, or treat them only heuristically without a tractable
+analytical formulation [9]. By cash constraints, we refer to the re-
+quirement that cumulative cash consumption remain within avail-
+able capital throughout execution, which we formulate in expec-
+tation, constraining the expected cash process at every trading
+period. This aspect is particularly critical in portfolio rebalancing
+settings that involve both buy and sell orders, where simultaneous
+execution across multiple assets induces interactions in cash flows.
+For example, if a large portion of buy orders is executed early in the
+trading horizon (see Figure 1), available cash may be depleted while
+the portfolio remains unbalanced, making the remaining execution
+plan both financially and risk-wise infeasible. Despite its practical
+importance, the conditions under which such a feasible execution
+trajectory exists have not been characterized.
+To address this gap, we extend the AC framework with explicit
+cash constraints imposed at every trading period, requiring that
+the expected cumulative cash spent up to each time step does not
+exceed a given budget. We prove that the resulting multi-asset OE
+problem can be equivalently formulated as a quadratically con-
+strained quadratic program (QCQP). This reveals that, despite the
+path-dependent nature of cash feasibility, the problem remains
+within a tractable convex optimization class under mild conditions.
+We validate the proposed formulation through two complemen-
+tary experiments. First, in a controlled oracle setting where all
+market parameters are known, we demonstrate that tighter cash
+constraints progressively postpone buy orders while advancing
+sell orders, producing execution schedules that better align cash
+inflows with cash outflows. Second, using parameters calibrated
+from an agent-based market simulator, we evaluate the resulting
+execution strategies in out-of-sample simulations and show that
+they substantially reduce peak cash drawdown while maintaining
+implementation shortfall (IS) comparable to unconstrained OE and
+standard benchmark strategies. Taken together, these results estab-
+lish our framework as a computationally tractable approach to safe
+multi-asset OE under explicit cash constraints, bridging classical
+OE theory and practical portfolio rebalancing under limited capital.
+2 Related Work
+OE aims to minimize the transaction costs of large orders, mainly
+arising from market impact and price risk. In practice, market im-
+pact is mitigated by order slicing. A seminal contribution is due to
+AC [3], which models temporary and permanent market impact
+linearly and formulates OE as a mean–variance optimization of
+IS, defined as the deviation between the pre-trade benchmark and
+realized execution cost, yielding an analytical solution.
+While the AC framework assumes linear impact, subsequent
+work incorporates richer market dynamics, including order types [6],
+order flow [7], dynamic impact [11], and liquidity resilience [2, 4,
+1
+arXiv:2609.27786v1  [q-fin.TR]  18 Aug 2026
+
+=== page 2 ===
+Hashimoto et al.
+50%
+50%
+buy
+sell
++30%
+-10%80%
+40%
++10%
+-30%
+10%
+90%
+cash spent
+excess risk
+20%
+0%stock A
+stock B
+initial target
+(a)The trajectory of portfolio allocation (b)The execution plan (c)The cumulative cash spent and excess risk during execution
+≡
+t=0
+t=0 t=1
+t=1 t=2
+t=2
+t=0 t=1 t=2
+Figure 1: Conceptual illustration of the importance of cash constraints in multi-asset OE. Consider a stylized portfolio
+rebalancing problem with two assets over a two-period horizon as an example. Percentages denote each asset’s share of the
+total portfolio value at the initial time. We ignore differences in liquidity and volatility across assets. The goal is to rebalance
+the portfolio from an initial 50–50 allocation to a target allocation of 90% in stock A and 10% in stock B (a). We consider a
+buy-first execution strategy in which stock A is purchased aggressively in the first period (b), increasing its weight by 30% while
+reducing stock B by 10%. As a result, at the intermediate time (𝑡 = 1), a cash outlay equivalent to 20% of the initial portfolio
+value is required, which simultaneously induces an equivalent level of excess risk exposure (c).
+17]. Recent studies have adopted data-driven approaches such as
+reinforcement learning [8, 13, 14, 16, 18] to learn execution policies
+directly from data in complex market environments.
+A separate line of work extends OE to multi-asset settings, where
+interactions across assets arise through cross-impact and portfolio-
+level considerations. Prior studies focus on modeling such interac-
+tions through covariance structures and stochastic resilience [12,
+19], as well as cross-impact effects across assets [1, 15]. While these
+models capture rich interdependencies in execution dynamics, they
+typically do not explicitly account for cash constraints over the
+execution horizon, despite their importance for ensuring feasibil-
+ity. Fang et al. [9] is among the first to address this issue; however,
+their approach relies on data-driven methods, resulting in black-box
+policies without a tractable analytical formulation.
+3 Problem Setup
+Multi-Asset Optimal Execution Settings. We consider a multi-
+asset optimal execution (OE) problem under explicit cash con-
+straints. Let 𝑁 ∈ N denote the number of assets and 𝑇 > 0 the
+execution horizon. The trader aims to execute a portfolio of trades
+across these N assets within the finite time interval [0,𝑇]. For each
+asset 𝑛∈{1,...,𝑁}, let 𝑄(𝑛) ∈ R denote the total notional amount
+to be executed over the horizon. We adopt the convention that
+𝑄(𝑛) > 0 corresponds to a net purchase, while 𝑄(𝑛) < 0 represents
+a net sale. Let 𝑃(𝑛) 0 ∈ R+ denote the initial reference price of asset
+𝑛. To model the execution process, we discretize the time interval
+[0,𝑇] into 𝐾∈ N trading periods of equal length. Specifically, we
+define the discrete time grid as
+𝑡𝑘 :=𝑘𝜏, 𝑘 = 1,...,𝐾, 𝜏 =𝑇/𝐾. (1)
+At each time step 𝑡𝑘, the trader submits orders for each asset. Let
+𝑄(𝑛) 𝑘 ∈ R denote the execution amount of asset𝑛 at time𝑡𝑘.
+IS and Cash Spent. We define the IS as the total execution cost
+relative to the initial reference prices. The IS is decomposed across
+assets as𝐼𝑆 := ˝𝑁 𝑛=1 𝐼𝑆(𝑛), where, the IS for asset𝑛 is:
+𝐼𝑆(𝑛) :=
+𝐾∑︁
+𝑘=1
+˜𝑃(𝑛) 𝑘 𝑄(𝑛) 𝑘 −𝑃(𝑛) 0 𝑄(𝑛). (2)
+Here, ˜𝑃(𝑛) 𝑘 denotes the effective execution price of asset 𝑛 at time 𝑡𝑘,
+which incorporates both market impact and prevailing market con-
+ditions. Using ˜𝑃(𝑛) 𝑘 , the cumulative cash process 𝑀𝑘 := ˝𝑁 𝑛=1 𝑀(𝑛) 𝑘
+is defined as the total monetary amount spent up to time𝑡𝑘:
+𝑀(𝑛) 𝑘 :=
+𝑘∑︁
+𝑗 =1
+˜𝑃(𝑛) 𝑗 𝑄(𝑛) 𝑗 . (3)
+Price Process. We assume that the asset price dynamics follow
+an AC-type discrete-time model. For each asset 𝑛∈{1,...,𝑁} and
+each trading period 𝑘 = 1,...,𝐾, the unaffected price 𝑃(𝑛) 𝑘 and the
+effective execution price ˜𝑃(𝑛) 𝑘 are given by
+∀𝑛
+
+
+𝑃(𝑛) 𝑘 =𝑃(𝑛) 𝑘−1 +𝜏𝑔(𝑛)
+
+𝑄(𝑛) 𝑘
+𝜏
+
++𝜎(𝑛)√𝜏𝑍(𝑛) 𝑘 ,
+˜𝑃(𝑛) 𝑘 =𝑃(𝑛) 𝑘 +ℎ(𝑛)
+
+𝑄(𝑛) 𝑘
+𝜏
+ . (4)
+Here, 𝑔(𝑛)(·) and ℎ(𝑛)(·) represent the permanent and temporary
+market impact, respectively. 𝜎(𝑛) > 0 is the volatility coefficient of
+asset 𝑛, and {𝑍(𝑛) 𝑘 }𝑘=1,...,𝐾,𝑛=1,...,𝑁 are i.i.d. standard normal random
+variables, i.e., 𝑍(𝑛) 𝑘 ∼N(0, 1). In the following sections, we assume
+the both market impact functions are linear:
+𝑔(𝑛)(𝑥) =𝛾(𝑛)𝑥, ℎ(𝑛)(𝑥) =𝜂(𝑛)𝑥, (5)
+where𝛾(𝑛),𝜂(𝑛) ≥ 0 denote the impact coefficients, respectively.
+Safe OE Problem. We formulate the safe OE problem as a mean–
+variance optimization of the IS under cash constraints:
+min
+{𝑄(𝑛) 𝑘 }
+E[𝐼𝑆]+𝜆𝑉𝑎𝑟(𝐼𝑆) s.t. ∀𝑛
+𝐾∑︁
+𝑘=1
+𝑄(𝑛) 𝑘 =𝑄(𝑛),∀𝑘 E[𝑀𝑘]≤ ¯𝑐𝑘.
+(6)
+2
+
+=== page 3 ===
+Feasible Multi-Asset Optimal Execution under Cash Constraints
+Here, 𝜆≥ 0 is a risk-aversion parameter. The operators E[·],𝑉𝑎𝑟(·)
+respectively denote expectation and variance with respect to the un-
+derlying probability space governing the price dynamics. The first
+constraint in Eq. (6) enforces that the total executed amount for each
+asset matches the prescribed target 𝑄(𝑛). The second constraint im-
+poses a dynamic cash limit, requiring that the expected cumulative
+cash process up to each time step 𝑡𝑘 does not exceed a given budget
+level ¯𝑐𝑘. This formulation extends the classical AC framework by
+incorporating intertemporal budget constraints, which restrict not
+only the terminal outcome but also the path of capital deployment
+throughout the execution horizon.
+4 Optimal Execution as a QCQP
+4.1 Overview of the Main Claim
+We reformulate the OE problem introduced in Eq. (6) into a tractable
+optimization problem. In particular, our goal is to show that the
+problem can be expressed as a QCQP. This representation is key
+to analyzing the structural properties of the problem and enables
+the use of efficient convex optimization techniques. We further
+show that the resulting QCQP is convex, and hence can be solved
+efficiently to global optimality.
+Proposition 1 (QCQP reformulation of the safe OE prob-
+lem). Under the linear impact assumptions (Eq. (5)), the OE prob-
+lem Eq. (6) can be equivalently reformulated as a QCQP. More pre-
+cisely, there exist a decision vector 𝑸 ∈ R𝑁𝐾 , a symmetric matrix
+𝑯 ∈ R𝑁𝐾×𝑁𝐾 , a matrix 𝑪 ∈ R𝑁×𝑁𝐾 , a vector 𝒃 ∈ R𝑁 , and, for
+each 𝑘 = 1,...,𝐾, a vector 𝒂𝑘 ∈ R𝑁𝐾 and a symmetric matrix
+¯𝑫𝑘 ∈ R𝑁𝐾×𝑁𝐾 such that the above OE problem is equivalent to
+min
+𝑸∈R𝑁𝐾
+𝑸⊤𝑯 𝑸 s.t. 𝑪𝑸 = 𝒃, ∀𝑘 𝒂⊤ 𝑘 𝑸+ 𝑸⊤ ¯𝑫𝑘 𝑸≤ ¯𝑐𝑘. (7)
+In the following subsections, we derive this QCQP representation
+in a constructive manner. Specifically, we express each component
+of the objective and constraints in quadratic form.
+4.2 Derivation of the QCQP Reformulation
+In this subsection, we derive the QCQP reformulation in Eq. (7)
+through a sequence of algebraic transformations. In particular, we
+express the objective function, inventory constraint, and cash con-
+straints as quadratic forms with respect to 𝑸, and explicitly con-
+struct the matrices 𝑯 , 𝑪, and ¯𝑫𝑘 and vectors 𝒃 and 𝒂𝑘.
+Mean–Variance Objective. By denoting remaining orders to be
+executed before time 𝑡𝑘 as 𝑞(𝑛) 𝑘 :=𝑄(𝑛)−˝𝑘−1 𝑠=1 𝑄(𝑛) 𝑠 , and rearranging
+the order of summation,𝐼𝑆(𝑛) can be rewritten as follows:
+𝐼𝑆(𝑛) =
+𝐾∑︁
+𝑘=1
+𝜂(𝑛)
+𝜏 (𝑄(𝑛) 𝑘 )2 +𝑞(𝑛) 𝑘
+
+𝛾(𝑛)𝑄(𝑛) 𝑘 +𝜎(𝑛)𝑍(𝑛) 𝑘
+
+. (8)
+Since {𝑍(𝑛) 𝑘 }𝑘,𝑛 are i.i.d., the expectation and variance of 𝐼𝑆(𝑛) can
+be computed as follows:
+E[𝐼𝑆(𝑛)] =
+𝐾∑︁
+𝑘=1
+𝜂(𝑛)
+𝜏 (𝑄(𝑛) 𝑘 )2 +𝛾(𝑛)𝑞(𝑛) 𝑘 𝑄(𝑛) 𝑘
+
+. (9)
+𝑉𝑎𝑟(𝐼𝑆(𝑛)) =(𝜎(𝑛))2𝜏(𝑸 (𝑛))⊤𝑼 ⊤ 𝐾 𝑼𝐾 𝑸 (𝑛). (10)
+Let 𝑸 (𝑛) :=  𝑄(𝑛) 1 ... 𝑄(𝑛) 𝐾 ⊤ ∈ R𝐾, 𝒒(𝑛) :=  𝑞(𝑛) 1 ... 𝑞(𝑛) 𝐾 ⊤ ∈
+R𝐾 denote the execution schedule and remaining inventory vector
+for asset𝑛. Using an upper triangular matrix:
+𝑼𝐾 :=  𝒖1 ... 𝒖𝐾  ∈ R𝐾×𝐾, ∀𝑘 𝒖𝑘 ∈ R𝐾,(𝒖𝑘)𝑖 :=
+(
+1 𝑖≤𝑘
+0 𝑘 <𝑖 ,
+(11)
+we obtain: 𝒒(𝑛) = 𝑼𝐾 𝑸 (𝑛). Using this relation, the expectation and
+variance of 𝐼𝑆(𝑛) (Eqs.(9,10)) can be expressed in quadratic form
+with respect to 𝑸 (𝑛):
+E[𝐼𝑆(𝑛)] = 𝜂(𝑛)
+𝜏 (𝑸 (𝑛))⊤ 𝑸 (𝑛)+𝛾(𝑛)(𝑼𝐾 𝑸 (𝑛))⊤ 𝑸 (𝑛) (12)
+=(𝑸 (𝑛))⊤
+𝜂(𝑛)
+𝜏 𝑬𝐾 +𝛾(𝑛) 2 (𝑼𝐾 + 𝑼 ⊤ 𝐾)  𝑸 (𝑛). (13)
+𝑉𝑎𝑟(𝐼𝑆(𝑛)) =(𝜎(𝑛))2𝜏⊤𝑸 (𝑛)⊤𝑼𝐾 𝑼𝐾 𝑸 (𝑛). (14)
+Here, 𝑬𝐾 ∈ R𝐾×𝐾 denotes the identity matrix. Let 𝑸∈ R𝑁𝐾 denotes
+the overall execution plans: 𝑸 :=
+
+(𝑸 (1))⊤ ... (𝑸 (𝑁))⊤
+⊤
+. Sum-
+ming over all assets, the expectation and variance of the total IS
+are given as follows.
+E[𝐼𝑆] = 𝑸⊤𝑨𝑸, 𝑉𝑎𝑟(𝐼𝑆) = 𝑸⊤𝑩𝑸, (15)
+𝑨 := blkdiag(𝑨(𝑛)), 𝑨(𝑛) := 𝜂(𝑛)
+𝜏 𝑬𝐾 +𝛾(𝑛) 2 (𝑼𝐾 + 𝑼 ⊤ 𝐾), (16)
+𝑩 := blkdiag(𝑩(𝑛)), 𝑩(𝑛) :=(𝜎(𝑛))2𝜏 𝑼 ⊤ 𝐾 𝑼𝐾. (17)
+Here, blkdiag(𝑨(𝑛)) denotes the block diagonal matrix with blocks
+𝑨(1),..., 𝑨(𝑁). Combining the above results, the objective function
+can be written in quadratic form as
+E[𝐼𝑆]+𝜆𝑉𝑎𝑟(𝐼𝑆) = 𝑸⊤(𝑨+𝜆𝑩)𝑸. (18)
+Thus, by defining 𝑯 := 𝑨+𝜆𝑩, we obtain the desired quadratic
+representation of the objective.
+Inventory Constraint. The inventory constraints admit a sim-
+ple linear representation. Let 𝑪∈ R𝑁×𝑁𝐾 be the matrix whose 𝑛-th
+row extracts the total executed amount of asset𝑛, i.e.,
+𝑪 := blkdiag 1⊤ 𝐾 , (19)
+where 1⊤ 𝐾 ∈ R1×𝐾 denotes the row vector of ones. Let 𝒃∈ R𝑁 be
+the vector of target execution amounts, 𝒃 :=
+
+𝑄(1) ··· 𝑄(𝑁)
+⊤
+.
+Then, the inventory constraints can be written as 𝑪𝑸 = 𝒃.
+Cash Constraint. Using Eq. (4), the cumulative cash spent 𝑀(𝑛) 𝑘
+(Eq. (3)) can be expressed explicitly as follows:
+𝑀(𝑛) 𝑘 =𝑃(𝑛) 0
+𝑘∑︁
+𝑗 =1
+𝑄(𝑛) 𝑗 +𝛾(𝑛)
+𝑘∑︁
+𝑗 =1
+𝑄(𝑛) 𝑗
+𝑗∑︁
+𝑙 =1
+𝑄(𝑛) 𝑙
++𝜂(𝑛)
+𝜏
+𝑘∑︁
+𝑗 =1
+
+𝑄(𝑛) 𝑗
+2
++𝜎(𝑛)√𝜏 𝑘∑︁
+𝑗 =1
+𝑄(𝑛) 𝑗
+𝑗∑︁
+𝑙 =1
+𝑍(𝑛) 𝑙 . (20)
+For Eq. (20), the first term can be written in inner product form:
+𝑘∑︁
+𝑗 =1
+𝑄(𝑛) 𝑗 = 𝒖⊤ 𝑘 𝑸 (𝑛). (21)
+3
+
+=== page 4 ===
+Hashimoto et al.
+The second term in Eq. (20) can be written in quadratic form by
+introducing the matrix 𝑳𝑘 ∈ R𝐾×𝐾 defined by
+(𝑳𝑘)𝑖,𝑗 :=
+(
+1 1≤ 𝑗≤𝑖≤𝑘,
+0 otherwise. (22)
+Then,
+𝑘∑︁
+𝑗 =1
+𝑄(𝑛) 𝑗
+𝑗∑︁
+𝑙 =1
+𝑄(𝑛) 𝑙 =(𝑸 (𝑛))⊤ 𝑳𝑘 𝑸 (𝑛) =(𝑸 (𝑛))⊤ 𝑳𝑘 + 𝑳⊤ 𝑘 2 𝑸 (𝑛).
+(23)
+The third term in Eq. (20) can also be written in quadratic form by
+introducing the matrix 𝑫𝑘 := diag(𝒖𝑘)∈ R𝐾×𝐾 :
+𝑘∑︁
+𝑗 =1
+
+𝑄(𝑛) 𝑗
+2
+=(𝑸 (𝑛))⊤ 𝑫𝑘 𝑸 (𝑛), (24)
+where diag(𝒖𝑘) denotes the diagonal matrix whose diagonal en-
+tries are given by the components of 𝒖𝑘. Using Eqs. (21,23,24), the
+expected𝑀(𝑛) 𝑘 can be expressed as follows.
+E[𝑀(𝑛) 𝑘 ] =𝑃(𝑛) 0 𝒖⊤ 𝑘 𝑸 (𝑛)+(𝑸 (𝑛))⊤
+𝛾(𝑛)
+2 (𝑳𝑘 + 𝑳⊤ 𝑘)+𝜂(𝑛) 𝜏 𝑫𝑘  𝑸 (𝑛)
+(25)
+Therefore, by defining the vector 𝒂𝑘 ∈ R𝑁𝐾 and the matrix ¯𝑫𝑘 ∈
+R𝑁𝐾×𝑁𝐾 as follows, we obtain∀𝑘 E[𝑀𝑘] = 𝒂⊤ 𝑘 𝑸+ 𝑸⊤ ¯𝑫𝑘 𝑸.
+𝒂𝑘 :=
+
+𝑃(1) 0 𝒖⊤ 𝑘 ... 𝑃(𝑁) 0 𝒖⊤ 𝑘
+⊤
+, (26)
+¯𝑫𝑘 := blkdiag( ¯𝑫 (𝑛) 𝑘 ), ¯𝑫 (𝑛) 𝑘 :=
+𝛾(𝑛)
+2 (𝑳𝑘 + 𝑳⊤ 𝑘)+𝜂(𝑛) 𝜏 𝑫𝑘  (27)
+Proposition 2 (Convexity of the QCQP). Under 𝜆≥ 0, 𝛾(𝑛) ≥
+0, and𝜂(𝑛) ≥ 0 for all𝑛, the QCQP formulation in Eq. (7) is convex.
+Proof. The objective function is quadratic with Hessian 𝑯 =
+𝑨+𝜆𝑩. We first show that 𝑯⪰ 0. For each asset 𝑛, the matrix 𝑩(𝑛)
+is given by Eq. (17). Since 𝑼 ⊤ 𝐾 𝑼𝐾 ⪰ 0 and (𝜎(𝑛))2𝜏≥ 0, it follows
+that ∀𝑛 𝑩(𝑛) ⪰ 0, and thus 𝑩⪰ 0. Next, consider 𝑨(𝑛) defined in
+Eq (16). Since 𝑬𝐾 ⪰ 0 and 𝜂(𝑛) ≥ 0, the first term in Eq (16) is
+positive semidefinite. Moreover, for any 𝒙∈ R𝐾 ,
+𝒙⊤ 𝑼𝐾 𝒙 = ∑︁
+1≤𝑖≤𝑗≤𝐾
+𝑥𝑖𝑥𝑗 = 1 2 '›
+«
+ 𝐾∑︁
+𝑖=1
+𝑥𝑖
+!2
++
+𝐾∑︁
+𝑖=1
+𝑥2 𝑖 “ﬁ
+‹
+≥ 0, (28)
+which implies (𝑼𝐾+𝑼 ⊤ 𝐾)/2 ⪰ 0. Since𝛾(𝑛) ≥ 0, we obtain ∀𝑛 𝑨(𝑛) ⪰
+0, and hence 𝑨⪰ 0. Combining the above and using 𝜆≥ 0, we
+obtain 𝑯 = 𝑨+𝜆𝑩⪰ 0, so the objective function is convex.
+Each equality constraint is affine, and therefore defines a con-
+vex feasible set. Each inequality constraint is of the form 𝒂⊤ 𝑘 𝑸+
+𝑸⊤ ¯𝑫𝑘 𝑸≤ ¯𝑐𝑘. For each 𝑘 and 𝑛, the matrix ¯𝑫 (𝑛) 𝑘 is given in Eq. (27).
+Since 𝑫𝑘 = diag(𝒖𝑘)⪰ 0 and 𝜂(𝑛) ≥ 0, the second term of ¯𝑫 (𝑛) 𝑘 is
+positive semidefinite. Similarly, for any 𝒙∈ R𝐾 ,
+𝒙⊤𝑳𝑘 𝒙 = ∑︁
+1≤𝑙≤𝑗≤𝑘
+𝑥𝑗𝑥𝑙 = 1 2 '›
+«
+ 𝑘∑︁
+𝑗 =1
+𝑥𝑗
+!2
++
+𝑘∑︁
+𝑗 =1
+𝑥2 𝑗 “ﬁ
+‹
+≥ 0, (29)
+which implies (𝑳𝑘 + 𝑳⊤ 𝑘)/2 ⪰ 0. Since 𝛾(𝑛) ≥ 0, we obtain ¯𝑫 (𝑛) 𝑘 ⪰ 0
+for all𝑛, and hence ¯𝑫𝑘 ⪰ 0.
+Table 1: Simulation settings for Experiment 1.
+Param. Description Value
+𝑁 # of assets 2
+𝑄(1) Buy-side order size 20
+𝑄(2) Sell-side order size −20
+𝑃(𝑛) 0 Initial asset price 50.0, 𝑛 = 1, 2
+𝛾(𝑛) Permanent impact coefficient 0.02, 𝑛 = 1, 2
+𝜂(𝑛) Temporary impact coefficient 0.05, 𝑛 = 1, 2
+𝜎(𝑛) Volatility 0.10, 𝑛 = 1, 2
+𝐾 # of execution periods 20
+𝜏 Time interval 1
+𝜆 Risk-aversion parameter 0.30
+¯𝑐0 Initial cash constraint 5.0
+𝛽 Cash constraint relaxation rate 0.1, 0.2, 0.3, 0.5
+− Optimization solver SCS
+Therefore, all inequality constraints are convex. This proves that
+the problem is a convex QCQP. □
+5 Experimental Setup
+We evaluate the proposed framework through two complementary
+experiments that separately investigate its underlying mechanism
+and practical effectiveness.
+• RQ1 (Mechanism Validation): How do explicit cash constraints
+reshape the OE schedule?
+• RQ2 (Performance Evaluation): Can the proposed formulation
+improve cash feasibility without sacrificing execution efficiency
+under realistic market conditions?
+The first experiment addresses RQ1 using an oracle setting in which
+all market parameters are assumed to be known. This enables us
+to isolate the qualitative effect of the proposed cash constraints
+on the OE schedule. The second experiment addresses RQ2 by
+evaluating the optimized execution strategies in an out-of-sample
+agent-based market simulator with calibrated market parameters,
+thereby assessing their practical effectiveness.
+5.1 Experiment 1: Mechanism Validation
+To answer RQ1, we conduct a controlled experiment to isolate the
+qualitative effect of the proposed cash constraints on the OE sched-
+ule. Since our objective is to understand the qualitative behavior
+induced by the proposed QCQP formulation itself, we assume an
+oracle setting in which all market parameters are known exactly.
+We consider a stylized portfolio rebalancing task involving two
+assets, where one asset is purchased and the other is sold simultane-
+ously. The cash constraint is parameterized as ¯𝑐𝑘 = ¯𝑐0 +𝛽𝑘, where
+𝛽 controls the rate at which the available budget is relaxed over
+the execution horizon. By varying 𝛽, we investigate how different
+levels of cash availability influence the resulting OE schedules. The
+complete experimental settings are summarized in Table 1.
+5.2 Experiment 2: Performance Evaluation
+To answer RQ2, we evaluate the proposed method in a realistic
+market environment using the Simudyne Pulse agent-based market
+4
+
+=== page 5 ===
+Feasible Multi-Asset Optimal Execution under Cash Constraints
+simulator [20]. Unlike Experiment 1, where all market parameters
+are assumed to be known, this experiment considers the practical
+setting in which the market impact and volatility parameters must
+be estimated from historical data. We therefore construct execution
+schedules using estimated market parameters and evaluate their
+performance under out-of-sample market conditions.
+Evaluation Protocol. To ensure a rigorous out-of-sample eval-
+uation, parameter estimation and performance evaluation are con-
+ducted on disjoint trading days. Market parameters are calibrated
+using simulation data generated on the calibration date, while exe-
+cution performance is evaluated on an independent validation date.
+The calibrated parameters are fixed throughout the evaluation and
+are never updated using the validation data.
+To evaluate the resulting strategies under unseen market condi-
+tions, we calibrate a separate Simudyne Pulse market simulator to
+the validation date (2025-10-14) and generate independent Monte
+Carlo price trajectories. The execution-model parameters are there-
+fore estimated exclusively from the calibration market, while the
+execution strategies are evaluated in a distinct market environment
+calibrated to the validation date, ensuring a strict out-of-sample
+evaluation protocol.
+Parameter Estimation. For each asset 𝑛, the arrival price 𝑃(𝑛) 0 ,
+permanent market impact coefficient 𝛾(𝑛), temporary market im-
+pact coefficient 𝜂(𝑛), and volatility 𝜎(𝑛) are estimated from the
+calibration data generated by the market simulator. To estimate the
+market impact parameters, we perform a series of TWAP execu-
+tions with different target execution sizes and record the resulting
+IS. Let 𝑉(𝑛) 𝑖 denote the total executed quantity in calibration run 𝑖,
+and let 𝐼𝑆(𝑛) 𝑖 denote the corresponding realized IS. Under the linear
+impact assumption, the expected IS satisfies
+𝐼𝑆(𝑛) 𝑖
+𝑉(𝑛) 𝑖 =𝜂(𝑛)+𝛾(𝑛) 2 𝑉(𝑛) 𝑖 +𝜀𝑖, (30)
+where 𝜀𝑖 denotes the residual error. The coefficients𝛾(𝑛) and 𝜂(𝑛) are
+estimated by ordinary least squares (OLS). The volatility parameter
+𝜎(𝑛) is estimated from the variance of one-period mid-price returns
+obtained from baseline simulations without algorithmic execution.
+The arrival price 𝑃(𝑛) 0 is defined as the observed market price at the
+beginning of the validation period.
+Evaluation Settings. We compare the proposed cash-constrained
+optimization (Ours) with three benchmark strategies: time-weighted
+average price (TWAP), volume-weighted average price (VWAP), and
+an ablated variant without the proposed cash constraints (AC free),
+which corresponds to Eq. (6) with the cash constraints removed. AC
+free serves as an ablation of the proposed formulation, allowing us
+to isolate the contribution of the proposed cash constraints while
+keeping the optimization objective and all other settings identical.
+The remaining experimental settings are summarized in Table 2.
+Evaluation Metrics. We report two evaluation metrics: the peak
+cash drawdown, defined as the maximum cumulative cash deficit
+during execution normalized by the target buy notional, which
+measures cash feasibility throughout the execution process, and
+(d) 𝛽=0.5
+(a) 𝛽=0.1
+(c) 𝛽=0.3
+(b) 𝛽=0.2
+Figure 2: OE schedules under different cash constraint levels.
+The blue and orange bars represent the execution amounts of
+the buy and sell assets, respectively, at each execution period.
+The cash constraint is defined as ¯𝑐𝑘 = ¯𝑐0 +𝛽𝑘, where smaller
+values of𝛽 correspond to stricter cash constraints.
+combined IS, computed over the buy–sell portfolio, which evaluates
+the overall execution efficiency.
+6 Results
+6.1 RQ1: Effect of Cash Constraints on OE
+We first investigate how the proposed cash constraints influence
+the structure of the OE schedule. Figure 2 illustrates the OE sched-
+ules obtained under different levels of cash constraints. When the
+5
+
+=== page 6 ===
+Hashimoto et al.
+Table 2: Simulation settings for Experiment 2.
+Param. Description Value
+𝑁 # of assets 2
+(𝑄(1),𝑄(2)) Order sizes (×106) (0.5,-0.5), (0.75,-0.75),
+(1.0,-1.0), (1.5,-1.5),
+and (2.0,-2.0)
+𝑇 Execution horizon 7,200 sec.
+𝐾 Number of execution periods 20
+𝜏 Time interval 360 sec.
+𝜆 Risk-aversion parameter 0.50
+¯𝑐𝑘 Cash budget for Ours 0 for all𝑘
+- Simulator Simudyne Pulse v2.0
+- Calibration date 2025-09-15
+- Validation date 2025-10-14
+- Assets 1024.HK, 9888.HK,
+9999.HK
+- # of buy–sell pairs 3× 2 = 6
+- # of validation runs 300
+Solver Optimization solver SCS
+𝑉(𝑛) 𝑖 Target volume of TWAP simulations
+for the parameter estimations
+1,000, 5,000, 10,000,
+and 20,000 shares
+- # of calibration runs 3 for all𝑉(𝑛) 𝑖
+cash constraint is relatively loose (𝛽 = 0.5), the proposed method
+produces nearly symmetric buy and sell schedules that closely
+resemble the unconstrained AC solution. As the cash constraint
+becomes tighter, however, the execution schedules become increas-
+ingly asymmetric. In particular, buy orders are progressively post-
+poned, while sell orders are executed earlier in the trading hori-
+zon. Under the strictest constraint (𝛽 = 0.1), most sell orders are
+completed before substantial buy orders are initiated. This behav-
+ior arises because the optimization explicitly enforces the cash
+constraint at every trading period. Executing sell orders earlier
+generates cash inflows that, in expectation, finance subsequent
+buy orders, allowing the optimization to keep the expected cash
+process within budget throughout the execution horizon. Conse-
+quently, the proposed formulation automatically coordinates the
+timing of buy and sell executions according to the available cash
+budget, rather than simply optimizing each asset independently.
+These observations answer RQ1, demonstrating that explicit cash
+constraints fundamentally reshape the structure of the OE schedule
+by coordinating cash inflows and outflows across multiple assets.
+6.2 RQ2: Performance in Realistic Markets
+Table 3 summarizes the execution-model parameters estimated
+from the market simulator on the calibration date (2025-09-15).
+These parameters are subsequently fixed when constructing the OE
+schedules. As shown in Table 3, the estimated market impact and
+volatility parameters vary substantially across assets, representing
+different liquidity conditions. In particular, 9999.HK exhibits the
+largest estimated market impact coefficient, indicating a relatively
+illiquid market in which trades exert a stronger influence on prices.
+Figure 3 illustrates the price trajectories generated by calibrated
+Simudyne Pulse market simulator on the validation date (2025-
+10-14). It illustrates that the market simulator generates diverse
+price trajectories for each asset. Together, these results indicate that
+(c) 9999.HK
+(a) 1024.HK
+(b) 9888.HK
+Figure 3: Representative simulated mid-price trajectories
+generated by the calibrated Simudyne Pulse market simula-
+tor on the validation date (2025-10-14). Each line represents
+one Monte Carlo realization of the same market environ-
+ment. These simulated price paths are used exclusively for
+out-of-sample evaluation of execution strategies.
+Table 3: Market parameters estimated from the calibration
+simulation on 2025-09-15. The arrival price 𝑃(𝑛) 0 , permanent
+impact coefficient 𝛾(𝑛) , temporary impact coefficient 𝜂(𝑛) , and
+volatility 𝜎(𝑛) are estimated independently for each asset
+and subsequently used to construct the execution schedules
+evaluated on the validation date.
+Symbol 𝑃(𝑛) 0 𝛾(𝑛) 𝜂(𝑛) 𝜎(𝑛)
+1024.HK 81.275 1.523× 10−9 6.524× 10−4 1.666× 10−3
+9888.HK 123.350 8.650× 10−11 0.000 2.529× 10−3
+9999.HK 232.500 1.899× 10−8 1.038× 10−2 1.622× 10−3
+the proposed method is evaluated across heterogeneous market
+conditions with varying levels of liquidity and price volatility.
+Table 4 compares all execution strategies at the benchmark target
+execution volume, 𝑄(1) = 0.5×106 and 𝑄(2) =−0.5×106. Across all
+6
+
+=== page 7 ===
+Feasible Multi-Asset Optimal Execution under Cash Constraints
+Table 4: Performance comparison of execution strategies under realistic market simulations (𝑄(1) = 0.5 × 106,𝑄(2) =−0.5 × 106).
+Results are reported as mean with standard deviation in parentheses over 300 independent simulations. Peak Cash Drawdown
+measures the largest cumulative cash shortfall during execution, normalized by the buy notional. Combined IS denotes the IS
+of the buy–sell pair. Lower values indicate better performance for both metrics.
+Peak Cash Drawdown (%) Combined IS (bps)
+Pair (Buy/Sell) TWAP VWAP AC free Ours TWAP VWAP AC free Ours
+1024.HK / 9888.HK 0.00 (0.00) 0.00 (0.00) 59.73 (2.53) 1.20 (1.91) -13.08 (57.61) -13.23 (46.88) -13.06 (42.15) -13.20 (57.34)
+1024.HK / 9999.HK 0.00 (0.00) 0.00 (0.00) 88.45 (4.15) 0.67 (8.15) 17.39 (79.75) 20.41 (68.23) 8.52 (70.29) 8.23 (80.28)
+9888.HK / 1024.HK 10.16 (0.01) 10.99 (0.07) 60.27 (2.36) 2.01 (2.22) 9.26 (58.34) 10.61 (47.54) 12.32 (48.13) 10.13 (56.69)
+9888.HK / 9999.HK 0.00 (0.00) 1.11 (0.07) 57.06 (2.53) 0.03 (0.27) 17.72 (77.74) 27.71 (62.10) 13.90 (70.93) 11.77 (77.02)
+9999.HK / 1024.HK 16.67 (1.03) 19.52 (1.00) 70.03 (3.52) 11.81 (4.06) -20.39 (78.03) -27.47 (66.01) -8.44 (53.28) -11.34 (78.23)
+9999.HK / 9888.HK 10.51 (1.03) 10.80 (1.08) 69.43 (3.30) 9.98 (3.99) -41.98 (75.89) -46.92 (60.85) -30.84 (50.82) -33.74 (75.58)
+six ordered asset pairs, our method substantially reduces peak cash
+drawdown relative to AC free. While AC free incurs drawdowns
+ranging from 57.06% to 88.45%, the corresponding values for our
+method remain between 0.03% and 11.81%. The reduction is partic-
+ularly pronounced for the pairs involving 9999.HK, for which AC
+free requires the largest intermediate cash balances. This observa-
+tion is consistent with the relatively large estimated market-impact
+coefficient and low liquidity of 9999.HK reported in Table 3. These
+results show that incorporating the cash constraint directly into
+the optimization problem effectively limits intermediate funding
+requirements during execution.
+Importantly, the improvement in cash feasibility does not come
+at the expense of execution quality. At the benchmark volume, our
+method achieves a lower mean combined IS than AC free for every
+evaluated asset pair. The differences are relatively small for some
+pairs, but they consistently favor our method despite the substan-
+tial reduction in cash drawdown. TWAP and VWAP attain lower
+combined IS for some asset pairs, whereas our method performs
+best for others. Thus, our method does not uniformly dominate
+the rule-based baselines in terms of IS alone; rather, it provides a
+substantially improved balance between execution cost and cash
+feasibility through an explicit optimization framework.
+Figure 4 further demonstrates that Ours remains effective across
+different execution scales. The distribution of Ours is clearly shifted
+toward lower peak cash drawdown than that of AC free, and the
+two distributions are largely separated along the cash-drawdown
+dimension. This indicates that the reduction in intermediate cash
+requirements is robust across different execution volumes and asset
+pairs. In contrast, the combined-IS distributions partially overlap,
+reflecting variability across market conditions and simulation runs.
+Nevertheless, the proposed method achieves a lower combined
+IS on average while substantially reducing peak cash drawdown.
+These results suggest that explicitly incorporating cash constraints
+not only improves cash feasibility but also enhances execution
+performance over a wide range of execution conditions.
+One possible interpretation is that the cash constraint acts as an
+implicit regularizer on the execution schedule. By preventing ex-
+cessively cash-intensive schedules, it may also suppress aggressive
+trades that generate large market impact under the simulated mar-
+ket dynamics. Although the present results do not directly identify
+0 10 20 30 40 50 60 70
+Peak Cash Drawdown (%)
+40
+30
+20
+10
+0
+10
+20
+30
+40
+Combined IS (bps)
+AC free
+Ours
+0.5M HKD
+0.75M HKD
+1M HKD
+1.5M HKD
+2M HKD
+Figure 4: Joint distributions of peak cash drawdown and com-
+bined IS for Ours and AC free. Solid and dashed contours
+show KDEs for Ours and AC free, respectively, and markers
+indicate simulation outcomes. Results are aggregated over
+five execution volumes, six ordered asset pairs, and ten runs
+per setting (300 observations per method). Across all paired
+observations, the difference in combined IS (Ours − AC free)
+is−6.68 bps on average (standard deviation: 12.95).
+this mechanism, they show that cash feasibility and execution effi-
+ciency need not constitute a strict trade-off. Overall, these findings
+answer RQ2: explicitly incorporating cash constraints substantially
+reduces intermediate cash consumption while preserving, and on
+average improving, execution efficiency.
+7 Discussion
+Execution Feasibility as a New Perspective on OE. The classi-
+cal OE literature [3, 15, 19] focuses on minimizing IS while balancing
+market impact and execution risk, implicitly assuming sufficient
+capital throughout execution. Our results show that this assump-
+tion can be problematic in portfolio rebalancing with simultaneous
+buy and sell orders, where temporary cash shortages may arise
+even when the target portfolio is financially feasible.
+7
+
+=== page 8 ===
+Hashimoto et al.
+The proposed formulation extends the conventional notion of OE
+by explicitly incorporating cash feasibility in expectation, constrain-
+ing the expected cumulative cash consumption at every period of
+the execution horizon. Rather than solely minimizing execution
+costs, the optimization simultaneously determines an execution
+schedule whose expected capital deployment remains within budget
+throughout the trading horizon. The experimental results demon-
+strate that this additional consideration substantially reduces in-
+termediate funding requirements while preserving execution effi-
+ciency. These findings suggest that execution feasibility should be
+regarded as an important optimization objective alongside transac-
+tion cost and risk in practical multi-asset execution.
+Implications for Practical Portfolio Execution. An impor-
+tant property of the proposed formulation is that explicit cash
+constraints can be incorporated without sacrificing computational
+tractability. Although intertemporal cash constraints introduce tem-
+poral dependencies across assets through cumulative cash flows, the
+resulting optimization remains a convex QCQP under the standard
+linear market impact assumptions. Consequently, globally optimal
+schedules can be obtained using existing convex solvers without
+heuristic or black-box methods.
+This analytical formulation also offers practical advantages over
+purely data-driven approaches [9]. Since the cash constraints are
+modeled explicitly, practitioners can directly specify available cap-
+ital limits according to operational requirements while preserv-
+ing the interpretability of the resulting execution schedules. Such
+transparency is particularly desirable in institutional portfolio re-
+balancing, where execution decisions must often satisfy predefined
+funding and risk management policies.
+Limitations and Future Work. Several limitations remain to be
+addressed. First, the proposed framework adopts the classical linear
+AC market impact model. Although this assumption enables a con-
+vex analytical formulation, real financial markets exhibit nonlinear
+impact [5, 10, 21]. Nevertheless, we view the proposed framework
+as a theoretical benchmark. By providing the first convex formula-
+tion of multi-asset execution with intertemporal cash constraints, it
+establishes a reference point for future studies that extend the frame-
+work to more realistic market impact models. Second, the current
+formulation constrains the expected cumulative cash process rather
+than realized cash trajectories. Under stochastic price fluctuations,
+the realized cash consumption may temporarily exceed the pre-
+scribed budget even when the expectation satisfies the constraint.
+Incorporating probabilistic or robust cash constraints represents
+another promising extension. Finally, our empirical evaluation fo-
+cuses on two-asset portfolio rebalancing tasks using parameters
+calibrated from an agent-based market simulator. Although the
+optimization framework is applicable to an arbitrary number of as-
+sets, further validation on larger portfolios would provide stronger
+evidence of its practical effectiveness.
+8 Conclusion
+This paper introduced a cash-constrained formulation of multi-asset
+OE by extending the classical AC framework with intertemporal
+constraints on expected cash consumption. We showed that the
+resulting problem can be reformulated as a convex QCQP, allow-
+ing globally optimal schedules to be computed efficiently while
+constraining expected capital deployment throughout execution.
+Synthetic experiments showed that the proposed constraints funda-
+mentally reshape execution schedules by coordinating cash inflows
+and outflows across assets. Furthermore, out-of-sample evaluations
+using an agent-based market simulator showed that the proposed
+method substantially reduces peak cash drawdown while maintain-
+ing comparable IS under various market conditions. Our results
+suggest that execution feasibility should be regarded as a funda-
+mental objective alongside execution cost and risk. We hope the
+proposed formulation serves as a benchmark for future studies
+on feasibility-aware OE, including richer market impact models,
+stochastic cash constraints, and learning-based execution.
+References
+[1] Julia Ackermann, Thomas Kruse, and Mikhail Urusov. 2026. Multi-asset op-
+timal trade execution with stochastic cross-effects: An Obizhaeva-Wang-type
+framework. arXiv:2503.05594
+[2] Aurélien Alfonsi, Antje Fruth, and Alexander Schied. 2010. Optimal execution
+strategies in limit order books with general shape functions. Quantitative Finance
+10, 2 (2010), 143–157.
+[3] Robert Almgren and Neil Chriss. 2000. Optimal execution of portfolio transac-
+tions. Journal of Risk 3, 2 (2000), 5–39.
+[4] Robert F. Almgren. 2003. Optimal execution with nonlinear impact functions
+and trading-enhanced risk. Applied Mathematical Finance 10, 1 (2003), 1–18.
+[5] Jean-Philippe Bouchaud. 2010. Price Impact. John Wiley & Sons, Ltd.
+[6] Álvaro Cartea and Sebastian Jaimungal. 2015. Optimal execution with limit and
+market orders. Quantitative Finance 15, 8 (2015), 1279–1291.
+[7] Álvaro Cartea and Sebastian Jaimungal. 2016. Incorporating order-flow into
+optimal execution. Mathematics and Financial Economics 10, 3 (2016), 339–364.
+[8] Di Chen, Yada Zhu, Miao Liu, and Jianbo Li. 2022. Cost-efficient reinforce-
+ment learning for optimal trade execution on dynamic market environment. In
+Proceedings of the ACM International Conference on AI in Finance. 386–393.
+[9] Yuchen Fang, Zhenggang Tang, Kan Ren, Weiqing Liu, Li Zhao, Jiang Bian,
+Dongsheng Li, Weinan Zhang, Yong Yu, and Tie-Yan Liu. 2023. Learning multi-
+agent intention-aware communication for optimal multi-order execution in
+finance. In Proceedings of the ACM SIGKDD Conference on Knowledge Discovery
+and Data Mining. 4003–4012.
+[10] Jim Gatheral. 2010. No-dynamic-arbitrage and market impact. Quantitative
+Finance 10, 7 (2010), 749–759. doi:10.1080/14697680903373692
+[11] Jim Gatheral and Alexander Schied. 2013. Dynamical models of market impact
+and algorithms for order execution. Cambridge University Press, 579–602.
+[12] Ulrich Horst and Xiaonyu Xia. 2019. Multi-dimensional optimal trade execution
+under stochastic resilience. Finance and Stochastics 23, 4 (2019), 889–923.
+[13] Kang Li, Mihai Cucuringu, Leandro Sánchez-Betancourt, and Timon Willi. 2024.
+Mixtures of experts for scaling up neural networks in order execution. In Pro-
+ceedings of the ACM International Conference on AI in Finance. 669–676.
+[14] Siyu Lin and Peter A. Beling. 2020. An end-to-end optimal trade execution frame-
+work based on proximal policy optimization. In Proceedings of the International
+Joint Conference on Artificial Intelligence. 4548–4554.
+[15] Iacopo Mastromatteo, Michael Benzaquen, Zoltan Eisler, and Jean-Philippe
+Bouchaud. 2017. Trading lightly: Cross-impact and optimal portfolio execu-
+tion. arXiv:1702.03838
+[16] Brian Ning, Franco Ho Ting Lin, and Sebastian Jaimungal. 2021. Double deep
+q-learning for optimal execution. Applied Mathematical Finance 28, 4 (2021),
+361–380.
+[17] Anna A. Obizhaeva and Jiang Wang. 2013. Optimal trading strategy and sup-
+ply/demand dynamics. Journal of Financial Markets 16, 1 (2013), 1–32.
+[18] Ollie Olby, Andreea Bacalum, Rory Baggott, and Namid Stillman. 2025. Right
+place, right time: Market simulation-based RL for execution optimisation. In
+Proceedings of the ACM International Conference on AI in Finance. 898–905.
+[19] Alexander Schied, Torsten Schöneborn, and Michael Tehranchi. 2010. Optimal
+basket liquidation for CARA investors is deterministic. Applied Mathematical
+Finance 17, 6 (2010), 471–489.
+[20] Simudyne. 2026. Pulse: Synthetic market microstructure data from agent-based
+simulation. https://pulse.simudyne.com. Tick-level synthetic order book data
+generated by PulseABM, calibrated to real exchange microstructure.
+[21] Elia Zarinelli, Michele Treccani, J. Doyne Farmer, and Fabrizio Lillo. 2015. Beyond
+the square root: Evidence for logarithmic dependence of market impact on size
+and participation rate. Market Microstructure and Liquidity 1, 2 (2015), 1550004.
+8

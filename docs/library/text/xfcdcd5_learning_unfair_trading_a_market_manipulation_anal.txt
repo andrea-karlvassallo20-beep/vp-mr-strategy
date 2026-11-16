@@ -1,0 +1,1128 @@
+=== page 1 ===
+Learning Unfair Trading: a Market Manipulation Analysis From the
+Reinforcement Learning Perspective
+Enrique Mart´ınez-Miranda and Peter McBurney and Matthew J. Howard
+Department of Informatics
+King’s College London
+{enrique.martinez miranda,peter.mcburney,matthew.j.howard}@kcl.ac.uk
+Abstract
+Market manipulation is a strategy used by traders to
+alter the price of ﬁnancial securities. One type of ma-
+nipulation is based on the process of buying or selling
+assets by using several trading strategies, among them
+spooﬁng is a popular strategy and is considered illegal
+by market regulators. Some promising tools have been
+developed to detect manipulation, but cases can still be
+found in the markets. In this paper we model spooﬁng
+and pinging trading, two strategies that differ in the le-
+gal background but share the same elemental concept of
+market manipulation. We use a reinforcement learning
+framework within the full and partial observability of
+Markov decision processes and analyse the underlying
+behaviour of the manipulators by ﬁnding the causes of
+what encourages the traders to perform fraudulent ac-
+tivities. This reveals procedures to counter the problem
+that may be helpful to market regulators as our model
+predicts the activity of spoofers.
+1 Introduction
+Market microstructure is a branch of ﬁnance concerned with
+analysis of the trading process arising from the exchange of
+assets under a given set of rules (O’Hara 1998). In double
+auction markets, this exchange of assets is done when the
+buy and sell sides agree on the amount to pay/receive for the
+trade, but this agreement depends on the different strategies
+implemented by both sides. A trading strategy is by itself
+a plan of actions designed to achieve proﬁtable returns by
+buying or selling ﬁnancial assets (Pardo 2008).
+While trading strategies are meant to follow the well es-
+tablished rules of the markets, some traders prefer to misbe-
+have and take advantage of others by manipulating the price
+of the assets being traded. For instance, some traders can ma-
+nipulate by spreading false information to other market par-
+ticipants or by taking actions that may affect the perceived
+price (Allen and Gale 1992), just as the case of the strat-
+egy called pump and dump. Others, on the contrary, prefer
+to take actions directly involved in the exchange of the as-
+sets by artiﬁcially inﬂating or deﬂating the price in order to
+obtain proﬁts. Several manipulative strategies based on the
+trading process are well known in the ﬁnancial argot and
+Copyright c© 2015, Association for the Advancement of Artiﬁcial
+Intelligence (www.aaai.org). All rights reserved.
+have names like ramping, wash trading, quote stufﬁng, lay-
+ering, spooﬁng, among others. Spooﬁng is one of the most
+popular strategies that uses non-bona ﬁde orders to improve
+the price and is considered illegal by market regulators (Ak-
+tas 2013). A similar strategy used by high-frequency traders
+(HFTs) is called pinging where HFTs place orders without
+the intention of execution, but to ﬁnd liquidity not displayed
+in the order book (where all buy and sell orders are listed
+in double auction markets), and has caused controversy as it
+can be viewed as a manipulative strategy (Scopino 2015).
+Studies found in the literature that analyse the problem
+of market manipulation have mainly focused on the devel-
+opment of methods for detection. However, there has been
+little analysis on the behaviour of market manipulators, an
+area that may reveal the cause of why these economic agents
+take such actions, thus examining this might be helpful for
+market regulators to develop counter-measures that may dis-
+courage or preclude fraudulent strategies
+We propose to model spooﬁng and pinging strategies in
+the context of portfolio growth maximisation, i.e., the ex-
+pected capital appreciation over time of an investment ac-
+count. We use a reinforcement learning agent that simu-
+lates the behaviour of the spooﬁng trader in the context of
+Markov decision processes (MDP), while a partially observ-
+able MDP is used to model the pinging trader since the latter
+involves hidden state in the order book. We use a ﬁxed en-
+vironment where transitions and rewards do not change in
+time, but the agent has the option to transition between “two
+different” state representations that, both combined, are the
+full state representation of the environment that simulates
+the manipulation process.
+Our contribution is to show how these manipulative trad-
+ing strategies can be modelled in a (PO)MDP framework
+and how this reveals the causes of market manipulation in
+terms of the incentives present in the market, and the dy-
+namics of how it operates. From this, we aim to examine
+two main questions: i) can spooﬁng and pinging modelled
+by and MDP and POMDP respectively, be optimal strategies
+when compared to honest behavior while seeking for growth
+maximisation? ii) If the manipulative strategies are optimal,
+which mechanisms can market regulators implement in or-
+der to discourage or disincent traders taking such behaviour?
+The results of this yield recommendations to market regula-
+tors as to how to stop manipulative behaviour.
+arXiv:1511.00740v1  [q-fin.TR]  2 Nov 2015
+
+=== page 2 ===
+2 Related Work
+Research on price manipulation has been done using several
+approaches. Some authors have developed analytical models
+with the intention to investigate manipulative strategies per-
+formed by large traders under the hypothesis of stochastic
+economies with ﬁnite/inﬁnite horizon and time dependent
+price processes (Jarrow 1992). Others take a continuous-
+time economy with risky and risk free assets and different
+agents involved in a game where predatory trading (trading
+style that takes advantage of other investors’ needs) leads to
+price overshooting and ampliﬁes the selling cost and default
+risk of large traders (Brunnermeier and Pederse 2005). Oth-
+ers consider the problem where manipulative uninformed
+traders can proﬁt by selling a given ﬁrm’s stock, thus pro-
+viding a starting point to restrict short selling (when traders
+sell a security not owned) (Goldstein and Guembel 2008).
+Other researchers have focused in the application of data
+driven approaches with the aim to present empirical evi-
+dence of stock price manipulation under the assumption of
+the presence of arbitrageurs or information seekers acting ra-
+tionally (Aggarwal and Wu 2006) or by ﬁnding unusual pat-
+terns of trading activities and systematic proﬁtability based
+on market timing and liquidity performed by brokers in
+emerging markets (Khwaja and Mian 2005). An agency-
+based model is tested with empirical data where brokers ma-
+nipulate the closing price to inﬂuence his customer’s percep-
+tion about his performance (Hillion and Suominen 2004).
+Also, behavioural stances have been mixed with theoret-
+ical and data driven approaches. An analytical framework
+is developed that describes trade-based manipulation as an
+intentional act to produce changes in the price and obtain a
+proﬁt, so one could clarify what does and does not constitute
+manipulation (Ledgerwood and Carpenter 2012). Evidence
+of trade-based manipulation and its effects on investor be-
+haviour and market efﬁciency is provided, where the manip-
+ulator pretends to act as an informative trader that may affect
+the reaction of other investors (Kong and Wang 2014).
+Furthermore, discriminative models are intended to de-
+tect market manipulation based on empirical data. By us-
+ing economic and statistical analysis it is possible to detect
+manipulation ex post, suggesting that the existence of reg-
+ulatory framework may be inefﬁcient (Pirrong 2004). Ma-
+chine learning techniques have also been applied for detec-
+tion of manipulation. Based on trading data, some authors
+suggest that Artiﬁcial Neural Networks and Support Vec-
+tor Machines are effective techniques to detect manipula-
+tion ( ¨Oˇg¨ut, Doˇganay, and Aktas¸ 2009). Others suggest that a
+method called “hidden Markov model with abnormal states”
+is capable to model and detect price manipulation patterns,
+but further calibration is necessary (Cao et al. 2013). Data
+mining methods for detecting intraday price manipulation
+have been used to classify and identify patterns linked to
+market manipulation at different time scales, but further re-
+search is needed to address the challenge on detecting the
+different forms of manipulation (D´ıaz-Sol´ıs, Theodoulidis,
+and Sampaio 2011). Furthermore, Na¨ıve Bayes is a good
+classiﬁer for predicting potential trades associated to mar-
+ket manipulation (Golmohammadi, Zaiane, and D´ıaz 2014).
+For the case of spooﬁng trading, detection can be done with
+the implementation of supervised learning algorithms (Cao
+et al. 2014), or can be identiﬁed by modelling trading deci-
+sions as MDPs and using Apprenticeship Learning to learn
+the reward function (Yang et al. 2012).
+Though research is extensive in the area of market ma-
+nipulation, few develop generative models of what encour-
+ages these economic agents to follow the disruptive strate-
+gies. Furthermore, few of them provide recommendations
+to regulatory entities and/or ﬁrms (Rossi et al. 2015) to en-
+courage traders to stop this harmful behaviour. Different to
+the discriminative models that are intended to distinguish
+the manipulative behaviour from other strategies, we use the
+(PO)MDP approach to model spooﬁng/pinging as it predicts
+the behavior of manipulators in terms of the market condi-
+tions, thus providing a powerful tool that can be used by
+market regulators to counter the manipulative strategies.
+3 Problem Formulation
+3.1 Trading in a Bull Market
+In this work we are focused on modelling two trade-based
+market manipulation strategies as follows. Suppose there is
+a trader managing an investment portfolio in behalf of a bro-
+kerage ﬁrm and has the objective to get high trading proﬁts
+that may produce portfolio growth in the short/medium term.
+Suppose the agent is trading in a futures market and the port-
+folio consists of two different contracts, α and β, with a mar-
+ket full of optimism so prices are rising (a situation known
+as a bull market). Mathematically, the capital of the invest-
+ment account at given market tick t ∈ [0,T ] (where a tick
+represents the execution of a new trade in the market, either
+from the trader or any other participant) can be written as
+It = at + ct, (1)
+where at = aα t + aβ t is the capital associated to the mar-
+ket value of the contracts α and β, and ct is the cash to
+be used for future purchases of more contracts. The vari-
+able at changes at every tick since the prices of the con-
+tracts are following a trend, while ct changes due to cash
+inﬂows/outﬂows (by the sale/purchase of contracts). The net
+proﬁt of the investment over a tick window [0,T ] is
+R = GT −
+T∑
+t=0
+ζt, (2)
+where GT = IT −I0 is the investment growth, and ζt are
+the direct transaction costs associated to the trading of the
+contracts (such as exchange and government fees).
+Under bull market conditions, one way in which the trader
+can proﬁt from the portfolio’s growth is with a simple buy
+and hold strategy, an almost risk-free strategy whereby she
+purchases contracts α and β and simply waits, in the long
+term, for the prices to rise before selling for a proﬁt. How-
+ever, the trader may, alternatively, be aiming for a higher tar-
+get growth G∗ T in the short/medium term, requiring a more
+active strategy than the “buy and hold”, i.e., buying and sell-
+ing contracts α and β, subject to the transaction costs ζt.
+For this, the trader can behave in several different ways.
+First, the trader may trade honestly, i.e., following all the
+
+=== page 3 ===
+market rules, by buying more contracts or selling them when
+she believes is proﬁtable. In this way, the invested capital
+may appreciate and produce growth if such proﬁts are larger
+than the direct cost associated to the trading process ζt. Al-
+ternatively, she may act as a manipulative trader to control
+the price of the contracts in order to accelerate the growth
+process and quickly reach the desired G∗ T . In either case,
+following the transaction, the trader ends up with a different
+proportion of the contracts α and β, rebalancing the quan-
+tities at and ct and thereby ﬁnds herself in a new level of
+growth Gt at a given tick t.
+This process is illustrated in Fig. 1 where the three strate-
+gies are simulated on closing prices determined by the mar-
+ket indexes S&P 500 and NASDAQ Composite for contracts
+α and β, respectively, in the period February 27, 1995 to
+May 5, 1995. Initially, the trader has 1,000 contracts in both
+assets and the account’s capital value is 10 million monetary
+units. While the market evolves, the trader takes actions rep-
+resented by the ﬁlled (honest)/non-ﬁlled (manipulation) tri-
+angles, reaching new levels of proﬁt determined by changes
+in the growth Gt and the payment of transaction costs, ζt.
+In our simulation, the manipulative strategy has the best per-
+formance, giving a signal that price manipulation is more
+effective while maximising investment growth.
+0 20 40 60 80 100
+1
+1.02
+1.04
+1.06
+1.08
+·107
+ticks
+Profit
+Buy&Hold Honest Manipulation
+Figure 1: A simulation of proﬁts gained from different trad-
+ing strategies during a bull market period.
+However, transitioning in the different levels of growth
+Gt by trading is possible only when a trade is executed. In
+double auction markets this process can be performed when
+the buying and selling prices match, so the exchange of as-
+sets can proceed. This is known as liquidity and depends on
+the degree of trading activity implemented by other market
+participants. In our model, honest actions taken by the trader
+can lead to no change in the level of growth Gt if liquidity
+is poor in the contract to trade, but a manipulator can take
+advantage of this situation by placing a large order that may
+gain the interest of other market participants and start a pro-
+cess of price improvement.
+An illustrative example of growth maximisation is pro-
+vided in Fig. 2, where we changed the notation of Gt to
+st, t ∈ [0, 4], and G∗ T to s∗. There, the four growth levels
+correspond to holding a portfolio containing different pro-
+portions of contracts, for example, in s1 the trader holds
+one contract of type α and one contract β. If the trader
+choses to buy a second α contract, i.e., action “Buy α” (↑),
+she transitions to growth level s2 – holding two α con-
+tracts and one β contract by paying the associated trans-
+action costs ζ1. Similarly, if she then chooses to sell the
+second α contract, i.e., action “Sell α” (↓), she will re-
+turn to growth level s1, now paying ζ2 costs. These actions
+deﬁne honest actions for the α contracts, with homologue
+actions for contract β (“Buy β” (→) and “Sell β” (←)).
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+s1
+s1
+s2
+s2
+s3
+s3
+s4
+s4
+s∗
+s∗
+s5
+s1
+s6
+s2
+s7
+s5
+s8
+s4
+s′∗
+s∗
+Figure 10: Gridworld
+Sell α
+Buy α
+Sell
+β
+Buy
+β
+(a) Honest trading actions (Ah).
+Buy α (manipulation)
+Sell α (manipulation)
+Buy
+β
+(manipulation)
+Sell
+β
+(manipulation)
+(b) Manipulative actions (As).
+Figure 11: Trading actions.
+s2
+s1 s3
+s∗
+s4
+Figure 12: Gridworld
+6
+Figure 2:
+Idealised rep-
+resentation
+illustrating the
+different levels
+of st while
+maximising
+investment
+growth.
+Additionally, while in s2 taking actions
+“Buy α” (↑) and “Sell β” (←), result in
+no change in the level of growth. This
+is due to orders placed by the trader that
+were never ﬁlled because the price was
+too high/low while trying to sell/buy the
+β/α contract, a process that happens in all
+of the edges of the grid. We are assuming
+the trader only places limit orders, i.e., or-
+ders with a ﬁxed volume and price listed
+in the order book according to the market
+rules, so the agent’s orders will be ﬁlled
+only when a counterpart exists, if not, then
+the order is not executed and no transac-
+tion costs ζt are added. Similarly, for ac-
+tion “Buy β” (→) the trader faces the problem of poor liq-
+uidity in the asset. We associate this obstacle (poor liquid-
+ity) for the trader to the black square in the representation of
+Fig. 2, with the option for the trader to try to manipulate the
+asset’s price as a way to incentivize liquidity.
+3.2 Price Manipulation by Spooﬁng
+Spooﬁng is an illegal trading strategy used by traders in-
+tended to manipulate the price of a given asset by placing
+large orders (spooﬁng orders) without the intention of exe-
+cution, but to give misleading information to other market
+participants in terms of the asset’s supply and demand, thus
+producing a change in the price (Lee, Eom, and Park 2013).
+Once the price is affected, the trader cancels the spooﬁng
+order and places the real order on the opposite trading side.
+In our model, spooﬁng is illustrated as follows. Consider
+the case that, by taking spooﬁng actions, the trader can over-
+turn the lack of liquidity in the asset β and take advantage
+of improved prices. In Fig. 3, this corresponds to the ob-
+stacle switching from the top centre bin to the bottom cen-
+tre bin, showing the effect of manipulation while purchas-
+ing more contracts (the obstacle could switch to other cells,
+but it will not allow to analyse the effects of manipulation in
+terms of solving an optimisation problem as explained in the
+next sections). This can yield gains for the trader, for exam-
+ple, starting in s2, the trader can take action “Manipulative
+Buy β (⇒)” – i.e., use spooﬁng to buy β, by placing a large
+spooﬁng sell order for β, cancelling it, and then buying β at
+an improved price. Once the obstacle to switch to the bottom
+bin, the agent ﬁnds herself in s7, closer to s′∗.
+The two representations in Fig. 3 have the same levels
+of growth but with different conditions associated to market
+liquidity, thus giving an idea of the effects of price manip-
+ulation. This effect is related to market impact, where most
+of honest traders will avoid it as it represents indirect ex-
+tra costs, but for a manipulator like a spoofer it represents
+proﬁts that may accelerate the portfolio’s growth.
+
+=== page 4 ===
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+s1
+s1
+s2
+s2
+s3
+s3
+s4
+s4
+s∗
+s∗
+s5
+s1
+s6
+s2
+s7
+s5
+s8
+s4
+s′∗
+s∗
+Figure 10: Gridworld
+Sell α
+Buy α
+Sell
+β
+Buy
+β
+(a) Honest trading actions (Ah).
+Buy α (manipulation)
+Sell α (manipulation)
+Buy
+β
+(manipulation)
+Sell
+β
+(manipulation)
+(b) Manipulative actions (As).
+Figure 11: Trading actions.
+s2
+s1 s3
+s∗
+s4
+Figure 12: Gridworld
+s2
+s1 s3
+s∗
+s4
+s6
+s5
+s7 s′∗
+s8
+Figure 13: Gridworld
+s2
+s2
+s1
+s1
+s3
+s3
+s4
+s∗
+s4
+s∗
+s6
+s6
+s5
+s5
+s7
+s5
+s′∗
+s∗
+s4
+s8
+Figure 14: Gridworld
+6
+Figure 3: Representation illustrating the effect of the spoof-
+ing in the process of investment growth maximisation.
+3.3 Spooﬁng as a Markov Decision Process
+A natural model of the scenario described in §3.2, is that
+of a Markov Decision Process (MDP) (Nevmyvaka, Feng,
+and Kearns 2006; Yang et al. 2012). In general, an MDP is
+deﬁned by the tuple {S,A,T,R}, where S and A are sets
+of states and actions, respectively (s ∈ S and a ∈ A), R
+is the set of rewards (r ∈ R), and T is a set of transition
+probabilities ({P (s′|s,a)}∈T where P (s′|s,a) represents
+the probability of transitioning to state s′ from s after action
+a). Actions are taken according to the policy π(s,a) that
+deﬁnes the probability of taking action a in state s.
+Considering the growth st as the state variable, the prob-
+lem for the trader is to ﬁnd the best strategy for buying and
+selling contracts α and β, subject to the transaction costs
+ζt, in order to achieve the target short/medium term growth
+s∗. The complete set of states for spooﬁng is determined for
+the state representation in Fig. 3 as it captures the differ-
+ent levels of growth after taking any of the actions. These
+actions are associated to the process of buying and selling
+contracts and are used by the trader to navigate in/within the
+state space of Fig. 3, being the honest action set determined
+by A = {↑,↓,←,→} and similarly the set of manipulative
+actions A = {⇑,⇓,⇐,⇒} (“Manipulative Buy α”, “Manip-
+ulative Sell α”, “Manipulative Sell β”, “Manipulative Buy
+β”, respectively), and the “do nothing” action for the “buy
+and hold” A = {◦}, with A = A ∪ A ∪A. The rewards are
+represented by the transaction costs ζt that may depend on
+the action taken and the level of growth the trader is located
+at. The transition probabilities are linked to the degree of liq-
+uidity the contracts α and β have at a given tick t, so a good
+degree of liquidity will help the trader’s orders to be ﬁlled
+and transition to a new level of growth, while low liquidity
+will restrict these transitions.
+3.4 Price Manipulation by Pinging
+Pinging is similar to spooﬁng as is deﬁned as a limit or-
+der placed inside the bid-ask spread (the price difference
+between the best buy and sell quotes listed in the order
+book) without the intention of execution, but cancelled al-
+most instantly (Scopino 2015). This strategy is implemented
+by HFTs by exploiting the speed advantage with the inten-
+tion to ping the market in search of hidden liquidity, i.e., or-
+ders that are not displayed in the order book as is the case of
+large orders placed by institutional investors. This strategy
+has a more complex succession of events – submit ping or-
+ders and almost instantly cancel them, detect hidden liquid-
+ity, take the liquidity on the trading side pursued by the large
+investor and then place the real orders at improved prices.
+In order to make pinging a successful strategy, HFTs must
+be able to ﬁnd hidden liquidity, a process that depends on
+the ping orders that help to create a belief on the existence
+of such liquidity. However, it is well known that investors
+prefer to place large orders in dark pools, i.e., private venues
+where the exchange of assets is not visible to the general
+public, so no one can see who’s buying/selling, but whose
+prices depends on the current market prices of well stab-
+lished markets. This gives the HFT uncertainty about the
+existence of hidden liquidity as it is not displayed in the or-
+der book. In order to simulate this in the representation of
+Fig. 4, we introduce the concept of observations that guides
+the trader on the actions to take while being on a given state.
+For example, having observation o2 while in level s2 means
+that there is hidden liquidity (the obstacle) in the sell side
+of the β contracts, so the HFT can produce proﬁts by taking
+control over the prices in the regulated market while trading
+in the dark pool against the hidden liquidity. However, hav-
+ing the same observation in level s6 means that such liquid-
+ity does not exists and taking the manipulative action may
+produce losses.
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+s1
+s1
+s2
+s2
+s3
+s3
+s4
+s4
+s∗
+s∗
+s5
+s1
+s6
+s2
+s7
+s5
+s8
+s4
+s′∗
+s∗
+Figure 10: Gridworld
+Sell α
+Buy α
+Sell
+β
+Buy
+β
+(a) Honest trading actions (Ah).
+Buy α (manipulation)
+Sell α (manipulation)
+Buy
+β
+(manipulation)
+Sell
+β
+(manipulation)
+(b) Manipulative actions (As).
+Figure 11: Trading actions.
+s2
+s1 s3
+s∗
+s4
+Figure 12: Gridworld
+s2
+s1 s3
+s∗
+s4
+s6
+s5
+s7 s′∗
+s8
+Figure 13: Gridworld
+s2
+o2
+s1
+o1
+s3
+o3
+s∗
+o∗
+s4
+o4
+s6
+o2
+s5
+o1
+s7
+o5
+s′∗
+o∗
+o4
+s8
+Figure 14: Gridworld
+6
+Figure 4: Representation that illustrates pinging trading
+while trying to maximise the growth of the investment.
+3.5 Pinging as a Partially Observable Markov
+Decision Process
+Pinging, as described in §3.4, can be modelled with
+a Partially Observable Markov Decision Process
+(POMDP) (Baffa and Ciarlini 2010). In general, the
+POMDP is deﬁned by the tuple {S,A,T,R,O, Ω}, that is,
+the MDP tuple is extended with {O, Ω}, where O represents
+a set of observations (o ∈O) and Ω is a set of observation
+probabilities given states s and actions r ({O(o|s,r)}).
+For the POMDP, actions are taken according to the agent’s
+belief of being on a given state and is calculated according
+to the observations.
+Once more, every time a trader’s order is ﬁlled then the
+correspondent transaction costs must be paid. Liquidity is
+again the one that facilitates the trading of contracts α and
+β, so the trader can transition to the different levels of growth
+after the rebalance of capital. The observations represent the
+trader’s detection of hidden liquidity (the obstacle) that may
+help or be counterproductive while seeking proﬁts.
+4 Methodology
+In both models, the trader has the objective to reach the
+goal s∗ that represents the maximum investment growth and,
+since this is a bull market, the highest proﬁt comes from hav-
+ing the most contracts, a process that can be performed by
+navigating within the state representations (the opposite also
+applies while in a bear market [when pessimism persist and
+prices tend to fall], where the trader may prefer to sell con-
+tracts). We have chosen the state representations as in Fig. 3
+and Fig. 4 as both model a single agent’s behavior of acquir-
+ing contracts during a bull market period, with the option
+
+=== page 5 ===
+of taking either honest or manipulative actions as an “opti-
+mal” behavior. Other grids with a more complex structure
+may also reproduce optimality of trading strategies, but ma-
+nipulative behavior may not emerge as an “optimal” action
+according to the simulated market conditions, thus eliminat-
+ing the core of the analysis we present in this paper.
+Regardless of whether manipulative trading is permitted
+or not, the best sequence of trading actions for the agent (op-
+timal policy) can be determined in a straightforward manner
+through, for example, reinforcement learning. In this paper,
+for the MDP model this is achieved through simple value
+iteration (Sutton and Barto 1998) to ﬁnd the optimal value
+function
+Vπ∗ (s) = max
+a∈A
+[
+R(s,a) + γ
+∑
+s′∈S
+P (s′|s,a)V (s′)
+]
+, (3)
+where 0 < γ < is the discount factor. The POMDP for-
+malism is intended to model states not fully observable, ex-
+plaining why an observation function is needed to solve the
+problem. The observation function, Ω(a,s,o), is the prob-
+ability of making observation o from state s after action
+a (Kaelbling, Littman, and Cassandra 1998). For POMDP’s
+the solution is to ﬁnd optimal policies with actions that max-
+imises the value function. Based on the agent’s current be-
+liefs about the state (growth level), this value function can
+be represented as a system of simultaneous equations as
+V∗(b) = max
+a∈A
+[
+ρ(b,a) + γ
+∑
+b′∈B
+τ(b,a,b′)V∗(b′)
+]
+, (4)
+where b ∈ B is a belief state, ρ(b,a) = ∑ s∈Sb(s)R(s,a)
+are the expected rewards for the belief states; τ(b,a,b′) =∑
+{o∈O|b=b′}P (o|a,b), the state transition function.
+The optimal value function considers the potential re-
+wards of actions taken in the future, so it captures the opti-
+mal actions that generate the most of rewards over the long-
+term. This argument enables us to examine the questions es-
+tablished at the end of §1 by analising the optimal actions
+in the (PO)MDP model ultimately determined by two fac-
+tors: the reward and the transition functions. Whether ma-
+nipulative strategies are optimal, by expanding the idea of
+the reward function (transaction costs) and adding the no-
+tion of “high ﬁnes/ﬁnancial penalties” imposed by market
+regulators, we argue this will encourage traders to stop the
+misbehavior and play in a fair way. Additionally, we believe
+that adding uncertainty to the effect of manipulation over
+liquidity may represent another cause to discourage abusive
+behavior and promote more efﬁcient markets.
+5 Experiments
+In this section we present a simulation on the proﬁtability of
+the three strategies described in §3 and the optimal actions
+in the (PO)MDP model in terms of portfolio growth optimi-
+sation.
+5.1 Simulation
+First, we simulate the “buy and hold”, honest and spooﬁng
+strategies during bull market periods, by taking market in-
+dexes S&P 500 and NASDAQ Composite as the contracts
+Table 1: Proﬁtability simulated under a bull market.
+Strategy Avg. proﬁt (%) Std. dev.
+Buy and Hold 5.83% 0.041925
+Honest 6.85% 0.059576
+Spooﬁng 7.68% 0.059576
+α and β, respectively. We use closing prices for periods of
+92 days, simulating a short term to produce proﬁts. Table 1
+shows the results of the simulation and we see that, in aver-
+age, spooﬁng outperforms the other strategies, a result that
+was produced by the increase of growth after taking manip-
+ulative actions. Honest trading is the second best strategy,
+beating the “buy and hold” as the later has good perfor-
+mance in the long term. The next step is to analyse at which
+point the optimality of manipulative actions appears in the
+(PO)MDP models described in previous sections.
+5.2 MDP Model for Spooﬁng
+i. Is spooﬁng an optimal strategy?
+Here we demonstrate whether spooﬁng occurs according to
+the model described in §3.3 and, if it occurs, what are the
+factors that encourages it. First, we try to model a market
+where all participants play under the same conditions – all
+strategies pay the same transaction costs, with the trader’s
+actions outcome totally deterministic.
+As a baseline, all honest actions in direction of the edge of
+any of the states have zero costs and make the agent bounce
+back to the same state. The same for manipulative actions,
+except that the obstacle switches its position (thus changing
+representation); otherwise, manipulative actions costs −1 in
+all states. Transitioning within the different states costs −1
+and colliding against the obstacle has 0/−1 costs for all hon-
+est/ manipulative actions. The terminal states, s∗ and s′∗
+have a reward of +1 meaning the trader has reached the de-
+sired growth state. The “do nothing” (◦) action has zero costs
+in all states, but the agent cannot transition. All transitions
+are deterministic, meaning that P (s′|s,a) = 1, for all s,a.
+We set γ = 0.95 and solve equation (3) to ﬁnd the optimal
+actions in the MDP model. Table 2 shows the results for the
+baseline and we see that spooﬁng do occur in most of the
+states, sharing optimality with honest actions. The results
+reveal that while trading under the same conditions in terms
+of transaction costs, spooﬁng can be exploited by traders in
+order to gain proﬁts and reach the desired level of growth.
+ii. Adding ﬁnancial penalties to spooﬁng
+Now, we try to encourage the trader to behave honestly by
+simulating market regulators imposing ﬁnes/ﬁnancial penal-
+ties to spoofers. For this, in the baseline described in §5.2.i.
+we change the reward function and increase the costs to all
+manipulative actions in all states up to −4.53 and use the
+same value for γ to solve (3).
+Once more, Table 2 shows the results of this setup and the
+only optimal actions are those associated to honest trading.
+There’s a clear difference between the two market condi-
+tions from the regulatory point of view, one that considers a
+free-ﬁne market (baseline) and the other with ﬁnes imposed
+to manipulators. For example, in the baseline starting from
+
+=== page 6 ===
+Table 2: Optimal actions for the MDP model under different
+conditions of the reward and transition functions.
+State Baseline Adding Adding uncertainty on liquidity ﬁnes 50% vs. 50% 10% vs. 90%
+s1 ↑,→,⇑ → ⇒ ⇒
+s2 ⇒ ↓ ⇑,⇐ ↓
+s3 →,⇑,⇒ → →,⇒ →,⇒
+s4 ↑,⇑ ↑ ↑,⇑ ↑,⇑
+s5 ↑,⇑,⇒ ↑ ↑ ↑
+s6 → → → ⇒
+s7 →,⇒ → →,⇒ →,⇒
+s8 ↑,⇑ ↑ ↑,⇑ ↑,⇑
+state s2 means for the spoofer takes only two steps to reach
+s∗ (⇒ in s2; ⇒ in s7), while after imposing ﬁnes a honest
+trader will take four steps (↓ in s2; → in s1; → in s3; and ↑
+in s4) to reach the same level of growth.
+iii. Adding uncertainty to liquidity
+A second attempt to stop the spooﬁng behavior is by pro-
+viding uncertainty to the effects of manipulation over liq-
+uidity. This can be done by taking the baseline described in
+§5.2.i. and changing the transition function for all manipu-
+lative actions in all states. We take two different measures
+of uncertainty: a 50%/50%–10%/90% chance for the obsta-
+cle to switch/stagnates, with the aim to see which of these
+measures eliminates spooﬁng.
+We take the same value for γ and solve (3). Table 2 shows
+the results in this new setup and we conclude that imple-
+menting mechanism that somehow take control over liquid-
+ity are not as effective as applying ﬁnes to manipulators.
+Spooﬁng still occurs despite the effects over liquidity are
+vague. However, we must notice that in both measures of
+uncertainty, almost all the optimal actions (including spoof-
+ing actions) are in the same direction of honest actions when
+adding ﬁnes to spoofers, meaning that the effect over liquid-
+ity is vague precisely because liquidity already exists in the
+market, a consistent result with our model described in §3.1.
+5.3 POMDP Model for Pinging
+i. Is pinging an optimal strategy?
+Here we demonstrate whether pinging emerges as an op-
+timal strategy while maximising growth. First, we use the
+same baseline as in §5.2.i. in terms of rewards and transitions
+and the observations shown in Fig. 4. We set γ = 0.95 and
+solve (4). Table 3 shows the results for the baseline in the
+POMDP model, where pinging is the optimal action in all
+observable states under equal conditions in terms of transac-
+tion costs. Honest behavior is optimal only in observed state
+o2, meaning that no matter the HFT actually observes (de-
+tects) the hidden liquidity, she will take proﬁts from other
+investors that do not necessarily place large orders.
+ii. Increasing transaction costs to pinging
+We want to discourage HFTs to take pinging by changing
+parameters that may inﬂuence trader’s decisions. As pinging
+is not considered illegal, we take the changes in the reward
+function equivalent to increasing the direct transaction costs
+associated to pinging. We change the reward function for
+Table 3: Optimal actions for the POMDP model under dif-
+ferent conditions of the reward and transition functions.
+Observed Baseline Increase Adding uncertainty on liquidity State transaction costs 50% vs. 50% 10% vs. 90%
+o1 ⇑ →, ↑ ↑ ↑, ⇒
+o2 ⇒, → →, ↓ →, ⇒ →, ⇒, ↓
+o3 ⇑ → → →
+o4 ⇑ ↑ ↑ ↑
+o5 ⇒ → → →
+the POMDP model in the baseline considered in §5.3.i. and
+increase the costs to all pinging actions up to −4.91 in all
+states. We set γ = 0.95 and solve (4).
+Table 3 shows the results for these changes and we see that,
+under the new conditions pinging is no longer optimal as is
+was in the baseline in §5.3.i., and only honest actions can be
+taken by the trader. This means that the core of the business
+related to pinging is no longer proﬁtable because of the high
+costs that must be paid to the correspondent parties – it may
+be the case that pinging produce proﬁts, but not large enough
+to cover the transaction costs.
+iii. Adding uncertainty to liquidity
+Finally, a second attempt to stop pinging trading is by chang-
+ing the transition function, a mechanism that applies uncer-
+tainty to the potential effects of pinging over market liquid-
+ity. We take the baseline as in §5.3.i. and the same transi-
+tions described in §5.2.iii.. We set γ = 0.95 and solve (4).
+Once more, Table 3 shows the results of these changes and
+we see that, under mechanism that provide uncertainty to the
+effect of pinging trades over liquidity, pinging is still an op-
+timal action in some of the observed states, showing that is
+more effective to increase the transaction costs as shown in
+§5.3.ii., a similar result as in spooﬁng.
+6 Conclusions
+The results from the (PO)MDP models show they can pre-
+dict behaviours, and both the manipulative and honest trad-
+ing can co-exist in a regulated market where all participants
+have the same direct costs. We found that both spooﬁng
+and pinging trading are optimal investment strategies while
+traders try to maximise the investment growth, but market
+regulators can discourage the use of these strategies by im-
+plementing mechanism over market liquidity, and this en-
+forcement will be more efﬁcient if ﬁnes are added (for spoof-
+ing) or by increasing the direct transaction costs (pinging).
+However, our model works on bull market conditions and
+we expect to ﬁt on bear markets if we change the side of
+the trading actions. Other conditions where no trends exists
+may produce incentives for manipulation as a way to move
+the market. Furthermore, in pinging HFTs have the option
+to avoid ping orders and analyse the predictability of the as-
+set’s order ﬂow with the goal to infer the existence of hidden
+liquidity, thus saving direct transaction costs.
+Further research can be focused on applying the models in
+real market data and more complex portfolios, and verify the
+effectiveness of the recommendations provided to disincent
+manipulation performed by spooﬁng/pinging traders.
+
+=== page 7 ===
+References
+[Aggarwal and Wu 2006] Aggarwal, R., and Wu, G. 2006.
+Stock market manipulations. The Journal of Business
+79(4):1915–1954.
+[Aktas 2013] Aktas, D. D. 2013. Spooﬁng. Review of Bank-
+ing and Financial Law 33(89):89–98.
+[Allen and Gale 1992] Allen, F., and Gale, D. 1992. Stock-
+price manipulation. Review of Financial Studies 5(3):503–
+529.
+[Baffa and Ciarlini 2010] Baffa, A. C. E., and Ciarlini,
+A. E. M. 2010. Modeling POMDPs for generating and simu-
+lating stock investment policies. In Proceedings of the 2010
+ACM Symposium on Applied Computing, 2394–2399. ACM.
+[Brunnermeier and Pederse 2005] Brunnermeier, M. K., and
+Pederse, L. H. 2005. Predatory trading. The Journal of
+Finance 60(4):1825–1863.
+[Cao et al. 2013] Cao, Y.; Li, Y.; Coleman, S.; Belatreche,
+A.; and McGinnity, T. M. 2013. A Hidden Markov Model
+with abnormal states for detecting stock price manipulation.
+In Systems, Man, and Cybernetics (SMC), 2013 IEEE Inter-
+national Conference on, 3014–3019.
+[Cao et al. 2014] Cao, Y.; Li, Y.; Coleman, S.; Belatreche,
+A.; and McGinnity, T. M. 2014. Detecting price manipu-
+lation in the ﬁnancial market. In Computational Intelligence
+for Financial Engineering Economics (CIFEr), 2104 IEEE
+Conference on, 77–84.
+[D´ıaz-Sol´ıs, Theodoulidis, and Sampaio 2011] D´ıaz-Sol´ıs,
+D.; Theodoulidis, B.; and Sampaio, P. 2011. Analysis of
+stock market manipulations using knowledge discovery
+techniques applied to intraday trade prices. Expert Systems
+with Applications 38(10).
+[Goldstein and Guembel 2008] Goldstein, I., and Guembel,
+A. 2008. Manipulation and the allocational role of prices.
+The Review of Economic Studies 75(1):133–164.
+[Golmohammadi, Zaiane, and D´ıaz 2014] Golmohammadi,
+K.; Zaiane, O.; and D´ıaz, D. R. 2014. Detecting stock
+market manipulation using supervised learning algorithms.
+In Data Science and Advanced Analytics (DSAA), 2014
+International Conference on, 435–441. IEEE.
+[Hillion and Suominen 2004] Hillion, P., and Suominen, M.
+2004. The manipulation of closing prices. Journal of Finan-
+cial Markets 7(4):351–375.
+[Jarrow 1992] Jarrow, R. 1992. Market manipulation, bub-
+bles, corners, and short squeezes. Journal of Financial and
+Quantitative Analysis 27(03):311–336.
+[Kaelbling, Littman, and Cassandra 1998] Kaelbling, L. P.;
+Littman, M. L.; and Cassandra, A. R. 1998. Planning and
+acting in partially observable stochastic domains. Artiﬁcial
+intelligence 101(1):99–134.
+[Khwaja and Mian 2005] Khwaja, A. I., and Mian, A. 2005.
+Unchecked intermediaries: Price manipulation in an emerg-
+ing stock market. Journal of Financial Economics
+78(1):203–241.
+[Kong and Wang 2014] Kong, D., and Wang, M. 2014. The
+manipulator’s poker: Order-based manipulation in the chi-
+nese stock market. Emerging Markets Finance and Trade
+50(2):73–98.
+[Ledgerwood and Carpenter 2012] Ledgerwood, S. D., and
+Carpenter, P. R. 2012. A framework for the analysis of mar-
+ket manipulation. Review of Law & Economics 8(1):253–
+295.
+[Lee, Eom, and Park 2013] Lee, E. J.; Eom, K. S.; and Park,
+K. S. 2013. Microstructure-based manipulation: Strategic
+behavior and performance of spooﬁng traders. Journal of
+Financial Markets 16(2):227–252.
+[Nevmyvaka, Feng, and Kearns 2006] Nevmyvaka, Y.;
+Feng, Y.; and Kearns, M. 2006. Reinforcement learning
+for optimized trade execution. In Proceedings of the 23rd
+international conference on Machine learning, 673–680.
+ACM.
+[O’Hara 1998] O’Hara, M. 1998. Market Microstructure
+Theory. John Wiley & Sons.
+[ ¨Oˇg¨ut, Doˇganay, and Aktas¸ 2009] ¨Oˇg¨ut, H.; Doˇganay,
+M. M.; and Aktas¸, R. 2009. Detecting stock-price manip-
+ulation in an emerging market: The case of turkey. Expert
+Systems with Applications 36(9):11944 – 11949.
+[Pardo 2008] Pardo, R. 2008. The Evaluation and Optimiza-
+tion of Trading Strategies. Wiley.
+[Pirrong 2004] Pirrong, C. 2004. Detecting Manipulation in
+Futures Markets: The Ferruzzi Soybean Episode. American
+Law and Economics Review 6(1):28–71.
+[Rossi et al. 2015] Rossi, M.; Deis, G.; Roche, J.; and Przy-
+wara, K. 2015. Recent civil and criminal enforcement ac-
+tion involving high frequency trading. Journal of Investment
+Compliance 16(1):5–12.
+[Scopino 2015] Scopino, G. 2015. The (questionable) le-
+gality of high-speed “pinging” and “front running” in the
+futures market. Connecticut Law Review 47(3):607–697.
+[Sutton and Barto 1998] Sutton, R. S., and Barto, A. G.
+1998. Introduction to Reinforcement Learning. Cambridge,
+MA, USA: MIT Press, 1st edition.
+[Yang et al. 2012] Yang, S.; Paddrik, M.; Hayes, R.; Todd,
+A.; Kirilenko, A.; Beling, P.; and Scherer, W. 2012. Be-
+havior based learning in identifying high frequency trading
+strategies. In Computational Intelligence for Financial En-
+gineering & Economics (CIFEr), 2012 IEEE Conference on,
+1–8. IEEE.

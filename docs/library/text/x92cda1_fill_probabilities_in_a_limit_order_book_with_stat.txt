@@ -1,0 +1,1879 @@
+=== page 1 ===
+Fill Probabilities in a Limit Order Book with
+State-Dependent Stochastic Order Flows
+Felix Lokin ∗ Fenghui Yu †
+February 9, 2026
+Abstract
+This paper studies the fill probabilities of limit orders placed at different price levels in a
+limit order book. These probabilities play a central role in execution optimization, as limit
+orders are not guaranteed to be executed and inherently involve a trade-off between execution
+cost and execution risk. We model the limit order book within a general state-dependent
+stochastic framework, representing its dynamics as a collection of interacting queuing systems
+while incorporating key stylized market features. Within this framework, we derive semi-
+analytical expressions for several quantities of interest under state-dependent order flows,
+including the probability of a mid-price change, the fill probabilities of orders placed at the
+best quotes, and those of orders placed deeper in the book before the opposite best quote
+moves. While the framework can be extended to even deeper price levels, the corresponding
+fill probabilities are typically negligible. We validate the proposed model through extensive
+numerical experiments using real foreign exchange spot market data. The results demon-
+strate that the model remains tractable while capturing essential order book dynamics, and
+that the derived expressions achieve good accuracy in estimating fill probabilities.
+Keywords: Limit Order Books, Fill Probabilities, Execution Risks, Stochastic Order Flow,
+Foreign Exchange Spot Market, Laplace Transforms, Continued Fractions, Birth-Death Process,
+State-dependent Queue, Algorithmic Trading
+1 Introduction
+Recent technological advances have made algorithmic trading a dominant force in modern finan-
+cial markets, particularly in highly liquid environments. Algorithmic systems are now routinely
+used for tasks ranging from signal generation and market making to execution optimization and
+transaction cost reduction. In this paper, we focus on a key ingredient of execution optimiza-
+tion: the fill probability of a limit order. Since limit orders are not guaranteed to be executed,
+accurate estimates of fill probabilities are essential for managing execution risk and for designing
+trading strategies that balance execution certainty against price improvement.
+The fill probability (or execution probability) of a limit order is the probability that the
+order is executed within a given time horizon. It depends on order-specific characteristics, such
+as the price level and queue position, as well as on prevailing market conditions at the time of
+submission. Estimating fill probabilities is challenging due to the high-frequency and rapidly
+∗Delft Institute of Applied Mathematics, TU Delft, 2628 CD Delft, The Netherlands. (E-mail:
+fjp.lokin@gmail.com).
+†Delft Institute of Applied Mathematics, TU Delft, 2628 CD Delft, The Netherlands. (E-mail:
+fenghui.yu@tudelft.nl).
+1
+arXiv:2403.02572v2  [q-fin.TR]  6 Feb 2026
+
+=== page 2 ===
+evolving nature of limit order books. Nevertheless, reliable estimation is crucial in practice. In
+particular, traders must account for fill probabilities when choosing between aggressive strate-
+gies, which typically achieve faster execution at less favorable prices, and passive strategies,
+which offer better prices but carry a higher risk of non-execution.
+A central trade-off in limit order placement is therefore between execution speed and price
+improvement. Orders submitted at or near the best quotes are more likely to be filled, since
+market orders interact first with the best available prices. By contrast, orders placed deeper
+in the book offer more favorable prices but face substantially lower execution likelihood. This
+trade-off motivates the need for tractable and accurate models of fill probabilities, which can be
+incorporated into execution and market-making algorithms.
+Several approaches for estimating fill probabilities have been proposed in the literature. A
+commonly used simplification in optimal trading problems assumes that fill probabilities decay
+exponentially with the distance from the best quote. This assumption yields mathematically
+tractable execution models and has been widely adopted in the optimal execution literature,
+including Cartea et al. (2015), Cartea and Jaimungal (2015), and Gu´eant et al. (2012). While
+convenient, such reduced-form specifications do not explicitly account for time dependence or
+the evolving state of the order book.
+Another strand of research relies on econometric estimation from historical data. Regression-
+based approaches relate execution likelihood to explanatory variables such as order size, spread,
+volatility, and queue imbalance. Survival analysis has been particularly influential, as it provides
+a natural framework for modeling time-to-fill distributions. For example, Cho and Nelling (2000)
+model market order arrivals using a non-homogeneous Poisson process and assume a Weibull dis-
+tribution for time-to-fill. Lo et al. (2002) similarly apply survival analysis to compute execution-
+time distributions conditional on market covariates. These models are interpretable and rela-
+tively easy to estimate, but they may struggle to capture the full complexity of high-frequency
+order book dynamics.
+More recently, machine learning methods have been proposed to estimate fill probabilities
+in high-dimensional and non-linear settings. These approaches can incorporate rich feature
+sets and adapt to changing market conditions. For instance, Maglaras et al. (2022), Fabre
+and Ragel (2023), and Arroyo et al. (2024) combine machine learning with survival analysis to
+estimate both fill probabilities and fill times. Despite their flexibility, these methods typically
+require large training datasets, entail substantial computational costs, and often suffer from
+limited interpretability.
+Stochastic order book models form another important class of approaches. These models
+explicitly describe the random evolution of order arrivals, cancellations, and executions, and
+allow fill probabilities to be derived analytically or computed via simulation. Smith et al. (2003)
+show that even simplified stochastic models can reproduce key stylized facts of limit order books.
+In particular, Cont et al. (2010) and Huang et al. (2015) model the limit order book as a queueing
+system, where each price level is represented by a birth–death process: limit order arrivals
+correspond to “births”, while market orders and cancellations correspond to “deaths”. Cont et
+al. (2010) further assume that order flow intensities are deterministic functions of the distance
+to the opposite best quote. These models are analytically tractable and can be calibrated
+directly from order book data, but they often rely on restrictive assumptions in order to remain
+manageable.
+In this paper, we adopt a stochastic modeling approach and develop a general state-dependent
+order flow framework for estimating fill probabilities. In contrast to models with deterministic
+intensities, we allow the arrival and cancellation rates of limit and market orders to depend
+on a vector of stylized state variables, which may include queue sizes, the spread, and other
+2
+
+=== page 3 ===
+observable order book features. This specification is motivated by empirical evidence that or-
+der flow intensities vary significantly with market conditions and order book states. While
+our framework is formulated in general terms, we also present several explicit model specifica-
+tions, including classical parametric models from the literature and the model employed in our
+numerical experiments.
+Within this framework, we model the limit order book as a system of interacting state-
+dependent queues, and characterize fill times in terms of first-passage times of associated birth–
+death and pure-death processes. By exploiting Laplace-transform techniques, we derive semi-
+analytical expressions for several conditional probabilities of direct relevance to execution. These
+include the probability of an upward or downward mid-price movement, the fill probabilities of
+orders placed at the best bid and best ask before the mid-price changes, and the fill probabilities
+of orders placed one price level deeper than the best quote before the opposite best quote moves.
+A key contribution of this paper is that we go beyond the best bid and ask levels studied in
+much of the existing analytical literature (e.g., Cont et al. 2010). We provide a unified approach
+for deriving fill probabilities at deeper levels of the order book under general state-dependent
+intensities. While the methodology extends to arbitrarily deep levels, the resulting expressions
+become increasingly complex. Moreover, our empirical analysis of (Foreign Exchange)FX spot
+market data suggests that fill probabilities beyond one tick from the best quote are typically
+negligible. For this reason, we focus on the most practically relevant cases: orders posted at the
+best quote and one level deeper.
+The main contributions of this paper can be summarized as follows:
+• We develop a flexible state-dependent stochastic order flow framework for limit order
+books, modeling limit order arrivals, market order arrivals, and cancellations through an
+interacting queueing system.
+• Within this framework, we derive tractable semi-analytical expressions for key execution
+quantities, including the probabilities of upward and downward mid-price movements and
+the fill probabilities of limit orders posted at the best and second-best quotes, under general
+state-dependent order flow intensities.
+• We provide, to the best of our knowledge, the first analytical characterization of fill prob-
+abilities for orders posted one price level deeper than the best quote.
+• We validate the framework through extensive numerical experiments calibrated to real FX
+spot limit order book data, demonstrating both tractability and good empirical accuracy.
+The remainder of the paper is organized as follows. In Section 2, we introduce the state-
+dependent stochastic order flow model and present three explicit intensity specifications. Sec-
+tion 3 reviews the mathematical tools required for our analysis, including state-dependent first-
+passage times of birth–death and pure-death processes. Section 4 derives tractable expressions
+for mid-price movement probabilities and fill probabilities at the best quotes and one level
+deeper. In Section 5, we describe the calibration procedure and present an extensive empirical
+and numerical study using FX spot market data. Section 6 concludes the paper.
+2 Limit Order Book Model
+2.1 Limit Order Book as a Stochastic Model
+Following the framework of Cont et al. (2010) and Huang et al. (2015), we model a limit order
+book in which participants submit limit orders at discrete price levels, each corresponding to
+3
+
+=== page 4 ===
+an integer multiple of the tick size. These price levels are represented by the grid {1, . . . , N },
+where N is chosen sufficiently large so that the probability of orders being placed beyond level
+N is negligible over the time horizon considered.
+The state of the order book is described by the continuous-time process
+Q(t) = (Q1(t), . . . , QN (t))t≥0, (1)
+where |Qi(t)| denotes the number of outstanding limit orders at price level i at time t, for
+i = 1, . . . , N . To distinguish between the bid and ask sides, we adopt the convention that
+bid queues are represented by negative values. In particular, Qi(t) < 0 corresponds to −Qi(t)
+outstanding bid orders at level i, whereas Qi(t) > 0 corresponds to Qi(t) outstanding ask orders.
+The best ask price pA(t) is defined as the lowest level containing outstanding sell orders,
+namely
+pA(t) := inf{i ∈ {1, . . . , N } : Qi(t) > 0} ∧ (N + 1). (2)
+Similarly, the best bid price pB (t) is the highest level containing outstanding buy orders,
+pB (t) := sup{i ∈ {1, . . . , N } : Qi(t) < 0} ∨ 0. (3)
+The mid-price pM (t) and the bid–ask spread S(t) are then given by
+pM (t) := pB (t) + pA(t) 2 , S(t) := pA(t) − pB (t). (4)
+2.2 Dynamics of State-Dependent Order Flows
+The limit order book dynamics are modeled as a queuing system driven by three types of events:
+• limit order arrivals,
+• market order arrivals,
+• limit order cancellations.
+Let Q(tj ) denote the state of the order book immediately before the j-th event, and Q(tj+1)
+the state immediately after the next event at time tj+1. We assume that all orders have unit
+size (corresponding to the average order size in the data) and that events occur sequentially.
+Queue sizes on the bid side are represented by negative values, while queue sizes on the ask side
+are positive. The order book evolves according to the following update rules:
+Event Condition Queue update
+Limit buy arrival i < pA Qi(tj+1) = Qi(tj ) − 1
+Limit sell arrival i > pB Qi(tj+1) = Qi(tj ) + 1
+Buy market order i = pA QpA (tj+1) = QpA (tj ) − 1
+Sell market order i = pB QpB (tj+1) = QpB (tj ) + 1
+Bid cancellation i ≤ pB Qi(tj+1) = Qi(tj ) + 1
+Ask cancellation i ≥ pA Qi(tj+1) = Qi(tj ) − 1
+(5)
+Following standard practice in modeling order flows, we assume that arrivals and cancella-
+tions are governed by independent Poisson processes with exponentially distributed inter-arrival
+times. Specifically, for each price level i ∈ {1, . . . , N }, we assume that
+4
+
+=== page 5 ===
+• limit orders arrive at rate λQi (Xi),
+• market orders arrive at rate µQi (Xi) for i ∈ {pA, pB },
+• limit order cancellations occur at rate ϕQi (Xi),
+where Xi is a vector of stylized state variables affecting the intensities. All rates are allowed to
+be state-dependent.
+This framework allows for a flexible specification of the local state Xi and accommodates
+relevant market-specific features. We distinguish the queue size Qi from the factor vector Xi to
+emphasize the direct role of queue sizes in driving the order book evolution and the associated
+fill probabilities, while also simplifying subsequent derivations.
+For notational convenience, we write
+λQi := λQi (Xi), µQi := µQi (Xi), ϕQi := ϕQi (Xi).
+Schematic illustrations of the dynamics at the best bid and best ask are provided in Figures 1
+and 2.
+· · · Q − 1 Q Q + 1 · · · 0
+µ... + ϕ... µQ−1 + ϕQ−1 µQ + ϕQ µQ+1 + ϕQ+1 µ... + ϕ...
+λQ−1 λQ λQ+1 λ... λ0
+Figure 1: Schematic representation of the order book dynamics at the best bid Q = QpB .
+0 · · · Q − 1 Q Q + 1 · · ·
+µ... + ϕ... µQ−1 + ϕQ−1 µQ + ϕQ µQ+1 + ϕQ+1 µ... + ϕ...
+λ0 λ... λQ−1 λQ λQ+1
+Figure 2: Schematic representation of the order book dynamics at the best ask Q = QpA .
+2.3 Examples of Order Flow Models
+The intensity functions governing the arrival and cancellation of limit and market orders can be
+specified flexibly to reflect the characteristics of the market under consideration. In particular,
+the stylized factor vector Xi associated with each price level i may incorporate relevant state
+variables such as queue sizes, the spread, or the distance to the best quotes. Below we present
+three representative specifications that fit naturally within our general framework.
+5
+
+=== page 6 ===
+2.3.1 Model I
+Cont et al. (2010) propose a model in which order flow intensities are deterministic functions of
+the distance to the best bid and ask prices. Their specification can be viewed as a special case
+of our framework. At time tj , the intensities at price level i are given by
+
+
+
+λQi (Xi) = β (pA(tj ) − i)α , for i < pA(tj ),
+λQi (Xi) = β (i − pB (tj ))α , for i > pB (tj ),
+µQi (Xi) = µ, for i = pA(tj ) or i = pB (tj ),
+ϕQi (Xi) = θ(i − pB (tj )) |Qi(tj )|, for i ≥ pA(tj ),
+ϕQi (Xi) = θ(pA(tj ) − i) |Qi(tj )|, for i ≤ pB (tj ),
+(6)
+where α, β, µ > 0 are constants and θ : N → R+ is a non-negative function of the distance to
+the opposite best quote. In this case, one may take
+Xi(tj ) = (pA(tj ) − i, i − pB (tj ), Qi(tj )).
+The parameters α and β are typically calibrated via least-squares fitting.
+2.3.2 Model II
+Motivated by the empirical study of Toke and Yoshida (2017), one may alternatively model
+order flow intensities using a parametric specification that depends on the spread and queue
+size. At time tj , the intensities at level i are given by
+
+
+
+λQi (Xi) = exp
+
+α0 + α1 log(S(tj )) + α11 log2(S(tj )) + α2 log(1 + Qi(tj ))
++α22 log2(1 + Qi(tj )) + α12 log(S(tj )) log(1 + Qi(tj ))
+
+,
+µQi (Xi) = exp
+
+β0 + β1 log(S(tj )) + β11 log2(S(tj )) + β2 log(1 + Qi(tj ))
++β22 log2(1 + Qi(tj )) + β12 log(S(tj )) log(1 + Qi(tj ))
+
+,
+ϕQi (Xi) = exp
+
+γ0 + γ1 log(S(tj )) + γ11 log2(S(tj )) + γ2 log(1 + Qi(tj ))
++γ22 log2(1 + Qi(tj )) + γ12 log(S(tj )) log(1 + Qi(tj ))
+
+,
+(7)
+where αi, αij , βi, βij , γi, γij are constants for i, j ∈ N. In this specification, the stylized factor
+vector can be taken as
+Xi(tj ) = (S(tj ), Qi(tj )).
+Calibration may be performed via likelihood maximization; see Toke and Yoshida (2017) for
+further details.
+6
+
+=== page 7 ===
+2.3.3 Model III
+For our numerical experiments based on real order book data from the FX spot market, we
+propose a specification inspired by Cont et al. (2010) and supported by our empirical findings.
+While model selection is not the primary focus of this work, Model III provides a concrete setting
+in which we illustrate our methodology. Other specifications may be treated analogously.
+At time tj , the intensities are specified as
+
+
+
+λQi (Xi) = λ(pA(tj ) − i, S(tj )), for i < pA(tj ),
+λQi (Xi) = λ(i − pB (tj ), S(tj )), for i > pB (tj ),
+µQi (Xi) = µ(S(tj )), for i = pA(tj ) or i = pB (tj ),
+ϕQi (Xi) = θ(i − pB (tj ), S(tj )) |Qi(tj )|, for i ≥ pA(tj ),
+ϕQi (Xi) = θ(pA(tj ) − i, S(tj )) |Qi(tj )|, for i ≤ pB (tj ),
+(8)
+where λ, θ : N × N → R+ are non-negative functions of the distance to the opposite best quote
+and the spread, and µ : N → R+ is a non-negative function of the spread. Here, the absolute
+value accounts for the convention that bid-side queue sizes are negative. In this case, we take
+Xi(tj ) = (pA(tj ) − i, i − pB (tj ), S(tj )).
+The resulting order book dynamics define a continuous-time Markov process on ZN , with
+transitions occurring at order arrivals and cancellations. In particular, the transitions are as
+follows:
+Event Condition Queue update Rate
+Limit buy arrival i < pA(tj ) Qi(tj+1) = Qi(tj ) − 1 λ(pA(tj ) − i, S(tj ))
+Limit sell arrival i > pB (tj ) Qi(tj+1) = Qi(tj ) + 1 λ(i − pB (tj ), S(tj ))
+Buy market order i = pA(tj ) QpA (tj+1) = QpA (tj ) − 1 µ(S(tj ))
+Sell market order i = pB (tj ) QpB (tj+1) = QpB (tj ) + 1 µ(S(tj ))
+Bid cancellation i ≤ pB (tj ) Qi(tj+1) = Qi(tj ) + 1 θ(pA(tj ) − i, S(tj )) |Qi(tj )|
+Ask cancellation i ≥ pA(tj ) Qi(tj+1) = Qi(tj ) − 1 θ(i − pB (tj ), S(tj )) |Qi(tj )|
+3 Preliminaries on State-Dependent Queuing Systems
+To monitor the continuous-time dynamics of the limit order book Q(t), a natural modeling
+framework is provided by queueing theory as described in Section 2.2, where the number of
+outstanding orders at each price level is represented as a queue. By viewing the agent’s limit
+order as the last order in the corresponding queue, execution of this order occurs precisely
+when that queue becomes empty. Consequently, the queue containing the agent’s order can be
+modeled as a pure death process, since orders arriving after the agent do not directly affect
+its execution. In contrast, the remaining queues evolve as birth–death processes, reflecting the
+arrival, cancellation, and execution of orders over time.
+7
+
+=== page 8 ===
+3.1 First-Passage Times of State-Dependent Birth–Death Processes
+A birth–death process is a continuous-time Markov process on N0 whose transitions occur only
+between neighboring states. From state i, the process jumps to i + 1 (a “birth”) at rate λi, and
+to i − 1 (a “death”) at rate µi, where the state i represents the number of units in the system.
+Throughout, we allow the rates to depend on the current state, and assume that µ0 = 0.
+Let σb denote the first-passage time to state 0 starting from b ≥ 1. Then σb can be decom-
+posed as
+σb = σb,b−1 + σb−1,b−2 + · · · + σ1,0, (9)
+where σi,i−1 denotes the first-passage time from state i to state i − 1. By the strong Markov
+property, the random variables {σi,i−1}b i=1 are independent. Hence, if ˆfb(s) denotes the Laplace
+transform of σb and ˆfi,i−1(s) denotes the Laplace transform of σi,i−1, we obtain
+ˆfb(s) =
+bY
+i=1
+ˆfi,i−1(s). (10)
+A semi-analytical expression for ˆfi,i−1(s) can be obtained in terms of continued fractions. In
+particular, Abate and Whitt (1999) show that
+ˆfi,i−1(s) = − 1 λi−1 K ∞ k=i −λk−1µk λk + µk + s , (11)
+where the continued fraction is defined by
+K
+∞
+n=1
+an
+bn
+:= a1
+b1 + a2
+b2 + a3 b3 + · · ·
+, (12)
+with sequences {an}, {bn} ⊂ C satisfying an ̸= 0 for all n. For convenience, we also use the
+compact notation
+K
+∞
+n=1
+an
+bn
+= a1
+b1+
+a2
+b2+
+a3
+b3+ · · · .
+Numerical approximation schemes for continued fractions are provided in Appendix B.
+Combining (10) and (11), we obtain the Laplace transform of the first-passage time σb as
+ˆfb(s) =
+bY
+i=1
+
+− 1 λi−1 K ∞ k=i −λk−1µk λk + µk + s  . (13)
+The probability density function of σb can then be recovered numerically via Laplace inversion.
+Two inversion techniques are described in Appendix A.
+3.2 First-Passage Times of State-Dependent Pure-Death Processes
+We next consider a state-dependent pure-death process, in which only downward transitions are
+possible. Specifically, from state i ≥ 1 the process jumps to i − 1 at rate µi. Let ϵb denote the
+first-passage time to state 0 starting from b ≥ 1. Then ϵb admits the decomposition
+ϵb = ϵb,b−1 + ϵb−1,b−2 + · · · + ϵ1,0, (14)
+8
+
+=== page 9 ===
+where ϵi,i−1 denotes the first-passage time from state i to i − 1. By the strong Markov property,
+the random variables {ϵi,i−1}b i=1 are independent. Hence, if gb(t) denotes the density of ϵb and
+ˆgb(s) its Laplace transform, we obtain
+ˆgb(s) =
+bY
+i=1
+ˆgi,i−1(s), (15)
+where ˆgi,i−1(s) is the Laplace transform of the density of ϵi,i−1.
+Since ϵi,i−1 is exponentially distributed with parameter µi, its density is given by
+gi,i−1(t) = µie−µit, t ≥ 0,
+and therefore
+ˆgi,i−1(s) =
+Z ∞
+0
+µie−(µi+s)t dt = µi µi + s . (16)
+Substituting (16) into (15) yields the Laplace transform of ϵb:
+ˆgb(s) =
+bY
+i=1
+µi
+µi + s . (17)
+4 Fill Probabilities in a Limit Order Book
+In this section, we study the computation of fill probabilities in a limit order book with state-
+dependent order flows. Here, “state-dependent” refers not only to the queue sizes at each price
+level, but also to additional stylized factors that affect the intensities of order arrivals and
+cancellations.
+We derive expressions for the probability of a mid-price change, both upward and downward,
+and for the probability that a limit order placed at the best bid or best ask is executed before
+the mid-price moves. In addition, we obtain a semi-analytical expression for the fill probability
+of a limit order posted one price level deeper than the best quote, conditional on the event that
+the opposite best quote does not move first. While the methodology can be extended to deeper
+levels, the analytical expressions quickly become more involved. Moreover, empirical evidence
+from FX spot market data suggests that executions beyond one tick from the best quotes occur
+only rarely.
+Our derivations rely on first-passage time analysis for state-dependent birth–death processes.
+4.1 Probability of a Change in Mid-Price
+In this subsection, we study the probability of the first change in the mid-price, distinguishing
+between an upward and a downward movement. Let τ denote the time of the first change in the
+mid-price, defined by
+τ = inf{t ≥ 0 : pM (t) ̸= pM (0)},
+where pM (t) denotes the mid-price at time t. Since the mid-price depends solely on the best bid
+and best ask prices, the probability that the next price move is an increase, conditional on the
+state of the order book at time t = 0, is given by
+P
+
+pM (τ ) > pM (0)
+ QpA (0) = qA 0 , QpB (0) = qB 0 , S(0) = s0  , (18)
+9
+
+=== page 10 ===
+where s0 ≥ 1 denotes the initial spread. Similarly, the probability that the next price move is a
+decrease is
+P
+
+pM (τ ) < pM (0)
+ QpA (0) = qA 0 , QpB (0) = qB 0 , S(0) = s0  . (19)
+The following proposition provides an explicit characterization of these probabilities.
+Proposition 1 Let σA and σB denote the first-passage times to 0 of the best ask and best bid
+queues, respectively. For i ∈ {A, B}, let ˆf s0 σi (s) denote the Laplace transform of the density of
+σi, conditional on the initial spread s0 ≥ 1. Then
+ˆf s0 σi (s) =
+qi 0Y
+j=1
+
+− 1 λj−1(Xpi ) K ∞ k=j −λk−1(Xpi ) (µk(Xpi ) + ϕk(Xpi )) λk(Xpi ) + µk(Xpi ) + ϕk(Xpi ) + s  . (20)
+Define
+Λs0 :=
+s0−1X
+m=1
+λ0(XpA−m) =
+s0−1X
+m=1
+λ0(XpB +m),
+and let i, j ∈ {A, B} with i ̸= j. Then the conditional probabilities in (18) and (19) can be
+obtained by evaluating at s = 0 the inverse Laplace transform of
+ˆF s0 σi,σj (s) = 1 s  ˆf s0 σi (Λs0 + s) + Λs0 Λs0 + s  1 − ˆf s0 σi (Λs0 + s)   ˆf s0 σj (Λs0 − s) + Λs0 Λs0 − s  1 − ˆf s0 σj (Λs0 − s)  .
+(21)
+In particular, (i, j) = (A, B) corresponds to an upward mid-price move, while (i, j) = (B, A)
+corresponds to a downward mid-price move.
+In the special case s0 = 1, when no orders can be posted inside the spread, (21) simplifies to
+ˆF 1 σi,σj (s) = 1 s ˆf 1 σi (s) ˆf 1 σj (−s). (22)
+Proof. Let σb denote the first-passage time to state zero for a birth-death process with state-
+dependent birth rates λk and death rates µk, starting from state b.
+For each i ∈ A, B, let Qi := QPi . The process Qi evolves as a birth-death process with the
+following state-dependent transition rates:
+(
+birth rate λQi (Xpi ),
+death rate µQi (Xpi ) + ϕQi (Xpi ). (23)
+Applying (13) with b = qi 0 yields (20).
+Next, recall that the mid-price is defined by pM (t) := pB (t)+pA(t) 2 . A change in pM (t) occurs
+whenever pB or pA changes. A price increase happens if either pB (τ ) > pB (0) (due to a buy
+limit order inside the spread) or pA(τ ) > pA(0) (due to depletion of the best ask queue). Two
+cases are considered:
+(i) Case s0 = 1: A price move occurs only when either the best bid or best ask queue depletes.
+Then,
+P[price increases] = P[σA < σB ] = P[σA − σB < 0],
+and similarly,
+P[price decreases] = P[σB − σA < 0].
+10
+
+=== page 11 ===
+Assuming independence, the Laplace transform of the density of σi − σj is
+ˆf 1 σi−σj (s) = E[e−s(σi−σj )] = ˆf 1 σi (s) ˆf 1 σj (−s). (24)
+Since the Laplace transform of a CDF F is ˆF (s) = 1 s ˆf (s), we get
+ˆF 1 σi,σj (s) = 1 s ˆf 1 σi−σj (s) = 1 s ˆf 1 σi (s) ˆf 1 σj (−s), (25)
+which proves (22). Inversion of this transform at s = 0 gives the desired probability.
+(ii) Case s0 > 1: A price move can also result from a limit order posted inside the spread.
+Let τ m A (resp. τ m B ) be the first arrival time of an ask (resp. bid) order within the spread
+and is m ticks away from the best ask (bid), for m = 1, ..., s0 − 1. Each τ m A and τ m B is
+exponential with rate λ0(XpA−m) or λ0(XpB +m), respectively. Let τA, τB be exponential
+with rate
+Λs0 =
+s0−1X
+m=1
+λ0(XpA−m) =
+s0−1X
+m=1
+λ0(XpB +m),
+representing the first arrival of a limit order inside the spread. Note that the total rate of
+arrival of orders posted inside the spread is the same on both sides of the book.
+Then the first mid-price change occurs at
+τ := σA ∧ σB ∧ min {τ m A , τ m B : m = 1, . . . , s0 − 1} .
+A price increase occurs if either of the following events occurs first:
+– A buy limit order is posted inside the spread, establishing a new best bid at a higher
+price level;
+– The ask queue QA depletes before either a sell limit order is posted inside the spread
+or the bid queue QB depletes.
+The analysis for a price decrease is symmetric.
+Then the probability in Equation (18) (or (19)) is equivalent to
+P[σi ∧ τj < σj ∧ τi] = P[σi ∧ τj − σj ∧ τi < 0], (26)
+where (i, j) = (A, B) for a price increase and (i, j) = (B, A) for a price decrease.
+Since σA, σB , τA, and τB are independent, we may use the same argument as in the case
+s0 = 1. The Laplace transform of the distribution function of σi ∧ τj − σj ∧ τi is given by
+ˆF s0 σi,σj (s) := ˆF s0 σi∧τj ,σj ∧τi (s) = 1 s ˆf s0 σi∧τj ,σj ∧τi (s) = 1 s ˆf s0 σi∧τj (s) ˆf s0 σj ∧τi (−s). (27)
+To compute ˆf s0 σi∧τj (s), we apply Lemma 1, which gives the Laplace transform of the min-
+imum of a birth-death process and an independent exponential clock. Specifically, for
+i, j ∈ {A, B}:
+ˆf s0 σi∧τj (s) = ˆf s0 σi (Λs0 + s) + Λs0 Λs0 + s  1 − ˆf s0 σi (Λs0 + s)  , (28)
+11
+
+=== page 12 ===
+where ˆf s0 σi is given by Equation (20).
+Substituting Equation (28) into (27) yields the expression in Equation (21). Hence, the
+Laplace transform of the distribution in (26) is given by (21), and the desired probabilities
+in (18) and (19) can be computed by inverting this Laplace transform and evaluating it at
+s = 0, using (i, j) = (A, B) and (i, j) = (B, A), respectively.
+Lemma 1 Let X ≥ 0 be an exponential random variable with rate Λ, and let Y ≥ 0 be an
+independent random variable with density fY . Denote by ˆfY (s) the Laplace transform of fY .
+Then the Laplace transform of the density of X ∧ Y is given by
+ˆfX∧Y (s) = ˆfY (Λ + s) + Λ Λ + s  1 − ˆfY (Λ + s)  . (29)
+Proof. See Appendix C.
+Remark 1 Under Models I, II, and III described in Section 2.3, the queue processes Qi have
+explicit transition rate functions λQi (Xpi ), µQi (Xpi ), and ϕQi (Xpi ). By substituting these into
+Proposition 1, we obtain closed-form expressions for the probabilities of price movements given
+in Equation (18) and (19).
+For example, under Model III, which is used in our numerical experiments, we have
+Λs0 =
+s0−1X
+m=1
+λ0(m, s0),
+and the Laplace transform of the first-passage time σi takes the form
+ˆf s0 σi (s) =
+qi 0Y
+j=1
+
+− 1 λj−1(0, s0) K ∞ k=j −λk−1(0, s0) (µk(s0) + θ(0, s0)k) λk(0, s0) + µk(s0) + θ(0, s0)k + s  , (30)
+which is used in the computations of Proposition 1.
+Furthermore, if the transition rates λk and µk are independent of the queue state k, then we
+can simplify Λs0 = Ps0−1 m=1 λ(m, s0) and obtain
+ˆf s0 σi (s) =
+qi 0Y
+j=1
+
+− 1 λ(0, s0) K ∞ k=j −λ(0, s0) (µ(s0) + θ(0, s0)k) λ(0, s0) + µ(s0) + θ(0, s0)k + s  . (31)
+To support numerical computation, we provide two methods for Laplace transform inversion:
+the Euler method and the COS method. Implementation details can be found in Appendix A.
+4.2 Fill Probability at the Best Quotes
+We now study the probability that a limit order posted at the best bid or best ask is executed
+before the mid-price changes, under the assumption that the order is never cancelled. Let N CA
+and N CB denote the events that an order is submitted at time t = 0 at the best ask and best
+bid, respectively, and remains active thereafter.
+The corresponding conditional fill probability is
+P
+
+ϵi < τ
+ QA(0) = qA 0 , QB (0) = qB 0 , S(0) = s0, N Ci  , (32)
+12
+
+=== page 13 ===
+where i ∈ {A, B}, τ denotes the first time the mid-price moves, and ϵi is the first-passage time
+to zero of the queue position of the order on price leavel i, initialized at qi 0. In particular, i = A
+corresponds to an order posted at the best ask, while i = B corresponds to an order posted at
+the best bid.
+To simplify notation, we omit the conditioning on the initial state (QA(0) = qA 0 , QB (0) =
+qB 0 , S(0) = s0) in what follows.
+We model the order’s queue position as a pure-death process rather than a birth–death pro-
+cess. This is justified by the time-priority rule: after the order is submitted, any subsequent
+arrivals at the same price level join the queue behind it and therefore do not affect its execu-
+tion. Under this representation, the fill probability can be computed explicitly, as shown in the
+following proposition.
+Proposition 2 Fix s0 ≥ 1 and let ϵi denote the first-passage time to zero of the queue position
+of a limit order posted at the best quote on side i ∈ {A, B}, with initial position qi 0 ≥ 1. Then
+the Laplace transform of the density of ϵi is given by
+ˆgs0 ϵi (s) =
+qi 0Y
+k=1
+µk(Xpi ) + ϕk(Xpi )
+µk(Xpi ) + ϕk(Xpi ) + s , (33)
+where µk(Xpi ) and ϕk(Xpi ) denote the market order and cancellation intensities at the best
+quote pi.
+Let σj be the first-passage time to zero of the opposite best-quote queue, and let ˆf s0 σj (s) denote
+the Laplace transform of the density of σj , as defined in (20). Moreover, define
+Λs0 =
+s0−1X
+m=1
+λ0(XpA−m) =
+s0−1X
+m=1
+λ0(XpB +m).
+Then the fill probability in (32) is obtained by evaluating at s = 0 the inverse Laplace transform
+of
+ˆF s0 ϵi,σj (s) = 1 s ˆgs0 ϵi (s)  ˆf s0 σj (2Λs0 − s) + 2Λs0 2Λs0 − s  1 − ˆf s0 σj (2Λs0 − s)  , (34)
+for i ̸= j ∈ {A, B}.
+In the special case s0 = 1 (when no orders can be posted inside the spread), this simplifies to
+ˆF 1 ϵi,σj (s) = 1 s ˆg1 ϵi (s) ˆf 1 σj (−s). (35)
+Proof. Let ϵb denote the first-passage time to zero of a pure-death process starting at state b
+with death rates µk in state k. As shown in Section 3.2, the Laplace transform of the density of
+ϵb, denoted ˆgϵb (s), is given by Equation (17).
+In our setting, the death rate of the pure-death process, denoted Di, is given by µDi (Xpi ) +
+ϕDi (Xpi ), where i ∈ {A, B}. Applying Equation (17) yields
+ˆgs0 ϵi (s) =
+qi 0Y
+k=1
+µk(Xpi ) + ϕk(Xpi )
+µk(Xpi ) + ϕk(Xpi ) + s . (36)
+We now distinguish two cases:
+13
+
+=== page 14 ===
+(i) Case s0 = 1: In this case, the mid-price cannot move through placement of new limit
+orders, and the fill probability reduces to
+P[ϵi < σj ] = P[ϵi − σj < 0],
+for i ̸= j ∈ {A, B}. The Laplace transform of the density of ϵi − σj is given by
+ˆf 1 ϵi−σj (s) = E h e−s(ϵi−σj ) i = E[e−sϵi ] E[esσj ] = ˆg1 ϵi (s) ˆf 1 σj (−s). (37)
+Hence, the Laplace transform of the CDF F 1 ϵi,σj of ϵi − σj is
+ˆF 1 ϵi,σj (s) = 1 s ˆf 1 ϵi−σj (s) = 1 s ˆg1 ϵi (s) ˆf 1 σj (−s).
+Therefore, the desired probability is
+P[ϵi < σj ] = F 1 ϵi,σj (0),
+which can be obtained by evaluating the inverse Laplace transform of ˆF 1 ϵi,σj (s) at s = 0.
+(ii) Case s0 > 1: The fill probability becomes
+P[ϵi < σj ∧ τA ∧ τB ] = P[ϵi − (σj ∧ τA ∧ τB ) < 0],
+where τA and τB are independent exponential random variables with rate Λs0 , defined as
+in Proposition 1. The minimum τA ∧ τB is exponentially distributed with rate 2Λs0 .
+Let X = τA ∧ τB ∼ Exp(2Λs0 ) and Y = σj ≥ 0. By Lemma 1, the Laplace transform of
+the PDF of σj ∧ τA ∧ τB is
+ˆf s0 σj ∧τA∧τB (s) = ˆf s0 σj (2Λs0 − s) + 2Λs0 2Λs0 − s  1 − ˆf s0 σj (2Λs0 − s)  . (38)
+Let F s0 ϵi,σj denote the CDF of ϵi − (σj ∧ τA ∧ τB ). The Laplace transform of this CDF is
+ˆF s0 ϵi,σj (s) = 1 s ˆgs0 ϵi (s) ˆf s0 σj ∧τA∧τB (−s), (39)
+which corresponds to Equation (34) with ˆf s0 σj ∧τA∧τB (·) given by (38). The desired fill
+probability is obtained by evaluating the inverse Laplace transform of ˆF s0 ϵi,σj (s) at zero.
+Remark 2 Under Models I, II, and III, as described in Section 2.3, explicit expressions for the
+state-dependent death rates µDi (Xpi ) and ϕDi (Xpi ) are available and are required for computing
+Equation (33) in Proposition 2.
+For example, under Model III, we have
+ˆgs0 ϵi (s) =
+qi 0Y
+k=1
+µk(s0) + θ(0, s0) k
+µk(s0) + θ(0, s0) k + s . (40)
+Moreover, if the death rate µk is independent of the queue state k, i.e., µk(s0) = µ(s0) for
+all k, the expression simplifies to
+ˆgs0 ϵi (s) =
+qi 0Y
+k=1
+µ(s0) + θ(0, s0) k
+µ(s0) + θ(0, s0) k + s . (41)
+14
+
+=== page 15 ===
+4.3 Fill Probability at a Price Level Deeper than the Best Quotes
+In this section, we compute the fill probability of a limit order submitted one price level deeper
+than the best quote, before the opposite best quote moves. More precisely, we consider buy limit
+orders posted at pB − 1 and sell limit orders posted at pA + 1, and focus on execution events
+occurring prior to a movement of the opposite best quote.
+Although the methodology developed below can in principle be extended to limit orders
+posted deeper in the book, both the notation and the resulting analytical expressions quickly
+become considerably more involved. Moreover, our numerical experiments suggest that fill
+probabilities beyond one tick from the best quote are typically negligible. Consistent with this
+observation, Section 5.2.2 shows empirically that approximately 85% of executed limit orders are
+posted within one tick of the best quote, indicating that deeper levels contribute only marginally
+in practice.
+Under our modeling assumptions, such an order may be executed through two possible
+mechanisms:
+1. a large market order consumes liquidity across multiple price levels;
+2. the best quote queue is depleted, so that the best quote moves by one tick toward the
+order and the order becomes part of the new best quote.
+Since we assume unit-sized orders, the first mechanism cannot occur. Consequently, execution
+of an order posted one level deeper is only possible if the best quote shifts toward that level.
+Once this happens, the order becomes part of the best quote, and its fill probability can be
+computed using the approach developed in Section 4.2.
+We now introduce notation to formalize this argument. For i ∈ {A, B}, let Qi(t) denote the
+queue size at the best quote on side i at time t, and let Qi−(t) denote the queue size one level
+deeper. Moreover, let Wi−(t) denote the number of remaining orders at that deeper level that
+were already present at time 0.
+Let τ quote i be the first time the best quote on side i moves by one tick toward the deeper
+level:
+τ quote i ≡
+(
+inf{t ≥ 0 : pA(t) > pA(0)}, if i = A,
+inf{t ≥ 0 : pB (t) < pB (0)}, if i = B.
+(42)
+Similarly, define τ other i as the first time the mid-price changes due to any other event, such as
+the opposite best quote moving or the best quote moving in the opposite direction:
+τ other i ≡
+
+
+
+inf
+
+t ≥ 0 :
+ 
+pA(t) < pA(0)
+
+∨
+ 
+pB (t) ̸= pB (0)
+	
+, if i = A,
+inf
+
+t ≥ 0 :
+ 
+pB (t) > pB (0)
+
+∨
+ 
+pA(t) ̸= pA(0)
+	
+, if i = B.
+(43)
+The probability that the best quote moves toward the order before any such competing event
+occurs is
+P
+h
+τ quote i < τ other i
+ QA(0) = qA 0 , QB (0) = qB 0 , S(0) = s0 i , (44)
+which is computed in Proposition 4. For notational convenience, we omit the conditioning on
+the initial state and simply write P[τ quote i < τ other i ].
+Once the best quote has shifted to the price level of the concerned order, we define the
+remaining time until the next mid-price change by
+τ i ≡ inf{t ≥ τ quote i : pM (t) ̸= pM (τ quote i )} − τ quote i .
+15
+
+=== page 16 ===
+At time τ quote i , the order becomes part of the best quote. Therefore, conditional on τ quote i <
+τ other i , its fill probability can be computed using Proposition 2, with the initial time shifted to
+τ quote i .
+More precisely, conditional on τ quote i < τ other i , the fill probability of a limit order posted one
+level deeper than the best quote is given by
+P
+
+ϵi− < τ i
+ Wi−(τ quote i ) = qi− τ quote i , Qj (τ quote i ) = qj τ quote i , S(τ quote i ) = s0 + 1, N Ci−  , (45)
+where i ̸= j ∈ {A, B} and N Ci− denotes the event that a limit order is placed one level deeper
+than the best quote and remains active thereafter. The random variable ϵi− is the first-passage
+time to zero of a pure-death process representing the order’s position in the queue at the deeper
+level. Since only one best quote moves by one tick at time τ quote i , the spread increases from s0
+to s0 + 1.
+Combining the above, the fill probability of a limit order submitted one price level deeper
+than the best quote is therefore
+P
+h
+τ quote i < τ other i
+i
+·P
+
+ϵi− < τ i
+ Wi−(τ quote i ) = qi− τ quote i , Qj (τ quote i ) = qj τ quote i , S(τ quote i ) = s0 + 1, N Ci−  .
+(46)
+Proposition 3 The fill probability of a limit order submitted one price level deeper than the best
+quote, as defined in (46), admits the representation
+P[τ quote i < τ other i ]· 
+
+qi− 0X
+m=1
+NjX
+n=1
+P[ϵi− < τ i | Wi−(τ quote i ) = m, Qj (τ quote i ) = n] P[Wi−(τ quote i ) = m] P[Qj (τ quote i ) = n]
+
+ .
+(47)
+where i ̸= j ∈ {A, B}, and Ni− and Nj denote the admissible queue sizes at one level deeper
+than the best quote pi and at the opposite best quote pj , respectively, at time τ quote i .
+Moreover, P[Qj (τ quote i ) = n] may be approximated using the stationary distribution of Qj ,
+while the distribution of Wi−(τ quote i ) is given by
+P[Wi−(τ quote i ) = m] =
+
+
+
+P[σi < ϵqi− 0 , qi− 0 −1], m = qi− 0 ,
+P[ϵqi− 0 , m < σi] − P[ϵqi− 0 , m−1 < σi], 1 < m < qi− 0 ,
+P[ϵqi− 0 , 1 < σi], m = 1,
+(48)
+where ϵm,n denotes the first-passage time of a pure-death process from state m to state n, and
+σi denotes the first-passage time at which the best-quote queue on side i ∈ {A, B} is depleted.
+Proof. At time τ quote i , the queue sizes Wi−(τ quote i ) and Qj (τ quote i ) are random. Hence, by the law
+of total probability, the conditional fill probability in (45) can be obtained by conditioning on
+all admissible values of these quantities and summing over the resulting scenarios. In particular,
+for m ≥ 1 and n ≥ 1, consider the joint event
+{Wi−(τ quote i ) = m, Qj (τ quote i ) = n}.
+Its probability can be written as
+P
+h
+Wi−(τ quote i ) = m, Qj (τ quote i ) = n i . (49)
+16
+
+=== page 17 ===
+By the assumed independence between the processes Wi− and Qj , we obtain
+P
+h
+Wi−(τ quote i ) = m, Qj (τ quote i ) = n i = P[Wi−(τ quote i ) = m] P[Qj (τ quote i ) = n]. (50)
+For notational simplicity, we omit conditioning on the initial state at t = 0 and on the event
+S(τ quote i ) = s0 + 1 and N Ci−, which are fixed throughout.
+Conditioning on (Wi−(τ quote i ), Qj (τ quote i )) = (m, n) and summing over all admissible values
+yields
+Ni−X
+m=1
+NjX
+n=1
+P
+h
+ϵi− < τ i
+ Wi−(τ quote i ) = m, Qj (τ quote i ) = n i P[Wi−(τ quote i ) = m] P[Qj (τ quote i ) = n].
+(51)
+Combining Equations (44) and (51), we obtain the fill probability of an order placed one
+price level deeper than the best quote qi, for i ∈ {A, B}, as
+P[τ quote i < τ other i ]· 
+
+qi− 0X
+m=1
+NjX
+n=1
+P[ϵi− < τ i | Wi−(τ quote i ) = m, Qj (τ quote i ) = n] P[Wi−(τ quote i ) = m] P[Qj (τ quote i ) = n]
+
+ ,
+which proves (47).
+Finally, note that Wi− evolves as a pure-death process and therefore takes values in a finite
+state space at time τ quote i , which leads directly to the distribution given in (48). This reflects the
+fact that the order of interest can only advance in the queue due to cancellations, while orders
+submitted later have lower priority and do not affect its execution.
+In contrast, the process Qj evolves as a birth–death process and is, in principle, unbounded.
+In practice, however, queue sizes at the best quote remain effectively bounded, allowing us to
+restrict attention to a finite range of values. Following Cont and De Larrard (2013), we estimate
+the distribution of Qj (τ quote i ) empirically from observed queue sizes after the corresponding one-
+tick price move, and approximate P[Qj (τ quote i ) = n] using the stationary distribution of Qj .
+Remark 3 Suppose that all transition rates λQl (Xl), µQl (Xl), and ϕQl (Xl) depend only on the
+queue size, namely
+λQl (Xl) = λQl (pl), µQl (Xl) = µQl (pl), ϕQl (Xl) = ϕQl (pl),
+for all l = 1, . . . , N , as introduced in Section 2.1. In this case, the invariant distribution of the
+limit order book admits an explicit form. Let π(pl) denote the stationary distribution of Ql. By
+standard results (see Gross and Harris, 1998), it is given by
+πn(pl) = π0(pl)
+nY
+k=1
+ρk−1(pl), (52)
+where
+π0(pl) =
+ 
+1 +
+∞X
+n=1
+nY
+k=1
+ρk−1(pl)
+!−1
+, (53)
+17
+
+=== page 18 ===
+and
+ρn(pl) = λn(pl) µn+1(pl) + ϕn+1(pl) . (54)
+Consequently, for i ̸= j ∈ {A, B}, one may approximate
+P[Qj (τ quote i ) = n] = πn(pj ).
+To compute the probability given in Equation (47), we have the following propositions for
+the calculations of (44) and (51).
+Proposition 4 Recall that ˆf s0 σi (s) denotes the Laplace transform of the density of the first-
+passage time σi for the birth–death process Qi to hit 0, given initial spread s0 ≥ 1, and is given
+by (20). Define
+Λs0 =
+s0−1X
+m=1
+λ0(XpA−m) =
+s0−1X
+m=1
+λ0(XpB +m).
+Then the probability in (44) is obtained by evaluating at s = 0 the inverse Laplace transform of
+ˆGs0 σi,σj (s) = 1 s ˆf s0 σi (s)  ˆf s0 σj (2Λs0 − s) + 2Λs0 2Λs0 − s   1 − ˆf s0 σj (2Λs0 − s)  , (55)
+for i ̸= j ∈ {A, B}. In particular, when s0 = 1, we obtain
+ˆG1 σi,σj (s) = 1 s ˆf 1 σi (s) ˆf 1 σj (−s). (56)
+Proof. We distinguish two cases depending on the initial spread s0 again.
+(i) Case s0 = 1: Since no orders can be posted inside the spread, the event {τ quote i < τ other i } is
+equivalent to the event that the best-quote queue on side i is depleted before the opposite
+best-quote queue. Hence, for i ̸= j ∈ {A, B},
+P[τ quote i < τ other i ] = P[σi < σj ] = P[σi − σj < 0].
+By independence of σi and σj , this probability can be computed by evaluating at t = 0
+the inverse Laplace transform of
+ˆG1 σi,σj (s) = 1 s ˆf 1 σi (s) ˆf 1 σj (−s).
+(ii) Case s0 > 1: When the spread exceeds one tick, the mid-price may also move due to the
+arrival of limit orders inside the spread. Let τA and τB denote the first arrival times of
+sell and buy limit orders inside the spread, respectively. Then τA and τB are independent
+exponential random variables with rate Λs0 , and
+P[τ quote i < τ other i ] = P[σi < σj ∧ τA ∧ τB ].
+Applying Lemma 1 yields that this probability is obtained by evaluating at s = 0 the
+inverse Laplace transform of
+ˆGs0 σi,σj (s) = 1 s ˆf s0 σi (s)  ˆf s0 σj (2Λs0 − s) + 2Λs0 2Λs0 − s   1 − ˆf s0 σj (2Λs0 − s)  .
+18
+
+=== page 19 ===
+Since the best quote pi has moved by one tick to pi−, the bid–ask spread at time τ quote i
+increases to s0 + 1. We are therefore led to the following proposition, which provides an explicit
+expression for P[ϵi− < τ i | Wi−(τ quote i ) = m, Qj (τ quote i ) = n] appearing in (51).
+Proposition 5 Fix s0 ≥ 1 and suppose that at time τ quote i the spread equals s0 + 1. Conditional
+on
+Wi−(τ quote i ) = m, Qj (τ quote i ) = n,
+let p′ A and p′ B denote the best ask and best bid at time τ quote i , and define
+Λ′ s0+1 =
+s0X
+r=1
+λ0(Xp′ A−r) =
+s0X
+r=1
+λ0(Xp′ B +r).
+Let ˆf s0+1 σj (s) denote the Laplace transform of the density of the first-passage time σj of the
+birth–death process Qj to hit 0, given Qj (τ quote i ) = n (cf. (20)). Similarly, let ˆgs0+1 ϵi− (s) denote
+the Laplace transform of the density of the first-passage time ϵi− to hit 0 for the pure-death
+process describing the queue at the new best quote pi−, given Wi−(τ quote i ) = m (cf. (33)).
+Then, for i ̸= j ∈ {A, B},
+P
+h
+ϵi− < τ i
+ Wi−(τ quote i ) = m, Qj (τ quote i ) = n i
+is obtained by evaluating at s = 0 the inverse Laplace transform of
+ˆF s0+1 ϵi−,σj (s) = 1 s ˆgs0+1 ϵi− (s)  ˆf s0+1 σj (2Λ′ s0+1 − s) + 2Λ′ s0+1 2Λ′ s0+1 − s   1 − ˆf s0+1 σj (2Λ′ s0+1 − s)  . (57)
+Proof. Conditional on Wi−(τ quote i ) = m, the queue position of the order at level pi− evolves as
+a pure-death process with death rates µk(Xpi− ) + ϕk(Xpi− ) for k = 1, . . . , m. The first-passage
+time to 0 is therefore the sum of m independent exponential holding times, which yields (33)
+with qi 0 = Wi−(τ quote i ) = m.
+Since the spread at time τ quote i equals s0 + 1 ≥ 2, the mid-price may move either when the
+opposite best-quote queue Qj is depleted (at time σj ) or when a limit order arrives inside the
+spread. The latter occurs at the minimum of two independent exponential clocks with total
+rate 2Λ′ s0+1. Applying Lemma 1 with ϵi− and σj gives the Laplace representation (57), which
+completes the proof.
+Proposition 6 Let ˆf s0 σi (s) denote the Laplace transform of the density of the first-passage time
+σi of the birth–death process Qi to hit 0, as given in (20).
+Consider the pure-death process ˜Wi− on side i ∈ {A, B}, and let ˆhi−,s0 qi− 0 ,m(s) denote the Laplace
+transform of the density of the first-passage time for ˜Wi− to move from state qi− 0 to state m ≤ qi− 0 .
+Then, for m ≥ 1,
+ˆhi−,s0
+qi− 0 ,m(s) =
+qi− 0Y
+k=m
+ϕk(Xpi− )
+ϕk(Xpi− ) + s . (58)
+19
+
+=== page 20 ===
+Moreover, the probabilities in (48) can be obtained by evaluating at s = 0 the inverse Laplace
+transform of
+ˆH s0
+σi;qi− 0 ,m(s) =
+
+
+
+1
+s
+ˆf s0 σi (s) ˆhi−,s0 qi− 0 , qi− 0 −1(−s), m = qi− 0 ,
+1
+s
+ˆf s0 σi (−s)  ˆhi−,s0 qi− 0 , m(s) − ˆhi−,s0 qi− 0 , m−1(s)  , 1 < m < qi− 0 ,
+1
+s
+ˆf s0 σi (−s) ˆhi−,s0 qi− 0 , 1(s), m = 1.
+(59)
+Proof. Recall that Wi−(t), for 0 ≤ t ≤ τ quote i , denotes the number of orders at level pi− that
+were already present at time 0 and remain outstanding up to time t. Since pi− is not the best
+quote prior to τ quote i , these orders cannot be executed by market orders under the unit-size
+assumption. Hence, their evolution is driven solely by cancellations, and the process ˜Wi− is a
+pure-death process with death rates ϕk(Xpi− ).
+By (17), the Laplace transform of the density of the first-passage time from qi− 0 to m ≤ qi− 0
+satisfies
+ˆhi−,s0
+qi− 0 ,m(s) =
+qi− 0Y
+k=m
+ˆhi−,s0 k,k−1(s), ˆhi−,s0 k,k−1(s) = ϕk(Xpi− ) ϕk(Xpi− ) + s ,
+which yields
+ˆhi−,s0
+qi− 0 ,m(s) =
+qi− 0Y
+k=m
+ϕk(Xpi− )
+ϕk(Xpi− ) + s .
+Next, to compute the probabilities in (48), note that on the time interval [0, τ quote i ] no limit
+orders can be posted inside the spread. Therefore, the value of Wi−(τ quote i ) is determined by
+whether the pure-death process ˜Wi− reaches a given level before the depletion time σi of the
+best-quote queue.
+(i) Case m = qi− 0 . We have
+P[Wi−(τ quote i ) = qi− 0 ] = P[σi < ϵqi− 0 , qi− 0 −1],
+and by independence and the Laplace-transform argument used in Proposition 2, this
+probability is obtained by evaluating at s = 0 the inverse Laplace transform of
+ˆH s0
+σi;qi− 0 ,qi− 0 (s) = 1 s ˆf s0 σi (s) ˆhi−,s0 qi− 0 , qi− 0 −1(−s).
+(ii) Case 1 < m < qi− 0 . In this case,
+P[Wi−(τ quote i ) = m] = P[ϵqi− 0 , m < σi] − P[ϵqi− 0 , m−1 < σi],
+and thus it is obtained by evaluating at s = 0 the inverse Laplace transform of
+ˆH s0
+σi;qi− 0 ,m(s) = 1 s ˆf s0 σi (−s)  ˆhi−,s0 qi− 0 , m(s) − ˆhi−,s0 qi− 0 , m−1(s)  .
+(iii) Case m = 1. Finally,
+P[Wi−(τ quote i ) = 1] = P[ϵqi− 0 , 1 < σi],
+which is obtained by evaluating at s = 0 the inverse Laplace transform of
+ˆH s0
+σi;qi− 0 ,1(s) = 1 s ˆf s0 σi (−s) ˆhi−,s0 qi− 0 , 1(s).
+20
+
+=== page 21 ===
+Using Propositions 4–6, we can compute all terms in (47) and thereby obtain the fill prob-
+ability of a limit order posted one price level deeper than the best quote, before the opposite
+best quote moves.
+Remark 4 In line with Remarks 1 and 2, once explicit expressions for the transition rates
+λQi (Xpi ), µQi (Xpi ), ϕQi (Xpi ), and µQi− (Xpi− ), ϕQi− (Xpi− ) for i ∈ {A, B} are specified, the
+corresponding fill probability in (47) follows directly from Propositions 4–6.
+5 Numerical and Empirical Experiments
+This section outlines the calibration procedure for the model parameters, describes the FX spot
+limit order book dataset, and presents empirical stylized facts used to motivate our modeling
+choices. We then report numerical experiments evaluating the resulting fill probability estimates
+at different price levels. Throughout this section, we adopt Model III introduced in Section 2.3,
+which is supported by the empirical findings presented below.
+5.1 Parameter Estimation
+The empirical analysis in Section 5.2 indicates that both arrival and cancellation rates depend
+strongly on the prevailing spread size S. Following the estimation approach of Cont et al. (2010),
+we estimate the model parameters by sample averages over periods in which the spread remains
+equal to S.
+Limit order arrivals. For limit orders posted at distance δ (in ticks) from the opposite best
+quote, conditional on S, we estimate the arrival rate by
+ˆλS (δ) = N S l (δ) T S∗ , (60)
+where N S l (δ) denotes the total number of limit order arrivals observed at distance δ while the
+spread equals S, and T S ∗ is the total time (in seconds) during which the spread equals S in the
+considered sample. Under the symmetry assumption, the bid-side and ask-side rates are taken
+to be equal and given by 1 2 ˆλS (δ).
+Market order arrivals. Similarly, the market order arrival rate conditional on spread size S
+is estimated as
+ˆµS = N S m
+T S∗ · Sm Sl , (61)
+where N S m is the total number of market orders observed while the spread equals S, and Sm and
+Sl denote the average sizes of market and limit orders, respectively. The ratio Sm Sl adjusts for the unit-size assumption in the model. Symmetry implies that the buy and sell market order
+intensities are both given by 1 2 ˆµS . The empirical ratios Sm Sl are given in Table 1.
+Cancellation rates. Finally, we estimate the cancellation rate function θ(δ, S) by
+ˆθS (δ) = N S c (δ) T S∗ QS δ · Sc Sl , (62)
+21
+
+=== page 22 ===
+Week 1 Week 2 Week 3 Week 4
+Sm/Sl 0.40 0.47 0.38 0.43
+Table 1: Ratio of average market order size to average limit order size.
+where N S c (δ) denotes the number of cancellations observed at distance δ from the opposite best
+quote while the spread equals S, and Sc is the average cancellation size. The normalization factor
+QS δ corresponds to the average number of outstanding limit orders at that level, computed as
+QS δ = 1 2  QS,Bid δ + QS,Ask δ  ,
+with
+QS,Bid δ = 1 Sl 1 M MX j=1 V S,Bid δ (j) and QS,Ask δ = 1 Sl 1 M MX j=1 V S,Ask δ (j), (63)
+where M denotes the number of observations in the sample, and V S,Bid δ (j) (resp. V S,Ask δ (j)) is
+the total outstanding bid (resp. ask) volume at distance δ in the jth snapshot, conditional on
+spread S. The ratio Sc Sl is given in Table 2.
+Week 1 Week 2 Week 3 Week 4
+Sc/Sl 1.00 1.00 1.00 1.00
+Table 2: Ratio of average cancellation size to average limit order size.
+5.2 Empirical Analysis of the FX Spot Market
+We conduct empirical analyses of the FX spot limit order book to motivate our intensity spec-
+ifications and modeling assumptions. In particular, we study the empirical distribution of the
+bid–ask spread, assess the degree of symmetry between bid- and ask-side order flows, and quan-
+tify the relative frequency of submissions and cancellations.
+Our dataset consists of high-frequency limit order book data from the trading venue LMAX,
+covering the period from 2–11–2020 to 29–10–2021. We focus on the EUR/USD currency pair,
+one of the most actively traded instruments in the global FX market.
+Across four representative weeks (7–6–2021 to 2–7–2021), we find that the bid–ask spread
+lies predominantly between one and five ticks. In particular, the spread equals three or four ticks
+for approximately 80% of the observed time, indicating that moderate spread sizes dominate
+typical market conditions.
+Empirical estimates of limit order, market order, and cancellation intensities are given in
+Section 5.1.
+5.2.1 Order Flow Symmetry
+Model III assumes symmetric order flow, meaning that buy and sell order arrival rates are
+comparable. To assess this assumption, we estimate empirical market order arrival rates on
+both sides of the book. Figure 3 shows that buy and sell market order rates are consistently
+similar across all weeks, supporting the symmetry assumption and simplifying the calibration
+procedure.
+22
+
+=== page 23 ===
+Week 1 Week 2 Week 3 Week 4
+0.04
+0.08
+0.12
+0.16
+0
+Arrival rate per second
+Total Buy Sell
+Figure 3: Market order arrival rates (buy and sell) per second, by week.
+5.2.2 Empirical Limit Order Executions
+Figure 4 shows the empirical distribution of the distance between a limit order and the best quote
+at the time of execution. For buy (sell) orders, the distance is measured relative to the best bid
+(best ask). A distance of 0 corresponds to executions at the best quote, while a strictly positive
+distance indicates executions caused by market orders consuming liquidity across multiple price
+levels. Across all weeks in the dataset, more than 90% of executions occur at the best quotes,
+supporting the modeling assumption that market orders predominantly interact with the best
+bid and ask queues.
+We next study the placement depth of executed limit orders at submission. Figure 5 shows
+the distribution of submission distances from the best quote, where negative values correspond
+to orders submitted inside the spread. We find that approximately 85% of executed limit orders
+are submitted within one tick of the best quote, indicating that deeper placements contribute
+only marginally in practice.
+0 1 2 3 > 3
+0.2
+0.4
+0.6
+0.8
+1.0
+0
+Distance in ticks from the best quote
+Percentage
+Week 1
+Week 2
+Week 3
+Week 4
+Figure 4: Distribution of executed limit orders by their distance (in ticks) from the best quote
+at execution.
+23
+
+=== page 24 ===
+< 0 0 1 2 3 > 3
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0
+Distance in ticks from the best quote
+Percentage
+Week 1
+Week 2
+Week 3
+Week 4
+Figure 5: Distribution of executed limit orders by their distance (in ticks) from the best quote
+at submission.
+5.2.3 Empirical Arrival and Cancellation Rates
+We next quantify order flow as a function of the spread size S and the distance (in ticks) to
+the opposite best quote. Figure 6 shows empirical limit order arrival rates for S ∈ {1, . . . , 5},
+showing substantially higher activity when the spread is small. Figure 7 presents market order
+arrival rates by spread size, which similarly decrease rapidly as S increases. Figure 8 shows that
+cancellation intensities also depend strongly on S and closely mirror the submission profiles,
+consistent with the fact that nearly all limit orders are eventually cancelled (approximately
+99.9%; see Table 3). These findings motivate Model III, in which all order flow intensities
+explicitly depend on S.
+Week 1 Week 2 Week 3 Week 4
+Cancelled 99.91% 99.93% 99.91% 99.87%
+(Partially) filled 0.09% 0.07% 0.09% 0.13%
+Table 3: Percentage of limit orders that are cancelled or (partially) filled.
+5.2.4 Average Number of Outstanding Orders
+Figure 9 shows the time-averaged number of outstanding limit orders at price levels located one
+to ten ticks from the opposite best quote. The queue profiles are highly stable across the four
+sampled weeks. For each spread size, the best quote has the smallest average queue size, which
+increases with depth and peaks around four to six ticks from the best quote. Beyond this point,
+average queue sizes decline and remain approximately constant at deeper levels.
+5.3 Estimating the Probability of a Mid-Price Change
+Since the analysis is symmetric for upward and downward mid-price movements, we focus with-
+out loss of generality on the probability of a mid-price increase. Model-implied probabilities are
+computed via the Laplace-transform representation in Proposition 1, combined with numerical
+inversion using the COS method described in Section A.2.
+To benchmark the model, we compute the empirical conditional probability of an upward
+mid-price move from the observed frequencies. The evaluation is performed on a five-day sample
+from 29–6–2021 to 5–7–2021.
+24
+
+=== page 25 ===
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+20
+40
+60
+80
+0
+Distance in ticks from the opposite best quote
+Arrival rate per second
+S = 1
+S = 2
+S = 3
+S = 4
+S = 5
+(a) Rates between 7–6–2021 and 11–6–2021
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+50
+100
+150
+200
+0
+Distance in ticks from the opposite best quote
+Arrival rate per second
+S = 1
+S = 2
+S = 3
+S = 4
+S = 5
+(b) Rates between 14–6–2021 and 18–6–2021
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+10
+20
+30
+40
+0
+Distance in ticks from the opposite best quote
+Arrival rate per second
+S = 1
+S = 2
+S = 3
+S = 4
+S = 5
+(c) Rates between 21–6–2021 and 25–6–2021
+0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+7.5
+15
+22.5
+30
+0
+Distance in ticks from the opposite best quote
+Arrival rate per second
+S = 1
+S = 2
+S = 3
+S = 4
+S = 5
+(d) Rates between 28–6–2021 and 2–7–2021
+Figure 6: Limit order arrival rates by distance δ (in ticks) from the opposite best quote, for each
+spread size S.
+25
+
+=== page 26 ===
+1 2 3 4 5
+1.0
+2.0
+3.0
+4.0
+5.0
+6.0
+0
+Spread size (in ticks)
+Arrival rate per second
+Week 1
+Week 2
+Week 3
+Week 4
+Figure 7: Market order arrival rates (per second) for spread sizes S = 1, . . . , 5 ticks.
+Specifically, let t denote an event time and let tM be the first subsequent time at which the
+mid-price changes. The empirical probability of an increase, conditional on the state (qA, qB , S),
+is defined as
+P S inc(qA, qB ) = #
+
+pM (tM ) > pM (t), QA(t) = qA, QB (t) = qB , S(t) = S
+	
+#
+
+pM (tM ) ̸= pM (t), QA(t) = qA, QB (t) = qB , S(t) = S
+	 , (64)
+where # denotes the number of occurrences in the data, QA(t) and QB (t) are the best-ask and
+best-bid queue sizes, and S(t) is the spread.
+Calibration windows. We consider two calibration schemes for the intensity parameters:
+1. Same weekday calibration: parameters are estimated using the previous four occurrences
+of the same weekday (e.g., four previous Mondays to predict the next Monday).
+2. Rolling window calibration: parameters are estimated using the preceding five trading days
+(Monday–Friday) to predict the following Monday.
+For each scheme, we compute model probabilities both with spread-independent and spread-
+dependent intensities.
+Error metric. To assess predictive accuracy, we report the mean absolute percentage error
+(MAPE),
+MAPE = 1 n nX k=1  Pk − ˆPk Pk  , (65)
+where Pk is the empirical probability, ˆPk the corresponding model estimate, and n the total
+number of data points.
+26
+
+=== page 27 ===
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+0
+20
+40
+60
+0
+Distance in ticks from the opposite best quote
+Cancellation rate per second
+S = 1
+S = 2
+S = 3
+S = 4
+S = 5
+(a) Rates between 7–6–2021 and 11–6–2021.
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+25
+50
+75
+100
+125
+150
+0
+Distance in ticks from the opposite best quote
+Cancellation rate per second
+S = 1
+S = 2
+S = 3
+S = 4
+S = 5
+(b) Rates between 14–6–2021 and 18–6–2021.
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+5
+10
+15
+20
+25
+30
+35
+40
+0
+Distance in ticks from the opposite best quote
+Cancellation rate per second
+S = 1
+S = 2
+S = 3
+S = 4
+S = 5
+(c) Rates between 21–6–2021 and 25–6–2021.
+1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+2.5
+5
+7.5
+10
+12.5
+15
+17.5
+0
+Distance in ticks from the opposite best quote
+Cancellation rate per second
+S = 1
+S = 2
+S = 3
+S = 4
+S = 5
+(d) Rates between 28–6–2021 and 2–7–2021.
+Figure 8: Cancellation rates by distance δ (ticks) from the opposite best quote, for each spread
+size S.
+27
+
+=== page 28 ===
+1 2 3 4 5 6 7 8 9 10
+1
+2
+3
+4
+·106
+0
+Distance in ticks from the opposite best quote
+Average quantity outstanding
+S = 1
+S = 2
+S = 3
+S = 4
+S = 5
+(a) Average quantities between 7–6–2021 and
+11–6–2021.
+1 2 3 4 5 6 7 8 9 10
+1
+2
+3
+4
+·106
+0
+Distance in ticks from the opposite best quote
+Average quantity outstanding
+S = 1
+S = 2
+S = 3
+S = 4
+S = 5
+(b) Average quantities between 14–6–2021 and
+18–6–2021.
+1 2 3 4 5 6 7 8 9 10
+1
+2
+3
+4
+·106
+0
+Distance in ticks from the opposite best quote
+Average quantity outstanding
+S = 1
+S = 2
+S = 3
+S = 4
+S = 5
+(c) Average quantities between 21–6–2021 and
+25–6–2021.
+1 2 3 4 5 6 7 8 9 10
+1
+2
+3
+4
+·106
+0
+Distance in ticks from the opposite best quote
+Average quantity outstanding
+S = 1
+S = 2
+S = 3
+S = 4
+S = 5
+(d) Average quantities between 28–6–2021 and
+2–7–2021.
+Figure 9: Average outstanding queue size at distance δ = 1, . . . , 10 ticks from the opposite best
+quote, shown separately for each spread size S.
+28
+
+=== page 29 ===
+MAPE
+Rolling window (preceding 5 days) Same weekday (previous 4 instances)
+S Spread independent rates Spread dependent rates Spread independent rates Spread dependent rates
+1 11.3% 10.4% 11.4% 10.6%
+2 12.0% 11.4% 13.0% 10.8%
+3 12.7% 13.3% 14.7% 14.6%
+4 6.4% 4.7% 6.6% 5.4%
+5 10.8% 8.8% 10.8% 8.1%
+Average 10.6% 9.7% 11.3% 9.9%
+Table 4: MAPE between empirical and model-implied conditional probabilities of an upward mid-price
+move.
+Table 4 shows that incorporating spread dependence generally improves predictive accuracy.
+Although no calibration scheme dominates for all spread sizes, the rolling-window calibration
+with spread-dependent intensities yields the lowest average MAPE, and is therefore used in the
+remainder of the numerical experiments.
+Table 5 shows empirical frequencies and model-implied probabilities on 5–7–2021 under the
+selected calibration. To ensure statistical reliability, we discard state configurations (qA, qB , S)
+observed fewer than 100 times. Overall, the model reproduces the empirical monotonicity: the
+probability of an upward move decreases with qA and increases with qB . The resulting MAPE
+values indicate that the proposed framework captures short-term mid-price dynamics reasonably
+well.
+5.4 Estimate the Fill Probability at the Best Quotes
+We next estimate the conditional probability that a limit order submitted at the best quote
+is executed before the mid-price moves. Model-implied fill probabilities are computed from
+Proposition 2.
+Since the theoretical quantity is conditional on the event that the order is never cancelled, we
+construct an empirical proxy by focusing on orders that either (i) are filled before any mid-price
+change, or (ii) remain active until the mid-price moves and are cancelled only afterwards. We
+estimate
+P S fill = #{Fill, pM (tF ) = pM (t0)} #{Fill, pM (tF ) = pM (t0)} + #{Cancel, pM (tC ) ̸= pM (t0)} , (66)
+where # denotes the number of events, t0 is the submission time, and tF and tC denote the
+execution and cancellation times, respectively. Here, pM (t) denotes the mid-price at time t. For
+readability, we omit the conditioning on (QA(t0), QB (t0), S(t0)) = (qA, qB , S).
+Model-implied probabilities are obtained by numerically inverting the Laplace transforms in
+Proposition 2 using the COS method. Table 6 shows empirical and model-implied fill probabil-
+ities on 5–7–2021 for spread sizes S ∈ {1, . . . , 5}. As before, we only report states observed at
+least 100 times.
+Overall, the model reproduces the main monotonicity patterns in the data. Performance is
+strongest for small queue sizes, while fill probabilities are slightly overestimated when the best-
+bid queue is large. This is unsurprising, since for qB > 1 the empirical execution probability is
+typically below 0.5%, making accurate estimation challenging. Nevertheless, the results indicate
+that the proposed framework provides a tractable and empirically reasonable approximation of
+short-term execution probabilities at the best quotes.
+29
+
+=== page 30 ===
+Empirical Probability Model-Implied Probability
+qA qA
+qB 1 2 3 4 5 1 2 3 4 5
+1 50.3% 33.0% 22.9% 27.1% 22.4% 50.0% 34.7% 27.1% 22.6% 19.6%
+2 70.5% 56.6% - - - 65.3% 50.0% 41.1% 35.3% 31.1%
+S = 1 3 78.7% - - - - 72.9% 58.9% 50.0% 43.8% 39.2%
+4 78.2% - - - - 77.4% 64.7% 56.2% 50.0% 45.3%
+5 81.4% - - - - 80.5% 68.9% 60.8% 54.8% 50.0%
+1 49.6% 38.5% 32.2% 25.2% 22.0% 50.0% 36.8% 30.9% 27.6% 25.6%
+2 58.1% 48.5% 52.3% 45.5% 27.5% 63.3% 50.0% 43.2% 39.1% 36.4%
+S = 2 3 70.1% 49.9% - - - 69.2% 56.8% 50.0% 45.7% 42.7%
+4 75.1% 43.9% - - - 72.4% 60.9% 54.4% 50.0% 47.0%
+5 81.6% - - - - 74.5% 63.7% 57.3% 53.1% 50.0%
+1 49.9% 42.8% 39.7% 36.8% 31.8% 50.0% 38.9% 34.4% 32.2% 30.8%
+2 54.7% 48.1% 52.0% 47.5% 52.6% 61.1% 50.0% 45.0% 42.2% 40.5%
+S = 3 3 56.3% 46.0% 45.3% 49.9% 72.2% 65.6% 55.0% 50.0% 47.12% 45.3%
+4 62.5% 49.4% 59.7% 47.0% - 67.8% 57.8% 52.9% 50.0% 48.1%
+5 65.7% 51.9% - - - 69.2% 59.5% 54.7% 51.9% 50.0%
+1 51.7% 44.0% 41.5% 38.6% 35.3% 50.0% 41.5% 38.8% 37.6% 37.0%
+2 56.5% 47.0% 45.1% 43.5% 44.1% 58.5% 50.0% 47.0% 45.6% 44.9%
+S = 4 3 58.3% 52.8% 50.5% 52.8% 40.1% 61.2% 53.0% 50.0% 48.6% 47.8%
+4 61.5% 54.8% 55.6% 51.7% 48.3% 62.4% 54.4% 51.4% 50.0% 49.2%
+5 67.7% 58.7% 60.2% 54.0% 44.1% 63.0% 55.1% 52.2% 50.8% 50.0%
+1 39.1% 43.3% 49.3% 42.3% 51.0% 50.0% 44.4% 43.1% 42.7% 42.6%
+2 56.8% 45.5% 66.8% 52.1% 40.0% 55.6% 50.0% 48.6% 48.2% 48.0%
+S = 5 3 63.2% 48.1% 53.9% 59.7% 53.7% 56.9% 51.4% 50.0% 49.5% 49.4%
+4 65.0% 54.1% 39.4% 53.6% 50.7% 57.3% 51.8% 50.5% 50.0% 49.8%
+5 65.7% 64.2% 42.5% 53.3% 45.2% 57.4% 52.0% 50.6% 50.2% 50.0%
+Table 5: Empirical probabilities and model-implied probabilities of an upward mid-price move on 5–7–
+2021, conditional on spread size S and initial best-ask/best-bid queue sizes (qA, qB ).
+30
+
+=== page 31 ===
+Empirical Probability Model-Implied Probability
+qA qA
+qB 1 2 3 4 5 1 2 3 4 5
+1 2.0% 5.3% 7.1% 13.4% - 3.0% 3.9% 4.6% 5.1% 5.5%
+2 0.6% 0.0% - - - 1.9% 2.7% 3.2% 3.7% 4.0%
+S = 1 3 0.3% - - - - 1.5% 2.2% 2.6% 3.0% 3.3%
+4 0.0% - - - - 1.2% 1.8% 2.2% 2.6% 2.9%
+5 0.0% - - - - 0.9% 1.5% 1.9% 2.2% 2.5%
+1 1.3% 2.5% 4.1% 5.9% 5.9% 1.5% 1.8% 2.0% 2.1% 2.2%
+2 0.3% 0.1% 0.0% - - 1.0% 1.2% 1.3% 1.4% 1.5%
+S = 2 3 0.3% 1.6% - - - 0.7% 0.9% 1.0% 1.1% 1.2%
+4 0.2% - - - - 0.6% 0.8% 0.9% 1.0% 1.0%
+5 0.0% 0.0% 0.0% - - 0.5% 0.7% 0.8% 0.8% 0.9%
+1 0.5% 0.9% 1.4% 1.1% 0.8% 1.2% 1.3% 1.4% 1.4% 1.4%
+2 0.1% 0.0% 0.3% 0.0% 0.0% 0.8% 0.9% 1.0% 1.0% 1.0%
+S = 3 3 0.1% 0.1% 0.0% 0.0% - 0.7% 0.7% 0.8% 0.8% 0.8%
+4 0.1% 0.0% 0.0% - - 0.5% 0.5% 0.5% 0.6% 0.7%
+5 0.1% 0.0% - - - 0.5% 0.5% 0.6% 0.6% 0.6%
+1 1.5% 0.5% 0.3% 0.5% 0.3% 1.1% 1.2% 1.2% 1.2% 1.2%
+2 0.0% 0.0% 0.2% 0.1% 0.0% 0.8% 0.8% 0.8% 0.8% 0.8%
+S = 4 3 0.0% 0.1% 0.0% 0.0% 0.0% 0.6% 0.7% 0.7% 0.7% 0.7%
+4 0.1% 0.0% 0.0% 0.0% 0.0% 0.5% 0.6% 0.6% 0.6% 0.6%
+5 0.0% 0.0% 0.0% 0.0% - 0.5% 0.5% 0.5% 0.5% 0.5%
+1 0.0% - - - - 1.1% 1.1% 1.1% 1.1% 1.1%
+2 0.0% - - - - 0.6% 0.7% 0.7% 0.7% 0.7%
+S = 5 3 - - - - - 0.5% 0.5% 0.5% 0.7% 0.5%
+4 - - - - - 0.3% 0.3% 0.4% 0.4% 0.4%
+5 - - - - - 0.3% 0.3% 0.3% 0.3% 0.3%
+Table 6: Empirical and model-implied fill probabilities of a best-bid order on 5–7–2021, condi-
+tional on spread size S and initial best-ask/best-bid queue sizes (qA, qB ).
+31
+
+=== page 32 ===
+5.5 Estimate the Fill Probability at a Price Deeper than the Best Quotes
+In this section, we estimate the fill probability of a bid order posted one tick below the best bid,
+i.e., at pB− = pB − 1. Recall that WB−(t) denotes the number of remaining orders at level pB−
+at time t originating from the initial queue QB−(0).
+As observed in Section 5.4, empirical fill probabilities become negligible when WB− > 2. We
+therefore restrict attention to the cases m ∈ {1, 2} and assume that for m > 2,
+P
+h
+ϵB− < τ B
+ WB−(τ quote B ) = m, QA(τ quote B ) = n i = 0. (67)
+To estimate the probability in (47), we specialize to (i, j) = (B, A), which yields
+P[τ quote B < τ other B ]· 
+
+qB− 0X
+m=1
+NAX
+n=1
+
+P[ϵB− < τ B | WB−(τ quote B ) = m, QA(τ quote B ) = n] · P[WB−(τ quote B ) = m] · P[QA(τ quote B ) = n]
+
+ .
+(68)
+We focus on the cases where the spread at submission equals one or two ticks, since Model III
+achieved its best performance for these spread sizes in Section 5.4.
+Table 7 shows the empirical distribution of the best-ask queue size after a downward move
+of the best bid. For both S = 1 and S = 2, the probability mass is concentrated on qA ∈ {1, 2}.
+We therefore truncate the distribution by setting P[QA(τ quote B ) = n] = 0 for n > 2 and take
+NA = 2. Following Cont and De Larrard (2013), we use the empirical frequencies in Table 7 as
+estimates of P[QA(τ quote B ) = n] for n = 1, 2. Under this truncation, we set qB− 0 = NA = 2 in
+(68).
+qA
+S 1 2 3 4 5 > 5
+1 76.2% 22.0% 1.6% 0.0% 0.0% 0.2%
+2 82.2% 15.2% 1.4% 0.0% 0.0% 0.6%
+Table 7: Empirical distribution of the best-ask queue size qA after a downward move of the best
+bid, conditional on spread size S, using data from 29–6–2021 to 5–7–2021.
+We next consider the case where S = 1 at submission, so that S(τ quote B ) = S + 1 after the bid
+moves down. Model-implied probabilities are computed using order book data from 21–6–2021
+to 2–7–2021. Table 8 shows the corresponding empirical and model-implied fill probabilities.
+Even with two weeks of data, some queue-size configurations occur fewer than 100 times and
+are therefore excluded from the empirical estimates.
+Overall, the model captures the qualitative dependence of fill probabilities at the second best
+quote on prevailing queue sizes, with a mild tendency to overestimate execution. This is not
+unexpected, since the relevant probabilities are very small and the computation may accumu-
+late estimation errors from both best-quote fill probabilities and mid-price move probabilities.
+Nevertheless, the results demonstrate that the proposed framework remains tractable beyond
+the best quotes and provides model-implied fill probabilities that are broadly consistent with
+empirical patterns observed in the FX spot market.
+32
+
+=== page 33 ===
+Empirical Probability Model-Implied Probability
+qA qA
+qB 1 2 3 4 5 1 2 3 4 5
+qB− = 1
+1 0.19% 0.27% 0.68% 2.16% - 0.75% 0.97% 1.09% 1.16% 1.21%
+2 0.23% 0.25% 0.39% 0.67% - 0.53% 0.75% 0.88% 0.97% 1.03%
+3 0.11% 0.69% - - - 0.42% 0.62% 0.75% 0.84% 0.91%
+4 0.12% - - - - 0.35% 0.54% 0.66% 0.75% 0.82%
+qB− = 2
+1 0.06% 0.44% - - - 0.63% 0.81% 0.91% 0.96% 1.00%
+2 0.12% 0.37% 0.00% - - 0.47% 0.67% 0.78% 0.86% 0.91%
+3 0.12% 0.00% - - - 0.38% 0.57% 0.69% 0.77% 0.83%
+4 0.00% - - - - 0.32% 0.50% 0.61% 0.70% 0.76%
+qB− = 3
+1 0.28% 1.12% - - - 0.42% 0.54% 0.60% 0.64% 0.67%
+2 0.09% 0.22% - - - 0.38% 0.53% 0.62% 0.68% 0.72%
+3 0.04% - - - - 0.33% 0.49% 0.59% 0.66% 0.71%
+4 0.00% - - - - 0.29% 0.44% 0.55% 0.62% 0.68%
+qB− = 4
+1 0.06% 0.71% - - - 0.33% 0.42% 0.47% 0.50% 0.53%
+2 0.08% 0.62% - - - 0.32% 0.45% 0.52% 0.58% 0.61%
+3 0.00% - - - - 0.29% 0.43% 0.52% 0.58% 0.63%
+4 0.03% - - - - 0.26% 0.40% 0.49% 0.56% 0.61%
+qB− = 5
+1 0.07% 0.00% - - - 0.27% 0.35% 0.39% 0.42% 0.43%
+2 0.08% 0.89% - - - 0.28% 0.39% 0.46% 0.50% 0.53%
+3 0.00% - - - - 0.26% 0.38% 0.46% 0.52% 0.56%
+4 0.03% - - - - 0.24% 0.36% 0.45% 0.51% 0.56%
+Table 8: Empirical and model-implied fill probabilities for orders posted at pB − 1 with S = 1,
+using data from 21–6–2021 to 2–7–2021.
+33
+
+=== page 34 ===
+6 Conclusion
+This paper develops a tractable framework for computing fill probabilities of limit orders posted
+at different depths in a limit order book. We model the order book as a collection of interacting
+queueing systems with state-dependent order arrivals and cancellations, allowing the intensities
+to depend on both queue sizes and additional stylized market factors. Within this general
+setting, we derive semi-analytical expressions for key execution-related probabilities, including
+mid-price move probabilities and fill probabilities at the best quotes and one level deeper.
+We also show that several existing models arise as special cases of our framework, and we
+illustrate the practical performance of the proposed methodology using FX spot market data.
+The numerical results indicate that the derived formulas remain computationally tractable and
+produce fill probability estimates that align well with empirical patterns. Further refinements
+of the stochastic intensity specifications may improve quantitative accuracy for specific markets,
+but such extensions are left for future work.
+Acknowledgment: The authors thank MN for providing foreign exchange spot market
+limit order book data used in the empirical experiments.
+A Numerical Methods for Inverting a Laplace Transform
+A.1 Euler Method
+We briefly summarize the Euler method of Abate and Whitt (1995) for numerically inverting
+Laplace transforms. This method is based on a Fourier-series representation of the Bromwich
+integral and applies Euler summation to accelerate convergence.
+Let ˆf (s) denote the Laplace transform of a function f (t). The Bromwich inversion formula
+gives
+f (t) = 1 2πi Z γ+i∞ γ−i∞ est ˆf (s) ds, (69)
+where γ > 0 is chosen so that the contour lies to the right of all singularities of ˆf . Following
+Abate and Whitt (1995), this integral can be rewritten as
+f (t) = 2eγt
+π
+Z ∞
+0
+ℜ
+
+ˆf (γ + iu)
+
+cos(ut) du, (70)
+where ℜ(z) denotes the real part of z ∈ C.
+Approximating the integral using the trapezoidal rule with step size h > 0 yields
+f (t) ≈ fh(t) := heγt π ℜ  ˆf (γ)  + 2heγt π ∞X k=1 ℜ  ˆf (γ + ikh)  cos(kht). (71)
+A convenient choice is h = π 2t and γ = A 2t , which gives the classical Euler inversion formula
+fh(t) = eA/2 2t ℜ  ˆf  A 2t  + eA/2 t ∞X k=1 (−1)kℜ  ˆf  A + 2kπi 2t  . (72)
+If |f (t)| ≤ 1 for all t (as is the case for cumulative distribution functions), the discretization
+error satisfies f (t) − fh(t)  ≤ e−A 1 − e−A . (73)
+34
+
+=== page 35 ===
+For small e−A, this bound is approximately e−A. Hence, to achieve a target accuracy of at most
+10−γ , one may choose A = γ log(10). A commonly used value is γ = 8, leading to A ≈ 18.4.
+To compute (72) efficiently, Abate and Whitt (1995) recommend Euler summation, which
+forms a weighted average of the last m partial sums using binomial weights. Define the n-th
+partial sum by
+sn(t) := eA/2 2t ℜ  ˆf  A 2t  + eA/2 t nX k=1 (−1)kℜ  ˆf  A + 2kπi 2t  . (74)
+Then the Euler-accelerated approximation is given by
+f (t) ≈ E(m, n, t) :=
+mX
+k=0
+m
+k
+
+2−msn+k(t). (75)
+In practice, Abate and Whitt (1995) suggest choosing m = 11 and n = 15, and increasing n
+if higher accuracy is required. We refer the reader to the original paper for further details and
+implementation considerations.
+A.2 COS Method
+In addition to the Euler method, Laplace transforms can be inverted numerically using Fourier-
+based techniques. In particular, by evaluating the Laplace transform along the imaginary axis,
+one obtains the characteristic function. Indeed, setting s = iω yields
+ˆf (iω) =
+Z ∞
+0
+e−iωtf (t) dt, (76)
+which corresponds to the Fourier transform of f . This observation motivates the COS method
+of Fang and Oosterlee (2009), which approximates the target function via a truncated Fourier–
+cosine expansion. The COS method typically achieves exponential convergence for smooth
+densities and has linear computational complexity in the number of expansion terms.
+Fourier–cosine expansion. Let f (t) be supported on a finite interval [a, b] ⊂ R. Its Fourier–
+cosine expansion is given by
+f (t) =
+∞X′
+k=0
+¯Ak cos
+
+kπ t − a b − a  , (77)
+where the coefficients satisfy
+¯Ak = 2 b − a Z b a f (t) cos  kπ t − a b − a  dt, (78)
+and the notation P′ indicates that the k = 0 term is weighted by 1 2 .
+Truncation of the Laplace integral. Since the Bromwich inversion integral requires the
+Fourier transform of f , it is natural to approximate the infinite-domain integral by truncating
+the support. Choosing [a, b] such that the tail mass outside the interval is negligible, define the
+truncated transform
+ˆf ∗(s) :=
+Z b
+a
+e−stf (t) dt, (79)
+35
+
+=== page 36 ===
+so that ˆf ∗(s) ≈ ˆf (s).
+Coefficient approximation using the Laplace transform. Substituting ω = − kπ b−a and
+multiplying by e−i akπ b−a , we obtain
+ˆf ∗
+
+−i kπ b − a  exp  −i akπ b − a  = Z b a exp  ikπ t − a b − a  f (t) dt. (80)
+Taking the real part and using eiu = cos(u) + i sin(u) gives
+ℜ
+
+ˆf ∗
+
+−i kπ b − a  exp  −i akπ b − a  = Z b a f (t) cos  kπ t − a b − a  dt. (81)
+Comparing with (78), the coefficients can therefore be approximated by
+¯Ak = 2 b − a ℜ  ˆf ∗  −i kπ b − a  exp  −i akπ b − a  ≈ ¯Fk, (82)
+where
+¯Fk := 2 b − a ℜ  ˆf  −i kπ b − a  exp  −i akπ b − a  . (83)
+Hence, truncating the cosine expansion at N terms yields the COS approximation
+f (t) ≈ fN (t) :=
+N −1X′
+k=0
+¯Fk cos
+
+kπ t − a b − a  . (84)
+Choice of truncation interval. A crucial step in the COS method is selecting the integration
+range [a, b]. Fang and Oosterlee (2009) propose choosing
+[a, b] =
+
+c1 − L
+q
+c2 + √c4, c1 + L q c2 + √c4  , (85)
+where L ∈ [6, 12] and cn denotes the n-th cumulant of the underlying distribution. These
+cumulants can be obtained from the cumulant generating function
+CX (t) := log E[etX ] = log ˆf (−t), (86)
+so that
+cn = dn dtn CX (t)  t=0 , n ≥ 1. (87)
+In particular,
+c1 = d dt CX (t)  t=0 , c2 = d2 dt2 CX (t)  t=0 , c4 = d4 dt4 CX (t)  t=0 . (88)
+For further details and practical implementation aspects of the COS method, we refer to
+Fang and Oosterlee (2009).
+36
+
+=== page 37 ===
+B Numerical Methods for Continued Fractions
+In this appendix, we briefly describe a stable numerical procedure for evaluating continued
+fractions, which arise in the Laplace transform expressions used throughout the paper.
+Consider a continued fraction of the form
+f = a1
+b1+
+a2
+b2+
+a3
+b3+ · · · , (89)
+where {ak}k≥1 and {bk}k≥1 are given sequences. The k-th approximant (or convergent) of f is
+defined by truncating (89) after k terms:
+f (k) = a1
+b1+
+a2
+b2+ · · · ak bk = Ak Bk . (90)
+The numerator and denominator sequences {Ak} and {Bk} satisfy the same second-order recur-
+rence relation (
+Ak = bkAk−1 + akAk−2,
+Bk = bkBk−1 + akBk−2,
+(91)
+with initial conditions
+A0 = 0, A1 = a1, B0 = 1, B1 = b1.
+A straightforward approximation of f is obtained by computing f (k) for a fixed truncation
+level k. However, as discussed by Crawford and Suchard (2012), selecting k in advance may lead
+to numerical instability or unnecessary computational cost. Instead, we adopt the modified Lentz
+method, originally proposed by Thompson and Barnett (1986) and Press and Teukolsky (1988),
+which provides a stable iterative scheme for evaluating (89).
+Modified Lentz method. Define the ratios
+Ck := Ak Ak−1 , Dk := Bk−1 Bk . (92)
+Using the recurrence relations (91), these quantities satisfy
+
+
+
+Ck = bk + ak Ck−1 ,
+Dk = 1 bk + akDk−1 . (93)
+The approximants can then be updated recursively via
+f (k) = f (k−1) CkDk. (94)
+The iteration is terminated once the relative update is sufficiently small, i.e.,
+CkDk − 1  < ε, (95)
+for a prescribed tolerance ε > 0. Further discussion on convergence properties and numerical
+considerations can be found in Lorentzen and Waadeland (2008).
+37
+
+=== page 38 ===
+C Proofs
+C.1 Lemma 1
+Proof. Let X ∼ Exp(Λ) with Λ > 0, and assume that X is independent of Y . For t ≥ 0, we
+have
+P[X ∧ Y > t] = P[X > t]P[Y > t] = e−Λt  1 − FY (t)  , (96)
+where FY denotes the cumulative distribution function of Y . Hence,
+FX∧Y (t) = P[X ∧ Y ≤ t] = 1 − e−Λt  1 − FY (t)  , t ≥ 0. (97)
+Differentiating yields the density of X ∧ Y :
+fX∧Y (t) = d dt FX∧Y (t) = e−Λt  fY (t) + Λ   1 − FY (t)  , t ≥ 0. (98)
+Taking Laplace transforms, we obtain
+ˆfX∧Y (s) =
+Z ∞
+0
+e−stfX∧Y (t) dt
+=
+Z ∞
+0
+e−(s+Λ)tfY (t) dt + Λ
+Z ∞
+0
+e−(s+Λ)t  1 − FY (t)  dt
+= ˆfY (s + Λ) + Λ
+Z ∞
+0
+e−(s+Λ)t  1 − FY (t)  dt.
+(99)
+To evaluate the remaining integral, we integrate by parts:
+Z ∞
+0
+e−(s+Λ)t  1 − FY (t)  dt =  − 1 s + Λ e−(s+Λ)t  1 − FY (t) ∞ 0 − 1 s + Λ Z ∞ 0 e−(s+Λ)tfY (t) dt
+= 1 s + Λ − 1 s + Λ ˆfY (s + Λ).
+(100)
+Therefore,
+ˆfX∧Y (s) = ˆfY (s + Λ) + Λ
+ 1
+s + Λ − 1 s + Λ ˆfY (s + Λ) 
+= ˆfY (s + Λ) + Λ s + Λ  1 − ˆfY (s + Λ)  . (101)
+References
+[1] Joseph Abate and Ward Whitt. The Fourier-series method for inverting transforms of
+probability distributions. Queueing systems, 10:5–87, 1992.
+[2] Joseph Abate and Ward Whitt. Numerical inversion of Laplace transforms of probability
+distributions. ORSA Journal on Computing, 7(1):36–43, 1995.
+[3] Joseph Abate and Ward Whitt. Computing Laplace Transforms for Numerical Inversion
+Via Continued Fractions. INFORMS Journal on Computing, 11(4):394–405, 1999.
+38
+
+=== page 39 ===
+[4] ´Alvaro Arroyo, ´Alvaro Cartea, Fernando Moreno-Pino, and Stefan Zohren. Deep atten-
+tive survival analysis in limit order books: estimating fill probabilities with convolutional-
+transformers. Quantitative Finance, 24:35–57, 1 2024.
+[5] Bank for International Settlements. OTC foreign exchange turnover in April 2022. Technical
+report, (2022).
+[6] ´Alvaro Cartea and Sebastian Jaimungal. Optimal execution with limit and market orders.
+Quantitative Finance, 15(8):1279–1291, 2015.
+[7] ´Alvaro Cartea, Sebastian Jaimungal, and Jos´e Penalva. Algorithmic and High-Frequency
+Trading. Cambridge University Press, 2015.
+[8] Jin-Wan Cho and Edward Nelling. The Probability of Limit-Order Execution. Financial
+Analyst Journal, 56(5):28–33, 2000.
+[9] Rama Cont. Statistical modeling of high-frequency financial data. IEEE Signal Processing
+Magazine, 28(5):16–25, 2011.
+[10] Rama Cont and Adrien de Larrard. Price Dynamics in a Markovian Limit Order Market.
+SIAM Journal on Financial Mathematics, 4(1):1–25, 2013.
+[11] Rama Cont, Sasha Stoikov, and Rishi Talreja. A Stochastic Model for Order Book Dynam-
+ics. Operations Research, 58(3):549–563, 2010.
+[12] Forrest W. Crawford and Marc A. Suchard. Transition probabilities for general birth–death
+processes with applications in ecology, genetics, and evolution. Journal of Mathematical
+Biology, 65(3):553–580, 2012.
+[13] Timoth´ee Fabre and Vincent Ragel. Tackling the problem of state dependent execution
+probability: Empirical evidence and order placement. https://arxiv.org/pdf/2307.04863.pdf,
+2023.
+[14] Fang Fang and Kees W. Oosterlee. A Novel Pricing Method for European Options Based on
+Fourier-Cosine Series Expansions. SIAM Journal on Scientific Computing, 31(2):826–848,
+2009.
+[15] Donald Gross and Carl M. Harris. Fundamentals of Queueing Theory. New York: Wiley,
+1998.
+[16] Olivier Gu´eant, Charles-Albert Lehalle, and Joaquin Fernandez-Tapia. Optimal Portfolio
+Liquidation with Limit Orders. SIAM Journal on Financial Mathematics, 3(1):740–764,
+2012.
+[17] He Huang and Alec N. Kercheval. A generalized birth–death stochastic model for high-
+frequency order book dynamics. Quantitative Finance, 12(4):547–557, 2012.
+[18] Weibing Huang, Charles Albert Lehalle, and Mathieu Rosenbaum. Simulating and ana-
+lyzing order book data: The queue-reactive model. Journal of the American Statistical
+Association, 110:107–122, 1 2015.
+[19] Sungil Kim and Heeyoung Kim. A new metric of absolute percentage error for intermittent
+demand forecasts. International Journal of Forecasting, 32(3):669–679, 2016.
+39
+
+=== page 40 ===
+[20] Charles-Albert Lehalle, Othmane Mounjid, and Mathieu Rosenbaum. Optimal liquidity-
+based trading tactics. Stochastic Systems, 11(4):368–390, 2018.
+[21] Andrew W. Lo, A. Craig MacKinlay, and June Zhang. Econometric models of limit-order
+executions. Journal of Financial Economics, 65(1):31–71, 2002.
+[22] Lisa Lorentzen and Haakon Waadeland. Continued Fractions, volume 1. Atlantis Press, 2
+edition, (2008).
+[23] Costis Maglaras, Ciamac C. Moallemi, and Muye Wang. A deep learning approach to
+estimating fill probabilities in a limit order book. Quantitative Finance, 22(11):1989–2003,
+2022.
+[24] William H. Press and Saul A. Teukolsky. Evaluating Continued Fractions and Computing
+Exponential Integrals. Computers in Physics, 2(5):88–89, 1988.
+[25] Eric Smith, J. Doyne Farmer, L´aszl´o Gillemot, and Supriya Krishnamurthy. Statistical
+theory of the continuous double auction Statistical theory of the continuous double auction.
+Quantitative Finance, 3(6):1–36, 2003.
+[26] David A. Swanson. On the Relationship among Values of the same Summary Measure of
+Error when used across Multiple Characteristics at the same point in time: An Examination
+of MALPE and MAPE. Review of Economics and Finance, 5(1):1–14, 2015.
+[27] AFM Market Watch Edition 8 - Algorithmic Trading. Technical report, 2023.
+[28] Ian J. Thompson and A.R. Barnett. Coulomb and Bessel functions of complex arguments
+and order. Journal of Computational Physics, 64(2):490–509, 1986.
+[29] Ioane Muni Toke and Nakahiro Yoshida. Modelling intensities of order flows in a limit order
+book. Quantitative Finance, 17:683–701, 5 2017.
+[30] Frank Wilcoxon. Individual Comparisons by Ranking Methods. Biometrics Bulletin,
+1(6):80, 1945.
+40

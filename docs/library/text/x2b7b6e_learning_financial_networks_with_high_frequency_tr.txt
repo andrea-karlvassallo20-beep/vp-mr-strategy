@@ -1,0 +1,2156 @@
+=== page 1 ===
+Learning Financial Networks with High-frequency Trade Data
+Kara Karpmana , Sumanta Basub and David Easleyc
+ARTICLE HISTORY
+Compiled August 9, 2022
+ABSTRACT
+Financial networks are typically estimated by applying standard time series analyses
+to price-based economic variables collected at low-frequency (e.g., daily or monthly
+stock returns or realized volatility). These networks are used for risk monitoring and
+for studying information ﬂows in ﬁnancial markets. High-frequency intraday trade
+data sets may provide additional insights into network linkages by leveraging high-
+resolution information. However, such data sets pose signiﬁcant modeling challenges
+due to their asynchronous nature, nonlinear dynamics, and nonstationarity. To tackle
+these challenges, we estimate ﬁnancial networks using random forests. The edges in
+our network are determined by using microstructure measures of one ﬁrm to fore-
+cast the sign of the change in a market measure (either realized volatility or returns
+kurtosis) of another ﬁrm. We ﬁrst investigate the evolution of network connectivity
+in the period leading up to the U.S. ﬁnancial crisis of 2007-09. We ﬁnd that the net-
+works have the highest density in 2007, with high degree connectivity associated with
+Lehman Brothers in 2006. A second analysis into the nature of linkages among ﬁrms
+suggests that larger ﬁrms tend to offer better predictive power than smaller ﬁrms, a
+ﬁnding qualitatively consistent with prior works in the market microstructure litera-
+ture.
+KEYWORDS
+market microstructure; high-frequency trading; random forests
+1. Introduction
+From both theoretical and practical perspectives, there is interest in estimating link-
+ages among ﬁnancial institutions using data. Academicians seek to understand how
+information ﬂows between ﬁrms, regulators aim to identify when and how risk
+spreads through the ﬁnancial system, and ﬁnanciers would like to know whether
+incorporating other ﬁrms’ characteristics can improve their own trading algorithms.
+The matter of how ﬁrms interact with one another can be represented mathemati-
+cally as a network, with nodes corresponding to ﬁnancial institutions and an edge
+between two nodes indicating that those ﬁrms are connected in some sense.
+From a data scientist’s perspective, there are two key questions as to how best
+to measure these connections. First, it is important to understand which statistical
+methods are well-suited for the task of estimating linkages. Second, one needs to
+decide what type of data to apply these methods on. Financial institutions generate
+a variety of data through their activities (e.g. trading volumes and stock prices) and
+Department of Statistics and Data Science, Cornell University. Email: kjk233@cornell.edu
+Department of Statistics and Data Science, Cornell University. Email: sumbose@cornell.edu
+Department of Economics, Cornell University. Email: dae3@cornell.edu
+arXiv:2208.03568v1  [q-fin.ST]  6 Aug 2022
+
+=== page 2 ===
+it is not immediately apparent what kind of data are most informative for measuring
+ﬁrms’ connectivity.
+Predictability of one ﬁrm’s future performance using another ﬁrm’s past is often
+used to deﬁne edges between two ﬁrms in ﬁnancial networks. There is a rich litera-
+ture applying linear and vector autoregression (VAR) methods to the stochastic pro-
+cess of a ﬁrm’s stock price, e.g., its stock returns or return volatilities. For instance,
+Billio et al. (2012) constructs ﬁnancial networks by assessing bivariate Granger causal
+relationships between ﬁrms’ monthly stock returns. Basu et al. (2019) reﬁnes these
+methods by employing multivariate Granger causality, which has the effect of remov-
+ing indirect edges from the network. Similarly, Karpman et al. (2022) uses multivari-
+ate quantile Granger causality to estimate inter-ﬁrm connections that occur speciﬁ-
+cally during market downturns. Diebold and Yılmaz (2014), on the other hand, mod-
+els daily return volatilities using VAR models, with the corresponding forecast error
+variance decompositions deﬁning edges in the network.
+Most of the literature on ﬁnancial network analysis has used low-frequency data
+such as monthly, weekly, or daily returns and volatilities. However, ﬁrm linkages that
+are estimated from – for example – monthly ﬁnancial data are challenging to interpret
+since it is difﬁcult to establish what mechanisms, over the course of the month, pro-
+duce those linkages (investment decisions are usually made within a much shorter
+time frame). Analyzing high-frequency, intraday ﬁnancial data has the potential to
+yield insights that we cannot obtain through a low-frequency lens. With the rise of
+high-frequency computerized trading, ﬁnancial data is now being recorded at the
+level of nanoseconds, yielding massive intraday datasets. For example, the New York
+Stock Exchange (NYSE) maintains the Trade and Quote (TAQ) database, which pro-
+vides detailed information (e.g., timestamp, price, size, etc.) on all trades and quotes
+for stocks that are active on U.S.-based exchanges. By considering high-frequency ﬁ-
+nancial data, we can better discern which aspects of a ﬁrm’s trading give rise to its
+associations with other ﬁrms. One notable exception to the preponderance of low-
+frequency analyses is the work of H¨ardle et al. (2018), which uses intraday limit order
+book data (bid and ask prices and volumes) to measure stock connectedness.
+While using intraday data provides interpretability beneﬁts, high-frequency ﬁnan-
+cial time series also pose signiﬁcant modeling challenges that are not present at lower
+frequencies [Dutta et al. (2022)]. These time series are often nonlinear and nonsta-
+tionary, exhibiting strong persistence, seasonal and intraday patterns, and volatility
+bursts. As a result, simple linear models cannot capture key features of the data.
+Moreover, increasingly sophisticated ﬁnancial products and trading algorithms have
+rendered the markets so complex that specifying a functional form (such as a linear
+model) to relate ﬁrms’ variables may be overly simplistic.
+In this work, we adopt a nonlinear, nonparametric approach to estimate pre-
+dictability across ﬁrms’ time series using high-frequency data. Our methodology
+does not impose a functional form on the dynamic relationships between ﬁrms, and
+offers greater modeling ﬂexibility. In addition, we move away from price-based mea-
+sures (e.g. stock returns and volatility) and use trade-based measures, which are ex-
+pected to contain more ﬁne-grained information.
+In particular, we expand on the methodology proposed in Easley et al. (2021),
+which uses a random forest to predict a set of market measures, variables that traders
+use as inputs to their execution algorithms, including measures of liquidity, volatil-
+ity, and the shape of the returns distributions. The features of their (and our) random
+forest are microstructure variables, quantities that are computed from the price and
+volume of trades and that reﬂect underlying market frictions. We note that most
+2
+
+=== page 3 ===
+analyses consider only price data; for instance, the stock returns used in Billio et al.
+(2012) and realized volatility used in Diebold and Yılmaz (2014) can be calculated
+from stock prices. However, trades are the truly fundamental object since they are
+what give rise to prices. Thus, by using microstructure measures, which are formed
+from trade information, we address whether there is information contained in trades
+– beyond what is reﬂected in prices – that is useful in understanding inter-ﬁrm con-
+nections.
+Easley et al. (2019) provides empirical evidence that random forests can predict
+market measures of futures contracts using those contracts’ microstructure variables.
+Their analysis focuses mainly on intra-ﬁrm prediction; that is, they consider whether
+contract A’s microstructure variables can predict contract A’s market measures, and
+similarly for contracts B, C, etc. In our work, on the other hand, we ask whether
+features of ﬁrm A can help predict the market measures of ﬁrm B, for all pairs, A and
+B, in the system.
+Put differently, we measure whether, and to what extent, ﬁrm A’s predictability
+increases when we include ﬁrm B’s features in the random forest, as compared to
+when only ﬁrm A’s features are used. Various metrics exist to quantify predictability,
+including accuracy, precision, recall, and the F1 score. We use the area under the ROC
+curve (AUC), which reﬂects the true and false positive rates as the decision threshold
+is varied. We apply a bootstrap procedure to test by how much (if at all) the AUC in-
+creases when we add ﬁrm B’s features. The increase is then used as a weight for the
+edge running from ﬁrm B to ﬁrm A. In this manner, we construct a network whose
+edges indicate cross-predictability between ﬁrms. This technique can be viewed as a
+high-frequency analogue to the Granger causality methods applied to monthly stock
+returns in Billio et al. (2012). Under that framework, an edge from ﬁrm B to ﬁrm A
+means that ﬁrm B’s lagged returns help predict ﬁrm A’s returns, over and above ﬁrm
+A’s own lagged returns. Edges are deﬁned similarly here, except that instead of using
+linear models on monthly stock returns, we apply random forest methods to intra-
+day data. In both cases, we assess whether another ﬁrm’s information boosts pre-
+dictive power. We note that random forests may be a particularly effective method
+for capturing cross-effects between ﬁrms since they allow for higher-order interac-
+tions between many features, which is especially important given the complexities
+of modern-day ﬁnancial markets.
+We apply our methodology to high-frequency trade data of U.S. banks, broker-
+dealers, and insurance companies, with the goal of better understanding cross-effects
+between these institutions. Our methods can be used to address the same questions
+that researchers ask in the low-frequency context, including how network connec-
+tivity changes over time and what information channels exist between ﬁrms. On the
+ﬁrst count, we apply our methods to intraday data spanning 1998 to 2010, thereby
+visualizing the historical evolution of network connectivity over both economically
+stable and crisis periods. We ﬁnd that the networks reach maximum density in late
+2007, following the collapse of two subprime mortgage funds associated with the
+investment bank Bear Stearns. Several of the most highly connected nodes in the
+network, including Lehman Brothers and AIG, have been recognized as key con-
+tributors to the U.S. ﬁnancial crisis. Second, we demonstrate how our methods can
+be used to detect possible information spillovers between small and large ﬁnancial
+ﬁrms. This line of analysis is motivated by Chordia et al. (2011), which provides em-
+pirical evidence that the returns of large stocks lead (in the Granger causal sense) the
+returns of small stocks, and that this lead-lag relationship is especially strong when
+the large stocks have low liquidity. Our results are consistent with this earlier analy-
+3
+
+=== page 4 ===
+sis: we ﬁnd that the microstructure variables of large ﬁrms tend to be more important
+(compared to the microstructure variables of small ﬁrms) in predicting market mea-
+sures for both small and large ﬁrms.
+The manuscript is organized as follows. In Section 2, we describe our method-
+ology, including an overview of how the data is structured, an explanation of how
+random forests work, and details of our bootstrap AUC procedure, which is used
+to assess whether cross-features provide predictive improvement. In Section 3, we
+deﬁne ﬁve microstructure variables that are used as features in the random forest,
+while Section 4 presents two market measures that serve as labels (variables that
+we predict). In Section 5, we describe the high-frequency data used in our analysis,
+including which ﬁrms we choose to focus on. Section 6 presents the results of two
+empirical analyses, namely the evolution of network connectivity over time and the
+presence of information ﬂows between small and large ﬁrms. Section 7 concludes.
+2. Methods
+In this section, we ﬁrst describe how our data is structured, namely how we sam-
+ple from high-frequency trade information to construct microstructure variables and
+market measures. We then outline our random forest methodology, including an
+overview of how random forests work and details of our training and testing pro-
+cedure. Lastly, we introduce two metrics used to interpret the random forest results;
+the ﬁrst measures the relative importance of features used in the model, while the sec-
+ond quantiﬁes the random forest’s predictive accuracy. By comparing the accuracy
+with and without cross-features, we create ﬁnancial networks whose edges indicate
+that one ﬁrm’s variables signiﬁcantly improve our ability to predict the other ﬁrm’s
+market measure. Details are provided below.
+2.1. Data Structure
+Before describing our statistical methods, we brieﬂy explain how our dataset is struc-
+tured. We begin by obtaining high-frequency trade data from the NYSE Trade and
+Quote (TAQ) database [NYSE Trade and Quote Database]. TAQ provides informa-
+tion on every trade that occurs on a U.S.-based exchange, including the NYSE, Nas-
+daq, National Stock Exchange, and others. Among the many variables returned by
+TAQ are the timestamp, price, and volume of each trade. These three variables are in-
+tegral to creating our ﬁnal dataset: timestamps are used to aggregate trades (thereby
+reducing the total number of observations in our dataset), while price and volume
+are used to create the microstructure variables and market measures that serve as
+features and labels in our random forest.
+2.1.1. Trade Aggregation
+Aggregating trades is common in high-frequency ﬁnancial data analysis, for several
+reasons: aggregation limits the effect of noise, reduces the amount of data that we
+need to process, and allows for the creation of economically meaningful variables
+[Hautsch (2012)]. Trade aggregation can be based on time (e.g., collecting all trades
+whose timestamps fall in a 30-minute interval) or on event (e.g., aggregating trades
+until the price change exceeds a given threshold). In our analysis, we use time-based
+4
+
+=== page 5 ===
+aggregation, grouping each ﬁrm’s trades into 30-minute time bars.1 Since we consider
+only trades that occur during regular market hours (9:30 AM EST to 4:00 PM EST),
+our time bars correspond to the intervals 9:30 AM to 10:00 AM, 10:00 AM to 10:30
+AM, and so on and so forth until 3:30 PM to 4:00 PM, with these bars repeated for
+each day of the sample period. We emphasize that time bars are formed on a ﬁrm-
+by-ﬁrm basis; that is, we do not combine trades of stocks x and y into a single bar.
+2.1.2. Microstructure and Market Variables, Lookback Windows, and Forecast Horizons
+Once a ﬁrm’s trades have been gathered into time bars, we construct a set of mi-
+crostructure variables and market measures that capture key properties of the ﬁrm’s
+trading. In Sections 3 and 4, we provide deﬁnitions of these variables and measures.
+For now, we note that microstructure variables are used as features (predictors) in our
+random forest, while market measures are used to calculate labels (quantities we pre-
+dict). All are based on sequences of trade prices and volumes, and all are computed
+– at each time bar – using a lookback window of size W. For instance, the value of
+Kyle’s lambda (one of the microstructure variables) at time bar t is based on the trade
+prices and volumes at time bars in {t, t − 1,..., t − W + 1}.
+The microstructure variables at time bar t are then used to predict the sign of the
+change in a market measure at time bar t + h, where h is a ﬁxed forecast horizon. For
+example, one of the market measures we consider is realized volatility. We do not
+predict the value of realized volatility at bar t + h, nor do we predict the change in
+realized volatility between bars t and t + h. Instead we predict whether this change
+is positive (realized volatility increases) or negative (realized volatility decreases).
+The sign of the change in realized volatility becomes the label for our random forest;
+thus we are predicting a binary variable that takes the value 1 if the market measure
+increases and -1 if it decreases.
+In our analysis, we set W = 50 and h = 50. Since each time bar represents a 30-
+minute interval and there are 12 such intervals during regular market hours2, our
+lookback window size and forecast horizon both correspond to slightly more than
+four trading days.
+2.2. Random Forest
+Random forests are a popular machine learning tool for predicting the values of a
+binary variable [Breiman (2001)], Friedman et al. (2001)]. In our work, this binary
+variable represents whether a market measure — such as realized volatility — de-
+creases (-1) or increases (1) over some ﬁxed forecast horizon. Random forests work
+by aggregating the predictions of many decision trees, so we begin by describing how
+each tree makes its prediction.
+A decision tree takes as input training data in the form {(xi, yi)}1≤i≤n, where yi is the
+label for observation i and xi = (xi1,..., xip) is the vector of features. The tree repeat-
+1One alternate sampling method is to collect trades until their cumulative dollar-volume reaches a certain level
+[Easley et al. (2021)]. So-called dollar-volume bars have appealing theoretical and practical properties; however, they
+are not synchronized across stocks and thus present challenges for how to model using cross-effects. For example,
+an actively traded stock, sA, ﬁlls its dollar-volume bars faster than a less actively traded stock, sI . Thus sA’s ﬁrst
+dollar-volume bar may run from 9:30 AM to 9:35 AM, while sI does not ﬁll its bar until 10:00 AM. Therefore, we
+cannot use dollar-volume bars if we hope to use sI ’s features to make predictions about sA: in effect, we would be
+using future information about sI to predict current properties of sA.
+2The market is open from 9:30 AM EST to 4:00 PM EST, which corresponds to 13 30-minute intervals. However, we
+remove the ﬁrst time bar of the day (see Section 5 for details), resulting in only 12 time bars per trading day.
+5
+
+=== page 6 ===
+edly splits the n training observations into two subsets on the basis of one of the p
+features. For example, the ﬁrst split might separate the training set based on whether
+the second feature is greater than 5. This would yield two subsets, { j : x j2 ≤ 5} and
+{ j : x j2 > 5}. The next split could be based on whether the third feature is greater than
+10, yielding 4 subsets,
+{ j : x j2 ≤ 5, x j3 ≤ 10} { j : x j2 ≤ 5, x j3 > 10}
+{ j : x j2 > 5, x j3 ≤ 10} { j : x j2 > 5, x j3 > 10},
+and so on and so forth. In this example, features 2 and 3 are referred to as split features,
+while 5 and 10 are split points. Decision trees choose split features and split points by
+maximizing information gain, which measures how pure the labels are in the sub-
+sets that result from the split. Maximum purity (information gain) is achieved when
+one subset contains only observations with label 1 and the other subset contains only
+observations with label -1. As we move further down the tree, generating more and
+more splits, the feature space becomes increasingly partitioned and there exist fewer
+observations in each node of the tree. Eventually the tree stops growing (according
+to a particular stopping criterion) and we classify each observation by considering
+the terminal node (aka leaf) to which that observation belongs. Speciﬁcally, each ob-
+servation is predicted to have the most commonly occurring label (-1 or 1) in its leaf.
+Decision trees are known to have low bias and high variance [Friedman et al.
+(2001)]. They are accurate, on average, but individual decision trees are prone to
+overﬁtting the training data and sometimes do not perform well when generalized
+to a test set. Random forests counteract overﬁtting by aggregating the predictions of
+many decision trees, thereby stabilizing the overall prediction [Breiman (2001)]. In
+particular, for each observation i, the random forest computes the fraction of trees
+that predict -1 vs. 1. We can then make a prediction for observation i based on which
+class has the higher probability. For example, suppose a random forest consists of 100
+trees, 55 of which predict -1 and 45 of which predict 1, yielding class probabilities of
+0.55 and 0.45. Then we can set our ﬁnal prediction to be -1 since it is the majority
+vote over all trees. Each decision tree in the forest is trained on a bootstrapped sam-
+ple; that is, we draw K samples with replacement from our training set and ﬁt K
+decision trees, one on each bootstrap sample.
+Lastly, an important aspect of random forests is that not all features are taken to
+be candidates for every split. Instead – at each split – we choose a random subset
+of features, compute the largest information gain we can achieve with each of these
+features (over all split points), and select as our ﬁnal split feature and split point
+the ones that offer maximal information gain. This procedure is particularly help-
+ful when there are correlated features, in which case decision trees may select the
+feature that offers marginally higher information gain, while ignoring its highly cor-
+related but slightly less predictive counterpart. By randomizing the split candidates,
+we ensure that each of these feature has an equal opportunity of being selected.
+2.2.1. Random Forest Parameters
+We implement our random forest using the randomForest package in R [Liaw and
+Wiener (2002)]. In particular, we produce forests with K = 1000 trees, each of which
+is allowed to grow without limit (i.e., the minimum leaf size is 1). We randomly
+select m features as candidates at each split, with m =
+⌊√p ⌋ . Recall that p denotes the
+number of features, which varies based on whether we include cross-effects. We use
+6
+
+=== page 7 ===
+ﬁve microstructure variables (see Section 3), so m is either
+⌊√
+5
+⌋
+if we use only the
+ﬁrm’s own variables for prediction or
+⌊√
+10
+⌋
+if we also consider the features of one
+other ﬁrm. Finally, we assign a weight to each training set observation on the basis of
+its class; observations with label 1 (resp. -1) have weight 1/nI (resp. 1/nD), where nI
+and nD denote the number of training observations with label 1 and -1, respectively.
+When performing bootstrap, training observations are randomly sampled according
+to these weights so that the effect of class imbalance is minimized.
+2.2.2. Purged Cross-Validation
+Once the random forest is ﬁt on the training set, we evaluate its performance on test
+data. Depending on the exact analysis we perform (see Section 6 for details), we use
+one of two approaches. The ﬁrst procedure is purged cross-validation as proposed in
+Easley et al. (2021). This involves splitting the sample period into G intervals of equal
+length. We then iterate over each interval, g, taking g to be the test set and using all
+other intervals as training data, with one caveat. Since our microstructure variables
+(features) and market measures (labels) are formed using a lookback window, the
+train and test sets under this approach are not independent of each other, introducing
+bias into our results. To correct for this, we purge ﬁve days worth of data from around
+each test set, g (see Figure 1). This procedure yields G sets of results, one for each
+interval. In Section 2.3, we discuss how to aggregate these results across test sets.
+Beginning of Sample 
+Period
+End of Sample 
+Period
+Test TrainTrain
+1 2 3 4 5 6
+Purged from training set
+Figure 1. Schematic of the purged cross-validation procedure. The sample period is divided into 6 intervals of
+equal length, each interval serving as a test set as we iterate over the sample period. Suppose interval
+4 is the current test set. Then ﬁve days worth of data is purged from before and after interval 4, and the
+remaining data is used as the training set.
+Purged cross-validation allows us to test on the entire dataset as we iterate over
+intervals; however, it has the disadvantage that sometimes we test our model on
+data that occurs prior to our training data. (This would not be the approach of, say,
+a practitioner applying a random forest to recent ﬁnancial data in order to forecast
+changes in market measures.) To ensure that the chronology of the train and test sets
+does not impact our ﬁnal results, we use an alternative approach for some of our
+analyses. This consists of splitting the sample period into two intervals, training on
+the earlier interval (which has some data purged from it) and testing on the later
+interval.
+7
+
+=== page 8 ===
+2.3. Evaluating the Random Forest
+After applying our random forest to the test sets, we consider two aspects of our
+model’s performance: (i) its predictive ability, i.e., how well the random forest classi-
+ﬁes observations in the test set, and (ii) which features are most important in making
+those predictions. We address each of these points in turn.
+2.3.1. AUC for Assessing Prediction Accuracy and Forming Networks
+The receiver operating characteristics (ROC) curve offers a visual medium by which
+we can assess the predictive performance of a binary classiﬁer such as a random for-
+est [Fawcett (2006)]. For each observation in the test set, the random forest provides
+the probability that the observation’s label is -1, from which we can readily compute
+the probability that the observation’s label is 1. We convert these probabilities to ac-
+tual predictions of -1 or 1 by setting a decision threshold and evaluating whether
+the observation’s probability (e.g., of being -1) meets this threshold. For instance,
+if we set the decision threshold to 0.5, then observations are classiﬁed according to
+whether the majority of trees in the random forest predict -1 or 1 for the observation
+in question.
+The ROC curve displays the tradeoff between the true positive rate and the false
+positive rate as we vary the decision threshold between 0 and 1. The true positive
+rate (also referred to as recall) is deﬁned as
+T PR = T P T P + FN , (1)
+where T P (resp., FN) is the number of true positives (resp., false negatives) produced
+by the classiﬁer at a set threshold. In our analysis, we take labels of 1 to be positives
+and -1, negatives. From equation (1), we can see that the true positive rate is simply
+the proportion of positives in our system that are correctly classiﬁed as such. Simi-
+larly, the false positive rate is given by
+FPR = FP FP + T N , (2)
+where FP (resp., T N) is the number of false positives (resp., true negatives) produced
+by the classiﬁer at a set threshold. The false positive rate is then the proportion of
+negatives in our system that are incorrectly classiﬁed as positives. Both the TPR and
+FPR can be computed given the predicted class probabilities and true labels for the
+test set. Recall that, for purged cross-validation, we use multiple test sets; however,
+we simply aggregate the predicted and true values across all intervals, yielding – in
+effect – a single set of test results.
+As we vary the decision threshold from 0 (all observations classiﬁed as positive)
+to 1 (all observations classiﬁed as negative), both the TPR and the FPR decrease from
+1 to 0. The ROC curve plots the TPR and FPR at each of these intervening thresholds
+(see Figure 2). A random classiﬁer (i.e., one which – for each observation – predicts -1
+or 1 with equal probability) yields a diagonal ROC curve running from (0, 0) to (1, 1),
+while a classiﬁer that perfectly separates negatives from positives has an ROC curve
+running from (0, 0) up to (0, 1) and across to (1, 1). Thus, we can quantify a classiﬁer’s
+performance by computing the area under the ROC curve, referred to as the AUC. In
+the case of a random classiﬁer, the AUC is 0.5, while a perfect classiﬁer has an AUC of
+8
+
+=== page 9 ===
+1. AUC has the advantage that it assesses a classiﬁcation model’s performance over
+all possible decision thresholds, without requiring us to set a single threshold.
+Example of an ROC Curve
+False positive rate
+True positive rate
+0.0 0.2 0.4 0.6 0.8 1.00.0 0.2 0.4 0.6 0.8 1.0
+AUC: 0.600
+Figure 2. Receiver operating characteristics (ROC) curves plot the true and false positive rates of a binary clas-
+siﬁer as the decision threshold is varied. Random classiﬁers have a diagonal ROC curve, with a corre-
+sponding area under the curve (AUC) of 0.5. Higher values of AUC, as illustrated here, indicate better
+classiﬁer performance.
+We use AUC to detect the presence of cross-effects between ﬁrms; that is, to assess
+whether microstructure variables of ﬁrm x are useful in predicting market measures
+of ﬁrm y. We take the view that there are two competing models: Model 1 is a random
+forest not containing any cross-features (ﬁrm y’s variables only), while Model 2 is a
+random forest that does contain cross-features (both ﬁrm x and ﬁrm y’s variables). If
+features from ﬁrm y have predictive power, then Model 2 should have a higher AUC
+than Model 1. Thus, to determine whether cross-effects exist, we test the following
+hypotheses:
+H0 : AUC2 = AUC1 vs. HA : AUC2 > AUC1, (3)
+where AUC𝓁 denotes the AUC of Model 𝓁, with 𝓁 = 1, 2.3 The test in (3) is executed
+according to the following steps:
+3Note that we consider only whether AUC2 is greater than AUC1 since the reverse does not indicate the presence
+of cross-effects. In theory, the AUC should either (a) increase if we include microstructure measures from a ﬁrm
+having predictive power, or (b) stay the same if we include microstructure measures from a ﬁrm that does not have
+predictive power (i.e., the random forest should be able to select – as split features – the microstructure measures
+that improve predictive performance, so that the AUC remains the same with the addition of an “unhelpful” ﬁrm,
+but does not decrease).
+9
+
+=== page 10 ===
+(1) We ﬁt Models 1 and 2 on the training data, apply the ﬁtted models to the test
+data, and store
+{
+P1 i
+}
+i, the predicted class probabilities from Model 1;
+{
+P2 i
+}
+i, the
+predicted class probabilities from Model 2; and the true test set labels, {Ri}i. Here
+i indexes observations in the test set.
+(2) Using the predictions and true values, we compute AUCO 1 and AUCO 2 , the areas
+under the curve for Models 1 and 2, respectively.
+(3) We then draw B bootstrap samples from
+{
+P1 i , P2 i , Ri
+}
+i. For each bootstrap sample
+b, with b = 1,..., B, we calculate new areas under the curve, AUCb 1 and AUCb 2,
+storing the difference, AUCb 2 − AUCb 1.
+(4) The standard deviation, s, of the bootstrap differences is computed and a test
+statistic, D, is calculated as
+D = AUCO 2 − AUCO 1
+s .
+(5) Finally, a one-sided p-value is computed under the assumption that D follows
+a normal distribution.4
+Steps 1-5 are repeated twice for each pair of ﬁrms, (x, y), in the system, once to make
+predictions for ﬁrm x and again to make predictions for ﬁrm y. This yields a set of
+2×
+(N
+2
+)
+p-values, where N is the number of ﬁrms under consideration. We apply a mul-
+tiple testing correction to control the false discovery rate [Benjamini and Hochberg
+(1995)] and form directed networks with edges between pairs of ﬁrms that have an
+adjusted p-value falling below some threshold.
+2.3.2. MDA for Feature Importances
+Area under the curve measures the random forest’s predictive performance; how-
+ever, we are also interested in knowing to what extent the various features contribute
+to these predictions. We quantify feature importances using the mean decrease in ac-
+curacy (MDA), which compares the random forest’s accuracy on the original data to
+its accuracy on a dataset for which the values of a feature have been randomly per-
+muted [Biau and Scornet (2016)]. Accuracy is deﬁned as the fraction of all test set
+observations that are classiﬁed correctly5:
+A = T P + T N T P + FP + T N + FN .
+For each feature f , we compute its MDA as follows:
+(1) We begin by ﬁtting a model to the training set and computing its accuracy, AO,
+on the test set.
+(2) Next, we randomly permute the values of f in the test set. We make predictions
+on this shufﬂed test set and compute the new accuracy, AP.
+(3) The MDA for feature f is the fraction by which the model’s test set accuracy
+4This bootstrap procedure is implemented using the roc.test() function in the pROC package within R [Robin
+et al. (2011)]. We set B = 2000.
+5Here we use a decision threshold of 0.5 to convert probabilities to predicted values.
+10
+
+=== page 11 ===
+decreases after shufﬂing f :
+MDA = AO − AP
+AO
+. (4)
+Features having a high MDA are considered to be more important since they have
+a large effect on the model’s accuracy. In our analysis, we compute the MDAs sepa-
+rately for each test set in the sample period. The MDA values are then averaged over
+test sets to yield a mean importance for each feature f .
+3. Market Microstructure Variables
+Our random forest model uses a variety of market microstructure variables as fea-
+tures. Microstructure variables are designed to measure illiquidity, volatility, order
+imbalance, and other consequences of market frictions. As in Easley et al. (2021), we
+focus on ﬁve such measures that represent the evolution of microstructure models
+from those that use price data alone (ﬁrst generation) to those that use both price
+and volume data (second generation) to those that use more extensive trade infor-
+mation (third generation). Most of these measures were designed before the advent
+of high-frequency trading, raising the question of how well they capture market fric-
+tions in our current, more complex ﬁnancial era. Thus our model helps to assess the
+ongoing utility of these traditional market microstructure variables. In what follows,
+we describe each of the ﬁve measures, including their importance and how they are
+computed.
+3.1. Roll Measure
+The Roll measure – a ﬁrst generation microstructure variable – uses sequences of
+price changes to estimate the effective bid-ask spread, which in turn is a proxy for the
+transaction cost [Hautsch (2012)]. The Roll measure at bar t, written Rt, is a function
+of the ﬁrst-order serial covariance of price changes:
+Rt = 2
+√⏐⏐⏐cov(∆pt , ∆pt−1) ⏐⏐⏐. (5)
+Here ∆pt = (∆pt−W , ∆pt−W+1,..., ∆pt−1, ∆pt), with ∆pt denoting the difference between
+the closing prices at bars t and t − 1.
+3.2. Roll Impact
+Roll impact, a second generation variable, is closely related to the Roll measure.
+Speciﬁcally, Roll impact is deﬁned as the Roll measure, scaled by the amount of
+dollar-volume traded over the bar:
+˜Rt = Rt∑
+k∈T (t) pkvk
+, (6)
+where T (t) is the set of trades belonging to bar t, and pk and vk are the price and
+volume, respectively, of trade k. Since the numerator, Rt, represents transaction cost,
+11
+
+=== page 12 ===
+Roll impact can be interpreted as the transaction cost per unit of trade.
+3.3. Kyle’s Lambda
+Kyle’s lambda at bar t is given by
+λt = pt − pt−W ∑t
+τ=t−W bτVτ
+, (7)
+where pt is the closing price of bar t, Vt is the total volume traded over bar t, and bt =
+sign(pt − pt−1). Kyle’s lambda is the coefﬁcient obtained by regressing price change
+on order ﬂow, and thus measures the price impact of trading.
+3.4. Amihud’s Lambda
+Amihud’s lambda, another second generation variable, measures illiquidity by com-
+puting the ratio of the price change to the amount traded. Thus Amihud’s lambda
+can be viewed as the “price change per trade size,” with less liquid assets having a
+larger per-unit price impact than their more liquid counterparts [Hautsch (2012)]. In
+particular, Amihud’s lambda at bar t is deﬁned as
+λA t = 1 W t∑ τ=t−W+1 |rτ|∑ k∈T (τ) pkvk , (8)
+where rt is the return over bar t.
+3.5. VPIN
+The volume-synchronized probability of informed trading (VPIN) arises from third
+generation market microstructure models. By comparing the amount of buyer- and
+seller-initiated trades, VPIN quantiﬁes the extent to which there is information asym-
+metry in the market. For example, if a group of traders knows that an asset’s price is
+about to rise, we may observe a preponderance of buyer-initiated trades as informed
+traders rush to secure the asset before its price increases. The VPIN at bar t is given
+by
+V PINt = 1 W t∑ τ=t−W+1 ⏐⏐⏐ ˆV S τ − ˆV B τ ⏐⏐⏐ Vτ , (9)
+where Vt is the total volume traded over bar t, ˆV B t is the estimated total buy volume
+over bar t, and ˆV S t = Vt − V B t is the estimated total sell volume over bar t. Importantly,
+the information provided in the Trade and Quote (TAQ) database does not include
+whether the trades were buyer- or seller-initiated (we call such trades “unsigned”).
+Thus, before computing the VPIN, we must ﬁrst classify trades as buys or sells. A
+number of methods exist for this purpose (e.g, the Lee-Ready algorithm and the tick
+rule); here we use bulk volume classiﬁcation (BVC), which has been demonstrated
+to outperform other techniques when the trade data is noisy [Easley et al. (2016)].
+12
+
+=== page 13 ===
+3.5.1. Bulk Volume Classiﬁcation
+Bulk volume classiﬁcation is based on the heuristic that, if a trade is buyer-initiated,
+it will take place at the ask (the lowest price offered by sellers) and therefore will
+generate an uptick in the price of the asset. Similarly, if the trade is seller-initiated,
+it will take place at the bid (the highest price offered by buyers) and therefore will
+produce a downtick in price. This idea suggests that we can determine the amount
+of buyer- (resp., seller-) initiated trades by considering whether the price of the asset
+goes up or down. More speciﬁcally, let Vt be the total volume traded over bar t, with
+∆pt = pt − pt−1 denoting the change in the closing price between bars t and t − 1. Then
+BVC estimates the volume of buyer-initiated trades over bar t to be
+ˆV B t = Vt · Φ
+( ∆pt
+σ∆pt
+)
+, (10)
+where σ∆pt is the empirical standard deviation of the price changes (over all bars)
+and Φ is the cumulative distribution function of a standard normal random variable.
+Notice that the more positive the scaled price change is, the closer Φ
+(
+∆pt
+σ∆pt
+)
+is to 1, so
+that most of the volume traded over bar t is classiﬁed as buyer-initiated. Similarly,
+the more negative the scaled price change, the more volume is classiﬁed as seller-
+initiated. This result comports with the heuristic we described above: buyer-initiated
+trades are more likely to produce positive price changes, while seller-initiated trades
+are more likely to generate negative price changes.
+4. Market Measures
+We use the above-described microstructure variables as features in our random for-
+est, with the aim of predicting several important market measures. Although there are
+a number of market measures that interest traders, regulators, and researchers, here
+we focus on two: the sign of the change in realized volatility and the sign of the
+change in the kurtosis of returns. We describe each in turn, explaining why they are
+of interest and how we compute them.
+4.1. Sign of the Change in Realized Volatility
+Realized volatility is measured by the empirical standard deviation of returns; that
+is, if rt denotes the return over bar t, then the realized volatility, σt, is given by σt =
+sd (rt−W+1, rt−W+2,..., rt−1, rt). The sign of the change in realized volatility is deﬁned as
+sign(σt+h −σt), (11)
+which is 1 when the realized volatility increases (over a forecast horizon of h bars)
+and -1 when the realized volatility decreases. A trader who predicts that volatility
+will rise may want to adjust their execution algorithm, increasing their trading activ-
+ity so that orders are completed before prices begin to ﬂuctuate [Easley et al. (2021)].
+13
+
+=== page 14 ===
+4.2. Sign of the Change in the Kurtosis of Returns
+Many standard risk models assume normally distributed returns; thus, traders are
+interested in forecasting any deviations from normality so that they can adapt their
+risk management practices accordingly. One such deviation could be an increase or
+decrease in the kurtosis (“tailedness”) of the returns. For example, high forecasted
+kurtosis could be caused by a drop in liquidity: with fewer orders on the book,
+trades are executed at more extreme prices, thereby generating more extreme returns
+[Easley et al. (2021)]. The (excess) kurtosis6 at time t is given by
+Kt = µt,4
+σ4 t − 3, (12)
+where µt,4 and σt are, respectively, the empirical fourth moment and standard devia-
+tion of (rt−W+1, rt−W+2,..., rt−1, rt). The sign of the change in kurtosis is then
+sign (Kt+h − Kt) . (13)
+5. Data Description
+We obtain intraday trade data from the NYSE Daily Trade and Quote (TAQ) database,
+via Wharton Research Data Services (WRDS) [NYSE Trade and Quote Database].
+TAQ includes trade and quote information for all stocks that are actively traded on
+a U.S.-based exchange; however, we focus our attention on ﬁrms from the ﬁnancial
+sector, speciﬁcally banks, primary broker-dealers, and insurance companies. In so
+doing, we are able to compare our results to the analyses in Karpman et al. (2022),
+where lower-frequency data (monthly returns) are used to construct ﬁnancial net-
+works on the same set of ﬁrms. As in Karpman et al. (2022), sectoral membership of
+ﬁrms is identiﬁed using the Standard Industrial Classiﬁcation (SIC) code. We analyze
+data for this set of ﬁrms over two time periods: 1998-2010, and 2018 (see Sections 6.1
+and 6.2, respectively).
+Starting with the full set of trades for these ﬁrms, we apply the following ﬁlters
+to compile our ﬁnal dataset: (i) remove any trades whose price or volume is nega-
+tive since these records are clearly erroneous, (ii) exclude trades occurring outside
+of regular market hours (9:30 AM to 4:00 PM EST), (iii) only retain trades of com-
+mon shares7, and (iv) remove trades that are corrected, changed, or marked as erro-
+neous8. For each stock, we form time series of each of the microstructure variables
+and market measures by aggregating trades into 30-minute time bars (see Section
+2.1.1). Lastly, since the market opening is run according to a different process, namely,
+an auction, we remove the ﬁrst bar of each day from our ﬁnal dataset.
+6The kurtosis of the normal distribution is 3, meaning that the excess kurtosis measures the “tailedness” of a given
+distribution relative to the normal distribution. The terms “kurtosis” and “excess kurtosis” are often used inter-
+changeably; thus, we simply refer to “kurtosis.”
+7This corresponds to selecting records for which the TAQ symbol sufﬁx is blank.
+8This corresponds to selecting records for which the TAQ trade correction indicator is “00.”
+14
+
+=== page 15 ===
+6. Results
+Having discussed the methods by which we construct high-frequency ﬁnancial net-
+works, we now demonstrate how such networks can be used to gain insight into the
+structure of the ﬁnancial system using historical trade data. We consider two exam-
+ples. The ﬁrst examines how inter-ﬁrm connections vary over the course of 1998 to
+2010, with a special focus on whether connectivity changes in and around ﬁnancial
+crises (see Section 6.1). The second example explores why edges appear between cer-
+tain pairs of ﬁrms, and – in particular – whether the sizes of the ﬁrms (measured via
+market capitalization) plays a role (see Section 6.2).
+6.1. Historical Evolution of High-Frequency Financial Network Connectivity
+Connections between ﬁnancial institutions create channels through which risk can
+spread; hence, ﬁrm interconnectedness is considered to be a major contributor to
+systemic risk, deﬁned as the risk of widespread failure of the ﬁnancial system. For
+example, if a highly connected ﬁrm fails (even if due to an idiosyncratic shock), it
+may trigger a cascade of other ﬁrm failures that could cause extensive damage to
+the wider system. In the years since the 2007-2009 U.S. Financial Crisis, there has
+been increasing interest in measuring systemic risk and in identifying systemically
+important ﬁnancial institutions (SIFIs).
+Since systemic risk is tied to ﬁrm interconnectedness, much of the recent liter-
+ature has explored how to use ﬁnancial data (e.g., balance sheet information, re-
+turns, volatilities) to learn networks of ﬁrms. For instance, Billio et al. (2012) and
+Basu et al. (2019) construct networks whose edges correspond to intertemporal cor-
+relations (Granger causality) between ﬁrms’ stock returns. Under the market efﬁ-
+ciency hypothesis, there should not exist such lead-lag relationships between the
+price changes of different ﬁrms; however, in practice, market frictions such as capital
+requirements, borrowing constraints, and transaction costs may indeed give rise to
+correlations. As argued in Billio et al. (2012), the more such correlations exist (and
+the larger these correlations are), the greater the chance of risk propagating from one
+ﬁrm to another (i.e., the more systemic risk there is).
+Billio et al. (2012) shows that there are an increasing number of Granger causal
+connections during the economically unstable periods of 1998-1999 and 2007-2008.
+Likewise, Basu et al. (2019) (which reﬁnes the methods in Billio et al. (2012)) demon-
+strates that network connectivity spikes around several recent systemic events, in-
+cluding the 1998 Russian ﬁnancial crisis and the 2008 collapse of the investment bank,
+Lehman Brothers. Karpman et al. (2022) expands on these methods further by con-
+structing networks via quantile Granger causality, which focuses on ﬁrm connections
+that exist speciﬁcally during market downturns. Each of the aforementioned studies
+uses monthly stock returns for network building.
+Thus far we are unaware of any studies that attempt to quantify systemic risk
+using high-frequency ﬁnancial networks. The methods proposed in this paper, how-
+ever, are a natural vehicle for doing so. We have described how microstructure vari-
+ables, computed from intraday trade data, can be used to predict future changes in
+market measures such as realized volatility. Since these microstructure measures re-
+ﬂect information-based trading, a ﬁrm, y, having microstructure measures that can
+help predict realized volatility of another ﬁrm, x, represents a possible source of risk
+to ﬁrm x. Thus, by assessing whether features from one ﬁrm are useful in forecast-
+15
+
+=== page 16 ===
+ing changes for another ﬁrm, we can construct a network whose edges represent a
+high-frequency analogue of returns-based Granger causality. In this section, we cre-
+ate such networks for a set of ﬁrms and over a given time period that are comparable
+to those considered in Billio et al. (2012), Basu et al. (2019), and Karpman et al. (2022).
+We begin with the details of our network construction process, and then compare
+our results to those obtained using bivariate Granger causality applied to monthly
+stock returns.
+6.1.1. Methodology for Constructing 1998-2010 Financial Networks
+For each year between 1998 and 2010, we rank all actively-traded ﬁrms according to
+their average monthly market capitalization, which is computed using data from the
+Center for Research in Security Prices (CRSP) database, accessed via WRDS [CRSP
+Stocks]. Using this ranking, for each year, we identify the top 25 banks, primary
+broker-dealers, and insurance companies, yielding a total of 75 ﬁrms.9 Any ﬁrms
+having insufﬁcient data are excluded from our analysis, resulting in some variation
+in the number of ﬁrms considered per year (ranging from 59 ﬁrms in 1998 to 75 ﬁrms
+in the later years of the sample period).10
+Next we divide each year into three overlapping 6-month periods: January 1
+through June 30, April 1 through September 30, and July 1 through December 31.
+Thus our analysis involves 39 time windows (13 years, with 3 windows per year).
+For each six-month window, we split the interval into two sets, training on the ﬁrst
+three months and testing on the last three months. For example, we train on data
+from approximately11 January 1, 1998 through March 31, 1998 and test on data from
+approximately April 1, 1998 through June 30, 1998. We implement this testing proce-
+dure, rather than purged cross-validation, so as not to introduce any bias that may
+result from training on data that occurs after the test data.
+In each window, we iterate over each pair of ﬁrms, (x, y), twice, once to predict the
+sign of the change in realized volatility for ﬁrm x, and a second time for ﬁrm y. We
+ﬁt two random forest models, one that includes only features of the ﬁrm for which
+we are forecasting and the other that includes cross-features (i.e., features of both x
+and y). Then, as described in Section 2.3, we use bootstrap to assess whether the area
+under the curve (AUC) increases signiﬁcantly under the inclusion of cross-features.
+Our bootstrap procedure yields a set of p-values, one for each possible edge, x → y,
+in the network. We apply a false discovery rate correction and retain the set of edges
+whose adjusted p-value is less than or equal to 0.05.
+6.1.2. Estimated 1998-2010 Financial Networks
+Figure 3 displays the proportion of realized edges, hereafter referred to as density,12
+in each of our estimated networks from 1998 to 2010. For comparison purposes,
+we also show the density of networks estimated using bivariate Granger causality
+9Our choice of ﬁrms is similar to that made in Karpman et al. (2022), which considers companies in the same three
+ﬁnancial sectors, but selects sets of ﬁrms over 36-month rolling windows, rather than on an annual basis.
+10As discussed in Section 2.1, we aggregate trades into 30-minute time bars in order to create economic variables of
+interest, reduce the impact of noise, and decrease the amount of data inputted to the random forest. For the earlier
+years in the sample period, some ﬁrms have 30-minute windows in which few trades occurred. Out of an abundance
+of caution, we choose to exclude these ﬁrms from our analysis. Speciﬁcally we discard any ﬁrm for which 25% or
+more of its time bars contain fewer than 5 trades.
+11These dates are only approximate since we purge data from around the test set (see Section 2.3).
+12For example, if half of all possible edges occur, then the density is 0.5.
+16
+
+=== page 17 ===
+on monthly stock returns; however, we caution the reader that the high- and low-
+frequency networks are computed over different time windows, hence the two time
+series of network density are of different lengths.
+Our ﬁrst observation is that the high-frequency network density increases steadily
+during 1998, reaching a peak in the last quarter of that year (i.e., when our model is
+applied to test data from October-December 1998). This increase in connectivity co-
+incides with a period of mounting economic turmoil in Russia, culminating with the
+Russian government devaluing the ruble, defaulting on domestic debt, and declaring
+a moratorium on repayment of foreign debt (August 17, 1998) [Chiodo and Owyang
+(2002)]. As the future of the Russian economy remained unclear, U.S. stocks plunged
+and the Federal Reserve Bank of New York was forced to organize a bailout of the
+U.S.-based hedge fund Long Term Capital Management [Rubin et al. (1999)]. Notice
+that low-frequency (monthly returns) networks also display a connectivity increase
+during the fall of 1998.
+Our high-frequency networks then become less dense through the end of 2000, at
+which point connectivity repeatedly increases and decreases (albeit with an overall
+upward trend) through late 2003. These results are less interpretable than those in the
+low-frequency setting, where the density consistently decreases from 1999 through
+late 2002. Both the low- and high-frequency networks have elevated density in 2003.
+The intraday networks become less dense in 2004, before increasing in density in
+2005. On the other hand, the monthly-scale networks remain dense throughout 2003
+and 2004 and are not particularly dense in 2005.
+Intraday networks exhibit a fairly persistent increase in density through 2006 and
+2007. In fact, a global maximum density of 36.2% is reached in the end of 2007, sub-
+sequent to the summer 2007 failure of two subprime mortgage funds associated with
+the investment bank Bear Stearns. Connectivity then drops sharply in the ﬁrst half
+of 2008 before increasing again. These results are somewhat consistent with what is
+observed in the monthly-scale networks, where density steadily increases until the
+beginning of 2008, then decreases, and ﬁnally spikes following the September 2008
+collapse of the investment bank Lehman Brothers. High-frequency networks, like
+their low-frequency counterparts, display an overall decline in density in the late
+2000s.
+We now turn our attention to which ﬁrms are central in and around the 2007-
+2009 U.S. Financial Crisis. Node centrality can be measured using a variety of met-
+rics (e.g., degree, closeness, betweeness). We focus on degree; that is, on how many
+edges are incident to the node. Firms can be characterized by both their in-degree
+(number of incoming edges) and out-degree (number of outgoing edges). A ﬁrm
+having a large in-degree is one for which many other ﬁrms’ microstructure mea-
+sures are useful in forecasting its realized volatility. On the other hand, a ﬁrm with
+a large out-degree has microstructure measures that are useful for predicting the re-
+alized volatility of many other ﬁrms. Firms with large out-degree have the potential
+to spread risk through the ﬁnancial system since aspects of their trading (captured
+via microstructure measures) propagate to other ﬁrms. Likewise ﬁrms with large in-
+degree have the potential to absorb this risk.
+In Figure 4, we display the 10 most highly connected ﬁrms according to their in-
+degree and (separately) their out-degree, before, during, and after the U.S. Finan-
+cial Crisis. Several observations are in order. First, Lehman Brothers (LEH) has a
+large out-degree in the January-June 2006 and July-December 2006 networks. Dur-
+ing the intervening time period (April-September 2006), it has a large in-degree. That
+our methodology should identify Lehman Brothers as a highly connected ﬁrm in
+17
+
+=== page 18 ===
+0.20 0.25 0.30 0.35
+Density of High−Frequency Financial Networks (1998−2010)
+Network Density
+Jan 1998−Jun 1998
+Apr 1998−Sep 1998
+Jul 1998−Dec 1998
+Jan 1999−Jun 1999
+Apr 1999−Sep 1999
+Jul 1999−Dec 1999
+Jan 2000−Jun 2000
+Apr 2000−Sep 2000
+Jul 2000−Dec 2000
+Jan 2001−Jun 2001
+Apr 2001−Sep 2001
+Jul 2001−Dec 2001
+Jan 2002−Jun 2002
+Apr 2002−Sep 2002
+Jul 2002−Dec 2002
+Jan 2003−Jun 2003
+Apr 2003−Sep 2003
+Jul 2003−Dec 2003
+Jan 2004−Jun 2004
+Apr 2004−Sep 2004
+Jul 2004−Dec 2004
+Jan 2005−Jun 2005
+Apr 2005−Sep 2005
+Jul 2005−Dec 2005
+Jan 2006−Jun 2006
+Apr 2006−Sep 2006
+Jul 2006−Dec 2006
+Jan 2007−Jun 2007
+Apr 2007−Sep 2007
+Jul 2007−Dec 2007
+Jan 2008−Jun 2008
+Apr 2008−Sep 2008
+Jul 2008−Dec 2008
+Jan 2009−Jun 2009
+Apr 2009−Sep 2009
+Jul 2009−Dec 2009
+Jan 2010−Jun 2010
+Apr 2010−Sep 2010
+Jul 2010−Dec 2010
+Russian default
+LTCM
+Bear Stearns
+Lehman
+0.04 0.06 0.08 0.10 0.12
+Density of Low−Frequency Financial Networks (1998−2010)
+Network Density
+Feb 1995−Jan 1998
+Jul 1995−Jun 1998
+Dec 1995−Nov 1998
+May 1996−Apr 1999
+Oct 1996−Sep 1999
+Mar 1997−Feb 2000
+Aug 1997−Jul 2000
+Jan 1998−Dec 2000
+Jun 1998−May 2001
+Nov 1998−Oct 2001
+Apr 1999−Mar 2002
+Sep 1999−Aug 2002
+Feb 2000−Jan 2003
+Jul 2000−Jun 2003
+Dec 2000−Nov 2003
+May 2001−Apr 2004
+Oct 2001−Sep 2004
+Mar 2002−Feb 2005
+Aug 2002−Jul 2005
+Jan 2003−Dec 2005
+Jun 2003−May 2006
+Nov 2003−Oct 2006
+Apr 2004−Mar 2007
+Sep 2004−Aug 2007
+Feb 2005−Jan 2008
+Jul 2005−Jun 2008
+Dec 2005−Nov 2008
+May 2006−Apr 2009
+Oct 2006−Sep 2009
+Mar 2007−Feb 2010
+Aug 2007−Jul 2010
+Jan 2008−Dec 2010
+Russian default
+LTCM
+Bear Stearns
+Lehman
+Figure 3. Density of ﬁnancial networks over the 1998 to 2010 period, where network density refers to the pro-
+portion of realized edges. Top (high-frequency networks): each year is divided into three overlapping
+windows of six months each, a network is estimated for each window by applying the methodology
+described in 2 to intraday trade data, and the network density is plotted. Bottom (low-frequency net-
+works): the sample period is divided into 36-month rolling windows, a network is estimated for each
+window by applying bivariate Granger causality to monthly stock returns, and the network density is
+plotted. Note that there are 39 high-frequency networks and 156 low-frequency networks.
+the lead-up to the crisis is interesting given that the broker-dealer’s involvement in
+subprime mortgage lending has been recognized as a key contributor to the crisis
+[Friedman and Posner (2011)]. American International Group (AIG) is also highly
+connected before the crisis; in fact, it is one of the top ﬁrms according to out-degree
+in six of the nine networks that span 2006-2008. It is a top ﬁrm by in-degree dur-
+ing the January-June 2007 period. Like Lehman Brothers, AIG played a major role in
+the crisis through its use of collateralized debt obligations (CDOs) and credit default
+swaps (CDSs), and was bailed out by the federal government shortly after Lehman
+Brothers’ collapse [Friedman and Posner (2011)].
+More generally, we note that the top ﬁrms are not always consistent across neigh-
+boring time periods. For example, a ﬁrm might be highly connected during one time
+window, but not during the windows immediately preceding or following it. (This
+is the case with T. Rowe Price (TROW), which has a large in-degree during April-
+September 2007, but neither a large in-degree nor a large out-degree during either
+of the other 2007 windows.) A major exception is AIG, as noted above. Our method-
+ology highlights several additional ﬁrms that are known to have contributed to the
+crisis: Bear Stearns (BSC) is a top “in-ﬁrm” during April-September 2006 and a top
+“out-ﬁrm” in July-December 2007, The Federal National Mortgage Association (aka
+18
+
+=== page 19 ===
+Fannie Mae; FNM) is a top out-ﬁrm during January-June 2007 and January-June 2008,
+and The Federal Home Loan Mortgage Corporation (aka Freddie Mac; FRE) is a top
+out-ﬁrm during April-September 2006.
+Some of these results are consistent with those observed in monthly-scale bivariate
+Granger causality networks (see Figure 5). In the monthly-scale networks, as in their
+high-frequency counterparts, AIG, Fannie Mae, and Freddie Mac all have large out-
+degree before and/or during the crisis. Interestingly, AIG remains a large source of
+risk propagation (i.e., has high out-degree) through 2010, whereas it does not have
+a large out-degree in any of the high-frequency networks beyond April-September
+2008. Another key difference between the low- and high-frequency settings is the
+role played by Lehman Brothers and Bear Stearns. In the high-frequency networks,
+Lehman Brothers, and – to a lesser extent – Bear Stearns, emerge as top out-ﬁrms
+in the lead-up to the ﬁnancial crisis. In the monthly-scale networks, on the other
+hand, neither of these two ﬁrms have a large out-degree, although Lehman Brothers
+is consistently a top in-ﬁrm (absorber of risk) in 2006 and 2007. This difference raises
+the possibility that high-frequency networks may be able to identify risk propagating
+ﬁrms that are not highlighted in low-frequency networks.
+To further explore the behavior of systematically important ﬁnancial institutions,
+we consider subnetworks of ﬁrms that received considerable government assistance
+during or after the crisis (see Figure 6). The size of node i is proportional to the mar-
+ket capitalization of ﬁrm i, while the thickness of edge i → j is proportional to the
+increase in AUC obtained by using the features of ﬁrm i to predict the change in re-
+alized volatility of ﬁrm j. We select – for each year between 2006 and 2008 – the 10
+ﬁrms within our sample that received the largest amount of Troubled Asset Relief
+Program (TARP) funding, which was provided to companies that were deemed “too
+big to fail”13 [Kiel and Nguyen (2013)]. (For 2006 and 2007, we also include Lehman
+Brothers and Bear Stearns, which did not receive TARP funding but which were cru-
+cial ﬁrms during this period.)
+Figure 6 highlights the role played by Lehman Brothers in the lead-up to the crisis.
+For example, in the April-September 2006 network, Lehman Brothers has incoming
+edges from all but one of the other ﬁrms and is particularly inﬂuenced by Bank of
+America (AUC increase = 0.305), Wells Fargo (AUC increase = 0.264), and JPMorgan
+Chase (AUC increase = 0.223). In early 2007, AIG emerges as a ﬁrm having large in-
+degree, including from Bank of America (AUC increase = 0.297), Bear Stearns (AUC
+increase = 0.262), and Goldman Sachs (AUC increase = 0.259). Bank of America also
+has a large in-degree. By July-December 2007 (months before its collapse in March
+2008), Bear Stearns has many incoming edges, the strongest of which is from the
+company that would come to purchase it, JP Morgan Chase (AUC increase = 0.144).
+In 2008, several of the ﬁrms previously considered are no longer present in our sam-
+ple, whether because of their collapse (e.g., Lehman Brothers, Bear Stearns14) or be-
+cause they are no longer among the top 75 ﬁnancial institutions by market capitaliza-
+tion (e.g., Freddie Mac). However, ﬁrms like Citigroup, Wells Fargo, AIG, JPMorgan
+Chase, and Fannie Mae continue to have large in- and/or out-degree.
+13A ﬁrm is considered “too big to fail” if its collapse would result in signiﬁcant damage to the economy.
+14Recall that ﬁrms are only included in our sample if they are actively traded during the entire year. Bear Stearns
+was acquired by JPMorgan Chase in March 2008, while Lehman Brothers ﬁled for bankruptcy in September 2008.
+19
+
+=== page 20 ===
+TD
+AMTD
+STT
+SLF
+FII
+CB
+JEF
+BNS
+RJF
+MS
+ET
+NCC
+CFC
+LEH
+LNC
+PGR
+SCHW
+AMG
+BSC
+AMTD
+CME
+BEN
+CVH
+PFG
+ACE
+PRU
+BBT
+CNA
+SCHW
+WM
+AIG
+SLF
+WB
+HIG
+BEN
+BNS
+CNA
+MERCVH
+USB
+TROW
+BMO
+WM
+UNH
+SLF
+RJF
+WB
+CM
+NMX
+PFG
+SLM
+XL
+BEN
+AXP
+STA
+BLK AMTD
+AET
+CME WFC
+CNA
+AFL
+JNS
+PFG
+NYX
+MMC
+CI
+C
+TD
+AIZ
+AET
+CB
+BLK CME
+CNA
+CI
+PFG
+ACE JNS
+STI
+MFC
+BX
+PGR
+JEF
+IDC
+TRV LNC
+MET
+STT
+MORN
+MMC
+LM
+PGR
+SCHW
+NTRS
+AFL
+CME
+C
+HIG
+PNC
+DB
+BK
+LM
+SEIC
+IVZ
+AMG
+PFG
+CM
+MORN
+EV
+WSH
+WFC
+BEN
+PRU
+BLK
+HRB
+PBCT
+IDC
+DB
+HUM
+BLK
+NTRS
+MTB
+AMTD
+V
+BNS
+BMO
+GHL
+COF
+MET
+MORN
+MET
+BK
+AMP
+GNW
+HUM
+AON
+MTB
+JEF
+BLK
+C
+CME
+V
+LNC
+JNS
+MORN
+USB
+HUM
+BX
+PFG
+Jan 2006−Jun 2006 Apr 2006−Sep 2006 Jul 2006−Dec 2006 Jan 2007−Jun 2007 Apr 2007−Sep 2007 Jul 2007−Dec 2007 Jan 2008−Jun 2008 Apr 2008−Sep 2008 Jul 2008−Dec 2008 Jan 2009−Jun 2009 Apr 2009−Sep 2009 Jul 2009−Dec 2009 Jan 2010−Jun 2010 Apr 2010−Sep 2010 Jul 2010−Dec 2010
+1.0
+1.5
+2.0
+2.5
+3.0Standardized Degree
+Sector
+BA
+PB
+INS
+Standardized In−Degree of the Top 10 Firms in High−Frequency Realized Volatility Networks (2006−2010)
+LEH
+JEF
+PFG
+LM
+AIG
+USB
+LNC
+AET
+CNA
+BOT
+WFC
+ALL
+UBS
+XL
+FRE
+AIG
+BEN
+CB
+BOT
+JNC
+MMC
+PRU
+AIG
+AET CME
+EV
+JNS
+LEH
+COF
+AFL
+FNM
+IDC HUM
+AMTD
+ETFC
+NDAQ
+EV
+GNWMET
+ACE
+HIG
+RJF
+JPM
+BMO
+AIG
+NDAQ
+TD
+AXP
+PFG
+RY
+RF
+ALL
+BLK
+UNM
+BSC
+ETFC
+MER
+UBS WB
+AB
+HIG
+JEF
+FNM
+CME
+UNM CB
+CNA
+ACE
+AIG
+NDAQ
+BBT
+C
+ALL
+AIG
+AINV
+HIG
+NDAQ USB
+UNH
+STI
+MORN
+MFC
+CME
+SCHW
+TD
+HUM
+LAZ
+LM
+JEF
+AMG
+LAZ
+BMO
+DFS
+SEIC
+CM
+FII
+JEF
+C
+CNA
+RY
+USB
+RY
+BBT
+PNC
+TD
+WSH
+BAC
+RE
+ACE
+CI
+RY
+TROW
+WSH
+MET
+RE
+CM
+PNC
+HIG
+HRB
+BNS
+TRV
+BK
+USB
+HIG
+DB
+SCHW
+CB
+JNS
+MORN
+LNC
+PFG
+XL
+ALL
+ETFCBMO
+V
+CIT
+CB
+CM
+PRE
+GNW
+AMTD
+V
+NDAQ
+BX
+AB
+CM
+TD
+AON PRU
+Jan 2006−Jun 2006 Apr 2006−Sep 2006 Jul 2006−Dec 2006 Jan 2007−Jun 2007 Apr 2007−Sep 2007 Jul 2007−Dec 2007 Jan 2008−Jun 2008 Apr 2008−Sep 2008 Jul 2008−Dec 2008 Jan 2009−Jun 2009 Apr 2009−Sep 2009 Jul 2009−Dec 2009 Jan 2010−Jun 2010 Apr 2010−Sep 2010 Jul 2010−Dec 2010
+1.0
+1.5
+2.0
+2.5
+3.0Standardized Degree
+Sector
+BA
+PB
+INS
+Standardized Out−Degree of the Top 10 Firms in High−Frequency Realized Volatility Networks (2006−2010)
+Figure 4. Highly connected ﬁrms in high-frequency realized volatility networks before, during, and after the U.S.
+Financial Crisis. Firms are ranked according to their in-degree (top) and out-degree (bottom). Stan-
+dardized degrees (i.e., (ﬁrm degree - mean network degree)/standard deviation of network degree)
+are plotted so as to make results comparable across different networks. Banks (resp., broker-dealers,
+insurance companies) are displayed in red (resp., green, blue). Note that we add a small amount of
+random noise to the (x, y) coordinates of each ﬁrm so that ﬁrm labels do not overlap with one another.
+Full company names for all ticker symbols are provided in Table A2.
+6.2. Cross-Asset Information Flow Between Small and Large Firms
+Having constructed ﬁnancial networks in Section 1.6.1, we now seek to address why
+there are edges between some ﬁrms and not others. One natural hypothesis, sup-
+ported by the literature, is that edges may run from large ﬁrms to small ﬁrms. In-
+deed Lo and MacKinlay (1990) provides empirical evidence of a lead-lag relationship
+between the weekly returns of large and small market capitalization stocks. In par-
+ticular, the authors divide a sample of 551 stocks into size-based quintiles and form
+equal-weighted portfolios for each quintile. The correlation between the returns of
+the ﬁrst quintile’s portfolio, at week t − 1, and the returns of the ﬁfth quintile’s port-
+folio, at week t, is found to be 27.6 percent. (No evidence is discovered of the reverse
+– that is, of small stock returns leading large stock returns.)
+Various explanations for this pattern exist. Among them is the theory that market-
+20
+
+=== page 21 ===
+BMO
+COF
+BRK
+ATH
+LTR
+BNS
+AMG
+AGE
+MFC
+LM
+BRK
+COF
+ATH
+SCH
+TROW
+ENH
+MFC
+SLF
+CI
+WM
+BRK
+COF
+SLF
+BNS
+DB
+ACE
+CSE
+LEH
+BSC
+LNC
+COF
+BRK
+LEH
+CSE
+AC
+SLF
+SCH
+MWD
+LNC
+AGE
+COF
+LEH
+AGE
+SCH
+WM
+ET
+GS
+AC
+STI BAC
+COF
+EV
+BK
+STI
+JNS
+GS
+BMO
+AXPRJF
+AOC
+TD
+EV
+AOC
+AC
+FII
+AVZ
+STI LNC
+AMG
+MORN
+TD
+EV
+SCHWACE
+LM
+FIIAVZ
+RJF
+STI
+PRU
+SLM
+TD
+NYX
+MFCEV
+UBS
+ACE
+NDAQ
+LM
+ALL
+SLM
+TD
+UBS
+MFC NDAQ
+NYX AXP
+ACEPRU
+PFG
+UBS
+MFC
+ACE
+AB
+BK
+MORN
+TD
+FII
+PFG
+AXP
+MORN
+MFC
+NDAQ
+PFG
+BK
+RJF UBS
+METALL
+BX
+Feb 2003−Jan 2006 Jul 2003−Jun 2006 Dec 2003−Nov 2006 May 2004−Apr 2007 Oct 2004−Sep 2007 Mar 2005−Feb 2008 Aug 2005−Jul 2008 Jan 2006−Dec 2008 Jun 2006−May 2009 Nov 2006−Oct 2009 Apr 2007−Mar 2010 Sep 2007−Aug 2010
+2
+4
+6Standardized Degree
+Sector
+BA
+PB
+INS
+Standardized In−Degree of the Top 10 Firms in Low−Frequency Bivariate Granger Causality Networks (2006−2010)
+ET
+FNM
+PGR
+BAC
+ACE
+WFCWB
+SPC XL
+JPM
+ET
+UNH
+MFC
+FNM
+CIT
+BEN
+WB
+NCC AMTD
+LNC
+ET
+AMTD
+JNS
+AMG
+UNH
+BEN
+FNM AIG
+MMC
+WB
+AMTD
+NCC
+JNS
+UNH
+AIG
+ETTD
+JNC
+MMC
+CFC
+UNH
+MER
+BEN
+ATH
+COFFII
+GS
+AMTD
+WM
+JNS
+AIG
+CI
+FRE
+AMG
+AC
+WB
+LNC BEN
+FII
+AIG
+BAC
+WB
+UBSCI
+AVZRF
+MWDGS
+TD
+AIG
+HIG
+MS
+WB
+GSAC
+GNW
+CI
+SLFWDR
+AIG
+GS
+DB
+MS
+BEN
+AB
+FNM GNW
+HIG
+WDR
+GS
+AIG
+DB
+TROW
+BEN
+WDRHIG
+AMTD
+MS
+AOC
+AIG
+BEN
+TROW
+AOC
+XL
+WDRAMTD
+DB
+BAC
+HIG
+BX
+DB
+TROW
+WDRBEN
+AOC
+AMTD
+STT
+JNS
+XL
+Feb 2003−Jan 2006 Jul 2003−Jun 2006 Dec 2003−Nov 2006 May 2004−Apr 2007 Oct 2004−Sep 2007 Mar 2005−Feb 2008 Aug 2005−Jul 2008 Jan 2006−Dec 2008 Jun 2006−May 2009 Nov 2006−Oct 2009 Apr 2007−Mar 2010 Sep 2007−Aug 2010
+2
+4
+6Standardized Degree
+Sector
+BA
+PB
+INS
+Standardized Out−Degree of the Top 10 Firms in Low−Frequency Bivariate Granger Causality Networks (2006−2010)
+Figure 5. Highly connected ﬁrms in low-frequency bivariate Granger causality networks before, during, and
+after the U.S. Financial Crisis. Firms are ranked according to their in-degree (top) and out-degree
+(bottom). Standardized degrees (i.e., (ﬁrm degree - mean network degree)/standard deviation of net-
+work degree) are plotted so as to make results comparable across different networks. Banks (resp.,
+broker-dealers, insurance companies) are displayed in red (resp., green, blue). Note that we add a
+small amount of random noise to the (x, y) coordinates of each ﬁrm so that ﬁrm labels do not overlap
+with one another. Full company names for all ticker symbols are provided in Table A2.
+wide information is ﬁrst absorbed into the prices of large stocks (which tend to be
+actively traded) and subsequently into the prices of small stocks (which tend to be
+less frequently traded) [Brennan et al. (1993)]. More recently, Chordia et al. (2011)
+performs a Granger causal analysis on value-weighted portfolios of large and small
+market capitalization stocks. The authors regress daily returns of these portfolios on
+lagged values of returns, volatilities, and quoted spreads, and ﬁnd that the returns of
+the large stock portfolio lead the returns of the small stock portfolio, especially when
+the large stocks experience low liquidity.
+While Chordia et al. (2011) includes a variety of ﬁnancial variables (returns, volatil-
+ities, and quoted spreads) in their analysis, we are thus far unaware of any studies
+that examine whether market microstructure variables yield lead-lag relationships be-
+tween small and large ﬁrms. Our random forest methodology, however, lends itself
+21
+
+=== page 22 ===
+January − June 2006
+●
+●
+●
+●
+●
+●
+●
+●
+AIG
+FNM
+GS
+USB
+BAC
+BSC
+FRE
+JPM
+LEH
+MS
+C
+WFC
+April − September 2006
+●
+●
+●
+●
+●
+● ●
+●
+FNM
+FRE
+AIG
+JPM
+USB
+WFC
+MS
+C
+BSC
+BAC
+LEH
+GS
+July − December 2006
+●
+●
+●
+●
+●
+●
+●
+●
+BAC
+BSC
+FNM
+FRE
+LEH
+USB
+WFC
+C
+GS
+MS
+JPM
+AIG
+January − June 2007
+●
+●
+●
+●
+●
+● ●
+●
+FRE
+LEH
+AIG
+C
+FNM
+GS
+BSC
+JPM
+USB
+BAC
+MS
+WFC
+April − September 2007
+●
+●
+●
+●
+●
+● ●
+●
+C
+FRE
+LEH
+WFC
+AIG
+BSC
+FNM
+JPM
+USB
+BAC
+MS
+GS
+July − December 2007
+●
+●
+●
+●
+●
+●
+●
+●
+BSC
+JPM
+LEH
+MS
+USB
+C
+FNM
+FRE
+GS
+WFC
+BAC
+AIG
+Figure 6. High-frequency realized volatility networks of ﬁnancial institutions that received signiﬁcant federal
+bailout packages (TARP funding). Each year, the 10 institutions within our sample that received the
+most TARP funding are selected, in addition to Lehman Brothers and Bear Stearns. Nodes are sized
+according to their market capitalization, with red (resp., green, blue) nodes indicating banks (resp.,
+broker-dealers, insurance companies). Edge thickness is proportional to the increase in AUC obtained
+by including cross-features. Full company names for all ticker symbols are provided in Table A2.
+well to this question. Indeed we can assess whether the microstructure features of
+small (resp., large) ﬁrms are useful in predicting future increases and decreases in
+market measures of large (resp., small) ﬁrms. Notice that our method – as previously
+described – is implemented on a ﬁrm-by-ﬁrm basis; that is, we use microstructure
+variables of ﬁrm y (and possibly of a second ﬁrm, x) to forecast market measures of
+ﬁrm y. This procedure is fundamentally different from the analysis in Chordia et al.
+(2011), which considers ﬁnancial variables that have been aggregated over ﬁrms of
+similar size. So that we may compare our results to those in Chordia et al. (2011), we
+perform a similar aggregation.
+To begin, we consider all banks, primary broker-dealers, and insurance companies
+that were active on each trading day of 2018. We rank these ﬁrms according to their
+average monthly market capitalization and take our ﬁnal set of ﬁrms to be those in
+the ﬁrst and seventh capitalization deciles. The ﬁrst decile (54 ﬁrms) represents large
+stocks and the seventh decile (55 ﬁrms) represents small stocks. We use the seventh
+decile because stocks in lower tiers are likely to trade so infrequently as to make
+missing values a problem in our downstream analysis. Next, for each stock, we form
+22
+
+=== page 23 ===
+time series of its microstructure variables and market measures, and then compute
+value-weighted averages for both small and large ﬁrms (separately). For example,
+the aggregate time series of the Roll measure for small and large ﬁrms is given by
+Rsmall t =
+∑ns
+i=1
+(MCAPsi × Rsi t ) ∑ns
+i=1 MCAPsi
+, (14)
+Rlarge t =
+∑n𝓁
+i=1
+(
+MCAP𝓁i × R𝓁i t ) ∑n𝓁
+i=1 MCAP𝓁i
+, (15)
+where {si}1≤i≤ns and {𝓁i}1≤i≤n𝓁 denote the set of small and large ﬁrms, respectively,
+MCAP j is the average monthly MCAP of ﬁrm j, and R j t is the value of the Roll mea-
+sure of ﬁrm j at time t. We form aggregate time series for Amihud’s lambda, VPIN,
+kurtosis, and realized volatility in an analogous manner to (14) and (15).15 Finally,
+we calculate the sign of the change in average kurtosis and realized volatility:
+sign
+(
+σsmall t+h −σsmall t ) sign ( σlarge t+h −σlarge t ) ,
+sign
+(
+K small t+h − K small t ) sign ( Klarge t+h − Klarge t ) ,
+where, as before, h is a forecast horizon of 50 time bars. There are 2,881 observations
+in our ﬁnal dataset and we perform 10-fold cross-validation (over the entirety of
+2018) to evaluate the random forest classiﬁer’s performance.
+The ﬁrst question we address is which features are important for predicting mar-
+ket measure changes in ﬁrms of different sizes. We consider four prediction scenar-
+ios: (i) kurtosis for large ﬁrms, (ii) realized volatility for large ﬁrms (iii) kurtosis for
+small ﬁrms, and (iv) realized volatility for small ﬁrms. In each case, we include cross-
+features in our random forest model; that is, we use microstructure variables for both
+small and large ﬁrms. Furthermore, for each test set, we compute the mean decrease
+in accuracy (MDA) for each feature and average the results by ﬁrm size. Let Mi x de-
+note the MDA of feature x on test set i, where i = 1, 2,..., 10. Then, for each i, we
+calculate
+M
+i
+S mall = mean
+{
+Mi Roll.S mall, Mi Amihud.S mall, Mi V PIN.S mall } ,
+M
+i
+Large = mean
+{
+Mi Roll.Large, Mi Amihud.Large, Mi V PIN.Large } .
+Figure 7 displays the distributions of {M i S mall } 1≤i≤10 and of {M i Large } 1≤i≤10 for each of the
+four prediction scenarios.
+We observe that, under all scenarios but one, the microstructure variables of large
+ﬁrms are more important than those of small ﬁrms. For example, when forecasting
+kurtosis for large ﬁrms, the median large ﬁrm MDA is approximately 0.12 while
+the median small ﬁrm MDA is closer to 0.1. Qualitatively similar results hold when
+predicting realized volatility for large ﬁrms and kurtosis for small ﬁrms. On the other
+hand, this pattern is reversed when we forecast realized volatility for small ﬁrms, in
+which case the small ﬁrms’ features have higher MDA. Interestingly, though, the
+15Note that we do not include two of the microstructure variables described in Section 3, namely Roll impact and
+Kyle’s lambda. We exclude these because they were found to have relatively low predictive ability for 2018 ﬁnancial
+ﬁrms.
+23
+
+=== page 24 ===
+Predicting for Large Firms Predicting for Small Firms
+Kurtosis Realized Volatility Kurtosis Realized Volatility
+0.08
+0.09
+0.10
+0.11
+0.12
+0.13
+Market Measure
+MDA
+Firm Size
+Large
+Small
+Feature Importance Results for Random Forest Prediction on Value−Weighted Averages of
+ Financial Firms’ Measures
+Figure 7. Distribution of the average mean decrease in accuracy (MDA), grouped by ﬁrm size. For example, the
+leftmost boxplot illustrates the distribution of {M i Large } 1≤i≤10, where M i Large denotes the average of the
+MDA values for the large ﬁrms’ Roll measure, Amihud’s lambda, and VPIN, evaluated over test set i.
+The left (resp., right) panel displays feature importance results when forecasting the sign of the change
+in kurtosis and realized volatility for large (resp., small) ﬁnancial ﬁrms.
+distributions of
+{
+M
+i
+Large
+}
+i
+and
+{
+M
+i
+S mall
+}
+i
+have some overlap in this case, whereas in
+all other scenarios, the distribution of large ﬁrm MDA values lies entirely above the
+distribution of small ﬁrm MDA values.
+To an extent, these results are consistent with those reported in Chordia et al. (2011)
+and Lo and MacKinlay (1990), where the weekly and daily returns of large stocks
+were found to lead those of small stocks (but not the reverse). Our analysis reveals a
+similar lead-lag pattern in a high-frequency setting: microstructure variables of large
+ﬁrms have predictive power when forecasting the sign of the change in kurtosis of
+the small ﬁrms’ returns distribution. Moreover, when forecasting for large ﬁrms, the
+microstructure features of small ﬁrms are found to be less important than those of
+large ﬁrms. This conforms with earlier ﬁndings that small ﬁrm returns do not lead
+large ﬁrm returns.
+We now turn our attention to the question of whether adding cross-features im-
+proves the random forest’s predictive ability. We ﬁnd that the results here are mixed
+(see Figure 8). Including cross-features yields a signiﬁcant increase in AUC when
+forecasting realized volatility, and – to a lesser extent – kurtosis, for large ﬁrms. There
+is only minor predictive improvement, however, when using cross-features to predict
+realized volatility for small ﬁrms, and virtually no change when predicting kurtosis
+for small ﬁrms.16 As a robustness check, we repeat the analyses presented in this sec-
+tion on a set of information and communications technology (ICT) ﬁrms (rather than
+16We note that, regardless of ﬁrm size, our model has more success in forecasting realized volatility than it does in
+forecasting kurtosis.
+24
+
+=== page 25 ===
+Predicting Realized Volatility for Large Firms
+1 − Specificity
+Sensitivity
+0.0 0.5 1.0
+0.0 0.2 0.4 0.6 0.8 1.0
+AUC (w/o cross−features) = 0.543
+AUC (w/ cross−features) = 0.663
+Predicting Realized Volatility for Small Firms
+1 − Specificity
+Sensitivity
+0.0 0.5 1.0
+0.0 0.2 0.4 0.6 0.8 1.0
+AUC (w/o cross−features) = 0.576
+AUC (w/ cross−features) = 0.595
+Predicting Kurtosis for Large Firms
+1 − Specificity
+Sensitivity
+0.0 0.5 1.0
+0.0 0.2 0.4 0.6 0.8 1.0
+AUC (w/o cross−features) = 0.481
+AUC (w/ cross−features) = 0.524
+Predicting Kurtosis for Small Firms
+1 − Specificity
+Sensitivity
+0.0 0.5 1.0
+0.0 0.2 0.4 0.6 0.8 1.0
+AUC (w/o cross−features) = 0.463
+AUC (w/ cross−features) = 0.463
+AUC Results for Random Forest Prediction on Value−Weighted Averages of Financial Firms’ Measures
+Figure 8. ROC curves for predicting the sign of the change in realized volatility (top row) and in kurtosis (bot-
+tom row) for large ﬁrms (left column) and small ﬁrms (right column). In each case, the random forest
+was ﬁt twice, once without cross-features (e.g., using only large ﬁrms’ features to predict large ﬁrms’
+measures) and again with cross-features. Thus, for each prediction scenario, two ROC curves are dis-
+played: red (resp., black) curves indicate that cross-features were (resp., were not) used. The area under
+the curve (AUC) is reported in the lower right corner of each plot.
+ﬁnancial ﬁrms, as discussed here). We ﬁnd that the ICT feature importance results
+are qualitatively similar to those we present here, though the ROC results are not.
+Our complete ﬁndings are shown in Appendix A.
+7. Conclusion
+We estimate ﬁnancial networks by determining whether cross-effects in intraday
+trade data exist between each pairs of ﬁrms in our sample. We detect these cross-
+effects by assessing whether microstructure measures of one ﬁrm improve our abil-
+ity to forecast the sign of the change in a market measure (either realized volatility
+or returns kurtosis) of another ﬁrm, where predictive performance is measured via
+the area under the curve (AUC). Because we learn our networks from high-frequency
+trade data, which tends to be both nonlinear and nonstationary, we use a random for-
+est to forecast market measure changes. Random forests, a popular machine learning
+tool, provide a great deal of modeling ﬂexibility as they do not impose a particular
+functional form on the data. We apply these methods to the trade data of large U.S.
+25
+
+=== page 26 ===
+ﬁnancial institutions, demonstrating how our networks can be used to answer the
+same questions posed by researchers in the low-frequency setting (e.g., how network
+connectivity evolves over time and which types of ﬁrms interact with one another).
+High-frequency ﬁnancial networks have the potential to yield novel insights into
+the workings of the ﬁnancial system. Future work in this direction includes reﬁning
+our network estimation procedures (e.g., by changing the microstructure variables
+used as features, or by considering different market measures for prediction). There
+are a number of hyper-parameters in our random forest model (W, the length of the
+lookback window; h, the forecast horizon; the length of the time bar, etc.) and we
+have yet to perform an exhaustive review of how these parameters impact our ﬁnal
+results.
+Moreover, the networks we construct are based on bivariate analyses; that is, by
+testing for predictive improvements in ﬁrm x when we include the features of one
+additional ﬁrm, y. We could instead undertake a multivariate analysis wherein we
+include features of all ﬁrms in order to predict the change in the market measure of
+ﬁrm x. Such an analysis would give assurance that any cross-predictability detected
+between ﬁrms x and y is indeed due to the measures of ﬁrm y and not to measures
+of a ﬁrm that is correlated with y (i.e., indirect associations). Preliminary work in
+this direction has yielded mixed results; however, it is possible that by adjusting our
+model beyond the standard random forest, we may be able to make further progress.
+On that note, it is also interesting to consider how time series models (e.g., an au-
+toregressive integrated moving average (ARIMA) model with exogenous variables)
+would fare in predicting changes in market measures.
+Funding
+KK and SB were supported in part by NIH award R01GM135926. SB also acknowl-
+edges partial support from NSF awards DMS-1812128, DMS-2210675 and NIH award
+R21NS120227.
+References
+2017. North american industry classiﬁcation system manual. Executive Ofﬁce of the Presi-
+dent, Ofﬁce of Management and Budget.
+Basu S, Das S, Michailidis G, Purnanandam A. 2019. A system-wide approach to measure
+connectivity in the ﬁnancial sector. Available at SSRN 2816137.
+Benjamini Y, Hochberg Y. 1995. Controlling the false discovery rate: a practical and powerful
+approach to multiple testing. Journal of the Royal statistical society: series B (Methodolog-
+ical). 57(1):289–300.
+Biau G, Scornet E. 2016. A random forest guided tour. Test. 25(2):197–227.
+Billio M, Getmansky M, Lo AW, Pelizzon L. 2012. Econometric measures of connectedness
+and systemic risk in the ﬁnance and insurance sectors. Journal of ﬁnancial economics.
+104(3):535–559.
+Breiman L. 2001. Random forests. Machine learning. 45(1):5–32.
+Brennan MJ, Jegadeesh N, Swaminathan B. 1993. Investment analysis and the adjustment of
+stock prices to common information. The Review of Financial Studies. 6(4):799–824.
+Chiodo AJ, Owyang MT. 2002. A case study of a currency crisis: The russian default of 1998.
+Federal Reserve Bank of St Louis Review. 84(6):7.
+26
+
+=== page 27 ===
+Chordia T, Sarkar A, Subrahmanyam A. 2011. Liquidity dynamics and cross-autocorrelations.
+Journal of Financial and Quantitative Analysis. 46(3):709–736.
+CRSP Stocks. . Available: Center for Research in Security Prices. Graduate School of Business.
+University of Chicago. Retrieved from Wharton Research Data Services. Accessed 2019.
+Diebold FX, Yılmaz K. 2014. On the network topology of variance decompositions: Measuring
+the connectedness of ﬁnancial ﬁrms. Journal of Econometrics. 182(1):119–134.
+Dutta C, Karpman K, Basu S, Ravishanker N. 2022. Review of statistical approaches for mod-
+eling high-frequency trading data. Sankhya B:1–48.
+Easley D, de Prado ML, O’Hara M. 2016. Discerning information from trade data. Journal of
+Financial Economics. 120:269–285.
+Easley D, de Prado ML, O’Hara M, Zhang Z. 2021. Microstructure in the machine age. Review
+of Financial Studies. 34(7):3316–3363.
+Fawcett T. 2006. An introduction to roc analysis. Pattern recognition letters. 27(8):861–874.
+Friedman J, Hastie T, Tibshirani R. 2001. The elements of statistical learning. vol. 1. Springer
+series in statistics New York.
+Friedman J, Posner R. 2011. What caused the ﬁnancial crisis. University of Pennsylvania Press.
+H¨ardle WK, Chen S, Liang C, Schienle M. 2018. Time-varying limit order book networks.
+IRTG 1792 Discussion Paper 2018. Report No:.
+Hautsch N. 2012. Econometrics of ﬁnancial high-frequency data. Springer.
+Karpman K, Lahiry S, Mukherjee D, Basu S. 2022. Exploring ﬁnancial networks using quan-
+tile regression and granger causality. arXiv. Available from: https://arxiv.org/abs/
+2207.10705.
+Kiel P, Nguyen D. 2013. Bailout tracker: Tracking every dollar and every recipient. propublica:
+Journalism in the public interest.
+Liaw A, Wiener M. 2002. Classiﬁcation and regression by randomforest. R News. 2(3):18–22.
+Available from: https://CRAN.R-project.org/doc/Rnews/.
+Lo AW, MacKinlay AC. 1990. When are contrarian proﬁts due to stock market overreaction?
+The review of ﬁnancial studies. 3(2):175–205.
+NYSE Trade and Quote Database. . Retrieved from Wharton Research Data Services. Accessed
+2019.
+Robin X, Turck N, Hainard A, Tiberti N, Lisacek F, Sanchez JC, M ¨uller M. 2011. pROC: an
+open-source package for R and S+ to analyze and compare ROC curves. BMC Bioinformat-
+ics. 12:77.
+Rubin RE, Greenspan A, Levitt A, Born B. 1999. Hedge funds, leverage, and the lessons of
+long-term capital management. Report of The President’s Working Group on Financial
+Markets.
+Appendix A. Additional Details
+In Section 6.2, we apply a random forest model to the aggregated market measures of
+different sized ﬁnancial ﬁrms to assess whether ﬁrm size impacts cross-predictability
+(i.e., whether trade information from large (resp., small) ﬁrms improves the pre-
+dictability of small (resp., large) ﬁrms’ market measures). Here we repeat our analy-
+sis on a set of information and communications technology (ICT) ﬁrms, with the goal
+of determining whether our results vary by industry.
+We determine ICT ﬁrms on the basis of their North American Industry Classiﬁca-
+tion System (NAICS) code, which was obtained through the Center for Research in
+Security Prices (CRSP) database [CRSP Stocks, NAI (2017)]. To begin, we select all
+ﬁrms having any of 10 NAICS industry codes listed in Table A1. We sort these ﬁrms
+according to their average market capitalization over 2018 and retain 47 ﬁrms from
+the ﬁrst decile (representing large technology ﬁrms) and 47 from the seventh decile
+27
+
+=== page 28 ===
+(representing small technology ﬁrms).
+Figure A1 displays MDA feature importance results. On average, large ﬁrms’ fea-
+tures are more important than small ﬁrms’ features, regardless of whether we are
+forecasting realized volatility or kurtosis, for large ﬁrms or for small ﬁrms. How-
+ever, the difference in feature importances is larger when predicting for large ﬁrms
+(left panel) than for small ﬁrms (right panel), which suggests (a) that small ﬁrms
+carry little information about large ﬁrms, and (b) that large ﬁrms do contain some
+information about small ﬁrms, but the small ﬁrm features are still signiﬁcant. These
+results are qualitatively similar to what we obtain for ﬁnancial ﬁrms, except that, for
+the latter, small ﬁrms’ features are more important than large ﬁrms’ when predict-
+ing small ﬁrm realized volatility. In Figure A2, we show that including cross-features
+in the random forest model yields very little change in the AUC. An exception is
+when we predict kurtosis for small ﬁrms (bottom right plot), in which case we see an
+appreciable increase in AUC when we add large ﬁrms’ features.
+NAICS Code Description
+3341 Computer and peripheral equipment manufacturing
+3342 Communications equipment manufacturing
+3344 Semiconductor and other electronic component manufacturing
+3345 Navigational, measuring, electromedical, and control in- struments manufacturing
+5112 Software publishers
+5161 Internet publishing and broadcasting
+5179 Other telecommunications
+5181 Internet service providers and Web search portals
+5182 Data processing, hosting, and related services
+5415 Computer systems design and related services
+Table A1. North American Industry Classiﬁcation System (NAICS) industry codes for information and commu-
+nications technology ﬁrms.
+Firm Name Sector Ticker Symbol
+ALLIANCEBERNSTEIN HLDG PB AB, AC
+ACE LTD INS ACE
+AETNA INC NEW INS AET
+A F L A C INC INS AFL
+AMERICAN INTERNATIONAL GROUP INS AIG
+APOLLO INVESTMENT CORP PB AINV
+ASSURANT INC INS AIZ
+ALLSTATE CORP INS ALL
+AFFILIATED MANAGERS GROUP INC PB AMG
+AMERIPRISE FINANCIAL INC PB AMP
+AMERITRADE HOLDING CORP NEW PB AMTD
+AON CORP INS AOC, AON
+AMERICAN EXPRESS CO BA AXP
+BANK OF AMERICA CORP BA BAC
+B B & T CORP BA BBT
+FRANKLIN RESOURCES INC PB BEN
+BANK NEW YORK INC BA BK
+28
+
+=== page 29 ===
+BLACKROCK INC PB BLK
+BANK MONTREAL QUE BA BMO
+BANK OF NOVA SCOTIA BA BNS
+C B O T HOLDINGS INC PB BOT
+BEAR STEARNS COMPANIES INC PB BSC
+BLACKSTONE GROUP L P PB BX
+CITIGROUP BA C
+CHUBB CORP INS CB
+COUNTRYWIDE FINANCIAL CORP BA CFC
+C I G N A CORP INS CI
+CIT GROUP PB CIT
+CANADIAN IMPERIAL BANK COMMERCE BA CM
+CHICAGO MERCANTILE EXCH HLDG INC PB CME
+C N A FINANCIAL CORP INS CNA
+CAPITAL ONE FINANCIAL CORP BA COF
+COVENTRY HEALTH CARE INC INS CVH
+DEUTSCHE BANK A G BA DB
+DISCOVER FINANCIAL SERVICES BA DFS
+E TRADE FINANCIAL CORP PB ET, ETFC
+EATON VANCE CORP PB EV
+FEDERATED INVESTORS INC PA PB FII
+FEDERAL NATIONAL MORTGAGE ASSN BA FNM
+FEDERAL HOME LOAN MORTGAGE CORP BA FRE
+GREENHILL & CO INC PB GHL
+GENWORTH FINANCIAL INC INS GNW
+HARTFORD FINANCIAL SVCS GRP INC PB HIG
+BLOCK H & R INC BA HRB
+HUMANA INC INS HUM
+INTERACTIVE DATA CORP PB IDC
+INVESCO LTD PB IVZ
+JEFFERIES GROUP INC NEW PB JEF
+NUVEEN INVESTMENTS INC PB JNC
+JANUS CAP GROUP INC PB JNS
+JPMORGAN CHASE & CO BA JPM
+LAZARD LTD PB LAZ
+LEHMAN BROTHERS HOLDINGS INC PB LEH
+LEGG MASON INC PB LM
+LINCOLN NATIONAL CORP IN INS LNC
+MERRILL LYNCH & CO INC PB MER
+METLIFE INC INS MET
+MANULIFE FINANCIAL CORP INS MFC
+MARSH & MCLENNAN COS INC INS MMC
+MORNINGSTAR INC PB MORN
+MORGAN STANLEY DEAN WITTER & CO PB MS
+M & T BANK CORP BA MTB
+NATIONAL CITY CORP BA NCC
+NASDAQ STOCK MARKET INC PB NDAQ
+NYMEX HOLDINGS INC PB NMX
+NORTHERN TRUST CORP BA NTRS
+N Y S E GROUP INC PB NYX
+29
+
+=== page 30 ===
+PEOPLES UNITED FINANCIAL INC BA PBCT
+PRINCIPAL FINANCIAL GROUP INC INS PFG
+PROGRESSIVE CORP OH INS PGR
+P N C FINANCIAL SERVICES GRP INC BA PNC
+PARTNERRE LTD INS PRE
+PRUDENTIAL FINANCIAL INC INS PRU
+EVEREST RE GROUP LTD INS RE
+REGIONS FINANCIAL CORP BA RF
+RAYMOND JAMES FINANCIAL INC PB RJF
+ROYAL BANK CANADA MONTREAL QUE BA RY
+SCHWAB CHARLES CORP NEW PB SCHW
+S E I INVESTMENTS COMPANY PB SEIC
+SUN LIFE FINANCIAL INC INS SLF
+SLM CORP BA SLM
+ST PAUL TRAVELERS COS INC INS STA
+SUNTRUST BANKS INC BA STI
+STATE STREET CORP BA STT
+TORONTO DOMINION BANK ONT BA TD
+T ROWE PRICE GROUP INC PB TROW
+TRAVELERS GROUP INC INS TRV
+U B S AG BA UBS
+UNITEDHEALTH GROUP INC INS UNH
+UNUMPROVIDENT CORP INS UNM
+U S BANCORP DEL BA USB
+VISA INC BA V
+WACHOVIA CORP 2ND NEW BA WB
+WELLS FARGO & CO NEW BA WFC
+WASHINGTON MUTUAL INC BA WM
+WILLIS GROUP HOLDINGS PUB LTD CO INS WSH
+X L CAPITAL LTD INS XL
+Table A2.: Firm names, sectors, and ticker symbols. BA:
+bank, PB: broker/dealer, INS: insurance.
+30
+
+=== page 31 ===
+Predicting for Large Firms Predicting for Small Firms
+Kurtosis Realized Volatility Kurtosis Realized Volatility
+0.10
+0.12
+0.14
+0.16
+0.18
+Market Measure
+MDA
+Firm Size
+Large
+Small
+Feature Importance Results for Random Forest Prediction on Value−Weighted Averages of
+ ICT Firms’ Measures
+Figure A1. Distribution of the average MDA, grouped by ﬁrm size. The left (resp., right) panel displays feature
+importance results when forecasting the sign of the change in kurtosis and realized volatility for
+large (resp., small) ICT ﬁrms.
+31
+
+=== page 32 ===
+Predicting Realized Volatility for Large Firms
+1 − Specificity
+Sensitivity
+0.0 0.5 1.0
+0.0 0.2 0.4 0.6 0.8 1.0
+AUC (w/o cross−features) = 0.512
+AUC (w/ cross−features) = 0.529
+Predicting Realized Volatility for Small Firms
+1 − Specificity
+Sensitivity
+0.0 0.5 1.0
+0.0 0.2 0.4 0.6 0.8 1.0
+AUC (w/o cross−features) = 0.512
+AUC (w/ cross−features) = 0.514
+Predicting Kurtosis for Large Firms
+1 − Specificity
+Sensitivity
+0.0 0.5 1.0
+0.0 0.2 0.4 0.6 0.8 1.0
+AUC (w/o cross−features) = 0.575
+AUC (w/ cross−features) = 0.543
+Predicting Kurtosis for Small Firms
+1 − Specificity
+Sensitivity
+0.0 0.5 1.0
+0.0 0.2 0.4 0.6 0.8 1.0
+AUC (w/o cross−features) = 0.425
+AUC (w/ cross−features) = 0.49
+AUC Results for Random Forest Prediction on Value−Weighted Averages of ICT Firms’ Measures
+Figure A2. ROC curves for predicting the sign of the change in realized volatility (top row) and in kurtosis
+(bottom row) for large (left column) and small (right column) ICT ﬁrms. For each prediction scenario,
+two ROC curves are displayed: red (resp., black) curves indicate that cross-features were (resp., were
+not) used. The area under the curve (AUC) is reported in the lower right corner of each plot.
+32

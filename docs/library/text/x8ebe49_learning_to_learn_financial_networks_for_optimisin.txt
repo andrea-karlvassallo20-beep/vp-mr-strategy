@@ -1,0 +1,710 @@
+=== page 1 ===
+Learning to Learn Financial Networks for Optimising Momentum
+Strategies
+Xingyue (Stacy) Pu
+xingyue.pu@eng.ox.ac.uk
+Oxford-Man Institute of Quantitative Finance
+University of Oxford
+Oxford, UK
+Stefan Zohren
+stefan.zohren@eng.ox.ac.uk
+Oxford-Man Institute of Quantitative Finance
+University of Oxford
+Oxford, UK
+Stephen Roberts
+sjrob@robots.ox.ac.uk
+Oxford-Man Institute of Quantitative Finance
+University of Oxford
+Oxford, UK
+Xiaowen Dong
+xdong@robots.ox.ac.uk
+Oxford-Man Institute of Quantitative Finance
+University of Oxford
+Oxford, UK
+ABSTRACT
+Network momentum provides a novel type of risk premium, which
+exploits the interconnections among assets in a financial network to
+predict future returns. However, the current process of constructing
+financial networks relies heavily on expensive databases and finan-
+cial expertise, limiting accessibility for small-sized and academic
+institutions. Furthermore, the traditional approach treats network
+construction and portfolio optimisation as separate tasks, poten-
+tially hindering optimal portfolio performance. To address these
+challenges, we propose L2GMOM, an end-to-end machine learn-
+ing framework that simultaneously learns financial networks and
+optimises trading signals for network momentum strategies. The
+model of L2GMOM is a neural network with a highly interpretable
+forward propagation architecture, which is derived from algorithm
+unrolling. The L2GMOM is flexible and can be trained with diverse
+loss functions for portfolio performance, e.g. the negative Sharpe
+ratio. Backtesting on 64 continuous future contracts demonstrates
+a significant improvement in portfolio profitability and risk control,
+with a Sharpe ratio of 1.74 across a 20-year period.
+KEYWORDS
+momentum signals, momentum strategies, portfolio optimisation,
+financial networks, graph learning, machine learning
+1 INTRODUCTION
+Financial networks represent interconnections among financial en-
+tities such as institutions, markets and assets, and are constructed
+to facilitate the analysis of various downstream tasks. These tasks
+primarily focus on systemic risk assessment and market structure
+analysis, and more recently on alpha research and portfolio optimi-
+sation [1, 9]. Network momentum is a type of network alpha signals,
+which is based on the idea that the future return of one company
+in the financial network can be predicted from the past returns
+of companies to which it is connected, a phenomenon known as
+momentum spillover [1].
+The construction of financial networks is crucial to the success
+of network momentum signals. Nodes often represent individual
+stocks, while edges capture the relations between them and are
+constructed based on various financial or economic factors. These
+factors include, but are not limited to, industry or business sim-
+ilarity [3, 14], geographical proximity [8, 16] news co-mentions
+[19] and supply-demand links [4, 13]. However, the construction
+of these networks often relies on acquiring expensive databases
+from domain experts with deep understanding of finance and eco-
+nomics, making it costly for small-sized, non-profit or academic
+institutions. Alternatively, we may adopt the reasonable assump-
+tion that momentum spillover is subtly echoed in the historical
+pricing data, which are more readily accessible. Therefore, if an
+effective model could be developed to learn the relationship be-
+tween companies from readily available data, it could significantly
+lessen the dependence on costly data acquisition and specialised
+financial knowledge. Nevertheless, creating such a model remains
+a significant open challenge in the field of machine learning and
+quantitative finance.
+Another limitation of the literature is that the construction of
+financial networks or graphs1 is often detached from the subse-
+quent downstream tasks. For example, analysts tend to focus more
+on economic justification when constructing these graphs, giving
+less consideration to whether they would lead to optimal portfo-
+lio performance. However, it is possible that the method of graph
+construction, such as deducing a custom sales ratio formula to de-
+termine the connection strength between two companies [4], may
+not help with achieving optimal portfolio performance. In other
+words, the graph may not be effectively optimised with respect to
+portfolio performance. This underscores the need for a task-specific
+graph construction framework.
+In response to these considerations, we propose an end-to-end
+machine learning framework capable of simultaneously learning fi-
+nancial graphs and optimising the trading signals from momentum
+features built from these networks. Our framework leverages the
+concept of learning to learn graph topologies (L2G) [17]. Traditional
+graph learning methods typically employ convex optimisation to
+solve for an optimal graph given observed data on nodes [5, 6].
+L2G reformulated this process into learning a parametric mapping,
+where node features are input and the graph serves as the output,
+by unrolling the optimisation algorithm into a forward propagation
+1In this paper, we use graph and network interchangeably, and neighbours and peers
+interchangeably to represent the assets one is connected to. In the literature, the
+connected assets are also sometimes referred to as linked assets.
+arXiv:2308.12212v1  [q-fin.PM]  23 Aug 2023
+
+=== page 2 ===
+Xingyue (Stacy) Pu, Stefan Zohren, Stephen Roberts, and Xiaowen Dong
+of a neural network. Taking advantage of the flexibility in neural
+architecture design and training, we propose to incorporate into
+L2G an additional layer for constructing network momentum fea-
+tures, and train the model with loss being portfolio performance
+metrics in an end-to-end fashion.
+We test the proposed strategy, Learning to Learn Financial Net-
+works for Optimising Momentum Strategies (L2GMOM), on 64 con-
+tinuous future contracts, spanning commodities, equities, fixed
+income funds, and foreign currencies. We obtain a Sharpe ratio
+of 1.74 across 20-year backtest period from 2000 to 2020 [2, 10].
+In addition, the learned financial graphs effectively elucidate the
+momentum spillover for portfolio construction, which enhances
+the interpretability of the proposed methods. Our model also excels
+in terms of computational efficiency, offering rapid inference in
+milliseconds and bypassing the need for daily graph optimisation.
+The major contributions of our work are threefold: Firstly, we
+present a novel methodology that uses easily accessible pricing data
+to infer financial networks between assets. This approach eliminates
+the costly requirement for alternative datasets and reduces human
+bias. Secondly, we propose an end-to-end learning framework that
+is capable of both inferring financial networks and simultaneously
+optimising the downstream task of portfolio construction. This
+ensures the financial networks are directly optimised in relation to
+portfolio performance. Finally, our proposed methods demonstrate
+strong empirical portfolio performance in both profitability and
+risk control.
+2 PRELIMINARY
+2.1 Individual Momentum Strategy
+The concept of individual asset momentum, proposed by [14], ex-
+plores the profitability by longing past winner assets and shorting
+past underperformers. A time-series (TSMOM) momentum can be
+therefore constructed, with the daily return defined as
+𝑟 portfolio 𝑡 :𝑡+1 := 1 𝑁𝑡 𝑁𝑡∑︁ 𝑖=1 𝑥𝑖,𝑡 𝜎tgt 𝜎𝑖,𝑡 𝑟𝑖,𝑡 :𝑡+1 (1)
+where 𝑁𝑡 is the number of assets at day 𝑡, 𝑟𝑖,𝑡 :𝑡+1 is the daily return
+of asset 𝑖. With the target annualised volatility 𝜎tgt, the asset return
+is scaled by its annualised realised volatility 𝜎𝑖,𝑡 . Here, 𝜎tgt = 0.15
+following literature standards [10], and 𝜎𝑖,𝑡 is estimated from an
+exponential weighted moving standard deviation with a 60-day
+span on daily returns. The position, or trading signal 𝑥𝑖,𝑡 ∈[−1, 1]
+at day 𝑡 for asset 𝑖, specifies the strategy. The core of momentum
+strategies is the construction of the trading signal 𝑥𝑖,𝑡 . It often
+consists of two steps - trend estimation and position sizing. We
+illustrate this with the following examples.
+Annual Return. Moskowitz et al. [15] proposed to use past 1-year
+asset return 𝑟𝑖,𝑡−252:𝑡 as a trend estimation, and the direction as the
+position 𝑥𝑖,𝑡 = sgn(𝑟𝑖,𝑡−252:𝑡).
+MACD. Baz et al. [2] constructed trend estimation using the
+volatility normalised moving average crossover divergence (MACD)
+indicators such that
+MACD(𝑖,𝑡,𝑆,𝐿) = 𝑚(𝑖,𝑡,𝑆)−𝑚(𝑖,𝑡,𝐿) (2)
+MACDnorm (𝑖,𝑡,𝑆,𝐿) = MACD(𝑖,𝑡,𝑆,𝐿) std(𝑝𝑖,𝑡−63:𝑡) (3)
+𝑦𝑖,𝑡(𝑆,𝐿) = MACDnorm (𝑖,𝑡,𝑆,𝐿) std(MACDnorm (𝑖,𝑡− 252,𝑆,𝐿)) (4)
+𝑥𝑖,𝑡 = 1 3 3∑︁ 𝑘=1 𝜙(𝑦𝑖,𝑡(𝑆𝑘,𝐿𝑘)) (5)
+where (𝑆𝑘,𝐿𝑘)∈{(8, 24),(16, 48),(32, 96)} and 𝜙(𝑦) = 𝑦 exp(−𝑦2/4) 0.89
+is a position scaling function.
+Machine Learning-based TSMOM. Recent literature managed to
+construct TSMOM from machine learning models. Lim et al. [10]
+proposed a general supervised learning framework such that
+𝑥𝑖,𝑡 = sgn(𝑦𝑖,𝑡) and 𝑦𝑖,𝑡 = 𝑓𝜽 (u𝑖,𝑡). (6)
+It can also directly model the position:
+𝑥𝑖,𝑡 = 𝑓𝜽 (u𝑖,𝑡) (7)
+The model specifications for 𝑓 are diverse and often considered
+in relation to the nature of the input feature u. Lim et al. [10]
+compared linear models and deep learning models, such as Lasso
+Regression, MLP, WaveNet, and LSTM, using input features such
+as the MACD indicators and volatility-scaled returns from diverse
+lookback windows. In a similar vein, Wood et al. [20] considered
+an attention-based deep learning model. Tan et al. [18] and Liu
+et al. [11] proposed advanced deep learning to effectively model
+for time-series and cross-sectional momentum.
+2.2 Network Momentum Strategy
+Network momentum strategy takes into account the interconnec-
+tions of assets, assuming an asset’s future performance can be
+influenced by the past performance of its linked assets. A network
+or graph is defined to represent economic links between assets,
+modelled by a graph adjacency matrix A𝑡 at time 𝑡. A general
+framework of network momentum strategies starts by defining a
+network or graph to represent certain economic links between two
+assets. The network is mathematically modelled by a graph adja-
+cency matrix A𝑡 ∈ R𝑁𝑡 ×𝑁𝑡 between 𝑁𝑡 assets at time 𝑡, where the
+entries 𝑎𝑖𝑖,𝑡 = 0 and 𝑎𝑖𝑗,𝑡 ≥ 0. If 𝑎𝑖𝑗,𝑡 > 0, there exists an economic
+link that shows certain similarity between asset 𝑖 and asset 𝑗. Some
+studies [3, 14] defined binary graph such that 𝑎𝑖𝑗,𝑡 ∈{0, 1}, while
+others [1, 21] also quantified the strength of the interconnections
+using edge weights.
+The network momentum of asset 𝑖 at time 𝑡 is defined through
+the average of trend estimation propagated from its connected
+assets in A𝑡 :
+𝑦𝑖,𝑡 = 1 |N𝑡(𝑖)| ∑︁ 𝑗∈N𝑡 (𝑖) 𝑎𝑖𝑗,𝑡𝑦𝑗,𝑡 (8)
+where N𝑡(𝑖) is the neighbourhood set of asset 𝑖 at time 𝑡 containing
+all its connected assets. In the literature, different economic links
+were explored. Some examples of A include:
+
+=== page 3 ===
+Learning to Learn Financial Networks for Optimising Momentum Strategies
+• Industry Linkage. 𝑎𝑖𝑗,𝑡 = 1 if stock 𝑖 and 𝑗 belong to the
+same industry, based on industrial classification codes such
+as two-digit SIC [14] and GICS [3].
+• Supply-demand Relations [13, 21]. Cohen and Frazzini [4]
+define a customer link 𝑎𝑖𝑗,𝑡 = 1 for a target firm 𝑖 if it sells
+more then 10% its products or services to the firm 𝑗.
+• Geographic Location. 𝑎𝑖𝑗,𝑡 = 1 if two companies have head-
+quarters in the same location [8, 16].
+• Patent Similarity. Lee et al. [9] define a technology proxim-
+ity score 𝑎𝑖𝑗,𝑡 to measure the similarity of patent portfolios
+between two firms.
+• Analyst co-coverage. Ali and Hirshleifer [1] defined 𝑎𝑖𝑗,𝑡 as
+the number of sell-side analysts who cover stock 𝑖 and 𝑗 in
+the same report at time 𝑡.
+While the above networks can effectively capture some economic
+similarity between companies and potentially generate alpha sig-
+nals, they often rely on expensive databases from domain experts
+with deep understanding of finance. In this paper, we propose learn-
+ing the graph adjacency matrix A𝑡 from readily accessible historical
+returns that directly optimises momentum strategy.
+2.3 Learning to Learn Graph Topologies
+Graph learning involves estimating a graph adjacency matrix by
+exploring the spectral characteristics presented in the node observa-
+tions [5–7, 12]. Given a feature matrix V ∈ R𝑁×𝐹 on 𝑁 nodes, the
+graph adjacency matrix can be optimised for by solving a convex
+optimisation problem such as the one in [7]:
+min
+A
+tr
+
+V⊤(D − A)V  −𝛼1⊤ log(A1)+𝛽||A||2 𝐹
+𝑠.𝑡. A𝑖𝑗 = A𝑗𝑖, A𝑖𝑗 ≥ 0 ∀𝑖 ≠ 𝑗
+(9)
+where D is a diagonal matrix with D𝑖𝑖 = ˝ 𝑗 A𝑖𝑗 . The first trace
+term measures the spectral variations of V on the learned graph,
+encouraging connections between nodes with similar features. The
+log and ℓ2 terms act as topological regularisation in the optimisation
+problem, enforcing graph connectivity to avoid isolated nodes and
+ensure a smooth edge weight distribution. The constraints ensure
+the learned graph adjacency matrix is symmetric and non-negative.
+Although the optimisation problem can be efficiently solved
+by proximal gradient descent algorithms like primal-dual splitting
+(PDS), choices of hyperparameters 𝛼 and 𝛽, significantly influence
+the resulting graph’s topological structure, such as its sparsity.
+To address this, Pu et al. [17] introduced Learning to Learn Graph
+Topologies (L2G), a method reformulating the optimisation problem
+into a task of learning a parametric mapping. A neural network with
+a forward propagation step is proposed by unrolling the iterative
+PDS optimisation steps (as in Algorithm 1). The hyperparameters
+that influence the graph’s topological characteristics transform
+into learnable parameters, which are trained using a loss function
+comparing graph estimates against ground truth graphs.
+In our context, each financial asset represents a node, and their
+historical pricing data act as node observations. With graph learn-
+ing, we can reveal the interconnections between assets. Learning to
+Learn Graph Topologies (L2G) provides further inspiration, as we
+can now use a loss function associated with portfolio performance
+to determine the optimal graph structure.
+3 PROPOSED METHODOLOGY
+3.1 L2GMOM
+In this section, we introduce Learning to Learn Financial Networks
+for Optimising Momentum Strategies (L2GMOM), a solution specifi-
+cally designed to learn financial networks from readily available
+data and optimise them directly for an ideal portfolio performance.
+As introduced in Section 2.3, L2G reformulates optimisation-
+based graph learning into an unrolling neural network. By lever-
+aging the inherent modularity of neural networks, where different
+layers can be easily stacked for forward propagation, we propose to
+incorporate an additional layer into L2G for directly constructing
+network momentum. Given a feature matrix V𝑡 captured from 𝑁𝑡
+assets at time 𝑡, the initial step of L2GMOM involves employing
+the L2G layer (Algorithm 1), as defined in Eq.(10a), to learn a graph
+adjacency matrix A𝑡 . This matrix illustrates the interconnections
+among the assets. Subsequently, A𝑡 has a normalisation step, as out-
+lined in Eq.(10b). The normalisation aims to offset the dominance
+of nodes with many connections. In line with the machine learning-
+based TSMOM approach [10] and traditional network momentum
+in Eq.(8), we propose a linear layer to estimate the momentum
+trend of asset 𝑖, derived from a linear combination of individual
+momentum features U𝑡 of its connected assets in ˜A𝑡 . ˜A𝑡 U𝑡 has an
+interpretation of a network momentum features and the learned
+parameters 𝜽 are the weights of combining different momentum
+features. It is worth mentioning that ˜A𝑡 from Eq.(10b) contains
+only non-negative edges, as a result of enforcing the constraints of
+Eq.(9). In summary, these are the forward propagation rules for the
+L2GMOM neural network:
+A𝑡 = L2G(V𝑡,𝐿; 𝜶 , 𝜷, 𝜸 ) (10a)
+˜A𝑡 = D−1/2 𝑡 A𝑡 D−1/2 𝑡 , where D𝑖𝑖,𝑡 = ∑︁
+𝑗
+A𝑖𝑗,𝑡, D𝑖𝑗,𝑡 = 0 (10b)
+(L2GMOM) y𝑡 = ˜A𝑡 U𝑡 𝜽 +𝑏 (10c)
+where y𝑡 is the model output, a 𝑁𝑡 -dimensional vector of trend
+estimations for every assets, such that y𝑡 = [𝑦1,𝑡,𝑦2,𝑡,...,𝑦𝑁𝑡 ,𝑡]𝑇 .
+We further take the trading positions x𝑡 = sgn(y𝑡) for constructing
+a network momentum strategy. The trainable parameters include
+(𝜶 , 𝜷, 𝜸, 𝜽,𝑏).
+Taking one step further, we also model the direct position x𝑡 in-
+stead of the trend estimation y𝑡 . We name the model L2GMOM_SR,
+since we further use Sharpe Ratio (SR) to optimise for the positions,
+which are consistent with the literature [10]. Since the resulting
+positions x𝑡 lie within the range of [−1, 1] in TSMOM, we simply
+introduce a non-linear activation function, tanh, in the linear layer
+to ensure the same bahaviour:
+(L2GMOM_SR) x𝑡 = tanh
+
+˜A𝑡 V𝑡 𝜽 +𝑏
+
+(11)
+The use of L2GMOM_SR showcases our model’s flexibility, accom-
+modating different loss functions. L2GMOM_SR not only optimises
+the portfolio positions, but also the graph learning layer, ensuring
+the network is well optimised w.r.t. Sharpe ratio.
+3.2 Input Features
+We consider the following eight momentum features calculated
+from pricing data for U𝑡 :
+
+=== page 4 ===
+Xingyue (Stacy) Pu, Stefan Zohren, Stephen Roberts, and Xiaowen Dong
+Algorithm 1 L2G (PDS unrolling)
+Input: Feature matrix V ∈ R𝑁×𝐹 , number of unrolling times 𝐿
+1: Initial primal w0 = 0 ∈ R𝑁(𝑁−1)/2 and dual v0 = 0 ∈ R𝑁
+2: h = vech(H), where H𝑖𝑗 = ||V𝑖,: − V𝑗,: ||2 2
+3: Degree operator D such that Dw = [𝑑1,...,𝑑𝑁]𝑇 , where 𝑑𝑖 =˝
+𝑗 W𝑖𝑗 and w = vech(W)
+4: for 𝑙 = 0, 1,...,𝐿 do
+5: r1,𝑙 = w𝑙 −𝛾𝑙(2𝛽𝑙 w𝑙 + 2h + D𝑇 v𝑙)
+6: r2,𝑙 = v𝑙 +𝛾𝑙 Dw𝑙
+7: p1,𝑙 = max{0, r1,𝑙}
+8: p2,𝑙 =  r2,𝑙 − √︃ r2 2,𝑙 + 4𝛼𝑙𝛾𝑙 /2
+9: q1,𝑙 = p1,𝑙 −𝛾𝑙(2𝛽𝑙 p1,𝑙 + 2h + D𝑇 p2,𝑙)
+10: q2,𝑙 = p2,𝑙 +𝛾𝑙 Dp1,𝑙
+11: w𝑙+1 = w𝑙 − r1,𝑙 + q1,𝑙
+12: v𝑙+1 = v𝑙 − r2,𝑙 + q2,𝑙
+13: end for
+14: return Graph estimate A such that w𝐿 = vech(A)
+• Volatility normalised returns over the past 1-day, 1-
+month, 3-month, 6-month and 1-year periods; defined as
+𝑟𝑡 −Δ:𝑡/𝜎𝑡 √ Δ, where 𝜎𝑡 is an ex-ante daily volatility estimated
+from an exponential weighted moving standard deviation
+with 60-day span on daily return.
+• MACD indicators with three combinations of short and
+long time scales (𝑆𝑘,𝐿𝑘) ∈ {(8, 24),(16, 48),(32, 96)} in
+Eq.(4).
+Therefore, U𝑡 ∈ R𝑁𝑡 ×8 is the matrix containing these eight features
+for every asset.
+For V𝑡 , we adopt a 252-day lookback window and stack the
+individual features together. This is to ensure the L2G layer can
+capture a stable similarity from longer time-series, providing a ro-
+bust foundation for learning. As a result, we obtain a representation
+V𝑡 ∈ R𝑁𝑡 ×8𝛿 , where 𝛿 = 252.
+In order to mitigate the influence of outliers, we also winsorise
+the data by capping/flooring it to be within 5 times its exponentially
+weighted moving (EWM) standard deviations from its EWM average
+– computed using a 252-day half-life, as adopted by Lim et al. [10].
+3.3 Loss Functions
+The parameters in L2GMOM to be estimated include graph learn-
+ing parameters (𝜶 , 𝜷, 𝜸 ) and momentum feature parameters (𝜽,𝑏).
+Note that Pu et al. [17] observed that allowing varying hyperparam-
+eters (𝛼,𝛽,𝛾) in each unrolling layer would significantly increase
+the performance of graph learning. Therefore, we adopt the same
+approach. The coefficients are learned by minimising with respect
+to different loss functions associated with portfolio performance,
+depending on whether the output is y𝑡 or x𝑡 .
+• Mean Squared Error (MSE) for training L2GMOM:
+LMSE (𝜽,𝑏) = 1 |Ω| ∑︁ (𝑖,𝑡)∈Ω  𝑦𝑖,𝑡 −𝑟𝑖,𝑡 :𝑡+1 𝜎𝑖,𝑡 2 (12)
+• Negative Sharpe Ratio for training L2GMOM_SR:
+LSR (𝜽,𝑏) = −
+˝
+(𝑖,𝑡)∈Ω 𝑅𝑖,𝑡 ×
+√
+252
+˝
+(𝑖,𝑡)∈Ω 𝑅2 𝑖,𝑡 −(˝ (𝑖,𝑡)∈Ω 𝑅𝑖,𝑡)2 (13)
+where 𝑅𝑖,𝑡 = 𝑥𝑖,𝑡 𝜎tgt 𝜎𝑖,𝑡 𝑟𝑖,𝑡 :𝑡+1 is the volatility-normalised re-
+turn of asset 𝑖 at time 𝑡.
+4 PERFORMANCE EVALUATION
+4.1 Backtest Setup
+4.1.1 Datasets. Our dataset contains 64 ratio-adjusted continuous
+future contracts obtained from the Pinnacle Data Crop CLC Data-
+base2. We computed the momentum feature in Section 3.2 from the
+daily prices from 1990 to 2020, although different assets could have
+different time spans when the prices are available. In Appendix,
+Table 2 lists all the assets used in backtest.
+4.1.2 Strategy Candidates. We compare the proposed strategies
+against the following reference benchmarks:
+• Long Only takes a consistent long position 𝑥𝑖,𝑡 = 1 with
+daily volatility scaling in Eq.(1)
+• MACD [2] takes positions from Eq.(5).
+• LinReg [10] stands for Linear Regression with the eight
+momentum features as covariates, and the signals were con-
+structed following Eq.(6) .
+• GLinReg stands for Graph Linear Regression. We learn
+graphs separately with Eq.(9) and we fit them in Eq.(10c).
+This is to demonstrate whether the performance gain is
+from the end-to-end learning architecture.
+We name the strategies constructed from the proposed models as
+L2GMOM and L2GMOM_SR. The positions of L2GMOM are the
+signs of the trend estimation in Eq.(10c), and L2GMOM_SR directly
+outputs the positions.
+4.1.3 Optimisation Details. The models were trained every 5 years,
+involving coefficient optimisation and hyperparameter tuning us-
+ing data up to the re-trained time point. These optimised models
+were then used to generate trading signals for the subsequent 5
+years, using out-of-sample data. To ensure an adequate number
+of training samples, the first backtest period covered 1990-1999
+for training and 2000-2004 for testing. Similarly, the second pe-
+riod included 1990-2004 for training and 2005-2009 for testing, and
+so on. Thus, we had a 20-year aggregated out-of-sample period
+from 2000 to 2020. For each backtest period, the most recent 10%
+of training data was set aside as a validation set for hyperparame-
+ter tuning. The hyperparameters included the number of unrolling
+times 𝐿 in Algorithm 1, batch size, and optimiser parameters. Linear
+models such as LinReg and GLinReg have analytical solutions. For
+L2GMOM and L2GMOM_SR, we used stochastic gradient descent
+with the Adam optimiser in a mini-batch approach. Early stopping
+was activated when the validation loss failed to improve beyond a
+certain threshold, which was determined using the validation set
+for convergence. To mitigate the randomness introduced by the
+Adam optimiser, we conducted 5 runs with random initial values
+and averaged the model outputs to create an ensemble.
+2https://pinnacledata2.com/clc.html
+
+=== page 5 ===
+Learning to Learn Financial Networks for Optimising Momentum Strategies
+Table 1: Portfolio Performance Metrics
+return vol. Sharpe downside deviation MDD MDD duration Sortino Calmar hit rate Avg. P Avg. L
+Raw Signals:
+Long Only 0.036 0.053 0.671 0.037 0.200 17.2% 0.951 0.173 53.9% 0.955
+MACD 0.025 0.047 0.533 0.033 0.121 27.5% 0.766 0.200 52.9% 0.977
+LinReg 0.043 0.042 1.029 0.028 0.080 11.5% 1.541 0.538 53.6% 1.031
+GLinReg 0.060 0.049 1.227 0.033 0.085 7.7% 1.806 0.713 54.3% 1.034
+L2GMOM 0.065 0.047 1.400 0.030 0.066 7.2% 2.197 0.942 50.7% 1.086
+L2GMOM_SR 0.045 0.032 1.394 0.023 0.052 6.2% 1.911 0.817 52.0% 1.051
+Signals Rescaled to 15% Target Volatility:
+Long Only 0.117 0.150 0.792 0.095 0.633 17.1% 1.229 0.177 53.9% 0.969
+MACD 0.102 0.150 0.694 0.094 0.342 23.7% 1.085 0.279 52.9% 0.997
+LinReg 0.174 0.150 1.189 0.092 0.285 11.9% 1.892 0.623 53.6% 1.049
+GLinReg 0.200 0.150 1.365 0.093 0.253 8.9% 2.149 0.822 54.3% 1.048
+L2GMOM 0.224 0.150 1.525 0.089 0.186 7.2% 2.531 1.201 50.7% 1.099
+L2GMOM_SR 0.255 0.150 1.744 0.094 0.173 5.7% 2.716 1.495 52.0% 1.091
+a Best performance of each metric is bold.
+4.2 Portfolio Performance
+In evaluating the portfolio performance, we use the following an-
+nualised metrics in Table 1:
+• Profitability: expected return and hit rate (the percentage
+of days with positive returns across the test period)
+• Risk: daily volatility (vol.), downside deviation, maximum
+drawdown (MDD) and MDD duration (the percentage of
+days with MDD across the test period).
+• Overall Performance: Sharpe ratio (expected return/vol.),
+Sortino ratio (expected return/downside deviation), Calmar
+ratio (expected return/MDD), and the average profits over
+the average loss
+ Avg. P
+Avg. L
+
+.
+In order to have a better comparison between different strategies,
+we apply an additional layer of volatility scaling at the portfolio
+level to an annualised volatility target of 15% and report the above
+evaluation metrics. In Figure 1a and Figure 1b, we plot the daily
+cumulative returns of raw signals and signals rescaled to 15% annual
+volatility of main strategies.
+L2GMOM and GLinReg both outperform LinReg in terms of
+portfolio returns in both raw signals and signals rescaled to 15% tar-
+get volatility. This suggests that considering the network effect in
+assets can greatly enhance profitability. L2GMOM also outperform-
+ing GLinReg indicates that optimising the graph with respect to
+portfolio performance can yield higher returns, which supports our
+conjecture that the separation of network construction in network
+momentum strategies may adversely affect the portfolio perfor-
+mance. In terms of portfolio risk, L2GMOM has a lower downside
+deviation and shorter MDD duration in both raw signals and sig-
+nals rescaled to 15% target volatility, indicating that it manages
+risk more effectively. L2GMOM also outperforms GLinReg in terms
+of volatility, suggesting that optimising the graph with respect to
+portfolio performance can also reduce risk.
+L2GMOM_SR has the lowest volatility, downside deviation, MDD,
+and MDD duration in the raw signal, indicating that optimising
+with the Sharpe ratio can significantly reduce risk. It is not sur-
+prising to observe a higher Sharpe ratio in L2GMOM_SR, which is
+consistent with the results in machine learning TSMOM [10]. Note
+that, the returns of L2GMOM_SR drops in the raw signals, but the
+return is the highest in the volatility-scaled signals.
+4.3 Diversification Analysis
+To evaluate whether the signals constructed from the proposed
+models are different from the reference baselines, we calculated the
+correlation of daily returns between candidate signals in Figure 2a.
+Besides, we calculate the percentage by how much the signals of two
+strategies have the same direction, also known as sign agreement in
+Figure 2b. Note that LineReg, GLinReg, L2GMOM and L2GMOM_SR
+have the exactly same input momentum features.
+From Figure 2a and Figure 2b, we draw the following conclusions.
+The L2GMOM strategy, which incorporates graph learning and net-
+work momentum, shows moderate diversification potential with
+the model-free MACD strategy, as evidenced by their moderate re-
+turn correlation and position sign agreement. Comparing L2GMOM
+with LinReg, which uses the same input but different momentum
+calculation methods, shows less diversification potential due to
+higher correlation and agreement. However, L2GMOM has better
+portfolio performance, showing it could be a better alternative strat-
+egy. Finally, L2GMOM, GLinReg, and L2GMOM_SR, all of which
+consider graph effects but differ in optimisation methods, show
+limited diversification potential due to high return correlations and
+sign agreements. Despite their different modelling approaches, the
+similar inputs and graph-based methods used by these strategies
+result in relatively high correlations, suggesting limited diversifica-
+tion benefits when combined in a portfolio.
+
+=== page 6 ===
+Xingyue (Stacy) Pu, Stefan Zohren, Stephen Roberts, and Xiaowen Dong
+(a) Raw signals
+ (b) Signals rescaled to 15% volatility target
+Figure 1: The cumulative daily returns of the proposed strategy (L2GMOM/L2GMOM_SR) and four reference strategies (Long
+Only/MACD/LinReg/GLinReg) in different colours for the entire out-of-sample period from 2000 to 2020.
+(a) Return Correlations
+ (b) Sign Agreement
+Figure 2: A diversification analysis on the correlations and
+sign agreement of daily returns between the proposed strate-
+gies (L2GMOM/L2GMOM_SR) and four reference strategies
+(Long Only/MACD/LinReg/GLinReg) of the entire out-of-
+sample period from 2000 to 2020. The values of the pair-
+wise correlation and sign agreement are marked in the cor-
+responding square boxes.
+4.4 Turnover Analysis
+Following the convention of literature [10], we calculate the cost-
+adjusted Sharpe ratio from the adjusted returns:
+˜𝑟 portfolio 𝑖,𝑡 :𝑡+1 := 1 𝑁𝑡 𝑁𝑡∑︁ 𝑖=1  𝑥𝑖,𝑡 𝜎tgt 𝜎𝑖,𝑡 𝑟𝑖,𝑡 :𝑡+1 −𝑐·𝜎𝑖,𝑡 𝑥𝑖,𝑡 𝜎𝑖,𝑡 − 𝑥𝑖,𝑡−1 𝜎𝑖,𝑡−1   (14)
+where 𝑐 is the turnover cost in bps, varying from 0.5 to 5 bps. As
+ex-ante costs rise, all strategies see a drop in cost-adjusted Sharpe
+ratios. LinReg, a machine learning model, is most sensitive, turning
+negative at costs over 3 bps. GLinReg, which includes graph learn-
+ing, fares better, maintaining a higher positive Sharpe ratios at 2
+bps. The proposed models, L2GMOM and L2GMOM_SR, also stay
+positive at 3 bps, showing resilience to increasing costs. Thus, graph
+learning strategies like GLinReg, L2GMOM, and L2GMOM_SR of-
+fer better cost resilience than LinReg. The Long Only and MACD
+strategies, which are model-free, show a relatively gradual decrease
+in Sharpe ratio as ex-ante costs increase. To further reduce the
+turnover of machine learning strategies, [10] proposed including
+a turnover regularisation. This is an interesting avenue for future
+analysis.
+Figure 3: The cost-adjusted Sharpe ratio of the proposed
+strategies (L2GMOM/L2GMOM_SR) and four reference strate-
+gies (Long Only/MACD/LinReg/GLinReg) of the entire out-
+of-sample period from 2000 to 2020.
+4.5 Network Analysis
+Figure 4 are example daily networks obtained from the proposed
+L2GMOM and L2GMOM_SR, specifically the output of Eq.(10b).
+We deliberately chose two different dates to exhibit, 2008-01-03 for
+the turbulent period and 2010-01-04 for the calm period. Note that
+
+=== page 7 ===
+Learning to Learn Financial Networks for Optimising Momentum Strategies
+(a) 2008-01-03 from L2GMOM
+ (b) 2008-01-03 from L2GMOM_SR
+(c) 2010-01-04 from L2GMOM
+ (d) 2010-01-04 from L2GMOM_SR
+Figure 4: Momentum Spillover Analysis. Networks obtained from L2GMOM or L2GMOM_SR.
+there were some assets without any connections, because the input
+features for them were missing. The four subfigures demonstrate
+a strong community structure corresponding to four asset classes:
+commodities, equities, fixed income (FI), and foreign exchange (FX).
+The equities form a dense cluster, indicating a high degree of inter-
+connection among equity assets. Inter-class connections are also
+observed, particularly between commodities and the other three
+asset classes. However, there is a notable absence of connections be-
+tween equities and fixed income. This is reasonable given that these
+two asset classes often exhibit negative correlations and are used
+to hedge each other, suggesting no momentum spillover according
+to the strategy.
+By comparing Figure 4a and 4c, we can also capture some tem-
+poral variations in the momentum network structure. During calm
+periods (e.g. 2010-01-04), there are fewer inter-class connections
+between fixed income and the other assets. However, in turbulent
+times (e.g. Global Financial Crisis covering 2008-01-03), these con-
+nections increase, indicating a shift in momentum propagation
+under different market conditions.
+The graphs obtained from the L2GMOM_SR strategy are denser
+with more similar edge weights, demonstrating the strategy’s ten-
+dency in reducing volatility. One possible explanation is that, by
+increasing the connections between assets, the strategy ensures that
+each asset receives momentum information passed from a broader
+range of assets, rather than relying on a few, thus enhancing the
+robustness and stability of the strategy.
+5 CONCLUSION
+In this paper, we present an innovative end-to-end graph machine
+learning framework for the construction of network momentum
+strategies, specifically two model variants: L2GMOM and L2GMOM_SR.
+Our framework effectively learns the graph adjacency matrix and
+optimises the momentum strategy directly from historical pricing
+
+=== page 8 ===
+Xingyue (Stacy) Pu, Stefan Zohren, Stephen Roberts, and Xiaowen Dong
+data, reducing the dependence on costly linkage databases and
+financial expertise typically needed for constructing network mo-
+mentum factors, such as those derived from supply chain data.
+Our models exceed the performance of traditional time series
+momentum strategies in both portfolio returns and risk manage-
+ment across 64 continuous futures contracts. Moreover, our models
+are highly interpretable, providing explicit networks as a byproduct.
+These networks not only represent the similarity between the mo-
+mentum features of these assets, but are also optimised with respect
+to portfolio performance. This offers a powerful interpretation of
+the interconnections that can aid in constructing network momen-
+tum strategies. By analysing these learned networks, we uncover
+the community structure and temporal variations that align with
+common financial sense.
+REFERENCES
+[1] Usman Ali and David Hirshleifer. 2020. Shared Analyst Coverage: Unifying
+Momentum Spillover Effects. Journal of Financial Economics 136, 3 (June 2020),
+649–675.
+[2] Jamil Baz, Nicolas Granger, Campbell R. Harvey, Nicolas Le Roux, and Sandy
+Rattray. 2015. Dissecting Investment Strategies in the Cross Section and Time
+Series. (Dec. 2015).
+[3] Leslie Boni and Kent L. Womack. 2006. Analysts, Industries, and Price Momentum.
+Journal of Financial and Quantitative Analysis 41, 1 (March 2006), 85–109.
+[4] Lauren Cohen and Andrea Frazzini. 2008. Economic Links and Predictable
+Returns. The Journal of Finance 63, 4 (2008), 1977–2011.
+[5] Xiaowen Dong, Dorina Thanou, Pascal Frossard, and Pierre Vandergheynst.
+2016. Learning Laplacian Matrix in Smooth Graph Signal Representations. IEEE
+Transactions on Signal Processing 64, 23 (2016), 6160–6173.
+[6] Xiaowen Dong, Dorina Thanou, Michael Rabbat, and Pascal Frossard. 2019.
+Learning Graphs from Data: A Signal Representation Perspective. IEEE Signal
+Processing Magazine 36, 3 (May 2019), 44–63.
+[7] Vassilis Kalofolias. 2016. How to Learn a Graph from Smooth Signals. Proceedings
+of the 19th International Conference on Artificial Intelligence and Statistics (May
+2016), 920–929.
+[8] George M. Korniotis and Alok Kumar. 2013. State-Level Business Cycles and
+Local Return Predictability. The Journal of Finance 68, 3 (2013), 1037–1096.
+[9] Charles M.C. Lee, Stephen Teng Sun, Rongfei Wang, and Ran Zhang. 2019. Tech-
+nological Links and Predictable Returns. Journal of Financial Economics 132, 3
+(June 2019), 76–96.
+[10] Bryan Lim, Stefan Zohren, and Stephen Roberts. 2019. Enhancing Time Series
+Momentum Strategies Using Deep Neural Networks. The Journal of Financial
+Data Science 1, 4 (2019), 19–38.
+[11] Tom Liu, Stephen Roberts, and Stefan Zohren. 2023. Deep Inception Net-
+works: A General End-to-End Framework for Multi-asset Quantitative Strategies.
+arXiv:2307.05522 [q-fin]
+[12] Gonzalo Mateos, Santiago Segarra, Antonio G. Marques, and Alejandro Ribeiro.
+2019. Connecting the Dots: Identifying Network Structure via Graph Signal
+Processing. IEEE Signal Processing Magazine 36, 3 (May 2019), 16–43.
+[13] Lior Menzly and Oguzhan Ozbas. 2010. Market Segmentation and Cross-
+predictability of Returns. The Journal of Finance 65, 4 (2010), 1555–1580.
+[14] Tobias J. Moskowitz and Mark Grinblatt. 1999. Do Industries Explain Momentum?
+The Journal of Finance 54, 4 (Aug. 1999), 1249–1290.
+[15] Tobias J. Moskowitz, Yao Hua Ooi, and Lasse Heje Pedersen. 2012. Time Series
+Momentum. Journal of Financial Economics 104, 2 (May 2012), 228–250.
+[16] Christopher A Parsons, Riccardo Sabbatucci, and Sheridan Titman. 2020. Ge-
+ographic Lead-Lag Effects. The Review of Financial Studies 33, 10 (Oct. 2020),
+4721–4770.
+[17] Xingyue Pu, Tianyue Cao, Xiaoyun Zhang, Xiaowen Dong, and Siheng Chen.
+2021. Learning to Learn Graph Topologies. Advances in Neural Information
+Processing Systems 34 (2021), 4249–4262.
+[18] Wee Ling Tan, Stephen Roberts, and Stefan Zohren. 2023. Spatio-Temporal
+Momentum: Jointly Learning Time-Series and Cross-Sectional Strategies.
+arXiv:2302.10175 [cs, q-fin, stat]
+[19] Xingchen Wan, Jie Yang, Slavi Marinov, Jan-Peter Calliess, Stefan Zohren, and
+Xiaowen Dong. 2021. Sentiment Correlation in Financial News Networks and
+Associated Market Movements. Scientific Reports 11, 1 (Feb. 2021), 3062.
+[20] Kieran Wood, Sven Giegerich, Stephen Roberts, and Stefan Zohren. 2022. Trading
+with the Momentum Transformer: An Intelligent and Interpretable Architecture.
+arXiv:2112.08534 [cs, q-fin, stat]
+[21] Rei Yamamoto, Naoya Kawadai, and Hiroki Miyahara. 2021. Momentum Infor-
+mation Propagation through Global Supply Chain Networks. The Journal of
+Portfolio Management 47, 8 (July 2021), 197–211.
+A DATASET DETAILS
+The backtest was primarily conducted with the Pinnacle Data Corp
+CLC Database. We have access to a robust dataset comprising 98
+ratio-adjusted continuous futures contracts dating back to 1990.
+However, for the purpose of this study, we narrowed our focus to a
+subset of 64 assets, as listed in Table 2.
+
+=== page 9 ===
+Learning to Learn Financial Networks for Optimising Momentum Strategies
+Table 2: The Pinnacle Universe
+Ticker Description Period Ticker Description Period
+Commodities: Equities:
+BC BRENT CRUDE OIL, composite 2010-2020 AX GERMAN DAX INDEX 1999-2020
+BG BRENT GASOIL, composite 2010-2020 CA CAC40 INDEX 2000-2020
+CC COCOA 1990-2020 EN NASDAQ, MINI 2001-2020
+CL CRUDE OIL 1990-2020 ER RUSSELL 2000, MINI 2004-2020
+CT COTTON #2 1990-2020 ES S&P 500, MINI 1999-2020
+DA MILK III, composite 1999-2020 HS HANG SENG INDEX 1999-2020
+GI GOLDMAN SAKS C. I. 1995-2020 LX FTSE 100 INDEX 1991-2020
+JO ORANGE JUICE 1990-2020 MD S&P 400, MINI, electronic 1994-2020
+KC COFFEE 1990-2020 SC S&P 500, composite 1996-2020
+KW WHEAT 1990-2020 SP S&P 500, day session 1990-2020
+LB LUMBER 1990-2020 XU DOW JONES EUROSTOXX 50 2003-2020
+MW WHEAT, MINN 1990-2020 XX DOW JONES STOXX 50 2004-2020
+NR NATURAL GAS 1990-2020 YM DOW JONES, MINI ($5.00) 2004-2020
+SB SUGAR #11 1990-2020 Fixed Income:
+W_ WHEAT, CBOT 1990-2018 AP AUSTRALIAN PRICE INDEX 2010-2020
+ZA PALLADIUM, electronic 1990-2020 DT EURO BOND (BUND) 1991-2020
+ZB RBOB, electronic 1990-2020 FB T-NOTE, 5yr composite 1990-2020
+ZC CORN, electronic 1990-2020 GS GILT, LONG BOND 1991-2020
+ZF FEEDER CATTLE, electronic 1990-2020 TU T-NOTES, 2yr composite 1992-2020
+ZG GOLD, electronic 1990-2020 TY T-NOTE, 10yr composite 1990-2020
+ZI SILVER, electronic 1990-2020 UB EURO BOBL 2000-2020
+ZK COPPER, electronic 1990-2020 US T-BONDS, composite 1990-2020
+ZL SOYBEAN OIL, electronic 1990-2020 Currencies:
+ZM SOYBEAN MEAL, electronic 1990-2020 AN AUSTRALIAN $$, day session 1990-2020
+ZN NATURAL GAS, electronic 1992-2020 BN BRITISH POUND, composite 1990-2020
+ZO OATS, electronic 1990-2020 CB CANADIAN 10YR BOND 1996-2020
+ZP PLATINUM, electronic 1990-2020 CN CANADIAN $$, composite 1990-2020
+ZR ROUGH RICE, electronic 1990-2020 DX US DOLLAR INDEX 1990-2020
+ZS SOYBEANS electronic 1990-2020 FN EURO, composite 1990-2020
+ZT LIVE CATTLE, electronic 1990-2020 JN JAPANESE YEN, composite 1990-2020
+ZU CRUDE OIL, electronic 1990-2020 MP MEXICAN PESO 1997-2020
+ZW WHEAT electronic 1990-2020 NK NIKKEI INDEX 1992-2020
+ZZ LEAN HOGS, electronic 1990-2020 SN SWISS FRANC, composite 1990-2020

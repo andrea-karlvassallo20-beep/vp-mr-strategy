@@ -1,0 +1,1390 @@
+=== page 1 ===
+Credible Decentralized Exchange Design via Veriﬁable
+Sequencing Rules
+Matheus V. X. Ferreira∗ David C. Parkes†
+April 19, 2023
+Abstract
+Trading on decentralized exchanges has been one of the primary use cases for per-
+missionless blockchains with daily trading volume exceeding billions of U.S. dollars. In
+the status quo, users broadcast transactions they wish to execute in the exchange and
+miners are responsible for composing a block of transactions and picking an execution
+ordering — the order in which transactions execute in the exchange. Due to the lack
+of a regulatory framework, it is common to observe miners exploiting their privileged
+position by front-running transactions and obtaining risk-fee proﬁts. Indeed, the Flash-
+bots service institutionalizes this exploit, with miners auctioning the right to front-run
+transactions. In this work, we propose to modify the interaction between miners and
+users and initiate the study of veriﬁable sequencing rules. As in the status quo, miners
+can determine the content of a block; however, they commit to respecting a sequencing
+rule that constrains the execution ordering and is veriﬁable (there is a polynomial time
+algorithm that can verify if the execution ordering satisﬁes such constraints). Thus in
+the event a miner deviates from the sequencing rule, anyone can generate a proof of
+non-compliance.
+We ask if there are sequencing rules that limit price manipulation from miners in
+a two-token liquidity pool exchange. Our ﬁrst result is an impossibility theorem: for
+any sequencing rule, there is an instance of user transactions where the miner can
+obtain non-zero risk-free proﬁts. In light of this impossibility result, our main result
+is a veriﬁable sequencing rule that provides execution price guarantees for users. In
+particular, for any user transaction A, it ensures that either (1) the execution price of A
+is at least as good as if A was the only transaction in the block, or (2) the execution price
+of A is worse than this “standalone” price and the miner does not gain when including
+A in the block. Our framework does not require users to use countermeasures against
+predatory trading strategies, for example, set limit prices or split large transactions
+into smaller ones. This is likely to improve user experience relative to the status quo.
+Keywords— Decentralized Exchange; Market Design; Order Execution; Pricing; Front-running
+∗Harvard University (matheus@seas.harvard.edu).
+†Harvard University (parkes@eecs.harvard.edu).
+1
+arXiv:2209.15569v2  [cs.GT]  17 Apr 2023
+
+=== page 2 ===
+1 Introduction
+Decentralized ﬁnance, also referred to as DeFi, has been one of the main applications of permission-
+less blockchains. DeFi protocols allow liquidity providers to lock capital into smart contracts. The
+locked money enables the liquidity provider to obtain revenue from transaction fees by providing
+liquidity for ﬁnancial services such as lending and trading. As of 2022, the locked capital in DeFi
+protocols exceeds $40 billion U.S. dollars [2], with the most prominent decentralized exchange,
+Uniswap [7], having over $7 billion U.S. dollars in reserves and trading volume that often exceeds
+billions of U.S. dollars per day [4].
+In theory, a decentralized exchange allows traders to submit buy or sell orders to a smart
+contract without needing any intermediary. Uniswap implements a liquidity pool decentralized
+exchange as follows. Liquidity providers lock capital into a liquidity pool of two token types. Let
+Xi be the amount of token i∈{1, 2} locked on a liquidity pool. The product X1 ·X2 deﬁnes the
+potential corresponding to the current state of the exchange. A user can submit a trade on Uniswap
+against the liquidity pool and, for example, withdraw q > 0 units of token 1 as long as they deposit
+a quantity p> 0 of token 2 that preserves the potential:
+(X1 −q) · (X2 + p) = X1 ·X2. (1)
+Many alternatives exist to the product potential function of Uniswap [20, 36], and Uniswap
+itself has been generalized in recent years to Uniswap v3, which allows for the amount of locked
+liquidity to vary by price. Still, a common feature of liquidity pool exchanges is the existence of
+a reserve X ∈ R2 (or, in general, X ∈ Rn for n tokens) representing the locked capital (and the
+exchange state). Users submit orders to buy or sell a particular token, modifying the exchange state
+after execution. In the example (1), the exchange state changes from (X1,X2) to (X1 −q,X2 + p)
+when the user trades p units of token 2 for q units of token 1.
+In the blockchain setting, where computation and storage resources are highly scarce, liquidity
+pool exchanges provide beneﬁts compared with traditional order books. First, the memory storage is
+constant while an order book’s memory requirement grows with the number of pending transactions.
+In terms of computation, executing an order requires only a constant number of operations, while an
+order book requires matching buys with sells and updating underlying data structures. Regarding
+latency, orders execute instantaneously when processed, while order books need each buy/sell order
+to wait to match with a corresponding sell/buy order.
+In an ideal setting, users would privately submit orders to the liquidity pool exchange; in this
+sense, there would be no intermediary. In practice, miners act as intermediaries between users and
+the exchange. Miners choose which pending orders to include in a block and, in the status quo, are
+also responsible for specifying the order with which transactions execute, which we refer to as the
+execution ordering.1
+As one can observe from (1), the state at which an order executes highly inﬂuences the trade
+outcome. Not surprisingly, miners can take advantage of their role to manipulate the content
+of a block and its execution ordering [40]. This is known as Miner Extractable Value (MEV),
+1We refer to a miner as the agent that deﬁnes the content and ordering of transactions inside a block.
+This is the most common terminology for Proof-of-Work blockchains like Bitcoin. On the other hand,
+Proof-of-Stake blockchains like Ethereum refer to these agents as block proposers. The distinction between a
+Proof-of-Work miner and a Proof-of-Stake block proposer is irrelevant to our results since they play the same
+role. Moreover, decentralized exchanges can be implemented in either Proof-of-Work blockchains or Proof-
+of-Stake blockchains and are equally vulnerable to front-running by miners/proposers. Indeed, Uniswap was
+initially implemented over Ethereum Proof-of-Work while their most recent implementation operates over
+Ethereum Proof-of-Stake.
+2
+
+=== page 3 ===
+also referred to as maximum/maximal extractable value. A well-documented, front-running attack
+from miners is a sandwich attack [19, 45].2 Here, a malicious miner purchases x > 0 units of a
+token ahead of q > 0 units purchased by a user, and then immediately sells the x units. The
+eﬀect is that the miner achieves risk-free proﬁts at the cost of a higher price for the user. This
+attack has been institutionalized through the front-running-as-a-service business model provided
+by Flashbots [3, 44], where miners auction the right to allow another party to insert orders and
+manipulate the order execution.
+Although front-running schemes are familiar to traditional ﬁnance, a history of regulation in
+the ﬁnancial system is designed to protect traders from this kind of market manipulation [12].
+However, these regulations have not been enforced on decentralized exchanges where anonymous
+entities can become a miner and create blocks. Given the absence of regulatory enforcement,
+there is a great interest in developing algorithmic techniques to mitigate market manipulation by
+miners (or other entities). Batch auctions are one such approach [13, 5, 37], where transactions are
+batched and all clear at the same market clearing price. However, blockchains execute transactions
+sequentially rather than in batches. Thus smart-contract-based batch auctions introduce latency
+and computational overhead. Instead, we focus on the well-established (sequential) liquidity pool
+exchange model, where transactions execute sequentially at potentially diﬀerent prices, due to their
+computational eﬃciency and low latency, and we seek to design sequencing rules that can provably
+mitigate opportunities for miner manipulation.
+A trusted relay service [14, 3] like Flashbots Protect (developed by the same organization that
+operationalizes MEV auctions) is another approach to mitigating manipulation and one that has
+gained relatively rapid adoption. A user privately communicates their transaction to a trusted
+service under the promise that the service will not act on privileged information obtained from that
+user (by injecting transactions and manipulating execution ordering). The relay service recruits
+a trusted set of miners to include that transaction in a block.3 Such approaches, however, lack
+credibility because existing solutions provide no mechanism for which a user can verify that the
+service manager (or the trusted miner) does not manipulate the execution ordering for proﬁt.
+Our approach is similar to a relay service, where users communicate their transactions to the
+service, and the service sequences these transactions into blocks. However, our approach makes
+such a relay service credible: we give a concrete procedure by which any user can verify a set of
+formal guarantees. To be concrete, we model a miner as the entity that is responsible for picking
+which transactions to include in a block B, and that is free to manipulate the block’s content and
+2See [19, 44] for a broader discussion and empirical measurements on diﬀerent kinds of MEV.
+3For simplicity, we consider a game between users and miners that already captures the challenges of
+designing a trustworthy decentralized exchange. In practice, the interactions between users with decentralized
+exchanges implemented over the Ethereum blockchain are becoming increasingly more complex. Since the
+Ethereum Proof-of-Stake update, most of the interactions between users and the blockchain proceeds as
+follows. A user sends a transaction to a block builder (like Flashbots protect) that generates a block —
+an ordered list of transactions. When constructing the block, the builder includes private transactions
+(transactions users send directly to Flashbots) and public transactions (transactions users broadcast to the
+whole network). Flashbots protect allows sandwich attacks on public transactions but promises not to front-
+run private transactions. The block builder forwards the block to a relay service (like Flashbots Relay)
+together with a bid. The relay service forwards a hash of the block together with the bid to validators. The
+validator chooses which block to conﬁrm via an auction: picking the hash with the highest bid (without
+seeing the block content). Only after the validator commits to a winning hash, the relay reveals the block
+associated with that hash. This way validators cannot front-run user transactions since they already commit
+to the block content. Our results also apply to this setting since the status quo requires users to trust that
+both Flashbots Protect and the Flashbots Relay will not act on privileged information and sandwich attack
+user transactions.
+3
+
+=== page 4 ===
+include its own transactions. However, the miner can commit to picking an execution ordering
+from a veriﬁable sequencing rule. Formally, a sequencing rule is a function S that takes the initial
+state X0 (of liquidity reserves), before any transaction executes, the block B (the transactions to
+include), and outputs a non-empty set S(X0,B), which is a set of permutations of B. We refer to
+the elements of S(X0,B) as valid execution orderings. We ask that a sequencing rule is eﬃcient,
+in the sense that there is a polynomial time algorithm that can compute some T ∈ S(X0,B) for
+any (X0,B). Moreover, we ask that a sequencing rule is veriﬁable, in the sense that anyone can
+eﬃciently check if T ∈ S(X0,B) for any (T,X0,B). Hence, any detectable deviation by a miner
+from S (picking T ⁄∈S(X0,B)) can be punished, either ﬁnancially or via reputation loss.
+We ask if there are sequencing rules where the miner cannot proﬁt from manipulating the block
+content while respecting the sequencing rule. We summarize our ﬁndings as follows:
+1. Theorem 4.1 (Folklore). For a large class of liquidity pool exchanges, including the product
+potential design of Uniswap, and where miners can pick the content of a block (including
+adding their own transactions) and sequence transactions as they like, a user might receive
+an arbitrarily bad execution price. That is, a user who buys q units of a token might make
+an arbitrarily large payment. Equivalently, a user who sells q units of a token might receive
+an arbitrarily small payment.
+2. Theorem 4.2. For a class of liquidity pool exchanges (that includes Uniswap), for any
+sequencing rule, there are instances where the miner has a proﬁtable risk-free undetectable
+deviation.
+3. Theorem 5.2. We specify a sequencing rule (the Greedy Sequencing Rule) such that, for
+any valid execution ordering, then for any user transaction A that the miner includes in the
+block, it must be that either (1) the user eﬃciently detects the miner did not respect the
+sequencing rule, or (2) the execution price of A for the user is at least as good as if A was the
+only transaction in the block, or (3) the execution price of A is worse than this standalone
+price but the miner does not gain when including A in the block.
+Theorem 4.1 shows a miner can force an arbitrarily bad execution (and proﬁt as a result) if
+they can pick an execution ordering (in the absence of trading costs for the miner). This result
+can be weakened by introducing transaction fees (paid by each transaction in the block) or trading
+fees (proportional to the trading volume). However, suﬃciently large transactions can still be the
+victim of a sandwich attack. While prior work has explored (often complex) trade-oﬀs between fees
+and order size [28] to mitigate market manipulation, our positive result holds even in the absence
+of trading costs (blockchain transaction fees or exchange fees).
+One can also weaken Theorem 4.1 by allowing users to make use of a limit price to specify the
+maximum they want to pay for a buy order (or the minimum they want to receive for a sell order).
+By setting a limit price, a transaction fails to execute unless their execution price is as good as this
+limit. If a transaction fails, no trade takes place, but users must still pay blockchain transaction
+fees. Requiring all transactions to pay fees, even if they fail, is a security mechanism from existing
+blockchains to increase the cost for a Denial-of-Service-Attack (where a malicious user nationally
+creates transactions that will fail and consume network resources).
+One might wonder why can’t users simply set limit prices equal to the most recent market price
+to prevent sandwich attacks? First, users can still be manipulated in the status quo such that they
+trade at their limit prices, and thus, they need to set limit prices close to the standalone price, and
+this can lead to high latency, with transactions failing to execute. In contrast, our positive result,
+Theorem 5.2, does not require users to use limit prices for protection (since if a transaction is a
+4
+
+=== page 5 ===
+victim of a predatory trading strategy it still trades at a price at least as good as the standalone
+price).
+If one aims to design a sequencing rule where the miner can never obtain risk-free proﬁts (risk-
+free proﬁts meaning the miner is sure to receive some tokens for free), then Theorem 4.2 shows
+such a goal is unattainable. Thus, Theorem 5.2 focuses on providing provable guarantees from
+the user’s perspective. This is our main result, and ensures that if a self-interested miner includes
+a user’s transaction in the block, then either the transaction executes with at a good execution
+price—as good as if the user’s transaction was the only one in the block—or the miner does not
+gain by including the transaction. That is, a miner can proﬁtably insert their own transactions, but
+only to the extent that the user’s execution price is no worse than their standalone price (i.e., the
+price if they were the only transaction in the block). Although a user can still get a bad execution
+price, but in this case the miner provably does not proﬁt from including the user’s transaction. For
+example, if two users each wish to buy q units of the same token, then in the absence of any other
+transactions, it is inevitable that the transaction that executes in second place pays a higher price.
+This is due to competition for the same token and not due to miner manipulation.
+1.1 Technical overview
+During a sandwich attack, a miner manipulates the state of the exchange in a way that causes one or
+more user transactions to achieve a worse execution price. We formalize the properties achieved by
+our sequencing rule by taking the price at the most recent state of the liquidity reserves, X0 ∈ R2,
+when a user submits a buy or sell order, as a benchmark. This is a relevant benchmark because
+the blockchain consensus ensures that X0 is not manipulable by the miner.4
+Crucial for our sequencing rule is the observation that any liquidity pool exchange with two
+tokens satisﬁes the following duality property: at any state X ∈ R2, it is either the case that (1)
+any buy order receives a better execution at X than at X0, or (2) any sell order receives a better
+execution at X than at X0. Thus at any point during the execution of the orders in a block, as long
+as the transactions yet to execute are not all of the same type (i.e., not all buy orders or all sell
+orders), there is at least one order that would be happier to be the next order to execute compared
+with executing at the beginning of the block.
+To be concrete, in deﬁning our Greedy Sequencing Rule, let T1,T2,...,Tt be the execution
+ordering up to step t of the current block; these are the transactions already added to the execution
+ordering. To deﬁne which transaction Tt+1 executes at step t + 1, we simulate what the state Xt
+would be after T1,T2,...,Tt executes and we add the constraint that Tt+1 must be a buy order
+(any buy order) if buy orders receive a better execution at Xt than at X0 and a sell order (any sell
+order) if sell orders receive a better execution at Xt than at X0. It is possible that at step t + 1,
+only buy or sell orders are left to execute. In this case, we let the miner sequence the remaining
+orders as they wish. Importantly, this rule operates on any set of transactions included in a block
+and does not need knowledge as to whether a transaction comes from a user or the miner. This
+makes the rule veriﬁable based purely on information written on the blockchain.
+4The miner could manipulate X0 over multiple blocks, but we assume a diﬀerent miner creates each block,
+or equivalently that miners are myopic. This assumption is well-motivated for a decentralized blockchain
+where the miner for a block is sampled from a large population and the miner selection mechanism is
+unpredictable so that the miner for a round is unknown until that round starts. This is a common assumption
+in the context of transaction fee mechanisms [26, 42, 35]. Note that nothing prevents us from updating the
+benchmark state X0 less frequently to decrease the likelihood of manipulation. That is because manipulating
+X0 over a long period of time increases the inventory risk for an attacker.
+5
+
+=== page 6 ===
+Interestingly, when only buys or sells are left to execute, we will argue the miner is indiﬀerent
+as to whether or not to include those in the block. That happens because the miner never proﬁts
+from executing a buy (respectively sell) order after another buy (respectively sell) order, and would
+instead prefer to execute their transaction before this kind of order. Therefore, if Tt+1 is a user buy
+(or sell) order and all transactions that execute after Tt+1 are also buy (or sell) orders, the miner
+executes no order of their own after Tt+1 because they would prefer instead to execute their orders
+before Tt+1. Since the miner does not choose to subsequently include any of their own transactions
+once only buys or only sells of others remain to execute, then this implies that the miner does not
+gain from placing these transactions, for example Tt+1, in the block. That is, there is no risk-free
+gain to the miner from including these transactions, i.e., no gain in tokens to the miner.
+Let us see why the Greedy Sequencing Rule makes sandwich attacks unproﬁtable on Uniswap
+when there is a single user who wishes to purchase q units of token 1 at market price (i.e., without
+reporting a limit on how much they would pay) and the initial state in the block is (X1,X2). For
+the setting where the miner can sequence orders as they wish, the miner can obtain a risk-free proﬁt
+by ﬁrst front-running the user and purchasing w<X1 −q units of token 1. Then they execute the
+user’s order at state
+(
+X1 −w, X1·X2 X1−w −X2
+)
+. After the user’s order executes, the miner sells the w
+units of token 1 they purchased in the ﬁrst step (at a higher price).
+On the other hand, if the miner commits to implementing the Greedy Sequencing Rule, once the
+miner purchases w units of token 1, the miner is forced to execute any outstanding sell order (before
+executing the user’s buy order). Thus the sequencing rule forces the miner to immediately sell the
+w units of token 1 they just purchased! One can easily check that no matter how many transactions
+the miner injects into the block, once constrained by the Greedy Sequencing Rule, the miner cannot
+obtain a risk-free proﬁt when including only a single user transaction in the block. Interestingly,
+the miner can obtain risk-free proﬁts if the block contains three or more user transactions (as our
+impossibility result suggests), but without violating the guarantees of Theorem 5.2; i.e., any gains
+to the miner do not come at the expense of poorer execution price to users. Our work formalizes
+this intuition, giving results for any two-token liquidity pool exchange and for any number of user
+transactions included in a block.5
+1.2 Related work
+Blockchain consensus. Decentralized exchanges are one of the most impactful applications of
+decentralized blockchain technology. Nakamoto [38] introduced the Bitcoin digital currency as the
+ﬁrst use case for decentralized blockchains. The bitcoin blockchain uses a PoW (Proof-of-Work)
+longest-chain blockchain to implement a decentralized distributed computer for payments. No
+single entity owns the bitcoin system because anyone can volunteer to be a miner. The ﬁrst miner
+to solve a computationally hard problem receives the privilege to change the state of the distributed
+computer and receive cryptocurrency in the form of Bitcoin tokens as a reward. Economic incentives
+play an important role in the security of decentralized blockchains. A line of work started by Eyal
+and Sirer [22] introduces selﬁsh mining as a way for miners to improve their proﬁt on longest chain
+PoW blockchains. Sapirshtein et al. [43] and Kiayias et al. [31] provide guarantees for when honest
+mining is a Nash equilibrium.
+The assumption that miners are myopic—they do not manipulate prices across multiple blocks—
+is rooted on the assumption that a decentralized blockchain uses an unpredictable miner selection.
+5With a single user transaction in the block, our greedy sequencing rule ensures the miner cannot obtain
+risk-free proﬁts. Our impossibility constructs an attack on any sequencing rule when blocks contain three
+or more user transactions. We leave as an open question the case where blocks have two user transactions.
+6
+
+=== page 7 ===
+Although longest chain Proof-of-Work (PoW) blockchains satisfy this assumption, they have very
+high energy consumption [6]. On the other hand, longest chain Proof-of-Stake (PoS) blockchains [16,
+32, 18, 33] have a negligible energy cost, but their miner selection are sometimes predictable [11].
+Even for non-longest chain PoS blockchains, Ferreira et al. [27] show that an adversary can bias
+the miner selection making the protocol predictable to a certain degree. Ferreira and Weinberg
+[25] ask if longest chain PoS blockchains can provide similar miner selection guarantees as longest
+chain PoW. They show that when the blockchain has access to an external source of randomness
+(such as the NIST randomness beacon) longest chain PoS blockchains can provide similar (but
+strictly weaker) fairness guarantees (i.e., unpredictable and unbiased miner selection) than their
+PoW equivalent.
+Incentive analysis in blockchain consensus often assumes a constant reward per block [25, 27,
+31, 43, 22]. Carlsten et al. [15], on the other hand, argue that transaction fees, when larger than
+block rewards, introduce a high variance in the revenue per block and can pose a risk to blockchain
+security. Qin et al. [41] argue that DeFi applications can also disrupt miner incentives. They
+measure miner extractable value (MEV) from DeFi applications and quantify their risk to the
+blockchain security.
+Constant product automated market makers. Uniswap is the highest trading volume liquidity
+pool exchange and uses the product potential (1). Their exchange is commonly referred as a
+constant product automated market maker. There is an underlying risk for providing liquidity to
+these exchanges, but liquidity providers receive trading fees as compensation. Neuder et al. [39]
+and Heimbach et al. [29] show that complex liquidity provision strategies can improve the liquidity
+provider’s revenue and Fan et al. [23] studies the tradeoﬀs between return to liquidity providers
+and gas fees to traders in the design of Uniswap v3 style schemes for diﬀerential price liquidity
+provision.
+Miner extractable value. Our work assumes the miner is proﬁt seeking. Alternatively, front-
+running on decentralized exchanges have been studied in the context of an honest miner and a
+self-interested user that attempts to front-run other users [28, 45, 34]. This adversarial model is
+strictly weaker than ours because a self-interested user has uncertainty over the execution ordering.
+Heimbach and Wattenhofer [28] observe that, with trading costs (e.g., trading fees), users can
+limit their trading volume driving front-running schemes unproﬁtable. However, their approach
+is, in eﬀect, limited to a small number of transactions in a block. Otherwise, the adversary can
+combine multiple transactions by executing them in sequence. For example, if n> 1 buy orders each
+have volume q > 0, then the adversary executes all n orders in sequence which, for all purposes, is
+equivalent to a single order of volume n·q. Thus, there is a suﬃciently large n where a front-running
+scheme remains proﬁtable while unproﬁtable if executed only on individual transactions. On the
+other hand, our approach works even if the miner is proﬁt seeking, the number of user transactions
+per block is unbounded, the trading volume for any particular transaction is arbitrarily large, and
+there are no trading costs.
+Mechanism design with imperfect commitment. Traditional mechanism design assumes that
+the entity running the mechanism can commit to the rules of the game. Front-running schemes
+would not be a concern if the miner could commit to ordering transactions in the same order as they
+were observed, i.e., without introducing their own transactions after observing user transactions
+and interspersing them with suitably ordered user transactions. Unfortunately, one cannot enforce
+such a sequencing rule because it is not veriﬁable: in the presence of latency, diﬀerent miners
+could observe transactions in diﬀerent orders [30]. Then the miner has plausible deniability to
+act on privileged information—and include their own transactions after learning about the user
+transactions.
+7
+
+=== page 8 ===
+Away from the design of mechanisms for decentralized exchanges, this challenge with im-
+perfect commitment is an important constraint in the design of transaction fee mechanisms for
+blockchains [26, 35, 42]. These are the mechanisms that determine which transactions win the
+right to be executed on a blockchain and enter a block. In auction theory, the inability of the auc-
+tioneer to commit to implementing a particular auction rule has been studied through the theory
+of credible auction design [8]. This considers ways in which an auctioneer might usefully deviate
+from an intended rule, but only allowing for deviations that are undetectable by the participants
+of an auction. For example, an auctioneer can introduce their own bid in a second-price auction
+to increase the second price, but cannot charge a winner more than their bid price in a ﬁrst-price
+auction (and, ﬁrst-price but not second-price auctions are credible). By running an auction over the
+internet, it is easy for auctioneers to deviate from the promised auction by, for example, bidding
+on their own auction with a fake identity. Prior work [24, 21, 17] has propose computationally
+and communication-eﬃcient auctions that are truthful and credible under standard cryptographic
+assumptions and assumptions on bidder valuations.
+1.3 Paper organization
+Our results are not limited to exchange designs such as Uniswap that make use of the constant
+product potential, and apply to a large class of liquidity pool decentralized exchanges. We provide
+the necessary background and introduce a general model for liquidity pool decentralized exchange
+in Section 2. In Section 3, we introduce the communication model. In Section 4, we show front-
+running schemes can be proﬁtable for a large class of decentralized exchanges. There we also
+motivate our impossibility result (Theorem 4.2). In Section 5, we deﬁne the Greedy Sequencing
+Rule and prove our main result, Theorem 5.2. We conclude in Section 6. Appendix A contains the
+necessary mathematical background. The remaining appendices contain omitted proofs.
+2 Background
+The exchange has a state X = (X1,X2) where Xi ≥ 0 is the current reserves of tokens i∈{1, 2}.
+Let {e1,e2} be the standard basis of R2 which allow us to rewrite X = X1 ·e1 + X2 ·e2.
+A user submits a transaction that either buys or sells token 1. A buy order Buy(q,p) purchases
+q units of token 1 for at most p·q units of token 2. A sell order Sell(q,p) sells q units of token
+1 for at least p·q units of token 2. We refer to p as the limit price. An order is a market order
+if p = ∞ for a buy order and p = 0 for a sell order, and for a market order we omit p and write
+Buy(q) := Buy(q,∞) and Sell(q) := Sell(q, 0).
+To deﬁne the outcome of a transaction, we endow the exchange with a potential function φ :
+R2 ≥0 → R≥0, which is a real-valued continuous function that takes a state X and maps to the
+potential φ(X) ≥ 0. We assume φ is strictly increasing and quasiconcave as follows:
+Deﬁnition 2.1 (Increasing function). For a function f we refer to dom(f) as the domain of f.
+For x,y∈ Rn, we write x≥y to denote xi ≥yi for all i∈ [n]. A real-valued function f is increasing
+if for all x,y ∈ dom(f), we have that x≥y, f(x) ≥f(y). Moreover, f is strictly increasing if for
+all x,y ∈ dom(f) ⊆ Rn such that x≥y and xi >yi for some i∈ [n] = {1, 2,...,n}, we have that
+f(x) >f(y).
+Deﬁnition 2.2 (Convex Set). A set D⊆ Rn is convex if for all x,y ∈D and α∈ [0, 1], the linear
+combination α·x + (1 −α) ·y∈D.
+8
+
+=== page 9 ===
+Deﬁnition 2.3 (Quasiconcave Function). A real-valued function f is quasiconcave if dom(f) is
+a convex set and for all x,y ∈ dom(f), and all α ∈ [0, 1], we have that f(α·x + (1 −α) ·y) ≥
+min{f(x),f(y)}.
+The execution price of an order is the buying price in the case of a buy order, or the selling price
+in the case of a sell order. We deﬁne the execution price algorithmically using the potential function
+and the current state. For a buy order Buy(q) executing at state X, the function Y (X, Buy(q))
+denotes the amount of token 2 a user would pay for q units of token 1, which we deﬁne as
+Y (X, Buy(q)) := min{y≥ 0 : φ(X−q·e1 + y·e2) ≥φ(X)}. (2)
+For a sell order Sell(q) executing at state X, the function Y (X, Sell(q)) denotes the amount
+of token 2 a user would trade for q units of token 1, which we deﬁne as
+Y (X, Sell(q)) := max{y≤X2 : φ(X + q·e1 −y·e2) ≥φ(X)}. (3)
+Although Y (X, Buy(q)) (or Y (X, Sell(q))) deﬁne the execution price at state X, we introduce
+some feasibility constraints to determine if an order will successfully execute or fail. First, an order
+must not turn the liquidity reserves negative. Second, the potential at the next state must be the
+same as the previous state. Third, the user must pay at most q·p·e2, in the case of a buy order
+Buy(q,p), or receive at least q·p·e2, in the case of a sell order Sell(q,p). Formally, a buy order
+Buy(q,p) can successfully execute at X if and only if,
+Y (X, Buy(q)) ≤p·q,
+φ(X1 −q,X2 + Y (X, Buy(q))) = φ(X),
+X1 ≥q.
+A sell order Sell(q,p) can successfully execute at X if and only if
+Y (X, Sell(q)) ≥p·q,
+φ(X1 + q,X2 −Y (X, Sell(q)) = φ(X),
+X2 ≥Y (X, Sell(q)).
+If Buy(q,p) can successfully execute at X, the user trades Y (X, Buy(q))·e2 for q·e1. Similarly, if
+Sell(q,p) can successfully execute at X, the user trades q·e1 for Y (X, Sell(q))·e2. We summarize
+the order of operations for the execution of an order on state Xt−1 in Algorithm 1.
+9
+
+=== page 10 ===
+Order Execution
+Input: Current state Xt−1; order A = Buy(q,p) | Sell(q,p).
+Output: Next state Xt.
+1. If A cannot successfully execute at Xt−1, abort the execution of A. The subsequent
+state is Xt = Xt−1.
+2. If A can successfully execute at Xt−1:
+(a) If A is a buy order, the user deposits Y (Xt−1,A) units of token 2 and withdraws q
+units of token 1.
+(b) If A is a sell order, the user deposits q units of token 1 and withdraws Y (Xt−1,A)
+units of token 2.
+(c) The subsequent state is
+Xt =
+{
+Xt−1 −q·e1 + Y (Xt−1,A) ·e2 if A is a buy order,
+Xt−1 + q·e1 −Y (Xt−1,A) ·e2 if A is a sell order.
+Algorithm 1: The execution of a Buy(q,p) or Sell(q,p) order at state Xt−1.
+One beneﬁt of liquidity pool exchanges is their computational eﬃciency, since Algorithm 1
+executes in constant time for many choices of φ. For example, computing Y (Xt−1,A) for the
+product potential function of Uniswap requires only a constant number of algebraic operations.
+Observe a transaction only successfully executes at state X if the next state has the potential
+φ(X) = c. Thus the exchange will always be in a state contained in the level set Lc(φ) which we
+refer as the collection of reachable states.
+Deﬁnition 2.4 (Level sets). Let c∈ R be a constant. A level set Lc(f) of real-valued function f
+is the collection of points x∈ dom(f) where f(x) = c. A superlevel set Sc(f) of f is the collection
+of points x∈ dom(f) such that f(x) ≥c.
+2.1 Examples of potential functions
+This section provides formal deﬁnitions for some of the potential functions that are used in practice.
+However, our results hold for a larger class of potential functions, of which the ones deﬁned here
+are illustrative.
+Uniswap [7] uses a product potential function to implement a liquidity pool exchange with two
+tokens. Balancer [36] uses a similar design but supports pools with two or more tokens.
+A concern is that liquidity pool exchanges based on product potentials can have high price
+volatility when the reserves are small relative to trade volumes. To address this concern, Curve [20]
+uses a potential function that aims to provide lower price volatility by assuming token prices are
+stable. We describe these models next.
+Product potential. The product potential function φ maps a state X to the product of the current
+deposits
+φ(X) = X1 ·X2. (4)
+10
+
+=== page 11 ===
+An exchange with the product potential is also called constant product automated market maker
+(CPAMM), referencing the fact the product of the reserves is invariant while liquidity providers
+neither add nor remove liquidity. In a CPAMM, the prices implied by the current state X remain
+in rough correspondence with the trading prices in a secondary market such as Coinbase. For
+example, suppose each unit of token i is worth pi U.S. dollars in the secondary market. We say
+pi/pj is the relative price of token i with respect to token j. Then we say a CPAMM is in equilibrium
+if X1/X2 = p1/p2; otherwise, arbitrageurs would have an incentive to trade in the exchange and
+take proﬁts in the secondary market. See Angeris and Chitra [9], Angeris et al. [10] for a discussion
+on the role of arbitrage in automated market makers.
+Stable potential. Potential functions that imply small variation in prices for even large trades
+are popular in liquidity pool exchanges in the case that the underlying tokens are expected to have
+a stable price. For example, stablecoins such as USDC and USDT aim to have a 1-to-1 parity with
+the U.S. dollar.6 The stable potential achieves this by combining the product potential function
+with the additive potential function, deﬁned as
+φ(X) = X1 + X2. (5)
+With just the additive potential function, the price for token 1 with respect to 2 would always
+equal 1 and the exchange would be unstable because if the prices in a secondary market are p1 ⁄= p2,
+arbitrageurs would have an incentive to trade the token with the lowest price for the token with
+the highest price until all liquidity reserves are depleted. The stable potential addresses this by
+interpolating between the additive and the product potentials:
+φ(X) = X1 ·X2 (X1+X2
+2
+)2 (X1 + X2) +
+(
+1 − X1 ·X2 (X1+X2
+2
+)2
+)
+X1 ·X2. (6)
+To see that (6) interpolates correctly, it suﬃces to check that 0 ≤ X1·X2( X1+X2
+2
+)2 ≤ 1. The lower
+bound is clear since Xi ≥ 0 for i∈{1, 2}. The upper bound follows from the AM-GM inequality,
+i.e., X1 ·X2 ≤
+(X1+X2
+2
+)2
+(Lemma A.1). Note the inequalities are also tight since the lower bound is
+attained whenever Xi = 0 for some i∈{1, 2}, and the upper bound is attained whenever X1 = X2.
+In the case that an exchange uses the stable potential and the prices in the secondary market
+are p1 = p2, arbitrageurs would have an incentive to trade in the liquidity pool whenever X1 ⁄= X2.
+Hence the only equilibrium has X1 = X2, and the stable potential behaves closer to the additive
+potential, as desired.
+2.2 Model discussion
+This section argues why our assumptions on potential functions are, in essence, without loss. Firstly,
+the potential must be strictly increasing because this is equivalent to requiring that users should
+only be able to withdraw tokens from the exchange if they deposit some payment:
+6These coins are successful, with a market cap of over 150 billion U.S. dollars as of 2022. [1] USDT and
+USDC are known as collateralized stable coins, and are issued by entities that promise that users are always
+able to redeem 1 unit of USDT or USDC for 1 U.S. dollar. This suggests that these stable coins should always
+have a 1-to-1 parity with the U.S. dollar. Another class of stablecoins known as an algorithmic stablecoin
+is not collateralized. Instead, they rely on incentive mechanisms, and these have so far failed to hold their
+1-to-1 parity during periods of market turbulence. Notably, the algorithmic stablecoin UST had a market
+cap of over $50 billion U.S. dollars when it collapsed overnight in 2022 due to a bank run.
+11
+
+=== page 12 ===
+Deﬁnition 2.5. A potential φ has non-zero payment if for all states X ∈ dom(φ), we have that
+Y (X, Sell(0)) = 0.
+One can check that all the potential functions from Section 2.1 when restricted to states X > 0
+have non-zero payment. The product potential does not have zero payments if the domain contains
+some state X where Xi = 0 for some i. To show an exchange satisﬁes non-zero payment, Lemma 2.1
+shows that it suﬃces to check that φ is strictly increasing with the mild assumption that dom(φ)
+is open and upward closed.
+Deﬁnition 2.6 (Open and upward closed sets). Let Bε(x) = {y∈ Rn : ||x−y||≤ε} be the a ball
+around x. A set D ⊆ Rn is open if for all x∈D, there is ε > 0 such that for all y ∈Bε, we have
+that y∈D. A set D⊆ Rn is upward closed if for all x∈D, if y≥x, then y∈D.
+Lemma 2.1. Let dom(φ) be open and upward closed. A potential φ has non-zero payment if and
+only if φ is strictly increasing.
+Proof. We prove the lemma in two parts.
+Claim 2.1. If φ is strictly increasing, then φ has non-zero payment.
+Proof. Fix any X ∈ dom(φ). Fix ε > 0 and X′ = X−y·e2 for any y ∈ (0,ε]. Because dom(φ)
+is open, there is a ε> 0 such that X′∈ dom(φ). Because φ is strictly increasing and X is strictly
+bigger than X′, we conclude φ(X′) <φ(X). This proves Y (X, Sell(0)) ≤y≤ε. Taking the limit
+as ε→ 0 proves that Y (X, Sell(0)) = 0 as desired.
+Claim 2.2. If φ has non-zero payment, then φ is strictly increasing.
+Proof. Fix any X ⁄= X′ ∈ dom(φ) and w.l.o.g. assume X ≥ X′. Let p = X −X′ ≥ 0. Deﬁne
+Zj = X −∑j i=1 pi ·ei for all j and observe Z0 = X and Z2 = Z′. Note Zj ∈ dom(φ). To
+see, observe Zj ≥ Z2 = Z′ and Z′ ∈ dom(φ) which combined with the assumption dom(φ) is
+upward closed implies Zj ∈ dom(φ). Now observe that φ(Zj) < φ(Zj−1) for all j where pj > 0;
+otherwise, the event φ(Zj) ≥ φ(Zj−1) implies Y (Zj−1, Sell(0)) ≥ pj > 0, a contradiction to the
+assumption φ has non-zero payment. Note there is at least one pj > 0 because X ⁄= X′. This
+proves φ(X) = φ(Z0) >φ(Z2) = φ(X′) as desired. Thus φ is strictly increasing.
+Combining both claims proves Lemma 2.1.
+Our second assumption is that potential functions are quasiconcave. In Lemma 2.2, we show
+that assuming φ is quasiconcave and strictly increasing ensures that buying token 1 only increases
+the price of token 1 relative to token 2 and selling token 1 only decreases the price of token 1
+relative to token 2.
+Lemma 2.2 (Pricing Lemma). Consider states X and X′ where φ(X) = φ(X′) and X′ 1 <X1 and
+assume the potential function φ is quasiconcave and strictly increasing. Then the following hold:
+• If Buy(q) can successfully execute at both X and X′, then Y (X, Buy(q)) ≤Y (X′, Buy(q)).
+• If Sell(q) can successfully execute at both X and X′, then Y (X, Sell(q)) ≤Y (X′, Sell(q)).
+We provide the proof of the Pricing Lemma in Appendix B which follows from ﬁrst principles.
+12
+
+=== page 13 ===
+3 Communication Model
+The risk of market manipulation in liquidity pool exchanges arrives from how users communicate
+their transactions with the exchange. Suppose users 1, 2,...,|A| want to execute transactions
+A1,A2,...,A|A| at state X0. Note a single entity could control multiple users, but that is not
+relevant for our analysis. Each user privately sends their transaction to the miner. The miner
+aggregates observed transactions into a block B, which we model as a set of potentially unbounded
+size.
+The order of transactions in the block deﬁnes the execution ordering—the order by which
+transactions execute in the decentralized exchange. In our model, miners pick the block (i.e., the
+transactions to include), but use a sequencing rule S to determine the execution ordering.
+Deﬁnition 3.1 (Sequencing Rule). A sequencing rule S is a function from a state X (of the
+liquidity reserves before any transaction executes) and a set of transactions B to a non-empty set
+system S(X,B) containing permutations of B.
+First, we would like a sequencing rule to be eﬃciently computable in order to minimize the
+computational burden on miners.
+Deﬁnition 3.2 (Eﬃcient Sequencer). A sequencing rule S is (computationally) eﬃcient, if for all
+initial state X = (X1,X2) and block B, there is an algorithm that takes (X0,B) and outputs some
+T ∈S(X0,B) in time O(log(X1 + X2)|B|).
+Any block sequencing algorithm requires at least log(X1 + X2)|B| computation to read the
+content of B. Thus our deﬁnition requires that a sequencing rule imposes at most a constant
+multiplicative computational overhead when compared with the status quo, i.e., where the miner
+computes their favorite ordering of B.
+We are ready to deﬁne the trading game (X0,{Ai},S) between users and a miner. The game
+takes as input a transaction, Ai, from each user i, the initial state X0, and a sequencing rule S.
+The outcome of the game is an execution ordering on a set of transactions and associated sequence
+of states, where the transactions that are ordered can include a subset of user transactions and
+additional transactions that may be introduced by the miner. In the case of an honest miner, the
+game proceeds as in Algorithm 2:
+13
+
+=== page 14 ===
+Ideal Trading Game
+Input: Initial state X0; order Ai from each user i; sequencing rule S.
+Output: Execution ordering T = (T1,...,T|T|) and states X1,X2,...,X|T| where Tt executes
+at Xt−1.
+Proceed as follows:
+1. The miner initializes the block B = ∅.
+2. For all i, user i privately sends order Ai to the miner.
+3. For all i, the miner adds Ai to B.
+4. The miner picks some (T1,...,T|B|) ∈S(X0,B) as the execution ordering.
+5. For t = 1,...|B|,
+(a) The exchange executes Tt at state Xt−1.
+(b) Let Xt be the state after Tt executes on Xt−1.
+Algorithm 2: Trading game with an honest miner.
+Algorithm 2 assumes the miner commits to implement all the steps faithfully. However, we
+assume miners can perform the following deviations in the real trading game, these comprising the
+strategy of the miner, with knowledge of the input:
+1. At step (3), by censoring transaction Ai (not adding Ai to block B).
+2. Between step (3) and (4), by including their own transactions into B.
+3. At step (4), by picking an execution ordering T ⁄∈S(X0,B).
+We assume a self-interested miner who will follow any set of deviations that are proﬁtable and
+undetectable by an observer. For this, we assume that the observer can only see the blockchain
+state (which includes X0 and the outcome of the trading game). By assuming an observer can see
+the outcome but not the set of outstanding orders, we avoid introducing (strong) assumptions over
+the communication channel. For example, a naive approach to mitigate censorship is to suggest
+that users broadcast their transaction. Thus, an observer who sees order Ai must conclude that the
+miner also saw Ai. If the miner did not include Ai into B, then the observer can conclude the miner
+censored Ai. Unfortunately, it is not possible to conﬁrm that a miner receives a transaction in the
+presence of latency. The miner can simply refuse to acknowledge the receipt of a message, with
+latency providing plausible deniability. Moreover, a malicious user could send Ai to the observer
+and not to the miner, harming the miner’s reputation. To avoid these concerns, we assume our
+observer can only rely on information stored in the blockchain to detect a miner deviation.
+Deﬁnition 3.3 (Safe deviation). The outcome of the trading game (X0,{Ai},S) with an honest
+miner is (X0,T ) where T ∈S(X0,{Ai}). A deviation for the miner is a strategy that results in an
+outcome (X0,T ) where T is not necessarily contained in S(X0,{Ai}). A deviation resulting in an
+outcome (X0,T ) is safe if there is a trading game (X0,{A′ i},S) where T ∈S(X0,{A′ i}).
+14
+
+=== page 15 ===
+In other words, a deviation for the miner is safe if it can be explained by a diﬀerent set of user
+transactions {A′ i}. For a given sequencing rule, we deﬁne the language,
+L(X0,S) = {(X0,T ) : {Ai},T ∈S(X0,{Ai})}, (7)
+which is the set of all possible outcomes for the sequencer S with initial state X0. An important
+constraint for a sequencing rule is that an observer must be able to eﬃciently check whether
+(X0,T ) ∈L(X0,S), for any outcome (X0,T ). This can be formalized as follows:
+Deﬁnition 3.4 (Veriﬁable sequencing rule). A sequencing rule with language L is veriﬁable if
+there is a polynomial time algorithm P that takes any outcome (X0,T ) and outputs True if
+(X0,T ) ∈L(X0,S) or False if (X0,T ) ⁄∈L(X0,S).
+3.1 User and miner utility
+Consider an outcome (X0,T ). Let Tσ(i) denote the transaction owned by user i in the execution
+order T , which is undeﬁned if the miner censors user i. Then, we deﬁne user i’s utility for the
+outcome as
+ui(X0,T ) =
+{
+(0, 0) if σ(i) is undeﬁned, and
+Xσ(i) −Xσ(i)−1 otherwise.
+This is the diﬀerence in tokens owned by the user that correspond to the executed transaction,
+or no change in the case that the user’s transaction is not executed. For an entity that controls
+users i and j, their utility would be ui(X0,T ) + uj(X0,T ).
+Let I ⊆{1,...,|T|} be the time steps where one of the miner’s transaction executes (perhaps
+empty). Then the miner’s utility is
+u0(X0,T ) =
+∑
+t∈I
+(Xt −Xt−1).
+For outcomes (X0,T ) and (X0,T′), we say (X0,T ) dominates (X0,T′) for agent i if ui(X0,T ) ≥
+ui(X0,T′). The outcome is a risk-free execution for agent i if ui(X0,T ) ≥ 0. A risk-free execution
+is proﬁtable for agent i if the agent has a strictly positive quantity of some token and a non-negative
+quantity of the other token. A common feature of a front-running scheme is that the miner has
+an execution ordering and set of transactions to insert that provides it with a proﬁtable, risk-free
+execution (with 0 ⁄= u0(X0,T ) ≥ 0).
+Example 3.1. Let ui(X0,T ) be the utility of agent i. If ui(X0,T ) = (−1, 1), then (X0,T ) is not
+a risk-free execution for agent i, because agent i pays 1 unit of token 1. If ui(X0,T ) = (0, 0), then
+(X0,T ) is a risk-free execution for agent i, but not a proﬁtable one. If ui(X0,T ) = (1, 0), then
+(X0,T ) is a proﬁtable, risk-free execution for agent i.
+4 Market Manipulation
+One desirable property for an exchange with the product and stable potential functions is that a
+user cannot completely deplete token 1 reserves because they would need to deposit an unbounded
+quantity of token 2. We can formalize this property as follows.
+Deﬁnition 4.1 (Liquidity-preserving). An exchange is liquidity-preserving if, for all states X > 0,
+we have
+lim
+q→X1
+Y (X, Buy(q)) = ∞.
+15
+
+=== page 16 ===
+Figure 1: A front-running scheme (a sandwich attack) with execution ordering (T1,Tu,T3),
+where Tu is the user’s transaction. The miner’s orders, T1 and T3, are in red, and the user’s
+order, Tu, is in blue.
+Unfortunately, users interacting with any liquidity-preserving decentralized exchange are vul-
+nerable to front-running if the miner can arbitrarily choose an execution ordering. We ﬁrst illustrate
+this in the following example for the product potential. Although the example focuses on buy or-
+ders, sell orders can also be victims of front-running.
+Example 4.1 (Front-running, product potential). Consider the product potential, φ(X) = X1 ·
+X2 = c, and suppose a user submits a market order Tu = Buy(q). Recall the set of reachable states
+is the level set Lc(φ). Also observe that X1 uniquely determines X2 given c (because φ is strictly
+increasing, Lemma B.1). In the front-running scheme from Figure 1, the miner sequences their own
+buy order, T1, before Tu and their own sell order, T3, after Tu. This is a sandwich attack. The
+eﬀect of “running ahead” of the user’s transaction is that the price increases after the miner’s buy
+order. As a result, this is a proﬁtable risk-free manipulation. For the user, the eﬀect is a worse
+execution price.
+Theorem 4.1 generalizes Example 4.1 to the case of a user’s transaction that includes a limit
+price, and for a general exchange rule (not just the product potential), and shows that the miner
+can obtain a proﬁt that increases as the user increases the limit price.
+Theorem 4.1. Consider a buy order Buy(q,p), for quantity q at limit price p, and assume this
+is feasible at state X. Assume the exchange is liquidity-preserving. Then there is an execution
+ordering where the user swaps q·p units of token 2 for q units of token 1, and the miner receives
+q·p−Y (X, Buy(q)) units of token 2 for free.
+Proof. Because Buy(q,p) is feasible at state X, it satisﬁes the constraints q≤X1 and Y (X, Buy(q,p)) ≤
+q·p. Instead of executing only Buy(q,p) at X, the miner injects their own buy and sell by picking
+the execution ordering
+(Buy(X1 −q−w), Buy(q,p), Sell(X1 −q−w)).
+The miner picks the smallest w ≥ 0 that still allows the user transaction to successfully execute.
+Observe such a constant exists because setting w = X1 −q ensures the user transaction successfully
+executes.
+Next, we claim the user pays exactly q·p for this value of w. To see this, let x≥q, and observe
+that the liquidity-preserving assumption implies
+lim
+x→X1
+Y (X, Buy(x−q)) + Y (X(x), Buy(q)) = lim
+x→X1
+Y (X, Buy(x)) = ∞,
+16
+
+=== page 17 ===
+where X(x) is the state after Buy(x−q) executes on X. Thus when p = w = 0, the payment of the
+user can be unbounded since limx→X1 Y (X(x), Buy(q)) = ∞. Moreover, when w = X1 −q, the user
+pays at most Y (X, Buy(q,p)) ≤q·p. The fact φ is continuous implies the function representing the
+user payment as a function of w is continuous. From the intermediate value theorem (Lemma A.1),
+we conclude there is a value w≥ 0 such that the user pays q·p units of token 2.
+The state after all transactions execute is (X1 −q,X2 + Y (X, Buy(q))). Because the user
+deposits q·p·e2, the miner receives the diﬀerence q·p−Y (X, Buy(q)).
+In the case of the additive potential function (5), which is not liquidity-preserving, the deviation
+used by the miner in the proof of Theorem 4.1 is not proﬁtable and, in particular, the miner’s utility
+is (0, 0). Whenever Buy(q) successfully executes, the miner trades q units of token 2 for q units of
+token 1. Equivalently, whenever Sell(q) successfully executes, the miner trades q units of token
+1 for q units of token 2. As a result, the miner’s net utility from executing orders Buy(q) and
+Sell(q) is always zero regardless of their position in the execution ordering. Although robust
+to market manipulation, non-liquidity preserving exchanges fail to execute transactions once they
+have exhausted their liquidity reserves, making then unsuitable for settings where secondary-market
+prices ﬂuctuate.
+4.1 Impossibility result
+We already established (Theorem 4.1) that miners can obtain large proﬁts when they pick the block
+content along with the execution ordering. Next, we ask what is possible if miners can only choose
+the block content, but not the execution ordering. One might ask if there is a sequencing rule S
+where, for any block {Bi} (containing miner and user transactions), and initial state X0, there
+is no execution ordering T ∈ S(X0,B) that gives risk-free proﬁts for the miner. Unfortunately,
+Theorem 4.2 shows that this is impossible even when {Bi} contains only three user transactions.
+For simplicity, we state Theorem 4.2 under the assumption that the exchange uses the product
+potential (which suﬃces for an impossibility result); however, one can generalize the statement
+for any liquidity pool exchange that suﬀers price impact, i.e., the token 1 (resp. 2) price strictly
+increases as token 1 (resp. 2) reserves decreases.
+Theorem 4.2. Consider a liquidity pool exchange with the product potential. Then for any
+sequencing rule S, there is an initial state X0 and a block B, containing miner transactions and a
+set of three user transactions, such that the miner receives a strictly positive quantity of token 2
+and pays nothing if the execution ordering is contained in S(X0,B).
+The idea is to consider a block that contains n≥ 3 identical buy orders, Buy(2), and the same
+number of identical sell orders, Sell(1), where one of the buy orders and two of the sell orders are
+the miner’s. We assume X1 > 4n in the initial state, so that no transaction ever fails to execute.
+We ﬁx the execution ordering. Then because the execution ordering from a sequencing rule does
+not depend on whom owns which transaction, we choose which buys and sells the miner owns after
+observing the ordering.
+It is clear that after the miner executes their orders, their utility in token 1 is zero. It suﬃces to
+argue that for any permutation of the 2n transactions, there is always one buy order and two sell
+orders where the buy order buys at an average price p and the two sell orders sells at an average
+price that is strictly larger than p. Letting the miner own these particular, three transactions,
+implies proﬁt to the miner because there is a gain in token 2 and no change in position for token 1.
+See Figure 2 for one of the permutations, where if the miner owns orders {T1,T4,T5}, they receive
+a positive quantity of token 2 for free.
+17
+
+=== page 18 ===
+Figure 2: Example of a permutation where the miner obtain risk-free proﬁts. Arrows pointing
+to the left are buy orders and arrows pointing to the right are sell orders. Miner orders are
+in red and user orders are in blue.
+Proof of Theorem 4.2. Let X0,1 = X0,2 = 4 ·n, where n ≥ 3. The miner picks a block B that
+contains n buy orders equal to Buy(2) and n sell orders equal to Sell(1). One of the buys and
+two of the sells will be the miner’s. Let the execution order be T ∈ S(X0,B). Next, we will pick
+which particular buys and sells the miner owns in a way that depends on T .
+Recall Xt is the state after order Tt executes on Xt−1. Xt,i is the token i reserve at state Xt.
+Let Zt = Xt,1 −X0,1, and observe Z0 = 0 and Z|T| = −n for any execution ordering. Moreover,
+Zt = Zt−1 + 1 whenever Tt is a sell order and Zt = Zt−1 − 2 whenever Tt is a buy order.
+Let i ∈ arg maxt∈[|T|]{Zt−1 : Tt is a buy order}, then Ti is the buy order that pays the lowest
+price. Observe Zi−1 = k for some k≥ 0 because Z0 = 0 and Z|T| < 0. Next consider the following
+cases:
+Case 1. There are two sell orders Ta and Tb that execute at a state where Za−1 ≤ (k − 2)
+and Zb−1 ≤ (k − 2), respectively. If the miner owns orders Ti = Buy(2), Ta = Sell(1), and
+Tb = Sell(1), then the miner ends the trading game with a strictly positive quantity of token 2
+because they sell two units of token 1 at a lower average price than they were purchased.
+Case 2. There are m ≥ n− 1 sell orders that execute at states where Zt−1 ≥ k− 1. Let Tt be
+one of these sell orders. We ﬁrst argue that Tt executes at a state where Zt−1 = k− 1. To see
+this, observe that if Zt−1 > k− 1, then Zt = Zt−1 + 1 ≥ k + 1 > 0. Because Z|T| = −n < 0,
+there is a buy order Tj that executes after Tt where Zj−1 ≥k + 1. We reach a contradiction, since
+k = Zi−1 ≥Zj−1 ≥k +1. This proves that if Tt is a sell order executing a state where Zt−1 ≥k−1,
+then Zt−1 = k− 1. This also implies that, for all time steps t, we have Zt ≤ k. Now for any sell
+order Tt where Zt−1 = k− 1, we will have that Zt = k. Then Tt+1 must be a buy order, and we
+will have that Zt+2 = k− 2. Therefore, we can only have m sell orders executing at states where
+Zt−1 = k−1 if there are m sell orders executing at states where Zj = k−2. Because m = n−1 ≥ 2,
+we reach a contradiction to the assumption that at most one sell order executes at a state where
+Zt−1 ≤k− 2. This proves that Case 2 never happens.
+Cases 1 and 2 cover all scenarios. This proves that the miner always receives a strictly positive
+quantity of token 2 and pays nothing.
+5 Greedy Sequencing Rule
+The Greedy Sequencing Rule (Algorithm 3) takes a set of transactions B and an initial state
+X0 (denoting the state before a transaction in this block executes on the chain), and recursively
+constructs an execution ordering (T1,...,T|B|) (a permutation of the transactions in B). The set
+18
+
+=== page 19 ===
+of transactions B may include both user and miner transactions. We refer to (T1,...,Tt) as the
+execution ordering up to step t and state Xt denotes the state after (T1,...,Tt) executes on state
+X0. We partition the set of outstanding transactions, that is the transactions in B that are not
+in {T1,...,Tt}, into two groups: Bbuy that contains the outstanding buy orders and Bsell that
+contains the outstanding sell orders. At step 0, B = Bbuy ∪Bsell.
+What would be a good choice for Tt+1? We suppose that when user i communicated their order
+Ai to the miner, the user could observe X0 as the current state of the exchange, and is comfortable
+with Ai executing at X0. However, Ai will execute at state Xt if this forms the (t+1)-th transaction
+in the block. If Ai is a buy order, the user prefers Y (Xt,Ai) to be as small as possible. However,
+if Ai is a sell order, the user prefers Y (Xt,Ai) to be as large as possible. Our main observation is
+that as long as both Bbuy and Bsell are not empty, there is at least one transaction that would be
+at least as happy when executing at Xt as when executing at X0. To be concrete, we show that
+if the token 1 reserves at Xt are smaller than those at X0, then any sell order would be at least
+as happy by executing at Xt than X0. Conversely, if the Xt token 1 reserves are higher than at
+X0, then any buy order would be at least as happy by executing at Xt than X0. We formalize this
+property in the Duality Theorem (Theorem 5.1) which we prove in Appendix C.
+This immediately suggests a good choice for Tt+1. The Greedy Sequencing Rule allows the
+miner to pick Tt+1 to be any buy order from Bbuy if it is the buy orders that prefer to execute at
+Xt than X0; otherwise, the rule allows the miner to pick Tt+1 to be any sell order from Bsell. Duality
+ensures that one of these conditions is satisﬁed as long as neither Bbuy or Bsell are non-empty.
+Once one of Bbuy or Bsell is empty, we allow the miner to append the remaining transactions in
+any arbitrary order (just as in the status quo). Interestingly, we will argue that from the moment
+that Bbuy or Bsell are empty, the miner has nothing to proﬁt (or lose) from manipulating the
+execution ordering going forward.
+19
+
+=== page 20 ===
+Greedy Sequencing Rule
+Input: Initial state X0; set of transactions B.
+Output: Execution ordering T .
+Proceed as follows:
+1. Initialize T as an empty list.
+2. Let Bbuy ⊆B be the collection of buy orders in B. Let Bsell ⊆B be the collection of
+sell orders in B.
+3. While Bbuy and Bsell are both non-empty:
+(a) Let t = |T|.
+(b) If Xt,1 ≥X0,1:
+i. Let A be any order in Bbuy.
+ii. Append A to T and remove A from Bbuy.
+(c) Else:
+i. Let A be any order in Bsell.
+ii. Append A to T and remove A from Bsell.
+(d) Let Xt+1 be the state after A executes on Xt.
+4. If Bbuy ∪Bsell is non-empty, append the remaining transactions in Bbuy ∪Bsell to T in
+any order.
+Algorithm 3: Greedy Sequencing Rule.
+Deﬁnition 5.1 (Execution quality). An order A receives a better execution at state X than X′ if
+either:
+• order A fails to execute on X′, or
+• order A can successfully execute on both X and X′ and if A is a buy order, we have that
+Y (X,A) ≤Y (X′,A), else if A is a sell order, we have that Y (X,A) ≥Y (X′,A).
+Theorem 5.1 (Duality Theorem). Consider any liquidity pool exchange with potential φ. For any
+pair of states X,X′∈Lc(φ), either:
+• any buy order receives a better execution at X than X′, or
+• any sell order receives a better execution at X than X′.
+The premise for a front-running scheme is that the miner manipulates the liquidity reserves to
+force a sell order to execute at a state Xt where the token 1 reserves are higher than at X0 and a
+buy order to execute at a state Xt where the token 1 reserves are smaller than at X0. In particular,
+if the miner wants a sell order to execute at a state Xt where the token 1 reserves are higher than at
+X0, then the miner intends to execute a buy order immediately after this transaction. The Greedy
+20
+
+=== page 21 ===
+Figure 3: Execution ordering T (1). No output from the Greedy Sequencing Rule can execute
+Buy(q) between Buy(q′) and Sell(q′).
+Sequencing Rule avoids this pattern because it forces the miner’s buy order to execute before the
+sell order.
+To illustrate this, we consider an example with a single user order, Buy(q) (see Figure 3). Recall
+for a front-running attack, the miner wants to pick the execution ordering (Buy(q′), Buy(q), Sell(q′))
+where Buy(q′) and Sell(q′) are the miner’s own transactions. The crucial observation is that the
+Greedy Sequencing Rule would never output this as a valid execution ordering. In fact, with the
+Greedy Sequencing Rule, the miner can only output the following four execution orderings on these
+transactions:
+T (1) = (Buy(q), Sell(q′), Buy(q′)), or
+T (2) = (Buy(q′), Sell(q′), Buy(q)), or
+T (3) = (Sell(q′), Buy(q′), Buy(q)), or
+T (4) = (Sell(q′), Buy(q), Buy(q′)).
+In T (1), T (2), and T (3), the miner’s orders simply cancel each other out, resulting in no proﬁt.
+The miner prefers T (3) over T (4) since their buy order executes at a better price. This shows that,
+given this sequencing rule, the miner is indiﬀerent as to whether Buy(q) is in the block or not.
+5.1 Execution quality
+In this section, we show that users obtain a predictable execution price that is immune to front-
+running schemes. Our analysis accounts for an unbounded number of user transactions per block
+and allows the miner to inject as many transactions as they desire.
+Deﬁnition 5.2 (Core/Tail Decomposition). For an outcome (X0,T ) from any trading game, we
+partition transactions in T into two sets: the core denoted Core(X0,T ) and the tail denoted
+Tail(X0,T ). A transaction Tt is in the core, if Tt receives a better execution at Xt−1 than X0. The
+tail contains the remaining the transactions.
+Lemma 5.1. Let (X0,T ) be an outcome from a trading game with the Greedy Sequencing Rule
+S. Then Tail(X0,T ) contains only buy orders or only sell orders.
+Proof. The outcome (X0,T ) ∈L(X0,S) and there is a corresponding trading game (X0,{Ti},S)
+that outputs (X0,T ). During the execution of the trading game, let Tt be an order that is appended
+to T when neither Bbuy nor Bsell are empty. We claim Tt ∈Core(X0,T ). If Tt is a buy order, it
+21
+
+=== page 22 ===
+must be that Tt executes at a state Xt−1 where token 1 reserves are higher than at X0. Consider
+the following cases:
+• Tt fails to execute at Xt−1. From Lemma C.1, if Tt fails to execute at Xt−1, then it also fails
+to execute at X0. Thus Tt receives a better execution at Xt−1 than X0.
+• Tt can successfully execute at Xt−1. If Tt fails to execute at X0, then Tt receives a bet-
+ter execution at Xt−1 than X0. If Tt can successfully execute at X0, the Pricing Lemma
+(Lemma 2.2) states that Y (Xt−1,Tt) ≤Y (X0,Tt), since token 1 reserves are higher at Xt−1.
+Thus Tt receives a better execution at Xt−1 than at X0.
+The above proves if Tt ∈Bbuy, then Tt ∈Core(X0,T ). Next, we consider the case Tt ∈Bsell.
+It must be that Tt executes at a state Xt−1 where token 1 reserves are lower than at X0. Consider
+the following cases:
+• Tt fails to execute at Xt−1. From Lemma C.1, if Tt fails to execute at Xt−1, then it also fails
+to execute at X0. Thus Tt receives a better execution at Xt−1 than X0.
+• Tt can successfully execute at Xt−1. If Tt fails to execute at X0, then Tt receives a bet-
+ter execution at Xt−1 than X0. If Tt can successfully execute at X0, the Pricing Lemma
+(Lemma 2.2) states that Y (Xt−1,Tt) ≥Y (X0,Tt), since token 1 reserves are lower at Xt−1.
+Thus Tt receives a better execution at Xt−1 than X0.
+The above proves that if Tt ∈ Bsell, then Tt ∈ Core(X0,T ). Thus all transactions Tt ∈
+Tail(X0,T ) were added to the execution ordering when either Bbuy or Bsell were empty. This
+proves that all transactions in Tail(X0,T ) must be of the same type, and only buy orders or only
+sell orders.
+Let T−t = (T1,...,Tt−1,Tt+1,...,T|T|) denote the execution ordering T without Tt.
+Theorem 5.2. Let (X0,T ) be an outcome from a trading game with the Greedy Sequencing Rule.
+Then for any user i∈A with a transaction Tσ(i) ∈T , we have one of the following
+1. Indiﬀerence. The execution ordering T−σ(i) dominates T for the miner.
+2. Isolation. The execution ordering T dominates (Tσ(i)), the execution ordering that contains
+only order Tσ(i), for user i.
+Proof. Fix a user i∈A with an order Tσ(i) ∈T . Consider the following cases:
+• Tσ(i) ∈ Tail(X0,T ). By Lemma 5.1, all transactions in the tail are of the same type as
+Tσ(i). Consider the execution ordering T−σ(i), then for any j > σ(i), the order Tj receives
+a better execution under execution ordering T−σ(i) than T . To see this, observe that if Tj
+was a buy order, then Tj would execute at a state with higher token 1 reserves (which from
+Corollary C.1 only improves the execution of Tj). Similar, if Tj was a sell order, then Tj
+would execute at a state with lower token 1 reserves, which only improves the execution of Tj
+(Corollary C.1). Thus if the miner owns any transaction Tj executing after Tσ(i), excluding
+Tσ(i) only improves the miner’s transaction execution quality. This proves that execution
+ordering T−σ(i) dominates T for the miner.
+• Tσ(i) ∈ Core(X0,T ). It follows directly from the deﬁnition of the core that Tσ(i) receives a
+better execution at state Xσ(i)−1 than X0. This proves that T dominates (Tσ(i)) for user i.
+22
+
+=== page 23 ===
+Figure 4: A valid outcome when trading with the Greedy Sequencing Rule for the block that
+contains three identical buy orders, Buy(2), and three identical sell orders, Sell(2). The
+miner owns the orders in red. The initial state is (X1,X2). Left arrows denote buy orders
+and right arrows denote sell orders.
+The ﬁrst case argues the miner can only improve their utility by excluding the user’s transaction
+from the block, while the second case argues the user receives an execution as good as the optimal
+execution they would receive in isolation. This proves the theorem.
+This strong positive result might come as a surprise given the impossibility result (Theorem 4.2).
+However, the miner can still proﬁt from injecting their own transactions in the greedy sequencing
+rule, but provably without causing an execution price worse than what the user expected if se-
+quenced at the start of the block. To see this, consider the same example from Section 4.1, where
+the block contains three identical buy orders, Buy(2) and three identical sell orders, Sell(2), and
+the exchange uses the product potential function, φ(X) = X1 ·X2, with initial state X1,X2 ≥ 10.
+Figure 4 shows a valid execution ordering from the Greedy Sequencing Rule. By letting the
+miner own order orders {T1,T2,T5}, they obtain a positive quantity of token 2 for free. Let us
+check the execution quality for users. Orders T4 and T3 execute at a state as good as X. Order
+T6 executes at a worse state than X; however, the miner is indiﬀerent about T6 (since no miner
+transaction is sequenced after T6). Interestingly, if (T3,T4,T6) were the execution ordering, T6
+would receive the same execution, although T3 would receive an even better execution because T4
+causes a positive externality on T3.
+5.2 The Greedy Sequencing Rule is veriﬁable
+We conclude by providing a proof that the Greedy Sequencing Rule, S, is veriﬁable. Recall that
+L(X0,S) (7) is a language representing the feasible outcomes for the sequencing rule S when the
+initial state is X0. We deﬁne Algorithm 4 as our veriﬁer. Let us ﬁrst check that the veriﬁer outputs
+True if (X0,T ) ∈L(X0,S) is a valid outcome from the Greedy Sequencing Rule. By deﬁnition,
+there is an input (X0,{Ai}) to the Greedy Sequencing Rule that outputs (X0,T ). Suppose we
+run the Greedy Sequencing Rule on (X0,{Ai}), and suppose for contradiction the veriﬁer outputs
+False at step t. The following must be true:
+• {Tt,Tt+1,...,T|T|} are not all orders of the same type, and
+23
+
+=== page 24 ===
+• Xt−1,1 ≥X0,1 and Tt is a sell order, or Xt−1,1 <X0,1 and Tt is a buy order.
+The ﬁrst bullet implies Bbuy and Bsell were not empty at step t. Thus whenever Xt−1,1 ≥X0,1,
+the Greedy Sequencing Rule would pick Tt to be a buy order and whenever Xt−1,1 <X0,1 the Greedy
+Sequencing Rule would pick Tt to be a sell order (and since Bbuy and Bsell are non-empty, this is
+always possible). This contradicts the second bullet, and proves the veriﬁer outputs True.
+Next, consider the case where (X0,T ) ⁄∈L(X0,S), and this is not a valid outcome from the
+Greedy Sequencing Rule. Suppose for contradiction, the veriﬁer outputs True. By inspection, we
+can construct a trading game instance (X0,{Ai},S) that outputs (X0,T ). Thus T ∈S(X0,{Ai})
+implies (X0,T ) ∈L(X0,S), which is a contradiction.
+Veriﬁer for the Greedy Sequencing Rule
+Input: Outcome (X0,T ).
+Output: True|False.
+Proceed as follows:
+1. For t = 1, 2,...,|T|:
+(a) If Tt,Tt+1,...,T|T|, are orders of the same type (i.e., all are buy orders or all are
+sell orders), then output True.
+(b) If Xt−1,1 ≥X0,1 and Tt is a buy order, then output False.
+(c) If Xt−1,1 <X0,1 and Tt is a sell order, then output False.
+(d) Let Xt be the state after Tt executes on Xt−1.
+2. Output True.
+Algorithm 4: The Veriﬁer for the Greedy Sequencing Rule.
+6 Conclusion
+We have proposed a decentralized exchange framework where we model miners as intermediaries
+between a liquidity pool exchange and users, acting to choose which transactions to include in
+a block. The miners are free to pick the block content, but the execution ordering must be a
+feasible output from the Greedy Sequencing Rule that we introduce and that they commit to
+implement. Our design does not require users to trust miners because we require that the execution
+ordering is veriﬁable, i.e., a polynomial time algorithm can certify if the execution ordering is a
+valid output from the Greedy Sequencing Rule. Our proposal is backward compatible with the
+current implementations of liquidity pool exchanges: miners incur no computational overhead for
+implementing the sequencing rule and the sequencing rule veriﬁer runs in polynomial time. From a
+practical side, our proposal can be operationalized through a relay service that commits to following
+our sequencing rule and operates a private transaction pool.
+A common desideratum in DeFi protocols is to limit the miner utility from protocol manipula-
+tions (i.e., removing so-called miner extractable value). In this regard, we prove that no sequencing
+rule can prevent miners from obtaining risk-free proﬁts in liquidity pool exchanges that have price
+24
+
+=== page 25 ===
+impact: there are always instances where the miner receives strictly positive utility. Given this
+impossibility result, we focused on sequencing rules that provide provable guarantees for users in
+a system populated by self-interested miners. Our main ﬁnding is the Greedy Sequencing Rule,
+which ensures that for any user transaction A that is executed, either (1) transaction A receives an
+execution price as good as if A was the only transaction in the block, or (2) transaction A receives
+an execution price worse than this standalone price, but the miner does not gain when including A
+in the block. Thus a bad execution price is due to competition for the same token between users,
+and not the result of manipulation from the miner.
+Our work leaves open the following questions:
+• Our Greedy Sequencing Rule explicitly assumes the liquidity pool exchange only pools n = 2
+tokens. Although two token pools have the highest trading volume, other liquidity pool
+exchanges allow for liquidity pools with three or more tokens. Namely, Balancer [36] uses
+the product potential φ(X) = ∏n i=1 Xi where one might have n ≥ 3 tokens in the same
+pool. Which guarantees can veriﬁable sequencing rules provide for n≥ 3 token liquidity pool
+exchanges?
+• We propose a veriﬁable sequencing rule with provable execution price guarantees for users
+under a simple utility model for miners, i.e., we assume that a miner prefers token basket
+X over X′ if X ≥ X′ (and incomparable otherwise). If the miner’s utility is a real-valued
+function u(X) ∈ R, can one characterize the sequencing rule that minimizes the miner’s
+utility over all trading games and safe deviations?
+• We show that for any sequencing rule, there is a set of user transactions that allow miners
+to extract risk-free proﬁts. This result shows that welfare loss for users (i.e., the price of
+anarchy) is inevitable when miners are strategic. Deﬁne an optimal sequencing rule, i.e., a
+rule that maximizes user welfare under optimal miner deviations. Can we characterize the
+class of optimal sequencing rules?
+• Our impossibility result only applies to deterministic sequencing rules. A randomized se-
+quencing rule S takes not only the initial state X and the block content B, but also a
+random string r (potentially unknown by the miner before picking B) and outputs a set sys-
+tem S(X,B,r) with valid execution orderings. Are there randomized sequencing rules where
+miners cannot obtain risk-free proﬁts?
+• In a setting where a user creates two or more transactions {Bi,Bj}, they might wish to specify
+a constraint that Bi executes before Bj. Can one replicate our results with sequencing rules
+that must preserve the user’s ordering constraints?
+A Mathematical Background
+Lemma A.1 (AM-GM Inequality). Let x1,x2,...,xn ≥ 0. Then 1 n ∑n i=1 xi ≥ n √∏n i=1 xi.
+Theorem A.1 (Intermediate Value Theorem). Let f be a real-valued continuous function with
+domain dom(f) equals to the interval [a,b]. If min{f(a),f(b)}≤u≤ max{f(a),f(b)}, then there
+is a c∈ [a,b] such that f(c) = u.
+Lemma A.2. A real-valued function f is quasiconcave if and only if all its superlevel sets are
+convex sets.
+25
+
+=== page 26 ===
+Proof. First, consider the case where f is quasiconcave. Let Sc be a superlevel set of f. Then for
+any x,y ∈ Sc(f) and α ∈ [0, 1], quasiconcavity implies f(αx + (1 −α)y) ≥ min{f(x),f(y)}≥ c
+where the last inequality follows from the fact x and y are in the superlevel set Sc(f). The inequality
+witnesses that the convex combination of x with y also belongs to the superlevel set Sc(f). This
+proves Sc(f) is a convex set.
+Next, consider the case where all superlevel sets Sc(f) of f are convex sets. Then for any
+x,y∈ dom(f) and α∈ [0, 1], we can pick c = min{f(x),f(y)}. Then convexity implies the convex
+combination αx + (1 −α)y ∈ Sc(f) ⊆ dom(f). Thus f(αx + (1 −α)y) ≥ c = min{f(x),f(y)}.
+This proves that f is quasiconcave.
+Deﬁnition A.1 (Graph and Epigraph). The graph of a real-valued function f is deﬁned as
+graph(f) = {(x,f(x)) : x∈ dom(f)}.
+A function f generates a set S, if S = graph(f). The epigraph of a real-valued function f is
+deﬁned as
+epi(f) = {(x,y) : x∈ dom(f) : y≥f(x)}.
+Lemma A.3. A real-valued function f is convex if and only if epi(f) is a convex set.
+Proof. Consider the case where f is convex. Let (x1,y1),..., (xm,ym) ∈ epi(f), ∑m i=1 αi = 1.
+Then
+m∑
+i=1
+αi · (xi,yi) ≥
+m∑
+i=1
+αi · (xi,f(xi))
+=
+( m∑
+i=1
+αixi,
+m∑
+i=1
+αif(xi)
+)
+≥
+( m∑
+i=1
+αixi,f(
+m∑
+i=1
+αixi)
+)
+{By convexity of f}
+The chain of inequalities, proves (∑m i=1 αixi,∑m i=1 αiyi) ∈ epi(f). Thus epi(f) is convex.
+Next, consider the case where epi(f) is a convex set. Let x,...,xm ∈ dom(f), ∑m i=1 αi = 1.
+By deﬁnition, (xi,f(xi)) ∈ epi(f). Then
+( m∑
+i=1
+αi ·xi,
+m∑
+i=1
+αi ·f(xi)
+)
+=
+m∑
+i=1
+αi · (xi,f(xi)) ∈ epi(f)
+{By convexity of epi(f)}
+This proves ∑m i=1 αi ·xi ∈ dom(f) and ∑m i=1 αi ·f(xi) ≥f(∑m i=1 αi ·xi). Thus f is a convex
+function.
+Restatement (Lemma B.3). If f : R → R is a convex function, then the slope function R (Deﬁni-
+tion B.2) of f is increasing on all dimensions. That is, for all x,y,z∈ dom(f),
+• if x≤z, then R(x,y) ≤R(z,y), and
+• if y≤z, then R(x,y) ≤R(x,z).
+26
+
+=== page 27 ===
+Proof. R is a symmetric function because for all x,y ∈ dom(f), and we obtain that R(x,y) =
+R(y,x). Thus it suﬃces to show that for ﬁxed x ∈ dom(f), the function h(y) = R(x,y) deﬁned
+over dom(f) is an increasing function. Pick any point z ∈ dom(f) such that z > y. Then it
+suﬃces to show that h(y) ≤ h(z). We consider separately the case where (1) x ≤ y ≤ z, (2)
+y ≤ x ≤ z and (3) y ≤ z ≤ x. For each case, we observe that the midpoint can be deﬁned as a
+convex combination of the extreme points. That is, the ﬁrst case implies there is an α∈ [0, 1] such
+that y = αz + (1 −α)y. Then convexity of f implies
+f(y) ≤αf(z) + (1 −α)f(x)
+.
+Rearranging the inequality and observing that α = y−x z−x, one obtains that
+h(y) = f(y) −f(x) y−x ≤ f(z) −f(x) z−x = h(z).
+The analysis of the second and third cases is similar. This proves the slope function is an
+increasing function as desired.
+B Proof of Pricing Lemma
+Restatement (Lemma 2.2). Consider states X and X′ where φ(X) = φ(X′) and X′ 1 < X1 and
+assume the potential function φ is quasiconcave and strictly increasing. Then the following hold:
+• If Buy(q) can successfully execute at both X and X′, then Y (X, Buy(q)) ≤Y (X′, Buy(q)).
+• If Sell(q) can successfully execute at both X and X′, then Y (X, Sell(q)) ≤Y (X′, Sell(q)).
+Consider Figure 5 where the curve represents the set of reachable states. We will show the
+assumption the potential function is strictly increasing and quasiconcave implies the curve is the
+graph of a convex function f. Then the payment inequalities will follow from observing the slope
+of f is decreasing (since f is a convex function).
+One might wonder if there are two distinct reachable states (X1,X2), (X1,X′ 2) ∈ Lc(φ) or
+(X1,X2), (X′ 1,X2) ∈ Lc(φ). Interestingly, the fact φ is strictly increasing precludes this because
+there is a bijective real-valued function f that generates the set of reachable states Lc(φ).
+Lemma B.1. Let φ be a strictly increasing potential function. Then there is a bijective real-
+valued function f that generates level set Lc(φ) in the following sense: for all (X1,X2) ∈ Lc(φ),
+X2 = f(X1) and X1 = f−1(X2).
+Proof. Fix (X1,X2) ∈ Lc(φ) and (X1,X′ 2) ∈ dom(φ). Without loss of generality, let X2 > X′ 2.
+Then the fact φ is strictly increasing implies φ(X1,X2) >φ(X1,X′ 2). Thus (X1,X2) and (X1,X′ 2)
+are not in the same level set. This proves for each X1, there is a unique X2 such that φ(X1,X2) = c.
+Deﬁne f(X1) = X2 for all such X1.
+With a similar argument, we can show that for each X2, there is a unique X1 such that
+φ(X1,X2) = c. Deﬁne g(X2) = X1 for all such X2. Finally, we claim g = f−1. To see this, observe
+g(f(X1)) = g(X2) = X1. Thus g is the inverse function of f, as desired.
+Lemma B.1 ensures the existence of a generator f for the set of reachable states Lc(φ), as long
+as the potential function φ is strictly increasing. An interpretation for this result is that the reserves
+27
+
+=== page 28 ===
+Figure 5: Pricing inequalities for quasiconcave and strictly increasing potential functions.
+for token i uniquely determine the reserves for token 3-i (for i∈{1, 2}). That is, if X1 is known,
+then X2 = f(X1). Equivalently, if X2 is known, then X1 = f−1(X2). See Figure 6.
+We can now reinterpret Lemma 2.2 as stating that the price for token i increases as Xi decreases
+(since X3−i is completely determined from Xi). To prove Lemma 2.2, we will argue that f is a
+convex function, which follows from the quasiconcavity of φ. If φ is quasiconcave, a well-known
+fact is that the superlevel set Sc(φ) is a convex set. Interestingly, we can relate Sc(φ) with f by
+observing Sc(φ) = epi(f), which follows from the fact φ is strictly increasing. All that is left is to
+use a well-known property for convex functions: a real-valued function f is convex if and only if
+epi(f) is a convex set (Figure 7).
+Deﬁnition B.1 (Convex function). A real-valued function f is convex if dom(f) is a convex set,
+and for all x,y∈ dom(f), and all α∈ [0, 1], we have that f(α·x+(1−α)·y) ≤α·f(x)+(1−α)·f(y).
+Lemma B.2. Let φ be strictly increasing and quasiconcave. Then there is a bijective convex
+function f that generates level set Lc(φ).
+Proof. Applying Lemma B.1 with strictly increasing function φ implies the existence of a bijective
+function f that generates Lc(φ). We claim epi(f) = Sc(φ), for superlevel set Sc(φ). First, consider
+the case where (X1,X2) ∈ Sc(φ). By deﬁnition, φ(X1,f(X1)) = c and φ(X1,X2) ≥ c. Because
+φ is strictly increasing, we conclude X2 ≥ f(X1). This proves (X1,X2) ∈ epi(f). Next, consider
+the case where (X1,X2) ∈ epi(f). By deﬁnition, X2 ≥ f(X1). Because φ is strictly increasing,
+φ(X1,X2) ≥φ(X1,f(X1)) = c. This proves (X1,X2) ∈Sc(φ). Both cases prove epi(f) = Sc(φ).
+Next, we require two well-known facts from convexity theory (see Appendix A):
+• A real-valued function is quasiconcave if and only if all its superlevel sets are convex sets.
+28
+
+=== page 29 ===
+𝑋!
+𝑋"
+𝑓
+Figure 6: Because φ is strictly increasing the
+generator f of level set Lc(φ) always exists.
+𝑋!
+𝑋"
+𝑓
+𝑒𝑝𝑖(𝑓)=𝑆#𝜙
+Figure 7: If φ is strictly increasing and quasi-
+concave, the generator f of level set Lc(φ) is a
+convex function.
+• A real-valued function is convex if and only if its epigraph is a convex set.
+The ﬁrst bullet implies Sc(φ) = epi(f) is a convex set since φ is quasiconcave. The second
+bullet implies f is a convex function, as desired.
+We are ready to prove Lemma 2.2. All that is left is the following well-known fact from convexity
+theory:
+Deﬁnition B.2 (Slope function). The slope function of f : R → R maps x,y ∈ dom(f) to
+R(x,y) = f (y)−f (x) y−x , the slope of the line connecting (x,f(x)) to (y,f(y)).
+Lemma B.3. If f is a convex function, then the slope function R of f is increasing on all dimensions.
+That is, for all x,y,z∈ dom(f),
+• if x≤z, then R(x,y) ≤R(z,y), and
+• if y≤z, then R(x,y) ≤R(x,z).
+We include a proof in Appendix A. We conclude with the proof of Lemma 2.2.
+Proof of Lemma 2.2. Let f be the generator of level set Lc(φ) and recall f is a convex function as
+per Lemma B.2. Using the fact that X′ 1 ≤X1, we obtain
+R(X′ 1 −q,X′ 1) ≤R(X1 −q,X′ 1) {by Lemma B.3}
+≤R(X1 −q,X1) {by Lemma B.3}.
+Expanding on the deﬁnition of R, we derive
+f(X′ 1 −q) −f(X′ 1) ≥f(X1 −q) −f(X1).
+29
+
+=== page 30 ===
+Claim B.1. Let A be an order that can successfully execute at state X = (X1,f(X1)). The
+following are true:
+• if A = Buy(q), then Y (X,A) = f(X1 −q) −f(X1), and
+• if A = Sell(q), then Y (X,A) = f(X1 + q) −f(X1).
+Proof. Let Z = (Z1,f(Z1)) be the state after A executes at X. By deﬁnition, Y (X,A) = f(Z1) −
+f(X1). If A = Buy(q), then Z1 = X1 −q. If A = Sell(q), then Z1 = X1 + q. This proves the
+claim.
+The claim implies that Y (X′, Buy(q)) = f(X′ 1−q)−f(X′ 1) ≥f(X1−q)−f(X1) = Y (X, Buy(q)),
+as desired. The proof that Y (X, Sell(q)) ≤Y (X′, Sell(q)) follows a similar format: because R is
+increasing and X′ 1 ≤X1, we obtain
+f(X′ 1 + q) −f(X′ 1) = q·R(X′ 1 + q,X′ 1) ≥q·R(X1 −q,X1) = f(X1 + q) −f(X1).
+Finally, we observe that Y (X′, Sell(q)) = f(X′ 1 + q) −f(X′ 1) and Y (X, Sell(q)) = f(X1 +
+q) −f(X1). This proves Lemma 2.2.
+C Proof of Duality Theorem
+Restatement (Theorem 5.1). Consider any liquidity pool exchange with potential φ. For any pair
+of states X,X′∈Lc(φ), either:
+• any buy order receives a better execution at X than X′, or
+• any sell order receives a better execution at X than X′.
+First, we prove a monotonicity property for the quality of execution of an order. Consider states
+X,X′ ∈ Lc(φ), where the token 1 reserves at X are smaller than at X′. We will argue that any
+buy order receives a better execution at X′ than at X. Similarly, we will argue that any sell order
+receives a better execution at X than at X′.
+Observation C.1. Let f be the generator of Lc(φ) and X ∈ Lc(φ) (Lemma B.1). Buy(q) can
+successfully execute at X if and only if X1,X1 −q∈ dom(f). Sell(q) can successfully execute at
+X if and only if X1,X1 + q∈ dom(f).
+Proof. The fact X1 ∈ dom(f) follows from the fact f generates Lc(φ) and X ∈ Lc(φ). First, we
+will consider a buy order Buy(q). If Buy(q) can successfully execute at X, then (X1 −q,f(X1 −
+q)) ∈ Lc(φ) which implies X1 −q ∈ dom(f). For the converse, if f(X1 −q) ∈ dom(f), then
+(X1 −q,f(X1 −q)) ∈Lc(φ) which implies Buy(q) can successfully execute at X.
+Next, we consider a sell order Sell(q). If Sell(q) can successfully execute at X, then (X1 +
+q,f(X1 + q)) ∈Lc(φ) which implies X1 + q ∈ dom(f). For the converse, if f(X1 + q) ∈ dom(f),
+then (X1 + q,f(X1 + q)) ∈Lc(φ) which implies Sell(q) can successfully execute at X.
+Lemma C.1. Consider states X,X′∈Lc(φ) where X1 ≤X′ 1. If Buy(q,p) can successfully execute
+at X, then Buy(q,p) can successfully execute at X′. If Sell(q,p) can successfully execute at X′,
+then Sell(q,p) can successfully execute at X.
+30
+
+=== page 31 ===
+Proof. Let f be the convex function that generates the set of reachable states Lc(φ) (Lemma B.2).
+First, we prove Buy(q,p) can successfully execute at X′. The fact that X,X′∈Lc(φ) and Buy(q,p)
+can successfully execute at X implies X′ 1,X1,X1 −q ∈ dom(f) (Observation C.1). Note X′ 1 −q
+is a point between X1 −q and X′ 1, and thus the convexity of dom(f) implies X′ 1 −q ∈ dom(f).
+This proves Buy(q) can successfully execute at X′ (Observation C.1), and we are left to show
+Y (X′, Buy(q)) ≤q·p. Because the token 1 reserves at X are lower than at X′, Buy(q) pays less by
+executing at X′ than X (Lemma 2.2). Thus the payment by executing at X′ is at most q·p since
+the payment by executing at X is at most q·p. This proves Buy(q,p) can successfully execute at
+X′.
+Next, we prove Sell(q,p) can successfully execute at X. The fact that X,X′ ∈ Lc(φ) and
+Sell(q,p) can successfully execute at X′ implies X1,X′ 1,X′ 1 + q ∈ dom(f) (Observation C.1).
+Note that X1 + q is a point between X1 and X′ 1 + q, and thus the convexity of dom(f) implies
+X1 + q∈ dom(f). This proves that Sell(q) can successfully execute at X (Observation C.1), and
+we are left to show Y (X, Sell(q)) ≥ q·p. Because token 1 reserves at X are lower than at X′,
+Sell(q) receives more tokens by executing at X than X′ (Lemma 2.2). Thus Sell(q) receives at
+least q·p tokens by executing at X, since Sell(q) receives at least q·p by executing at X′. This
+proves Sell(q,p) can successfully execute at X.
+Corollary C.1. Consider states X,X′ ∈ Lc(φ), where X1 ≤ X′ 1. Buy(q,p) receives a better
+execution at X′ than X. Moreover, Sell(q,p) receives a better execution at X than X′.
+Proof. If Buy(q,p) fails to execute at X, then Buy(q,p) receives a better execution at X′ (by
+deﬁnition). If Buy(q,p) can successfully execute at X, then Buy(q,p) also successfully executes at
+X′ (Lemma C.1). From the Pricing Lemma (Lemma 2.2), we have Y (X′, Buy(q)) ≤Y (X, Buy(q)).
+This proves that Buy(q,p) receives a better execution at X′ than X.
+If Sell(q,p) fails to execute at X′, then Sell(q,p) receives a better execution at X (by deﬁni-
+tion). If Sell(q,p) can successfully execute at X′, then Sell(q,p) can also successfully execute at
+X (Lemma C.1). From the Pricing Lemma (Lemma 2.2), we have Y (X, Sell(q)) ≥Y (X′, Sell(q)).
+This proves that Sell(q,p) receives a better execution at X than X′.
+Proof of Theorem 5.1. First, consider the case where the token 1 reserves at X are smaller than
+those at X′. From Corollary C.1, any sell order receives a better execution at X than X′. Second,
+consider the case where the token 1 reserves at X are larger than at X′. From Corollary C.1, any
+buy order receives a better execution at X than X′.
+References
+[1] Top stablecoin tokens by market capitalization. URL https://coinmarketcap.com/view/
+stablecoin/.
+[2] Deﬁ pulse - the decentralized ﬁnance leaderboard. URL https://www.defipulse.com/.
+[3] Flashbots. URL https://docs.flashbots.net/.
+[4] Uniswap overview. URL https://info.uniswap.org/#/.
+[5] Gnosis protocol. URL: https://docs.gnosis.io/protocol/docs/devguide01/, 2020.
+[6] 2022. URL https://ccaf.io/cbeci/index. Accessed: 2022-8-25.
+31
+
+=== page 32 ===
+[7] H. Adams, N. Zinsmeister, M. Salem, R. Keefer, and D. Robinson. Uniswap v3 core, 2021.
+[8] M. Akbarpour and S. Li. Credible auctions: A trilemma. Econometrica, 88(2):425–467, 2020.
+[9] G. Angeris and T. Chitra. Improved price oracles: Constant function market makers. In
+Proceedings of the 2nd ACM Conference on Advances in Financial Technologies, pages 80–91,
+2020.
+[10] G. Angeris, A. Evans, T. Chitra, and S. Boyd. Optimal routing for constant function market
+makers. In Proceedings of the 23rd ACM Conference on Economics and Computation, pages
+115–128, 2022.
+[11] J. Brown-Cohen, A. Narayanan, A. Psomas, and S. M. Weinberg. Formal barriers to longest-
+chain proof-of-stake protocols. In Proceedings of the 2019 ACM Conference on Economics and
+Computation, pages 459–473, 2019.
+[12] M. Brunnermeier, A. Crockett, C. A. Goodhart, A. Persaud, H. S. Shin, et al. The fundamen-
+tal principles of ﬁnancial regulation, volume 11. ICMB, Internat. Center for Monetary and
+Banking Studies Geneva, 2009.
+[13] E. Budish, P. Cramton, and J. Shim. The high-frequency trading arms race: Frequent batch
+auctions as a market design response. The Quarterly Journal of Economics, 130(4):1547–1621,
+2015.
+[14] A. Capponi, R. Jia, and Y. Wang. The evolution of blockchain: from lit to dark. arXiv preprint
+arXiv:2202.05779, 2022.
+[15] M. Carlsten, H. Kalodner, S. M. Weinberg, and A. Narayanan. On the instability of bitcoin
+without the block reward. In Proceedings of the 2016 ACM SIGSAC Conference on Computer
+and Communications Security, pages 154–167, 2016.
+[16] J. Chen and S. Micali. Algorand: A secure and eﬃcient distributed ledger. Theoretical
+Computer Science, 777:155–183, 2019.
+[17] T. Chitra, M. V. Ferreira, and K. Kulkarni. Credible, optimal auctions via blockchains. arXiv
+preprint arXiv:2301.12532, 2023.
+[18] P. Daian, R. Pass, and E. Shi. Snow white: Robustly reconﬁgurable consensus and applications
+to provably secure proof of stake. In International Conference on Financial Cryptography and
+Data Security, pages 23–41. Springer, 2019.
+[19] P. Daian, S. Goldfeder, T. Kell, Y. Li, X. Zhao, I. Bentov, L. Breidenbach, and A. Juels. Flash
+boys 2.0: Frontrunning in decentralized exchanges, miner extractable value, and consensus
+instability. In 2020 IEEE Symposium on Security and Privacy (SP), pages 910–927. IEEE,
+2020.
+[20] M. Egorov. Stableswap-eﬃcient mechanism for stablecoin liquidity. Retrieved Feb, 24:2021,
+2019.
+32
+
+=== page 33 ===
+[21] M. Essaidi, M. V. X. Ferreira, and S. M. Weinberg. Credible, Strategyproof, Optimal, and
+Bounded Expected-Round Single-Item Auctions for All Distributions. In M. Braverman, edi-
+tor, 13th Innovations in Theoretical Computer Science Conference (ITCS 2022), volume 215
+of Leibniz International Proceedings in Informatics (LIPIcs), pages 66:1–66:19, Dagstuhl, Ger-
+many, 2022. Schloss Dagstuhl – Leibniz-Zentrum f¨ur Informatik.
+[22] I. Eyal and E. G. Sirer. Majority is not enough: Bitcoin mining is vulnerable. In International
+conference on ﬁnancial cryptography and data security, pages 436–454. Springer, 2014.
+[23] Z. Fan, F. J. Marmolejo-Coss´ıo, B. Altschuler, H. Sun, X. Wang, and D. Parkes. Diﬀerential
+liquidity provision in uniswap v3 and implications for contract design. In Proceedings of the
+Third ACM International Conference on AI in Finance, pages 9–17, 2022.
+[24] M. V. X. Ferreira and S. M. Weinberg. Credible, truthful, and two-round (optimal) auctions
+via cryptographic commitments. In Proceedings of the 21st ACM Conference on Economics
+and Computation, pages 683–712, 2020.
+[25] M. V. X. Ferreira and S. M. Weinberg. Proof-of-stake mining games with perfect randomness.
+In Proceedings of the 22nd ACM Conference on Economics and Computation, pages 433–453,
+2021.
+[26] M. V. X. Ferreira, D. J. Moroz, D. C. Parkes, and M. Stern. Dynamic posted-price mechanisms
+for the blockchain transaction-fee market. In Proceedings of the 3rd ACM Conference on
+Advances in Financial Technologies, pages 86–99, 2021.
+[27] M. V. X. Ferreira, Y. L. S. Hahn, S. M. Weinberg, and C. Yu. Optimal strategic mining against
+cryptographic self-selection in proof-of-stake. In Proceedings of the 23rd ACM Conference on
+Economics and Computation, pages 89–114, 2022.
+[28] L. Heimbach and R. Wattenhofer. Eliminating sandwich attacks with the help of game the-
+ory. In Proceedings of the 2022 ACM on Asia Conference on Computer and Communications
+Security, pages 153–167, 2022.
+[29] L. Heimbach, E. Schertenleib, and R. Wattenhofer. Risks and returns of uniswap v3 liquidity
+providers. arXiv preprint arXiv:2205.08904, 2022.
+[30] M. Kelkar, F. Zhang, S. Goldfeder, and A. Juels. Order-fairness for byzantine consensus. In
+Annual International Cryptology Conference, pages 451–480. Springer, 2020.
+[31] A. Kiayias, E. Koutsoupias, M. Kyropoulou, and Y. Tselekounis. Blockchain mining games.
+In Proceedings of the 2016 ACM Conference on Economics and Computation, pages 365–382,
+2016.
+[32] A. Kiayias, A. Russell, B. David, and R. Oliynykov. Ouroboros: A provably secure proof-
+of-stake blockchain protocol. In Annual international cryptology conference, pages 357–388.
+Springer, 2017.
+[33] S. King and S. Nadal. Ppcoin: Peer-to-peer crypto-currency with proof-of-stake. self-published
+paper, August, 19(1), 2012.
+[34] K. Kulkarni, T. Diamandis, and T. Chitra. Towards a theory of maximal extractable value i:
+Constant function market makers. arXiv preprint arXiv:2207.11835, 2022.
+33
+
+=== page 34 ===
+[35] R. Lavi, O. Sattath, and A. Zohar. Redesigning bitcoin’s fee market. ACM Transactions on
+Economics and Computation, 10(1):1–31, 2022.
+[36] F. Martinelli and N. Mushegian. A non-custodial portfolio manager, liquidity provider, and
+price sensor. URl: https://balancer. ﬁnance/whitepaper, 2019.
+[37] C. McMenamin, V. Daza, and M. Fitzi. Fairtradex: A decentralised exchange preventing value
+extraction. arXiv preprint arXiv:2202.06384, 2022.
+[38] S. Nakamoto. Bitcoin: A peer-to-peer electronic cash system. Decentralized Business Review,
+page 21260, 2008.
+[39] M. Neuder, R. Rao, D. J. Moroz, and D. C. Parkes. Strategic liquidity provision in uniswap
+v3. arXiv preprint arXiv:2106.12033, 2021.
+[40] A. Park. The conceptual ﬂaws of constant product automated market making. Available at
+SSRN 3805750, 2021.
+[41] K. Qin, L. Zhou, and A. Gervais. Quantifying blockchain extractable value: How dark is the
+forest? In 2022 IEEE Symposium on Security and Privacy (SP), pages 198–214. IEEE, 2022.
+[42] T. Roughgarden. Transaction fee mechanism design. In Proceedings of the 22nd ACM Con-
+ference on Economics and Computation, EC ’21, page 792, New York, NY, USA, 2021. Asso-
+ciation for Computing Machinery.
+[43] A. Sapirshtein, Y. Sompolinsky, and A. Zohar. Optimal selﬁsh mining strategies in bitcoin.
+In International Conference on Financial Cryptography and Data Security, pages 515–532.
+Springer, 2016.
+[44] B. Weintraub, C. F. Torres, C. Nita-Rotaru, and R. State. A ﬂash (bot) in the pan: mea-
+suring maximal extractable value in private pools. In Proceedings of the 22nd ACM Internet
+Measurement Conference, pages 458–471, 2022.
+[45] L. Zhou, K. Qin, C. F. Torres, D. V. Le, and A. Gervais. High-frequency trading on decen-
+tralized on-chain exchanges. In 2021 IEEE Symposium on Security and Privacy (SP), pages
+428–445. IEEE, 2021.
+34

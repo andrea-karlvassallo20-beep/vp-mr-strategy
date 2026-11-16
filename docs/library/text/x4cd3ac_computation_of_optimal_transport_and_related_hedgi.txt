@@ -1,0 +1,1347 @@
+=== page 1 ===
+Computation of optimal transport and related hedging
+problems via penalization and neural networks∗
+Stephan Eckstein† Michael Kupper‡
+January 28, 2019
+Abstract
+This paper presents a widely applicable approach to solving (multi-marginal, mar-
+tingale) optimal transport and related problems via neural networks. The core idea is
+to penalize the optimization problem in its dual formulation and reduce it to a ﬁnite
+dimensional one which corresponds to optimizing a neural network with smooth ob-
+jective function. We present numerical examples from optimal transport, martingale
+optimal transport, portfolio optimization under uncertainty and generative adversarial
+networks that showcase the generality and eﬀectiveness of the approach.
+Keywords: optimal transport, robust hedging, numerical method, duality, regularisation, feedfor-
+ward networks, Knightian uncertainty, distributional robustness
+1 Introduction
+In this paper we present a penalization method which allows to compute a wide class of optimization
+problems of the form
+φ(f) = sup
+ν∈Q
+∫
+fdν
+by means of neural networks. The most widely known representative of such a functional occurs in
+the optimal transport problem, to be introduced shortly. More generally, these functionals appear
+for instance in the representation of coherent risk measures [4] as the worst-case expected loss over a
+class Q of scenario probabilities, in the representation of nonlinear expectations [41], or as the upper
+bound of arbitrage-free prices for a contingent claim f, see e.g. [25]. To solve the initial problem
+φ(f) we will make use of its dual formulation and restrict to the subclass of those optimization
+problems which can be realized as a minimal superhedging price
+φ(f) = inf
+h∈H:
+h≥f
+∫
+hdµ0.
+∗We thank Daniel Bartl, Fabian Both, Jens Jackwerth, Mathias Pohl, Stefan Volkwein and two anony-
+mous referees for helpful comments.
+†Department Mathematics and Statistics, University of Konstanz, stephan.eckstein@uni-konstanz.de.
+‡Department Mathematics and Statistics, University of Konstanz, kupper@uni-konstanz.de.
+1
+arXiv:1802.08539v2  [math.OC]  25 Jan 2019
+
+=== page 2 ===
+for some µ0 ∈Q, where H is a set of continuous and bounded functions h : X → R, where the
+relation of H and Q is given at the beginning of Section 2. A very similar class of optimization
+problems in an abstract framework of Banach lattices is studied in [21]. Under suﬃcient regularity
+conditions the values of the primal problem supν∈Q
+∫
+fdν and its dual problem infh∈H: h≥f
+∫
+hdµ0
+can be shown to coincide, see e.g. [16] for related pricing-hedging dualities.
+A typical example is the Kantorovich relaxation [36] of Monge’s optimal transport problem,
+where Q is the set of probability measures on a product space X = X1 ×X2 with given marginals µ1
+and µ2, and where H is the set of all continuous and bounded functions h(x1,x2) = h1(x1) + h2(x2)
+and
+∫
+hdµ0 =
+∫
+X1 h1 dµ1 +
+∫
+X2 h2 dµ2. Further frequently studied problems in this class include
+multi-marginal optimal transport and Wasserstein distances (see e.g. [5, 50, 51]), martingale optimal
+transport (see e.g. [7, 26, 31, 33]), value at risk under dependence uncertainty (see e.g. [11, 22, 44]),
+or calculating worst case copula values and improved Fréchet-Hoeﬀding bounds (see e.g. [6, 40]).
+Moreover, φ(f) serves as a building block for several other problems, like generative adversarial
+networks (where additionally, the optimization includes generating a distribution, see e.g. [3, 23, 30]),
+portfolio choice under dependence uncertainty (where additionally, portfolio weights are optimized,
+see e.g. [10, 43]), or robust optimized certainty equivalents (see e.g. [20]). In these cases, the solution
+approach presented in this paper is still applicable.
+Summary of the approach The goal is to solve φ(f) numerically. The implementation will
+build on the dual representation of φ(f). The ﬁrst step is to go over to a ﬁnite dimensional setting,
+where the set H is replaced by a subset Hm:
+φm(f) = inf
+h∈Hm:
+h≥f
+∫
+hdµ0
+Theoretically, we will look at a sequence (Hm)m∈N with H1 ⊆H2 ⊆ ... ⊆H such that H∞ :=
+∪m∈NHm is in a certain sense dense in H. More concretely, Hm can be a set of neural networks
+with a ﬁxed structure (but unspeciﬁed parameter values), and m measures the number of neurons
+per layer.
+To allow for a step-wise updating of the parameters (e.g. by gradient descent methods) for the
+space Hm, the inequality constraint h ≥ f is penalized. To this end, we introduce a reference
+probability measure θ on the state space X. Intuitively, this measure will be used to sample points
+at which the inequality constraint h≥f can be tested. Further, we introduce a diﬀerentiable and
+nondecreasing penalty function β : R → R+. This leads to the penalized problem
+φm θ,β(f) = inf h∈Hm
+{∫
+hdµ0 +
+∫
+β(f −h) dθ
+}
+.
+For theoretical considerations we also introduce
+φθ,β(f) = inf h∈H
+{∫
+hdµ0 +
+∫
+β(f −h) dθ
+}
+.
+Theoretically, we will again consider sequences of penalty functions (βγ)γ>0 parametrized by a
+penalty factor γ, and use the notation φθ,γ(f) := φθ,βγ(f) and φm θ,γ(f) := φm θ,βγ(f). Here, an
+increasingpenaltyfactorcanbeseenasamoreandmorepreciseenforcingoftheinequalityconstraint
+h≥f.
+The problems φm θ,γ(f) are the ones which are solved numerically. Chapters 2 and 3 study the
+relation between this problem which is eventually implemented, and the initial problem φ(f). To
+2
+
+=== page 3 ===
+φ(f)
+(initial problem)
+φθ,γ(f)
+(penalized version of φ(f))
+φm(f)
+(ﬁnite-dim. version of φ(f))
+φm θ,γ(f)
+(numerically solved problem)
+γ→∞
+(Thm. 2.2)
+m→∞ (Prop. 2.3)
+(Lemma 3.3)
+m→∞ (Remark 3.5)
+γ→∞
+(Prop. 3.7)
+min{γ,m}→∞
+(Prop. 2.4, Remark 3.5
+)
+Figure 1: Occurring problems and their relations. The depicted convergences are studied in
+Section 2 and, in a more speciﬁc context of neural networks, in Section 3.
+this end, we analyse how the introduced approximative problems behave for m→∞ and γ →∞.
+Figure 1 summarizes the occurring problems and their relations. Notably, we are only interested in
+convergence of optimal values, not that of optimizers.
+The ﬁnal step is to ﬁnd a numerical solution of φm θ,γ(f), which means in practice ﬁnding the
+optimal parameters of the network Hm. We use Tensorﬂow [1] and the Adam optimizer [38] to this
+end, and thus mostly regard this step as a black box. We will denote the numerical optimal solution
+by ˆφm θ,γ(f).
+Implementation method: Related literature Penalization of optimal transport problems
+has been studied in several works (see e.g. [9, 14, 17, 18, 27, 30, 45, 46, 48]). Entropic penalization
+in particular is applied often, which is in close relation to the Schrödinger problem [39]. Cominetti
+and San Martín’s work [17] from 1994 on entropic penalization of arbitrary linear programs can be
+applied to purely discrete optimal transport. The basic idea in [17] is to obtain a strictly convex
+problemthroughpenalizationwhichcanbesolvedquickerandconvergestotheinitialproblem, foran
+increasing penalty factor. More recently, Cuturi [18] gives an eﬃcient algorithm to compute discrete
+optimaltransportproblemswithtwomarginalsbasedonentropicpenalizationandSinkhorn’smatrix
+scaling algorithm. Genevay et al. [27] and Solomon et al. [48] go further in this direction and
+give algorithms to compute arbitrary optimal transport problems with two marginals, where the
+algorithm (for the case of continuous marginals) is based on a reproducing kernel Hilbert space
+approach, and discretization, respectively. In [27] the authors already mention that more general
+regularizationsbeyondtheentropiconearepossible. AmongothersBenamouetal.[9]andSchmitzer
+[45] use scaling algorithms related to [18] for a larger class of problems, including for example
+(discrete) multi-marginal, constrained and unbalanced optimal transport. Carlier et al. [14] show Γ-
+convergence of the entropic penalized Wasserstein-2 distance to the unpenalized one. The same kind
+of Γ-convergence is also subject of the studies related to the Schrödinger problem [39], even for more
+general cost functions. Recent research by Arjovsky et al. [3, 30] inspired by generative adversarial
+networks include solving a particular optimal transport problem (the Wasserstein-1 distance) based
+on L2 penalization. In these works, the numerical approach to solve optimal transport problems
+by parametrization of the dual variables by neural networks originated. Seguy et al. [46] apply a
+3
+
+=== page 4 ===
+neural network based approach to arbitrary optimal transport problems with two marginals. Their
+theoretical results are broadly based on entropic penalization, discretization, and weakly continuous
+dependence of the optimal transport problem on the marginals.
+Contribution The current paper gives a unifying numerical solution approach to problems of the
+form φ(f) based on penalization and neural networks. The focus lies both on general applicability
+with respect to the choice of problem, and also on a ﬂexible framework regarding the solution
+method.
+Compared to the existing literature, which often focusses on a single representative (often the
+optimal transport problem) among problems of the form φ(f), our theoretical results are widely
+applicable. Similarly, the penalization method and the resulting dual relations in this paper allow
+for many diﬀerent forms of reference measure θ and penalty function βγ, while the existing literature
+is often restricted to uniform or product reference measures, and exponential penalty functions.1
+We show the eﬀects of diﬀerent reference measures and diﬀerent penalty functions both theoretically
+in Theorem 2.2 and practically in the numerical examples in Section 4. In some examples the choice
+of an appropriate reference measure is crucial, see e.g. Section 4.4. Equation (2.6) of Theorem 2.2
+also motivates an updating procedure for the reference measure to reduce the error arising from
+penalization, which is applied in Section 4.5.
+The presented approach is showcased with several examples, which are mostly toy problems
+taken from existing papers. The reason we use toy problems is to allow for an evaluation of the
+numerical methods that can be based on analytical solutions.
+Structure of the paper In Section 2 we present the theoretical results on approximation and
+regularization. Section 3 discusses the particular case of Hm as built by multilayer feedforward
+networks. In Section 4 we illustrate the proposed method with several examples. All proofs are
+postponed to Section 5.
+2 Regularization and approximation of hedging functionals
+Let P(X ) be the set of all Borel probability measures on a Polish space X, and denote by Cb(X )
+the linear space of all continuous bounded functions f : X → R. We consider the superhedging
+functional
+φ(f) := inf
+{∫
+hdµ0 : h≥f for some h∈H
+}
+(2.1)
+for f ∈Cb(X ), where µ0 ∈P(X ) is a pricing measure and H⊆Cb(X ). Throughout this section we
+assume that H is a linear space which contains the constants (i.e. the constant functions).
+In order to derive a dual representation, we assume that φis continuous from above, i.e. φ(fn) ↓ 0
+for every sequence (fn) in Cb(X ) such that fn ↓ 0. By the nonlinear Daniell-Stone theorem it has
+a representation
+φ(f) = max
+µ∈Q
+∫
+fdµ (2.2)
+1In discrete settings, the reference measure is usually the uniform distribution (see e.g. [18], where the
+penalization does not explicitly include a reference measure. The penalization applied is simply the entropy
+of a measure, with corresponds to the relative entropy with uniform reference measure). In non-discrete
+settings, usually the product measure of the marginals speciﬁed by the optimal transport problems are used
+(see e.g. [27, 46]).
+4
+
+=== page 5 ===
+for all f ∈ Cb(X ), and the nonempty set Q =
+{
+µ ∈P(X ) :
+∫
+hdµ =
+∫
+hdµ0 for all h ∈H
+}
+. In
+particular µ0 ∈Q. The problems (2.2) and (2.1) are in duality and we refer to (2.2) as the primal
+and (2.1) as the dual formulation. For the details we refer to the Appendix A. There it is outlined
+how the duality extends to unbounded functions. However, for the sake of readability we focus on
+Cb(X ).
+The following example illustrates the basic setting:
+Example 2.1. Let X = Rd, and denote by Π(µ1,...,µd) the set of all µ∈P(Rd) with ﬁrst marginal
+µ1, second marginal µ2, etc. In the following examples, under the assumption that Q⁄= ∅ it is
+straightforward to verify that the corresponding superhedging functional is continuous from above.
+(a) (Multi-marginal) optimal transport [36, 51]:
+Q = Π(µ1,...,µd),
+H = {h∈Cb(Rd) : h(x1,...,xd) = h1(x1) + ... + hd(xd) for all (x1,...,xd) ∈ Rd
+and some hi ∈Cb(R)}
+(b) Martingale optimal transport [7, 26]:
+Q = {µ∈ Π(µ1,...,µd) : the canonical process on Rd is a µ-martingale}
+H = {h∈Cκ(Rd) : h(x1,...,xd) =
+d∑
+i=1
+hi(xi) +
+d∑
+i=2
+gi(x1,...,xi−1) · (xi −xi−1)
+for all (x1,...,xd) ∈ Rd and some hi ∈Cb(R) and gi ∈Cb(Ri−1)}
+where Cκ(Rd) denotes the space of all continuous functions of linear growth corresponding
+to κ(x) := 1 + |x|, see Appendix A. By Strassen’s theorem [49] the set Q is nonempty if the
+marginals µ1,...,µd are in convex order.
+(c) Optimal transport with additional constraints:
+Q = {µ∈ Π(µ1,...,µd) :
+∫
+gjdµ = cj for all j = 1,...,N}
+H = {h∈Cb(Rd) : h(x1,...,xd) =
+d∑
+i=1
+hi(xi) +
+N∑
+j=1
+λj (gj(x1,...,xd) −cj)
+for some hi ∈Cb(R),λj ∈ R}
+for some g1,...,gN ∈ Cb(Rd) and c1,...,cN ∈ R. For related problems we refer to [6] and
+the references therein.
+2.1 Regularization of the superhedging functional by penalization
+Our goal is to regularize the superhedging functional φ by considering the convolution
+φθ,γ(f) := inf h∈Cb(X)
+{
+φ(h) + ψθ,γ(f −h)
+}
+= inf
+h∈H
+{∫
+hdµ0 +
+∫
+βγ(f −h) dθ
+}
+(2.3)
+5
+
+=== page 6 ===
+where ψθ,γ(f) :=
+∫
+βγ(f) dθ for a sampling measure θ ∈P(X ), and βγ(x) := 1 γβ(γx) is a penalty
+function which is parametrized by γ > 0. We assume that β : R → R+ is a diﬀerentiable nonde-
+creasing convex function such that limx→∞β(x)/x = ∞. Its convex conjugate
+β∗ γ(y) := sup
+x∈R
+{xy−βγ(x)} for all y∈ R+,
+satisﬁes β∗ γ(y) = β∗(y)/γ. Common examples are
+(a) the exponential penalty function β(x) = exp(x− 1) with conjugate β∗(y) = y log(y),
+(b) the Lp penalty function β(x) = 1 p(max{0,x})p with conjugate β∗(y) = 1 qyq where q = p p−1
+for some p> 1.
+In case that H = R the functional (2.3) is a so-called optimized certainty equivalent, see Ben-Tal and
+Teboulle [8]. In the following result we show the dual representation of the regularized superhedging
+functional φθ,γ and its convergence to φ.
+Theorem 2.2. Let f ∈Cb(X ). Suppose there exists π∈Q such that π≪θ and
+∫
+β∗(dπ dθ ) dθ<∞.
+Then
+φθ,γ(f) = max µ∈Q
+{∫
+fdµ− 1 γ ∫ β∗ (dµ dθ ) dθ } . (2.4)
+Moreover,
+φθ,γ(f) − β(0) γ ≤φ(f) ≤φθ,γ(f) + 1 γ ∫ β∗ (dµε dθ ) dθ + ε (2.5)
+whenever µε ∈Q is an ε-optimizer of (2.2) such that µε ≪θ and
+∫
+β∗ γ (dµε dθ ) dθ<∞.
+If ˆh∈H is a minimizer of (2.3) then ˆµ∈P(X ) deﬁned by
+dˆµ
+dθ := β′ γ(f − ˆh) (2.6)
+is a maximizer of (2.4).
+2.2 Approximation of the superhedging functional
+In this subsection we consider a sequence H1 ⊆H2 ⊆··· of subsets of H, and set H∞ := ⋃ m∈N Hm.
+For each m∈ N ∪{+∞}, we deﬁne the approximated superhedging functional by
+φm(f) := inf {∫ hdµ0 : h≥f for some h∈Hm } . (2.7)
+For the approximation of φ(f) by φm(f), we need the following density condition on H∞.
+Condition (D): For every ε> 0 and µ∈P(X ) holds
+(a) for every h∈H there exists h′∈H∞ such that ∫ |h−h′|dµ≤ε,
+(b) there exists h′′∈H∞ such that 1Kc ≤h′′ and ∫ h′′dµ≤ε for some compact subset K
+of X.
+In Section 3 we will discuss Condition (D) in the context of multilayer feedforward networks. The
+condition allows for the following approximation result.
+6
+
+=== page 7 ===
+Proposition 2.3. Assume that H∞ is a linear space which contains the constants. Under Condition
+(D) one has
+lim
+m→∞
+φm(f) = φ∞(f) = φ(f)
+for all f ∈Cb(X ).
+Given a sampling measure θ and a parametrized penalty function βγ as in the previous subsec-
+tion, we deﬁne the approximated version of the regularized superhedging functional by
+φm θ,γ(f) = inf h∈Hm
+{∫
+hdµ0 +
+∫
+βγ(f −h) dθ
+}
+(2.8)
+for all f ∈Cb(X ). As a consequence of the two approximative steps φθ,γ(f) →φ(f) for γ →∞ in
+Theorem 2.2 and φm(f) → φ(f) for m →∞ in Proposition 2.3 we get the following convergence
+result.
+Proposition 2.4. Suppose that H∞ satisﬁes Condition (D) and for every ε > 0 there exists an
+ε-optimizer µε of (2.4) such that µε ≪θ and
+∫
+β∗(dµε dθ ) dθ < +∞. Then, for every f ∈Cb(X ) one
+has φm θ,γ(f) →φ(f) for min{m,γ}→∞.
+The existence of such ε-optimizers as required in Theorem 2.2 and Proposition 2.4 is for example
+established in [12] in the context of multi-marginal optimal transport problems in Rd with absolutely
+continuous marginals. In general, the existence of such ε-optimizers crucially depends on the choice
+of θ, see also Example 3.6 for a simple illustration.
+3 Modellingﬁnitedimensionalsubspaceswithmultilayerfeed-
+forward networks
+This section explains the speciﬁc choice of approximative subspaces as built by neural networks.
+Generally, a feasible alternative to neural networks is to build these spaces via basis functions, like
+polynomials, which is for example pursued in [33] in the context of martingale optimal transport.
+In contrast to a basis approach, where functions are represented as a weighted sum over ﬁxed basis
+functions, neural networks rely on the composition of layers of simple functions. This has shown to
+be an eﬃcient way to approximate a large class of functions with relatively few parameters. Before
+going into the results, we give the required notation for neural networks.
+3.1 Notation
+The type of neural networks we consider are fully connected feed-forward neural networks. Those
+are mappings of the form
+Rd ∋x↦→Al ◦ ϕ◦Al−1| {z }
+(l−1). layer
+◦...◦ϕ◦A0| {z }
+1. layer
+(x)
+where Ai are aﬃne transformations and ϕ : R → R is a nonlinear activation function that is applied
+elementwise, i.e. ϕ((x1,...,xn)) = (ϕ(x1),...,ϕ(xn)) for (x1,...,xn) ∈ Rn.
+Regarding dimensions, there is an input dimension d∈ N and a hidden dimension m∈ N. This
+means A0 maps from Rd to Rm, A1,...,Al−1 map from Rm to Rm, and Al maps from Rm to R.
+Each aﬃne transformation Aj can trivially be represented as Aj(x) = Mjx + bj for a matrix Mj
+7
+
+=== page 8 ===
+and a vector bj. All these matrices and vectors together are the parameters of the network, which
+can be regarded as an element of RD for some D∈ N.
+We will require the sets which contain all feed-forward neural networks with ﬁxed structure
+(i.e. ﬁxed number of layers and ﬁxed dimensions) but unspeciﬁed parameter values. We denote by
+Ξ ⊂ RD the sets of possible parameters for a ﬁxed network structure (where formally, D depends
+on the structure of the network), and by Nl,d,m(ξ) = Al ◦ϕ◦Al−1 ◦...◦ϕ◦A0 a particular neural
+network with l layers, input dimension d, hidden dimension m and parameters ξ ∈ Ξ. We denote
+the set of all such networks Nl,d,m(ξ) for ξ∈ Ξ by Nl,d,m(Ξ).
+In the remainder of this section, we work with a ﬁxed number of layers and input dimension,
+but allow for growing hidden dimension. For diﬀerent hidden dimensions m, denote by Ξm the
+corresponding parameter sets. We deﬁne
+Nl,d :=
+⋃
+m∈N
+Nl,d,m(Ξm).
+We want this deﬁnition to be independent of the precise choices of the parameter sets, which is why
+we make the standing assumption that the sets Nl,d,m(Ξm) are growing in m. One way to make
+this explicit is:
+Assumption 3.1. For any l,d ∈ N and a sequence of parameter sets Ξ1, Ξ2,..., where Ξm is
+regarded as a subset of RDm for some Dm ∈ N, we will always assume that [−m,m]Dm ⊆ Ξm and
+Nl,d,m(Ξm) ⊂ Nl,d,m+1(Ξm+1) for all m∈ N.
+The only reason why we do not just set Ξm ≡ RDm is that in Proposition 3.7 we make the
+assumption of compact parameter sets. Further, we assume
+Assumption 3.2. The activation function ϕ is continuous, nondecreasing and satisﬁes the limit
+properties limx→−∞ϕ(x) = 0 and limx→+∞ϕ(x) = 1.
+3.2 Modelling Hm via neural networks
+In the following we assume that H is of the form
+H =
+{ J∑
+j=1
+ejhj ◦πj + a : hj ∈Cb(Rdj),a∈ R } ,
+where ej ∈ Cb(X ) and πj : X → Rdj are continuous functions for all j = 1,...,J. This form of
+H includes many diﬀerent problems, for instance the ones considered in Example 2.1 (e.g. in (a)
+one has H = {∑d j=1 hj ◦ prk : hj ∈ Cb(R)} where prj(x) := xj denotes the projection on the j-th
+marginal component).
+We approximate H by
+H∞ = { J∑
+j=1
+ejhj ◦πj + a : hj ∈ Nlj,dj,a∈ R
+}
+,
+and its subspaces
+Hm = { J∑
+j=1
+ejhj ◦πj + a : hj ∈ Nlj,dj,m(Ξj,m),a∈ R
+}
+.
+8
+
+=== page 9 ===
+In this context the problems φm θ,γ(f) are given by
+φm θ,γ(f) = inf h∈Hm
+{∫
+hdµ0 +
+∫
+βγ(f −h) dθ
+}
+= inf
+a∈R
+inf
+hj∈Nlj,dj,m(Ξj,m)
+{∫ J∑
+j=1
+ejhj ◦πjdµ0 + a +
+∫
+βγ
+(
+f −
+J∑
+j=1
+ejhj ◦πj −a
+)
+dθ
+}
+= inf
+a∈R
+inf
+ξj∈Ξj,m
+{∫ J∑
+j=1
+ejNlj,dj,m(ξj) ◦πjdµ0 + a +
+∫
+βγ
+(
+f −
+J∑
+j=1
+ejNlj,dj,m(ξj) ◦πj −a
+)
+dθ
+}
+for all f ∈ Cb(X ). The ﬁnal formulation illustrates that the problem φm θ,γ(f) is now reduced to
+a ﬁnite dimensional problem of ﬁnding the optimal parameters in a neural network. Further, the
+overall objective depends smoothly on the parameters, and the parameters are unconstrained. In
+short, problem φm θ,γ(f) ﬁts into the framework of machine learning problems that can be numerically
+solved by standard stochastic gradient descent based methods.
+Under the standing Assumptions 3.1 and 3.2, the following lemma establishes situations when
+Condition (D), which is required for Proposition 2.3, is satisﬁed in the neural network setting.
+Lemma 3.3.
+(a) H∞ satisﬁes the ﬁrst part of Condition (D).
+(b) If X = Rd = Rd1 ×...× RdJ0 and πj = prj, ej = 1 for j = 1,...,J0 ≤ J, where prj is the
+projection from Rd to j-th marginal component Rdj, then H∞ satisﬁes the second part of Condition
+(D). Further, the second part of Condition (D) is trivially satisﬁed whenever X is compact.
+Notably, part (b) can be seen as a large, but still exemplary case. Intuitively, the second part
+of Condition (D) is satisﬁed whenever the space H∞ is rich enough.
+Remark 3.4. LaterinthenumericswewillusuallyworkwithaReLUactivationfunction, i.e. ϕ(x) =
+max{0,x}. While this does not satisfy the latter limit property of Assumption 3.2, this is easily
+amendable: Basically, throughout the whole theory the assumptions will only be used to guarantee
+existence of neural networks with certain properties. Given Assumption 3.2, we will only require
+two layers (l = 1) to obtain the necessary results. In the numerics however, we use more layers.
+If more layers are given, one can also bundle several layers and regard them as one layer, with a
+diﬀerent activation function. For example:
+Al ◦ϕ◦Al−1 ◦...◦A1 ◦ϕ| {z }
+ϕ
+◦A0
+Wheneverϕ is a mapping of the form (x1,...,xm) ↦→ (ϕ(x1),...,ϕ(xm)), an (l+1)-layer network with
+activation function ϕ can represent any function that a two layer network with activation function
+ϕ can represent. For ϕ(x) = max{0,x} one can easily see thatϕ(x) = min{1, max{0,x}} is feasible,
+which satisﬁes Assumption 3.2.
+3.3 Convergence
+In this section we study in what sense φm θ,γ(f) converges to φ(f) for the approximation by neural
+networks.
+First, we study the case of uniform convergence in m and γ, i.e. conditions for the convergence
+φm θ,γ(f) →φ(f) for min{m,γ}→∞. This is subject of Remark 3.5 below, which is a summary of
+9
+
+=== page 10 ===
+results established in Section 2 and Section 3.2. The two approximative steps leading to uniform
+convergence are φθ,γ(f) →φ(f) for γ →∞ and φm(f) →φ(f) for m→∞.
+On the other hand, sometimes the convergence φθ,γ(f) →φ(f) for γ →∞ is not satisﬁed even
+though practically one obtains a good approximation. One such case is given in Example 3.6. Even
+if uniform convergence does not hold, one can still often connect problems φm θ,γ(f) and φ(f). This
+is done by the approximative steps φm(f) → φ(f) for m →∞ and φm θ,γ(f) → φm(f) for γ →∞,
+where the latter is subject of Proposition 3.7. Here, instead of the strong assumption required for
+φθ,γ(f) → φ(f), the convergence φm θ,γ(f) → φm(f) can be shown by assuming that all parameter
+sets of the neural networks are compact.
+Remark 3.5. Under the assumptions of Lemma 3.3, Proposition 2.3 implies φm(f) → φ(f) for
+m →∞. Further, given the existence of ε-optimizers for every ε > 0 as required in Theorem 2.2,
+convergence φθ,γ(f) → φ(f) for γ →∞ holds. Given both assumptions, Proposition 2.4 yields
+φm θ,γ(f) → φ(f) for min{m,γ}→∞. The convergence φm θ,γ(f) → φθ,γ(f) for m →∞ is a trivial
+consequence.
+Example 3.6. Let X = [0, 1]2, µ1 = µ2 = δ0 and f(x1,x2) = −|x1 −x2|. Let Q = Π(µ1,µ2) be the
+set of all measures in X with ﬁrst marginal µ1 and second marginal µ2, so that
+φ(f) = sup
+µ∈Π(µ1 ,µ2 )
+∫
+fdµ
+Obviously, φ(f) = f(0, 0) = 0. Note that Q = {µ1 ⊗µ2} so that µ0 = µ1 ⊗µ2 = δ(0,0).
+Consider two possible reference measures, θ(1) = U([0, 1]2) being the uniform distribution on
+[0, 1]2, and θ(2) = µ1 ⊗µ2 = δ(0,0). For θ(2) it is obvious that the existence of ε-optimizers as
+required in Theorem 2.2 is given, since θ(2) itself is the optimizer of φ(f). Hence φθ(2) ,γ(f) →φ(f)
+for γ →∞ holds.
+On the other hand, there does not exist ν ∈ Π(µ1,µ2) with ν ≪ θ(1), and hence φθ(1) ,γ(f) =
+−∞. However, by ﬁrst approximating φ(f) by φm(f), the functional becomes smoother: Roughly
+speaking, the marginal constraints are slightly relaxed. This becomes obvious when studying the
+dual formulations
+φθ(1) ,γ(f) = inf h1 ,h2 ∈Cb([0,1])
+{
+h1(0) + h2(0) +
+∫
+βγ(f −h1 −h2) dθ(1)
+}
+φm θ(1) ,γ(f) = inf h1 ,h2 ∈Nl,1,m(Ξm)
+{
+h1(0) + h2(0) +
+∫
+βγ(f −h1 −h2) dθ(1)
+}
+While one easily ﬁnds sequences of functions in Cb([0, 1]) so that the values at 0 go to minus inﬁnity
+but the penalty term stays bounded, this is impossible with functions in Nl,1,m(Ξm) given that the
+activation function is continuous and the parameter sets are compact. So there is hope to establish
+the convergence φm θ(1) ,γ(f) →φm(f) for γ →∞, which will indeed be a consequence of the following
+result.
+Proposition 3.7. Fix m ∈ N. Given that all parameter sets Ξj,m for j = 1,...,J of the neural
+networks occurring in Hm are compact and θ is strictly positive (i.e. θ gives positive mass to every
+non-empty open set), it holds φm θ,γ(f) →φm(f) for γ →∞.
+4 Numerical Examples
+This section aims at showcasing how various frequently studied problems that fall into the theoretical
+framework of the previous sections can be implemented simply and eﬀectively with neural networks.
+10
+
+=== page 11 ===
+The examples focus on toy problems that allow an objective evaluation of the numerical results and
+give the reader an idea about the strengths and weaknesses of the presented approach. We chose a
+very basic implementation using Tensorﬂow and the Adam optimizer.2 As for the network architec-
+ture: In all the examples, H is as described in Section 3, and Nlk,m always approximates Cb(Rd). To
+approximate Cb(Rd) we use a ﬁve layer (l = 4 in the previous chapter) ReLU-network with hidden
+dimension 64·d. We did not perform a hyper parameter search to obtain this architecture, but rather
+oriented ourselves at papers with comparable settings (e.g. at [19, 30, 46]). Notably, increasing the
+complexity (number of layers or hidden dimension) further did not change the numerical results
+signiﬁcantly in the cases tested, so we believe the structure chosen to be adequate for the problems
+considered.
+Simply put, the implementation works as follows: We perform a normal stochastic gradient
+type optimization (outsourced to the Adam optimizer) for a certain number of iterations to ﬁnd
+near optimal parameters of the network. At each iteration during this process, the expectations in
+the objective function are replaced by averages over a ﬁxed number (called batch size) of random
+points from the respective distributions. To obtain the numerical approximation ˆφm θ,γ(f) of φm θ,γ(f),
+we ﬁnally average the sample objective values over the last roughly 5% of iterations. This is referred
+to as the dual value. Alternatively, one can use formula (2.6) to obtain sample points from an
+approximate optimizer ν∗ of the primal problem and numerically evaluate ∫ fdν∗, which is referred
+to as the primal value (more details on how to work with such an approximative optimizer ν∗ is
+given in Section 4.5). If not stated otherwise, all reported values are dual values.
+The numerical procedure we use can likely be improved by ﬁne-tuning parameters or by using
+more complex network architectures. For example batch normalization is applied in a related setting
+in [13] which appears to signiﬁcantly speed up the optimization.
+4.1 Optimal transport and Fréchet-Hoeﬀding bounds
+With this ﬁrst problem, we study the eﬀects of diﬀerent penalty functions, penalty factor, batch size
+and number of iterations of the Adam optimizer. Let X = [0, 1]d, θ = U ( [0, 1]d) (where U(·) denotes
+the uniform distribution) and Q = {ν ∈P(X ) : νi = U ([0, 1])}, where νi is the i-th marginal of ν.
+For some ﬁxed z∈ [0, 1]d, deﬁne the function f : [0, 1]d → R+ by3
+f(x) =
+{ 1, if xi ≤zi for all i∈{1, 2,...,d},
+0, else.
+The value φ(f) = supν∈Q
+∫
+fdν corresponds to the maximum value of a d-dimensional copula at
+point z. By the Fréchet-Hoeﬀding bounds we have an analytical solution to this problem, which is
+φ(f) = min
+i∈{1,...,d}
+zi.
+In Figure 2 we observe how ˆφm θ,γ(f) depends on the number of iterations of the Adam optimizer
+and the batch size. We observe that while higher batch sizes lead to more stable convergence, the
+speed of convergence appears not strongly related to batch size. This suggests that increasing batch
+sizes might lead to both quick and ﬁnally stable performance.4 Since L2 penalization appears more
+2All used code is available on https://github.com/stephaneckstein/transport-and-related.
+3The function f here is not continuous. Since the optimal transport problem is continuous from below
+(see e.g. [37]), the representation (2.2) nevertheless holds for all bounded measurable functions f.
+4See also [47] and references therein for related concepts on how to optimally tune the optimization
+procedure. In this paper however, we decided to stick with standard parameters of the Adam optimizer and
+ﬁxed batch size. This is done to avoid another layer of complexity when evaluating the numerical results.
+11
+
+=== page 12 ===
+Figure 2: Fréchet-Hoeﬀding bounds: d = 2, z1 = 0.5, z2 = 0.75. Comparison of L2 penalty
+function βγ(x) = γ max{0,x}2 and exponential penalty function βγ(x) = exp(γx−1) γ . The
+values plotted are running averages over the last 1000 iterations. The dotted red line is
+the true value φ(f). The dotted blue lines are bounds from below for φθ,γ(f) obtained by
+Equation (2.5) in Theorem 2.2 for the respective choices of γ.
+stable, we will mostly use this penalization for the rest of the applications. Further, the ﬁgure
+illustrates that the numerical solutions appear to approximately obtain the lower bounds for φθ,γ(f)
+as given by Equation (2.5) in Theorem 2.2. I.e. one approximately has φ(f) ≈φm θ,γ(f)+ 1 γ ∫ β∗(dˆµ dθ )dθ
+where ˆµ is an optimizer of φ(f).5
+4.2 Multi-marginal optimal transport
+The aim of this example is to compare the approach of this paper with existing methods for a
+numerically challenging problem. Let X = (RD)M, where M denotes the number of marginals
+and D denotes the dimension of each marginal. Let µi for i = 1,...,M be K-mixtures of normal
+distributions with randomly chosen parameters, and deﬁne Q = Π(µ1,...,µM). For p,q≥ 1 let
+f(x) := −
+( D∑
+j=1
+⏐⏐ M∑
+i=1
+(−1)ixi,j ⏐⏐q)p/q ,
+where we write x = (xi,j) ∈X with i = 1,...,M, j = 1,...,D. Note that for two marginals, one has
+−φ(f) = Wp p,q(µ1,µ2), where Wp,q is the Wasserstein-p distance with Lq norm on Rd.
+In Table 4.2 we compare optimal values to this problem arising from diﬀerent algorithmic ap-
+proaches. We compare linear programming methods based on discretization of the marginals, the
+neural network method presented in this paper, and a reproducing kernel Hilbert space (RKHS)
+approach as described in [28, Algorithm 3]. For the linear programming methods, we use a
+maximal number of variables of 106, which was around the boundary so that Gurobi [32] was
+5Here, ˆµ is chosen as the optimizer which is uniform on the cubes [0,z] and [z, 1].
+12
+
+=== page 13 ===
+LP NN RKHS Ref
+MC quantization dual primal Laplace Com.
+(M,D,K)
+p = q = 2
+(2, 1, 1) 0.403 (0.084) 0.408 (0.026) 0.413 0.401 0.364 (0.006) 0.405
+(2, 1, 6) 3.337 (0.320) 3.263 (0.115) 3.279 3.258 2.444 (0.018) 3.269
+(5, 2, 6) 8.978 (8.233) 3.073 (0.231) 3.123 3.041 DNC -
+p = 1, q = 2
+(2, 1, 6) 1.536 (0.071) 1.537 (0.025) 1.537 1.531 1.471 (0.009) 1.533
+(5, 2, 6) 2.845 (1.314) 1.741 (0.064) 1.753 1.740 DNC -
+(10, 3, 6) 10.235 (3.576) 6.744 (0.074) 6.759 6.743 DNC -
+˜f (x) = f (x) · sin(∑M i=1 xi,1)
+(5, 2, 6) 16.814 (0.893) 17.380 (0.043) 18.001 17.539 DNC -
+(10, 3, 6) 24.618 (2.332) 23.615 (0.107) 34.235 32.521 DNC -
+Table 1: Multi-marginal optimal transport: Numerical values for −φ(f) arising from diﬀer-
+ent numerical schemes. The numbers in brackets are empirical standard deviations over 100
+runs. LP denotes linear programming, based on either sampling the marginals randomly
+(MC) or using the quantization approach from [42, Algorithm 4.5] to approximate marginals
+(quantization). The neural network (NN) implementation is based on L2 penalization with
+γ = M·D· 500. For the reproducing kernel Hilbert space solution (RKHS) as described in
+[28, Algorithm 3] we use a Laplace kernel and the same penalization as for the NN-method.
+For the ﬁnal two rows, we report numerical values for −φ( ˜f). DNC entries did not converge.
+The ﬁnal column are analytical reference values given by the comonotone coupling for two
+marginals.
+13
+
+=== page 14 ===
+still able to solve the resulting linear program on our computer. Regarding the RKHS algo-
+rithm we have to mention that it is the only method that is not building on an established
+package like Tensorﬂow or Gurobi. Hence eﬃciency with respect to running time and tuning
+of hyperparameters might be far from optimal for this approach. Notably, switching from ex-
+ponential penalization as used in [28] to L2-penalization was already a slight improvement. For
+the precise speciﬁcations of each algorithm and the problem setting, we refer to the code on
+https://github.com/stephaneckstein/OT_Comparison.
+Evaluating the results, we ﬁnd that the neural network based method and the linear program-
+ming method with quantization appear to work best. Surprisingly, even for the case with 10
+marginals (where the linear program can only use 4 points to approximate each marginal!), the
+quantization method achieved a similar value as the neural network method for −φ(f). We believe
+the reason is that the function f is very smooth which a quantization approach can exploit. Hence
+we slightly changed f to ˜f in the ﬁnal two test cases, which makes the function less regular. These
+are the only cases where the neural network solution and the quantization method strongly diﬀer.
+In the ﬁnal case, the quantization approach still has to approximate each marginal distribution with
+just 4 points, while the neural network method can use millions of points. From this standpoint, one
+can place higher trust in the neural network solution, even though we have no analytical reference
+value to compare it against.
+Initially, weincludedafourthmethodbasedontheapproachinthispaper, butwithapolynomial
+basis instead of neural networks. This performed very badly however (at least when using a standard
+monomial basis), and hence we omitted the results in this table.
+4.3 Martingale optimal transport
+In martingale optimal transport, the optimal transport problem is extended by imposing a martin-
+gale constraint on top of marginal constraints. Dimensions are regarded as discrete time-steps and
+the measures in Q are distributions of discrete stochastic processes (Xt)t=1,...,d with ﬁxed marginal
+distributions as well as the condition that the process is a martingale.
+Here, we consider a simple example with d = 2, where an analytical solution is known. This
+example is taken from [2]. Let X := [−1, 1] × [−2, 2], θ := U(X ) and set
+Q :=
+{
+ν = ν1 ⊗K : ν1 = U([−1, 1]), ν2 = U([−2, 2]), x =
+∫ 2
+−2
+yK(x,dy) holds ν1-a.s.
+}
+.
+For f = −|x−y|ρ one gets φ(f) = −1 for all ρ> 2. We implement this problem with ρ = 2.3, where
+we use the L2 penalty function for diﬀerent values of γ. The results are shown in Figure 3. One can
+see that while for values of γ up to around 1280, the behavior of the optimal value is approximately
+as predicted by Equation (2.5) in Theorem 2.2, in that the error decreases by roughly a factor of two
+if γ is increased by a factor of two. For larger values of γ however, numerical instabilities occur and
+the optimizer cannot ﬁnd the true optimum. This is indicated by the fact that the value ˆφm θ,γ(f) is
+above φ(f) = −1.
+4.4 Portfolio optimization
+Consider a market with two assets, where the distribution of returns for each individual asset is
+given, but not the joint distribution. An investor wants to maximize his or her worst-case utility
+from investing into the two assets. Here, the utility of the investor is characterized by a mean-
+variance objective. While the mean is fully characterized by the marginal distributions, the worst
+14
+
+=== page 15 ===
+Figure 3: Martingale optimal transport: Mean numerical optimal values and 95% conﬁdence
+bounds over 100 independent runs for diﬀerent values of γ (L2 penalization). The network is
+trained for 20000 iterations with batch size 1024. The true optimal value of the unpenalized
+problem is -1.
+case considers all possible variances of the portfolio, which depend on the joint distribution of the
+assets.
+The following example is taken from [43]: Let X = [0, 1] × [0, 2]. Let θ1 = U([0, 1]) and
+θ2 = U([0, 1]) ◦ϕ−1, where ϕ(x) = 2x2. Let Q = {ν ∈P(X ) : ν1 = θ1, ν2 = θ2}. We will solve the
+following robust mean-variance portfolio optimization problem
+sup
+x∈[0,1]
+−φ(−fx) :=
+sup
+x∈[0,1]
+inf
+ν∈Q
+∫
+(1 −x)ξ1 + xξ2
+−λ
+(
+(1 −x)ξ1 + xξ2 − (1 −x)
+∫ 1
+0
+ζ1 θ1(dζ1) −x
+∫ 2
+0
+ζ2θ2(dζ2)
+)2
+ν(dξ).
+whereλ≥ 0 is the risk aversion. The integral over the term inside the large brackets is the variance of
+the portfolio. For the analytical solution, see Example 1 of [43]. We implemented the above problem
+in two ways. For the ﬁrst, we choose the reference measure θ(1) = θ1 ⊗θ2. For the second, we use the
+reference measure θ(2) = 0.5θ(1) + 0.5 ( U([0, 1]) ◦ (Id,ϕ)−1) ,6 i.e. half the product measure, half the
+perfectly correlated measure. The second version may correspond to our intuition that the optimal
+coupling should include positive correlation. More precisely: The choice of reference measure θ
+always has the implicit objective to lead to narrow bounds in Equation (2.5) in Theorem 2.2. In this
+example, if one presumes that an optimal measure ν∗ ∈Q has mass near the perfectly correlated
+diagonal, it makes sense to choose a reference measure which puts mass in this region, as does θ(2).
+6Id denotes the identity mapping.
+15
+
+=== page 16 ===
+Figure 4: Portfolio optimization under dependence uncertainty: As reference measure we
+take either the product measure or a positively correlated measure. We use L2 penalization
+with γ = 160. The network is trained with batch size 213 for 40000 iterations.
+The results are reported in Figure 4. As expected, the second version yields results closer to the
+analytical solution.
+4.5 Bounds on the distribution of a sum of dependent random variables
+In this section, the objective is to ﬁnd bounds for the probability P(X1 +X2 +...+Xd ≥s) for some
+s ∈ R, where the individual distributions of Xi are known, but not their joint distribution. This
+problem is in strong relation to calculating worst- and best-case value at risks under dependence
+uncertainty, see also [20, 22, 44].
+LetX = Rd. Forgivenmarginalsµ1,...,µd ∈P(R) andQ = Π(µ1,...,µd), theproblemstatement
+is
+φ(f) := sup
+ν∈Q
+∫
+1{x1 +...+xd≥s}ν(dx1,...,dxd).
+For simplicity, we consider the case d = 2, and µi = U([0, 1]). Let s = 1.9. Every optimal
+measure ν ∈Q gives mass 1/10 uniformly to the line section {(x, 1.9 −x) : 0.9 ≤x≤ 1}, while the
+rest of the mass is irrelevant as long as the marginal condition is satisﬁed. This leads to an optimal
+valueφ(f) = 0.1. For the natural choice of reference measure θ = U([0, 1]2), every optimal measure is
+singular with respect to θ, and thus one can expect high errors by penalization. An implementation
+with this reference measure and L2 penalization with γ = 320 leads to ˆφm θ,γ(f) ≈ 0.0881.7
+Updating the reference measure: To obtain a more accurate value, we make use of Equation
+(2.6) in Theorem 2.2. Recall that an optimizer ˆν ∈Q of φθ,γ(f) is given by dˆν dθ = β′(f−ˆh), where ˆh is
+the dual optimizer of φθ,γ(f). Taking ˆν as a reference measure instead of θ can only reduce the error
+by penalization, since φˆν,γ(f) ≥φθ,γ(f) holds by convexity of β∗ γ. Implementing the problem with
+ˆν as a reference measure has to be done approximately, since the true optimizer ˆh is unknown and
+7The network was trained for 20000 iterations with batch size 1024.
+16
+
+=== page 17 ===
+Figure5: Boundsonthedistributionofthesumofdependentvariables: Sampledpointsfrom
+the numerically optimal measure ν∗ and the corresponding empirical marginal distributions.
+replaced by the numerical optimal solution. We denote the numerically obtained optimal measure
+by ν∗.
+To implementφm ν∗,γ(f) requires sampling points from ν∗. This is non-trivial since ν∗ is only given
+by dν∗ dθ . We implemented this by an acceptance-rejection method as described in [24]. This is very
+slow, as the number of rejections increases with the maximum of the Radon-Nikodym derivative.
+Sampling eﬃciently in such a situation is diﬃcult, see e.g. [34] for an overview of existing methods
+and a proposed new one.
+Figure 5 illustrates the optimal measure ν∗. The measure ν∗ looks comparable to an optimal
+solution of φ(f), while simultaneously being driven towards the reference measure θ. One obtains
+ˆφm ν∗,γ(f) ≈ 0.0982, which is close to the true optimal value 0.1.
+In the following, we brieﬂy discuss the rearrangement algorithm [22, 44] which is tailored to this
+type of problem. In contrast to the presented approach, which relies on sampling from the involved
+marginal distributions, the rearrangement algorithm mainly relies on the (inverse of) the cumulative
+distribution function of the marginals. The rearrangement algorithm achieves similar or even better
+accuracy in higher dimensional settings and with diﬀerent marginals (e.g. Pareto marginals). The
+case of higher dimensions scales well with the approach taken here. However, the base time in low
+dimensions is higher than that of the rearrangement algorithm, and further heavy tailed marginals
+17
+
+=== page 18 ===
+like the Pareto distribution can lead to less accuracy.8
+4.6 Generative Adversarial Networks (GANs)
+The objective in GANs is to create new sample points from a measure µ, of which only an empirical
+distribution ˜µ is known (see e.g. [3, 29]). Usually, the measure µ might refer to the uniform distri-
+bution over some very large set of images. The set ˜µ is then just the uniform distribution over a
+small subset of these images. The goal is to sample new images that are not already present in the
+given subset, but that might plausibly have been samples from the measure µ.
+To proceed, we ﬁrst take some latent probability measure τ. The goal is to obtain a function
+G such that µ and the push-forward measure τ ◦G−1 are close (in a sense to be speciﬁed), and
+thus the pseudo samples for µ can be obtained by sampling from τ and applying G. To ﬁnd such
+a function G out of a class of functions G, one can only use ˜µ instead of µ (thus µ does not enter
+the formal problem statement). The closeness of ˜µ and τ ◦G−1 is measured by diﬀerent distances
+in GANs. In the Wasserstein GAN, the ﬁrst Wasserstein distance W1(·,·) (see e.g [51]) is used, and
+the objective is
+arg min
+G∈G
+W1(τ ◦G−1, ˜µ).
+The above can be generalized to arbitrary transport distances instead of the ﬁrst Wasserstein
+distance. To put this into our setting, let G a set of functions that map into X1. Let X = X1 ×X1
+and for G ∈G deﬁne QG := {ν ∈P(X ) : ν1 = τ ◦G−1, ν2 = ˜µ}. For a cost function c, arbitrary
+transport type GANs can be expressed via
+arg min
+G∈G
+−φG(−c) = arg min
+G∈G
+inf
+ν∈QG
+∫
+cdν
+If c is a metric, the above corresponds to the Wasserstein GAN.
+Since it is diﬃcult to objectively evaluate GAN setups, we omit numerical results in this section.
+The interested reader can see the code on GitHub, where the toy problems appearing in [30] are
+implemented for diﬀerent functions c.9
+5 Proofs
+5.1 Proof of Theorem 2.2
+1) We ﬁrst show (2.4) by verifying that φθ,γ is real-valued and continuous from above on Cb(X ).
+To that end, as shown in Appendix A one has φ∗(µ) = suph∈H( ∫ hdµ− ∫ hdµ0) for all µ∈P(X ),
+so that
+µ∈Q if and only if
+∫
+hdµ =
+∫
+hdµ0 for all h∈H. (5.1)
+Since βγ(x) ≥xy− 1 γβ∗(y) for all x∈ R and y∈ R+, it follows that
+∫
+βγ(f −h) dθ≥
+∫
+f −hdπ− 1 γ ∫ β∗ (dπ dθ ) dθ
+8We refer to https://github.com/stephaneckstein/transport-and-related, where diﬀerent speciﬁ-
+cations (including Pareto marginals) of the problem in this section are implemented.
+9For the implementation, we merely adjusted code from https://github.com/igul222/improved_wgan_
+training to our method. See again https://github.com/stephaneckstein/transport-and-related
+18
+
+=== page 19 ===
+so that
+φθ,γ(f) = inf h∈H
+{∫
+hdπ +
+∫
+βγ(f −h) dθ
+}
+≥
+∫
+fdπ− 1 γ ∫ β∗ (dπ dθ ) dθ>−∞
+for all f ∈ Cb(X ). This shows that φθ,γ is real-valued on Cb(X ). Further, let (fk) be a sequence
+in Cb(X ) such that fk ↓f. For every h∈H the monotone convergence theorem implies ∫ βγ(fk −
+h) dθ→
+∫
+βγ(f−h) dθ, so that φθ,γ(fk) ↓φθ,γ(f). Hence, it follows from the nonlinear Daniell-Stone
+theorem (see Proposition A.1) that
+φθ,γ(f) = max µ∈P(X)
+{∫
+fdµ−φ∗ θ,γ(µ) } for all f ∈Cb(X ),
+where the convex conjugate is given by
+φ∗ θ,γ(µ) = φ∗(µ) + ψ∗ θ,γ(µ) =
+{
+1
+γ
+∫
+β∗(dµ dθ ) dθ if µ∈Q and µ≪θ
+∞ else.
+Indeed, the convex conjugate of the convolution inff∈Cb(X){φ(f) + ψθ,γ(·−f)} is given as the sum
+of the convex conjugates φ∗ and ψ∗ θ,γ. By (5.1) one has φ∗(µ) = 0 if µ ∈Q and φ∗(µ) = +∞
+otherwise. Moreover,
+ψ∗ θ,γ(µ) = sup
+f∈Cb(X)
+{∫
+fdµ−
+∫
+βγ(f) dθ
+}
+= sup
+f∈Cb(X)
+{∫
+fdµ dθ −βγ(f) dθ } = ∫ β∗ γ (dµ dθ ) dθ
+if µ≪θ and ψ∗ θ,γ(µ) = +∞ otherwise.
+2) We next show (2.5). On the one hand, one has
+φθ,γ(f) = inf h∈H
+{∫
+hdµ0 +
+∫
+βγ(f −h) dθ
+}
+≤ inf
+h∈H:
+h≥f
+∫
+hdµ0 + βγ(0) = φ(f) + β(0) γ .
+On the other hand, for every ε-optimizer µε ∈Q of (2.2) such that µϵ ≪θ one has
+φ(f) ≤
+∫
+fdµε + ε≤
+∫
+fdµε −φ∗ θ,γ(µε) + φ∗ θ,γ(µε) + ε≤φθ,γ(f) + 1 γ ∫ β∗ (dµε dθ ) dθ + ε
+with the convention −∞ + ∞ = +∞.
+3)Let ˆh∈Hbeaminimizerof (2.3), i.e.φµ,γ(f) = ∫ ˆhdµ0+ ∫ βγ(f−ˆh) dθ. Deﬁninghλ := ˆh+λh
+for an arbitrary h∈H, the ﬁrst order condition
+d
+dλ
+⏐⏐⏐
+λ=0
+(∫
+hλdµ0 +
+∫
+βγ(f −hλ) dθ
+)
+= 0
+implies ∫
+hdµ0 −
+∫
+β′ γ(f − ˆh)hdθ = 0.
+This shows that the probability measure ˆµ with Radon-Nikodým derivative dˆµ dθ := β′ γ(f−ˆh) satisﬁes∫
+hdµ0 =
+∫
+hdˆµ for all h ∈H, which in view of (5.1) satisﬁes ˆµ ∈Q. Integrating the identity
+βγ(x) = xβ′ γ(x) −β∗ γ(β′ γ(x)) with x = f − ˆh w.r.t. θ, one obtains ∫
+βγ(f − ˆh) dθ =
+∫
+f − ˆhdˆµ−
+∫
+β∗ γ
+(dˆµ
+dθ
+)
+dθ
+which shows that
+φθ,γ(f) =
+∫
+ˆhdµ0 +
+∫
+βγ(f − ˆh) dθ =
+∫
+fdˆµ−
+∫
+β∗ γ
+(dˆµ
+dθ
+)
+dθ.
+As a consequence, ˆµ∈Q is a maximizer of (2.4).
+19
+
+=== page 20 ===
+5.2 Proof of Proposition 2.3
+Fix f ∈Cb(X ). That limm→∞φm(f) = φ∞(f) ≥φ(f) follows from the deﬁnition of H∞. Moreover,
+for every ε > 0 the Condition (D) guarantees h ∈ H∞ and K ⊆ X such that 1Kc ≤ h and∫
+hdµ0 ≤ε. Hence, φ∞(1Kc) ≤ ∫ hdµ0 ≤ε and Dini’s lemma implies that φ∞ is continuous from
+above on Cb(X ). By Proposition A.1 it follows that
+φ∞(f) = max
+µ∈P(X)
+{∫
+fdµ−φ∞∗(µ) } .
+Similar to (A.2) its convex conjugate is given by
+φ∞∗(µ) = sup
+h∈H∞
+(∫
+hdµ−
+∫
+hdµ0
+)
+≤ sup
+h∈H
+(∫
+hdµ−
+∫
+hdµ0
+)
+= φ∗(µ).
+It remains to show that for h ∈H and µ ∈P(X ) with
+∫
+hdµ−
+∫
+hdµ0 > 0 there exists h′∈H∞
+such that
+∫
+h′dµ− ∫ h′dµ0 > 0. But this follows directly from the ﬁrst part of Condition (D) for
+the probability measure 1 2 µ + 1 2 µ0. Indeed, there exists a sequence (hn) in H∞ such that hn →h in
+L1(µ) and in L1(µ0), which shows that ∫ hndµ− ∫ hndµ0 > 0 for n large enough.
+5.3 Proof of Proposition 2.4
+Observe that
+φm(f) + βγ(0) ≥ inf h∈Hm:
+h≥f
+{∫
+hdµ0 +
+∫
+βγ(f −h) dθ
+}
+≥φm θ,γ(f) ≥φθ,γ(f)
+where the ﬁrst inequality uses that βγ is increasing, the second inequality just drops the constraint
+h≥f, and the third inequality follows from Hm ⊆H.
+Fix ε> 0. By Condition (D) and Theorem 2.2 there exist m0 ∈ N and γ0 > 0 such that
+φm(f) ≤φ(f) + ε and φ(f) ≤φθ,γ(f) + ε
+for all m≥m0 and γ ≥γ0. This shows that
+φ(f) + ε + β(0) γ ≥φm(f) + βγ(0) ≥φm θ,γ(f) ≥φθ,γ(f) ≥φ(f) −ε
+for all m≥m0 and γ ≥γ0, which shows that φm θ,γ(f) →φ(f) whenever min{m,γ}→∞.
+5.4 Proof of Lemma 3.3
+(a) From Hornik [35] it follows that Nlj,dj is dense in Cb(Rdj) with respect to L1(ν) for every
+ν ∈P(Rdj) and all j = 1,...,J. By the triangle inequality and boundedness of ej, the ﬁrst
+part of Condition (D) follows.
+(b) If X is compact, the condition is trivially satisﬁed. Hence assume that X = Rd = Rd1 ×...×
+RdJ0 and πj = prj, ej = 1 for j = 1,...,J0 ≤ J, where prj is the projection from Rd to the
+j-th marginal component in Rdj.
+Let ε > 0 and ν ∈P(X ). We ﬁrst ﬁx j, denote by ν(j) := ν ◦ pr−1 j and show that there
+exists a h′′ j ∈ Nlj,dj such that 1Kc j ≤ h′′ j and ∫ Rdj h′′ j dν(j) ≤ 2ε for some compact subset
+20
+
+=== page 21 ===
+Kj of Rdj. Without loss of generality, assume that lj = 1. This can always be done since
+the function h′′ j will be compact-valued and hence for multiple layers, the remaining layers
+beyond the ﬁrst can simply approximate the identity function in the supremum norm.10 Fix
+Kj = [−c, +c]dj such that ν(j)(Kc j ) ≤ε/(4dj). By assumption on ϕ, for each i∈{1,...,dj}
+there exist ai,bi,ai,bi ∈ R such that
+ϕ(aixi + bi) + ϕ(aixi +bi)
+{
+≤ε/(2dj) for xi ∈ [−c,c]
+≥ 1 −ε for xi ⁄∈ [−c− 1,c + 1].
+Then
+h′′ j :=
+dj∑
+i=1
+ϕ(aixi + bi) + ϕ(aixi +bi) + ε∈ N1,dj,2dj ⊂ N1,dj
+satisﬁes 1 ˜Kc j ≤h′′ j for the compact ˜Kj := [−c− 1,c + 1]dj, as well as
+∫
+Rdj
+h′′ j dν(j) ≤
+∫
+Rdj
+ε
+21Kj + 2d1Kc j dν(j) + ε≤ ε 2 + 2dν(j)(Kc j ) + ε≤ 2ε.
+Now, deﬁne h′′ := ∑d j=1 h′′ j ◦ prj ∈H∞ and K := ∏J0 j=1 ˜Kj ⊂X, which is compact. Then one
+immediately gets 1Kc ≤h′′ and ∫ h′′dν ≤ 2J0ε.
+5.5 Proof of Proposition 3.7
+1) For one ﬁx network Nlj,dj,m, the mapping ξ ↦→ Nlj,dj,m(ξ) is pointwise continuous, i.e. it holds
+for ξn → ξ that Nlj,dj,m(ξn)(x) → Nlj,dj,m(ξ)(x) for all x ∈ Rdj, since ϕ is continuous. Further,
+since we assume that ϕ is bounded, the functions Nlj,dj,m(ξn) are uniformly bounded and hence by
+dominated convergence one obtains Nlj,dj,m(ξn) →Nlj,dj,m(ξ) in L1(ν) for all ν ∈P(Rdj). By the
+triangle inequality, this continuity transfers to the mapping (ξ1,...,ξJ) ↦→∑J j=1 ejNlj,dj,m(ξj) ◦πj.
+Hence, we can write
+Hm = {η(A) + a : A∈Am,a∈ R}
+where A↦→η(A) is continuous in L1(µ0) and L1(θ), and Am is compact.
+2) For every ε> 0 there exists η(A) + a∈Hm with η(A) + a≥f such that
+φm(f) + ε≥
+∫
+η(A) + adµ0 = lim γ→∞
+{∫
+η(A) dµ0 + a +
+∫
+βγ(f −η(A) −a) dθ
+}
+≥ lim sup
+γ→∞
+φm θ,γ(f)
+since 0 ≤
+∫
+βγ(f −η(A) −a) dθ≤βγ(0) = 1 γβ(0).
+On the other hand, let (γn) be a sequence in R+ with γn →∞. Our goal is to show that
+φm(f) ≤ lim infn→∞φm θ,γn(f). We assume that lim infn→∞φm θ,γn(f) <∞ otherwise there is nothing
+to prove. For every n∈ N there exist An ∈Am and an ∈ R such that
+φm θ,γn(f) + 1 n ≥ ∫ η(An) dµ0 + an + ∫ βγn ( f−η(An) −an) dθ≥ ∫ η(An) dµ0 + ∫ f−η(An) + cdθ
+(5.2)
+10More precisely, the function h′′ j as given by one layer would be the input in the ﬁrst component for the
+remaining layers, and the remaining layers approximate the continuous function [−z,z]m ∋ x ↦→ x1 in the
+supremum norm, which is possible as shown in [35].
+21
+
+=== page 22 ===
+since βγn(x) ≥ x + c for all n ∈ N for some constant c ∈ R. In particular, lim infn→∞φm θ,γn(f) is
+real-valued as A↦→
+∫
+f−η(A) + cdθ is a continuous function on the compact Am. By passing to a
+subsequence we may assume that limn→∞φm θ,γn(f) = lim infn→∞φm θ,γn(f), and An →A∈Am such
+that η(An) → η(A) in L1(θ) and θ-a.s. as well as ∫ η(An) dµ0 → ∫ η(A) dµ0. We next show that
+(an) is bounded. Suppose by way of contradiction that an →−∞. Since limx→∞β(x)/x = ∞ and
+f −η(An) is uniformly bounded by compactness of Am, it follows that
+∫
+η(An) dµ0 + an + βγn ( f −η(An) −an) → +∞
+Moreover, in view of (5.2) the sequence
+(∫
+η(An) dµ0 + an + βγn ( f −η(An) −an))−
+is uniformly integrable in L1(θ). Hence, it follows from Fatou’s lemma that
++∞ =
+∫
+lim inf
+n→∞
+{∫
+η(An) dµ0 + an + βγn ( f −η(An) −an)} dθ
+≤ lim inf
+n→∞
+{∫
+η(An) dµ0 + an +
+∫
+βγn
+(
+f −η(An) −an) dθ }
+≤ lim inf
+n→∞
+φm θ,γn(f) <∞
+which is the desired contradiction. This shows that (an) is bounded and by passing to a subsequence
+an →a∈ R. Finally it follows from Fatou’s lemma that
+lim inf
+n→∞
+φm θ,γn(f) = lim inf n→∞
+{∫
+η(An) dµ0 + an +
+∫
+βγn
+(
+f −η(An) −an) dθ }
+≥
+∫
+η(A) dµ0 + a +
+∫
+β∞
+(
+f −η(A) −a
+)
+dθ
+=
+∫
+η(A) + adµ0
+≥φm(f)
+where β∞(x) = 0 if x ≤ 0 and β∞(x) = ∞ if x > 0. The second inequality follows because
+η(A) + a ≥ f θ-a.s. as a consequence of the ﬁrst inequality, f,η(A) ∈ Cb(X ) and θ is strictly
+positive.
+A Nonlinear version of the Daniell-Stone theorem
+Let X be a Polish space. Given a measurable function κ : X → [1,∞), we denote by Cκ(X ) the
+Stone vector lattice of all continuous functions f : X→ R such that |f|/κ is bounded. For instance,
+if κ is bounded one has Cκ(X ) = Cb(X ), or if κ(x) = 1 + |x| on X = Rd the space Cκ(Rd) contains
+all continuous functions f : Rd → R of linear growth. Further, let ca+ κ (X ) be the set of all Borel
+measures µ on X which satisfy
+∫
+κdµ < ∞. The following nonlinear version of the Daniell-Stone
+theorem follows directly from Proposition 1.1 in [15].
+22
+
+=== page 23 ===
+Proposition A.1. Let φ: Cκ(X ) → R be an increasing11 convex functional which is continuous from
+above, i.e. φ(fn) ↓ 0 for every sequence (fn) such that fn ↓ 0. Then, it has the dual representation
+φ(f) = max
+µ∈ca+ κ (X)
+{∫
+fdµ−φ∗(µ) } for all f ∈Cκ(X ), (A.1)
+where the convex conjugate φ∗ : ca+ κ (X ) → R∪{+∞} is given by φ∗(µ) = supf∈Cκ(X){ ∫ fdµ−φ(f)}.
+Continuity from above is strongly related to the concept of tightness, which in the context of risk
+measures was introduced by Föllmer and Schied, see [25]. Typical examples include transport type
+problems where tightness is imposed by marginal constraints, see e.g. Bartl et al. [5]. For extensions
+of the representation (A.1) to upper semicontinuous functions and related pricing-hedging dualities
+we refer to Cheridito et al. [16].
+As an application we consider the superhedging functional
+φ(f) := inf
+{∫
+hdµ0 : h≥f for some h∈H
+}
+on Cκ(X ), where µ0 ∈ca+ κ (X ) is a probability measure and H⊆Cκ(X ) is a convex cone such that
+κ ∈H. Straightforward inspection shows that φ is a real-valued increasing convex functional on
+Cκ(X ). Further, if φ is continuous from above by Proposition A.1 it has the dual representation
+(A.1). Its convex conjugate is given by
+φ∗(µ) = sup
+f∈Cκ(X)
+{∫
+fdµ− inf
+h∈H:
+h≥f
+∫
+hdµ0
+}
+= sup
+h∈H
+sup
+f∈Cκ(X):
+h≥f
+{∫
+fdµ−
+∫
+hdµ0
+}
+= sup
+h∈H
+{∫
+hdµ−
+∫
+hdµ0
+}
+. (A.2)
+SinceH is a convex cone which contains the constants it follows that φ∗(µ) = 0 wheneverµ∈ca+ κ (X )
+is a probability measure such that
+∫
+hdµ =
+∫
+hdµ0 for all h ∈ H, and φ∗(µ) = +∞ else. In
+particular, in case that Cκ(X ) = Cb(X ) we conclude the dual representation (2.2).
+References
+[1] M. Abadi, A. Agarwal, P. Barham, E. Brevdo, Z. Chen, C. Citro, G. S. Corrado, A. Davis,
+J. Dean, M. Devin, S. Ghemawat, I. Goodfellow, A. Harp, G. Irving, M. Isard, Y. Jia, R. Joze-
+fowicz, L. Kaiser, M. Kudlur, J. Levenberg, D. Mané, R. Monga, S. Moore, D. Murray, C. Olah,
+M. Schuster, J. Shlens, B. Steiner, I. Sutskever, K. Talwar, P. Tucker, V. Vanhoucke, V. Va-
+sudevan, F. Viégas, O. Vinyals, P. Warden, M. Wattenberg, M. Wicke, Y. Yu, and X. Zheng.
+TensorFlow: Large-scale machine learning on heterogeneous systems, 2015. Software available
+from tensorﬂow.org.
+[2] A. Alfonsi, J. Corbetta, and B. Jourdain. Sampling of probability measures in the convex order
+and approximation of martingale optimal transport problems. 2017.
+11φ(f ) ≥φ(g) whenever f ≥g.
+23
+
+=== page 24 ===
+[3] M. Arjovsky, S. Chintala, and L. Bottou. Wasserstein GAN. arXiv preprint arXiv:1701.07875,
+2017.
+[4] P. Artzner, F. Delbaen, J.-M. Eber, and D. Heath. Coherent measures of risk. Mathematical
+Finance, 9(3):203–228, 1999.
+[5] D.Bartl, P.Cheridito, M.Kupper, andL.Tangpi. Dualityforincreasingconvexfunctionalswith
+countably many marginal constraints. Banach Journal of Mathematical Analysis, 11(1):72–89,
+2017.
+[6] D. Bartl, M. Kupper, T. Lux, and A. Papapantoleon. Sharpness of improved Fréchet-Hoeﬀding
+bounds: an optimal transport approach. arXiv preprint arXiv:1709.00641, 2017.
+[7] M. Beiglböck, P. Henry-Labordère, and F. Penkner. Model-independent bounds for option
+prices: A mass transport approach. Finance and Stochastics, 17(3):477–501, 2013.
+[8] A. Ben-Tal and M. Teboulle. An old-new concept of convex risk measures: The optimized
+certainty equivalent. Mathematical Finance, 17(3):449–476, 2007.
+[9] J.-D. Benamou, G. Carlier, M. Cuturi, L. Nenna, and G. Peyré. Iterative Bregman projections
+for regularized transportation problems. SIAM Journal on Scientiﬁc Computing, 37(2):A1111–
+A1138, 2015.
+[10] C. Bernard, X. Jiang, and R. Wang. Risk aggregation with dependence uncertainty. Insurance:
+Mathematics and Economics, 54:93–108, 2014.
+[11] C. Bernard, L. Rüschendorf, S. Vanduﬀel, and J. Yao. How robust is the value-at-risk of credit
+risk portfolios? The European Journal of Finance, 23(6):507–534, 2017.
+[12] U. Bindini. Smoothing operators in multi-marginal optimal transport. arXiv preprint
+arXiv:1901.07407, 2019.
+[13] H. Bühler, L. Gonon, J. Teichmann, and B. Wood. Deep hedging. arXiv preprint
+arXiv:1802.03042, 2018.
+[14] G. Carlier, V. Duval, G. Peyré, and B. Schmitzer. Convergence of entropic schemes for optimal
+transport and gradient ﬂows. SIAM Journal on Mathematical Analysis, 49(2):1385–1418, 2017.
+[15] P. Cheridito, M. Kupper, and L. Tangpi. Representation of increasing convex functionals with
+countably additive measures. arXiv preprint arXiv:1502.05763, 2015.
+[16] P. Cheridito, M. Kupper, and L. Tangpi. Duality formulas for robust pricing and hedging in
+discrete time. SIAM Journal on Financial Mathematics, 8(1):738–765, 2017.
+[17] R. Cominetti and J. San Martín. Asymptotic analysis of the exponential penalty trajectory in
+linear programming. Mathematical Programming, 67(1-3):169–187, 1994.
+[18] M. Cuturi. Sinkhorn distances: Lightspeed computation of optimal transport. In Advances in
+neural information processing systems, pages 2292–2300, 2013.
+[19] W. E, J. Han, and A. Jentzen. Deep learning-based numerical methods for high-dimensional
+parabolic partial diﬀerential equations and backward stochastic diﬀerential equations. Com-
+munications in Mathematics and Statistics, 5(4):349–380, 2017.
+[20] S. Eckstein, M. Kupper, and M. Pohl. Robust risk aggregation with neural networks. arXiv
+preprint arXiv:1811.00304, 2018.
+24
+
+=== page 25 ===
+[21] I. Ekren and H. M. Soner. Constrained optimal transport. Archive for Rational Mechanics and
+Analysis, pages 1–37, 2017.
+[22] P. Embrechts, G. Puccetti, and L. Rüschendorf. Model uncertainty and VaR aggregation.
+Journal of Banking & Finance, 37(8):2750–2764, 2013.
+[23] S. Feizi, C. Suh, F. Xia, and D. Tse. Understanding GANs: the LQG setting. arXiv preprint
+arXiv:1710.10793, 2017.
+[24] B. D. Flury. Acceptance–rejection sampling made easy. SIAM Review, 32(3):474–476, 1990.
+[25] H. Föllmer and A. Schied. Stochastic Finance: An Introduction in Discrete Time. Walter de
+Gruyter, 2011.
+[26] A. Galichon, P. Henry-Labordere, N. Touzi, et al. A stochastic control approach to no-arbitrage
+bounds given marginals, with an application to lookback options. The Annals of Applied
+Probability, 24(1):312–336, 2014.
+[27] A. Genevay, M. Cuturi, G. Peyré, and F. Bach. Stochastic optimization for large-scale optimal
+transport. In D. D. Lee, M. Sugiyama, U. V. Luxburg, I. Guyon, and R. Garnett, editors,
+Advances in Neural Information Processing Systems 29, pages 3440–3448. Curran Associates,
+Inc., 2016.
+[28] A. Genevay, M. Cuturi, G. Peyré, and F. Bach. Stochastic optimization for large-scale optimal
+transport. In Advances in Neural Information Processing Systems, pages 3440–3448, 2016.
+[29] I. Goodfellow, J. Pouget-Abadie, M. Mirza, B. Xu, D. Warde-Farley, S. Ozair, A. Courville, and
+Y. Bengio. Generative adversarial nets. In Advances in neural information processing systems,
+pages 2672–2680, 2014.
+[30] I. Gulrajani, F. Ahmed, M. Arjovsky, V. Dumoulin, and A. Courville. Improved training of
+Wasserstein GANs. arXiv preprint arXiv:1704.00028, 2017.
+[31] G. Guo and J. Obloj. Computational methods for martingale optimal transport problems.
+arXiv preprint arXiv:1710.07911, 2017.
+[32] L. Gurobi Optimization. Gurobi optimizer reference manual, 2018.
+[33] P. Henry-Labordère. Automated option pricing: Numerical methods. International Journal of
+Theoretical and Applied Finance, 16(08):1350042, 2013.
+[34] F. Horger, T. Würﬂ, V. Christlein, and A. Maier. Deep learning for sampling from arbitrary
+probability distributions. arXiv preprint arXiv:1801.04211, 2018.
+[35] K. Hornik. Approximation capabilities of multilayer feedforward networks. Neural networks,
+4(2):251–257, 1991.
+[36] L. V. Kantorovich. On the translocation of masses. In Dokl. Akad. Nauk SSSR, volume 37,
+pages 199–201, 1942.
+[37] H. G. Kellerer. Duality theorems for marginal problems. Zeitschrift für Wahrscheinlichkeits-
+theorie und verwandte Gebiete, 67(4):399–432, 1984.
+[38] D. Kingma and J. Ba. Adam: A method for stochastic optimization. arXiv preprint
+arXiv:1412.6980, 2014.
+[39] C. Léonard. A survey of the Schrödinger problem and some of its connections with optimal
+25
+
+=== page 26 ===
+transport. Discrete & Continuous Dynamical Systems - A, 34(4):1533–1574, 2014.
+[40] T. Lux, A. Papapantoleon, et al. Improved Fréchet–Hoeﬀding bounds on d-copulas and appli-
+cations in model-free ﬁnance. The Annals of Applied Probability, 27(6):3633–3671, 2017.
+[41] S. Peng. G-expectation, G-Brownian motion and related stochastic calculus of Itô type. In
+Stochastic analysis and applications, pages 541–567. Springer, 2007.
+[42] G. C. Pﬂug and A. Pichler. Multistage stochastic optimization. Springer, 2014.
+[43] G. C. Pﬂug and M. Pohl. A review on ambiguity in stochastic portfolio optimization. Set-Valued
+and Variational Analysis, pages 1–25, 2017.
+[44] G. Puccetti and L. Rüschendorf. Computation of sharp bounds on the distribution of a function
+of dependent risks. Journal of Computational and Applied Mathematics, 236(7):1833–1840,
+2012.
+[45] B. Schmitzer. Stabilized sparse scaling algorithms for entropy regularized transport problems.
+arXiv preprint arXiv:1610.06519, 2016.
+[46] V. Seguy, B. B. Damodaran, R. Flamary, N. Courty, A. Rolet, and M. Blondel. Large-scale
+optimal transport and mapping estimation. arXiv preprint arXiv:1711.02283, 2017.
+[47] S. L. Smith, P.-J. Kindermans, and Q. V. Le. Don’t decay the learning rate, increase the batch
+size. arXiv preprint arXiv:1711.00489, 2017.
+[48] J. Solomon, F. De Goes, G. Peyré, M. Cuturi, A. Butscher, A. Nguyen, T. Du, and L. Guibas.
+Convolutional Wasserstein distances: Eﬃcient optimal transportation on geometric domains.
+ACM Transactions on Graphics (TOG), 34(4):66, 2015.
+[49] V. Strassen. The existence of probability measures with given marginals. The Annals of
+Mathematical Statistics, 36(2):423–439, 1965.
+[50] S. Vallender. Calculation of the Wasserstein distance between probability distributions on the
+line. Theory of Probability & Its Applications, 18(4):784–786, 1974.
+[51] C. Villani. Optimal Transport: Old and New, volume 338. Springer Science & Business Media,
+2008.
+26

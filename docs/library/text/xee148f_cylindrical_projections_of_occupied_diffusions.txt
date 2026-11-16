@@ -1,0 +1,1153 @@
+=== page 1 ===
+Cylindrical Projections of Occupied Diffusions
+Valentin Tissot-Daguette∗ and Xin Zhang†
+July 28, 2026
+Abstract
+Occupied diffusions offer a Markovian framework for path-dependent dynamics
+by lifting the state space with a flow of occupation measures. Because this additional
+feature is infinite-dimensional, the simulation of these processes remains computa-
+tionally intractable. We address this by introducing cylindrical projections, which
+approximate the occupation flow via a finite-dimensional system. We establish the
+strong convergence of this approximation to the initial process and derive corre-
+sponding convergence rates. The method is validated through Euler–Maruyama
+simulations of self-interacting diffusions and an application to the Local Occupied
+Volatility (LOV) model in finance. Finally, we provide a weak error analysis and
+explore its consequences for Monte Carlo methods and derivatives pricing.
+Keywords. Occupation measure, cylindrical projections, error analysis, stochastic simulation,
+self-interacting diffusions, path-dependent volatility
+AMS 2020 Subject Classification. 65C30, 60J25, 62C05, 65Z05
+1 Introduction
+Many stochastic dynamics arising in finance, engineering, and biology are path-dependent :
+the present evolution depends not only on the current state, but also on the past tra-
+jectory. They appear naturally across applications: in finance for volatility models with
+history-dependent dynamics [16, 18, 19, 21]; in engineering and biology for delayed dy-
+namics and systems [15, 31]. To capture path-dependent phenomena, a natural approach
+is to work on the path space directly [12], enabling the analysis of such systems via path-
+dependent partial differential equations (PPDEs) [13, 14]. While this framework offers
+remarkable generality, it entails considerable computational complexity and analytical
+challenges around the regularity of path functionals, such as solutions of PPDEs.
+An alternative, proposed in [29, 27] (see also [5, 26]), consists of enlarging the state
+space by a measure-valued variable, the occupation flow, which records the time spent by
+the process in arbitrary regions. One then recovers a Markovian framework that captures
+∗Quantitative Research, Office of the CTO, Bloomberg. Email: vtissotdague@bloomberg.net
+†Department of Finance and Risk Engineering, New York University. Email: xz1662@nyu.edu. X.
+Zhang is partially supported by the NSF Grant DMS-2508556.
+1
+arXiv:2604.25001v2  [math.NA]  26 Jul 2026
+
+=== page 2 ===
+a specific form of path dependence arising from occupation times. In this work, we shall
+focus on occupied diffusions, solving stochastic differential equations (SDEs) of the form
+
+
+
+d Ot = δXt λ(Ot, Xt) dt,
+dXt = b(Ot, Xt) dt + σ(Ot, Xt) dWt,
+(1.1)
+where Xt ∈ Rd and Ot is a finite measure on Rd that encodes the spatial distribution of
+the process’s history. With O0 = 0, λ ≡ 1, and A ⊆ Rd, Ot(A) = |{s ∈ [0, t] : Xs ∈ A}|
+is the amount of time X has spent in A up to time t. The well-posedness of (1.1)
+was established in [29], alongside several financial applications. As argued in [28], the
+path dependence of the diffusion coefficient σ (through O) gives rise to a subclass of
+path-dependent volatility models [16, 18, 19, 21]. See also Section 4.3.
+While (1.1) is Markov on M(Rd) × Rd, with M(Rd) denoting the set of finite mea-
+sures on Rd, direct simulation is difficult since Ot is infinite-dimensional. A practical
+numerical method must therefore replace Ot by a finite-dimensional representation, while
+controlling the induced error. This is the central objective of the present work. We here
+equip M(Rd) with a cylindrical structure, i.e., taking a countable family of test functions
+(fk)k∈N, we identify any finite measure o ∈ M(Rd) with a sequence (o(fk))k∈N, where
+o(f ) := R f (x) o(dx) denotes the integration of f with respect to o. For any truncation
+level K, we then heuristically approximate Ot in (1.1) by a finite dimensional process
+ZK t := (Ot(f1), . . . , Ot(fK )). In Section 3, we introduce approximations (X K t , ZK t )
+as solutions to finite dimensional stochastic differential equations (2.3), which we call
+cylindrical projections of the occupied diffusion (1.1). In Theorem 3.1, under standard
+Lipschitz assumptions on (λ, b, σ), we prove that for any fixed horizon T ∈ (0, ∞),
+E
+"
+sup
+0≤t≤T
+|Xt − X K t |2
+#1/2
+≤ C K , for some positive constant C.
+By embedding (Z K t ) to the space of positive measures, we obtain the same convergence
+rate from (Z K t ) to (Ot) with respect to a cylindrical norm similar to [26].
+In Section 4, we implement an Euler–Maruyama scheme for the cylindrical projec-
+tions and investigate several examples: Cranston–Le Jan and Raimond self-attracting
+diffusions [10, 25], as well as a variant of the local occupied volatility (LOV) model
+[28]. These experiments illustrate the quantitative convergence of cylindrical projec-
+tions. Motivated by Monte Carlo methods and derivatives pricing, we include in Section
+5 a weak error analysis of the proposed projection of OSDEs.
+From a computational perspective, cylindrical projections provide a general alterna-
+tive to both direct-history simulation and spectral moment approximations. A direct
+Euler–Maruyama discretization of an occupied diffusion replaces Ot by the empirical
+occupation measure of the whole past trajectory; for self-interacting convolution kernels
+this leads to O(N 2) kernel evaluations over N time steps and requires caching the entire
+discrete path in active memory (RAM). Fourier-moment methods can reduce this cost
+to O(N ML), where ML is the number of frequency modes, but they are mainly suited
+2
+
+=== page 3 ===
+to smooth translation-invariant convolution kernels and require a periodic or truncated-
+domain spectral representation. By contrast, our cylindrical approximation compresses
+the occupation flow itself into a finite-dimensional Markovian state. It avoids the growth
+of the state dimension with the time grid, applies to general coefficients (λ, b, σ) depend-
+ing on the occupation measure, including nonlinear and non-convolutional dependencies,
+and yields a deterministic projection error controlled by the strong and weak convergence
+results.
+Related Literature. The modeling of path-dependent systems draws from several
+intersecting fields. First, the class of SDEs considered here generalizes the so-called
+self-interacting diffusions, introduced in Cranston and Le Jan [10], Raimond [25], and
+further developed in [4, 1, 2, 3]. Let us also mention the recent works of Du et al. [11]
+and Chassagneux and Pag`es [7], linking ergodic dynamics of McKean-Vlasov type with
+a specific class of OSDEs.
+In finance, OSDEs provide a subclass of path-dependent volatility models, see Guyon
+[18, 19], Guyon and Lekeufack [21]. The practical execution of these models relies on
+numerical integration techniques for SDEs, notably the classical work of Kloeden and
+Platen [23] and Guyon and Henry-Labord`ere [20], and the recent quantization-based
+methods of Grasselli and Pag`es [16].
+Cylindrical projections serve as a versatile tool on the space of measures and have
+been used across various contexts. Notably, Guo et al. [17] establish a general Itˆo formula
+for flows of probability measures using cylindrical functions. Also, Cox et al. [9] employ
+a similar construction in the context of measure-valued martingales, while Soner et al.
+[26] leverages this approach to prove a comparison result for nonlinear occupied PDEs.
+Outline. The remainder of this paper is structured as follows. Section 2 introduces
+occupied diffusions, their cylindrical projections, and corresponding simulation scheme.
+Our convergence results are established in Section 3, and illustrated in Section 4 through
+a series of examples. We also compare cylindrical approximations with other numerical
+methods in Section 4.4. Section 5 finally provides a weak error analysis, and explores
+its implications for Monte Carlo methods and the pricing of financial derivatives. Ap-
+pendix A contains postponed proofs.
+2 Occupied Diffusions
+Let d ≥ 1 and M be the space of finite Borel measures in Rd. Introduce the dual pairing
+o(ϕ) =
+Z
+Rd
+ϕ(x)o(dx), o ∈ M, ϕ : Rd → R,
+whenever the above is well-defined. Write Br ⊂ Rd for the open ball of radius r centered
+at the origin and Br(x) = x + Br. We also denote the d × d identity matrix by Id.
+Definition 2.1. Let (gj )j∈N ⊂ C1 b (Rd) be a separating family such that g0 is a constant
+function and P∞ j=0∥gj ∥2 C1 ≤ 1. We then define the cylindrical norm associated to (gj )
+3
+
+=== page 4 ===
+by
+∥o∥ :=
+ ∞X
+j=0
+|o(gj )|2
+1/2
+, o ∈ M(Rd). (2.1)
+Given (o, x) ∈ M × Rd, we also write ∥(o, x)∥ := (∥o∥2 + |x|2)1/2.
+Fix a finite horizon T > 0 and a stochastic basis (Ω, F , F, Q), where F = (F t)t∈[0,T ]
+satisfies the usual conditions. Introduce the occupied stochastic differential equations
+(OSDE),
+
+
+
+d Ot = δXt λ(Ot, Xt) dt, O0 = o ∈ M,
+dXt = b(Ot, Xt) dt + σ(Ot, Xt) dWt, X0 = x ∈ Rd, (2.2)
+where b : M × Rd → Rd, σ : M × Rd → Rd×d, and W is standard Brownian motion
+in Rd. The map λ : M × Rd → R+ describes the rate of the stochastic clock Λt :=R t
+0 λ(Ot, Xt)dt. In particular, setting λ ≡ 1 (i.e., Λt = t) leads to the calendar time
+occupation flow,
+Ot(A) = o(A) +
+Z t
+0
+δXs (A)ds =
+Z t
+0
+1A(Xs)ds, A ∈ B(Rd), t ∈ [0, T ].
+If λ = tr(σσ⊤), then Λt = tr(⟨X⟩t) is the (aggregate) quadratic variation clock. Under
+the following assumption, (2.2) admits a unique strong solution (O, X); see [26, Lemma
+3.2].
+Assumption 2.1. The coefficients λ, b, σ satisfy the following linear growth and Lips-
+chitz conditions: there exists L > 0 such that for all ϕ ∈ {λ, b, σ},
+|ϕ(o, x)| ≤ L(1 + ∥(o, x)∥),
+|ϕ(o, x) − ϕ(o′, x′)| ≤ L∥(o − o′, x − x′)∥.
+When ϕ = σ, then |σ(o, x)| denotes the Frobenius norm of σ(o, x) ∈ Rd×d.
+2.1 Cylindrical Projection
+Similar to Cox et al. [9], for any K ∈ N, take an open cover (U K k ){k=1,... ,NK } of BR+1
+such that for every k ≤ NK , U K k ⊂ B1/K (xK k ) for some point xK k ∈ BR+1. Set also
+U K 0 = Rd \BR+1, xK 0 ∈ ∂BR+1, and choose a partition of unity (f K k ) subordinate to
+(U K k ){k=0,... ,NK }, i.e.,
+f K k ≥ 0,
+NKX
+k=0
+f K k ≡ 1, supp(f K k ) ⊂ U K k , k = 0, . . . , NK ,
+with supp(f ) = {x : f (x) > 0}. Introduce also the vector-valued function f K : Rd →
+RNK +1, f K (x) = (f K 0 (x), . . . , f K NK (x)). The partition of unity is then used to project
+the occupation measure Ot ∈ M onto the finite-dimensional vector
+ZK t := Ot(f K ) = (Ot(f0), . . . , Ot(fNK )) ∈ RNK +1 .
+4
+
+=== page 5 ===
+Conversely, given z ∈ RNK +1, an occupation measure is reconstructed through the lift
+oK : RNK +1 → M, z 7→ oK (z) =
+NKX
+k=0
+zK k δxK k ∈ M .
+For ϕ : M × Rd → R, define the projected map ϕK (z, x) = ϕ(oK (z), x), (z, x) ∈ RNK +1 ×
+Rd. We then approximate OSDE (2.2) by the projected OSDE,
+
+
+
+dZ K t = f K (X K t )λK (Z K t , X K t ) dt, z0 = o(f K ),
+dX K t = bK (ZK t , X K t ) dt + σK (Z K t , X K t ) dWt, X K 0 = x ∈ Rd,
+(2.3)
+with initial conditions x, o as in (2.2). Since (O, X), solution to (2.2), is Markov, the
+system (2.3) is Markov as well.
+2.2 Simulation Scheme
+The simulation of trajectories from the projected SDE (2.3) is straightforward and sum-
+marized in Algorithm 1. The Euler-Maruyama scheme is used in Step III. to update
+the process. Alternatively, exact or higher order schemes could be used depending on
+λ, b, σ; see [23, Chapter 10].
+In Step III 1. of Algorithm 1, the occupation vector Z K tmp is a temporary variable
+reused at each iteration. Indeed, as the joint process (Z K , X K ) is Markov, updating X
+only requires the current occupation times rather than the entire history. This provides
+a significant computational and storage advantage over general path-dependent SDEs,
+where the state-space dimension typically grows with each time step. See Section 4.4
+for a performance comparison with alternative schemes.
+Algorithm 1 Euler-Maruyama Scheme, Projected OSDEs (one sample)
+Given: x0 ∈ Rd, T > 0, N ∈ N, {fk}k∈N (separating family), K ∈ N (truncation level).
+I. Initialize X K 0 = x0 and temporary variable Z K tmp = 0 ∈ RNK +1.
+II. Generate independent Brownian increments δWn = Wtn+1 − Wtn ∈ Rd, n < N .
+III. For n = 0, . . . , N − 1:
+1. ZK tmp ←− Z K tmp + λK (ZK tmp, X K tn )f K (X K tn )δt,
+2. X K tn+1 = X K tn + bK (Z K tmp, X K tn )δt + σK (Z K tmp, X K tn )δWn.
+IV. Return X K = (X K t0 , . . . , X K tN ) and Z K tmp = OT (f K ).
+5
+
+=== page 6 ===
+3 Main Results
+For fixed horizon T ∈ (0, ∞), introduce the norms
+∥X∥Q = EQ
+h
+sup
+0≤t≤T
+|Xt|2
+i1/2
+, (3.1)
+∥(O, X)∥Q = EQ
+h
+sup
+0≤t≤T
+∥(Ot, Xt)∥2
+i1/2
+= EQ
+h
+sup
+0≤t≤T
+ 
+|Xt|2 + ∥Ot∥2i1/2 . (3.2)
+and for any R > 2, define exit times for (2.2) and (2.3), respectively,
+τR = inf{t ≥ 0 : ∥(Ot, Xt)∥ ≥ R}, τ K R = inf n t ≥ 0 : ∥(o(Z K t ), X K t )∥ ≥ R o . (3.3)
+We can now state the main results of this section.
+Theorem 3.1. Suppose that o = O0 satisfies supp(o) ⊂ BR for some R > 2. Then there
+exists C > 0 that depends on the dimension d, time horizon T , radius R, and Lipschitz
+constants of b, σ, λ such that
+∥(OτR , X τR ) − (oK (ZK,τ K R ), X K,τ K R )∥Q ≤ C K . (3.4)
+Proposition 3.1. Introduce the stopped process (OτR , X τR ) = (O·∧τR , X·∧τR ). Then,
+∥(O, X) − (OτR , X τR )∥Q ≤ C(1 + ∥(o, x)∥2)0.675 R0.35 ,
+where C is a positive constant depending on T and the Lipschitz constants of b, σ, λ.
+Remark 3.1. (i) If we further impose in Assumption 2.1 that |λ(o, x)| ≤ L(1 + ∥o∥)
+uniformly in x, then O is bounded over [0, T ] by Gr¨onwall inequality. Using the
+same arguments as in Theorem 3.1, one can prove that (3.4) holds as well, where
+the constant C depends on d, T , Lipschitz constants of b, σ, λ, the L∞ norm of λ,
+but not on the radius R. Choosing R = K 20/7 in Proposition 3.1 leads to
+∥(O, X) − (oK (Z K,τ K R ), X K,τ K R )∥Q ≤ C(1 + ∥(o, x)∥2)0.675 K .
+(ii) Combining Proposition 3.1 with Theorem 3.1, we get a convergence that depends
+on K only. In (3.7), setting R = 1 C log K yields
+∥(O, X) − (oK (Z K,τ K R ), X K,τ K R )∥Q ≤ C(1 + |x|2 + ∥o∥2)0.675 (log K)0.35 .
+3.1 Lenglart’s Inequality Revisited
+Toward the proof of Proposition 3.1, we establish a variant of Lenglart’s inequality [24],
+which provides probabilistic bounds on the exit time τR defined in (3.3).
+Lemma 3.1. Under Assumption 2.1, for any γ ∈ (0, 1), R > 2,
+Q(τR ≤ T ) ≤ 4eιγT (2 − γ) EQ[(1 + ∥(o, x)∥|)3γ ] R3γ (1 − γ) , (3.5)
+where ι is a constant that only depends on b, σ.
+6
+
+=== page 7 ===
+Proof. See Appendix A.1.
+As can be seen in (3.5), the bound decays polynomially in the radius R, while it
+grows exponentially with the time horizon T . Since both rates depend on γ, the upper
+bound may be optimized with respect to this parameter. In the proof of Proposition 3.1
+below, we choose γ = 0.9, which yields a sufficiently tight upper bound for our purposes.
+Proof of Proposition 3.1. Let ¯X = X −X τR and ¯O = O − OτR . In view of the definitions
+of (OτR , X τR ) and ∥·∥Q, we have
+∥(O, X) − (OτR , X τR )∥2 Q = EQ
+"
+sup
+τR≤t≤T
+∥( ¯Ot, ¯Xt)∥2
+#
+.
+Using the strong Markov property of (2.2) and conditioning on τR = t0, (Ot0 , Xt0 ) =
+(x, o) with ∥(x, o)∥2 = R2 − 1, then (Ot, Xt)t≥t0 solves the OSDE
+
+
+
+Ot = o +
+R t
+t0 δXs λ(Os, Xs) ds,
+Xt = x +
+R t
+t0 b(Os, Xs) dt +
+R t
+t0 σ(Os, Xs) dWs.
+It is then straightforward to show that
+| ¯Xt|2 ≤ 2(t − t0)
+Z t
+t0
+b2( ¯Os + o, ¯Xs + x) ds + 2|Mt|2,
+with the martingale Mt := R t t0 σ(¯o + Os, x + ¯Xs) dWs. From the linear growth of b,
+| ¯Xt|2 ≤ 2(t − t0)L2
+Z t
+t0
+ 
+R2 + sup
+t0≤u≤s
+∥( ¯Ou, ¯Xu)∥2
+!
+ds + 2|Mt|2.
+Taking supremum over t on both sides and applying Doob’s martingale inequality,
+EQ
+"
+sup
+t0≤s≤t
+| ¯Xs|2
+#
+≤ [2(t − t0) + 8]L2
+Z t
+t0
+
+R2 + EQ
+"
+sup
+t0≤u≤s
+∥( ¯Ou, ¯Xu)∥2
+#
+ ds.
+Using the definition of cylindrical norm,
+∥ ¯Os∥2 =
+∞X
+j=0
+ Z s
+t0
+gj (Xu)λ(Ou, Xu) du
+!2
+≤
+∞X
+j=0
+ Z s
+t0
+|gj (Xu)|2 du
+!  Z s
+t0
+λ(Ou, Xu)2 du
+!
+≤
+
+
+Z s
+t0
+∞X
+j=0
+|gj (Xu)|2 du
+
+
+ Z s
+t0
+λ(Ou, Xu)2 du
+!
+= (s − t0)
+Z s
+t0
+λ(Ou, Xu)2 du,
+7
+
+=== page 8 ===
+recalling that P∞ j=0∥gj ∥2 C1 ≤ 1, and hence
+EQ
+"
+sup
+t0≤s≤t
+∥ ¯Os∥2
+#
+≤ (t − t0)L2
+Z t
+t0
+
+R2 + EQ
+"
+sup
+t0≤u≤s
+∥( ¯Ou, ¯Xu)∥2
+#
+ ds.
+We therefore obtain the inequality
+EQ
+"
+sup
+t0≤s≤t
+
+| ¯Xs|2 + ∥ ¯Os∥2
+#
+≤ L2(3(t − t0) + 8)
+Z t
+t0
+
+R2 + EQ
+"
+sup
+t0≤u≤s
+∥( ¯Ou, ¯Xu)∥2
+#
+ ds.
+Hence by Gr¨onwall inequality, with some positive constant C depending on L and T
+EQ
+"
+sup
+t0≤s≤t
+
+| ¯Xs|2 + ∥ ¯Os∥2
+#
+≤ 8L2
+
+(t − t0)2 + (t − t0)  R2 exp  8L2  (t − t0)2 + (t − t0) 
+≤ C
+
+(t − t0)2 + (t − t0)  R2.
+Thus, we obtain that
+∥(X, O) − (OτR , X τR )∥2 Q ≤ CR2 EQ
+h
+((T − τR)+)2 + (T − τR)+
+i
+.
+In view of Lemma 3.1,
+EQ[((T − τR)+)2 + (T − τR)+] =
+Z T
+0
+(2u + 1) Q[τR ≤ T − u] du
+≤ (T 2 + 1)eιγT (2 − γ)(1 + |X0|2 + ∥O0∥2)1.5γ
+R3γ (1 − γ) ,
+and setting γ = 0.9 finally leads to
+∥(X, O) − (OτR , X τR )∥2 Q ≤ C(1 + |x|2 + ∥o∥2)1.35 R0.7 .
+Remark 3.2. Using the same arguments as in the proof above, we also have
+∥(o(Z K ), X K ) − (o(Z K,τ K R ), X K,τ K R )∥Q ≤ C(1 + ∥(o, x)∥2)0.675 R0.35 .
+3.2 Proof of Theorem 3.1
+We now prove our main result, which we decompose into the following steps.
+Proof. Step 1. Recall that Z K 0 = o(f K ). Let us estimate the difference of initial positions
+∥o − oK (Z K 0 )∥2 =
+∞X
+j=0
+|o(gj ) − oK (Z K 0 )(gj )|2
+=
+∞X
+j=0
+ o(gj ) − NKX k=1 gj (xK k )o(f K k )  2 ,
+8
+
+=== page 9 ===
+where we used that Supp(o) ⊂ BR and thus o(f K 0 ) = 0. Notice that
+o(gj ) − NKX
+k=1
+gj (xK k )o(f K k )  ≤  NKX
+k=1
+Z
+|gj (x) − gj (xK k )|f K k (x) do(x)
+  ≤ 1 K ||g′ j ||∞.
+Since P∞ j=0 ||gj ||2 C1 ≤ 1, we obtain that ∥o − oK (Z K 0 )∥2 ≤ 1/K2.
+Step 2. For the simplicity of notation, in the rest we omit the stopping time τR, τ K R in the
+superscript of X τR , OτR , X K,τ K R , ZK,τ K R . Let us denote θt = Ot −oK (Z K t ), εt = Xt −X K t ,
+and then
+d
+dt
+∥θt∥2
+2 =
+∞X
+j=0
+θt(gj )
+Z
+gj (x) θt(dx) dt
+=
+∞X
+j=0
+θt(gj )gj (Xt)λ(Ot, Xt)
+−
+∞X
+j=0
+θt(gj )
+
+
+NKX
+k=0
+gj (xK k )f K k (X K t )
+
+ λ(oK (Z K t ), X K t )
+=
+∞X
+j=0
+θt(gj )(gj (Xt) − gj (X K t ))λ(Ot, Xt) (I)
++
+∞X
+j=0
+θt(gj )
+
+gj (X K t ) −
+NKX
+k=0
+gj (xK k )f K k (X K t )
+
+ λ(Ot, Xt) (II)
++
+∞X
+j=0
+θt(gj )
+
+
+NKX
+k=0
+gj (xK k )f K k (X K t )
+
+ (λ(Ot, Xk) − λ(oK (ZK t ), X K t )). (III)
+The term (I) is bounded from above by
+∞X
+j=0
+θt(gj )  ∥∇gj ∥∞|εt||λ(Ot, Xt)| ≤ |εt||λ(Ot, Xt)| ∞X
+j=0
+θt(gj )  ∥∇gj ∥∞
+≤ |εt||λ(Ot, Xt)|∥θt∥.
+For any x ∈ BR, according to our construction of f K k , for any x ∈ BR,
+ gj (x) − NKX k=0 gj (xK k )f K k (x)  ≤ ∥∇gj ∥∞ K .
+Keeping in mind that both Xt and X K are stopped within the ball BR, the term of (II)
+is bounded from above by
+∞X
+j=0
+|θt(gj )| ∥∇gj ∥∞ K |λ(Ot, Xt)| ≤ 1 K |λ(Ot, Xt)|∥θt∥.
+9
+
+=== page 10 ===
+Using the Lipschitz property of λ, the term (III) is bounded by
+L
+∞X
+j=0
+|θt(gj )|∥gj ∥∞(∥θt∥ + |εt|) ≤ L(∥θt∥ + |εt|)∥θt∥.
+Together, we have the estimate
+d
+dt ∥θt∥2 ≤ 2|λ(Ot, Xt)|
+ 1
+K + |εt|
+
+∥θt∥ + 2L(∥θt∥ + |εt|)∥θt∥
+≤ 2LR
+ 1
+K + |εt|
+
+∥θt∥ + 2L(∥θt∥ + |εt|)∥θt∥,
+where we used the linear growth property of λ and
+p
+1 + |Xt|2 + || O ||2 ≤ R. From Step
+1, we have ||θ0||2 ≤ 1/K2. In view of 2LR||θt|| K ≤ LR||θt||2 + LR K2 , we obtain that
+∥θt∥2 ≤ CR K2 + CR Z t 0 ∥θs∥2 + |εs|2 ds,
+and thus
+EQ
+"
+sup
+0≤s≤t
+∥θs∥2
+#
+≤ CR K2 + CR EQ
+"Z t
+0
+sup
+0≤u≤s
+(∥θu∥2 + |εu|2) ds
+#
+, (3.6)
+where C is a positive constant only depending on the Lipschitz constants and T that is
+allowed to change from line to line.
+Step 3. By definition of εt,
+|εt|2
+2 ≤ t
+Z t
+0
+
+b(Os, Xs) − b(oK (ZK s ), X K s ) 2 dt +  Z t 0 σ(Os, Xs) − σ(oK (ZK s ), X K s ) dWs  2 .
+Taking supremum over time, using Doob’s martingale inequality and Lipschitz property
+of b, σ, we obtain that
+EQ
+"
+sup
+0≤s≤t
+|εs|2
+#
+≤ C EQ
+"Z t
+0
+sup
+0≤u≤s
+(∥θu∥2 + |εu|2) ds
+#
+,
+Together with (3.6), by Gr¨onwall inequality we conclude the result
+EQ
+"
+sup
+0≤s≤T
+(ε2 s + ∥θs∥2 s )
+#
+≤ CR K2 exp(CR). (3.7)
+4 Numerical Examples
+This section gathers examples of occupied SDEs, ranging from self-interacting diffusions
+to path-dependent volatility model in finance. We also verify numerically the conver-
+gence rates established in Theorem 3.1.
+10
+
+=== page 11 ===
+4.1 Cranston-Le Jan’s Self-interacting Diffusion
+Consider the self-attracting diffusion introduced by Cranston and Le Jan [10],
+dXt = β
+ Z t
+0
+(Xs − Xt)ds
+
+dt + dWt, X0 = x, β > 0. (4.1)
+Then (4.1) corresponds to the occupied SDE,
+
+
+
+d Ot = δXt dt,
+dXt = b(Ot, Xt) dt + dWt, b(o, x) = β
+R
+R(y − x)o(dy).
+(4.2)
+Rewriting the drift in (4.1) as βt( ¯Xt − Xt), X t = 1 t R t 0 Xsds, we gather that the process
+is attracted to its running average X when β > 0, and repelled from it otherwise; see
+Fig. 1. As shown in [10], (4.1) admits an explicit strong solution whose proof is reported
+here for completeness.
+Figure 1: Sample paths X and drift from the Cranston-Le Jan diffusion (4.1). Dotted
+line is the running average of X (i.e., the barycenter of O).
+(a) β = −5.
+ (b) β = 5.
+Proposition 4.1. Cranston-Le Jan’s diffusion (4.1) admits a unique strong solution
+given by Xt = x +
+R t
+0 κ(t, s)dWs, with the Volterra kernel
+κ(t, s) = 1 − βs
+Z t
+s
+e
+β
+2 (s2−u2)du, t ≥ s. (4.3)
+Proof. See Appendix A.2.
+Observe that X is a Gaussian Volterra process with constant mean function and
+covariance kernel CQ(Xt, Xs) = R s∧t 0 κ(t, u)κ(s, u)du. The Volterra and covariance ker-
+nels are displayed in Fig. 2. Next, let us verify Theorem 3.1 by numerically comparing
+projected diffusions to the exact solution from Proposition 4.1. We use β = 5, T = 1, 29
+time steps, and 213 simulations, and choose f K k = 1AK k , where (AK k )K k=1 form a regular
+11
+
+=== page 12 ===
+Figure 2: Volterra and covariance kernel of the Cranston-Le Jan diffusion (4.1), β = 1.
+(a) Volterra kernel κ(t, s), t ≥ s.
+ (b) Covariance kernel
+R t∧s
+0 κ(t, u)κ(s, u)du.
+partition of the compact interval [−R, R], R = 2, and AK 0 = R \[−R, R]. The results
+are shown in Figs. 3 to 5. The error in (3.4) is split into its spatial and occupation
+components, both of which demonstrate a nearly linear convergence rate.
+Figure 3: Sample path from Cranston-Le Jan’s diffusion (β = 5) for increasing values
+of K.
+(a) Full horizon [0, 1].
+ (b) Zoom on [0.75, 1.].
+12
+
+=== page 13 ===
+Figure 4: Pathwise errors X − X K (β = 5) for increasing values of K.
+Figure 5: Convergence rate of Cranston-Le Jan’s diffusion (4.1), β = 5.
+4.2 Raimond’s Self-interacting Diffusion
+Consider the following multi-dimensional diffusion introduced by Raimond [25],
+dXt = β
+ Z t
+0
+Xs − Xt
+|Xs − Xt| ds
+
+dt + dWt, X0 = x ∈ Rd, (4.4)
+where W is a Brownian motion in Rd. Note that (4.4) is self-attracting when β > 0,
+and self-repelling otherwise. The associated OSDE (2.2) is obtained by setting λ ≡ 1,
+σ ≡ I, and
+b(o, x) = β
+Z
+Rd
+φ(y − x)o(dy), φ(x) = x |x| . (4.5)
+Alternatively, note that b(o, x) = −∇xV (o, x) with the potential V (o, x) = β
+R
+Rd |y −
+x|o(dy). To remove the singularity at x = 0 in the implementation, we replace the vector
+field φ by φε(x) = x√ ε+|x|2 for small ε > 0. It is then easily seen that the drift (4.10)
+satisfies Assumption 2.1, with φε in lieu of φ.
+A sample trajectory of X and its drift are depicted in Fig. 6 for d = 2 and β ∈ {−1, 5}.
+As expected, the drift increases in magnitude with β (bottom chart), which intensifies
+the attraction of the diffusion toward its own past trajectory. The cylindrical projection
+13
+
+=== page 14 ===
+of (O, X) is carried out using f K k = 1AK k , with boxes AK k ⊆ R2 forming a partition of
+[−R, R]2, R = 2 as shown in the top charts of Fig. 6.
+The convergence results are shown in Fig. 7 with β = 5, T = 1, 29 time steps, and 213
+sample paths. Since no explicit solution of (O, X) is known in this case, the cylindrical
+projections are compared to X K for large K (here K = 75). Again, the truncation error
+decreases linearly, bounded only by sampling noise and discretization inaccuracies.
+Figure 6: Sample path (top) and drift (bottom) from Raimond’s self-attracting diffusion
+(4.4) for two values for β (based on same Brownian path).
+(a) β = −1.
+ (b) β = 5.
+Figure 7: Convergence rate of Raimond’s diffusion (4.1), β = 5.
+14
+
+=== page 15 ===
+4.3 Local Occupied Volatility Model
+We conclude this section with a financial example where the diffusion coefficient, termed
+volatility, depends on the exponential time occupation flow. Specifically, introduce the
+simplified local occupied volatility (LOV) model [28],
+d Ot = δXt eκtdt, Ot(R) = eκt − 1 κ =: Λt, (4.6)
+dXt
+Xt
+= σ(Ot, Xt) dWt, (4.7)
+σ2(Ot, Xt) = vloc(Xt) + 1 Λt
+Z
+R+
+ℓ(x/Xt) Ot(dx), (4.8)
+for some time-homogeneous local variance vloc : R+ → R+. The function ℓ : R+ →
+R+ describes the sensitivity of instantaneous variance with respect to path-dependent
+shocks, captured by the occupation measure Ot. In this example, we choose
+vloc(x) = α(x/x0 − 1)2 + β(x/x0 − 1) + γ, ℓ(y) = δ tanh((y − 1)/ε). (4.9)
+That is, vloc(Xt) is a quadratic function of the simple return Xt/x0 − 1 over the period
+[0, t]. The local variance achieves a minimum value of vmin := γ − β2 4α . The local volatil-
+ity σloc := √vloc and sensitivity function ℓ are displayed in Fig. 8 for the parameters
+(α, β, γ, δ, ε) = (1, −0.1, 0.01, vmin 2 , 0.1). Similar to [29], setting δ < vmin ensures that the
+occupied variance (4.8) remains positive.
+The results are summarized in Figs. 9 to 11 with the aforementioned parameters. A
+reference solution is obtained by setting X ≈ X K with K = 100. The noise observed in
+the pathwise errors (Fig. 10) stems from fluctuations in the volatility coefficients across
+truncation levels. This is in contrast with the related plot for Cranston-Le Jan’s diffusion
+(Fig. 4), where the solution only affects the finite variation part of the dynamics.
+Figure 8: Local volatility σloc = √vloc (left) and local sensitivity function ℓ given in
+(4.9) with (α, β, γ, δ, ε) = (1, −0.1, 0.01, vmin 2 , 0.1).
+15
+
+=== page 16 ===
+Figure 9: Sample path of the LOV model (4.6) for varying truncation levels.
+(a) Full horizon [0, 1].
+ (b) Zoom on [0.75, 1].
+Figure 10: Pathwise errors X 100 − X K in the LOV model (4.6) for J = 1000 simulations
+and increasing values of K.
+Figure 11: Convergence rate for the LOV model (4.6)-(4.8).
+16
+
+=== page 17 ===
+4.4 Alternative Schemes and Comparison
+We compare the proposed cylindrical projection with two natural alternatives: the
+direct-history Euler scheme and a Fourier-moment scheme. Let tn = nδt, n = 0, . . . , N ,
+and let MK := NK + 1 denote the number of coordinates in the cylindrical state Z K .
+For a tensor-product grid with K cells per coordinate, MK ≍ Kd.
+Direct-history scheme. This approach consists of discretizing the occupation flow
+according to
+ON tn =
+n−1X
+j=0
+δXtj δt,
+and evaluates the coefficients using the full past trajectory. For the regularized Raimond
+interaction (Section 4.2),
+b(o, x) = β
+Z
+Rd
+ϕε(y − x)o(dy), ϕε(u) = up ε + |u|2 , (4.10)
+the direct Euler drift is
+bhist n = β
+n−1X
+j=0
+ϕε(Xtj − Xtn )δt.
+Thus, step n requires O(nd) kernel operations and one path requires PN n=1 n = O(N 2)
+kernel evaluations, or O(N 2d) arithmetic operations up to constants. The memory re-
+quirement is O(N d) if the whole trajectory must be retained. This direct scheme is a use-
+ful benchmark, since it introduces no spatial projection error beyond the time discretiza-
+tion error of Euler–Maruyama [23]. However, its quadratic cost becomes prohibitive for
+fine time grids or long horizons. In some special models, such as the Cranston–Le Jan
+example, algebraic simplifications reduce the cost through a running barycenter, but
+such reductions are model-specific and are not available for a general occupied diffusion.
+The cylindrical projection replaces Ot by the finite-dimensional vector
+ZK t = (Ot(f K 0 ), . . . , Ot(f K NK )).
+On the time grid, Algorithm 1 updates Z K according to
+ZK,n+1 = ZK,n + λK (Z K,n, X K tn )f K (X K tn )δt,
+and then updates X K using bK and σK . For indicator boxes, the occupation update
+is local, typically O(1) per step; for a smooth partition of unity, the update cost is
+proportional to the number of nonzero basis functions at the current point. In the
+self-interacting kernel examples, the dense drift evaluation has the form
+bK n = β
+NKX
+i=0
+ZK,n i ϕε(xK i − X K tn ),
+and costs O(MK d) per step, hence O(N MK d) per path. The online memory is O(MK ),
+apart from the optional storage of the output trajectory. Therefore, when MK ≪ N ,
+17
+
+=== page 18 ===
+the cylindrical scheme offers a substantial reduction in computational cost compared
+to the direct-history approach. Even when MK is comparable to or larger than N ,
+the method still has two important advantages: the simulated process remains finite-
+dimensional and Markovian, and the projection error is deterministic and controlled by
+Theorem 3.1.
+Fourier scheme. An alternative approximation leverages Fourier moments of the
+occupation flow. Specifically, suppose that the occupation dependence is linear and
+translation-invariant as in (4.10), that is, b(o, x) =
+R
+Rd ϕ(y − x)o(dy). After localization
+or periodization on a compact domain, the function ϕ admits the truncated Fourier
+representation
+ϕ(u) ≈ ϕL(u) :=
+X
+zℓ∈IL
+aℓeizℓ·u, (4.11)
+with frequencies zℓ on the truncated lattice IL = {−L, . . . , L}d \{0}. The past trajectory
+is then captured by the Fourier moments
+Zn ℓ =
+n−1X
+j=0
+eizℓ·Xtj δt, Zn+1 ℓ = Zn ℓ + eizℓ·Xtn δt.
+From the occupation time formula, the drift is estimated as
+b(Otn , Xtn ) ≈
+X
+zℓ∈IL
+aℓe−izℓ·Xtn Zn ℓ .
+The resulting cost is O(N MLd) per path, where ML := | I L | = (2L + 1)d − 1, and the
+active memory is O(ML). For higher dimensions (d ≥ 4), the deterministic lattice can be
+replaced by random Fourier Features to break the curse of dimensionality. Similar ran-
+domization techniques can be used for the cylindrical projections by optimally selecting
+the centers of the partition of unity, e.g. according to a low-discrepancy sequence.
+The Fourier coefficients aℓ in (4.11) may be computed offline by spectral methods
+or FFT-based procedures; see [30, 6, 8]. This approach can be very efficient when ϕ
+is smooth, periodic, and of convolution type. However, the scheme is less effective for
+singular or sharply localized kernels, which require numerous high-frequency modes to
+resolve. It also relies on global oscillatory basis functions, introduces truncation or
+periodic-boundary effects, and is not directly applicable to general nonlinear dependen-
+cies of (λ, b, σ) on the occupation measure. For instance, the LOV model in Section
+4.3 depends on the occupation measure through a state-dependent volatility functional,
+which is naturally handled by cylindrical projection but is not a simple translation-
+invariant Fourier convolution.
+Fourier moments may be faster than cylindrical projections when ML ≪ MK and the
+kernel is smooth and translation-invariant. The advantages of the cylindrical projection
+are of a different nature: it provides a model-independent finite-dimensional Markov
+approximation of the occupation flow, preserves the measure-based interpretation of
+path dependence, applies to nonlinear and non-convolutional coefficients. Furthermore,
+it comes with the strong projection error estimates established in Sections 3.
+18
+
+=== page 19 ===
+Table 1: Computational complexity and limitations of discretization schemes.
+Scheme Cost per path Limitations
+Direct history O(N 2d) quadratic cost and full path in RAM
+Fourier moments O(N MLd) convolution structure only and ML ≍ Ld
+Cylindrical projection O(N MK d) projection dimension MK ≍ Kd
+Table 1 provides a comparative summary of the discretization schemes, while Table 2
+details their empirical performance for Raimond’s self-interacting diffusion with β = 5
+and d ∈ {2, 3}. Strong errors are evaluated against the direct-history scheme using the
+norm ∥ · ∥Q from (3.1). For the Fourier scheme with d = 2, we use a spectral frequency
+limit of L = 5, leading to ML = (2L + 1)2 − 1 = 120 modes, hence 2ML = 240 scalar
+values. We align the cylindrical scheme’s memory usage by setting K = 15 intervals
+per dimension for the indicator functions f K k = 1AK k , giving MK = K2 + 1 = 226 scalar
+values. When d = 3, we choose L = 3 and K = 8, leading to 684 and 513 scalar values
+in active memory, respectively.1 Table 2 shows that the cylindrical projection scheme
+outperforms the Fourier method in both accuracy and execution speed.
+Runtimes are plotted in the left panel of Figure 12, highlighting the quadratic growth
+of the direct-history scheme. Interestingly, the Fourier scheme is more than twice as slow
+as the cylindrical projection despite their aligned memory constraints. This behavior is
+driven by the repeated evaluation of complex exponentials, which require multiple CPU
+clock cycles compared to the basic floating-point operations utilized in the cylindrical
+projection.
+Remark 4.1. More generally, the structural mechanism behind the Fourier scheme
+can be extended to general kernels ϕ = ϕ(y, x) by leveraging approximations via dense
+families of separable functions. If the bivariate kernel admits a truncated expansion in
+terms of products or sums of univariate functions—such as those arising from low-rank
+tensor-train decompositions or polynomial expansions techniques—it can be written as
+ϕ(y, x) ≈
+LX
+ℓ=1
+ϕℓ,1(y)ϕℓ,2(x),
+for some truncation level L ∈ N. Under this separation of variables, the past trajec-
+tory can again be compressed online into running moments Z n ℓ = Pn−1 j=0 ϕℓ,1(Xtj )δt,
+which satisfy the O(1) update Z n+1 ℓ = Zn ℓ + ϕℓ,1(Xtn )δt. The resulting drift bL n =PL
+ℓ=1 Zn ℓ ϕℓ,2(Xtn ) circumvents the O(N 2) direct-history bottleneck to achieve an over-
+all complexity of O(N Ld) per path, with an active memory of O(L). While highly
+efficient for smooth kernels where a low-rank structure can be computed offline, this
+paradigm is restricted to linear occupation-dependencies and scales poorly if the non-
+convolutional kernel requires a prohibitive number of mixing modes to uniformly control
+the approximation error.
+1Alternative partitions of unity, such as linear and cubic splines, were also tested for the cylindrical
+scheme; these provided similar accuracy to indicator functions but resulted in higher runtimes.
+19
+
+=== page 20 ===
+Figure 12: Computational metrics for Raimond’s self-interacting diffusion (β = 5) across
+dimensions d = 2 (top row) and d = 3 (bottom row).
+(a) Runtime per path (ms).
+ (b) Active memory per path.
+20
+
+=== page 21 ===
+Table 2: Runtime per path (in milliseconds) and strong errors against the direct-history
+scheme for Raimond’s self-interacting diffusion (β = 5) in dimensions d ∈ {2, 3}.
+d = 2
+Runtime (milliseconds) Strong errors
+N Direct-history Fourier Cylindrical Fourier Cylindrical
+128 0.06 0.56 0.26 0.30 0.09
+256 0.23 1.20 0.51 0.30 0.10
+512 1.05 2.38 1.07 0.31 0.10
+1024 5.02 4.87 2.12 0.31 0.09
+2048 19.94 9.80 4.56 0.29 0.10
+4096 82.50 19.54 9.08 0.31 0.10
+d = 3
+Runtime (milliseconds) Strong errors
+N Direct-history Fourier Cylindrical Fourier Cylindrical
+128 0.07 1.94 0.88 0.44 0.14
+256 0.36 3.88 1.75 0.44 0.14
+512 1.47 7.68 3.84 0.44 0.13
+1024 6.17 16.29 6.99 0.43 0.14
+2048 27.44 31.31 14.93 0.43 0.15
+4096 118.32 66.42 29.48 0.42 0.14
+5 Weak Error Analysis and Monte Carlo Methods
+Our main results in Section 3 provide strong error estimates arising from cylindrical
+projections. These theorems naturally lead to weak convergence rates as outlined next.
+Corollary 5.1. Suppose φ : M × Rd → R is Lipschitz with M × Rd equipped with the
+product of cylindrical and Euclidean norm. Then we obtain the weak convergence rate,
+EQ[φ(OτR T , X τR T )] − EQ[φ(oK (Z K,τ K R T ), X K,τ K R T )]  ≤ CLip(φ) K ,
+where Lip(φ) denotes the Lipschitz coefficient of φ, and C is the constant of Theorem 3.1.
+Moreover, similar to Remark 3.1, (oK (Z K,τ K R T ), X K,τ K R T ) weakly converges to (OT , XT ) at
+the rate 1/K when λ is bounded, and at the rate 1/(log K)0.35 when λ is Lipschitz.
+Proof. Write φR T = φ(OτR T , X τR T ), φR,K T = φ(oK (Z K,τ K R T ), X K,τ K R T ) for brevity. Thanks to
+the Lipschitz property of φ,
+EQ  φR T  − EQ  φR,K T  ≤ EQ h |φR T − φR,K T | i
+≤ Lip(φ) EQ
+
+∥(OτR T , X τR T ) − (oK (Z K,τ K R T ), X K,τ K R T )∥ 
+≤ Lip(φ)∥(OτR , X τR ) − (oK (Z K,τ K R ), X K,τ K R )∥Q.
+The result then follows from Theorem 3.1.
+21
+
+=== page 22 ===
+Applications to Monte Carlo Methods. Given a function φ : M × Rd → R and a
+finite horizon T > 0, suppose we are interested in estimating the value
+p = EQ[φ(OT , XT )],
+where X evolves according to (2.2). Dropping the dependence on the exit time τR for
+brevity, then combining Monte Carlo simulations with cylindrical projection leads to
+the estimator
+pK,J = 1 J JX j=1 φ(oK (Z K,j T ), X K,j T ).
+Introduce pK := EQ[φ(oK (ZK T ), X K T )]. Classically, |pK − pK,J | ∼ 1√ J , so together with
+Corollary 5.1, there exist finite constants C1, C2 such that
+|p − pK,J | ≤ |p − pK | + |pK − pK,J | ≤ C1
+K + C2√ J .
+In fact, a third error arises from time discretization which we shall omit here.
+Example 5.1. Consider a floating-strike Asian call option in the local occupied volatility
+(LOV) model from Section 4.3 with κ = 0, x0 = 100. That is φ(OT , XT ) = (XT −OT )+,
+where OT = 1 T R R x OT (dx) is the barycenter of OT . Since (o, x) 7→ x − 1 T R R yo(dy) is
+linear in o, x, and x → x+ is 1−Lipschitz continuous, then φ is Lipschitz as well. The
+Monte Carlo prices pK,J and weak errors |p − pK,J | are displayed in Fig. 13 as function
+of K, with J = 214 many simulations. The exact price p is estimated using K = 100
+occupation bins. The right panel of Fig. 13 confirms the linear rate of convergence with
+respect to K established in Corollary 5.1.
+Figure 13: Floating Asian call option in the LOV model (4.6)-(4.8).
+(a) Monte Carlo price K 7→ pK,J , J = 214.
+ (b) Weak error K 7→ |p − pK,J |
+22
+
+=== page 23 ===
+A Postponed Proofs
+A.1 Lemma 3.1
+Proof. Let Yt :=
+p
+1 + ∥(Ot, Xt)∥2, and ˜τR := inf{t ≥ 0 : Yt ≥ R}, where (O, X) is the
+strong solution to (2.2). We prove (3.5) through
+Q(τR ≤ T ) ≤ Q(˜τR+1 ≤ T ) ≤ eιγT (2 − γ) EQ[|Y0|3γ ] (R + 1)3γ (1 − γ) ≤ 4eιγT (2 − γ) EQ[|Y0|3γ ] R3γ (1 − γ) ,
+where first and third inequalities are straightforward. So it suffices to show the second
+inequality. Let us consider Zt = e−ιtY 3 t with some positive ι to be specified later.
+According to Itˆo’s formula,
+dYt = 1 2Yt
+
+2Xt dXt + 2
+∞X
+j=0
+Ot(gj )gj (Xt)λ(Ot, Xt) dt + σ(Ot, Xt)2 dt
+
+
+− 1 2Y 3 t  X 2 t σ2(Ot, Xt) dt  ,
+and also that
+dZt = − ιZt dt + 3e−ιtY 2 t dYt + 3e−ιtYtd⟨Y ⟩t
+=e−ιt
+
+−ιY 3 t + 3Y 2 t
+ 
+2Xtb(Ot, Xt) + 2 P∞ j=0 Ot(gj )gj (Xt)ι(Ot, Xt) + σ(Ot, Xt)2
+2Yt
+!
+ dt
++ e−ιt
+ 
+− X 2 t σ2(Ot, Xt) 2Y 3 t + 3X 2 t σ(Ot, Xt)2 Yt
+!
+dt + local martingale.
+Note that P∞ j=0 Ot(gj )gj (Xt) ≤ ∥Ot∥ and |Xt|+∥Ot∥+1 ≤ 3Yt. Thanks to the linear
+growth assumption 2.1, with large enough ι which only depends on b, σ, λ, Z becomes a
+local supermartingale. As Z is nonnegative, it is a supermartingale. Therefore for any
+A ∈ F0 and stopping time τ , we have that
+EQ[Zτ 1 A] ≤ EQ[Z01 A].
+Applying [22, Lemma 3.2] with ft = Zt, gt = Z0, we get that for any γ ∈ (0, 1) and any
+stopping time τ
+EQ
+
+
+ 
+sup
+t≤τ ∧T
+Zt
+!γ 
+ ≤ 2 − γ 1 − γ EQ[Zγ 0 ],
+and thus
+e−ιγT EQ
+"
+sup
+t≤T
+Y 3γ t
+#
+≤ 2 − γ 1 − γ EQ[Y 3γ 0 ].
+We then conclude that
+Q(˜τR ≤ T ) = Q
+ 
+sup
+t≤T
+|Yt| ≥ R3γ
+!
+≤
+EQ
+h
+supt≤T Y 3γ t
+i
+R3γ ≤ eιγT (2 − γ) EQ[Y 3γ 0 ] (1 − γ)R3γ .
+23
+
+=== page 24 ===
+A.2 Proposition 3.1
+Proof. Let Zt := R t 0 (Xt − Xu) du. Noting that dZt = t dXt and dXt = −βZt dt + dWt
+leads to the linear SDE
+dZt = −βtZt dt + t dWt, Z0 = 0.
+Using the integrating factor e
+β
+2 t2 , it is then easily seen that Zt = e− β 2 t2 R t 0 e β 2 s2 s dWs.
+Integrating the SDE (4.1) and applying the stochastic Fubini theorem, we conclude that
+Xt = x − β
+Z t
+0
+Zu du + Wt = x − β
+Z t
+0
+e− β 2 u2
+Z u
+0
+e
+β
+2 s2 s dWs
+
+du + Wt
+= x +
+Z t
+0
+"
+1 − βse
+β
+2 s2
+Z t
+s
+e− β 2 u2 du
+#
+dWs = x +
+Z t
+0
+κ(t, s)dWs,
+with κ given in (4.3).
+References
+[1] M. Bena¨ım and O. Raimond. Self-interacting diffusions II: Convergence in law.
+Annales de l’Institut Henri Poincar´e (B) Probability and Statistics, 39(6):1043–
+1055, 2003.
+[2] M. Bena¨ım and O. Raimond. Self-interacting diffusions. III. Symmetric interactions.
+The Annals of Probability, 33(5):1716 – 1759, 2005.
+[3] M. Bena¨ım and O. Raimond. Self-Interacting Diffusions IV: Rate of Convergence.
+Electronic Journal of Probability, 16:1815 – 1843, 2011.
+[4] M. Bena¨ım, M. Ledoux, and O. Raimond. Self-interacting diffusions. Probability
+Theory and Related Fields, 122:1–41, 01 2002.
+[5] L. B´ethencourt, R. Catellier, and E. Tanr´e. Brownian particles controlled by their
+occupation measure. SIAM Journal on Control and Optimization, 63(2):1286–1313,
+2025.
+[6] J. P. Boyd. Chebyshev and Fourier Spectral Methods. Dover Publications, Mineola,
+NY, 2 edition, 2001.
+[7] J.-F. Chassagneux and G. Pag`es. Computing the invariant distribution of McKean-
+Vlasov SDEs by ergodic simulation. arXiv:2406.13370, 2025.
+[8] J. W. Cooley and J. W. Tukey. An algorithm for the machine calculation of complex
+fourier series. Mathematics of Computation, 19(90):297–301, 1965. doi: 10.1090/
+S0025-5718-1965-0178586-1.
+[9] A. M. G. Cox, S. K¨allblad, M. Larsson, and S. Svaluto-Ferro. Controlled measure-
+valued martingales: A viscosity solution approach. The Annals of Applied Proba-
+bility, 34(2):1987 – 2035, 2024.
+24
+
+=== page 25 ===
+[10] M. Cranston and Y. Le Jan. Self attracting diffusions: Two case studies. Mathe-
+matische Annalen, 303:87–93, 1995.
+[11] K. Du, Y. Jiang, and J. Li. Empirical approximation to invariant measures for
+McKean–Vlasov processes: Mean-field interaction vs self-interaction. Bernoulli, 29
+(3):2492–2518, Aug. 2023.
+[12] B. Dupire. Functional Itˆo calculus. Quantitative Finance, 19(5):721–729, 2019.
+Originally published as SSRN preprint, 2009.
+[13] I. Ekren, C. Keller, N. Touzi, and J. Zhang. On viscosity solutions of path dependent
+PDEs. The Annals of Probability, 42(1):204–236, 2014.
+[14] I. Ekren, N. Touzi, and J. Zhang. Viscosity solutions of fully nonlinear parabolic
+path dependent pdes: Part I. The Annals of Probability, 44(2):1212–1253, 2016.
+[15] M. M. Gomez, M. Sadeghpour, M. R. Bennett, G. Orosz, and R. M. Murray.
+Stability of systems with stochastic delays and applications to genetic regulatory
+networks. SIAM Journal on Applied Dynamical Systems, 15(4):1844–1873, 2016.
+[16] M. Grasselli and G. Pag`es. Strong solutions and quantization-based numerical
+schemes for a class of non-Markovian volatility models. arXiv:2503.00243, 2025.
+[17] X. Guo, H. Pham, and X. Wei. Itˆo’s formula for flows of measures on semimartin-
+gales. Stochastic Processes and their Applications, 159:350–390, 2023.
+[18] J. Guyon. Path-dependent volatility. Risk, 2014.
+[19] J. Guyon. Path-dependent volatility: Practical examples. Global Derivatives Con-
+ference, 2017. Presentation slides.
+[20] J. Guyon and P. Henry-Labord`ere. Nonlinear Option Pricing. Chapman and
+Hall/CRC Financial Mathematics Series. CRC Press, 2013.
+[21] J. Guyon and J. Lekeufack. Volatility is (mostly) path-dependent. Quantitative
+Finance, 23(9):1221–1258, 2023.
+[22] I. Gy¨ongy and N. Krylov. On the rate of convergence of splitting-up approximations
+for SPDEs. In E. Gin´e, C. Houdr´e, and D. Nualart, editors, Stochastic Inequalities
+and Applications, pages 301–321, Basel, 2003. Birkh¨auser Basel.
+[23] P. Kloeden and E. Platen. Numerical Solution of Stochastic Differential Equations.
+Springer Berlin, 1992.
+[24] E. Lenglart. Relation de domination entre deux processus. Annales de l’I.H.P.
+Probabilit´es et statistiques, 13(2):171–179, 1977.
+[25] O. Raimond. Self-attracting diffusions: Case of the constant interaction. Probability
+Theory and Related Fields, 107:177–196, 1997.
+25
+
+=== page 26 ===
+[26] H. M. Soner, V. Tissot-Daguette, and J. Zhang. Controlled occupied processes and
+viscosity solutions. arXiv:2411.12080, 2024.
+[27] V. Tissot-Daguette. Free Boundaries, Functional Expansions, and Occupied Pro-
+cesses. PhD thesis, Princeton University, 2024. Available at ProQuest Dissertations
+& Theses Global.
+[28] V. Tissot-Daguette. Pricing with passion: The local occupied volatility (LOV)
+model. The Journal of FinTech, 2026. In press.
+[29] V. Tissot-Daguette. Occupied processes: Going with the flow. Stochastic Processes
+and their Applications, 195:104890, 2026.
+[30] L. N. Trefethen. Spectral Methods in MATLAB. SIAM, Philadelphia, 2000.
+[31] G. Wei, Z. Wang, and W. Qian. Nonlinear Stochastic Control and Filtering with
+Engineering-Oriented Complexities. Engineering Systems and Sustainability. CRC
+Press, Boca Raton, 2016.
+26

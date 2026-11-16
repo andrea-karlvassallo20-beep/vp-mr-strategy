@@ -1,0 +1,1442 @@
+=== page 1 ===
+FinStressTS: A Parametric Synthetic Benchmark for Time-Series
+Forecasting in Finance
+Jiaze Sun
+National University of Singapore
+Singapore
+e0564914@u.nus.edu
+Kelvin J.L. Koa∗
+National University of Singapore
+Asian Institute of Digital Finance
+Singapore
+kelvin.koa@u.nus.edu
+Ruiyang Ni
+Nanyang Technological University
+Singapore
+rni001@e.ntu.edu.sg
+Yize Liu
+National University of Singapore
+Singapore
+liuyize51@u.nus.edu
+Haonan Chen
+National University of Singapore
+Singapore
+e1538433@u.nus.edu
+Ke-Wei Huang
+National University of Singapore
+Asian Institute of Digital Finance
+Singapore
+dishkw@nus.edu.sg
+Abstract
+Financial forecasting is notoriously difficult due to low signal-to-
+noise ratios, latent factors, and discontinuous jumps. A critical
+limitation of real-world benchmarks is the inability to attribute
+failure: researchers see that a model underperforms, but cannot
+isolate why, as the generative mechanisms are unobservable en-
+tanglements of noise and structure. Furthermore, real financial
+data reveal only one realized path, making it difficult to assess tail-
+risk calibration or data efficiency under controlled conditions. We
+introduce FinStressTS, a mechanism-aware synthetic benchmark
+designed to bridge this gap by providing controlled environments
+that link model behavior directly to specific structural causes.
+FinStressTS comprises 30 diagnostic environments organized
+around six canonical mechanism families: volatility clustering,
+multi-scale persistence, heavy-tailed shocks, regime switching, self-
+exciting jumps, and zero-inflated processes. We evaluate models
+on two distinct tasks: (1) Point Forecasting, where we assess pre-
+dictive accuracy using NMAE across five diagnostic settings; and
+(2) Probabilistic Forecasting, where we benchmark distributional
+calibration using CRPS in settings with known data-generating
+mechanisms—an evaluation difficult to isolate with real data. We
+rigorously evaluate 15 diverse models, ranging from classical econo-
+metric methods (HAR, VAR) to modern Transformer-based forecast-
+ers (PatchTST, iTransformer) and deep probabilistic architectures
+(DeepAR, TSFlow), while also conducting learning curve analyses
+to measure performance as a function of sample size.
+Our evaluation reveals critical insights: (1) Mechanism Sensi-
+tivity: Model performance is governed by architectural inductive
+bias rather than capacity—simple autoregressive and linear mod-
+els consistently outperform Transformers in volatility-, tail-, and
+jump-driven environments; (2) Distributional Alignment: Paramet-
+ric probabilistic models (e.g., DeepAR) achieve superior calibration
+∗Corresponding author.
+This work is licensed under a Creative Commons Attribution 4.0 International License.
+KDD ’26, Jeju Island, Republic of Korea
+© 2026 Copyright held by the owner/author(s).
+ACM ISBN 979-8-4007-2259-2/2026/08
+https://doi.org/10.1145/3770855.3817578
+in stationary settings by aligning with volatility dynamics, whereas
+flexible density models (e.g., flows and mixtures) are necessary
+when predictive distributions become multimodal or sparse; (3)
+Data Inefficiency: Neural models require substantially more data
+to match simple baselines and often fail to benefit from additional
+samples in stationary regimes, with larger datasets helping primar-
+ily when learning latent regime structure or complex predictive
+distributions. FinStressTS provides the community with an open
+framework to diagnose failure modes and advance risk-aware fore-
+casting; the accompanying code is available on GitHub.1
+CCS Concepts
+• Computing methodologies → Simulation evaluation; Neural
+networks; • General and reference→ Evaluation.
+Keywords
+time series forecasting, probabilistic forecasting, financial time se-
+ries, benchmarking, synthetic data, model diagnostics, data effi-
+ciency
+ACM Reference Format:
+Jiaze Sun, Kelvin J.L. Koa, Ruiyang Ni, Yize Liu, Haonan Chen, and Ke-Wei
+Huang. 2026. FinStressTS: A Parametric Synthetic Benchmark for Time-
+Series Forecasting in Finance. In Proceedings of the 32nd ACM SIGKDD
+Conference on Knowledge Discovery and Data Mining V.2 (KDD ’26), Au-
+gust 09–13, 2026, Jeju Island, Republic of Korea. ACM, New York, NY, USA,
+12 pages. https://doi.org/10.1145/3770855.3817578
+1 Introduction
+Financial time-series forecasting is a cornerstone of modern data
+science, yet it remains notoriously difficult due to extremely low
+signal-to-noise ratios and complex, evolving dynamics. Recent large-
+scale evaluations, such as the M6 Financial Forecasting Competition
+[39], have demonstrated that sophisticated deep learning models fre-
+quently fail to outperform simple heuristics when evaluated on raw
+market returns. While this highlights the inherent unpredictability
+of financial markets, it also exposes a fundamental methodological
+paradox: real-world benchmarks offer authenticity but function
+as "black boxes" for diagnosis. Financial data entangles multiple
+1Code available at: https://github.com/jiazeee/FinStressTS.
+arXiv:2606.03184v1  [q-fin.CP]  2 Jun 2026
+
+=== page 2 ===
+KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea Jiaze Sun et al.
+latent mechanisms simultaneously—such as volatility clustering,
+heavy-tailed shocks, regime shifts, and self-exciting jumps—making
+it impossible to isolate the specific structural reasons for a model’s
+underperformance. When a forecaster fails, researchers cannot
+definitively determine whether the error stems from distributional
+miscalibration, an inability to adapt to regime changes, or insuf-
+ficient data efficiency. This attribution gap limits what current
+benchmarks can verify: we can measure that modern architectures
+fail, but we cannot rigorously determine why.
+Current evaluation infrastructure reinforces this gap by forcing
+researchers to choose between authenticity and diagnostic control.
+Reliance on historical data restricts evaluation to a single, unre-
+peatable realization of a stochastic process, which precludes the
+systematic assessment of robustness and scalability that is essential
+for deployment. For instance, with real data, one cannot gener-
+ate "counterfactual" histories to test how a model’s performance
+degrades under increasingly "dirty" conditions (e.g., noisy inputs,
+outliers) or rigorously measure data efficiency (learning curves)
+without the confounding effects of time-varying regimes. Mean-
+while, alternative benchmarks fail to bridge this divide: generic
+time-series datasets lack the distinctive risk profile of financial
+markets, while existing synthetic baselines frequently rely on over-
+simplified Gaussian assumptions that fail to challenge modern ar-
+chitectures. Consequently, the community lacks a "middle ground"
+that combines parametric control with financial realism to enable
+the "green-box" testing impossible with real data.
+To provide this missing diagnostic “middle ground,” we introduce
+FinStressTS, a mechanism-aware synthetic benchmark for financial
+time-series forecasting. Rather than attempting to reproduce the
+full complexity of markets, FinStressTS follows a controlled stress-
+testing philosophy: it isolates six canonical mechanism families that
+correspond to widely documented stylized facts of asset returns
+[11], implements each family via parametrically controlled data-
+generating processes grounded in econometric theory, and system-
+atically varies their structural parameters to construct 30 diagnostic
+environments with controlled mechanism-specific settings. Because
+the generative mechanisms are known by design, FinStressTS en-
+ables evaluations that are infeasible with historical benchmarks: (i)
+probabilistic calibration can be assessed using proper scoring rules
+such as CRPS in settings where the data-generating mechanism is
+known [23], and (ii) data efficiency can be measured through learn-
+ing curves that quantify how much data different model classes
+require to reliably capture specific financial dynamics. In this way,
+FinStressTS turns opaque underperformance into interpretable di-
+agnosis—linking errors in accuracy, robustness, and calibration to
+precise structural causes rather than confounded explanations.
+FinStressTS is organized around six mechanism families that
+distinguish financial time series from generic forecasting domains
+and jointly capture core empirical regularities. (i) Volatility clus-
+tering models persistent conditional heteroskedasticity through
+ARCH/GARCH dynamics [7, 19]. (ii) Multi-scale volatility persis-
+tence captures long-memory effects across daily/weekly/monthly
+horizons via the HAR structure [13]. (iii) Heavy-tailed shocks and
+outliers reproduce fat-tailed return behavior [11] using Student-𝑡
+innovations (e.g., in conditional volatility settings) [8]. (iv) Regime
+switching represents abrupt, persistent shifts in market conditions
+using Markov-switching processes [25]. (v) Self-exciting jump dy-
+namics capture event clustering—where extreme events raise the
+likelihood of subsequent jumps—via Hawkes-type processes [26].
+(vi) Zero-inflated processes represent intermittent activity with ex-
+tended zero/near-zero periods punctuated by bursts, which is com-
+mon in illiquid assets and transaction-level settings [30]. For each
+family, FinStressTS defines multiple diagnostic levels by varying
+mechanism-specific parameters (e.g., persistence, tail heaviness,
+regime duration, jump intensity, zero inflation), enabling targeted
+failure-mode analysis under isolated mechanisms as well as realistic
+compound stress scenarios.
+We validate FinStressTS with a comprehensive benchmarking
+study of 15 forecasting models spanning classical statistical base-
+lines (e.g., AR/HAR/VAR), representative deep point forecasters (in-
+cluding Transformer variants such as PatchTST and iTransformer),
+and deep probabilistic architectures (e.g., autoregressive likelihood
+models and flow-based generative forecasters). We evaluate both
+point accuracy and distributional quality using proper scoring rules
+in controlled settings with known data-generating mechanisms
+[23], and we further conduct learning-curve analyses to quantify
+data efficiency under controlled mechanism stresses. This setup
+yields insights that black-box historical benchmarks cannot iso-
+late. First, limited mean predictability: across many environments,
+simple autoregressive-style baselines are competitive—and often
+superior—to complex neural models, emphasizing that increasing
+volatility complexity does not automatically translate into learnable
+improvements in expected returns. Second, mechanism sensitivity:
+architectures that perform well under stationary volatility cluster-
+ing can degrade sharply under regime-switching or jump-driven
+environments, revealing failure modes that are obscured when
+mechanisms are entangled. Third, probabilistic fragility: deep prob-
+abilistic models can exhibit systematic miscalibration under heavy
+tails and stress dynamics, whereas models with more flexible dis-
+tributional families can better preserve calibration. Finally, data
+inefficiency: learning curves reveal that neural methods often re-
+quire multiples more data than classical baselines to achieve stable
+performance and reliable calibration. Overall, FinStressTS acts as a
+diagnostic instrument rather than a leaderboard: it turns aggregate
+errors into mechanism-level failure signatures.
+This paper makes the following contributions:
+(1) A mechanism-aware benchmark comprising 30 diagnostic envi-
+ronments with parametric control over six canonical financial
+mechanisms, each grounded in established econometric theory
+and empirical stylized facts.
+(2) Evaluation of 15 forecasting models across point and probabilis-
+tic tasks, distinguishing between verifiable point accuracy and
+distributional calibration: unlike historical data where true dis-
+tributions and volatility dynamics are unobservable, our bench-
+mark enables evaluation under known data-generating mecha-
+nisms.
+(3) Systematic learning curve analyses that quantify data efficiency
+requirements across mechanism families, revealing how sample
+size impacts model reliability in ways obscured by standard
+train-test splits.
+(4) Open-source implementation with reproducible experimental
+protocols, enabling the community to conduct targeted stress
+
+=== page 3 ===
+FinStressTS: A Parametric Synthetic Benchmark for Time-Series Forecasting in Finance KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea
+tests, diagnose failure modes, and validate architectural claims
+under controlled conditions.
+(5) Empirical insights on mechanism-specific vulnerabilities that
+inform principled model selection for high-stakes financial ap-
+plications.
+2 Related Work
+2.1 Point and Probabilistic Time-Series
+Forecasting
+Research on time-series forecasting spans classical statistical models
+and modern deep learning architectures, with growing emphasis on
+both point prediction and full predictive distributions. We organize
+the discussion around three strands that align with the models
+evaluated in this work: (i) classical point forecasters, (ii) neural
+point forecasters, and (iii) probabilistic time-series models.
+Classical point forecasting. Classical econometric models remain
+strong baselines in financial forecasting due to their interpretability
+and robustness in low-data regimes. Linear autoregressive (AR)
+models and vector autoregressions (VAR) capture temporal and
+cross-variable dependencies through lagged relationships and are
+widely used in forecasting and policy analysis [9, 12, 36]. To cap-
+ture multi-scale dynamics in financial volatility, the Heterogeneous
+Autoregressive model of realized volatility (HAR-RV) regresses
+future realized volatility on daily, weekly, and monthly realized-
+volatility components, providing a parsimonious approximation
+to long-memory effects [3, 14]. Despite their structural simplicity,
+these models often remain competitive and provide useful reference
+points for benchmarking [38].
+Neural point forecasting. Recent work has developed a diverse
+set of neural architectures for time-series forecasting. A first family
+emphasizes simplicity and decomposition, exemplified by DLinear,
+which decomposes an input series into trend and residual seasonal
+components before applying linear mappings [57]. A second family
+adapts transformers to time series via specialized inductive biases,
+including Fourier enhanced structure (FEDformer) [60] and series
+decomposition with auto-correlation (Autoformer) [56]. A third
+family focuses on efficiency and structure-aware tokenization, such
+as PatchTST, which operates on local temporal patches [41], and
+iTransformer, which inverts the standard tokenization by embed-
+ding each variate’s historical sequence as a token and applying
+attention across variates rather than temporal tokens [33]. More
+recent models, including TimeXer [54], explicitly model cross-time
+and cross-variate feature interactions, and the Nonstationary Trans-
+former [34] introduces learned de-stationarization to better handle
+distributional shifts. Collectively, these models provide representa-
+tive and competitive neural point-forecasting baselines.
+Probabilistic time-series forecasting. Beyond point prediction, prob-
+abilistic forecasting aims to model full predictive distributions, cap-
+turing uncertainty, tail risk, and dependence structure [22]. DeepAR
+is a seminal deep autoregressive model that parameterizes a likeli-
+hood conditioned on past observations and covariates, enabling scal-
+able probabilistic forecasting across multiple related series [1, 48].
+Subsequent work has developed more flexible generative and distri-
+butional models for multivariate forecasting. TimeGrad introduces
+autoregressive denoising diffusion models for multivariate prob-
+abilistic time-series forecasting, sampling future values through
+a learned reverse diffusion process [46]. TSFlow uses conditional
+flow matching with Gaussian-process priors and optimal-transport
+paths to model time-series distributions and enable probabilistic
+forecasting [29]. TimeMCL adapts Multiple Choice Learning to
+multivariate forecasting, using multiple prediction heads and a
+Winner-Takes-All loss to generate diverse plausible futures [15].
+More recently, RATD augments diffusion-based forecasting with
+an embedding-based retrieval module, using retrieved reference
+series to guide the denoising process [32], while QuantileFormer
+formulates Transformer-based probabilistic forecasting through
+pattern-mixture decomposition, combining quantile drift, diver-
+gence patterns, and Gaussian mixture components [49]. Evaluation
+typically relies on proper scoring rules such as the Continuous
+Ranked Probability Score (CRPS) [22].
+Relation to our study. We benchmark classical econometric base-
+lines (AR, HAR, VAR), modern neural point forecasters (DLinear,
+Autoformer, FEDformer, PatchTST, iTransformer, TimeXer, and
+Nonstationary Transformer), and representative probabilistic mod-
+els (DeepAR, TimeGrad, TSFlow, TimeMCL, RATD, and Quantile-
+Former). This enables systematic comparison across traditional
+versus neural methods and point versus probabilistic paradigms
+under controlled financial mechanisms within a unified evaluation
+framework.
+2.2 Time-Series Benchmarking and Evaluation
+Benchmarking has played a central role in advancing time-series
+forecasting (TSF) by providing standardized datasets, evaluation
+protocols, and reproducible baselines [24, 38]. A wide range of
+general-purpose tools and libraries have been developed for fore-
+casting research and practice, including Prophet for decomposable
+business forecasting [51], sktime for unified time-series learning
+[35], TSlib for neural forecasting models [53], and GluonTS and
+NeuralForecast for probabilistic forecasting and evaluation [1, 43].
+More recently, ProbTS has sought to unify point and probabilistic
+evaluation and integrate emerging time-series foundation models
+[59]. These toolkits have significantly improved reproducibility and
+accessibility in TSF research. However, they are largely domain-
+agnostic and are not designed around financial-market stress mech-
+anisms.
+In terms of datasets and benchmarks, early collections such as
+M3 and M4 focused primarily on univariate forecasting across
+heterogeneous domains [37, 38], while the Monash Time Series
+Forecasting Archive further consolidated diverse public datasets for
+evaluating global forecasting algorithms [24]. More recent bench-
+marks and libraries have increasingly emphasized multivariate
+and long-horizon forecasting, including the long-term forecasting
+benchmarks popularized by LTSF-Linear and unified multivariate
+evaluation pipelines such as BasicTS+ [50, 57]. As highlighted by
+TFB [45], existing TSF benchmarks exhibit three recurring issues:
+insufficient coverage of data domains, stereotype bias against tradi-
+tional statistical methods, and inconsistent or inflexible evaluation
+pipelines. TFB addresses these concerns by expanding domain cov-
+erage, including traditional baselines, and standardizing evaluation
+protocols. Nevertheless, such benchmarks are primarily designed
+
+=== page 4 ===
+KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea Jiaze Sun et al.
+for broad empirical comparison across heterogeneous domains. Fi-
+nancial time series, when included, typically constitute one domain
+among many rather than the organizing focus of the benchmark.
+A complementary line of work has explored finance-oriented
+datasets aimed at improving the evaluation of time-series models
+on financial tasks. Prior studies in financial time series modeling
+often assess models on different sliced historical data from specific
+markets [10, 16, 52, 58]. To address the lack of consistency across
+such evaluations, FinTSB [27] constructed consolidated datasets us-
+ing 15 years of historical stock data. While this approach improves
+consistency in time horizons and market coverage, it still relies on
+real financial data that must be continuously updated. Moreover,
+real financial data entangle multiple stochastic mechanisms simul-
+taneously, making it difficult to attribute model performance to
+specific structural features or to conduct controlled stress tests.
+To obtain greater experimental control, several prior works have
+explored synthetic or semi-synthetic datasets. Examples include
+simulation-based generators such as GRATIS [28], synthetic bench-
+mark suites for generative time-series modeling such as TSGM
+[42] and TSGBench [5], and task-specific synthetic datasets such
+as TimeGraph [21] for causal discovery. In parallel, recent work
+has applied generative models to produce synthetic financial time
+series, including GAN-based approaches such as TimeGAN [44]
+and QuantGAN [55]. These methods focus on data realism, augmen-
+tation, or generative modeling, but are not designed as mechanism-
+controlled benchmarks for forecasting evaluation.
+Therefore, our work introduces a mechanism-aware, paramet-
+ric synthetic benchmark for financial time-series forecasting. By
+organizing six interpretable mechanism families with controllable
+diagnostic levels, the benchmark enables targeted stress testing,
+failure-mode analysis, and data-efficiency studies across models
+within a unified evaluation framework.
+2.3 Financial Econometrics and Mechanism
+Modeling
+Financial econometrics provides the theoretical foundation for our
+mechanism-aware design by documenting the structural proper-
+ties that fundamentally shape forecasting difficulty. Canonical styl-
+ized facts include volatility clustering and multi-scale persistence
+[13, 18], which create time-varying risk; heavy tails and regime
+shifts [12, 25], which violate Gaussian stationarity; and jump dy-
+namics—both self-exciting [26] and zero-inflated [2]—which intro-
+duce discontinuity and event clustering. Finally, markets exhibit
+strong cross-sectional dependence governed by latent factor struc-
+tures [20, 47]. FinStressTS builds directly on these insights by op-
+erationalizing these mechanisms into parametric data-generating
+processes, enabling controlled evaluation under financially realistic
+yet diagnostically transparent conditions.
+3 The FinStressTS Stress-Test Suite
+3.1 Design principles
+We design FinStressTS as a mechanism-aware stress-test suite for
+financial time-series forecasting, guided by four core principles:
+(1) Econometric fidelity. All six mechanisms are grounded in
+canonical stochastic processes that are well-established in the-
+ory and empirically validated across decades of econometric
+literature. Unlike arbitrary synthetic data, each case targets a
+specific, universally recognized stylized fact of asset returns,
+ensuring that the benchmark rigorously reflects the theoretical
+and empirical consensus on how financial markets evolve.
+(2) Diagnostic control. Our parametric approach allows us to
+explicitly control the strength of specific time-series proper-
+ties—such as the magnitude of jumps or the frequency of regime
+switches. This enables targeted stress testing: by varying these
+diagnostic control parameters, we can rigorously evaluate how
+well data-driven algorithms capture specific structural patterns
+and identify the exact threshold at which they fail.
+(3) Verifiable ground truth. Because the data-generating process
+is fully specified, FinStressTS provides access to the true condi-
+tional distribution P(𝑦𝑡+1 |H𝑡). This enables a rigorous evalua-
+tion of probabilistic calibration and tail risk—assessments that
+are theoretically impossible with real-world data where the true
+distribution is unknown.
+(4) Multivariate panel structure. Each environment generates a
+panel of return series whose co-movement is driven by shared
+latent drivers, such as common factors, regimes, or market-
+wide jumps, rather than by an arbitrary covariance matrix. This
+makes cross-sectional dependence interpretable and control-
+lable: by varying the strength of common factors, heterogeneity
+in factor loadings, and idiosyncratic noise, FinStressTS tests
+whether multivariate models can exploit shared structure across
+series.
+Together, these principles ensure that FinStressTS supports con-
+trolled, interpretable, and reproducible evaluation, enabling the
+community to move beyond leaderboard rankings toward a diag-
+nostic understanding of the forecasting robustness.
+3.2 Mechanism families
+We instantiate six mechanism families and each family isolates
+a distinct stochastic mechanism, supporting multivariate panel
+generation and interpretable diagnostic control (Figure 1).
+(1) Volatility clustering (GARCH-type). Finance motivation:
+conditional heteroskedasticity and volatility persistence are the
+most robust empirical regularities in returns [7, 19]. Diagnos-
+tic question: can a model adapt its risk over time and avoid
+systematically under/overestimating volatility during clusters
+of large moves? Controls: persistence strength and mean re-
+version, cross-sectional heterogeneity, and the signal-to-noise
+ratio between systematic (factor) and idiosyncratic risk.
+(2) Multi-scale volatility persistence (HAR-type). Finance
+motivation: realized volatility exhibits persistence across mul-
+tiple horizons and long-memory-like behavior [4, 13]. Diagnos-
+tic question: can a model learn multi-scale temporal depen-
+dence (daily/weekly/monthly components) rather than overfit-
+ting short-term fluctuations? Controls: overall persistence, the
+relative weight of long-horizon components (memory decay),
+and baseline noise levels.
+(3) Heavy tails and outliers. Finance motivation: return distri-
+butions are fat-tailed and contain extreme observations far more
+frequently than Gaussian models predict [11, 17]. Diagnostic
+question: do forecasts remain reliable under tail risk, and are
+
+=== page 5 ===
+FinStressTS: A Parametric Synthetic Benchmark for Time-Series Forecasting in Finance KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea
+Table 1: Summary of FinStressTS mechanism families. Each
+case targets a specific financial stylized fact and exposes in-
+terpretable parameters for diagnostic control.
+Case Mechanism Diagnostic Parameters (Control
+Knobs)
+1 Volatility clustering Persistence (𝜌); Heterogeneity; SNR
+2 Multi-scale persistence Long-memory share
+3 Heavy tails / Outliers Tail d.o.f. (𝜈); Outlier prob.; Magni-
+tude
+4 Regime switching Break frequency; Regime separation;
+Memory
+5 Self-exciting jumps Excitation (𝛼); Decay (𝛽); Criticality
+6 Zero-inflated jumps Sparsity (𝜋); Active intensity; Magni-
+tude
+predictive intervals/calibration robust when shocks are heavy-
+tailed or contaminated? Controls: tail heaviness (degrees of
+freedom), contamination frequency, and outlier magnitude.
+(4) Regime switching with structural breaks. Finance mo-
+tivation: markets undergo persistent shifts (e.g., crises) that
+violate global stationarity assumptions. Diagnostic question:
+can a model detect and adapt to distribution shift without
+catastrophic degradation? Controls: regime persistence and
+break frequency, regime separation (identifiability), and within-
+regime temporal dependence.
+(5) Self-exciting jumps (Hawkes-type). Finance motivation:
+news shocks often cluster in time, producing cascades rather
+than independent jumps; Hawkes processes are a standard
+model for such self-excitation in finance [6, 26]. Diagnostic
+question: can a model remain calibrated and responsive when
+shocks arrive in bursts and stress propagates across assets?
+Controls: excitation strength (criticality), memory decay, cross-
+sectional coupling via shared jump components, and jump mag-
+nitude distributions.
+(6) Zero-inflated jumps (sparse activity). Finance motivation:
+illiquid assets and transaction-level series exhibit long inac-
+tive stretches punctuated by bursts of activity, producing zero-
+inflation and intermittent dynamics [30, 31]. Diagnostic ques-
+tion: can a model handle sparse-event regimes without col-
+lapsing calibration? Controls: sparsity rate, conditional arrival
+intensity in the active state, and jump magnitude distributions.
+A summary of these families and control parameters is provided
+in Table 1. Full specifications are deferred to Appendix A.
+3.3 Diagnostic level design
+For each mechanism family, we define five diagnostic levels that
+systematically vary structural parameters to enable targeted failure-
+mode analysis. Rather than imposing monotonic difficulty, each
+level isolates a specific mechanism dimension ceteris paribus: Level
+1 provides a balanced baseline for standardized comparison and
+data-efficiency experiments, while Levels 2–5 each vary specific
+parameters to stress-test distinct structural properties (e.g., regime
+duration vs. regime separation vs. within-regime persistence). This
+design enables direct attribution of performance changes to precise
+causal factors, transforming opaque failures into interpretable diag-
+noses. Complete parameter specifications for all 30 environments
+are provided in the accompanying repository.
+4 Models and Evaluation Protocol
+We evaluate 15 models along five structural dimensions.
+(1) Linear vs. Nonlinear: We compare linear and low-capacity
+baselines (AR, HAR, VAR, DLinear) with deep nonlinear archi-
+tectures.
+(2) Marginal vs. Cross-Series Information Use: We contrast
+models that explicitly mix cross-series information (VAR, iTrans-
+former, TimeXer) with channel-independent or marginal fore-
+casting models (e.g., PatchTST, DeepAR).
+(3) Stationarity Handling: We compare models with explicit de-
+composition, normalization, or stationarization mechanisms
+(DLinear, Autoformer, FEDformer, Non-stationary Transformer)
+against other attention-based forecasters to test robustness to
+trends and regime shifts.
+(4) Probabilistic Family: We compare likelihood-based forecast-
+ing (DeepAR), flow-matching and diffusion-style generative
+forecasting (TSFlow, RATD), multiple-choice sample genera-
+tion (TimeMCL), and quantile-structured probabilistic modeling
+(QuantileFormer).
+(5) Dependence Modeling: We distinguish marginal probabilistic
+forecasts from joint multivariate forecast samples for 𝑃(y𝑡+1 |
+H𝑡), enabling evaluation of aggregate risk calibration.
+4.1 Forecasting Task and Protocol
+Data Generation and Splitting. For each mechanism, we gen-
+erate a panel of 𝑁 = 50 series and 𝑇total = 2, 000 steps. We use a
+strict chronological split (60% training, 20% validation, 20% test-
+ing). Standardization (𝑧-score) is applied per series 𝑖 using statistics
+computed solely on the training split.
+Rolling One-Step-Ahead Forecasting. We adopt a rolling set-
+ting (𝐻 = 1). At time 𝑡, the model observes a lookback window
+Y𝑡−𝐿+1:𝑡 ∈ R𝑁×𝐿 (where 𝐿 = 96) containing histories for all se-
+ries. Parameters are fixed after training; no online updates are
+performed.
+Point Forecasting Task. A point forecaster learns a mapping
+𝑓𝜃 : R𝑁×𝐿 → R𝑁 to predict the vector of next-step values:
+ˆy𝑡+1 =[ ˆ𝑦1,𝑡+1,..., ˆ𝑦𝑁,𝑡+1]⊤ =𝑓𝜃 (Y𝑡−𝐿+1:𝑡). (1)
+Models capable of global modeling process the full panel jointly;
+univariate models process each series 𝑖 independently to output
+ˆ𝑦𝑖,𝑡+1.
+Probabilistic Forecasting Task. Probabilistic models estimate
+the conditional distribution of the next step given historyH𝑡 :
+ˆ𝐹𝑡+1 (z|H𝑡)≈ P(𝑌1,𝑡+1 ≤𝑧1,...,𝑌𝑁,𝑡+1 ≤𝑧𝑁 |H𝑡). (2)
+Depending on the architecture, this predictive distribution may
+factorize across series as ˛𝑁 𝑖=1 ˆ𝐹𝑖,𝑡+1 (𝑧𝑖 |H𝑡) or model cross-series
+dependencies explicitly. Evaluation uses 𝑆 = 100 Monte Carlo sam-
+ples{ˆy(𝑠) 𝑡+1}𝑆 𝑠=1 drawn from ˆ𝐹𝑡+1.
+
+=== page 6 ===
+KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea Jiaze Sun et al.
+0.75
+0.50
+0.25
+0.00
+0.25
+0.50
+y
+case1_garch
+0.10
+0.05
+0.00
+0.05
+0.10
+case2_har
+1.00
+0.75
+0.50
+0.25
+0.00
+0.25
+0.50
+0.75
+case3_heavytail
+0.04
+0.03
+0.02
+0.01
+0.00
+0.01
+0.02
+0.03
+case4_regime
+0.04
+0.02
+0.00
+0.02
+0.04
+case5_hawkes
+0.100
+0.075
+0.050
+0.025
+0.000
+0.025
+0.050
+case6_zip
+0 200 400
+time
+0.03
+0.04
+0.05
+0.06
+0.07
+0.08sigma2_idio
+0 200 400
+time
+0.0005
+0.0010
+0.0015
+0.0020
+0.0025sigma2_idio
+0 200 400
+time
+0.04
+0.06
+0.08
+0.10sigma2_idio
+0 250 500 750 1000
+time
+0.0
+0.5
+1.0
+1.5
+2.0regime
+0 200 400
+time
+0.04
+0.02
+0.00
+0.02
+jump size
+0 200 400
+time
+0.10
+0.05
+0.00
+0.05
+jump size
+Figure 1: Illustrative examples of synthetic time series generated by each mechanism family under the Level 1 diagnostic
+configuration. Each column corresponds to one mechanism. The top row displays the observed series, and the bottom row
+displays the associated latent process governing conditional variance, regime state, or jump magnitude.
+Table 2: Point forecasting results (NMAE↓). Rows are (case, level). Best is bold; second best is underlined.
+Case Level Scenario Point models (NMAE↓)
+Naive AR(1) HAR VAR DLinear PatchTST iTrans AutoF FEDF NTrans TimeXer
+1
+L1 Baseline 1.1267 0.7970 0.7989 0.8105 0.7980 0.8065 0.8096 0.8629 0.8472 0.8093 0.8040
+L2 Factor persistence 1.1054 0.8002 0.8009 0.8178 0.7971 0.8069 0.8150 0.8519 0.8453 0.8070 0.8082
+L3 Idio persistence 1.1122 0.7870 0.7881 0.8037 0.7883 0.7945 0.7994 0.8527 0.8439 0.7965 0.7949
+L4 Heterogeneity 1.1137 0.7972 0.7976 0.8147 0.7993 0.8122 0.8232 0.8593 0.8507 0.8077 0.8129
+L5 Low SNR 1.1197 0.7942 0.7947 0.8124 0.7940 0.8002 0.8012 0.8666 0.8517 0.8037 0.7996
+2
+L1 Baseline 1.1277 0.7881 0.7886 0.8088 0.7903 0.8042 0.8151 0.8507 0.8449 0.7981 0.8062
+L2 High persistence 1.0170 0.7386 0.7393 0.7620 0.7394 0.7508 0.7540 0.8152 0.7962 0.7488 0.7464
+L3 Long memory 1.1126 0.7900 0.7909 0.8132 0.7917 0.8033 0.8091 0.8508 0.8443 0.7965 0.8030
+L4 High noise 1.0953 0.7905 0.7911 0.8118 0.7919 0.8025 0.8126 0.8525 0.8472 0.7997 0.8034
+L5 Low SNR 1.1096 0.7846 0.7863 0.8075 0.7848 0.7982 0.8056 0.8364 0.8197 0.7914 0.8007
+3
+L1 Heavy tails 1.0999 0.7704 0.7715 0.7839 0.7721 0.7837 0.7914 0.8417 0.8242 0.7808 0.7838
+L2 Extreme tails 0.8228 0.5634 0.5651 0.5894 0.5657 0.5764 0.5909 0.6512 0.6384 0.5767 0.5792
+L3 Frequent outliers 1.0146 0.6996 0.7011 0.7201 0.7020 0.7076 0.7167 0.7695 0.7610 0.7105 0.7087
+L4 Large outliers 0.9455 0.6474 0.6482 0.6728 0.6498 0.6562 0.6626 0.7381 0.7250 0.6631 0.6558
+L5 Worst-case tails 0.7782 0.5036 0.5059 0.5390 0.5087 0.5107 0.5243 0.6544 0.6269 0.5289 0.5120
+4
+L1 Moderate regimes 1.0040 0.7839 0.7845 0.8037 0.7910 0.7850 0.7861 0.8755 0.8565 0.8064 0.7848
+L2 Frequent switches 0.9992 0.7808 0.7812 0.7992 0.7875 0.7850 0.7887 0.9037 0.8620 0.8017 0.7822
+L3 Subtle regimes 1.0068 0.7801 0.7806 0.7961 0.7866 0.7871 0.7876 0.8568 0.8484 0.8015 0.7855
+L4 Strong regimes 0.9025 0.7144 0.7126 0.7218 0.7176 0.7183 0.7174 0.7884 0.7909 0.7394 0.7152
+L5 Persistent regimes 0.7113 0.6357 0.6365 0.6518 0.7497 0.6398 0.6424 0.8434 0.8271 0.7502 0.6408
+5
+L1 Moderate clustering 1.0249 0.7481 0.7490 0.7658 0.7505 0.7571 0.7628 0.8259 0.8034 0.7633 0.7577
+L2 Strong clustering 1.0641 0.7743 0.7754 0.7905 0.7755 0.7819 0.7862 0.8444 0.8350 0.7878 0.7811
+L3 Long-memory clustering 1.0181 0.7364 0.7386 0.7595 0.7414 0.7531 0.7648 0.8157 0.8050 0.7508 0.7530
+L4 High jump rate 1.0494 0.7626 0.7631 0.7878 0.7654 0.7720 0.7812 0.8483 0.8302 0.7808 0.7730
+L5 Heavy-tailed jumps 0.8582 0.6018 0.6031 0.6350 0.6059 0.6326 0.6304 0.7233 0.6758 0.6148 0.6256
+6
+L1 Baseline 0.9243 0.6926 0.6937 0.7095 0.7031 0.7056 0.7148 0.7911 0.7684 0.7151 0.7057
+L2 Rare events 0.9483 0.7215 0.7223 0.7374 0.7319 0.7292 0.7334 0.8061 0.7930 0.7460 0.7287
+L3 Bursty events 0.8649 0.6334 0.6364 0.6630 0.6521 0.6731 0.6764 0.7319 0.7125 0.6607 0.6618
+L4 Heavy-tailed events 0.7810 0.5764 0.5785 0.7074 0.5962 0.6318 0.6154 0.7686 0.7011 0.6004 0.6088
+L5 Persistent background 0.6645 0.5618 0.5627 0.5791 0.6726 0.5814 0.5838 0.7443 0.7148 0.6570 0.5804
+Abbrev: iTrans=iTransformer; AutoF=Autoformer; FEDF=FEDformer; NTrans=Nonstationary Transformer.
+Note: Although originally proposed for modeling realized volatility, HAR is applied here as a linear multi-scale autoregressive baseline for mean forecasting on the target series.
+4.2 Evaluation Metrics
+We evaluate point and probabilistic forecasts using scale-normalized
+metrics that are comparable across mechanism families and sensi-
+tive to uncertainty calibration.
+Point forecasting metric. For point forecasters, we report a
+volatility-normalized mean absolute error, denoted as NMAE𝜎. Let
+ˆ𝑦𝑖,𝑡 be the one-step-ahead prediction for series 𝑖 at time 𝑡, and 𝑦𝑖,𝑡
+the ground truth. Over the test window containing 𝑇test time steps
+and𝑁 series, we define
+NMAE𝜎 =
+1
+𝑇test𝑁
+˝𝑁
+𝑖=1
+˝𝑇test
+𝑡 =1
+𝑦𝑖,𝑡 − ˆ𝑦𝑖,𝑡 
+Std {𝑦𝑖,𝑡}𝑖=1..𝑁,𝑡 =1..𝑇test  . (3)
+
+=== page 7 ===
+FinStressTS: A Parametric Synthetic Benchmark for Time-Series Forecasting in Finance KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea
+20% 40% 60% 80% 100%
+Percentage of Training Samples (%)
+0.72
+0.73
+0.74
+0.75
+0.76
+0.77
+0.78
+0.79
+0.80nmae_sigma
+AR
+20% 40% 60% 80% 100%
+Percentage of Training Samples (%)
+0.72
+0.74
+0.76
+0.78
+0.80
+0.82
+0.84nmae_sigma
+HAR
+20% 40% 60% 80% 100%
+Percentage of Training Samples (%)
+0.8
+0.9
+1.0
+1.1
+1.2nmae_sigma
+VAR
+20% 40% 60% 80% 100%
+Percentage of Training Samples (%)
+0.73
+0.74
+0.75
+0.76
+0.77
+0.78
+0.79
+0.80nmae_sigma
+DLinear
+20% 40% 60% 80% 100%
+Percentage of Training Samples (%)
+0.850
+0.875
+0.900
+0.925
+0.950
+0.975
+1.000
+1.025nmae_sigma
+Autoformer
+20% 40% 60% 80% 100%
+Percentage of Training Samples (%)
+0.80
+0.85
+0.90
+0.95
+1.00nmae_sigma
+FEDformer
+20% 40% 60% 80% 100%
+Percentage of Training Samples (%)
+0.75
+0.80
+0.85
+0.90
+0.95nmae_sigma
+PatchTST
+20% 40% 60% 80% 100%
+Percentage of Training Samples (%)
+0.74
+0.76
+0.78
+0.80
+0.82
+0.84
+0.86
+0.88nmae_sigma
+iTransformer
+20% 40% 60% 80% 100%
+Percentage of Training Samples (%)
+0.74
+0.76
+0.78
+0.80
+0.82
+0.84
+0.86
+0.88nmae_sigma
+TimeXer
+20% 40% 60% 80% 100%
+Percentage of Training Samples (%)
+0.76
+0.78
+0.80
+0.82
+0.84
+0.86
+0.88
+0.90nmae_sigma
+Nonstationary_Transformer
+case1_garch_5levels case2_har_5levels case3_heavytail_5levels case4_regime_5levels case5_hawkes_5levels case6_zip_5levels
+Figure 2: Data-efficiency learning curves for 10 models across six synthetic mechanism families. Each subplot shows NMAE𝜎
+versus training set size.
+The denominator is the pooled empirical standard deviation over all
+series and time steps in the test set. This measures error relative to
+the intrinsic volatility of the data, enabling fair comparison across
+mechanisms with different scales.
+Probabilistic forecasting metric. For probabilistic forecast-
+ers, we use the Continuous Ranked Probability Score (CRPS) [40],
+which evaluates the agreement between a predictive cumulative
+distribution function𝐹 and an observation𝑦:
+CRPS(𝐹,𝑦) =
+∫
+R
+ 𝐹(𝑧)− 1{𝑦≤𝑧}2 𝑑𝑧. (4)
+CRPS is a proper scoring rule and is minimized in expectation when
+the predictive distribution matches the data-generating distribution.
+In practice, probabilistic models provide Monte Carlo samples
+{𝑥(𝑠)}𝑆 𝑠=1 ∼𝐹. We compute CRPS using the sample-based estimator
+CRPS(𝐹,𝑦) = 1 𝑆 𝑆∑︁ 𝑠=1 |𝑥(𝑠)−𝑦|− 1 2𝑆2 𝑆∑︁ 𝑠=1 𝑆∑︁ 𝑠′=1 |𝑥(𝑠)−𝑥(𝑠′)|. (5)
+For multivariate time series, we evaluate calibration on the cross-
+sectional aggregate, reflecting portfolio-level distributional accu-
+racy. Let 𝑦sum 𝑤,ℎ = ˝𝑁 𝑖=1 𝑦𝑖,𝑤,ℎ and 𝑥sum(𝑠) 𝑤,ℎ = ˝𝑁 𝑖=1 𝑥(𝑠) 𝑖,𝑤,ℎ denote the
+summed ground truth and sampled forecasts for evaluation win-
+dow𝑤 and horizonℎ. We compute
+CRPSsum = 1 𝑊𝐻 𝑊∑︁ 𝑤=1 𝐻∑︁ ℎ=1 CRPS  𝐹 sum 𝑤,ℎ,𝑦sum 𝑤,ℎ  . (6)
+To compare across datasets with different scales, we report a nor-
+malized version by dividing CRPSsum by 1 𝑊𝐻 ˝ 𝑤,ℎ |𝑦sum 𝑤,ℎ|.
+Data Efficiency. To quantify sample complexity, we train mod-
+els on increasing training sizes 𝑛∈{100, 200, 300, 400, 600, 800, 1000,
+1200} while keeping the test set fixed, constructing learning curves
+(Figure 2) to identify the minimum data required for neural models
+to outperform linear baselines.
+5 Results
+5.1 Point Forecasting: The Dominance of
+Robustness
+Table 2 reports NMAE𝜎 across all environments. Within this con-
+trolled setting, the results suggest that model performance is more
+closely associated with mechanism-compatible inductive biases
+than with model capacity alone.
+Finding 1: Robustness trumps expressiveness. Simple base-
+lines (AR, HAR) and the linear decomposition model (DLinear)
+consistently outperform complex Transformers. This indicates that
+in low signal-to-noise financial environments (Cases 1–3), the pri-
+mary task is robust mean-reversion rather than complex pattern
+matching. Deep models with high capacity (e.g., Nonstationary
+Transformer) tend to overfit idiosyncratic noise, whereas DLinear’s
+structural constraint—modeling trends without attention—acts as a
+beneficial regularizer against overreaction to jumps and outliers.
+Finding 2: Local attention outperforms global mixing. Among
+attention-based models, PatchTST typically ranks highest. Its patch-
+based design preserves local temporal structure without forcing
+global cross-series mixing. In contrast, architectures designed for
+global correlation (iTransformer, TimeXer) struggle in jump-driven
+environments (Cases 5–6). This suggests that global attention mech-
+anisms may diffuse the impact of local shocks, diluting the signal
+required to predict sudden moves.
+Finding 3: Decomposition fails without periodicity. Auto-
+former and FEDformer, which rely on seasonal–trend decomposi-
+tion and frequency-domain representations, underperform consis-
+tently across nearly all synthetic environments. Unlike traffic, en-
+ergy, or weather data, financial return series tend to exhibit weaker
+periodic structure and are dominated instead by stochastic volatil-
+ity, regime changes, and heavy-tailed shocks. As a result, inductive
+biases designed to extract periodic components provide little ad-
+vantage and can even hinder performance. These results highlight
+
+=== page 8 ===
+KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea Jiaze Sun et al.
+Table 3: Probabilistic forecasting results (CRPS↓).
+Case Level Scenario Probabilistic models (CRPS↓)
+DeepAR TimeGrad TSFlow TimeMCL RATD QFormer
+1
+L1 Baseline 0.7346 1.0687 1.0695 0.9667 0.7208 0.9604
+L2 Factor persistence 0.7378 1.0579 1.0296 0.9636 0.7493 0.9697
+L3 Idio persistence 0.7371 1.0629 0.8316 1.0166 0.9092 0.9558
+L4 Heterogeneity 0.7323 1.0698 0.9935 1.0597 0.8290 0.9597
+L5 Low SNR 0.7438 1.0210 0.9748 1.0341 1.1623 0.9394
+2
+L1 Baseline 0.7312 1.0491 1.1959 0.9911 0.7863 0.9951
+L2 High persistence 0.7316 1.0807 0.9587 1.0310 0.7922 0.9920
+L3 Long memory 0.7281 1.1038 1.0526 1.0276 0.7800 0.9955
+L4 High noise 0.7363 1.0826 0.9791 0.9760 0.7906 0.9890
+L5 Low SNR 0.7338 1.0603 1.1436 1.0865 0.7395 0.9952
+3
+L1 Heavy tails 0.7370 1.0454 0.9929 1.0062 0.8465 0.9583
+L2 Extreme tails 0.7570 1.0052 1.0136 0.9653 0.9188 0.9647
+L3 Frequent outliers 0.7628 1.0832 1.1309 0.9932 0.9643 0.9503
+L4 Large outliers 0.7618 1.0372 0.8987 1.0314 0.9674 0.9497
+L5 Worst-case tails 0.7654 0.9573 0.8541 1.0564 1.2393 0.9457
+4
+L1 Moderate regimes 0.6421 0.6840 0.6039 0.8521 1.9729 0.9902
+L2 Frequent switches 0.6628 0.7951 0.7809 0.9244 2.2090 0.9926
+L3 Subtle regimes 0.8121 0.9383 0.8409 1.0200 2.2031 0.9919
+L4 Strong regimes 0.9844 0.9709 1.3420 1.5561 1.2589 0.9970
+L5 Persistent regimes 0.5333 0.6836 0.7799 0.7767 1.9097 0.9828
+5
+L1 Moderate clustering 0.9051 1.1326 1.1165 1.1689 1.4851 0.9969
+L2 Strong clustering 0.9095 1.2770 1.3267 1.1077 1.4627 0.9960
+L3 Long-memory clustering 0.9338 1.2030 1.2134 1.1073 1.2756 0.9968
+L4 High jump rate 0.9262 1.2509 1.5418 1.1599 1.2673 0.9964
+L5 Heavy-tailed jumps 0.9727 1.1350 1.7447 1.3144 1.8884 0.9961
+6
+L1 Baseline 0.9270 1.1704 1.1310 1.0982 1.4757 0.9951
+L2 Rare events 0.8769 1.1403 0.8379 1.0434 1.7746 0.9945
+L3 Bursty events 0.9724 1.0791 1.2106 1.0984 1.2565 0.9977
+L4 Heavy-tailed events 1.0548 1.1237 0.8055 1.6101 2.3690 0.9940
+L5 Persistent background 0.9157 1.0738 0.8100 1.0692 1.2109 0.9906
+Abbrev: QFormer=QuantileFormer.
+Figure 3: CRPS as a function of training sam-
+ple ratio across the six synthetic cases for each
+probabilistic model. Each line corresponds to
+one case (Case 1–6). Lower is better.
+a fundamental mismatch between popular time-series inductive bi-
+ases and the structural properties of financial data. Notably, many of
+these architectures were originally designed for long-horizon fore-
+casting in strongly periodic domains (e.g., traffic, energy, weather),
+whereas our evaluation focuses on one-step-ahead prediction in
+noise-dominated environments. This contrast further illustrates
+that inductive biases effective for long-term seasonal prediction do
+not necessarily transfer to short-horizon financial forecasting.
+5.2 Probabilistic Forecasting: The Role of
+Inductive Bias
+Table 3 reports CRPS, revealing how well a model’s distributional
+assumptions align with the mechanism.
+Finding 4: Parametric alignment yields efficiency. DeepAR
+achieves the best CRPS in 24 of 30 settings. Its success is not acci-
+dental: its autoregressive Gaussian likelihood with time-varying
+scale (𝜎𝑡 ) is structurally isomorphic to the GARCH dynamics gen-
+erating Case 1 and Case 2. This confirms that correct parametric
+specification (even if simple) beats flexible but data-hungry density
+estimators in stationary regimes.
+Finding 5: Flexibility wins under multimodality. The limits
+of DeepAR are exposed in Case 4 (Regime Switching) and Case 6
+(Zero-Inflated Jumps). Here, the true posterior is multimodal (mix-
+ture of regimes) or zero-inflated. TSFlow, which uses normalizing
+flows to model arbitrary densities, overtakes DeepAR in these set-
+tings (e.g., Case 4 L1), proving that generative flexibility is essential
+when the unimodal Gaussian assumption is violated.
+Finding 6: Diffusion models struggle with structural breaks.
+RATD performs well on smooth volatility processes but degrades
+on discontinuous mechanisms (Cases 4 & 6). This suggests that
+diffusion-based residuals struggle to adapt to abrupt structural
+breaks where the "noise" distribution shifts instantaneously.
+5.3 Data Efficiency: The Cost of Complexity
+Figure 2 (Point Forecasting) reveals a stark efficiency gap between
+statistical and neural methods.
+The “Early Saturation” Effect. For volatility (Case 1) and tail-
+driven (Case 3) mechanisms, performance saturates rapidly. Neural
+models improve up to ∼40% of the training data and then plateau.
+This implies that the "signal" in one-step financial forecasting is
+information-sparse; providing more data effectively just samples
+more noise, offering diminishing returns for complex architectures.
+
+=== page 9 ===
+FinStressTS: A Parametric Synthetic Benchmark for Time-Series Forecasting in Finance KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea
+Regimes demand data. The only exception is Case 4 (Regime
+Switching), where learning curves remain steep even at larger sam-
+ple sizes. This supports that inferring latent structural changes is an
+information-dense task requiring significantly more history than
+learning stationary volatility dynamics.
+5.4 Probabilistic Data Efficiency
+Figure 3 (Probabilistic CRPS) highlights that calibration is far more
+data-intensive than point prediction.
+Data-insensitive baselines. DeepAR is remarkably data-efficient
+in stationary settings (Cases 1–3), stabilizing with very few samples.
+This robustness makes it a strong baseline for data-scarce financial
+applications, provided the stationarity assumption holds.
+Generative models require scale. Flexible models like TSFlow
+and TimeMCL show visible improvements as data volume increases,
+particularly in complex Case 4. Unlike DeepAR, they must learn
+the distributional shape from scratch (without a parametric prior).
+Consequently, they require 2–3× more data to achieve competi-
+tive calibration, highlighting a clear trade-off between asymptotic
+flexibility and small-sample robustness.
+6 Limitations and Future Directions
+FinStressTS is a diagnostic benchmark rather than a full market
+simulator, and we note several limitations that motivate future
+extensions. First, as a parametric simulator, FinStressTS does not
+model many real-market complexities (e.g., limit order books). Thus,
+strong performance should be interpreted as robustness and cali-
+bration under specified mechanisms, not as a guarantee of trading
+profitability. We view FinStressTS as complementary to real-data
+evaluation. Second, each of the six mechanism families is imple-
+mented via canonical econometric formulations. These choices are
+well-grounded but not exhaustive; alternative DGPs (e.g., stochas-
+tic volatility) and parameter configurations may induce different
+learning dynamics and shift relative rankings. An important next
+step is to add multiple variants per mechanism family and test ro-
+bustness across formulations. Third, our benchmark focuses on
+fixed-horizon forecasting and does not yet cover (i) multi-step
+forecasting, (ii) online adaptation under nonstationarity, or (iii)
+decision-aware evaluation for downstream tasks (portfolio alloca-
+tion). While FinStressTS supports compound stresses, expanding
+interacting mechanism combinations (e.g., regime shifts with heavy
+tails and jumps) would further enrich diagnostics. Last, although
+we evaluate 15 diverse models, the space of time-series methods is
+evolving, requiring ongoing benchmark updates. Learning curves
+and distributional metrics also add computational cost, which may
+limit diagnostic granularity for very large models. We mitigate this
+with standardized protocols and release FinStressTS as an extensible
+artifact to support community-driven expansion.
+7 Conclusion
+We introduced FinStressTS, a mechanism-aware synthetic bench-
+mark that addresses a fundamental gap in financial forecasting
+evaluation: the inability to isolate why models fail. By organiz-
+ing 30 diagnostic environments around six canonical mechanisms
+with parametric control, FinStressTS transforms opaque failures
+into interpretable diagnoses, enabling researchers to trace under-
+performance to precise structural causes rather than confounded
+explanations inherent in historical data.
+Our evaluation of 15 models across point and probabilistic tasks
+reveals four insights impossible to obtain from black-box bench-
+marks. First, simple autoregressive models dominate one-step mean
+forecasting across nearly all mechanisms, showing that financial
+prediction difficulty lies primarily in modeling uncertainty, not con-
+ditional means. Second, performance is highly mechanism-dependent:
+models excelling under stationary volatility (e.g., DeepAR) degrade
+catastrophically under regime switching, where flexible density
+models (e.g., TSFlow) gain advantage. Third, ground-truth access via
+known DGPs reveals persistent probabilistic miscalibration—deep
+models fail at reliable uncertainty quantification. Fourth, learning
+curves expose stark efficiency gaps: neural methods require 2–3×
+more samples than classical baselines for comparable calibration,
+with some never reaching parity—particularly concerning given
+data scarcity from regime shifts in finance.
+These findings have direct implications: when data are limited or
+regimes shift, sophisticated neural architectures may underperform
+simpler alternatives. Mechanism-aware model selection matters
+more than universal sophistication; probabilistic calibration must
+be validated independently from point accuracy; and data efficiency
+should be a first-order design consideration. Beyond empirical in-
+sights, FinStressTS provides open-source infrastructure enabling
+researchers to stress-test architectures, validate robustness claims,
+and systematically compare models under controlled conditions—a
+living resource the community can extend with additional mecha-
+nisms, compound scenarios, and multi-step evaluation.
+References
+[1] Alexander Alexandrov, Konstantinos Benidis, Michael Bohlke-Schneider, Valentin
+Flunkert, Jan Gasthaus, Tim Januschowski, Danielle C Maddix, Syama Rangapu-
+ram, David Salinas, Jasper Schulz, et al. 2020. Gluonts: Probabilistic and neural
+time series modeling in python. Journal of Machine Learning Research 21, 116
+(2020), 1–6.
+[2] Torben G Andersen, Tim Bollerslev, and Francis X Diebold. 2007. Roughing it
+up: Including jump components in the measurement, modeling, and forecasting
+of return volatility. The review of economics and statistics 89, 4 (2007), 701–720.
+[3] Torben G Andersen, Tim Bollerslev, Francis X Diebold, and Paul Labys. 2003.
+Modeling and forecasting realized volatility. Econometrica 71, 2 (2003), 579–625.
+[4] Torben G. Andersen, Tim Bollerslev, Francis X. Diebold, and Paul Labys. 2003.
+Modeling and Forecasting Realized Volatility. Econometrica 71, 2 (2003), 579–625.
+doi:10.1111/1468-0262.00402
+[5] Yihao Ang, Qiang Huang, Yifan Bao, Anthony KH Tung, and Zhiyong Huang.
+2023. TSGBench: Time Series Generation Benchmark. Proceedings of the VLDB
+Endowment 17, 3 (2023), 305–318.
+[6] Emmanuel Bacry, Iacopo Mastromatteo, and Jean-François Muzy. 2015. Hawkes
+Processes in Finance. Market Microstructure and Liquidity 1, 1 (2015), 1550005.
+doi:10.1142/S2382626615500057
+[7] Tim Bollerslev. 1986. Generalized Autoregressive Conditional Heteroskedasticity.
+Journal of Econometrics 31, 3 (1986), 307–327. doi:10.1016/0304-4076(86)90063-1
+[8] Tim Bollerslev. 1987. A Conditionally Heteroskedastic Time Series Model for
+Speculative Prices and Rates of Return. The Review of Economics and Statistics 69,
+3 (1987), 542–547.
+[9] George Box and GM Jenkins. 1976. Analysis: Forecasting and Control. San
+francisco (1976).
+[10] Weijun Chen, Shun Li, Xipu Yu, Heyuan Wang, Wei Chen, and Tengjiao Wang.
+2024. Automatic de-biased temporal-relational modeling for stock investment
+recommendation. In Proceedings of the Thirty-Third International Joint Conference
+on Artificial Intelligence. 1999–2008.
+[11] Rama Cont. 2001. Empirical properties of asset returns: stylized facts and statisti-
+cal issues. Quantitative Finance 1, 2 (2001), 223–236. doi:10.1080/713665670
+[12] Rama Cont. 2001. Empirical properties of asset returns: stylized facts and statisti-
+cal issues. Quantitative finance 1, 2 (2001), 223.
+
+=== page 10 ===
+KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea Jiaze Sun et al.
+[13] Fulvio Corsi. 2009. A Simple Approximate Long-Memory Model of Realized
+Volatility. Journal of Financial Econometrics 7, 2 (2009), 174–196. doi:10.1093/
+jjfinec/nbp001
+[14] Fulvio Corsi. 2009. A simple approximate long-memory model of realized volatil-
+ity. Journal of financial econometrics 7, 2 (2009), 174–196.
+[15] Adrien Cortés, Rémi Rehm, and Victor Letzelter. 2025. Winner-takes-all for Multi-
+variate Probabilistic Time Series Forecasting. In ICML 2025: The 42nd International
+Conference on Machine Learning.
+[16] Yitong Duan, Lei Wang, Qizhong Zhang, and Jian Li. 2022. Factorvae: A proba-
+bilistic dynamic factor model based on variational autoencoder for predicting
+cross-sectional stock returns. In Proceedings of the AAAI conference on artificial
+intelligence, Vol. 36. 4468–4476.
+[17] Paul Embrechts, Claudia Klüppelberg, and Thomas Mikosch. 1997. Modelling
+Extremal Events for Insurance and Finance. Springer. doi:10.1007/978-3-642-
+33483-2
+[18] Robert F Engle. 1982. Autoregressive conditional heteroscedasticity with esti-
+mates of the variance of United Kingdom inflation. Econometrica: Journal of the
+econometric society (1982), 987–1007.
+[19] Robert F. Engle. 1982. Autoregressive Conditional Heteroskedasticity with Esti-
+mates of the Variance of United Kingdom Inflation. Econometrica 50, 4 (1982),
+987–1007. doi:10.2307/1912773
+[20] Eugene F Fama and Kenneth R French. 1993. Common risk factors in the returns
+on stocks and bonds. Journal of financial economics 33, 1 (1993), 3–56.
+[21] Muhammad Hasan Ferdous, Emam Hossain, and Md Osman Gani. 2025. Time-
+graph: Synthetic benchmark datasets for robust time-series causal discovery. In
+Proceedings of the 31st ACM SIGKDD Conference on Knowledge Discovery and Data
+Mining V. 2. 5425–5435.
+[22] Tilmann Gneiting and Matthias Katzfuss. 2014. Probabilistic forecasting. Annual
+Review of Statistics and Its Application 1, 1 (2014), 125–151.
+[23] Tilmann Gneiting and Adrian E. Raftery. 2007. Strictly Proper Scoring Rules,
+Prediction, and Estimation. J. Amer. Statist. Assoc. 102, 477 (2007), 359–378.
+doi:10.1198/016214506000001437
+[24] Rakshitha Godahewa, Christoph Bergmeir, Geoffrey I Webb, Rob J Hyndman,
+and Pablo Montero-Manso. 2021. Monash time series forecasting archive. arXiv
+preprint arXiv:2105.06643 (2021).
+[25] James D Hamilton. 1989. A new approach to the economic analysis of nonstation-
+ary time series and the business cycle. Econometrica: Journal of the econometric
+society (1989), 357–384.
+[26] Alan G. Hawkes. 1971. Spectra of some self-exciting and mutually exciting point
+processes. Biometrika 58, 1 (1971), 83–90. doi:10.1093/biomet/58.1.83
+[27] Yifan Hu, Yuante Li, Peiyuan Liu, Yuxia Zhu, Naiqi Li, Tao Dai, Shu-tao Xia,
+Dawei Cheng, and Changjun Jiang. 2025. Fintsb: A comprehensive and practical
+benchmark for financial time series forecasting. arXiv preprint arXiv:2502.18834
+(2025).
+[28] Yanfei Kang, Rob J Hyndman, and Feng Li. 2020. GRATIS: GeneRAting TIme
+Series with diverse and controllable characteristics. Statistical Analysis and Data
+Mining: The ASA Data Science Journal 13, 4 (2020), 354–376.
+[29] Marcel Kollovieh, Marten Lienen, David Lüdke, Leo Schwinn, and Stephan Gün-
+nemann. 2024. Flow matching with gaussian process priors for probabilistic time
+series forecasting. arXiv preprint arXiv:2410.03024 (2024).
+[30] Diane Lambert. 1992. Zero-Inflated Poisson Regression, with an Application to
+Defects in Manufacturing. Technometrics 34, 1 (1992), 1–14. doi:10.1080/00401706.
+1992.10485228
+[31] David A. Lesmond, Joseph P. Ogden, and Charles A. Trzcinka. 1999. A New
+Estimate of Transaction Costs. The Review of Financial Studies 12, 5 (1999),
+1113–1141. doi:10.1093/rfs/12.5.1113
+[32] Jingwei Liu, Ling Yang, Hongyan Li, and Shenda Hong. 2024. Retrieval-augmented
+diffusion models for time series forecasting. Advances in Neural Information
+Processing Systems 37 (2024), 2766–2786.
+[33] Yong Liu, Tengge Hu, Haoran Zhang, Haixu Wu, Shiyu Wang, Lintao Ma, and
+Mingsheng Long. 2023. itransformer: Inverted transformers are effective for time
+series forecasting. arXiv preprint arXiv:2310.06625 (2023).
+[34] Yong Liu, Haixu Wu, Jianmin Wang, and Mingsheng Long. 2022. Non-stationary
+transformers: Exploring the stationarity in time series forecasting. Advances in
+neural information processing systems 35 (2022), 9881–9893.
+[35] Markus Löning, Anthony Bagnall, Sajaysurya Ganesh, Viktor Kazakov, Jason
+Lines, and Franz J Király. 2019. sktime: A unified interface for machine learning
+with time series. arXiv preprint arXiv:1909.07872 (2019).
+[36] Helmut Lütkepohl. 2013. Introduction to multiple time series analysis. Springer
+Science & Business Media.
+[37] Spyros Makridakis and Michele Hibon. 2000. The M3-Competition: results,
+conclusions and implications. International journal of forecasting 16, 4 (2000),
+451–476.
+[38] Spyros Makridakis, Evangelos Spiliotis, and Vassilios Assimakopoulos. 2018. The
+M4 Competition: Results, findings, conclusion and way forward. International
+Journal of forecasting 34, 4 (2018), 802–808.
+[39] Spyros Makridakis, Evangelos Spiliotis, Ross Hollyman, Fotios Petropoulos, Nor-
+man Swanson, and Anil Gaba. 2024. The M6 forecasting competition: Bridging
+the gap between forecasting and investment decisions. International Journal of
+Forecasting (2024).
+[40] James E Matheson and Robert L Winkler. 1976. Scoring rules for continuous
+probability distributions. Management science 22, 10 (1976), 1087–1096.
+[41] Y Nie. 2022. A Time Series is Worth 64Words: Long-term Forecasting with
+Transformers. arXiv preprint arXiv:2211.14730 (2022).
+[42] Alexander Nikitin, Letizia Iannucci, and Samuel Kaski. 2024. TSGM: a flexible
+framework for generative modeling of synthetic time series. Advances in Neural
+Information Processing Systems 37 (2024), 129042–129061.
+[43] Kin G. Olivares, Cristian Challú, Azul Garza, Max Mergenthaler Canseco, and
+Artur Dubrawski. 2022. NeuralForecast: User friendly state-of-the-art neural
+forecasting models. PyCon Salt Lake City, Utah, US 2022. https://github.com/
+Nixtla/neuralforecast
+[44] Cemal Öztürk. 2024. Enhancing Financial Time-Series Analysis with TimeGAN:
+A Novel Approach. In 2024 9th International Conference on Computer Science and
+Engineering (UBMK). IEEE, 447–450.
+[45] Xiangfei Qiu, Jilin Hu, Lekui Zhou, Xingjian Wu, Junyang Du, Buang Zhang,
+Chenjuan Guo, Aoying Zhou, Christian S Jensen, Zhenli Sheng, et al. 2024. TFB:
+Towards Comprehensive and Fair Benchmarking of Time Series Forecasting
+Methods. Proceedings of the VLDB Endowment 17, 9 (2024), 2363–2377.
+[46] Kashif Rasul, Calvin Seward, Ingmar Schuster, and Roland Vollgraf. 2021. Au-
+toregressive denoising diffusion models for multivariate probabilistic time series
+forecasting. In International conference on machine learning. PMLR, 8857–8868.
+[47] Stephen A Ross. 2013. The arbitrage theory of capital asset pricing. In Handbook
+of the fundamentals of financial decision making: Part I. World Scientific, 11–30.
+[48] David Salinas, Valentin Flunkert, Jan Gasthaus, and Tim Januschowski. 2020.
+DeepAR: Probabilistic forecasting with autoregressive recurrent networks. Inter-
+national journal of forecasting 36, 3 (2020), 1181–1191.
+[49] Yimiao Shao, Wenzhong Li, Kang Xia, Kaijie Lin, Mingkai Lin, and Sanglu Lu. 2025.
+QuantileFormer: Probabilistic Time Series Forecasting with a Pattern-Mixture
+Decomposed VAE Transformer. In Proceedings of the Thirty-Fourth International
+Joint Conference on Artificial Intelligence. 6147–6155.
+[50] Zezhi Shao, Fei Wang, Yongjun Xu, Wei Wei, Chengqing Yu, Zhao Zhang, Di
+Yao, Tao Sun, Guangyin Jin, Xin Cao, et al. 2024. Exploring progress in multi-
+variate time series forecasting: Comprehensive benchmarking and heterogeneity
+analysis. IEEE Transactions on Knowledge and Data Engineering 37, 1 (2024),
+291–305.
+[51] Sean J Taylor and Benjamin Letham. 2018. Forecasting at scale. The American
+Statistician 72, 1 (2018), 37–45.
+[52] Heyuan Wang, Tengjiao Wang, Shun Li, Jiayi Zheng, Shijie Guan, and Wei Chen.
+2022. Adaptive Long-Short Pattern Transformer for Stock Investment Selection..
+In IJCAI. 3970–3977.
+[53] Yuxuan Wang, Haixu Wu, Jiaxiang Dong, Yong Liu, Mingsheng Long, and Jianmin
+Wang. 2024. Deep Time Series Models: A Comprehensive Survey and Benchmark.
+(2024).
+[54] Yuxuan Wang, Haixu Wu, Jiaxiang Dong, Guo Qin, Haoran Zhang, Yong Liu,
+Yunzhong Qiu, Jianmin Wang, and Mingsheng Long. 2024. Timexer: Empowering
+transformers for time series forecasting with exogenous variables. Advances in
+Neural Information Processing Systems 37 (2024), 469–498.
+[55] Magnus Wiese, Robert Knobloch, Ralf Korn, and Peter Kretschmer. 2020. Quant
+GANs: deep generation of financial time series. Quantitative Finance 20, 9 (2020),
+1419–1440.
+[56] Haixu Wu, Jiehui Xu, Jianmin Wang, and Mingsheng Long. 2021. Autoformer: De-
+composition transformers with auto-correlation for long-term series forecasting.
+Advances in neural information processing systems 34 (2021), 22419–22430.
+[57] Ailing Zeng, Muxi Chen, Lei Zhang, and Qiang Xu. 2023. Are transformers
+effective for time series forecasting?. In Proceedings of the AAAI conference on
+artificial intelligence, Vol. 37. 11121–11128.
+[58] Liang Zeng, Lei Wang, Hui Niu, Ruchen Zhang, Ling Wang, and Jian Li. 2024.
+Trade when opportunity comes: price movement forecasting via locality-aware
+attention and iterative refinement labeling. In Proceedings of the Thirty-Third
+International Joint Conference on Artificial Intelligence. 6134–6142.
+[59] Jiawen Zhang, Xumeng Wen, Zhenwei Zhang, Shun Zheng, Jia Li, and Jiang Bian.
+2024. ProbTS: Benchmarking point and distributional forecasting across diverse
+prediction horizons. Advances in Neural Information Processing Systems 37 (2024),
+48045–48082.
+[60] Tian Zhou, Ziqing Ma, Qingsong Wen, Xue Wang, Liang Sun, and Rong Jin. 2022.
+Fedformer: Frequency enhanced decomposed transformer for long-term series
+forecasting. In International conference on machine learning. PMLR, 27268–27286.
+
+=== page 11 ===
+FinStressTS: A Parametric Synthetic Benchmark for Time-Series Forecasting in Finance KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea
+A Data Generation
+FinStressTS generates multivariate panels of 𝑁 return series over
+𝑇 retained time steps after burn-in. Each case targets one canon-
+ical financial mechanism, and its five diagnostic settings vary in-
+terpretable mechanism controls rather than defining a monotone
+difficulty scale.
+Shared panel structure. For factor-based cases, returns are gener-
+ated from a linear factor panel:
+𝑦𝑖,𝑡 =𝛼𝑖 +𝛽⊤ 𝑖 𝑓𝑡 +𝑢𝑖,𝑡, (7)
+where 𝑓𝑡 ∈ R𝐾 denotes systematic factors, 𝑢𝑖,𝑡 is the idiosyncratic
+component, and (𝛼𝑖,𝛽𝑖) are firm-specific intercepts and factor load-
+ings drawn once per panel and fixed over time. Conditional on the
+shared factors and variance paths, idiosyncratic residuals are inde-
+pendent across firms. Thus, cross-sectional dependence is induced
+through common latent drivers rather than arbitrary covariance
+matrices.
+For jump-based cases, cross-sectional dependence is induced by
+a common market-wide compound jump𝐽𝑡 :
+𝑦𝑖,𝑡 =𝛼𝑖 +𝜙𝑦𝑖,𝑡−1 +𝛽⊤ 𝑖 𝑓𝑡 +𝜀𝑖,𝑡 +𝛾𝑖𝐽𝑡,
+𝜀𝑖,𝑡 ∼N(0,𝜎2 𝜀). (8)
+In the implemented Case 5 and Case 6, 𝑓𝑡 ≡ 0, so dependence is
+driven by the shared jump process and firm-level exposure𝛾𝑖.
+A.1 Case 1: Volatility Clustering with Factor
+and Idiosyncratic GARCH
+This case isolates volatility clustering. Both systematic factors and
+idiosyncratic residuals follow GARCH(1,1) conditional variance
+dynamics. All nonlinear behavior arises through conditional het-
+eroskedasticity, while cross-sectional dependence is induced by the
+factor structure in Eq. (7).
+Systematic factors. For each factor 𝑗 = 1,...,𝐾,
+𝑓𝑗,𝑡 =𝜇𝑓 +𝜎𝑓,𝑗,𝑡𝜀𝑗,𝑡, 𝜀𝑗,𝑡 ∼N(0, 1),
+𝜎2 𝑓,𝑗,𝑡 =𝜔𝑓 +𝛼𝑓 (𝑓𝑗,𝑡−1 −𝜇𝑓)2 +𝛽𝑓𝜎2 𝑓,𝑗,𝑡−1. (9)
+We require 𝛼𝑓 ≥ 0, 𝛽𝑓 ≥ 0, and 𝛼𝑓 +𝛽𝑓 < 1. All factors share the
+same unconditional variance ¯𝜎2 𝑓 , implemented by
+𝜔𝑓 =(1−𝛼𝑓 −𝛽𝑓) ¯𝜎2 𝑓. (10)
+Idiosyncratic residuals. For each series𝑖,
+𝑢𝑖,𝑡 =𝜎𝑢,𝑖,𝑡𝜂𝑖,𝑡, 𝜂𝑖,𝑡 ∼N(0, 1),
+𝜎2 𝑢,𝑖,𝑡 =𝜔𝑢,𝑖 +𝛼𝑢𝑢2 𝑖,𝑡−1 +𝛽𝑢𝜎2 𝑢,𝑖,𝑡−1, (11)
+with 𝛼𝑢 +𝛽𝑢 < 1. Cross-sectional heterogeneity is introduced by
+firm-specific unconditional idiosyncratic variances:
+¯𝜎2 𝑢,𝑖 = ¯𝜎2 𝑢 exp
+
+𝜎log𝜉𝑖 − 1 2𝜎2 log
+
+, 𝜉𝑖 ∼N(0, 1),
+𝜔𝑢,𝑖 =(1−𝛼𝑢 −𝛽𝑢) ¯𝜎2 𝑢,𝑖.
+(12)
+The exponential normalization preserves E[ ¯𝜎2 𝑢,𝑖] = ¯𝜎2 𝑢.
+Parameterization and simulation. Volatility persistence is con-
+trolled by
+𝜌𝑓 =𝛼𝑓 +𝛽𝑓, 𝜌𝑢 =𝛼𝑢 +𝛽𝑢. (13)
+Given a fixed share 𝜅∈(0, 1), we set 𝛼 =𝜅𝜌 and 𝛽 =(1 −𝜅)𝜌. We
+draw (𝛼𝑖,𝛽𝑖) once per panel, initialize conditional variances at their
+unconditional levels, simulate factor and idiosyncratic GARCH
+paths recursively, and construct returns using Eq. (7).
+A.2 Case 2: Multi-Scale Volatility Persistence
+via HAR Dynamics
+This case models multi-scale volatility persistence, where condi-
+tional volatility depends on lagged squared shocks aggregated over
+multiple horizons. The panel structure is Eq. (7); both factor and id-
+iosyncratic components are conditionally Gaussian with HAR-style
+variance recursions.
+Conditional innovations. For factors and residuals,
+𝑓𝑗,𝑡 =𝜇𝑓,𝑗 +
+√︃
+𝜎2 𝑓,𝑗,𝑡𝜀𝑗,𝑡, 𝜀𝑗,𝑡 ∼N(0, 1),
+𝑢𝑖,𝑡 =
+√︃
+𝜎2 𝑢,𝑖,𝑡𝜂𝑖,𝑡, 𝜂𝑖,𝑡 ∼N(0, 1).
+(14)
+In implementation,𝜇𝑓,𝑗 = 0.
+HAR-style variance recursion. Let 𝑥𝑡 denote a generic innovation,
+either a demeaned factor shock or an idiosyncratic shock. The
+HAR-style variance recursion is
+𝜎2 𝑡 =𝑐+𝑏1𝑥2 𝑡−1
++𝑏5
+1
+𝐿5,𝑡
+𝐿5,𝑡∑︁
+ℓ=1
+𝑥2 𝑡−ℓ
++𝑏22
+1
+𝐿22,𝑡
+𝐿22,𝑡∑︁
+ℓ=1
+𝑥2 𝑡−ℓ,
+(15)
+where
+𝐿5,𝑡 = min(5,𝑡), 𝐿22,𝑡 = min(22,𝑡). (16)
+The averages include lag 1; a small floor𝜖 > 0 ensures positivity.
+For factors and residuals, the same feedback coefficients are used,
+but baseline levels may differ:
+𝑐𝑢 =𝑐idio, 𝑐𝑓 =𝛾𝑐idio, (17)
+so𝛾 controls the factor-to-idiosyncratic baseline variance ratio.
+Parameterization and simulation. Instead of specifying (𝑏1,𝑏5,𝑏22)
+directly, we use
+𝑠 =𝑏1 +𝑏5 +𝑏22, 𝜆 = 𝑏22 𝑠 , (18)
+where 𝑠 ∈ [0, 1) controls total feedback strength and 𝜆∈ [0, 1]
+controls the long-horizon share. The implementation maps
+𝑏22 =𝜆𝑠, 𝑏1 =𝑏5 = (1−𝜆)𝑠 2 . (19)
+We draw cross-sectional parameters once, initialize variances at
+their baseline levels, recursively update HAR variances, generate
+Gaussian shocks, and construct returns via Eq. (7).
+A.3 Case 3: Heavy-Tailed Innovations and Rare
+Outliers
+This case isolates distributional misspecification using factor-GARCH
+dynamics with heavy-tailed innovations and transient outliers.
+
+=== page 12 ===
+KDD ’26, August 09–13, 2026, Jeju Island, Republic of Korea Jiaze Sun et al.
+Volatility dynamics. Factors and base idiosyncratic components
+follow GARCH(1,1):
+𝑓𝑗,𝑡 =𝜎𝑓,𝑗,𝑡𝑧𝑓,𝑗,𝑡,
+𝑢base 𝑖,𝑡 =𝜎𝑢,𝑖,𝑡𝑧𝑖,𝑡, (20)
+with
+𝜎2 𝑓,𝑗,𝑡 =𝜔𝑓 +𝛼(𝜎𝑓,𝑗,𝑡−1𝑧𝑓,𝑗,𝑡−1)2 +𝛽𝜎2 𝑓,𝑗,𝑡−1,
+𝜎2 𝑢,𝑖,𝑡 =𝜔𝑢 +𝛼(𝑢base 𝑖,𝑡−1)2 +𝛽𝜎2 𝑢,𝑖,𝑡−1. (21)
+We require𝜌 =𝛼+𝛽 < 1 and set
+𝜔𝑓 =(1−𝜌) ¯𝜎2 𝑓, 𝜔𝑢 =(1−𝜌) ¯𝜎2 𝑢. (22)
+Heavy tails and outliers. To induce excess kurtosis, we use stan-
+dardized Student-𝑡 shocks:
+𝑧𝑓,𝑗,𝑡,𝑧𝑖,𝑡 ∼
+√︂
+𝜈− 2
+𝜈 𝑡𝜈, 𝜈 > 2. (23)
+Rare additive idiosyncratic outliers are sampled independently:
+𝑜𝑖,𝑡 =
+(
+𝑠𝑖,𝑡 ·𝑐out𝜎𝑢,𝑖,𝑡, with prob.𝜋out,
+0, otherwise, (24)
+where 𝑠𝑖,𝑡 ∈{−1,+1} and 𝑐out = outlier_scale. The observed
+idiosyncratic component is
+𝑢𝑖,𝑡 =𝑢base 𝑖,𝑡 +𝑜𝑖,𝑡. (25)
+The GARCH recursion depends only on 𝑢base 𝑖,𝑡 , so the outliers rep-
+resent transient distributional deviations rather than persistent
+volatility shocks.
+A.4 Case 4: Market-Wide Regime Switching
+with Structural Breaks
+Case 4 induces piecewise-stationary behavior through a shared
+latent market regime. Let 𝑠𝑡 ∈{0, 1, 2} denote the time-level regime,
+interpreted as Up, Stable, and Down. Regime-specific parameters
+(𝜇𝑠,𝜎𝑠) control the conditional mean and volatility in state𝑠.
+Block-wise regime dynamics. To model structural breaks rather
+than rapid switching, the regime is constant within blocks of length
+𝐵. Let 𝑇full =𝑇+𝑇burn and 𝑏(𝑡) =⌈𝑡/𝐵⌉. The block-level regimes
+follow a Markov chain:
+Pr(𝑠𝑏 = 𝑗|𝑠𝑏−1 =𝑖) = Π𝑖𝑗, 𝑖,𝑗∈{0, 1, 2}, (26)
+where Π is row-stochastic. The time-level state is𝑠𝑡 =𝑠𝑏(𝑡).
+Regime-dependent panel process. Conditional on {𝑠𝑡}, each series
+follows
+𝑦𝑖,𝑡 =𝑎𝑖𝜇𝑠𝑡 +𝜙𝑦𝑖,𝑡−1 +𝑏𝑖𝜎𝑠𝑡 𝜀𝑖,𝑡,
+𝜀𝑖,𝑡 ∼N(0, 1), (27)
+where 𝜙 ∈(−1, 1) controls within-regime persistence. The firm-
+specific exposure scalars are drawn as
+𝑎𝑖 ∼ LN
+
+− 1 2𝜏2 𝜇,𝜏2 𝜇
+
+, 𝑏𝑖 ∼ LN
+
+− 1 2𝜏2 𝜎,𝜏2 𝜎
+
+, (28)
+so that E[𝑎𝑖] = E[𝑏𝑖] = 1, where LN denotes the log-normal distri-
+bution.
+A.5 Case 5: Market-Wide Self-Exciting Jumps
+Case 5 isolates self-exciting event clustering. A market-wide event
+process generates clustered jump counts, and the resulting com-
+pound jump affects all series through firm-level exposures.
+Hawkes-type intensity. Let 𝜆𝑡 denote jump intensity and 𝑁𝑡 the
+event count. The discrete-time Hawkes recursion is
+𝜆𝑡 =𝜇+𝛿(𝜆𝑡−1 −𝜇)+𝛼𝑁𝑡−1,
+𝑁𝑡 | 𝜆𝑡 ∼ Poisson(max{𝜆𝑡,𝜖}), (29)
+where 𝛿 = exp(−𝛽), 𝜇≥ 0 is the baseline intensity, 𝛼≥ 0 is the
+excitation strength, and 𝛽 > 0 controls decay. A sufficient stability
+condition is
+𝛼 < 1−𝛿 = 1− exp(−𝛽). (30)
+For reporting, we use the discrete branching proxy
+brdisc = 𝛼 1− exp(−𝛽), brdisc < 1. (31)
+Compound jumps and panel returns. Conditional on 𝑁𝑡 , the ag-
+gregate jump is
+𝐽𝑡 =
+𝑁𝑡∑︁
+𝑘=1
+𝑠𝑡,𝑘𝐴𝑡,𝑘, (32)
+where 𝑠𝑡,𝑘 ∈{−1,+1} with Pr(𝑠𝑡,𝑘 =+1) =𝑝↑. Jump magnitudes
+are parameterized by their mean:
+𝐴𝑡,𝑘 ∼ LogNormal(𝑚log,𝑠2 log), 𝑚log = log( ¯𝑎)− 1 2𝑠2 log, (33)
+so that E[𝐴𝑡,𝑘] = ¯𝑎. Panel returns follow Eq. (8) with 𝑓𝑡 ≡ 0; baseline
+exposures use 𝛾𝑖 ≡𝛾mean, with optional log-normalized heterogene-
+ity preserving the same mean.
+A.6 Case 6: Zero-Inflated Sparse Jumps
+Case 6 isolates sparse jump dynamics. Unlike Case 5, jump arrivals
+are not self-exciting; instead, many periods are structurally inactive
+due to zero inflation.
+Let 𝑁𝑡 denote the market-wide jump count, modeled as 𝑁𝑡 ∼
+ZIP(𝜋,𝜆), meaning
+𝑁𝑡 =
+(
+0, with prob.𝜋,
+˜𝑁𝑡, ˜𝑁𝑡 ∼ Poisson(𝜆), with prob. 1−𝜋. (34)
+Thus,
+Pr(𝑁𝑡 = 0) =𝜋+(1−𝜋)𝑒−𝜆, E[𝑁𝑡] =(1−𝜋)𝜆. (35)
+Compound jumps and panel returns. Conditional on 𝑁𝑡 , the com-
+mon aggregate jump is again
+𝐽𝑡 =
+𝑁𝑡∑︁
+𝑘=1
+𝑠𝑡,𝑘𝐴𝑡,𝑘, (36)
+with signed log-normal magnitudes as in Eq. (33). Panel returns
+follow Eq. (8) with 𝑓𝑡 ≡ 0, and firm exposures are drawn once per
+panel:
+𝛾𝑖 ∼N(𝛾mean,𝛾 2 std), (37)
+matching the simulator’s default implementation.

@@ -1,0 +1,889 @@
+=== page 1 ===
+arXiv:2401.08302v1  [q-fin.TR]  16 Jan 2024
+Do backrun auctions protect traders?
+Andrew W. Macpherson *
+January 17, 2024
+Abstract
+We study a new ‘laminated’ queueing model for orders on batched trading venues such as
+decentralised exchanges. The model aims to capture and generalise transaction queueing in-
+frastructure that has arisen to organise MEV activity on public blockchains such as Ethereum,
+providing convenient channels for sophisticated agents to extract value by ‘acting on’ end-user
+order ﬂow by performing arbitrage and related HFT activities. In our model, market orders
+are interspersed with orders created by arbitrageurs that under idealised conditions reset the
+marginal price to a global equilibrium between each trade, improving predictability of execu-
+tion for liquidity traders.
+If an arbitrageur has a chance to land multiple opportunities in a row, he may attempt
+to manipulate the execution price of the intervening market order by a probabilistic ‘blind
+sandwiching’ strategy. To study how bad this manipulation can get, we introduce and bound
+a price manipulation coefﬁcient that measures the deviation from global equilibrium of local
+pricing quoted by a rational arbitrageur. We exhibit cases in which this coefﬁcient is well
+approximated by a ‘zeta value’ with interpretable and empirically measurable parameters.
+Market orders and stop orders face a common risk: those who submit market orders,
+or whose stop orders convert to market orders, anticipate that there will be robust and
+orderly quoting and trading activity to provide an immediate execution at a reasonable
+price.
+SEC Memorandum, [17].
+Contents
+1 Introduction 1
+2 Model 8
+3 Generalisations 15
+1 Introduction
+Arbitrage is the means by which markets arrive at competitive equilibrium [15]. In the case
+that markets are fragmented across many trading venues, arbitrageurs communicate local prices
+between different venues and facilitate the convergence of the market on a global equilibrium,
+alleviating local information asymmetries. A robust and orderly functioning of arbitrage is a
+basic assumption for much of ﬁnancial economics [14, 20, 18].
+*This work was funded by the Flashbots Research grants programme as FRP-34. GitHub:
+https://github.com/flashbots/mev-research/
+1
+
+=== page 2 ===
+Arbitrage opportunities in liquid markets are short-lived, so speed and ﬁne-grained control
+over execution ordering is of the essence for arbitrage traders. Naturally, in the information age
+arbitrage is primarly the domain of high-frequency algorithmic traders [21, Part II].
+The act of competing for arbitrage opportunities at high frequency has been argued to have
+some negative externalities [21, 2, 5], notably:
+• A winner-takes-all latency race incentivizes massive investment in physical infrastructure
+and low latency algorithm design and implementation. Because this infrastructure and
+R&D labour is private and highly specialised, much of it is wastefully duplicated.
+• The enormous barrier to entry for new agents erected by this investment favours a monop-
+olistic market structure.
+• The extraordinary efﬁciency with which HFT algorithms can react to signals can amplify
+the effect on markets of modelling errors or sudden changes in liquidity structure, e.g. ﬂash
+crashes [21, p. 1628].
+What if the competition for arbitrage opportunities could itself be made more orderly? The ad-
+vent of programmable, transparent trading environments on public blockchains such as Ethereum
+provides a setting for radical experimentation in this direction. Moreover, the extreme prolifera-
+tion of novel assets and trading venues on these domains makes the need for efﬁcient arbitrage
+even more immediate.
+1.1 Bringing order to the arbitrage market
+The discrete time environment of programmable blockchains provides a new type of opportunity
+for arbitrageurs: the possibility to backrun a price-moving trade by having the arbitrage transac-
+tion sequenced in the very next position in the block. This differs from the ‘continuous’ execution
+environment of traditional exchanges in that no other transaction can intervene between the
+target trade and the backrun. This type of backrun is commonly employed to arbitrage CFMM
+DEXes [19].
+The general model for how arbitrageurs carry out this procedure is as follows: unconﬁrmed
+transactions from ‘ordinary’ end users gather in a pool — public or otherwise — observed by
+algorithmic traders, or MEV searchers. Information about the contents of these transactions may
+be completely or selectively revealed to searchers, who then construct arbitrage transactions and
+attempt to arrange for them to be sequenced so as to best exploit the opportunities created by the
+incoming order ﬂow.
+In Ethereum’s public mempool, the contents of pending transactions are fully visible to arbi-
+trageurs, who must compete to be allocated each backrun position through complex and subtle
+bidding and timing games [5]. Moreover, if arbitrageurs themselves submit transactions to the
+public mempool, they too can become the victim of targeted exploitation by other searchers. Like
+traditional HFT, this incurs substantial costs and barriers to entry on the part of searchers; fur-
+thermore, the congestion caused by excessive messaging and failed transactions is an additional
+cost borne by Ethereum itself.
+Given the vital function performed by arbitrageurs in aligning prices across different trad-
+ing venues and the problems associated with the ad hoc public mempool competition, it is not
+surprising that the industry has begun to explore designs for preferred channels along which ar-
+bitrageurs can compete for and act on backrun opportunities in a more orderly fashion.123 Such
+channels allow the competition for positioning to happen out of band, so that Ethereum need
+process only one searcher transaction (or string of transactions originating from the same entity)
+1MEV Blocker, https://mevblocker.io
+2MEV-Share, https://collective.flashbots.net/t/mev-share-programmably-private-orderflow-to-share-mev-with-user 
+3SUClave, https://github.com/getclave/suclave-ethglobal-istanbul
+2
+
+=== page 3 ===
+after each user transaction, in recognition of the fact that generally only one arbitrage transaction
+is needed to reset the price after each price-moving trade.
+Laminated batches We now attempt to formalise the alternation of user and searcher arbi-
+trage orders that arise from the type of privileged searcher channel just described. Consider an
+idealised trading venue M on which two classes of trader place orders to exchange a risky asset
+with a numéraire:
+• liquidity traders, or price takers, who are opinionated about the size (denominated in the
+risky asset) they wish to trade, but although they surely wish to get the best possible price
+given their size and time requirements, are not opinionated about the exact value of that
+price;
+• arbitrageurs, who are opinionated about the marginal price at which they are prepared to
+trade, but not size.
+Liquidity and arbitrage orders are collected in two separate queues and alternately executed, as
+follows:
+1. First, a set of liquidity orders sell(r i) of (signed) sizes {r1, . . ., rK } are enqueued. When ex-
+ecuted, the resulting trades will have some price impact that depends on r i and the market
+liquidity curve immediately before execution.
+2. A sequence of K or K + 1 execution slots are then made available for arbitrageurs to place
+orders: one immediately after each liquidity order and preceding the next (if any) and,
+optionally, one at the front of the batch. Depending on how we structure the discipline,
+arbitrageurs may have varying degrees of information about their slot allocation and the
+number, contents, and ordering of liquidity orders when they make their decisions.
+An arbitrage order arb(p) is speciﬁed by declaring the target price p, indicating that its
+originator commits to buy/sell all liquidity available at a price better than p.4 Executing an
+arbitrage order with target price p resets the marginal price on to M p.
+Orders are then executed in sequence
+[ arb(p0), sell(r1), arb(p1), . . ., sell(rK ), arb(pk) ]
+alternating between liquidity and arbitrage orders. We refer to this process of interleaving orders
+as lamination, and to the resulting ordered segment as a laminated batch. For an illustration of
+how this model can be specialised to model a two-lane queueing system actually deployed in the
+wild, see Example 3.2.
+1.1 Remark (Implementations of laminated batches). The semantics of arbitrageur orders in our
+model is equivalent to that of a large partial ﬁll limit order. For trading on any CFMM DEX,
+this order format can be programmed into a wrapper contract that computes the correct sizing in
+terms of the reserve balances at execution time.
+In practice, an arbtrageur/taker lamination queue can be implemented by providing two end-
+points to submit orders, one for liquidity traders and one for arbitrageurs, together with a mech-
+anism to assign arbitrage slots — say, an auction, or a stake-weighted random election. These
+endpoints could either be integrated into the venue itself, say, as a monolithic smart contract en-
+semble, or as an additional infrastructure layer over an existing ‘vanilla’ CFMM that enqueues
+liquidity and arbitrage orders in two lanes and delivers them in an atomic, contiguous bundle.
+For our analysis to apply in the latter case, orders that arrive at the CFMM other than via the
+lamination layer must be considered as beyond the strategy horizon of our arbitrageurs.
+To analyse our batch trading model, we make a few simplifying assumptions:
+4In the presence of transaction fees, arbitrageurs would quote separate bid and ask prices, introducing a spread.
+3
+
+=== page 4 ===
+arb(p0) sell(r1 ) arb(p1) sell(r2 ) arb(p2) sell(r3 ) arb(p3)
+p1 + I(r2 )
+p2 + I(r3 )
+p0 p1
+p2
+p3
+p0 + I(r1 )
+Figure 1: Price evolution in a laminated batch. I(r i) := price impact of trade sell(r i).
+• All markets are frictionless, that is, without transaction fees.
+• Arbitrageurs can trade instantly on a reference market O with zero price impact.
+• The target venue M as a whole is a price taker from O . That is, M is sufﬁciently small
+compared to O that order ﬂow on M does not inﬂuence the reference price pO ← O .
+• Batches are committed instantaneously from the perspective of the reference market, so the
+global equilbrium price pO during the execution of a single batch is constant.
+Given these assumptions, how would a rational arbitrageur set prices?
+Passthrough arbitrage Suppose that each arbitrageur is myopic, so that they treat each ar-
+bitrage opportunity in complete isolation — that is, they have a strategy time horizon of just one
+trade. This models an idealised situation in which arbitrage is so competitive that each agent
+treats as negligible their chances of being able to land multiple spots. Then an arbitrageur’s best
+strategy is always to set their target price to the reference price pO , absorbing all liquidity avail-
+able on M at a better price, and simultaneously trading an equal amount in the opposite direction
+on O .5 We call this strategy passthrough pricing, because it simply passes through information
+from the reference market to M without introducing a bias.
+With passthrough arbitrage, each liquidity order on the verge of execution ﬁnds the market in
+a state of global price equilibrium. There are a number of reasons to ﬁnd this dynamic desirable:
+• Ordering independent. It reduces the problem of predicting executions to that of modelling
+the block price, which is indexed over a single discrete time variable.
+• Sandwich-resistant. Liquidity traders can place market orders with greater conﬁdence that
+they will not receive an ‘manipulated’ execution price.
+• Price oracle. Prices set by arbitrageurs provide an incentive-compatible internal price ora-
+cle.
+• Mitigating wasteful competition. Constraining the strategy space (say, by eliminating sand-
+wiches) and simplifying execution of arbitrage MEV lowers the barrier to entry for would-be
+arbitrageurs and reduces the scope for model failures.
+5In practice, arbitrageurs may also have more abstract methods to acquire opposite exposure to their trade on M .
+4
+
+=== page 5 ===
+Passthrough pricing also has the effect of isolating adverse selection effects on liquidity providers,
+known as LVR [13], to the top of the block, which may facilitate redistribution mechanisms aimed
+at mitigating these effects.
+Unfortunately, these results depend on the clearly unrealistic assumption that arbitrageurs
+make decisions about each trade in isolation. What happens when this assumption is lifted?
+Manipulation If an arbitrageur i knows that he has a non-negligible chance to be allocated
+two or more slots — say, slot k −1 and k — in a row, then under suitable conditions he may choose
+to use this opportunity to try to ‘sandwich’ the intervening liquidity order r k so that the latter
+executes at a manipulated price, increasing the overall proﬁt. This strategy is harder to execute in
+the absence of execution guarantees about atomicity and ordering and without information about
+the contents of the target liquidity order. However, with suitable models for the distribution of
+these unknowns, the strategy can still be dominant in expectation. That is, trading in laminated
+batches is not fully sandwich resistant.
+The main goal of this paper is to study how bad this manipulation can get in the presence
+of an incompletely decentralized pool of rational arbitrageurs. We can measure this by introduc-
+ing a manipulation coefﬁcient CM : = log( ˆp/pO ) ∈ R, where ˆp is the price set by an arbitrageur at
+Nash equilibrium and pO is the reference price. Obtaining bounds or concentration results on CM
+should be useful for exchange designers, who might wish to convince traders that manipulation
+on their venue will remain within certain limits, given some ansatz about the liquidity struc-
+ture, the distribution of liquidity orders r i, and that of the allocation function of opportunities to
+arbitrageurs.
+1.2 Remark (Sybil resistance). It may be tempting to imagine that we can simply enforce ‘myopic’
+arbitrage by a hardcoded trading rule that the same arbitrageur cannot be allocated two consec-
+utive slots. However, it is generally very difﬁcult to rule out collaboration or Sybil identities that
+allow ‘many’ arbitrageurs to act as one, so such rules would carry little water in practice.
+1.2 Results
+Our main contributions are to formalise the model sketched in the previous section, establish
+limiting cases — in particular, when the probability of landing a sandwich vanishes — in which
+arbitrageurs provide passthrough pricing, and establish a closed form approximation to price
+manipulation near the limit.
+Suppose given a market M , a random order ﬂow (r k)K k=1, a population {1, . . ., N} of rational
+arbitrageurs, and a random slot allocation α : [K ]+ : = {0, . . ., K } → [N]. Each arbitrageur i quotes a
+target price pi with associated price φ(si) that will be the target price in slot k for all k ∈ α−1(i).6
+Although our model permits the use of an arbitrary random allocation α, our results turn out
+to only depend on α through its single and binary marginal distributions. That is, if we deﬁne
+• the primary weight ai,k : = P[α(k) = i], the probability that player i is assigned slot k;
+• a secondary weight or coupling bi,k : = P[α(k − 1) = i | α(k) = i], the probability that, given
+player i is assigned slot k, they are also assigned the slot immediately before (hence giving
+an opportunity to sandwich).
+Our ﬁrst result is that under general conditions, best response strategies are dominant, so the
+optimal target price for each arbitrageur can be computed separately.
+1.3 Theorem (Existence and convergence of equilibrium prices, 2.17). The marginal quote ˆp at
+each slot depends only on pO , the marginal distributions of the trade size and direction for each k,
+and the primary and secondary allocation weights ai,k, bi,k.
+Moreover, ˆp converges to pO as either
+6The case where arbitrageurs may set different prices for different slots will be treated shortly.
+5
+
+=== page 6 ===
+1. the trade distributions r k
+p
+→ 0 in probability for all k.
+2. the secondary allocation weights bi,k → 0 for all i, k.
+We also obtain an explicit equation (14) for the dominant strategy in terms of the allocation
+weights and an expected price impact function.
+As a special case, we obtain a formalisation of the claim made in the previous section that
+myopic arbitrageurs provide passthrough pricing.
+1.4 Corollary (Myopic arbitrageurs provide passthrough pricing, 2.18). Suppose that all sec-
+ondary allocation weights vanish. Then the dominant strategy for each arbitrageur is to set prices
+to pO .
+The general form (14) for the lamination equation obtained for the optimiser ˆp is quite com-
+plicated. It can be approached under simplifying assumptions. Suppose:
+1. The order ﬂow distribution r is symmetric in the index set {1, . . ., K }. Intuitively, this means
+arbitrageurs have no information about the absolute ordering of liquidity orders within the
+batch.
+2. Slots are allocated to arbitrageurs by independent weighted lotteries (that are also inde-
+pendent of ⃗r). That is, each participating arbitrageur i has some weight 0 ≤ wi ≤ 1, where∑
+i wi = 1, and slots are allocated to i by Bernoulli trials (weighted coin tosses) with weight
+wi.
+Under these conditions, approximating the log price impact function by its linearisation yields an
+approximation to the equilibrium price manipulation coefﬁcient in terms of a ‘zeta function’
+Zφ,r (w) : = 1 − w 1 − Mr (λ)w
+where Mr is the moment generating function of the distribution of r and λ = d dx log φ(1) > 1 is a
+weighting determined in terms of the liquidity curve of the market.7
+1.5 Remark. In practical situations we can expect the error to be quite small (< 1%), more than
+enough to make order-of-magnitude judgements.
+1.6 Theorem (Zeta function approximation to manipulation coefﬁcient, 2.23). Suppose that the
+liquidity curve φ of M is approximated by its linearisation at pO with error at most C. Then
+log( ˆp/pO ) ≈ Zφ,r( ˇw)
+with error at worst C.
+Per-slot pricing The reader familiar with existing backrun services such as MEV-Blocker and
+MEV-Share may ﬁnd it surprising that we require our backrunners to each choose a single target
+price per batch, rather than allowing them the freedom to craft separate backrun transactions for
+each slot. There are a few reasons for this:
+• Giving arbitrageurs the ability to set different target prices for different slots in the same
+batch requires us to posit an additional labelling of the slots that players can use to declare
+their moves, complicating the game design.
+• More choices for arbitrageurs generally means more leeway to perform manipulation strate-
+gies. Conversely, the most powerful bounds on manipulation are likely to be available with
+the most constrained action space for MEV actors.
+7In a Balancer-style weighted 2-asset CPMM pool, the quantity λ is the reciprocal of the pool share of the numéraire.
+6
+
+=== page 7 ===
+Nonetheless, we study this more complicated model brieﬂy in §3.1, formulating a generalised
+laminated queue model in which liquidity orders and arbitrage slots are labelled by an auxiliary
+set of strings K and arbitrageurs may quote a different price for each label. Labels are mapped to
+execution positions by a random indexing idx : K → [K ] We ﬁnd that under suitable blinding as-
+sumptions for backrunners, the Nash equilibrium computation for this labelled lamination game
+collapses to the single-price one.
+1.7 Theorem (3.1). For sufﬁciently small order ﬂow or coupling, and suitable action space, each
+arbitrageur has a dominant strategy. If the mapping from labels to execution positions is uniformly
+random, this dominant strategy is to set all prices to the same value: the optimum price of the
+associated uniform marginal price game.
+1.3 Related work
+A plethora of approaches have been ﬂoated to combat the combined menace of wasteful MEV
+market structures and exposing liquidity traders to unpredictable, disequilibrium, or manipu-
+lated outcomes. It is beyond our scope here to give a full overview of extant models; we list here
+only a few that are particularly close in spirit to the laminated batch model.
+Exotic queue disciplines The lamination model presented in this paper and the probabilistic
+methods used to analyse it are inspired by the very general queue theoretic approach to blockchain
+based markets introduced in [9].
+In [6], a ‘greedy sequencing rule’ is introduced with a similar goal of ensuring that prices
+remain ‘close’ to a constant value throughout the batch, with all directional trades isolated to one
+end of the block. In comparison to that work, the dynamics of price movements in the laminate
+model is a natural product of incentive structures rather than hardcoded into the queue discipline.
+Private mempools Perhaps the most basic approach to combatting price manipulation by fron-
+trunning is to impose pre-conﬁrmation privacy. While it may seem intuitively clear that private
+transactions beneﬁt from frontrunning protection, it is a matter of debate whether this always
+leads to improved expectation outcomes for their originators [16, 10].
+Privacy, encoded as randomness in the distribution of market orders from the arbitrageur’s
+perspective, is part of our model. The arguments of this paper explore some of its effects and
+limitations. As we conﬁrm in §3.1, sufﬁcient privacy does indeed hobble some of the most pow-
+erful targeted value extraction strategies. However, even with very limited information about
+unconﬁrmed liquidity trades — just an ansatz about their distribution and the market structure
+— proﬁtable price manipulation is still possible, negatively impacting trader outcomes.
+Frequent batch auctions A simple and popular way to completely eliminate ordering based
+MEV is to ensure that all trades commute by aggregating them together into batches and ex-
+ecuting them at the same uniform clearing price (UCP). The batch auction approach has been
+the subject of substantial recent interest [2, 4, 7, 3]. In [3], the authors derive strong conclusions
+about their batched CF-AMM similar in spirit to the present paper: in our language, that in a per-
+fectly competitive and frictionless market, arbitrageurs deliver passthrough pricing to the batch.
+However, unlike in the lamination model, those arbitrageurs obtain zero revenue in equilibrium.
+The most popular implementation of blockchain-settled batch auctions, the CoW protocol [4],
+also attempts to distinguish between makers and takers with the presence of ‘liquidity orders,’
+which at least in spirit echoes the laminate model’s bipartite queues.
+Another difference between lamination batches and traditional UCP batches is that traders do
+not get uniform execution prices, only uniform pre-execution marginal prices. Larger trades still
+have a greater instantaneous market impact and therefore generally receive a worse execution
+7
+
+=== page 8 ===
+price. Conversely, in a UCP batch auction, the price impact of larger trades is effectively socialised
+across smaller trades.
+1.4 Future directions
+For practical applications and relevance to real-world instantiations of laminated batches, it
+would be useful to lift some of our hypotheses:
+• If we want our model to eventually apply to exchanges that account for a signiﬁcant fraction
+of volume for a particular asset pair, we will have to lift the assumption that M is a price
+taker.
+• To apply the model to limit order books or CFMMs with a multi-block horizon, we will need
+to allow a dynamic liquidity structure.
+• Our model assumes that all market orders are denominated in the same asset (the ‘risky’
+one). More realistic dynamics could be obtained in a symmetric model that does not prefer
+a particular asset as the numéraire and allows orders to be denominated in any asset.
+It would also be interesting to analyse the effect on incentives of auction-based mechanisms for
+realising α, and reward redistribution systems such as volume-weighted or position-dependent
+fees and rebates.
+Acknowledgements The author is grateful to Quintus Kilbourn and Evan Kim for valuable
+feedback on early drafts of this work.
+2 Model
+2.1 Markets
+Our model of a trading venue follows the approach of [12].
+2.1 Deﬁnition. A market M consists of the data of a price density function φM : U → R deﬁned
+on an open subset U ⊆ (0, ∞) which is piecewise C∞ (possibly with discontinuities) and monotone
+decreasing. The parameter of the function is called the liquidity depth. The market is said to be
+smooth if φ is everywhere C∞ and invertible if it is strictly monotone.
+The data of a market can be interpreted as follows. Suppose we have a risky asset A and
+a numéraire B that can be traded. Suppose that both assets are arbitrarily divisible and that a
+quantity r of A can be sold for ˆC(r) of B, where ˆC is some piecewise-differentiable function deﬁned
+in a neighbourhood U0 of r = 0. Then setting U = U0 + x, where x > 0 is chosen arbitrarily so that
+U ⊆ (0, ∞), and φ(u) := d ˆC(r)/dr(u − x) deﬁnes a price density curve in the sense of Deﬁnition 2.1.
+2.2 Example (CFMM). Let f : (0, ∞)2 → R be a CFMM (where f is C∞ with generically positive
+partial derivatives) and λ ∈ R a level. The indifference set f −1(λ) is an embedded submanifold
+of (0, ∞)2 that projects diffeomorphically onto an open subset of either axis. Then there exists an
+open set U ⊆ R such that the projection f −1(λ) → (0, ∞) admits a section s : U → f −1(λ). Composing
+this section with the other projection gives a smooth real-valued function P : U → (0, ∞). Then
+φ f := −dP/d t deﬁnes a market on reserve set U in the sense of Deﬁnition 2.1.
+2.3 Example (Reference market). The highly liquid reference market O arises as a limiting case
+where φ : (0, ∞) → R is constant and the liquidity depth x0 ≫ 0 is large compared to all other
+quantities under consideration.
+8
+
+=== page 9 ===
+2.4 Deﬁnition (Action). Fix an initial market depth x ∈ U. Since φ is monotone, it is integrable
+over intervals within its domain, so we can deﬁne an (absolute) cost function or action
+S (x, y) : =
+∫ y
+x
+φ(u)du
+= Φ(y) − Φ(x)
+where Φ is an antiderivative of φ. It is the revenue of a trader that moves the liquidity depth on
+M from x to y (by selling y − x units of A). When y < x, S (x, y) < 0 and S (y, x) = −S (x, y) is the
+cost to buy x − y units of A.
+If φ is deﬁned by a CFMM f and level λ, then S (x0, x) is a constant plus the amount of
+numéraire needed to balance an amount x of the risky asset.
+A cyclic arbitrage that moves the reserve depth from x to y consists of buying x − y units of A
+on M and selling the same number of units on O . It results in a gain of S (x, y) + pO · (x − y) in the
+numéraire. We will need to refer to this quantity a lot, so we introduce notation for it.
+2.5 Deﬁnition (Opportunity cost). The relative or opportunity cost function at x0 ∈ U is the quan-
+tity
+C(x) : = φ(x0) · (x − x0) + S (x, x0). (1)
+It is the cost of an arbitrage that moves the reserve depth from x0 to x. Both terms have the same
+sign, and if x > x0 (resp. if x < x0), the linear term (resp. nonlinear term) dominates. Hence this
+function is continuous, convex, and valued in non-negative reals with a minimum at C(x0) = 0. If
+φ is C k, then C is C k+1 with derivatives
+C′(x) = φ(x0) − φ(x) (2)
+C′′(x) = −φ′(x) (> 0). (3)
+In words, the derivative of opportunity cost is marginal price differential. Since it is convex, it is
+also locally integrable on the domain of φ.
+Note that the opportunity costs at different liquidity depths x0, x1 differ by a linear term with
+gradient φ(x1) − φ(x0).
+2.6 Remark. In economic terms, the quantity C can be interpreted as a surplus supply or demand
+of the risky asset A. If x1 > xO , then it is a surplus supply (of the risky asset), i.e. M will sell this
+amount below the odds. Correspondingly, if x < xO , it is a surplus demand.
+2.2 Game
+We consider a game of N players X1, . . ., X n parametrised by the following data:
+1. A market M with liquidity structure φ : U → (0, ∞).
+2. A natural number K ∈ N. We write [K ]+ = {0} ⊔ [K ].
+3. A sequence r1, . . ., rK of real numbers, representing market orders.
+4. A map α : [K ]+ → [N].
+5. A positive real number x0 > 0.
+6. A positive real number xO > 0. We write pO := φ(xO ).
+9
+
+=== page 10 ===
+In situations of imperfect information, we will consider x0, the r i, and α as random variables. For
+simplicity, K and xO will generally be ﬁxed (i.e. known to all players). Each player’s beliefs about
+the other parameters comprise a distribution on
+H N,K = R × RK × N K+ .
+with the three factors representing the space of x0, r, and α, respectively.
+We recall also the deﬁnitions of the primary and secondary allocation weights
+ai,k : = P[α(k) = i] bi,k : = P[α(k − 1) = i | α(k) = i]
+where bi,k is deﬁned whenever ai,k > 0.
+2.7 Remark (Generality of the information assumptions). No effective generality is lost by the
+assumption that N and K are known to all players, since any situation with an unknown (but
+bounded) number of players and trades can be represented by a suitable random allocation func-
+tion α from a ﬁxed large K into a ﬁxed large N.
+Actions and utilities Each player has action space A ⊂ (0, ∞). To simplify the treatment of
+indices, we deﬁne s0 : = x0, r0 : = 0, and write α(k) = 0 for k = −1. That is, the ‘zeroth market
+order’ has zero size, and the zeroth player ‘nature’ plays x0 — the starting liquidity — in the slot
+immediately preceding the ﬁrst ‘real’ slot. Given an action proﬁle ⃗s ∈ A N , the utility of player i is
+Ui (⃗s) : =
+∑
+α( j)=i
+C(sα( j−1) + r j) − C(si) (4)
+=
+∑
+α( j)=i
+[
+S (sα( j−1) + r j, si) + pO · (sα( j−1) + r j − si)
+]
+. (5)
+So that expectations are deﬁned, we will assume that |C(s + r)| is bounded by an integrable func-
+tion on all of A and the range of r.
+2.3 Interpretation
+The interpretation of this game is as follows: N players insert arbitrage trades sα(0), . . ., sα(K)
+interleaving K market orders (r1, . . ., rK ) on a market M between assets A and B (the numéraire).
+The numbers r i represent the size and direction of the orders, denominated in A, with positive
+r i indicating a sell order. The liquidity curve φM does not change during this sequence of trades;
+this hypothesis is plausible for a CFMM DEX but not a limit order book. If α(n) = i, then player
+n will have a chance to insert an arbitrage in the nth slot, where slot 0 is top of block and slot k
+is immediately after the kth trade for k > 0.
+A player’s beliefs about the distribution of r i are a forecast of the size and direction of incoming
+trades. His beliefs about α could derive from common knowledge that the allocation is uniformly
+pseudo-randomly derived from cryptographically secure entropy source, or it could be a forecast
+about the outcome of some mechanism (e.g. an auction).
+The absolute boundedness assumption on C(s + r) means that the marginal price remains
+bounded independently of the actions of arbitrageurs and traders. Clearly, this assumption is
+veriﬁed on any market that can be implemented on a ﬁnite computer. It is violated on some
+idealised continuum models, a key example being a CPMM with A = (0, ∞). To deal with this
+case, we should instead bound A away from 0, i.e. A = (ǫ, ∞) for some strictly positive ǫ.
+In play, each player X i chooses a target depth si. If the market is invertible, this is equivalent
+to choosing a marginal market price φ(si), i.e. creating an arbitrage arb(φ(si)). Otherwise, the
+target depth is the more fundamental parameter since this determines directly the amount that
+must be traded.
+10
+
+=== page 11 ===
+All players may also trade on a reference market O at a constant price pO . In §2.1 we have
+established that the payout for moving the liquidity depth on M from x to y, then trading the
+same amount in the opposite direction on O is C(x) − C(y).
+For simplicity we assume that utility for players is measured only in terms of asset B. That
+is, players do not gain utility from holding A in inventory. To gain utility, players must complete
+a pure proﬁt cyclic arbitrage as above.
+2.4 Information structures
+Our model is general enough to capture a broad range of important hypotheses about the in-
+formation about order ﬂow and slot allocation available to arbitrageurs when they make their
+commitments.
+2.8 Deﬁnition (Monopoly). A backrun game is a monopoly if there exists an n ∈ [N], the monop-
+olist, such that the image of α is {n} almost surely.
+2.9 Deﬁnition (Freeness). A backrun game is free if α is injective with unit probability. That is,
+for all i, j ∈ [K ]+ we have i ⁄= j ⇒ P(α(i) = α( j)) = 0. In particular, for all i, j ∈ [K ]+ and n ∈ [N],
+i ⁄= j ⇒ P(α( j) = n | α(i) = n) = 0.8
+It is locally free if α (a.s.) does not map any two consecutive slot indices to the same player.
+It is equivalent to say that the couplings bi,k = P(α(k − 1) = i|α(k) = i) vanish for all positive
+ai,k = P(α(k) = i).
+2.10 Deﬁnition (Symmetry). The order vector (r i)K i=1 is symmetric if the r i are identically dis-
+tributed, that is, their marginal distributions are all the same. It is strictly symmetric if they
+are symmetrically distributed, that is, their joint distribution is invariant under the permutation
+action of ΣK . A strictly symmetric order vector is symmetric.
+The allocation α is symmetric if its distribution is invariant under the right action of ΣK+1 on
+[N][K]+ .
+Intuitively, a [strictly] symmetric order vector, resp. allocation, means that the agent whose
+perspective we share — in this paper, the arbitrageur deciding on a price target — has no infor-
+mation about the ordering of liquidity orders, resp. the ordering of the allocation. They still may
+have information about the content of orders, for example, the unordered set of orders from which
+the batch will be drawn, or the allocation weights, for example the number of slots they will be
+allocated. They may even have information about the contents of the orders they will backrun.
+2.11 Deﬁnition (Blind allocation). A laminated queue has blind allocation if α(k) and r k are
+independent random variables for all k = 1, . . ., K . The condition extends automatically to the case
+where k is itself a [K ]-valued random variable.
+2.12 Remark. Intuitively, a laminated queue can be non-blind if the mechanism that determines
+α ‘knows’ about r. For example, this can happen if α is determined by an auction among arbi-
+trageurs, and arbitrageurs have some information about liquidity orders when they make their
+bids. So for example, the MEV-Blocker allocation is non-blind, while MEV-Share allocation can in
+principle be blind if the maximum privacy settings are used.
+Our deﬁnition also permits that liquidity traders know about α before creating their orders.
+This can be the case for single-player bundling mechanisms where the arbitrageur also chooses
+α.
+Note that a monopolistic allocation is always blind (because a deterministic random variable
+is always independent of any other random variable).
+8The adjective ‘free’ is chosen by analogy with the notion of a free, or non-interacting theory in physics. Intuitively,
+distinct backrun opportunities do not interact with one another.
+11
+
+=== page 12 ===
+2.13 Example (Randomly permuted order list). Let r = (r i) be a vector of order distributions, and
+let σ ∼ Unif(ΣK ) be a uniformly random permutation independent of (r i). Then the random vector
+σ∗ r with ith coordinate rσ(i) is strictly symmetric.
+2.14 Example (Randomly permuted allocation). Similarly, if α is any random allocation and σ ∼
+Unif(ΣK+1) is independent of α, then α ◦ σ is symmetric.
+2.15 Example (Known matching of players to orders, unknown ordering). Suppose (r i) is deﬁned,
+as in Example 2.13, as a permutation of a known vector (r′ i) ∈ RK by a uniformly random permu-
+tation σ. Let α′ : [K ]+ → [N] be a known allocation, and deﬁne α : = α′ ◦ σ. Then α is symmetric,
+and player n is allocated the slots backrunning the orders {r j | α( j) = n} with probability 1. See
+also §3.1.
+2.16 Example (Independent allocations). Let α′ k, k = 0, . . ., K be a sequence of i.i.d. [N]-valued
+random variables with pmf w. That is, each player i = 1, . . ., N ﬂips a w(i)-weighted coin to land
+a move in slot k for each k = 0, . . ., K . Then α′ is symmetric. If σ is a random permutation (not
+necessarily uniform), then α′ ◦ σ is also a vector of i.i.d. random variables.
+2.5 Solution
+The general formula for expected payoffs splits as a weighted sum of conditional expectations:
+E(Ui (⃗s)) =
+K∑
+k=0
+P(α(k) = i) ·
+(
+E[C(sα(k−1) + r k) | α(k) = i]/bracehtipuple~t /bracehtipdownright/bracehtipdownle~t /bracehtipupright
+backrun revenue
+− E[C(si) | α(k) = i]/bracehtipuple~t /bracehtipdownright/bracehtipdownle~t /bracehtipupright
+frontrun cost
+)
+(6)
+=
+K∑
+k=0
+ai,kEUi,k(⃗s), (7)
+where the kth term
+EUi,k (⃗s) :=E [ C(sα(k−1) + r k) | α(k) = i ] − C(si) (8)
+is the expected payoff of being allocated slot k given ⃗s (when ai,k > 0).
+The expected backrun revenue in slot k depends on player i’s strategy si only when player i
+also wins the previous slot, i.e. α(k − 1) = i. The contribution to the optimisation problem of the
+backrun revenue summand of EUi,k(⃗s) is therefore weighted by the secondary allocation weights
+bi,k. Note that bi,0 = 0 for all i, since by deﬁnition α(−1) = 0 is not a real player.
+We therefore compute
+EUi,k(⃗s) = bi,k · E[C(si + r k) | α(k) = i] − C(si) + {terms not depending on si}. (9)
+The summand E[C(si + r k) | α(k) = i] is the backrun or end slice revenue from running a successful
+sandwich. Note that the conditioning drops out of the expression if we assume that the allocation
+is blind in the sense of Deﬁnition 2.11.
+For the purposes of ﬁnding a best response strategy to ⃗s ˆi , we can disregard the last term and
+simply try to optimise the sum of expressions
+~EUi,k(s) : = bi,k · E[C(s + r k)] − C(s). (10)
+Since |C(s + r k)| is by hypothesis bounded independently of s and r, we may move the derivative
+inside the expectation and obtain
+EU′ i (s |⃗s ˆi) =
+K∑
+k=0
+ai,k · ~EU ′ i,k(s) (11)
+=
+K∑
+k=0
+ai,k ·
+(
+bi,k · E[C′(s + r k) | α(k) = i] − C′(s) ) (12)
+=
+K∑
+k=0
+ai,k ·
+(
+φ(s) − bi,k · E[φ(s + r k) | α(k) = i] + (bi,k − 1)φ(xO )
+)
+. (13)
+12
+
+=== page 13 ===
+Note that this formula depends only on the marginal distributions of the r k and on the pairwise
+joint distributions of the α(k), not on the full joint distribution. Therefore, optimising by setting
+EU′ i (s |⃗s ˆi) = 0 gives us the lamination equation
+(
+K∑
+k=0
+ai,k
+)
+· ( ¯φ(s∗) − 1) =
+K∑
+k=1
+ai,k bi,k
+(
+E[ ¯φ(s∗ + r k) | α(k) = i] − 1 ) , i = 1, . . ., K (14)
+where we have written ¯φ(s) : = φ(s)/pO for the price manipulation factor. Note that the index 0
+does not appear on the right hand side, because bi,0 = 0.
+Clearly, the solution s∗ to this equation, if it exists, does not depend on the strategies s−i of
+other players, and satisﬁes ¯φ(s∗) → 1 under either of the following régimes:
+1. r
+p
+→ 0.
+2. bi,k → 0.
+By a continuity argument, a solution s∗ exists in an L0-neighbourhood of {(bi,k)K k=1 = 0} ∪ {r a.s. = 0}.
+2.17 Theorem. Assume φ is continuously differentiable. For sufﬁciently small secondary alloca-
+tion weights or sufﬁciently small order ﬂow, there exists an action space A ⊂ (0, ∞) containing xO
+such that the unique solution in A to EU′ i (s) = 0 is a dominant strategy.
+Proof. We have established that EUi (si |⃗s ˆi) has a local maximum s∗ close to xO for small (bi,k)K k=0
+or (r k)K k=0. By continuity, it is strictly convex on some neighbourhood A of s∗ containing xO .
+2.18 Corollary. Suppose that α is locally free (Deﬁnition 2.9), that is, player i almost surely lands
+no two consecutive slots. Then player i’s unique dominant strategy is passthrough pricing.
+Proof. Immediate from the form (13) of expected utility.
+2.6 Symmetric trade distribution with independent slot allocation
+When the information structure is highly symmetric and uncoupled, the formulas for optimal
+arbitrage simplify considerably. Under such hypotheses we can derive approximations to quotes
+in a simple closed form that can be used to derive bounds on manipulation. For the remainder of
+this section, we suppose:
+• Liquidity order ﬂow (r k)K k=1 is symmetric (arbitrageurs have no information about the se-
+quence order);
+• Allocations are blind (arbitrageurs do not know more about the trades they are backrunning
+than they do about a generic trade);
+• Slot allocations for player i are determined by Bernoulli trials with weight wi = ai,k = bi,k.
+That is, allocations are independent in the sense of Example 2.16, hence symmetric.
+Then the lamination equation (14) simpliﬁes to
+¯φ(s∗) − 1 = K K + 1 wi(E[ ¯φ(s∗ + r)] − 1). (15)
+In the interests of economy of notation, we absorb the ‘top of block’ factor into the allocation
+weight, writing ˇwi : = K K+1 wi henceforth. The sandwich term ¯φ(s∗ + r) makes it hard to solve this
+equation for s∗ directly. Instead, we proceed under an exponential approximation that turns out
+to have very small error in practice. We also assume in this section that sizes are normalised so
+that equilibrium liquidity depth is unity xO = 1.
+13
+
+=== page 14 ===
+2.19 Deﬁnition (Exponential price impact). Suppose ¯φ(xO + x) = ¯φ(1 + x) = exp(−λx) for some
+coefﬁcient λ > 0. Then setting RHS of equation (15) splits the product
+E( ¯φ(s + r)) = ¯φ(s) · E( ¯φ(xO + r))
+of the manipulation factor by the expected price impact factor at equilibrium of the order ﬂow r.
+We can also express the expected price impact at equilibrium
+E( ¯φ(xO + r)) = E[e−λr] = Mr (λ)
+in terms of the moment generating function Mr of the distribution of r.
+2.20 Example (CPMM). If M is a weighted CPMM with invariant xα yβ, we have φ(x) = x−(1+α/β).
+The exponential approximation at x = 1 is determined by
+λ = d d x log φ(1) = −(1 + α/β),
+that is the reciprocal of the pool share of the numéraire [11].
+The linearisation error is quite good for reasonable ranges of r: for example, in the unweighted
+case (λ = 2) we can get a bound C = 0.011 for r ∈ [−0.1, 0.1] or C = 0.000101 for r ∈ [−0.01, 0.01].
+2.21 Remark (Better linear approximations). With few changes, we could replace the linearisation
+at xO with an optimal linear or afﬁne L∞-approximation to log ¯φ on its domain. However, we then
+lose the nice interpretation of the slope λ.
+If price impact is assumed exponential, we can gather like terms in equation (15) to obtain
+¯φ(s∗) · (1 − ˇwi · Mr (λ)) = 1 − ˇwi .
+The coefﬁcient of ¯φ(s∗) is positive as long as the expected price impact factor Mr(λ) is at most ˇw−1 i .
+In this case we can divide through to ﬁnd
+¯φ(s∗) = Zφ,r( ˇwi ) := 1 − ˇwi 1 − ˇwi · Mr (λ) . (16)
+In general, when we have only || log ¯φ(1+r)+λr|| < C for some C > 0, this gives us the zeta function
+approximation for ¯φ(s∗).
+2.22 Remark. If wi is large — say, if player i is a monopolist (Deﬁnition 2.8) — then the bound
+Mr(λ) ˇwi < 1 might be exceeded for realistic price impact factor expectations.
+2.23 Theorem (Zeta function approximation for price manipulation factor). Suppose that linear
+approximation error of log ¯φ(s) at xO is bounded by C, that is,
+| log ¯φ(xO + r) + λr| < C
+on the domain of φ. Then the zeta function approximation error of the manipulation factor log ¯φ(s∗)
+is also at most C, that is,
+| log ¯φ(s∗) − log Zφ,r( ˇwi )| < C
+for 0 ≤ ˇwi ≤ min{1, Mr(λ)−1}.
+2.24 Remark (Sizing r). Note that the relevant ﬁgure here is the expected price impact of each
+individual liquidity trade. If traders tend to split their larger orders up into many small orders,
+bounds can be easily satisﬁed without constraining the trading volume.
+14
+
+=== page 15 ===
+Numerical computations Expanding the zeta function approximation via the Newton-Mercator
+series, we ﬁnd
+log ¯φ(s∗) ≈ log(1 − ˇwi ) − log(1 − ˇwi · Mr (λ)) (17)
+=
+∞∑
+n=1
+1
+n
+(
+ˇwn i − ( ˇwi · Mr (λ))n) (18)
+=
+∞∑
+n=1
+1
+n ˇwn i · ( 1 − Mr (λ)]n) (19)
+We can obtain bounds on these power series by bounding ˇwi and |Mr(λ) − 1| away from 1. In
+practice it is reasonable to bound these quite small so as to get an estimate of log ¯φ(s∗) to a few
+decimal places.
+2.25 Example (Bounding the log manipulation coefﬁcient). Suppose D > max{wi , wi · Mr (λ)}. Then
+log ¯φ(s) = wi ·(1− Mr(λ))+O(D2). By itself, this bound is perhaps not as powerful as we would like;
+for example, if D = 0.1 then we get an approximation error of up to 0.1. It becomes more so if you
+assume also that Q = |Mr (λ) − 1| is small, say 0.01; we ﬁnd, for example, that
+log ¯φ(s∗) = −2w2 i + O(D3,QD,Q2)
+with an error of less than 0.01.
+2.7 Trader experience
+Suppose a liquidity trader makes an order q which will be sequenced in slot k
+$
+∈ {1, . . ., K }. Suppose
+backrunner allocations are independent as in Example 2.16, where the ith player has weight
+wi ∈ [0, 1] and internal order ﬂow model ∼ r i. Let ¯p = ¯φ(sα(k−1)) be the normalised marginal price
+at the time that q executes.
+Our liquidity trader does not know player i’s model for the distribution of order ﬂow, and
+so player i’s dominant strategy s∗ i must be treated as a random variable. Let us model beliefs
+of arbitrageurs about order ﬂow distribution as a distribution over some parameter space R of
+probability measures on R. Then s∗ and hence ¯p can be regarded as a (deterministic) function on
+[N] × R. Equivalently, taking weights, we could model it as a function on [0, 1] × R. We can use
+these parametrisations to make statements about the distribution of log ¯p.
+2.26 Example (Equal weights). Suppose that allocation weights are evenly distributed, i.e. wi =
+1/N for all i = 1, . . ., N. Then the distribution of (w, r) is supported on {1/N} × R, and we can treat
+¯p as a deterministic function of the R-valued random variable r.
+It makes sense to ask how the value of N contributes to ¯p in this case. Under the zeta function
+approximation, we have ¯p ≈ Zφ,r
+( K+1
+K N
+)
+as distributions with error bounded a.s. independently of
+N. This random variable tends to 1 a.s. as N → ∞. That is, unsurprisingly, as the arbitrageur
+population becomes more decentralised and the market power of any individual arbitrageur tends
+to zero, the marginal prices experienced by traders tend to the oracle price pO with absolute error
+depending only on the error of the linear approximation to φ.
+3 Generalisations
+Our core laminated batch model with market orders invites generalisations in a number direc-
+tions that may make it more realistic.
+3.1 Per-slot pricing
+In real-world systems like MEV-Share and MEV-Blocker, algorithmic traders can propose differ-
+ent backrun order (bundles) for each target user transaction separately. If elected to backrun
+15
+
+=== page 16 ===
+a particular target transaction, the backrunner is guaranteed atomic execution of the target-
+backrun pair. Backrunners can specify a target transaction in their order by a label (i.e. hash)
+without necessarily having any information about the eventual execution ordering among target-
+backrun bundles.
+We can extend our trading model — with liquidity orders standing in for user transactions and
+arbitrageurs for backrunners — to capture this action space by introducing a random labelling
+bijection idx : K → [K ] of the slots (excluding top of block). The allocation function is replaced
+by a mapping α : K → [N], and the liquidity trade vector is also indexed by K . Each player i
+chooses a K -indexed family of target prices (si,k)k∈K . Then X i ’s payoffs are as if he played si,h
+in the idx(h)th slot for each h ∈ α∗(i).
+Indexing by label h ∈ K , the payoffs are deﬁned as follows:
+Ui
+(
+(si,h)h∈K |⃗s ˆi
+)
+: = ∑
+h∈α∗(i)
+C(sα(h′),h′ + r h) − C(si,h) (20)
+where idx(h′) = idx(h) − 1.
+If we restrict the action space to the diagonal, we can reindex the labelling out of the utility
+formula and recover a game of the form considered in §2.2; call this the diagonal subgame.
+The utility optimisation equation takes a very similar form to (13):
+EU′ i ( (si,h)h∈K ) = ∑
+h∈K
+ai,h
+(
+∑
+h∈K
+bi,hE[C(si,h′ + r h) | α(h) = i] − C(si,h)
+)
+. (21)
+However, the randomness of the unknown indexing idx feeds into h′ and hence si,h′ , so unlike the
+diagonal case this value must itself be treated as a random variable.
+3.1 Proposition. For sufﬁciently small allocation weights or order ﬂow, there exists an action
+space A ⊂ (0, ∞)K containing (xO , . . ., xO ) such that all players in this game have a unique dominant
+strategy.
+If the sequence order idx : K → [K ] is uniformly random, then the dominant strategy is the
+same as the dominant strategy for the diagonal subgame, that is, to set all si,h to the same value.
+Proof. The ﬁrst claim follows from along the same lines as the proof of Proposition 2.17. For the
+second, by ΣK -symmetry , if EUi has a maximum on the diagonal for some allocation weights
+and order ﬂow, then for any small deformation of the parameters it has a nearby maximum that
+remains on the diagonal.
+In other words, despite its greater input complexity, if backrunners have no information about
+sequence order then per-slot pricing is no more expressive than the uniform price game discussed
+in §2.2.
+3.2 Example (MEV-Blocker). Let’s compare this model to the way MEV-blocker [1] works. In
+MEV-Blocker, the eth_sendBundle RPC allows a searcher to construct a transaction bundle with
+a given (unsigned partial) transaction in the ﬁrst slot. As suggested by the documentation in
+loc. cit., a typical use case is to use the rest of the bundle to backrun the target transaction.
+The full contents of transactions are visible to the searcher at the time they choose their strat-
+egy, so that (r h)h∈K is deterministic. However, searchers are not informed of the ﬁnal sequence
+order (unless they are integrated with the block builder), so idx : K → [K ] should be considered a
+random variable.
+The allocation function α : K → [N] of slots to searchers is determined by an auction, so this
+random variable models the searcher’s beliefs about the outcomes of this auction. A searcher’s
+private value for an allocation α(h) = i, and hence their bid in the allocation auction, depends on
+the amount they can expect to gain from backrunning the trade r h (or frontrunning the subse-
+quent trade). This in turn depends on the value of r h. That is, α(h) and r h are not independent,
+16
+
+=== page 17 ===
+and the MEV-Blocker allocation function is not blind (in the sense of the obvious adaptation of
+Def. 2.11 to the per-slot pricing game).
+This model assumes that all MEV-blocker bundles on the target market are executed consec-
+utively, and not interspersed with any trades originating from other channels.
+3.3 Remark (Inferring transaction ordering). Even if, as in MEV-Blocker, backrunners are not
+informed of transaction ordering when they make their decisions, they may be able to use knowl-
+edge of the contents of transaction contents to make forecasts about ordering. For example, larger
+trades may be expected to land closer to the top of the block; concretely, for ﬁxed R ∈ R, P(r k ≤ R)
+is smaller for smaller k. The hypothesis that idx is uniformly random is unrealistic in this case.
+3.2 Limit orders
+Allowing liquidity traders to place limit orders introduces K additional parameters to the model.
+The qualitative dynamics that result depend on whether the orders permit partial ﬁlls or not. In
+the latter case, the payoff functions are discontinuous, so we get some interesting phase transi-
+tions in strategy space. In particular, if the limit on a liquidity order is such that it would fail to
+execute at the oracle price, the optimal strategy for an arbitrageur may be to provide better than
+equilibrium pricing so that the trade executes and they can proﬁt from the backrun.
+3.4 Example (Sandwiching a limit order). Suppose for simplicity that player 1 is a monopolist,
+and K = 1. This is the situation of an atomic sandwich of a single trade (r, q). Suppose r > 0 (so
+the liquidity trader wishes to sell the risky asset) and q = φ(y).
+The payoff function for sandwiching a partial ﬁll limit is
+C(r0) − C(s) + C(min{q, s + r}) − C(s).
+The mixed term is obtained by retracting the action space onto A ∩ (0, q − r].
+In the all or nothing case, we get a discontinuous payoff
+U(s) : = C(r0) − C(s) +
+{ C(s + r) − C(s) s + r ≤ q
+0 s + r > q
+and hence a nontrivial phase transition.
+Suppose sell(r, q) would fail to execute at the oracle price, i.e. xO + r = q + ǫ > xO for some
+ǫ > 0. For small ǫ > 0 the term C(s + r) > 0 dominates the utility expression at s = xO − ǫ, whence
+lim
+s→(xO −ǫ)+
+U(s) > lim
+s→(xO −ǫ)−
+U(s).
+That is, setting the price lower than the oracle price has better payoff than passthrough pricing.
+Similar reasoning holds if we allow our sandwicher to set different prices for the ﬁrst and second
+slot.
+3.3 Multiple batches
+Consider a repeated version of the backrun game where the same N players play M ∈ N ⊔ {∞}
+times, with x0,⃗r, α, φ, pO re-rolled each play. Note that for realism in this case, we are forced to
+allow the liquidity curve to vary from turn to turn. If we allow imperfect information about the
+liquidity curve, payoff analysis is substantially complicated.
+The repeated game greatly opens up the strategy space, enabling new ways for arbitrageurs
+to coordinate to give liquidity traders bad prices. For example, by analogy with the solution to
+the repeated prisoner’s dilemma it is natural to search for Nash equilibria (in non-dominating
+strategies) in ‘price ring’ strategies, where all arbitrageurs set prices to a level that deviates from
+the oracle price according to some scheme not depending on the player, unless another arbitrageur
+deviates ﬁrst.
+Furthermore, the possibility of using smart contracts to add new commitments to the multi
+stage game opens yet more possibilities for price rings to arise as ‘Stackelberg’ equilibria [8].
+17
+
+=== page 18 ===
+References
+[1] MEV Blocker. How to send backrun bundles to MEV Blocker RPC. 2023. URL: https://me
+vblocker.io/docs.
+[2] Eric Budish, Peter Cramton, and John Shim. “The High-Frequency Trading Arms Race:
+Frequent Batch Auctions as a Market Design Response”. In: The Quarterly Journal of Eco-
+nomics 130.4 (July 2015), pp. 1547–1621. ISSN: 0033-5533. DOI: 10 . 1093 / qje / qjv027.
+eprint: https://academic.oup.com/qje/article-pdf/130/4/1547/30637414/qjv027.p
+df.
+[3] Andrea Canidio and Robin Fritsch. Arbitrageurs’ proﬁts, LVR, and sandwich attacks: batch
+trading as an AMM design response. 2023. arXiv: 2307.02074 [cs.DC].
+[4] CoW protocol overview. 2023. URL: https://docs.cow.fi.
+[5] Philip Daian et al. “Flash boys 2.0: Frontrunning in decentralized exchanges, miner ex-
+tractable value, and consensus instability”. In: 2020 IEEE Symposium on Security and Pri-
+vacy (SP). IEEE. 2020, pp. 910–927. arXiv: 1904.05234 [cs.CR].
+[6] Matheus V. X. Ferreira and David C. Parkes. Credible Decentralized Exchange Design via
+Veriﬁable Sequencing Rules. 2022. arXiv: 2209.15569 [cs.GT].
+[7] Tiantian Gong and Aniket Kate. Order but Not Execute in Order. 2023. arXiv: 2302.01177
+[cs.CR].
+[8] Mathias Hall-Andersen and Nikolaj I Schwartzbach. “Game theory on the blockchain: a
+model for games with smart contracts”. In: International Symposium on Algorithmic Game
+Theory. Springer. 2021, pp. 156–170.
+[9] Andrew W. Macpherson. Adversarial blockchain queues and trading on a CFMM. 2023.
+arXiv: 2302.01663 [math.PR].
+[10] Blair Marshall. The False Narrative of MEV Protection: How Private Transactions Can Re-
+sult in a Poorer Settlement Than Sending Publicly. 2023. URL: https://www.blocknative
+.com/blog/mev-protection-negative-settlement.
+[11] Fernando Martinelli and Nikolai Mushegian. A non-custodial portfolio manager, liquidity
+provider, and price sensor. 2019. URL: https://balancer.fi/whitepaper.pdf.
+[12] Jason Milionis, Ciamac C. Moallemi, and Tim Roughgarden. Complexity-Approximation
+Trade-offs in Exchange Mechanisms: AMMs vs. LOBs. 2023. arXiv: 2302.11652 [math.FA].
+[13] Jason Milionis et al. Automated market making and loss-versus-rebalancing. 2022. arXiv:
+2208.06046 [q-fin.MF].
+[14] Franco Modigliani and Merton H Miller. “The cost of capital, corporation ﬁnance and the
+theory of investment”. In: The American economic review 48.3 (1958), pp. 261–297.
+[15] Robert F Nau and Kevin F McCardle. “Arbitrage, rationality, and equilibrium”. In: Theory
+and Decision 31 (1991), pp. 199–240.
+[16] Torsten Schöneborn and Alexander Schied. “Liquidation in the face of adversity: stealth vs.
+sunshine trading”. In: EFA 2008 Athens Meetings Paper. 2009.
+[17] Securities, Division of Trading Exchange Commission, and Markets. Certain Issues Affect-
+ing Customers in the Current Equity Market Structure. 2016. URL: https://www.sec.gov/s
+potlight/equity-market-structure/issues-affecting-customers-emsac-012616.p
+df.
+[18] Hal R Varian. “The arbitrage principle in ﬁnancial economics”. In: Journal of Economic
+Perspectives 1.2 (1987), pp. 55–72.
+18
+
+=== page 19 ===
+[19] Ye Wang et al. “Cyclic arbitrage in decentralized exchanges”. In: Companion Proceedings of
+the Web Conference 2022. 2022, pp. 12–19.
+[20] Jan Werner. “Arbitrage and the existence of competitive equilibrium”. In: Econometrica:
+Journal of the Econometric Society (1987), pp. 1403–1418.
+[21] Yesha Yadav. “How algorithmic trading undermines efﬁciency in capital markets”. In: Vand.
+L. Rev. 68 (2015), p. 1607.
+19

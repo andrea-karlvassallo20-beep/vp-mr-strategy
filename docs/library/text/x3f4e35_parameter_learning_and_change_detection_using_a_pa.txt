@@ -1,0 +1,1127 @@
+=== page 1 ===
+Parameter Learning and Change Detection Using a Particle
+Filter With Accelerated Adaptation
+Karol Gellert* and Erik Schl¨ogl*
+*University of Technology Sydney, Quantitative Finance Research Centre
+June 15, 2018
+Abstract
+This paper presents the construction of a particle ﬁlter, which incorporates elements
+inspired by genetic algorithms, in order to achieve accelerated adaptation of the esti-
+mated posterior distribution to changes in model parameters. Speciﬁcally, the ﬁlter is
+designed for the situation where the subsequent data in online sequential ﬁltering does
+not match the model posterior ﬁltered based on data up to a current point in time.
+The examples considered encompass parameter regime shifts and stochastic volatility.
+The ﬁlter adapts to regime shifts extremely rapidly and delivers a clear heuristic for
+distinguishing between regime shifts and stochastic volatility, even though the model
+dynamics assumed by the ﬁlter exhibit neither of those features.
+1
+arXiv:1806.05387v1  [stat.ML]  14 Jun 2018
+
+=== page 2 ===
+1 Introduction
+In an ideal world, using a well-speciﬁed model entails estimating the model parameters
+from historical data, and then applying the model with these parameters going forward,
+i.e. out of sample. Indeed, the bulk of the empirical academic literature in ﬁnance takes
+this approach. However, practitioners’ use of models, in particular for the pricing and risk
+management of derivative ﬁnancial products relative to observed prices for liquidly traded
+market instruments, typically tends to depart from this ideal. Primacy is accorded to
+model “calibration” over empirical consistency, i.e., choosing a set of liquidly traded market
+instruments (which may include liquidly traded derivatives) as “calibration instruments”,
+model parameters are determined so as to match model prices of these instruments as
+closely as possible to observed market prices at a given point in time. Once these market
+prices have changed, the model parameters (which were assumed to be constant, or at most
+time–varying in a known deterministic fashion) are recalibrated, thereby contradicting the
+model assumptions. “Legalising” these parameter changes by expanding the state space
+(e.g. via regime–switching or stochastic volatility models) shifts, rather than resolves, the
+problem: for example in the case of stochastic volatility, volatility becomes a state variable
+rather than a model parameter, and can evolve stochastically, but the parameters of the
+stochastic volatility process itself are assumed to be time–invariant. The limits of increasing
+model complexity are determined by a combination of mathematical tractability and the
+practicality of models. The result is a certain disparity between empirical research and how
+models are used in practice. In this light we propose a practically motivated methodology in
+the form of an adaptive particle ﬁlter which is able to rapidly detect discrepancies between
+the assumed model and data including parameter changes and model mis-speciﬁcation.
+Particle ﬁltering is a sequential Monte Carlo method which has become popular for its
+ﬂexibility, wide applicability and ease of implementation. The origin of the particle ﬁlter is
+widely attributed to Gordon, Salmond and Smith (1993) and theirs has remained the most
+general ﬁltering approach. It is an online ﬁltering technique ideally suited for analysing
+streaming ﬁnancial data in a live setting. It seeks to approximate the posterior distribution
+of latent (unobserved) dynamic states and/or model parameters by sets of discrete sample
+values, where these sampled values are called “particles.” For a more comprehensive intro-
+duction to particle ﬁltering see: Chen et al. (2003) for a general introduction and historical
+perspective; Johannes and Polson (2009), Lopes and Tsay (2011), and Creal (2012) for
+reviews related to ﬁnance; Andrieu, Doucet, Singh and Tadic (2004), Capp´e, Godsill and
+Moulines (2007), Chopin, Iacobucci, Marin, Mengersen, Robert, Ryder and Sch¨afer (2011),
+Kantas, Doucet, Singh and Maciejowski (2009), and Kantas, Doucet, Singh, Maciejowski
+and Chopin (2015) for parameter estimation techniques. The theoretical perspective is
+outlined by Del Moral and Doucet (2014) and covered in depth in Del Moral (2004, 2013).
+Basic particle ﬁlter algorithms suﬀer from particle impoverishment, which can be broadly
+described as the increase in the number of zero weighted particles as the number of obser-
+vations increases, resulting in fewer particles available for the estimation of the posterior.
+A key distinguishing feature of most contemporary particle ﬁlters is the approach taken
+2
+
+=== page 3 ===
+to deal with the problem of particle impoverishment and it continues to be a focus of
+eﬀort from researchers. A variety of techniques have been proposed as a solution, the
+main approaches are: the use of suﬃcient statistics as per Storvik (2002), Johannes and
+Polson (2007), Polson, Stroud and M¨uller (2008), and Carvalho, Johannes, Lopes and Pol-
+son (2010); maximising likelihood functions as per Andrieu, Doucet and Tadic (2005) and
+Yang, Xing, Shi and Pan (2008); and random perturbation or kernel methods as per West
+(1993a, 1993b), Liu and West (2001), Carvalho and Lopes (2007), Flury and Shephard
+(2009), and Smith and Hussain (2012).
+The idea behind random perturbation, initially proposed by Gordon et al. (1993) in
+the context of the estimation of dynamic latent states, is that by introducing an artiﬁcial
+dynamic to the static parameters, the point estimates become slightly dispersed, eﬀectively
+smoothing the posterior distribution and reducing the degeneracy problem. This comes
+at a cost of losing accuracy as the artiﬁcial dynamic embeds itself into the estimation.
+Motivated in part by this issue, Liu and West (2001) introduce a random kernel with
+shrinking variance, a mechanism which allows for a smoothed interim posterior, but where
+the dispersion reduces in tandem with convergence of the posterior distribution. The
+method proposed by Flury and Shephard (2009) is another example of this approach,
+introducing a perturbation to the SIR ﬁlter just prior to the resampling stage such that
+new samples are drawn from an already smoothed distribution, avoiding damage to the
+asymptotic properties of the algorithm. A common theme of these approaches is the
+assumption that the parameters are ﬁxed over the observation period, whereas we will
+operate under the pragmatic (and somewhat self–contradictory) premise of the frequent
+recalibration of ﬁnancial market models conducted by practitioners: Model parameters are
+ﬁxed, until they change.1 To this end, we adapt the idea of random perturbation to a more
+general parameter detection ﬁlter, pursuing a similar objective as Nemeth, Fearnhead and
+Mihaylova (2014),2 who develop a particle ﬁlter for the estimation of dynamically changing
+parameters. This type of problem is usually motivated by tracking maneuvering targets,
+perhaps an apt metaphor for a ﬁnancial market model requiring repeated recalibration of
+model parameters as time moves on.
+Our contribution to the literature is the introduction of a particle ﬁlter with acceler-
+ated adaptation designed for the situation where the subsequent data in online sequential
+ﬁltering does not match the model posterior ﬁltered based on data up to a current point
+in time. This covers cases of model misspeciﬁcation as well as sudden regime changes or
+rapidly changing parameters. The proposed ﬁlter is an extension of on-line methods for pa-
+rameter estimation which achieve smoothing using random perturbation. The accelerated
+adaptation is achieved by introducing a dynamic to the random perturbation parameter,
+allowing particle–speciﬁc perturbation variance; this combines with re-selection to produce
+1If desired, one could interpret this as estimation of changes in model regime, but where one remains
+agnostic about the number and nature of the model regimes. Particle ﬁlters have been applied to estimate
+regime–switching models, see for example Carvalho and Lopes (2007) and Bao, Chiarella and Kang (2012).
+2See also Nemeth, Fearnhead, Mihaylova and Vorley (2012).
+3
+
+=== page 4 ===
+a genetic algorithm which allows for rapid adaptation to mismatching or changing dynam-
+ics in the data. The similarity between particle ﬁltering and genetic algorithms has been
+noted before, see for example Smith and Hussain (2012), who use genetic algorithm mu-
+tation as a resampling step in the SIR ﬁlter. We reinforce the genetic algorithm aspect
+of the particle ﬁlter to detect and rapidly adapt to any discrepancies between the model
+and realised dynamic by exploiting random perturbations, in a sense taking the opposite
+direction of methods in the literature which seek to control random perturbation in order
+to remove biases in the estimation of parameters assumed to be ﬁxed.
+This approach leads us to a useful indicator of when changes in model parameters are
+being signalled by the data. The eﬀectiveness of this heuristic measure is based on the
+notion that in the case of perfect model speciﬁcation no additional parameter “learning”
+would be required. We show how this indicator can provide useful information for charac-
+terising the empirical underlying dynamics without using highly complex models (meaning
+models which assume stochastic state variables where the simpler model uses model pa-
+rameters). This allows for the use of a more basic model implementation to gain insight
+into more complex models, to make data–driven choices on how the simpler models might
+most fruitfully be extended. For example, our indicator will behave quite distinctly for
+an unaccounted regime change in the dynamic as opposed to an unaccounted stochastic
+volatility dynamic.
+The remainder of the paper is organised as follows. Section 2 recalls the basic particle
+ﬁlter construction. Section 3 iteratively presents the evolution of the particle ﬁlter method-
+ology based on the existing literature, culminating in the Liu and West (2001) ﬁlter, which
+forms the starting point of our ﬁlter with accelerated adaptation. Section 4 presents our
+particle ﬁlter incorporating additional elements inspired by genetic algorithms, adding this
+elements step by step and providing examples demonstrating their eﬀectiveness. Section 5
+concludes.
+2 Particle ﬁlter
+2.1 General framework
+Consider a sequence of Markovian discrete time states x1:t = {x1,...,xt} and discrete
+observations y1:t = {y1,...,yt}. In general, particle ﬁltering is concerned with the ﬁltering
+problem characterised by state-space equations:3
+xt+1 = f(xt,dt) (1)
+yt = g(xt,vt) (2)
+with dt and vt as independent random sequences in the discrete time domain. The transition
+density of the state p(xt+1|xt) and the observation likelihood p(yt|xt) are obtained from
+equations (1) and (2). The objective of particle ﬁltering is the sequential estimation of the
+3using notation from Chen et al. (2003)
+4
+
+=== page 5 ===
+posterior density p(xt|y1:t) which can be expressed in the recursive Bayesian setting:4
+p(xt|y1:t) = p(yt|xt)p(xt|y1:t−1) p(yt|y1:t−1) (3)
+where p(xt|y1:t−1) is the prior and is determined by the integral:
+p(xt|y1:t−1) =
+∫
+p(xt|xt−1)p(xt−1|y1:t−1)dxt−1 (4)
+p(yt|y1:t−1) is the evidence and is determined by:
+p(yt|y1:t−1) =
+∫
+p(yt|xt)p(xt|y1:t−1)dxt (5)
+The continuous posterior is approximated in the particle ﬁlter by a discrete random
+measure {x(i) t ,π(i) t }N i=1 composed of sample values of the state x(i) t with associated weights
+π(i) t , and N denoting the total number of particles5 as follows:
+p(xt|y1:t) ≈
+N∑
+i=1
+δ{x(i) t =xt}π(i) t (6)
+where δ is the Dirac delta function.
+2.2 Filtering for parameters with directly observed states
+The general state-space framework is a combination of state and observation dynamics.
+The observation dynamics are useful in problems which require modelling of observation
+uncertainty, for example applications involving physical sensors. In empirical ﬁnance the
+observation usually consists of a directly observed price, which often is assumed not have
+any inherent observation uncertainty. It does not mean state uncertainty cannot be mod-
+elled but here unobserved states are artefacts of the modelling assumptions rather than
+physical quantities of the system — stochastic volatility is one such example.
+In this paper we focus on estimation of only model parameters, in order to present our
+approach in the simplest setting where states are assumed to be directly observed — by
+adapting the results in existing literature in the appropriate manner, our approach would
+be straightforward to extend to the estimation of latent state variables. We begin with
+a derivation of the recursive Bayesian framework below. Similarly to Chen et al. (2003),
+the last step of the derivation relies on the assumption that the states follow a ﬁrst-order
+Markov process and therefore p(xt|x1:t−1) = p(xt|xt−1). Let θ represent the parameter set,
+4see Chen et al. (2003) for derivation
+5see Li, Bolic and Djuric (2015)
+5
+
+=== page 6 ===
+the parameter posterior is
+p(θ|x1:t+1) = p(x1:t+1|θ)p(θ) p(x1:t+1) (7)
+= p(xt+1,x1:t|θ)p(θ) p(xt+1,x1:t) (8)
+= p(xt+1|x1:t,θ)p(x1:t|θ)p(θ) p(xt+1|x1:t)p(x1:t) (9)
+= p(xt+1|x1:t,θ)p(θ|x1:t) p(xt+1|x1:t) (10)
+= p(xt+1|x1:t,θ)p(θ|x1:t)∫ p(xt+1|x1:t,θ)p(θ|x1:t)dθ (11)
+= p(xt+1|xt,θ)p(θ|x1:t)∫ p(xt+1|xt,θ)p(θ|x1:t)dθ (12)
+The above formulation establishes a recursive relationship between sequential posteriors.
+The particle approximation is based on the discretisation of θ(i) as shown below. Introduc-
+ing weight notation π(i) t+1 := p(θ(i)|x1:t+1) and the un-normalised weight ˆπ(i) t+1 we have
+π(i) t+1 ≈ p(xt+1|xt,θ(i))π(i) t N∑
+i=1
+p(xt+1|xt,θ(i))π(i) t
+= ˆπ(i) t+1 N∑
+i=1
+ˆπ(i) t+1
+(13)
+After initialisation a basic ﬁltering algorithm consists of iterative application of two
+steps to calculate the above approximation. The update step is the calculation of ˆπ(i) t+1 for
+all i, and the normalisation step obtains the posterior estimates π(i) t+1.
+3 Implementation and numerical results
+From this point, the paper follows an iterative approach to demonstrate the evolution of
+particle ﬁlter methodology as it exists in the current literature. Each iteration consists of a
+deﬁnition of a particle ﬁlter algorithm, followed by a simulation study with a focus on deﬁ-
+ciencies which are used to motivate the next innovation. Each incremental addition to the
+ﬁlter algorithm aims to resolve the deﬁciency found in the previous step. Thus this section
+focuses on already existing techniques, leading up to the next section which contains the
+main contributions of this paper. This incremental process is initialised with the most basic
+algorithm and simulation model chosen to represent a minimal implementation of a particle
+ﬁlter. The choice of a simple simulation model makes available a known posterior distri-
+bution, providing a benchmark for measuring the performance of the ﬁlter. To measure
+performance we use the Kolmogorov–Smirnov statistic. Although this is not a common
+choice, we ﬁnd it particularly useful for measuring performance against the benchmark, as
+well providing an intuitive measure for demonstrating particle impoverishment.
+6
+
+=== page 7 ===
+3.1 Preliminaries
+3.1.1 Observation process
+Begin with a basic Gaussian stochastic process, deﬁned by the stochastic diﬀerential equa-
+tion
+dxt = σdWt (14)
+where Wt denotes a standard Wiener process. Discrete observations used for the simulation
+study are generated using the Euler-Maruyama discretisation, i.e.
+∆xt = xt −xt−1 = σ∆Wt (15)
+The particle ﬁlter presented in this section will be concerned with estimating the posterior
+of p(σt|x1:t) given a set of observations x1:t generated by the above process. Note the use
+of subscript in σt to associate the estimate with data up to time t.
+The transition density for this process is given by:
+p(xt|xt−1,σ) = 1√ 2πσ2 e
+−∆xt2
+2σ2 t (16)
+3.1.2 Benchmark posterior
+Finding the posterior of σ from observations generated by the above process is equivalent
+to ﬁnding the posterior distribution of the variance given a set of Gaussian increments ∆xt.
+An established result, based on Cochran’s theorem6, states that the distribution of σ2 t is
+obtained from the chi-square distribution with n− 1 degrees of freedom; χ2 n−1 according
+to:
+ˆσ2 tn
+σ2 t ∼χ2 n−1 (17)
+where ˆσ2 t is the maximum likelihood estimator; ˆσ2 t =
+∑
+t ∆x2 t
+n with n the number of obser-
+vations. The theoretical posterior can be written as:
+p(σt|x1:t) = χ2 n−1
+( ˆσ2 tn
+σ2 t
+)
+(18)
+with cumulative distribution function (CDF):
+F (σt) =
+σt∫
+0
+χ2 n−1
+( ˆσ2 tn
+σ2 t
+)
+dσt (19)
+6see Cochran (1934)
+7
+
+=== page 8 ===
+3.1.3 Measuring performance
+Assessing the performance of the particle ﬁlter in the presence of a theoretical benchmark
+amounts to measuring the distance between two posterior distributions with respect to
+increasing number of particles and increasing number of observations. The Kolmogorov-
+Smirnov (KS) statistic, which measures the maximum distance between CDFs, seems a
+natural choice, however it is not commonly used in literature, with Djuric and M´ıguez
+(2010) providing one of the few examples of usage related to the particle ﬁlter. Deﬁne the
+estimated CDF as
+F∗(σt) = ∑
+i
+I (σ(i) t ≤σt)π(i) t .
+The KS statistic measures the maximum distance between the theoretical F (σt) and esti-
+mated posterior F∗(σt):
+KS = sup
+σt
+|F∗(σt) −F (σt)| (20)
+It must be stressed that this approach is limited in use for this speciﬁc case due to the avail-
+ability of a known posterior. Within this limitation, it is a simple and eﬀective approach for
+demonstrating convergence, as well as demonstrating the issue of particle impoverishment;
+including the eﬃcacy of the Liu and West ﬁlter for resolving it.
+3.1.4 Convergence
+Convergence has been the subject of signiﬁcant research and a wide range of results exist in
+the literature. For detailed theoretical analysis see Chopin (2004), Del Moral and Doucet
+(2014), Douc and Moulines (2007) and Doucet and Johansen (2009). For a comprehensive
+survey of convergence results refer to Crisan and Doucet (2002). The present paper em-
+ploys numerical testing of expected convergence results as a means to assess particle ﬁlter
+performance. The numerical tests are based on the KS statistic relying on the basic asser-
+tion that convergence of the KS statistic implies convergence of the estimated posterior to
+the benchmark distribution:
+sup
+σt
+|F∗(σt) −F (σt)|−−−−→ N→∞ 0 =⇒ F∗(σt) −−−−→ N→∞ F (σt) (21)
+Additionally, the KS statistic is used to assess convergence with respect to the number of
+observations, where it proves to be an eﬀective indicator of a known issue with particle
+ﬁlters referred to as particle impoverishment7.
+3.2 Basic Filter (SIS)
+A basic ﬁltering algorithm consists of initialisation followed by iterative application of two
+steps corresponding to (13). It is essentially an adaptation of the ﬁlter known as sequential
+importance sampling (SIS) for the detection of a static parameter. A ﬁlter for dynamic
+7see Chen et al. (2003) p. 26 for an introduction to particle impoverishment
+8
+
+=== page 9 ===
+Figure 1: KS statistic for increasing number of particles (logarithmic scales)
+state variables also would include a draw from the state variable transition kernel, see Chen
+et al. (2003). The update step is the calculation of ˆπ(i) t+1 for all i, and the normalisation
+step obtains the posterior estimates π(i) t+1. The algorithm is deﬁned as follows:
+1: Initilisation For each particle; draw N particles σ(i) 0 ∼U(a,b) and π(i) 0 = 1 N
+2: Sequentially for each observation:
+2.1: Update For each particle update weight ˆπ(i) t = π(i) t p(xt|xt−1,σ(i) t )
+2.2: Normalisation For each particle π(i) t = ˆπ(i) t∑ ˆπ(i) t
+The performance of the ﬁlter is tested numerically by rerunning it with an increasing num-
+ber of particles given a ﬁxed set of observations, and recording the KS statistic for each
+run. The results are presented in Figure 1, showing the value of the KS statistic with
+respect to the number of particles, both in log-space. Convergence is evident, however the
+most prominent aspect of the results is instability as N →∞. The instability indicates
+that while there is an overall convergence trend, incremental increases in the number of
+particles result in signiﬁcant noise in the KS statistic. To better understand the reason
+behind the instability, the theoretical (18) and the estimated posterior (6) PDF and CDF
+are compared visually for a small number of particles. The PDF comparison is shown
+in Figure 2. Each vertical line in the plot represents a particle weight π(i) t and is shown
+against the theoretical posterior8. The scaled comparison demonstrates a very good corre-
+spondence between the estimated and theoretical shape of the PDF. It is also evident that
+the estimation points are unevenly distributed, reﬂecting the randomly initialised particle
+locations. The estimated and theoretical CDFs are compared in Figure 3. The KS statistic
+corresponds to the maximum vertical distance between the two plots. Intuitively it appears
+that the vertical distance between the CDFs is related to the horizontal distance between
+adjacent estimation points, identiﬁable in the CDF as the end points of each piecewise ﬂat
+8Note the estimate and theoretical posterior are shown at diﬀerent scales as the scaling of the estimate
+depends on the number of particles, only converging to the scaling of the theoretical posterior as N →∞
+9
+
+=== page 10 ===
+Figure 2: theoretical (red, lhs) and estimated (black, rhs) σ (horizontal) posterior.
+Figure 3: theoretical (red) and estimated (black) σ (horizontal) posterior CDF.
+interval. It follows that the maximum vertical distance, i.e the KS statistic, is related to
+the maximum distance between adjacent estimation points. The random initialisation of
+the estimation points means that the maximum distance between adjacent points does not
+decrease monotonically as N →∞, resulting in the instability observed in the KS statistic.
+3.3 Equal Spacing
+The above reasoning leads to a trivial improvement: if the point density locations are
+equally spaced the maximum distance between adjacent points will decrease monotonically
+as N →∞. Further, even spacing guarantees that this maximum distance is minimised
+for any given number of particles9.The initialisation in the ﬁltering algorithm is altered to
+reﬂect equally spaced estimation points:
+9This does not guarantee the optimal estimation point distribution with respect to the KS statistic, but
+the improvement in performance is substantial
+10
+
+=== page 11 ===
+Figure 4: KS statistic or increasing number of particles (logarithmic scales), random (grey)
+vs equally spaced (black) distribution of estimation point densities
+1: Initilisation For each particle; let σ(i) 0 = (b−a)i N and π(i) 0 = 1 N
+2: Sequentially for each observation:
+2.1: Update For each particle update weight ˆπ(i) t = π(i) t p(xt|xt−1,σ(i) t )
+2.2: Normalisation For each particle π(i) t = ˆπ(i) t∑ ˆπ(i) t
+The convergence test from the previous section is rerun with the above adjustment. The
+result, shown in Figure 4, clearly demonstrates that this simple change has resulted in a
+faster and more stable rate of convergence.10 11 The reason for the improvement is evident
+in the PDF Figure 5 and CDF Figure 6 and conﬁrms the assertion from the previous
+section. The shape of the PDF is preserved at equally spaced intervals which allows closer
+and more consistent alignment between the CDFs, resulting in the elimination of noise
+from the convergence of the KS statistic.
+A well known problem with the basic particle ﬁlter is that the number of particles with
+non-zero weights can only decrease with each iteration12. Zero weights occur when the
+estimated posterior probability at a particular estimation point falls below the smallest
+positive ﬂoating point number available for the computing machine on which the ﬁlter
+is implemented. To demonstrate the problem, the proportion of zero weighted particle
+is plotted against the number of observations in Figure 7. This weight degeneration is a
+problem particularly for detection of dynamic state variables where it essentially diminishes
+the sample domain. In this case the problem is largely solved by introducing a resampling
+step where the zero weight particles are replaced by sampling from the non-zero weight
+particles according to their relative estimated probabilities. For detection of static model
+10This is somewhat related to research focusing on sequential monte carlo using quasi-random rather
+than pseudo-random draws, see for example Gerber and Chopin (2015)
+11notably the convergence is linear in log-space suggesting the form sup |F ∗(σ) −F (σ)|≤ C N echoing
+theoretical results for the convergence of mean square error, see Crisan and Doucet (2002), section V
+12see Chen et al. (2003) p. 26 for a good summary
+11
+
+=== page 12 ===
+Figure 5: theoretical (red, lhs) and estimated (black, rhs) σ (horizontal) posterior for
+equally spaced estimation points
+Figure 6: theoretical (red) and estimated (black) σ (horizontal) posterior CDF for equally
+spaced estimation points
+Figure 7: Proportion of zero weight particles with increasing number of observations for
+the SIS ﬁlter in log-space
+12
+
+=== page 13 ===
+parameters, simply resampling only removes the zero weight particles but does not resolve
+the sample impoverishment problem. Because the model parameters are assumed to be
+ﬁxed, resampling simply concentrates more particles on the same (diminishing) number of
+estimation points. The resolution of this issue for static parameters will be demonstrated
+over the next two sections.
+3.4 Resampling: SIR Filter
+The ﬁrst step to reducing particle impoverishment is to redistribute the particles according
+to the current posterior estimate, a technique called sample importance resampling (SIR).
+This redistribution of particles replicates higher probability particles and discards any with
+zero or very low weighting, thus resolving the problem highlighted in the previous section.
+Various methods for resampling have been proposed in literature. This paper uses system-
+atic resampling, which can be found in the survey analysis of Hol, Schon and Gustafsson
+(2006), where it is described as having the lowest discrepancy and reduced computation
+complexity without deterioration of the estimate.13 The goal of the resampling step is to
+transform the posterior distribution approximated by N particles of diﬀering weights into
+one approximated by N particles of equal weight. The resampling begins by generating N
+ordered numbers:
+uk = (k− 1) + ˜u N , with ˜u∼U[0, 1), (22)
+then reselecting the particles according to
+σ(k) t = σ(i) t , with i s.t. uk ∈
+[ i−1∑
+s=1
+π(s) t ,
+i∑
+s=1
+π(s) t
+)
+(23)
+The ﬁltering algorithm is adjusted to include the resampling step:
+1: Initialisation For each particle; let σ(i) 0 = (b−a)i N and π(i) 0 = 1 N
+2: Sequentially for each observation:
+2.1: Update For each particle update weight ˆπ(i) t = π(i) t p(xt|xt−1,σ(i) t )
+2.2: Normalisation For each particle π(i) t = ˆπ(i) t∑ ˆπ(i) t
+2.3: Resampling Generate a new set of particles:
+p(σt|x1:t) ≈
+N∑
+i=1
+δ{σ(i) t =σt}π(i) t −−−−−−→ resample p(σt|x1:t) ≈
+N∑
+k=1
+1
+Nδ{σ(k) t =σt}
+As discussed, the above algorithm discards zero weighted particles (or, more accurately, is
+likely to discard particles of very low weight), resolving the problem posed in the previous
+section. However, for static model parameter estimation the particle impoverishment still
+persists, because resampling simply concentrates particles on the same estimation points.
+Because the parameters are assumed to be ﬁxed, their value does not change as it would
+13Our own experimentation conﬁrms these ﬁndings.
+13
+
+=== page 14 ===
+Figure 8: KS statistic for increasing number of observations for the SIR ﬁlter
+for dynamic state parameters. As the number of observations increases, the theoretical
+posterior density becomes increasingly more concentrated around the maximum likelihood
+estimate, in the limit approaching the Dirac delta measure. The key intuition to un-
+derstanding particle impoverishment is that the estimated posterior will concentrate the
+estimation density on a single point after a ﬁnite number of observations rather than in
+the limit: On each update of the weight π(i) t , the total weight becomes more and more
+concentrated on the parameter value θ(i) of maximum likelihood given the observations,
+but for a ﬁnite number of observations the parameter value of maximum likelihood does
+not necessarily coincide with the “true” parameter of the data generating process, and
+for a ﬁnite number of particles, the discretisation of the parameter space by the θ(i) will
+also mean that the best possible θ(i) will not coincide with the exact “true” parameter.
+Therefore, in the limit the theoretical and estimated posterior will both be concentrated
+on a single point at diﬀerent locations, with the estimate reaching this state after a ﬁnite
+amount of observations. Once the estimate reaches this point the KS statistic is based on
+the one estimation point (denote as σ∗) and equals max(1 −F (σ∗),F (σ∗)). As the theo-
+retical posterior converges, its PDF narrows until the single remaining estimation point is
+outside its numerically signiﬁcant domain; reﬂecting this the KS statistic approaches the
+maximum value 1. This is demonstrated numerically by running the particle ﬁlter over a
+large number observations and recording the KS statistic at each sequential estimate, as
+shown in Figure 8. The KS statistic approaching 1 as the number of observations increases
+is an indicator of theoretical and particle ﬁlter posteriors diverging from each other as a
+consequence of particle impoverishment. As an additional explanation, Figure 9 shows an
+example of a PDF for an impoverished state of the particle ﬁlter, where the posterior is
+estimated by just four particle locations. The example shows a state where the theoret-
+ical posterior has narrowed as it converges, however the spacing between the estimation
+points has not changed. This will eventually lead to the posterior being estimated by a
+single point, which eventually will fall outside of the theoretical posterior. One of the
+many approaches motivated by the problem of particle impoverishment, initially proposed
+14
+
+=== page 15 ===
+Figure 9: theoretical (red, lhs) and estimated (black, rhs) σ (horizontal) posterior demon-
+strating particle impoverishment.
+by Gordon et al. (1993), is to add small random perturbations to every particle at each
+iteration of the ﬁltering algorithm, that is
+θt+1 = θt + ζt+1 (24)
+ζt+1 ∼N(0,Wt+1) (25)
+where Wt+1 is a speciﬁed variance matrix. While this approach provides a framework for
+addressing particle impoverishment, it does so at the cost of accuracy to the posterior
+distribution. Any random perturbation to the ﬁxed parameters introduces an artiﬁcial
+dynamic resulting in potential overdispersion of the parameter estimate. For example, if
+the variance Wt+1 of the random perturbation is constant, the constant value becomes
+the minimum variance of the posterior estimate, i.e at some point the minimum variance
+becomes larger than the variance of the theoretical posterior, almost exactly the opposite
+eﬀect to particle impoverishment. It is therefore desirable to have the perturbation variance
+shrink in line with the posterior convergence such that it always remains only a relatively
+small contributor to the estimation variance. One such approach which explicitly addresses
+overdispersion is proposed by Liu and West (2001), and the literature refers to this as the
+Liu and West ﬁlter.
+3.5 Liu and West ﬁlter
+To resolve the problem of over-dispersion, Liu and West (2001) put forward an approach
+using a kernel interpretation of the random perturbation proposed by Gordon et al. (1993).
+The idea of the kernel representation is that each parameter in the particle population exists
+as a density instead of a single point. The overdispersion is resolved by linking the variance
+of the kernel to the estimated posterior variance such that it shrinks proportionally to the
+convergence of the estimated posterior. The practical application within the ﬁlter algorithm
+is to draw the parameter from the kernel density for each particle at each iteration. The
+15
+
+=== page 16 ===
+kernel is expressed as a normal density N (σ|m,S) with mean m and variance S and replaces
+the Dirac delta density in equation (6):
+p(σt|x1:t) ≈
+N∑
+i=1
+π(i) t N (σ(i) t |m(i) t ,h2Vt) (26)
+where Vt is the variance of the current posterior Vt = 1 N ∑ i (σ(i) t −σt)2 and
+m(i) t = cσ(i) t + (1 −c)σt (27)
+with c =
+√
+1 −h2 and σt the mean of the current posterior. The ﬁltering algorithm now
+includes a kernel smoothing step where the posterior points are drawn from the kernel
+deﬁned in eq. (26):
+1: Initialisation For each particle; let σ(i) 0 = (b−a)i N and π(i) 0 = 1 N
+2: Sequentially for each observation:
+2.1: Update For each particle update weight ˆπ(i) t = π(i) t p(xt|xt−1,σ(i) t )
+2.2: Normalisation For each particle π(i) t = ˆπ(i) t∑ ˆπ(i) t
+2.3: Resampling Generate a new set of particles:
+p(σt|x1:t) ≈
+N∑
+i=1
+δ{σ(i) t =σt}π(i) t −−−−−−→ resample p(σt|x1:t) ≈
+N∑
+k=1
+1
+Nδ{σ(k) t =σt}
+2.4: Kernel smoothing For each particle apply σ(i) t ∼N (σ(i) t |m(i) t ,h2Vt)
+Numerical results demonstrating the eﬀectiveness of the Liu and West ﬁlter in reducing
+particle impoverishment are shown in Figure 10. The KS statistic for the Liu and West
+ﬁlter remains relatively constant as the number of observations increases, indicating that
+the ﬁlter estimate convergence with respect to the number of observations is well aligned
+with the theoretical posterior. The reason for the improvement is conﬁrmed by comparison
+of the estimated posterior to the theoretical PDF, shown in Figure 11. The example
+demonstrates the eﬀectiveness of the kernel in estimating both the location and variance
+of the theoretical posterior.
+4 Parameter learning and change detection
+In this section we continue to extend the particle ﬁlter, introducing techniques representing
+the main research contribution of this paper. The section begins by introducing a regime
+shift to the Gaussian reference model in order to pose a more diﬃcult ﬁltering problem
+and highlight the adaptive aspect of the Liu and West ﬁlter. We show that the adaptation
+is a result of the combination of random perturbation and re-selection, forming a genetic
+algorithm capable of adapting to parameter regime changes. After demonstrating the link
+between adaptation speed and the size of the random perturbation, we propose an extension
+16
+
+=== page 17 ===
+Figure 10: KS statistic for increasing number of observations SIR (grey) and Liu and West
+(black)
+Figure 11: theoretical (red, lhs) and estimated (black, rhs) posterior for σ (horizontal) in
+the Liu and West ﬁlter
+to the Liu and West ﬁlter which increases the kernel variance when required for adaptation.
+This is achieved by exploiting the genetic algorithm embedded in the Liu and West ﬁlter,
+thus allowing the size of parameter random perturbation to evolve as part of the already
+existing process. The result is a ﬁlter capable of adapting to regime changes and converging
+to the Liu and West ﬁlter when adaptation is not required. We also illustrate the capacity
+of the ﬁlter to adapt to stochastic volatility. Finally we demonstrate how measuring the
+average adaptation at each iteration can provide useful information which can be used to
+distinguish between diﬀerent dynamics of the underlying data.
+17
+
+=== page 18 ===
+4.1 Regime shift
+Consider a model where at time t = t∗ there is a change in volatility,
+dxt = (σ1I t<t∗ + σ2I t≥t∗ )dWt (28)
+Up to the time t∗, the above model is identical to (14) and the particle ﬁlter performs as
+demonstrated in the previous chapter. In the case of the Liu and West ﬁlter, the range
+of the posterior support will narrow in line with the converging theoretical posterior as
+the number of observations increase up to time t∗. At the point t = t∗, two situations
+are possible, the new value σ2 could lie either inside or outside the range of the estimated
+posterior. In the case that it is inside, that is there are at least two particles such that
+σ(i) t ≤ σ2 ≤ σ(j) t , the weights of the particles closest to σ2 will start to increase and
+eventually the ﬁlter will converge to the new value. However, in order to develop and
+illustrate a genetic algorithm approach, this section will focus on the opposite case, where
+σ2 is outside the range of the posterior. This situation will be labelled the adaptation
+phase.
+In general, the posterior density, given enough observations, tends to converge around
+the parameter values set in the simulation used to generate the observations. However, this
+is not possible during the adaptation phase, since by deﬁnition the range of the posterior
+does not encompass the new parameter value. In this case, the posterior will converge to
+the point closest to the new value σ2, located at the boundary of the existing posterior
+range. In the limit, all density will be focused on the single particle closest to σ2, that is:
+π(i) t p −→ 1 for is.t.|σ2 −σ(i) t | = inf 1≤j≤N [|σ2 −σ(j) t |] (29)
+The presence of random perturbation, in the form of the kernel used in the Liu and West
+ﬁlter, allows the posterior interval to expand and therefore decrease the distance of the
+interval boundary to σ2. That is, there is a non-zero probability that the random per-
+turbation results in at least one of the new particle locations falling outside the current
+estimation boundary. This is especially the case during the adaptation phase, where pos-
+terior density is accumulated at the boundary. This translates to
+P ( inf
+1≤j≤N
+[|σ2 −~σ(j) t |] < inf 1≤j≤N [|σ2 −σ(j) t |]) > 0, where ~σ(j) t ∼N (σ(j) t |m(j) t ,h2Vt) (30)
+The random perturbation combines with the re-selection to form a genetic algorithm ca-
+pable of adapting the posterior to the new value by expanding the posterior such that
+inf[|σ2 −σ(j) t |] → 0, thereby allowing the posterior to shift towards σ2. In the Liu and West
+ﬁlter, the kernel variance Vt is determined by the variance of the particles, which tends
+towards zero as the particles become increasingly concentrated around the boundary. The
+variance is prevented from reaching zero by the random expansion of the boundary, giving
+the posterior incremental space preventing collapse to a single point. The net result is a
+situation where the two forces tend to balance out resulting in a relatively steady rate of
+boundary expansion towards σ2. This is evident in Figure 12: after the regime change
+there is a slow and relatively constant change in the estimate in the direction of σ2.
+18
+
+=== page 19 ===
+Figure 12: Estimated expected value (black) vs simulation input value (red) of σt with
+regime change after 10,000 steps for the Liu and West ﬁlter
+The adaptation demonstrated in this section stems from the combination of random per-
+turbation via the kernel and re-selection, creating a type of genetic algorithm. Adaptation
+is evident, however it is very slow; the Liu and West ﬁlter was designed to smooth the
+posterior without causing overdispersion, and not to rapidly adapt to model parameter
+regime changes.
+4.2 Controlling the rate of adaptation
+Equation (30) implies that the speed of adaptation is directly related to the speed of
+expansion of the posterior interval, which in turn is driven by the size of the kernel variance
+Vt. In the case of the Liu and West ﬁlter, the adaptation is slow since the variance of the
+kernel depends on the variance of the posterior and therefore shrinks in line with the
+convergence of the posterior. To illustrate the relationship between the size of the random
+kernel variance and adaptation speed, an additional noise term φ is introduced into the
+kernel used by Liu and West as follows:
+p(σt|x1:t) ≈
+N∑
+i=1
+π(i) t N (σ(i) t |m(i) t ,h2Vt + φ) (31)
+The ﬁltering algorithm becomes:
+19
+
+=== page 20 ===
+Figure 13: Comparing estimated posterior expected value (black) vs simulation input value
+(red) of σt, when there is a regime change after 10,000 steps, using the Liu and West ﬁlter
+with additional noise, for diﬀerent values of φ (i) 0.1 N (ii) 1.0 N (iii) 10.0 N (iv) 100.0 N
+1: Initialisation For each particle; let σ(i) 0 = (b−a)i N and π(i) 0 = 1 N
+2: Sequentially for each observation:
+2.1: Update For each particle update weight ˆπ(i) t = π(i) t p(xt|xt−1,σ(i) t )
+2.2: Normalisation For each particle π(i) t = ˆπ(i) t∑ ˆπ(i) t
+2.3: Resampling Generate a new set of particles:
+p(σt|x1:t) ≈
+N∑
+i=1
+δ{σ(i) t =σt}π(i) t −−−−−−→ resample p(σt|x1:t) ≈
+N∑
+k=1
+1
+Nδ{σ(k) t =σt}
+2.4: Kernel smoothing For each particle apply σ(i) t ∼N (σ(i) t |m(i) t ,h2Vt + φ)
+Figure 13 and Figure 14 show ﬁltering results with the above change for varying levels of
+the noise term φ. The key aspect of the results is that increasing φ indeed increases the
+adaptation speed, but at the cost of signiﬁcant additional noise in the prediction.14
+The regime shift, applied to the dynamics behind Figures 13 and 14, provides a test case
+with a large sudden change at a speciﬁc point in time. As another test case, in Figure 15
+and Figure 16 we consider a basic stochastic volatility model. In contrast to a regime shift,
+changes in the model volatility are driven by a diﬀusion, testing the capability of the ﬁlter
+to detect continuous, rather than sudden discrete changes. The process is deﬁned by the
+14Figure 12 results are equivalent to the above ﬁlter if one sets φ = 0.
+20
+
+=== page 21 ===
+Figure 14: Comparing the change in estimated posterior expected value of σt, where there
+is a regime change after 10,000 steps, using the Liu and West ﬁlter with additional noise,
+for diﬀerent values of φ (i) 0.1 N (ii) 1.0 N (iii) 10.0 N (iv) 100.0 N
+following system of SDEs:
+dxt = αtdW1,t (32)
+dαt = νdW2,t (33)
+where W1,t and W2,t denote independent standard Wiener processes.
+The ﬁlter is applied to the stochastic volatility model without any alteration from the
+setup used to detect regime changes. As is apparent in particular in Figure 15(ii), some
+degree of additional noise seems to help in detection of the underlying value of α. However,
+similarly to the regime shift, too much noise simply translates to a noisy estimate. These
+results also highlight the resemblance to a ﬁlter conﬁgured to detect only a stochastic
+volatility model, i.e., a ﬁlter set up to detect the state parameter α given a value of
+ν15. Each iteration would contain an additional step where each particle’s α(i) is updated
+according to the stochastic volatility dynamic. In this case the additional noise parameter
+φ acts in a similar fashion to the stochastic volatility parameter ν. The diﬀerence in the
+approach highlights one of the motivating factors behind our method, the approach being
+presented does not have to assume prior knowledge of the underlying model, rather it can
+act as a gauge for empirical assessment of data and with limited modelling assumptions
+can suggest fruitful extensions toward more sophisticated models. In the regime shift
+example the noise parameter φ improved the adaptation speed at the cost of prediction
+noise. A high level of φ is only desirable during the adaptation phase, at other times the
+ideal the level of φ would be zero. For the stochastic volatility example clearly there is
+some optimal level of φ which achieves good ﬁlter performance without causing excessive
+15See Bao et al. (2012), Casarin (2004) for examples of stochastic volatility model detection.
+21
+
+=== page 22 ===
+Figure 15: Comparing estimated posterior expected value (black) vs simulation input value
+(red) of α in the stochastic volatility model, using the Liu and West ﬁlter with additional
+noise, for diﬀerent values of φ (i) 0.1 N (ii) 1.0 N (iii) 10.0 N (iv) 100.0 N
+Figure 16: Comparing the change in estimated posterior expected value of α in the stochas-
+tic volatility model, using the Liu and West ﬁlter with additional noise, for diﬀerent values
+of φ (i) 0.1 N (ii) 1.0 N (iii) 10.0 N (iv) 100.0 N
+noise. This is the motivation for a methodology for automatically selecting the level of φ
+based on the data, based on an examination of the behaviour of particles on the boundary
+of the posterior during the adaptation phase, which will be considered next.
+4.3 Applying selection to the rate of adaptation
+Results from the previous section show that the adaptation of the ﬁlter after a regime
+change is driven by posterior boundary expansion resulting from random perturbation.
+22
+
+=== page 23 ===
+During the adaptation phase, there is a persistent concentration of density around the
+boundary of the posterior closest to the new value. It is as though the particles seek to
+be as close as possible to the new value and are pushing the posterior in this direction.
+Therefore the behaviour of particles on the edge of the posterior should be quite diﬀerent
+during the adaptation phase than at other times. It remains to quantify this diﬀerence and
+use it to enhance the performance of the ﬁlter.
+One of the diﬀerences, already highlighted, is the concentration of posterior density
+around the boundary during the adaptation phase. This is examined numerically by mea-
+suring how much probability mass the update step moves into the pre-update tail of the
+posterior. The measurement is made by ﬁrst, prior to the update step, ﬁnding the lowest
+σ∗ t such that ∑
+i
+I (σ(i) t ≥σ∗ t )π(i) t ≤p
+when σ2 > sup[σ(j) t ] or the highest σ∗ t such that
+∑
+i
+I (σ(i) t ≤σ∗ t )π(i) t ≤p
+when σ2 < inf[σ(j) t ]. Following the update step, compute the amount of probability mass
+which has moved beyond σ∗ t , i.e. into the tail, using either ∑
+i
+I (σ(i) t ≥σ∗ t )ˆπ(i) t+1 when σ2 >
+sup[σ(j) t ] or ∑
+i
+I (σ(i) t ≤σ∗ t )ˆπ(i) t+1 when σ2 < inf[σ(j) t ]. If the new cumulative density is higher
+than p, it means that the density in the tail of the posterior has increased. If this measure
+is persistently high through cycles of weight update and re-selection, it is a strong indicator
+of regime change.
+Indeed, Figure 17 generated with p = 0.05, reveals a notable increase in the weight
+associated with the edge particles during the adaption phase. In the ﬁrst case the measure
+persists at the maximum value of 1.0, reﬂecting the slow adaptation observed for this
+setting, where for a substantial number of update steps all probability mass is shifted
+beyond σ∗ t in each step (i.e., because of the choice of small φ, the posterior moves toward
+the new “true value” only in small increments). Consistent with the ﬁndings in the previous
+sections, the speed of adaptation depends on the size of φ at the cost of noise in the results.16
+Another quantity to consider is the size of the dispersion of each particle from the
+application of the kernel. Deﬁne realised dispersion for each particle as the distance it has
+moved from current location due to application of the kernel, denoted as |∆σ(i) t |. Consider
+the situation where all particles are in exactly the same location, i.e the posterior exists
+at one point. After application of the kernel, it is obvious that the particles on the edge
+16Results for Figure 17 were generated with the identical ﬁlter conﬁguration to the results shown in
+Figure 13.
+23
+
+=== page 24 ===
+Figure 17: Probability mass shifted beyond the 5% quantile on the edge of the posterior
+with regime change after 10,000 steps, using the Liu and West ﬁlter with additional noise
+term φ equal to (i) 0.1 N (ii) 1.0 N (iii) 10.0 N (iv) 100.0 N
+of the posterior will have the highest realised dispersion. In the opposite situation where
+the particles are very widely dispersed and the kernel variance is relatively small, the
+relative position of the particle after application of the kernel will have minimal relation
+with realised dispersion. Therefore the relation between realised dispersion and particle
+location at the posterior boundary depends on the existing level of dispersion and relative
+kernel variance. As already determined, during the adaptation phase the particles tend to
+be very concentrated at the boundary, therefore are closer to the situation where they are
+likely to exhibit a relation where particles located on the edges will tend to have higher
+realised dispersion.
+The combination of higher density and realised dispersion at the edge of the posterior
+results in a selection bias of high realised dispersion particles during the adaptation phase.
+This veriﬁed numerically by recording the total realised dispersion ∑
+i
+|∆σ(i) t | following each
+re-selection step. The results are shown in Figure 18 and show a similar pattern to the
+results in Figure 17, conﬁrming the assertion.
+The results so far have established a relationship between the value of φ and the adap-
+tation speed, and a selection bias for particles with high realised dispersion during the
+adaptation phase. Realised dispersion is a function of φ, which so far has been kept con-
+stant, connecting the two results. Through its connection to realised dispersion, redeﬁning
+φ to be non-constant will subject it to the same selection bias. To take advantage of this,
+deﬁne φ(i) for each particle, initialised using φ(i) ∼ U(0,c). This way high values of φ
+leading to high dispersion will tend to be selected during the adaptation phase increasing
+adaptation speed. Conversely, low values of φ will tend to be selected when adaptation is
+not required, reducing noise. The ﬁltering algorithm now becomes:
+24
+
+=== page 25 ===
+Figure 18: Realised dispersion after re-selection for simulated data with regime change
+after 10,000 steps, using the Liu and West ﬁlter with additional noise term φ equal to
+(i) 0.1 N (ii) 1.0 N (iii) 10.0 N (iv) 100.0 N
+1: Initialisation For each particle; let σ(i) 0 = (b−a)i N , π(i) 0 = 1 N and φ(i) ∼U(0,c)
+2: Sequentially for each observation:
+2.1: Update For each particle update weight ˆπ(i) t = π(i) t p(xt|xt−1,σ(i) t )
+2.2: Normalisation For each particle π(i) t = ˆπ(i) t∑ ˆπ(i) t
+2.3: Resampling Generate a new set of particles:
+p(σt|x1:t) ≈
+N∑
+i=1
+δ{σ(i) t =σt}π(i) t −−−−−−→ resample p(σt|x1:t) ≈
+N∑
+k=1
+1
+Nδ{σ(k) t =σt}
+2.4: Kernel smoothing For each particle apply σ(i) t ∼N (σ(i) t |m(i) t ,h2Vt + φ(i))
+The algorithm is tested with the initial distribution set such that the expected value of
+φ for each test is equivalent to the value set for the tests in the previous section. The
+results, shown in Figure 19 and Figure 20, when compared to Figures 13 and 14, reveal a
+signiﬁcant reduction in noise coupled with an increase in the speed for charts (i) and (ii)
+but a decrease for charts (iii) and (iv). The reduction in noise results from a selection bias
+for low φ particles when not in the adaptation phase as discussed above. Conversely the
+increase in adaptation speed for charts (i) and (ii) results from a selection bias towards
+higher φ particles during the adaptation phase. The slow down in adaptation speed ob-
+served in charts (iii) and (iv) occurs because prior to the adaptation phase high φ particles
+tend to be eliminated from the particle population by the selection process. The ﬁlter is
+also applied to the stochastic volatility model with results shown in Figure 21 and Figure
+22. Similarly to the results for the regime change there is an elimination of noise from the
+results. However the results, particularly for charts (ii), (iii) and (iv) are very similar to
+25
+
+=== page 26 ===
+Figure 19: Comparing estimated posterior expected value (black) vs simulation input value
+(red) of σt with regime change after 10,000 steps, using the Liu and West ﬁlter with
+additional noise parameter φ(i) ∼U(0,c) with c set to (i) 0.2 N (ii) 2.0 N (iii) 20.0 N (iv) 200.0 N
+Figure 20: Comparing the change in estimated posterior expected value (black) vs sim-
+ulation input value (red) of σt with regime change after 10,000 steps, using the Liu and
+West ﬁlter with additional noise parameter φ(i) ∼U(0,c) with c set to (i) 0.2 N (ii) 2.0 N (iii) 20.0 N
+(iv) 200.0 N
+each other indicating that the selection process has converged on a similar level of α, high-
+lighting the ability of the ﬁlter to ﬁnd the correct level of additional noise corresponding
+to the constant stochastic volatility parameter.
+The above algorithm takes advantage of the existing selection process to increase the
+adaptation speed when required and reduce noise in the results when adaptation is not
+26
+
+=== page 27 ===
+Figure 21: Comparing estimated expected value (black) vs simulation input value (red)
+of α in the stochastic volatility model for the Liu and West ﬁlter with additional noise
+parameter φ(i) ∼U(0,c) with c set to (i) 0.2 N (ii) 2.0 N (iii) 20.0 N (iv) 200.0 N
+Figure 22: Comparing the change in estimated posterior expected value (black) vs simula-
+tion input value (red) of α in the stochastic volatility model, using the Liu and West ﬁlter
+with additional noise parameter φ(i) ∼U(0,c) with c set to (i) 0.2 N (ii) 2.0 N (iii) 20.0 N (iv) 200.0 N
+required. The detection of and increase in adaptation speed during the adaptation phase
+is now embedded in the algorithm via the selection of the noise term. However the speed
+of adaptation remains relatively constant, bounded by the range of the initial distribution
+of φ, which can only shrink as a result of the selection process. The next section describes
+a method which overcomes this limitation and achieves accelerated adaptation.
+27
+
+=== page 28 ===
+4.4 Accelerated adaptation: selectively increasing the rate of adaptation
+Adaptation in a particle ﬁlter is driven by a genetic algorithm resulting from a combination
+of selection and random perturbation. The speed of the adaptation is bound by the size of
+the parameter φ, which sets level of variance of the random perturbation via the smoothing
+kernel. To increase the speed of, or accelerate, the rate of adaptation, the parameter φ
+needs to constantly increase during the adaptation phase. The idea to allow φ itself to
+adapt this way, is to use the already existing genetic algorithm by subjecting φ to both
+selection and random perturbation. The eﬀectiveness of selection on φ has already been
+demonstrated in the last section. In this section the genetic algorithm for φ is completed
+by adding a random perturbation; φ(i) t+1 = φ(i) t e∆φ(i) t , where ∆φ(i) t ∼N (0,γ). To reﬂect
+this, the algorithm is altered as follows:
+1: Initialisation For each particle; let σ(i) 0 = (b−a)i N , π(i) 0 = 1 N and φ(i) 0 ∼U(0,c)
+2: Sequentially for each observation:
+2.1: Update For each particle update weight ˆπ(i) t = π(i) t p(xt|xt−1,σ(i) t )
+2.2: Normalisation For each particle π(i) t = ˆπ(i) t∑ ˆπ(i) t
+2.3: Resampling Generate a new set of particles:
+p(σt|x1:t) ≈
+N∑
+i=1
+δ{σ(i) t =σt}π(i) t −−−−−−→ resample p(σt|x1:t) ≈
+N∑
+k=1
+1
+Nδ{σ(k) t =σt}
+2.4: Noise parameter perturbation For each particle; φ(i) t = φ(i) t−1e∆φ(i) t where ∆φ(i) t ∼N (0,γ)
+2.5: Kernel smoothing For each particle apply σ(i) t ∼N (σ(i) t |m(i) t ,h2Vt + φ(i))
+The ability of the proposed approach to accelerate adaptation is demonstrated by adding
+noise parameter perturbation to the ﬁlter conﬁguration used to produce the results shown
+in Figure 19, chart (ii). The results, shown in Figure 23 and Figure 24 for increasing
+values of γ, demonstrate very eﬀective acceleration of adaptation coupled with a signiﬁ-
+cant reduction in noise compared to the implementation in the previous section. The
+adaptation of the ﬁlter to a regime change demonstrates the ability to rapidly increase the
+speed of adaptation when required. The same mechanism forces the additional noise to
+decrease when the adaptation phase is ﬁnished. The decrease in the noise factor can be
+further demonstrated with stochastic volatility model simulated data and the ﬁlter con-
+ﬁgured with a very high starting point for φ as in Figure 15, chart (iv). The results in
+Figure 25 and Figure 26 demonstrate how the particle ﬁlter learns to reduce excess noise
+for increasing values of γ. It is also evident from the results, particularly Figure 24, that
+the reduction in noise post adaptation phase tends to be slower than the initial increase.
+To speed up this reversal a dampening parameter is introduced in the next section.
+4.5 Dampening the rate of adaptation
+The post-adaptation learning parameter decrease tends to be slower than the adaptation
+increase because, relatively speaking, large observed changes are less likely assuming a low
+28
+
+=== page 29 ===
+Figure 23: Comparing estimated posterior expected value (black) vs simulation input value
+(red) of σ with regime change after 10,000 steps, using the Liu and West ﬁlter with learning
+for diﬀerent values of γ (i)0.0001 (ii)0.001 (iii)0.01 (iv)0.1
+Figure 24: Comparing the change in estimated posterior expected value (black) vs simula-
+tion input value (red) of σ with regime change after 10,000 steps, using the Liu and West
+ﬁlter with learning for diﬀerent values of γ (i)0.0001 (ii)0.001 (iii)0.01 (iv)0.1
+volatility than small observed changes assuming a high volatility. Therefore, during adapta-
+tion low noise particles are relatively less likely to survive than high noise particles outside
+of the adaptation phase. This bias can be counteracted with the introduction of a damp-
+ening parameter in the form of a negative mean in the distribution used to perturb φ, that
+is ∆φ(i) t in the learning step becomes ∆φ(i) t ∼N (−κ,γ). The addition of the dampening
+parameter also speeds up the convergence to the Liu and West ﬁlter when learning is not
+required, that is, in the idealised situation where the model assumed by the ﬁlter actually
+29
+
+=== page 30 ===
+Figure 25: Comparing estimated posterior expected value (black) vs simulation input value
+(red) of σ for stochastic volatility with learning for diﬀerent values of γ (i)0.0001 (ii)0.001
+(iii)0.01 (iv)0.1
+Figure 26: Comparing estimated posterior expected value (black) vs simulation input value
+(red) of σ for stochastic volatility with learning for diﬀerent values of γ (i)0.0001 (ii)0.001
+(iii)0.01 (iv)0.1
+matches the observations. The ﬁltering algorithm including the dampening factor becomes:
+30
+
+=== page 31 ===
+Figure 27: Comparing estimated posterior expected value (black) vs simulation input value
+(red) of σ with regime change after 10,000 steps, using the Liu and West ﬁlter with learning
+for diﬀerent values of κ (i)0.01 (ii)0.02 (iii)0.03 (iv)0.04
+1: Initialisation For each particle; let σ(i) 0 = (b−a)i N , π(i) 0 = 1 N and φ(i) 0 ∼U(0,c)
+2: Sequentially for each observation:
+2.1: Update For each particle update weight ˆπ(i) t = π(i) t p(xt|xt−1,σ(i) t )
+2.2: Normalisation For each particle π(i) t = ˆπ(i) t∑ ˆπ(i) t
+2.3: Resampling Generate a new set of particles:
+p(σt|x1:t) ≈
+N∑
+i=1
+δ{σ(i) t =σt}π(i) t −−−−−−→ resample p(σt|x1:t) ≈
+N∑
+k=1
+1
+Nδ{σ(k) t =σt}
+2.4: Noise parameter perturbation For each particle; φ(i) t = φ(i) t−1e∆φ(i) t where ∆φ(i) t ∼N (κ,γ)
+2.5: Kernel smoothing For each particle apply σ(i) t ∼N (σ(i) t |m(i) t ,h2Vt + φ(i))
+The impact of the dampening parameter was tested on the regime shift data with the par-
+ticle ﬁlter conﬁgured with a high learning parameter used to generate the results in chart
+(iv) in Figure 23. The results for increasing value of the dampening parameter are shown
+in Figure 27 and Figure 28. The dampening parameter does indeed reduce estimate noise,
+however it is important to note that the dampening parameter has to be set low enough as
+not to completely oﬀset the impact from perturbation. It may also be possible to evolve
+this parameter in the same manner as the noise parameter. However, this is not attempted
+in this research.
+31
+
+=== page 32 ===
+Figure 28: Comparing the change in estimated posterior expected value (black) vs simula-
+tion input value (red) of σ with regime change after 10,000 steps, using the Liu and West
+ﬁlter with learning for diﬀerent values of κ (i)0.01 (ii)0.02 (iii)0.03 (iv)0.04
+4.6 Average perturbation as a relative measure
+The particle ﬁlter proposed in this paper allows rapid detection of parameter changes by
+exploiting and enhancing the genetic algorithm aspect of a ﬁlter which includes random
+perturbation and selection. However, every random perturbation results in a deterioration
+of the quality of the posterior estimation, since the underlying assumption in the recursive
+calculation of the particle weights is that the parameters of each particle are ﬁxed. Ideally,
+if the model assumption in the ﬁlter reﬂected the empirical data, the posterior estimation
+would not require any additional noise. This leads to the idea that the amount of additional
+noise used by the ﬁlter can serve as an indicator of model adequacy, as well as distinguish
+between diﬀerent dynamics present in the data set. Deﬁne this measure as the average of
+the φ parameter calculated at each iteration:
+∑
+i
+φ(i)
+N
+The following oﬀer some examples of how the behaviour of average φ can help to distinguish
+and identify the dynamics of the underlying data.
+4.6.1 Gaussian process
+The Gaussian process as the underlying dynamic demonstrates the behaviour of the mea-
+sure when the data generating process matches the assumption in the ﬁlter. As the esti-
+mated parameter posterior converges increasingly less perturbation is required, reﬂecting
+the correspondence between the ﬁlter assumption and underlying data. Simulation results
+shown in Figure 29 conﬁrm the convergence of φ for diﬀerent perturbation variance pa-
+32
+
+=== page 33 ===
+Figure 29: Comparison of average φ (log-scale) for the Gaussian model with diﬀerent values
+of ﬁlter perturbation variance γ (i) 1.0 (ii) 0.01 (iii) 0.001 (iv) 0.0001
+Figure 30: Comparison of average φ (log-scale) for the regime change model with diﬀerent
+values of ﬁlter perturbation variance parameter γ (i) 1.0 (ii) 0.01 (iii) 0.001 (iv) 0.0001
+rameter γ, expectedly high γ results in convergence noise highlighting the need for some
+implementation speciﬁc tuning of this parameter.
+4.6.2 Regime change
+The regime change is marked by a sharp increase in φ, reﬂecting sudden adaptation to the
+new model state. Before and after the regime change the model is Gaussian and therefore
+the behaviour of φ is similar to the previous section. The rate of convergence of φ is slower
+for the higher σ following the regime change indicating a relationship between the rate of
+convergence of φ and σ. The results are shown in Figure 30 for varying levels of γ.
+33
+
+=== page 34 ===
+Figure 31: Comparison of average φ (log-scale) for the stochastic volatility model with
+diﬀerent values of stochastic volatility ν (i) 0.1 (ii) 0.2 (iii) 0.3 (iv) 0.4
+4.6.3 Stochastic volatility
+If the ﬁlter assumption does not match the dynamics of the underlying data, φ will not
+tend to converge to zero. In the case of stochastic volatility, φ will tend towards a constant
+value reﬂecting the constantly changing volatility, with the level of this value indicating
+the level of stochasticity in the data. Figure 31 shows some examples of the behaviour of φ
+for varying levels of stochasticity in the data, using γ = 0.001 corresponding to chart (iii)
+in Figure 29.
+5 Conclusion
+We arrived at our proposed methodology by ﬁrst recognising that the random pertur-
+bation technique applied in a particle ﬁlter results in a genetic–type algorithm capable
+of adapting to changing parameters. At this point, we took an opposite direction to the
+approach of (Liu and West 2001), instead of remediating the overdispersion caused by
+random perturbation, we allowed the random perturbation to freely evolve, enhancing the
+adaptive capability of the particle ﬁlter. Our approach is highly adaptive when required
+and convergent conditional on the data matching modelling assumptions and no parameter
+changes. Given that the level of adaptability is governed by the variance of the random
+perturbation; the key insight of our approach is that an eﬀective way of recognising the
+level of required variance is to incorporate its selection into the already existing genetic
+algorithm framework. In terms of existing literature, it links particle ﬁltering with genetic
+algorithms for parameter learning, resulting in a ﬁltering algorithm particularly useful for
+parameter change detection and in the context of ﬁnance an eﬀective on-line method for
+measuring volatility.
+34
+
+=== page 35 ===
+As with particle ﬁlters in general our approach, is easy to implement requiring a relatively
+small amount of coding and our results therefore are easy to replicate. We also demonstrate
+our results with a basic model adding to the ease of replication of the methodology. We
+provided an implementation orientated overview by presenting our approach in an incre-
+mental fashion, following chronological developments in particle ﬁltering leading up to our
+contribution. In this way we hope to accommodate an audience interested in our approach
+with various degrees of experience in particle ﬁltering, particularly in ﬁnance research and
+practice where particle ﬁltering is not widely used.
+References
+Andrieu, C., Doucet, A., Singh, S. S. and Tadic, V. B.: 2004, Particle Methods for Change
+Detection, System Identiﬁcation, and Control, Proceedings of the IEEE 92(3), 423–
+438.
+Andrieu, C., Doucet, A. and Tadic, V. B.: 2005, On-Line Parameter Estimation in
+General State-Space Models, 44th IEEE Conference on Decision and Control, IEEE,
+pp. 332–337.
+Bao, Y., Chiarella, C. and Kang, B.: 2012, Particle Filters for Markov Switching Stochas-
+tic Volatility Models, Technical report, Quantitative Finance Research Centre, Uni-
+versity of Technology, Sydney.
+Capp´e, O., Godsill, S. J. and Moulines, E.: 2007, An Overview of Existing Methods and
+Recent Advances in Sequential Monte Carlo, Proceedings of the IEEE 95(5), 899–924.
+Carvalho, C. M., Johannes, M. S., Lopes, H. F. and Polson, N. G.: 2010, Particle Learning
+and Smoothing, Statistical Science 25(1), 88–106.
+Carvalho, C. M. and Lopes, H. F.: 2007, Simulation-based sequential analysis of
+Markov switching stochastic volatility models, Computational Statistics & Data Anal-
+ysis 51(9), 4526–4542.
+Casarin, R.: 2004, Bayesian Monte Carlo Filtering For Stochastic Volatility Models,
+Technical report, University Paris Dauphine.
+Chen, Z. et al.: 2003, Bayesian ﬁltering: From Kalman Filters to Particle Filters, and
+Beyond, Statistics 182(1), 1–69.
+Chopin, N., Iacobucci, A., Marin, J.-M., Mengersen, K., Robert, C. P., Ryder, R. and
+Sch¨afer, C.: 2011, On Particle Learning, Bayesian Statistics 9 .
+Chopin, N. x.: 2004, Central Limit Theorem for Sequential Monte Carlo Methods and
+its Application to Bayesian Inference, The Annals of Statistics 32(6), 2385–2411.
+Cochran, W. G.: 1934, The Distribution of Quadratic Forms in a Normal System, with
+Applications to the Analysis of Covariance, Mathematical Proceedings of the Cam-
+bridge Philosophical Society, Vol. 30, Cambridge University Press, pp. 178–191.
+35
+
+=== page 36 ===
+Creal, D.: 2012, A survey of sequential Monte Carlo methods for economics and ﬁnance,
+Econometric reviews 31(3), 245–296.
+Crisan, D. and Doucet, A.: 2002, A Survey of Convergence Results on Particle Filtering
+Methods for Practitioners, IEEE Transactions on signal processing 50(3), 736–746.
+Del Moral, P.: 2004, Feynman-Kac Formulae: Genealogical and Interacting Particle
+Systems with Applications, New York: Springer-Verlag.
+Del Moral, P.: 2013, Mean Field Simulation for Monte Carlo Integration, Chapman-
+Hall/CRC Press.
+Del Moral, P. and Doucet, A.: 2014, Particle Methods: An introduction with Applications,
+ESAIM: Proceedings, Vol. 44, EDP Sciences, pp. 1–46.
+Djuric, P. M. and M´ıguez, J.: 2010, Assessment of Nonlinear Dynamic Mod-
+els by Kolmogorov–Smirnov Statistics, IEEE Transactions on Signal Processing
+58(10), 5069–5079.
+Douc, R. and Moulines, E.: 2007, Limit Theorems for Weighted Samples with Applications
+to Sequential Monte Carlo Methods, The Annals of Statistics 36, 2344–2376.
+Doucet, A. and Johansen, A. M.: 2009, A tutorial on Particle Filtering and Smoothing:
+Fifteen years later, Handbook of Nonlinear Filtering 12(656-704), 3.
+Flury, T. and Shephard, N.: 2009, Learning and Filtering via Simulation: Smoothly
+Jittered Particle Filters, Technical report, Department of Economics Discussion Paper
+Series, University of Oxford.
+Gerber, M. and Chopin, N.: 2015, Sequential Quasi-Monte Carlo, Journal of the Royal
+Statistical Society: Series B (Statistical Methodology) 77(3), 509–579.
+Gordon, N. J., Salmond, D. J. and Smith, A. F.: 1993, Novel approach to nonlinear/non-
+Gaussian Bayesian state estimation, IEE Proceedings F, Vol. 140, IET, pp. 107–113.
+Hol, J. D., Schon, T. B. and Gustafsson, F.: 2006, On Resampling Algorithms for Particle
+Filters, Nonlinear Statistical Signal Processing Workshop, IEEE, pp. 79–82.
+Johannes, M. and Polson, N.: 2009, Particle ﬁltering, Handbook of Financial Time Series
+pp. 1015–1029.
+Johannes, M. S. and Polson, N.: 2007, Particle Filtering and Parameter Learning, Tech-
+nical report, Chicago Business School.
+Kantas, N., Doucet, A., Singh, S. S., Maciejowski, J. and Chopin, N.: 2015, On Par-
+ticle Methods for Parameter Estimation in State-Space Models, Statistical Science
+30(3), 328–351.
+36
+
+=== page 37 ===
+Kantas, N., Doucet, A., Singh, S. S. and Maciejowski, J. M.: 2009, An Overview of
+Sequential Monte Carlo Methods for Parameter Estimation in General State-Space
+Models, IFAC Proceedings Volumes 42(10), 774–785.
+Li, T., Bolic, M. and Djuric, P. M.: 2015, Resampling Methods for Particle Filter-
+ing: Classiﬁcation, implementation, and strategies, IEEE Signal Processing Magazine
+32(3), 70–86.
+Liu, J. and West, M.: 2001, Combined parameter and state estimation in simulation-based
+ﬁltering, Sequential Monte Carlo Methods in Practice, New York: Springer-Verlag,
+pp. 197–223.
+Lopes, H. F. and Tsay, R. S.: 2011, Particle Filters and Bayesian Inference in Financial
+Econometrics, Journal of Forecasting 30(1), 168–209.
+Nemeth, C., Fearnhead, P. and Mihaylova, L.: 2014, Sequential Monte Carlo Meth-
+ods for State and Parameter Estimation in Abruptly Changing Environments, IEEE
+Transactions on Signal Processing 62(5), 1245–1255.
+Nemeth, C., Fearnhead, P., Mihaylova, L. and Vorley, D.: 2012, Particle Learning Methods
+for State and Parameter Estimation, 9th Data Fusion and Target Tracking Conference,
+IET.
+Polson, N. G., Stroud, J. R. and M¨uller, P.: 2008, Practical Filtering with Sequential
+Parameter Learning, Journal of the Royal Statistical Society: Series B (Statistical
+Methodology) 70(2), 413–428.
+Smith, R. and Hussain, M. S.: 2012, Genetic Algorithm Sequential Monte Carlo Meth-
+ods For Stochastic Volatility And Parameter Estimation, Proceedings of the World
+Congress on Engineering, Vol. 1.
+Storvik, G.: 2002, Particle ﬁlters for state space models with the presence of unknown
+static parameters, IEEE Transactions on signal Processing 50(2), 281–289.
+West, M.: 1993a, Approximating Posterior Distributions by Mixtures, Journal of the
+Royal Statistical Society Series B 55(2), 409–422.
+West, M.: 1993b, Mixture models, Monte Carlo, Bayesian Updating and Dynamic Models,
+Computing Science and Statistics, Vol. 24, pp. 325–333.
+Yang, X., Xing, K., Shi, K. and Pan, Q.: 2008, Joint State and Parameter Estimation
+in Particle Filtering and Stochastic Optimization, Journal of Control Theory and
+Applications 6(2), 215–220.
+37

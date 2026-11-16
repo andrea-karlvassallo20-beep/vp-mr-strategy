@@ -1,0 +1,1148 @@
+=== page 1 ===
+Can Large Language Models Execute Parent Orders?
+Zane Shen1, Xinli Xu2, Guangyi Zhang3, Jialong Chen4, Jinsong Zhou2,
+Cong Chen3, Guibao Shen2, Dongyu Yan2, Luozhou Wang2, Zhen Yang2∗
+1Independent Researcher, 2HKUST(GZ), 3ZJU, 4SYSU
+zaneshen1@gmail.com, zheny.cs@gmail.com
+Abstract
+Parent-order execution is a core problem in algorithmic trad-
+ing,wherethegoalistosplitalargeorderintosmallerorders
+while reducing execution costs. Existing approaches either
+rely on pre-specified market assumptions that may not hold
+in practice, or require task-specific training that limits adapt-
+ability to new settings. To overcome these limitations, we
+present the first systematic study of large language models
+(LLMs) for parent-order execution. This extends the use of
+LLMs in finance from what to trade to how to execute. We
+propose PACE (Plan-Ahead Controlled Execution), a hierar-
+chicalframeworkthatdecomposesparent-orderexecutioninto
+long-horizonplanningandshort-horizonexecution,requiring
+neither explicit market assumptions nor task-specific train-
+ing. Experiments on Shenzhen Stock Exchange Level-1 data
+show that PACE outperforms TWAP, Almgren-Chriss, and
+learning-based baselines, exceeding the strongest baseline by
+0.65 bps. Behavioral analysis reveals that LLMs make execu-
+tiondecisionsdifferentlyfromhumaninvestors:highermodel
+confidence predicts better performance rather than worse re-
+turns, and the model trades earlier rather than procrastinating
+toward the deadline. These findings suggest that LLMs can
+complement human traders in execution decisions.
+Code — https://github.com/zaneopen/PACE
+1 Introduction
+Reducing execution costs is a central objective for financial
+institutions(BertsimasandLo1998).However,submittinga
+largeorderallatoncecanrevealthetrader’sintentandleave
+no room to adjust as the market changes. This may lead to
+worse traded prices and thus increase execution costs (Kyle
+1985; O’Hara 2015). Parent-order execution addresses this
+problem by splitting a large order into smaller orders. The
+core challenge is to decide how much to trade at each time,
+aimingtobuylowerorsellhigherandreduceexecutioncosts.
+Traditional strategies impose simplifying assumptions on
+market behavior, such as a fixed intraday volume distribu-
+tion,andtradeundertheseassumptions(AlmgrenandChriss
+2001; Almgren and Lorenz 2006; Frei and Westray 2015).
+Real markets may not follow the assumed form, and model
+parameters drift over time. Learning-based strategies train
+data-driven policies but require task-specific rewards, states,
+and actions (Fang et al. 2021; Lin and Beling 2021; Wang
+et al. 2021; Ning, Lin, and Jaimungal 2021; Niu, Li, and Li
+∗Corresponding author.
+9:30 15:00 14:45 15:00
+Long-horizon
+Decomposition
+Short-horizon
+Decomposition
+Figure 1: Decomposition of a stock price series into its un-
+derlying long-horizon trend and residual short-horizon fluc-
+tuation using the HP filter (Hodrick and Prescott 1997).
+2024; Xu et al. 2025). When market patterns or task spec-
+ifications change, the policy often needs to be redesigned.
+An ideal strategy should require neither pre-specified as-
+sumptionsnortask-specifictraining,butleveragebroadprior
+knowledge to generate decisions at inference time.
+Large language models (LLMs) satisfy these require-
+ments:nopre-specifiedmarketassumptions,notask-specific
+training, and decisions generated at inference time. LLMs
+have shown strong capabilities in financial text understand-
+ing (Huang, Wang, and Yang 2023; Wu et al. 2023; Yang,
+Liu, and Wang 2023), factor mining (Wang et al. 2026; Han
+et al. 2026), and trading agents (Xiao et al. 2024; Li et al.
+2025; Shi et al. 2026). Yet these studies focus on what to
+trade, not how to execute. This gap motivates our central
+question: can LLMs be used for parent-order execution?
+Directly applying LLMs is challenging because price
+movements are highly noisy. Inspired by the observation il-
+lustratedinFig.1thatstockpricescontainbothlong-horizon
+trends and short-horizon fluctuations, we introduce PACE
+(Plan-Ahead Controlled Execution). It decomposes parent-
+order execution into two stages: the Planner generates long-
+arXiv:2607.28410v1  [cs.CE]  30 Jul 2026
+
+=== page 2 ===
+horizon plans, while the Executor adjusts trading quantities
+in response to short-horizon market changes.
+We evaluate PACE on Shenzhen Stock Exchange Level-
+1 data against representative static and learning-based ex-
+ecution strategies, including time-weighted average price
+(TWAP),Almgren-Chriss(AC),XGBoost,andLSTMbase-
+lines,onidenticalparentorders.TheresultsshowthatPACE
+outperformsthestrongestbaselineby0.65basispoints(bps),
+corresponding to USD 6.5 million in annual execution-cost
+savings for a fund trading USD 100 billion per year.
+Behavioral analysis reveals LLM decision patterns strik-
+ingly different from human investors: higher Planner confi-
+dence predicts better performance, unlike human overcon-
+fidence which degrades investment returns (Odean 1999),
+andtheExecutorplacesmoretradesearlierratherthanwait-
+ing until deadlines, unlike human procrastination (Steel and
+König2006).ThesedifferencessuggestthatLLMsmaycom-
+plement human traders in complex execution decisions.
+Our main contributions are as follows:
+• WeprovidethefirstsystematicstudyofLLMsforparent-
+order execution, extending their financial use from what
+to trade to how to execute, with a complete experimental
+framework for future research and evaluation.
+• We propose PACE, a framework that separates long-
+horizon planning from short-horizon execution without
+pre-specifiedassumptionsortask-specificpolicytraining.
+• We provide behavioral analysis of LLMs in parent-order
+execution, linking model actions to confidence and time
+pressure. This moves beyond performance comparison
+andhelpsexplainhowLLMsbehaveasexecutionagents.
+2 Related Work
+Parent-order execution. Existing work on parent-order ex-
+ecutionmainlyfollowsstaticandlearning-basedlines.Static
+methods formulate execution through market impact model-
+ing or stochastic control. Representative studies include the
+mean-variance execution framework of Almgren and Chriss
+(2001),theBayesianadaptivetradingmodelofAlmgrenand
+Lorenz(2006),andthestochasticcontrolformulationbyFrei
+and Westray (2015). Later studies improve static strategies
+through dynamic volume adjustment (Białkowski, Darolles,
+and Le Fol 2008), or incorporate market microstructure fac-
+tors (Cartea and Jaimungal 2015, 2016; Tsoukalas, Wang,
+and Giesecke 2019). Learning-based methods instead learn
+adaptive execution strategies from data. Prior work applies
+reinforcementlearningtoexecutiontimingandactionselec-
+tion (Moallemi and Wang 2022; Ning, Lin, and Jaimungal
+2021; Fang et al. 2021; Lin and Beling 2021), uses neural
+networkstoapproximateoptimalexecutionsolutions(Chen,
+Ludkovski, and Voß 2024), and explores hierarchical or
+MoE-based execution strategies (Wang et al. 2021; Niu,
+Li, and Li 2024; Li et al. 2024a; Xu et al. 2025). These
+approaches either rely on pre-specified assumptions about
+pricedynamics,tradingvolume,ormarketimpact,orrequire
+task-specifictraining.Incontrast,PACEintroducesLLMsto
+parent-order execution for the first time, combining LLMs’
+pretrained knowledge with current market observations to
+generate adaptive decisions at inference time without speci-
+fying a price model or training a task-specific policy.
+LLMs in finance. Existing LLM research in finance cov-
+ers three main directions. The first develops financial lan-
+guage models and resources, including FinBERT (Huang,
+Wang, and Yang 2023), FLANG (Shah et al. 2022),
+BloombergGPT (Wu et al. 2023), FinGPT (Yang, Liu, and
+Wang2023),andPIXIU(Xieetal.2023).Thesecondapplies
+LLMs and foundation models to a broad range of quantita-
+tive finance tasks, including factor discovery (Wang et al.
+2026; Han et al. 2026; Tang et al. 2026b), financial time-
+series modeling (Shi et al. 2026), and investment or trading
+agents (Yu et al. 2024; Li et al. 2024b; Xiao et al. 2024;
+Yu et al. 2025; Ma et al. 2025). The third studies evaluation
+andsimulationoffinancialagents(Lietal.2025;Yangetal.
+2026;Tangetal.2026a).Despitethisprogress,parent-order
+executionremainsunexploredinLLM-basedfinance.Wefill
+thisgapandprovidethefirstbehavioralanalysisofLLMsin
+parent-order execution, revealing several important ways in
+which their behavior differs from that of human investors.
+3 Method
+3.1 Preliminary
+Inalgorithmictrading,parent-orderexecutionisafundamen-
+talproblem.Thecoreideaistosplitalargeorderintosmaller
+orders,sothateachorderconsumeslessliquidityandreveals
+less trading intent, thereby reducing execution costs. Parent-
+order execution operates on a parent order, which specifies
+the stock ID, trading direction, execution window, and total
+execution quantity. Given such a parent order, an execution
+strategy decides when and how much to trade. The resulting
+time-quantity schedule is called the execution curve.
+3.2 Inputs
+The inputs consist of three components: the parent order,
+market history, and the TWAP curve, as shown in Fig. 2(a).
+Parent order. A parent order is specified by O =
+(s, d, ts, te, Q), where s is the stock ID, d ∈ {BUY, SELL}
+istradingdirection, ts and te arethestartandendtimes,and
+Qisthetotalexecutionquantity.Theparent-orderexecution
+window is [ts, te], with duration T = te − ts.
+Markethistory.Themarkethistorycontainsstockpriceand
+tradedvolumesequencesoverarecentlookbackwindow.At
+each time t, the market history over the past L minutes:
+Ht−L:t = {(Pi, Vi)}t i=t−L (1)
+where Pi denotes the stock price at minute i. Vi denotes
+the total traded volume at minute i. We use the mid-price as
+a standard proxy for the stock price. At each minute i, the
+mid-price is defined as the average of the Ask1 price Ai and
+Bid1 price Bi. The Ask1 price is the lowest available sell
+price, and the Bid1 price is the highest available buy price:
+Pi = Ai +Bi 2 (2)
+TWAP curve. TWAP is a natural baseline which represents
+the simplest execution curve and provides a reference time-
+quantity schedule for the execution strategy. For a window
+
+=== page 3 ===
+Figure2:OverviewofPACE.Thelowerrowgivesanexampledataflowacrossthethreemainstagesforaparentorderthatsells
+6,000 shares of stock 300308 from 10:30 to 11:00. Here, N = 6 denotes the number of sub-plans in this example.
+[ts, te] with target quantity Q and decision interval ∆, the
+number of decision times is K = (te − ts)/∆. TWAP uni-
+formly distributes the total quantity Q across these K deci-
+sion times. The trading quantity at each decision time is:
+QTWAP = Q K (3)
+The TWAP curve is therefore defined as the sequence of
+decision times and corresponding order quantities:
+CTWAP = {(tk, QTWAP)}K k=1 (4)
+3.3 PACE
+Motivation. Traditional execution strategies are typically
+either static strategies or learning-based strategies. Static
+strategies, such as the TWAP curve in Eq. 4, cannot adap-
+tively adjust order quantities in response to market changes.
+Learning-based strategies lack broader prior knowledge and
+make order decisions mainly from the observed input data.
+To address these limitations, we introduce LLMs into
+parent-order execution for the first time. In addition, mo-
+tivated by the observation illustrated in Fig. 1 that financial
+markets exhibit both coarse price trends and fine local fluc-
+tuations,wedesignPACEtoseparatelong-horizonplanning
+from short-horizon execution. Compared with static strate-
+gies, PACE enables timely responses to market changes.
+Compared with learning-based strategies, PACE leverages
+LLM prior knowledge beyond the observed inputs.
+Long-horizon Planner. Given the parent order O, market
+history Hts −T :ts , and TWAP curve CTWAP, the Planner
+forms a long-horizon textual trend assessment RL over the
+execution window [ts, te], and decomposes the parent order
+into N execution sub-plans {Sn}N n=1, as shown in Fig. 2(b).
+Specifically,thePlannerpartitionstheexecutionwindowinto
+N shortertimeslotsofequalduration.Foreachslot,theLLM
+outputsaquantitypreferencescore an togetherwithanover-
+allconfidencescore c.Here, an ∈ [−1, 1],wherealarger an
+indicates a preference for allocating more quantity to slot n.
+The confidence score c ∈ [0, 1] reflects the LLM’s overall
+confidence in {an}N n=1. The Planner then maps {an}N n=1 to
+corresponding quantity-allocation weights as follows:
+wn = (1 − λc) 1 N|{z}
+TWAP
+allocation
++λc exp(an)PN
+j=1 exp(aj ) | {z }
+LLM
+allocation
+(5)
+InEq.(5),theleftunderbracedtermrepresentstheTWAP
+allocation, while the right underbraced term represents the
+LLM allocation. The hyperparameter λ ∈ [0, 1] controls the
+proportion of the LLM allocation. A larger λ places more
+weight on the LLM allocation, whereas a smaller λ keeps
+the allocation closer to TWAP. The Planner then allocates
+the total quantity Q across time slots according to wn and
+producesexecutionsub-plans {Sn}N n=1.Eachsub-plan Sn =
+(un, vn, qn) specifies the start time, end time, and execution
+quantity of the n-th time slot, with duration τn = vn − un.
+Short-horizon Executor. Given the sub-plan Sn, the Ex-
+ecutor jointly uses market history Ht−τ :t, Planner’s long-
+horizontrendassessment RL,andtheTWAPbaselinequan-
+tity QTWAP to accordingly output the order quantity QE t :
+QE t = (1 + γzt)QTWAP (6)
+Here, zt ∈ [−1, 1] is the LLM-generated quantity ad-
+justment score, which indicates how the Executor changes
+the current order quantity relative to the TWAP baseline. A
+valueof zt = 0followstheTWAPbaseline,while zt > 0and
+zt < 0increaseanddecreasetheorderquantity,respectively.
+The hyperparameter γ ∈ [0, 1] controls the deviation from
+TWAP:asmaller γ keepsthequantityclosertoTWAP,while
+a larger γ amplifies the effect of zt on the order quantity.
+3.4 Backtesting Environment
+As shown in Fig. 2(c), we construct a backtesting environ-
+ment with two components, the Matcher and the Evaluator,
+to evaluate the performance of strategies. The Matcher im-
+plements the matching mechanism that determines whether
+strategy-submitted orders are traded, while the Evaluator
+computes strategy metrics from the traded orders.
+Matcher. Alg. 1 presents the matching mechanism. Each
+market snapshot provides the Ask1 price At and Bid1 price
+Bt attime t.Ateachsnapshot,thestrategy π submitsorders
+to the Matcher. Each order o has a direction o.d, quantity
+
+=== page 4 ===
+Algorithm 1 Matching Procedure
+Require: D = {(At, Bt)}, π
+◦ D: market snapshots
+◦ At, Bt: Ask1 and Bid1 prices at time t
+◦ π: execution strategy, e.g., TWAP
+Orders ← [ ]
+for each (At, Bt) ∈ D do
+Order ← π.SubmitOrders(At, Bt)
+Orders.extend(Order)
+▷ orders may remain unfilled
+for each o ∈ copy(Orders) do
+▷ o.d is direction and o.p is price
+mB ← (o.d = BUY and o.p ≥ At)
+mS ← (o.d = SELL and o.p ≤ Bt)
+if mB or mS then
+▷ order is traded
+Fill(o)
+Orders.remove(o)
+end if
+end for
+end for
+o.q,andprice o.p.Thedirection o.dfollowstheparent-order
+direction,thestrategydetermines o.q(e.g.,PACEusesEq.6),
+and the order-submission setting determines o.p.
+Weconsidertwoorder-submissionsettings.Intheaggres-
+sive setting, buy orders are submitted at At and sell orders
+are submitted at Bt, so they can be traded immediately. In
+the passive setting, buy orders are submitted at Bt and sell
+orders are submitted at At, giving better prices but possibly
+leavingordersunfilled.TheMatcherstoressubmittedorders
+in Orders and checks them against the current At and Bt.
+Onceanorderistraded,theMatcherremovesitfrom Orders.
+Evaluator. As shown in Fig. 2(c), the Evaluator uses two
+widely used metrics in parent-order execution: price perfor-
+mance (bp) and completion rate (cr). The cr is defined as:
+cr = QTrade
+Q (7)
+where QTrade isthequantitytradedbythestrategyforthe
+parentorder,and Qisthetotalexecutionquantityrequiredby
+theparentorder.Thus,a cr of100%indicatesthattheparent
+order is fully executed. For experiments involving M parent
+orders,value-weightedpriceperformance wbpisdefinedas:
+wbp =
+PM
+i=1 P TWAP i · Qi · bpi PM
+j=1 P TWAP j · Qj (8)
+A larger wbp indicates better price performance. The unit
+isbasispoints(bps),where1bpsequalsoneten-thousandth.
+Here, bp is the price performance of a single parent order:
+bp =
+
+
+
+P TWAP − P Trade
+P TWAP × 10000, d = BUY,
+P Trade − P TWAP
+P TWAP × 10000, d = SELL
+(9)
+where P Trade is the strategy’s average execution price,
+P TWAP is TWAP price over the execution window:
+P TWAP = 1 T
+teX
+i=ts
+Pi (10)
+4 Experiments
+4.1 Setup
+Dataset and model selection. We use Shenzhen Stock Ex-
+changeLevel-1Snapshotdatacoveringalltradingdaysfrom
+April 2026. For each trading day, we randomly generate
+10 parent orders following the procedure detailed in the
+supplementary material. We experiment with one closed-
+source model, ChatGPT-5.4, and one open-source model,
+DeepSeek-v4-flash (Xu et al. 2026). Both models use their
+default API parameters. The default reasoning effort is none
+for ChatGPT-5.4 and high for DeepSeek-v4-flash.
+Baselines. We use TWAP strategy, AC strategy (Almgren
+and Chriss 2001), and learning-based strategies using XG-
+Boost (Chen and Guestrin 2016) or LSTM (Hochreiter and
+Schmidhuber1997)asrepresentativebaselines.Baselinede-
+tails are provided in the supplementary material.
+Implementationdetails.Weevaluatetwoorder-submission
+settingstodeterminetheorderpriceinAlg.1:all-aggressive
+and all-passive. In the passive setting, following common
+industrypractice,wecancelunfilledordersandaggressively
+submittheremainingquantityinthefinalminute,aprocedure
+knownasasweep.Toreduceinformationleakageriskforthe
+LLM,weremovestockIDsandtradingdatesfromthemodel
+inputs.Eachparentorderisrepeatedeighttimestoreducethe
+effect of LLM stochasticity. The main hyperparameters are
+set to λ = 0.3, γ = 0.5, τ = 5 minutes, and ∆ = 1 minute,
+where λ and γ are defined in Eqs. 5 and 6, respectively.
+4.2 Main Results
+AsshowninTab.1,PACEconsistentlyoutperformsallbase-
+lines across both settings. Under the aggressive setting, its
+bestvariantimproves wbpoverTWAPby1.02bps,andover
+thestrongestbaselineby0.65bps.Underthepassivesetting,
+the corresponding improvements are 1.07 bps and 0.71 bps.
+Such improvements can be economically meaningful: for a
+fundtradingUSD100billionannually,replacingtheTWAP
+strategy with PACE can reduce execution costs by about 1
+bps, corresponding to approximately USD 10 million in an-
+nualsavings.Inaddition,bothLLMvariantsachievepositive
+gains, suggesting that PACE works across different models.
+4.3 Performance Breakdown
+Significance. Using 5,000 bootstrap resamples, DS-v4-f
+shows significant gains under both aggressive submission
+(+1.02 bps; 95% CI: [0.15, 2.12]; p = 0.002) and passive
+submission (+1.07 bps; 95% CI: [0.05, 2.24]; p = 0.014).
+Heterogeneity. To further examine whether PACE’s gains
+are consistent across different parent-order characteristics,
+we split the results along three dimensions: order direction,
+execution window length, and parent-order quantity. Fig. 3
+shows that PACE improves over TWAP across all groups.
+
+=== page 5 ===
+Strategy Method Aggressive Passive wbp gain wbp gain
+Static TWAP -3.28 - -4.99 - AC -2.93 +0.35 -4.74 +0.25
+ML XGB -3.10 +0.18 -4.63 +0.36 LSTM -2.91 +0.37 -4.75 +0.24
+Ours GPT-5.4 -2.76 +0.52 -4.49 +0.50 DS-v4-f -2.26 +1.02 -3.92 +1.07
+Table 1: Main results under aggressive and passive order-
+submission settings. Gain denotes the improvement over the
+TWAP strategy in bps. All strategies achieve a 100% cr.
+BUY SELL
+0
+0.5
+1
+1.5
+0.35
+1.43
+0.50
+1.42
+Gain vs. TWAP strategy (bps)
+(a) Order Direction
+0-30 30-60
+1.45
+0.62
+1.57
+0.62
+(b) Window length
+0-5 5-10
+0.78
+1.09
+0.77
+1.16
+(c) Quantity
+Aggressive Passive
+Figure 3: Gain of PACE (DS-v4-f) over the TWAP strategy
+across parent-order characteristics. Window length denotes
+the execution window length in minutes, and Quantity de-
+notes the parent-order quantity in thousand shares.
+Two patterns are especially notable. First, sell orders show
+largergains,whichreflectChina’sshort-salelimits:negative
+informationenterspricesmoreslowly,leavingmoreroomfor
+sell execution (Chang, Luo, and Ren 2014). Second, longer
+execution windows show smaller gains, because prices be-
+come less predictable as the horizon becomes longer.
+VolatilityRobustness.Toexaminerobustnesstopricenoise,
+we split parent orders into low- and high-volatility groups
+using stock volatility within the execution window. Higher
+volatilityindicatesstrongerpricefluctuationsandthusanois-
+ierexecutionenvironment.Fig.5showsaclearadvantagefor
+PACE under both low and high volatility. This suggests that
+PACE is more robust to noisy price than ML strategies. Its
+separation of long-horizon planning from short-horizon ex-
+ecution helps reduce the influence of local noise.
+Sweep analysis. We examine whether passive-setting gains
+are driven by the sweep. For DS-v4-f, the sweep executes
+18.80% of the quantity, while pre-sweep and sweep trades
+achieve -3.64 and -6.63 wbp, respectively. Thus, the gains
+arise primarily before rather than from the sweep itself.
+Inference cost. For the 1,680 parent orders in our main ex-
+periment, the total traded value is about USD 35.6 million.
+For scale, a 1 bps improvement over TWAP corresponds to
+aboutUSD3,560inexecution-costsavings.FortheDS-v4-f
+Type Method wbp gain
+Module
+w/o P+E -3.28 -
+w/o P -2.88 +0.40
+w/o E -2.62 +0.66
+Prompt w/o S -2.45 +0.83 w/o G -2.38 +0.90
+Full Ours -2.26 +1.02
+Table2:Ablationstudyintheaggressivesetting.PandEde-
+note the Planner and Executor; S and G denote side-specific
+execution guidance and the market glossary in prompts.
+variant, the total LLM API cost is only about USD 30. This
+suggeststhattheinferencecostofthestrongestPACEvariant
+is small relative to its estimated economic benefit.
+4.4 Design Analysis
+Module Ablation. To analyze the necessity of each mod-
+ule in our method, we conduct ablation study under the all-
+aggressivesetting.w/oPremoveslong-horizonplanningand
+uniformlyallocatesthetotalquantityacrosssub-plans.w/oE
+removesshort-horizonexecutionandtradesuniformlywithin
+each sub-plan. w/o P+E is the TWAP strategy. As shown
+in Tab. 2, removing either module hurts performance. The
+Planner contributes more in this setting, but the Executor
+also adds clear value beyond uniform execution.
+Prompt Ablation. To examine whether PACE relies on
+prompt-specific trading instructions, we remove two prompt
+components. w/o S removes side-specific guidance, such as
+“buy orders prefer lower prices.” w/o G removes market
+glossary explanations, such as the meanings of Ask1, Bid1,
+and TWAP. Both variants still outperform TWAP but under-
+perform the full prompt in Tab. 2. This shows that LLMs re-
+tainusefulexecutionabilitywithouttheseinstructions,while
+clear trading guidance further improves performance.
+HyperparameterSensitivity.Weexaminethesensitivityof
+PACEto λinEq.5, γinEq.6,andthesub-planduration τ un-
+der the aggressive setting. Fig. 4 shows that PACE performs
+best at moderate parameter values, while extreme values re-
+duce overall performance. The parameters λ and γ directly
+control the strength of LLM signals. If they are too small,
+PACE stays close to TWAP; if they are too large, PACE may
+overreact to noisy signals. A very small τ creates too many
+sub-plans, making Planner allocations too fine-grained and
+noise-sensitive.Averylarge τ createsoverlylongsub-plans,
+making Executor adjustments more exposed to noise.
+Planner replanning. By default, the Planner is called only
+once when the parent order starts. We test whether updating
+the Planner during execution can improve performance. In
+the replanning variant, the Planner dynamically uses the lat-
+est market history to generate a new plan for the remaining
+executionwindowaftereachsub-planends.Tab.3showsthat
+replanning hurts shorter parent orders but improves longer
+parent orders. For shorter parent orders, frequent replanning
+may disrupt the trading pace and introduce extra noise. For
+
+=== page 6 ===
+0 0.3 0.5 0.8 1.0
+−3.8
+−3.2
+−2.6
+−2 (a) λ
+0 0.3 0.5 0.8 1.0
+−2.7
+−2.5
+−2.3
+−2.1 (b) γ
+2 5 10 15
+−2.8
+−2.6
+−2.4
+−2.2
+Parameter value
+(c) τ
+Figure 4: Hyperparameter sensitivity of λ, γ, and τ under
+the aggressive setting, where the y-axis reports wbp in bps.
+Window length One-shot Replanning
+10–40 min -1.99 -2.50
+50–60 min -2.78 -2.48
+Table3:Plannerreplanningtest.Valuesarereportedin wbp.
+longer parent orders, one-shot planning becomes harder be-
+causefuturetrendsarelesspredictable,whilereplanningcan
+dynamically adjust later sub-plans to new market changes.
+4.5 Case Study
+Fig. 6(a) presents a sell parent order from 10:30 to 11:20.
+Based on the market history from 9:40 to 10:30, the Planner
+expects the downward trend to continue and allocates more
+quantitytotheearlyslots.Therealizedpricekeepsdeclining
+after the parent order starts, so this front-loaded allocation
+helps the sell order trade at higher prices. Fig. 6(b) presents
+a sell sub-plan from 10:50 to 10:55. The Executor increases
+the sell quantity from the TWAP baseline of 200 shares to
+300 shares when prices are relatively high, and reduces it
+to 100 shares when prices decline. As a result, it sells more
+shares at more favorable prices and lowers execution costs.
+4.6 Planner Behavior
+PlanningStability.WeexaminewhetherthePlanner’sallo-
+cation is stable across repeated calls. For each parent order,
+we compute the KL dispersion of the quantity preference
+scores an defined in Sec. 3.3 across eight repeated runs.
+Fig. 7(a) shows consistently modest KL dispersion for all
+three model settings, indicating broadly stable long-horizon
+score distributions across calls for the same parent order.
+Confidence-Based Allocation. We examine whether higher
+LLM confidence is associated with higher allocation con-
+centration. We use the LLM confidence score c and the
+Herfindahl–HirschmanIndex(HHI)of an tomeasureconfi-
+dence and allocation concentration, respectively. Following
+theeightrepeatedruns inexperimentssetup,foreachparent
+Low volatility High volatility
+-4.5
+-3.5
+-2.5
+-1.5
+-0.5
+-2.16
+-1.57
+-0.93
+-4.00-4.18
+-3.48
+wbp (bps)
+XGB LSTM PACE
+Figure 5: wbp in low- and high-volatility scenarios.
+GPT-5.4 none DS-v4-f none DS-v4-f high
+c 6.96∗∗ 7.34∗∗∗ 5.03∗∗ 5.68∗∗ 4.78∗∗ 5.42∗∗
+(2.39) (2.58) (2.14) (2.39) (2.04) (2.22)
+Controls NO YES NO YES NO YES
+Adj. R2 0.020 0.041 0.022 0.025 0.020 0.021
+Obs. 1680 1680 1680 1680 1680 1680
+Table 4: Planner confidence and execution performance.
+The dependent variable is bp. None/high denote reasoning-
+effort. Parentheses report t-statistics based on parent-order-
+clustered standard errors. ∗∗∗p < 0.01 and ∗∗p < 0.05.
+order, we convert c and HHI into advantages, ˜c and gHHI,
+by subtracting their eight-run averages. Fig. 7(b) shows pos-
+itiveslopesforallthreemodels,indicatingthat,forthesame
+parent order, the LLM makes more concentrated allocations
+when it is more confident. This mirrors human investors:
+stronger self-belief leads to more concentrated portfolios
+(Barth 2018). The smaller slope for GPT-5.4 none suggests
+that the strength of this relation differs across models.
+Confidence and Performance. We examine whether LLM
+confidence predicts strategy performance. We regress bp on
+confidence c,bothwithandwithoutcontrolsforparent-order
+direction, log quantity, execution-window length, and stock
+volatility; further details are provided in the supplementary
+material.Tab.4showssignificantlypositivecoefficientson c
+acrossallregressions,indicatingthathigherLLMconfidence
+is associated with better performance. This differs from hu-
+man investors, whose overconfidence often leads to worse
+returns (Odean 1999). The larger coefficients for GPT-5.4
+none suggest that this relation varies across models.
+4.7 Executor Behavior
+Response to Time Pressure. We examine whether the Ex-
+ecutor responds systematically to time pressure. We regress
+the LLM-generated quantity adjustment score z, defined in
+Eq. 6, on time pressure T P, which measures how close the
+currenttimeistotheendofthesub-plan.Alarger zmeansrel-
+atively more quantity allocated at the current decision time,
+and a higher T P means the current sub-plan is closer to its
+deadline. Details are in the supplementary material.
+Tab. 5 shows that T P has significantly negative coeffi-
+cients across all model settings. This indicates that the Ex-
+
+=== page 7 ===
+Figure 6: Case study of PACE. (a) Using only pre-execution history, the Planner front-loads the sell order before the realized
+price decline. (b) Using only information available at each decision time, the Executor trades more at locally higher prices.
+GPT-5.4 none DS-v4-f none DS-v4-f high
+0
+0.01
+0.02
+0.03
+0.04
+0.029
+0.009
+0.017
+Models
+KL dispersion
+(a)
+−0.2 −0.1 0 0.1 0.2-3
+-2
+-1
+0
+1
+2
+3
+˜c
+gHHI
+(b)
+×10−2
+Figure 7: Planner behavior. (a) Lower KL dispersion means
+more stable long-horizon scores. (b) ˜c and gHHI denote con-
+fidence advantage and concentration advantage.
+ecutor allocates more quantity when time pressure is still
+low, so it reduces the risk of having too much quantity left
+nearthedeadline.Thisdiffersfromhumanbehavior:humans
+often delay work until the deadline gets close and feel more
+urgent near the end (Steel and König 2006).
+BeyondHeuristics.WefurthertestwhetherLLMexecution
+decisionsreflectbroadermarketreasoningormerelyfollowa
+simplerecentmarketmovementheuristic.Weadd LRtothe
+Executorregression. LRisthelogreturnovertheprevious τ
+minutes, with its sign reversed for sell orders, as detailed in
+the supplementary material. Tab. 5 shows that LR is signifi-
+cant positive for GPT-5.4 but insignificant for DS-v4-f. This
+suggeststhatGPT-5.4’sexecutiondecisionspartlyfollowre-
+centtrends,whereasthoseofDS-v4-fcannotbeexplainedby
+simple trend-following or mean-reversion. Since w/o Plan-
+ner still outperforms TWAP in Tab. 2, these non-heuristic
+decisions by DS-v4-f provide genuine performance gains.
+GPT-5.4 none DS-v4-f none DS-v4-f high
+T P -0.16∗∗∗ -0.16∗∗∗ -0.11∗∗∗ -0.10∗∗∗ -0.11∗∗∗ -0.09∗∗∗
+(-11.42) (-11.27) (-5.13) (-4.86) (-6.77) (-6.41)
+LR 10.49∗∗∗ 10.69∗∗∗ 1.72 2.26 3.26 3.61
+(4.86) (5.06) (0.53) (0.79) (1.13) (1.40)
+Controls NO YES NO YES NO YES
+Adj. R2 0.019 0.034 0.013 0.082 0.018 0.097
+Obs. 44989 44989 44072 44072 43967 43967
+Table 5: Executor behavior regression. The dependent vari-
+ableis z. T P denotestimepressure,and LRdenotestheside-
+adjusted log return over the previous τ minutes. Parentheses
+report t-statistics based on parent-order-clustered standard
+errors. ∗∗∗p < 0.01, ∗∗p < 0.05, and ∗p < 0.1.
+5 Conclusion
+This paper presents the first study of LLMs for parent-order
+execution. We propose PACE, which separates long-horizon
+planningfromshort-horizonexecutionwithoutpre-specified
+market assumptions or task-specific training. Experiments
+demonstrate consistent improvements over all baselines un-
+der both order-submission settings. Behavioral analysis fur-
+ther reveals that LLM decisions differ markedly from those
+ofhumaninvestors.Highermodelconfidencepredictsbetter
+performance, and the model trades earlier rather than de-
+ferring execution until the deadline. These patterns suggest
+that LLMs may help human traders make more disciplined
+executiondecisions.FutureworkmayevaluatePACEinlive
+trading and enrich its inputs by incorporating news, market
+microstructure information, and cross-asset signals.
+
+=== page 8 ===
+References
+Almgren, R.; and Chriss, N. 2001. Optimal execution of
+portfolio transactions. Journal of Risk, 3: 5–40.
+Almgren,R.;andLorenz,J.2006. Bayesianadaptivetrading
+with a daily cycle. Journal of Trading, 1(4): 38–46.
+Barth,D.2018. Thecostsandbeliefsimpliedbydirectstock
+ownership. Management Science, 64(11): 5263–5288.
+Bertsimas, D.; and Lo, A. W. 1998. Optimal control of
+execution costs. Journal of financial markets, 1(1): 1–50.
+Białkowski,J.;Darolles,S.;andLeFol,G.2008. Improving
+VWAP strategies: A dynamic volume approach. Journal of
+Banking & Finance, 32(9): 1709–1722.
+Cartea, Á.; and Jaimungal, S. 2015. Optimal execution with
+limitandmarketorders. QuantitativeFinance,15(8):1279–
+1291.
+Cartea, Á.; and Jaimungal, S. 2016. Incorporating order-
+flow into optimal execution. Mathematics and Financial
+Economics, 10(3): 339–364.
+Chang, E. C.; Luo, Y.; and Ren, J. 2014. Short-selling,
+margin-trading,andpriceefficiency:EvidencefromtheChi-
+nese market. Journal of Banking & Finance, 48: 411–424.
+Chen, T.; and Guestrin, C. 2016. Xgboost: A scalable tree
+boosting system. In Proceedings of the 22nd acm sigkdd
+international conference on knowledge discovery and data
+mining, 785–794.
+Chen, T.; Ludkovski, M.; and Voß, M. 2024. On parametric
+optimalexecutionandmachinelearningsurrogates. Quanti-
+tative Finance, 24(1): 15–34.
+Fang,Y.;Ren,K.;Liu,W.;Zhou,D.;Zhang,W.;Bian,J.;Yu,
+Y.;andLiu,T.-Y.2021. Universaltradingfororderexecution
+with oracle policy distillation. In Proceedings of the AAAI
+Conference on Artificial Intelligence, volume 35, 107–115.
+Frei,C.;andWestray,N.2015.OptimalexecutionofaVWAP
+order:astochasticcontrolapproach. MathematicalFinance,
+25(3): 612–639.
+Han,J.;Zhang,S.;Li,W.;Yang,Z.;Dong,Y.;Hu,T.;Yuan,
+J.; Yu, X.; Zhu, Y.; Lou, F.; et al. 2026. QuantaAlpha: An
+Evolutionary Framework for LLM-Driven Alpha Mining.
+arXiv:2602.07085.
+Hochreiter, S.; and Schmidhuber, J. 1997. Long short-term
+memory. Neural computation, 9(8): 1735–1780.
+Hodrick, R. J.; and Prescott, E. C. 1997. Postwar U.S. Busi-
+ness Cycles: An Empirical Investigation. Journal of Money,
+Credit and Banking, 29(1): 1–16.
+Huang, A. H.; Wang, H.; and Yang, Y. 2023. FinBERT:
+A large language model for extracting information from fi-
+nancial text. Contemporary Accounting Research, 40(2):
+806–841.
+Kyle, A. S. 1985. Continuous auctions and insider trading.
+Econometrica: Journal of the Econometric Society, 53(6):
+1315–1335.
+Li, H.; Cao, Y.; Yu, Y.; Javaji, S. R.; Deng, Z.; He, Y.;
+Jiang, Y.; Zhu, Z.; Subbalakshmi, K.; Huang, J.; et al. 2025.
+Investorbench: A benchmark for financial decision-making
+tasks with llm-based agent. In Proceedings of the 63rd An-
+nual Meeting of the Association for Computational Linguis-
+tics (Volume 1: Long Papers), 2509–2525.
+Li,K.;Cucuringu,M.;Sánchez-Betancourt,L.;andWilli,T.
+2024a. Mixturesofexpertsforscalingupneuralnetworksin
+orderexecution.InProceedingsofthe5thACMInternational
+Conference on AI in Finance, 669–676.
+Li, Y.; Luo, B.; Wang, Q.; Chen, N.; Liu, X.; and He, B.
+2024b. CryptoTrade:AreflectiveLLM-basedagenttoguide
+zero-shotcryptocurrencytrading.InProceedingsofthe2024
+ConferenceonEmpiricalMethodsinNaturalLanguagePro-
+cessing, 1094–1106.
+Lin,S.;andBeling,P.A.2021. Anend-to-endoptimaltrade
+executionframeworkbasedonproximalpolicyoptimization.
+In Proceedings of the twenty-ninth international conference
+on international joint conferences on artificial intelligence,
+4548–4554.
+Ma, T.; Du, J.; Huang, W.; Wang, W.; Xie, L.; Zhong, X.;
+andZhou,J.T.2025. AgentTradingArena:AStudyonNu-
+merical Understanding in LLM-Based Agents. In Findings
+of the Association for Computational Linguistics: EMNLP
+2025, 5496–5514.
+Moallemi,C.C.;andWang,M.2022.Areinforcementlearn-
+ing approach to optimal execution. Quantitative Finance,
+22(6): 1051–1069.
+Ning, B.; Lin, F. H. T.; and Jaimungal, S. 2021. Double
+deepq-learningforoptimalexecution.AppliedMathematical
+Finance, 28(4): 361–380.
+Niu, H.; Li, S.; and Li, J. 2024. MacMic: Executing Iceberg
+Orders via Hierarchical Reinforcement Learning. In IJCAI,
+6008–6016.
+Odean, T. 1999. Do investors trade too much? American
+economic review, 89(5): 1279–1298.
+O’Hara, M. 2015. High frequency market microstructure.
+Journal of financial economics, 116(2): 257–270.
+Shah,R.;Chawla,K.;Eidnani,D.;Shah,A.;Du,W.;Chava,
+S.;Raman,N.;Smiley,C.;Chen,J.;andYang,D.2022.When
+FLUEmeetsFLANG:Benchmarksandlargepretrainedlan-
+guagemodelforfinancialdomain.InProceedingsofthe2022
+ConferenceonEmpiricalMethodsinNaturalLanguagePro-
+cessing, 2322–2335.
+Shi, Y.; Fu, Z.; Chen, S.; Zhao, B.; Xu, W.; Zhang, C.; and
+Li,J.2026. Kronos:Afoundationmodelforthelanguageof
+financial markets. In Proceedings of the AAAI Conference
+on Artificial Intelligence, volume 40, 25366–25373.
+Steel, P.; and König, C. J. 2006. Integrating theories of
+motivation. Academy of management review, 31(4): 889–
+913.
+Tang, L.; Mei, J.; Liu, D.; Qian, C.; Cheng, D.; Shao, J.;
+andHu,X.2026a. InterpretingEmergentExtremeEventsin
+Multi-Agent Systems. arXiv:2601.20538.
+Tang, Z.; Yin, X.; Chen, W.; Chen, Z.; Zheng, Y.; Ye, W.;
+Wang, K.; and Lin, L. 2026b. Alphaagentevo: Evolution-
+oriented alpha mining via self-evolving agentic reinforce-
+ment learning. In The Fourteenth International Conference
+on Learning Representations.
+
+=== page 9 ===
+Tsoukalas, G.; Wang, J.; and Giesecke, K. 2019. Dynamic
+portfolio execution. Management Science, 65(5): 2015–
+2040.
+Wang, R.; Wei, H.; An, B.; Feng, Z.; and Yao, J. 2021.
+Commission fee is not enough: A hierarchical reinforced
+framework for portfolio management. In Proceedings of the
+AAAI conference on artificial intelligence, volume 35, 626–
+633.
+Wang, Y.; Xu, J.; Zhang, H.; Huang, S.-L.; Sun, D. D.; and
+Zhang,X.-P.2026.FactorMiner:ASelf-EvolvingAgentwith
+Skills and Experience Memory for Financial Alpha Discov-
+ery. arXiv:2602.14670.
+Wu, S.; Irsoy, O.; Lu, S.; Dabravolski, V.; Dredze, M.;
+Gehrmann, S.; Kambadur, P.; Rosenberg, D.; and Mann,
+G. 2023. BloombergGPT: A Large Language Model for
+Finance. arXiv:2303.17564.
+Xiao, Y.; Sun, E.; Luo, D.; and Wang, W. 2024. Tradin-
+gAgents: Multi-Agents LLM Financial Trading Framework.
+arXiv:2412.20138.
+Xie, Q.; Han, W.; Zhang, X.; Lai, Y.; Peng, M.; Lopez-
+Lira, A.; and Huang, J. 2023. PIXIU: A Large Language
+Model, Instruction Data and Evaluation Benchmark for Fi-
+nance. arXiv:2306.05443.
+Xu, A.; Lin, B.; Xue, B.; Wang, B.; Xu, B.; Wu, B.; Zhang,
+B.;Lin,C.;Dong,C.;Ling,C.;etal.2026.DeepSeek-V4:To-
+wards Highly Efficient Million-Token Context Intelligence.
+arXiv:2606.19348.
+Xu, H.; Bohne, J.; Polak, P.; Byrd, D.; Rosenberg, D.; and
+Kazantsev, G. 2025. Learning to Trade with Preferences:
+InterpretableExecutionviaMixture-of-Experts. InProceed-
+ings of the 6th ACM International Conference on AI in Fi-
+nance, 762–770.
+Yang, H.; Liu, X.-Y.; and Wang, C. D. 2023. Fin-
+GPT: Open-Source Financial Large Language Models.
+arXiv:2306.06031.
+Yang, Y.; Zhang, Y.; Wu, M.; Zhang, K.; Zhang, Y.; Yu, H.;
+Hu, Y.; and Wang, B. 2026. Twinmarket: A scalable behav-
+ioralandsocialsimulationforfinancialmarkets. Advancesin
+Neural Information Processing Systems, 38: 63469–63519.
+Yu, Y.; Li, H.; Chen, Z.; Jiang, Y.; Li, Y.; Suchow,
+J. W.; Zhang, D.; and Khashanah, K. 2025. Finmem: A
+performance-enhanced llm trading agent with layered mem-
+ory and character design. IEEE Transactions on Big Data.
+Yu, Y.; Yao, Z.; Li, H.; Deng, Z.; Jiang, Y.; Cao, Y.; Chen,
+Z.; Suchow, J. W.; Cui, Z.; Liu, R.; et al. 2024. Fincon:
+A synthesized llm multi-agent system with conceptual ver-
+bal reinforcement for enhanced financial decision making.
+Advances in Neural Information Processing Systems, 37:
+137010–137045.
+6 Appendix
+6.1 Notation
+The notation used in this paper is summarized in Table 6.
+6.2 Parent Order Generation
+For each trading day, we randomly generate 10 parent or-
+derstoevaluatedifferentexecutionstrategiesunderthesame
+parent orders. The start time of each parent order is fixed
+at 10:30:00, and the end time is determined by a randomly
+sampled execution window. The execution window is sam-
+pled from {10, 20, 30, 40, 50, 60} minutes, so the end time
+rangesfrom10:40:00to11:30:00.Theordersideisrandomly
+sampled from {BUY, SELL}. The parent-order quantity is
+randomly generated between 100 and 10,000 shares and is
+constrained to be a multiple of 100 shares. Among the gen-
+erated parent orders, 51% are buy orders and 49% are sell
+orders. Other summary statistics are shown in Table 7.
+6.3 Robustness Analysis
+Statistical robustness. We use 5,000 bootstrap resamples
+over parent orders to test whether PACE’s gains are statisti-
+cally robust. Table 8 shows that DS-v4-f has positive 95%
+confidence intervals under both order-submission settings,
+while GPT-5.4 remains close to the significance bound-
+ary. These results support the statistical robustness of the
+strongest PACE variant.
+Depth-limited matching. We test whether PACE remains
+effective under a stricter matching rule. In this setting, an
+aggressive order can trade only up to the available Ask1 or
+Bid1volume,andtheremainingquantityiscancelled.Table9
+shows that PACE still outperforms TWAP under this more
+conservative matching mechanism.
+Final-sweep analysis. We examine whether passive-setting
+gains are driven by the aggressive sweep in the final minute.
+Table 10 shows that DS-v4-f achieves -3.64 wbp before the
+sweep,betterthanitsoverallperformanceof-3.92 wbp,while
+its sweep trades achieve -6.63 wbp. Thus, the final sweep
+reduces rather than creates its performance gain.
+Repeated-run stability. Table 11 reports wbp over eight
+repeated runs for each parent order. The small across-run
+variation indicates that PACE is stable across repeated LLM
+calls.
+6.4 Baseline Details
+ACStrategy WeimplementanAlmgren-Chrissstrategyas
+a traditional execution baseline. Specifically, given the total
+parent-orderquantity Qandexecution-windowlength T,the
+AC strategy first computes the target remaining inventory at
+time t as follows:
+xt = Q sinh(κ(T − t)) sinh(κT ) (11)
+where xt denotes the remaining quantity to be executed
+after time t, and κ controls the degree of front-loading in
+the execution curve. When κ = 0, the strategy reduces to
+an approximately uniform TWAP execution curve. As κ in-
+creases, the strategy completes more trading quantity earlier
+in the execution window, leading to a more front-loaded ex-
+ecution pattern. Based on the target remaining inventory,
+the strategy further obtains the target cumulative executed
+quantity at each minute:
+
+=== page 10 ===
+Symbol Meaning Symbol Meaning
+O Parent order s Stock ID
+d Trading direction Q Total execution quantity
+ts Parent-order start time te Parent-order end time
+T Parent-order execution-window duration ∆ Fixed decision interval
+τ Fixed sub-plan duration K Number of decision times
+tk The k-th decision time L Lookback-window length
+Ht−L:t Market history over [t − L, t] Pi Mid-price at minute i
+Vi Total traded volume at minute i Ai Ask1 price at minute i
+Bi Bid1 price at minute i QTWAP TWAP quantity at each decision time
+CTWAP TWAP curve N Number of Planner time slots
+Sn The n-th execution sub-plan un Start time of sub-plan n
+vn End time of sub-plan n qn Execution quantity of sub-plan n
+τn Duration of sub-plan n RL Planner’s long-horizon trend assessment
+an Quantity preference score for slot n c Planner confidence score
+wn Planner allocation weight for slot n λ LLM-allocation strength coefficient
+zt Executor quantity adjustment score at time t QE t Executor order quantity at time t
+γ Executor deviation coefficient from TWAP D Market snapshots
+π Execution strategy P TWAP TWAP price benchmark
+P Trade Average execution price QTrade Traded parent-order quantity
+cr Parent-order completion rate bp Basis-point price performance
+wbp Value-weighted basis-point performance T P Time pressure
+LR Side-adjusted recent log return HHI Allocation concentration
+˜c Confidence advantage gHHI Concentration advantage
+M Number of parent orders R Number of repeated runs
+κ AC schedule front-loading parameter η ML baseline adjustment coefficient
+Table 6: Notation used in this paper.
+Statistic Q (shares) T (minutes)
+Mean 5000.48 35.29
+Std. 2878.38 16.40
+Min 100 10
+25% 2500 20
+50% 4900 40
+75% 7500 50
+Max 10000 60
+Table 7: Summary statistics of generated parent orders.
+QAC t = Q − xt (12)
+In the experiments, we perform a grid search over κ ∈
+{0.1, 0.3, 0.5, 0.8, 1.0} and use the best-performing param-
+eter κ = 0.5.
+Learning-based Strategies To further compare PACE
+with learning-based strategies, we construct two machine
+learningbaselines:XGBandLSTM.Bothmodelsaretrained
+topredictthenext-minutepricedirection,andtheprediction
+signalisusedtoadjusttheTWAPquantityateachexecution
+step.
+The models are trained on market-wide minute-level data
+from January 1, 2026 to March 31, 2026 and evaluated on
+April 2026 data used in the main experiments, ensuring that
+thetrainingperiodprecedestheevaluationperiod.Theinput
+featuresincludelogreturn,log-returnvolatility,orderimbal-
+Setting Model gain 95% CI p-value
+Aggressive GPT-5.4 +0.52 [0.00, 1.05] 0.03
+Aggressive DS-v4-f +1.02 [0.15, 2.12] 0.00
+Passive GPT-5.4 +0.50 [0.00, 1.00] 0.03
+Passive DS-v4-f +1.07 [0.05, 2.24] 0.01
+Table8:BootstraprobustnesstestforPACE.Gainsarecom-
+puted relative to TWAP.
+Strategy Original matching Depth-limited matching
+TWAP -3.28 -3.08
+PACE -2.26 -2.41
+Table 9: Depth-limited matching test using DS-v4-f. Values
+are reported in wbp.
+ance, trade imbalance, and spread volatility. The prediction
+target is a three-class direction label of the next-minute re-
+turn: up, down, or flat.
+During backtesting, both baselines use TWAP as the de-
+fault execution curve. For a buy parent order, the strategy
+increases the current TWAP quantity when the model pre-
+dicts an upward price movement; for a sell parent order, it
+increases the current TWAP quantity when the model pre-
+dicts a downward price movement.
+
+=== page 11 ===
+Strategy Sweep (%) Pre-sweep Sweep
+TWAP 14.93 -4.80 -7.38
+AC 14.60 -4.55 -7.15
+XGB 13.64 -4.44 -7.68
+LSTM 13.62 -4.39 -10.50
+GPT-5.4 18.05 -4.21 -7.47
+DS-v4-f 18.80 -3.64 -6.63
+Table 10: Final-sweep analysis under passive submission.
+The last two columns report wbp; Sweep (%) is the fraction
+of executed quantity traded by the final-minute sweep.
+Statistic Aggressive Passive GPT-5.4 DS-v4-f GPT-5.4 DS-v4-f
+Mean -2.76 -2.26 -4.49 -3.92
+Std. 0.24 0.14 0.34 0.21
+Min. -3.32 -2.45 -5.08 -4.24
+Median -2.72 -2.22 -4.42 -3.84
+Max. -2.48 -2.04 -4.06 -3.58
+Table 11: Repeated-run stability of PACE. Each statistic is
+computed over eight repeated runs, and values are reported
+in wbp.
+QML t =
+(1 + η)QTWAP t , yt = 1,
+QTWAP t , yt = 0, (13)
+where yt = 1indicatesthatthecurrentsignalisfavorable,
+and yt = 0 denotes all other cases. The adjustment magni-
+tude is controlled by the hyperparameter η. We search over
+η ∈ {0.1, 0.3, 0.5, 0.8, 1.0} and report the best result in the
+main experiments.
+6.5 Behavioral Analysis Details
+Planner Stability We evaluate whether the Planner gives
+stable long-horizon quantity preference scores when the
+same parent order is queried repeatedly. For parent or-
+der i and repeated run r, the Planner outputs slot scores
+ai,r = (ai,r,1, . . . , ai,r,Ni ). We convert these scores into a
+score-implied allocation distribution using a fixed softmax
+transformation:
+pi,r,n = exp(ai,r,n)PNi
+m=1 exp(ai,r,m)
+(14)
+For each parent order, we compute the average score dis-
+tribution across its R = 8 repeated runs:
+¯pi,n = 1 R
+RX
+r=1
+pi,r,n (15)
+The KL dispersion of run r is then defined as the di-
+vergence between its score distribution and the parent-order
+average distribution:
+Di,r = DKL(pi,r ∥¯pi) =
+NiX
+n=1
+pi,r,n log pi,r,n ¯pi,n (16)
+Theparent-order-levelKLdispersionistheaverageacross
+repeated runs:
+KLi = 1 R
+RX
+r=1
+Di,r (17)
+AlowervaluemeansthatthePlannerproducesmoresimi-
+larlong-horizonscoredistributionsforthesameparentorder
+across repeated runs. The model-level statistic reported in
+Fig.7(a) of the main paper is the average of KLDispersioni
+across parent orders.
+Confidence and Concentration We examine whether
+higher Planner confidence is associated with more concen-
+trated long-horizon allocation preferences. We use the same
+score-implied allocation distribution pi,r,n defined in Ap-
+pendix6.5.Foreachparentorder iandrepeatedrun r,score
+concentration is measured by the HHI:
+HHIi,r =
+NiX
+n=1
+p2 i,r,n (18)
+A larger HHI means that the Planner’s long-horizon pref-
+erence is more concentrated on fewer slots. To compare re-
+peated runs of the same parent order, we remove the parent-
+order mean from both confidence and HHI:
+˜ci,r = ci,r − 1 R
+RX
+r′=1
+ci,r′ (19)
+gHHIi,r = HHIi,r − 1 R
+RX
+r′=1
+HHIi,r′ (20)
+The demeaning step controls for parent-order-level dif-
+ferences. Therefore, Fig.7(b) of the main paper compares
+whether a run that is more confident than the same parent
+order’s average also has a more concentrated score-implied
+allocation distribution.
+ConfidenceandPerformance WeexaminewhetherPlan-
+ner confidence predicts execution performance. The main
+explanatory variable is the Planner confidence score c. We
+use bp as dependent variable.
+We estimate the following OLS specification:
+bp = α + βc + X′Γ + ϵ (21)
+wherethecontrolvector Xincludesparent-orderside,log
+parent-order quantity, execution-window length, and stock
+volatility.Wereportbothspecificationswithoutcontrolsand
+specifications with controls in Table.4 of the main paper.
+Executor Regression We examine whether the Execu-
+tor’s quantity adjustment responds to time pressure and re-
+cent price movements. The dependent variable is the LLM-
+generatedquantityadjustmentscore z.Alarger z meansthat
+the Executor allocates more quantity.
+For each Executor decision, we define time pressure as:
+T Pt = 1 − τ remaining t τ (22)
+
+=== page 12 ===
+where τ remaining t istheremainingtimeofsub-planattime
+t,and τ isthetotaldurationofsub-plan.Alarger T Pt means
+that the current time is closer to the sub-plan deadline.
+Wealsodefine LRastheside-adjustedlogreturnoverthe
+previous τ minutes:
+LRt =
+log Pt − log Pt−τ , d = BUY,
+− (log Pt − log Pt−τ ) , d = SELL, (23)
+where Pt is the mid-price at time t, and d is the parent-
+order direction.
+We estimate the following OLS specification:
+zt = α + β1T Pt + β2LRt + X′Γ + ϵ (24)
+The control vector X includes parent-order side, log
+parent-order quantity, execution-window length, stock
+volatility,andlogsub-planquantity.Tab.5reportsbothspec-
+ifications without controls and specifications with controls.
+6.6 Prompts
+The prompt details are shown in Figure 8 and Figure 9.
+6.7 AI Assistance Statement
+We used AI assistants as supporting tools for code develop-
+ment,documentediting,andlanguagepolishing.Allresearch
+questions, experimental designs, implementation decisions,
+analyticalconclusions,andfinalmanuscriptstatementswere
+reviewed, verified, and are the responsibility of the authors.
+
+=== page 13 ===
+Planner Prompt Template
+Youareaprofessionaltradingplanner.Basedonthefollowingmarketinformationandrules,scorethefixedfutureslotssothesystem
+can convert your scores into an execution plan.
+Input: minute-level historical mid-price and traded volume; parent-order direction, total quantity, and duration; fixed 5-minute future
+slots.
+Rules: The execution window is split into fixed 5-minute slots. The model must score every slot instead of outputting raw quantities
+or custom time ranges. Valid scores are −1, −0.5, 0, 0.5, 1, where a higher score means that the slot deserves more allocation. If the
+signal is weak or noisy, the model should use mostly zero scores and a low confidence value so the final allocation stays close to
+TWAP. The goal is to obtain an average execution price better than the TWAP price: lower for buy orders and higher for sell orders.
+Response format: First provide brief analysis reasons, then output a JSON object with a short summary, a confidence value, and one
+score for each fixed slot.
+Planner JSON:
+{summary, confidence, slot_scores : [{slot_index, score}]}
+Constraints: Output exactly one score for each fixed future slot. Do not output raw quantities or time ranges.
+Figure8:CondensedPlannerprompttemplate.Runtimevariablessuchasmarkethistory,parent-orderfields,andslotdefinitions
+are filled dynamically for each parent order.
+Executor Prompt Template
+Youareafinancialexecutionassistant.Basedontherecentmarketinformation,thePlanner’slong-termintent,andthecurrentTWAP
+baseline quantity, determine how the current minute’s order quantity should be adjusted.
+Input: current time; parent-order start and end time; total parent-order quantity; minutes remaining; executed quantity; in-flight
+pending quantity; current TWAP baseline quantity; Planner’s long-term prediction; recent minute-level mid-price and traded volume.
+Rules: The model should judge whether the short-term market condition is favorable, unfavorable, or unclear relative to the current
+TWAPexecution.Forabuyorder,ifthepriceisexpectedtorise,tradingmorenowispreferred;ifthepriceisexpectedtofall,trading
+less now is preferred. For a sell order, the direction is reversed. If the signal is weak, noisy, or conflicts with the Planner’s long-term
+intent, the model should choose a neutral adjustment.
+Response format: First provide brief analysis reasons, then output a JSON object containing only the adjustment level.
+Executor JSON:
+{adjustment_level : zt}
+Valid adjustment levels: zt ∈ {−1, −0.5, 0, 0.5, 1}, where 0 means following the TWAP baseline quantity, positive values mean
+trading more than TWAP, and negative values mean trading less than TWAP.
+Constraints: Do not output raw quantities while respecting remaining quantity, pending orders, and the parent-order completion
+constraint.
+Figure9:CondensedExecutorprompttemplate.Runtimevariablessuchasrecentmarkethistory,Plannerintent,TWAPbaseline
+quantity, and execution progress are filled dynamically at each decision minute.

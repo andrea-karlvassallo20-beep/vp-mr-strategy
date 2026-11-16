@@ -1,0 +1,829 @@
+=== page 1 ===
+Constructing Time-Series Momentum Portfolios with
+Deep Multi-Task Learning
+Joel Onga, Dorien Herremansa
+aSingapore University of Technology and Design, 8 Somapah Rd, Singapore 487372
+Abstract
+A diversified risk-adjusted time-series momentum (TSMOM) portfolio can
+deliver substantial abnormal returns and offer some degree of tail risk pro-
+tection during extreme market events. The performance of existing TSMOM
+strategies, however, relies not only on the quality of the momentum signal
+but also on the efficacy of the volatility estimator. Yet many of the existing
+studies have always considered these two factors to be independent. Inspired
+by recent progress in Multi-Task Learning (MTL), we present a new approach
+using MTL in a deep neural network architecture that jointly learns portfolio
+construction and various auxiliary tasks related to volatility, such as forecast-
+ing realized volatility as measured by different volatility estimators. Through
+backtesting from January 2000 to December 2020 on a diversified portfolio of
+continuous futures contracts, we demonstrate that even after accounting for
+transaction costs of up to 3 basis points, our approach outperforms existing
+TSMOM strategies. Moreover, experiments confirm that adding auxiliary
+tasks indeed boosts the portfolio’s performance. These findings demonstrate
+that MTL can be a powerful tool in finance.
+Keywords: Deep Learning, Forecasting, Multi-Task Learning, Portfolio
+Construction, Time-series Momentum
+∗Joel Ong
+Email addresses: joel$_$ong@mymail.sutd.edu.sg (Joel Ong),
+dorien$_$herremans@sutd.edu.sg (Dorien Herremans)
+Preprint accepted to Expert Systems with Applications June 27, 2023
+arXiv:2306.13661v1  [q-fin.CP]  8 Jun 2023
+
+=== page 2 ===
+1. Introduction
+This section introduces the research background, literature review and
+research gaps, and our contribution, respectively. In Section 1.1, we discussed
+the phenomenon of Momentum in Finance. Section 1.2 reviews the literature
+associated with our study and identifies the current research gaps. Finally,
+section 1.3 summarizes our contributions.
+1.1. Background
+Momentum is a phenomenon that has been extensively studied in the
+finance literature. It is based on the idea that assets that have recently
+outperformed their peers will continue to outperform their peers (Jegadeesh
+& Titman, 1993, 2001). Moskowitz et al. (2012) proposed the concept of
+time-series momentum (TSMOM), whereby asset selection focuses purely on
+the assets’ past return rather than their relative returns. They show that
+a strategy where one simply buys assets if their past 12-month returns are
+positive and sells them otherwise can achieve an impressive risk-adjusted
+return. Other researchers have also investigated this phenomenon on a
+broader range of asset classes with extended sample periods and observed
+similar results (Georgopoulou & Wang, 2016; Levine & Pedersen, 2016; Hurst
+et al., 2017). Another critical aspect of the time-series momentum strategy
+is volatility scaling to target a constant volatility exposure. This involves
+leveraging exposure during low volatility periods and scaling back exposure
+during high volatility periods. This mechanism may reduce the probability of
+extreme losses by limiting the tail risk of extreme returns. Without such risk
+adjustments, momentum strategies are susceptible to large crashes during
+periods of market stress (Barroso & Santa-Clara, 2015; Daniel & Moskowitz,
+2016). Furthermore, Baltas & Kosowski (2012) show that the efficacy of the
+volatility estimator can improve the performance of time-series momentum
+strategies.
+1.2. Literature Review and Research gap
+The application of deep learning in finance is not new (Tay & Cao, 2001;
+Cao & Tay, 2003; Kim, 2003; Sapankevych & Sankar, 2009; Nunes et al.,
+2019; Law & Shawe-Taylor, 2017; Aboussalah & Lee, 2020; Yu et al., 2022;
+Zou & Herremans, 2022). Zhang et al. (2020) proposes a deep learning ap-
+proach to directly optimize the portfolio Sharpe ratio without requiring the
+expected return forecast. In addition, the authors utilize exchange-traded
+2
+
+=== page 3 ===
+funds (ETFs) of market indices instead of individual assets to form a port-
+folio. Within the realm of momentum portfolio, Lim et al. (2019) introduce
+a new trading strategy for time series momentum using deep learning tech-
+niques called Deep Momentum Networks (DMN). This approach combines
+deep learning-based trading rules with the volatility scaling framework of
+time series momentum to learn trend estimation and position sizing in a
+data-driven manner. The authors optimize the Sharpe ratio of the signal and
+backtest it on a portfolio of 88 continuous futures contracts. More recently,
+Wood et al. (2021) introduce the Momentum Transformer, an attention-
+based deep-learning architecture (Vaswani et al., 2017) that outperforms
+benchmark time-series momentum strategies. Unlike LSTM architectures,
+the Momentum Transformer uses an attention mechanism to learn longer-
+term dependencies, adapt to new market regimes, and capture concurrent
+regimes at different timescales.
+In today’s context, the return-generating and risk-management functions
+are typically separate entities. As a result, the portfolio construction pro-
+cess may need more oversight with adequate risk management before live
+implementation (Harvey et al., 2021). In addition, much of the existing re-
+search on deep learning for portfolio construction focuses on maximizing the
+Sharpe ratio as an objective function. A yet unexplored type of type of deep
+learning in this context is Multi-task learning (MTL). Multi-task learning
+(MTL) involves training a neural network to learn multiple tasks (related
+to one another) jointly rather than independently to improve the model’s
+generalizability (Caruana, 1997; Sebastian Thrun, 1998; Ruder, 2017). This
+technique has become increasingly important due to its relevance in many
+applications, ranging from Computer vision, Natural Language Processing,
+to Speech Recognition (Collobert & Weston, 2008; Bingel & Søgaard, 2017;
+Anastasopoulos & Chiang, 2018). For example, when performing visual scene
+understanding in the field of Computer Vision, a model needs to understand
+both the scene’s geometry and its semantics simultaneously. Not surprisingly,
+researchers showed that the MTL approach outperforms models trained in-
+dividually on each task (Cipolla et al., 2008). Ghosn & Bengio (1996) first
+used MTL to train a model to predict the future returns of multiple stocks
+simultaneously. However, the authors found significantly better results when
+some or all of the parameters of the stock models are not shared. Since then,
+much more research has been done on multi-task learning in finance, but
+much of this is focused on forecasting forward returns, ranking assets and
+not portfolio construction (Ma & Tan, 2022; Kang et al., 2022; Yuan et al.,
+3
+
+=== page 4 ===
+2023).
+To address the research gaps mentioned above and inspired by recent
+progress in MTL, we propose constructing a time-series momentum port-
+folio through multi-task learning where tasks related to returns and risk
+are jointly learned. Our suggested approach envisions a union between the
+return-generating and risk-management processes. In this case, our auxiliary
+tasks, which focus on predicting multiple types of forward-looking volatility,
+allow the model to learn the shared representation of the assets’ forward-
+looking risk relevant to the main tasks of portfolio construction. For instance,
+with a forward-looking view of the risk of an asset, we can size the asset’s po-
+sition more adequately. This approach can help capture complex interactions
+between investment objectives, such as risk and return trade-offs.
+1.3. Our Contributions
+We demonstrate that using a multi-task deep neural architecture to learn
+portfolio construction and auxiliary tasks simultaneously improves the per-
+formance of time-series momentum strategies, thus making our approach
+more effective than existing TSMOM strategies. In addition, compared to
+the existing time-series momentum approach, our proposed approach cir-
+cumvents the need to specify the momentum and position sizing rule explic-
+itly. Our main contributions are: i.) A novel multi-task deep learning-based
+framework that results in improved time-series momentum portfolios, ii.) the
+first implementation and study of multi-task learning in the context of port-
+folio construction, and iii.) extensive experimental analysis to understand
+the performance trade-offs resulting from using different volatility-related
+auxiliary tasks.
+The paper is organized as follows. In Section 2, we discuss existing work
+on time-series momentum strategies. Section 3 presents the proposed multi-
+task time-series momentum model. Section 4 presents the setup of the dif-
+ferent experiments, such as which dataset was used, benchmark models, and
+proposed backtesting strategy. In Section 5, the results of our experiments
+are presented. Finally, in Section 6 we summarize our findings and suggest
+directions for future research.
+2. Classical Time-Series Momentum Strategy
+One of the most influential ideas in the finance literature is the Efficient
+Market Hypothesis (EMH) (Fama, 1970). In the most general sense, the
+4
+
+=== page 5 ===
+EMH implies that any predictable pattern will eventually cease to exists
+as market participants increasingly act upon it. Unfortunately, the EHM
+fails to explain many of the persistent market anomalies documented by re-
+searchers (Jegadeesh & Titman, 1993; Kishore et al., 2008; Moskowitz et al.,
+2012; Rossi, 2015). One such market anomaly is cross-sectional momen-
+tum, whereby assets that recently outperformed their peers (over the past
+3 to 12 months) will continue to outperform them on average over the next
+month (Jegadeesh & Titman, 1993). Since the study by Jegadeesh & Tit-
+man (1993) was published, a growing body of research suggests that the
+performance of portfolios constructed using cross-sectional momentum is ro-
+bust across asset classes, markets, and periods (Jegadeesh & Titman, 2001;
+Asness et al., 2014; Geczy & Samonov, 2016).
+In contrast to traditional work on momentum, Moskowitz et al. (2012)
+discovered another form of momentum: time-series momentum (TSMOM),
+whereby there is strong predictability from an asset’s past performance.
+Specifically, they found that the past 12-months’ excess return of an asset is
+a positive predictor of its future returns. Following Moskowitz et al. (2012),
+we can express the realized returns rT SM OM,i t,t+1 for period t to t + 1 of a single
+asset i, for the TSMOM strategy as follows:
+rTSMOM,i t,t+1 = sgn(ri t−252,t) σtgt σi t ri t,t+1 (1)
+sgn(x) :=
+
+
+
+-1 if x < 0,
+0 if x = 0,
+1 if x > 0.
+(2)
+where ri t−252,t is the previous one year return of asset i, ri t,t+1 is the one day
+return of the asset i, σtgt is the annualized target volatility, and σi t is the
+ex-ante volatility of asset i estimated using the standard deviation of returns
+with exponentially decaying weights and a span of 60 days. In Equation (1),
+the size of the trade is determined by σtgt/σi t. Sizing the position in such
+a manner results in more volatile assets having a lower weight than their
+less volatile counterparts. A final (full) portfolio can be constructed using
+a TSMOM strategy by taking the average return series of the individual
+volatility scaled strategies where rTSMOM t,t+1 is the realised return of the portfolio
+strategy from day t to t+1 and St is the total number of assets in the portfolio
+in period t, as per the equation below:
+5
+
+=== page 6 ===
+rTSMOM t,t+1 = 1 St
+StX
+i=1
+rTSMOM,i t,t+1 (3)
+3. Methodology
+3.1. Multi-Task Time-Series Momentum Strategy
+Figure 1: Proposed Multi-task learning architecture. The architecture consists of Long-
+Short Term Memory (LSTM) modules which serve as the shared layers. In these layers, the
+network parameters are shared across the various task-specific layers. Each task-specific
+layer is a feedforward network (FNN) layer, whereby each FNN learns a set of parameters
+optimized to their respective task. In Section 4.2, we discussed the features used as input
+to our model in more detail. In this section we will describe the output of each FNN.
+6
+
+=== page 7 ===
+In this work, we propose a deep-MTL architecture with hard parameter
+sharing, which includes two types of tasks: the main task and the auxiliary
+tasks. The main task of the proposed model is constructing a time-series
+momentum portfolio. The auxiliary tasks, on the other hand, are included
+to enhance the model’s shared representation and allow the model to better
+generalize, which in turn will aid the main task. In our proposed archi-
+tecture (Figure 1), the inputs are encoded using Long Short-Term Memory
+(LSTM) (Hochreiter & Schmidhuber, 1997) layers which serve as the shared
+layers, after which the network branches out into task-specific feedforward
+networks. In Section 4, we describe the details of the architecture’s imple-
+mentation as well as the hyperparameters tuning process.
+3.2. Main Task: portfolio construction
+As per Equation (1), the two key variables for building a traditional time-
+series momentum portfolio are the momentum signal used to identify trends
+and the volatility estimator used in position sizing. These are represented
+by the terms sgn(ri t−252,t) and σi t respectively. The product of the time-series
+momentum signal and the inverse ex-ante volatility for a particular asset will
+yield its resulting weight in the portfolio. Instead of explicitly defining time-
+series momentum signals and volatility estimators independently as proposed
+by Moskowitz et al. (2012), we parameterize both of these terms and predict
+them directly using our proposed multi-task architecture, so as to learn both
+the trend and position sizing simultaneously. We can express the realized
+returns rρ t,t+1 of our proposed MTL method as follows:
+rρ t,t+1 = σtgt St
+StX
+i=1
+wi t−1,t ri t,t+1 (4)
+where wi t−1,t is the output of the task-specific layer (for the main task) at
+time t for asset i in our proposed model and represents the weight allocated
+to that asset i in our portfolio. Regular re-balancing is typically required to
+manage the changing risk profile of each asset i n any portfolio. Too many
+trades, however, could also hurt performance. To ensure that our model
+considers this and is thus suitable for live implementation, we embedded
+transaction costs into Equation (4) to obtain Equation (5) to calculate the
+realized returns more accurately. Here, τ is the transaction cost (set as 3
+basis points (bps)), and |wi t−1,t − wi t−2,t−1| is the change in weight of asset s
+in the portfolio from time t to time t + 1.
+7
+
+=== page 8 ===
+rρ t,t+1 = σtgt St
+StX
+i=1
+wi t−1,t ri t,t+1 − τ |wi t−1,t − wi t−2,t−1| (5)
+Since our primary objective when developing the multi-task model is to
+construct a portfolio with better risk-adjusted performance, we employ the
+Sharpe ratio (Sharpe, 1994), as per Equation (6), as the loss function that is
+minimized during the training of our neural network model.
+LSharpe Ratio = − E[rρ] σrρ (6)
+where E[rρ] and σrρ are the mean and standard deviation of the portfolio’s
+realised returns, respectively.
+Unlike existing mean-variance approaches to portfolio construction (Markowitz,
+1952; Black & Litterman, 1992; Chekhlov et al., 2005; Estrada, 2007), where
+forward-looking excess returns are required, our approach circumvents the
+need for this forecasting and obtains the asset allocations directly by opti-
+mizing the Sharpe ratio. As a result, we do not have to deal with instability
+caused by estimation errors when predicting excess returns (Black & Lit-
+terman, 1992; Clarke et al., 2002; DeMiguel et al., 2007) in our portfolio
+construction process.
+In addition, having an optimized end-to-end model is extremely attrac-
+tive as it circumvents the need to specify the time-series momentum signals
+and volatility estimator independently. Furthermore, using ex-ante volatil-
+ity to scale the positions in the portfolio, as is the case for TSMOM, has its
+shortcomings. For example, the ex-post volatility of a time-series momentum
+portfolio could differ from the target volatility because the ex-ante volatility
+estimates are prone to estimation errors. Moreover, the volatility of the as-
+sets can change drastically during the holding period. These limitations may
+give rise to unnecessary turnover, reducing the performance after accounting
+for transaction costs (Baz et al., 2015).
+3.3. Auxiliary Tasks
+In the context of multi-task learning, the purpose of these auxiliary tasks
+is to enable the model to learn a shared representation that contains relevant
+information which may improve the performance of the main task (Baxter,
+2000; Ruder, 2017; Liebel & K¨orner, 2018). As found by Baltas & Kosowski
+8
+
+=== page 9 ===
+(2012), the efficacy of the volatility estimator used to perform volatility scal-
+ing can significantly impact the performance of time-series momentum strate-
+gies. Hence, we study five auxiliary tasks for forecasting each asset’s 21-days
+forward-volatility as defined by the:
+1. Close-to-close volatility estimator, σctc
+2. Parkinson volatility estimator, σp (Parkinson, 1980)
+3. Garman-Klass volatility estimator, σgk (Garman & Klass, 1980)
+4. Rogers-Satchell volatility estimator, σrs (Rogers & Satchell, 1991)
+5. Yang-Zhang volatility estimator, σyz (Yang & Zhang, 2000)
+By adding these auxiliary tasks, we aim to induce forward-looking volatil-
+ity information into the shared representation, thus allowing the main task-
+specific layers to construct a better risk-adjusted time-series momentum port-
+folio. This is confirmed in the experiment in Section 5. As our training loss
+function for the auxiliary task-specific layers, we minimize the negative cor-
+relation between the predicted and the realized volatility:
+Lcorr(y,ˆy) = − Sy,ˆy Sy · Sˆy (7)
+where y is the predicted volatility, ˆy is the realized volatility, Sy,ˆy is the
+covariance of y and ¯y, which is calculated as Sy,ˆy = 1 n−1 Pn i=1(yi − ¯y)(ˆyi − ¯ˆy)
+where n is the number of samples and Sy and Sˆy is the standard deviation
+of y and ˆy, respectively.
+3.4. Loss function
+Putting it all together, the final loss function of our model, which we
+minimize during training, can be written as Equation (8). Here, the loss
+for the main task Lmain is the negative Sharpe ratio, and the loss for the
+H auxiliary tasks Laux,h is the negative correlation between the predicted
+volatility and realized volatility. Finally, µ and λ are the weights assigned to
+each of the tasks’ loss, which are in the range of [0, 1] with µ + λ = 1. Simply
+put, we perform a weighted linear sum of the losses for each task, where
+µ = 0.5 and λ = 0.5. Here, H is the set of five auxiliary tasks that include
+forecasting volatility defined by the different volatility estimators discussed
+above.
+9
+
+=== page 10 ===
+Ltotal = µ Lmain + λ
+X
+h∈H
+Laux,h
+= µ LSharpe Ratio + λ
+X
+h∈H
+Lρy,ˆy ,h
+= −µ E[rρ] σrρ + λ X h∈H − Syh,ˆyh Syh · Sˆyh
+(8)
+4. Experimental Setup
+4.1. Dataset
+Individual futures contracts have expiry dates and variable liquidity. As a
+result, they are unsuitable for analyzing long-term trends. Instead, we evalu-
+ate our proposed model on the Stevens Continuous Futures data feed (Stevens
+Analytics, 2020) obtained through Nasdaq Data Link from January 1990 to
+December 2020. This data feed has a daily frequency and more than 20
+years of historical data. The Steven Continuous Futures data feed provides a
+long-term continuous price history for 78 of the most popular US and inter-
+national futures contracts from various asset classes, including commodities,
+currencies, fixed income, and equity indexes futures. In particular, we use the
+continuous contract history of each asset spliced together using end-to-end
+concatenation with the prices adjusted using the backward-ratio method.
+4.2. Feature Set
+We derive a set of time-series momentum features from the daily settled
+price of the continuous futures by taking the log returns (ri t−d,t) over the
+past 1 trading day, 21 trading days, 63 trading days, 126 trading days, and
+finally 252 trading days:
+ri t−d,t = ln P i t P i t−d (9)
+where ri t−d,t is the natural logarithm of the d-day return of asset i at day t, P i t
+is the settled price of asset i at time t and P i t−d is the settled price of asset i,
+d trading days ago at time t. We also constructed features that would allow
+the proposed model to capture various asset risk dimensions:
+10
+
+=== page 11 ===
+1. Realized volatility RV i t−n over the past 5 trading days, 21 trading days,
+63 trading days, 126 trading days, and finally 252 trading days. The
+realized volatility of an asset i is given by Equation 10.
+RV i t−n,t =
+vuut 252
+N
+NX
+n=1
+(ri t−n,t−n+1)2 (10)
+where RV i t−n is the realized volatility of asset i at time t. The constant
+252 represents the approximate number of trading days in a year, N is
+the number of trading days in the measurement time frame, ri t−n,t−n+1
+is the log daily return of asset i at time t − n.
+2. Realized volatility of realized volatility (vol of vol) is obtained by apply-
+ing the same formula used for calculating the realized volatility on the
+realized volatility itself. When applying the formula the second time,
+however, we always calculate it on a 21 trading day basis, regardless of
+the time frame of the realized volatility.
+There are two reasons why we created the features as such. First, to retain
+the spirit of time-series momentum, we only use features similar to those used
+in constructing a time-series momentum portfolio (Moskowitz et al., 2012).
+Second, and most importantly, we do not want the feature engineering to
+drive the performance of the portfolios, but rather the model’s multi-task
+architecture should be delivering the performance.
+Given that these features have varying scales, before using them as inputs
+to our model, we apply z-score standardization with a sliding window of
+length 21 to our features. In this case, a sliding window z-score is preferred
+over a static z-score because financial time-series data are non-stationary.
+4.3. Benchmark Models
+We have constructed a number of portfolios to serve as the reference
+benchmarks for our proposed model’s performance.
+1. TSMOM is the time-series momentum portfolio by Moskowitz et al.
+(2012), whereby assets are bought or sold based on the assets’ previous
+12 months return. This portfolio is re-balanced daily.
+2. CTA-MOM is the Commodity Trading Advisor (CTA)-momentum sig-
+nal based on the cross-over of exponentially weighted moving averages
+as proposed by Baz et al. (2015). This portfolio is re-balanced daily.
+11
+
+=== page 12 ===
+The volatility target, σtgt for TSMOM and CTA-MOM was chosen such
+that the average return across all assets in the portfolios would have approx-
+imately 10% annualized volatility from January 2000 to December 2020.
+4.4. Backtest Specifications
+In the backtest results presented in the next section, our proposed model
+was trained from scratch every year using an expanding window cross-validation
+approach as shown in Figure 2, with 20% of the training data kept as a val-
+idation set. After training, we used the models to generate the portfolio on
+the test set, with each test set containing a year’s worth of out-of-sample
+results. Then, using data from January 1990 to December 2020, we repeated
+this expanding window out-of-sample generation 21 times, resulting in an
+out-of-sample backtest from January 2000 to December 2020.
+Figure 2: Expanding window cross-validation.
+Throughout the backtest, we trained our model on the training data.
+During training, the loss functions (both the negative Sharpe loss function for
+the main-task and negative correlation for the auxiliary tasks) are minimized
+using Stochastic Gradient Descent (SGD) with the Adam optimizer and a
+learning rate set at 0.0001. Finally, the validation set was used to perform a
+grid search in order to find the best hyperparameters within the parameter
+search space shown in Table 1. The model training will terminate when
+12
+
+=== page 13 ===
+Parameters Values
+Number of LSTM Layers 1, 2, 3, 4
+LSTM Number of Hidden Units 32, 64, 126, 252
+LSTM Dropout Rate 0.05, 0.10, 0.15, 0.20
+Number of MLP Layers 1, 2, 3, 4
+MLP Number of Hidden Units 32, 64, 126, 252
+MLP Dropout Rate 0.05, 0.10, 0.15, 0.20
+Learning Rate 0.0001, 0.001, 0.01, 0.1
+Max Gradient Norm 0.01, 0.1, 0.
+Table 1: Hyperparameter Search Space.
+it reaches 200 epochs. In addition, we implemented early stopping, which
+terminates training before the 200 epochs are reached when there is no longer
+an increase in the validation loss (on the validation set) for 25 epochs. Since
+we took an expanding window out-of-sample strategy to train and validate
+our model, the final training batch, which uses data from January 1990 to
+December 2019, took approximately 2 hours to train using a machine with
+NVIDIA GeForce RTX 2060 installed.
+5. Experiment results and analysis
+5.1. Performance Evaluation
+We compute the backtest metrics for all of the portfolios by aggregating
+the out-of-sample results from January 2000 to December 2020. We then
+derive the net backtesting metrics by assuming a transaction cost of 3 basis
+points (bps). During our backtest, we applied volatility scaling to all port-
+folios, bringing the volatility to a target of 10%. This rescaling also helps
+to enable comparisons between the cumulative returns of different strategies.
+In Table 2, the returns of our proposed strategy, which we refer to as MTL-
+TSMOM, outperforms both TSMOM and CTA-MOM by 236 bps and 624
+bps, respectively, over the 20 year test period.
+The maximum drawdown is a strategy’s maximum loss from peak to
+trough over a given investment period. Drawdown presents a significant risk
+to investors when considering the uptick in returns needed to overcome a
+drawdown. For instance, if a strategy losses 50%, it requires a 100% in-
+crease to recover to the former peak. Throughout the backtest, our proposed
+13
+
+=== page 14 ===
+Figure 3: (Top) The plot shows our proposed model performance (dark blue) against the
+benchmark models over the test set period January 2000 to December 2020. At inception,
+we invested $100 in each strategy, and the terminal value indicates how much our initial
+investment would be worth at the end of December 2020. All strategies were re-scaled to
+10% volatility. (Bottom) The plot shows the drawdown of our proposed model against the
+benchmark models during the same period. Drawdown refers to the decline in the value
+of a portfolio from a previous peak value to the largest subsequent trough.
+14
+
+=== page 15 ===
+TSMOM CTA-MOM MTL-TSMOM
+Annualized Return (%) 5.54 1.66 7.90
+Annualized Sharpe Ratio 0.59 0.21 0.81
+Annualized Sortino Ratio 0.83 0.31 1.20
+Return Over Max Drawdown 0.28 0.04 0.38
+Max Drawdown (%) -19.88 -41.63 -21.00
+Max Drawdown Period 432 3066 103
+Max Drawdown Recovery Period 385 N.A. 42
+Proportion of Positive Returns (%) 53.44 51.44 51.62
+Table 2: Backtest metrics (net) from January 2000 to December 2020. Transaction costs
+were set at 3 bps. All portfolios have been rescaled to target 10% annualized volatility.
+model’s maximum drawdown is -21%, significantly better than the CTA-
+MOM strategy, which has a -41.63% maximum drawdown but slightly worse
+than the TSMOM strategy, a maximum drawdown of -19.88%. However,
+when considering the strategy’s return divided by the maximum drawdown,
+our proposed model performs better with a score of 0.38. In contrast, the
+TSMOM and CTA-MOM benchmark models obtained a score of 0.28 and
+0.04, respectively. In addition to a low drawdown magnitude, investors also
+typically prefer a portfolio with a lower recovery time. Hence, the drawdown
+duration is another critical dimension of analyzing a trading strategy’s risk.
+This work presents two metrics to assess our proposed and benchmark mod-
+els. First, the Max Drawdown Period is the total time (in trading days)
+that has elapsed from the start to the end of the most significant drawdown.
+Secondly, the Max Drawdown Recovery Period represents the time taken in
+trading days by the strategy (if recovered), from the largest drawdown to re-
+covery. In Table 1, our proposed model performs better than the benchmark
+models in terms of the Max Drawdown Period and Max Drawdown Recovery
+Period. Our proposed model began its largest drawdown period on 5 May
+2006 and hit its max drawdown of -21% on 2 October 2006. Subsequently, it
+took only 42 trading days to recover from its biggest drawdown. In compar-
+ison, TSMOM hit its maximum drawdown of -19.9% on 28 December 2012
+and took 385 trading days before making new highs, while CTA-TSMOM did
+not recover from its maximum drawdown in the backtest period. Although
+our proposed model did not fare better than TSMOM in terms of the mag-
+nitude of the drawdown, the lower drawdown recovery periods and higher
+annualized return present itself as a more attractive portfolio.
+15
+
+=== page 16 ===
+5.2. Ablation Study
+Our proposed Multi-Task TSMOM model is trained with several auxiliary
+tasks. In this section, we perform an ablation study to investigate the effects
+of training the portfolio construction tasks with different auxiliary tasks.
+Aux. task Ann. Return (%) Sharpe Ratio Sortino Ratio Max Drawdown (%)
+None 6.63 0.69 1.02 -36.54
+Close-to-close 6.85 0.71 1.05 -21.30
+Parkinson 4.61 0.50 0.74 -38.20
+Garman Klas 6.67 0.70 1.03 -34.82
+Rogers-Satchell 5.32 0.57 0.85 -18.69
+Yang-Zhang 7.03 0.73 1.08 -25.66
+MTL-TSMOM (All) 7.90 0.81 1.20 -21.00
+Table 3: Backtest metrics (net) from January 2000 to December 2020 when training our
+model with the main task (portfolio construction) with various single auxiliary tasks (all
+different types of volatility forecasts), as well as a full model with all auxiliary tasks and
+one without any auxiliary tasks. The transaction costs were set at 3 bps. All portfolios
+have been rescaled to target 10% annualized volatility.
+Table 3 shows the risk-adjusted performance of the various portfolios con-
+structed by models without any auxiliary task, with a single auxiliary task,
+and with all auxiliary tasks (MTL-TSMOM). The table allows us to com-
+pare the full proposed MTL-TSMOM to a model trained without any aux-
+iliary tasks. The former MTL-TSMOM outperforms the latter by 127 bps
+and incurred a much lower max drawdown (-21%). This better performance
+when using all auxiliary tasks is also apparent when comparing the full MTL-
+TSMOM to models where the portfolio construction task was co-trained with
+a single auxiliary task. This confirms the advantage of co-training the port-
+folio construction task with many auxiliary tasks in an MTL setting. We
+also note, however, that not all auxiliary tasks, when trained jointly with
+the portfolio construction task, results in better performance. These obser-
+vations highlight the intricacies of task selection for portfolio construction in
+an MTL setting, and confirm that our proposed model with all five auxiliary
+tasks largely achieves the best performance.
+5.3. Long-term Correlation with Equities Index
+It is widely known that the Time-Series Momentum Strategy (TSMOM)
+and Trend following strategies, such as CTA-MOM, exhibit negative down-
+side correlation to equity markets (Hurst et al., 2017), providing the potential
+to perform well during periods of sustained stress in global equity markets.
+16
+
+=== page 17 ===
+In this section, we show that our proposed model exhibits similar character-
+istics while attaining a lower long-term correlation to equity markets. We
+have selected the US MSCI Index as the equity index benchmark for our
+analysis. The US MSCI Index measures the performance of the large and
+mid-cap segments of the US market. It contains 626 constituents and cov-
+ers approximately 85% of the free float-adjusted market capitalization in the
+US. Instead of using the US MSCI Price Return Index for our analysis, we
+used the Total Return Index. The total return index accounts for activity
+associated with dividends, interest, rights offerings, and other distributions
+realized over a given period. As a result, the US MSCI Total Return Index
+is a better representation of the index’s actual growth over time. Using the
+Bloomberg Terminal, we obtained the US MSCI Total Return Index data
+from January 2000 to December 2020.
+In Figure 4b, we plot the 252-day rolling correlation of the results gen-
+erated by our proposed model in Section 5.1 as well as the two benchmark
+portfolios returns with the US MSCI Total Return Index, which measures
+the performance of the large and mid cap segments of the US market. From
+the figure, it can be observed that there are some crucial times when the neg-
+ative correlation between all three models and the US MSCI Total Return
+Index coincides with periods of sustained negative equity performance. For
+example, we observe a dip in the 252-trading days rolling correlation, which
+becomes highly negative during periods of financial market stress, such as the
+Global Financial Crisis of 2008-2009 (Wood et al., 2022) and, more recently,
+the Coronavirus Crash of 2020 (Mazur et al., 2021). The longest bull market
+on record post-global financial crisis began in March 2009 and lasted nearly
+11 years until the COVID-19 pandemic brought it to a close. We observed
+a relatively higher correlation between the benchmark models and US MSCI
+Total Return Index during this period. Interestingly, our proposed models
+maintain a relatively low correlation to the US MSCI Total Return Index
+throughout our backtesting period, ranging from -0.24 to 0.28 as compared
+to the benchmark models, where the 252-trading days rolling correlation is in
+the more extreme range of -0.77 to 0.81. The low long-term correlation with
+equities makes our proposed model extremely attractive for asset allocators
+looking for an alternative source of return that has a low correlation with
+the standard 60/40 portfolio (Robinson & Langley, 2017; Graham, 2020).
+To further substantiate the diversification benefits of our proposed model,
+we picked two well-known market stress events to observe how our proposed
+and benchmark models perform: the Global Financial Crisis (GFC) of 2008,
+17
+
+=== page 18 ===
+(a) Cumulative Returns of US MSCI Total Return Index
+(b) The plot shows the 252-trading day rolling correlation of our proposed model and benchmark momen-
+tum models’ daily returns with the US MSCI Total Return Index returns.
+Figure 4: Rolling Correlation of Momentum Portfolios against US MSCI Index
+18
+
+=== page 19 ===
+(a) The plots show that our proposed strategy, two benchmark strategies, as well as the equity index
+performance during the Global Financial Crisis.
+(b) The plots show that our proposed strategy, two benchmark strategies, as well as the equity index
+performance during the Coronavirus Crash.
+Figure 5: Crisis Performance
+19
+
+=== page 20 ===
+which began in early October 2007 before bottoming in March 2009, and more
+recently, the Coronavirus Crash of 2020, which began in mid-February 2020
+and ended in early April 2020. In Figure 5, we plot the cumulative return
+of our proposed strategy, two benchmark strategies, and the equity index
+during the GFC and Coronavirus Crash. During both of these periods of
+extreme market stress, our proposed and the benchmark models significantly
+outperformed the US MSCI Total Return Index, with our proposed model
+outperforming the US MSCI Total Return Index by 57% and 34.4% in the
+GFC and Coronavirus Crash of 2020, respectively.
+6. Conclusion
+We propose a multi-task learning time-series momentum model (MTL-
+TSM), which is a novel portfolio optimization method based on deep multi-
+task learning. In the MTL setting, our model jointly learns portfolio con-
+struction and various auxiliary tasks related to volatility, such as forecasting
+realized volatility. Our model was implemented in Python with PyTorch, the
+full source code of the model is available online1. In a thorough experiment,
+after accounting for transaction costs of up to 3 basis points, we demonstrate
+that our proposed approach consistently outperforms all benchmarks in risk-
+adjusted return, achieving an out-of-sample annualized return of 7.90% for
+the period of 1st January 2000 to 31st December 2020. Furthermore, our ex-
+tensive experiments also show that the proposed MTL-TSMOM outperforms
+existing multi-task benchmarks in constructing a better risk-adjusted port-
+folio. Lastly, our proposed model shows a low correlation to the US MSCI
+Total Return Index’s returns, thus presenting itself as an extremely attractive
+diversifier to existing stocks and bonds portfolios. Future research directions
+include identifying additional auxiliary tasks to construct a time-series mo-
+mentum portfolio with better overall performance. In addition, it would be
+of interest to explore dynamic task weighting instead of static task weighting.
+Finally, it would be interesting to quantify the relationship between portfolio
+construction and other auxiliary tasks. In particular, how valuable they may
+be for multi-task representation learning in portfolio construction.
+1https://github.com/joelowj/mtl-tsmom
+20
+
+=== page 21 ===
+References
+Aboussalah, A. M., & Lee, C.-G. (2020). Continuous control with
+stacked deep dynamic recurrent reinforcement learning for portfo-
+lio optimization. Expert Systems with Applications, 140 , 112891.
+URL: https://www.sciencedirect.com/science/article/pii/
+S0957417419306074. doi:https://doi.org/10.1016/j.eswa.2019.
+112891.
+Anastasopoulos, A., & Chiang, D. (2018). Tied multitask learning for neural
+speech translation. Proceedings of the 2018 Conference of the North
+American Chapter of the Association for Computational Linguistics:
+Human Language Technologies, Volume 1 (Long Papers), (pp. 82–91).
+Asness, C., Frazzini, A., Israel, R., & Moskowitz, T. (2014). Fact, fiction,
+and momentum investing. The Journal of Portfolio Management, 40 ,
+75–92.
+Baltas, A., & Kosowski, R. (2012). Improving time-series momentum strate-
+gies: The role of trading signals and volatility estimators. SSRN Elec-
+tronic Journal , .
+Barroso, P., & Santa-Clara, P. (2015). Momentum has its moments. Journal
+of Financial Economics, 116 , 111–120.
+Baxter, J. (2000). A model of inductive bias learning. J. Artif. Int. Res., 12 ,
+149–198.
+Baz, J., Granger, N., Harvey, C., Roux, N., & Rattray, S. (2015). Dissect-
+ing investment strategies in the cross section and time series. SSRN
+Electronic Journal , . doi:10.2139/ssrn.2695101.
+Bingel, J., & Søgaard, A. (2017). Identifying beneficial task relations for
+multi-task learning in deep neural networks. Proceedings of the 15th
+Conference of the European Chapter of the Association for Computa-
+tional Linguistics: Volume 2, Short Papers, 2 , 164–169.
+Black, F., & Litterman, R. (1992). Global portfolio optimization. Financial
+Analysts Journal , 48 , 28–43. doi:10.2469/faj.v48.n5.28.
+21
+
+=== page 22 ===
+Cao, L., & Tay, F. (2003). Support vector machine with adaptive parame-
+ters in financial time series forecasting. IEEE Transactions on Neural
+Networks, 14 , 1506–1518. doi:10.1109/TNN.2003.820556.
+Caruana, R. (1997). Multitask learning. Machine Learning, 28 , 41–75.
+Chekhlov, A., Uryasev, S., & ZABARANKIN, M. (2005). Drawdown mea-
+sure in portfolio optimization. International Journal of Theoretical and
+Applied Finance (IJTAF), 08 , 13–58. doi:10.2139/ssrn.544742.
+Cipolla, R., Gal, Y., & Kendall, A. (2008). Multi-task learning using
+uncertainty to weigh losses for scene geometry and semantics. 2018
+IEEE/CVF Conference on Computer Vision and Pattern Recognition, .
+Clarke, R., de Silva, H., & Thorley, S. (2002). Portfolio constraints and the
+fundamental law of active management. Financial Analysts Journal , 58 ,
+48–66. doi:10.2469/faj.v58.n5.2468.
+Collobert, R., & Weston, J. (2008). A unified architecture for natural lan-
+guage processing: deep neural networks with multitask learning. Pro-
+ceedings of the 25th international conference on Machine learning -
+ICML ’08 , 28 , 41–75.
+Daniel, K., & Moskowitz, T. J. (2016). Momentum crashes. Journal of
+Financial Economics, 122 , 221–247.
+DeMiguel, V., Garlappi, L., & Uppal, R. (2007). Optimal Versus Naive
+Diversification: How Inefficient is the 1/N Portfolio Strategy? The
+Review of Financial Studies, 22 , 1915–1953. doi:10.1093/rfs/hhm075.
+Estrada, J. (2007). Mean-semivariance optimization: A heuristic approach.
+Journal of Applied Finance, 18 . doi:10.2139/ssrn.1028206.
+Fama, E. F. (1970). Efficient capital markets: A review of theory and em-
+pirical work. The Journal of Finance, 25 , 383–417.
+Garman, M. B., & Klass, M. J. (1980). On the estimation of security price
+volatilities from historical data. The Journal of Business, 53 , 67–78.
+Geczy, C. C., & Samonov, M. (2016). Two centuries of price-return momen-
+tum. Financial Analysts Journal , 72 , 32–56.
+22
+
+=== page 23 ===
+Georgopoulou, A. A., & Wang, G. J. (2016). The trend is your friend:
+Time-series momentum strategies across equity and commodity markets.
+SSRN Electronic Journal , .
+Ghosn, J., & Bengio, Y. (1996). Multi-task learning for stock selec-
+tion. In M. Mozer, M. Jordan, & T. Petsche (Eds.), Advances
+in Neural Information Processing Systems. MIT Press volume 9.
+URL: https://proceedings.neurips.cc/paper_files/paper/1996/
+file/1d72310edc006dadf2190caad5802983-Paper.pdf.
+Graham, R. (2020). We see risk where others may not: 60/40 in 2020 vision.
+URL: https://www.man.com/maninstitute/60-40-in-2020-vision.
+Harvey, C. R., Rattray, S., & Hemert, O. v. (2021). Strategic risk manage-
+ment: Designing portfolios and managing risk . John Wiley &amp; Sons,
+Inc.
+Hochreiter, S., & Schmidhuber, J. (1997). Long Short-Term Memory. Neural
+Computation, 9 , 1735–1780. doi:10.1162/neco.1997.9.8.1735.
+Hurst, B., Ooi, Y. H., & Pedersen, L. H. (2017). A century of evidence on
+trend-following investing. The Journal of Portfolio Management, 44 ,
+15–29.
+Jegadeesh, N., & Titman, S. (1993). Returns to buying winners and selling
+losers: Implications for stock market efficiency. The Journal of Finance,
+48 , 65–91.
+Jegadeesh, N., & Titman, S. (2001). Profitability of momentum strategies:
+An evaluation of alternative explanations. The Journal of Finance, 56 ,
+699–720.
+Kang, Y., Chen, L., Jia, N., Wei, W., Deng, J., & Qian, H. (2022). A
+cwgan-gp-based multi-task learning model for consumer credit scoring.
+Expert Systems with Applications, 206 , 117650. URL: https://www.
+sciencedirect.com/science/article/pii/S0957417422009538.
+doi:https://doi.org/10.1016/j.eswa.2022.117650.
+Kim, K.-J. (2003). Financial time series forecasting using support vector
+machines. Neurocomputing, 55 , 307–319. doi:10.1016/S0925-2312(03)
+00372-2. Support Vector Machines.
+23
+
+=== page 24 ===
+Kishore, R., Brandt, M., Santa-Clara, P., & Venkatachalam, M. (2008). Earn-
+ings announcements are full of surprises. SSRN Electronic Journal , .
+Law, T., & Shawe-Taylor, J. (2017). Practical bayesian support vector regres-
+sion for financial time series prediction and market condition change de-
+tection. Quantitative Finance, 17 , 1–14. doi:10.1080/14697688.2016.
+1267868.
+Levine, A., & Pedersen, L. H. (2016). Which trend is your friend? Financial
+Analysts Journal , 72 , 51–66.
+Liebel, L., & K¨orner, M. (2018). Auxiliary tasks in multi-task learning.
+CoRR, abs/1805.06334 . arXiv:1805.06334.
+Lim, B., Zohren, S., & Roberts, S. (2019). Enhancing time series momentum
+strategies using deep neural networks. arXiv preprint arXiv:1904.04912 ,
+. doi:10.48550/ARXIV.1904.04912.
+Ma, T., & Tan, Y. (2022). Stock ranking with multi-task learning. Ex-
+pert Systems with Applications, 199 , 116886. URL: https://www.
+sciencedirect.com/science/article/pii/S0957417422003293.
+doi:https://doi.org/10.1016/j.eswa.2022.116886.
+Markowitz, H. (1952). Portfolio selection. The Journal of Finance, 7 , 77–91.
+Mazur, M., Dang, M., & Vega, M. (2021). Covid-19 and the march 2020
+stock market crash. evidence from s&p1500. Finance Research Let-
+ters, 38 , 101690. URL: https://www.sciencedirect.com/science/
+article/pii/S1544612320306668. doi:https://doi.org/10.1016/j.
+frl.2020.101690.
+Moskowitz, T. J., Ooi, Y. H., & Pedersen, L. H. (2012). Time series momen-
+tum. Journal of Financial Economics, 104 , 228–250.
+Nunes, M., Gerding, E., McGroarty, F., & Niranjan, M. (2019). A com-
+parison of multitask and single task learning with artificial neural net-
+works for yield curve forecasting. Expert Systems with Applications,
+119 , 362–375. URL: https://www.sciencedirect.com/science/
+article/pii/S0957417418307322. doi:https://doi.org/10.1016/j.
+eswa.2018.11.012.
+24
+
+=== page 25 ===
+Parkinson, M. (1980). The extreme value method for estimating the variance
+of the rate of return. The Journal of Business, 53 , 61–65.
+Robinson, J., & Langley, B. (2017). The 60/40 problem: Examining the tra-
+ditional 60/40 portfolio in an uncertain rate environment. URL: https:
+//papers.ssrn.com/sol3/papers.cfm?abstract_id=2959015.
+Rogers, L. C. G., & Satchell, S. E. (1991). Estimating variance from high,
+low and closing prices. The Annals of Applied Probability, 1 , 504–512.
+Rossi, M. (2015). The efficient market hypothesis and calendar anomalies:
+a literature review. International Journal of Managerial and Financial
+Accounting, 7 , 285.
+Ruder, S. (2017). An overview of multi-task learning in deep neural networks.
+CoRR, abs/1706.05098 . arXiv:1706.05098.
+Sapankevych, N. I., & Sankar, R. (2009). Time series prediction using support
+vector machines: A survey. IEEE Computational Intelligence Magazine,
+4 .
+Sebastian Thrun, L. P. (1998). Learning to learn: Introduction and overview.
+Learning to Learn, (pp. 3–17).
+Sharpe, W. F. (1994). The sharpe ratio. The Journal of Portfolio Manage-
+ment, 21 , 49–58.
+Stevens Analytics (2020). Trend: Stevens analytics. continuous futures: Fu-
+ture daily open price — symbol: – — exchange: All exchanges — sym-
+bol: Ed, 09/28/1983 - 10/23/2020. data planet™ statistical datasets:
+A sage publishing resource dataset-id: 095-001-006. doi:10.6068/
+DP17560842C1658.
+Tay, F. E., & Cao, L. (2001). Application of support vector machines in
+financial time series forecasting. Omega, 29 , 309–317. doi:10.1016/
+S0305-0483(01)00026-3.
+Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N.,
+Kaiser, L. u., & Polosukhin, I. (2017). Attention is all you need. In
+I. Guyon, U. V. Luxburg, S. Bengio, H. Wallach, R. Fergus, S. Vish-
+wanathan, & R. Garnett (Eds.), Advances in Neural Information Pro-
+cessing Systems. Curran Associates, Inc. volume 30.
+25
+
+=== page 26 ===
+Wood, K., Giegerich, S., Roberts, S., & Zohren, S. (2021). Trading with the
+momentum transformer: An intelligent and interpretable architecture.
+doi:10.48550/ARXIV.2112.08534.
+Wood, K., Giegerich, S., Roberts, S., & Zohren, S. (2022). Trading with the
+momentum transformer: An intelligent and interpretable architecture.
+URL: https://arxiv.org/abs/2112.08534.
+Yang, D., & Zhang, Q. (2000). Drift-independent volatility estimation based
+on high, low, open, and close prices. The Journal of Business, 73 , 477–
+492.
+Yu, P., Wynter, L., & Lim, S. H. (2022). Federated reinforcement
+learning for portfolio management. In H. Ludwig, & N. Baracaldo
+(Eds.), Federated Learning: A Comprehensive Overview of Methods
+and Applications (pp. 467–482). Cham: Springer International Pub-
+lishing. URL: https://doi.org/10.1007/978-3-030-96896-0_21.
+doi:10.1007/978-3-030-96896-0_21.
+Yuan, C., Ma, X., Wang, H., Zhang, C., & Li, X. (2023). Covid19-
+mlsf: A multi-task learning-based stock market forecasting frame-
+work during the covid-19 pandemic. Expert Systems with Applica-
+tions, 217 , 119549. URL: https://www.sciencedirect.com/science/
+article/pii/S0957417423000507. doi:https://doi.org/10.1016/j.
+eswa.2023.119549.
+Zhang, Z., Zohren, S., & Roberts, S. (2020). Deep learning for portfo-
+lio optimisation. URL: https://papers.ssrn.com/sol3/papers.cfm?
+abstract_id=3613600.
+Zou, Y., & Herremans, D. (2022). A multimodal model with twitter finbert
+embeddings for extreme price movement prediction of bitcoin. arXiv
+preprint arXiv:2206.00648 , .
+26

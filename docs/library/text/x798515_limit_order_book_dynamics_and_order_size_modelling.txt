@@ -1,0 +1,1254 @@
+=== page 1 ===
+Limit Order Book Dynamics and Order Size Modelling Using
+Compound Hawkes Process
+Konark Jain
+konark.jain.23@ucl.ac.uk
+University College London; JP Morgan Chase & Co.
+London, UK
+Nick Firoozye
+n.firoozye@ucl.ac.uk
+University College London
+London, UK
+Jonathan Kochems
+jonathan.a.kochems@jpmorgan.com
+JP Morgan Chase & Co.
+London, UK
+Philip Treleaven
+p.treleaven@ucl.ac.uk
+University College London
+London, UK
+ABSTRACT
+Hawkes Process has been used to model Limit Order Book (LOB)
+dynamics in several ways in the literature however the focus has
+been limited to capturing the inter-event times while the order size
+is usually assumed to be constant. We propose a novel methodol-
+ogy of using Compound Hawkes Process for the LOB where each
+event has an order size sampled from a calibrated distribution. The
+process is formulated in a novel way such that the spread of the
+process always remains positive. Further, we condition the model
+parameters on time of day to support empirical observations. We
+make use of an enhanced non-parametric method to calibrate the
+Hawkes kernels and allow for inhibitory cross-excitation kernels.
+We showcase the results and quality of fits for an equity stock’s
+LOB in the NASDAQ exchange and compare them against several
+baselines. Finally, we conduct a market impact study of the simula-
+tor and show the empirical observation of a concave market impact
+function is indeed replicated.
+KEYWORDS
+Limit Order Book, Microstructure, Financial Simulations, Hawkes
+Process
+1 INTRODUCTION
+The Hawkes process, known for its high adaptability, offers a more
+comprehensive point process methodology for modeling order book
+arrivals than the Poisson process and its variants, without the need
+to explicitly model individual traders’ behaviors in the market.
+Its capability to replicate microstructural details such as volatility
+clustering and correlated order flow makes it a suitable candidate
+for Limit Order Book (LOB) models. It is important to highlight
+that these point process models are mathematically descriptive,
+providing full transparency in their nature and thus are suitable for
+applications where black-box solutions are not preferred. In their
+comprehensive review and tutorial, Bacry et al. 2015 outlay the
+major ideas of the Hawkes Process, its mathematical theory, some
+of its crucial properties and finally applications including a detailed
+review over the Order Book models. Recently, state dependent
+Hawkes Process have been quite popular (Morariu-Patrichi and
+Pakkanen 2022, Kirchner and Vetter 2022, Mucciante and Sancetta
+2023, Wu et al. 2019). However, as noted in Rambaldi et al. 2017
+and Lu and Abergel 2018a, individual order’s size is an important
+of aspect of the LOB which the Hawkes model alone is unable to
+capture.
+1.1 Empirical Distributions of Order Sizes:
+We show here in Figure 1 two trading weeks’ of data (10 dates) for
+Apple and plot the empirical histograms on a log-log scale. We only
+focus on top of the book cancels and limit orders. As Figures 1a
+and 1b show, the market orders and limit orders sizes have several
+spikes at round numbers indicating the preference of the traders.
+For example, we see more than 40% of the market orders and 60%
+of limit orders are of 100 size. Naturally, Cancel Orders’ sizes are
+capped at the size of an individual order. In fact we observe that
+outright cancels (i.e. full quantity of an order is cancelled) constitute
+99.3% of all cancels.
+(a) Market Orders’ Size Distribu-
+tion (log-log scale)
+(b) Limit Orders’ Size Distribution
+(log-log scale)
+Figure 1: Empirical Distribution of Order Sizes
+1.2 Properties of the Order Book Dynamics:
+There have been several variations to the Hawkes model to accom-
+modate for certain properties of the order book in exchanges.
+Prop 1: Bid-Ask Spread is always non-negative: The bid-ask
+spread can never be less than one tick. This property is important
+to consider while modelling the LOB. This challenge was tackled by
+using order arrival intensities dependent on spread-in-ticks by Lee
+and Seo 2022. Previously, Zheng et al. 2014 have used constrained
+Hawkes Process to control for positive spreads.
+Prop 2: Order intensities are dependent on time-of-day: It
+is well known that trading volumes follow an intraday seasonality
+which is observered to be stationary across multiple days. Natu-
+rally, we observe that the order intensities too exhibit this intraday
+2024-08-15 00:39. Page 1 of 1–14.
+arXiv:2312.08927v5  [q-fin.TR]  14 Aug 2024
+
+=== page 2 ===
+Konark Jain, Nick Firoozye, Jonathan Kochems, and Philip Treleaven
+seasonality (more in Section 2). Hawkes models have been adapted
+to account for the same in Mucciante and Sancetta 2023, Prenzel
+et al. 2022, and Kirchner and Vetter 2022.
+Prop 3: Cross-excitations can be inhibitory: As noted in Lu
+and Abergel 2018b, the cross-excitation of events need not necessar-
+ily always be catalyzing. For example, we observe that limit orders
+inside the spread and cancels at top at opposing sides of the book
+have inhibitory effects on each other. Generally modelling for this
+can introduce negative intensities in the point process. To avoid
+such complications, Lu and Abergel 2018b propose to floor the total
+intensity of any element of the Hawkes process to zero.
+In this work we show some lack of support for the hypothesis
+that the order arrival intensities are impacted by the past order sizes.
+Thus we conclude that the Compound Hawkes Process is a suitable
+candidate for the model. We then create a stationary distribution
+of the order sizes for each type of order which closely mimics
+the empirical distribution. This distribution is used to sample the
+order sizes in the compound Hawkes Process. We create a novel
+formulation of the Hawkes intensities which satisfies Properties 1,
+2 and 3. In Section 4, we show the calibration results for the Apple
+Inc. stock by using Level 2 data in the NASDAQ exchange. We also
+provide an analysis for the quality of fit as well as a market impact
+study in the simulator.
+2 RELATED WORK
+We refer to Jain et al. 2024 for a comprehensive review of vari-
+ous techniques in Limit Order Book simulations. Gould et al. 2013
+too reviewed Limit Order Books, focusing on their properties and
+presenting various models for LOB simulation. In another survey,
+Cont 2011 demonstrated the usefulness of several zero-intelligence
+models in LOB modeling and provided empirical observations to
+test the models’ outputs. For a more detailed overview of the mi-
+crostructural statistics of the LOB and their modelling methods, we
+refer to the text by Abergel et al. 2016. The field of order book simu-
+lations is evolving alongside modeling techniques. With the rise of
+deep learning, many architectures have been developed to mimic
+the order book and its properties. Jain et al. 2024’s review classifies
+order book simulator models based on their core methodologies:
+(1) Point Process Models: These treat the order book as a
+queuing system with multiple components, which can be
+modeled either independently (zero-intelligence models)
+or with interacting terms (Hawkes process). They focus on
+aggregate dynamics, ignoring individual order motivations.
+(2) Agent-Based Models: These simulate the behavior of var-
+ious types of agents interacting with the central LOB.
+(3) Deep Learning Models: These avoid forming priors on
+data, using generative networks to estimate probability dis-
+tributions. Although powerful, they face training difficulties
+and lack explainability.
+(4) Stochastic Partial Differential Equation Models: Using
+observed facts or expert judgment, these models employ
+partial differential equations to describe LOB dynamics.
+The Hawkes Process has emerged as a promising model for ad-
+dressing challenges associated with Poisson Processes in modeling
+Limit Order Book (LOB) queueing systems. In their comprehensive
+review, Bacry et al. 2015 outline the key concepts of the Hawkes
+Process, its mathematical foundations, essential properties, and its
+applications, including an in-depth exploration of Order Book mod-
+els. Notably, Hawkes Processes exhibit improvements over Poisson
+methods in capturing volatility clustering and addressing the Epps
+Effect, where covariance between assets approaches zero as the
+timescale decreases. The inherent features of endogenously excited
+order flow and implicit market impact make Hawkes Processes
+particularly relevant.
+Recent work by Hawkes 2018 delves into the financial appli-
+cations of Hawkes Processes, emphasizing their utility in model-
+ing various market phenomena. Discussions in the literature have
+focused on selecting appropriate kernel functions, with studies
+demonstrating that power law kernels better fit empirical data
+than exponential ones (Nyström and Zhang 2022). Da Fonseca and
+Zaatour 2014 argue against exponentially decaying kernels based
+on Q-Q plot comparisons, highlighting potential insufficiencies in
+representing empirical data.
+The extension to n-dimensional Hawkes Processes has gained
+popularity in LOB models, with different formulations. Toke 2010
+present a two-agent model employing 1D Hawkes Processes for
+Market Orders and Limit Orders. Bacry et al. 2016 divide order book
+events into categories, using an 8-dimensional Hawkes Process to
+model bid and ask sides separately. Kirchner 2017 propose a non-
+parametric method for estimating Hawkes Processes, optimizing
+hyperparameters using the AIC statistic. Da Fonseca and Zaatour
+2014 offer an alternate strategy for fitting Hawkes Processes, utiliz-
+ing a generalized method of moments for faster parameter estima-
+tion compared to traditional maximum likelihood methods. They
+validate their approach using key stylized facts and compare results
+with MLE baselines.
+In the realm of Constrained Hawkes Processes, Zheng et al.
+2014 and Lee and Seo 2022 present 4-dimensional models with
+constraints on bid-ask spread processes. Toke and Yoshida 2017,
+2020 also present a spread dependent LOB point process model for
+European (Large-tick) stocks. Lee and Seo 2022 introduce stochas-
+tic decay kernels and provide empirical validation and economic
+interpretations. Various other variants of Hawkes Processes have
+been proposed. Kaj and Caglar 2017 introduce a "Buffer-Hawkes"
+Process, while Morariu-Patrichi and Pakkanen 2022 develop a state-
+dependent Hawkes Process based on spread and order flow imbal-
+ance. Kirchner and Vetter 2022 formulate a marked state-dependent
+Hawkes Process, optimizing for model parsimony.
+The LOB’s individual order sizes have been a quantity of interest
+in a number of other works. Gopikrishnan et al. 2000 observe a
+power law decay in the probability distribution of traded volume
+for several equities, which is the order size of Market Orders in
+our model. With regards to order size modelling within an LOB
+model, let us mention that Abergel et al. 2016 use parametric dis-
+tributions for order sizes in the Hawkes Process model. The fact
+that order sizes distributions are not smooth and have spikes in
+probability at round numbers, probably due to the traders’ pref-
+erence for round numbered child order sizes, has been noted in
+Challet and Stinchcombe 2001. More recently, Lu and Abergel 2018a
+develop geometric distributions with spikes at round numbers for
+their Poisson LOB model’s order sizes. In an alternate direction, a
+non-parametric method for sampling order sizes was used in Hultin
+2024-08-15 00:39. Page 2 of 1–14.
+
+=== page 3 ===
+Limit Order Book Dynamics and Order Size Modelling Using Compound Hawkes Process
+Figure 2: Order Book Snapshot
+et al. 2023 where each order size is a result from a deep recurrent
+neural network.
+Scaling limits of Hawkes Processes have been explored by Abergel
+and Jedidi 2015 and Horst and Xu 2019, demonstrating convergence
+to Stochastic Differential Equations (SDEs) and Ordinary Differen-
+tial Equations (ODEs) for aggregate features. Non-linear Hawkes
+Processes, as proposed by Lu and Abergel 2018a and Mounjid et al.
+2019, introduce inhibiting kernels for negative excitation and novel
+features such as sum of exponential functions. These models offer
+enhanced performance compared to linear counterparts. The ap-
+plication of Neural Hawkes Processes has gained attention, with
+Kumar 2021 introducing a Deep Neural Hawkes Process for Market
+Making. Shi and Cartlidge 2022 develop a neural Hawkes process
+with continuous time LSTM units, capturing complex dynamics in
+market feedback loops.
+Hawkes Processes offer a comprehensive point process method-
+ology for modeling LOB arrivals, showcasing adaptability and the
+ability to capture microstructural details. Despite their strengths
+however, challenges exist in model calibration, especially due to
+the complex likelihood function and the impact of kernel choice
+on predictive power. Model parsimony also remains a pertinent
+consideration in higher-dimensional settings.
+3 METHODOLOGY
+3.1 Mathematical Formulation:
+We consider the task of modelling LOB’s current best bid and ask
+(i.e. Level 1 LOB). We note that since placing order in the spread
+is a common practice in equities, the reason being that the spread
+usually has empty price levels (the number of empty price levels
+in the spread varies for each equity, particularly notable is the
+finding by Bouchaud et al. 2018 where the authors show a strong
+relationship between the price of US stocks and the spread-in-ticks)
+to attract market participants to place a more aggressive order,
+the Hawkes formulation should contain modelling the intensity
+of the nearby empty levels as well. Hence we formulate the order
+book as a queueing system with six different queues which are
+{ask+1, ask0, ask−1, bid+1, bid0, bid−1}.
+Here ask0 and bid0 are the respective best ask and bid prices
+while the subscripts denote the price level distance in ticks from
+the best ask/bid. For eg. ask+1 is the price level which is 1 tick more
+than ask0. The 2 × 6 vector of ((𝑞(𝜁) 𝑘 ,𝜁𝑘)𝜁∈{ask,bid},𝑘∈{−1,0,+1}),
+where 𝑞(𝜁) 𝑘 denotes the queue size, is what we define as the state
+of the order book. The motivation to model just these six levels
+and not the entire order book is two-fold. Firstly, the question of
+parsimony becomes important when we model more levels than
+just these six. Secondly, we observe that the LOB state changes
+are generally events which move the prices by 1 tick. Indeed we
+observe, in our dataset, 97.4% of all in-spread orders occur 1-tick
+away from the best respective quote with mean being 1.035 ± 0.285
+ticks for 2 million samples, and 97.5% of all price changes have the
+next non-empty price level at 1-tick distance as well with the mean
+being 1.033 ± 0.283 ticks.
+Mechanical Constraints: Naturally, since ask0 and bid0 are the
+best ask and bid prices, the queue size at ask−1/bid+1 is zero. There-
+fore any incoming limit order at ask−1/bid+1 (i.e. an in-spread (IS)
+order) creates a new best ask/bid and so the LOB state transforms
+from
+𝑆 := {(𝑞(ask) +1 , ask+1),(𝑞(ask) 0 , ask0),(0, ask−1),
+(0, bid+1),(𝑞(bid) 0 , bid0),(𝑞(bid) −1 , bid−1)}
+to
+𝑆𝐼𝑆 = {(𝑞(ask) 0 , ask0),(𝑞(ask) −1 , ask−1),(0, ask−2),
+(0, bid+1),(𝑞(bid) 0 , bid0),(𝑞(bid) −1 , bid−1)}
+for an in-spread ask side limit order.
+Note that it is possible that the spread is only 2-tick wide which
+would mean ask−1 and bid+1 coincides. There is also the possibility
+of 1-tick spread in which case ask−1 and bid+1 do not exist. We will
+put some constraints on the Hawkes process intensities for these
+levels further in this section to account for these possibilities. On the
+other hand, if a queue-depletion (QD) event at best bid/ask happens
+(for eg, a large enough market order of size 𝜅𝑀𝑂ask ≥𝑞(ask) 0 ), the
+spread widens and therefore the state moves from 𝑆 to
+𝑆𝑄𝐷 = {(𝑞(ask) +2 −(𝑞(ask) 0 −𝜅𝑀𝑂ask ), ask+2),(𝑞(ask) +1 , ask+1),(0, ask0),
+(0, bid+1),(𝑞(bid) 0 , bid0),(𝑞(bid) −1 , bid−1)}
+for a queue-depleting ask side market order/cancel order. Here we
+observe an unknown quantity 𝑞(ask) +2 . We sample this unknown
+quantity from a stationary distribution calibrated from empirical
+data. We remove the remainder of the Market Order’s size (if any)
+from this quantity to get the final state 𝑆𝑄𝐷. We stress the fact
+that Market Order sizes relative to the quoted liquidity can be
+high enough to incur a multi-price-level QD, in which case the
+spread widens by multiple ticks and the state moves accordingly.
+Finally, we note that Market Orders can only occur at ask0/bid0
+and ask−1/bid+1 cannot have Cancel Orders since by definition the
+quantity there is zero.
+2024-08-15 00:39. Page 3 of 1–14.
+
+=== page 4 ===
+Konark Jain, Nick Firoozye, Jonathan Kochems, and Philip Treleaven
+Compound Hawkes Process: A compound point process (CPP)
+𝑍(𝑡) is defined as
+𝑍(𝑡) =
+𝑁(𝑡)∑︁
+𝑖=1
+𝑌𝑖 (1)
+where {𝑁(𝑡) : 𝑡 ≥ 0} is the counting process, with intensity 𝜆(𝑡),
+and 𝑌𝑖 are i.i.d. random variables denoting the jump size with the
+corresponding 𝑃Θ (𝑌𝑖) being their respective jump size distribution
+parameterised by Θ. Compound Hawkes process (CHP) is a special
+case of the CPP where 𝑁(𝑡) is a counting process associated with a
+Hawkes Process. For a 𝑑-dimensional Hawkes process the intensity
+of the process 𝜆(𝑖)(𝑡) and the associated counting process 𝑁(𝑖)(𝑡)
+for 𝑖 = 1,...,𝑑 is defined as:
+𝜆(𝑖)(𝑡) = 𝜇(𝑖)(𝑡)+
+𝑑∑︁
+𝑗=1
+∑︁
+𝑡𝑗∈𝑇𝑗
+𝜙(𝑗→𝑖)(𝑡−𝑡𝑗) (2)
+where 𝑇𝑗 := {𝑡𝑗 : 𝑡𝑗 ≤𝑡} denotes the set of past event times in the
+𝑗 dimension of the Hawkes Process. Here, 𝜇(𝑖)(𝑡) is the exogenous
+intensity of the 𝑖-th dimension and 𝜙(𝑗→𝑖)(𝑡−𝑡𝑗) is the excitation
+term from 𝑗-th dimension to 𝑖-th dimension. The excitation terms
+are a function of the time since the event (generally a decaying
+function in time like exponential decay or power law decay). An
+alternate but similar formulation is the following:
+𝜆(𝑖)(𝑡) = 𝜇(𝑖)(𝑡)+
+𝑑∑︁
+𝑗=1
+∫ 𝑡
+0
+𝜙(𝑗→𝑖)(𝑡−𝑢)𝑑𝑁(𝑗)(𝑢) (3)
+Limit Order Book at Compound Hawkes Process: We define a
+12D Compound Hawkes Process (in accordance with the mechani-
+cal constraints) for the 6 queues in the order book state where each
+dimension corresponds to the following event types:
+E := {𝐿𝑂ask+1 ,𝐶𝑂ask+1 ,𝐿𝑂ask0 ,𝐶𝑂ask0 ,𝑀𝑂ask0 ,𝐿𝑂ask−1 ,
+𝐿𝑂bid+1 ,𝐿𝑂bid0 ,𝐶𝑂bid0 ,𝑀𝑂bid0 ,𝐿𝑂bid−1 ,𝐶𝑂bid−1 }
+where LO is Limit Order, CO is Cancel Order and MO is Market
+Order. We define a one-to-one mapping between the enumeration
+𝑖 = 1,..., 12 to the ordered set E denoted by 𝑖(𝑒) : E→{1,..., 12}.
+Here each of the 12 event types’ order size (𝜅(𝑒) ∈ N for event 𝑒 ∈E)
+is sampled from its own specific calibrated distribution (Π(𝑒)(Θ)
+where Θ is its calibrated parameters). We postulate that the order
+intensities themselves are not impacted by the past order sizes
+but only the past order event-times as is the general assumption
+in Hawkes models applied to LOB data. We provide some weak
+evidence for this claim in the Appendix A. We note that our work
+on the distribution of order size closely follows the work by Lu
+and Abergel 2018a however they make use of a Poisson model. For
+Cancel Order quantities, since we observe almost all cancels in
+empirical data are outright cancels, we draw randomly, with equal
+probability, from the available limit orders’ quantities in the queue.
+We thus create a CHP for the queue-sizes at the six queues, indexed
+by 𝑘 = 1 ... 6, of the LOB:
+𝑞(𝜁) 𝑘 (𝑡) = ∑︁
+𝑒∈E(𝜁) 𝑘
+𝑁(𝑖(𝑒))(𝑡)∑︁
+𝑗=1
+𝜅(𝑒) 𝑗 (4)
+𝜅(𝑒) 𝑗 ∼ Π(𝑒)(Θ) (5)
+∀𝑗 ∈ N,𝜁 ∈{ask, bid},𝑒 ∈E,𝜅(𝑒) 𝑖 ∈ N
+where 𝑗 = 1,...,𝑁(𝑖(𝑒))(𝑡) and E(𝜁) 𝑘 is the set of eligible events
+for side 𝜁 and queue number 𝑘.
+The assumption that these distributions are stationary and in-
+dependent of any conditions is quite strong. Addition of queue-
+reactiveness is a potential solution to this problem. We reserve this
+line of research for future work.
+To control the spread of the process (Prop 1), we formulate the
+intensities of 𝐿𝑂ask−1 and 𝐿𝑂bid+1 in the following manner as a
+function of the current spread-in-ticks (𝑠). If 𝜆(𝐼𝑆)(𝑡) represents the
+intensity of the In-Spread events : {𝑖(𝐿𝑂ask−1 ),𝑖(𝐿𝑂bid+1 )}, then,
+𝜆(𝐼𝑆)(𝑡,𝑠) = 𝜆(𝐼𝑆)(𝑡)(𝑠− 1)𝛽 ; 𝛽 > 0,𝑠 ∈ N (6)
+In this formulation we enforce the mechanical constraint if 𝑠 = 1,
+𝜆𝑖(𝐿𝑂ask−1 )(𝑡, 1) = 𝜆𝑖(𝐿𝑂bid+1 )(𝑡, 1) = 0 with an extra parameter
+𝛽. We motivate the choice of a power law dependence of order
+intensity over spread in Appendix B.
+We observe a strong dependence between the intensities 𝜆(.) 𝑡 on
+the time of day of the trading day (Prop 2). There is a "U"-shape of
+order intensities with respect to the time of day i.e. right after the
+open auction and before the close auction, the activity in the market
+is much higher than the middle of the day. This effect is observed
+for trading volumes in equities with a number of probable causes
+but the most commonly accepted one is that because auctions cause
+a halt in trading, this halt leads to increased activity. To maintain
+model parsimony, we bin the 6.5 hour trading day of NASDAQ into
+thirteen 30-minute bins (indexed by 𝑄𝑡 ∈{1, 2,..., 13}) for 𝑡 being
+a time of day). We model the intensity as a separable function of
+time-of-day and the Hawkes Intensities:
+𝜆(𝑖)(𝑄𝑡,𝑡,𝑠) = 𝑓(𝑖)(𝑄𝑡)×𝜆(𝑖)(𝑡,𝑠) (7)
+Finally, to make sure the inhibitory kernels do not create negative
+intensities, we floor the total excitation 𝜆(𝑒)(𝑄𝑡,𝑡,𝑠) to zero. There-
+fore the generalized intensities for all 12 dimensions, 𝑖 = 1 ... 12,
+can be written as:
+2024-08-15 00:39. Page 4 of 1–14.
+
+=== page 5 ===
+Limit Order Book Dynamics and Order Size Modelling Using Compound Hawkes Process
+For In-Spread events:
+𝜆(𝑖)(𝑄𝑡,𝑡,𝑠) =𝑚𝑎𝑥
+
+0,𝑓(𝑖)(𝑄𝑡)(𝑠− 1)𝛽×
+
+𝜇(𝑖)+
+𝑑∑︁
+𝑗=1
+∫ 𝑡
+0
+𝜙(𝑗→𝑖)(𝑡−𝑢)𝑑𝑁(𝑗)(𝑢)
+
+(8)
+For other event :
+𝜆(𝑖)(𝑄𝑡,𝑡,𝑠) =𝑚𝑎𝑥
+
+0,𝑓(𝑖)(𝑄𝑡)×
+
+𝜇(𝑖)+
+𝑑∑︁
+𝑗=1
+∫ 𝑡
+0
+𝜙(𝑗→𝑖)(𝑡−𝑢)𝑑𝑁(𝑗)(𝑢)
+
+(9)
+Price Dynamics: The mid price (𝑃(𝑡)) dynamics after an event
+at 𝑡 at side 𝜁 (and 𝜉 = +1 for 𝜁 = ask and -1 for 𝜁 = bid) is a jump
+process with jumps defined by :
+𝑃  𝑡+ −𝑃(𝑡) = −𝜂 2 𝜉𝑑𝑁(𝐼𝑆)(𝑡)
++𝜂 2 𝜉𝑑𝑁(𝐶𝑂)(𝑡)1{#𝑞(𝜁) 0 (𝑡)=1}(𝑡)
++𝜂 2 𝜉𝑑𝑁(𝑀𝑂)(𝑡)1{𝑞(𝜁) 0 (𝑡)≤𝜅(𝑀𝑂𝜁0 )(𝑡)}(𝑡) (10)
+where 𝜂 is the tick-size, 𝑁(𝐼𝑆)(𝑡) is the counting process for IS
+orders, and #𝑞(𝜁) 0 (𝑡) denotes the number of individual limit orders
+in the queue.
+3.2 Calibration:
+We follow the non-parametric method of calibration in Kirchner
+2017 and take inspiration from Bacry et al. 2016 to create a time
+grid at both linear and log scales to account for the slowness of
+the decay kernels. This method has the advantage of not having
+any priors on the shape of the kernels themselves (popular choices
+in the literature include exponential decay and power-law decay)
+since it is non-parametric.
+For an event 𝑒 (not a spread-dependent event), with the count-
+ing process 𝑁(𝑖(𝑒))(𝑡) having an intensity as in (9), we define the
+binned observated counts in the dataset by 𝑋(𝑒,𝑛) Δ := 𝑁(𝑖(𝑒))(𝑡𝑛)−
+𝑁(𝑖(𝑒))(𝑡𝑛−1), 𝑛 ∈ N where Δ := 𝑡𝑛−𝑡𝑛−1 is the bin size (taken con-
+stant). For brevity, we drop the notation of 𝑖(𝑒) and instead denote
+the index by the event 𝑒 itself. Taking inspiration from Kirchner
+2017 we have, for H(𝑒) 𝑛−1 denoting the set of previous 𝑛− 1 bins’
+observed values:
+E
+
+𝑋(𝑒,𝑛) Δ
+H(𝑒) 𝑛−1  = ∫ 𝑛Δ (𝑛−1) Δ E  𝑓(𝑄𝑡)𝜆(𝑒)(𝑡) H(𝑒) 𝑛−1  (11)
+E
+
+𝑋(𝑒,𝑛) Δ
+H(𝑒) 𝑛−1 
+𝑓(𝑄𝑡) =
+∫ 𝑛Δ
+(𝑛−1) Δ
+𝜇(𝑒) 𝑡 𝑑𝑡
++
+𝑑∑︁
+𝑗 =1
+∫ 𝑛Δ
+(𝑛−1) Δ
+∫ 𝑡
+0
+𝜙(𝑗→𝑖)(𝑡 −𝑢)𝑁(𝑗)(𝑑𝑢)𝑑𝑡 (12)
+Here we use the fact that 𝑓(𝑄𝑡) is piecewise constant and construct
+the bins such that there is perfect overlapping between the Δ grid
+and the 𝑄𝑡 grid. Now we define another grid 𝛿𝑘 := 𝑡(𝑘) 𝑚𝑎𝑥−𝑡(𝑘) 𝑚𝑖𝑛 with
+𝑡(1) 𝑚𝑎𝑥 = 𝑡; 𝑡(𝐾) 𝑚𝑖𝑛 = 𝑡−𝑇 for 𝑘 = 1,...,𝐾 and 𝑇 < ∞ being the cut-off
+point for the integral to make an approximation:
+∫ 𝑡
+0
+𝜙(𝑗→𝑖)(𝑡 −𝑢)𝑁(𝑗)(𝑑𝑢)≈
+𝐾∑︁
+𝑘=1
+𝑋(𝑒) 𝛿𝑘
+𝛿𝑘
+∫ 𝑡(𝑘) 𝑚𝑎𝑥
+𝑡(𝑘) 𝑚𝑖𝑛 𝜙(𝑗→𝑖)(𝑢)𝑑𝑢 (13)
+Here 𝑋(𝑒) 𝛿𝑘 is the binned observed events of type 𝑒 in the bin 𝛿𝑘.
+Now we make another approximation, as in Kirchner 2017, that
+the grid Δ is small enough so that the intensity is constant over
+(𝑡𝑛−1,𝑡𝑛]. Now with this and substituting (11) in (10), we have:
+E
+
+𝑋(𝑒,𝑛) Δ
+H(𝑒) 𝑛−1 
+𝑓(𝑄𝑡) ≈Δ𝜇(𝑖)+ Δ
+𝑑∑︁
+𝑗 =1
+𝐾∑︁
+𝑘=1
+𝑋(𝑒) 𝛿𝑘
+𝛿𝑘
+∫ 𝑡(𝑘) 𝑚𝑎𝑥
+𝑡(𝑘) 𝑚𝑖𝑛 𝜙(𝑗→𝑖)(𝑢)𝑑𝑢 (14)
+As noted in Bacry et al. 2016, a linearly spaced grid to estimate
+cross-excitation is insufficient for slow decaying kernels like the
+power-law. Therefore we propose to use the same linear-log spaced
+grid proposed in Bacry et al. 2016 as the 𝛿𝑘 grid. We set 𝛿1 = Δ and
+add 𝐾 2 linearly spaced 𝛿𝑘. Lastly we add 𝐾 2 log spaced 𝛿𝑘 to get the
+final grid 𝐺 = [0, Δ,..., 𝐾 2 Δ, 𝐾 2 Δ𝑚, 𝐾 2 Δ𝑚2,...,𝑇] with 𝑚 = ( 2𝑇 𝐾 Δ ) 2 𝐾 .
+Note that for in-spread events, the intensity also depends on the
+current spread. However we note that much like 𝑓(𝑄𝑡), (𝑠𝑡 − 1)𝛽
+is another piecewise constant function multiplied to the intensity.
+Therefore the treatment of in-spread events is exactly the same with
+𝑓(𝑄𝑡) being replaced by 𝑓(𝑄𝑡)× E[(𝑠𝑡− 1)𝛽]. For in-spread events,
+we have, for current spread 𝑠 in the Δ bin event 𝑒, the following
+equations. Here < (𝑠 − 1)𝛽 >((𝑛−1)Δ,𝑛Δ] denotes the average of
+(𝑠− 1)𝛽 in the bin Δ. The same procedure as above follows for the
+modified AR process fitting of the in-spread events’ intensities.
+E
+
+𝑋(𝑒,𝑛) Δ
+H(𝑒) 𝑛−1  = ∫ 𝑛Δ (𝑛−1)Δ E  (𝑠− 1)𝛽𝑓𝑒(𝑄𝑡)𝜆(𝑒)(𝑡) H(𝑒,𝑁) 𝑛−1 
+(15)
+E
+
+𝑋(𝑒,𝑛) Δ
+H(𝑒) 𝑛−1 
+𝑓(𝑒)(𝑄𝑡) < (𝑠− 1)𝛽 >((𝑛−1)Δ,𝑛Δ] =
+∫ 𝑛Δ
+(𝑛−1)Δ
+𝜇(𝑒) 𝑡 𝑑𝑡
++
+𝑑∑︁
+𝑗=1
+∫ 𝑛Δ
+(𝑛−1)Δ
+∫ 𝑡
+0
+𝜙(𝑗→𝑖)(𝑡−𝑢)𝑁(𝑗)(𝑑𝑢)𝑑𝑡
+(16)
+This formulation is then solved by the least squares method. We
+get as a result (upon rescaling by 𝛿𝑘 Δ ) the point estimates for ∫ 𝑡(𝑘) 𝑚𝑎𝑥
+𝑡(𝑘) 𝑚𝑖𝑛 𝜙(𝑗→𝑖)(𝑢)𝑑𝑢 for all 𝑡(𝑘) (.) ∈𝐺; 𝑖,𝑗 ∈ 1,...,𝑑. We form cumula-
+tive sums of these estimates to get point estimates for the function
+Φ(𝑡(𝑘) 𝑚𝑎𝑥) = ∫ 𝑡(𝑘) 𝑚𝑎𝑥 0 𝜙(𝑗→𝑖)(𝑢)𝑑𝑢.
+We add two constraints to the least squares problem (from the
+auto-regressive formulation). Firstly, we enforce the unidirectional
+shape of the Hawkes Kernels by constraining the point estimates
+to be uniform in sign (i.e., either all greater than 0 or all less than
+0). For this, we make use of the Hawkes Graph Achab et al. 2018
+which directly estimates the kernel norms matrix : 𝑴𝑑×𝑑 (elements
+2024-08-15 00:39. Page 5 of 1–14.
+
+=== page 6 ===
+Konark Jain, Nick Firoozye, Jonathan Kochems, and Philip Treleaven
+of which are defined as 𝑀𝑖𝑗 =
+∫ ∞
+0 𝜙(𝑗→𝑖)(𝑢)𝑑𝑢 which is the kernel
+norm of 𝜙(𝑗→𝑖)(𝑡) for 𝑖,𝑗 ∈{1,...,𝑑}) from the conditional prob-
+abilities of the 12D point process. Note that we purely use this
+method to identify whether a kernel is catalysing or inhibiting in
+nature (i.e. is the kernel norm positive or negative).
+Secondly, we constrain the integral of a Hawkes Kernel to ensure
+the stability of the Hawkes Process. A standard Hawkes Process
+is stable if the maximum eigenvalue of the Kernel Norm matrix is
+< 1 (Hawkes 2018), we derive the corresponding constraint for our
+Hawkes Process model in Equations 17-21.
+𝜆(𝑖) = E
+
+𝜆(𝑖)(𝑡)
+
+= E
+
+𝑓(𝑖)(𝑄𝑡)
+
+𝜇(𝑖) 𝑡 +
+𝑑∑︁
+𝑗=1
+∫ 𝑡
+0
+𝜙(𝑗→𝑖)(𝑡−𝑢)𝑑𝑁(𝑗) 𝑢
+
+(17)
+= 𝑓(𝑖)(𝑄𝑡)
+
+𝜇(𝑖)+
+𝑑∑︁
+𝑗=1
+𝜆(𝑗)
+∫ 𝑡
+0
+𝜙(𝑗→𝑖)(𝑡−𝑢)𝑑𝑢
+
+(18)
+Λ = diag(𝑓(1)(𝑄𝑡),...,𝑓(𝑑)(𝑄𝑡))·
+
+𝝁 + Λ · 𝑴
+
+(19)
+Λ = 𝝁
+
+diag(𝑓(1)(𝑄𝑡),...,𝑓(𝑑)(𝑄𝑡))−1 − 𝑴
+−1
+(20)
+=⇒
+∫ ∞
+0
+𝜙(𝑗→𝑖)(𝑢)𝑑𝑢 ≈
+𝐾∑︁
+𝑘=1
+∫ 𝑡(𝑘) 𝑚𝑎𝑥
+𝑡(𝑘) 𝑚𝑖𝑛 𝜙(𝑗→𝑖)(𝑢)𝑑𝑢 ≤ 1 𝑚𝑎𝑥𝑄𝑡𝑓(𝑄𝑡)
+(21)
+Therefore for stationarity and stability of the Hawkes Process,
+the maximum eigenvalue of the matrix 𝑴 should be less than
+1
+𝑚𝑎𝑥𝑄𝑡𝑓(𝑄𝑡) . We postulate that the formulation with constrained
+integrals of individual kernels (Equation 19) is an adequate linear
+approximation to the non-linear constraint of bounded eigenvalues.
+In practice, we do see the calibrated Hawkes Kernel to occasionally
+violate this non-linear constraint. We apply a heuristic of multiply-
+ing all the kernels by a regularizing term to cap the eigenvalue at
+1.
+Following the same logic as equations 13 and 14, one can get the
+following constraint for in-spread order intensities.
+𝐾∑︁
+𝑘=1
+∫ 𝑡(𝑘) 𝑚𝑎𝑥
+𝑡(𝑘) 𝑚𝑖𝑛 𝜙(𝑗→𝑖)(𝑢)𝑑𝑢 ≤ 1 < (𝑠− 1)𝛽 > 𝑚𝑎𝑥𝑄𝑡𝑓(𝑄𝑡) (22)
+These constraints are linear constraints on the Quadratic Problem
+posed by equation 12.
+We fit parametric functions on each of these kernels on these
+point estimates and here we make use of power-law functions and
+exponential functions as the candidates. Unlike Kirchner 2017, how-
+ever, we do not calibrate the parameters in 30-minute windows and
+average over a day’s 13 windows, but rather we use the entire day’s
+data to calibrate the parameters and secondly we do not make the
+approximation
+∫ 𝑡(𝑘) 𝑚𝑎𝑥
+𝑡(𝑘) 𝑚𝑖𝑛 𝜙(𝑗→𝑖)(𝑢)𝑑𝑢 ≈(𝑡(𝑘) 𝑚𝑎𝑥 −𝑡(𝑘) 𝑚𝑖𝑛)𝜙(𝑗→𝑖)(𝑡(𝑘) 𝑚𝑖𝑛)
+since the grid size is not uniformly small.
+We calibrate the data for several days individually and test the
+stationarity (by day) of the calibrated parameters. Since we do see
+(a) Norm Matrix: Real, Simulated
+Data
+(b) Norm Matrix: Fitted, Simulated
+Data
+Figure 3: Simulated Data Calibration
+stationarity in the kernel parameters over multiple days (Figure 5b),
+we conclude by using the parameters over multiple days for our
+final calibrated parameters’ estimation. We note that as mentioned
+in Kirchner and Bercher 2018, the exogenous intensity is massively
+overestimated because of the cut-off error and the distributional
+errors. Therefore me make use of the result from Bacry et al. 2016
+to estimate the exogenous intensities from the average intensity
+of the events observed ( ˆΛ) and the fitted norm matrix ˆ𝑀. From
+Equation 17, we take the average across all bin indices 𝑄𝑡 and use
+the fact that < 𝑓(𝑄𝑡) >= 1 to get:
+ˆ𝝁 = (I − ˆ𝑴) ˆΛ (23)
+We use the maximum likelihood method to calibrate the order size
+distribution. A key observation is the preference of traders of round
+numbers in their order quantity. This is an important stylized fact
+of the order book dynamics so we make use of Dirac delta functions
+to add spikes in the distribution function to account for this. Finally,
+we use the thinning algorithm to simulate the order book from
+the calibrated parameters and provide some visualizations of the
+calibrated parameters in the following section along with the quality
+of fit results.
+4 RESULTS
+In this section we showcase the calibrated and simulated results of
+our proposed model. We further perform comparisons to other mod-
+els of LOB in the literature. For a comparison of the non-parametric
+method of calibration of the Hawkes Process against the more
+commonly used MLE method, we refer the reader to the work by
+Kirchner and Bercher 2018.
+4.1 Calibration for Simulated Data:
+As evidence of correctness of the fitting method, we construct a 12D
+Compound Hawkes Process and simulated it for 100 trading days.
+The parameters of this CHP are chosen randomly from a list of
+candidate parameters and the norm matrix is chosen to be diagonal
+with near-diagonal terms having non-zero elements. The real norm
+matrix is shown in Figure 3a. We then transform the simulated order
+book data into the binned data structure needed for the calibration
+methoodology above and perform the non-parameteric estimation
+of the kernel point estimates and the exogenous intensities, and
+finally fit a power law kernel to the points observed over the 100
+trading days. We show the fitted norm matrix in Figure 3b. We
+2024-08-15 00:39. Page 6 of 1–14.
+
+=== page 7 ===
+Limit Order Book Dynamics and Order Size Modelling Using Compound Hawkes Process
+Figure 4: Intensities conditioned by Time of Day : we report
+the average number of events per 30 min bin in a 6 month
+period
+note that the fitted matrix exhibits similar shape near the diagonal
+to the real matrix however we do see some off diagonal elements
+having large inaccurate values. The norm weighted average relative
+error in estimated parameters across the 144 kernels is 6.0%, 0.9%
+and 4.4% respectively for 𝛼,𝛽,𝛾 parameters of the power law kernel
+𝜙(𝑡) = 𝛼(1+𝛾𝑡)−𝛽 . Hence we conclude that the fitting methodology
+works reasonably well with a tolerable amount of estimation error.
+4.2 Calibration for Equities LOB:
+We now show the observed intensities conditioned by time of day
+for a sample dimension (Market Orders at Ask) in Figure 4. We
+observe the common U-shape across all 12 dimensions. In Figure
+16b, we show the the norm of kernels 𝑴, removing the time-of-day
+multiplier. The 𝑥 axis shows the excitor and 𝑦 axis is the excitee.
+We also show some sample fitted kernel shapes in Figure 5b. As we
+can see here in the translucent blue lines, the kernel shapes fitted
+over multiple days are stable across days.
+Since the number of excitation kernels in a 12D Hawkes Process
+are 122, in order to maintain model parsimony, we zero-out the
+effect of small cross-excitations such as Cancel Bid0 → Limit Ask0.
+We set the threshold to select kernels on the basis of their norms
+to 0.01 as it eliminates several cross-excitation terms to limit the
+number of kernels to 65.
+Note that these estimated kernels are estimated in a non-parametric
+manner and hence need to be further fitted on a parametric function.
+We choose between the power-law kernel : 𝜙(𝑡) = 𝛼(1 +𝛾𝑡)−𝛽 and
+the exponential kernel : 𝜙(𝑡) = 𝛼𝑒−𝛽𝑡 to do the parametric fit by
+comparing the fit’s Akaike Information Criteria (AIC). We see that
+the power-law kernel is selected 100% of the time for this dataset.
+We show the fitted line in 5b in red. As we can see, the power law
+line fits the point estimates quite well. Indeed we see an average
+mean square fit error to be ∼ 10−3 . Another noteworthy aspect of
+the fitting results is the presence of inhibitory kernels.
+We make use of NASDAQ Level 2 data for the year 2019 (i.e.
+12 months of data) for Apple Inc. which is a medium-tick stock
+(average spread is 1.7 ticks). In Appendix C, we also show some
+more results for other stock types like large-tick (Intel), small-tick
+(Tesla) and very small-tick (Amazon).
+4.3 Calibration of Order Size Distributions
+Following Lu and Abergel 2018a, we use Dirac delta at round num-
+bers to account for the stylized facts we observe in Figure 1a and 1b.
+We choose the set 1, 10, 50, 100, 200, 500 as the set of round numbers
+(a) Norms of Kernel: AAPL.OQ
+(b) Kernel Shape: non-parametric point estimates (blue) and parametric
+power-law fit (red) - (log-log scale) : AAPL.OQ
+Figure 5: Excitation Kernels
+we wish to put spikes in the PDF at. The remainder of the PDF is
+modelled by a Geometric distribution. We fit this distribution using
+the maximum likelihood method. We show the final calibrated PDF
+(smoothened for illustration purposes) in Figure 6.
+4.4 Quality of fit metrics:
+We present the quality of fit metrics in Figure 7. We perform a real-
+ism quality of fit by comparing some stylized facts of the simulated
+data to the empirical data. We make use of inter-event durations’
+distributions, price change time distributions, signature plots, distri-
+bution of spread and returns, autocorrelation of returns and sample
+price paths as our set of stylized facts. As we can see from Figure 7,
+the Hawkes Process is able to replicate the shape of the Signature
+Plot, the presence of long auto-correlations of absolute returns, the
+2024-08-15 00:39. Page 7 of 1–14.
+
+=== page 8 ===
+Konark Jain, Nick Firoozye, Jonathan Kochems, and Philip Treleaven
+(a) Market Orders’ Size Distribu-
+tion (log-log scale)
+(b) Limit Orders’ Size Distribution
+(log-log scale)
+Figure 6: Fitted Distribution of Order Sizes
+(a) Simulated LOB dy-
+namics
+(b) Signature Plot -
+Simulated vs Empiri-
+cal
+(c) Absolute Returns
+ACF - Simulated vs
+Empirical
+(d) Returns Distribu-
+tion (log-scale) - Sim-
+ulated vs Empirical
+(e) Price Paths - Simu-
+lated
+(f) Price Paths - Em-
+pirical
+(g) Inter-arrival times
+- LO (Top, Bid)
+(h) Inter-arrival times
+- MO (Ask)
+(i) Spread Distribu-
+tion - Simulated vs
+Empirical
+(j) Price Change Time
+- Simulated vs Empiri-
+cal
+Figure 7: Results (full model)
+long tail of returns’ distribution as well as the two peaks in inter-
+order arrival times quite well. In addition to this, our particular
+formulation of the Hawkes Process, with its spread control formu-
+lation, is able to match the distribution of the empirical spreads
+quite well. Figure 8 depicts the efficacy of replicating the "U"-shape
+dynamics of the order book events in our formulation.
+(a) LO(deep, ask)
+ (b) CO(deep, ask)
+ (c) LO(top, ask)
+(d) CO(top)
+ (e) MO(Ask)
+ (f) LO(in-spread, Ask)
+(g) LO(in-spread, Bid)
+ (h) MO(Bid)
+ (i) CO(top, Bid)
+(j) LO(top, Bid)
+ (k) CO(deep, Bid)
+ (l) LO(deep, Bid)
+Figure 8: Time-of-day shape (simulated)
+4.5 Comparison to a similar Poisson Process
+formulation:
+We formulate a 12D Compound Poisson Process with the order
+intensities of the individual counting processes being Poisson In-
+tensities instead of Hawkes Intensities. The order sizes are sampled
+from the same distribution as our CHP model. Prop 1 and Prop 2
+are enforced by flooring the in-spread order arrival intensity to
+zero when the spread is 1-tick wide and we multiply the order in-
+tensity by the same 𝑓(𝑄𝑡) time-of-day multiplier. We calibrate the
+Poisson intensities by the maximum likelihood method and report
+the quality of fit metrics in Figure 9. As we can clearly see in the
+plots, the Poisson model misses the a large mass of the inter-arrival
+time distribution as well as the price change time distribution. The
+spread distribution is unrealistic as well and the volatility signature
+plot is uncharacteristically flat.
+4.6 The effect of mis-specifying the order size
+distribution:
+We now show the necessity to model the order sizes’ distribution by
+considering the calibrated kernels with a constant order size (equal
+to the median order size). We compare the empirical data’s price
+change event times, the volatility signature plot and the spread
+distribution with the simulated one for the two types of models.
+As we can clearly see in Figure 10. As we can see here, our model
+with the calibrated order size distribution fits much better to the
+empirical data than the constant order size model - the signature
+plot and the returns distribution show that the volatility is heavily
+2024-08-15 00:39. Page 8 of 1–14.
+
+=== page 9 ===
+Limit Order Book Dynamics and Order Size Modelling Using Compound Hawkes Process
+(a) Signature Plot -
+Simulated vs Empiri-
+cal
+(b) Price Paths - Simu-
+lated
+(c) Inter-arrival times
+- LO (Top, Bid)
+(d) Inter-arrival times
+- MO (Ask)
+(e) Spread Distribu-
+tion - Simulated vs
+Empirical
+(f) Price Change Time
+- Simulated vs Empiri-
+cal
+Figure 9: Results (Poisson model)
+(a) Signature Plot -
+Simulated vs Empiri-
+cal
+(b) Returns Distribu-
+tion (log-scale) - Sim-
+ulated vs Empirical
+(c) Price Paths - Simu-
+lated
+(d) Spread Distribu-
+tion - Simulated vs
+Empirical
+(e) Price Change Time
+- Simulated vs Empiri-
+cal
+Figure 10: Results (Constant Order Size model)
+overestimated (by a magnitude of ∼ 100 as can be seen in the
+signature plot), the price changes happen much faster as can be
+seen in the left tail of the price change time plot, and finally the
+spreads are much wider in general. Our postulate regarding this
+observation is that price changes depend on not just order arrival
+times but also on how fast the queue depletes. Therefore, modelling
+the order sizes will enable for a more realistic price change event
+times, returns, spreads and volatility in the simulator.
+4.7 Comparison with Other Hawkes Process
+Models:
+In order to compare our model’s performance with the state of the
+art model, we chose Bacry et al. 2016’s 8D Hawkes Process model
+which has the following types of events: {Price Changes, Market
+Orders (no price change), Limit Orders (top, no price change), Can-
+cel Orders (top, no price change} × { bid, ask } . This model takes
+an alternative approach of modelling the top of the order book
+(a) Price Change Time
+(Ask) - Simulated vs
+Empirical
+(b) Price Change Time
+(Bid) - Simulated vs
+Empirical
+(c) Inter-arrival times
+- MO (Ask)
+(d) Inter-arrival times
+- LO (Top, Bid)
+Figure 11: Results (Baseline model Bacry et al. 2016)
+than us. We make use of the code made available by their research
+groupBacry et al. 2017 and implement an Expectation-Maximisation
+fit over the events on the same dataset that we fit our model. We
+find that the power law kernels again fit the data better than ex-
+ponential kernels. We infer the power law parameters from the
+point estimates fitted by the EM Algorithm using the same MLE
+method we used in our methodology. We then simulate the Hawkes
+Process using the code provided by the authors in the tick library
+Bacry et al. 2017. Since the simulator is only able to produce event
+times and not the queue sizes, spreads or the magnitude of the price
+change, we only use the inter-event arrival times as the stylized fact
+for comparison since price-paths, returns and spread distributions
+are not simulated. We show the results in Figure 11. As we can see
+from the simulated distributions, their model is able to capture the
+right tail of the distribution quite well in all the events we simulate
+however the model is insufficiently accurate in the high frequency
+domain (i.e. the left tail).
+4.8 Market Impact Study:
+As noted in Jain et al. 2024, Market Impact (MI) is one of the
+more crucial characteristics of a realistic order book simulator.
+We introduce an external agent in the CHP simulator which posts
+child orders with a quantity 𝑞(𝑄𝑇,𝑇,𝑓) for a meta order with a
+quantity 𝑄𝑇 , duration of order 𝑇 and frequency of orders posted
+𝑓 . We take inspiration from the setup of Cont et al. 2023 in this
+study and deploy a TWAP strategy (i.e. 𝑞(𝑄𝑇,𝑇,𝑓) = 𝑄𝑇 𝑇×𝑓 ) with
+varying parameters 𝑄𝑇 ∈ {3000, 6000, 12000, 24000} shares,𝑇 ∈
+{15, 30, 60, 120} seconds and 𝑓 ∈ {1, 1 3 , 1 12 , 1 20 } sec−1 with order
+start time fixed. The choice of 𝑄𝑇 is motivated by the fact that
+average queue size for this stock is found to be around 600 shares,
+and hence a child order with the most usual configuration in the
+MI study (𝑄𝑇 = 12000,𝑇 = 60,𝑓 = 1 3 ) would have a order size
+equal to the average queue size thus initiating queue depletions.
+We also conduct a study with varying order start time with other
+three parameters fixed to 𝑄𝑇 = 12000,𝑇 = 60,𝑓 = 1 3 . In this way we
+check for the MI function’s sensitivity to each of the 4 parameters
+we test over. We start the simulation 100 seconds prior to the order
+2024-08-15 00:39. Page 9 of 1–14.
+
+=== page 10 ===
+Konark Jain, Nick Firoozye, Jonathan Kochems, and Philip Treleaven
+start time and observe the mid-price till 120 seconds after the meta
+order has finished executing. We show simulated mid-price paths
+in blue, green and yellow respectively for before, during and after
+the execution of the meta order. We show an average price path in
+orange. We employ three types of order types for the child orders
+which are market orders, limit orders (top) and limit orders (deep).
+Finally, we experiment over both the buy and the sell side of the
+book. We simulate 100 paths per set of parameters and report some
+results in Figures 12, 13 and 14. We now provide an analysis of the
+observed MI statistics in the simulator. In Figures 12 and 13, we
+focus on MI by Market Orders. We find (Figure 12a) that trading
+during the morning has a higher impact than afternoon. This im-
+pact again increases near close. This suggests that the time-of-day
+conditioning of the model parameters propagates to MI as well.
+Varying the total quantity in the meta-order we find a concave
+relation between the MI observed and 𝑄𝑇 (Figure 12c). This is in-
+line with the empirically observed concavity in MI with respect
+to total order quantity. Next testing over the speed of trading, i.e.
+the percent-of-volume (POV) rate, we vary the time horizon of the
+meta order 𝑇 while keeping all other parameters constant. Interest-
+ingly we observe a rise in absolute MI Δ𝑃 with increasing 𝑇 (and
+decreasing POV rate). We note however a rapid decreasing relation
+between the rate of change of Δ𝑃 which we denote as 𝛼 in these
+experiments. This suggests that the behaviour of Δ𝑃 could be due
+to the frequency of trading rather than the POV rate. Indeed in
+Figure 13d, we observe an increase in trading frequency leads to
+higher Δ𝑃. We also note the price jumps and subsequent relaxation
+observed in low frequency trading regime (bottom right in Figure
+13c). This suggests that our simulator is more sensitive to number
+of trades than volume of trade for price impact. This is ofcourse
+due to the assumption we made that order sizes are independent
+of each other and only the order count excites future orders. This
+suggests that in this simulator a trading engine might be better off
+by trading big block trades at a lower frequency instead of using
+smaller batches which is counter-intuitive to the real world phe-
+nomenon of adverse selection. This is a potential missing piece in
+our simulator. However we again note the concavity of the MI func-
+tion with 1 𝑇,𝑓 both. Which implies a concavity of the MI function
+with respect to POV rate and number of order slices. This is again
+inline with empirically observed facts. In Figure 14, we showcase
+the MI of Limit Orders at various depths in the order book. We note
+the concavity seen in MI for limit orders at the top of the book in
+Figure 14b. We also observe that limit orders have a much weaker
+and noisier (but non-zero nonetheless) MI on the LOB than the
+MOs. The MI weakens to being indistinguishable from noise as
+we go deeper in the book but at the cost of fill probability. This
+observation also is inline with observations from empirical data.
+5 CONCLUSION & FUTURE WORK
+We tackle the problem of simulating a realistic order book by using
+the Compound Hawkes Process. We particularly focus on building
+a simulator which is realistic in its order sizes and exhibits the
+mechanical constraints that a real order book has such as non-
+negative spreads and positive intensities. We further condition the
+intensities to be dependent on time-of-day in order for the simulator
+to not be ignorant of the increase in trading intensities around open
+(a) By TOD (MO, Buy)
+(b) By 𝑄𝑇 (MO, Buy)
+ (c) MI w.r.t. 𝑄𝑇 (MO, Buy)
+Figure 12: Market Impact Study (Market Orders)
+(a) By 𝑇 (MO, Buy)
+ (b) MI w.r.t. 𝑇 (MO, Buy)
+(c) By 𝑓 (MO, Buy)
+ (d) MI w.r.t. 𝑓 (MO, Buy)
+Figure 13: Market Impact Study (Market Orders, continued)
+and close auctions.We present a number of stylized facts to test the
+model’s efficacy against empirical observations and we compare it
+our model’s empirical facts to several baselines.
+In this formulation of the Hawkes Process, we assume nothing
+about the Price Process of the equity and rather let it rather emerge
+as a jump process by modest assumptions about the order flow
+itself. Our contributions can be enlisted as follows:
+(1) We propose a novel formulation of the Hawkes Process to
+maintain positive spread.
+2024-08-15 00:39. Page 10 of 1–14.
+
+=== page 11 ===
+Limit Order Book Dynamics and Order Size Modelling Using Compound Hawkes Process
+(a) By 𝑄𝑇 (LO, Top, Sell)
+(b) MI w.r.t. 𝑄𝑇 (LO, Top, Sell)
+(c) By 𝑄𝑇 (LO, Deep, Buy)
+(d) MI w.r.t. 𝑄𝑇 (LO, Deep, Buy)
+Figure 14: Market Impact Study (Limit Orders)
+(2) We augment the non-parameteric methods proposed in
+Kirchner 2017 to work with slow decaying kernels and to
+be more stable.
+(3) We make use of calibrated distributions for sampling the
+order sizes of the events rather than assuming unit order-
+size.
+(4) We formulate the in-spread order arrivals as a function
+of the current spread - utilizing the well known fact that
+spreads are mean-reverting.
+(5) We perform a MI study on this simulator along with testing
+against several baselines and empirical data by making use
+of a number of popular stylized facts.
+Future directions of research includes testing this model on more
+equities, particularly tackle the problem of small-tick stocks which
+have a lower amount of information at the top two levels of the
+LOB which our model assumes. Though our formulation theoreti-
+cally can work with small-tick stocks as well but since it limits its
+modelling to the top of the book, it will be unsuitable for small-tick
+stocks. By large, small-tick stocks violate a number of assumptions
+that we make in this model of the LOB - the LOB is not dense in
+small-tick stocks, neither is the price improvement done uniformly
+at 1-tick from the best, and finally there exists quite a few deeper
+levels than the top two which affect the LOB dynamics. To general-
+ize this model for such stocks, future research should be focused on
+relaxing these assumptions, one possible avenue is modelling more
+levels of the LOB in the Hawkes process albeit at the cost of com-
+putational time and accuracy. Further, the number of dimensions of
+this Hawkes Process is quite high, future research could be focused
+on simulating the order book with lesser number of dimensions.
+A PREVIOUS ORDER SIZES DO NOT IMPACT
+FUTURE ORDER ARRIVAL RATES
+We calculate the next order intensity in our dataset for a past or-
+der size by counting the number of future events in a window of
+𝑡 = 0.01sec. The joint scatter plot for Market Orders at Bid is shown
+in Figure 15a. Qualitatively the distribution looks to be quite uni-
+form. We make use of the Hoeffding Independence Test to calculate
+the distance between the observed joint distribution of these two
+random variables and the distribution if they were independent.
+The test statistic is observed to be 0.00068 which is sufficiently low
+for us to conclude, albeit with weak evidence, that the two variables
+are independent. We observe similar scatter plots and Hoeffding
+statistics for all other events.
+B IN-SPREAD ORDER INTENSITY DEPENDS
+ON CURRENT SPREAD
+We plot the order intensity against the current spread-in-ticks in
+empirical data (3 months data) in Figure 15c. Here we show a scatter
+plot since the intensities are approximated by the number of in-
+spread orders in the next 0.01 seconds and therefore are random.
+We show the distribution of data points in the translucent red bars.
+We fit a linear regressor on log-log transformation of these data
+points (excluding 0 and 1 spread) and find the best exponent to be
+0.7479. The red line in the plot shows the fitted line. We observe an
+𝑅2 of 0.85 for this regression. Similar figures for other stocks are
+also shown in Figures 15e, 15b , 15d.
+C RESULTS FOR SOME MORE STOCKS:
+In addition to Apple Inc. (Medium-Tick), we also calibrate and sim-
+ulate the 12D Hawkes Process for Intel (Large-Tick), Tesla (Small-
+Tick) and Amazon (Very Small-Tick) stocks. In Figure 16 we show
+the calibration results for the three stocks. Finally we show the
+stylized facts comparison between the model and empirical data in
+Figure 17. For Intel, we see that the Hawkes Process model is not
+able to capture the high frequency domain of the order book events
+(Figure 17a.) well and the spread is higher than the observed (Fig-
+ure 17b.). Tesla and Amazon have relatively better fit in order book
+events inter-arrival times (Figure 17 d. and g. respectively) however
+the spread distribution is underestimated in the Tesla model and
+severly underestimated in the Amazon model. Finally the signature
+plots (Figures 17 c., f. and i.) show that while the Intel volatility is
+slightly overestimated however the scale is similar (like Apple in the
+Figure 7), Tesla and Amazon have severly underestimated volatility
+in the model. On a related note, the relative returns distributions
+(Figures 17 j.,k. and l.) show that while the Intel (like Apple) model
+is able to replicate the fat tailed nature of the empirical returns, the
+Tesla and Amazon models are not. This suggests that the future
+work direction should be aimed that solving these problems with
+high-spread (small-tick) names.
+D DISCLAIMER
+Opinions and estimates constitute our judgement as of the date of this Material, are for
+informational purposes only and are subject to change without notice. This Material
+is not the product of J.P. Morgan’s Research Department and therefore, has not been
+prepared in accordance with legal requirements to promote the independence of
+research, including but not limited to, the prohibition on the dealing ahead of the
+dissemination of investment research. This Material is not intended as research, a
+recommendation, advice, offer or solicitation for the purchase or sale of any financial
+product or service, or to be used in any way for evaluating the merits of participating in
+any transaction. It is not a research report and is not intended as such. Past performance
+is not indicative of future results. Please consult your own advisors regarding legal, tax,
+accounting or any other aspects including suitability implications for your particular
+circumstances. J.P. Morgan disclaims any responsibility or liability whatsoever for the
+quality, accuracy or completeness of the information herein, and for any reliance on,
+or use of this material in any way.
+2024-08-15 00:39. Page 11 of 1–14.
+
+=== page 12 ===
+Konark Jain, Nick Firoozye, Jonathan Kochems, and Philip Treleaven
+(a) Previous Order Size vs Future Arrival Rates
+ (b) In-Spread Arrival Rates vs Current Spread : INTC.OQ
+(c) In-Spread Arrival Rates vs Current Spread : AAPL.OQ
+ (d) In-Spread Arrival Rates vs Current Spread : TSLA.OQ
+(e) In-Spread Arrival Rates vs Current Spread : AMZN.OQ
+Figure 15: Appendix
+REFERENCES
+Frédéric Abergel and Aymen Jedidi. Long-time behavior of a hawkes process–based
+limit order book. SIAM Journal on Financial Mathematics, 6(1):1026–1043, 2015. doi:
+10.1137/15M1011469. URL https://doi.org/10.1137/15M1011469.
+Frédéric Abergel, Marouane Anane, Anirban Chakraborti, Aymen Jedidi, and Ioane
+Muni Toke. Limit Order Books. Physics of Society: Econophysics and Sociophysics.
+Cambridge University Press, 2016. doi: 10.1017/CBO9781316683040.
+Massil Achab, Emmanuel Bacry, Stéphane Gaïffas, Iacopo Mastromatteo, and Jean-
+François Muzy. Uncovering causality from multivariate hawkes integrated cumu-
+lants. Journal of Machine Learning Research, 18(192):1–28, 2018.
+Emmanuel Bacry, Iacopo Mastromatteo, and Jean-François Muzy. Hawkes processes
+in finance. Market Microstructure and Liquidity, 01(01):1550005, 2015. doi: 10.1142/
+S2382626615500057. URL https://doi.org/10.1142/S2382626615500057.
+Emmanuel Bacry, Thibault Jaisson, and Jean-François Muzy. Estimation of slowly
+decreasing hawkes kernels: application to high-frequency order book dynamics.
+Quantitative Finance, 16(8):1179–1201, 2016.
+Emmanuel Bacry, Martin Bompaire, Stéphane Gaïffas, and Soren Poulsen. Tick: a
+python library for statistical learning, with a particular emphasis on time-dependent
+modelling. arXiv preprint arXiv:1707.03003, 2017.
+Jean-Philippe Bouchaud, Julius Bonart, Jonathan Donier, and Martin Gould. Trades,
+quotes and prices: financial markets under the microscope. Cambridge University
+Press, 2018.
+Damien Challet and Robin Stinchcombe. Analyzing and modeling 1+1d markets.
+Physica A: Statistical Mechanics and its Applications, 300(1):285–299, 2001. ISSN
+0378-4371. doi: https://doi.org/10.1016/S0378-4371(01)00335-1. URL https://www.
+sciencedirect.com/science/article/pii/S0378437101003351.
+Rama Cont. Statistical modeling of high-frequency financial data. IEEE Signal Processing
+Magazine, 28(5):16–25, 2011. doi: 10.1109/MSP.2011.941548.
+Rama Cont, Mihai Cucuringu, Jonathan Kochems, and Felix Prenzel. Limit order book
+simulation with generative adversarial networks. Available at SSRN 4512356, 2023.
+José Da Fonseca and Riadh Zaatour. Hawkes process: Fast calibration, application to
+trade clustering, and diffusive limit. Journal of Futures Markets, 34(6):548–579, 2014.
+doi: https://doi.org/10.1002/fut.21644. URL https://onlinelibrary.wiley.com/doi/abs/
+10.1002/fut.21644.
+Parameswaran Gopikrishnan, Vasiliki Plerou, Xavier Gabaix, and H. Eugene Stanley.
+Statistical properties of share volume traded in financial markets. Phys. Rev. E, 62:
+R4493–R4496, Oct 2000. doi: 10.1103/PhysRevE.62.R4493. URL https://link.aps.org/
+doi/10.1103/PhysRevE.62.R4493.
+2024-08-15 00:39. Page 12 of 1–14.
+
+=== page 13 ===
+Limit Order Book Dynamics and Order Size Modelling Using Compound Hawkes Process
+(a) Norms of Kernel: INTC.OQ
+ (b) Norms of Kernel: AAPL.OQ
+(c) Norms of Kernel: TSLA.OQ
+ (d) Norms of Kernel: AMZN.OQ
+Figure 16: Norms of Kernels
+Martin D. Gould, Mason A. Porter, Stacy Williams, Mark McDonald, Daniel J. Fenn,
+and Sam D. Howison. Limit order books. Quantitative Finance, 13(11):1709–1742,
+November 2013. doi: 10.1080/14697688.2013.803. URL https://ideas.repec.org/a/taf/
+quantf/v13y2013i11p1709-1742.html.
+Alan G. Hawkes. Hawkes processes and their applications to finance: a review. Quan-
+titative Finance, 18(2):193–198, 2018. doi: 10.1080/14697688.2017.1403131. URL
+https://doi.org/10.1080/14697688.2017.1403131.
+Ulrich Horst and Wei Xu. A scaling limit for limit order books driven by hawkes
+processes. SIAM Journal on Financial Mathematics, 10(2):350–393, 2019.
+Hanna Hultin, Henrik Hult, Alexandre Proutiere, Samuel Samama, and Ala Tarighati.
+A generative model of a limit order book using recurrent neural networks. Quan-
+titative Finance, 23(6):931–958, 2023. doi: 10.1080/14697688.2023.2205583. URL
+https://doi.org/10.1080/14697688.2023.2205583.
+Konark Jain, Nick Firoozye, Jonathan Kochems, and Philip Treleaven. Limit order book
+simulations: A review. arXiv preprint arXiv:2402.17359, 2024.
+Ingemar Kaj and Mine Caglar. A buffer hawkes process for limit order books. arXiv
+preprint arXiv:1710.03506, 2017.
+M. Kirchner and A. Bercher. A nonparametric estimation procedure for the hawkes
+process: comparison with maximum likelihood estimation. Journal of Statistical
+Computation and Simulation, 88(6):1106–1116, 2018. doi: 10.1080/00949655.2017.
+1422126. URL https://doi.org/10.1080/00949655.2017.1422126.
+Matthias Kirchner. An estimation procedure for the hawkes process. Quantitative
+Finance, 17(4):571–595, 2017.
+Matthias Kirchner and Silvan Vetter. Hawkes model specification for limit order books.
+The European Journal of Finance, 28(7):642–662, 2022.
+Pankaj Kumar. Deep hawkes process for high-frequency market making. arXiv preprint
+arXiv:2109.15110, 2021.
+Kyungsub Lee and Byoung Ki Seo. Modeling bid and ask price dynamics with an
+extended hawkes process and its empirical applications for high-frequency stock
+market data. Journal of Financial Econometrics, page nbab029, 2022.
+Xiaofei Lu and Frédéric Abergel. Order-book modeling and market making strategies.
+Market Microstructure and Liquidity, 4(01n02):1950003, 2018a.
+Xiaofei Lu and Frédéric Abergel. High-dimensional hawkes processes for limit
+order books: modelling, empirical analysis and numerical calibration. Quanti-
+tative Finance, 18(2):249–264, 2018b. doi: 10.1080/14697688.2017.1403142. URL
+https://doi.org/10.1080/14697688.2017.1403142.
+Maxime Morariu-Patrichi and Mikko S Pakkanen. State-dependent hawkes processes
+and their application to limit order book modelling. Quantitative Finance, 22(3):
+2024-08-15 00:39. Page 13 of 1–14.
+
+=== page 14 ===
+Konark Jain, Nick Firoozye, Jonathan Kochems, and Philip Treleaven
+(a) INTC.OQ - LO Top (Ask)
+ (b) INTC.OQ - Spread Distribution
+ (c) INTC.OQ - Signature Plot
+(d) TSLA.OQ - LO Top (Ask)
+ (e) TSLA.OQ - Spread Distribution
+ (f) TSLA.OQ - Signature Plot
+(g) AMZN.OQ - LO Top (Ask)
+ (h) AMZN.OQ - Spread Distribution
+ (i) AMZN.OQ - Signature Plot
+(j) INTC.OQ - Returns Distribution
+ (k) TSLA.OQ - Returns Distribution
+ (l) AMZN.OQ - Returns Distribution
+Figure 17: Results (full model - other stocks)
+563–583, 2022.
+Othmane Mounjid, Mathieu Rosenbaum, and Pamela Saliba. From asymptotic proper-
+ties of general point processes to the ranking of financial agents. arXiv preprint
+arXiv:1906.05420, 2019.
+Luca Mucciante and Alessio Sancetta. Estimation of an order book dependent hawkes
+process for large datasets. arXiv preprint arXiv:2307.09077, 2023.
+Kaj Nyström and Changyong Zhang. Hawkes-based models for high frequency finan-
+cial data. Journal of the Operational Research Society, 73(10):2168–2185, 2022.
+Felix Prenzel, Rama Cont, Mihai Cucuringu, and Jonathan Kochems. Dynamic calibra-
+tion of order flow models with generative adversarial networks. In Proceedings of
+the Third ACM International Conference on AI in Finance, pages 446–453, 2022.
+Marcello Rambaldi, Emmanuel Bacry, and Fabrizio Lillo. The role of volume in order
+book dynamics: a multivariate hawkes process analysis. Quantitative Finance, 17
+2024-08-15 00:39. Page 14 of 1–14.
+
+=== page 15 ===
+Limit Order Book Dynamics and Order Size Modelling Using Compound Hawkes Process
+(7):999–1020, 2017.
+Zijian Shi and John Cartlidge. State dependent parallel neural hawkes process for limit
+order book event stream prediction and simulation. In Proceedings of the 28th ACM
+SIGKDD Conference on Knowledge Discovery and Data Mining, pages 1607–1615,
+2022.
+Ioane Muni Toke. " market making" behaviour in an order book model and its impact
+on the bid-ask spread. arXiv preprint arXiv:1003.3796, 2010.
+Ioane Muni Toke and Nakahiro Yoshida. Modelling intensities of order flows in a limit
+order book. Quantitative Finance, 17(5):683–701, 2017. doi: 10.1080/14697688.2016.
+1236210. URL https://doi.org/10.1080/14697688.2016.1236210.
+Ioane Muni Toke and Nakahiro Yoshida. Analyzing order flows in limit order books
+with ratios of cox-type intensities. Quantitative Finance, 20(1):81–98, 2020. doi: 10.
+1080/14697688.2019.1637927. URL https://doi.org/10.1080/14697688.2019.1637927.
+Peng Wu, Marcello Rambaldi, Jean-François Muzy, and Emmanuel Bacry. Queue-
+reactive hawkes models for the order flow. arXiv preprint arXiv:1901.08938, 2019.
+Ban Zheng, François Roueff, and Frédéric Abergel. Ergodicity and scaling limit of a
+constrained multivariate Hawkes process. Post-Print hal-00777941, HAL, February
+2014. URL https://ideas.repec.org/p/hal/journl/hal-00777941.html.
+DISCLOSURE STATEMENT
+No potential conflict of interest was reported by the author(s).
+FUNDING
+This work was supported by JP Morgan Chase & Co.
+2024-08-15 00:39. Page 15 of 1–14.
