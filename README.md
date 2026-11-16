@@ -22,12 +22,22 @@ is adopted with one binding constraint: the wider the clue-search, the harder
 the Deflated Sharpe correction, and every variable admitted to the priming
 score must survive the vol-tautology check that killed C1.
 
-**Status: FROZEN in a strict holding pattern.** The daily-resolution program
-is closed (its central claim was falsified). The next phase — C1 re-run at L2
-resolution on full-depth order-book data — is fully specified, kill lines
-pre-declared, and blocked solely on procurement of Tardis full-depth L2 data
-that must pass the verification gate. No further model code will be written
-until then.
+**Status: the L2 phase has begun — the gate has run, T3 has died, and the
+endpoint has been re-framed.** The daily-resolution program is closed (its
+central claim was falsified). Since then, in order: the Tardis raw `@depth`
+replay was ingested (four complete BTCUSDT days, native U/u/pu); the Layer 0
+gate was EXECUTED — 2026-10-01 **PASSED** (gap rate 0.00009%, mid 100%,
+depth 100% vs independent 25-level snapshots), 10-02..04 partial (sequence
+criterion passed; the 100-snapshot ground truth needs a paid subscription —
+the owner's call); the pre-registered taker track ran on free aggTrades and
+**T3 tested-fail** (wall-clock exposure does not remove the arrival-density
+dependence — it is vol-mediated); T1/T2 are cached and **pending the owner's
+decision** (`paper/research/t1_t2_decision_memo_2026-11-16.md`); and the
+endpoint has been re-framed in writing: **a WHEN instrument, straddle-logic,
+sized by the posterior on MOVE, not UP** — because the 0.505 direction
+boundary has survived everything, including the watchlist whose four primed
+coils all broke downward. The live state of every claim is on the site:
+`docs/ledger.html`.
 
 ---
 
@@ -133,8 +143,24 @@ the 3D state-space region hypothesis; detector confirmation as a strategy
 improvement.
 
 Blocked, unproxied: C5 (absorption asymmetry) and C6 (depth OFI) — they
-require full-depth incremental L2 and signed trades, which do not exist in
-this repository yet. No proxy substitution is permitted.
+require full-depth incremental L2 and signed trades. The four ingested raw
+replay days exist and the reconciliation confirms the cancel channel is
+alive (91–97% passive cancellations) — C5/C6 are testable the day the gate
+fully passes. No proxy substitution is permitted.
+
+**Dead since this README last moved:** T3 — wall-clock exposure invariance
+on taker data, **tested-fail** (trades/min HR 0.9998, 95% CI [0.99977,
+0.99983], p = 4.7e-42 after hour-of-day stratification; the density effect
+is vol-mediated). The runner stopped at the first upstream kill per
+protocol; T1/T2 await the owner's decision.
+
+**Open forward tests (not scored, windows unclosed):** the 2026-11-12
+primed-coil watchlist (KAVA, HOLO, GENIUS, SOL — all four broke downward;
+window ends 2027-01-11) and the pre-registered second-generation rule
+(quiet-not-coiled, derived from the misses profile: 207 of 651 missed crypto
+moves were quiet, range-bottom, unstretched — everything but the 20-day
+compression streak; frozen until a forward window that does not yet
+exists).
 
 ---
 
@@ -242,15 +268,21 @@ input.
 
 | Path | What it is |
 |---|---|
+| Path | What it is |
+|---|---|
 | `paper/research/orderflow_program.md` | The constitution: data inventory, claims ledger, kill lines, blocked-on-data record |
 | `paper/research/c1_hazard_report.md` | The C1 experiment and its verdict (FAILED, all kill lines) |
-| `paper/research/c1_l2_test_spec.md` | The next experiment, fully specified, not run |
+| `paper/research/c1_l2_test_spec.md` | The L2 experiment, fully specified, not run |
 | `paper/research/l2_data_acquisition_spec.md` | Exactly what data must arrive and pass the gate |
+| `paper/research/l0_gate/` | The executed Layer 0 gate report (2026-10-01 → 10-04) |
+| `paper/research/taker_falsification_*.json` | T3's tested-fail record (and the cached T1/T2 harness state) |
+| `paper/research/t1_t2_decision_memo_2026-11-16.md` | The T1/T2 decision memo (owner's call) |
+| `paper/research/smh_methodology_review_2026-11-15.md` | The methodology review: endpoint re-framed, five weaknesses, the unblocked queue |
 | `paper/research/LEARNING_NOTES.md` | Plain-language guide: the book knowledge base and the lab |
 | `KNOWLEDGE.md`, `KNOWLEDGE_SMH.md` | The Market Studies knowledge base (13 books studied; the source of the ideas) |
-| `src/` | Ingestion, verification gate, event clock, CPCV, feature calculators, C1-L2 harness |
-| `tests/` | 27 tests, all green, including failure-path tests (gap, leakage, kill lines) |
-| `docs/` | Data dictionary, macro checklist, the thesis presentation |
+| `src/` | Ingestion, verification gate, event clock, CPCV, feature calculators, C1-L2 harness, the taker falsification runner, the mega-universe scanner, board refresh |
+| `tests/` | 113 tests, all green, including failure-path tests (gap, leakage, kill lines) |
+| `docs/` | The site: thesis, working manual, causal chains, books, clues, night-before sauce move, board, dormancy map (1,299 series), library (100 resources + articles catalogue), claims ledger, instrument |
 | `strategy/`, `paper/` | The earlier Salient system: gated strategy core, nightly paper-trading loop, research batteries |
 
 ## The Epistemic Contract (why this can be trusted)
@@ -267,5 +299,8 @@ input.
    proxy substitution.
 8. One instrument survives before any panel is attempted.
 
-**Frozen pending data acquisition.** The next commit that touches the model
-should be the gate report on real Tardis data.
+**The gate report on real Tardis data exists** (`paper/research/l0_gate/`):
+one day fully passed, three days sequence-verified with the snapshot audit
+incomplete. The next commit that touches any model should be either the
+owner's T1/T2 decision executed, or the full-gate pass on procured snapshot
+coverage — nothing else moves the ledger.
