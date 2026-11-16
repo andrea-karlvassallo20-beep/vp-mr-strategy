@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Math, Verified — vp-mr-strategy</title>
+<link rel="stylesheet" href="site.css">
+<style>
+body{background:#0b0e14;color:#c9d1d9;font-family:Georgia,serif;margin:0;padding:2rem;max-width:1100px;margin:auto}
+h1{color:#fff;font-size:2.2rem;letter-spacing:.02em}
+h2{color:#35ff9e;border-bottom:1px solid #24304a;padding-bottom:.3rem;margin-top:2.8rem}
+h3{color:#fff}
+table{border-collapse:collapse;width:100%;font-size:.9rem;margin:1rem 0}
+th,td{border:1px solid #24304a;padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:#161b26;color:#35ff9e}
+tr:nth-child(even) td{background:#11151f}
+.note{color:#8b949e;font-size:.9rem;font-style:italic}
+.big{font-size:1.15rem}
+.num{font-family:monospace;color:#ffd166}
+.dead{color:#ff6b6b;font-weight:bold}
+.pass{color:#35ff9e;font-weight:bold}
+.formula{font-family:monospace;background:#11151f;border:1px solid #24304a;border-radius:8px;padding:1rem;margin:1.2rem 0;font-size:.95rem;line-height:1.7}
+.verdict{border:1px solid #35ff9e;border-radius:8px;padding:1.2rem;margin:1.5rem 0;background:#0f1a14}
+.verdict h2{color:#35ff9e;border:0;margin-top:0}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html">Thesis</a>
+  <a href="manual.html">The working manual</a>
+  <a href="causal.html">Causal chains</a>
+  <a href="books.html">The books, taught</a>
+  <a href="clues.html">The clue dossier</a>
+  <a href="criteria.html">The night-before sauce move</a>
+  <a href="v4_charts.html">The board, colored</a>
+  <a href="dormancy.html">The dormancy map</a>
+  <a href="resources.html">The library</a>
+  <a href="ledger.html">The claims ledger</a>
+  <a href="ohlcv_verdict.html">The OHLCV verdict</a>
+  <a href="math_verification.html" aria-current="page">The math, verified</a>
+  <a href="instrument.html">The instrument (live)</a>
+</nav>
+
+<div class="epigraph"><p>"The edge is the combination. Which means the public math it is built from has to be flawless first — not trusted, not remembered: verified against its own source."</p></div>
+
+<main>
+<div class="kicker">The open-source verification &middot; the exact formula from the arXiv source &middot; five defects found and fixed &middot; the tick cross-check</div>
+<h1>The Math, Verified<span class="dot">.</span></h1>
+
+<p class="note">The plain-language record of how the two pieces of public math the programme's L2 layer stands on — order flow imbalance and the Hawkes process — were verified against their published sources and an independent implementation, and what that verification found hiding in our own code. The full technical record: <code>paper/research/math_verification_2026-11-16.md</code>; the re-runnable evidence: <code>src/verify_math_library.py</code>.</p>
+
+<div class="verdict">
+<h2>The conclusion, in one line</h2>
+<p><span class="big">The math is now verified end-to-end — and verification earned its keep: <span class="pass">five defects</span> were found and fixed in our own implementations before any of it touched a claim.</span></p>
+<p class="note">The formula is authoritative, not the code. That sentence is the method.</p>
+</div>
+
+<h2>1 &middot; Why verify public math at all</h2>
+<p>The mathematics is public: high-frequency traders run Hawkes processes and order flow imbalance in milliseconds, off papers anyone can download. Retail traders do not know it exists. The programme's bet — hypothesis <b>C8</b> — is that the edge is the <b>combination</b>: this public math, on a frontier market's limit order book, at a macro horizon (4h/24h) where nobody runs it, with kill lines written before the data exists. But a combination built on a mis-copied formula is not an edge; it is a bug wearing a thesis. So before anything else: extract the exact formulas from the sources, and cross-check our implementations against an independent library. Nothing below tests a claim. It makes the claims possible to test honestly.</p>
+
+<h2>2 &middot; The exact formula, from the LaTeX source</h2>
+<p>The order flow imbalance of Cont, Kukanov &amp; Stoikov (<i>The Price Impact of Order Book Events</i>, arXiv:1011.6402v3) is not the paraphrase found in most blog posts. The paper's own source defines the contribution of the n-th book event to the queues as:</p>
+<div class="formula">
+e<sub>n</sub> = 1{P<sup>B</sup><sub>n</sub> &ge; P<sup>B</sup><sub>n-1</sub>} &middot; q<sup>B</sup><sub>n</sub> &minus; 1{P<sup>B</sup><sub>n</sub> &le; P<sup>B</sup><sub>n-1</sub>} &middot; q<sup>B</sup><sub>n-1</sub><br>
+&nbsp;&nbsp;&nbsp;&nbsp; &minus; 1{P<sup>A</sup><sub>n</sub> &le; P<sup>A</sup><sub>n-1</sub>} &middot; q<sup>A</sup><sub>n</sub> + 1{P<sup>A</sup><sub>n</sub> &ge; P<sup>A</sup><sub>n-1</sub>} &middot; q<sup>A</sup><sub>n-1</sub>
+</div>
+<p>Two properties matter, and both were wrong in our code. First, the indicators are <b>non-strict</b> (&ge;, &le;): when a price does not move, <i>both</i> fire and the event contributes the queue change — added liquidity positive, removed negative. Same-price events are the majority of book events. Second, when a price <i>does</i> move, the contribution is the <b>full level size</b> (the whole new queue at the improved price; the whole withdrawn queue at the dropped one), not the small difference across levels. Our implementation was compared event-by-event against a literal transcription of this formula on 25 randomized books &times; 2,000 events: maximum difference after the fix, <span class="num">0.0</span>.</p>
+
+<h2>3 &middot; The five defects</h2>
+<table>
+<tr><th>#</th><th>Where</th><th>What was wrong</th><th>Why it mattered</th></tr>
+<tr><td class="num">D1</td><td>OFI, ask side</td><td>Both ask-side branches were sign-flipped relative to the source — the code contradicted its own docstring</td><td>Every ask-side flow reading had the wrong sign</td></tr>
+<tr><td class="num">D2</td><td>OFI, same price</td><td>Same-price queue changes contributed zero instead of the queue delta</td><td>The majority of book events were invisible to the feature</td></tr>
+<tr><td class="num">D3</td><td>Hawkes likelihood</td><td>The recursion seeded a <i>phantom event at the first timestamp in every dimension</i></td><td>Every early intensity reading was inflated</td></tr>
+<tr><td class="num">D4</td><td>Hawkes likelihood</td><td>The intensity used the transposed excitation matrix while the compensator used rows — internally inconsistent</td><td>Asymmetric excitation was mis-attributed between buy and sell channels</td></tr>
+<tr><td class="num">D5</td><td>Hawkes branching ratio</td><td>Reported the spectral radius of the amplitude matrix &alpha; instead of the branching matrix G = &alpha;/&beta;</td><td><b>The branching ratio was overstated by the factor &beta; (= 2.0 in the default configuration)</b></td></tr>
+</table>
+<p class="note">None of the five had been consumed by a tested claim — they lived in the descriptive layer. That is the registry doing its job: the bugs died before they could cost anything.</p>
+
+<h2>4 &middot; The cross-check against tick</h2>
+<p><code>tick</code> is the open-source point-process library maintained by the X-Data initiative. The two libraries speak different parameterizations of the same model — ours: kernel &alpha;&middot;e<sup>-&beta;t</sup>; tick's: kernel G&middot;&beta;&middot;e<sup>-&beta;t</sup>, where its "adjacency" <i>is</i> the branching matrix — and the verification documents the bridge explicitly. Three checks, each on exact simulations with known planted truth:</p>
+<table>
+<tr><th>Check</th><th>Method</th><th>Result</th></tr>
+<tr><td>Likelihood exactness</td><td>Our O(N) recursion vs an independent O(N&sup2;) oracle written straight from the intensity definition, on tick-simulated data</td><td class="pass">max relative difference <span class="num">1.6&times;10<sup>-14</sup></span></td></tr>
+<tr><td>2D branching recovery</td><td>Our MLE and tick's estimator on tick-simulated 2D data, vs the planted &rho;(G)</td><td class="pass">ours within <span class="num">0.086</span>, tick within <span class="num">0.033</span></td></tr>
+<tr><td>1D branching (Filimonov&ndash;Sornette)</td><td>The cheatsheet's fit — executed verbatim from the markdown — vs tick on 1D simulations</td><td class="pass">both within <span class="num">0.04</span> of the planted branching ratio</td></tr>
+</table>
+<p class="note">One honest limitation is recorded rather than papered over: tick 0.8.0.2's own log-likelihood model returns values inconsistent with its documentation (probed on handcrafted Poisson data), so the sharp likelihood check runs against the independent brute-force oracle instead — tick enters through its simulator and its estimator, where it behaves exactly as it should.</p>
+
+<h2>5 &middot; Why D5 mattered most</h2>
+<p>The C8 trigger fires when the Hawkes branching ratio exceeds <span class="num">0.8</span> — the market going critical, most trades begotten by other trades. The old metric overstated the branching ratio by the factor &beta; = 2.0. Read that again with the trigger in mind: <b>every ordinary market with a true branching ratio of 0.4 would have registered as 0.8</b>. The trigger would have fired constantly, the hypothesis would have been "tested" against noise, and the failure would have been blamed on the idea — not the arithmetic. The 0.8 threshold was frozen only <i>after</i> this fix, on the true &rho;(G). This is why verification precedes registration, and why both precede data.</p>
+
+<h2>6 &middot; What this page cannot tell you</h2>
+<p>Verified math is not a verified edge. The formula being flawless says nothing about whether the combination works: C8 remains declared, untested, blocked-on-data, with eleven kill lines armed. Direction remains refused — the endpoint is a WHEN instrument, sized by the posterior on MOVE, not UP. And no amount of correct arithmetic substitutes for the L2 data itself: the gate, the base layer (C1-L2), then the synthesis. What this page records is narrower and prior to all of that: <b>when the data finally arrives, the math it will be measured with is now provably the math the papers actually wrote.</b></p>
+
+<p class="note">Technical record: <code>paper/research/math_verification_2026-11-16.md</code> &middot; machine output: <code>paper/research/math_verification.json</code> &middot; re-run it yourself: <code>python src/verify_math_library.py</code> &middot; regression tests: <code>tests/test_math_exactness.py</code></p>
+</main>
+</body>
+</html>
