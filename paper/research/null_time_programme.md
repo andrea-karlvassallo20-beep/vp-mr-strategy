@@ -460,3 +460,44 @@ awaiting the owner's word; the blocked list stays blocked.
 Ratification queue after this session: eight candidate
 sharpenings (sessions 3, 4/4b, 5, 6), zero armed. T1 remains armed
 awaiting the owner's word; the blocked list stays blocked.
+
+## 11. Null-time session 7 (2026-11-16): deep-read session 5 — the boundary-solution rule, documented in the wild
+
+- **Library deep-read session 5** (rank 3 of the 500 triage):
+  `paper/research/library/2026-11-16_price_discovery_herding_deep_read.md`
+  on Kang, "The Physics of Price Discovery: Deconvolving
+  Information, Volatility, and the Critical Breakdown of Signal
+  during Retail Herding" (arXiv:2601.11602v2, 2026; Korean
+  equities, deconvolution + Hawkes). Grade: NO kill line changed.
+  One candidate sharpening, PENDING OWNER RATIFICATION: the
+  boundary-solution rule — the paper's own branching-ratio point
+  estimate is 0.998 with a bootstrap CI of [0.050, 0.660], and its
+  own appendix names the cause: the optimizer "hitting the wall"
+  of the stability constraint, the point estimate "likely a
+  constrained boundary solution rather than the true underlying
+  value." This is K7's pathology with a worked example. Candidate
+  pre-declaration for the trigger layer: every branching-ratio
+  reading carries its bootstrap CI; a boundary solution (n-hat at
+  the constraint within optimizer tolerance) is MISSING, not high
+  - it must not fire the trigger, and no placebo on labels can
+  catch it because the artifact lives in the FEATURE.
+  Reinforcing evidence recorded: (a) session 3's normalized-units
+  sharpening - volume normalization is "contaminated by
+  volatility artifacts" (their herding/normal signal ratio 0.37
+  under volume vs 0.91 under market-cap normalization); (b) the
+  trigger's interpretation language - retail surges are the
+  near-critical population (0.98-0.999 across thresholds), so on
+  a retail-heavy venue the trigger measures self-excited FLOW, not
+  "the market is critical"; (c) philosophical support - "market
+  efficiency as a state variable" is the C8 premise in another
+  market; (d) their non-stationarity caution (trending branching
+  ratio, historical training mis-calibrates) matches session
+  4/4b's W-ladder and drift-reporting items.
+
+Ratification queue after this session: nine candidate
+sharpenings (sessions 3, 4/4b, 5, 6, 7), zero armed. T1 remains
+armed awaiting the owner's word; the blocked list stays blocked.
+Next in the queue: Aloosh & Li (2024), "Direct evidence of
+bitcoin wash trading" - the companion evidence for session 5's
+gate audit (to be acquired; Management Science, may be
+paywalled - if so, synthesized with the label, per policy).
