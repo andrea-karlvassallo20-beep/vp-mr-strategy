@@ -424,3 +424,39 @@ new claims, no kill lines armed without the owner's word):
 Ratification queue after this session: six candidate sharpenings
 (sessions 3, 4/4b, and this one), zero armed. T1 remains armed
 awaiting the owner's word; the blocked list stays blocked.
+
+## 10. Null-time session 6 (2026-11-16): deep-read session 4 — the flash crash inside the test year
+
+- **Library deep-read session 4** (rank 2 of the 500 triage):
+  `paper/research/library/2026-11-16_crypto_micro_shap_deep_read.md`
+  on Bieganowski & Slepaczuk, "Explainable Patterns in
+  Cryptocurrency Microstructure" (arXiv:2602.00776, 2026; Binance
+  perps, 1s snapshots, 2022-2025, five assets). Grade: NO kill line
+  changed. Two candidate sharpenings, PENDING OWNER RATIFICATION:
+  (1) the October 10, 2025 flash crash is INSIDE the 2025-26 test
+  year - pre-declare it in the split manifest as a named event
+  window, reported separately from the pooled reading, so a single
+  well-timed short cannot masquerade as a general hazard effect
+  (the concrete instance of K4); the event date must be verified
+  against the Binance feed at the L0 gate, not trusted from the
+  paper. (2) Reinforcing evidence for session 5's spoofing audit:
+  their model demonstrably reacted to a single large shallow bid
+  with an immediate large prediction - OFI-shaped triggers are
+  spoofable by construction on this venue. Gifts recorded: GMADL
+  (direction-aware, magnitude-weighted) as a candidate responder
+  metric for C1-L2's short-horizon label; their purged
+  walk-forward with explicit temporal gap as an independent
+  same-venue citation for the programme's purge/embargo
+  discipline; and the horizon framing - stable cross-asset OFI
+  predictability on Binance perps at 1-SECOND horizons motivates
+  the gate but tests none of our claims (C1-L2/C8 live at
+  30m-4h-24h; the horizon gap is C8's unexplored cell, and this
+  paper is the citable venue evidence). Systemic caution noted:
+  a market running homogenized imbalance signals is fragile - if
+  C8 passes, the edge is the INTERACTION, not the raw trigger the
+  crowd already runs, which is why C8-B (joint superiority over
+  trigger alone) must be the honest baseline.
+
+Ratification queue after this session: eight candidate
+sharpenings (sessions 3, 4/4b, 5, 6), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked.
