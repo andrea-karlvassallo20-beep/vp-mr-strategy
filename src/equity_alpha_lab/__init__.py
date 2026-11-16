@@ -33,6 +33,13 @@ from .quality import (
 )
 from .factors import PRICE_FACTORS, compute_all, momentum, reversal, volatility, range_position, amihud_illiquidity, dollar_volume
 from .evaluation import ic_series, ic_summary, quantile_returns, top_bucket_turnover
+from .inference import (
+    newey_west_tstat,
+    ic_inference,
+    fama_macbeth,
+    bonferroni_threshold,
+    bonferroni_t_threshold,
+)
 
 __all__ = [
     "SECURITY_MASTER_COLUMNS",
@@ -63,4 +70,9 @@ __all__ = [
     "ic_summary",
     "quantile_returns",
     "top_bucket_turnover",
+    "newey_west_tstat",
+    "ic_inference",
+    "fama_macbeth",
+    "bonferroni_threshold",
+    "bonferroni_t_threshold",
 ]

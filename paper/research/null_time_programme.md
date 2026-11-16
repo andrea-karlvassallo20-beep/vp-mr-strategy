@@ -370,3 +370,17 @@ armed. The owner's word is the only trigger.
   Next in the queue: the library ritual's second paper (Hawkes branching —
   the beta lesson's other half), then the remaining prose pages against the
   ledger.
+- 2026-11-16 (null-time session 5, L2-independent): the honest-inference
+  layer built for the equity programme (src/equity_alpha_lab/inference.py:
+  Newey-West HAC t-stat, Fama-MacBeth with HAC coefficient inference,
+  Bonferroni zoo-level thresholds; 8 ground-truth tests including an AR(1)
+  case where the naive t provably overstates; suite 161 green) plus the
+  SMH methodology review (2026-11-16_smh_methodology_review.md): four
+  method lessons formalized, six candidate sharpenings queued (S-r1
+  kill-line coverage matrix, S-r2 two-window default, S-r3 pre-declared
+  placebo reference, S-r4 coverage-and-lift both reported, S-r5
+  programme-level multiplicity ledger, S-r6 cross-programme transfer),
+  zero armed. Null-time queue published and ordered so future sessions
+  need no decision: inference layer (done) -> Sharadar decision (owner)
+  -> forward_returns vectorization -> NYSE calendar -> equity site page
+  -> library ritual.

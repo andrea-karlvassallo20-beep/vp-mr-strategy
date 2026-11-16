@@ -33,6 +33,19 @@ They stay blocked until a source passes the
 against a survivorship-biased or period-end-keyed source would bake the
 sins the whole pipeline exists to prevent into the factor zoo itself.
 
+## Honest inference (`inference.py`) — required for any claim
+
+- `newey_west_tstat`: HAC (Bartlett kernel) t-stat for the mean of a
+  series; reports the naive t alongside so the naive/HAC se ratio is a
+  visible overstatement diagnostic.
+- `ic_inference`: the honest version of `ic_summary` — any pre-registered
+  factor claim must cite these numbers, not the naive ones.
+- `fama_macbeth`: per-date cross-sectional OLS with HAC inference on the
+  coefficient series; optional control factors.
+- `bonferroni_threshold` / `bonferroni_t_threshold`: zoo-level multiple
+  testing control (a 6-factor scan cannot silently shop for the best
+  t-stat).
+
 ## Evaluation instruments (`evaluation.py`)
 
 - `ic_series`: per-date Spearman rank IC between factor and forward return.
@@ -63,10 +76,10 @@ sins the whole pipeline exists to prevent into the factor zoo itself.
 
 ## Limitations (stated before any real-data use)
 
-- The IC t-stat is NAIVE (i.i.d. across dates). Serial dependence in IC,
-  cross-sectional dependence, Newey-West/Fama-MacBeth inference, and
-  multiple-testing control across the zoo are Month-2 follow-ups and MUST
-  precede any claim about a factor.
+- The IC t-stat in `evaluation.py` is NAIVE (i.i.d. across dates) and is
+  kept only as a diagnostic; `inference.py` provides the HAC/Fama-MacBeth
+  versions that any claim must cite. Cross-sectional dependence beyond
+  Fama-MacBeth (e.g. cluster-robust errors) remains future work.
 - Sector/size exposure decomposition is not implemented yet.
 - `quantile_returns` uses equal-weighted means; no cost or tradability
   overlay (that is Month 3's job, not the evaluator's).
