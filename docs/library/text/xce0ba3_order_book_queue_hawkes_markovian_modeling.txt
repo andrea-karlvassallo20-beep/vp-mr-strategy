@@ -1,0 +1,1513 @@
+=== page 1 ===
+Order Book Queue Hawkes-Markovian
+Modeling
+Philip Protter ∗
+Department of Statistics, Columbia University
+and
+Qianfan Wu
+Kelley School of Business, Indiana University Bloomington
+and
+Shihao Yang†
+H. Milton Stewart School of Industrial and Systems Engineering
+Georgia Institute of Technology
+January 7, 2022
+Order Book Queue Hawkes-Markovian
+Modeling
+∗The research of Dr. Philip Protter is partially supported by NSF Grant DMS-2106433.
+†Corresponding Author. Email: shihao.yang@isye.gatech.edu. The authors thank Dr. Dan Christina
+Wang for providing access to the LOBSTER data used in this study.
+1
+arXiv:2107.09629v3  [q-fin.TR]  5 Jan 2022
+
+=== page 2 ===
+Abstract
+This article presents a Hawkes process model with Markovian baseline intensities
+for high-frequency order book data modeling. We classify intraday order book trading
+events into a range of categories based on their order types and the price changes
+after their arrivals. To capture the stimulating eﬀects between multiple types of order
+book events, we use the multivariate Hawkes process to model the self- and mutually-
+exciting event arrivals. We also integrate a Markovian baseline intensity into the event
+arrival dynamic, by including the impacts of order book liquidity state and time factor
+to the baseline intensity. A regression-based non-parametric estimation procedure is
+adopted to estimate the model parameters in our Hawkes+Markovian model. To
+eliminate redundant model parameters, LASSO regularization is incorporated in the
+estimation procedure. Besides, model selection method based on Akaike Information
+Criteria is applied to evaluate the eﬀect of each part of the proposed model. An
+implementation example based on real LOB data is provided. Through the example,
+we study the empirical shapes of Hawkes excitement functions, the eﬀects of liquidity
+state as well as time factors, the LASSO variable selection, and the explanatory power
+of Hawkes and Markovian elements to the dynamics of the order book.
+Keywords: Hawkes Process, Order book modeling, Non-parametric estimation, Model se-
+lection
+AMS subject classiﬁcations: 91G99, 62G05, 62J05, 62M20
+2
+
+=== page 3 ===
+1 Introduction
+An Electronic Limit Order Book (LOB) is a list of electronic orders that a trading venue
+uses to record the interest of buyers and sellers in a particular ﬁnancial instrument. The
+modern ﬁnancial market has witnessed unprecedented increases in trading volume and
+frequency during the recent decades, with the global total value of stock traded escalating
+and with the average stock holding period plunged signiﬁcantly from 1990 to 2018 [22, 18].
+Therefore, understanding the dynamics of the LOB has become increasingly signiﬁcant in
+the analysis of liquidity, transaction costs, and the regulation of the modern global ﬁnancial
+market.
+A Hawkes process [8, 10], also called “self-exciting and mutually(cross)-exciting point
+process”, is a type of stochastic point process whose essential property is that the arrival/
+occurrence of any event will increase the arrival probability of further events. As elec-
+tronic LOB data is typically complex, large-scale, and high-frequency, Hawkes process has
+become increasingly popular in ﬁtting LOB dynamics due to its ability to capture the
+complex stimulating eﬀects between event ﬂows. Bacry & Muzy [2] and Hawkes [9] have
+provided comprehensive reviews on Hawkes process applications in ﬁnance, especially in
+modeling LOB data, including related works in estimation procedure [15, 3], Hakwes pro-
+cess generalizations [4], and model modiﬁcations of minor details [6, 7]. In addition, Hawkes
+process with exponential kernels is among the most popular model speciﬁcations for LOB
+modeling in recent works [20, 1, 19, 15].
+Besides the self and cross-exciting property, LOB data can also be viewed as a chain
+of transitions from one state to another based on diﬀerent price and order size levels as
+diﬀerent types of orders arrive. Based on this perspective, Markov models can be applied
+to LOB data, assuming the transition from one LOB state to another as an event arrives
+3
+
+=== page 4 ===
+depends only on the state attained in the previous event. For example, Huang et al. [12]
+and Huang & Rosenbaum [13] propose a simulation and analytical framework for Markov
+models on LOB data and demonstrates empirical ﬁndings on various LOB event types; Kelly
+& Yudovina [14] discuss a tractable Markov LOB model on short time scales and provides
+applications in high-frequency trading; Morariu-Patrichi & Pakkanen [19] estimates a state-
+dependent Hawkes model for LOB modeling in which the exponential excitement kernel
+depends on the state process that switches state whenever events arrive.
+Our contribution
+Most of the previous works mentioned above apply Hawkes process and Markov models
+independently to LOB data. The eﬀectiveness of combining the two models in LOB mod-
+eling is not well studied. Moreover, assuming a parametric form of Hawkes excitement
+kernels, such as an exponential distribution, gives less ﬂexibility for estimating kernels that
+exhibit more complex shapes other than the assumed parametric distribution. In this pa-
+per, we introduce a Hawkes+Markovian model to capture the dynamics of electronic LOB
+data. We apply a multi-dimensional Hawkes process on a comprehensive range of event
+types derived from LOB movements. In addition, by integrating the Markovian model on
+the LOB data, our model captures the intuition that the stimulating eﬀects among events
+also depend on the liquidity state and time factor of the LOB right before event arrives.
+Instead of assuming the Hawkes kernels to follow parametric distributions from the ex-
+ponential family, we implement a regression-based non-parametric method [15] for model
+parameter estimation. The main idea of the estimation procedure is to allocate the event
+arrival sequences into a series of ﬁxed-size bins of discretized short-period, and then obtain
+the Hawkes kernel estimators as a step function. In contrast to previous works [15, 19]
+that do not consider order sizes, we do take order sizes into account in the arrival sequence
+construction to better capture the stimulating eﬀects of large and small orders. As the
+4
+
+=== page 5 ===
+number of estimated parameters is large, we also incorporate the use of LASSO regular-
+ization [23] in our model estimation. Furthermore, we propose a model selection method
+based on Akaike Information Criterion (AIC) to analyze the contribution of the Hawkes
+stimulation part, the Markovian part, and the LASSO part to model explanatory power.
+Finally, we demonstrate an implementation example using real order book data.
+The rest of this paper is organized as follows: Section 2 demonstrates a brief mathe-
+matical introduction of order book data representations; Section 3 introduces our proposed
+model, with detailed illustrations on event classiﬁcation and model structures; Section 4
+provides detailed descriptions of the non-parametric model estimation as well as model
+selection; Section 5 showcases some aggregated empirical results from an implementation
+example based on real LOB data.
+2 Order book representation
+The limit order book is mainly constructed by two elements. The ﬁrst element is the shape
+of the order book, consisting of all the orders at which prices the market wants to buy
+(bid price) and the market wants to sell (ask price). The bid/ask prices form the bid/ask
+queues and must be multiples of the tick size, which is the measure of the minimum upward
+or downward movement of security prices (currently the tick size for all U.S exchanges is
+$0.01). The second element is the center position of the order book between the best bid
+price (the highest price the market wants to buy) and the best ask price (the lowest price
+the market wants to sell). The center position of LOB is often referred to as the “reference
+price” and the distance between the best bid and best ask is referred to as “bid-ask spread”.
+The easiest way to approximate the reference price is to deﬁne it as the midpoint of the best
+bid and best ask, also known as the “mid price”. The order book also includes information
+on the size of each order, which is the quantity of shares an order attempts to execute. See
+5
+
+=== page 6 ===
+Figure 1 for an example.
+Figure 1: A simple order book representation. (Q−1, Q−2, Q−3) / (Q1, Q2, Q3) represent
+the ﬁrst, second, and third price level on the bid/ask side, respectively; (q−1, q−2, q−3) /
+(q1, q2, q3) represent the number of orders on the ﬁrst, second, and third price level on the
+bid/ask side, respectively.
+Mathematical Representation Huang et al. [12] and Huang & Rosenbaum [13] demon-
+strate a comprehensive overview of the mathematical representations of LOB. Recall the
+reference price pref(t) must lie strictly between the best bid and best ask. Let qi(t) be the
+size of the ask orders at price level Qi that is the i-th tick strictly above pref(t). Symmetri-
+cally, q−i(t) is the negation of size of the bid orders at price level Q−i that is the i-th tick
+strictly below pref(t).
+Formally, let α be the single tick value, then Q1 := min{nα : nα > pref,n∈ Z}, Qi :=
+Q1 +(i−1)α, ∀i> 1. Similarly, Q−1 := max{nα : nα<pref,n∈ Z}, Q−i := Q−1 −(i−1)α,
+∀i> 1. See Figure 1 and its caption for an example.
+The complete order book’s shape at time t is an inﬁnite vector for the current size at
+all prices q(t) = [...,q−k(t),...,q−1(t),q1(t),...,qk(t),...] with qi ∈ Z denoting the size at
+6
+
+=== page 7 ===
+each price. Note qi < 0 if these orders are bid orders and qi > 0 if they are ask orders. If
+qi = 0 there is no orders at price level Qi. Since qi can be 0, the best bid and best ask
+prices are deﬁned as the nearest price levels to the reference price with non-empty orders
+sizes:
+Qbest-bid = Qmax{i:i<0 and |qi|⁄=0} , Qbest-ask = Qmin{i:i>0 and |qi|⁄=0}
+The reference price, pref(t), is often the mid-price, with some technicality detailed in
+Supplementary Material Section A. The LOB information at time t is therefore fully repre-
+sented by [q(t),pref(t)], t≥ 0. To restrict the dimensions of [q(t),pref(t)], we consider only
+K limits on each side, and thus have now q(t) = [q−K (t),...,q−1(t),q1(t),...,qK (t)], which
+we shall call “level-K order book”.
+3 Model speciﬁcations
+Following the framework we outlined above, we propose a speciﬁc event arrival dynamic
+for empirical modeling of the level-K order book.
+We consider the LOB event arrival process as 6 × (K + 1) dimensional, indicating
+6 × (K + 1) types of events are studied in the level-K order book. They are generally
+grouped into two categories: (1) order book events that do not change reference price, and
+(2) order book events that change the reference price. The way we classify LOB events
+is mainly extended from previous work on the “Queue-Reactive” LOB model [12, 13].
+Compared to the simpler LOB event classiﬁcations used in [15, 19], our classiﬁcation not
+only separates events belonging to each of the K order book levels, but also classiﬁes events
+in more detailed groups when the reference price changes, enabling our proposed model to
+capture more complex dynamics of event stimulation.
+7
+
+=== page 8 ===
+3.1 Order book events that do not change reference price
+When studying the level-K order book, each order book queue can have the following
+events:
+• a trade, or market order, which is denoted as (t)
+• an insertion of new limit order, which is denoted as (i)
+• a cancellation of existing limit order, which is denoted as (c)
+For level-K order book, we have in total 2K number of queues:
+• K ask queues, denoted as +1, +2,..., +K, which are the 1st tick above reference
+price, 2nd tick above reference price, ..., K-th tick above reference price, respectively.
+• K bid queues, denoted as −1,−2,...,−K, which are the 1st tick below reference
+price, 2nd tick below reference price, ..., K-th tick below reference price, respectively.
+Therefore, we have in total 3 × 2K number of events that do not change reference price.
+For example, “+1(t)” denotes the event that a trade order arrives at the ﬁrst ask queue,
+“-2(i)” denotes the event that a new order arrives at the second bid queue and is inserted,
+and “+3(c)” denotes the event that an existing order is canceled at the third ask queue. In
+our framework, higher level trade orders such as “+2(t)”, “+3(t)”, “-2(t)”, and “-3(t)”
+are possible when there is no order above/below that order book trade level. For instance,
+“+2(t)” is possible when the queue at the ﬁrst ask queue (1 tick above the reference price)
+is empty, meaning the price at the 2nd-level (2 ticks above the reference price) is the current
+best execution price.
+8
+
+=== page 9 ===
+3.2 Order book events with reference price change
+This section focuses on the modeling for another 6 types of events that shift the reference
+price. The reference price can increase due to the following event:
+• Trade at the best ask price that depletes the queue of best ask. The event of reference
+price increase due to trade is denoted as p+(t)
+• Cancellation of all orders at the best ask price. The event of reference price increase
+due to cancellation is denoted as p+(c)
+• Insertion of bid order at a higher price than the current best bid oﬀer, which is
+only possible when the bid-ask spread is strictly larger than one tick. The event of
+reference price increase due to insertion is denoted as p+(i)
+On the ﬂip side, the reference price can decrease due to the following event:
+• Trade at the best bid price that depletes the queue of best bid. The event of reference
+price decrease due to trade is denoted as p-(t)
+• Cancellation of all orders at the best bid price. The event of reference price decrease
+due to cancellation is denoted as p-(c)
+• Insertion of ask order at a lower price than the current best ask oﬀer, which is only
+possible when the bid-ask spread is strictly larger than one tick. The event of reference
+price decrease due to insertion is denoted as p-(i)
+3.3 Hawkes+Markovian model of the order book
+The order book event processes of dimension 6K + 6 at time t are represented as Xi(t),i =
+1, 2,..., 6K + 6, with X1,X2,...,X6K+6 representing the arrival process for the following
+9
+
+=== page 10 ===
+events:
+
+ X1 X2 ...
+X6K+6
+
+ =
+
+ (-K(i), -K(c), -K(t),..., -1(i), -1(c), -1(t))⊺ | {z } 3K (+1(i), +1(c), +1(t),..., +K(i), +K(c), +K(t))⊺ | {z } 3K (p-(t), p-(c), p-(i), p+(t), p+(c), p+(i))⊺
+| {z }
+6
+
+
+(6K+6)×1
+Basically, Xi(t) represents the cumulative size of the corresponding event. For example,
+X1(t) corresponds to event -K(i), the insertion of limit order at the bid queue K-th tick
+below reference price; X6K+6(t) corresponds to event p+(i), price increase due to insertion
+of bid above current best bid.
+3.3.1 Hawkes part
+Deﬁne the instantaneous rate of event i’s arrival to be
+λi(t) = lim ∆t→0+
+E(Xi(t + ∆t) −Xi(t)|Ft)
+∆t
+∀i = 1, 2,..., 6K + 6, where Ft is the ﬁltration generated by X at time t. Then the
+intensity of event i for a plain-vanilla multivariate Hawkes process model for LOB data can
+be represented as:
+λi(t) = ηi +
+6K+6∑
+j=1
+∫ t
+0
+φji(t−s)dXj (s), ∀i = 1, 2,..., 6K + 6. (1)
+in which ηi represents the baseline intensity, φji(·) represents the Hawkes kernel for event
+j stimulating event i.
+3.3.2 Markovian part
+To further extend on the plain-vanilla multivariate Hawkes process, we integrate two factors
+derived from LOB queues to the baseline intensity (intercept) ηi of the Hawkes process:
+10
+
+=== page 11 ===
+• The current LOB liquidity state: The liquidity state includes the number of
+existing orders on the associated price of the event, the number of orders on the best
+bid/ask price, and the bid-ask spread.
+• Time clustering: Figure 2 indicates that the trading frequency for real LOB data
+diﬀers between time groups throughout trading hours. The last 30 minutes have
+signiﬁcantly more activities, and the ﬁrst 30 minutes see slightly higher activities,
+while other periods during the day seem to be tranquil.
+We call the above two factors “Markovian” factors because these factors carry the present
+information only, which is the current state of LOB, represented by liquidity and time.
+Under this setting, we assume that the dynamics of the LOB is aﬀected by the LOB
+liquidity and time only through the current state. This type of modeling is consistent with
+the LOB Markovian models proposed by [12, 13]. Therefore, we model the baseline event
+arrival intensities ηi with a Markovian structure that depends on the current liquidity state
+and time clustering:
+ηi(t) = Mi(li(t)) + Θi(t) (2)
+where Mi(·) and Θi(·) denote speciﬁed functions on liquidity state li(t) and time t.
+11
+
+=== page 12 ===
+Figure 2: An illustration of the order arrival rate for LOB data. The ﬁgure demonstrates
+median order arrival rates per second for 20 trading days from 1/2/2019 to 1/31/2019
+based on LOB data for Apple.Inc.
+Next we shall deﬁne the liquidity state li(t). Note li(t) only changes if an event arrives.
+For all events that do not change the reference price (i.e., -K(i), -K(c), -K(t), . . . ,
++K(i), +K(c), +K(t)), the liquidity state li(t) is intuitively qki (t), the accumulated order
+size right before time t on the ki-th price level where event i belongs. For example, events
++1(i),+1(c),+1(t) have ki = 1 and li(t) = q1(t).
+Then we consider the events changing the reference price. For events p-(t) and p-(c),
+li(t) is deﬁned as the queue size at the best bid price. For events p+(t) and p+(c), li(t) is
+deﬁned as the queue size at best ask price; this is because the queue at the best bid/ask
+must be either consumed or canceled for these event types. For events p+(i) and p-(i),
+we consider order insertions within the bid-ask spread, and therefore the bid-ask spread is
+considered as the liquidity state li(t) for these two types of events. p+(i) and p-(i) are
+the only two types of events whose liquidity state is based on price (bid-ask spread) while
+the liquidity state of the rest of the events is based on existing order size at the associated
+price.
+12
+
+=== page 13 ===
+Formally, we have the mathematical deﬁnition:
+li(t) =
+
+
+
+qki (t), i∈{-K(i), -K(c),..., +K(i), +K(c), +K(t)} (queue size)
+qbest-bid(t), i∈{p-(t), p-(c)} (size of the best-bid queue)
+qbest-ask(t), i∈{p+(t), p+(c)} (size of the best-ask queue)
+Qbest-ask(t) −Qbest-bid(t), i∈{p+(i), p-(i)} (bid-ask spread)
+where ki denote the queue to which event i belongs to.
+3.3.3 Final form of Hawkes+Markovian combined model
+Our ﬁnal model on the instantaneous rate λi(t) is a combination of Hawkes part Eq.(1)
+and Markovian part Eq.(2):
+λi(t) = Mi(li(t)) + Θi(t) +
+6K+6∑
+j=1
+∫ t
+0
+φj,i(t−s)dXj (s), ∀i = 1, 2,..., 6K + 6 (3)
+4 Estimation procedure
+Given the above hybrid Hawkes+Markovian model, we employ a non-parametric regression-
+based approach to estimate the model parameters. Our approach is extended from [15] as
+well as [3].
+Inspired by [15] and [3], we approximate the whole intensity function as a standard
+vector-valued linear autoregressive time series. The estimation procedure discretizes a
+continuous point process into multiple ﬁxed-size bins on the time domain and thereby ﬁts
+a vector autoregression model to the discretized samples.
+To outline the intensity function estimation, we ﬁrst deﬁne discretization bin-size ∆
+and maximum support s. The maximum support represents the maximum duration (in
+seconds) during which the arrival of one event can have stimulating eﬀects on the arrival of
+13
+
+=== page 14 ===
+other events. The bin-size ∆ deﬁnes the short period of time during which the Hawkes self-
+and cross-exciting function stays unchanged. Take s = 20 seconds, ∆ = 0.25 seconds as an
+example: this setting indicates the maximum duration that an event i can stimulate the
+intensities of future event arrivals is 20 seconds, while event i’s self- and cross-stimulating
+functions stay the same within each 0.25-second short period. That is to say, the 80 of
+0.25-second windows combined deﬁne the 20-second stimulating horizon for event i and its
+stimulating function shrinks to 0 beyond 20 seconds after event i’s arrival.
+Given an appropriate choice of bin-size ∆ and maximum support s, a continuous Hawkes
+excitement function between two events can be approximated by a piece-wise constant
+function of p = ⌊s/∆⌋ steps, with each step standing for the constant function value
+over the short period ∆. To complete the estimation, we need to apply some smoothing
+methods over the estimated point-wise function. We adopt the cubic smoothing spline in
+our method. The cubic smoothing spline is a smoothing technique such that the curve
+spanning each data interval is represented by a cubic polynomial. The cubic smoothing
+spline is achieved by minimizing the curvature of the smoothed function and is not required
+to pass all data points. The overall illustration of the estimation method is demonstrated
+in Figure 3.
+14
+
+=== page 15 ===
+Figure 3: An example illustration of Hawkes excitement function estimation. The example
+demonstrates the estimation for a continuous function φji. Suppose s = 4∆ and therefore
+p = 4. The estimation idea is that φji can be approximated by ˆφji = (ˆφji,1, ˆφji,2, ˆφji,3, ˆφji,4).
+ˆφji,1 represents the ﬁxed function value over [0, ∆], ˆφji,2 represents the ﬁxed function value
+over [∆, 2∆] ....Though the main objective is to obtain the discrete estimators ˆφji, we
+can further ﬁt a cubic smoothing spline to the discrete estimators to derive a continuous
+estimated function as shown by the red dotted line.
+4.1 Bin construction
+To obtain our proposed discretized estimators, the data needs to be discretized under the
+(s, ∆)-framework as the ﬁrst step. The estimation requires allocating LOB event arrival
+and LOB state sequences into ﬁxed-size bins with length ∆ over the time horizon and
+counting the number of realizations in each bin. Afterward, these bin-count sequences can
+be used as suﬃcient statistics to obtain model estimates.
+Recall in Section 3.3, we denote the order book event process at time t as Xi(t), where i
+15
+
+=== page 16 ===
+is index for events. For LOB data, each type of event outlined in Section 3.1 and 3.2 comes
+with an order size indicating the quantity of shares the LOB event attempts to execute.
+For example, a +1(i) event with order size 100 indicates the event at the ﬁrst ask queue
+to insert 100 shares.
+Since all regular order book events -K(i),-K(c),-K(t),. . . , +K(i), +K(c), +K(t) are
+additive, big events can be considered as the sum of the same events with smaller sizes in
+a short period of time. As an intuitive example, one insertion order of size 100 shares is
+assumed to be equivalent to two insertion orders of size 50 shares happening at the same
+time and the same price. However, the events p-(t), p-(c), p-(i), p+(t), p+(c), p+(i)
+are not addictive because the reference price change caused by these events shift the LOB
+queue distribution. Speciﬁcally, the queue size value qk can shift to its neighbours when
+the reference price (center of LOB distribution) goes up and down. Therefore, an event
+causing reference price changes cannot be thought simply as the sum of the same event with
+a smaller size. Overall, the size of an LOB event is modeled in a dichotomous approach for
+Xi: for all regular addictive events, Xi increases by its order size at event arrival; for all
+non-addictive events, Xi by 1 at event arrival, treating as pure point processes.
+We can then construct a series of ﬁxed-size bins over the total time horizon (0,T ], and
+sum the realizations of Xi during each bin to obtain the bin-count sequences, as illustrated
+in Figure 4. Formally, for t∈ (0,T ], for some bin-size ∆ > 0, we construct the (6K + 6)-
+dimensional bin-count, liquidity state, and time factor sequences as:
+B(∆) k = ( B(∆) i,k )6K+6 i=1 , B(∆) i,k := X(i) ( ((k− 1)∆,k∆] ) ,
+l(∆) k = ( l(∆) i,k )6K+6 i=1 , l(∆) i,k := li ( (k− 1)∆ ) ,
+t(∆) k = ( t(∆) i,k )6K+6 i=1 , t(∆) i,k := (k− 1)∆,
+where i = 1, 2,..., 6K + 6, k = 1, 2,...,n, and n := ⌊T/∆⌋.
+16
+
+=== page 17 ===
+Figure 4: An illustration example on bin-count sequence construction for event -K(i).
+Order size at the cross mark are allocated into bins 1, 2,...,n based on event arrival time.
+4.2 Bucketize LOB state factors
+As mentioned in Section 3.3, we assume that the baseline intensity function of the proposed
+model is controlled by functions based on LOB liquidity state li(t) and intraday time t. In
+the previous section, we have discussed discretizing and transforming sequences li(t) and
+t into bin-based sequences l(∆) i,k and t(∆) i,k for a selected bin-size ∆. Consequently, we have
+indeed transformed Mi(li(t)) and Θi(t) into Mi(l(∆) i,k ) and Θi(t(∆) i,k ) for estimation purpose.
+In order to approximate the non-parametric function Mi(·) and Θi(·), we treat l(∆) i,k
+and t(∆) i,k as categorical variables to obtain the linear parameters. Therefore, Mi(·) and
+Θi(·) become step functions that depend only on the speciﬁed categories of the discretized
+liquidity state and time factor. We use the following method for bucketization:
+17
+
+=== page 18 ===
+• Liquidity state l(∆) i,k : we bucketize l(∆) i,k into 10 categories {L1,L2,...,L10} 1with
+L1 = [0, 100),L2 = [100, 200),...,L10 = [900, +∞), which represents the number
+of existing orders on the corresponding price queue (except for events p+(i), p-(i))
+right before event arrives. For example, l(∆) i,k ∈ L1 means that the number of or-
+ders on the queue is between 0 and 100 shares. For the special case of events p+(i),
+p-(i), the l(∆) i,k represents the bid-ask spread in market price (Section 3.3). The group
+l(∆) i,k ∈L1 means that the bid-ask spread is between $0 and $0.01.
+• Time factor t(∆) i,k : major U.S. electronic stock exchanges trade from 9:30 am ET to
+4:00 pm ET. As illustrated in Figure 2, the LOB event arrival frequency exhibits
+time clustering eﬀects at the beginning and ending intraday 30-minutes window (9:30
+- 10:00 am ET and 3:30 - 4:00 pm ET). Therefore, we construct 1-minute categories
+at the beginning and ending 30-minutes to better capture the event arrival volatility.
+For the rest of the period between 10:00 am ET to 3:30 pm ET, we bucketize time t(∆) k
+into 5-minute categories since the event arrivals are more tranquil. Consequently, we
+construct 126 time categories consisting of 60 1-minute categories and 66 5-minute
+categories, denoted as {T1,T2,...,T126}.
+The above category creation is an implementation choice. Other choices on the number
+of categories for the liquidity state and time factor can also be applied as long as they do
+not impact implementation feasibility.
+4.3 Non-parametric estimation
+After deﬁning the bin-count sequence and the LOB state/time categories, we ﬁt a vector-
+valued autoregression model to the bin-count sequences to obtain the Hawkes excitement
+1These categories apply to all event types ∀i = 1, . . . , 6K +6, and therefore the i subscript is eliminated
+from the {L1, L2, . . . , L10} notation.
+18
+
+=== page 19 ===
+functions, together with the Markovian liquidity state and time factor parameters. For
+each event-to-event pair, the auto-regression model is implemented with lag p := ⌊s/∆⌋ on
+the bin-count sequence data B(∆) k as well as the Markovian liquidity state and time factor
+sequence l(∆) k and t(∆) k across all event types.
+Kirchner [15] has provided a detailed framework for autoregressive non-parametric esti-
+mation for Hawkes process with constant baseline intensity. Our estimation is an extension
+of Kirchner’s method with modiﬁcations that the baseline intensity is varying and controlled
+by li(t) and t. An illustration of the estimation procedure is given in Figure 5.
+The mathematical representation detail on the estimation procedure is given in Sup-
+plementary Material Section B. As shown Eq.(4) in the Supplementary Material Section
+B, ˆΦ(∆,s) ∈ R(6K+6)×((6K+6)p+10+126) represents all the parameters of our model for a choice
+of bin-size ∆ and maximum support s. To summarize, the estimation procedure for our
+proposed model estimates: A total of (6K + 6) × (6K + 6) Hawkes excitement functions
+φ(·), each as a step function with p = ⌊s/∆⌋ distinct levels (See Figure 3); A total of
+6K + 6 liquidity state functions M(·), each as a step function with 10 distinct levels on
+the 10 liquidity state baskets; A total of 6K + 6 time factor functions Θ(·), each as a step
+function with 126 distinct levels on the 126 time factor baskets.
+19
+
+=== page 20 ===
+Figure 5: An illustration of the non-parametric estimation procedure. Over a time horizon
+(0,T ], given a bin-size ∆ and a maximum support s, the parameters of our proposed
+model can be estimated using an autoregressive framework with lag p = ⌊s/∆⌋. There
+are totally n = ⌊T/∆⌋ bins. The autoregression response Y ranges from the (p + 1)-
+th bin to the n-th bin from the bin-count sequence. The design matrix Z consists of
+two parts: the ﬁrst part contains the bucketized liquidity state and time factor sequences
+controlling the regression intercept; the second part contains lag-p sequences constructed
+from the bin-count sequence. The estimated parameters ˆµ and ˆθ for liquidity state and
+time factor control the baseline intensity of the estimated excitement functions. Parameters(
+ˆΦ1,..., ˆΦp
+)
+are the estimates for the constant excitement function value during each short
+period of bin-size ∆.
+20
+
+=== page 21 ===
+4.4 LASSO regularization
+Many previous works have discussed the exponential decaying shape of the LOB excitement
+functions [20, 1, 19, 15]. Therefore, We believe some of the estimators for the excitement
+function are likely to be very close to zero, especially at the tail part when the support
+s is large and the bin-size ∆ is small. As discussed in Remark 1 from Supplementary
+Material Section B and Section 3.3, for a single event type the OLS estimation procedure
+outputs a large (6K + 6) ×p (recall p = ⌊s/∆⌋) number of estimators for the Hawkes
+stimulating functions φ(·) for a given combination of (s, ∆). To ﬁt linear models with such
+a large design matrix in a more robust way, we consider adding LASSO regularization to
+the non-parametric estimation of excitement function to shrink the estimations to zero.
+On the other hand, we don’t regularize any LOB liquidity state and time factor parame-
+ters (ˆµ, ˆθ) since we believe most of the redundant parameters tend to appear in the Hawkes
+excitement function part, while the liquidity state and time factor should have smooth
+and non-zero eﬀects. The mathematical representation detail of the LASSO is given in
+Deﬁnition 3 in Supplementary Material Section C.
+4.5 Model selection using AIC (Akaike Information Criterion)
+AIC is among the common approaches for linear model selection and diagnosis. Kirchner
+[15] uses multivariate AIC to determine the ideal model ﬁt using both simulated and real
+LOB data. In our proposed methodology, AIC can be used to evaluate the eﬀects of
+diﬀerent parts of the proposed model in Section 3.3.3.
+Given a selected bin size ∆ = ∆0, the estimation lag equals p = ⌊s/∆0⌋ for any
+maximum support s > 0. Similarly, we denote the total number of the bins as n0 :=
+⌊T/∆0⌋. AIC calculation involves the total number of eﬀective parameters (model degree-
+of-freedom) in its formula. When the estimated parameters are not eﬀective (exactly zero,
+21
+
+=== page 22 ===
+or not estimable), they cannot be counted as degree-of-freedom. For example, a number
+of redundant estimators shrink to zero under LASSO regularization. Also, when there is
+no liquidity state observation in some of the bucketized categories among (L1,L2,...,L10),
+the parameter ˆµ(∆,s) will not be estimable. Consequently, these parameters are not part of
+the AIC calculation.
+Denote the (6K + 6) × 1 regression residual vector as ˆuk (∆0,p) = (ˆu1,k,..., ˆu6K+6,k)⊤ for
+∀k = (p + 1),...,n0. The multivariate AIC is given as:
+AIC(∆0)(p) = log ( detˆΣ(∆0)(p) ) + 2 ×de
+(n0 −p), ˆΣ(∆0)(p) =
+n0∑
+k=p+1
+(ˆuk (∆0,p))(ˆuk (∆0,p))⊤/(n0−p)
+where de is the number of eﬀective parameters involved in the estimation.
+5 Implementation Example
+In this section, we give a detailed example of the implementation of the proposed model and
+its estimation illustrated in Section 3 and Section 4. We apply our model on real order book
+data obtained from Lobster Data (http://lobsterdata.com). The data is reconstructed
+from the ITCH data [21] provided by NASDAQ and accurately delivers order book ﬂows and
+distributions in nanoseconds. Detailed processing, cleaning, and reconstruction methods
+for the Lobster Data is shown in [11]. Order book data of Apple.Inc from 9:30 AM ET to
+4:00 PM ET from 01/02/2019 to 01/31/2019 was used in our implementation. We choose
+to model the level-3 order book, i.e., setting K = 3, so that there are 6K + 6 = 24 events
+considered. They are:
+22
+
+=== page 23 ===
+
+ (-3(i), -3(c), -3(t), -2(i), -2(c), -2(t), -1(i), -1(c), -1(t))⊺ | {z } 9 (+1(i), +1(c), +1(t), +2(i), +2(c), +2(t), +3(i), +3(c), +3(t))⊺ | {z } 9 (p-(t), p-(c), p-(i), p+(t), p+(c), p+(i))⊺
+| {z }
+6
+
+
+24×1
+The order book estimation for every single day can be considered as an independent
+realization of event arrivals. Since the support and bin size values are ﬁxed throughout the
+days in consideration, we can obtain the unbiased estimator of the estimation parameters by
+taking the mean of each element from single-day parameters. The aggregated results across
+many days can smooth out single-day extreme values and therefore is a clear representation
+of estimation results over a certain period.
+Suppose we have N days of order book data for a company and the estimator¯ˆΦ(∆,s) n for
+each day with n = 1, 2,...,N, the aggregated estimator can be represented as:
+¯ˆΦ(∆,s) 1:N :=
+∑N
+n=1
+ˆΦ(∆,s) n
+N
+In addition, a small LASSO regularization parameter λi = 0.0005 has been implemented
+for our estimations, as a large parameter may drastically alter the estimation results. The
+main ﬁndings and all the observed features demonstrated in the rest of Section 5 are based
+on the 20-day aggregation method mentioned above.
+5.1 Main ﬁndings
+Through our non-parametric estimation over 20-day LOB data of Apple.Inc, the main
+ﬁndings include:
+• Most of the estimated Hawkes excitement functions exhibit exponential shape with
+trailing zeros. However, there are some exceptions and most of them appear on
+23
+
+=== page 24 ===
+market (trade) orders on higher levels (the 2nd and 3rd best bid/ask price) of the
+LOB queue.
+• The estimated Hawkes excitement functions are similar with respect to insertion and
+deletion events on the 1st level of LOB queue (the 1st best bid/ask price).
+• For most of the LOB events that do not change the price (reference price, which is
+the center of the order book), the event arrival intensity increases with the current
+order size in the order book queue.
+• The arrival intensities for almost all events elevate during the beginning and ending
+30-minutes window of daily trading hours. The intensity increases drastically before
+market close between 15:55 to 16:00 pm ET.
+• Our qualitative result is not sensitive to the discretization size in time and the han-
+dling of the size of the order.
+• Through model selection analysis using AIC (Akaike Information Criterion), the in-
+clusion of the Hawkes excitement functions, the LOB liquidity state, and LOB time
+factor to the event arrival intensity all contribute to the improved model ﬁtting. Be-
+sides, reducing the bin-size and adding LASSO regularization to our estimation both
+contribute to better model ﬁtting.
+The details of the observations listed above will be discussed in the rest of this section.
+5.2 Estimated excitement functions
+Figure 6 illustrates the estimated excitement functions of insertion event at 1st ask (event
++1(i)) stimulating insertion and cancellation at the 1st ask (event +1(i) and +1(c)).
+24
+
+=== page 25 ===
+We observe the excitement function to have a time-decaying shape in general: the
+stimulation is highest in a very short time following the event arrival, and then gradually
+decaying to zero.
+We also observe similarities between Fig.6(a) and Fig.6(b): the ﬁgures both exhibit
+exponential decaying shapes with slight spikes around 5 and 13 seconds after event +1(i)
+arrives. This observation suggests that the estimated excitement functions are very similar
+for the eﬀect towards the insertion and cancellation at the 1st ask (i.e., eﬀect towards
++1(i) and +1(c)). We have similar observations for 1st bid as well demonstrated in
+Supplementary Material Section D, suggesting such stimulation behavior exists at the 1st
+level of the LOB queue.
+(a) +1(i) stimulate +1(i)
+ (b) +1(i) stimulate +1(c)
+Figure 6: Aggregated Hawkes excitement function estimations under (s = 20 seconds, ∆ =
+0.25 seconds) with LASSO regularization. The points illustrate the discrete function esti-
+mators. The red line illustrates the cubic smoothing spline for the points.
+Further examination shows that this feature (similarity at the 1st ask/bid) becomes
+less obvious for the 2nd and 3rd levels of the LOB queue. One possible explanation of this
+25
+
+=== page 26 ===
+feature is that market participants may use a sequence of insertion/deletion orders in a
+short period of time to drive up/down the price for speciﬁc purposes. Insertion/deletion
+on the 1st level is typically less risky than insertion/deletion on any higher levels especially
+when the short-term price movement is unpredictable.
+5.3 Exponential and non-exponential shape of excitement func-
+tions
+From the aggregated estimation results we observe that a large proportion of Hawkes
+excitement functions exhibit exponential features with their function values converging
+to zero as time elapses on the horizontal axis. For example, we can see the excitement
+functions demonstrated in Figure 6 exhibit this feature. This observation agrees with the
+existing works that assume the stimulation eﬀects are exponential-decaying and use Hawkes
+process with exponential kernels [20, 1, 19, 15].
+However, we have also observed that some Hawkes excitement functions exhibit other
+shapes. Figure 7 shows that the excitement functions for speciﬁc events can deviate from
+the exponential shape. These non-exponential shaped functions appear more frequently for
+market(trade) order events on higher levels of the LOB queue when they are the “being
+stimulated” part of the function, such as events -3(t), -2(t), and +3(t). These “high-
+level” trade orders typically arrive when the bid-ask spread is large. One possible reason
+for this non-exponential feature is that, for a heavily traded stock like Apple.Inc, some
+high-frequency algorithmic market participants may use complex execution and risk man-
+agement strategies to deal with the increased risk brought by the enlarged bid-ask spread.
+Therefore, our estimated Hawkes function can generate complicated shapes possibly be-
+cause of this layer of complexity. These non-exponential shaped functions indicate the
+advantage of our non-parametric method since it might be problematic to adopt exponen-
+26
+
+=== page 27 ===
+tial shape assumption for stimulating functions throughout all events. More examples on
+the non-exponential shapes are demonstrated in Supplementary Material Section E.
+(a) -1(t) stimulate +3(t)
+ (b) p+(t) stimulate -3(t)
+Figure 7: Aggregated Hawkes excitement function estimation under (s = 20 seconds, ∆ =
+0.25 seconds) with LASSO regularization. The points illustrate the discrete function esti-
+mators. The red line illustrates the cubic smoothing spline for the points.
+5.4 Liquidity state
+For liquidity state results, we have observed that for event types that do not change
+the reference price, the arrival intensity increases as the liquidity state increases for all
+trade/cancellation events, as well as insertion events on the 1st level (i.e., -3(c), -3(t),
+-2(c), -2(t),-1(i), -1(c), -1(t),+1(i), +1(c), +1(t),+2(c), +2(t), +3(c), +3(t)).
+An example is shown in Figure 8(a). This is consistent with the intuition that more
+trade/cancellation events are likely to happen when the number of existing orders on the
+corresponding queue is large, because the trade/cancellation are actions on existing orders.
+It also suggests that more insertion events at 1st level LOB are likely to happen when the
+number of existing orders on the 1st level is large, which could be potentially explained by
+27
+
+=== page 28 ===
+the popularity of the stock – when the stock is popular, naturally the number of existing
+orders at 1st level LOB is high, yet market participants are willing to insert more orders
+at 1st level LOB, and vice versa.
+On the other hand, the arrival intensity generally decreases as the liquidity state in-
+creases for the insertion events at 2nd and 3rd level (i.e., +3(i), -3(i), +2(i), -2(i)).
+An example is demonstrated in Figure 8(b). The observation implies that market partic-
+ipants are less likely to insert orders on the 2nd and 3rd level of LOB when the number
+of existing orders is large on these levels. This behavior is possibly due to the increased
+risk that the orders on the 2nd and 3rd level may fail to be ﬁlled as orders accumulate in
+these queues, and maybe the market participants focus more on the 1st level when such a
+situation occurs.
+More examples demonstrating the above patterns are presented in Supplementary Ma-
+terial Section F.
+(a) Liquidity state for +1(c)
+ (b) Liquidity state for -3(i)
+Figure 8: Aggregated estimation result for liquidity state for selected events under (s =
+20 seconds, ∆ = 0.25 seconds). In general, the arrival intensity increases/decreases as the
+liquidity state increases for event +1(c) and -3(i), respectively.
+28
+
+=== page 29 ===
+5.5 Time factor
+For estimation results of time factor, the order arrival intensity tends to be larger at the
+beginning and end of the trading hours between 9:30 am and 4:00 pm (see Figure 9). This
+feature matches our initial arrival rate estimation in Figure 2 and reinforces our model
+assumption that more time factor categories should be constructed in the beginning and
+ending 30 minutes.
+(a) Time factor for event +1(i)
+ (b) Time factor for event +3(t)
+Figure 9: Aggregated estimation result for time factor between 9:30 am and 4:00 pm under
+(s = 20 seconds, ∆ = 0.25 seconds).
+Figure 9 demonstrates the time factor pattern mentioned above for event +1(i) and
+event +3(t). From the estimation results we have also observed a signiﬁcant intensity
+increase for many order types such as p-(i), p-(t), and -1(t) at 15:55 pm and 15:59 am.
+These patterns possibly stem from large algorithmic trader’s execution rules or the policy
+of stock exchanges on last-minute order submission/cancellations.
+29
+
+=== page 30 ===
+5.6 Sensitivity analysis
+So far our results have been presented using the bin count construction method based on
+order sizes, a ﬁxed bin-size ∆ = 0.25 seconds, and the LASSO loss function. This section
+provides a sensitivity analysis of these model assumptions to explore estimation robustness.
+The analysis consists of the following parts:
+• Estimation results when the size of order is ignored in bin count construction, assum-
+ing all orders to have size 1 in the estimation. (see Supplementary Material Section
+G)
+• Estimation results when the LASSO regularization is removed. (see Supplementary
+Material Section H)
+• Estimation results when the bin-size is increased from 0.25 seconds to 0.5 seconds.
+(see Supplementary Material Section I)
+Generally speaking, our estimation is robust for the above sensitivity tests. We have
+obtained qualitatively similar results as our original setting when we remove the LASSO
+regularization and enlarge the bin-size. After ignoring the order size, the estimation levels
+tend to decrease and the excitement function becomes smoother and less volatile. However,
+the observations given from Section 5.2 to Section 5.5 still hold.
+5.7 Model selection result
+In this section, we validate the added explanatory power for diﬀerent model parts using the
+AIC model selection method illustrated in Section 4.5. We consider the following model
+speciﬁcations for model selection: Model 1○: liquidity state only; Model 2○: time
+factor only; Model 3○: liquidity state + time factor; Model 4○: Hawkes only; Model
+5○: Hawkes + LASSO (LASSO parameter 0.0005); Model 6○: liquidity state + time
+30
+
+=== page 31 ===
+factor + Hawkes; Model 7○: Liquidity state + time factor + Hawkes + LASSO (LASSO
+parameter 0.005). Model 7○ is the model we mainly proposed and discussed in previous
+sections (Section 3.3.3 and Section 4). The ”+LASSO” notation is used to illustrate that
+LASSO regularization is used in model estimations as discussed in Section 4.4. Figure 10
+demonstrate AICs for the 7 models mentioned above for Apple.Inc on 2019-01-03.
+Figure 10: AICs and number of eﬀective parameters for seven model types for Apple.Inc on
+2019-01-03 with maximum support s = 20 seconds and bin-size ∆ = 0.25 seconds. Order
+size is considered to construct bin count sequence.
+We conclude that for Apple.Inc on 2019-01-03, Model 1○/ 2○/ 3○ generally have much
+higher AICs with a much smaller number of eﬀective parameters than the rest of the models.
+As expected, Model 4○ outperforms Model 1○/ 2○/ 3○, indicating the Hawkes ex-
+citement functions have stronger explanatory power than the combination of liquidity state
+and time variables. Furthermore, the LASSO models (Model 5○/ 7○) with a small reg-
+ularization parameter λi = 0.0005 generate even smaller AICs compared to Model 4○
+and Model 6○, respectively. Model 7○ apparently dwarfs all other models by including
+31
+
+=== page 32 ===
+liquidity state, time factor, Hawkes kernels, and LASSO all together.
+We have calculated the AICs for the 7 types of model across all the 20 trading days
+from 2019-01-02 to 2019-01-31. The AIC comparison and diﬀerence between diﬀerent model
+types are demonstrated in the following Table 1.
+AIC
+Diﬀerence
+Min 1st
+Quantile
+Median Mean 3rd
+Quantile
+Max
+# of
+days with
+decreased
+AIC
+4○ - 3○1 -4.09 -1.19 -0.58 -0.89 -0.16 0.09 18 out of 20
+6○ - 4○2 -0.31 -0.24 -0.23 -0.22 -0.18 -0.13 20 out of 20
+5○ - 4○3 -0.12 -0.09 -0.08 -0.08 -0.07 -0.03 20 out of 20
+5○ - 3○4 -4.15 -1.28 -0.63 -0.97 -0.23 -0.01 20 out of 20
+7○ - 6○5 -0.13 -0.09 -0.08 -0.08 -0.07 -0.03 20 out of 20
+Interpretations:
+1 The Hawkes part has stronger explanatory power than the liquidity state and time factor part.
+2 Adding the liquidity state and time factor to the Hawkes part further improves explanatory power.
+3 Adding LASSO (LASSO parameter 0.0005) to the Hawkes part further improves explanatory power.
+4 The Hawkes part with LASSO (LASSO parameter 0.0005) generates stronger explanatory power
+than the liquidity state and time factor.
+5 Adding LASSO (LASSO parameter 0.0005) further improves the explanatory power of the model
+with the liquidity state, time factor, and Hawkes.
+Table 1: AIC diﬀerence summary statistics of Apple. Inc from 2019-01-02 to 2019-01-31.
+Maximum Support s = 20s, bin-size ∆ = 0.25s. AIC has been adjusted for sample size so
+that it reﬂects the AIC per single sample.
+Following the sensitivity analysis provided in Section 5.6, we also present the model
+32
+
+=== page 33 ===
+selection results when the size of order is ignored and when the bin-size is enlarged from
+0.25s to 0.5s. The results are demonstrated in Supplementary Material Section J.
+In summary, Figure 10, Table 1, and Supplementary Material Section J demonstrate
+the following conclusions:
+• In event arrival intensity modeling, the inclusion of the Hawkes stimulating function
+part, the liquidity state part, and the time factor part all contribute to decreased
+AIC. Moreover, the Hawkes part is more powerful than the liquidity state and time
+factor parts in terms of reducing AIC.
+• Adding LASSO regularization with a small regularization parameter can eﬀectively
+eliminate redundant parameters for the Hawkes stimulating function and thereby
+further reduce AIC.
+• Under maximum support s = 20 seconds, smaller AIC is achieved when the bin-size
+∆ decreases to a shorter period.
+The model selection results are consistent whether we consider the order sizes or not.
+This is intuitive since the two methods are just diﬀerent ways to account for the size of
+orders based on the same LOB dataset.
+A very small λi = 0.0005 is chosen throughout our implementations. We have also
+implemented the same model AIC selections under λi = 0.001 and achieved similar results.
+Therefore, we believe a choice of λi that regularizes 10% to 20% of parameters to zeros
+given a small choice of ∆ (around 0.5 seconds) is enough to reduce estimation AIC. Any
+more advanced method for selecting the appropriate λi is beyond the scope of this paper
+and is left for future works.
+For the choice of bin-size ∆, Kirchner [15] has discussed that the choice of ∆ is a
+bias/variance trade-oﬀ as well as a bias/computational-issue trade-oﬀ when ∆ is extremely
+33
+
+=== page 34 ===
+small. Our estimation demonstrates that for all else being equal, smaller AICs are achieved
+when we reduce ∆ from 0.5 seconds to 0.25 seconds for all 20 days discussed, taking the AIC
+diﬀerence between Figure 10 and Figure S24 as an example. In addition, when ∆ = 0.25
+seconds, Model 5○ (Hawkes+LASSO) achieves smaller AIC than Model 3○ (liquidity
+state+time factor) for all 20 days discussed (see Table 1) while the number of days reduces
+to 19 when ∆ = 0.5 seconds with all else equal (see Table S2). This result implies that
+choosing ∆ = 0.25s is always better than choosing ∆ = 0.5s throughout our estimation.
+Also, we anticipate smaller AIC will be achieved if ∆ is reduced to a further smaller value
+until the model reaches a threshold when the increasing number of parameters brought by
+the decreasing ∆ generates too much penalty. However, the computational budget required
+for model estimation increases quadratically as ∆ decreases. Due to this computational
+barrier, any experiment with ∆ smaller than 0.25s is left for future research.
+6 Discussion and conclusion
+Though we have demonstrated our choice of maximum support s and bin-size ∆ is appro-
+priate enough to derive expected results, research on the choice of (s, ∆) and their dynamics
+is a natural direction of further study. Besides, as an extension to [15], [16] has introduced
+the comparison between the Hawkes model non-parametric estimation and maximum likeli-
+hood estimation (MLE), and concluded that the non-parametric method outperforms MLE
+under some circumstances. Whether this result holds under our proposed framework is also
+worth investigating. Another possible direction for future research would be to explore more
+LOB state variables that could reduce the estimation AIC. For example, it is worthwhile
+to test queue imbalance as proposed by [19]. Moreover, based on previous research [13, 5]
+on the mathematical properties for Markov models, further research on the stationary and
+ergodicity properties for our proposed model is also a direction of investigation.
+34
+
+=== page 35 ===
+To conclude, in this work we have proposed a comprehensive method in high-frequency
+limit order book modeling, integrated Markovian state factors into plain-vanilla Hawkes
+process, and applied a ﬂexible non-parametric method for high-dimensional estimation.
+Our model provides more careful classiﬁcation rules for LOB event types and does not
+require strict parametric assumptions on event stimulating kernels. The mathematical
+property of our model enables us to implement the estimation on large scale under a
+parallel and distributed computing framework. We believe our proposed model will bring
+valuable insights for researchers, ﬁnancial institutions, and policymakers who attempt to
+understand the distribution of the order book, the stimulating eﬀects between orders, and
+more topics related to market microstructure.
+References
+[1] F. Abergel and A. Jedidi, Long-time behavior of a hawkes process–based limit
+order book, SIAM Journal on Financial Mathematics, 6 (2015), pp. 1026–1043.
+[2] E. Bacry, I. Mastromatteo, and J.-F. Muzy, Hawkes processes in ﬁnance,
+Market Microstructure and Liquidity, 1 (2015), p. 1550005.
+[3] E. Bacry and J.-F. Muzy, Hawkes model for price and trades high-frequency dy-
+namics, Quantitative Finance, 14 (2014), pp. 1147–1166.
+[4] P. Blanc, J. Donier, and J.-P. Bouchaud, Quadratic hawkes processes for ﬁ-
+nancial prices, Quantitative Finance, 17 (2017), pp. 171–188.
+[5] E. Cinlar and J. Jacod, Representation of semimartingale markov processes in
+terms of wiener processes and poisson random measures, in Seminar on Stochastic
+Processes, 1981, Springer, 1981, pp. 159–242.
+35
+
+=== page 36 ===
+[6] A. Clements, R. Herrera, and A. Hurn, Modelling interregional links in elec-
+tricity price spikes, Energy Economics, 51 (2015), pp. 383–393.
+[7] F. Ferriani and P. Zoi, The dynamics of price jumps in the stock market: an
+empirical study on europe and us, The European Journal of Finance, (2020), pp. 1–25.
+[8] A. G. Hawkes, Spectra of some self-exciting and mutually exciting point processes,
+Biometrika, 58 (1971), pp. 83–90.
+[9] A. G. Hawkes, Hawkes processes and their applications to ﬁnance: a review, Quan-
+titative Finance, 18 (2018), pp. 193–198.
+[10] A. G. Hawkes and D. Oakes, A cluster process representation of a self-exciting
+process, Journal of Applied Probability, (1974), pp. 493–503.
+[11] R. Huang and T. Polak, Lobster: Limit order book reconstruction system, Tech-
+nical report, Humboldt-Universit¨at zu, Berlin, (2011).
+[12] W. Huang, C.-A. Lehalle, and M. Rosenbaum, Simulating and analyzing order
+book data: The queue-reactive model, Journal of the American Statistical Association,
+110 (2015), pp. 107–122.
+[13] W. Huang and M. Rosenbaum, Ergodicity and diﬀusivity of markovian order book
+models: a general framework, SIAM Journal on Financial Mathematics, 8 (2017),
+pp. 874–900.
+[14] F. Kelly and E. Yudovina, A markov model of a limit order book: thresholds,
+recurrence, and trading strategies, Mathematics of Operations Research, 43 (2018),
+pp. 181–203.
+36
+
+=== page 37 ===
+[15] M. Kirchner, An estimation procedure for the hawkes process, Quantitative Finance,
+17 (2017), pp. 571–595.
+[16] M. Kirchner and A. Bercher, A nonparametric estimation procedure for the
+hawkes process: comparison with maximum likelihood estimation, Journal of Statistical
+Computation and Simulation, 88 (2018), pp. 1106–1116.
+[17] H. L¨utkepohl, New introduction to multiple time series analysis, Springer Science
+& Business Media, 2005.
+[18] T. Maloney and R. J. Almeida, Lengthening the investment time horizon, MFS
+White Paper Series November, (2019).
+[19] M. Morariu-Patrichi and M. S. Pakkanen, State-dependent hawkes processes
+and their application to limit order book modelling, arXiv preprint arXiv:1809.08060,
+(2018).
+[20] I. Muni Toke and F. Pomponio, Modelling trades-through in a limited order book
+using hawkes processes, Economics: The Open-Access, Open-Assessment E-Journal, 6
+(2012).
+[21] NASDAQ, Nasdaq totalview-itch data, 2018. https://www.nasdaqtrader.
+com/content/technicalsupport/specifications/dataproducts/
+NQTVITCHSpecification.pdf.
+[22] The World Bank, World stocks traded, total value in $US, 2019. data retrieved
+from The World Bank and the World Federation of Exchanges database, https://
+data.worldbank.org/indicator/CM.MKT.TRAD.CD.
+[23] R. Tibshirani, Regression shrinkage and selection via the lasso, Journal of the Royal
+Statistical Society: Series B (Methodological), 58 (1996), pp. 267–288.
+37
+
+=== page 38 ===
+Supplementary Material
+This Supplementary Material is organized as following: Section A illustrates the construc-
+tion of the reference price in the order book representation mentioned in Section 2; Section
+B illustrates the mathematical representation details of the estimation procedure follow-
+ing Section 4.3; Section C demonstrates the mathematical representation for the LASSO
+regularization discussed in Section 4.4; Section D demonstrates the estimated Hawkes ex-
+citement functions of insertion event at the bid side following Section 5.2; Section E shows
+more examples on the estimated non-exponential shaped excitement functions following
+Section 5.3; Section F presents more examples on the liquidity state estimation following
+Section 5.4; Section G demonstrates the estimation results when the size of order is ig-
+nored as mentioned in Section 5.6; Section H demonstrates the estimation results when
+the LASSO regularization is removed as mentioned in Section 5.6; Section I demonstrates
+the estimation results when the bin-size is enlarged as mentioned in section 5.6; Section J
+presents additional model selection results as mentioned in Section 5.7.
+A Speciﬁcations on reference price
+Following Section 2, this supporting section demonstrates the construction of the reference
+price pref . The construction method presented here is mainly adopted from [12].
+When the bid-ask spread is odd in tick unit, it is intuitive to use the mid price pmid to
+approximate the reference price pref . Though one can still use pmid as a proxy of pref when
+the spread is even in tick unit, it is no longer appropriate enough since pmid itself can be a
+position for order arrivals. To be more strict, when (Qbest-ask −Qbest-bid) = 2n + 1,n∈ Z,
+we have pref = pmid = (Qbest-bid + Qbest-ask)/2; When (Qbest-ask −Qbest-bid) = 2n,n ∈ Z,
+we have pref = (Qbest−bid + Qbest−ask)/2 + α/2 or pref = (Qbest−bid + Qbest−ask)/2 −α/2,
+38
+
+=== page 39 ===
+whichever is closer to the previous value of pref .
+B Mathematical details on non-parametric estimation
+Following Section 4.3, this supporting section illustrates the mathematical representations
+of the non-parametric estimation over the (6K + 6)-dimensional LOB data.
+Precisely, based on Deﬁnition 3.3, Theorem 3.5, and Deﬁnition 3.6 from [15], as well as
+[17](page70-75), the mathematical details of the estimation procedure is given in Deﬁnition
+1 and Deﬁnition 2.
+According to our model speciﬁcation discussed in Section 3, a total number of 6K + 6
+event types is considered for a level-K order book and the number of event types serves
+as the dimension of the multivariate Hawkes process. For notation simplicity, we denote
+6K+6 as d in the following discussions (Deﬁnition 1, Deﬁnition 2, Remark 1, and Deﬁnition
+3 in Supplementary Materials C).
+Deﬁnition 1 Let Xi (∀i = 1, 2,...,d) be a d-variate Hawkes process derived from LOB
+data with varying baseline intensities controlled by liquidity state sequence li(t) and time
+factor t. Let T > 0 and consider the time interval (0,T ]. For some bin-size ∆ > 0,
+construct the following bin-count sequences according to Section 4.1:
+(
+B(∆) k ,l(∆) k ,t(∆) k
+)
+,∀k = 1, 2,...,n := ⌊T/∆⌋
+, where B(∆) k , l(∆) k and t(∆) k are d× 1 column vectors deﬁned on Rd.
+Then assume l(∆) k can be bucketized into 10 categories [L1,L2,...,L10] and t(∆) k can be buck-
+etized into 126 categories [T1,T2,...,T126] according to Section 4.2. Given some maximum
+support s such that ∆ < s < T , The d-variate estimator for the proposed model is deﬁned
+39
+
+=== page 40 ===
+as:
+(
+ˆΦ(∆,s) 1 , ˆΦ(∆,s) 2 ,..., ˆΦ(∆,s) p , ˆµ(∆,s) 1 ,..., ˆµ(∆,s) 10 , ˆθ(∆,s) 1 ,..., ˆθ(∆,s) 126
+)
+:= ˆΦ(∆,s) ∈ Rd×(dp+10+126),
+with p := ⌊s/∆⌋ (4)
+Speciﬁcally,
+ˆΦ(∆,s) r :=
+
+
+ˆφ(∆,s) 11,r ˆφ(∆,s) 12,r ˆφ(∆,s) 1d,r
+ˆφ(∆,s) 21,r ˆφ(∆,s) 22,r ˆφ(∆,s) 2d,r
+...
+ˆφ(∆,s) d1,r ˆφ(∆,s) d2,r ˆφ(∆,s) dd,r
+
+ ∈ Rd×d, with ∀r = 1, 2,...,p
+, where the matrix element
+ˆφ(∆,s) ji,r ,∀i,j = 1, 2,...,d; ∀r = 1, 2,...,p
+are weakly consistent estimators for the Multivaraite Hawkes excitement function for event
+j stimulating event i at the r-th function discretizated short period. Substitute r with ⌊t/∆⌋
+yields that ˆφ(∆,s) ji,⌊t/∆⌋ are weakly consistent estimator (for T →∞, ∆ → 0 and s = ∆p→∞)
+for φji(t) as shown in Eq.(3).
+Also,
+(
+ˆµ(∆,s) 1 ,..., ˆµ(∆,s) 10
+)
+∈ Rd×10 and ( ˆθ(∆,s) 1 ,..., ˆθ(∆,s) 126 ) ∈ Rd×126 are weakly consistent
+estimators for function M(·) and Θ(·) (for T →∞, ∆ → 0 and s = ∆p→∞).
+Deﬁnition 1 gives the detailed description on the structure of the estimator. Then we
+elucidate the estimation formulas for estimator ˆΦ(∆,s) in Deﬁnition 2:
+Deﬁnition 2 Followed from Deﬁnition 1, ˆΦ(∆,s) can be obtained by applying the following
+multivariate conditional least-squares (CLS) estimator:
+ˆΦ(∆,s) := 1 ∆ ˆθ(p,n) CLS ( B(∆) k ,l(∆) k ,t(∆) k ) k=1,...,n
+40
+
+=== page 41 ===
+The CLS estimator is deﬁned as
+ˆθ(p,n) CLS : Rd×(n−p) → Rd×(dp+10+126)
+(
+B(∆) 1 ,...,B(∆) n ; l(∆) 1 ,...,l(∆) n ; t(∆) 1 ,...,t(∆) n
+)
+→
+ˆθ(p,n) CLS
+(
+B(∆) 1 ,...,B(∆) n ; l(∆) 1 ,...,l(∆) n ; t(∆) 1 ,...,t(∆) n
+)
+:= YZ⊤( ZZ⊤)−1
+,where
+Z
+(
+B(∆) 1 ,...,B(∆) n ; l(∆) 1 ,...,l(∆) n ; t(∆) 1 ,...,t(∆) n
+)
+:=
+
+ B(∆) p B(∆) p+1 ... B(∆) n−1 B(∆) p−1 B(∆) p ... B(∆) n−2 ... B(∆) 1 B(∆) 2 ... B(∆) n−p 1 l(∆) p+1∈L1 1 l(∆) p+2∈L1 ... 1 l(∆) n ∈L1 1 l(∆) p+1∈L2 1 l(∆) p+2∈L2 ... 1 l(∆) n ∈L2 ... 1 l(∆) p+1∈L10 1 l(∆) p+2∈L10 ... 1 l(∆) n ∈L10 [0]d×1 [0]d×1 ... [0]d×1 1 t(∆) p+1∈T2 1 t(∆) p+2∈T2 ... 1 t(∆) n ∈T2 1 t(∆) p+1∈T3 1 t(∆) p+2∈T3 ... 1 t(∆) n ∈T3 ...
+1 t(∆) p+1∈T126 1 t(∆) p+2∈T126 ... 1 t(∆) n ∈T126
+
+ ∈ R(dp+10+126)×(n−p)
+is the design matrix and
+Y
+(
+B(∆) 1 ,...,B(∆) n
+)
+:=
+(
+B(∆) p+1,B(∆) p+2,...,B(∆) n
+)
+∈ Rd×(n−p)
+41
+
+=== page 42 ===
+is the response.
+Within the design matrix Z,
+(
+1 l(∆) k ∈L1 ,..., 1 l(∆) k ∈L10
+)
+and
+(
+1 t(∆) k ∈L1 ,..., 1 l(∆) k ∈L126
+)
+with
+∀k = p + 1,...,n are d× 1 column indicator functions that returns 1 (returns 0 other-
+wise) when the i-th dimension element falling into the corresponding category; [0]d×1 is
+d-dimensional column vector consisting of zeros.
+The design matrix Z in Deﬁnition 2 contains a (n−p) dimensional row consisting of
+zeros. This row references the part of design matrix such that the time factor sequence
+t(∆) k belongs to the T1 category. The T1 category is treated as the “reference group” in
+the presence of the two categorical variables [l(∆) k ,t(∆) k ] and the regular (non-categorical)
+variables derived from B(∆) k . The R programming language we use is built with its default
+“contrast coding” system that requires the existence of at least one “reference group” when
+implementing linear regression models with more than one categorical variable. The CLS es-
+timators for the ”reference group” are automatically set to zeros according to the “contrast
+coding” rule. Therefore, the CLS estimator in Deﬁnition 2 returns a zero vector of dimen-
+sional d as the estimator for category T1. The “contrast coding” system may be diﬀerent
+for other programming languages and their statistical packages. The choice of categorical
+variable coding rules and the reference group can be considered as adding/subtracting a
+constant on the estimators for one categorical variable and subtracting/adding it back on
+another, leading to no change on model ﬁt.
+Followed Deﬁnition 2, the following deﬁnition gives an equivalent but easier way for
+model implementation:
+Remark 1 Given Deﬁnition 1 and 2, [17](page72) illustrates that the multivariate CLS-
+estimation is equivalent to d individual Ordinary-Least-Squared(OLS) estimations, in which
+d is the dimension of the CLS-estimation. Using design matrix Z, response Y , and esti-
+mator ˆΦ(∆,s) given in Deﬁnition 1 and 2, and let yi be the transpose of the i-th row vector
+42
+
+=== page 43 ===
+of response Y:
+yi =
+(
+B(∆) i,p+1,B(∆) i,p+2,...,B(∆) i,n
+)⊤
+∈ R(n−p)×1,∀i = 1, 2,...,d
+; Let ˆφi (∆,s) be the transpose of the i-th row vector of ˆΦ(∆,s):
+ˆφi (∆,s) = [( ˆφ(∆,s) i1,1 ,..., ˆφ(∆,s) id,1 ) ,..., ( ˆφ(∆,s) i1,p ,..., ˆφ(∆,s) id,p ) ,
+(
+ˆµ(∆,s) i,1 ,..., ˆµ(∆,s) i,10
+)
+,
+(
+ˆθ(∆,s) i,1 ,..., ˆθ(∆,s) i,126
+)]⊤
+∈ R(dp+10+126)×1
+We have that ˆφi (∆,s) := ( ZZ⊤)−1 Zyi is the OLS estimator for the model:
+yi = Z⊤φ(∆,s) i + ui,∀i = 1, 2,...,d
+, where ui is (n−p)×1 white-noise column vector (ui,p+1,ui,p+2,...,ui,n)⊤ with i = 1,...,d.
+In model implementation, we prefer conducting the OLS estimations based on yi =
+Z⊤φ(∆,s) i + ui over all dimensions 1, 2,...,d, over the one single CLS-estimation shown in
+Deﬁnition 2, since the OLS estimations involve less dimensions and thereby more compu-
+tationally eﬃcient under a parallel computing setting.
+C Non-parametric estimation with LASSO
+The following deﬁnition illustrates LASSO regularization for our proposed model discussed
+in Section 4.4. Consistent with Supplementary Materials B, we denote the dimension of
+our estimation (the number of event types considered) 6 × (K + 1) as d for simplicity. Note
+K represents the level of the order book we consider.
+Deﬁnition 3 Consider the design matrix Z, the response Y , and the OLS-estimators pro-
+posed in Deﬁnition 2 and Remark 1. The OLS-estimators minimize the loss function:
+(
+yi −Z⊤φ(∆,s) i
+)⊤(
+yi −Z⊤φ(∆,s) i
+)
+43
+
+=== page 44 ===
+Then consider adding a LASSO regularization term that only applies to the Hawkes
+excitement function φ(∆,s),excitements i := [( ˆφ(∆,s) i1,1 ,..., ˆφ(∆,s) id,1 ) ,..., ( ˆφ(∆,s) i1,p ,..., ˆφ(∆,s) id,p )]⊤ ∈
+Rdp×1 to the loss function, the LASSO loss function becomes:
+(
+yi −Z⊤φ(∆,s) i
+)⊤(
+yi −Z⊤φ(∆,s) i
+)
++ λi‖φ(∆,s),excitements i ‖1
+where λi denotes the regularization penalty and ‖·‖1 denotes the 𝓁1-norm for estimators.
+D Estimated excitement functions: bid orders
+Following Section 5.2, this section illustrates excitement functions of insertion event at 1st
+bid (event -1(i)) stimulating insertion and cancellation at the 1st bid (event -1(i) and
+-1(c)). The shapes of the estimated excitement functions exhibit similar time-decaying
+patterns as shown in Section 5.2 for ask orders.
+Additionally, we observed similarities between Fig.S1(a) and Fig.S1(b), which show the
+stimulation of -1(i) to -1(i) and -1(c). Both excitement functions spike at around 8
+seconds and 20 seconds. This observation suggests that the estimated Hawkes excitement
+functions are similar for the eﬀect towards the insertion and cancellation at the 1st bid
+(eﬀect towards -1(i) and -1(c)).
+44
+
+=== page 45 ===
+(a) -1(i) stimulate -1(i)
+ (b) -1(i) stimulate -1(c)
+Figure S1: Aggregated Hawkes excitement function estimation result under (s =
+20 seconds, ∆ = 0.25 seconds) with LASSO regularization. The points illustrate the dis-
+crete function estimators. The red line illustrates the cubic smoothing spline for the points.
+E More examples on non-exponential shaped excite-
+ment functions
+Following Section 5.3 and Figure 7, this section demonstrates more examples on the esti-
+mated excitement functions with non-exponential shapes in the following Figure S2.
+45
+
+=== page 46 ===
+(a) -1(c) stimulate +2(t)
+ (b) +2(t) stimulate -2(t)
+Figure S2: Aggregated Hawkes excitement function estimation under (s = 20 seconds, ∆ =
+0.25 seconds) with LASSO regularization. The points illustrate the discrete function esti-
+mators. The red line illustrates the cubic smoothing spline for the points.
+F More examples on liquidity state
+Following Section 5.4 and Figure 8, this section presents more examples of the estimated
+result for liquidity state. The examples are presented in Figure S3 and Figure S4. In
+general, the arrival intensity increases as the liquidity state increases for trade/cancellation
+events and insertion events on the 1st level (i.e., -3(c), -3(t), -2(c), -2(t),-1(i), -1(c),
+-1(t),+1(i), +1(c), +1(t),+2(c), +2(t), +3(c), +3(t)); the arrival intensity decreases
+as liquidity state increases for the insertion events on the 2nd and 3rd level (i.e., +3(i),
+-3(i), +2(i), -2(i)).
+46
+
+=== page 47 ===
+(a) Liquidity state for +1(i)
+ (b) Liquidity state for +1(t)
+(c) Liquidity state for -1(c)
+Figure S3: Aggregated estimation results for liquidity state for selected events under (s =
+20 seconds, ∆ = 0.25 seconds).
+47
+
+=== page 48 ===
+(a) Liquidity state for +3(i)
+ (b) Liquidity state for +2(i)
+(c) Liquidity state for -2(i)
+Figure S4: Aggregated estimation results for liquidity state for selected events under (s =
+20 seconds, ∆ = 0.25 seconds).
+G Empirical results when order size is ignored
+This supporting section demonstrates the empirical estimation results when the order size
+is ignored, as mentioned in Section 5.6. The demonstrations will be presented in the same
+format as the demonstrations from Section 5.2 to Section 5.5. In general, the results on
+48
+
+=== page 49 ===
+excitement function, liquidity state, and time factor still hold qualitatively in the sense
+that most estimated functions have similar shapes.
+However, diﬀerent order size considerations tend to give the estimated functions in
+diﬀerent levels, where the estimations in general have lower intensity levels for many events
+when the order size is ignored. Also, the estimated Hawkes excitement functions tend to
+be less volatile if we ignore the order size. This behavior is expected since we aggregate
+order sizes in the original model setting while all orders are considered to have size 1 if we
+ignore order size. Therefore, when order size is ignored, it is natural for the estimates to
+have relatively lower intensity and volatility, especially during peak trading hours.
+G.1 Estimated excitement functions
+Based on Figure 6 and Figure S1, the following Figure S5 and Figure S6 demonstrate the
+estimated Hawkes excitement functions when the order size is ignored.
+49
+
+=== page 50 ===
+(a) +1(i) stimulate +1(i)
+ (b) +1(i) stimulate +1(c)
+Figure S5: Aggregated Hawkes excitement function estimation under (s = 20 seconds, ∆ =
+0.25 seconds) with LASSO regularization. All orders are considered to have size 1. The
+points illustrate the discrete function estimators. The red line illustrates the cubic smooth-
+ing spline for the points.
+50
+
+=== page 51 ===
+(a) -1(i) stimulate -1(i)
+ (b) -1(i) stimulate -1(c)
+Figure S6: Aggregated Hawkes excitement function estimation under (s = 20 seconds, ∆ =
+0.25 seconds) with LASSO regularization. All orders are considered to have size 1. The
+points illustrate the discrete function estimators. The red line illustrates the cubic smooth-
+ing spline for the points.
+As we can observe, the above estimated functions are consistent with the 1st-ask and
+1st-bid similarity patterns discussed in Section 5.2 and Section D.
+G.2 Exponential and non-exponential shape of excitement func-
+tions
+Based on Figure 7 in Section 5.3, the following Figure S7 demonstrates the estimated
+Hawkes excitement functions with non-exponential shapes when the order size is ignored.
+51
+
+=== page 52 ===
+(a) -1(t) stimulate +3(t)
+ (b) p+(t) stimulate -3(t)
+(c) -1(c) stimulate +2(t)
+ (d) +2(t) stimulate -2(t)
+Figure S7: Aggregated Hawkes excitement function estimation under (s = 20 seconds, ∆ =
+0.25 seconds) with LASSO regularization. All orders are considered to have size 1. The
+points illustrate the discrete function estimators. The red line illustrates the cubic smooth-
+ing sline for the points.
+The demonstrated results for the model with LASSO regularization are consistent with
+the results discussed in Section 5.3: while most of the estimated Hawkes functions ex-
+hibit exponential time-decaying shapes, some estimated results do exhibit non-exponential
+52
+
+=== page 53 ===
+shapes.
+G.3 Liquidity state
+Based on Figure S3 and Figure S4 in Section 5.4, the following Figure S8 and Figure S9
+demonstrate the liquidity state estimations of the model with LASSO regularization.
+(a) Liquidity state for +1(i)
+ (b) Liquidity state for +1(c)
+(c) Liquidity state for +1(t)
+ (d) Liquidity state for -1(c)
+Figure S8: Aggregated estimation result for liquidity state for event +1(i), +1(c), +1(t),
+-1(c) under (s = 20 seconds, ∆ = 0.25 seconds). All orders are considered to have size 1.
+For these events the event arrival intensity increases as liquidity state increases.
+53
+
+=== page 54 ===
+(a) Liquidity state for +3(i)
+ (b) Liquidity state for -3(i)
+(c) Liquidity state for +2(i)
+ (d) Liquidity state for -2(i)
+Figure S9: Aggregated estimation result for liquidity state for event +3(i), -3(i), +2(i),
+-2(i) under (s = 20 seconds, ∆ = 0.25 seconds). All orders are considered to have size 1.
+For these events the event arrival intensity decreases as liquidity state increases.
+The demonstrated liquidity state estimation results of the model with LASSO regular-
+ization is consistent with the results discussed in Section 5.4.
+54
+
+=== page 55 ===
+G.4 Time factor
+Based on Figure 9 in Section 5.5, the following Figure S10 demonstrates the time factor
+estimations of the model with LASSO regularization.
+(a) Time factor for event +1(i)
+ (b) Time factor for event +3(t)
+Figure S10: Aggregated estimation result for time factor between 9:30 am and 4:00 pm
+under (s = 20 seconds, ∆ = 0.25 seconds). All orders are considered to have size 1.
+The demonstrated time factor estimation results of the model with LASSO regulariza-
+tion is consistent with the results discussed in Section 5.5.
+H Empirical results without LASSO
+This supporting section demonstrates the empirical estimation results when the LASSO
+regularization is removed, as mentioned in Section 5.6. The demonstrations will be pre-
+sented in the same format as the demonstrations from Section 5.2 to Section 5.5. As a
+whole, the results on excitement function, liquidity state, and time factor still hold quali-
+tatively. The estimation result with or without LASSO (small regularization λi = 0.0005)
+55
+
+=== page 56 ===
+are very similar visually. Furthermore, the cubic smoothing spline for the LASSO model is
+smoother than the model without LASSO since the estimator distribution is more concen-
+trated to zero after adding LASSO.
+H.1 Estimated excitement functions
+Based on Figure 6 and Figure S1, the following Figure S11 and Figure S12 demonstrate
+the estimated Hawkes excitement functions when the LASSO regularization is removed.
+(a) +1(i) stimulate +1(i)
+ (b) +1(i) stimulate +1(c)
+Figure S11: Aggregated Hawkes excitement function estimation under (s =
+20 seconds, ∆ = 0.25 seconds) when LASSO regularization is removed. the discrete func-
+tion estimators. The red line illustrates the cubic smoothing spline for the points.
+56
+
+=== page 57 ===
+(a) -1(i) stimulate -1(i)
+ (b) -1(i) stimulate -1(c)
+Figure S12: Aggregated Hawkes excitement function estimation under (s =
+20 seconds, ∆ = 0.25 seconds) when LASSO regularization is removed. The points illus-
+trate the discrete function estimators. The red line illustrates the cubic smoothing spline
+for the points.
+As we can observe, the above estimated functions are consistent with the 1st-ask and
+1st-bid similarity patterns discussed in Section 5.2 and Section D, when the LASSO regu-
+larization is removed.
+H.2 Exponential and non-exponential shape of excitement func-
+tions
+Based on Figure 7 in Section 5.3, the following Figure S13 demonstrates the estimated
+Hawkes excitement functions with non-exponential shapes when the LASSO regularization
+is removed.
+57
+
+=== page 58 ===
+(a) -1(t) stimulate +3(t)
+ (b) p+(t) stimulate -3(t)
+(c) -1(c) stimulate +2(t)
+ (d) +2(t) stimulate -2(t)
+Figure S13: Aggregated Hawkes excitement function estimation under (s =
+20 seconds, ∆ = 0.25 seconds) when LASSO regularization is removed. The points illus-
+trate the discrete function estimators. The red line illustrates the cubic smoothing spline
+for the points.
+The results for the model without LASSO regularization are consistent with the results
+discussed in Section 5.3: while most of the estimated Hawkes functions exhibit exponential-
+decaying shapes, some estimated results do exhibit non-exponential shapes.
+58
+
+=== page 59 ===
+H.3 Liquidity state
+Based on Figure S3 and Figure S4 in Section 5.4, the following Figure S14 and Figure S15
+demonstrate the liquidity state estimations of the model when the LASSO regularization
+is removed.
+(a) Liquidity state for +1(i)
+ (b) Liquidity state for +1(c)
+(c) Liquidity state for +1(t)
+ (d) Liquidity state for -1(c)
+Figure S14: Aggregated estimation result for liquidity state for event +1(i), +1(c), +1(t),
+-1(c) under (s = 20 seconds, ∆ = 0.25 seconds) when LASSO regularization is removed.
+For these events the event arrival intensity increases as liquidity state increases.
+59
+
+=== page 60 ===
+(a) Liquidity state for +3(i)
+ (b) Liquidity state for -3(i)
+(c) Liquidity state for +2(i)
+ (d) Liquidity state for -2(i)
+Figure S15: Aggregated estimation result for liquidity state for event +3(i), -3(i), +2(i),
+-2(i) under (s = 20 seconds, ∆ = 0.25 seconds) when LASSO regularization is removed.
+For these events the event arrival intensity decreases as liquidity state increases.
+The demonstrated liquidity state estimation results of the model without LASSO reg-
+ularization is consistent with the results discussed in Section 5.4.
+60
+
+=== page 61 ===
+H.4 Time factor
+Based on Figure 9 in Section 5.5, the following Figure S16 demonstrates the time factor
+estimations of the model when the LASSO regularization is removed.
+(a) Time factor for event +1(i)
+ (b) Time factor for event +3(t)
+Figure S16: Aggregated estimation result for time factor between 9:30 am and 4:00 pm
+under (s = 20 seconds, ∆ = 0.25 seconds) when LASSO regularization is removed. All
+orders are considered to have size 1.
+The demonstrated time factor estimation results of the model without LASSO regular-
+ization is consistent with the results discussed in Section 5.5.
+I Empirical results with enlarged bin-size
+This supporting section demonstrates the empirical estimation results when the bin-size
+∆ is enlarged from 0.25 seconds to 0.5 seconds, as mentioned in Section 5.6. The demon-
+strations will be presented in the same format as the demonstrations from Section 5.2 to
+Section 5.5. As a whole, the results on excitement function, liquidity state, and time factor
+61
+
+=== page 62 ===
+still hold qualitatively. This meets our expectation that enlarging the bin-size won’t change
+the estimated result signiﬁcantly as estimations are obtained from the same dataset and
+the ∆ = 0.5s estimation result is just a coarse version of the ∆ = 0.25s result.
+I.1 Estimated excitement functions
+Based on Figure 6 and Figure S1, the following Figure S17 and Figure S18 demonstrate the
+estimated Hawkes excitement functions when the bin-size ∆ is enlarged from 0.25 seconds
+to 0.5 seconds.
+(a) +1(i) stimulate +1(i)
+ (b) +1(i) stimulate +1(c)
+Figure S17: Aggregated Hawkes excitement function estimation under (s =
+20 seconds, ∆ = 0.5 seconds) with LASSO regularization. The points illustrate the discrete
+function estimators. The red line illustrates the cubic smoothing spline for the points.
+62
+
+=== page 63 ===
+(a) -1(i) stimulate -1(i)
+ (b) -1(i) stimulate -1(c)
+Figure S18: Aggregated Hawkes excitement function estimation under (s =
+20 seconds, ∆ = 0.5 seconds) with LASSO regularization. The points illustrate the discrete
+function estimators. The red line illustrates the cubic smoothing spline for the points.
+As we can observe, the above estimated functions are generally consistent with the
+1st-ask and 1st-bid similarity patterns discussed in Section 5.2 and Section D, when the
+bin-size is enlarged.
+I.2 Exponential and non-exponential shape of excitement func-
+tions
+Based on Figure 7 in Section 5.3, the following Figure S19 demonstrates the estimated
+Hawkes excitement functions with non-exponential shapes when the bin-size ∆ is enlarged
+from 0.25 seconds to 0.5 seconds.
+63
+
+=== page 64 ===
+(a) -1(t) stimulate +3(t)
+ (b) p+(t) stimulate -3(t)
+(c) -1(c) stimulate +2(t)
+ (d) +2(t) stimulate -2(t)
+Figure S19: Aggregated Hawkes excitement function estimation under (s = 20
+seconds, ∆ = 0.5 seconds) with LASSO regularization. The points illustrate the discrete
+function estimators. The red line illustrates the cubic smoothing spline for the points.
+The demonstrated results for the model without LASSO regularization are consistent
+with the results discussed in Section 5.3: while most of the estimated Hawkes functions ex-
+hibit exponential time-decaying shapes, some estimated results do exhibit non-exponential
+shapes.
+64
+
+=== page 65 ===
+I.3 Liquidity state
+Based on Figure S3 and Figure S4 in Section 5.4, the following Figure S20 and Figure S21
+demonstrate the liquidity state estimations of the model when the bin-size ∆ is enlarged
+from 0.25 seconds to 0.5 seconds.
+(a) Liquidity state for +1(i)
+ (b) Liquidity state for +1(c)
+(c) Liquidity state for +1(t)
+ (d) Liquidity state for -1(c)
+Figure S20: Aggregated estimation result for liquidity state for event +1(i), +1(c), +1(t),
+-1(c) under (s = 20 seconds, ∆ = 0.5 seconds). For these events the event arrival intensity
+increases as liquidity state increases.
+65
+
+=== page 66 ===
+(a) Liquidity state for +3(i)
+ (b) Liquidity state for -3(i)
+(c) Liquidity state for +2(i)
+ (d) Liquidity state for -2(i)
+Figure S21: Aggregated estimation result for liquidity state for event +3(i), -3(i), +2(i),
+-2(i) under (s = 20 seconds, ∆ = 0.5 seconds). For these events the event arrival intensity
+decreases as liquidity state increases.
+The demonstrated liquidity state estimation results of the model with LASSO regular-
+ization is consistent with the results discussed in Section 5.4 when the bin-size is enlarged.
+66
+
+=== page 67 ===
+I.4 Time factor
+Based on Figure 9 in Section 5.5, the following Figure S22 demonstrates the time factor
+estimations of the model with LASSO regularization.
+(a) Time factor for event +1(i)
+ (b) Time factor for event +3(t)
+Figure S22: Aggregated estimation result for time factor between 9:30 am and 4:00 pm
+under (s = 20 seconds, ∆ = 0.5 seconds).
+The demonstrated time factor estimation results of the model with LASSO regulariza-
+tion is consistent with the results discussed in Section 5.5 when the bin-size is enlarged.
+J Additional model selection results
+This section presents additional model selection results based on AIC for the models when
+the size of order is ignored and when the bin-size is enlarged from 0.25 seconds to 0.5
+seconds. The selection results are presented in the same format at Figure 10 and Table 1.
+The following Figure S23 and Table S1 demonstrate the model selection result when
+the size of order is ignored. Model 1○- 7○ are explained in Section 5.7.
+67
+
+=== page 68 ===
+Figure S23: AICs and number of eﬀective parameters for seven model types for Apple.Inc
+on 2019-01-03 with maximum support s = 20 seconds and bin-size ∆ = 0.25 seconds. All
+orders are considered to have size 1.
+68
+
+=== page 69 ===
+AIC
+Diﬀerence
+Min 1st
+Quantile
+Median Mean 3rd
+Quantile
+Max
+# of
+days with
+decreased
+AIC
+4○ - 3○1 -1.43 -0.30 -0.15 -0.23 -0.005 0.13 15 out of 20
+6○ - 4○2 -0.23 -0.19 -0.18 -0.18 -0.16 -0.12 20 out of 20
+5○ - 4○3 -0.15 -0.12 -0.11 -0.10 -0.08 -0.02 20 out of 20
+5○ - 3○4 -1.46 -0.38 -0.26 -0.33 -0.12 -0.016 20 out of 20
+7○ - 6○5 -0.16 -0.12 -0.11 -0.10 -0.09 -0.02 20 out of 20
+Interpretations:
+1 The Hawkes part has stronger explanation power than the liquidity state and time factor part.
+2 Adding the liquidity state and time factor to the Hawkes part further improves explanation power.
+3 Adding LASSO (LASSO parameter 0.0005) to the Hawkes part further improves explanation power.
+4 The Hawkes part with LASSO (LASSO parameter 0.0005) generates stronger explanation power
+than the liquidity state and time factor part.
+5 Adding LASSO (LASSO parameter 0.0005) further improves the explanation power of the model
+with the liquidity state, time factor, and Hawkes.
+Table S1: AIC diﬀerence summary statistics of Apple. Inc from 2019-01-02 to 2019-01-31
+with maximum support s = 20 seconds and bin-size ∆ = 0.25 seconds. All orders are
+considered to have size 1. AIC has been adjusted for sample size so that it reﬂects the AIC
+per single sample.
+The following Figure S24 and Table S2 demonstrate the model selection result when
+the bin size is enlarged from 0.25 seconds to 0.5 seconds. Model 1○- 7○ are explained in
+Section 5.7.
+69
+
+=== page 70 ===
+Figure S24: AICs and number of eﬀective parameters for seven model types for Apple.Inc
+on 2019-01-03 with maximum support s = 20 seconds and bin-size ∆ = 0.5 seconds. Order
+sizes are considered in bin count sequence construction.
+70
+
+=== page 71 ===
+AIC
+Diﬀerence
+Min 1st
+Quantile
+Median Mean 3rd
+Quantile
+Max
+# of
+days with
+decreased
+AIC
+4○ - 3○1 -4.25 -1.19 -0.61 -0.88 -0.18 0.06 18 out of 20
+6○ - 4○2 -0.4 -0.31 -0.29 -0.28 -0.24 -0.18 20 out of 20
+5○ - 4○3 -0.09 -0.06 -0.06 -0.05 -0.04 -0.03 20 out of 20
+5○ - 3○4 -4.29 -1.26 -0.65 -0.94 -0.23 0.001 19 out of 20
+7○ - 6○5 -0.09 -0.07 -0.06 -0.06 -0.05 -0.03 20 out of 20
+Interpretations:
+1 The Hawkes part has stronger explanation power than the liquidity state and time factor part.
+2 Adding the liquidity state and time factor to the Hawkes part further improves explanation power.
+3 Adding LASSO (LASSO parameter 0.0005) to the Hawkes part further improves explanation power.
+4 The Hawkes part with LASSO (LASSO parameter 0.0005) generates stronger explanation power
+than the liquidity state and time factor part.
+5 Adding LASSO (LASSO parameter 0.0005) further improves the explanation power of the model
+with the liquidity state, time factor, and Hawkes.
+Table S2: AIC diﬀerence summary statistics of Apple. Inc from 2019-01-02 to 2019-01-31
+with maximum support s = 20 seconds and bin-size ∆ = 0.5 seconds. Order sizes are
+considered in bin count sequence construction.. AIC has been adjusted for sample size so
+that it reﬂects the AIC per single sample.
+71

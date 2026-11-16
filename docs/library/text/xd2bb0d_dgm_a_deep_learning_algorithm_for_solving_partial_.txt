@@ -1,0 +1,1636 @@
+=== page 1 ===
+DGM: A deep learning algorithm for solving partial diﬀerential
+equations
+Justin Sirignano∗ and Konstantinos Spiliopoulos†‡§
+September 7, 2018
+Abstract
+High-dimensional PDEs have been a longstanding computational challenge. We propose to solve high-
+dimensional PDEs by approximating the solution with a deep neural network which is trained to satisfy
+the diﬀerential operator, initial condition, and boundary conditions. Our algorithm is meshfree, which is
+key since meshes become infeasible in higher dimensions. Instead of forming a mesh, the neural network
+is trained on batches of randomly sampled time and space points. The algorithm is tested on a class of
+high-dimensional free boundary PDEs, which we are able to accurately solve in up to 200 dimensions.
+The algorithm is also tested on a high-dimensional Hamilton-Jacobi-Bellman PDE and Burgers’ equation.
+The deep learning algorithm approximates the general solution to the Burgers’ equation for a continuum
+of diﬀerent boundary conditions and physical conditions (which can be viewed as a high-dimensional
+space). We call the algorithm a “Deep Galerkin Method (DGM)” since it is similar in spirit to Galerkin
+methods, with the solution approximated by a neural network instead of a linear combination of basis
+functions. In addition, we prove a theorem regarding the approximation power of neural networks for a
+class of quasilinear parabolic PDEs.
+1 Deep learning and high-dimensional PDEs
+High-dimensional partial diﬀerential equations (PDEs) are used in physics, engineering, and ﬁnance. Their
+numerical solution has been a longstanding challenge. Finite diﬀerence methods become infeasible in higher
+dimensions due to the explosion in the number of grid points and the demand for reduced time step size.
+If there are d space dimensions and 1 time dimension, the mesh is of size Od+1. This quickly becomes
+computationally intractable when the dimension d becomes even moderately large. We propose to solve
+high-dimensional PDEs using a meshfree deep learning algorithm. The method is similar in spirit to the
+Galerkin method, but with several key changes using ideas from machine learning. The Galerkin method is
+a widely-used computational method which seeks a reduced-form solution to a PDE as a linear combination
+of basis functions. The deep learning algorithm, or “Deep Galerkin Method” (DGM), uses a deep neural
+network instead of a linear combination of basis functions. The deep neural network is trained to satisfy
+the diﬀerential operator, initial condition, and boundary conditions using stochastic gradient descent at
+randomly sampled spatial points. By randomly sampling spatial points, we avoid the need to form a mesh
+(which is infeasible in higher dimensions) and instead convert the PDE problem into a machine learning
+problem.
+DGM is a natural merger of Galerkin methods and machine learning. The algorithm in principle is
+straightforward; see Section 2. Promising numerical results are presented later in Section 4 for a class
+∗University of Illinois at Urbana Champaign, Urbana, E-mail: jasirign@illinois.edu
+†Department of Mathematics and Statistics, Boston University, Boston, E-mail: kspiliop@math.bu.edu
+‡The authors thank seminar participants at the JP Morgan Machine Learning and AI Forum seminar, the Imperial College
+London Applied Mathematics and Mathematical Physics seminar, the Department of Applied Mathematics at the University
+of Colorado Boulder, Princeton University, and Northwestern University for their comments. The authors would also like to
+thank participants at the 2017 INFORMS Applied Probability Conference, the 2017 Greek Stochastics Conference, and the
+2018 SIAM Annual Meeting for their comments.
+§Research of K.S. supported in part by the National Science Foundation (DMS 1550918). Computations for this paper were
+performed using the Blue Waters supercomputer grant “Distributed Learning with Neural Networks”.
+1
+arXiv:1708.07469v5  [q-fin.MF]  5 Sep 2018
+
+=== page 2 ===
+of high-dimensional free boundary PDEs. We also accurately solve a high-dimensional Hamilton-Jacobi-
+Bellman PDE in Section 5 and Burger’s equation in Section 6. DGM converts the computational cost of
+ﬁnite diﬀerence to a more convenient form: instead of a huge mesh of Od+1 (which is infeasible to handle),
+many batches of random spatial points are generated. Although the total number of spatial points could be
+vast, the algorithm can process the spatial points sequentially without harming the convergence rate.
+Deep learning has revolutionized ﬁelds such as image, text, and speech recognition. These ﬁelds require
+statistical approaches which can model nonlinear functions of high-dimensional inputs. Deep learning, which
+uses multi-layer neural networks (i.e., “deep neural networks”), has proven very eﬀective in practice for such
+tasks. A multi-layer neural network is essentially a “stack” of nonlinear operations where each operation is
+prescribed by certain parameters that must be estimated from data. Performance in practice can strongly
+depend upon the speciﬁc form of the neural network architecture and the training algorithms which are used.
+The design of neural network architectures and training methods has been the focus of intense research over
+the past decade. Given the success of deep learning, there is also growing interest in applying it to a range
+of other areas in science and engineering (see Section 1.2 for some examples).
+Evaluating the accuracy of the deep learning algorithm is not straightforward. PDEs with semi-analytic
+solutions may not be suﬃciently challenging. (After all, the semi-analytic solution exists since the PDE
+can be transformed into a lower-dimensional equation.) It cannot be benchmarked against traditional ﬁnite
+diﬀerence (which fails in high dimensions). We test the deep learning algorithm on a class of high-dimensional
+free boundary PDEs which have the special property that error bounds can be calculated for any approximate
+solution. This provides a unique opportunity to evaluate the accuracy of the deep learning algorithm on a
+class of high-dimensional PDEs with no semi-analytic solutions.
+This class of high-dimensional free boundary PDEs also has important applications in ﬁnance, where it
+used to price American options. An American option is a ﬁnancial derivative on a portfolio of stocks. The
+number of space dimensions in the PDE equals the number of stocks in the portfolio. Financial institutions
+are interested in pricing options on portfolios ranging from dozens to even hundreds of stocks [43]. Therefore,
+there is a signiﬁcant need for numerical methods to accurately solve high-dimensional free boundary PDEs.
+We also test the deep learning algorithm on a high-dimensional Hamilton-Jacobi-Bellman PDE with
+accurate results. We consider a high-dimensional Hamilton-Jacobi-Bellman PDE motivated by the problem
+of optimally controlling a stochastic heat equation.
+Finally, it is often of interest to ﬁnd the solution of a PDE over a range of problem setups (e.g., diﬀerent
+physical conditions and boundary conditions). For example, this may be useful for the design of engineering
+systems or uncertainty quantiﬁcation. The problem setup space may be high-dimensional and therefore may
+require solving many PDEs for many diﬀerent problem setups, which can be computationally expensive. We
+use our deep learning algorithm to approximate the general solution to the Burgers’ equation for diﬀerent
+boundary conditions, initial conditions, and physical conditions.
+In the remainder of the Introduction, we provide an overview of our results regarding the approximation
+power of neural networks for quasilinear parabolic PDEs (Section 1.1), and relevant literature (Section 1.2).
+The deep learning algorithm for solving PDEs is presented in Section 2. An eﬃcient scheme for evaluating
+the diﬀusion operator is developed in Section 3. Numerical analysis of the algorithm is presented in Sections
+4, 5, and 6. We implement and test the algorithm on a class of high-dimensional free boundary PDEs in up
+to 200 dimensions. The theorem and proof for the approximation of PDE solutions with neural networks is
+presented in Section 7. Conclusions are in Section 8. For readability purposes, proofs from Section 7 have
+been collected in Appendix A.
+1.1 Approximation Power of Neural Networks for PDEs
+We also prove a theorem regarding the approximation power of neural networks for a class of quasilinear
+parabolic PDEs. Consider the potentially nonlinear PDE
+∂tu(t,x) + Lu(t,x) = 0, (t,x) ∈ [0,T ] × Ω
+u(0,x) = u0(x), x∈ Ω
+u(t,x) = g(t,x), x∈ [0,T ] ×∂Ω, (1.1)
+2
+
+=== page 3 ===
+where ∂Ω is the boundary of the domain Ω. The solution u(t,x) is of course unknown, but an approximate
+solution f(t,x) can be found by minimizing the L2 error
+J(f) = ‖∂tf + Lf‖2 2,[0,T]×Ω + ‖f −g‖2 2,[0,T]×∂Ω + ‖f(0,·) −u0‖2 2,Ω .
+The error function J(f) measures how well the approximate solution f satisﬁes the diﬀerential operator,
+boundary condition, and initial condition. Note that no knowledge of the actual solution u is assumed; J(f)
+can be directly calculated from the PDE (1.1) for any approximation f. The goal is to construct functions
+f for which J(f) is as close to 0 as possible. Deﬁne Cn as the class of neural networks with a single hidden
+layer and n hidden units.1 Let fn be a neural network with n hidden units which minimizes J(f). We prove
+that, under certain conditions,
+there exists fn ∈ Cn such that J(fn) → 0, as n→∞, and
+fn →u as n→∞,
+strongly in, Lρ([0,T ] × Ω), with ρ < 2, for a class of quasilinear parabolic PDEs; see subsection 7.2 and
+Theorem 7.3 therein for the precise statement. That is, the neural network will converge in Lρ,ρ< 2 to the
+solution of the PDE as the number of hidden units tends to inﬁnity. The precise statement of the theorem
+and its proof are presented in Section 7. The proof requires the joint analysis of the approximation power of
+neural networks as well as the continuity properties of partial diﬀerential equations. Note that J(fn) → 0
+does not necessarily imply that fn → u, given that we only have L2 control on the approximation error.
+First, we prove that J(fn) → 0 as n→∞. We then establish that each neural network {fn}∞ n=1 satisﬁes a
+PDE with a source term hn(t,x). We are then able to prove, under certain conditions, the convergence of
+fn →u as n→∞ in Lρ([0,T ] × Ω), for ρ< 2, using the smoothness of the neural network approximations
+and compactness arguments.
+Theorem 7.3 establishes the approximation power of neural networks for solving PDEs (at least within
+a class of quasilinear parabolic PDEs); however, directly minimizing J(f) is not computationally tractable
+since it involves high-dimensional integrals. The DGM algorithm minimizes J(f) using a meshfree approach;
+see Section 2.
+1.2 Relevant Literature
+Solving PDEs with a neural network as an approximation is a natural idea, and has been considered in
+various forms previously. [29], [30], [46], [31], and [35] propose to use neural networks to solve PDEs and
+ODEs. These papers estimate neural network solutions on an a priori ﬁxed mesh. This paper proposes using
+deep neural networks and is meshfree, which is key to solving high-dimensional PDEs.
+In particular, this paper explores several new innovations. First, we focus on high-dimensional PDEs and
+apply deep learning advances of the past decade to this problem (deep neural networks instead of shallow
+neural networks, improved optimization methods for neural networks, etc.). Algorithms for high-dimensional
+free boundary PDEs are developed, eﬃciently implemented, and tested. In particular, we develop an iterative
+method to address the free boundary. Secondly, to avoid ever forming a mesh, we sample a sequence of
+random spatial points. This produces a meshfree method, which is essential for high-dimensional PDEs.
+Thirdly, the algorithm incorporates a new computational scheme for the eﬃcient computation of neural
+network gradients arising from the second derivatives of high-dimensional PDEs.
+Recently, [41, 42] develop physics informed deep learning models. They estimate deep neural network
+models which merge data observations with PDE models. This allows for the estimation of physical models
+from limited data by leveraging a priori knowledge that the physical dynamics should obey a class of PDEs.
+Their approach solves PDEs in one and two spatial dimensions using deep neural networks. [32] uses a deep
+neural network to model the Reynolds stresses in a Reynolds-averaged Navier-Stokes (RANS) model. RANS
+is a reduced-order model for turbulence in ﬂuid dynamics. [15, 2] have also recently developed a scheme
+for solving a class of quasilinear PDEs which can be represented as forward-backward stochastic diﬀerential
+1A neural network with a single hidden layer and n hidden units is a function of the form Cn ={
+h(t,x) : R1+d ↦→ R : h(t,x) = ∑n i=1 βiψ ( α1,it + ∑d j=1 αj,ixj + cj )} where Ψ : R → R is a nonlinear “activation” function
+such as a sigmoid or tanh function.
+3
+
+=== page 4 ===
+equations (FBSDEs) and [16] further develops the algorithm. The algorithm developed in [15, 2, 16] focuses
+on computing the value of the PDE solution at a single point. The algorithm that we present here is diﬀerent;
+in particular, it does not rely on the availability of FBSDE representations and yields the entire solution of
+the PDE across all time and space. In addition, the deep neural network architecture that we use, which
+is diﬀerent from the ones used in [15, 2], seems to be able to recover accurately the entire solution (at least
+for the equations that we studied). [49] use a convolutional neural network to solve a large sparse linear
+system which is required in the numerical solution of the Navier-Stokes PDE. In addition, [9] has recently
+developed a novel partial diﬀerential equation approach to optimize deep neural networks.
+[33] developed an algorithm for the solution of a discrete-time version of a class of free boundary PDEs.
+Their algorithm, commonly called the “Longstaﬀ-Schwartz method”, uses dynamic programming and ap-
+proximates the solution using a separate function approximator at each discrete time (typically a linear
+combination of basis functions). Our algorithm directly solves the PDE, and uses a single function approxi-
+mator for all space and all time. The Longstaﬀ-Schwartz algorithm has been further analyzed by [45], [23],
+and others. Sparse grid methods have also been used to solve high-dimensional PDEs; see [43], [44], [22], [6],
+and [7].
+In regards to general results on the approximation power of neural networks we refer the interested reader
+to classical works [11, 25, 26, 39] and we also mention the recent work by [38], where the authors study the
+necessary and suﬃcient complexity of ReLU neural networks that is required for approximating classiﬁer
+functions in the mean square sense.
+2 Algorithm
+Consider a parabolic PDE with d spatial dimensions:
+∂u
+∂t (t,x) + Lu(t,x) = 0, (t,x) ∈ [0,T ] × Ω,
+u(t = 0,x) = u0(x),
+u(t,x) = g(t,x), x∈∂Ω, (2.1)
+where x ∈ Ω ⊂ Rd. The DGM algorithm approximates u(t,x) with a deep neural network f(t,x; θ) where
+θ ∈ RK are the neural network’s parameters. Note that the diﬀerential operators ∂f ∂t (t,x; θ) and Lf(t,x; θ)
+can be calculated analytically. Construct the objective function:
+J(f) =
+‖‖‖‖ ∂f ∂t (t,x; θ) + Lf(t,x; θ) ‖‖‖‖ 2 [0,T]×Ω,ν1 + ‖f(t,x; θ) −g(t,x)‖2 [0,T]×∂Ω,ν2 + ‖f(0,x; θ) −u0(x)‖2 Ω,ν3 .
+Here, ‖f(y)‖2 Y,ν = ∫ Y|f(y)|2 ν(y)dy where ν(y) is a positive probability density on y∈Y. J(f) measures how
+well the function f(t,x; θ) satisﬁes the PDE diﬀerential operator, boundary conditions, and initial condition.
+If J(f) = 0, then f(t,x; θ) is a solution to the PDE (2.1).
+The goal is to ﬁnd a set of parameters θ such that the function f(t,x; θ) minimizes the error J(f). If the
+error J(f) is small, then f(t,x; θ) will closely satisfy the PDE diﬀerential operator, boundary conditions,
+and initial condition. Therefore, a θ which minimizes J(f(·; θ)) produces a reduced-form model f(t,x; θ)
+which approximates the PDE solution u(t,x).
+Estimating θ by directly minimizing J(f) is infeasible when the dimension d is large since the integral
+over Ω is computationally intractable. However, borrowing a machine learning approach, one can instead
+minimize J(f) using stochastic gradient descent on a sequence of time and space points drawn at random
+from Ω and ∂Ω. This avoids ever forming a mesh.
+The DGM algorithm is:
+1. Generate random points (tn,xn) from [0,T ] × Ω and (τn,zn) from [0,T ] ×∂Ω according to respective
+probability densities ν1 and ν2. Also, draw the random point wn from Ω with probability density ν3.
+2. Calculate the squared error G(θn,sn) at the randomly sampled points sn = {(tn,xn), (τn,zn),wn}
+where:
+G(θn,sn) =
+(∂f
+∂t (tn,xn; θn) + Lf(tn,xn; θn)
+)2
++
+(
+f(τn,zn; θn) −g(τn,zn)
+)2
++
+(
+f(0,wn; θn) −u0(wn)
+)2
+.
+4
+
+=== page 5 ===
+3. Take a descent step at the random point sn:
+θn+1 = θn −αn∇θG(θn,sn)
+4. Repeat until convergence criterion is satisﬁed.
+The “learning rate” αn decreases with n. The steps ∇θG(θn,sn) are unbiased estimates of ∇θJ(f(·; θn)):
+E
+[
+∇θG(θn,sn)
+⏐⏐θn ] = ∇θJ(f(·; θn)).
+Therefore, the stochastic gradient descent algorithm will on average take steps in a descent direction for the
+objective function J. A descent direction means that the objective function decreases after an iteration (i.e.,
+J(f(·; θn+1)) <J(f(·; θn)) ), and θn+1 is therefore a better parameter estimate than θn.
+Under (relatively mild) technical conditions (see [3]), the algorithm θn will converge to a critical point of
+the objective function J(f(·; θ)) as n→∞:
+lim
+n→∞
+‖∇θJ(f(·; θn))‖ = 0.
+It’s important to note that θn may only converge to a local minimum when f(t,x; θ) is non-convex. This
+is generally true for non-convex optimization and is not speciﬁc to this paper’s algorithm. In particular,
+deep neural networks are non-convex. Therefore, it is well known that stochastic gradient descent may only
+converge to a local minimum (and not a global minimum) for a neural network. Nevertheless, stochastic
+gradient descent has proven very eﬀective in practice and is the fundamental building block of nearly all
+approaches for training deep learning models.
+3 A Monte Carlo Method for Fast Computation of Second Deriva-
+tives
+This section describes a modiﬁed algorithm which may be more computationally eﬃcient in some cases.
+The term Lf(t,x; θ) contains second derivatives ∂2f ∂xixj (t,x; θ) which may be expensive to compute in higher
+dimensions. For instance, 20, 000 second derivatives must be calculated in d = 200 dimensions.
+The complicated architectures of neural networks can make it computationally costly to calculate the
+second derivatives (for example, see the neural network architecture (4.2)). The computational cost for
+calculating second derivatives (in both total arithmetic operations and memory) is O(d2 ×N) where d is
+the spatial dimension of x and N is the batch size. In comparison, the computational cost for calculating
+ﬁrst derivatives is O(d×N). The cost associated with the second derivatives is further increased since we
+actually need the third-order derivatives ∇θ ∂2f ∂x2 (t,x; θ) for the stochastic gradient descent algorithm. Instead
+of directly calculating these second derivatives, we approximate the second derivatives using a Monte Carlo
+method.
+Suppose the sum of the second derivatives in Lf(t,x, ; θ) is of the form 1 2 ∑d i,j=1 ρi,jσi(x)σj(x) ∂2f ∂xixj (t,x; θ),
+assume [ρi,j]d i,j=1 is a positive deﬁnite matrix, and deﬁne σ(x) =
+(
+σ1(x),...,σd(x)
+)
+. For example, such
+PDEs arise when considering expectations of functions of stochastic diﬀerential equations, where the σ(x)
+represents the diﬀusion coeﬃcient. See equation (4.1) and the corresponding discussion. A generalization
+of the algorithm in this section to second derivatives with nonlinear coeﬃcient dependence on u(t,x) is also
+possible. Then,
+d∑
+i,j=1
+ρi,jσi(x)σj(x) ∂2f ∂xixj (t,x; θ) = lim ∆→0 E [ d∑ i=1 ∂f ∂xi (t,x + σ(x)W∆; θ) − ∂f ∂xi (t,x; θ) ∆ σi(x)Wi ∆ ] , (3.1)
+where Wt ∈ Rd is a Brownian motion and ∆ ∈ R+ is the step-size. The convergence rate for (3.1) is O( √ ∆).2
+2Let f be a three-times diﬀerentiable function in x with bounded third-order derivatives in x. Then, it directly follows from
+a Taylor expansion that
+⏐⏐⏐⏐ ∑d i,j=1 ρi,jσi(x)σj(x) ∂2f ∂xixj (t,x; θ) − E [∑d i=1 ∂f ∂xi (t,x+σ(x)W∆;θ)− ∂f ∂xi (t,x;θ) ∆ σi(x)Wi ∆ ]⏐⏐⏐⏐≤ C(x) √ ∆.
+The constant C(x) depends upon ρ,fxxx(t,x; θ) and σ(x).
+5
+
+=== page 6 ===
+Deﬁne:
+G1(θn,sn) :=
+(∂f
+∂t (tn,xn; θn) + Lf(tn,xn; θn)
+)2
+,
+G2(θn,sn) :=
+(
+f(τn,zn; θn) −g(τn,zn)
+)2
+,
+G3(θn,sn) :=
+(
+f(0,wn; θn) −u0(wn)
+)2
+,
+G(θn,sn) := G1(θn,sn) + G2(θn,sn) + G3(θn,sn).
+The DGM algorithm use the gradient ∇θG1(θn,sn), which requires the calculation of the second derivative
+terms in Lf(tn,xn; θn). Deﬁne the ﬁrst derivative operators as
+L1f(tn,xn; θn):=Lf(tn,xn; θn) − 1 2
+d∑
+i,j=1
+ρi,jσi(xn)σj(xn) ∂2f ∂xixj (tn,xn; θ).
+Using (3.1), ∇θG1 is approximated as ˜G1 with a ﬁxed constant ∆ > 0:
+˜G1(θn,sn) := 2
+(∂f
+∂t (tn,xn; θn) + L1f(tn,xn; θn) + 1 2
+d∑
+i=1
+∂f
+∂xi (t,xn + σ(xn)W∆; θ) − ∂f ∂xi (t,xn; θ)
+∆ σi(xn)Wi ∆
+)
+× ∇θ
+(∂f
+∂t (tn,xn; θn) + L1f(tn,xn; θn) + 1 2
+d∑
+i=1
+∂f
+∂xi (t,xn + σ(xn) ˜W∆; θ) − ∂f ∂xi (t,xn; θ)
+∆ σi(xn) ˜Wi ∆
+)
+,
+where W∆ is a d-dimensional normal random variable with E[W∆] = 0 and Cov[(W∆)i, (W∆)j] = ρi,j∆. ˜W∆
+has the same distribution as W∆. W∆ and ˜W∆ are independent. ˜G1(θn,sn) is a Monte Carlo approximation
+of ∇θG1(θn,sn). ˜G1(θn,sn) has O( √ ∆) bias as an approximation for ∇θG1(θn,sn). This approximation
+error can be further improved via the following scheme using “antithetic variates”:
+˜G1(θn,sn) := ˜G1,a(θn,sn) + ˜G1,b(θn,sn) (3.2)
+˜G1,a(θn,sn) :=
+(∂f
+∂t (tn,xn; θn) + L1f(tn,xn; θn) + 1 2
+d∑
+i=1
+∂f
+∂xi (t,xn + σ(xn)W∆; θ) − ∂f ∂xi (t,xn; θ)
+∆ σi(xn)Wi ∆
+)
+× ∇θ
+(∂f
+∂t (tn,xn; θn) + L1f(tn,xn; θn) + 1 2
+d∑
+i=1
+∂f
+∂xi (t,xn + σ(xn) ˜W∆; θ) − ∂f ∂xi (t,xn; θ)
+∆ σi(xn) ˜Wi ∆
+)
+,
+˜G1,b(θn,sn) :=
+(∂f
+∂t (tn,xn; θn) + L1f(tn,xn; θn) − 1 2
+d∑
+i=1
+∂f
+∂xi (t,xn −σ(xn)W∆; θ) − ∂f ∂xi (t,xn; θ)
+∆ σi(xn)Wi ∆
+)
+× ∇θ
+(∂f
+∂t (tn,xn; θn) + L1f(tn,xn; θn) − 1 2
+d∑
+i=1
+∂f
+∂xi (t,xn −σ(xn) ˜W∆; θ) − ∂f ∂xi (t,xn; θ)
+∆ σi(xn) ˜Wi ∆
+)
+.
+The approximation (3.2) has O(∆) bias as an approximation for ∇θG1(θn,sn). (3.2) uses antithetic variates
+in the sense that ˜G1,a(θn,sn) uses the random variables (W∆, ˜W∆) while ˜G1,b(θn,sn) uses (−W∆,− ˜W∆).
+See [1] for a background on antithetic variates in simulation algorithms. A Taylor expansion can be used
+to show the approximation error is O(∆). It is important to highlight that there is no computational cost
+associated with the magnitude of ∆; an arbitrarily small ∆ can be chosen with no additional computational
+cost (although there may be numerical underﬂow or overﬂow problems). The modiﬁed algorithm using the
+Monte Carlo approximation for the second derivatives is:
+1. Generate random points (tn,xn) from [0,T ] × Ω and (τn,zn) from [0,T ] ×∂Ω according to respective
+densities ν1 and ν2. Also, draw the random point wn from Ω with density ν3.
+6
+
+=== page 7 ===
+2. Calculate the step ˜G(θn,sn) = ˜G1(θn,sn) + ∇θG2(θn,sn) + ∇θG3(θn,sn) at the randomly sampled
+points sn = {(tn,xn), (τn,zn),wn}. ˜G(θn,sn) is an approximation for ∇θG(θn,sn).
+3. Take a step at the random point sn:
+θn+1 = θn −αn ˜G(θn,sn)
+4. Repeat until convergence criterion is satisﬁed.
+In conclusion, the modiﬁed algorithm here is computationally less expensive than the original algorithm
+in Section 2 but introduces some bias and variance. The variance essentially increases the i.i.d. noise in
+the stochastic gradient descent step; this noise averages out over a large number of samples though. The
+original algorithm in Section 2 is unbiased and has lower variance, but is computationally more expensive.
+We numerically implement the algorithm for a class of free boundary PDEs in Section 4. Future research
+may investigate other methods to further improve the computational evaluation of the second derivative
+terms (for instance, multi-level Monte Carlo).
+4 Numerical Analysis for a High-dimensional Free Boundary PDE
+We test our algorithm on a class of high-dimensional free boundary PDEs. These free boundary PDEs are
+used in ﬁnance to price American options and are often referred to as “American option PDEs”. An American
+option is a ﬁnancial derivative on a portfolio of stocks. The option owner may at any time t∈ [0,T ] choose to
+exercise the American option and receive a payoﬀ which is determined by the underlying prices of the stocks
+in the portfolio. T is called the maturity date of the option and the payoﬀ function is g(x) : Rd → R. Let
+Xt ∈ Rd be the prices of d stocks. If at time t the stock prices Xt = x, the price of the option is u(t,x). The
+price function u(t,x) satisﬁes a free boundary PDE on [0,T ] × Rd. For American options, one is primarily
+interested in the solution u(0,X0) since this is the fair price to buy or sell the option.
+Besides the high dimensions and the free boundary, the American option PDE is challenging to numer-
+ically solve since the payoﬀ function g(x) (which both appears in the initial condition and determines the
+free boundary) is not continuously diﬀerentiable.
+Section 4.1 states the free boundary PDE and the deep learning algorithm to solve it. To address the
+free boundary, we supplement the algorithm presented in Section 2 with an iterative method; see Section
+4.1. Section 4.2 describes the architecture and implementation details for the neural network. Section 4.3
+reports numerical accuracy for a case where a semi-analytic solution exists. Section 4.4 reports numerical
+accuracy for a case where no semi-analytic solution exists.
+4.1 The Free Boundary PDE
+We now specify the free boundary PDE for u(t,x). The stock price dynamics and option price are:
+dXi t = µ(Xi t)dt + σ(Xi t)dWi t,
+u(t,x) = sup
+τ≥t
+E[e−r(τ∧T)g(Xτ∧T )|Xt = x],
+where Wt ∈ Rd is a standard Brownian motion and Cov[dWi t,dWj t ] = ρi,jdt. The price of the American
+option is u(0,X0).
+The model (4.1) for the stock price dynamics is widely used in practice and captures several desirable
+characteristics. First, the drift µ(x) measures the “average” growth in the stock prices. The Brownian
+motion Wt represents the randomness in the stock price, and the magnitude of the randomness is given
+by the coeﬃcient function σ(Xi t). The movement of stock prices are correlated (e.g., if Microsoft’s price
+increases, it is likely that Apple’s price will also increase). The magnitude of the correlation between two
+stocks i and j is speciﬁed by the parameter ρi,j. An example is the well-known Black-Scholes model µ(x) = µx
+and σ(x) = σx. In the Black-Scholes model, the average rate of return for each stock is µ.
+An American option is a ﬁnancial derivative which the owner can choose to “exercise” at any time
+t∈ [0,T ]. If the owner exercises the option, they receive the ﬁnancial payoﬀ g(Xt) where Xt is the prices of
+7
+
+=== page 8 ===
+the underlying stocks. If the owner does not choose to exercise the option, they receive the payoﬀ g(XT ) at
+the ﬁnal time T . The value (or price) of the American option at time t is u(t,Xt). Some typical examples of
+the payoﬀ function g(x) : Rd → R are g(x) = max ( (∏d i=1 xi)1/d−K, 0 ) and g(x) = max ( 1 d ∑d i=1 xi−K, 0 ) .
+The former is referred to as a “geometric payoﬀ function” while the latter is called an “arithmetic payoﬀ
+function.” K is the “strike price” and is a positive number.
+The price function u(t,x) in (4.1) is the solution to a free boundary PDE and will satisfy:
+0 = ∂u ∂t (t,x) + µ(x) · ∂u ∂x(t,x) + 1 2
+d∑
+i,j=1
+ρi,jσ(xi)σ(xj) ∂2u ∂xi∂xj (t,x) −ru(t,x), ∀ { (t,x) : u(t,x) >g(x) } .
+u(t,x) ≥ g(x), ∀ (t,x).
+u(t,x) ∈ C1(R+ × Rd), ∀ { (t,x) : u(t,x) = g(x) } .
+u(T,x) = g(x), ∀ x. (4.1)
+The free boundary set is F =
+{
+(t,x) : u(t,x) = g(x)
+}
+. u(t,x) satisﬁes a partial diﬀerential equation “above”
+the free boundary set F , and u(t,x) equals the function g(x) “below” the free boundary set F .
+The deep learning algorithm for solving the PDE (4.1) requires simulating points above and below the
+free boundary set F . We use an iterative method to address the free boundary. The free boundary set F
+is approximated using the current parameter estimate θn. This approximate free boundary is used in the
+probability measure that we simulate points with. The gradient is not taken with respect to the θn input of
+the probability density used to simulate random points. For this purpose, deﬁne the objective function:
+J(f; θ, ˜θ) =
+‖‖‖‖‖‖ ∂f ∂t (t,x; θ) + µ(x) · ∂f ∂x(t,x; θ) + 1 2 d∑ i,j=1 ρi,jσ(xi)σ(xj) ∂2f ∂xi∂xj (t,x; θ) −rf(t,x; θ) ‖‖‖‖‖‖ 2 [0,T]×Ω,ν1(˜θ)
++ ‖max(g(x) −f(t,x; θ), 0)‖2 [0,T]×Ω,ν2(˜θ)
++ ‖f(T,x; θ) −g(x)‖2 Ω,ν3 .
+Descent steps are taken in the direction −∇θJ(f; θ, ˜θ). ν1(˜θ) and ν2(˜θ) are the densities of the points in ˜B1
+and ˜B2, which are deﬁned below. The deep learning algorithm is:
+1. Generate the random batch of points B1 = {tm,xm}M m=1 from [0,T ] × Ω according to the probability
+density ν0 1 . Select the points ˜B1 = {(t,x) ∈B1 : f(t,x; θn) >g(x)}.
+2. Generate the random batch of points B2 = {τm,zm}M m=1 from [0,T ] ×∂Ω according to the probability
+density ν0 2 . Select the points ˜B2 = {(τ,z) ∈B2 : f(τ,z; θn) ≤g(z)}.
+3. Generate the random batch of points B3 = {wm}M m=1 from Ω with probability density ν3.
+4. Approximate J(f; θn, ˜θn) as J(f; θn,Sn) at the randomly sampled points Sn = { ˜B1, ˜B2,B3}:
+J(f; θn,Sn) = 1 | ˜B1| ∑ (tm,xm)∈ ˜B1
+(∂f
+∂t (tm,xm; θn) + µ(xm) · ∂f ∂x(tm,xm; θn)
++ 1 2
+d∑
+i,j=1
+ρi,jσ(xi)σ(xj) ∂2f ∂xi∂xj (tm,xm; θn) −rf(tm,xm; θn) )2
++ 1
+| ˜B2|
+∑
+(τm,zm)∈ ˜B2
+max
+(
+g(zm) −f(τm,zm; θn), 0
+)2
++ 1 |B3| ∑ wm∈B3
+(
+f(T,wm; θ) −g(wm)
+)2
+.
+5. Take a descent step for the random batch Sn:
+θn+1 = θn −αn∇θJ(f; θn,Sn).
+8
+
+=== page 9 ===
+6. Repeat until convergence criterion is satisﬁed.
+The second derivatives in the above algorithm can be approximated using the method from Section 3.
+4.2 Implementation details for the algorithm
+This section provides details for the implementation of the algorithm, including the DGM network architec-
+ture, hyperparameters, and computational approach.
+The architecture of a neural network can be crucial to its success. Frequently, diﬀerent applications
+require diﬀerent architectures. For example, convolution networks are essential for image recognition while
+long short-term networks (LSTMs) are useful for modeling sequential data. Clever choices of architectures,
+which exploit a priori knowledge about an application, can signiﬁcantly improve performance. In the PDE
+applications in this paper, we found that a neural network architecture similar in spirit to that of LSTM
+networks improved performance.
+The PDE solution requires a model f(t,x; θ) which can make “sharp turns” due to the ﬁnal condition,
+which is of the form u(T,x) = max(p(x), 0) (the ﬁrst derivative is discontinuous when p(x) = 0). The shape
+of the solution u(t,x) for t < T , although “smoothed” by the diﬀusion term in the PDE, will still have a
+nonlinear proﬁle which is rapidly changing in certain spatial regions. In particular, we found the following
+network architecture to be eﬀective:
+S1 = σ(W 1→ x + b1),
+Z𝓁 = σ(Uz,𝓁→ x + Wz,𝓁S𝓁 + bz,𝓁), 𝓁 = 1,...,L,
+G𝓁 = σ(Ug,𝓁→ x + Wg,𝓁S1 + bg,𝓁), 𝓁 = 1,...,L,
+R𝓁 = σ(Ur,𝓁→ x + Wr,𝓁S𝓁 + br,𝓁), 𝓁 = 1,...,L,
+H𝓁 = σ(Uh,𝓁→ x + Wh,𝓁(S𝓁 ⊙R𝓁) + bh,𝓁), 𝓁 = 1,...,L,
+S𝓁+1 = (1 −G𝓁) ⊙H𝓁 + Z𝓁 ⊙S𝓁, 𝓁 = 1,...,L,
+f(t,x; θ) = WSL+1 + b, (4.2)
+where
+→
+x = (t,x), the number of hidden layers is L + 1, and ⊙ denotes element-wise multiplication (i.e.,
+z⊙v =
+(
+z0v0,...,zNvN
+)
+). The parameters are
+θ =
+{
+W 1,b1,
+(
+Uz,𝓁,Wz,𝓁,bz,𝓁
+)L
+𝓁=1
+,
+(
+Ug,𝓁,Wg,𝓁,bg,𝓁
+)L
+𝓁=1
+,
+(
+Ur,𝓁,Wr,𝓁,br,𝓁
+)L
+𝓁=1
+,
+(
+Uh,𝓁,Wh,𝓁,bh,𝓁
+)L
+𝓁=1
+,W,b
+}
+.
+The number of units in each layer is M and σ : RM → RM is an element-wise nonlinearity:
+σ(z) =
+(
+φ(z1),φ(z2),...,φ(zM)
+)
+, (4.3)
+where φ : R → R is a nonlinear activation function such as the tanh function, sigmoidal function ey 1+ey , or
+rectiﬁed linear unit (ReLU) max(y, 0). The parameters in θ have dimensions W 1 ∈ RM×(d+1), b1 ∈ RM,
+Uz,𝓁 ∈ RM×(d+1), Wz,𝓁 ∈ RM×M, bz,𝓁 ∈ RM, Ug,𝓁 ∈ RM×(d+1), Wg,𝓁 ∈ RM×M, bg,𝓁 ∈ RM, Ur,𝓁 ∈ RM×(d+1),
+Wr,𝓁 ∈ RM×M, br,𝓁 ∈ RM, Uh,𝓁 ∈ RM×(d+1), Wh,𝓁 ∈ RM×M, bh,𝓁 ∈ RM, W ∈ R1×M, and b∈ R.
+The architecture (4.2) is relatively complicated. Within each layer, there are actually many “sub-layers”
+of computations. The important feature is the repeated element-wise multiplication of nonlinear functions
+of the input. This helps to model more complicated functions which are rapidly changing in certain time
+and space regions. The neural network architecture (4.2) is similar to the architecture for LSTM networks
+(see [24]) and highway networks (see [47]).
+The key hyperparameters in the neural network (4.2) are the number of layers L, the number of units
+M in each sub-layer, and the choice of activation unit φ(y). We found for the applications in this paper
+that the hyperparameters L = 3 (i.e., four hidden layers), M = 50, and φ(y) = tanh(y) were eﬀective. It
+is worthwhile to note that the choice of φ(y) = tanh(y) means that f(t,x; θ) is smooth and therefore can
+9
+
+=== page 10 ===
+solve for a “classical solution” of the PDE. The neural network parameters are initialized using the Xavier
+initialization (see [18]). The architecture (4.2) is bounded in the input x (for a ﬁxed choice of parameters
+θ) if σ(·) is a tanh or sigmoidal function; it may be helpful to allow the network to be unbounded for
+approximating unbounded/growing functions. We found that replacing the σ(·) in the H𝓁 sub-layer with the
+identity function can be an eﬀective way to develop an unbounded network.
+We emphasize that the only input to the network is (t,x). We do not use any custom-designed nonlinear
+transformations of (t,x). If properly chosen, such additional inputs might help performance. For example,
+the European option PDE solution (which has an analytic formula) could be included as an input.
+A regularization term (such as an 𝓁2 penalty) could also be included in the objective function for the
+algorithm. Such regularization terms are used for reducing overﬁtting in machine learning models estimated
+using datasets which have a limited number of data samples. (For example, a model estimated on a dataset
+of 60, 000 images.) However, it’s unclear if this will be helpful in the context of this paper’s application,
+since there is no strict upper bound on the size of the dataset (i.e., one can always simulate more time/space
+points).
+Our computational approach to training the neural network involved several components. The second
+derivatives are approximated using the method from Section 3. Training is distributed across 6 GPU nodes
+using asynchronous stochastic gradient descent (we provide more details on this below). Parameters are
+updated using the well-known ADAM algorithm (see [27]) with a decaying learning rate schedule (more
+details on the learning rate are provided below). Accuracy can be improved by calculating a running average
+of the neural network solutions over a sequence of training iterations (essentially a computationally cheap
+approach for building a model ensemble). We also found that model ensembles (of even small sizes of 5) can
+slightly increase accuracy.
+Training of the neural network is distributed across several GPU nodes in order to accelerate training.
+We use asynchronous stochastic gradient descent, which is a widely-used method for parallelizing training of
+machine learning models. On each node, i.i.d. space and time samples are generated. Each node calculates
+the gradient of the objective function with respect to the parameters on its respective batch of simulated data.
+These gradients are then used to update the model, which is stored on a central node called a “parameter
+server”. Figure 1 displays the computational setup. Updates occur asynchronously; that is, node i updates
+the model immediately upon completion of its work, and does not wait for node j to ﬁnish its work. The
+“work” here is calculating the gradients for a batch of simulated data. Before a node calculates the gradient
+for a new batch of simulated data, it receives an updated model from the parameter server. For more details
+on asynchronous stochastic gradient descent, see [13].
+Figure 1: Asynchronous stochastic gradient descent on a cluster of GPU nodes.
+During training, we decrease the learning as the number of iterations increases. We use a learning rate
+schedule where the learning rate is a piecewise constant function of the number of iterations. This is a typical
+choice. We found the following learning rate schedule to be eﬀective:
+10
+
+=== page 11 ===
+αn =
+
+
+
+10−4 n≤ 5, 000
+5 × 10−4 5, 000 <n≤ 10, 000
+10−5 < 10, 000 <n≤ 20, 000
+5 × 10−6 20, 000 <n≤ 30, 000
+10−6 30, 000 <n≤ 40, 000
+5 × 10−7 40, 000 <n≤ 45, 000
+10−7 45, 000 <n
+We use approximately 100, 000 iterations. An “iteration” involves batches of size 1, 000 on each of the
+GPU nodes. Therefore, there are 5, 000 simulated time/space points for each iteration. In total, we used
+approximately 500 million simulated time/space points to train the neural network.
+We implement the algorithm using TensorFlow and PyTorch, which are software libraries for deep learn-
+ing. TensorFlow has reverse mode automatic diﬀerentiation which allows the calculation of derivatives for
+a broad range of functions. For example, TensorFlow can be used to calculate the gradient of the neural
+network (4.2) with respect to x or θ. TensorFlow also allows for the training of models on graphics process-
+ing units (GPUs). A GPU, which has thousands of cores, can be use to highly parallelize the training of
+deep learning models. We furthermore distribute our computations across multiple GPU nodes, as described
+above. The computations in this paper were performed on the Blue Waters supercomputer which has a large
+number of GPU nodes.
+4.3 A High-dimensional Free Boundary PDE with a Semi-Analytic Solution
+We implement our deep learning algorithm to solve the PDE (4.1). The accuracy of our deep learning
+algorithm is evaluated in up to 200 dimensions. The results are reported below in Table 1.
+Number of dimensions Error
+3 0.05%
+20 0.03%
+100 0.11%
+200 0.22%
+Table 1: The deep learning algorithm solution is compared with a semi-analytic solution for the Black-Scholes
+model. The parameters µ(x) = (r−c)x and σ(x) = σx. All stocks are identical with correlation ρi,j = .75,
+volatility σ = .25, initial stock price X0 = 1, dividend rate c = 0.02, and interest rate r = 0. The maturity
+of the option is T = 2 and the strike price is K = 1. The payoﬀ function is g(x) = max
+(
+(∏d i=1 xi)1/d −
+K, 0
+)
+. The error is reported for the price u(0,X0) of the at-the-money American call option. The error is
+|f(0,X0;θ)−u(0,X0)|
+|u(0,X0)| × 100%.
+The semi-analytic solution used in Table 1 is provided below. Let µ(x) = (r−c)x, σ(x) = σx, and ρi,j = ρ
+for i⁄= j (i.e., the Black-Scholes model). If the payoﬀ function in (4.1) is g(x) = max
+(
+(∏d i=1 xi)1/d −K, 0 ) ,
+then there is a semi-analytic solution to (4.1):
+u(t,x) = v(t, (
+d∏
+i=1
+xi)1/d −K), (4.4)
+where v(t,x) satisﬁes the one-dimensional free boundary PDE
+0 = ∂v ∂t (t,x) + ˆµx∂v ∂x(t,x) + 1 2 ˆσ2x∂2v ∂x2 (t,x) −rv(t,x), ∀ { (t,x) : v(t,x) > ˆg(x) } .
+v(t,x) ≥ ˆg(x), ∀ (t,x).
+ˆv(t,x) ∈ C1(R+ × Rd), ∀ { (t,x) : v(t,x) = ˆg(x) } .
+v(T,x) = ˆg(x), ∀ x, (4.5)
+11
+
+=== page 12 ===
+where ˆσ2 = dσ2+d(d−1)ρσ2 d2 , ˆµ = (r−c) − 1 2 ˆσ2 + 1 2 σ2, and ˆg(x) = max(x, 0). The one-dimensional PDE (4.5)
+can be solved using ﬁnite diﬀerence methods. If f(t,x; θ) is the deep learning algorithm’s estimate for the
+PDE solution at (t,x), the relative error at the point (t,x) is |f(t,x;θ)−u(t,x)| |u(t,x)| × 100% and the absolute error
+at the point (t,x) is |f(t,x; θ) −u(t,x)|. The relative error and absolute error at the point (t,x) can be
+evaluated using the semi-analytic solution (4.4).
+Although the solution at (t,x) = (0,X0) is of primary interest for American options, most other PDE
+applications are interested in the entire solution u(t,x). The deep learning algorithm provides an approximate
+solution across all time and space (t,x) ∈ [0,T ] × Ω. As an example, we present in Figure 2 contour plots of
+the absolute error and percent error across time and space for the American option PDE in 20 dimensions.
+The contour plot is produced in the following way:
+1. Sample time points t𝓁 uniformly on [0,T ] and sample spatial points x𝓁 = (x𝓁 1,...,x𝓁 20) from the joint
+distribution of X1 t,...,X20 t in equation (4.1). This produces an “envelope” of sampled points since Xt
+spreads out as a diﬀusive process from X0 = 1.
+2. Calculate the error E𝓁 at each sampled point (t𝓁,x𝓁) for 𝓁 = 1,...,L.
+3. Aggregate the error over a two-dimensional subspace
+(
+t𝓁, (
+20∏
+i=1
+x𝓁 i)1/20,E𝓁) for 𝓁 = 1,...,L.
+4. Produce a contour plot from the data
+(
+t𝓁, (∏20 i=1 x𝓁 i)1/20,E𝓁)L 𝓁=1. The x-axis is t and the y-axis is the
+geometric average (∏20 i=1 xi)1/20, which corresponds to the ﬁnal condition g(x).
+Figure 2 reports both the absolute error and the percent error. The percent error |f(t,x;θ)−u(t,x)| |u(t,x)| × 100%
+is reported for points where |u(t,x)| > 0.05. The absolute error becomes relatively large in a few areas;
+however, the solution u(t,x) also grows large in these areas and therefore the percent error remains small.
+4.4 A High-dimensional Free Boundary PDE without a Semi-Analytic Solution
+We now consider a case of the American option PDE which does not have a semi-analytic solution. The
+American option PDE has the special property that it is possible to calculate error bounds on an approximate
+solution. Therefore, we can evaluate the accuracy of the deep learning algorithm even on cases where no
+semi-analytic solution is available.
+We previously only considered a symmetrical case where ρi,j = 0.75 and σ = 0.25 for all stocks. This
+section solves a more challenging heterogeneous case where ρi,j and σi vary across all dimensions i =
+1, 2,...,d. The coeﬃcients are ﬁtted to actual data for the stocks IBM, Amazon, Tiﬀany, Amgen, Bank
+of America, General Mills, Cisco, Coca-Cola, Comcast, Deere, General Electric, Home Depot, Johnson &
+Johnson, Morgan Stanley, Microsoft, Nordstrom, Pﬁzer, Qualcomm, Starbucks, and Tyson Foods from 2000-
+2017. This produces a PDE with widely-varying coeﬃcients for each of the d2+d 2 second derivative terms.
+The correlation coeﬃcients ρi,j range from −0.53 to 0.80 for i⁄= j and σi ranges from 0.09 to 0.69.
+Let f(t,x; θ) be the neural network approximation. [45] derived that the PDE solution u(t,x) lies in the
+interval:
+u(t,x) ∈
+[
+u(t,x),u(t,x)
+]
+,
+u(t,x) = E
+[
+g(Xτ)|Xt = x,τ >t
+]
+,
+u(t,x) = E
+[
+sup
+s∈[t,T]
+[
+e−r(s−t)g(Xs) −Ms ]] . (4.6)
+where τ = inf{t ∈ [0,T ] : f(t,Xt; θ) < g(Xt)} and Ms is a martingale constructed from the approximate
+12
+
+=== page 13 ===
+Figure 2: Top: Absolute error. Bottom: Percent error. For reference, the price at time 0 is 0.1003 and the
+solution at time T is max(geometric average of x − 1, 0).
+solution f(t,x; θ)
+Ms = f(s,Xs; θ) −f(t,Xt; θ) −
+∫ s
+t
+[∂f
+∂t (s′,Xs′ ; θ) + µ(Xs′ )∂f ∂x(s′,Xs′ ; θ)
++ 1 2
+d∑
+i,j=1
+σ(Xs′ ,i)σ(Xs′ ,j) ∂2f ∂xi∂xj (s′,Xs′ ; θ) −rf(s′,Xs′ ; θ) ] ds′. (4.7)
+The bounds (4.6) depend only on the approximation f(t,x; θ), which is known, and can be evaluated via
+Monte Carlo simulation. The integral for Ms must also be discretized. The best estimate for the price
+of the American option is the midpoint of the interval [u(0,X0),u(0,X0)], which has an error bound of
+13
+
+=== page 14 ===
+u(0,X0)−u(0,X0)
+2u(0,X0) × 100%. Numerical results are in Table 2.
+Strike price Neural network solution Lower Bound Upper Bound Error bound
+0.90 0.14833 0.14838 0.14905 0.23%
+0.95 0.12286 0.12270 0.12351 0.33%
+1.00 0.10136 0.10119 0.10193 0.37%
+1.05 0.08334 0.08315 0.08389 0.44%
+1.10 0.06841 0.06809 0.06893 0.62%
+Table 2: The accuracy of the deep learning algorithm is evaluated on a case where there is no semi-
+analytic solution. The parameters µ(x) = (r−c)x and σ(x) = σx. The correlations ρi,j and volatilities σi
+are estimated from data to generate a heterogeneous diﬀusion matrix. The initial stock price is X0 = 1,
+dividend rate c = 0.02, and interest rate r = 0 for all stocks. The maturity of the option is T = 2. The payoﬀ
+function is g(x) = max
+( 1
+d
+∑d
+i=1 xi −K, 0
+)
+. The neural network solution and its error bounds are reported
+for the price u(0,X0) of the American call option. The best estimate for the price of the American option
+is the midpoint of the interval [u(0,X0),u(0,X0)], which has an error bound of u(0,X0)−u(0,X0) 2u(0,X0) × 100%. In
+order to calculate the upper bound, the integral (4.7) is discretized with time step size ∆ = 5 × 10−4.
+We present in Figure 3 contour plots of the absolute error bound and percent error bound across time and
+space for the American option PDE in 20 dimensions for strike price K = 1. The contour plot is produced
+in the following way:
+1. Sample time points t𝓁 uniformly on [0,T ] and sample spatial points x𝓁 = (x𝓁 1,...,x𝓁 20) from the joint
+distribution of X1 t,...,X20 t in equation (4.1).
+2. Calculate the error E𝓁 at each sampled point (t𝓁,x𝓁) for 𝓁 = 1,...,L.
+3. Aggregate the error over a two-dimensional subspace
+(
+t𝓁, 1 20
+20∑
+i=1
+x𝓁 i,E𝓁) for 𝓁 = 1,...,L.
+4. Produce a contour plot from the data
+(
+t𝓁, 1 20 ∑20 i=1 x𝓁 i,E𝓁)L 𝓁=1. The x-axis is t and the y-axis is the
+geometric average 1 20 ∑20 i=1 x𝓁 i, which corresponds to the ﬁnal condition g(x).
+Figure 3 reports both the absolute error and the percent error. The percent error |f(t,x;θ)−u(t,x)| |u(t,x)| × 100% is
+reported for points where |u(t,x)| > 0.05. It should be emphasized that these are error bounds; therefore,
+the actual error could be lower. The contour plot 3 requires signiﬁcant computations. For each point at
+which calculate an error bound, a new simulation of (4.6) is required. In total, a large number of simulations
+are required, which we distribute across hundreds of GPUs on the Blue Waters supercomputer.
+5 High-dimensional Hamilton-Jacobi-Bellman PDE
+We also test the deep learning algorithm on a high-dimensional Hamilton-Jacobi-Bellman (HJB) equation
+corresponding to the optimal control of a stochastic heat equation. Speciﬁcally, we demonstrate that the
+deep learning algorithm accurately solves the high-dimensional PDE (5.5). The PDE (5.5) is motivated by
+the problem of optimally controlling the stochastic partial diﬀerential equation (SPDE):
+∂v
+∂t (t,x) = α∂2v ∂x2 (t,x) + u(x) + σ∂2W ∂t∂x(t,x), x∈ [0,L],
+v(t,x = 0) = ¯v(0),
+v(t,x = L) = ¯v(L),
+v(t = 0,x) = v0(x), (5.1)
+14
+
+=== page 15 ===
+Figure 3: Top: Absolute error. Bottom: Percent error. For reference, u(0,X0) ∈ [0.10119, 0.10193] and the
+solution at time T is max(average of x − 1, 0).
+where u(x) is the control and W (t,x) is a Brownian sheet (i.e., ∂2W ∂t∂x(t,x) is space-time white noise) deﬁned on
+a stochastic basis (Ω,F,Ft, P). The square integrable, adapted to the ﬁltration Ft, control u is a source/sink
+term which can be used to guide the temperature v(t,x) towards a target proﬁle ¯v(x) on [0,L]. As it is
+discussed in [10] such problems admit unique solutions in the appropriate generalized sense, see Theorem
+3.1 in [10]. The endpoints at x = 0,L are held at the target temperatures. Speciﬁcally, the optimal control
+minimizes
+E
+[∫ ∞
+0
+e−γs
+∫ L
+0
+[
+(v(s,x) − ¯v(x))2 + λu(x)2] dxds ] . (5.2)
+The constant γ > 0 is a discount factor. The constant λ> 0 penalizes large values for the control u(x). The
+goal is to reach the target ¯v(x) while expending the minimum amount of energy. The optimal control u(x)
+15
+
+=== page 16 ===
+satisﬁes an inﬁnite-dimensional HJB equation. We refer the reader to Theorems 5.3 and 5.4 of [10] as well
+as [14] and [36] for an analysis of inﬁnite-dimensional HJB equations for the stochastic heat equation.
+An example of a problem represented by the SPDE (5.1) is the heating of a rod to a target temperature
+proﬁle. One can control the heat applied to each portion of the rod along its length. There are also random
+ﬂuctuations in the temperature of the rod due to other environmental factors, which is represented by the
+Brownian sheet W (t,x). The goal is to guide the temperature proﬁle of the rod to the target proﬁle while
+expending the least amount of energy; see the objective function (5.2).
+(5.1) can be discretized in space, which yields a system of stochastic diﬀerential equations (SDEs). (For
+example, see Section 3.2 of [19].) This system of SDEs can be used to derive a ﬁnite, high-dimensional PDE
+for the value function and optimal control. That is, we ﬁrst approximate the SPDE with a ﬁnite-dimensional
+system of SDEs, and then we solve the high-dimensional PDE corresponding to the ﬁnite-dimensional system
+of SDEs.
+dXj t = α ∆2 (Xj+1 t − 2Xj t + Xj−1 t )dt + Uj tdt + σ√ ∆ dWj t, Xj 0 = v0(j∆), (5.3)
+where ∆ is the mesh size, v(t,j∆) = Xj t , u(j∆) = Uj t , and Wj t are independent standard Brownian motions
+(see [12], [21], and [19] regarding numerical schemes for stochastic parabolic PDEs of the form considered in
+this section). The dimension of the SDE system (5.3) is d = L ∆ − 1. Note that (5.3) uses a central diﬀerence
+scheme for the diﬀusion term in (5.1).
+The objective function (5.2) becomes:
+V (x) = inf
+Ut∈U
+E
+[∫ ∞
+0
+e−γs
+d∑
+j=1
+[
+(Xj s − ¯v(j∆))2 + λ(Uj s )2] ∆ds ⏐⏐⏐⏐X0 = x ] . (5.4)
+The value function V (x) satisﬁes a nonlinear PDE with d spatial dimensions x1,x2,...,xd.
+0 = ∆(x− ¯v)⊤(x− ¯v) − 1 4λ∆
+d∑
+j=1
+(∂V
+∂xj
+(x)
+)2
++ σ2
+2∆
+d∑
+j=1
+∂2V
+∂x2 j (x) + α ∆2
+d∑
+j=1
+(xj+1 − 2xj + xj−1) ∂V ∂xj (x) −γV (x). (5.5)
+The vector ¯v = (¯v(∆), ¯v(2∆),..., ¯v(d∆)). Note that the values xd+1 = ¯v(L) and x0 = ¯v(0) are constants
+which correspond to the boundary conditions in (5.1). The PDE (5.5) is high dimensional since the number
+of dimensions d = L ∆ − 1. The optimal control is
+Uj t = − 1 2λ∆ ∂V ∂xj (Xt). (5.6)
+We solve the PDE (5.5) using the deep learning algorithm for d = 21 dimensions. The size of the domain is
+L = 10−1. The coeﬃcients are α = 10−4, σ = 10− 1 2 , λ = 1, and γ = 1. The target proﬁle is ¯v(x) = 0.
+The deep learning algorithm’s accuracy can be evaluated since a semi-analytic solution is available for
+(5.5).3 Figure 4 shows a contour plot of the percent error over space. The contour plot is produced in the
+following way:
+1. Sample spatial points x𝓁 = (x𝓁 1,...,x𝓁 21) from the distribution of (5.3) for 𝓁 = 1,...,L.
+2. Calculate the percent error at each sampled point. The percent error is A𝓁 = |f(x𝓁;θ)−V (x𝓁)| |V (x𝓁)| × 100%.
+3. Aggregate the accuracy over a two-dimensional subspace
+(
+x𝓁 11, 1 21
+21∑
+i=1
+x𝓁 i,A𝓁) for 𝓁 = 1,...,L.
+3The PDE (5.5) has a semi-analytic solution which satisﬁes a Riccati equation. The Riccati equation can be solved using
+an iterative method.
+16
+
+=== page 17 ===
+4. Produce a contour plot from the data
+(
+x𝓁 11, 1 21
+21∑
+i=1
+x𝓁 i,A𝓁)L 𝓁=1. The x-axis is x11 and the y-axis is the
+average 1 21
+21∑
+i=1
+xi. This corresponds to v(t,x) at the midpoint x = L 2 and the average 1 L ∫L 0 v(t,x)dx,
+respectively.
+The average percent error over the entire space is 0.1%.
+Figure 4: Contour plot of the percent error for the deep learning algorithm for a 21-dimensional Hamilton-
+Jacobi-Bellman PDE. The horizontal axis is the 11-th dimension. The vertical axis is the average of all
+dimensions.
+Lastly, we close this section by mentioning that in the recent paper [15] (see also [2]) the authors develop a
+machine learning algorithm that provides the value at a single point in time and space of the solution to a class
+of HJB equations which admit explicit solution that can be obtained through the Cole-Hopf transformation.
+Their method relies on characterizing the solution via backward stochastic diﬀerential equations (BSDE). In
+contrast, the current work (a) does not rely on BSDE type representations through nonlinear Feynman-Kac
+formulas, and (b) allows to recover the whole object (i.e. the solution across all points in time and space).
+6 Burgers’ equation
+It is often of interest to ﬁnd the solution of a PDE over a range of problem setups (e.g., diﬀerent physical
+conditions and boundary conditions). For example, this may be useful for the design of engineering systems
+or uncertainty quantiﬁcation. The problem setup space may be high-dimensional and therefore may require
+solving many PDEs for many diﬀerent problem setups, which can be computationally expensive.
+Let the variable p represent the problem setup (i.e., physical conditions, boundary conditions, and initial
+conditions). The variable p takes values in the space P, and we are interested in the solution of the PDE
+u(t,x; p). (This is sometimes called a “parameterized class of PDEs”.) In particular, suppose u(t,x; p)
+17
+
+=== page 18 ===
+satisﬁes the PDE
+∂u
+∂t (t,x; p) = Lpu(t,x; p), (t,x) ∈ [0,T ] × Ω,
+u(t,x; p) = gp(x), (t,x) ∈ [0,T ] ×∂Ω,
+u(t = 0,x; p) = hp(x), x∈ Ω. (6.1)
+A traditional approach would be to discretize the P-space and re-solve the PDE many times for many
+diﬀerent points p. However, the total number of grid points (and therefore the number of PDEs that must
+be solved) grows exponentially with the number of dimensions, and P is typically high-dimensional.
+We propose to use the DGM algorithm to approximate the general solution to the PDE (6.1) for diﬀerent
+boundary conditions, initial conditions, and physical conditions. The deep neural network is trained using
+stochastic gradient descent on a sequence of random time, space, and problem setup points (t,x,p). Similar
+to before,
+• Initialize θ.
+• Repeat until convergence:
+– Generate random samples (t,x,p) from [0,T ] × Ω ×P, (˜t, ˜x) from [0,T ] ×∂Ω, and ˆx from Ω.
+– Construct the objective function
+J(θ) =
+(∂f
+∂t (t,x,p; θ) −Lpf(t,x,p; θ)
+)2
++
+(
+gp(˜x) −f(˜t, ˜x,p; θ)
+)2
++
+(
+hp(ˆx) −f(0, ˆx,p; θ)
+)2
+. (6.2)
+– Update θ with a stochastic gradient descent step
+θ−→θ−α∇θJ(θ), (6.3)
+where α is the learning rate.
+If x is low-dimensional (d ≤ 3), which is common in many physical PDEs, the ﬁrst and second partial
+derivatives of f can be calculated via chain rule or approximated by ﬁnite diﬀerence. We implement our
+algorithm for Burgers’ equation on a ﬁnite domain.
+∂u
+∂t = ν∂2u ∂x2 −αu∂u ∂x, (t,x) ∈ [0, 1] × [0, 1],
+u(t,x = 0) = a,
+u(t,x = 1) = b,
+u(t = 0,x) = g(x), x∈ [0, 1].
+The problem setup space is P = (ν,α,a,b) ∈ R4. The initial condition g(x) is chosen to be a linear
+function which matches the boundary conditions u(t,x = 0) = a and u(t,x = 1) = b. We train a single
+neural network to approximate the solution of u(t,x; p) over the entire space (t,x,ν,α,a,b) ∈ [0, 1] × [0, 1] ×
+[10−2, 10−1] × [10−2, 1] × [−1, 1] × [−1, 1]. We use a larger network (6 layers, 200 units per layer) than in
+the previous numerical examples. Figure 5 compares the deep learning solution with the exact solution for
+several diﬀerent problem setups p. The solutions are very close; in several cases, the two solutions are visibly
+indistinguishable. The deep learning algorithm is able to accurately capture the shock layers and boundary
+layers.
+Figure 6 presents the accuracy of the deep learning algorithm for diﬀerent times t and diﬀerent choices
+of ν. As ν becomes smaller, the solution becomes steeper. It also shows the shock layer forming over time.
+The contour plot (7) reports the absolute error of the deep learning solution for diﬀerent choices of b and ν.
+18
+
+=== page 19 ===
+Figure 5: The deep learning solution is in red. The “exact solution”, found via ﬁnite diﬀerence, is
+in blue. Solutions are reported at time t = 1. The solutions are very close; in several cases, the two
+solutions are visibly indistinguishably. The problem setups, in counter-clockwise order, are (ν,α,a,b) =
+(0.01, 0.95, 0.9,−0.9), (0.02, 0.95, 0.9,−0.9), (0.01, 0.95,−0.95, 0.95), (0.02, 0.9, 0.9, 0.8), (0.01, 0.75, 0.9, 0.1),
+and (0.09, 0.95, 0.5 − 0.5).
+7 Neural Network Approximation Theorem for PDEs
+Let the L2 error J(f) measure how well the neural network f satisﬁes the diﬀerential operator, boundary
+condition, and initial condition. Deﬁne Cn as the class of neural networks with n hidden units and let fn be
+a neural network with n hidden units which minimizes J(f). We prove that
+there exists fn ∈ Cn such that J(fn) → 0, as n→∞, and
+fn →u as n→∞,
+in the appropriate sense, for a class of quasilinear parabolic PDEs with the principle term in divergence
+form under certain growth and smoothness assumptions on the nonlinear terms. Our theoretical result only
+19
+
+=== page 20 ===
+Figure 6: The deep learning solution is in red. The “exact solution”, found via ﬁnite diﬀerence, is in blue.
+Left plot: Comparison of solutions at times t = 0.1, 0.25, 0.5, 1 for (ν,α,a,b) = (0.03, 0.9, 0.95,−0.95).
+Right plot: Comparison of solutions for ν = 0.01, 0.02, 0.05, 0.09 at time t = 1 and with (α,a,b) =
+(0.8, 0.75,−0.75).
+Figure 7: Contour plot of the average absolute error of the deep learning solution for diﬀerent b and ν (the
+viscosity). The absolute error is averaged across x∈ [0, 1] for time t = 1.
+covers a class of quasilinear parabolic PDEs as described in this section. However, the numerical results of
+this paper indicate that the results are more broadly applicable.
+The proof requires the joint analysis of the approximation power of neural networks as well as the
+continuity properties of partial diﬀerential equations. First, we show that the neural network can satisfy the
+diﬀerential operator, boundary condition, and initial condition arbitrarily well for suﬃciently large n.
+J(fn) → 0 as n→∞. (7.1)
+Let u be the solution to the PDE. The statement (7.1) does not necessarily imply that fn →u. One challenge
+to proving convergence is that we only have L2 control of the error. We prove convergence for the case of
+homogeneous boundary data, i.e., g(t,x) = 0, by ﬁrst establishing that each neural network {fn}∞ n=1 satisﬁes
+a PDE with a source term hn(t,x). Importantly, the source terms hn(t,x) are only known to be vanishing
+20
+
+=== page 21 ===
+in L2. We are then able to prove that the convergence of fn →u as n→∞ in the appropriate space holds
+using compactness arguments.
+The precise statement of the theorem and the presentation of the proof is in the next two sections. Section
+7.1 proves that J(fn) → 0 as n→∞. Section 7.2 contains convergence results of fn to the solution u of the
+PDE as n→∞. The main result is Theorem 7.3. For readability purposes the corresponding proofs are in
+Appendix A.
+7.1 Convergence of the L2 error J(f )
+In this section, we present a theorem guaranteeing the existence of multilayer feed forward networks f able
+to universally approximate solutions of quasilinear parabolic PDEs in the sense that there is f that makes
+the objective function J(f) arbitrarily small. To do so, we use the results of [26] on universal approximation
+of functions and their derivatives and make appropriate assumptions on the coeﬃcients of the PDEs to
+guarantee that a classical solution exists (since then the results of [26] apply).
+Consider a bounded set Ω ⊂ Rd with a smooth boundary ∂Ω and denote ΩT = (0,T ] × Ω and ∂ΩT =
+(0,T ] ×∂Ω. In this subsection we consider the class of quasilinear parabolic PDE’s of the form
+∂tu(t,x) − div (α(t,x,u(t,x),∇u(t,x))) + γ(t,x,u(t,x),∇u(t,x)) = 0, for (t,x) ∈ ΩT
+u(0,x) = u0(x), for x∈ Ω
+u(t,x) = g(t,x), for (t,x) ∈∂ΩT (7.2)
+For notational convenience, let us write the operator of (7.2) as G. Namely, let us denote
+G[u](t,x) = ∂tu(t,x) − div (α(t,x,u(t,x),∇u(t,x))) + γ(t,x,u(t,x),∇u(t,x)).
+Notice that we can write
+G[u](t,x) = ∂tu(t,x) −
+d∑
+i,j=1
+∂αi(t,x,u(t,x),∇u(t,x))
+∂uxj
+∂xi,xju(t,x) + ˆγ(t,x,u(t,x),∇u(t,x)),
+where
+ˆγ(t,x,u,p) = γ(t,x,u,p) −
+d∑
+i=1
+∂αi(t,x,u,p)
+∂u ∂xiu−
+d∑
+i=1
+∂αi(t,x,u,p)
+∂xi
+.
+For the purposes of this section, we consider equations of the type (7.2) that have classical solutions.
+In particular we assume that there is a unique u(t,x) solving (7.2) such that
+u(t,x) ∈C(¯ΩT ) ⋂ C1+η/2,2+η(ΩT ) with η∈ (0, 1) and that sup
+(t,x)∈ΩT
+2∑
+k=1
+|∇(k) x u(t,x)|<∞. (7.3)
+We refer the interested reader to Theorems 5.4, 6.1 and 6.2 of Chapter V in [28] for speciﬁc general
+conditions on α,γ guaranteeing the validity of the aforementioned statement.
+Universal approximation results for single functions and their derivatives have been obtained under
+various assumptions in [11, 25, 26]. In this paper, we use Theorem 3 of [26]. Let us recall the setup
+appropriately modiﬁed for our case of interest. Let ψ be an activation function, e.g., of sigmoid type, of the
+hidden units and deﬁne the set
+Cn(ψ) =
+
+
+ζ(t,x) : R1+d ↦→ R : ζ(t,x) =
+n∑
+i=1
+βiψ
+
+α1,it +
+d∑
+j=1
+αj,ixj + cj
+
+
+
+
+. (7.4)
+where θ = (β1,··· ,βn,α1,1,··· ,αd,n,c1,c1,··· ,cn) ∈ R2n+n(1+d) compose the elements of the parameter
+space. Then we have the following result.
+21
+
+=== page 22 ===
+Theorem 7.1. Let Cn(ψ) be given by (7.4) where ψ is assumed to be in C2(Rd), bounded and non-constant.
+Set C(ψ) = ⋃ n≥1 Cn(ψ). Assume that ΩT is compact and consider the measures ν1, ν2, ν3 whose support
+is contained in ΩT , Ω and ∂ΩT respectively. In addition, assume that the PDE (7.2) has a unique classical
+solution such that (7.3) holds. Also, assume that the nonlinear terms ∂αi(t,x,u,p) ∂pj and ˆγ(t,x,u,p) are locally
+Lipschitz in (u,p) with Lipschitz constant that can have at most polynomial growth on u and p, uniformly
+with respect to t,x. Then, for every ϵ > 0, there exists a positive constant K > 0 that may depend on
+supΩT |u|, supΩT |∇xu| and supΩT |∇(2) x u| such that there exists a function f ∈ C(ψ) that satisﬁes
+J(f) ≤Kϵ.
+The proof of this theorem is in the Appendix.
+7.2 Convergence of the neural network to the PDE solution
+We now prove, under stronger conditions, the convergence of the neural networks fn to the solution u of the
+PDE
+∂tu(t,x) − div (α(t,x,u(t,x),∇u(t,x))) + γ(t,x,u(t,x),∇u(t,x)) = 0, for (t,x) ∈ ΩT
+u(0,x) = u0(x), for x∈ Ω
+u(t,x) = 0, for (t,x) ∈∂ΩT, (7.5)
+as n →∞. Notice that we have restricted the discussion to homogeneous boundary data. We do this for
+both presentation and mathematical reasons. 4
+The objective function is
+J(f) = ‖G[f]‖2 2,ΩT + ‖f‖2 2,∂ΩT + ‖f(0,·) −u0‖2 2,Ω
+Recall that the norms above are L2(X) norms in the respective space X = ΩT,∂ΩT and Ω respectively.
+From Theorem 7.1, we have that
+J(fn) → 0 as n→∞.
+Each neural network fn satisﬁes the PDE
+G[fn](t,x) = hn(t,x), for (t,x) ∈ ΩT
+fn(0,x) = un 0 (x), for x∈ Ω
+fn(t,x) = gn(t,x), for (t,x) ∈∂ΩT (7.6)
+for some hn,un 0 , and gn such that
+‖hn‖2 2,ΩT + ‖gn‖2 2,∂ΩT + ‖un 0 −u0‖2 2,Ω → 0 as n→∞. (7.7)
+For the purposes of this section, we make the following set of assumptions.
+Condition 7.2. • There is a constant µ> 0 and positive functions κ(t,x),λ(t,x) such that for all (t,x) ∈
+ΩT we have
+‖α(t,x,u,p)‖≤µ(κ(t,x) + ‖p‖), and |γ(t,x,u,p)|≤λ(t,x) ‖p‖,
+with κ∈L2(ΩT ), λ∈Ld+2+η(ΩT ) for some η > 0.
+4We set u(t,x) = 0, for (t,x) ∈ ∂ΩT , i.e., g = 0, to circumvent certain technical diﬃculties arising due to inhomogeneous
+boundary conditions. If g ⁄= 0 such that g is the trace of some appropriately smooth function, say φ, then one can reduce the
+inhomogeneous boundary conditions on ∂ΩT to the homogeneous one by introducing in place of u the new function u−φ, see
+Section 4 of Chapter V in [28] or Chapter 8 of [20] for details on such considerations. We do not explore this here, because our
+goal is not to prove the most general result possible, but to provide a concrete setup in which we can prove the validity of the
+approximation results of interest.
+22
+
+=== page 23 ===
+• α(t,x,u,p) and γ(t,x,u,p) are Lipschitz continuous in (t,x,u,p) ∈ ΩT× R × Rd uniformly on compacts
+of the form {(t,x) ∈ ¯ΩT,|u|≤C,|p|≤C}.
+• α(t,x,u,p) is diﬀerentiable with respect to (x,u,p) with continuous derivatives.
+• There is a positive constant ν > 0 such that
+α(t,x,u,p)p≥ν|p|2
+and
+⟨α(t,x,u,p1) −α(t,x,u,p2),p1 −p2⟩> 0, for every p1,p2 ∈ Rd,p1 ⁄= p2.
+• u0(x) ∈C0,2+ξ(¯Ω) for some ξ > 05 with itself and its ﬁrst derivative bounded in ¯Ω.
+• Ω is a bounded, open subset of Rd with boundary ∂Ω ∈C2.
+• For every n∈ N, fn ∈C1,2(¯ΩT ). In addition, (fn)n∈N ∈L2(ΩT ).
+Theorem 7.3. Assume that Condition 7.2 and (7.7) hold. Then, problem (7.5) has a unique bounded
+solution in C0,δ,δ/2(¯ΩT ) ∩L2
+(
+0,T ; W 1,2 0 (Ω) ) ∩W (1,2),2 0 (Ω′ T ) for some δ > 0 and any interior subdomain Ω′ T
+of ΩT 6. In addition, fn converges to u, the unique solution to (7.5), strongly in Lρ(ΩT ) for every ρ< 2. If,
+in addition, the sequence {fn(t,x)}n∈N is uniformly bounded in n and equicontinuous then the convergence
+to u is uniform in ΩT .
+The proof of this theorem is in the Appendix. We conclude this section with some remarks and an
+example.
+Remark 7.4. Despite the restriction made to the zero boundary data case, we do expect that our results are
+also valid for reasonably smooth inhomogeneous boundary data. In addition, if we make further assumptions
+on the nonlinearities α(t,x,u,p) and γ(t,x,u,p) and on the initial data u0(x), then one can establish existence
+and uniqueness of classical solutions, see for example Section 6 of Chapter V in [28] for details. As a matter
+of fact the results of Chapter V.6 in [28] show that with assuming a little bit more on the growth of the
+derivatives of the nonlinear functions α(t,x,u,p),γ(t,x,u,p) will lead to ∇xu∈C0,δ′ ,δ′ /2(ΩT ) for some δ′ > 0.
+Furthermore, we remark here that stronger claims can be made if more properties are known in regards to
+the given approximating family {fn} such as, for example, a-priori bounds on appropriate Sobolev norms,
+but we do not explore this further here.
+Remark 7.5. The uniform, in n, L2 bound for the sequence {fn}n∈N is easily satisﬁed for a bounded neural
+network approximation sequence fn(t,x). However, we believe that it is true for a wider class of models, after
+all one expects that to be true if fn indeed converges in Lρ for ρ < 2. The condition on equicontinuity for
+{fn(t,x)} allows to both simplify the proof and make a stronger claim as well. However, it is only a suﬃcient
+condition and not necessary. The paper, [8], see Theorems 19 and 20 therein, discusses structural restric-
+tions (a-priori boundedness and summability) that can be imposed on the unknown weights of feedforward
+neural networks, belonging in the class C(ψ) = ⋃ n≥1 Cn(ψ) as deﬁned by (7.4), which then guarantee both
+equicontinuity and universal approximation properties of the neural network for continuous and bounded
+functions. As it is also discussed in [8], equicontinuity is also related to fault-tolerance properties of neural
+networks, a subject worthy of further study in the context of PDEs. However, we do not discuss this further
+here as this would be a topic for a diﬀerent paper.
+Let us present the case of linear parabolic PDEs in Example 7.6 below.
+5In general, the H¨older space C0,ξ(¯Ω) is the Banach space of continuous functions in ¯Ω having continuous derivatives up
+to order [ξ] in ¯Ω with ﬁnite corresponding uniform norms and ﬁnite uniform ξ− [ξ] H¨older norm. Analogously, we also deﬁne
+the H¨older space C0,ξ,ξ/2(¯ΩT ) which in addition has ﬁnite [ξ]/2 and (ξ− [ξ])/2 regular and H¨older derivatives norms in time
+respectively. These spaces are denoted by Hξ(¯Ω) and Hξ,ξ/2(¯ΩT ) respectively in [28].
+6Here W (1,2),2 0 (Ω′ T ) denotes the Banach space which is the closure of C∞ 0 (Ω′ T ) with elements from L2(Ω′ T ) having generalized
+derivatives of the form Dr tDs x with r,s such that 2r + s≤ 2 with the usual Sobolev norm.
+23
+
+=== page 24 ===
+Example 7.6 (Linear case). Let us assume that the operator G is linear in u and ∇u. In particular, let us set
+αi(t,x,u,p) =
+n∑
+j=1
+(
+σσT) i,j (t,x)pj,i = 1,···d
+and
+γ(t,x,u,p) = −⟨b(t,x),p⟩ +
+d∑
+i,j=1
+∂
+∂xi
+(
+σσT) i,j (t,x)pj −c(t,x)u.
+Assume that there are positive constants ν,µ> 0 such that for every ξ∈ Rd the matrix [( σσT) i,j (t,x) ]d i,j=1
+satisﬁes
+ν|ξ|2 ≤
+d∑
+i,j=1
+(
+σσT) i,j (t,x)ξiξj ≤µ|ξ|2
+and that the coeﬃcients b and c are such that
+‖‖‖‖‖ d∑ i=1 b2 i ‖‖‖‖‖ q,r,ΩT + ‖c‖q,r,ΩT ≤µ, for some µ> 0
+where we recall for example ‖c‖q,r,ΩT =
+(∫T
+0
+(∫
+Ω |c(t,x)|qdx )r/q)1/r and r,q satisfy the relations
+1
+r + d 2q = 1
+q∈ (d/2,∞],r∈ [1,∞), for d≥ 2,
+q∈ [1,∞],r∈ [1, 2], for d = 1.
+In particular, the previous bounds always hold in the case of coeﬃcients b and c that are bounded in
+ΩT . Under these conditions, standard results for linear PDE’s, see for instance Theorem 4.5 of Chapter III
+of [28] for a related result, show that approximation results analogous to that of Theorem 7.3 hold.
+8 Conclusion
+We believe that deep learning could become a valuable approach for solving high-dimensional PDEs, which
+are important in physics, engineering, and ﬁnance. The PDE solution can be approximated with a deep
+neural network which is trained to satisfy the diﬀerential operator, initial condition, and boundary conditions.
+We prove that the neural network converges to the solution of the partial diﬀerential equation as the number
+of hidden units increases.
+Our deep learning algorithm for solving PDEs is meshfree, which is key since meshes become infeasible in
+higher dimensions. Instead of forming a mesh, the neural network is trained on batches of randomly sampled
+time and space points. The approach is implemented for a class of high-dimensional free boundary PDEs in
+up to 200 dimensions with accurate results. We also test it on a high-dimensional Hamilton-Jacobi-Bellman
+PDE with accurate results.
+The DGM algorithm can be easily modiﬁed to apply to hyperbolic, elliptic, and partial-integral diﬀerential
+equations. The algorithm remains essentially the same for these other types of PDEs. However, numerical
+performance for these other types of PDEs remains to be be investigated.
+It is also important to put the numerical results in Sections 4, 5 and 6 in a proper context. PDEs with
+highly non-monotonic or oscillatory solutions may be more challenging to solve and further developments
+in architecture will be necessary. Further numerical development and testing is therefore required to better
+judge the usefulness of deep learning for the solution of PDEs in other applications. However, the numerical
+results of this paper demonstrate that there is suﬃcient evidence to further explore deep neural network
+approaches for solving PDEs.
+24
+
+=== page 25 ===
+In addition, it would be of interest to establish results analogous to Theorem 7.3 for PDEs beyond the
+class of quasilinear parabolic PDEs considered in this paper. Stability analysis of deep learning and machine
+learning algorithms for solving PDEs is also an important question. It would certainly be interesting to
+study machine learning algorithms that use a more direct variational formulation of the involved PDEs. We
+leave these questions for future work.
+A Proofs of convergence results
+In this section we have gathered the proofs of the theoretical results of Section 7.
+Proof of Theorem 7.1. By Theorem 3 of [26] we know that there is a function f ∈ C(ψ) that is uniformly
+2−dense on compacts of C2(R1+d). This means that for u ∈C1,2([0,T ] × Rd) and ϵ > 0, there is f ∈ C(ψ)
+such that
+sup
+(t,x)∈ΩT
+|∂tu(t,x) −∂tf(t,x; θ)| + max |a|≤2 sup (t,x)∈¯ΩT |∂(a) x u(t,x) −∂(a) x f(t,x; θ)|<ϵ (A.1)
+We have assumed that (u,p) ↦→ ˆγ(t,x,u,p) is locally Lipschitz continuous in (u,p) with Lipschitz constant
+that can have at most polynomial growth in u and p , uniformly with respect to t,x. This means that
+|ˆγ(t,x,u,p) − ˆγ(t,x,v,s)|≤
+(
+|u|q1/2 + |p|q2/2 + |v|q3/2 + |s|q4/2
+)
+(|u−v| + |p−s|) .
+for some constants 0 ≤q1,q2,q3,q4 <∞. Therefore we obtain, using H¨older inequality with exponents r1,r2,
+∫
+ΩT
+|ˆγ(t,x,f,∇xf) − ˆγ(t,x,u,∇xu)|2 dν1(t,x) ≤
+≤
+∫
+ΩT
+(|f(t,x; θ)|q1 + |∇xf(t,x; θ)|q2 + |u(t,x)|q3 + |∇xu(t,x)|q4)
+×
+(
+|f(t,x; θ) −u(t,x)|2 + |∇xf(t,x; θ) −∇xu(t,x)|2) dν1(t,x)
+≤
+(∫
+ΩT
+(|f(t,x; θ)|q1 + |∇xf(t,x; θ)|q2 + |u(t,x)|q3 + |∇xu(t,x)|q4)r1 dν1(t,x)
+)1/r1
+×
+(∫
+ΩT
+(
+|f(t,x; θ) −u(t,x)|2 + |∇xf(t,x; θ) −∇xu(t,x)|2)r2 dν1(t,x) )1/r2
+≤K
+(∫
+ΩT
+(|f(t,x; θ) −u(t,x)|q1 + |∇xf(t,x; θ) −∇xu(t,x)|q2 + |u(t,x)|q1∨q3 + |∇xu(t,x)|q2∨q4)r1 dν1(t,x)
+)1/r1
+×
+(∫
+ΩT
+(
+|f(t,x; θ) −u(t,x)|2 + |∇xf(t,x; θ) −∇xu(t,x)|2)r2 dν1(t,x) )1/r2
+≤K
+(
+ϵq1 + ϵq2 + sup
+ΩT
+|u|q1∨q3 + sup
+ΩT
+|∇xu|q2∨q4
+)
+ϵ2 (A.2)
+where the unimportant constant K < ∞ may change from line to line and for two numbers q1 ∨q3 =
+max{q1,q3}. In the last step we used (A.1).
+In addition, we have also assumed that for every i,j ∈{1,···d}, the mapping (u,p) ↦→ ∂αi(t,x,u,p) ∂pj is
+locally Lipschitz in (u,p) with Lipschitz constant that can have at most polynomial growth on u and p,
+uniformly with respect to t,x. This means that
+⏐⏐⏐⏐ ∂αi(t,x,u,p) ∂pj − ∂αi(t,x,v,s) ∂sj ⏐⏐⏐⏐≤ ( |u|q1/2 + |p|q2/2 + |v|q3/2 + |s|q4/2 ) (|u−v| + |p−s|) .
+for some constants 0 ≤q1,q2,q3,q4 <∞. Denote for convenience
+ξ(t,x,u,∇u,∇2u) =
+d∑
+i,j=1
+∂αi(t,x,u(t,x),∇u(t,x))
+∂uxj
+∂xi,xju(t,x).
+25
+
+=== page 26 ===
+Then, similarly to (A.2) we have after an application of H¨older inequality, for some constant K < ∞ that
+may change from line to line,
+∫
+ΩT
+⏐⏐ξ(t,x,f,∇xf,∇2 xf) −ξ(t,x,u,∇xu,∇2 xu) ⏐⏐2 dν1(t,x) ≤
+≤
+∫
+ΩT
+⏐⏐⏐⏐⏐⏐ d∑ i,j=1 (∂αi(t,x,f(t,x; θ),∇f(t,x; θ)) ∂fxj − ∂αi(t,x,u(t,x),∇u(t,x)) ∂uxj ) ∂xi,xju(t,x) ⏐⏐⏐⏐⏐⏐ 2 dν1(t,x)
++
+∫
+ΩT
+⏐⏐⏐⏐⏐⏐ d∑ i,j=1 ∂αi(t,x,f(t,x; θ),∇f(t,x; θ)) ∂fxj ( ∂xi,xjf(t,x; θ) −∂xi,xju(t,x) ) ⏐⏐⏐⏐⏐⏐ 2 dν1(t,x)
+≤K
+d∑
+i,j=1
+(∫
+ΩT
+⏐⏐∂xi,xju(t,x) ⏐⏐2p dν1(t,x) )1/p ×
+×
+(∫
+ΩT
+⏐⏐⏐⏐ ∂αi(t,x,f(t,x; θ),∇f(t,x; θ)) ∂fxj − ∂αi(t,x,u(t,x),∇u(t,x)) ∂uxj ⏐⏐⏐⏐ 2q dν1(t,x) )1/q +
++ K
+d∑
+i,j=1
+(∫
+ΩT
+⏐⏐⏐⏐ ∂αi(t,x,f,∇f) ∂fxj ⏐⏐⏐⏐ 2p dν1(t,x) )1/p(∫ ΩT ⏐⏐∂xi,xjf(t,x; θ) −∂xi,xju(t,x) ⏐⏐2q dν1(t,x) )1/q
+≤K
+d∑
+i,j=1
+(∫
+ΩT
+⏐⏐∂xi,xju(t,x) ⏐⏐2p dν1(t,x) )1/p ×
+×
+(∫
+ΩT
+(|f(t,x; θ) −u(t,x)|q1 + |∇xf(t,x; θ) −∇xu(t,x)|q2 + |u(t,x)|q1∨q3 + |∇xu(t,x)|q2∨q4)qr1 dν1(t,x)
+)1/(qr1)
+×
+(∫
+ΩT
+(
+|f(t,x; θ) −u(t,x)|2 + |∇xf(t,x; θ) −∇xu(t,x)|2)qr2 dν1(t,x) )1/(qr2)
++ K
+d∑
+i,j=1
+(∫
+ΩT
+⏐⏐⏐⏐ ∂αi(t,x,f,∇f) ∂fxj ⏐⏐⏐⏐ 2p dν1(t,x) )1/p(∫ ΩT ⏐⏐∂xi,xjf(t,x; θ) −∂xi,xju(t,x) ⏐⏐2q dν1(t,x) )1/q
+≤Kϵ2, (A.3)
+where in the last step we followed the computation in (A.2) and used (A.1).
+Using (A.1) and (A.2)-(A.3) we subsequently obtain for the objective function (note that G[u](t,x) = 0
+for u that solves the PDE)
+J(f) = ‖G[f](t,x)‖2 ΩT,ν1 + ‖f(t,x; θ) −g(t,x)‖2 ∂ΩT,ν2 + ‖f(0,x; θ) −u0(x)‖2 Ω,ν3
+= ‖G[f](t,x) −G[u](t,x)‖2 ΩT,ν1 + ‖f(t,x; θ) −g(t,x)‖2 ∂ΩT,ν2 + ‖f(0,x; θ) −u0(x)‖2 Ω,ν3
+≤
+∫
+ΩT
+|∂tu(t,x) −∂tf(t,x; θ)|2 dν1(t,x) +
+∫
+ΩT
+⏐⏐ξ(t,x,f,∇f,∇2f) −ξ(t,x,u,∇u,∇2u) ⏐⏐2 dν1(t,x)
++
+∫
+ΩT
+|γ(t,x,f,∇xf) −γ(t,x,u,∇xu)|2 dν1(t,x) +
+∫
+∂ΩT
+|f(t,x; θ) −u(t,x)|2 dν2(t,x)+
++
+∫
+Ω
+|f(0,x; θ) −u(0,x)|2 dν3(t,x)
+≤Kϵ2
+for an appropriate constant K <∞. The last step completes the proof of the Theorem after rescaling ϵ.
+Proof of Theorem 7.3. Existence, regularity and uniqueness for (7.5) follows from Theorem 2.1 [40] combined
+with Theorems 6.3-6.5 of Chapter V.6 in [28] (see also Theorem 6.6 of Chapter V.6 of [28]). Boundedness
+26
+
+=== page 27 ===
+follows from Theorem 2.1 in [40] and Chapter V.2 in [28]. The convergence proof follows by the smoothness
+of the neural networks together with compactness arguments as we explain below.
+Let us ﬁrst consider problem (7.6) with gn(t,x) = 0 and let us denote the solution to this problem by
+ˆfn(t,x). Due to Condition 7.2, Lemma 4.1 of [40] applies and gives that { ˆfn}n∈N is uniformly bounded
+with respect to n in at least L∞( 0,T ; L2(Ω) ) ∩L2 ( 0,T ; W 1,2 0 (Ω) ) (in regards to such uniform energy bound
+results we also refer the reader to Theorem 2.1 and Remark 2.14 of [5] for the case γ = 0 and to [34, 37]
+for related results in more general cases). As a matter of fact ˆfn is more regular than stated, see Section 6,
+Chapter V of [28], but we will not make use of this fact in the convergence proof of ˆfn to u. These uniform
+energy bounds imply that we can extract a subsequence, denoted also by { ˆfn}n∈N, which converges to some
+u in the weak-* sense in L∞( 0,T ; L2(Ω) ) and weakly in L2 ( 0,T ; W 1,2 0 (Ω) ) and to some v weakly in L2(Ω)
+for every ﬁxed t∈ (0,T ].
+Next let us set q = 1 + d d+4 ∈ (1, 2) and note that for conjugates, r1,r2 > 1 such that 1/r1 + 1/r2 = 1
+∫
+ΩT
+⏐⏐⏐γ(t,x, ˆfn,∇x ˆfn) ⏐⏐⏐ q dtdx≤ ∫
+ΩT
+|λ(t,x)|q|∇x ˆfn(t,x)|qdtdx
+≤
+(∫
+ΩT
+|λ(t,x)|r1qdtdx
+)1/r1 (∫
+ΩT
+|∇x ˆfn(t,x)|r2qdtdx
+)1/r2
+. (A.4)
+Let us choose r2 = 2/q > 1. Then we calculate r1 = r2 r2−1 = 2 2−q . Hence, we have that r1q = d + 2.
+Recalling the assumption λ ∈ Ld+2(ΩT ) and the uniform bound on the ‖‖‖∇x ˆfn ‖‖‖ 2 we subsequently obtain
+that for q = 1 + d d+4 , there is a constant C <∞ such that
+∫
+ΩT
+⏐⏐⏐γ(t,x, ˆfn,∇x ˆfn) ⏐⏐⏐ q dtdx≤C.
+The latter estimate together with the growth assumptions on α(·) from Condition 7.2, imply that
+{∂t ˆfn}n∈N is bounded uniformly with respect to n in L1+d/(d+4)(ΩT ) and in L2(0,T ; W−1,2(Ω)). Consider
+the conjugates 1/δ1 + 1/δ2 = 1 with δ2 > max{2,d}. Due to the embedding
+W−1,2(Ω) ⊂W−1,δ1(Ω), Lq(Ω) ⊂W−1,δ1(Ω), and L2(Ω) ⊂W−1,δ1(Ω),
+we have that {∂t ˆfn}n∈N is bounded uniformly with respect to n in L1(0,T ; W−1,δ1(Ω)). Deﬁne now the
+spaces X = W 1,2 0 (Ω), B = L2(Ω) and Y = W−1,δ1(Ω), and notice that
+X ⊂B ⊂Y
+with the ﬁrst embedding being compact. Then, Corollary 4 of [48] yields relative compactness of { ˆfn}n∈N
+in L2(ΩT ), which means that { ˆfn}n∈N converges strongly to u in that space. Thus, up to subsequences,
+{ ˆfn}n∈N converges almost everywhere to u in ΩT .
+The nonlinearity of the α and γ functions with respect to the gradient prohibits us from passing to
+the limit directly in the respective weak formulation. However, the uniform boundedness of { ˆfn}n∈N in
+Lσ
+(
+0,T ; W 1,σ 0 (Ω) ) with σ > 1 (in fact here σ = 2) and its weak convergence to u in that space, allows us
+to conclude, as in Theorem 3.3 of [4], that
+∇ ˆfn →∇u almost everywhere in ΩT.
+Hence, we obtain that { ˆfn}n∈N converges to u strongly also in Lρ
+(
+0,T ; W 1,ρ 0 (Ω) ) for every ρ< 2.
+In preparation to passing to the limit as n→∞ in the weak formulation, we need to study the behavior
+of the nonlinear terms. Recalling the assumptions on α(t,x,u,p) we have for ρ< 2 and for a measurable set
+27
+
+=== page 28 ===
+A⊂ ΩT (the constant K <∞ may change from line to line)
+∫
+A
+⏐⏐⏐α(t,x, ˆfn,∇ ˆfn) ⏐⏐⏐ ρ dtdx≤K [∫
+A
+|κ(t,x)|ρdtdx +
+∫
+A
+|∇ ˆfn(t,x)|ρdtdx
+]
+≤K
+[∫
+A
+|κ(t,x)|ρdtdx +
+(∫
+ΩT
+|∇ ˆfn(t,x)|2dtdx
+)ρ/2
+|A|1−ρ/2
+]
+≤K
+[∫
+A
+|κ(t,x)|ρdtdx + |A|1−ρ/2
+]
+.
+In the latter display we used H¨oder inequality with exponent 2/ρ> 1. By Vitali’s theorem we then conclude
+that
+α(t,x, ˆfn,∇ ˆfn) →α(t,x,u,∇u) strongly in Lρ(ΩT )
+as n→∞, for every 1 <ρ< 2. For the same reason, an analogous estimate to (A.4), gives
+∫
+A
+⏐⏐⏐γ(t,x, ˆfn,∇x ˆfn) ⏐⏐⏐ q dtdx≤K (∫
+A
+|λ(t,x)|d+2 dtdx
+)(2−q)/2
+≤K|A|
+η
+d+2+η
+implying, via Vitali’s theorem, that
+γ(t,x, ˆfn,∇ ˆfn) →γ(t,x,u,∇u) strongly in Lq(ΩT )
+as n→∞, for q = 1 + d d+4 .
+Notice also that by construction we have that the initial condition un 0 converges to u0 strongly in L2(Ω).
+The weak formulation of the PDE (7.6) with gn = 0 reads as follows. For every t1 ∈ (0,T ]
+∫
+Ωt1
+[
+− ˆfn∂tφ + ⟨ α(t,x, ˆfn,∇ ˆfn),∇φ ⟩ + (γ(t,x, ˆfn,∇ ˆfn) −hn)φ ] (t,x)dxdt
++
+∫
+Ω
+ˆfn(t1,x)φ(t1,x)dx−
+∫
+Ω
+un 0 (x)φ(0,x)dx = 0
+for every φ∈C∞ 0 (ΩT ). Using the above convergence results, we then obtain that the limit point u satisﬁes
+for every t1 ∈ (0,T ] the equation
+∫
+Ωt1
+[−u∂tφ + ⟨α(t,x,u,∇u),∇φ⟩ + γ(t,x,u,∇u)φ] (t,x)dxdt
++
+∫
+Ω
+u(t1,x)φ(t1,x)dx−
+∫
+Ω
+u0(x)φ(0,x)dx = 0,
+which is the weak formulation of the equation (7.5).
+It remains to discuss the convergence of fn − ˆfn to zero, where we recall that fn is the neural network
+approximation satisfying (7.6) and ˆfn satisﬁes (7.6) with gn = 0. The functions fn ∈C1,2(¯ΩT ) and ¯ΩT is
+compact. We have also assumed that {fn}n is uniformly bounded in L2(ΩT ). This implies that, up to a
+subsequence, fn will converge at least weakly in L2(ΩT ). Moreover, the boundary values gn(t,x) (which is
+nothing else by fn(t,x) evaluated at the smooth boundary ∂ΩT ) in (7.6) converge to zero strongly in L2.
+It is then a standard result that gn, i.e., fn evaluated at the boundary, converges to zero, at least, almost
+uniformly along a subsequence, see for example Lemma 2.1 in Chapter II of [28]. As it then follows, for
+example, by the proof of Theorems 6.3-6.4-6.5 of Chapter V.6 in [28], using smoothness and uniqueness, fn
+will diﬀer from the solution to the PDE (7.6) with gn = 0, ˆfn(t,x), by a negligible amount as n→∞ in the
+almost everywhere sense. The assumed uniform L2 bound for {fn}n∈N together with the previously derived
+uniform L2(ΩT ) bound for { ˆfn}n∈N yield uniform L2(ΩT ) boundedness for {fn− ˆfn}n∈N. Then, by Vitali’s
+theorem again, we get that {fn − ˆfn}n∈N goes to zero strongly in Lρ(ΩT ) for every ρ< 2.
+The previously derived strong convergence of {fn − ˆfn}n∈N to zero in Lρ(ΩT ) for every ρ< 2, together
+with the strong L2(ΩT ) convergence of { ˆfn}n∈N to u, conclude the proof of the convergence in Lρ(ΩT ) for
+every ρ< 2 using triangle inequality.
+28
+
+=== page 29 ===
+If {fn(t,x)} is equicontinuous then, Lemma 3.2 of [17] gives uniform convergence of gn to zero. Hence,
+by the previous analysis, it will certainly be true that {fn}n∈N converges to u in Lρ(ΩT ) for every ρ < 2.
+The Lρ convergence to zero together with boundedness and equicontinuity of the sequence {fn(t,x)} results
+then in uniform convergence due to the well known Arzel`a-Ascoli theorem.
+References
+[1] S. Asmussen and P. Glynn, Stochastic Simulation: Algorithms and Analysis, Springer, 2007.
+[2] C. Beck, W. E., A. Jentzen. Machine learning approximation algorithms for high-dimensional fully
+nonlinear partial diﬀerential equations and second-order backward stochastic diﬀerential equations,
+arXiv:1709.05963, 2017.
+[3] D. Bertsekas and J. Tsitsiklis, Gradient convergence in gradient methods via errors, SIAM Journal of
+Optimization, Vol.10, No. 3, pgs. 627-642, 2000.
+[4] L. Boccardo, A. Dall‘Aglio, T. Gallou¨et and L. Orsina, Nonlinear parabolic equations with measure
+data, Journal of Functional Analysis, Vol. 147, pp. 237-258, (1997).
+[5] L. Boccardo, M.M. Porzio and A. Primo, Summability and existence results for nonlinear parabolic
+equations, Nonlinear Analysis: Theory, Methods and Applications, Vol. 71, Issue 304, pp. 1-15, 2009.
+[6] H. Bungartz, A. Heinecke, D. Pﬂuger, and S. Schraufstetter, Option pricing with a direct adaptive sparse
+grid approach, Journal of Computational and Applied Mathematics, Vol. 236, No. 15, pgs. 3741-3750,
+2012.
+[7] H. Bungartz and M Griebel, Sparse Grids, Acta numerica, Vol. 13, pgs. 174-269, 2004.
+[8] P. Chandra and Y. Singh, Feedforward sigmoidal networks - equicontinuity and fault-tolerance proper-
+ties, IEEE Transactions on Neural Networks, Vol. 15, Issue 6, pp. 1350-1366, 2004.
+[9] P. Chaudhari, A. Oberman, S. Osher, S. Soatto, and G. Carlier. Deep relaxation: partial diﬀerential
+equations for optimizing deep neural networks, 2017.
+[10] S. Cerrai, Stationary Hamilton-Jacobi Equations in Hilbert Spaces and Applications to a Stochastic
+Optimal Control Problem, SIAM Journal on Control and Optimization, Vol. 40, No. 3, pgs. 824-852,
+2001.
+[11] G. Cybenko, Approximation by superposition of a sigmoidal function, Mathematics of Control, Signals
+and Systems, Vol. 2, pp. 303-314, 1989.
+[12] A. Davie and J. Gaines, Convergence of Numerical Schemes for the Solution of Parabolic Stochastic
+Partial Diﬀerential Equations, Mathematics of Computation, Vol. 70, No. 233, pgs. 121-134, 2000.
+[13] J. Dean, G. Corrado, R. Monga, K. Chen, M. Devin, M. Mao, A. Senior, P. Tucker, K. Yang, Q. Le, and
+A. Ng. Large scale distributed deep networks. In Advances in Neural Information Processing Systems,
+pp. 1223-1231, 2012.
+[14] A. Debussche, M. Fuhrman, and G. Tessitore, Optimal control of a stochastic heat equation with
+boundary-noise and boundary-control, ESAIM: Control, Optimisation and Calculus of Variations, Vol.
+13, No. 1, pgs. 178-205, 2007.
+[15] W. E., J. Han, and A. Jentzen. Deep learning-based numerical methods for high-dimensional parabolic
+partial diﬀerential equations and backward stochastic diﬀerential equations, Communications in Math-
+ematics and Statistics, Springer, 2017.
+[16] M. Fujii, A. Takahashi, and M. Takahashi. Asymptotic Expansion as Prior Knowledge in Deep Learning
+Method for high dimensional BSDEs, arXiv:1710.07030, 2017.
+29
+
+=== page 30 ===
+[17] A. M. Garcia, E. Rodemich, H. Rumsey Jr. and M. Rosenblatt, A real variable lemma and the continuity
+of paths of some Gaussian processes, Indiana University Mathematics Journal, Vol. 20, No. 6, pp. 565-
+578, December, 1970.
+[18] X. Glorot and Y. Bengio. Understanding the diﬃculty of training deep feedforward neural networks.
+In Proceedings of the Thirteenth International Conference on Artiﬁcial Intelligence and Statistics, pp.
+249-256, 2010.
+[19] J. Gaines. Numerical experiments with SPDEs. London Mathematical Society Lecture Note Series,
+55-71, 1995.
+[20] D. Gilbarg and N.S. Trudinger. Elliptic partial diﬀerential equations of second order, second edition.
+Springer-Verlang, Berlin Heidelberg, 1983.
+[21] I. Gy¨ongy, Lattice Approximations for Stochastic Quasi-Linear Parabolic Partial Diﬀerential Equations
+Driven by Space-Time White Noise I, Potential Analysis, Vol. 9, Issue 1, pgs. 125, 1998.
+[22] A. Heinecke, S. Schraufstetter, and H. Bungartz, A highly parallel Black-Scholes solver based on adaptive
+sparse grids, International Journal of Computer Mathematics, Vol. 89, No. 9, pgs. 1212-1238, 2012.
+[23] M. Haugh and L. Kogan, Pricing American Options: A Duality Approach, Operations Research, Vol.
+52, No. 2, pgs. 258-270, 2004.
+[24] S. Hochreiter and J. Schmidhuber, Long short-term memory, Neural Computation, Vol. 9, No. 8, pgs.
+1735-1780, 1997.
+[25] K. Hornik, M. Stinchcombe and H. White, Universal approximation of an unknown mapping and its
+derivatives using multilayer feedforward networks, Neural Networks, Vol. 3, Issue 5, pp. 551-560, 1990.
+[26] K. Hornik, Approximation capabilities of multilayer feedforward networks, Neural Networks, Vol. 4, pp.
+251-257, 1991.
+[27] D. Kingma and J. Ba, ADAM: A method for stochastic optimization. arXiv: 1412.6980, 2014.
+[28] O. A. Ladyzenskaja, V. A. Solonnikov and N. N. Ural’ceva, Linear and Quasi-linear Equations of
+Parabolic Type (Translations of Mathematical Monographs Reprint), American Mathematical Society,
+Vol. 23, 1988.
+[29] I. Lagaris, A. Likas, and D. Fotiadis, Artiﬁcial neural networks for solving ordinary and partial diﬀer-
+ential equations, IEEE Transactions on Neural Networks, Vol. 9, No. 5, pgs. 987-1000, 1998.
+[30] I. Lagaris, A. Likas, and D. Papageorgiou, Neural-network methods for boundary value problems with
+irregular boundaries, IEEE Transactions on Neural Networks, Vol. 11, No. 5, pgs. 1041-1049, 2000.
+[31] H. Lee, Neural Algorithm for Solving Diﬀerential Equations, Journal of Computational Physics, Vol.
+91, pgs. 110-131, 1990.
+[32] J. Ling, A. Kurzawski, and J. Templeton. Reynolds averaged turbulence modelling using deep neural
+networks with embedded invariance. Journal of Fluid Mechanics, Vol. 807, pgs. 155-166, 2016.
+[33] F. Longstaﬀ and E. Schwartz, Valuing American Options by Simulation: A Simple Least-Squares Ap-
+proach, Review of Financial Studies, Vol. 14, pgs. 113-147, 2001.
+[34] M. Magliocca, Existence results for a Cauchy-Dirichlet parabolic problem with a repulsive gradient
+term, Nonlinear Analysis, Vol. 166, pp. 102-143, 2018
+[35] A. Malek and R. Beidokhti, Numerical solution for high order diﬀerential equations using a hybrid neural
+network-optimization method, Applied Mathematics and Computation, Vol. 183, No. 1, pgs. 260-271,
+2006.
+30
+
+=== page 31 ===
+[36] F. Masiero, HJB equations in inﬁnite dimensions, Journal of Evolution Equations, Vol. 16, No. 4, pgs.
+789-824, 2016.
+[37] R. Di Nardo, F. Feo, O. Guib´e, Existence result for nonlinear parabolic equations with lower order
+terms, Anal. Appl.(Singap.), Vol. 09, No. 02, pp. 161-186, 2011.
+[38] P. Petersen and F. Voigtlaender, Optimal approximation of piecewise smooth functions using deep ReLU
+neural networks, (2017), arXiv: 1709.05289v4.
+[39] A. Pinkus. Approximation theory of the MLP model in neural networks. Acta Numerica, Vol. 8, pp.
+143195, 1999.
+[40] M. M. Porzio, Existence of solutions for some “noncoercive” parabolic equations, Discrete and Contin-
+uous Dynamical Systems, Vol. 5, Issue 3, pp. 553-568, 1999.
+[41] M. Raissi, P. Perdikaris, and G. Karniadakis. Physics Informed Deep Learning (Part I): Data-driven
+Solutions of Nonlinear Partial Diﬀerential Equations, arXiv:1711.10561, 2017.
+[42] M. Raissi, P. Perdikaris, and G. Karniadakis. Physics Informed Deep Learning (Part II): Data-driven
+Discovery of Nonlinear Partial Diﬀerential Equations, arXiv:1711.10566, 2017.
+[43] C. Reisinger and G. Wittum, Eﬃcient hierarchical approximation of high-dimensional option pricing
+problems, SIAM Journal on Scientiﬁc Computing, Vol. 29, No. 1, pgs. 440-458, 2007.
+[44] C. Reisinger, Analysis of linear diﬀerence schemes in the sparse grid combination technique, IMA Journal
+of Numerical Analysis, Vol. 33, No. 2, pgs. 544-581, 2012.
+[45] L.C.G. Rogers, Monte-Carlo Valuation of American Options, Mathematical Finance, Vol. 12, No. 3, pgs.
+271-286, 2002.
+[46] K. Rudd, Solving Partial Diﬀerential Equations using Artiﬁcial Neural Networks, PhD Thesis, Duke
+University, 2013.
+[47] R. Srivastava, K. Greﬀ, and J. Schmidhuber, Training very deep networks, In Advances in Neural
+Information Processing Systems, pp. 2377-2385, 2015.
+[48] J. Simon, Compact sets in the space Lp(0,T ; B), Annali di Matematica Pura ed Applicata, Vol. 146, pp.
+65-96, 1987.
+[49] J. Tompson, K. Schlachter, P. Sprechmann, and K. Perlin. Accelerating Eulerian Fluid Simulation with
+Convolutional Networks, Proceedings of Machine Learning Research, Vol. 70, pgs. 3424-3433, 2017.
+31

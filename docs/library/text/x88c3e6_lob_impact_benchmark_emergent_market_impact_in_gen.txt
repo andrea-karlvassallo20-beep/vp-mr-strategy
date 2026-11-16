@@ -1,0 +1,810 @@
+=== page 1 ===
+LOB-Impact Benchmark: Emergent Market Impact in Generative
+Limit Order Book Models
+George Nigmatulin
+george.nigmatulin@eng.ox.ac.uk
+British Open-ended Learning and
+Discovery Lab (BOLD)
+Department of Engineering Science
+University of Oxford
+Oxford, United Kingdom
+Valentin Mohl
+valentin.mohl@cs.ox.ac.uk
+British Open-ended Learning and
+Discovery Lab (BOLD)
+Department of Computer Science
+University of Oxford
+Oxford, United Kingdom
+Sascha Frey
+sascha.frey@st-hughs.ox.ac.uk
+British Open-ended Learning and
+Discovery Lab (BOLD)
+Department of Computer Science
+University of Oxford
+Oxford, United Kingdom
+Kang Li
+kang.li@stats.ox.ac.uk
+British Open-ended Learning and
+Discovery Lab (BOLD)
+Department of Statistics
+University of Oxford
+Oxford, United Kingdom
+Aramis Marti-Shahandeh
+aramis@robots.ox.ac.uk
+British Open-ended Learning and
+Discovery Lab (BOLD)
+Department of Engineering Science
+University of Oxford
+Oxford, United Kingdom
+Mihai Cucuringu
+mihai@math.ucla.edu
+Department of Mathematics
+University of California Los Angeles
+Los Angeles, United States
+Department of Statistics & Oxford
+Man Institute of Quantitative Finance
+University of Oxford
+Oxford, United Kingdom
+Anisoara Calinescu
+ani.calinescu@cs.ox.ac.uk
+British Open-ended Learning and
+Discovery Lab (BOLD)
+Department of Computer Science
+University of Oxford
+Oxford, United Kingdom
+Jakob Foerster
+jakob@robots.ox.ac.uk
+British Open-ended Learning and
+Discovery Lab (BOLD)
+Department of Engineering Science
+University of Oxford
+Oxford, United Kingdom
+Stefan Zohren
+stefan.zohren@eng.ox.ac.uk
+British Open-ended Learning and
+Discovery Lab (BOLD)
+Department of Engineering Science
+University of Oxford
+Oxford, United Kingdom
+Abstract
+Realistic market impact is essential for generative limit order book
+(LOB) models to serve as world models for trading agents. If a sim-
+ulator misprices this mechanism, agents learn policies that are opti-
+mal in the simulator but wrong in the real market. Existing metrics
+assess generated streams purely through distributional comparison
+with historical data, leaving counterfactual response to an agent’s
+own orders largely unexplored. Here, we show that market impact
+emerges naturally in neural LOB generators trained solely for next-
+token prediction. We inject execution-style metaorders into the gen-
+erated message flow of five autoregressive models across five NAS-
+DAQ stocks and measure the response using estimators from the
+empirical impact literature, validated on baselines whose physics
+is known in advance. Our benchmark evaluates any message-level
+generator in three phases: free generation (reading order-flow per-
+sistence against price diffusivity); metaorder injection (yielding
+the impact law’s exponent and amplitude); and a post-execution
+window (measuring relaxation). In addition, comparing each visible
+injection to a blind, simulator-only control isolates the model’s
+This work is licensed under a Creative Commons Attribution 4.0 International License.
+ICAIF ’26, Milan, Italy
+© 2026 Copyright held by the owner/author(s).
+ACM ISBN 979-8-4007-3087-0/2026/11
+https://doi.org/10.1145/3858063.3858909
+learned response from standard book mechanics. For every model
+on every stock, we measure how the impact responds as a function
+of cumulative metaorder participation. Interestingly, we observe
+emergent impact in generative models of market data, with expo-
+nents in the range of 0.63 to 1.21, slightly above the traditional 0.5
+of the square-root law of impact. In the family of models tested, we
+are so far unable to observe impact decay during relaxation. We
+tentatively attribute this to the still-short context windows of the
+models. We release the benchmark as open source to validate future
+generative models for market data.
+CCS Concepts
+• Computing methodologies → Simulation evaluation; • Ap-
+plied computing→ Economics.
+Keywords
+limit order book, generative AI, market impact, square-root law,
+evaluation benchmark, state-space models, reinforcement learning
+ACM Reference Format:
+George Nigmatulin, Valentin Mohl, Sascha Frey, Kang Li, Aramis Marti-
+Shahandeh, Mihai Cucuringu, Anisoara Calinescu, Jakob Foerster, and Ste-
+fan Zohren. 2026. LOB-Impact Benchmark: Emergent Market Impact in
+Generative Limit Order Book Models. In 7th ACM International Conference
+on AI in Finance (ICAIF ’26), November 14–17, 2026, Milan, Italy. ACM, New
+York, NY, USA, 9 pages. https://doi.org/10.1145/3858063.3858909
+arXiv:2610.27100v1  [q-fin.TR]  19 Oct 2026
+
+=== page 2 ===
+ICAIF ’26, November 14–17, 2026, Milan, Italy Nigmatulin, Mohl, Frey et al.
+1 Introduction
+Generative LOB models (GANs [10], recurrent and state-space mes-
+sage generators [14, 26, 31, 33], transformers and diffusion [2, 18])
+are judged today by how closely their message streams resemble
+historical ones. Distributional benchmarks such as LOB-Bench [25]
+make this comparison precise by scoring spread, volume, inter-
+arrival, and imbalance distributions against real data. Such simu-
+lators are candidates to serve as world models for reinforcement-
+learning agents [12, 23], and an agent trained inside a simulator that
+gets the response to its orders wrong will learn mispriced policies,
+even if the surrounding stream looks realistic. Distributional scores
+are blind to this response, and existing benchmarks measure it only
+for a single event.
+Constructing such a benchmark requires examining how real
+markets absorb large trades. Institutions do not execute a large
+order at once; they split it into small child orders. Empirical finance
+provides the reference for what such a metaorder does to the price:
+the square-root law of metaorder impact,
+𝐼(𝑄) =𝜎·𝑌·
+
+𝑄
+𝑉
+𝛽
+, 𝛽≈ 0.5, (1)
+where 𝐼(𝑄) is the expected price change, 𝜎 the daily volatility, 𝑄
+the metaorder size, 𝑉 the daily volume, and 𝑌 a dimensionless
+amplitude; the law is documented across equities, futures, and
+FX [1, 6, 32]. This law is driven by two forces: persistence and
+resilience. Order flow is highly persistent: the sign of the next trade
+is predictable from the previous one [19]. If every trade permanently
+moved the price, this persistence would cause indefinite trends.
+Instead, prices remain diffusive because the market absorbs and
+relaxes from each push [7]. The law’s concavity emerges when the
+liquidity a metaorder consumes is replenished behind it, and this
+same replenishment brings the price back down once execution
+stops [13]. In free generation, persistence is directly observable;
+resilience appears only indirectly as a diffusive price.
+Isolating resilience therefore needs a counterfactual: how prices
+would have moved under an exogenous metaorder. A historical
+trace cannot answer that; a generator can. LOB-Bench measures
+this response at the scale of a single event. At the metaorder scale,
+MarS reports a square-root-shaped response to injected TWAP
+orders [18], and Bodor and Carlier [5] an exponent of 0.55 on a
+ten-child metaorder. However, these experiments do not separate
+the mechanical impact, where the injected orders remove levels
+of the price, from indirect impact through the reactions of other
+participants to those orders. In a generator, other participants are
+the model itself, and resilience lives in its reaction alone.
+Our aim is to design experiments that measure these counter-
+factuals and isolate indirect impact. In our procedure, metaorders
+injected into five neural state-space generators produce an iden-
+tifiable impact law on every stock we run: 25 model–stock pairs,
+25 identifications. We provide an automatic per-stock calibration;
+every build-up injection is paired with a blind run that separates
+the model’s reaction from the book’s mechanics, and a number is
+reported only where a law is identified. This procedure extends dis-
+tributional benchmarking, providing an instrument for evaluating
+the interactive fidelity of LOB simulators.
+2 Methodology
+2.1 Benchmark design
+The benchmark takes four inputs: the model under test, a stock, a
+calibration computed from that stock’s own data (Section 2.3), and
+a budget of 𝑛 rollouts per direction per phase, spread over every
+trading day of the month. It runs three phases with two paired
+controls (Figure 1, left). Everything downstream is fixed before any
+model is run: the injection schedule, calibration and estimator are
+set by the stock and the protocol, never by the model under test.
+Phase 1: free generation. The model runs freely over the injection
+horizon (the length of one build-up metaorder: 12k–73k messages
+depending on the stock, Table 2). For this phase, we measure the
+following three observables. The first is a consistency pair: 𝛾flow, the
+decay exponent of the trade-sign autocorrelation (smaller means
+longer memory), read against 𝐻, the Hurst exponent of the gen-
+erated mid-price (𝐻 = 0.5 is diffusive). Persistent signs must be
+compensated by transient impact, so a generator that combines
+persistent flow with a super-diffusive price (𝐻 > 0.5) has built a
+free lunch into its own market [7]. The second is the free drift a
+rollout accumulates with nothing injected. The third is the price
+response to a single trade, against the real stream. Phase 1 serves
+as a first filter: the replay passes it perfectly yet has no impact at
+all, so establishing impact requires an intervention.
+Phases 2 & 3: metaorder injection and relaxation. The injection
+realises the counterfactual of Section 1: the same conditioning
+windows, run again under an exogenous metaorder. After a condi-
+tioning window from the real stream, we alternate one aggressive
+child of median trade size with Δ𝑁 generated messages, the spac-
+ing that holds participation at 𝜂 = 10% (Section 2.3) (Figure 1,
+right). Two shapes probe the two faces of impact. The build-up
+shape (𝑖=100,𝑐=0) reads the impact exponent along a 100-child
+metaorder, a typical real length (Section 2.3). The relaxation shape
+(𝑖=10,𝑐=100) executes a short metaorder and then stops injecting
+for 100 silent blocks: ten execution durations, over which real im-
+pact falls to about two-thirds of its peak within one to two durations
+and to about one-half by the tenth [9, 24]. Every configuration runs
+in both directions, and the two are combined as
+𝐼 = 1 2  𝐼buy −𝐼sell , (2)
+which also handles free drift: direction-independent drift cancels in
+Eq. 2 and is measured separately on the no-injection arm, entering
+the accounting exactly once.
+Blind control. An identified law does not say whose law it is. The
+replay kernels of Table 1, with no model inside, are identified on
+AMD at 𝛿 = 0.73–0.81, inside the neural range, so the exponent
+cannot attribute the response, and a large amplitude could be purely
+mechanical impact. The build-up therefore runs twice on the same
+windows and seeds, once visible and once blind. In the blind run,
+the orders fill in the simulator, but neither model input (message
+stream, book state) carries them, so the generated flow proceeds as
+if the metaorder never happened. This allows us to single out the
+indirect impact. The laws are fitted on the visible runs. The blind
+control covers only the build-up: Phase 3 reads a ratio within one
+visible run, which a floor ten times below the peak cannot change.
+
+=== page 3 ===
+LOB-Impact Benchmark ICAIF ’26, November 14–17, 2026, Milan, Italy
+Figure 1: The benchmark and its counterfactual probe. Left: four inputs, three phases, and the claim ladder they decide, each
+row reading claim · variable · pass criterion. Phase 1 generates freely and decides the balance (C1); Phase 2 injects the build-up
+and decides existence (C2), attribution (C3) and the square-root law (C4); Phase 3 injects, then falls silent, and decides relaxation
+(C5). Schedules print as (what is injected; children 𝑖; silent blocks 𝑐). Every build-up injection runs twice, visible and blind: same
+windows and seeds, the orders fill in the simulator while neither model input (message stream, book state) carries them, and
+the visible-over-blind ratio attributes the response to the model itself (C3). Table 3 prints the resulting ladder for every model ×
+stock. Right: the injection protocol. After a conditioning window (Context), aggressive children are injected Δ𝑁 model-generated
+messages apart; the post-execution phase injects none. The traced paths are the real-market expectation the benchmark tests
+against: a transient response decaying towards a permanent level. The sell experiment mirrors the buy; the two combine by
+antisymmetrisation (Eq. 2), and the experiment repeats over many windows (stacked frames).
+The horizon is set by the object, not by the model. Market im-
+pact is a property of the metaorder, the working unit of optimal
+execution [3, 15], and only at that scale can an emergent impact
+law be demonstrated. A build-up rollout therefore runs about 40k
+messages on AMD, far past the 500-message training window of
+latter-day models (Table 1). The no-injection arm (free generation
+at this horizon, the second paired control) also tracks rollout degra-
+dation.
+Sample sizes are part of the protocol. Rollouts buy detection:
+resolving a peak 𝑃 at three standard errors takes 𝑛∗ = 9 𝜎 2 1 /𝑃 2 per
+direction, 𝜎1 from a pilot. Trading days buy precision: days are the
+independent unit and rollouts cannot substitute for them. A cell
+is printed only when its peak exceeds three standard errors and
+its law is identified. One campaign per stock (1,024 rollouts per
+direction per phase over 20 trading days) meets both requirements,
+with about 1.4× the minimum that subsampling shows is needed.
+With fewer than five days, the interval is often narrower than the
+full-sample one, yet contains the full-sample value only 40–68% of
+the time: the estimate looks precise but is wrong.
+Each executed child 𝑘 contributes one signed point (𝑞𝑘,𝐼𝑘), where
+𝑞𝑘 =𝑄𝑘/𝑉 is the cumulative participation and 𝐼𝑘 the mid-price dis-
+placement. We write 𝛿 for the measured exponent and keep 𝛽 for
+the reference 0.5 of Eq. 1. The law 𝐼 =𝑎𝑞𝛿 is fitted on the cumu-
+lative pool 𝑞 ≤ 𝑞𝑘, because every prefix of a metaorder is itself
+a completed metaorder, the lifecycle convention of the empirical
+literature [3, 34]. The local exponent declines along a metaorder,
+as for real ones [34], so 𝛿 is always quoted at the full metaorder,
+under one convention for every model.
+Existence is decided before magnitude (Figure 2). The identifia-
+bility test fits 𝐼 =𝑎𝑞𝛿 directly by least squares, with no logarithms
+and no sign selection. For each 𝛿 on a grid ([0.05, 1.5], step 0.01)
+the best amplitude has a closed form, 𝑎∗(𝛿) = ˝𝐼𝑞𝛿/˝𝑞2𝛿, so the
+misfit becomes a curve over 𝛿: a real law gives a sharp minimum,
+and no signal gives a flat curve with 𝑎≈ 0. A law counts as not
+identified when the amplitude is below the floor (|𝑌| < 0.05) or the
+best 𝛿 sits on a grid bound; the master curve (all sizes collapsed
+onto one) is drawn only when ⟨𝐼(1)⟩ exceeds three standard er-
+rors. Testing existence first is the one step we add to an otherwise
+standard pipeline; a weighted-median 𝐿1 version guards against
+outliers. The number, quoted only where a law is identified, is the
+binned estimator of the empirical literature [30]: 18 quantile bins,
+signed conditional bin means, OLS through the positive means.
+All fits run on raw signed impact; volatility enters only as the unit
+of the amplitude (𝐼 in units of the day’s Parkinson volatility), 𝑌 =
+𝑎𝑞𝛿−1/2 ref /𝜅𝑃 at the data edge, with 𝜅𝑃 = √ 4 ln 2≈ 1.665 converting
+the Parkinson range [28] to the convention of the empirical studies,
+so 𝑌 compares directly with the measured 𝑌 ≈ 0.5 [8, 32, 34].
+On AMD the binned 𝛿 moves by at most 0.05 across six volatility
+normalisations (none, i.e. 𝜎 = 1, and the Parkinson, Garman–Klass,
+Rogers–Satchell, close-to-close and Yang–Zhang estimators), and
+the𝐿1 twin agrees wherever a law is identified.
+Phase 3 reads relaxation through two numbers: the level at which
+impact settles and its slope after execution. We compare the level
+with real metaorders, which relax to one-half to two-thirds of their
+peak [9, 24], and with the kernel baselines run under the same
+schedule, whose closed-form value sets the scale of relaxation at
+this spacing. Fitted directly, the neural decay kernel comes out
+permanent (𝛾≈ 0) by two independent methods, schedule ordering
+and an impulse fit. Days are pooled on a common clock, the executed
+fraction 𝑣 =𝑘/𝑁 of the metaorder, because metaorder impact does
+
+=== page 4 ===
+ICAIF ’26, November 14–17, 2026, Milan, Italy Nigmatulin, Mohl, Frey et al.
+Figure 2: The estimator’s input on AMD. Rows: the Historic re-
+play (negative control, top) and S5-120M (bottom). Columns:
+raw signed points (ln𝑞,𝐼) (left) and equal-count bins with
+signed conditional means (right). Half the replay’s points
+lie at or below zero; signed means cancel where there is no
+signal, so the replay’s means straddle zero while S5-120M’s
+rise. The estimator built on these means is defined in the
+text.
+not depend on execution duration [6]; cells where fast and slow
+days still differ materially are marked 𝑚.
+The estimator is validated before it is read: laws of known expo-
+nent, planted in the replay’s own point cloud (real noise, real day
+structure), are recovered across 𝛿∈[0.5, 1.0] with a small down-
+ward bias (at most 0.11 at neural amplitudes), so the exponents
+reported below are conservative. In 500 null trials with nothing
+planted, the identifiability test returns not one false law. The kernel
+baselines close the loop end to end: Phase 3 recovers their built-in
+resilience in the correct order on all five stocks.
+Each cell is finally reduced to a verdict on the five claims of
+Figure 1 (the C1–C5 column of Table 3), on criteria fixed for every
+model: C1 when𝛾flow, 𝐻 and the free drift sit within tolerances fixed
+in advance (0.10, 0.02 and 5 ticks) of the stock’s own replay; C2
+when the gate identifies a law; C3 when the visible peak is at least
+3× the blind floor; C4 when |𝛿− 0.5|≤ 0.10 and 𝑌∈[0.5, 1]; C5
+when the end-over-peak is at or below that of the Obizhaeva–Wang
+(OW) kernel, the standard resilient book, on the same stock and
+schedule, with a non-positive slope and a free drift under 20 ticks,
+so the descent is not the drift; the OW row itself is left undecided.
+C4 and C5 are undecidable when no law is identified, and C3 when
+no blind run was made, so a missing measurement cannot read as
+a defect. Every verdict follows from the numbers printed beside it,
+so the whole ladder can be checked from Table 3 alone.
+2.2 Models under test
+The benchmark accepts any message-level generator; Table 1 lists
+the panel of models we test. The replay block spans no causal re-
+sponse (Historic, the negative control), permanent impact (Heuris-
+tic), and two kernels with the target physics written in: the Prop-
+agator, whose power-law decay to 2 3 is the positive control, and
+Obizhaeva–Wang (OW), with exponential resilience. The five neu-
+ral generators carry a continuous hidden state across generated
+and injected messages, the mechanism through which relaxation
+could arise, and share one eight-name corpus including AMD, eval-
+uation month held out. Book reconstruction and matching use the
+JAX-LOB engine [12]; every number comes from the one campaign
+per stock of Section 2.
+2.3 Data preparation
+The injection protocol requires three calibration numbers per stock:
+the child size, the spacing between children, and the daily vol-
+ume that normalises cumulative participation. All three are com-
+puted from LOBSTER message data for January 2026, the evaluation
+month, held out of model training.
+As impact is measured relative to the stock’s own activity, the
+measurements are re-calibrated per name. We choose a partici-
+pation target of 𝜂 = 10% of the market orders during execution;
+broker databases retain execution participations of 3–40% [3] and
+the empirical impact surface is fitted over 10−4 to 0.1 [34]. The
+child volume is the stock’s median market-order size, 𝑉 is the day’s
+volume, and the spacing follows from the participation identity
+𝜂 = 1/(1+ Δ𝑁 𝜙):
+Δ𝑁 = 𝜂−1 − 1 𝜙 = 9 𝜙 , (3)
+computed per day from one month of LOBSTER message data [20].
+Here 𝜙 is the market-order share of the day’s message stream (Fig-
+ure 3, middle). The child count 𝑁 = 100 is fixed a priori, never per
+model: the mean metaorder length in the empirical samples (96–98
+trades per hidden order [24], 73–100 child orders [3]), spanning two
+decades of cumulative participation. A shorter metaorder would
+sample only the early, steepest part and bias𝛿 upward.
+Figure 3 shows the universe: Δ𝑁 is strongly right-skewed, so a
+high-OTR name (order-to-trade ratio 1/𝜙) costs seven times more
+generation than a low-OTR one. Table 2 takes one name per cohort.
+This paper reports AMD band by band: high-OTR cohort (Δ𝑁 =
+401 ± 69, ≈40k messages per metaorder), and inside every training
+corpus, so the measurement carries no distribution shift.
+Table 2: Selected stocks, one per cohort (day-mean, whole
+shares, January 2026). “Child” is the median market-order
+size, used as the child size; ± = std across days; “gen” is the
+messages a 100-child build-up metaorder must generate. Fig-
+ures 2 and 4 show AMD; the others are in Table 3 only.
+Stock Cohort Child (±std) Δ𝑁 (±std) 𝜙 gen
+EA Low OTR 17(±4) 122(±15) 7.49% 12k
+NVDA Mid (modal) 31(±7) 250(±35) 3.65% 25k
+MSFT Mid (modal) 19(±3) 261(±59) 3.68% 26k
+AMD High OTR 20(±3) 401(±69) 2.30% 40k
+GOOG High OTR (tail) 23(±2) 729(±183) 1.30% 73k
+
+=== page 5 ===
+LOB-Impact Benchmark ICAIF ’26, November 14–17, 2026, Milan, Italy
+Table 1: Models under test. Top block: non-neural baselines, calibrated (where anything is fitted) on the evaluation stock
+itself. Bottom block: neural generators sharing one corpus (merged cell) that includes AMD, so every neural measurement is
+in-distribution. “Gen.” is the wall-clock for one build-up rollout (∼40k messages): replay baselines transform a stored stream
+(—), parametric baselines run on CPU, neural models on one H100. †Fine-tuned with a 2000-message context and run with a
+4000-message window.
+Model Class How it works Trained / calibrated on Gen.
+Historic replay Replays the real stream unchanged; cannot react. real held-out data —
+Heuristic replay+ shift Replay; a consumed best level shifts all later messages. rule fixed a priori —
+Propagator replay+ kernel Replay+ one-tick kicks decaying as 2 3 + 1 3 ℓ−1/2. kernel from theory [6] — OW replay+ kernel Replay+ Obizhaeva–Wang exponential-resilience kernel. kernel from theory [27] —
+CST parametric Memoryless event rates vs distance from mid [11]. rates on the stock, Jan 2026 ∼4 s
+NMZI parametric CST+ return-driven order-sign feedback [29]. as CST; feedback at defaults ∼4 s
+Hawkes point process Self-/cross-exciting intensities; short-range clustering [4]. kernels on the stock, Jan 2026 ∼4 s
+QR parametric Queue-reactive intensities conditioned on the book [16]. intensities on the stock, Jan 2026 ∼4 s
+S5-120M neural SSM Autoregressive next-token generation; S5 backbone [31]. GOOG, AAPL, NVDA, AMZN, META,
+TSLA, MSFT, AMD; Jan 2022–Dec 2025;
+Jan 2026 (the evaluation month) held
+out.
+53 s
+S5-4k neural SSM S5 with a 4000-message conditioning window. ∼12 min
+Mamba3 neural SSM Selective state-space backbone [14, 17]. 39 s
+Mamba3-4k neural SSM Mamba-3 with a 4000-message conditioning window†. ∼12 min
+GDN neural SSM Gated-DeltaNet recurrence [33]. 54 s
+Figure 3: The universe and the calibration it fixes (day-mean over 487 names, January 2026). Left: the median market-order size,
+which sets the child volume. Middle: the market-order fraction of the message stream, the denominator of Eq. 3. Right: the
+resulting Δ𝑁 , the messages the generator must produce between children at 𝜂 = 10%; shaded bands are the OTR cohorts, vertical
+lines the universe median and the five selected stocks. Since Δ𝑁 is the generation burden of the same experiment, the five span
+the universe minimum (EA), the modal band (NVDA, MSFT), the high-OTR cohort (AMD) and its tail (GOOG).
+3 Results
+Table 3 gives every measurement for the 13 models on all five stocks.
+On every stock the neural generators produce an impact law of
+their own, but it is not the square-root law, and it does not relax.
+Below we go through the AMD measurements (Figure 4) phase by
+phase; Section 4 interprets them.
+3.1 Phase 1: Free generation
+In identical windows, the real AMD stream is balanced: persistent
+trade signs (𝛾flow = 1.66) with a diffusive mid-price (𝐻 = 0.54). No
+generator holds both legs. The Mamba family carries longer flow
+memory than the real stream (𝛾flow = 1.20 and 1.06) and a price that
+is too diffusive (𝐻 = 0.58 for both): persistence left uncompensated.
+The S5 family carries shorter flow memory (1.90, 1.83) with the
+real diffusivity (𝐻 = 0.55, 0.54); GDN carries the panel’s longest
+flow memory (0.79) with a price below diffusive (𝐻 = 0.49). Every
+neural generator also drifts when left alone, from +9 (S5-4k) to −251
+(Mamba3-4k) ticks per rollout (Table 3). Every neural generator
+therefore fails C1.
+3.2 Phase 2: Metaorder response
+The middle band of Figure 4 shows the build-up. We first check that
+a law exists, then measure it. All five neural generators show a sharp
+minimum of the 𝐿2 misfit over 𝛿 (Section 2), so their exponent is
+identified: claim C2 passes across the panel. For the Historic replay
+the misfit is flat and the amplitude sits at zero: with no signal, no 𝛿
+fits better than another, so there is no law, the correct answer for a
+stream that cannot react.
+Where a law is identified, we calculate 𝛿. On AMD the binned
+exponents are 0.66 (S5-120M), 0.79 (S5-4k), 0.87 (Mamba3), 0.90
+(GDN), and 0.93 (Mamba3-4k). Their 95% day-clustered bootstrap
+intervals are ±0.05–0.06: the S5 family stays closest to 0.5, yet no
+interval comes near it. The band is stable under every estimator
+variant of Section 2, and the estimator’s bias points down: the true
+build-up is, if anything, steeper.
+The amplitude turns the overshoot into money: the neural panel
+shows 𝑌 = 2.2–8.6 against the empirical 𝑌≈ 0.5, four to seventeen
+times what a real metaorder pays per unit of participation. In levels,
+a 100-child metaorder moves the simulated price by 17–70 bps,
+
+=== page 6 ===
+ICAIF ’26, November 14–17, 2026, Milan, Italy Nigmatulin, Mohl, Frey et al.
+Figure 4: The AMD measurements, all three phases in one figure (5×2). Top, Phase 1: pseudo-metaorders on the no-injection
+arm (the pipeline returns drift, not impact); the trade-sign autocorrelation; the mid-displacement variance (slope = 2𝐻 ); the
+drift-corrected own-trade response 𝑅(ℓ). Middle, Phase 2: antisymmetrised 𝐼(𝑘) against the √·-law reference (full range inset),
+the master curve, and the binned estimator along the metaorder (𝛿(𝑘) and 𝑌(𝑘), both against 0.5). Bottom, Phase 3: 𝐼(𝑘) past
+the end of execution, and the master curve against the theoretical reference (dashed: √𝑣 build-up, then power-law decay to 2 3 ).
+Apart from GDN’s drift, only the curves with resilience typed in come down.
+
+=== page 7 ===
+LOB-Impact Benchmark ICAIF ’26, November 14–17, 2026, Milan, Italy
+Table 3: All five stocks, one row per model, the same measurements everywhere (the AMD block is the one read band by band in Section 3). Columns: Par. =
+parameters; Ctx = conditioning window; LOB-Bench KS/L1/WS on free-generation rollouts against the real stream, 500-message windows, lower is better; Phase-1
+flow balance (𝛾fl = trade-sign memory, 𝐻 = diffusivity) and free drift (ticks); Phase-2 build-up (𝛿 = binned exponent, where the direct-𝐿2 profile identifies one; ± =
+half-width of the 95% day-clustered bootstrap interval, the trading day being the resampling unit; 𝑌 = amplitude at the data edge; v/b = visible peak over blind
+floor, the C3 ratio); Phase-3 relaxation (e/p = end-over-peak; slp = post-execution slope in % of peak per execution duration). target rows: the stock’s real stream in
+identical windows; (exp) = the empirical value for real markets, from the literature. C1–C5 = the claim ladder of Figure 1, one verdict per claim (✓ pass, ✗ fail,· not
+decidable) on the criteria of Section 2: C1 the balance holds; C2 impact exists; C3 not book mechanics; C4 the square-root law; C5 the impact relaxes. The blind arm
+behind C3 runs for the neural panel only. Shaded bold : the two numbers behind the neural panel’s failed C4 and C5 – 𝛿 against the 0.5 of the square-root law, e/p
+against the real-market 2 3 relaxation (the kernel rows bound this schedule) – the one signature all 25 neural cells repeat. Markers: “—” does not exist; n.i. = not
+identified; (·)𝑢 = below the identifiability or sample-size requirement, shown for reference only; 𝑐 by construction; 𝑚 duration-mixed; 𝑓 fixed a priori; †2k fine-tune
+at 4000; ‡EA out-of-distribution.
+Model Par. Ctx KS L1 WS 𝛾fl 𝐻 drift 𝛿 𝑌 v/b e/p slp C1–C5
+AMD
+target — — low low low 1.66 0.54 ≈0 0.5 (exp) 0.5 (exp) — 2 3 (exp) ∼−1.5 (exp) —
+Historic — — .060 .162 .096 1.66 0.54 +1 (0.11)𝑢 (0.03)𝑢 — (−0.00)𝑢 (−0.5)𝑢 ✓ ✗···
+Heuristic 2𝑓 ∞ .060 .162 .096 1.66 0.54 +1 0.81 1.46 — 0.95 −0.3𝑐 ✓ ✓· ✗ ✗
+Propagator 2𝑓 ∞ .060 .162 .096 1.66 0.54 +1 0.76 0.98 — 0.89 −0.5 ✓ ✓· ✗ ✗
+OW 2𝑓 exp. .041 .106 .070 1.66 0.54 +1 0.73 0.96 — 0.81 −0.3 ✓ ✓· ✗·
+CST 1.5k 0 .328 .523 .570 n.i. 0.47 +1 n.i. n.i. — (0.68)𝑢 (−10.3)𝑢 · ✗···
+NMZI 1.5k+2 EWMA .330 .526 .574 n.i. 0.27 0 n.i. n.i. — (0.73)𝑢 (+3.6)𝑢 · ✗···
+Hawkes 0.4k ≲1s .477 .534 .644 2.23 0.20 −3 (0.48)𝑢 (0.03)𝑢 — (1.04)𝑢 (−1.9)𝑢 ✗ ✗···
+QR 90 0 .445 .503 .607 .88 0.42 +0 0.72 0.09 — 1.12 +2.6 ✗ ✓· ✗ ✗
+S5-120M 120M 500 .142 .231 .185 1.90 0.55 −18 0.66±.05 2.24 21 1.19 +0.6 ✗ ✓ ✓ ✗ ✗
+S5-4k 55M 4k .171 .270 .237 1.83 0.54 +9 0.79±.06 4.00 26 1.15 +0.0 ✗ ✓ ✓ ✗ ✗
+Mamba3 78M 500 .106 .244 .144 1.20 0.58 −69 0.87±.06 7.65 9.5 1.16𝒎 +0.4 ✗ ✓ ✓ ✗ ✗
+Mamba3-4k 78M 4k† .128 .245 .165 1.06 0.58 −251 0.93±.05 8.38 5.0 1.36𝒎 +3.7 ✗ ✓ ✓ ✗ ✗
+GDN 94M 500 .139 .250 .183 .79 0.49 −127 0.90±.05 8.57 12 0.88𝒎 −2.4 ✗ ✓ ✓ ✗ ✗
+NVDA
+target — — low low low 1.31 0.49 ≈0 0.5 (exp) 0.5 (exp) — 2 3 (exp) ∼−1.5 (exp) —
+Historic — — .054 .118 .068 1.31 0.49 −1 (−0.33)𝑢 (0.00)𝑢 — (0.00)𝑢 (−0.3)𝑢 ✓ ✗···
+Heuristic 2𝑓 ∞ .054 .118 .068 1.31 0.49 −1 0.93 0.99 — 1.07 +0.1𝑐 ✓ ✓· ✗ ✗
+Propagator 2𝑓 ∞ .054 .118 .068 1.31 0.49 −1 0.84 0.66 — 1.04 +0.1 ✓ ✓· ✗ ✗
+OW 2𝑓 exp. .055 .098 .061 .97 0.51 +1 0.83 0.69 — 0.92 +0.0 ✗ ✓· ✗·
+CST 1.5k 0 .219 .398 .303 .16 0.44 0 n.i. n.i. — (0.64)𝑢 (−9.2)𝑢 ✗ ✗···
+NMZI 1.5k+2 EWMA .224 .399 .308 −.12 0.38 0 n.i. n.i. — (1.06)𝑢 (−1.0)𝑢 ✗ ✗···
+Hawkes 0.4k ≲1s .259 .339 .345 1.71 0.20 +2 (1.05)𝑢 (0.65)𝑢 — (−3.00)𝑢 (−59.5)𝑢 ✗ ✗···
+QR 90 0 .259 .349 .363 .83 0.35 +1 0.88 0.16 — 2.47 +20.8 ✗ ✓· ✗ ✗
+S5-120M 120M 500 .098 .163 .133 2.32 0.55 −7 0.98±.05 7.36 23 0.99 −0.7 ✗ ✓ ✓ ✗ ✗
+S5-4k 55M 4k .120 .181 .158 1.94 0.54 −4 0.97±.05 7.49 23 1.11 −0.6 ✗ ✓ ✓ ✗ ✗
+Mamba3 78M 500 .095 .172 .129 1.08 0.59 −24 1.15±.04 19.05 7.7 1.67 +5.3 ✗ ✓ ✓ ✗ ✗
+Mamba3-4k 78M 4k† .113 .184 .147 1.39 0.62 −27 1.11±.05 18.98 9.4 1.03 −0.5 ✗ ✓ ✓ ✗ ✗
+GDN 94M 500 .093 .181 .152 1.99 0.65 −29 1.12±.05 15.43 13 0.89 −1.5 ✗ ✓ ✓ ✗ ✗
+GOOG
+target — — low low low 1.77 0.54 ≈0 0.5 (exp) 0.5 (exp) — 2 3 (exp) ∼−1.5 (exp) —
+Historic — — .069 .133 .118 1.77 0.54 0 (−0.12)𝑢 (0.01)𝑢 — (0.00)𝑢 (−0.1)𝑢 ✓ ✗···
+Heuristic 2𝑓 ∞ .069 .133 .118 1.77 0.54 0 0.81 0.73 — 1.00 −0.1𝑐 ✓ ✓· ✗ ✗
+Propagator 2𝑓 ∞ .069 .133 .118 1.77 0.54 0 (0.73)𝑢 (0.46)𝑢 — (0.95)𝑢 (−0.1)𝑢 ✓ ✗···
+OW 2𝑓 exp. .046 .091 .077 1.20 0.54 +1 (0.72)𝑢 (0.47)𝑢 — (0.92)𝑢 (−0.1)𝑢 ✗ ✗···
+CST 1.5k 0 .316 .501 .613 −.44 0.51 +1 n.i. n.i. — (1.84)𝑢 (+4.5)𝑢 ✗ ✗···
+NMZI 1.5k+2 EWMA .318 .503 .612 .04 0.25 −1 n.i. n.i. — (1.04)𝑢 (+3.9)𝑢 ✗ ✗···
+Hawkes 0.4k ≲1s .408 .461 .636 1.91 0.03 0 (0.76)𝑢 (0.05)𝑢 — (−2.01)𝑢 (−34.6)𝑢 ✗ ✗···
+QR 90 0 .398 .445 .617 1.11 0.36 0 n.i. n.i. — 1.68 +5.9 ✗ ✗···
+S5-120M 120M 500 .124 .201 .242 1.66 0.56 −18 0.73±.06 1.70 26 1.14 +0.4 ✗ ✓ ✓ ✗ ✗
+S5-4k 55M 4k .131 .217 .232 1.92 0.55 +1 0.75±.05 1.83 23 1.16 +0.9 ✗ ✓ ✓ ✗ ✗
+Mamba3 78M 500 .117 .224 .124 1.95 0.59 −42 0.97±.10 6.24 6.9 1.67 +2.6 ✗ ✓ ✓ ✗ ✗
+Mamba3-4k 78M 4k† .133 .233 .181 .97 0.59 −879 1.21±.11 12.56 3.4 0.24 −13.8 ✗ ✓ ✓ ✗ ✗
+GDN 94M 500 .134 .222 .263 .79 0.54 −85 1.11±.10 8.42 9.6 0.18 −8.5 ✗ ✓ ✓ ✗ ✗
+EA‡
+target — — low low low 1.31 0.47 ≈0 0.5 (exp) 0.5 (exp) — 2 3 (exp) ∼−1.5 (exp) —
+Historic — — .049 .113 .112 1.31 0.47 0 (−0.52)𝑢 (0.00)𝑢 — (0.00)𝑢 (−0.5)𝑢 ✓ ✗···
+Heuristic 2𝑓 ∞ .049 .113 .112 1.31 0.47 0 (0.85)𝑢 (1.42)𝑢 — (1.01)𝑢 (−0.1)𝑢 ✓ ✗···
+Propagator 2𝑓 ∞ .049 .113 .112 1.31 0.47 0 (0.76)𝑢 (0.93)𝑢 — (0.97)𝑢 (−0.2)𝑢 ✓ ✗···
+OW 2𝑓 exp. .045 .097 .099 1.25 0.43 0 (0.74)𝑢 (0.97)𝑢 — (0.82)𝑢 (−0.5)𝑢 ✗ ✗···
+CST 1.5k 0 .211 .356 .372 .37 0.44 +1 n.i. n.i. — (3.49)𝑢 (+16.6)𝑢 ✗ ✗···
+NMZI 1.5k+2 EWMA .214 .358 .372 1.02 0.45 0 n.i. n.i. — (5.43)𝑢 (+16.6)𝑢 ✗ ✗···
+Hawkes 0.4k ≲1s .312 .382 .431 2.08 0.43 0 (0.45)𝑢 (0.31)𝑢 — (0.80)𝑢 (+0.7)𝑢 ✗ ✗···
+QR 90 0 .302 .374 .419 .23 0.45 0 0.74 0.32 — 0.42 −1.0 ✗ ✓· ✗ ✓
+S5-120M 120M 500 .135 .221 .224 1.68 0.57 −3 0.84±.06 12.23 29 1.18 n.i. ✗ ✓ ✓ ✗ ✗
+S5-4k 55M 4k .145 .264 .275 1.62 0.56 +4 1.05±.06 19.18 38 1.24 +0.6 ✗ ✓ ✓ ✗ ✗
+Mamba3 78M 500 .125 .182 .203 2.03 0.59 −4 1.10±.07 49.52 25 1.37 +2.2 ✗ ✓ ✓ ✗ ✗
+Mamba3-4k 78M 4k† .113 .179 .210 1.82 0.62 −13 1.12±.07 41.66 20 1.14 +0.1 ✗ ✓ ✓ ✗ ✗
+GDN 94M 500 .137 .172 .202 2.11 0.57 −6 1.06±.07 43.54 13 1.34 +1.6 ✗ ✓ ✓ ✗ ✗
+MSFT
+target — — low low low 1.51 0.55 ≈0 0.5 (exp) 0.5 (exp) — 2 3 (exp) ∼−1.5 (exp) —
+Historic — — .066 .149 .105 1.51 0.55 +12 (0.87)𝑢 (0.23)𝑢 — (0.01)𝑢 (−0.9)𝑢 ✓ ✗···
+Heuristic 2𝑓 ∞ .066 .149 .105 1.51 0.55 +12 0.84 1.29 — 0.89 −0.3𝑐 ✓ ✓· ✗ ✗
+Propagator 2𝑓 ∞ .066 .149 .105 1.51 0.55 +12 0.83 0.94 — 0.82 −0.5 ✓ ✓· ✗ ✗
+OW 2𝑓 exp. .050 .100 .069 1.82 0.55 −7 0.80 n.i. — 0.71 −0.5 ✗ ✓···
+CST 1.5k 0 .339 .462 .590 .20 0.24 −13 n.i. n.i. — (1.75)𝑢 (+5.1)𝑢 ✗ ✗···
+NMZI 1.5k+2 EWMA .346 .476 .597 n.i. 0.17 0 n.i. n.i. — (−2.01)𝑢 (−37.8)𝑢 · ✗···
+Hawkes 0.4k ≲1s .384 .446 .599 1.88 0.23 +2 n.i. n.i. — 0.57 −6.4 ✗ ✗···
+QR 90 0 .369 .429 .582 .88 0.50 −1 0.71 n.i. — 1.44 +4.6 ✗ ✓·· ✗
+S5-120M 120M 500 .214 .283 .325 1.96 0.55 −30 0.63±.11 3.07 11 1.14 +0.3 ✗ ✓ ✓ ✗ ✗
+S5-4k 55M 4k .226 .298 .277 1.39 0.59 +18 0.69±.11 3.48 18 1.21 +0.5 ✗ ✓ ✓ ✗ ✗
+Mamba3 78M 500 .163 .282 .208 1.47 0.62 −39 0.81±.11 7.60 8.8 1.19 +0.2 ✗ ✓ ✓ ✗ ✗
+Mamba3-4k 78M 4k† .134 .278 .160 1.82 0.60 −62 0.86±.14 8.79 9.6 0.72 −3.9 ✗ ✓ ✓ ✗ ✗
+GDN 94M 500 .178 .276 .213 1.03 0.52 −58 0.79±.12 8.28 11 0.95 −2.1 ✗ ✓ ✓ ✗ ✗
+
+=== page 8 ===
+ICAIF ’26, November 14–17, 2026, Milan, Italy Nigmatulin, Mohl, Frey et al.
+against at most 11 bps for any baseline (the Heuristic replay). On
+AMD, claim C4 fails in every neural cell: no exponent within 0.10
+of 0.5, no amplitude inside the empirical band.
+The baselines behave as designed. The three replay kernels
+(Heuristic, Propagator, OW) are identified at 𝛿 = 0.73–0.81 with
+𝑌 = 0.96–1.46: the mechanical response written into them, at
+roughly the price a real book charges. Their 𝛿 sits below the closed-
+form values (≈0.9–1.0) by the small-amplitude bias measured in the
+planted-law calibration. QR is identified at 𝛿 = 0.72 with 𝑌 = 0.09, a
+law with almost no impact behind it; the zero-intelligence pair (CST,
+NMZI) and Hawkes identify nothing at all (𝑌 = 0.03 for Hawkes on
+AMD, below the floor). The neural models differ from the baselines
+in amplitude: their exponents overlap with the replay kernels’, but
+their 𝑌 exceeds every baseline’s. The blind control shows that this
+impact is the models’ own (C3): the visible peak is at least 3× the
+blind floor in all 25 neural cells and over 10× in 16 (v/b, Table 3).
+This excess is the indirect impact the experiments were designed
+to isolate.
+3.3 Phase 3: Relaxation
+The bottom band asks whether impact comes down once execution
+stops. Real metaorders fall to about two-thirds of peak within one to
+two execution durations and to about one-half within ten [6, 9, 24],
+the span of our window, so a flat curve cannot be blamed on it. The
+kernel baselines set the scale: at realistic child spacing, a kernel
+spends most of its transient between children, so its closed-form
+end-over-peak is 0.94 for the Propagator and 0.87 for OW, and the
+measured values land beside these (0.89 and 0.81 on AMD, against
+the permanent Heuristic’s 0.95).
+The neural panel shows no credible relaxation. End-over-peak
+on AMD reads 1.19 (S5-120M), 1.15 (S5-4k), 1.16 (Mamba3), 1.36
+(Mamba3-4k), and 0.88 (GDN), with post-execution slopes of +0.6,
+±0.0, +0.4, +3.7, and −2.4% of the peak per execution duration.
+Four of the five remain above peak: the price keeps moving in the
+metaorder’s direction after the last child has executed. GDN falls
+below peak, but its free drift of −127 ticks prevents attributing the
+decline to resilience. That is claim C5, and no neural cell passes it.
+3.4 Extending to a larger universe
+The AMD portrait replicates down the blocks of Table 3: the neural
+panel is one claim-ladder signature repeated 25 times: C1 fails, C2
+and C3 pass, C4 and C5 fail.
+All five neural generators identify a law on every stock, every
+exponent above the square-root reference: 0.63–0.93 on AMD and
+MSFT, 0.73–1.21 on GOOG, 0.97–1.15 on NVDA, 0.84–1.12 on EA.
+All 25 day-clustered intervals (the ± of Table 3) exclude 0.5, with
+half-widths of 0.04–0.14 and the tightest case (MSFT S5-120M) still
+bounding its exponent above 0.53. The replay returns no law on any
+stock, keeping the estimator honest. Ranking the generators by 𝛿 or
+by 𝑌 gives nearly the same order on every stock (Kendall 𝑊 = 0.82
+and 0.81): the benchmark measures a model-specific component
+that persists across stocks.
+In 20 of the 25 neural rows, 𝐻 exceeds the stock’s own value; in
+three it matches, and only GDN, on AMD and MSFT, sits below. No
+neural row reaches two thirds by decay: the three lowest end-over-
+peak entries (GDN 0.18 and Mamba3-4k 0.24 on GOOG; Mamba3-4k
+0.72 on MSFT) sit on the heaviest-drift rows of their blocks; the
+descent is drift, not resilience.
+On the four stocks in the training corpus, 𝑌≈ 2–9 on AMD and
+MSFT, 1.7–12.6 on GOOG and 7–19 on NVDA. On EA, the one stock
+outside the corpus, 𝑌 = 12–50. The observed OOD result does not
+destroy the law; it destroys its calibration.
+The Propagator and OW are identified on AMD, NVDA and
+MSFT but not on GOOG or EA; QR’s end-over-peak swings from
+2.47 (NVDA) to 0.42 (EA).
+The three 500-context generators sit close together in the distri-
+butional columns yet differ materially in impact. Across stocks, the
+correlation between the LOB-Bench KS ranking and the |𝛿− 0.5|
+ranking is unstable (+0.54 on GOOG against −0.71 on MSFT, 𝑝 =
+0.02) and mostly negative within the neural family (MSFT neural
+rows: −0.90, 𝑝 = 0.08). The better mimic can sit farther from the
+impact law, so the two properties must be measured separately.
+4 Discussion
+Our results separate three questions that distributional evaluation
+conflates: whether impact exists, whether it is the generator’s own,
+and whether its dynamics are market-realistic; across the neural
+panel, the answer is yes, yes, and no. The joint C4/C5 failure is
+consistent with insufficient replenishment: in a real book, each
+child’s push decays before the next arrives, turning 𝑁 pushes into√
+𝑁 rather than 𝑁 . With persistent flow but insufficient replen-
+ishment, impact instead builds up too steeply and fails to relax
+credibly (Sections 3.1–3.3). The blind control shows that the build-
+up is not explained by book mechanics alone; the defect hides at
+the single-event scale. We attribute the missing replenishment to
+limited long-horizon memory: relaxation requires retaining a refer-
+ence price from before the metaorder, which the models’ still-short
+context windows do not preserve.
+These impact errors matter directly for execution: an execution
+cost model depends on the shape, amplitude, and relaxation of
+market impact [15, 23], all measured here per model and stock.
+Today’s generators may achieve message-level realism, but they
+remain unsuitable as environments for execution agents while the
+endogenous impact they do produce has the wrong shape and does
+not decay: such a simulator can reward schedules that a real book
+would punish.
+The results suggest how to improve these models. At each train-
+ing checkpoint, Phase 1 can be run on freely generated rollouts: the
+goal is for the generated 𝛾flow and 𝐻 to approach their empirical
+values for the stock. The direction matters: learn replenishment
+rather than unlearn persistence; killing flow memory would restore
+the balance vacuously. Phases 2 and 3 then test whether the repair
+restores realistic build-up and relaxation. The 4k-context variants
+fail the same tests but remain well short of a metaorder, leaving the
+attribution untested rather than refuted; longer contexts and larger
+models are the natural next test.
+Limitations. One stock is reported band by band, the other four
+only through Table 3, and everything is measured at one operat-
+ing point: one participation rate, one child size, aggressive chil-
+dren [21, 30], one metaorder shape, one month of one exchange;
+and 𝛿 depends on that point. The 10% target lies inside the retained
+empirical samples [3, 34]; the extreme-volume regime [8] is not
+
+=== page 9 ===
+LOB-Impact Benchmark ICAIF ’26, November 14–17, 2026, Milan, Italy
+probed. The month itself is a sample: a month atypical by about one
+within-month standard deviation would already move the exponent
+past its half-width cap.
+One open-source package (repository https://github.com/george-
+nigmatulin/lob-impact) contains the protocol, calibration, estima-
+tors, controls, and reporting rules; a user supplies a model and one
+month of LOBSTER-format data for any stock.
+5 Conclusion
+Market impact emerges in generative LOB models. Five neural mes-
+sage generators, trained only on next-token prediction, answer an
+injected metaorder with an identifiable law in all 25 model–stock
+pairs, while a replay that cannot react does not answer at all. The
+models fail in two related ways: impact builds up more steeply than
+the square-root reference and shows no credible post-execution
+relaxation. Together, these failures point to insufficient replenish-
+ment to compensate persistent order flow. We tentatively attribute
+both to limited long-horizon memory, induced by still-short context
+windows, a concrete target for future models.
+Acknowledgments
+This work was supported by the UKRI ESRC Grand Union DTP
+[ES/Y001761/1]; EPSRC [UKRI5149] and other sponsors of BOLD;
+the Department of Computer Science, University of Oxford; and
+a UKRI AI World Leading Researcher Fellowship [EP/W002949/1].
+The authors acknowledge the use of resources provided by the
+Isambard-AI National AI Research Resource (AIRR) [22]. Isambard-
+AI is operated by the University of Bristol and is funded by the UK
+Government’s Department for Business, Innovation, Science and
+Trade (DBIST) via UK Research and Innovation; and the Science
+and Technology Facilities Council [ST/AIRR/I-A-I/1023].
+References
+[1] Robert Almgren, Chee Thum, Emmanuel Hauptmann, and Hong Li. 2005. Direct
+Estimation of Equity Market Impact. Risk 18, 7 (2005), 58–62.
+[2] Alfred Backhouse, Kang Li, Jakob Foerster, Anisoara Calinescu, and Stefan Zohren.
+2025. Painting the Market: Generative Diffusion Models for Financial Limit Order
+Book Simulation and Forecasting. arXiv preprint arXiv:2509.05107 (2025).
+[3] Emmanuel Bacry, Adrian Iuga, Matthieu Lasnier, and Charles-Albert Lehalle.
+2015. Market impacts and the life cycle of investors orders. Market Microstructure
+and Liquidity 1, 02 (2015), 1550009.
+[4] Emmanuel Bacry, Iacopo Mastromatteo, and Jean-François Muzy. 2015. Hawkes
+Processes in Finance. Market Microstructure and Liquidity 1, 1 (2015), 1550005.
+[5] Hamza Bodor and Laurent Carlier. 2025. Deep Learning Meets Queue-Reactive:
+a Framework for Realistic Limit Order Book Simulation. arXiv preprint
+arXiv:2501.08822 (2025).
+[6] Jean-Philippe Bouchaud, Julius Bonart, Jonathan Donier, and Martin Gould. 2018.
+Trades, quotes and prices: financial markets under the microscope. Cambridge
+University Press, Cambridge, UK.
+[7] Jean-Philippe Bouchaud, Yuval Gefen, Marc Potters, and Matthieu Wyart. 2004.
+Fluctuations and response in financial markets: the subtle nature of ‘random’
+price changes. Quantitative Finance 4, 2 (2004), 176–190.
+[8] Frédéric Bucci, Michael Benzaquen, Fabrizio Lillo, and Jean-Philippe Bouchaud.
+2019. Crossover from Linear to Square-Root Market Impact. Physical Review
+Letters 122, 10 (2019), 108302.
+[9] Frédéric Bucci, Michael Benzaquen, Fabrizio Lillo, and Jean-Philippe Bouchaud.
+2019. Slow Decay of Impact in Equity Markets: Insights from the ANcerno
+Database. Market Microstructure and Liquidity 4, 03n04 (2019), 1950006.
+[10] Andrea Coletta, Matteo Prata, Michele Conti, Emanuele Mercanti, Novella Bar-
+tolini, Aymeric Moulin, Svitlana Vyetrenko, and Tucker Balch. 2021. Towards
+Realistic Market Simulations: a Generative Adversarial Networks Approach. In
+Proceedings of the 2nd ACM International Conference on AI in Finance (ICAIF).
+ACM, New York, NY, USA, 1–9.
+[11] Rama Cont, Sasha Stoikov, and Rishi Talreja. 2010. A Stochastic Model for Order
+Book Dynamics. Operations Research 58, 3 (2010), 549–563.
+[12] Sascha Frey, Kang Li, Peer Nagy, Silvia Sapora, Chris Lu, Stefan Zohren, Jakob
+Foerster, and Anisoara Calinescu. 2023. JAX-LOB: A GPU-Accelerated Limit
+Order Book Simulator to Unlock Large Scale Reinforcement Learning for Trading.
+In Proceedings of the 4th ACM International Conference on AI in Finance (ICAIF).
+ACM, New York, NY, USA, 583–591.
+[13] Jim Gatheral. 2010. No-Dynamic-Arbitrage and Market Impact. Quantitative
+Finance 10, 7 (2010), 749–759.
+[14] Albert Gu and Tri Dao. 2024. Mamba: Linear-Time Sequence Modeling with
+Selective State Spaces. In First Conference on Language Modeling (COLM). Open-
+Review.net, Philadelphia, PA, USA.
+[15] Olivier Guéant. 2016. The Financial Mathematics of Market Liquidity: From Optimal
+Execution to Market Making. CRC Press, Boca Raton, FL.
+[16] Weibing Huang, Charles-Albert Lehalle, and Mathieu Rosenbaum. 2015. Simulat-
+ing and Analyzing Order Book Data: The Queue-Reactive Model. J. Amer. Statist.
+Assoc. 110, 509 (2015), 107–122.
+[17] Aakash Lahoti, Kevin Y. Li, Berlin Chen, Caitlin Wang, Aviv Bick, J. Zico Kolter,
+Tri Dao, and Albert Gu. 2026. Mamba-3: Improved Sequence Modeling using State
+Space Principles. In Proceedings of the 14th International Conference on Learning
+Representations (ICLR). OpenReview.net, Rio de Janeiro, Brazil.
+[18] Junjie Li, Yang Liu, Weiqing Liu, Shikai Fang, Lewen Wang, Chang Xu, and Jiang
+Bian. 2025. MarS: a Financial Market Simulation Engine Powered by Generative
+Foundation Model. In Proceedings of the 13th International Conference on Learning
+Representations (ICLR). OpenReview.net, Singapore.
+[19] Fabrizio Lillo and J. Doyne Farmer. 2004. The long memory of the efficient market.
+Studies in Nonlinear Dynamics & Econometrics 8, 3 (2004).
+[20] LOBSTER. 2023. LOBSTER: Limit Order Book System – The Efficient Reconstructor.
+Retrieved January 15, 2025 from https://lobsterdata.com
+[21] Guillaume Maitrier, Grégoire Loeper, Kiyoshi Kanazawa, and Jean-Philippe
+Bouchaud. 2026. The “double” square-root law: Evidence for the mechanical
+origin of market impact using Tokyo Stock Exchange data. Quantitative Finance
+26, 4 (2026), 491–503.
+[22] Simon McIntosh-Smith, Sadaf R Alam, and Christopher Woods. 2024. Isambard-AI:
+a leadership class supercomputer optimised specifically for Artificial Intelligence.
+arXiv:2410.11199 [cs.DC] https://arxiv.org/abs/2410.11199
+[23] Valentin Mohl, Sascha Frey, Reuben Leyland, Kang Li, George Nigmatulin, Mi-
+hai Cucuringu, Stefan Zohren, Jakob Foerster, and Anisoara Calinescu. 2025.
+JaxMARL-HFT: GPU-Accelerated Large-Scale Multi-Agent Reinforcement Learn-
+ing for High-Frequency Trading. In Proceedings of the 6th ACM International
+Conference on AI in Finance (ICAIF). ACM, New York, NY, USA, 18–26.
+[24] Esteban Moro, Javier Vicente, Luis G. Moyano, Austin Gerig, J. Doyne Farmer,
+Gabriella Vaglica, Fabrizio Lillo, and Rosario N. Mantegna. 2009. Market impact
+and trading profile of hidden orders in stock markets. Physical Review E 80, 6
+(2009), 066102.
+[25] Peer Nagy, Sascha Frey, Kang Li, Bidipta Sarkar, Svitlana Vyetrenko, Stefan
+Zohren, Anisoara Calinescu, and Jakob Foerster. 2025. LOB-Bench: Benchmark-
+ing Generative AI for Finance – an Application to Limit Order Book Data. In
+Proceedings of the 42nd International Conference on Machine Learning (ICML)
+(Proceedings of Machine Learning Research, Vol. 267). PMLR, Vancouver, Canada,
+45437–45460.
+[26] Peer Nagy, Sascha Frey, Silvia Sapora, Kang Li, Anisoara Calinescu, Stefan Zohren,
+and Jakob Foerster. 2023. Generative AI for End-to-End Limit Order Book Mod-
+elling: A Token-Level Autoregressive Generative Model of Message Flow Using a
+Deep State Space Network. In Proceedings of the 4th ACM International Conference
+on AI in Finance (ICAIF). ACM, New York, NY, USA, 91–99.
+[27] Anna A Obizhaeva and Jiang Wang. 2013. Optimal trading strategy and sup-
+ply/demand dynamics. Journal of Financial Markets 16, 1 (2013), 1–32.
+[28] Michael Parkinson. 1980. The Extreme Value Method for Estimating the Variance
+of the Rate of Return. The Journal of Business 53, 1 (1980), 61–65.
+[29] Adele Ravagnani and Fabrizio Lillo. 2026. Modeling metaorder impact with a
+Non-Markovian Zero Intelligence model. Physica A: Statistical Mechanics and its
+Applications 681 (2026), 131056.
+[30] Yuki Sato and Kiyoshi Kanazawa. 2025. Strict Universality of the Square-Root Law
+in Price Impact across Stocks: a Complete Survey of the Tokyo Stock Exchange.
+Physical Review Letters 135, 25 (2025), 257401.
+[31] Jimmy T.H. Smith, Andrew Warrington, and Scott W. Linderman. 2023. Simplified
+State Space Layers for Sequence Modeling. In Proceedings of the 11th International
+Conference on Learning Representations (ICLR). OpenReview.net, Kigali, Rwanda.
+[32] Bence Tóth, Yves Lempérière, Cyril Deremble, Joachim de Lataillade, Julien
+Kockelkoren, and Jean-Philippe Bouchaud. 2011. Anomalous Price Impact and
+the Critical Nature of Liquidity in Financial Markets. Physical Review X 1, 2
+(2011), 021006.
+[33] Songlin Yang, Jan Kautz, and Ali Hatamizadeh. 2025. Gated Delta Networks:
+Improving Mamba2 with Delta Rule. In Proceedings of the 13th International
+Conference on Learning Representations (ICLR). OpenReview.net, Singapore.
+[34] Elia Zarinelli, Michele Treccani, J. Doyne Farmer, and Fabrizio Lillo. 2015. Beyond
+the square root: Evidence for logarithmic dependence of market impact on size
+and participation rate. Market Microstructure and Liquidity 1, 02 (2015), 1550004.

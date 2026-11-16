@@ -1,0 +1,1178 @@
+=== page 1 ===
+Order-book modelling and market making strategies
+Xiaofei Lu∗1 and Fr´ed´eric Abergel†1
+1Chaire de ﬁnance quantitative, Laboratoire MICS, CentraleSup´elec, Universit´e Paris Saclay
+June 14, 2018
+Abstract
+Market making is one of the most important aspects of algorithmic trading, and it has been
+studied quite extensively from a theoretical point of view. The practical implementation of so-
+called ”optimal strategies” however suﬀers from the failure of most order book models to faithfully
+reproduce the behaviour of real market participants.
+This paper is twofold. First, some important statistical properties of order driven markets
+are identiﬁed, advocating against the use of purely Markovian order book models. Then, market
+making strategies are designed and their performances are compared, based on simulation as well
+as backtesting. We ﬁnd that incorporating some simple non-Markovian features in the limit order
+book greatly improves the performances of market making strategies in a realistic context.
+Keywords : limit order books, Markov decision process, market making
+1 Introduction
+Most modern ﬁnancial markets are order-driven markets, in which all of the market participants
+display the price at which they wish to buy or sell a traded security, as well as the desired quantity.
+This model is widely adopted for stock, futures and option markets, due to its superior transparency.
+In an order-driven market, all the standing buy and sell orders are centralised in the limit order
+book (LOB). An example LOB is given in Figure 1, together with some basic deﬁnitions. Orders in
+the LOB are generally prioritized according to price and then to time according to a FIFO rule.
+With the emerging of electronic markets, and the deregulation of ﬁnancial markets, algorithmic
+trading strategies have become more and more important.
+In particular, market making - or: liquidity providing - strategies lay at the core of modern markets.
+Since there are no more designated market makers, every market participant can, and sometimes must,
+provide liquidity to the market, and the design of optimal market making strategies is a question of
+crucial practical relevance.
+Originating with the seminal paper [Ho and Stoll, 1981], many researchers in quantitative ﬁnance
+have been interested in a theoretical solution to the market making problem. It has been for-
+malised in [Avellaneda and Stoikov, 2008] using a stochastic control framework, and then extended in
+various contributions such as [Gu´eant et al., 2013][Cartea and Jaimungal, 2013a, Cartea et al., 2014,
+Cartea and Jaimungal, 2013b] [Fodra and Pham, 2013][Fodra and Pham, 2015] [Guilbaud and Pham, 2013b][Guilbaud and Pham, 2013a]
+[Bayraktar and Ludkovski, 2014] [Gu´eant et al., 2012] or [Gueant and Lehalle, 2015]. It is noteworthy
+that, in this series of papers, the limit order book is not modelled as such, and the limit orders are
+taken into account indirectly thanks to some probability of execution.
+In practice, the price discontinuity and the intrinsic queueing dynamics of the LOB make such
+simpliﬁcations rather simplistic as opposed to real markets, and it is obvious to the practicioner that
+∗xiaofei.lu@centralesupelec.fr
+†frederic.abergel@centralesupelec.fr
+1
+arXiv:1806.05101v1  [q-fin.TR]  13 Jun 2018
+
+=== page 2 ===
+P 5 b P 4 b P 3 b P 2 b P 1 b P 0 P 1 a P 2 a P 3 a P 4 a P 5 a
+prices
+0
+20
+40
+60
+80
+100Quantities
+V 5 b V 4 b
+V 3 b
+V 2 b
+V 1 b V 1 a
+V 2 a
+V 3 a
+V 4 a V 5 a
+Figure 1: Illustrative order book example. Blue bars on the left half of the ﬁgure represent the available
+buy orders with prices P· b and total quantities V· b . These correspond to the buyer side, also called the
+bid side. Participants in the bid side are providing liquidity with prices at which they are ready to
+buy some quantities of the stock. The right hand bars represent the sell side, commonly called the
+ask side or oﬀer side, where participants willing to sell post their orders with the prices they are ready
+to sell the stock. The line in the middle corresponds to the mid-price level and is computed as the
+average between the best (highest) bid price and the best (lowest) ask price. A transaction occurs
+when a sell order and a buy order are at least partially matched. A queue of limit orders with the
+same price is called a limit. Diﬀerent colours in the same limit represent orders with diﬀerent priority
+with darker bars having higher execution priority.
+these actual microstructural properties of the order book play a fundamental role in assessing the
+proﬁtability of market making strategies. There now exists an abundant literature on order book
+modelling, and the reader is referred to [Abergel et al., 2016] for an extensive study of the subject,
+but, as regards market making strategies - or more general trading strategies, for that matter - only
+very recent papers such as [Abergel et al., 2017] actually address the market making problem using a
+full order book model.
+It is our aim in this paper to contribute to the literature on the subject, both from the modeling
+and strategy design points of view, so that the paper is twofold: it analyzes and enhances the queue-
+reactive order book model proposed by [Huang et al., 2015], and then study the optimal placement of
+a pair of bid-ask orders as the paradigm of market making.
+A word on data: we use the Eurostoxx 50 futures data for June and July, 2016 for the entire
+analysis, and backtest until Novembre for out-of-sample validation. Eurostoxx 50 futures oﬀers two
+main advantages:
+1. it is a very large tick instrument, with an average spread very close to 1 tick and extremely rare
+multiple-limit trades (less than 0.5%);
+2. the value of a futures contract is very high in euros, so that one thinks in terms of number of
+contracts rather than notional. This actually simpliﬁes the choice of the unit.
+These two observations allow us to follow only the ﬁrst (best) Bid and Ask limits, and focus on
+the question of interest to us, namely, the design of a model where the state of the order book as
+well as the type of the order that lead the book into its current state, are relevant. This approach,
+departing from the purely Markovian case, is based on empirical observations and will be shown
+to provide a more realistic and useful modelling framework. In a diﬀerent mathematical setting,
+2
+
+=== page 3 ===
+a similar reasoning is at the root of Hawkes-process-based order book models such as studied in
+[Lu and Abergel, 2017][Abergel and Jedidi, 2015].
+The paper is organized as follows: Section 2 presents the rationale and the calibration of the en-
+riched queue reactive model that improve the performances of the initial model of [Huang et al., 2015].
+Section 3 addresses the optimal market making strategies in the context of this enhanced model, study-
+ing it both in a simulation framework, and in a backtesting engine using real data.
+2 Challenging the queue-reactive model
+This section presents empirical ﬁndings that lay the ground for two improvements to the queue-reactive
+model of [Huang et al., 2015]. The ﬁrst one is concerned with the distribution of order sizes, whereas
+the second, and maybe more original one, addresses the diﬀerence in nature of events leading to
+identical states of the order book.
+These improvements will be incorporated in two order book models inspired by, but largely extend-
+ing, the queue-reactive model. In Section 3, these models will be used in a simulation and backtesting
+framework to study optimal market making policies.
+2.1 The queue-reactive model
+In Huang et al. [Huang et al., 2015], the authors propose an interesting Markovian limit order book
+model. The limit order book (LOB in short) is seen as a 2K− dimensional vector of bid and ask limits
+[Q−i : i = 1,...,K] and [Qi : i = 1,...,K], the limits being placed i− 0.5 ticks away from a reference
+price pref.
+Denoting the corresponding quantities by qi, the 2K−dimensional process X(t) = (q−K(t),...,q−1(t),q1(t),...,qK(t))
+with values in Ω = N2K is modeled as a continuous time Markov chain with inﬁnitesimal generator Q
+of the form:
+Qq,q+ei = fi(q),
+Qq,q−ei = gi(q),
+Qq,q−ei = −
+∑
+q∈Ω,p⁄=q
+Qq,p,
+Qq,q−ei = 0 otherwise.
+The authors study several choices for the function g: in the ﬁrst and simplest one, queues are
+considered independent. The second one introduces some one-sided dependency, whereas the third
+one emphasizes the interaction between the bid and ask sides of the LOB. Some important statistical
+features of the limit order book can be reproduced within this model, such as the average shape of the
+LOB. However, when trying to calibrate the queue-reactive model on our dataset of EUROSTOXX50
+future, we observe new phenomena that lead us to enrich the model in two directions.
+2.2 The limitation of unit order size
+Following a procedure similar to that in [Huang et al., 2015], the conditional intensities of limit orders,
+cancellation and market orders are calibrated and presented in Figure 2. Note that the intensities of
+all order types are higher when the corresponding queue length is small. For each queue (bid and
+ask), the limit orders are liquidity constructive events and the other two are liquidity destructive.
+There clearly are three diﬀerent regimes for the queue sizes:
+• λL is slightly higher than λC + λM when the queue size is smaller than (approximately) 70.
+• They become comparable when the queue size lies between 70 and 300.
+• When the queue size is above 300, λL decreases whereas λC + λM stays stable.
+3
+
+=== page 4 ===
+0 200 400
+Queue length
+0
+2
+4
+6
+8
+10Order ﬂow intensity
+λL
+λC
+λM
+λC + λM
+Figure 2: Queue reactive model order intensities
+Of special importance is the condition λL < λC + λM when the queue size is large, a fact which
+guarantees that the system is ergodic.
+Another interesting feature is that the intensity of market orders drastically decreases when the
+queue size increases, a fact that can be reformulated as the concentration of trades when the queue
+size is small. From a practical point of view, a small queue usually indicates a directional consensus,
+so that liquidity consumers race to take the liquidity before having to place limit orders and wait for
+execution at the same price.
+0 100 200 300 400 500
+Queue length
+10
+20
+30
+40
+50
+60
+70Average order sizes
+¯mL
+¯mC
+¯mM
+Figure 3: Queue reactive model mean order sizes
+In the work of [Huang et al., 2015], and many other related works, the order size is supposed
+to be constant. It is however clear from empirical analyses that the order sizes have remarkable
+statistical properties, and that such information is relevant to the LOB dynamics, see for instance
+4
+
+=== page 5 ===
+[Abergel et al., 2016][Muni Toke, 2015][Rambaldi et al., 2017].
+The mean order sizes conditional on the queue states are shown in Figure 3. The size of limit
+and cancellation orders appear to be quite stable across diﬀerent queue sizes (except for very small
+queues), whereas the average size of market orders is clearly increasing with the queue size.
+10 20 30 40 50 60 70 80 90 100
+0.00
+0.01
+0.02
+0.03
+0.04
+0.05
+0.06
+Frequencies
+Cancellation, Q ∈ [290, 300)
+10 20 30 40 50 60 70 80 90 100
+0.00
+0.01
+0.02
+0.03
+0.04
+0.05
+0.06
+Limit order, Q ∈ [290, 300)
+Order sizes
+Figure 4: Limit order and cancellation size histogram
+10 60 110 160 210 260 300
+Order sizes
+0.000
+0.005
+0.010
+0.015
+0.020
+0.025
+0.030
+0.035
+Frequencies
+Figure 5: Market order size histogram when Q∈ [290, 299)
+To further analyze the distributions of order sizes, histograms of order sizes with the queue length
+in the interval of [2900, 299) are shown in Figure 4 and 5. Bins of 10 futures on the x-axis are used to
+produce the histograms. The ﬁrst bin
+The empirical distributions for limit orders and cancellations are rather similar and can be modelled
+with a geometric distribution. On the contrary, there exist some interesting patterns in the sizes of
+market orders: the distribution looks like a mixture of a geometric distribution for small sizes, and
+5
+
+=== page 6 ===
+Dirac functions at {[50, 59), [100, 109), [150, 159),···} and q = Q. It is not surprising, because traders
+do not necessarily randomize their market orders, so that multiples of 50 occur quite frequently, and
+so do orders that completely eat up the ﬁrst limit. For the rest of this subsection, we denote q,Q∈ N∗
+to represent the bin of [10(q− 1), 10q) and [10(Q− 1), 10Q).
+Inspired by such observations, a simple model of order sizes can be proposed:
+• Limit order sizes follow geometric laws pL(q; Q) with parameters pL 0 (Q) depending on the queue
+sizes;
+• Cancellation sizes follow truncated geometric laws with parameters pC(q; Q)
+pC(q; Q) = P[q|Q] = pC 0 (1 −pC 0 )q−1 1 − (1 −pC 0 )Q 1 {q≤Q}
+;
+• Market order sizes follow a mixture of geometric laws and Dirac functions
+pM(q; Q) = P[q|Q] = θ0
+pM 0 (1 −pM 0 )q−1
+1 − (1 −pM 0 )Q 1 {q≤Q} +
+⌊ Q−1 5 ⌋∑
+k=1
+θk1 {q=5k+1} + θ∞1 {q=Q,Q⁄=5n+1}
+where the parameters {pM 0 ,θ0,θk,θ∞} depend on Q.
+The parameters of limit order sizes are simply estimated. For the cancellation and market orders, a
+maximum likelihood method can be used. The market order log-likelihood is
+log(L) =
+∑
+qi⁄=5n+1,qi⁄=Q
+log θ0 + (qi − 1) log(1 −pM 0 ) + log pM 0 − log(1 − (1 −pM 0 )Q)
++
+⌊ Q−1 5 ⌋∑
+k=1
+∑
+qi=5k+1
+log(θ0(1 −pM 0 )qi−1pM 0 + θk(1 − (1 −pM 0 )Q)) − log(1 − (1 −pM 0 )Q)
++ 1 {Q⁄=5n+1}
+∑
+qi=Q
+log(θ0(1 −pM 0 )qi−1pM 0 + θ∞(1 − (1 −pM 0 )Q)) − log(1 − (1 −pM 0 )Q).
+The calibration results are presented in Table 1 and 2. As expected, the geometric distribution
+parameters for limit orders and cancellations are quite close to each other, and remain stable across
+diﬀerent queue lengths. The geometric distribution parameter for market orders slightly decreases
+with the queue length. Dirac parameters θk are very stable across diﬀerent queue lengths.
+Table 1: Calibrated limit order and cancellation size parameters
+Q 21 22 23 24 25 26 27 28 29 30
+pL 0 0.6421 0.6415 0.6458 0.6410 0.6443 0.6430 0.6418 0.6439 0.6404 0.6387
+pC 0 0.6578 0.6591 0.6600 0.6623 0.6598 0.6611 0.6557 0.6554 0.6538 0.6496
+The enhanced LOB model is then driven by compound Poisson processes with intensities condi-
+tional on the queue size.
+2.3 The role of limit removal orders
+By construction, Markovian LOB models assume that the past has no inﬂuence on the future except
+through the present. Nevertheless, it has been established, see e.g. [Abergel et al., 2016][Lu and Abergel, 2017]
+for some in-depth empirical studies, that the nature of past events actually inﬂuence the order ﬂow
+and, therefore, the future states of the LOB.
+6
+
+=== page 7 ===
+Table 2: Calibrated market order size parameters
+Q pM 0 θ0 θ1 θ2 θ3 θ4 θ5* θ6*
+21 0.3486 0.8357 0.0185 0.0338 0.0081 0.1038 - -
+22 0.3557 0.8311 0.0198 0.0338 0.0094 0.0215 0.0844 -
+23 0.3383 0.8517 0.0148 0.0366 0.0084 0.0188 0.0697 -
+24 0.3327 0.8475 0.0108 0.0373 0.0099 0.0192 0.0753 -
+25 0.3333 0.8310 0.0234 0.0379 0.0084 0.0214 0.0779 -
+26 0.3292 0.8391 0.0203 0.0408 0.0115 0.0167 0.0716 -
+27 0.3250 0.8374 0.0188 0.0369 0.0114 0.0220 0.0116 0.0619
+28 0.3134 0.8351 0.0191 0.0452 0.0086 0.0201 0.0164 0.0554
+29 0.3090 0.8262 0.0192 0.0476 0.0086 0.0181 0.0135 0.0668
+30 0.3050 0.8426 0.0205 0.0402 0.0096 0.0188 0.0103 0.0580
+* For the cases of Q⁄= 5k + 1, θ⌊ Q−1 5 ⌋+1 represents θ∞
+In this section, the emphasis is set on the nature of the last event that totally removes the liquidity
+at one limit, and the subsequent evolution of the LOB.
+An order that completely eats up a limit is termed a limit removal order. Such an order can only
+be a cancellation or market order. The liquidity removal process is denoted by Y (t) = (qr(t),Or(t)),
+where qr stands for the order size and Or ∈{OM,OC} for its type - OM for a market order and OC
+for a cancellation. Then, Y (t) is a c`adl`ag process with jump times τr = {τr i }{i=1,2,...}.
+In a symmetric way, an order that creates a new limit will be termed a limit establishing order.
+Such an order can only be a limit order, but it can be placed either on the bid or ask side since the
+limit is empty. The liquidity establishing order process is denoted by Z(t) = (qe(t),Oe(t)), where
+Oe ∈{F,R}: F for ‘follow ’, so that P (τe i ) ⁄= P (τr i −), and R for ‘revert ’). Again, Z(t) is a c`adl`ag
+process with jump times as τe = {τe i }{i=1,2,...}.
+2.3.1 Characterization of Oe
+Table 3: Oe conditional probabilities
+Or F R P[Oe = F|Or]
+OM 7554 1409 84.3%
+OC 1043 2823 27.0%
+We ﬁrst investigate Oe(τe i ) conditional on Or(τr i ). Table 3 presents the daily average number of
+events as well as their conditional probabilities.
+A ﬁrst important observation is that the price tends to move in the same direction if it is triggered
+by OM, whereas mean-reversion is more likely in the case of an OC-triggered price change. In other
+words, OM is more informative than OC, and is the main driver of price moves.
+One can wonder whether this dependency structure could be simpliﬁed to one on the state of the
+LOB only, that is, whether the conditional distribution of Oe|Or,X could be explained by Oe|X.
+Figure 6 presents the empirical distributions of Oe|(qF,qS) for Or ∈{OM,OC} respectively, where
+qF = q−1 and qS = q2 at τe i −, and qF = q1 and qS = q−2 for the corresponding bid side, which are
+LOB states just before the arrival of a limit establishing event.
+Although the queue sizes may vary before the arrival of a limit establishing event, Figure 6 shows
+that their inﬂuence is negligible, and the conclusion is that Oe is highly dependent on the Or but
+much less on (qF,qS).
+7
+
+=== page 8 ===
+It seems also relevant to include the sizes qr(τr i ) in the analysis. In Figure 7, the upper panel
+presents the conditional distribution of Oe|Or,qr as a function of qr, while the lower panel presents
+the cumulative distribution function of qr. For both OM and OC, the probability of Oe = F increases
+with the order size. It is however noteworthy that, for OM, this probability reaches almost 1 when
+qr ≥ 30, a rather signiﬁcant fact as there are over 20% of market orders that lay in the interval of
+(30, +∞).
+For OC, the situation is completely diﬀerent: not only does the probability of Oe = F remains
+close to 0.5, but the proportion of cancellation orders of size larger than 20 is very small and the
+decrease of P[Oe = F|Or = Oc,qr] when qr > 50 is not statistically signiﬁcant.
+The interpretation of this phenomenon is direct: not only market orders are much more informative
+than cancellations but, the larger the market order is, the more likely it is to indicate a directional
+price movement that the market will follow. A market buy (sell) order of size larger than 30 that
+consumes the entire liquidity will almost always be followed by new liquidity providers placing bid
+(ask) limit orders at the previous trade price.
+qF0 200 400 600 8001000 q S 02004006008001000
+0.00
+0.11
+0.22
+0.33
+0.44
+0.56
+0.67
+0.78
+0.89
+1.00 P [Oe = F |OM ]
+P [Oe = F |OC ]
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+Figure 6: Conditional distribution Oe w.r.t the ﬁrst limit queue sizes for diﬀerent Or
+.
+2.3.2 The size of liquidity establishing orders
+Table 4 summarizes the average number of (Or,Oe,qr) events, as well as the average quantity qe
+corresponding to each of these classes of events. As already observed in Section 2.3.1, very few large
+cancellations result in an empty limit, most large orders are market orders that systematically lead to
+a follow event. Moreover, one can clearly see a monotonically increasing relationship between qe and
+qr across all values of (Or,Oe).
+Due to the low number of large orders in other classes, we will concentrate on (OM,F ) for a
+in-depth analysis.
+Figure 8 illustrates the variation of qe with respect to qr for (Or,Oe) = (OM,F ). There exists
+a deﬁnite monotonically increasing relationship between the two quantities, and the new limit can
+8
+
+=== page 9 ===
+0.5
+1.0
+P [Oe = F |Or, qr ∈ (q, q + 10)]
+OM
+OC
+0 10 20 30 40 50
+q
+0.6
+0.8
+1.0
+P [qr < q|Or]
+Figure 7: Conditional distribution Oe w.r.t qr for diﬀerent Or
+.
+Table 4: qe conditional distribution on Or, Oe and intervals of qr
+# of events per day mean qe size
+(Or,Oe) (0, 10) [10, 20) [20,∞) (0, 10) [10, 20) [20,∞)
+(OM,F ) 3623 1128 2802 7.46, 10.18 27.93
+(OM,R) 1153 180 75 6.69, 6.75 27.98
+(OC,F ) 906 112 23 7.22, 7.45 9.08
+(OC,R) 2552 243 26 5.60, 7.71 7.99
+even reach a size of over 100 shortly after the old limit is consumed by a very large market order.
+Clearly, the geometric distribution that we have previously advocated for the size of limit orders fails
+to represent such a phenomenon.
+Figure 9 shows some empirical conditional distributions of qe obtained by classifying qr. When qr
+is small, the distribution is close to geometric. However, as qr increases, the density presents fatter
+tails and discrete peaks, and it is no longer appropriate to use a geometric distribution - one may
+rather consider using the empirical distribution to model qe|qr.
+2.3.3 Characterizing inter-event durations
+Going further, we now analyze the empirical distributions of (the logarithm of) inter-arrival times
+log10(∆τ) in Figure 10. When the triggering event is OC, the distribution of ∆τ are very similar, no
+matter what Oe and the size of the order are. When the triggering event is OM and the price reverts,
+∆τ distributions are quite similar when qr < 20.
+On the contrary, the distribution of ∆τ|(OM,F ) is very diﬀerent from the others, and is diﬀerent
+for diﬀerent intervals of qr. First, as expected, except for very small qr, the densities of ∆τ > 1ms are
+close to 0. In addition, there is a sharp peak around 200µs. One possible reason of such concentration
+is about the reaction to large trades. Though liquidity providers try to place limit orders immediately
+after a large trade, they are constrained by the round-trip latencies of the market and their own
+9
+
+=== page 10 ===
+0 100 200 300 400 500
+qr
+0
+50
+100
+150
+200qe
+Figure 8: Mean qe with respect to qr. The full line presents the mean and the dashed line presents
+the 95% conﬁdence interval of the estimation.
+0 100 200
+0.0
+0.1
+0.2
+[0, 20)
+0 100 200
+0.0
+0.1
+0.2
+[20, 50)
+0 100 200
+0.0
+0.1
+0.2
+[50, 100)
+0 100 200
+0.0
+0.1
+0.2
+[100, 250)
+0 100 200
+0.0
+0.1
+0.2
+[250, 500)
+0 100 200
+0.0
+0.1
+0.2
+[500, ∞)
+Figure 9: Histograms of qe with respect to qr in diﬀerent intervals.
+systems. As 200µs represents the typical market round-trip latency, a high density concentrates
+around this level. But there could have been a few market makers who react to exogenous information
+that is the same as the large trade but arrives late which result in the density below. And the above
+part comes simply from the higher latencies of some market makers.
+10
+
+=== page 11 ===
+1µs 1 ms 1s
+0.0
+0.5
+1.0
+1.5
+2.0
+200µs
+(OM , F )
+[0, 10)
+[10, 20)
+[20, ∞)
+1µs 1 ms 1s
+0.0
+0.2
+0.4
+0.6
+0.8
+(OM , R)
+[0, 10)
+[10, 20)
+[20, ∞)
+1µs 1 ms 1s
+0.0
+0.2
+0.4
+0.6
+0.8
+(OC , F )
+[0, 10)
+[10, 20)
+[20, ∞)
+1µs 1 ms 1s
+0.0
+0.2
+0.4
+0.6
+0.8
+(OC , R)
+[0, 10)
+[10, 20)
+[20, ∞)
+Figure 10: log10(τr −τe) distribution with respect to Or, Oe and qr in diﬀerent intervals.
+2.4 Enriching the queue-reactive model
+As a conclusion to this empirical study, one can see that the dynamics of the order book, and not
+only its state, must be used in order to gain a faithfull representation of the market. In order to
+enhance the queue-reactive model, it is necessary to add a dependency of the order sizes and, more
+importantly, a dependency on the nature of the order that drove the book into its current state. One
+must therefore depart from the Markovian framework, but only slightly, and in the interest of a much
+more realistic modelling.
+We then propose two LOB models that can be viewed as extensions of the queue-reactive model,
+but diﬀer from it as regards price transitions:
+• Model I: When either limit is empty, the next limit order that closes the spread depends only
+on whether the emptied limit was on the bid or ask side. The size of the order and the recurrence
+time are independent.
+• Model II: The new limit order (Oe,qe) depends not only on the side of the cleared limit, but
+also are functions of the last removal event (Or,qr). The arrival time of the event is determined
+by τe = τr + ∆τ, where ∆τ is dependent on (Or,qr).
+Each of these models is compared with the unit size model having the same transition rule as Model
+I, which we refer to as Model 0. Monte Carlo simulations are conducted for the diﬀerent models, and
+the results are benchmarked against real data.
+As an example, Figure 11 presents the distributions of the best limit quantities sampled at 1s
+frequency in the various models, as well as in the data. Model 0 produces a LOB that is very con-
+centrated around the constructive-destructive equilibrium limit size (around 300), with lower density
+for smaller queues and almost no density for long queues. Adding the size distribution in Model I
+11
+
+=== page 12 ===
+already improves the model, with a global shape closer to the real data. Model II improves the too
+high density around the equilibrium queue size, and also produces more realistic, fatter tails for the
+queue size distribution.
+0 200 400 600 800 1000
+0.00
+0.01
+0.02
+0.03
+0.04
+ real data
+Model 0
+Model I
+Model II
+Figure 11: Best bid/ask quantities distributions.
+3 Market making in real markets
+In this section, we address the problem of deﬁning an optimal market making (or: liquidity providing)
+policy in an order-driven ﬁnancial market. Our goal is to mimick as well as possible the situation
+of an electronic market maker, and a realistic order book model incorporating the various empirical
+properties we have just shown must therefore be designed. Once a model is set up, stochastic control is
+used in order to derive the optimal strategy. The characteristics of the optimal strategy are quite useful
+in determining whether a model makes sense or not, as its performances in a real market environment
+can be measured, either through backtesting or direct experimentation. An ‘optimal ’strategy that
+would lose money in the market would be an indication of poor modelling !
+Based on the work in [Hult and Kiessling, 2010] (see also [Abergel et al., 2017] [B¨auerle and Rieder, 2011]
+for related approach and results), optimal market making strategies are numerically and empirically
+studied under the various hypotheses corresponding to the models labelled 0 and II introduced in
+Section 2.4. In the interest of readability, the theoretical framework and main results are recalled in
+Appendix A, while the current section is devoted to the presentation and discussion of the results.
+As usual in stochastic control, the quantity of interest is the value function in each state of the
+LOB, that is, the expected future proﬁt and loss (P&L) of a pair of bid and ask orders: the risk-neutral
+market maker (MM) will place an order if the value is strictly greater than 0, and stay out of the
+market otherwise. The associated optimal strategy is thus deﬁned according to the value functions.
+After a simulation-based study and analysis of optimal market making strategies, with or with-
+out inventory control, the optimal strategies for each models are backtested against realistic market
+conditions.
+Note that, for technical reasons, the maximum queue size is set equal to 500 contracts and the
+bid-ask spread is supposed to be always 1 tick - as a matter of fact, for liquid, large-tick instruments,
+trades almost never occur when the spread is larger than 1 tick, so that this hypothesis stands.
+12
+
+=== page 13 ===
+3.1 Optimal market making strategies
+This section is devoted to a comparison of the optimal strategies for Model 0 and Model II. The results
+for Model I are only slightly diﬀerent from Model 0 and will not be presented here.
+The state of the LOB is described by a quadruple (xB,xA,yB,yA) representing the best bid and
+ask quantities in number of lots, and the position of the MM’s orders in the queue. The key question
+in market making is the time to enter the order book.
+Initially, the MM places his order at the end of the queue, so that
+xB = yB xA = yA.
+3.1.1 Value function and optimal strategies for Model 0
+We illustrate the value as a function of the initial state in Figure 12. The x and y axis are respectively
+the bid and ask queue lengths in the ﬁgure. Once the state values are known, the optimal strategy is
+staighforward: if the value is positive, the optimal action is to stay in the order book, whereas if the
+value is 0, the optimal action is to cancel the orders.
+0 100 200 300 400 500
+0
+100
+200
+300
+400
+500Ask queue length
+Value functions
+0.5
+0.6
+0.7
+0.8
+0.9
+0 100 200 300 400 500
+0
+100
+200
+300
+400
+500
+Decisions
+Cancel
+Keep
+Bid queue length
+Figure 12: Initial state values in Model 0
+One clearly observes that the values are mostly positive. When the order book is highly imbalanced,
+the order value is lower. The lowest values appear when both of the limit queues are short. However,
+the minimum value is still higher than 0.5. The result can be interpreted as follows: when the queue
+length is short, the probability that the queue will become empty increases before other limit orders
+arrive behind the MM’s orders; when his order is executed on one side of the order book but not on
+the opposite side, the MM will have to close the position at a loss with a market order. When the
+queue is long, the probability that both MM’s orders get executed before the price changes is higher,
+so the value is closer to 1.
+However, such a result is hardly a reﬂection of reality. From practical experience we know that
+a simple market making strategy is unproﬁtable or poorly proﬁtable in the real market. The value
+functions calibrated with Model 0 are at least 0.5 tick, indicating that we should follow a naive strategy,
+always placing an order on both the bid and ask sides. This unrealistic behaviour comes from the fact
+that Model 0 has very stable limits, so that the MM’s bid and ask orders tend to be both executed
+before either limit is cleared.
+3.1.2 Value function and optimal strategies for Model II
+Figure 13 shows the values (left) and the decisions (right) depending on the initial state. The state is
+non-proﬁtable when the state value is 0, so that the MM cancels orders on both sides and wait for a
+further transition, otherwise, he stays in the book and wait for his orders to get executed.
+13
+
+=== page 14 ===
+Clearly, the results are very diﬀerent from those obtained previously: in most of the initial states,
+the optimal policy is to cancel. In fact, the MM is penalized when there is a price change before
+both his orders get executed, and the existence of large market orders increases such a risk. The most
+favourable situation is when the two queues are balanced and relatively long, so that his orders can
+gradually gain priority before the order book becomes imbalanced again and the price changes.
+0 100 200 300 400 500
+0
+100
+200
+300
+400
+500Ask queue length
+Value functions
+0.000
+0.001
+0.002
+0.003
+0.004
+0.005
+0 100 200 300 400 500
+0
+100
+200
+300
+400
+500
+Decisions
+Cancel
+Keep
+Bid queue length
+Figure 13: Initial state values in enriched Queue-reactive model
+The relative values of diﬀerent bid and ask positions are also of great importance. Figure 14
+shows the example of the state x = (200, 300). As expected, the states become more valuable as the
+MM’s orders get closer to the top of the queues. In addition, the values are not symmetric: the value
+of (200, 300, 50, 10) is larger than that of (200, 300, 10, 50) because, the longer the queue, the more
+valuable the priority.
+0 50 100 150 200
+0
+50
+100
+150
+200
+250
+300Ask order position
+Value functions
+0.00
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+0.35
+0.40
+0 50 100 150 200
+0
+50
+100
+150
+200
+250
+300
+Decisions
+Cancel
+Keep
+Bid order position
+Figure 14: State values and decisions when the order book state in x = (200, 300)
+To further illustrate the diﬀerences in values and strategies for diﬀerent states, let us now ﬁx the
+positions in the queues to be yB = 300 and yA = 200. Figure 15 is a plot of the value function and
+optimal decision according to queue lengths.
+As expected, the priorities become more valuable when the queues are longer, and the asymmetry
+also exists. For instance, in this case, and regardless of the bid queue length, the MM should not stay
+in the order book when the ask queue length is 220 or less.
+Figure 16 shows the value function according to the MM’s priority for small queue sizes. When
+the queue lengths become small, the proportion of market orders compared to that of limit orders
+14
+
+=== page 15 ===
+300 350 400 450 500
+200
+250
+300
+350
+400
+450
+500Ask queue length
+Value functions
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0.14
+300 350 400 450 500
+200
+250
+300
+350
+400
+450
+500
+Decisions
+Cancel
+Keep
+Bid queue length
+Figure 15: State values and decisions when the market maker’ order priorities are (yB,yA) = (300, 200)
+increase and the risk of a price move becomes higher. As a consequence, it becomes uninteresting for
+the MM to stay in the market when the order book is in the state (50, 100), except when he is at the
+top of both queues.
+0 50 100
+0
+50
+100
+150
+200Ask order position
+x = (100,200)
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0.14
+0 50
+0
+50
+100
+x = (50,100)
+0.000
+0.001
+0.002
+0.003
+0.004
+0.005
+0.006
+0.007
+0.008
+Bid order position
+Figure 16: State values for short queues
+When one order is executed, the strategy becomes a ‘buy-one-lot’or ‘sell-one-lot’problem. The
+optimal buy-one-lot strategy after the MM’s ask order has been executed is described in Figure 17
+and Figure 18. Actually, an ask queue length of xA = 140 acts as a threshold, beyond which the market
+maker should always stay in the bid queue and hope for an execution as a limit order. Otherwise, if
+the ask queue is too short (or the bid queue to long), the price tends to go upwards, and the MM may
+be better oﬀ using a market buy to close his inventory.
+3.1.3 Relaxing the inventory constraints
+The previously deﬁned market making strategies allowed for an inventory of at most 1, a severe
+restriction in practice. Relaxing this constraint, one may decide to continuously submit limit bid or
+ask orders when the previous ones are executed and the state immediately after the execution has
+value greater than 0, regardless of the inventory. This new strategy violates the initial constraint but
+however provides some useful information as to whether the proﬁts made by making the spread can
+cover the inventory risk. This new strategy will be referred to as a ‘locally optimal strategy ’. As
+15
+
+=== page 16 ===
+0 100 200 300 400 500
+0
+100
+200
+300
+400
+500Order position
+Expected buy price
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0 100 200 300 400 500
+0
+100
+200
+300
+400
+500
+Decisions
+Wait
+Market order
+Bid queue length
+Figure 17: Buy-one-lot strategy when xA = 100
+0 100 200 300 400 500
+0
+100
+200
+300
+400
+500Order position
+Expected buy price
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0 100 200 300 400 500
+0
+100
+200
+300
+400
+500
+The only cases where it
+is better to use market
+order than to wait
+for further transitions
+Decisions
+Wait
+Market order
+Bid queue length
+Figure 18: Buy one unit strategy when xA = 140
+previously seen, the value function for Model 0 is positive for all states, which implies that the MM
+should follow a naive strategy, continuously submitting orders whatever the state of the LOB. This
+naive strategy will be used as a benchmark.
+Under the assumptions of Model II, Monte Carlo simulation is used to compare the performance
+of the locally optimal and naive strategies.
+For the locally optimal strategy, the simulation runs for an hour of market activity, whereas for
+the naive strategy, it does for only 10 minutes as the turnover of the naive strategy is much higher.
+The ﬁnal inventory is supposed to be closed at the end of the simulation using market orders.
+The daily average P&L, absolute inventory and turnover - measured in number of contracts - of
+both strategies are summarized in Table 5, the standard deviations of the means being given between
+parentheses. The P&L of the continuous strategy is much better than that of naive strategy. Its
+P&L is signiﬁcantly positive, with a Z-score of 2.87, whereas the P&L of the naive strategy is fairly
+negative, because of the adverse selection eﬀects embedded in Model II.
+3.2 Backtesting the optimal strategies
+To better assess the performance of Model II in reproducing a real trading environment, the optimal
+strategy is backtested using tick-by-tick order book data.
+Since building a backtester that can replay historical data in a realistic way is a notably diﬃcult
+16
+
+=== page 17 ===
+Table 5: Continuous and naive strategy
+Monte Carlo simulation
+continuous naive
+P&L 1.35 (0.47) -7.12(0.71)
+|Inv| 3.33 (0.02) 10.47(0.09)
+turnover 19.01 (0.06) 113.46(0.22)
+task, we ﬁrst present our methodology before showing the results.
+3.2.1 The backtester
+The purpose of a backtesting engine is to reproduce as well as possible the performances of a trading
+strategy, were it to really be traded in the market. It can produce results that are quite diﬀerent from
+those obtained by simulation.
+One of the ﬁrst issues is latency. As pointed out in Figure 10, the round-trip latency is clearly
+reﬂected in market data. In practice, the incoming data feed and outgoing orders can have diﬀerent
+latencies, as they do not necessarily share the same venue (public broadcast reception and private
+sending). When one reacts to exogeneous information, or information from markets that do not share
+the same location, these two latencies have to be speciﬁed separately. In addition, the latency is not
+constant, and is typically higher during intense activities because the sequential processing of orders
+by the matching engine will take more time when orders are piling up. Unfortunately, this variable
+latency is not measurable, so that for our backtests, a ﬁxed round-trip latency is considered.
+Another, very important source of discrepancy between backtests and real market conditions, is
+of course market impact. Orders in the market are seen by other traders and become a source of
+information that inﬂuences the order ﬂows. For example, a constantly monitored indicator is the
+market (LOB) imbalance, a clue to short term price movements: an order on the bid side posted by
+the market maker will actually tend to decrease the probability of execution of said order. However,
+the market impact of passive limit orders is smaller, and much harder to model, than that of market
+orders, and we have chosen to ignore it. Such a simpliﬁcation is realistic when the order size is small
+compared to the typical queue size. In the case of SX5E futures, the lot size of 10 contracts is very
+small compared to the average quantity at the ﬁrst limit, generally around 500 contracts.
+When replaying the LOB and trades adding the MM’s orders, the key issue is to set some priority
+rules these ﬁctitious orders in the LOB.
+The main question is that of cancellations. Since the exact order ﬂow is not available, it is
+impossible to know which orders have been completely cancelled. Moreover, modiﬁcation of an order is
+allowed with a loss of priority (it can be viewed as simultaneously cancelling an order and resubmitting
+a new one), so that a decrease in size is not distinguishable from a cancellation. For the sake of
+simplicity, we decide to randomly choose the position where a cancellation occurs. Since orders with
+low priorities are more likely to be canceled, a capped exponential law is used.
+It is true that there are some ways to improve the identiﬁcation of canceled orders, by registering
+the limit orders in a list and matching the quantities, but it is our practical experience that the
+improvement is marginal.
+As for trading rule, a ﬁctitious MM’s order will be executed if its position in the queue is within the
+size of an incoming market order. Immediately after this trade, and before the MM submits another
+order, the queue length is set to be the same as that observed in the initial LOB data - as if we had
+increased the trade size to absorb the MM’s order.
+One important exception is the case when the market order clears one limit: even if the MM’s order
+is at the bottom of the queue, it will be considered to be executed, in accordance with the markedly
+very high proportion of market orders that actually empty limit in real data. Comparisons with
+17
+
+=== page 18 ===
+production results show that this choice can inﬂuence up to 20% of the turnover for any given strategy
+and morevoer, that ignoring these executions result in overestimating the backtest performances.
+As a conclusion, although the only way to validate a strategy is probably to run it in the market,
+backtesting engines are always useful, but a lot of care must be taken when designing them and
+interpreting the results they provide.
+3.2.2 Backtesting market making strategies
+The ‘locally optimal strategy ’is backtested, as well as a naive strategy (possibly with a threshold).
+The backtest is run on the period ranging from July to mid-November, 2016. The MM’s order
+size is ﬁxed to 1 lot (10 contracts). In the case of the locally optimal strategy, the value function
+calculated using market data is used to determine whether the MM orders should wait for execution
+or be cancelled. When one of the orders is executed, another order on the same side is submitted
+immediately if the value is positive, otherwise, a new order will not be submitted and the existing
+order on the opposite side is cancelled.
+For the naive strategy, bid and ask orders are continuously submitted as soon as the previous one
+on the same side is executed. When a threshold qmin is set, the order stays in the LOB only if the
+corresponding queue is longer than the threshold.
+Two diﬀerent thresholds of respectively 250 and 400 contracts are studied.
+Finally, for practical reasons, we also implement a simple inventory control: whenever the inventory
+reaches a certain level, new limit orders will no longer be submitted until the inventory falls below the
+level. In the examples shown here, the maximum inventory is 80, but other values have been tested
+and do not change the conclusions.
+3.2.3 Results
+The backtesting results are presented in Figure 19. Table 6 summarizes the daily average P&L,
+turnover and proﬁtability of the diﬀerent strategies. Clearly, the locally optimal strategy is much
+more proﬁtable than the naive strategies. Without a threshold, the naive strategy provides too much
+liquidity and the turnover is much higher than with the optimal strategy, making it diﬃcult to compare
+the P&Ls. But even with a threshold of 400 (so as to match the turnover of the optimal strategy),
+the strategy has a decreasing trend and ends up with a negative P&L.
+The locally optimal strategy is the only one that actually ends up positive.
+07-01 07-29 08-27 09-24 10-22 11-20
+dates
+−2000
+−1000
+0
+PnL (1000 euros)
+Local optimal strategy
+Naive strategy, qmin = 0
+Naive strategy, qmin = 250
+Naive strategy, qmin = 400
+Figure 19: Strategies backtested with real data
+18
+
+=== page 19 ===
+Table 6: Average daily statistics for diﬀerent strategies
+Optimal Naive
+qmin = 0 qmin = 250 qmin = 400
+P&L (ke) 0.54 -26.89 -3.43 -2.13
+Turn over (M e) 45.20 3430.42 119.25 35.83
+Proﬁtability (bp) 0.12 -0.08 -0.29 -0.59
+4 Conclusion
+This paper addresses the calibration of Markovian limit order book models `a la [Huang et al., 2015],
+and their practical usefulness for market making strategies.
+First, we show that the size and arrival times of limit orders and cancellations are stable across
+diﬀerent queue lengths, whereas market order behave completely diﬀerently. Moreover, our analysis
+shows a strong dependence of a limit establishing order on the nature of the limit removal order.
+Incorporating these two features allows us to enhance in a signiﬁcant way the queue-reactive model.
+Second, the model is used with the purpose of designing optimal market making strategies. The
+optimal strategy is compared with the naive strategy, ﬁrst in a simulation framework where it obviously
+performs better, but also in a historical backtester, where we also ﬁnd it to perform much better. This
+is an indirect proof that the enhanced queue-reactive model may be closer to describing the real market
+than most Markovian LOB models.
+A Markov decision processes and optimal strategies
+Let (Xn)∞ n=0 be a Markov chain in discrete time on a countable state space S with transition matrix
+P . Let A be a ﬁnite set of possible actions. Every action can be classiﬁed as either continuation
+action or termination action. The set of continuation actions is denoted C and the set of termination
+actions T.
+C ∪ T = A C ∩ T = ∅
+The Markov chain is terminated when a termination action is selected.
+Every action is not available in every state of the chain. Let A : S ↦→ 2A be a function associating
+a non-empty set of actions A(s) to each state s ∈ S. 2A is the power set consisting of all subsets of
+A. The set of continuation actions available in state s is denoted C(s) = A(s) ∩ C and the set of
+termination T(s) = A(s) ∩ T. For each s,s′∈ S and a∈A(s) the transition probability from s to s′
+when selecting action a is denoted Pss′(a).
+For every action there are associated values. The value of continuation is denoted vC(s,a), which
+can be non-zero only when a∈ C(s). The value of termination is denoted vT (s,a), it can be non-zero
+only when a∈ T(s). It is assumed that both vC and vT are non-negative and bounded.
+A policy α = (α0,α1,...) is a sequence of functions: αn : Sn+1 ↦→ A such that αn(s0,...,sn) ∈
+A(sn) for each n≥ 0 and (s0,...,sn) ∈ Sn+1.
+The expected total value starting in X0 = s and following a policy α until termination is denoted
+by V (s,α). It can be interpreted as the expected payoﬀ of a strategy starting from state s by take the
+policy α. The purpose of Markov decision theory is to analyse optimal policies and optimal expected
+values. A policy α∗ is called optimal if, for all states s∈ S and policies α,
+V (s,α∗) ≥V (s,α)
+The optimal expected value V∗ is deﬁned by V∗(s) = supαV (s,α)
+If an optimal policy α∗ exists, then V∗(s) = V (s,α∗). It is proved in [Hult and Kiessling, 2010]
+that, if all policies terminate in ﬁnite time with probability 1, an optimal policy α∗ exists and the
+19
+
+=== page 20 ===
+optimal expected value is the unique solution to a Bellman equation. Furthermore, the optimal policy
+α∗ is stationary, that is to say the policy does not change with time. The optimal values as well as
+the associated stationary optimal policies can be approached by a recursive algorithm Algorithm 1.
+Algorithm 1 Optimal strategy value approximation
+Input. Tolerance TOL, transition matrix P, state space S, continuation actions C, termination
+strategies T,continuation value vC, termination value vT .
+Output. Lower bound of optimal value Vn and almost optimal policy αn.
+while d > TOL do
+Put
+Vn(s) = max( max a∈C(s) vC(s,a) +
+∑
+s′∈S
+Pss′(a)Vn−1(s′), max a∈T(s) vT (s,a))
+and
+d = max
+s∈S
+Vn(s) −Vn−1(s), for s∈ S
+n = n + 1
+end while
+Deﬁne α : S ↦→ C ∪ T as a maximizer to
+max( max
+a∈C(s)
+vC(s,a) +
+∑
+s′∈S
+Pss′(a)Vn−1(s′), max a∈T(s) vT (s,a))
+A.1 Keep or cancel strategy for buying one unit
+Denote Xn the order book state after n transitions and X0 the initial state. An agent wants to buy
+one unit at price j0 < jA(X0). After each market transition, the agent can choose between keeping
+the limit order or cancelling it and submit a market buy order at the best ask level jA(Xn) if the price
+is lower than the predetermined stop loss price J >jA(X0). If jA reaches J before the agent’s order
+is executed, he cancels the bid order and places a market order at J to fulﬁl the trade. It is assumed
+that there are always suﬃcient limit orders at level J.
+Denote Yn the position of the limit order of the agent, and (Or n,qr n) the last limit removal order
+type and quantity, where n is the number of event orders from time 0. Sn = (Xn,Yn,Or n,qr n) is still a
+Markov chain in S ⊂ N2K ×{0, 1, 2,...}×{OM,OC}× N where Yn ≤Xj0 n .
+The generator matrix of S is denoted W = (Wss′). The jump chain associated with the process is
+denoted as S = (Sn)∞ n=0. The jump chain is of greater importance in the model. Without ambiguity,
+we will use S to represent both the continuous process and the jump chain. The transition matrix of
+the jump chain is denoted P = Pss′.
+Let s = (x,y) ∈ S. There are three possible cases:
+• y < 0 and jA(x) <J. Then the possible continuation action is C(s) = {0}, representing waiting
+for next market transition. And the possible termination action is T(s) = {−1}, representing
+cancellation of the limit order and submission of market order at jA(x).
+• y < 0 and jA(x) = J. The process terminates as the ask price reaches stop loss price. The limit
+order is cancelled and a market order is submitted at jA(x) = J, represented by T(s) = {−1}.
+And C(s) = ∅.
+• y = 0. The process terminates with the execution of the limit order, represented by T(s) = {−2}.
+And C(s) = ∅.
+20
+
+=== page 21 ===
+The 1 tick hypothesis is important here for the boundary conditions. Once JB = J−2 and JA = J−1,
+and the ask is cleared, without the hypothesis we should have terminated the process, except that we
+have ignored the possibility of the price reversion by a new ask order, so that the execution probability
+of the market maker’s bid order is underestimated.
+The expected value (cost), interpreted as the expected saving with respect to stop loss price, is
+given by
+V∞(s,α) =
+
+
+
+∑
+s′∈S Pss′V∞(s′,α) , α(s) = 0
+πJ −πjA(x) , α(s) = −1
+πJ −πj0 , α(s) = −2
+(1)
+The waiting value is zero. The value function could then be approximated by Algorithm with the
+iteration
+Vn+1(s) = max( max a∈C(s)
+∑
+s′∈S
+Pss′(a)Vn(s′), max a∈T(s) vT (s,a))
+=
+
+
+
+max(∑ s′∈S Pss′Vn(s′),πjA (s)) , for y > 0,jA <J
+πJ −πJ = 0 , for y > 0,jA = J
+πJ −πj0 , for y = 0
+A.2 Market making (Making the spread)
+The extended Markov chain here is deﬁned as (Xn,Y 0 n,Y 1 n,j0 n,j1 n,Or n,qr n), where Y 0 n (Y 1 n ) is the positions
+of the market maker’s bid(ask) order in the bid(ask) price level j0 n (j1 n). We have both Y 0 n and Y 1 n are
+non-increasing, and
+Xj0 n n ≥Y 0 n ≥ 0 Xj1 n n ≥Y 1 n ≥ 0
+The market maker predetermines a best buy level JB0 < jA(X0), a worst level JB1 > jA(X0), a
+best sell level JA1 >jB(X0) and a worst sell level JA0 <jB(X0). As in the buy one strategy, the order
+is cancelled and executed at the stop loss price if the corresponding best limit price reaches the worst
+price level. And it is assumed that the execution at the stop loss price is always available. The state
+space is deﬁned on S ⊂ Nd ×{0, 1, 2,...}×{0, 1, 2,...}×{JB0 ,...,JB1 − 1}×{JA0 + 1,...,JA1 }×
+{OM,OC}× N.
+The possible actions in this strategy are:
+• The market maker can choose to wait for next market transition and cancel both orders before
+any of the orders is executed
+• When one of the orders has been executed, the market maker has one order on the opposite side
+waiting for execution. The market maker follows a buy(sell)-one-unit strategy.
+Let VB ∞(x,y,j,or,qr) denote the optimal(minimal) expected buy price (cost rather than value)
+in state (x,y,j,or,qr) for buying one unit, with best buy level JB0 and worst level JB1 . Similarly,
+VA ∞(x,y,j) denotes the optimal (maximal) expected sell price in state (x,y,j,or,qr) for selling one
+unit, with best sell level JA1 and worst sell level JA0 . The optimal expected value is then given by
+V∞(s)
+
+
+
+max(∑ s′∈S Pss′V∞(s′), 0) , for y0 > 0,y1 > 0
+πj1 −VB ∞(x,y0,j0,or,qr) , for y0 > 0,y1 = 0
+VA ∞(x,y1,j1) −πj0,or ,qr , for y0 = 0,y1 > 0
+An extended version is also possible, to take the change of limit price into consideration. Under
+this strategy, the available actions for the market maker are:
+• Before any of the orders is executed, the market maker can choose from waiting for next transi-
+tion, cancel both orders or cancel either order and resubmit at new levels k0 et k1.
+21
+
+=== page 22 ===
+• When one of the orders have been processed, the outstanding limit order is proceeded according
+to the buy(sell)-one-unit strategy. And the price level is also renewable after each market
+transition.
+In this strategy, the optimal expected value is determined by
+V∞(s)
+
+
+
+max(∑ s′∈S Pss′V∞(s′), max V∞(sk0k1 ), 0) , for y0 > 0,y1 > 0
+πj1 −VB ∞(x,y0,j0,or,qr) , for y0 > 0,y1 = 0
+VA ∞(x,y1,j1,or,qr) −πj0 , for y0 = 0,y1 > 0
+where sk0k1 describes the cancel and resubmit of one limit order.
+References
+[Abergel et al., 2016] Abergel, F., Anane, M., Chakraborti, A., Jedidi, A., and Toke, I. M. (2016).
+Limit order books. Cambridge University Press.
+[Abergel et al., 2017] Abergel, F., Hur´e, C., and Pham, H. (2017). Algorithmic trading in a mi-
+crostructural limit order book model. arXiv preprint arXiv:1705.01446.
+[Abergel and Jedidi, 2015] Abergel, F. and Jedidi, A. (2015). Long time behaviour of a hawkes
+process-based limit order book. Available at SSRN 2575498.
+[Avellaneda and Stoikov, 2008] Avellaneda, M. and Stoikov, S. (2008). High frequency trading in a
+limit order book. Quantitative Finance, 8(3):217–224.
+[B¨auerle and Rieder, 2011] B¨auerle, N. and Rieder, U. (2011). Markov decision processes with appli-
+cations to ﬁnance. Springer Science & Business Media.
+[Bayraktar and Ludkovski, 2014] Bayraktar, E. and Ludkovski, M. (2014). Liquidation in limit order
+books with controlled intensity. Mathematical Finance, 24(4):627–650.
+[Cartea and Jaimungal, 2013a] Cartea, ´A. and Jaimungal, S. (2013a). Modeling asset prices for algo-
+rithmic and high frequency trading. Mathematics and ﬁnancial economics, 20:512–547.
+[Cartea and Jaimungal, 2013b] Cartea, ´A. and Jaimungal, S. (2013b). Risk metrics and ﬁne tuning
+of high frequency trading strategies. Mathematical Finance, page doi: 10.1111/maﬁ.12023.
+[Cartea et al., 2014] Cartea, ´A., Jaimungal, S., and Ricci, J. (2014). Buy low sell high: A high
+frequency trading perspective. SIAM Journal of Financial Mathematics, 5(1):415–444.
+[Fodra and Pham, 2013] Fodra, P. and Pham, H. (2013). Semi markov model for market microstruc-
+ture.
+[Fodra and Pham, 2015] Fodra, P. and Pham, H. (2015). High frequency trading and asymptotics for
+small risk aversion in a markov renewal model. Preprint ArXiv.
+[Gueant and Lehalle, 2015] Gueant, O. and Lehalle, C.-A. (2015). General intensity shapes in optimal
+liquidation. Mathematical Finance, 25(3):457–495.
+[Guilbaud and Pham, 2013a] Guilbaud, F. and Pham, H. (2013a). Optimal high frequency trad-
+ing in a pro-rata microstructure with predictive information. Mathematical Finance, page doi:
+10.1111/maﬁ.12042.
+[Guilbaud and Pham, 2013b] Guilbaud, F. and Pham, H. (2013b). Optimal high-frequency trading
+with limit and market orders. Quantitative Finance, 13:79–94.
+22
+
+=== page 23 ===
+[Gu´eant et al., 2012] Gu´eant, O., Lehalle, C.-A., and Fernandez-Tapia, J. (2012). Optimal portfolio
+liquidation with limit orders. SIAM Journal on Financial Mathematics, 3(1):740–764.
+[Gu´eant et al., 2013] Gu´eant, O., Lehalle, C.-A., and Fernandez-Tapia, J. (2013). Dealing with the
+inventory risk: a solution to the market making problem. Mathematics and ﬁnancial economics,
+7:477–507.
+[Ho and Stoll, 1981] Ho, T. and Stoll, H. R. (1981). Optimal dealer pricing under transactions and
+return uncertainty. The Journal of Trading, 9:47–73.
+[Huang et al., 2015] Huang, W., Lehalle, C.-A., and Rosenbaum, M. (2015). Simulating and analyz-
+ing order book data: The queue-reactive model. Journal of the American Statistical Association,
+110(509):107–122.
+[Hult and Kiessling, 2010] Hult, H. and Kiessling, J. (2010). Algorithmic trading with Markov chains.
+PhD thesis, Doctoral thesis, Stockholm University, Sweden.
+[Lu and Abergel, 2017] Lu, X. and Abergel, F. (2017). High-dimensional hawkes processes for limit
+order books: modelling, empirical analysis and numerical calibration. Quantitative Finance, pages
+1–16.
+[Muni Toke, 2015] Muni Toke, I. (2015). The order book as a queueing system: average depth and
+inﬂuence of the size of limit orders. Quantitative Finance, 15(5):795–808.
+[Rambaldi et al., 2017] Rambaldi, M., Bacry, E., and Lillo, F. (2017). The role of volume in order
+book dynamics: a multivariate hawkes process analysis. Quantitative Finance, 17(7):999–1020.
+23

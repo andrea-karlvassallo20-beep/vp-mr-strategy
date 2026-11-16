@@ -1,0 +1,1242 @@
+=== page 1 ===
+Non-Parametric Estimation of Multi-dimensional
+Marked Hawkes Processes
+Sobin Joseph
+Department of Management Studies
+Indian Institute of Science
+Bangalore 560012
+sobinjoseph@iisc.ac.in
+Shashi Jain
+Department of Management Studies
+Indian Institute of Science
+Bangalore 560012
+shashijain@iisc.ac.in
+Abstract
+An extension of the Hawkes process, the Marked Hawkes process distinguishes
+itself by featuring variable jump size across each event, in contrast to the constant
+jump size observed in a Hawkes process without marks. While extensive literature
+has been dedicated to the non-parametric estimation of both the linear and non-
+linear Hawkes process, there remains a significant gap in the literature regarding
+the marked Hawkes process. In response to this, we propose a methodology for
+estimating the conditional intensity of the marked Hawkes process. We introduce
+two distinct models: Shallow Neural Hawkes with marks- for Hawkes processes
+with excitatory kernels and Neural Network for Non-Linear Hawkes with Marks-
+for non-linear Hawkes processes. Both these approaches take the past arrival times
+and their corresponding marks as the input to obtain the arrival intensity. This
+approach is entirely non-parametric, preserving the interpretability associated with
+the marked Hawkes process. To validate the efficacy of our method, we subject the
+method to synthetic datasets with known ground truth. Additionally, we apply our
+method to model cryptocurrency order book data, demonstrating its applicability
+to real-world scenarios.
+KEYWORDS: Marked Hawkes processes, non-parametric estimation, online learning, cryptocurrency
+order book
+1 Introduction
+Hawkes process proposed by A.G. Hawkes is a self or mutually exciting multivariate point process
+with the intensity function dependent on time steps of past events Hawkes [1971]. Marked Hawkes
+process is an extended version of the Hawkes process, where the conditional intensity function
+considers the past timestamps of events and the associated mark with each timestamp. These marks
+can represent various factors, aside from event time, that directly affect the intensity of the events.
+Consider the scenario of market order arrivals in a exchange; the time of the next market order is not
+only determined by the history of order arrivals but is also influenced by the history of past order
+volumes. This illustrates a marked Hawkes process where, in an arrival process, the occurrence of the
+next event depends on both the arrival history and the mark history (in this example, order volume
+serves as the mark component). The marked Hawkes process has found applications in diverse
+fields such as seismology where magnitude and position of the earthquake are the mark variables
+(Ogata [1998], Zhuang et al. [2004], and Fox et al. [2016]), in social networks where the number of
+followers serves as a mark category (Kobayashi and Lambiotte [2016], and Chen and Tan [2018]), in
+finance which has volume (Chavez-Demoulin and McGill [2012] and Fauth and Tudor [2012]) and
+the occurrence of extreme events (Embrechts et al. [2011], and Stindl and Chen [2019]) as the mark
+variable and, in criminology with fraud transactions as marks (Yuan et al. [2019], and Narayanan
+Preprint. Under review.
+arXiv:2402.04740v1  [stat.ML]  7 Feb 2024
+
+=== page 2 ===
+et al. [2022]). In a Hawkes process without marks, when an event occurs, it can excite or inhibit more
+events. The size of each excitation or decay, referred to as the jump size, remains constant across all
+events. In contrast, in a marked Hawkes process, an event’s impact on future events is characterized
+by varying jump sizes. Figure 1 illustrates the distinction between a Hawkes process and a marked
+Hawkes through an intensity-time plot. In this plot, we observe a constant intensity jump for Hawkes
+and a variable jump for the marked Hawkes process.
+(a) Hawkes Process
+ (b) Marked Hawkes Process
+Figure 1: Comparison between Hawkes process and Marked Hawkes process
+For a marked Hawkes process, similar to a Hawkes process, the intensity function combines exogenous
+background rate and endogenous kernels. This combination can take linear or non-linear forms. A
+Hawkes process, which models the self-excitability of events based on their past occurrences, can
+be limited in explaining dependencies related to the characteristics of the event, such as volume,
+price, magnitude, number of followers or any other relevant features. Consider the earlier example of
+market order arrivals in an exchange; even though a Hawkes process without marks can explain the
+dependency of an order arrival with its past arrival, it won’t be able to explain the effects of order
+volume on market order evolution. But considering it as a marked Hawkes process allows the model
+to capture not only the temporal dependencies between successive orders but also the impact of the
+volume of past orders on the evolution of the market. This is essential in understanding how the
+arrival of market orders is influenced by past order volumes. Take another example of earthquake
+aftershocks: the magnitude of an earthquake serves as a crucial mark that influences the likelihood
+of further aftershocks. A marked Hawkes process enables the modelling of the arrival intensity of
+aftershocks, considering both temporal dependencies between the aftershocks and the influence of
+their magnitudes.
+The kernels in a marked Hawkes process intensity function play a pivotal role in capturing the
+temporal and mark dependencies. They quantify the influence of past events and their marks on
+the likelihood of future events. Thus understanding the form of these kernels is crucial for accurate
+modelling and estimation in the marked Hawkes process.
+Hence here, we propose a novel feed-forward neural network-based approach to model the marked
+Hawkes process kernel function. Our method utilizes a 2-layered feed-forward neural network to
+capture the Hawkes kernel using the history of event times and their associated marks. The network
+design includes a hidden layer and an output layer for approximating the kernel function that receives
+both the historical data of past arrivals and their corresponding marks as the input. This modelling
+approach extends the neural network-based models, specifically the Shallow Neural Hawkes (SNH)
+(Joseph et al. [2022]) and the Neural Network for Non-Linear Hawkes (NNNH) (Joseph and Jain
+[2023]), which were initially designed for Hawkes processes without marks.
+1.1 Literature Review of Marked Hawkes Process
+While there has been considerable research on estimating the Hawkes kernels and base intensity,
+the literature focused specifically on the marked Hawkes process is relatively scarce. Most of the
+available studies on estimating the marked Hawkes process primarily revolve around parametric
+assumptions, with only a few exceptions exploring non-parametric methods.
+The early studies of the marked Hawkes process primarily focused on predicting earthquake after-
+shocks, known as ETAS (Epidemic-Type Aftershock Sequence). The ETAS model was developed in
+Ogata [1988] and Ogata [1999], considering past earthquake event times as the temporal variable
+2
+
+=== page 3 ===
+and earthquake magnitude as the mark variable. Subsequently, Zhuang et al. [2004] modified this
+approach to incorporate the event location as an additional spatial mark factor. It’s worth noting that
+both methods rely on parametric assumptions for the kernel and mark function. Embrechts et al.
+[2011] leans towards parametric assumptions, applying the marked Hawkes process to model extreme
+price moves in stock market index data. Similarly, Chen and Tan [2018] adopts a parametric marked
+Hawkes process to model retweet cascading on Twitter data.
+Transitioning to non-parametric approaches for the marked Hawkes process, Bacry and Muzy [2016]
+uses the Wiener-Hopf integral, while Fox et al. [2016] employs the EM algorithm for estimating the
+marked Hawkes kernel and base intensity. Although both models are non-parametric, they model the
+temporal and mark part of the kernel as distinct functions with no interdependence. Furthermore,
+several non-parametric techniques based on neural networks have been proposed. For instance,
+Mei and Eisner [2017], Du et al. [2016] and Shchur et al. [2019] utilize recurrent neural network
+(RNN)-based models with maximum likelihood estimation (MLE) as the loss function to estimate
+the marked Hawkes process. Another approach, as proposed by Xiao et al. [2017], adopts the RNN-
+based Wasserstein generative adversarial network (WGAN) to learn the marked Hawkes process.
+However, it’s worth noting that RNNs may face challenges in capturing extended dependencies and
+encounter issues like gradient vanishing and gradient explosion, as highlighted by Pascanu et al.
+[2013]. Introducing a different perspective, Zuo et al. [2020] presents the transformer Hawkes,
+which utilizes self-attention modules combined with feed-forward networks to learn the marked
+Hawkes process. Fabre and Toke [2024] utilize the physics-informed neural network (PINN) to
+estimate the kernels of a marked Hawkes process. This model incorporates the first and second-order
+characteristics equation of Bacry and Muzy [2016] to facilitate the training of the neural network.
+1.2 Contribution and Organization of the paper
+The aforementioned methods employ neural networks to directly model the conditional intensity
+function, making it challenging to deduce the causal relationships between each event and its historical
+context. Even though neural network-based methods have conducted joint analyses of marks and time,
+those approaches typically handle discrete marks (marks in Z +). In the approaches that consider
+marks as continuous, such as Fabre and Toke [2024], the marked Hawkes kernel function is taken as
+a decoupled function of time and mark.
+Thus, as our first contribution, we propose a novel approach based on neural networks, which can
+approximate the marked Hawkes process kernel instead of the intensity function. This allows for
+inferring causal relationships between events across each dimension using the estimated kernels. The
+two-layered feed-forward network accommodates continuous marks, enabling a more comprehensive
+modelling of the marked Hawkes process. The parameters of the model are estimated by maximizing
+the log-likelihood function. Since the log-likelihood function is non-convex for a Hawkes process,
+even for a parametric setting (Joseph et al. [2022]), we use the stochastic gradient descent (SGD)
+method to derive the network parameters. The model represents a novel approach capable of jointly
+modelling a marked Hawkes kernel’s temporal and mark dependency.
+The application of the proposed method to the high-frequency cryptocurrency trading data is our
+next contribution. The dataset comprises the arrival times and their associated volumes for market
+orders in Bitcoin-US Dollar and Ethereum-US Dollar pairs. From the proposed method, we obtain
+the underlying kernels, providing insights into the relationship of an event concerning both the history
+of time and the mark. This improves predictions of future arrivals and uncovers connections between
+arrival patterns, historical data, and associated order volumes. This insight can provide a clearer
+understanding of the underlying dynamics of the market’s microstructure.
+The remainder of the paper is structured as follows. Section 2 provides the definition of the marked
+Hawkes process and its associated log-likelihood function. In Section 3, we establish the neural
+network models of the SNH with marks and the NNNH with marks. Section 4 is dedicated in
+validating the performance of our proposed model, with evaluations conducted on simulated datasets
+where the ground truth is known. Furthermore, we apply the estimation method to a real-life
+cryptocurrency market order arrivals dataset, considering order volume as the mark component.
+Finally, Section 5 presents a concise conclusion of the paper.
+3
+
+=== page 4 ===
+2 Preliminary Definitions
+Definition of the Marked Hawkes Process: As per the definition provided by Daley and Vere-
+Jones [2007], a marked point process N (X × M), with event time in the space X and marks in the
+space M, is a point process {(tn, mn)}n≥1 on X × M with the additional property that ground
+process Ng (.) (Ng constitutes the collection of the event times {tn}) is itself a point process; i.e. for
+a bounded set A ∈ BX (where BX is the Borel set of the space X ), Ng (A) = N (A × M ) < ∞.
+A D-dimensional marked point process defined as {N1(X × M), . . . , ND (X × M)}, where each
+Nd(X × M) = N g d (t) for d = 1, . . . , D represents a marked point process. We introduce H ≡ Ht : t ≥ 0 as the internal history, where Ht is the history of the process up to and including time
+t, and Ht− is the history of the process up to but not including time t. For the given marked point
+process N := {Nd(X × M)}D d=1, the mark space M can take various forms: it can be discrete, as in the case where marks represent the number of fraudulent transactions (Narayanan et al. [2022]
+or the number of Twitter followers (Kobayashi and Lambiotte [2016]), positive continuous when
+marks represent energy (Ogata [1998]), volume (Chavez-Demoulin and McGill [2012]) or price
+(Lee and Seo [2017]), or even multidimensional Euclidean space for space-time processes. In this
+paper, without loss of generality, we explore examples where M is positively continuous, denoted as
+M ∈ R+, and X ∈ [0, T ).
+The dth dimensional conditional intensity of the marked point process N defined on [0, T ) × M,
+with respect to its internal history H represented by λd(t, m) is given by,
+λd(t, m)dt dm ≈ E [Nd(dt × dm)|Ht−] . (1)
+The given intensity λd(t, m) can also be represented as,
+λd(t, m) = λg d(t|Ht−)fd(m|t, Ht−), (2)
+where λg d(t|Ht−), is the conditional intensity of the ground process (from this point onwards, for ease of notation we will denote λg d(t|Ht−) as λg d(t)), and fd(m|t, Ht−) is the conditional density of a mark at t given Ht−. This emphasizes the significance of the distribution of marks in defining the
+Hawkes intensity function. Consider the following definitions from Daley and Vere-Jones [2007]:
+• Independent marks: Nd := Nd([0, T ) × M) has independent marks if, for a given set of
+event times {td n}n≥1, the marks {md n}n≥1 are mutually independent random variables such
+that the distribution of md n depends only on the corresponding event time td n.
+• Unpredictable marks: Nd has unpredictable marks if the distribution of mark at t is inde-
+pendent of its history Ht−.
+In the context of a marked counting process, the independence of marks implies that both marks and
+the event times are independent of each other, i.e. the marks don’t influence event times and vice-versa.
+Additionally, unpredictable marks occur when the distribution of marks can influence the subsequent
+evolution of the event times, but event times don’t influence the distribution of marks. This work’s
+proposed models are suitable for independent and unpredictable marks. For both the independent and
+unpredictable marks case, the conditional mark density is i.i.d. with fd(m|t, Ht−) = fd(m).
+The conditional intensity, λd(t, m), for the d-th dimension of a D dimensional non-linear marked
+Hawkes process can be expressed as:
+λd(t, m) = Ψd
+
+µd(t) +
+DX
+j=1
+X
+{∀k|(tj k <t)}
+ϕdj (t − tj k, mj k)
+
+ fd(m), (3)
+where Ψd : R → R+, is a non-negative non-linear function, which is required to be Lipschitz
+continuous (Brémaud and Massoulié [1996]), µd(t) : R+ → R+, is the exogenous base intensity for
+the d-th dimension, and ϕdj (t − tj k, mj k), 1 ≤ d, j ≤ D, are the kernels that quantify the magnitude
+of excitation or decay of the intensity for the d-th dimension at time t due to the past arrivals tj k, and
+past marks mj k, {∀k|tj k < t} in the jth dimension. These kernel functions have their support in R.
+4
+
+=== page 5 ===
+The intensity function provided in Equation 3 serves as a comprehensive representation of the marked
+Hawkes process, wherein the Hawkes kernel ϕdj is influenced by both the histories of marks and
+event times. However, alternative modelling approaches exist for capturing the impact of marks on
+the process.
+A commonly employed marked intensity function in the literature is expressed as follows:
+λd(t, m) = Ψd
+
+µd(t) +
+DX
+j=1
+X
+∀k|(tj k <t)
+ψdj (mk j )ϕdj (t − tj k)
+
+ fd(m), (4)
+Similar to Equation 3, this formulation involves the conditional ground intensity, which is a function
+of past event times and corresponding mark values. However, unlike Equation 3, it assumes that
+the excitation kernel can be decomposed into a function of marks and a function of past event time
+stamps.
+In cases where marks are independent and do not influence the evolution of events, the conditional
+intensity for the marked version is written as:
+λd(t, m) = Ψd
+
+µd(t) +
+DX
+j=1
+X
+∀k|(tj k <t)
+ϕdj (t − tj k)
+
+ fd(m). (5)
+Here, the marks contribute nothing to the Hawkes kernel, and consequently, they do not impact
+the ground intensity function, λg d(t). Equation 3, 4, and 5 represent different definitions of marked Hawkes processes in terms of mark dependencies. From a model-building perspective, Equations 4
+and 5 can be generalized as Equation 3. Therefore, it is necessary to consider only Equation 3 for
+estimation. To the best of our knowledge, the proposed model is the first non-parametric approach to
+model the process defined by Equation 3.
+Estimating a marked Hawkes process requires obtaining the base intensity function µd, and its kernel
+functions, ϕdj , either by assuming a parametric or non-parametric form for the kernels. Similary for
+estimating the mark density function, fd(m), one can adopt either a parametric or non-parametric
+approach. The prevalent method for estimating a Hawkes process typically entails maximizing the
+log-likelihood function of the process.
+The Log-Likelihood Function of Marked Hawkes Process The categorization of methods used
+for estimating marked Hawkes processes can be broadly classified into two groups:
+• Intensity-based approach: The most commonly used approach for estimating a marked
+Hawkes process involves deriving the parameters using the conditional intensity function,
+λd(t, m). The maximum likelihood estimation (MLE) is the prevailing method in this
+regard. Notably, this MLE approach has been employed by various researchers, including
+Du et al. [2016], Mei and Eisner [2017], and Zuo et al. [2020], among others. However,
+it’s worth noting that MLE methods can be computationally expensive, with their time
+complexity increasing quadratically with the number of event arrivals. This can pose chal-
+lenges when dealing with large datasets or complex models. To address this computational
+cost, alternative approaches like the Expectation-Maximization (EM) method have been
+used by researchers such as Fox et al. [2016] and Yuan et al. [2019]. EM also utilizes
+the likelihood function as the loss function, but it offers more computationally efficient
+optimization strategies compared to traditional MLE.
+• Intensity free approach: The use of intensity free approach for estimating marked Hawkes is
+very scarce. Among them, Xiao et al. [2017] and Shchur et al. [2019] employ the Wasserstein
+distance and conditional distribution function, respectively, to estimate the Marked Hawkes
+process. While Bacry and Muzy [2016] and Fabre and Toke [2024] use the second-order
+characteristics equation of a marked Hawkes kernel to estimate the base intensity and kernel
+of a marked Hawkes process.
+In this paper, we use the maximum log-likelihood(MLE) approach to estimate the base intensity
+intensity and the optimal kernels of the intensity function.
+5
+
+=== page 6 ===
+In a D-dimensional non-linear marked Hawkes process, {Nd[0, T ) × M} with the parameters
+µ = [µd(t)]D×1, Φ = [ϕdj (t, m)]D×D and f = [fd(m)]D ; 1 ≤ d, j ≤ D be the base intensity
+intensity, kernel function, and mark density function respectively. Let θ = [θ1, . . . θl . . . θL] be the
+set of parameters used to model µ, Φ and f . These parameters can be estimated by maximizing
+the log-likelihood function over the events, H sampled from the process. The log-likelihood (LL)
+function, L corresponding to H for the non-linear marked Hawkes process is given by (see for
+instance Daley and Vere-Jones [2007]),
+L(θ, H) =
+DX
+d=1
+
+ X
+{(tdn ,mdn )}∈H
+log(λd(td n, md n)) −
+Z T
+0
+Z
+M
+λd(s, m)dsdm
+
+ , (6)
+applying the λd(t, m) from the Equation 2 in to the equation,
+L(θ, H) =
+DX
+d=1
+
+ X
+{(tdn ,mdn )}∈H
+
+log(λg d(td n)) + log(fd(md n)) 	 − Z T
+0
+Z
+M
+λg d(s)fd(m)dsdm
+
+ .
+As the sum of mark density function across the marked space M is unity, i.e.
+R
+M fd(m)dm = 1, the above equation can be written as,
+L(θ, H) =
+DX
+d=1
+
+ X
+{(td n ,md n )}∈H
+log(λg d(td n)) −
+Z T
+0
+λg d(s)ds + X
+{md n }∈H
+fd(md n)
+
+ .
+The provided LL function L can be expressed as a sum of two terms, L = Lλ + Lf , where Lλ is the
+log-likelihood function for the ground intensity and Lf is the log-likelihood function for the marks
+density function.
+Lλ(θλ, H) =
+DX
+d=1
+
+ X
+{(tdn ,mdn )}∈H
+log(λg d(td n)) −
+Z T
+0
+λg d(s)ds
+
+ , (7)
+Lf (θf , H) =
+DX
+d=1
+
+ X
+{mdn }∈S
+log(fd(md n))
+
+ , (8)
+Where (θλ, θf ) ∈ θ and, θλ and θf are the parameter sets for the intensity function and density
+function, respectively. There are no parameters that appear in both Lλ and Lf . Thus, both terms can
+be maximized separately.
+From Equation 3, the λg d(t) in Lλ can be written as a combination of a base intensity rate µd(t) and kernel function ϕdj (t, m). Even for the most common parametric form of the ϕdj (t, m), the Lλ
+function may or may not be convex. For example, take the simplest case of the exponential kernel
+with multiplicative marks, ϕdj (t, m) = me−βt, Lλ won’t be a convex function. Hence, the Stochastic
+Gradient Descent (SGD) method is employed to find the local optimum of the Lλ function in the
+parametric space. To estimate the parameters θ using SGD, an unbiased estimator of the gradient of
+Lλ with respect to each parameter θp ∈ θλ is required and is given by,
+∇θp (Lλ(θλ, H)) =
+DX
+d=1
+
+ X
+{(tdn ,mdn )}∈H
+∇θp
+ (
+log(λg d(td n)) −
+Z td n
+td n−1
+λg d(s)ds
+)!
+ .
+Following the above equation, for each event points (td n, md n), an unbiased estimator of the gradient
+of Lλ with respect to each of the parameters θp will be,
+∇θp bLλ(θλ, td n, md n) := ∇θp
+ 
+log(λg d(td n)) −
+Z td n
+td n−1
+λg d(s)ds
+!
+, (9)
+6
+
+=== page 7 ===
+Figure 2: Flowchart showing process for estimation of Marked Hawkes process
+where td n and md n are sampled from H. In this context, we aim to maximize bLλ by adopting a non-
+parametric approach for the kernel function and base intensities. The detailed model is elaborated in
+Section 3.
+Because the log-likelihood is separable, we can independently fit the conditional mark density. In our
+approach, we employ the Gaussian mixture model (GMM) as a non-parametric method to estimate
+the mark density. This entails identifying the GMM parameters, denoted as θf , that optimize the
+log-likelihood function Lf . Further details on this process can be found in Section 3.1. By combining
+the non-parametric estimation of the kernel function and base intensities along with the GMM-based
+approach for Lf , we aim to comprehensively and accurately estimate the parameters for the marked
+Hawkes process model. Figure 2 provides an overview of the marked Hawkes process estimation for
+each of the dth dimensions. On the left side of the chart, marks {md n} ∈ H serve as input to the mark
+density likelihood function, Lfd from Equation 8, which is then processed by the GMM method to
+estimate the mark density function, fd. This estimation results in the prediction of subsequent marks
+for each dimension d. On the right side of the chart, both marks and historical time stamps Htdn − are utilized as inputs for the intensity likelihood function, Lλd given in Equation 7. The SNH with marks,
+or the NNNH with marks estimation approaches are employed to estimate the network parameters of
+7
+
+=== page 8 ===
+the ground intensity function, λg d. The obtained functional form of λg d is used to generate future event
+times,td n.
+3 Proposed Model
+In the context of the internal history H, we estimate the Hawkes conditional intensity function λd(t)
+by separately modelling the base intensity µd(t) and the kernel ϕdj (t, m). Estimating the Hawkes
+kernel is crucial in understanding the underlying temporal and mark dependency with the conditional
+intensity (as explained in Section 1). Our approach employs a two-layered neural network with a
+single hidden layer for approximating the Hawkes kernel ϕdj . The choice of using a two-layered
+neural network is motivated by the universal approximation theorem established by Hornik et al.
+[1989], which proves that a multilayered neural network with at least one single hidden layer within
+a certain group of activation functions can approximate any continuous function in a compact set
+arbitrarily well. This theorem has been extended to include a wider range of activation functions,
+including exponential and Rectified Linear Units (ReLu) by Leshno et al. [1993]. We refrain from
+employing a deeper network because estimating the network parameters through maximizing the
+log-likelihood involves evaluating the time integral of the kernels. Using a shallow network allows for
+efficient computation of this integral using analytical expressions. In contrast, with deeper networks,
+the computation of the integral becomes computationally intensive.
+This paper proposes two distinct models based on neural networks for estimating the marked Hawkes
+process –Shallow Neural Hawkes with marks (SNH with Marks) and Neural Network for Non-linear
+Hawkes with marks (NNNH with marks). The proposed models are the extensions of the SNH
+(Shallow Neural Hawkes) model Joseph et al. [2022] and the NNNH (Neural Network for Non-linear
+Hawkes) model Joseph and Jain [2023]. While both the SNH and NNNH use only event times for
+estimating the Hawkes kernel, the extended marks model incorporates both event times and their
+corresponding marks, making it a more versatile estimation of the kernel function.
+Shallow Neural Hawkes with Marks In their research, Joseph et al. [2022] proposed the Shallow
+Neural Hawkes (SNH) method, which is a neural network-based approach designed for estimating
+the kernels of a linear Hawkes process, specifically for process with excitation or positive kernels. Ex-
+panding upon the SNH model, the Shallow Neural Hawkes with marks(SNH with marks) incorporates
+both event times and their corresponding marks in the Hawkes intensity function. This enhancement
+enables the method to handle Hawkes processes involving temporal information (event times) and
+mark information.
+The SNH with marks is specifically designed for the linear Hawkes process, which makes it suitable
+only for positive or excitatory kernels, constraining the kernel function ˆϕdj (t, m) to be bounded
+in R+. A Linear Hawkes process implies linearity in intensity function, λg d(t). Therefore, in the expression of λg d(t) in Equation3, Ψd is an identity function. Thus, the estimated ground intensity
+function ˆλg d(t) can be expressed as follows:
+ˆλg d(t) = ˆµd(t) +
+DX
+j=1
+X
+{∀k|(tj k <t)}
+ˆϕdj (t − tj k, mj k),
+where each ˆµd(t), and ˆϕdj (t − tj k, mj k), d = 1, . . . , D, are approximated using a neural network.
+Given H, the kernel ˆϕdj (t, m) : R+ × R → R+ is modelled as,
+ˆϕdj (t, m) = Π ◦ A2 ◦ φ ◦ A1, (10)
+where A1 is the hidden layer, A1 : R+ × R → RP and A2 is the output layer, A2 : RP → R+. More
+precisely,
+A1 (x) = W1x + b1 for x ∈ R2×1, W1 ∈ RP ×2 and b1 ∈ RP ,
+A2(y) = W2y + b2 for y ∈ RP , W2 ∈ R1×P and b2 ∈ R,
+where P is the number of neurons. Also, φ : R → R+, 1 ≤ i ≤ P is the ReLU activation function
+given by,
+φ(yi) = max(yi, 0),
+8
+
+=== page 9 ===
+and function Π : R → R+, is the exponential function. We take W1 =
+
+a1 1 a2 1 . . . aP 1
+a1 2 a2 2 . . . aP 2
+T
+,
+W2 =
+
+a1 3, a2 3, . . . , aP 3  , and b1 =  b1 1, b2 1, . . . , bP 1  . Thus, the kernel function ˆϕdj can be written as,
+ˆϕdj (t, m) = exp
+ 
+b2 +
+pX
+i=1
+ai 3max   ai 1t + ai 2m + bi 1, 0 
+!
+. (11)
+Neural Network for Non-Linear Hawkes with Marks To overcome the limitation of the SNH
+with marks, which is confined to linear Hawkes processes with only excitation kernel functions,
+we propose a novel model called Neural Network for Non-linear Hawkes with Marks (NNNH with
+marks). Adapted from the Neural Network for Non-linear Hawkes (NNNH) method introduced by
+Joseph and Jain [2023], the NNNH with marks can model both excitatory and inhibitory kernels
+in a non-linear marked Hawkes process. This means that the kernel function ˆϕdj can take negative
+values with the range of the function mapping to R. To guarantee that the intensity function λg d(t) remains positive, the function Ψd in Equation 3 is selected as the ReLU function. By employing the
+RELU function, the estimated Hawkes intensity ˆλg d(t) is guaranteed to remain positive throughout the estimation, thus adhering to the necessary constraint. The framework is flexible enough to consider
+the base intensity µd(t) as a function of time. Thus the estimated Hawkes ground intensity function
+ˆλg d(t) for the NNNH with marks is given by,
+ˆλg d(t) = max
+
+ˆµd(t) +
+DX
+j=1
+X
+{∀k|(tj k <t)}
+ˆϕdj (t − tj k, mj k), 0
+
+ , (12)
+where each ˆµd(t), and ˆϕdj (t − tj k, mj k), d = 1, . . . , D, are approximated using a neural network.
+The network utilized to represent ˆϕdj (t, m) shares similarities with the one outlined in Equation 11.
+However, in the case of the NNNH network, the function Π takes the form of an identity function
+instead of an exponential one. This selection guarantees that ˆϕdj effectively maps from R+ × R to
+R. With this modification in ˆϕdj , the NNNH with mark can effectively accommodate excitation and
+inhibition kernels, making it more versatile for modelling a broader range of processes involving
+diverse dependencies between past arrivals and their corresponding marks. The kernel function
+ˆϕdj (t, m) given H is modelled as,
+ˆϕdj (t, m) = b2 +
+pX
+i=1
+ai 3max   ai 1t + ai 2m + bi 1, 0  . (13)
+Remark 3.1. This paper employs two methodologies to estimate the marked Hawkes process: SNH
+with marks for linear marked Hawkes and NNNH with marks for both linear and non-linear marked
+Hawkes. Despite NNNH with marks being capable of estimating the linear marked Hawkes process,
+SNH with marks is preferred due to its lower computational cost. When there is ambiguity in
+determining whether an event results in excitation or inhibition of the ground intensity in a dataset
+H, it is recommended to use NNNH with marks. However, if it is certain that the arrival of an event
+leads to the excitation of the ground intensity process, then SNH with marks is the preferable choice.
+The neural network used for both estimation models consists of a hidden layer of P neurons and
+a single output layer, resulting in a parameter dimension of 4P + 1 for a one-dimensional marked
+Hawkes setup. For a D-dimensional marked Hawkes process with a constant base intensity, the
+number of parameters can go up to (4P + 1)(D2). If we also consider the case of non-constant base
+intensity, µd(t), then the number of parameters to be estimated will be (4P + 1)(D2 + D).
+To estimate the parameter set θλ encompassing both the kernels and the base intensity parameters
+((4P + 1)(D2 + D) parameters), we use the ground intensity log-likelihood function Lλ given
+in Equation 7 across the observed dataset H. The computation of Lλ using the neural network
+approximation of λg d(t) in both the models necessitates obtaining the integrated intensity function and log intensity function in Lλ, the details of which are given in Appendix A.
+Post obtaining the log-likelihood function Lλ, in order to find the optimal network parameter set ˆθλ,
+which provides a local maximum for the Lλ, we employ batch stochastic gradient descent (SGD)
+9
+
+=== page 10 ===
+combined with Adam optimization algorithm introduced by Kingma and Ba [2014]. The gradients of
+the Lλ with respect to each of the parameters in the θλ can be computed using Equation 9. These
+gradients acquired through the batch SGD iteratively update the parameters in θλ, leading to the
+identification of the optimal parameter set, ˆθλ maximizing the Lλ, providing the optimal estimations
+for the kernels and the base intensity.
+3.1 Gaussian Mixture Model
+Gaussian mixture model (GMM) represents a class of mixture models used to estimate density
+functions. According to Murphy [2012] and McLachlan and Basford [1988], mixture models
+are probabilistic models where a distribution can be represented as the weighted sum of two or
+more base distributions. GMM specifically uses multivariate Gaussian distribution as the base
+distribution. GMM with a sufficiently large number of mixture components (Gaussian distributions)
+can approximate any continuous density function defined on R (Murphy [2012]). This paper utilizes
+a GMM density function to approximate the fd(m), mark density function in the dth dimension.
+While the marks, represented as [m1, . . . , mD ], may exhibit correlations, our specific assumption is
+that marks within a dimension are independent of those in other dimensions. For instance, the trade
+volumes for buy and sell market orders are assumed to be independent in the context of trade orders.
+Consequently, the marks within each dimension are treated as independent and identically distributed
+(i.i.d.). The estimated GMM density function ˆfd(m|θf ), corresponding to the dth dimensional marks
+m = {md n}n≥1 sampled from H, given the parameter set θf =  (zj , µj , σ2 j ) 	 , is expressed as
+follows:
+ˆfd(m|θf ) ≈
+kX
+j=1
+zj F (m|µj , σ2 j ), (14)
+where F (m|µj , σ2 j ) is the density function of the jth Gaussian distribution given by,
+F (m|µj , σ2 j ) = 1q
+2πσ2 j
+exp −
+ 
+(m − µj )2
+2σ2 j
+!
+.
+with parameters (µj , σ2 j ), k is the number of Guassian distributions and zj , 0 ≤ zj ≤ 1 is the weight
+parameter. The weight parameter, zj should satisfy Pk j=1 zj = 1. The parameters of the GMM, θf
+are estimated by the expectation maximization (EM) algorithm explained by Dempster et al. [1977].
+4 Experiments and Results
+The evaluation process commences with a comprehensive analysis of synthetic datasets, encom-
+passing both one-dimensional and multi-dimensional Hawkes processes with continuous marks.The
+effectiveness of our neural network-based approaches, SNH with marks and NNNH with marks is
+scrutinized against the vanilla models of SNH and NNNH1.
+The evaluation extends to practical applications, specifically utilizing our neural network approach
+on cryptocurrency trading data. This data includes detailed tick-by-tick sell and buy market orders
+for Bitcoin US Dollars (BTC-USD) and Ethereum US Dollar (ETH-USD) pairs. The neural network-
+based approach is applied to unveil the causal relationships concerning arrival times and marks within
+the specified pairs.
+To ensure the robustness of our methodology, we initiate the evaluation with data preprocessing steps
+before directly implementing the estimation technique. Moreover, we adopt a scaling mechanism
+for the dataset, which will be elaborated upon in the subsequent sections. The choice of initial
+parameters and hyperparameter selection are also addressed, including factors such as the number
+of hidden neurons, learning rates, and the stopping criteria. These aspects collectively contribute
+to appropriately evaluating our neural network-based approach’s performance and its practical
+applicability in different scenarios.
+1The code and the data that has been used in this section is given in https://github.com/sobin-joseph/Marked-
+Hawkes-Estimation
+10
+
+=== page 11 ===
+4.1 Simulation of Marked Hawkes Process
+To generate a synthetic dataset for a multivariate marked Hawkes process, it is crucial to define
+a simulation algorithm for the process. For simulating a Hawkes process, the most widely used
+algorithm is Ogata’s modified thinning algorithm proposed by Ogata [1981]. Ogata’s modified
+thinning algorithm builds upon the thinning algorithm initially introduced by Lewis and Shedler
+[1979] to simulate the point process. Thinning algorithms rely on the conditional intensity function
+to simulate successive intervals. For the simulation of a marked point process Daley and Vere-
+Jones [2007] extended the thinning algorithm of Lewis and Shedler [1979] to incorporate the
+marks. The resulting thinning algorithm for the marked Hawkes process given in Algorithm 1, is
+employed to simulate the marked Hawkes process. Similar to the aforementioned thinning algorithms,
+this algorithm for the marked point process follows a sequential approach. It utilizes the ground
+conditional intensity,λg d(t) to select the next time point. Subsequently, after selecting a new event time, the corresponding mark is chosen using the density function of the marks,fd(m).
+Algorithm 1: Thinning algorithm for marked Hawkes process
+Input: base intensity{µd}D d=1 , kernel function{ϕdj }D d,j=1, market density function{fd}D d=1, end
+time T ;
+Output: Event times {τd}D d=1 and marks {md}D d=1;
+Initialize t ← 0, {τd}D d=1 ← ∅, {md}D d=1 ← ∅;
+while t < T do
+Initialize M (t) ← 0 ;
+for d= 1 to D do
+λg d(t) ← max
+
+µd, µd +
+dX
+j=1
+X
+t≤τj
+ϕdj (t − τj , mj )
+
+;
+M (t) ← M (t) + λg d(t);
+end
+D ∼ U(0, 1);
+s ← t − log(D) M (t) ;
+U ∼ U(0, 1);
+Initialize λg (s) ← 0 ;
+for d= 1 to D do
+λg d(s) ← max
+
+0, µd +
+dX
+j=1
+X
+s<τj
+ϕdj (s − τj , mj )
+
+;
+λg (s) ← λg (s) + λg d(s) ;
+if λg (s) M (t) < U then
+t ← s ;
+τd ∪ s ;
+F ∼ U(0, 1);
+m ← f −1 d (F ); md ∪ m ;
+else
+end
+end
+pass;
+end
+4.2 Data preprocessing and choice of hyper-parameters:
+Before conducting the experiments, we partition the dataset H into training, validation, and test
+sets following a 70:15:15 ratio. It is important to ensure that the partition preserves the event times’
+chronological order. For both the validation and test sets, all the historical information leading
+11
+
+=== page 12 ===
+up to the current event is considered, starting from the inception of the data. Prior to the dataset
+division, we apply scaling to enhance the data’s suitability for analysis. This scaling procedure is
+aimed at transforming the dataset into a more canonical form, which, in turn, reduces the inherent
+variability. By reducing variability, we achieve a twofold effect: diminishing the generalization error
+and decreasing the model’s size, which, in our case, pertains to the number of neurons required to
+effectively train the model (Goodfellow et al. [2016]).
+This preprocessing procedure involves both event times and their corresponding marks. Given
+dataset H = {(td n, md n)}n≥1, where td n ∈ [0, T ) and md n ∈ M denote the ordered arrivals and their
+corresponding marks for the dth dimension ,the following definitions are relevant:
+td max = max  td n 	 n≥1 , Tmax = max  td max 	D d=1 , N = DX
+d=1
+Nd(Tmax) and md mean =
+P
+mdn ∈H
+md n
+N
+Consequently, each event time td n and its corresponding mark md n are scaled as follows:
+ˆtd n = td n N Tmax ,
+ˆmd n = md n 1 mdmean .
+The scaled dataset ˆH = {(ˆtd n, ˆmd n)}n≥1, will be the input to the proposed model.
+Initialization of network parameters and choice of batch size and hyperparameters: Proper
+initialization the parameters of the proposed models is of paramount importance, as it significantly
+impacts the performance of most algorithms. According to Goodfellow et al. [2016], the choice of
+initial values plays a critical role in determining whether an algorithm converges successfully or not.
+In certain cases, unstable initial inputs can even lead to the complete failure of the model.
+To address this concern, we adopt distinct initialization strategies for SNH with marks and NNNH
+with marks. For SNH with marks, the parameters outlined in Equation 11 are initialized as follows:
+ai 1 ∼ U(−0.5, 0.5), ai 2 ∼ U(−0.2, 0.2), ai 3 ∼ U(−1.0, 0.0), bi 1 ∼ U(0.0, 0.03), and bi 2 ∼
+U(−0.1, 0),
+where U(a, b), denotes uniform distribution between a and b.
+For the NNNH with marks, the parameters given in Equation 13 are initialized as:
+ai 1 ∼ U(−0.7, 0), ai 2 ∼ U(−0.2, 0.2), ai 3 ∼ U(0, 1.0), bi 1 ∼ U(0.0, 0.25), and bi 2 = 0.
+The initial base intensity for both the models is set to be initialised µ = 1 (For cases of varying
+base intensity in the NNNH with marks approach, the parameters of base intensity are initialised as
+explained in Joseph and Jain [2023]). We maintain a fixed hidden layer size of sixty-four neurons in
+both the SNH with marks and NNNH with marks. This choice of the number of neurons results from a
+careful balance between computational time requirements and achieving the optimum log-likelihood.
+Our stochastic gradient calculations are performed using a batch size of one hundred. We employ
+distinct learning rates for updating parameters in the hidden and output layers, as we have observed
+faster convergence with this configuration. The specific learning rates adopted for our experiments
+are as follows:
+• For the SNH with marks model, we use a learning rate of 2 × 10−2 for updating network
+parameters in the output layer and 2 × 10−3 for updating parameters in the hidden layer.
+• For the NNNH with marks, 5 × 10−3 and 5 × 10−4 are used to update the parameters in the
+output and hidden layers, respectively.
+In both models, the learning rate for updating µ is 1 × 10−3. These learning rate choices have
+contributed to efficient and effective convergence during the training process for both the SNH with
+marks and NNNH with marks.
+12
+
+=== page 13 ===
+Stopping criteria: We employ a stopping criterion to prevent the algorithm from underfitting or
+overfitting the dataset. For both the SNH with marks and NNNH with marks, we utilize the number
+of iterations during which the validation log-likelihood did not show improvement as the stopping
+criterion. In this context, we set the number of iterations for the stopping criteria to a fixed value of
+10. This ensures that the optimization process halts after 10 consecutive iterations without observable
+enhancements in the validation log-likelihood.
+4.3 Synthetic Data Experiments
+This section assesses the effectiveness of the proposed models on simulated datasets of a marked
+Hawkes process. We explore three distinct scenarios: a one-dimensional linear marked Hawkes
+process with a combined (or coupled) kernel function, a one-dimensional non-linear marked Hawkes
+process with decoupled kernel function (separable function of time and marks), and a multivariate
+marked Hawkes with decoupled kernel functions.
+For generating synthetic datasets for each scenario, we employ the thinning algorithm for marked
+Hawkes process outline in Algorithm 1. The evaluation of the proposed approaches involves the
+following measures: as an initial performance metric, we compare the error between the known theo-
+retical kernel and the kernel estimated using the proposed methods- both visually and quantitatively
+through an error plot. We analyze the absolute difference between the theoretical kernel and the
+estimated kernel at all regions in the error plot. Next, we compare the predictions of the estimated
+marked Hawkes process for arrival times with the vanilla models. This comparison is facilitated using
+Quantile-Quantile (QQ) plots for the test dataset.
+QQ plots validate the accuracy of interarrival time predictions from the estimation method. When
+predicting the next arrival time with a 90% confidence level based on the current history, ideally, 90%
+of the observed next arrivals should occur within the predicted time, and at least 10% should occur
+beyond it. If all subsequent arrivals fall within the predicted time, the algorithm is overly conservative,
+predicting too far into the future. If fewer than 90% of subsequent arrivals align with the predicted
+horizon, the predictions are too soon. A well-performing prediction model should exhibit Q% correct
+predictions at a Q% confidence level. A correctly fitted model is represented by an ideal QQ plot,
+which is a 45-degree line running through the origin.
+4.3.1 One-dimensional Marked Hawkes Process
+Marked Hawkes with coupled kernel function: This example uses the coupled (or combined)
+kernel function of the generalized marked Hawkes conditional intensity, as described in Equation 3.
+Specifically, we focus on a scenario representing a linear marked Hawkes process. In this context, we
+investigate situations where ϕ(t, m) is not a separable function of time t and marks m. To the best
+of our knowledge, no other non-parametric models can estimate such kernels. The marked Hawkes
+process is simulated using the following functions:
+• Kernel function, ϕ(t, m) = me−t(1+5m),
+• Base intensity, µ = 0.7, and
+• Mark distribution, f (m) = 1 0.5m √ 2π e− (log m)2 2×0.52 .
+Using Algorithm 1 with specified parameters, we conducted a simulation for the time interval
+(0, 2000], resulting in 1743 arrivals. The dataset is generated using a linear Hawkes process, and
+therefore, for estimation, we can consider either SNH with marks or NNNH with marks. SNH
+with marks is preferred due to its lower computational demand, as explained in Remark 3.1. The
+SNH estimation reaches the stopping criteria in approximately 690 seconds. Figure 3 displays the
+theoretical, estimated, and error kernels. Despite using a limited number of data points for fitting,
+the proposed model effectively estimates the kernel. The error plot in Figure 3 depicts the absolute
+difference between theoretical and estimated kernels (|ϕ − ˆϕ|), demonstrating the model’s capability
+to capture excitation in both time and mark space.
+Figure 4 presents a QQ plot analysis comparing the performance of SNH with marks and vanilla SNH.
+The plot indicates that vanilla SNH tends to predict shorter interarrival times more often, whereas
+SNH with marks accurately captures the distribution of interarrival times. This comparison suggests
+13
+
+=== page 14 ===
+(a) Estimated and theoretical kernel
+ (b) Error plot
+Figure 3: (a) describes the theoretical and estimated kernel obtained using SNH with marks for a
+one-dimensional Linear Hawkes process, while (b) presents the absolute error between the theoretical
+and estimated kernel expressed as | ˆϕ − ϕ|
+Figure 4: QQ plot providing a comparative analysis between SNH and SNH with marks estimation
+that the SNH with marks model outperforms the vanilla SNH model in predicting the linear marked
+Hawkes process.
+Marked Hawkes process with decoupled kernel function: In our second example, we consider a
+non-linear marked Hawkes process with decoupled (or separable) kernel function, outlined by the
+intensity function in Equation 5. A decoupled kernel function implies that the kernel has distinct
+functions for its temporal and mark components. For the estimation of non-linear marked Hawkes,
+it is necessary to use the NNNH with marks, as the SNH with marks is unsuitable for non-linear
+Hawkes. We use the following parameters for the functions given in the intensity Equation 5:
+• Kernel function, ϕ(t, m) = ψ(m)ϕ(t) = log(m)(−0.4e−2t),
+• base intensity, µ = 0.9, and
+• Mark distribution, f (m) = 1 m √ 2π e− (log m−0.5)2 2×12 .
+For the specified parameters, simulation is conducted over a period of (0, 8000], generating a dataset
+of length 3000. Despite the theoretical kernel having a separate time and mark function, estimation
+is performed by approximating the kernel as a combined function of time and mark, following the
+model given in Equation 10. The estimation took 1160 seconds to converge to the optimal network
+14
+
+=== page 15 ===
+(a) Theoretical and estimated kernel
+ (b) Error plot
+Figure 5: (a) shows the theoretical kernel and kernel estimated using NNNH with Hawkes for a
+one-dimensional Non-linear Hawkes process and (b) depicts the absolute error between the theoretical
+and estimated kernel
+parameters based on the stopping criteria. Figure 5 displays the theoretical kernel, and the estimated
+kernel using the NNNH with marks and the corresponding error plot. The kernel and the error plot,
+depicted in 5, suggest that the NNNH with marks can accurately approximate the given kernel. A
+comparison is also made with the vanilla NNNH estimation for the test data using the QQ plot
+presented in Figure 6. From the QQ plot, it is evident that both the NNNH with marks and vanilla
+NNNH effectively predict the interarrival time for the test dataset.
+Figure 6: QQ plot comparing the interarrival times obtained from NNNH and the NNNH with marks
+Estimation.
+4.3.2 Multi-dimensional Hawkes Estimation
+We aim to investigate a 2-dimensional marked Hawkes process with distinct kernel functions for
+temporal and mark components, as defined in the intensity Equation 5. This specific example,
+borrowed from Dassios et al. [2013], explores a scenario where each kernel possesses its unique
+marks generating function fdj (m), signifying that each kernel is associated with its own set of marks.
+The simulation is conducted for a 2 dimensional Hawkes process for a period of [0, 5000) with the
+kernel function,
+ϕdj (t, m) =
+
+me−2t me−50t
+me−4.5t me−3t
+
+,
+15
+
+=== page 16 ===
+the mark density function,
+fdj (m) =
+
+e−2.5m e−6m
+e−3m e−1.5m
+
+,
+and base intensity, µ = [0.3, 0.3]. The simulation generated a dataset of size of 2082. The dataset
+is subjected to the estimation process using multi-dimensional SNH with marks, and the kernels
+are subsequently obtained. Figure 7(a) presents a comparison between the estimated kernels and
+their theoretical counterparts, while Figure 7(b) illustrates the absolute error between the true and
+estimated kernels. These plots collectively affirm that multidimensional SNH with marks has the
+capacity to recover the theoretical kernel with precision. Furthermore, a QQ plot is provided for both
+multidimensional SNH with marks and the vanilla SNH in Fig 8. The QQ plot illustrates that both
+methods, despite vanilla SNH not considering marks, can predict interarrival times within the given
+confidence interval.
+(a) Kernel
+ (b) Error
+Figure 7: (a) The theoretical and the estimated kernel obtained using SNH with marks for a 2 − d
+marked Hawkes process with decoupled kernel function. (b) illustrates the error between the
+theoretical and estimated kernels
+Figure 8: QQ plot demonstrating the precision of prediction for multivariate SNH and SNH with
+marks estimation.
+4.4 Real Data
+This section discusses the application of the proposed estimation method in the real-world dataset,
+where we take the case of cryptocurrency trade in an exchange, specifically the market order book
+data of Bitcoin-US Dollar(BTC-USD) and Ethereum-US Dollar(ETH-USD) trades in the Binance
+16
+
+=== page 17 ===
+exchange. The application uses the volume of trade as the mark component, thus analysing the impact
+of the traded size on the market order arrival rate. This application gives a glimpse of the ability of
+our method to model real-world events with attached marked components.
+4.4.1 Cryptocurrency Dataset
+Data and Preprocessing: We utilize the high-frequency dataset from cryptocurrency trading
+involving two of the most commonly traded cryptocurrencies- Bitcoin (BTC) and Ethereum (ETH).
+The dataset consists of timestamps of buy and sell market orders for Bitcoin-US Dollars(BTC-USD)
+and Ethereum-US Dollars (ETH-USD) pairs on the Binance exchange. The Binance exchange was
+selected because it is a major exchange for various cryptocurrencies with high trading volumes. The
+dataset details arrival timestamps, volume, price, buyer ID and seller ID for each market order. The
+time horizon considered is from 16th July 2022, from 02 : 00 : 00 UTC to 02 : 30 : 00 UTC. The
+selection of Bitcoin and Ethereum currencies is based on the fact that they are the most commonly
+and heavily traded cryptocurrencies in the global cryptocurrency market.
+For the cryptocurrency dataset, we adopt the volume of trade as the mark component in the marked
+Hawkes process. This aligns with the approach of Chavez-Demoulin and McGill [2012], Fauth and
+Tudor [2012], Rambaldi et al. [2017] and Fabre and Toke [2024], which explore the impact of volume
+of trade on the clustering of market order. This justifies the use of volume as the mark component. In
+this context, the trade volume represents the quantity of bitcoins (or Ethereum) traded.
+Before applying the estimation method, some preprocessing is done to the dataset. There are instances
+in which a single sell/buy market order is fulfilled by multiple buyers (sellers) in the market. These
+orders are considered as a single sell (buy) market order, combining their respective trading volumes.
+Table 1 shows the descriptive statistics of the dataset after preprocessing. The table shows that the
+trade volume for ETH-USD currency (both buy and sell) is 10 times greater than the BTC-USD
+currency trade despite the higher number of BTC-USD trades. This discrepancy is primarily due
+to the higher price of Bitcoin compared to Ethereum, resulting in a greater quantity (volume) of
+ETH-USD in a single transaction compared to BTC-USD.
+Table 1: Descriptive statistics of the cryptocurrency market orders
+Cryptocurrency Trade-Type Number of Events Volume of trade
+BTC-USD sell 7512 463.23
+BTC-USD buy 9046 734.72
+ETH-USD sell 6989 9139.5
+ETH-USD buy 6270 8101.3
+Total 30388 18438.75
+Result and Summary: Figure 9 illustrates the kernels, ϕdj (t, m) obtained after applying SNH with
+marks model to the cryptocurrency dataset. From Figure 9 the following can be observed regarding
+the trade arrivals of BTC-USD and ETH-USD trades:
+• All the cryptocurrency trades(both buy and sell) exhibit self-excitatory behaviour but the
+amount of self-excitation varies for each currency. The self-excitation remains constant
+with the volume of trade for sell BTC-USD trade but decreases with the volume for buy
+BTC-USD trades. While, for buy and sell ETH-USD trades, the intensity of trade arrival
+due to its trades increases with the volume of trade.
+• Cross excitatory behaviour is observed in sell BTC-USD and buy ETH-USD. The occurrence
+of trades in buy ETH-USD triggers sell BTC-USD trades. This triggering intensity gradually
+increases with an increase in trading volume.
+• Trades in sell ETH-USD cross excite more trades in buy BTC-USD. This excitation is
+observed only for a small volume of ETH-USD trade and diminishes with an increasing
+volume.
+The above observations give the microstructure in a cryptocurrency market, i.e. Bitcoin trades
+(buy/sell) are influenced by Ethereum (sell/buy) trades, but not the other way around. There is also
+17
+
+=== page 18 ===
+a clear dependency on the volume of trade with the intensity of trade. This statement will also be
+supported by the QQ plot given in 10.
+The QQ plot compares the performance of SNH with marks, vanilla SNH and EM.2 The QQ pots
+for sell BTC-USD and buy ETH-USD indicate a volume dependency, suggesting that the volume of
+trade plays a pivotal role in the arrival of the next trade, while there is no observable dependency for
+the volume of trade in the other two dimensions (buy BTC-USD and sell ETH-USD).
+Figure 9: Kernels for the given cryptocurrency dataset estimated using SNH with marks
+In the context of market microstructure, understanding market dynamics in relation to various
+factors is crucial. The application of SNH with marks to the cryptocurrency dataset contributes to
+understanding the change in trade intensity concerning both time and volume. Figure 11 illustrates
+the self-excitatory kernel of ETH-USD estimated using SNH with marks (ϕ4,4(t, m) in Figure 9)
+and using Vanilla SNH. Figure 11a shows a clear mark dependency for the kernel with the intensity
+increasing as the volume of trade increases. In contrast, kernels from vanilla SNH (Figure 11b) don’t
+consider the volume, providing an average intensity across all the volumes at a given time t. Thus
+using SNH with marks one can deduce the dependency of the volume on kernel intensity, a feature
+absent in vanilla SNH.
+4.5 Prediction of Marked Hawkes process
+The prediction of marked Hawkes is closely tied to the simulation process. The key quantities of
+interest for prediction would be the time to the next event (interarrival time) and the probability of
+2EM is Expectation Maximization algorithm for Hawkes process estimation proposed by Lewis and Mohler
+[2011].
+18
+
+=== page 19 ===
+Figure 10: QQ plot comparing the performance of SNH with marks, vanilla SNH and EM estimation
+methods.
+(a) SNH with marks
+ (b) Vanilla SNH
+Figure 11: Estimated self-excitatory kernel of buy ETH-USD indicating the difference with marks
+and without marks estimation
+an event occurring within a given interval of time (exponential of the integrated intensity). These
+quantities can be derived if the conditional intensity is known, and the functional form of the
+conditional intensity is obtained through the discussed estimation methods. If the structure of the
+conditional intensity is known, conditional intensity can be obtained with any arbitrary history of
+time and mark. Thus it is straightforward to see prediction as an application and extension of the
+preceding procedures. A step-by-step detail of the prediction process is given as,
+1. Select a time period of the dataset (0, A] to estimate the marked Hawkes process, thereby
+obtaining the functional form of conditional intensity function.
+2. Simulate the process beyond (0, A] using Algorithm 1 leveraging the known structure of the
+conditional intensity function and the known history HA.
+3. Extract from the simulation the quantity required to predict (interarrival time or probability
+of arrival).
+4. Repeat steps 2 and 3 a sufficient number of times to achieve the desired precision for the
+prediction quantity.
+19
+
+=== page 20 ===
+5. The output is the empirical distribution of the quantity obtained from multiple successive
+simulations.
+5 Conclusion
+This paper introduces a novel non-parametric estimation technique tailored for the marked Hawkes
+process. This is the first known approach capable of non-parametrically estimating the kernel of
+the Hawkes process as a joint function of time and marks. Drawing inspiration from the vanilla
+SNH method and the NNNH method, the proposed model employs a two-layer feed-forward neural
+network to approximate the Hawkes kernel, treating the kernel as a joint function of event times
+and their associated marks. This model is applied to the log-likelihood function and the optimal
+neural network parameters are derived using batch SGD combined with Adam. The use of batch
+SGD renders the method suitable for online learning applications, facilitating the updation of network
+parameters based on the arrival of new data points.
+Here we explain two approaches SNH with marks- tailored for the linear marked Hawkes process
+and NNNH with marks- for the non-linear marked Hawkes process. Even though the NNNH with
+marks possesses the capability to model linear Hawkes models, we limit its use to scenarios suspected
+of negative dependencies as clarified in Remark 3.1. We apply the estimation methods to synthetic
+and cryptocurrency datasets. We compare all the results obtained with the corresponding estimation
+methods without marks, and QQ plots are obtained. Although QQ plots for estimation with marks and
+without marks appear unique (in some datasets), using estimation with marks proves advantageous
+when understanding the dependency of event arrivals on marks is crucial. In the cryptocurrency
+setting, estimation with marks reveals the relationship of the market order arrival intensity with the
+volume of the trade apart in addition to the history of trade arrivals. This provides a comprehensive
+insight into the dynamics of the cryptocurrency market microstructure.
+While the proposed methods prove robust in estimating Hawkes process with marks, determining the
+appropriate mark component in real-life applications remains a relevant factor, which can be taken as
+a future area of focus. Additionally, incorporating spatial coordinates as marked components could
+be a potential focus for future directions. Including spatial elements in the model has the potential to
+enhance our understanding and prediction capabilities in earthquake modelling and related fields.
+References
+Emmanuel Bacry and Jean-François Muzy. First-and second-order statistics characterization of
+hawkes processes and non-parametric estimation. IEEE Transactions on Information Theory, 62
+(4):2184–2202, 2016.
+Pierre Brémaud and Laurent Massoulié. Stability of nonlinear hawkes processes. The Annals of
+Probability, pages 1563–1588, 1996.
+Valérie Chavez-Demoulin and JA McGill. High-frequency financial data modeling using hawkes
+processes. Journal of Banking & Finance, 36(12):3415–3426, 2012.
+Feng Chen and Wai Hong Tan. Marked self-exciting point process modelling of information diffusion
+on twitter. The Annals of Applied Statistics, 12(4):2175–2196, 2018.
+Daryl J Daley and David Vere-Jones. An introduction to the theory of point processes: volume II:
+general theory and structure. Springer Science & Business Media, 2007.
+Angelos Dassios, Hongbiao Zhao, et al. Exact simulation of hawkes process with exponentially
+decaying intensity. Electronic Communications in Probability, 18, 2013.
+Arthur P Dempster, Nan M Laird, and Donald B Rubin. Maximum likelihood from incomplete data
+via the em algorithm. Journal of the Royal Statistical Society: Series B (Methodological), 39(1):
+1–22, 1977.
+Nan Du, Hanjun Dai, Rakshit Trivedi, Utkarsh Upadhyay, Manuel Gomez-Rodriguez, and Le Song.
+Recurrent marked temporal point processes: Embedding event history to vector. In Proceedings
+of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining,
+pages 1555–1564, 2016.
+20
+
+=== page 21 ===
+Paul Embrechts, Thomas Liniger, and Lu Lin. Multivariate hawkes processes: an application to
+financial data. Journal of Applied Probability, 48(A):367–378, 2011.
+Timothée Fabre and Ioane Muni Toke. Neural hawkes: Non-parametric estimation in high dimension
+and causality analysis in cryptocurrency markets. arXiv preprint arXiv:2401.09361, 2024.
+Alexis Fauth and Ciprian A Tudor. Modeling first line of an order book with multivariate marked
+point processes. arXiv preprint arXiv:1211.4157, 2012.
+Eric Warren Fox, Frederic Paik Schoenberg, and Joshua Seth Gordon. Spatially inhomogeneous
+background rate estimators and uncertainty quantification for nonparametric hawkes point process
+models of earthquake occurrences. 2016.
+Ian Goodfellow, Yoshua Bengio, and Aaron Courville. Deep learning. MIT press, 2016.
+Alan G Hawkes. Spectra of some self-exciting and mutually exciting point processes. Biometrika, 58
+(1):83–90, 1971.
+K Hornik, M Stinchcombe, and H White. Multilayer feedforward networks are universal approxima-
+tors. Neural Networks, 2(5):359–366, 1989.
+Sobin Joseph and Shashi Jain. A neural network based model for multi-dimensional nonlinear hawkes
+processes. arXiv preprint arXiv:2303.03073, 2023.
+Sobin Joseph, Lekhapriya Dheeraj Kashyap, and Shashi Jain. Shallow neural hawkes: Non-parametric
+kernel estimation for hawkes processes. Journal of Computational Science, page 101754, 2022.
+Diederik P Kingma and Jimmy Ba. Adam: A method for stochastic optimization. arXiv preprint
+arXiv:1412.6980, 2014.
+Ryota Kobayashi and Renaud Lambiotte. Tideh: Time-dependent hawkes process for predicting
+retweet dynamics. In Tenth International AAAI Conference on Web and Social Media, 2016.
+Kyungsub Lee and Byoung Ki Seo. Marked hawkes process modeling of price dynamics and volatility
+estimation. Journal of Empirical Finance, 40:174–200, 2017.
+Moshe Leshno, Vladimir Ya Lin, Allan Pinkus, and Shimon Schocken. Multilayer feedforward
+networks with a nonpolynomial activation function can approximate any function. Neural networks,
+6(6):861–867, 1993.
+Erik Lewis and George Mohler. A nonparametric EM algorithm for multiscale hawkes processes.
+Journal of Nonparametric Statistics, 1(1):1–20, 2011.
+PA W Lewis and Gerald S Shedler. Simulation of nonhomogeneous poisson processes by thinning.
+Naval research logistics quarterly, 26(3):403–413, 1979.
+Geoffrey J McLachlan and Kaye E Basford. Mixture models: Inference and applications to clustering,
+volume 38. M. Dekker New York, 1988.
+Hongyuan Mei and Jason M Eisner. The neural hawkes process: A neurally self-modulating
+multivariate point process. In Advances in Neural Information Processing Systems, pages 6754–
+6764, 2017.
+Kevin P Murphy. Machine learning: a probabilistic perspective. MIT press, 2012.
+Santhosh Narayanan, Carsten Maple, and Mark Hooper. A point process model for rare event
+detection. arXiv preprint arXiv:2209.04792, 2022.
+Yosihiko Ogata. On lewis’ simulation method for point processes. IEEE Transactions on Information
+Theory, 27(1):23–31, 1981.
+Yosihiko Ogata. Statistical models for earthquake occurrences and residual analysis for point
+processes. Journal of the American Statistical association, 83(401):9–27, 1988.
+Yosihiko Ogata. Space-time point-process models for earthquake occurrences. Annals of the Institute
+of Statistical Mathematics, 50:379–402, 1998.
+21
+
+=== page 22 ===
+Yosihiko Ogata. Seismicity analysis through point-process modeling: A review. In Seismicity patterns,
+their statistical significance and physical meaning, pages 471–507. Springer, 1999.
+Razvan Pascanu, Tomas Mikolov, and Yoshua Bengio. On the difficulty of training recurrent neural
+networks. In International conference on machine learning, pages 1310–1318. Pmlr, 2013.
+Marcello Rambaldi, Emmanuel Bacry, and Fabrizio Lillo. The role of volume in order book dynamics:
+a multivariate hawkes process analysis. Quantitative Finance, 17(7):999–1020, 2017.
+Oleksandr Shchur, Marin Biloš, and Stephan Günnemann. Intensity-free learning of temporal point
+processes. arXiv preprint arXiv:1909.12127, 2019.
+Tom Stindl and Feng Chen. Modeling extreme negative returns using marked renewal hawkes
+processes. Extremes, 22(4):705–728, 2019.
+Shuai Xiao, Mehrdad Farajtabar, Xiaojing Ye, Junchi Yan, Le Song, and Hongyuan Zha. Wasserstein
+learning of deep generative point process models. Advances in neural information processing
+systems, 30, 2017.
+Baichuan Yuan, Hao Li, Andrea L Bertozzi, P Jeffrey Brantingham, and Mason A Porter. Multivariate
+spatiotemporal hawkes processes and network reconstruction. SIAM Journal on Mathematics of
+Data Science, 1(2):356–382, 2019.
+Jiancang Zhuang, Yosihiko Ogata, and David Vere-Jones. Analyzing earthquake clustering features
+by using stochastic reconstruction. Journal of Geophysical Research: Solid Earth, 109(B5), 2004.
+Simiao Zuo, Haoming Jiang, Zichong Li, Tuo Zhao, and Hongyuan Zha. Transformer hawkes process.
+In International conference on machine learning, pages 11692–11702. PMLR, 2020.
+A Approximation of the Log-likelihood Function
+The ground intensity part of the log-likelihood function, Lλ given in the Equation 7 can be partitioned
+into two components: the log intensity part, log(λg d(td n)) and the integrated intensity part, R T 0 λg d(s)ds.
+For both the introduced models- SNH with marks and NNNH with marks, it is necessary to obtain
+both the integrated intensity and log intensity functions to obtain the gradients from Equation 9.
+Although obtaining the log intensity part is straightforward, the integrated intensity part is not so
+direct for both the SNH with marks and NNNH with marks.
+A.1 Integrated Intensity of SNH with marks
+For the SNH with marks, as the intensity function, λd(t) is linear, it is written as the arithmetic
+combination of base intensity, µ (taking the baseline intensity as constant) and the kernel functions,
+ϕdj (t), ∀1 ≤ j ≤ D. According to Joseph et al. [2022], the integrated intensity function for a linear
+Hawkes process without marks can be written as,
+Z T
+0
+λd(s)ds =
+X
+tdn ∈H
+Z td n
+td n−1
+µdds +
+DX
+j=1
+X
+tj n ∈H
+Z T −tj n
+0
+ϕdj (s)ds.
+The above equation can be modified for a marked Hawkes process. Thus, the integrated ground
+intensity with modification in ϕdj to accommodate marks is written as
+Z T
+0
+λg d(s)ds = X
+tdn ∈H
+Z td n
+td n−1
+µdds +
+DX
+j=1
+X
+{tdn ,mdn }∈H
+Z T −tj n
+0
+ϕdj (s, mj n)ds. (15)
+For the SNH with marks, the above kernel can be approximated according to Equation 11,
+ˆϕdj (s, m) = exp
+ 
+b2 +
+PX
+i=1
+ai 3max   ai 1s + ai 2m + bi 1, 0 
+!
+.
+22
+
+=== page 23 ===
+Each of the integrated kernel function
+R T −tj n
+0
+ˆϕdj (s, mj i )ds in Equation 15 involves integrating over
+the neural network model given in Equation 11. As the model consists of the RELU function, it
+is necessary to integrate over max function for each of the ith neuron, ∀1 ≤ i ≤ P . This involves
+obtaining the zero-crossings and integrating over non-zero paths of each ith neuron over the interval
+[0, T − tj n). For the ith neuron, the zero-crossing, yi is given by,
+ai 1yi + ai 2mj n + bi 1 = 0
+yi = − ai 2mj n + bi 1 ai 1 .
+Let Y = (y1, . . . , yP ) be the zero crossings across all the P neurons. Arranging the Y in the
+increasing order and within the bounds of [0, T − tj n) given by Y ∗ = (0, y∗ 1 , . . . , y∗ u, T − tj n), where
+u ≤ P . Thus the integrated kernel function across each of [0, T − tj n) is given as,
+Z T −tj n
+0
+ˆϕdj (s, mj n)dt =
+Z y∗ 1
+0
+ˆϕdj (s, mj n)ds +
+Z y∗ 2
+y∗ 1
+ˆϕdj (s, mj n)ds + . . . +
+Z T −tj n
+y∗u
+ˆϕdj (s, mj n)ds.
+(16)
+The obtained approximated integrated intensity function is substituted to the Lλ in Equation 7 and is
+maximized to obtain the network parameters.
+A.2 Integrated Intensity of NNNH with marks
+For the NNNH with marks method, the calculation of the integrated intensity function is complex
+compared to SNH with marks due to the presence of two non-linear functions (max functions). The
+integrated intensity function,
+R T
+0 λg d(s)ds can be written as,
+Z T
+0
+λg d(s)ds = X
+{tdn ,mdn }∈H
+Z td n
+td n−1
+λg d(s)ds,
+the sum of all distinct arrival times, as it is more convenient to calculate the intensity function across
+all distinct intervals. From the non-linear marked Hawkes intensity function given in Equation 12,
+λg d(s) across each distinct interval is,
+Z td n
+td n−1
+λg d(s)ds =
+Z td n
+td n−1
+max
+
+
+
+µd +
+DX
+j=1
+X
+tj k <s
+ϕdj (s − tj k, mj k)
+
+ , 0
+
+ ds,
+=
+Z td n
+td n−1
+max
+
+
+
+µd +
+DX
+j=1
+X
+tj k <s
+b2 +
+PX
+i=1
+ai 3 max  ai 1(s − tj k) + ai 2mj k + bi 1, 0 
+
+ , 0
+
+ ds,
+the second equality substitutes neural network model from Equation 13 in to ϕdj (s − tj k, mj k). For
+finding out
+R td n
+td n−1 λg d(s)ds, it is necessary to integrate the function over non-zero paths. This is done
+by determining the zero-crossings across each [td n−1, td n] pairs. For finding out zero-crossings for an
+given interval first, we have to find the zero-crossings for the inner max function layer and then the
+outer max layer. Let Y = (y1, . . . , yP ) be the zero-crossings for the entire neural network with P
+neurons (inner max layer), yi for each ith neuron is given by,
+ai 1(yi − tj k) + ai 2mj k + bi 1 = 0,
+yi = ai 1tj k − ai 2mj k − bi 1 ai 1 .
+Thus for each of the
+R td n
+td n−1 λg d(s)ds, there will be F = P Dl(Hs− ) (l(Hs− ) denotes the length of
+history up to s) number of zero crossings for the inner max layer. Arranging Y in chronological
+order and in the bounds of
+
+td n−1, td n  given by Y ′ = (td n−1, y1, . . . , yF , td n). Next, we found
+23
+
+=== page 24 ===
+out the zero-crossings across the outer max layer. This is done by finding the zero-crossings
+in each of the pairs in Y ′. For each of the pair in Y ′, there will be at most one zero-crossings,
+denoted by y∗ i . Thus the modified Y ′ with all the zero-crossings across the interval  td n−1, td n  ,
+Y ∗ = (td n−1, y∗ 1 , y1, . . . , yF , td∗ n , td n) (Y ∗ includes zero-crossings of both inner and outer max
+function)
+Finally, the integrated intensity,
+R td n
+td n−1 λg d(s)ds is given by,
+Z
+Y ∗
+λg d(s)ds =
+Z y∗ 1
+td n−1
+λg d(s)ds +
+Z y1
+y∗ 1
+λg d(s)ds + . . . +
+Z td∗ n
+yF
+λg d(s)ds +
+Z td n
+td∗n
+λg d(s)ds, (17)
+where λg d(s) = µd + PD j=1 P tj i <T R td n−1 tdn ϕdj (s, m).
+24

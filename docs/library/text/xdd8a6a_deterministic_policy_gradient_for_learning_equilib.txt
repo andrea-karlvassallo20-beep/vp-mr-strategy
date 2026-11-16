@@ -1,0 +1,1913 @@
+=== page 1 ===
+Deterministic Policy Gradient for Learning Equilibrium in
+Time-Inconsistent Control Problems
+Xin Guo ∗ Yijie Huang † Xiang Yu‡
+Abstract
+In this paper, we develop a continuous-time model-free reinforcement learning algorithm
+to learn deterministic equilibrium policies in general time-inconsistent control problems. Uti-
+lizing the extended Hamilton-Jacobi-Bellman system, we recast the original time-inconsistent
+problem into an equivalent two-stage problem. In the first stage, for given auxiliary functions,
+we employ the deterministic policy gradient approach to learn an optimal policy in an auxiliary
+time-consistent control problem. In the second stage, given the updated policy, we exploit the
+inner fixed point iterations and some martingale characterizations to learn the auxiliary func-
+tions. As a theoretical contribution, we provide some mild model assumptions and establish
+the convergence of inner fixed point iterations. By repeating this actor-critic style of itera-
+tions across two stages, our algorithm aims to learn the equilibrium under different sources of
+time-inconsistency in a unified manner. The superior effectiveness of the proposed algorithm
+are illustrated in two classical financial applications with time-inconsistency: mean-variance
+portfolio management and optimal tracking portfolio under non-exponential discounting.
+Keywords: Time-inconsistent control, two-stage reformulation, model-free continuous-time
+reinforcement learning, deterministic policy gradient, fixed point iteration
+1 Introduction
+Stochastic control has been ubiquitous in finance, economics, and engineering. As is well-known,
+time-consistency is the ground for the classical optimal control problems: the optimal decision
+starting at the initial time remains optimal when re-evaluated later, spurring the development of
+the powerful tool as dynamic programming principle. However, in many financial applications,
+time-inconsistency may occur due to different reasons such that a policy deemed optimal at current
+time might be disagreed at a future date. Prominent examples include the nonlinear functional
+of expectations such as the mean-variance criterion for portfolio management, the subjective
+non-exponential discounting adopted by the decision maker, or the dependence on initial state
+in the performance measure such as the state-dependent risk aversion in utility preference. In
+these circumstances, a sophisticated agent may frequently deviate from the predetermined optimal
+strategy earlier, thereby invalidating the global optimality for decision making.
+∗Department of Industrial Engineering and Operations Research, University of California, Berkeley, USA.
+Email:xinguo@berkeley.edu
+†Department of Applied Mathematics, The Hong Kong Polytechnic University, Kowloon, Hong Kong.
+Email:yijie.huang@polyu.edu.hk
+‡Department of Applied Mathematics, The Hong Kong Polytechnic University, Kowloon, Hong Kong.
+Email:xiang.yu@polyu.edu.hk
+1
+arXiv:2606.11798v1  [q-fin.CP]  10 Jun 2026
+
+=== page 2 ===
+A widely accepted alternative approach to handle time inconsistency, initiated by Strotz
+(1995), is to recast the decision making problem as an intra-personal game between the cur-
+rent self and all future selves by seeking a subgame-perfect Nash equilibrium. Bj¨ork and Murgoci
+(2014) considered the discrete-time problem formulation and Bj¨ork et al. (2017) extended the
+analysis to the continuous-time setting. In their approaches, the equilibrium is characterized by
+an extended system of Hamilton–Jacobi–Bellman (HJB) equations that couples the standard value
+function with auxiliary functions arising from the perturbation of control under the definition of
+equilibrium. Despite this significant theoretical characterization, its numerical implementation is
+generally challenging. Mathematically speaking, the extended HJB system consists of a family
+of infinitely dimensional nonlinear partial differential equations indexed by some parameters by
+time and state. Most importantly, solving these equations numerically requires full knowledge of
+the model coefficients, which are often unknown in real-life applications.
+Meanwhile, the past decade has witnessed significant success of reinforcement learning (RL) in
+solving optimal control with unknown environments via trial-and-error interactions. While most
+conventional RL algorithms are designed for discrete-time settings, many real-world applications
+evolve continuously in time, motivating a surge of recent advances in continuous-time RL theories
+and algorithms. To encourage the exploration in the continuous-time learning tasks, Wang et al.
+(2020) pioneered the introduction of the entropy regularization to represent stochastic policies
+in the diffusion model. Subsequently, Jia and Zhou (2022a,b, 2023) further developed policy
+evaluation, policy gradient, and q-learning algorithms for model-free RL algorithms with stochastic
+policies on the strength of some martingale characterizations. Later, along this direction, more
+theoretical advancements and applications of continuous-time RL with stochastic policies have
+been investigated in Guo et al. (2022), Szpruch et al. (2024), Sethi et al. (2025), Bo et al. (2025),
+Wei and Yu (2025), Wang et al. (2026a), Gao et al. (2026), Bo et al. (2024); see also Dong (2024);
+Dianetti, et al. (2024); Dai et al. (2026) for extensions in optimal stopping problems and Dai et
+al. (2025); Huang et al. (2025); Cao et al. (2025) for extensions in optimal switching and impulse
+control problems.
+Despite the remarkable recent developments of continuous-time RL in the domain of optimal
+control, the progress of continuous-time RL in learning the equilibrium for a time-inconsistent
+decision maker is very limited in the literature. Several conceptual and technical issues arise in
+the attempt to employ stochastic policies to learn the equilibrium in the time-inconsistent setting:
+• The coupled feature of extended exploratory HJB equation: Almost all continuous-
+time RL approaches universally assume time-consistent preferences. In the continuous-time
+framework, the exploratory HJB equation induced by dynamic programming plays a core
+role for deriving the policy gradient representation or the Gibbs-measure characterization of
+the policy iteration operator in devising model-free RL algorithms. When the agent adopts a
+time-inconsistent preference, the goal of RL is to learn the equilibrium in the intra-personal
+game, shifting the mathematical focus to the more sophisticated extended exploratory HJB
+system. Consequently, developing continuous-time RL algorithms in this new context is far
+beyond a simple extension of analogous ones in time-consistent models.
+In a concrete application in mean-variance portfolio management, Dai et al. (2023) proposed
+a model-based policy iteration algorithm to learn the equilibrium policy. Under entropy
+regularization, the stochastic equilibrium policy can be derived as a Gaussian distribution,
+2
+
+=== page 3 ===
+which enables them to formalize the policy iteration algorithm as iteration of parameterized
+mean and variance of the stochastic policy. Their method does not easily generalize to
+other forms of time-inconsistent problems. More recently, Huang et al. (2026) studied the
+theoretical policy iteration convergence for general time-inconsistent problems under entropy
+regularization when the model is known. However, the main results in Huang et al. (2026)
+crucially rely on the drift-control setup and some restrictive assumptions on cost functions
+that exclude some classical financial applications (see examples in Section 6). Moreover, the
+Gibbs-measure characterization of the stochastic equilibrium policy in section 2.2 of Huang
+et al. (2026) involves a coupled nonlinear term of solutions to the exploratory extended
+HJB system, posing an open problem to learn these coupled solutions simultaneously by a
+model-free RL algorithm.
+• Sampling issues from stochastic policies: As pointed out by Cheng et al. (2025), while
+stochastic policies, a.k.a., relaxed controls, are theoretically appealing, they are difficult to
+sample in continuous time, state, and action spaces. Compared with optimal control coun-
+terpart, the distribution of the stochastic equilibrium policy in a time-inconsistent setting
+is inevitably more difficult to admit an explicit characterization. How to efficiently sample
+from a general Gibbs-measure distribution is a well-known challenge in practical implemen-
+tations. In addition, these approaches typically impose Bellman equation constraints that
+are not readily implementable within deep RL frameworks.
+Furthermore, Jia et al. (2025) discussed that the continuous sampling from a stochastic pol-
+icy may cause measurability issues. As suggested by Jia et al. (2025), one can consider the
+discretely sampled actions and the SDE under piecewise action controls. As time grid tends
+to zero, it is shown in Jia et al. (2025) that the optimal value function under discretely sam-
+pled controls converges to the optimal value function in the exploratory formulation using
+stochastic policy. However, whether the similar convergence also holds for equilibrium value
+function and the equilibrium policy in the time-inconsistent setting is still an open problem.
+We cannot take this convergence by granted and need to mind the possible outstanding
+error between the equilibrium value function under the discretely sampled actions and the
+one using a stochastic policy.
+• Approximation issue under entropy regularization: Albeit entropy regularization
+encourages the randomization of the stochastic policy, it is also well noted that the entropy
+term in the exploratory formulation alters the targeted control problem. For optimal control
+problems, Tang et al. (2022) established the convergence of the exploratory HJB equation
+to the classical HJB equation as entropy regularization vanishes by invoking the stability
+result of viscosity solutions. In the time-inconsistent setting with drift control, Wang et
+at. (2026b) recently proved the convergence of the exploratory extended HJB equation to
+the original extended HJB equation as entropy regularization vanishes. However, the drift
+control setup is crucial to facilitate the convergence arguments, and it is assumed in Wang
+et at. (2026b) that the model coefficients and cost function need to meet some restrictive
+boundedness conditions. Consequently, in many financial applications with diffusion control
+such as the examples in Section 6, choosing small temperature parameter for entropy regu-
+larization may not guarantee a good approximation of the original problem without entropy.
+Potentially, adding the entropy may cause a considerable approximation error to learn the
+true equilibrium in the original time-inconsistent problem.
+3
+
+=== page 4 ===
+In sum, although stochastic policies have been popularized in continuous-time RL for time-
+consistent models, there are still some technical gaps calling for a full understanding in devising
+effective RL algorithms in the face of time-inconsistency. Inspired by the recent work Cheng et al.
+(2025), which established a policy gradient representation for the deterministic policy using the
+advantage rate function, the choice of deterministic policy seems a suitable alternative in general
+time-inconsistent control problems. By working with deterministic policies, we can circumvent
+the previous technical gaps stemming from entropy regularization. However, as the goal is no
+longer to seek the global optimal value, can the deterministic policy gradient (DPG) learn the
+equilibrium policy?
+Our work. In this paper, we bridge the time-inconsistent control problems and the deter-
+ministic policy gradient approach. To make this work, starting from the extended HJB system,
+we first reformulate the original time-inconsistent control problem as an equivalent two-stage
+fixed-point problem. This reformulation is achieved by introducing a modified running reward
+function that incorporates auxiliary functions capturing the future preferences of the agent. The
+first stage problem turns to be a standard time-consistent optimal control problem with this mod-
+ified reward. The second stage enforces the consistency: the auxiliary functions must coincide
+with the expected future outcomes under the optimal policy obtained in the first stage. Together,
+these two stages form a fixed-point condition that characterizes the subgame-perfect equilibrium.
+This decomposition not only clarifies the structure of the equilibrium but also provides a natural
+foundation for iterative learning algorithm.
+Based on this two-stage reformulation, the DPG can be invoked in the first stage of auxiliary
+optimal control problem. In a nutshell, our proposed RL algorithm operates in an actor-critic
+fashion: In the actor-step, for the fixed auxiliary functions, it improves the policy using DPG
+updates based on the advantage rate function; In the critic-step, for the given updated policy,
+it refines the auxiliary functions as the fixed point by repeating the inner iterations using the
+martingale conditions. To support the theoretical convergence in the second stage, we provide
+some mild model assumptions and establish the convergence guarantee of inner iterations to
+the fixed point auxiliary functions in Theorem 4.2. Moreover, to handle the modified reward
+that involves some unobservable auxiliary functions and their derivatives, we establish martingale
+characterizations for the value function and its advantage rate function as well as the auxiliary
+functions and their associated advantage rate functions. These characterizations replace the
+extended HJB equations with martingale orthogonality conditions that can be implemented via
+stochastic approximations, leading to efficient parameter updates.
+To achieve the purpose of exploration during the learning procedure, we choose the local explo-
+ration around the current action as in Cheng et al. (2025) in these martingale characterizations
+of the advantage rate function and auxiliary functions. In addition, as a new feature of time-
+inconsistent controls, the martingale characterizations need to hold for any extended parameters
+(s, y) ∈ [0, T ] × Rn in Propositions 4.4 and 4.5 to fully learn the auxiliary function f (t, x, s, y)
+and its advantage rate function because of the initial time-state dependence. To design a feasible
+martingale orthogonality condition for any parameters (s, y) ∈ [0, T ] × Rn, we also adopt a local
+exploration trick for these two parameters using the sampling from the uniform distribution on
+[0, T ] and Gaussian distribution on Rn with mean at x. Combining the fixed-point iteration with
+the martingale conditions, we finally propose a DPG-fixed point iteration (DPG-FPI) algorithm
+that simultaneously learns the equilibrium policy, the value function, and the auxiliary functions
+4
+
+=== page 5 ===
+from observed trajectories. The algorithm uses structured neural networks that incorporate the
+analytical forms suggested by the theory. We incorporate techniques such as target networks,
+which help to smooth the iterative fixed-point updates by averaging successive iterates.
+The superior performance of our DPG-FPI algorithm is demonstrated in two financial ap-
+plications, namely, the mean-variance portfolio management and the optimal tracking portfolio
+under non-exponential discounting. These two examples represent two distinct sources of time
+inconsistency. In the mean-variance problem, using its explicit classical solution to the extended
+HJB system and the explicit characterization of the equilibrium policy, we exploit parameteri-
+zations to capture the exact functional forms of the true solutions, which enables us to isolate
+the learning dynamics from approximation errors. After 10000 episodes of iterations, our learned
+equilibrium policy and learned equilibrium value function closely agree with their true values.
+Moreover, in this example, we also compare the performance of our DPG-FPI algorithm with
+the q-learning algorithm using stochastic policies. The numerical results are consistent with the
+findings of Cheng et al. (2025) in time-consistent control problems, where our DPG-FPI algorithm
+is shown to outperform entropy-regularized stochastic policy approach in terms of convergence
+speed, accuracy as well as stability with respect to the exploration and model parameters.
+In the second example of optimal tracking portfolio problem, the value function and the
+auxiliary function admit semi-analytical expressions; we thus adopt structured neural network
+architectures to leverage this structure while retaining sufficient flexibility. Again, the learned
+equilibrium policy and the learned equilibrium value function closely match their theoretical
+results, confirming that our DPG-FPI algorithm achieves very satisfactory performance in learning
+equilibrium under time-inconsistency. In this example, we further conduct a comparison of the
+learning performance between the time-consistent case under the exponential discounting (trained
+directly using the DPG algorithm in Cheng et al. (2025)) and the time-inconsistent case under non-
+exponential discounting (using our Algorithm 1), shedding some light on the extra instability in
+the learning task caused by time-inconsistency. As expected, both the learned value function and
+the learned equilibrium policy in the time-inconsistent case exhibit notable larger variance across
+independent runs. This numerical comparison highlights the foreseeable greater difficulty and
+instability in learning equilibrium policies under non-standard time preferences than in learning
+the optimal policies under exponential discounting.
+The rest of the paper is organized as follows. Section 2 reviews the classical formulation
+of time-inconsistent stochastic control problem, the extended HJB system and the definition of
+equilibrium policy, and introduces the equivalent two-stage reformulation to facilitate the RL
+design. Section 3 addresses the first stage for the given auxiliary functions where DPG is used to
+learn the optimal deterministic policy in an auxiliary time-consistent stochastic control problem.
+Section 4 tackles the second stage for a given policy where the inner fixed point iteration is
+developed to update the auxiliary functions. Section 5 devises the overall DPG-FPI algorithm
+based on the outer-inner iterations across two stages. Section 6 reports numerical experiments
+in two important financial applications, demonstrating the very satisfactory performance of the
+DPG-FPI algorithm to learn the equilibrium in time-inconsistent settings.
+Notations. Throughout this paper, we will use the following notations. For a, b ∈ Rn, a · b :=
+a⊤b. For a matrix A ∈ Rn×d, we use A⊤ for its transpose, Tr(A) for its trace, |A| for its
+Euclidean (Frobenius) norm, and we write A2 := AA⊤. For a set O ⊂ Rn, Ck(O) is the space
+5
+
+=== page 6 ===
+of real functions on O with continuous derivatives up to order k; C 1,2([0, T ] × O) is the space of
+functions u on [0, T ]×O for which ∂tu, ∂xi u, and ∂xixj u (for 1 ≤ i, j ≤ n) exist and are continuous.
+For D ⊂ [0, T ] × Rn, the following norms for functions defined on D are adopted:
+||u||(0) = sup
+(t,x)∈D
+|u(t, x)|,
+||u||(2) = ||u||(0) + ||∂tu||(0) +
+X
+1≤i≤n
+||∂xi u||(0) +
+X
+1≤i,j≤n
+||∂xixj u||(0),
+||u||(3) = ||u||(2) +
+X
+1≤i,j,k≤n
+||∂xixj xk u||(0).
+Moreover, for D ⊂ [0, T ] × Rn × [0, T ] × Rn, the norms for functions on D are defined analogously:
+||u||(0) = sup
+(t,x,s,y)∈D
+|u(t, x, s, y)|,
+||u||(2) = ||u||(0) + ||∂su||(0) + ||∂tu||(0) +
+X
+1≤i≤n
+||∂xi u||(0) +
+X
+1≤i,j≤n
+||∂xixj u||(0)
++
+X
+1≤i≤n
+||∂yi u||(0) +
+X
+1≤i,j≤n
+||∂yiyj u||(0) +
+X
+1≤i≤n
+||∂sxi u||(0) +
+X
+1≤i≤n
+||∂sxixj u||(0),
+||u||(3) = ||u||(2) +
+X
+1≤i,j,k≤n
+||∂xixj xk u||(0) +
+X
+1≤i,j,k≤n
+||∂yiyj yk u||(0) +
+X
+1≤i,j,k≤n
+||∂sxixj xk u||(0).
+2 Problem Formulations
+2.1 Classical Problem Formulation
+Let us consider the state space in Rn and assume that the action space is an open set A ⊆ Rd.
+For each adapted A-valued control process a = (as)s≥0, the resulting state process is governed by
+X a s = b(s, X a s , as)ds + σ(s, X a s , as)dWs, s ∈ [t, T ]; X a t = x, (2.1)
+where (Ws)s≥0 is an m-dimensional Brownian motion on a filtered probability space (Ω, F , F =
+(Fs)s≥0, P), and b : [0, T ] × Rn × A → Rn, σ : [0, T ] × Rn × A → Rn×m are continuous functions.
+In this paper, we restrict the admissible policies to be of deterministic and feedback type.
+Definition 2.1. An admissible deterministic policy is a map a : [0, T ] × Rn → A such that for
+each initial point (t, x) ∈ [0, T ] × Rn, the stochastic differential equation
+dXs = b (s, Xs, a (s, Xs)) ds + σ (s, Xs, a (s, Xs)) dWs, Xt = x
+has a unique strong solution denoted by X a. The class of admissible deterministic policies is
+denoted by A.
+The reward functional under the deterministic policy a(t, x) is given by
+J (t, x; a) := Et,x
+Z T
+t
+r(t, x, s, X a s , as)ds + F (t, x, X a T )
+
++ G(x, Et,x[X a T ]), (2.2)
+6
+
+=== page 7 ===
+where r : [0, T ] × Rn × [0, T ] × Rn × Rn × A → R, F : [0, T ] × Rn → R and G : Rn × Rn → R
+are continuous functions, representing the running and terminal rewards, respectively, and the
+expectation operator Et,x[·] := EP [·|Xt = x]. We further assume that the function y → G(x, y) is
+continuously differentiable. In particular, the reward functional depends on the initial time t, the
+initial state x as well as a nonlinear expectation. Consequently, the stochastic control problem
+is time inconsistent. That is, the global optimality does not hold in this framework because
+the optimal decision deemed now may no longer remain optimal in the future, and the standard
+dynamic programming techniques are inapplicable.
+To address this challenge, we adopt a game-theoretic approach as in Bj¨ork et al. (2017), and
+seek the subgame-perfect Nash equilibrium for the intra-personal game of the agent between
+the current self and all future selves. We formalize this by introducing the notion of a (closed-
+loop) equilibrium control, which remains dynamically consistent so that the future selves will not
+deviate.
+Definition 2.2. Consider an admissible deterministic policy ˆa. Choose another arbitrary admis-
+sible policy a ∈ A and a fixed real number h > 0. Also fix an arbitrarily chosen initial point (t, x).
+Define the deterministic policy a by
+ah(s, y) =
+(
+a(s, y) for t ≤ s < t + h, y ∈ Rn,
+ˆa(s, y) for t + h ≤ s ≤ T, y ∈ Rn.
+If
+lim inf
+h→0
+J (t, x; a) − J (t, x, ah)
+h ≥ 0
+for all a ∈ A, we say that ˆa is an equilibrium policy. Under this equilibrium policy ˆa, the
+equilibrium value function V is given by
+V (t, x) = J (t, x; ˆa).
+Following the standard arguments of Bj¨ork et al. (2017), we can derive an extended Hamil-
+ton–Jacobi–Bellman (HJB) system to characterize the equilibrium policy and the equilibrium
+value function, given by
+(i) The function V is determined by
+sup
+a∈A
+(
+(LaV ) (t, x) + r(t, x, t, x, a) − La ˆf (t, x, t, x) + La ˆf t,x(t, x)
+− La(G ⋄ ˆg)(t, x) + ∂yG(x, ˆg(t, x))La ˆg(t, x)
+)
+= 0, (2.3)
+with boundary condition
+V (T, x) = F (T, x, x) + G(x, x), (2.4)
+where L is the generator of (2.1) such that for all φ ∈ C 1,2 ([0, T ] × Rn) and a ∈ A,
+Laφ(t, x) := ∂tφ(t, x) + b(t, x, a)⊤∂xφ(t, x) + 1 2 Tr   Σ(t, x, a)∂2 xxφ(t, x)  ,
+with Σ := σσ⊤.
+7
+
+=== page 8 ===
+(ii) For each fixed (s, y), the auxiliary function ˆf s,y(t, x) is defined by
+Lˆa ˆf s,y(t, x) + r (s, y, t, x, ˆa(t, x)) = 0, s ≤ t < T, (2.5)
+ˆf s,y(T, x) = F (s, y, x). (2.6)
+(iii) The auxiliary function ˆg(t, x) is defined by
+Lˆa ˆg(t, x) = 0, 0 ≤ t < T, (2.7)
+ˆg(T, x) = x. (2.8)
+In the above definition, ˆa denotes the deterministic policy that achieves the supremum in the
+equation (2.3), and we have used the notations
+f (t, x, s, y) = f s,y(t, x), (G ⋄ g)(t, x) = G(x, g(t, x)).
+Before presenting the verification theorem, we first define a suitable function space that en-
+sures the stochastic integrals encountered in the analysis are well defined. Consider an arbitrary
+admissible policy a ∈ A. A function ℓ : [0, T ] × Rn → R is said to belong to the space L2 (X a) if
+it satisfies the integrability condition
+Et,x
+Z T
+t
+|∂xℓ (s, X a s ) σ (s, X a s )|2 ds
+
+< ∞
+for every (t, x) ∈ [0, T ] × Rn. Under this definition, we can now state the following standard
+verification theorem in the literature.
+Theorem 2.1 (Verification Theorem, Theorem 5.2 in Bj¨ork et al. 2017). Assume that the func-
+tions V (t, x), f (t, x, s, y), g(t, x), and ˆa(t, x) satisfy the following conditions.
+(i) V (t, x), and g(t, x) are smooth in the sense that they are in C 1,2([0, T ]×Rn), and f (t, x, s, y)
+is in C 1,2,1,2([0, T ] × Rn × [0, T ] × Rn). Moreover, these functions solve the extended HJB
+system given by (2.3)–(2.8).
+(ii) The feedback function ˆa is an admissible policy that achieves the supremum in equation
+(2.3).
+(iii) All V, f, g, and G⋄g as well as the function (t, x) 7−→ f (t, x, t, x) belong to the space L2   X ˆa .
+Then ˆa is an equilibrium policy, and V is the associated equilibrium value function. Furthermore,
+functions f and g admit the following probabilistic representations: for (t, s, x, y) ∈ [0, T ]2 × Rn ×
+Rn,
+f (t, x, s, y) = Et,x
+Z T
+t
+r(s, y, ℓ, X ˆa ℓ , ˆa(ℓ, X ˆa ℓ ))dℓ + F (s, y, X ˆa T )
+
+, (2.9)
+g(t, x) = Et,x
+h
+X ˆa T
+i
+. (2.10)
+8
+
+=== page 9 ===
+2.2 Equivalent Two-Stage Reformulation
+The extended HJB system (2.3)–(2.8) characterizes the (time-consistent) equilibrium policies,
+which also suggests an intriguing reinterpretation of the original time-inconsistent problem. Specif-
+ically, by suitably modifying the reward structure, one can transform the original problem into
+an equivalent time-consistent stochastic control problem together with some fixed point condition
+on the associated auxiliary functions.
+To see this, consider an auxiliary running reward function ˜r(t, x, a) : [0, T ] × Rn × A → R
+defined by
+˜r(t, x, a) := r(t, x, t, x, a) − Laf (t, x, t, x) + Laf t,x(t, x) − La(G ⋄ g)(t, x) + ∂yG(x, g(t, x))Lag(t, x).
+Then, the equilibrium value function V (t, x) from the original problem can be represented as the
+value function of a standard time-consistent optimal control problem:
+V (t, x) := sup
+a∈A
+Et,x
+Z T
+t
+˜r(s, X a s , as)ds + F (T, X a T , X a T ) + G(X a T , X a T )
+
+. (2.11)
+In this reformulation, the decision maker maximizes an expected payoff with a time-separable
+objective when the auxiliary functions (f, g) are priorily given, which is called an auxiliary optimal
+control problem that fits into the classical dynamic programming framework.
+The intuition behind this formulation is that the additional terms in ˜r compensate for the
+time-inconsistency embedded in the original preferences. The term −∂sf (t, x, t, x) adjusts for the
+fact that the future self may evaluate rewards differently, while the terms involving G ⋄ g and g
+correct for the distortion introduced by the nonlinear function G applied to the terminal expec-
+tation. Together, these modifications absorb the effects of changing preferences into a modified
+instantaneous reward, effectively “internalizing” the time inconsistency.
+Nevertheless, as emphasized by Bj¨ork et al. (2021), this equivalent formulation is primarily of
+conceptual interest and has limited analytical power. The crucial obstacle is that the construction
+of ˜r requires knowledge of the functions f and g, which in turn depend on the equilibrium
+control ˆa itself. In other words, to formulate the equivalent time-consistent problem, one must
+already know the solution to the original time-inconsistent problem. Thus, except for providing
+a conceptual connection between time-inconsistent and classical control problems through the
+structure of equilibrium solutions, this circular dependence renders the transformation unsuitable
+as an analytical tool.
+We next approach problem (2.11) from a different perspective, by formulating it as a two-stage
+fixed-point problem. This reformulation highlights the self-consistency required for an equilibrium
+and provides a constructive characterization of the solution. It goes as follows.
+(i) For a given pair of functions (f, g), we solve a standard stochastic control problem:
+max
+a∈A
+Et,x
+Z T
+t
+˜rf,g(s, X a s , as)ds + F (T, X a T , X a T ) + G(X a T , X a T )
+
+, (2.12)
+where the modified running reward ˜rf,g is defined as
+˜rf,g(t, x, a) := r(t, x, t, x, a) − Laf (t, x, t, x) + Laf t,x(t, x)
+9
+
+=== page 10 ===
+− La(G ⋄ g)(t, x) + ∂yG(x, g(t, x))Lag(t, x). (2.13)
+For each fixed (f, g), problem (2) is a conventional time-consistent optimal control problem.
+Its solution, denoted ˆaf,g, can in principle be obtained via standard dynamic programming
+or stochastic maximum principle techniques.
+(ii) We seek a fixed point: a pair of functions (f, g) such that, when the optimal control ˆaf,g
+obtained from step (i) is applied, the functions f and g themselves satisfy the PDE sys-
+tem (2.5)–(2.8). In other words, the pair (f, g) must be consistent with the probabilistic
+representations
+
+
+
+f (t, x, s, y) = Et,x
+Z T
+t
+r
+ 
+s, y, ℓ, X ˆaf,g ℓ , ˆaf,g(ℓ, X ˆaf,g ℓ )  dℓ + F   s, y, X ˆaf,g T  ,
+g(t, x) = Et,x
+h
+X ˆaf,g T i . (2.14)
+This fixed-point formulation captures the essence of the equilibrium concept: the functions (f, g)
+that determine the modified reward ˜r must coincide with the actual future outcomes generated
+by the control they induce. Thus, the equilibrium control ˆa and the associated functions (f, g)
+are mutually reinforcing: they satisfy a consistency condition that closes the loop between the
+agent’s anticipated future evaluations and the realized dynamics.
+The following result establishes the equivalence between the two formulations discussed above,
+thereby providing a unified framework for analyzing time-inconsistent stochastic control problems.
+Theorem 2.2 (Equivalence of Formulations). The time-inconsistent problem (2.2) and the two-
+stage problem (2.12)–(2.14) are equivalent in the following sense:
+(i) If ˆa is an equilibrium control for the time-inconsistent problem (2.2) with associated value
+function V and auxiliary functions (f, g) satisfying the extended HJB system (2.3)–(2.8) as
+well as conditions (i) and (iii) in Theorem 2.1, then (ˆa, f, g) constitutes a fixed point of the
+two-step procedure (2.12)–(2.14).
+(ii) If (ˆa, f, g) constitutes a fixed point of the two-step procedure (2.12)–(2.14), and satisfy condi-
+tions (i) and (iii) in Theorem 2.1, then ˆa is an equilibrium control for the time-inconsistent
+problem (2.2).
+Proof. Since the auxiliary functions (f, g) satisfy the extended HJB system (2.3)–(2.8) as well as
+conditions (i) and (iii) in Theorem 2.1, it follows that the functions f and g admit the probabilistic
+representations (2.9)–(2.10). Consequently, (ˆa, f, g) constitutes a fixed point of the two-step
+procedure (2.12)–(2.14).
+For item (ii), observe that conditions (i) and (iii) in Theorem 2.1 hold. It then follows from
+standard control theory that the value function V satisfies the HJB equation (2.3) together with its
+terminal condition (2.4), thereby verifying condition (ii) in Theorem 2.1. Applying Theorem 2.1
+now yields that ˆa is an equilibrium control for the time-inconsistent problem (2.2).
+10
+
+=== page 11 ===
+Theorem 2.2 transforms the original time-inconsistent problem into a two-stage fixed-point
+problem. This reformulation not only provides a conceptual bridge between time-inconsistent and
+classical controls as well as a constructive approach for computing an equilibrium. Specifically,
+the two-stage structure naturally lends itself an iterative scheme: starting from an initial guess
+(f0, g0), one solves the standard stochastic control problem (2.12) to obtain the corresponding
+optimal control ˆaf0,g0 . From this control, one then updates (f1, g1) via the fixed point of the
+probabilistic representations (2.9)–(2.10), which are precisely the solutions to the PDE system
+(2.5)–(2.8). Repeat this procedure until the iteration converges and yields a fixed point (ˆa, f, g)
+that satisfies the equilibrium conditions.
+3 Learning the Auxiliary Optimal Policy via DPG
+We start to introduce the RL formulation of the time-inconsistent control problem. In the first
+stage, the agent aims to learn an optimal policy in the auxiliary time-consistent control problem by
+interacting with an unknown environment. Specifically, we assume that the coefficient functions
+b(t, x, a) and σ(t, x, a) governing the state dynamics, as well as the running reward function
+r(t, s, x, a), are unknown to the agent. In contrast, the terminal reward functions F (T, x) and
+G(x) are known: the agent has clear knowledge of the final objective but must learn to achieve it
+through experience.
+Our approach builds on the fixed-point characterization established in Theorem 2.2 and lever-
+ages deterministic policy gradient (DPG) method from reinforcement learning. The key idea is to
+alternate between policy improvement for a fixed auxiliary pair (f, g) and updating (f, g) based
+on the resulting policy.
+First, we fix a pair of functions (f, g), assume that the modified running reward ˜rf,g can be
+observed by the agent, and consider the standard stochastic control problem (2.12). To solve this
+problem without knowledge of the dynamics, we adopt the DPG approach. Let {µϕ : [0, T ]×Rn →
+A | ϕ ∈ Rk} be a family of parameterized deterministic policies. For a fixed (f, g), we define the
+performance criterion
+V ϕ(t, x) := E
+Z T
+0
+˜rf,g  s, X ϕ s , µϕ(s, X ϕ s )  ds + F (T, X ϕ T , X ϕ T ) + G(X ϕ T , X ϕ T )  , (3.1)
+where X ϕ denotes the state process controlled by the policy µϕ. The objective is to maximize
+V ϕ(t, x) over the parameter space Rk, thereby obtaining an approximation µϕ∗ of the optimal
+control ˆaf,g for the modified problem.
+To ensure the well-posedness of the stochastic control problem (3.1) we impose the following
+assumptions.
+Assumption 3.1. (i) There exists C > 0 such that for all t, s ∈ [0, T ], a, a′ ∈ A and x, x′, y ∈
+Rn,
+b(t, x, a) − b   t, x′, a′ + σ(t, x, a) − σ   t, x′, a′ ≤ C  x − x′ + a − a′
+|b(t, 0, 0)| + |σ(t, 0, 0)| ≤ C,
+|r(s, y, t, x, a)| + |F (s, y, x)| + |G(x, y)| ≤ C
+ 
+1 + |x|2 + |a|2 .
+11
+
+=== page 12 ===
+(ii) There exists a locally bounded function ρ1 : [0, ∞) → [0, ∞) such that for all ϕ ∈ Rk, t ∈
+[0, T ], and x, x′ ∈ Rn, |µϕ(t, x) − µϕ (t, x′)| ≤ ρ1(|ϕ|) |x − x′| and |µϕ(t, 0)| ≤ ρ1(|ϕ|).
+(iii) For all (t, x) ∈ [0, T ] × Rn, a 7→ (b, σσ⊤, ˜rf,g)(t, x, a) and ϕ 7→ µϕ(t, x) are continuously
+differentiable. There exists a locally bounded function ρ2 : [0, ∞) → [0, ∞) such that for all
+ϕ ∈ Rk and (t, x) ∈ [0, T ] × Rn,
+|∂ϕb (t, x, µϕ(t, x))|
+1 + |x| +
+∂ϕ   σσ⊤ (t, x, µϕ(t, x))  + ∂ϕ ˜rf,g (t, x, µϕ(t, x)) 
+1 + |x|2 ≤ ρ2(|ϕ|).
+Moreover, V ϕ ∈ C1,2 ([0, T ] × Rn) for all ϕ ∈ Rk.
+By applying Theorem 3.1 in Cheng et al. (2025), we have the following DPG formula.
+Theorem 3.1. Let Assumption 3.1 hold. For all (t, x) ∈ [0, T ] × Rn and ϕ ∈ Rk,
+∂ϕV ϕ(t, x) = E
+Z T
+t
+∂ϕµϕ(s, X ϕ s )⊤∂aAϕ(s, X ϕ s , µϕ(s, X ϕ s ))ds
+ X ϕ t = x  ,
+where Aϕ(t, x, a) = LaV ϕ(t, x) + ˜rf,g(t, x, a).
+In Theorem 3.1, the implementation of DPG relies on the computation of the advantage rate
+function Aϕ locally around the policy µϕ. A convenient characterization of this advantage rate
+function is given by the following martingale criterion, adapted from Theorem 3.2 in Cheng et al.
+(2025).
+Theorem 3.2. Let Assumption 3.1 hold. Let ϕ ∈ Rk, ˆV ∈ C 1,2([0, T ] × Rn) and ˆq ∈ C([0, T ] ×
+Rn × A) satisfy the following conditions for all (t, x) ∈ [0, T ] × Rn:
+ˆV (T, x) = F (T, x, x) + G(x, x), ˆq(t, x, µϕ(t, x)) = 0, (3.2)
+and there exists a neighborhood Oµϕ(t,x) ⊂ A of µϕ(t, x) such that for all a ∈ Oµϕ(t,x),
+
+ˆV (s, X t,x,a s ) +
+Z s
+t
+(˜r − ˆq)(u, X t,x,a u , αu)du
+
+s∈[t,T ]
+(3.3)
+is an F-martingale, where X t,x,a satisfies for all s ∈ [t, T ],
+dX t,x,a s = b(s, X t,x,a s , αs)ds + σ(s, X t,x,a s , αs)dWs, X t,x,a t = x, (3.4)
+and (αs)s≥t is a square-integrable A-valued adapted process with lims↘t αs = a almost surely.
+Then ˆV (t, x) = V ϕ(t, x) and ˆq(t, x, a) = Aϕ(t, x, a) for all (t, x, a) ∈ [0, T ] × Rn × Oµϕ(t,x).
+4 Learning the Auxiliary Functions via Fixed-Point Iterations
+In this subsection, we address the problem of learning the auxiliary fixed point functions f (t, x, s)
+and g(t, x) for a given policy µf,g(t, x). Recall that these functions are defined by the consistency
+12
+
+=== page 13 ===
+conditions
+
+
+
+f (t, x, s, y) = Et,x
+Z T
+t
+r
+ 
+s, y, ℓ, X f,g ℓ , µf,g(ℓ, X f,g ℓ )  dℓ + F   s, y, X f,g T  ,
+g(t, x) = Et,x
+h
+X f,g T
+i
+,
+(4.1)
+where the process X f,g ℓ denotes the state process (2.1) controlled by the policy µf,g. These
+functions play a central role in the fixed-point characterization of the equilibrium: they encode the
+future evaluations that the agent anticipates at different times, and they determine the modified
+reward ˜rf,g used in the step of deterministic policy gradient.
+For the given µf,g, we shall call the iteration to achieve the fixed point (f, g) as inner iteration,
+for which we propose an iterative scheme. Given any initial guess (f0, g0), define the sequence
+{fk, gk}k≥0 iteratively as follows: for k ≥ 0,
+
+
+
+fk+1(t, x, s, y) = Et,x
+Z T
+t
+r
+ 
+s, y, ℓ, X fk ,gk ℓ , µfk ,gk (ℓ, X fk ,gk ℓ )  dℓ + F   s, y, X fk ,gk T  ,
+gk+1(t, x) = Et,x
+h
+X fk ,gk T
+i
+.
+(4.2)
+Assumption 4.1. (i) For each function φ ∈ {b, σ} the mapping (s, x, a) → φ(s, x, a) is con-
+tinuously differentiable of first order with respect to s with bounded derivatives, and three
+times continuously differentiable with respect to (x, a) with bounded derivatives.
+(ii) For each function φ ∈ {r, F } the mapping (t, y, s, x, a) → φ(t, y, s, x, a) is continuously
+differentiable with respect to (t, s). For each function φ ∈ {r, F, ∂sr, ∂sF }, the mapping
+(t, y, s, x, a) → φ(t, y, s, x, a) is three times continuously differentiable with respect to (y, x, a).
+Moreover, the first-order derivatives of (t, y, s, x, a) → φ(t, y, s, x, a) satisfy a linear growth
+condition in (x, a), uniformly in (s, t, y), while the second- and third-order derivatives with
+respect to (y, x, a) are uniformly bounded. There exists a constant C > 0 such that
+|φ(s, y, t, x1, a1) − φ(s, y, t, x2, a2)|
+≤ C(1 + |x1| + |x2| + |a1| + |a2|)(|x1 − x2| + |a1 − a2|),
+for any (t, s, y) ∈ [0, T ]2 × Rn and x1, x2 ∈ Rn, a1, a2 ∈ A.
+(iii) There exists a constant C > 0 such that for every pair (f, g) , the corresponding policy µf,g
+belongs to C 1,3([0, T ] × Rn) and satisfies that, for any (t, x) ∈ [0, T ] × Rn,
+|µf,g(t, x)| ≤ C(1 + |x|), |∂xµf,g(t, x)| + |∂xxµf,g(t, x)| + |∂xxxµf,g(t, x)| ≤ C.
+Furthermore, for each functional φf,g ∈ {µf,g, (∂xi µf,g)i=1,...,n, (∂xixj µf,g)i,j=1,...,n}, there
+exists a constant C > 0 such that
+|φf1,g1 (t, x1) − φf2,g2 (t, x2)| ≤ C(1 + |x1| + |x2|)(|| ˜f1 − ˜f2||(2) + ||˜g1 − ˜g2||(2))
++ C(1 + || ˜f1 − ˜f2||(2) + ||˜g1 − ˜g2||(2))|x1 − x2|
+for any (t, x1, x2) ∈ [0, T ]×R2n and (f1, f2, g1, g2) with || ˜f1||(2) +|| ˜f2||(2) +||˜g1||(2) +||˜g2||(2) <
+∞, where ˜fi(t, x, s, y) := fi(t,x,s,y) 1+|x|2 and ˜gi(t, x) := gi(t,x) 1+|x|2 for i = 1, 2.
+13
+
+=== page 14 ===
+Lemma 4.1. Let Assumptions 3.1 and 4.1 hold. For any (f0, g0) with ||f0||(3) + ||g0||(3) < ∞,
+consider the sequence {fk, gk}k≥0 defined by (4.2) and define the functions ˜fk(t, x, s, y) = fk (t,x,s,y) 1+|x|2
+and ˜gk(t, x) = gk (t,x) 1+|x|2 for k ≥ 0. Then, for any (s, y) ∈ [0, T ] × Rn, there exists a constant C > 0,
+independent of k, such that
+|| ˜fk||(3) + ||˜gk||(3) ≤ C.
+Proof. For notational simplicity we treat the one-dimensional spatial case n = m = d = 1; the
+extension to higher dimensions is straightforward. By stochastic flow analysis (see Theorem 3.4.1
+and 3.4.2 in Kunita 2019), the derivatives of fk+1 and gk+1 with respect to the initial state x can
+be shown to satisfy
+∂xfk+1(t, x, s, y) = Et,x
+" Z T
+t
+
+∂xr + ∂ar ∂xµfk ,gk
+ 
+s, y, ℓ, X fk ,gk ℓ , µfk ,gk (ℓ, X fk ,gk ℓ )  ∂xX fk ,gk ℓ dℓ
++ ∂xF
+ 
+s, y, X fk ,gk T  ∂xX fk ,gk T
+#
+, (4.3)
+∂xgk+1(t, x) = Et,x
+
+∂xX fk ,gk T  , (4.4)
+where the derivative process ∂xX fk ,gk = (∂xX fk ,gk ℓ )ℓ∈[t,T ] solves the linearized SDE
+∂xX fk ,gk ℓ = 1 +
+Z ℓ
+t
+ 
+∂xb + ∂ab ∂xµfk ,gk   s, Xs, µfk ,gk (s, X fk ,gk s )  ∂xX fk ,gk s ds
++
+Z ℓ
+t
+ 
+∂xσ + ∂aσ ∂xµfk ,gk   s, X fk ,gk s , µfk ,gk (s, Xs)  ∂xX fk ,gk s dWs. (4.5)
+From the SDE of X fk ,gk and the linearized equation (4.5), one obtains the standard estimates:
+there exists a constant C > 0 independent of k such that
+sup
+ℓ∈[t,T ]
+E
+
+|X fk ,gk ℓ |2 ≤ C(1 + |x|2), sup
+ℓ∈[t,T ]
+E
+
+|∂xX fk ,gk ℓ |2 ≤ C. (4.6)
+In the sequel, C denotes a generic constant independent of k and may change from line to line.
+From the definition (4.2), the boundedness of r and F as well as (4.6), it follows that
+|fk+1(t, x, s, y)| ≤ E
+hZ T
+t
+C(1 + |X fk ,gk ℓ |2)dℓ + C(1 + |X fk ,gk T |2) i ≤ C(T + 1)(1 + |x|2).
+so ∥ ˜fk+1∥(0) ≤ C. Similarly, |gk+1(t, x)| ≤ E[|X fk ,gk T |] ≤ q E[|X fk ,gk T |2] ≤ p C(1 + |x|2), hence
+|˜gk+1(t, x)| = |gk+1(t, x)|/(1 + |x|2) ≤ √ C/ √ 1 + x2 ≤ √ C. Thus ∥˜gk+1∥(0) is bounded uniformly.
+Leveraging (4.3), the growth conditions of ∂xr, ∂ar, ∂xF, ∂xµf,g as well as the estimate (4.6),
+we get
+|∂xfk+1(t, x, s, y)| ≤ CE
+hZ T
+t
+(1 + |X fk ,gk ℓ |)|∂xX fk ,gk ℓ | dℓ + |∂xX fk ,gk T | i ≤ C(1 + |x|).
+14
+
+=== page 15 ===
+It then holds that |∂x ˜fk+1(t, x, s, y)| ≤ |∂xfk+1(t,x,s,y)| 1+|x|2 + |fk+1(t,x,s,y)| 1+|x|2 |2x| 1+|x|2 ≤ C, thereby ∥∂x ˜fk+1∥(0) ≤
+C. Similarly, one gets that |∂xgk+1(t, x)| ≤ E[|∂xX fk ,gk T |] ≤ C, and |∂x ˜gk+1(t, x)| ≤ C 1+|x|2 +
+|gk+1|
+1+|x|2
+|2x|
+1+|x|2 , which remains bounded because |gk+1| ≤ C
+p
+1 + |x|2. Hence ∥∂x ˜gk+1∥(0) ≤ C.
+For the second and third derivatives of fk+1, gk+1 with respect to x, by repeatedly differentiat-
+ing the representations (4.3)–(4.4), we obtain expressions of ∂xxfk+1, ∂xxxfk+1 and ∂xxgk+1, ∂xxxgk+1,
+respectively. Each derivative involves expectations of products of derivatives of the coefficients,
+derivatives of µfk ,gk (up to order three), and derivatives of the flow (up to order three). All these
+quantities are uniformly bounded in k by Assumption 4.1, and a similar moment estimate to that
+in (4.6). A direct calculation then yields
+∥∂xxx ˜fk+1∥(0) + ∥∂xx ˜fk+1∥(0) + ∥∂xxx ˜gk+1∥(0) + ∥∂xx ˜gk+1∥(0) ≤ C.
+Next, we consider the derivatives of fk+1, gk+1 with respect to t. It follows from (4.2) that for
+h ∈ [0, T − t],
+
+
+
+fk+1(t, x, s, y) = Et,x
+Z t+h
+t
+r
+ 
+s, y, ℓ, X k ℓ , µk(ℓ, X k ℓ )  dℓ + fk+1   t + h, X k t+h, s, y  ,
+gk+1(t, x) = Et,x
+h
+gk+1(t + h, X k t+h) i . (4.7)
+In light of (4.7) and dominated convergence theorem, we have
+lim
+h↓0
+fk+1(t, x, s, y) − fk+1(t + h, x, s, y)
+h
+= lim
+h↓0
+1
+h Et,x
+Z t+h
+t
+r
+ 
+s, y, ℓ, X k ℓ , µk(ℓ, X k ℓ )  dℓ + fk+1   t + h, X k t+h, s, y  − fk+1(t + h, x, s, y) 
+= lim
+h↓0
+1
+h Et,x
+" Z t+h
+t
+ 
+r
+ 
+s, y, ℓ, X k ℓ , µk(ℓ, X k ℓ )  + b(ℓ, X k ℓ , µk(ℓ, X k ℓ ))⊤∂xfk+1(t + h, X k ℓ , s, y)
++ 1 2 Tr  Σ(ℓ, X k ℓ , µk(ℓ, X k ℓ ))∂2 xxfk+1(t + h, X k ℓ , s, y)  ! dℓ #
+= r
+ 
+s, y, t, x, µk(t, x)  + b(t, x, µk(t, x))⊤∂xfk+1(t, x, s, y) + 1 2 Tr  Σ(t, x, µk(t, x))∂2 xxfk+1(t, x, s, y)  .
+In a similar fashion, we obtain the same result for limh↓0 fk+1(t−h,x,s,y)−fk+1(t,x,s,y) h . Hence, it holds
+that
+lim
+h↑0
+fk+1(t − h, x, s, y) − fk+1(t, x, s, y)
+h = lim h↓0
+fk+1(t − h, x, s, y) − fk+1(t, x, s, y)
+h = ∂tfk+1.
+It then follows that fk+1 is a classical solution to the PDE:
+(
+Lµk (t,x)f s,y k+1(t, x) + r   s, y, t, x, µk(t, x)  = 0,
+f s,y k+1(T, x) = F (s, y, x), (4.8)
+15
+
+=== page 16 ===
+and, similarly, gk+1 satisfies
+(
+Lµk (t,x)gk+1(t, x) = 0,
+gk+1(T, x) = x. (4.9)
+The uniform boundedness of the time derivatives ∂t ˜fk+1, ∂t ˜gk+1 follows from the linear PDEs
+(4.8)-(4.9). Consequently, each term in the (3)-norm of ˜fk+1 and ˜gk+1 is bounded by a constant
+that is independently of k.
+For the derivative of fk+1 with respect to s, we have
+|∂sfk+1(t, x, s, y)| =
+Et,x " Z T t ∂sr   s, y, ℓ, X fk ,gk ℓ , µfk ,gk (ℓ, X fk ,gk ℓ )  dℓ + ∂sF   s, y, X fk ,gk T  
+≤ E
+hZ T
+t
+C(1 + |X fk ,gk ℓ |)dℓ + C(1 + |X fk ,gk T |) i ≤ C(1 + |x|),
+which yields ∥∂s ˜fk+1∥(0) ≤ C. Applying similar calculations to the derivatives of ∂sfk+1 with
+respect to x, we obtain ∥∂sx ˜fk+1∥(0) + ∥∂sxx ˜fk+1∥(0) + ∥∂sxxx ˜fk+1∥(0) ≤ C.
+Similarly, for the derivatives of fk+1 with respect to y, we have ∥∂yyy ˜fk+1∥(0) + ∥∂yy ˜fk+1∥(0) +
+∥∂y ˜fk+1∥(0) ≤ C. In conclusion, there exists a constant C > 0 (same for all k) such that
+∥ ˜fk+1∥(3) + ∥˜gk+1∥(3) ≤ C,
+which completes the proof.
+Theorem 4.2. Let Assumption 3.1 and 4.1 hold. For any (f0, g0) with ||f0||(3) +||g0||(3) < ∞, the
+sequence {(fk, gk)}k≥0 defined by (4.2) converges to a limit point (f, g) with f ∈ C 1,2,1,2([0, T ] ×
+Rn × [0, T ] × Rn) and g ∈ C 1,2([0, T ] × Rn), and (f, g) is a fixed point to (4.1).
+Proof. Fix (s, y) ∈ [0, T ] × Rn. We first show that {( ˜fk, ˜gk)}k≥0 is a Cauchy sequence in the norm
+∥ · ∥(2). For notational simplicity we treat the one-dimensional spatial case n = m = d = 1; the
+extension to higher dimensions is straightforward.
+Let us first estimate the difference between two consecutive iterates. We denote X k = X fk ,gk
+and µk = µfk ,gk for k ≥ 0. In the sequel, C denotes a generic constant independent of k and may
+change from line to line.
+Let ε ∈ (0, T ), we first consider the sequence of functions (fk, gk) on [T − ε, T ] × R × [0, T ].
+From the SDE of X k and Assumption 4.1, one gets the following standard estimates: for k ≥ 0,
+sup
+ℓ∈[T −ε,T ]
+E
+
+|X k+1 ℓ − X k ℓ |2 ≤ Cε(1 + |x|)2  ∥ ˜fk+1 − ˜fk∥2 (2) + ∥˜gk+1 − ˜gk∥2 (2)  . (4.10)
+By (4.2), (4.10) and Assumption 4.1, we have that, for t ∈ [T − ε, T ],
+|fk+1(t, x, s, y) − fk(t, x, s, y)|
+≤ Et,x
+" Z T
+t
+r   s, y, ℓ, X k ℓ , µk(ℓ, X k ℓ )  − r   s, y, ℓ, X k−1 ℓ , µk(ℓ, X k ℓ ) dℓ #
+16
+
+=== page 17 ===
++ Et,x
+" Z T
+t
+r   s, y, ℓ, X k−1 ℓ , µk(ℓ, X k ℓ )  − r   s, y, ℓ, X k−1 ℓ , µk−1(ℓ, X k−1 ℓ ) dℓ #
++ Et,x
+hF   s, y, X k T  − F   s, y, X k−1 T  i
+≤ CEt,x
+" Z T
+t
+(1 + |X k ℓ | + |X k−1 ℓ |) X k ℓ − X k−1 ℓ dℓ #
++ CEt,x
+" Z T
+t
+(1 + |X k ℓ | + |X k−1 ℓ |) µk(ℓ, X k ℓ )  − µk−1(ℓ, X k−1 ℓ ) dℓ #
++ CEt,x
+h
+(1 + |X k T | + |X k−1 T |) X k T − X k−1 T  i
+≤ CEt,x
+" Z T
+t
+(1 + |X k ℓ | + |X k−1 ℓ |)2dℓ
+# 1
+2
+Et,x
+" Z T
+t
+X k ℓ − X k−1 ℓ  2 dℓ # 1 2
++ CEt,x
+h
+(1 + |X k T | + |X k−1 T |)2
+i 1
+2
+Et,x
+hX k T − X k−1 T  2i 1 2
+≤ C(1 + |x|) sup
+ℓ∈[T −ϵ,T ]
+E
+
+|X k ℓ − X k−1 ℓ |2 1 2
+≤ C(1 + |x|2)ε   ∥ ˜fk − ˜fk−1∥(2) + ∥˜gk − ˜gk−1∥(2)  . (4.11)
+A similar estimate holds for |˜gk+1(t, x) − ˜gk(t, x)| that
+|˜gk+1(t, x) − ˜gk(t, x)| ≤ 1 1 + |x|2 |gk+1(t, x) − gk(t, x)| ≤ 1 1 + |x|2 |Et,x hX k T − X k−1 T  i
+≤ Cε
+ 
+∥ ˜fk − ˜fk−1∥(2) + ∥˜gk − ˜gk−1∥(2)  .
+(4.12)
+In view of (4.11) and (4.12), it holds that
+∥ ˜fk+1 − ˜fk∥(0) + ∥˜gk+1 − ˜gk∥(0) ≤ Cε   ∥ ˜fk − ˜fk−1∥(2) + ∥˜gk − ˜gk−1∥(2)  .
+The estimates for the derivatives of ˜f with respect to (t, s, x, y), and the corresponding derivatives
+of ˜gk can be obtained in a similar way.
+Then, the estimates for the derivatives ∂t ˜fk and ∂t ˜gk can be derived by using PDEs (4.8)-(4.9).
+That is, for ε small enough, we have
+∥ ˜fk+1 − ˜fk∥(2) + ∥˜gk+1 − ˜gk∥(2) ≤ Cε   ∥ ˜fk − ˜fk−1∥(2) + ∥˜gk − ˜gk−1∥(2) 
+≤ 1 2   ∥ ˜fk − ˜fk−1∥(2) + ∥˜gk − ˜gk−1∥(2)  ,
+which implies that, for k ≥ 0,
+∥ ˜fk+1 − ˜fk∥(0) + ∥˜gk+1 − ˜gk∥(0) ≤ C
+ 1
+2
+k
+.
+17
+
+=== page 18 ===
+Next, we extend this bound to the global domain [0, T ] × R. Partition [0, T ] into N subintervals
+of equal length ∆t = T /N such that ∆t ≤ ε, and define the time grids ti = i∆t for i = 0, 1, . . . , N .
+For each subinterval [ti−1, ti], let us denote
+||f ||(0,i) := sup
+t∈[ti−1,ti],(s,x,y)∈[0,T ]×Rn×Rn
+|fk+1(t, x, s, y)|, ||g||(0,i) := sup
+(t,x)∈[ti−1,ti]×Rn
+|g(t, x)|,
+and
+||f ||(2,i) := ||f ||(0,i) + ||∂tf ||(0,i) + ||∂sf ||(0,i) + ||∂xf ||(0,i) + ||∂xxf ||(0,i)
++ ||∂yf ||(0,i) + ||∂yyf ||(0,i) + ||∂sxf ||(0,i) + ||∂sxxf ||(0,i),
+||g||(2,i) := ||g||(0,i) + ||∂tg||(0,i) + ||∂xg||(0,i) + ||∂xxg||(0,i).
+We next prove by backward induction that, for every i = 1, . . . , N and all k ≥ 1,
+∥ ˜fk+1 − ˜fk∥(2,i) + ∥˜gk+1 − ˜gk∥(2,i) ≤ Cδk i ,
+where δi ∈ (0, 1) is a constant independent of k. The base case i = N (i.e., the last subinterval) is
+a direct result of the contraction estimate above in view that T − t ≤ ∆t ≤ ε on [tN −1, T ]. Now
+assume the estimate holds for the subinterval [ti−1, ti]. It follows from (4.2) that, for t ∈ [ti−1, ti],
+
+
+
+fk+1(t, x, s, y) = Et,x
+Z ti
+t
+r
+ 
+s, y, ℓ, X k ℓ , µk(ℓ, X k ℓ )  dℓ + fk+1   ti, X k ti , s, y,  ,
+gk+1(t, x) = Et,x
+h
+gk+1(ti, X k ti ) i . (4.13)
+By a similar calculation as the one leading to (4.11) and (4.12), and applying Lemma 4.1, we get
+that, for t ∈ [ti−i, ti],
+|| ˜fk+1 − ˜fk||(2,i−1) + ||˜gk+1 − ˜gk||(2,i−1)
+≤ C∆t
+ 
+∥fk − fk−1∥(2,i−1) + ∥˜gk − ˜gk−1∥(2,i−1)
+
++ C
+ 
+∥fk − fk−1∥(2,i) + ∥˜gk − ˜gk−1∥(2,i)
+
+≤ 1 2   ∥fk − fk−1∥(2,i−1) + ∥˜gk − ˜gk−1∥(2,i−1)  + Cδk i ,
+where the second inequality holds provided ∆t is small enough such that C∆t < 1/2. By Lemma
+4.2 in Huang et al. (2026), there exists a constant δi−1 ∈ (0, 1) such that, for all k ≥ 0,
+|| ˜fk+1 − ˜fk||(2,i−1) + ||˜gk+1 − ˜gk||(2,i−1) ≤ Cδk i−1.
+Setting δ = max{δ1 · · · , δN } ∈ (0, 1), we obtain
+|| ˜fk+1 − ˜fk||(2) + ||˜gk+1 − ˜gk||(2) ≤ Cδk,
+which implies that {( ˜fk, ˜gk)}k≥0 is a Cauchy sequence in the norm ∥ · ∥(2) Consequently, the
+sequence {( ˜fk, ˜gk)}k≥0 converges to a limit point ( ˜f , ˜g) with ˜f ∈ C 1,2,1,2([0, T ] × Rn × [0, T ] × Rn)
+and ˜g ∈ C 1,2([0, T ]×Rn). Define f (t, x, s, y) := (1+|x|2) ˜f (t, x, s, y) and g(t, x) := (1+|x|2)˜g(t, x).
+Then it holds that limk→∞ fk(t, x, s, y) = f (t, x, s, y) and limk→∞ gk(t, x) = g(t, x) for every
+(t, x, s, y) ∈ [0, T ] × Rn × [0, T ] × Rn.
+18
+
+=== page 19 ===
+Similar to (4.10), we get that, for k ≥ 0,
+sup
+ℓ∈[0,T ]
+E
+
+|X f,g ℓ − X k ℓ |2 ≤ C(1 + |x|2)   ∥ ˜f − ˜fk∥2 (2) + ∥˜g − ˜gk∥2 (2)  , (4.14)
+which implies that X k ℓ converges to X f,g ℓ P-almost surely for all ℓ ∈ [0, T ]. For fixed (t, x, s, y)
+and k ≥ 0, define
+Yk :=
+Z T
+t
+r
+ 
+s, y, ℓ, X fk ,gk ℓ , µfk ,gk (ℓ, X fk ,gk ℓ )  dℓ + F   s, y, X fk ,gk T  .
+Then
+E[|Yk|2] ≤ 2E
+Z T
+t
+r2  s, y, ℓ, X k ℓ , µk(ℓ, X k ℓ )  dℓ + F 2  s, y, X k T 
+≤ C(1 + |y|4 + sup
+ℓ∈[0,T ]
+E[|X k ℓ |4]) ≤ C(1 + |x|4 + |y|4),
+where the last inequality follows from standard moment estimates for SDEs. Consequently, the
+sequences (Yk)k≥1 and (X k T ) are both uniformly integrable. Letting k → ∞ on both sides of (4.2)
+and using the uniformly integrability, we deduce that the pair (f, g) is a fixed point of (4.1), which
+completes the proof.
+Theorem 4.2 lays a theoretical foundation for learning the fixed-point functions (f, g) for equi-
+librium via an iterative scheme. we next establish martingale characterizations for the auxiliary
+functions f and g. These characterizations convert the fixed-point conditions into orthogonality
+conditions that can be enforced using stochastic approximation, thereby enabling the iterative
+updates to be carried out with simulated trajectories. Moreover, the martingale representations
+provide a natural way to learn the unobservable terms Laf t,x(t, x), Laf (t, x, t, x), La(G ⋄ g)(t, x)
+and Lag(t, x) that appear in the modified reward function ˜rf,g(t, x).
+Recall that, for given policy µϕ, the functions fϕ and gϕ admit the probabilistic representations
+
+
+
+fϕ(t, x, s, y) = Et,x
+Z T
+t
+r
+ 
+s, y, ℓ, X ϕ ℓ , µϕ(ℓ, X ϕ ℓ )  dℓ + F   s, y, X ϕ T  ,
+gϕ(t, x) = Et,x
+h
+X ϕ T
+i
+.
+(4.15)
+We require that the model parameters and the policy satisfy the following differentiability
+condition with respect to the parameter ϕ.
+Assumption 4.2. For all (s, t, x, y) ∈ [0, T ]2 × R2n, a 7→ r(s, y, t, x, a) is continuously differen-
+tiable. The functions fϕ ∈ C1,2,1,2 ([0, T ] × Rn × [0, T ] × Rn) and gϕ ∈ C1,2 ([0, T ] × Rn) for all
+ϕ ∈ Rk. Moreover, there exists a locally bounded function ρ3 : [0, ∞) → [0, ∞) such that for all
+ϕ ∈ Rk and (t, s, x, y) ∈ [0, T ]2 × R2n,
+|∂ϕr (s, y, t, x, µϕ(t, x))|
+1 + |x|2 + |y|2 ≤ ρ3(|ϕ|)
+and
+|Laf (t, x, t, x)| + |Laf s,y(t, x)| + Lµϕ(t,x)(G ⋄ gϕ)(t, x)  + |∂yG(x, gϕ(t, x))Lµϕ(t,x)gϕ(t, x)|
+1 + |x|2 + |y|2 ≤ ρ3(|ϕ|).
+19
+
+=== page 20 ===
+Remark 4.3. Recall that in Assumption 3.1-(iii), we assume that for the modified new reward
+function ˜rf,g, there exists a locally bounded function ρ2 : [0, ∞) → [0, ∞) such that for all ϕ ∈ Rk
+and (t, x) ∈ [0, T ] × Rn,
+∂ϕ ˜rf,g (t, x, µϕ(t, x)) 
+1 + |x|2 ≤ ρ2(|ϕ|).
+It can be verified that this condition holds given Assumption 4.1.
+Under Assumption 4.2 and by an application of Itˆo’s formula, for each fixed (s, y), the function
+(t, x) 7→ f s,y ϕ (t, x) = fϕ(t, x, s, y) belongs to C 1,2([0, T ]×Rn) and satisfies the following linear PDE:
+
+
+
+Lµϕ(t,x)f s,y ϕ (t, x) + r   s, y, t, x, µϕ(t, x)  = 0, (t, x) ∈ [s, T ) × Rn,
+f s,y ϕ (T, x) = F (s, y, x), x ∈ Rn. (4.16)
+Similar to Theorem 3.2, the next martingale characterization of the function f s,y(t, x) holds.
+Proposition 4.4. Let Assumption 3.1 and 4.2 hold. Let ϕ ∈ Rk, ˆf s,y ∈ C1,2([0, T ] × Rn) for any
+(s, y) ∈ [0, T ] × Rn and ˆl ∈ C([0, T ] × Rn × A × [0, T ] × Rn) satisfy the following condition for all
+0 ≤ s ≤ t ≤ T, x, y ∈ Rn:
+ˆf s,y(T, x) = F (s, y, x), ˆl(t, x, µϕ(t, x), s, y) = 0, (4.17)
+and there exists a neighborhood Oµϕ(t,x) ⊂ A of µϕ(t, x) such that for all a ∈ Oµϕ(t,x),
+
+ˆf s,y(ℓ, X t,x,a ℓ ) +
+Z ℓ
+t
+
+r(s, y, u, X t,x,a u , αu) − ˆl(u, X t,x,a u , αu, s, y)  du 
+ℓ∈[t,T ]
+(4.18)
+is an F-martingale, where the process X t,x,a is given by (3.4). Then ˆf s,Y (t, x) = f s,y ϕ (t, x) and
+ˆl(t, x, a, s, y) = Laf s,y(t, x) for all (s, y) ∈ [0, T ] × Rn and (t, x, a) ∈ [s, T ] × Rn × Oµϕ(t,x).
+The following result establishes a martingale criterion that characterizes the advantage rate
+function for fϕ(t, x, t, x). It is worth noting the important distinction between Theorem 3.2 and
+the next one: Theorem 3.2 simultaneously characterizes both the value function and the advantage
+function, while the next result focuses solely on learning the advantage function itself.
+Proposition 4.5. Let Assumptions 3.1 and 4.2 hold. Let ϕ ∈ Rk and ˆo ∈ C([0, T ] × Rn × A).
+Assume that there exists a neighborhood Oµϕ(t,x) ⊂ A of µϕ(t, x) such that for all a ∈ Oµϕ(t,x),
+
+fϕ(s, X t,x,a s , s, X t,x,a s ) −
+Z s
+t
+ˆo(u, X t,x,a u , αu)du
+
+s∈[t,T ]
+(4.19)
+is an F-martingale, where the process X t,x,a is given by (3.4). Then ˆo(t, x, a) = Lafϕ(t, x, t, x) for
+all (t, x, a) ∈ [0, T ] × Rn × Oµϕ(t,x).
+20
+
+=== page 21 ===
+Proof. For (t, x) ∈ [0, T ] × Rn, define ˆf (t, x) := f (t, x, t, x). For any (t, x) ∈ [0, T ] × Rn and
+a ∈ Oµϕ(t,x), applying Itˆo formula to u 7→ ˆf (u, X t,x,a u ) yields that, for t ≤ u ≤ T ,
+ˆf   u, X t,x,a u  − ˆf (t, x) = Z u
+t
+Lαℓ ˆf  ℓ, X t,x,a ℓ  dℓ + Z u t ∂x ˆf  ℓ, X t,x,a ℓ ⊤ σ  ℓ, X t,x,a ℓ , αℓ  dWℓ.
+Combining this with the martingale condition (4.19), we deduce that the process
+Z u
+t
+
+Lαℓ ˆf  ℓ, X t,x,a ℓ  − ˆo  ℓ, X t,x,a ℓ , αℓ  dℓ 
+u∈[t,T ]
+has continuous paths and finite variation. Consequently, it holds almost surely that
+Z u
+t
+
+Lαℓ ˆf  ℓ, X t,x,a ℓ  − ˆo  ℓ, X t,x,a ℓ , αℓ  = 0, ∀u ∈ [t, T ]. (4.20)
+We claim that this implies
+La ˆf (t, x) − ˆo(t, x, a) = 0
+for all (t, x) ∈ [0, T ] × Rn and a ∈ Oµφ(t,x). To prove the claim, define the function
+M (t, x, a) := La ˆf (t, x) − ˆo(t, x, a), (t, x, a) ∈ [s, T ] × Rn × A.
+According to our assumption, M ∈ C([0, T ]×Rn ×A). Suppose that there exists (¯t, ¯x) ∈ [0, T ]×Rn
+and ¯a ∈ Oµφ(¯t,¯x) such that M (¯t, ¯x, ¯a) ̸= 0. By the continuity of M , we may assume without loss
+of generality that M (t, x, a) > 0 and t ∈ [0, T ). Then there exist constants ϵ, δ > 0 such that
+M (t, x, a) ≥ ϵ > 0 for all (t, x, a) ∈ [0, T ] × Rn × A satisfying max{|t − ¯t|, |x − ¯x|, |a − a|} ≤ δ.
+Now consider the process X ¯t,¯x,¯a defined by (3.4), and define the stopping time
+τ := inf
+n
+t ∈ [¯t, T ] : max
+n
+|t − ¯t|,
+X ¯t,¯x,¯a t − ¯x  , |αt − ¯a| o > δ o
+Note that τ > ¯t a.s. due to the sample path continuity of t 7→ X ¯t,¯x,¯a t and the condition limu↓t αu =
+a. This, along with (4.20), implies the existence of a set N with zero measure such that for all
+ω ∈ Ω\N , τ (ω) > ¯t, and
+Z τ (ω)
+¯t
+M
+
+u, X ¯t,¯x,¯a u (ω), αu(ω)  du = 0
+However, by the definition of τ , for all t ∈ (¯t, τ (ω)), we have max{|t − ¯t, |X ¯t,¯x,¯a t − ¯x|, |at − ¯a|} ≤ δ.
+Hence, by the choice of δ, it holds that M (t, X
+¯t,¯x,¯a
+t (ω), αt(ω)) ≥ ϵ > 0. As a result,
+Z τ (ω)
+¯t
+M
+
+u, X ¯t,¯x,¯a u (ω), αu(ω)  du > 0
+which contradicts the previous equality. That is, no such point (¯t, ¯x, ¯a) exists, and we must
+have La ˆf (t, x) − ˆo(t, x, a) = 0 for all (t, x, a) ∈ [0, T ] × Rn and a ∈ Oµφ(t,x). This yields that
+ˆo(t, x, a) = La ˆf (t, x) = Laf (t, x, t, x) for all (t, x) ∈ [0, T ] × Rn, which completes the proof.
+21
+
+=== page 22 ===
+Remark 4.6. If the running reward r and the terminal reward F do not depend on the initial
+state x (i.e., r = r(t, s, x, a) and F = F (t, x) are independent of x), the auxiliary function f
+simplifies to f = f s(t, x). In this case, the modified running reward ˜rf,g can be expressed as
+˜rf,g(t, x, a) = r(t, t, x, a) − Laf (t, x, t) + Laf t(t, x) − La(G ⋄ g)(t, x) + ∂yG(x, g(t, x)) Lag(t, x)
+= r(t, t, x, a) − ∂sf (t, x, t) − La(G ⋄ g)(t, x) + ∂yG(x, g(t, x)) Lag(t, x).
+Consequently, it is sufficient to learn the auxiliary function f s(t, x). Furthermore, in this case,
+the martingale characterization for f given in Proposition 4.4 can be applied directly. Specifically,
+for any admissible control process α, the process
+
+f s  ℓ, X t,x,a ℓ  + Z ℓ t r   s, u, X t,x,a u , αu  du  ℓ∈[t,T ]
+is a martingale. This simplifies the learning procedure.
+Assumption 4.1, together with Itˆo’s formula, implies that the function g(t, x) ∈ C 1,2([0, T ] ×
+Rn) satisfies the linear PDE:
+(
+Lµϕ(t,x)gϕ(t, x) = 0, (t, x) ∈ [0, T ) × Rn,
+gϕ(T, x) = x, x ∈ Rn, (4.21)
+We now present a martingale characterization for the function gϕ and its advantage rate
+function. The proof is analogous to that of Theorem 3.2 in Cheng et al. (2025) and is therefore
+omitted.
+Proposition 4.7. Let Assumptions 3.1 and 4.2 hold. Let ϕ ∈ Rk, ˆg ∈ C 1,2([0, T ] × Rn) and
+ˆh ∈ C([0, T ] × Rn × A) satisfy the following condition for all (t, x) ∈ [0, T ] × Rn:
+ˆg(T, x) = x, ˆh(t, x, µϕ(t, x)) = 0, (4.22)
+and there exists a neighborhood Oµϕ(t,x) ⊂ A of µϕ(t, x) such that for all a ∈ Oµϕ(t,x),
+
+ˆg(ℓ, X t,x,a ℓ ) −
+Z ℓ
+t
+ˆh(u, X t,x,a u , αu)du
+
+ℓ∈[t,T ]
+(4.23)
+is an F-martingale, where the process X t,x,a is given by (3.4). Then ˆg(t, x) = gϕ(t, x) and
+ˆh(t, x, a) = Lagϕ(t, x) for all (t, x, a) ∈ [0, T ] × Rn × Oµϕ(t,x).
+Note that the term La(G⋄gϕ)(t, x) in the modified reward function cannot be observed directly.
+To address this issue, we establish a martingale criterion that characterizes this advantage rate
+function that describes the advantage function for a known auxiliary function G ⋄ gϕ under a fixed
+policy. Because the proof follows the same lines as that of Proposition 4.5, it is omitted here.
+Proposition 4.8. Let Assumptions 3.1 and 4.2 hold. Let ϕ ∈ Rk and ˆp ∈ C([0, T ] × Rn × A).
+Assume that there exists a neighborhood Oµϕ(t,x) ⊂ A of µϕ(t, x) such that for all a ∈ Oµϕ(t,x),
+
+(G ⋄ gϕ)(s, X t,x,a s ) −
+Z s
+t
+ˆp(u, X t,x,a u , αu)du
+
+s∈[t,T ]
+(4.24)
+is an F-martingale, where the process X t,x,a is given by (3.4). Then ˆp(t, x, a) = La(G ⋄ gϕ)(t, x)
+for all (t, x, a) ∈ [0, T ] × Rn × Oµϕ(t,x).
+22
+
+=== page 23 ===
+5 Model-free DPG-FPI Algorithm
+Building upon the previous theoretical preparations in the two-stage reformulation, we present in
+this section a model-free DPG-FPI algorithm. The overall architecture is designed to approximate
+the key quantities arising from the theoretical analysis, namely, the value function, the advantage
+rate function, the policy, and the auxiliary functions f and g along with their associated advantage
+rate functions.
+We use Vθ, qψ, µϕ to denote the neural networks to approximate the value function, the advan-
+tage rate function, and the policy, respectively. Furthermore, we use fξ , gη, lζ , oϱ, hχ, pι to denote
+different neural networks to approximate functions f, g, and advantage rate functions of g, f , and
+G ⋄ g, respectively. All neural networks are trained simultaneously in an iterative loop that al-
+ternates between the Critic step (updating (fξ , gη, lζ , oϱ, hχ, pι in fixed point iterations with the
+fixed policy µϕ) and the Actor step (updating µϕ and Vθ, qψ using DPG with the fixed auxiliary
+functions fξ and gη).
+One key step is to invoke the martingale condition (3.3). Let us first recall the standard mar-
+tingale orthogonality condition. Denote L2([0, T ]) as the space of all F-progressively measurable
+processes K = (Kt)t∈[0,T ] satisfying E[
+R T
+0 |Kt|2dt] < ∞ and E[⟨K⟩T ] < ∞. For any semimartin-
+gale N = (Ns)s∈[0,T ], denote L2([0, T ]; N ) the space of all F-progressively measurable processes
+K = (Kt)t∈[0,T ] satisfying E
+hR T
+0 |Kt|2d ⟨N ⟩t
+i
+< ∞, where ⟨N ⟩t is the quadratic variation process
+of N . Then, the next result holds.
+Proposition 5.1 (Proposition 4 in Jia and Zhou 2022a). A diffusion process N = (Ns)s∈[0,T ] ∈
+L2([0, T ]) is a martingale if and only if
+E
+Z T
+0
+ςtdNt
+
+= 0 (5.1)
+for any ς ∈ L2([0, T ]; N ).
+(I) Actor-step: Learn the auxiliary optimal policy via DPG
+To implement the martingale condition (3.3), we must solve the martingale orthogonality equation
+introduced in Proposition 5.1. In practice, this can be implemented through stochastic approxi-
+mation with the parameter update
+θ ← θ − α∂θVθ (t, Xt) ·
+
+Vθ (t, Xt) −
+Z t+δ
+t
+(˜r (ℓ, Xℓ, aℓ) − qψ (ℓ, Xℓ, aℓ)) dℓ − Vθ (t + δ, Xt+δ )
+
+,
+ψ ← ψ − α∂ψqψ (t, xt, at) ·
+
+Vθ (t, Xt) −
+Z t+δ
+t
+(˜r (ℓ, Xℓ, aℓ) − qψ (ℓ, Xℓ, aℓ)) dℓ − Vθ (t + δ, Xt+δ )
+
+,
+where α > 0 is the learning rate and δ > 0 is the length of the integration interval. The integral
+appearing in the updates involves the modified running reward ˜r, which itself depends on the
+auxiliary networks fξ , gη, hχ, pι. To evaluate this integral, we compute ˜r at each point along the
+realized trajectory by
+˜r(ℓ, x, a) = r(ℓ, x, ℓ, x, a) − oϱ(ℓ, x, a) + lζ (ℓ, x, ℓ, x, a) − pι(ℓ, x, a) + ∂yG(x, gη(ℓ, x))hχ(ℓ, x, a),
+23
+
+=== page 24 ===
+where the reward r(ℓ, x, ℓ, x, a) is the instantaneous reward observed by the agent.
+To meet the constraint (3.2), we re-parameterize the advantage rate function qψ by
+qψ(t, x, a) := ¯qψ(t, x, a) − ¯qψ(t, x, µϕ(t, x)),
+where ¯qψ is a neural network and µϕ represents the current deterministic policy. Additionally, to
+enforce the terminal condition in (3.2), we introduce a penalty term
+E(Vθ(T, XT ) − F (T, XT , XT ) − G(XT , XT ))2,
+where XT , F (T, XT , XT ), G(XT , XT ) are from the realized trajectories. Then, the parameter ϕ of
+the deterministic policy is updated along the gradient direction given by Theorem 3.1.
+(II) Critic-step: Learn the auxiliary functions via fixed-point iterations
+The critic-step has M inner iterations to learn the fixed point auxiliary functions. For j =
+1, . . . , M , in the j-th inner iteration, the martingale conditions (4.18) and (4.19) are invoked. We
+employ stochastic approximation with the following parameter updates:
+ξ(j+1) ← ξ(j) − α∂ξ fξ(j) (t, xt, s, y) · ∆(j) ξ,ζ ,
+ζ (j+1) ← ζ (j) − α∂ζ lζ(j) (s, y, t, xt, a) · ∆(j) ξ,ζ ,
+with
+∆(j) ξ,ζ = fξ(j) (t, xt, s, y) −
+Z t+δ
+t
+(r − lζ(j) ) (s, y, ℓ, xℓ, aℓ) dℓ − fξ(j) (t + δ, xt+δ , s, y) ,
+and
+ϱ(j+1) ← ϱ(j) − α∂ϱoϱ(j) (t, xt, at) · ∆(j) ϱ ,
+with
+∆(j) ϱ = fξ(j) (t, xt, t, xt) +
+Z t+δ
+t
+oϱ(j) (ℓ, xℓ, aℓ) dℓ − fξ(j) (t + δ, xt+δ , t + δ, xt+δ ) .
+To ensure that the advantage rate function lζ satisfies condition (4.17), we reparameterize it by
+lζ (s, y, t, x, a) := ¯lζ (s, y, t, x, a) − ¯lζ (s, y, t, x, µϕ(t, x)),
+where ¯lζ stands for a neural network. We also add the following penalty term to meet the terminal
+condition in (4.17) that
+E(fξ (T, XT , s, y) − F (s, t, XT ))2,
+where XT , F (s, y, XT ) are from realized trajectories
+Meanwhile, for the auxiliary function g and the martingale conditions (4.24) and (4.23), we
+use stochastic approximation to update the parameters η, χ, and ι as follows:
+η(j+1) ← η(j) − α∂ηgη(j) (t, xt) ·
+
+gη(j) (t, xt) +
+Z t+δ
+t
+hχ(j) (ℓ, xℓ, aℓ) dℓ − gη(j) (t + δ, xt+δ )
+
+,
+24
+
+=== page 25 ===
+χ(j+1) ← χ(j) − α∂χhχ(j) (t, xt, at) ·
+
+gη(j) (t, xt) +
+Z t+δ
+t
+hχ(j) (ℓ, xℓ, aℓ) dℓ − gη(j) (t + δ, xt+δ )
+
+,
+and
+ι(j+1) ← ι(j) − α∂ιpι(j) (t, xt, at) ·
+
+(G ⋄ gη(j) ) (t, xt) +
+Z t+δ
+t
+pι(j) (ℓ, xℓ, aℓ) dℓ − (G ⋄ gη(j) ) (t + δ, xt+δ )
+
+.
+To ensure that the advantage rate function hχ satisfies condition (4.22), we reparameterize it as
+hχ(t, x, a) := ¯hχ(t, x, a) − ¯hχ(t, x, µϕ(t, x)),
+where ¯hχ is a neural network. This representation automatically enforces the required orthogo-
+nality property. Additionally, to fulfill the terminal condition in (4.22) by adding a penalty term
+of the form E(gη(T, XT ) − XT )2.
+To improve training stability and facilitate the iteration convergence to the fixed point, we
+introduce the target networks fξtgt and hηtgt , defined as the exponentially moving average of the
+corresponding network weights. These target networks provide stable targets during the temporal
+difference updates, reducing oscillations and promoting smoother learning.
+Based on the updating rules described above, we present the pseudo-code of the overall algo-
+rithm in Algorithm 1. Subsequently, Algorithm 2 presents the procedure for learning the auxiliary
+optimal policy via deterministic policy gradient, while Algorithm 3 details the inner loop of fixed-
+point iterations that leverages the martingale characterizations.
+Algorithm 1 DPG-FPI Algorithm for Time-Inconsistent Control Problem
+Input: Discretization step size ℓ, horizon K = T /ℓ, number of episodes N , number of inner
+iterations M , policy net µϕ, advantage-rate net ¯qψ, ¯lζ , oϱ, ¯hχ, pι, value net Vθ, fξ , gη, update fre-
+quency m, trajectory length L, exploration noise σexplore , soft update parameter τ , learning rate
+α, batch size B, terminal value constraint weight w, terminal reward functions F, G.
+Learning Procedure:
+1: Initialize ψ, χ, ζ, ϱι, θ, ξ, η, target θtgt = θ, ξtgt = ξ, ηtgt = η, i = 1, and replay buffer R.
+2: while i ≤ N do
+3: Initialize k = 0. Observe the initial state x0.
+4: while k ≤ K do
+5: Perform ak ∼ N (µψ(kℓ, xk), σexplore), s ∼ U ([0, kℓ]), y ∼ N (xk, σexplore).
+6: Collect rk = r(kℓ, xk, kℓ, xk, ak), rk,s,y = r(s, y, kℓ, xk, ak), xk+1
+7: Store (ak, rk, rk,s,y, xk+1) in R
+8: if k ≡ 0 mod m then
+9: ▷ train the auxiliary optimal policy by invoking Algorithm 2
+10: ▷ train the fixed point functions by invoking Algorithm 3
+11: end if
+12: Update k ← k + 1.
+13: end while
+14: Update i ← i + 1.
+15: end while
+25
+
+=== page 26 ===
+Algorithm 2 Learning the Auxiliary Optimal Policy via DPG
+Learning Procedure:
+1: ▷ train advantage rate function and value function
+2: Sample a batch of trajectories {x(j) kj :kj +L, a(j) kj :kj +L, r(j) kj :kj +L}B j=1 from R
+3: Define qψ(t, x, a) := ¯qψ(t, x, a) − ¯qψ(t, x, µϕ(t, x))
+4: Define hχ(t, x, a) := ¯hχ(t, x, a) − ¯hχ(t, x, µϕ(t, x))
+5: Define lζ (t, x, a, s, y) := ¯lζ (t, x, a, s, y) − ¯lζ (t, x, µϕ(t, x), s, y)
+6: For y = kj , · · · , kj + L, j = 1, · · · , B, compute the new reward by
+˜r(j) y = r(j) y − oϱ(yℓ, x(j) y , a(j) y ) + lζ (yℓ, x(j) y , a(j) y , yℓ, x(j) y ) − pι(yℓ, x(j) y , a(j) y )
++∂y G(x(j) y , gηtgt (ℓ, x(j) y ))hχ(yℓ, x(j) y , a(j) y )
+7: Compute the martingale loss
+∆1 = 1 B
+BX
+j=1
+ 
+Vθ (kj ℓ, x(j) kj ) −
+kj +L−1X
+y=kj
+(˜r(j) y − qψ (yℓ, x(j) y , a(j) y ))ℓ − Vθtgt ((kj + L)ℓ, x(j) kj +L) 2
+8: Sample a batch of terminal states {x(j) K , r(j) K }B j=1 from R
+9: Compute the terminal value constraint loss
+∆2 = 1 B BX j=1   Vθ(Kℓ, x(j) K ) − r(j) K 2
+10: Update θ and ψ by θ ← θ − α∂θ(∆1 + ω∆2) and ψ ← ψ − α∂ψ∆1
+11: ▷ train policy
+12: Sample a batch of states {x(j) kj }B j=1 from R
+13: Compute the policy loss by ∆3 = − 1 B PB j=1 ¯qψ(kj ℓ, x(j) kj , µϕ(kj ℓ, x(j) kj ))ℓ
+14: Update ϕ by ϕ ← ϕ − α∂ϕ∆3
+15: Update the target θtgt by θtgt = τ θ + (1 − τ )θtgt
+6 Financial Applications
+This section presents some numerical experiments of the proposed RL algorithm in two classical
+financial applications under time-inconsistency: the mean-variance portfolio management problem
+and the optimal portfolio with benchmark tracking under non-exponential discounting.
+6.1 Mean-Variance Portfolio Management Problem
+We consider a financial market consisting of a risky asset S and a risk-free money account with
+price process B, whose dynamics are governed by
+dSt = bStdt + σStdWt, dBt = rBtdt, (6.1)
+where W is a standard Brownian motion. The return rate b > 0, the volatility σ > 0, and the
+interest rate r are assumed to be some unknown constants.
+26
+
+=== page 27 ===
+At each time t ∈ [0, T ], let at denote the amount of wealth allocated to the risky asset S.
+Under the control a = (at)t∈[0,T ], the self-financing wealth process X evolves according to
+dXt = (rXt + (b − r)at) dt + σatdWt, t ∈ (0, T ], X0 = x ∈ (0, ∞). (6.2)
+We consider the classical mean-variance criterion for the portfolio management whose objective
+function is given by
+J (t, x, a) = Et,x [X a T ] − γ 2 Vart,x (X a T ) ,
+where γ is a known constant representing the investor’s risk aversion. By expanding the variance,
+we can rewrite the objective functional in the equivalent form
+J (t, x, a) = Et,x [F (X a T )] − G (Et,x [X a T ]) (6.3)
+with F (x) = x − γ 2 x2, G(x) = γ 2 x2.
+This formulation fits the time-inconsistent framework in the previous sections, where the
+function G introduces a nonlinear expectation that leads to time inconsistency. The extended
+HJB system for this problem is given by
+
+
+
+sup
+a∈R
+n
+∂tV (t, x) + (rx + (b − r)a)∂xV (t, x) + 1 2 σ2a2∂xxV (t, x)
+−La(G ◦ g)(t, x) + G′(g(t, x))Lag o = 0,
+V (T, x) = x,
+∂tg(t, x) + (rx + (b − r)ˆa)∂xg(t, x) + 1 2 σ2ˆa2∂xxg(t, x) = 0,
+g(T, x) = x.
+(6.4)
+It is well-known that the above extended HJB equation system admits an explicit classical
+solution, leading to the explicit characterization of an equilibrium policy.
+Proposition 6.1 (Proposition 18.1 in Bj¨ork et al. 2021). Consider the mean-variance portfolio
+management problem (6.3). The equilibrium policy is given by
+a∗(t) = 1 γ b − r σ2 e−r(T −t), (t, x) ∈ [0, T ] × [0, ∞).
+The associated equilibrium value function is given by
+V (t, x) = er(T −t)x + 1 2γ (b − r)2 σ2 (T − t), (t, x) ∈ [0, T ] × [0, ∞).
+Furthermore, the expected terminal wealth under the equilibrium policy is
+g(t, x) = Et,x [XT ] = er(T −t)x + 1 γ (b − r)2 σ2 (T − t), (t, x) ∈ [0, T ] × [0, ∞).
+27
+
+=== page 28 ===
+Algorithm 3 Learning the Auxiliary Functions via Fixed-Point Iterations
+Learning Procedure:
+1: Initialize τ = 1.
+2: while τ ≤ M do
+3: Sample a batch of trajectories {x(j) kj :kj +L, a(j) kj :kj +L, r(j) kj :kj +L,s,y }B j=1 from R
+4: Sample a batch of terminal states {x(j) K }B j=1 from R
+5: ▷ train the fixed point function f
+6: Compute the martingale loss
+∆f 1 = 1 B
+BX
+j=1
+ 
+fξ (kj ℓ, x(j) kj , s, y) −
+kj +L−1X
+y=kj
+(r(j) y,s − lζ (kj ℓ, x(j) kj , a(j) kj , s, y))ℓ − fξtgt ((kj + L)ℓ, x(j) kj +L, s, y) 2
+7: Compute the terminal value constraint loss
+∆f 2 = 1 B BX j=1   fξ (Kℓ, x(j) K , s, y) − F (s, y, x(j) K ) 2
+8: Update ξ and ζ by ξ ← ξ − α∂ξ (∆f 1 + ω∆f 2) and ζ ← ζ − α∂ζ ∆f 1
+9: Update the target ξtgt by ξtgt = τ ξ + (1 − τ )ξtgt
+10: ▷ train the advantage-rate of f (t, x, t, x)
+11: Compute the martingale loss
+∆f 3 = 1 B
+BX
+j=1
+ 
+fξ (kj ℓ, x(j) kj , kj ℓ, x(j) kj ) +
+kj +L−1X
+y=kj
+oϱ(kj ℓ, x(j) kj , a(j) kj )ℓ − fξtgt ((kj + L)ℓ, x(j) kj +L, (kj + L)ℓ, x(j) kj +L) 2
+12: Update ϱ by ϱ ← ϱ − α∂ϱ∆f 3
+13: ▷ train the fixed point function g
+14: Compute the martingale loss
+∆g1 = 1 B BX j=1   gη(kj ℓ, x(j) kj ) + kj +L−1X z=kj hχ(yℓ, x(j) z , a(j) z ))ℓ − gηtgt ((kj + L)ℓ, x(j) kj +L) 2
+15: Compute the terminal value constraint loss
+∆g2 = 1 B BX j=1   gη(Kℓ, x(j) K ) − x(j) K 2
+16: Update η and χ by η ← η − α∂η(∆g1 + ω∆g2) and χ ← χ − α∂χ∆g1
+17: Update the target χtgt by χtgt = τ χ + (1 − τ )χtgt
+18: ▷ train the advantage-rate of G(x, g(t, x))
+19: Compute the martingale loss
+∆G = 1 B
+BX
+j=1
+ 
+G(x(j) kj +L, gη (kj ℓ, x(j) kj )) +
+kj +L−1X
+y=kj
+pι(yℓ, x(j) y , a(j) y ))ℓ − G(x(j) kj +L, gηtgt ((kj + L)ℓ, x(j) kj +L)) 2
+20: Update ι by ι ← ι − α∂ι∆G
+21: Update τ ← τ + 1.
+22: end while
+28
+
+=== page 29 ===
+In the two-stage reformulation of the mean-variance problem, the modified running reward
+˜r(t, x, a) : [0, T ] × Rn × A → R takes the form
+˜r(t, x, a) := −La(G ⋄ g)(t, x) + G′(g(t, x))Lag(t, x) = − 1 2 γσ2a2e2r(T −t).
+Consequently, we arrive at the auxiliary optimal control problem
+V (t, x) := sup
+a∈A
+Et,x
+Z T
+t
+˜r(s, X a s , as)ds + F (T, X a T ) + G(X a T )
+
+.
+We apply Algorithm 1 to learn the equilibrium policy and introduce the following parameter-
+izations, which capture the exact functional forms of the true solutions, with the true parameters
+given by
+
+
+
+θ∗ 1 = r, θ∗ 2 = (b − r)2 σ2 , ψ∗ 1 = r, ψ∗ 2 = σ2, ψ∗ 3 = b − r,
+ϕ∗ 1 = r, ϕ∗ 2 = b − r σ2 , η∗ 1 = r, η∗ 2 = (b − r)2 σ2 ,
+χ∗ 1 = r, χ∗ 2 = b − r, χ∗ 3 = (b − r)2 σ2 , ι∗ 1 = r, ι∗ 2 = σ2, ι∗ 3 = b − r.
+(6.5)
+Consequently, the equilibrium value function V , the advantage rate function q, the equilibrium
+policy µ, and the auxiliary functions g, h = Lag and p = La(G ⋄ g) admit explicit representations
+
+
+
+V (t, x) = eθ∗ 1 (T −t)x + 1 2γ θ∗ 2 (T − t),
+q(t, x, a) = − 1 2 γe2ψ∗ 1 (T −t)ψ∗ 2 a2 + eψ∗ 1 (T −t)ψ∗ 3 a − (ψ∗ 3 )2 2γψ∗ 2 ,
+µ(t, x) = 1 γ ϕ∗ 2e−ϕ∗ 1 (T −t),
+g(t, x) = eη∗ 1 (T −t)x + 1 γ η∗ 2 (T − t),
+h(t, x, a) = eχ∗ 1 (T −t)χ∗ 2a − χ∗ 3 γ ,
+p(t, x, a) = 1 2 γe2ι∗ 1 (T −t)(ι∗ 2a2 + 2ι∗ 3ax) + (ι∗ 3)2 ι∗ 2 eι∗ 1 (T −t)(ι∗ 3(T − t)a − x) − (ι∗ 3)4 γ(ι∗ 2)2 (T − t).
+(6.6)
+Based on (6.5)-(6.6), we can parameterize the equilibrium value function V , the advantage rate
+q, the equilibrium policy µ, the functions g, h and p in the exact form as:
+
+
+
+Vθ(t, x) = eθ1(T −t)x + 1 2γ θ2(T − t),
+¯qψ(t, x, a) = − 1 2 γe2ψ1(T −t)ψ2a2 + eψ1(T −t)ψ3a,
+µϕ(t, x) = 1 γ ϕ2e−ϕ1(T −t),
+gη(t, x) = eη1(T −t)x + 1 γ η2(T − t),
+¯hχ(t, x, a) = eχ1(T −t)χ2a,
+pι(t, x, a) = 1 2 γe2ι1(T −t)(ι2a2 + 2ι3ax) + ι2 3 ι2 eι1(T −t)(ι3(T − t)a − x) − ι4 3 γι2 2 (T − t).
+(6.7)
+29
+
+=== page 30 ===
+Note that in the parameterization of ¯qψ, we have omitted the constant term − (ψ∗ 3 )2 2γψ∗ 2 in the true advantage rate q to reduce the parameter. This simplification is allowed because the actual
+advantage rate is constructed by
+qψ(t, x, a) = ¯qψ(t, x, a) − ¯qψ(t, x, µϕ(t, x)),
+which automatically satisfies the constraint qψ(t, x, µϕ(t, x)) = 0 as in (3.2). Therefore, any
+constant term would cancel out in this difference and does not affect the learning procedure.
+Remark 6.2. It is easy to verify that Assumptions 3.1, 4.1-(i),(ii) and 4.2 are satisfied for the
+mean-variance portfolio management problem (6.3) with the parameterization (6.7). To verify that
+Assumption 4.1-(iii) also holds, consider a family of functions gη(t, x) = eη1(T −t)x + 1 γ η2(T − t)
+with η1 ∈ [η1, ¯η1], η2 ∈ [η2, ¯η2], where η1, ¯η1, η2, ¯η2 ∈ R and η1 ≤ ¯η1, η2 ≤, ¯η2. Solving the PDE for
+V (t, x) in (6.4) yields the policy function µg(t, x) given by
+µgη (t, x) = b − r γσ2 e(r−2η1)(T −t).
+In view that η1 lies in the bounded interval [η1, ¯η1], we obtain the uniform bound
+||µgη ||(3) ≤ |b − r| γσ2 e(r+2|η1|+|¯η1|)T .
+Furthermore, for all (t, x) ∈ [0, T ] × Rn, it holds that
+|µgη (t, x) − µgη′ (t, x)| ≤ b − r γσ2 er|e−2η1(T −t) − e2η′ 1(T −t)|
+≤ 2 2(b − r) γσ2 er+(|η1|+¯η1|)T |e−η1(T −t) − e−η′ 1(T −t)|
+= 2(b − r) γσ2 er+(|η1|+¯η1|)T |∂xgη(t, 1) − ∂xgη′ (t, 1)|
+≤ b − r γσ2 er+(|η1|+¯η1|)T ||gη − gη′ ||2.
+Note that ∂xµgη (t, x) = ∂xxµgη (t, x) = 0 for all (t, x) ∈ [0, T ]×Rn. Hence the parameterized policy
+µgη indeed satisfies Assumption 4.1-(iii).
+The parameters for simulation are set as follows: r = 0.02, b = 0.1, σ = 0.3, and γ = 2. The
+time horizon is T = 1, the discretization step is ℓ = 0.01, and the exploration noise takes variance
+σexplore = 0.5. We use a batch size of B = 64, an update frequency of m = 1, a trajectory length
+of L = 1 per episode, an inner iteration number M = 1, and a total of N = 1 × 104 episodes.
+The soft updating parameter is τ = 0.05. Finally, the learning rates α1 = 0.1 for the parameters
+θ, ψ, ϕ, η, χ and α2 = 1 × 10−4 for ι.
+We simulate the state process and track the convergence of the iterated parameters in Algo-
+rithm 1. Figure 1 displays the evolution of selected parameters over the course of training, illus-
+trating that they indeed approach their true values given in (6.5). In Figure 2-(a), we compare
+the learned equilibrium value function Vθ(t, x) and the learned policy µϕ(t, x) with the theoretical
+30
+
+=== page 31 ===
+results in Proposition 6.1. The close agreement between the learned and true functions demon-
+strates the superior effectiveness of the proposed DPG-FPI algorithm in learning the equilibrium
+policy. Additionally, we plot in Figure 2-(b) the training losses of the learned equilibrium value
+function and the learned equilibrium policy, which again shows the rapid and steady convergence
+towards zero along the iterations.
+(a)
+ (b)
+Figure 1: Convergence of parameter iterations using Algorithm 1.
+Next, in this mean-variance example, we would like to compare the performance of Algorithm 1
+with the q-learning approach under entropy-regularization using stochastic policies as in Jia and
+Zhou (2023). Following a similar calculation as the one in Appendix C of Dai et al. (2023), the
+stochastic equilibrium policy under Shannon entropy regularization in our model can be obtained
+explicitly as a Gaussian distribution:
+π∗(t, x) ∼ N
+ 1
+γ
+b − r
+σ2 e−r(T −t), λ γσ2 e−2r(T −t)
+
+, (t, x) ∈ [0, T ] × [0, ∞),
+where λ is the temperature parameter that weights the tradeoff between the exploration and
+exploitation. We replace the actor step (Algorithm 2) by the q-learning algorithm to update the
+stochastic equilibrium policy, and keep Algorithm 3 the same for learning the fixed-point auxil-
+iary functions in both algorithms. We test both algorithms in two different model environment
+(different model parameters). In particular, to better illustrate the robustness with respect to
+local exploration/exploration effect, we also choose 4 different exploration parameters in each
+algorithm: the local exploration variance σexplore in our DPG-FPI algorithm and the temperature
+parameter γ of exploration in the q-learning algorithm.
+To quantify the performance, we choose the relative error of the learned equilibrium by the
+metric
+errorp(t) := |a∗(t) − a(t)| |a∗(t)| , for t ∈ [0, T ],
+where a∗(t) is the theoretical equilibrium policy given in Proposition 6.1, and a(t) is the either
+the deterministic equilibrium policy learned by DPG-FPI algorithm or the mean of the Gaussian
+31
+
+=== page 32 ===
+(a)
+ (b)
+Figure 2: (a): The learnt equilibrium value function vs the true equilibrium value function; and
+the learnt equilibrium policy vs the true equilibrium policy. The wealth level is set as x = 3. (b):
+Training losses of equilibrium value function and equilibrium policy function.
+policy learned by q-learning algorithm. Moreover, we also numerically plot the relative error of
+the learned value function by
+errorv(t, x) := |V (t, x) − v(t, x)| |V (t, x)| , for (t, x) ∈ [0, T ] × [0, ∞),
+where V (t, x) is the theoretical equilibrium value function given by (6.1), while v(t, x) stands
+for either the learned equilibrium value function by our DPG-FPI algorithm, or the learned
+equilibrium value function subtracted by the Shannon entropy term by the q-learning algorithm.
+From the numerical plots in Figure 3 and Figure 4, we observe that the DPG-FPI algorithm
+on average (under 4 different exploration parameters σexplore) evidently yields more stable and
+accurate approximation of both the equilibrium policy and equilibrium value function compared to
+the q-learning algorithm with stochastic policies (under 4 different temperature parameters λ). In
+particular, it is interesting to see that varying different local exploration parameters σexplore yield
+nearly close learning outcomes (especially the learned equilibrium value functions in Figure 4) in
+our DPG-FPI algorithm. In contrast, shifting the temperature parameters λ cause more noticeable
+differences in the learning errors, echoing the long-standing challenge in determining the proper
+temperature parameter for the trade-off of exploitation and exploration.
+On the other hand, comparing the left and right panels with different model inputs, the learn-
+ing errors under our DPG-FPI algorithm also exhibit smaller changes, illustrating the robustness
+with respect to market environment. On the contrary, the learning errors under stochastic policies
+show more substantial fluctuations when market environment changes. These observations align
+with the findings of Cheng et al. (2025) in time-consistent control problems, and our numerical
+plots exemplify these similar advantages of deterministic policies over stochastic policies in this
+time-inconsistent portfolio management problem.
+32
+
+=== page 33 ===
+(a)
+ (b)
+Figure 3: Comparison of policy error between the DPG-FPI algorithm and the q-learning algorithm with
+stochastic policies. The simulation parameters are set as: for panel (a), r = 0.02, b = 0.1, σ = 0.3, γ = 2;
+for panel (b), r = 0.05, b = 0.1, σ = 0.25, γ = 1. All other parameters remain the same as before.
+(a)
+ (b)
+Figure 4: Comparison of value function error between the DPG-FPI algorithm and the q-learning algo-
+rithm with stochastic policies at t = 0.5. The simulation parameters are set as: for panel (a), r = 0.02,
+b = 0.1, σ = 0.3, γ = 2; for panel (b), r = 0.05, b = 0.1, σ = 0.25, γ = 1. All other parameters remain the
+same as before.
+33
+
+=== page 34 ===
+6.2 Optimal Tracking Portfolio under Non-exponential Discounting
+We consider a financial market model consisting of a risky asset S and a risk-free money account
+B. The dynamics of these assets are described by
+dSt = b1Stdt + σ1StdWt, dBt = rBtdt,
+where W is a standard Brownian motion. The return rate b1 > 0, the volatility σ1 > 0 and the
+interest rate r > 0 are assumed to be unknown constants.
+At each time t ∈ [0, T ], let at be the amount of wealth that the fund manager allocates in
+asset S. Given the investment strategy a = (at)t∈[0,T ], the self-financing wealth process satisfies
+dXt = (rXt + (b1 − r)at) dt + σ1atdWt, t > 0, X0 = x ∈ R.
+In addition, we introduce a market index process Z = (Zt)t∈[0,T ], as a benchmark that the fund
+manager wishes to track. The index is assumed to follow a geometric Brownian motion
+dZt = b2Ztdt + σ2ZtdWt, Z0 = z ∈ (0, ∞).
+where the return rate b2 > 0 and the volatility σ2 > 0 are also unknown to the fund manager.
+Following Yao et al. (2006), for (t, x, z) ∈ [0, T ]×R×(0, ∞), the objective of the fund manager
+is to minimize the expected discounted squared tracking error:
+J (t, x, z; a) := Et,x,z
+Z T
+t
+β(s − t)|Xs − Zs|2ds
+
+. (6.8)
+The discount factor β : [0, ∞) → (0, ∞) is a pseudo-exponential type (Ekeland and Lazrak (2006))
+β(t) := λe−ρ1t + (1 − λ)e−ρ2t, t ≥ 0, (6.9)
+where the parameters λ ∈ [0, 1] and 0 < ρ1 < ρ2 are known to the fund manager. This function
+is a convex combination of two exponential discount factors, which places the problem in the
+domain of time-inconsistent stochastic control. The extended HJB system to characterize such
+an equilibrium is given by the following PDEs
+
+
+
+∂tV (t, x, z) + inf a∈R
+n
+(rx + (b1 − r)a)∂xV (t, x, z) + 1 2 σ2 1 a2∂xxV (t, x, z) + σ1σ2az∂xz V (t, x, z) o
++ 1 2 σ2 2 z2∂zz V (t, x, z) + b2z∂z V (t, x, z) + (x − z)2 − ∂sf (t, x, z, t) = 0,
+V (T, x, z) = 0.
+(6.10)
+where the function f (t, x, z, s) is the solution to
+
+
+
+∂tf (t, x, z, s) + (rx + (b1 − r)ˆa)∂xf (t, x, z, s) + 1 2 σ2 1 ˆa2∂xxf (t, x, z, s) + σ1σ2ˆaz∂xz f (t, x, z, s)
++ 1 2 σ2 2 z2∂zz f (t, x, z, s) + b2z∂z f (t, x, z, s) + β(t − s)(x − z)2 = 0,
+f (T, x, z, s) = 0,
+(6.11)
+34
+
+=== page 35 ===
+with ˆa(t, x, z) = − (b1−r)∂xV (t,x,z)+σ1σ2az∂xz V (t,x,z) σ2 1 ∂xxV (t,x,z) .
+To solve this extended HJB system, consider the following ansatz‌ of the value function
+V (t, x, z) = A(t)x2 + B(t)xz + C(t)z2, for (t, x, z) ∈ [0, T ] × R × [0, ∞), where A(t), B(t), C(t) are
+functions to be determined. Moreover, we adopt the ansatz of the auxiliary function f (t, x, z, s) =
+λe−ρ1(t−s)  A1(t)x2 + B1(t)xz + C1(t)z2 + (1 − λ)e−ρ2(t−s)  A2(t)x2 + B2(t)xz + C2(t)z2 , where
+Ai(t), Bi(t), Ci(t) for i = 1, 2 are functions to be determined.
+Define δ = (b1−r)2 σ2 1 , η = (b1−r)σ2 σ1 , γ(t) = B(t) 2A(t) , and for i = 1, 2, let αi = ρi − 2r + δ, βi =
+ρi − r + δ + η − b2. Using (6.10) and (6.11), we obtain the system of ODEs:
+
+
+
+A′(t) = δA(t) − 1 + λρ1A1(t) + (1 − λ)ρ2A2(t), A(T ) = 0,
+B′(t) = (δ + η − b2)B(t) + 2 + λρ1B1(t) + (1 − λ)ρ2B2(t), B(T ) = 0,
+C′(t) = (δ + 2η + σ2 2 ) B2(t) 4A(t) − (σ2 2 + 2b2)C(t) − 1 + λρ1C1(t) + (1 − λ)ρ2C2(t), C(T ) = 0,
+(6.12)
+and, for i = 1, 2,
+
+
+
+A′ i(t) = αiAi(t) − 1, Ai(T ) = 0,
+B′ i(t) = βiBi(t) + 2, Bi(T ) = 0,
+C′ i(t) = (ρi − σ2 2 − 2b2)Ci(t) + (δ + 2η + σ2 2 )(γ(t)Bi(t) − γ2(t)Ai(t)) − 1, Ci(T ) = 0.
+(6.13)
+Solving (6.12) and (6.13) yields the following semi-closed-form expressions of the equilibrium
+policies and the associated value function.
+Proposition 6.3. Consider the optimal tracking problem (6.8), the following results hold:
+(i) The auxiliary function f (t, x, z, s) admits the representation
+f (t, x, z, s) = λe−ρ1(t−s)  A1(t)x2 + B1(t)xz + C1(t)z2
++ (1 − λ)e−ρ2(t−s)  A2(t)x2 + B2(t)xz + C2(t)z2 .
+Here, the coefficients Ai(t) and Bi(t) are given by
+Ai(t) = 1 − eαi(t−T ) αi , Bi(t) = 2 βi   eβi(t−T ) − 1  ,
+and Ci(t) is given by
+Ci(t) =
+Z T
+t
+e(ρi−σ2 2 −2b2)(t−s) h 1 − (δ + 2η + σ2 2 )   γ(s)Bi(s) − γ(s)2Ai(s) i ds.
+(ii) The equilibrium portfolio policy is given by
+a∗(t, x, z) = − b1 − r σ2 1 x − B(t) 2A(t)  b1 − r σ2 1 + σ2 σ1  z.
+35
+
+=== page 36 ===
+The associated equilibrium value function takes the form of
+V (t, x, z) = A(t)x2 + B(t)xz + C(t)z2, (t, x, z) ∈ [0, T ] × R × [0, ∞),
+where coefficients A(t), B(t), C(t) are given by
+A(t) = λA1(t) + (1 − λ)A2(t), B(t) = λB1(t) + (1 − λ)B2(t),
+C(t) = λC1(t) + (1 − λ)C2(t).
+In our numerical implementation, we adopt structured neural network architectures that reflect
+the analytical form of the solution in Proposition 6.3, to facilitate the learning and to improve
+the convergence. The value network Vθ(t, x, z) is parameterized as Vθ(t, x) = Aθ(t)x2 + Bθ(t)xz +
+Cθ(t)z2, where Aθ(t) and Bθ(t) are parameterized in the exact form as:
+Aθ(t) = λ 1 − eθ1(t−T ) θ1 + (1 − λ) 1 − eθ2(t−T ) θ2 ,
+Bθ(t) = λ 2 θ3   eθ3(t−T ) − 1  + (1 − λ) 2 θ4   eθ4(t−T ) − 1  ,
+and Cθ(t) is implemented as two-layer fully connected MLPs with ReLU activations and the hidden
+dimension is set to 32. The auxiliary advantage rate network ¯qψ(t, x, z, a) is parameterized as
+¯qψ(t, x, z, a) = ψ2 1
+ 
+λ 1 − eψ2(t−T )
+ψ2
++ (1 − λ) 1 − eψ3(t−T )
+ψ3
+!
+(a − aψ(t, x, z))2,
+where aψ(t, x, z) is parameterized in the exact form as:
+aψ(t, x, z) = −ψ6x −
+λ
+ψ4
+ 
+eψ4(t−T ) − 1  + 1 − λ ψ5   eψ5(t−T ) − 1 
+λ
+ψ2
+(1 − eψ2(t−T )) + 1 − λ ψ3 (1 − eψ3(t−T )) (ψ6 + ψ7) z.
+The policy µϕ(t, x, z) follows the structure suggested by the theoretical solution, given by
+µϕ(t, x, z) = −ϕ1x −
+λ
+ϕ3
+ 
+eϕ3(t−T ) − 1  + 1 − λ ϕ4   eϕ4(t−T ) − 1 
+λ
+ϕ5
+(1 − eϕ5(t−T )) + 1 − λ ϕ6 (1 − eϕ6(t−T )) (ϕ1 + ϕ2) z.
+The auxiliary network fξ (t, x, z, s) is parameterized as
+fξ (t, x, s) = λe−ρ1(t−s)
+ 
+1 − eξ1(t−T )
+ξ1
+x2 + 2 ξ2   eξ2(t−T ) − 1  xz + C1,ξ (t)z2
+!
++ (1 − λ1)e−ρ2(t−s)
+ 
+1 − eξ3(t−T )
+ξ3
+x2 + 2 ξ4   eξ4(t−T ) − 1  xz + C2,ξ (t)z2
+!
+where C1,ξ (t) and C2,ξ (t) are implemented by a two-layer MLP with ReLU activations and hidden
+dimension 32. All networks are trained using the Adam optimizer with a learning rate of 10−4.
+36
+
+=== page 37 ===
+Remark 6.4. It is straightforward to verify that Assumptions 3.1, 4.1-(i),(ii) and 4.2 are satisfied
+in this example with the above parameterizations. To show that Assumption 4.1-(iii) also holds,
+consider a family of functions
+fξ (t, x, z, s) = λe−ρ1(t−s)  A1,ξ (t)x2 + B1,ξ (t)xz + C1,ξ (t)z2
++ (1 − λ)e−ρ2(t−s)  A2,ξ (t)x2 + B2,ξ (t)xz + C2,ξ (t)z2 ,
+with ξ ∈ Ξ, where Ξ ∈ Rdξ is a compact set and dξ is the dimension of the parameter ξ. Given
+the parameterized auxiliary function fξ , solving the PDE for function V (t, x, z) in (6.10) yields
+the policy function µfξ (t, x, z) in the form of
+µfξ (t, x, z) = − b1 − r σ2 1 x − Bξ (t) 2Aξ (t)  b1 − r σ2 1 + σ2 σ1  z,
+where the functions Aξ and Bξ are given by
+Aξ (t) =
+Z T
+t
+eδ(t−ℓ)(1 − λ1ρ1A1,ξ (t) − (1 − λ1)ρ2A2,ξ (t))dℓ,
+Bξ (t) = −
+Z T
+t
+e(δ+b0−b2)(t−ℓ)(2 + λ1ρ1B1,ξ (t) + (1 − λ)ρ2B2,ξ (t))dℓ
+By choosing an appropriate compact set Ξ, we can ensure the existence of positive constants ϵ, M
+such that
+0 < ϵ ≤ |Aξ (t)| ≤ M, and 0 < ϵ ≤ |Bξ (t)| ≤ M, ∀t ∈ [0, T ], ξ ∈ Ξ.
+For any ξ, ξ′ ∈ Ξ, it is easy to check that
+sup
+t∈[0,T ]
+ 
+|Aξ (t) − Aξ′ (t)| + |Bξ (t) − Bξ′ (t)|  ≤ ||fξ − fξ′ ||(2). (6.14)
+Using (6.14), we deduce that the parameterized policy µfξ indeed satisfies Assumption 4.1-(iii).
+For the simulation, the parameters are set as follows: r = 0.03, b1 = 0.1, σ1 = 0.25, b2 = 0.06,
+and σ2 = 0.2. The parameters of the discount function are ρ1 = 0.4, ρ2 = 1.2, and λ = 0.1. The
+time horizon is T = 1, the discretization step is ℓ = 0.01, and the variance of the exploration
+noise is σexplore = 0.1. In terms of algorithm hyperparameters, we use a batch size of B = 128,
+an update frequency of m = 1, a trajectory length of L = 10 per episode, an inner iteration
+number M = 1, and a total of N = 1000 episodes. The soft update parameter is set as τ = 0.02,
+the weight for the terminal value constraint takes w = 0.1, and the learning rate is chosen to be
+α = 1 × 10−4.
+Based on Algorithm 1 and Remark 4.6, we present numerical learning performance in the
+optimal tracking problem under non-exponential discounting in Figure 5. Panel (a) compares
+the learned equilibrium value function and the learned policy with their true theoretical results.
+The close agreement between the learned functions and the analytical solutions demonstrates
+that the algorithm successfully captures the equilibrium behavior despite the time-inconsistent
+nature of the problem. Panels (b) and (c) show the training losses of the learned equilibrium
+37
+
+=== page 38 ===
+value function and the learned policy along iterations, respectively. Both losses decrease fast and
+steadily as training progresses, indicating the successful convergence and stabilization of neural
+network parameters to learn the targeted equilibrium.
+Next, noting that the extreme case λ = 1 in the discount function β(t) corresponds to the
+standard time-consistent control problem under exponential discounting. On the strength of our
+DPG-FPI algorithm, we are allowed to compare the learning performance between the time-
+inconsistent and time-consistent scenarios in Figure 6. In particular, we compare the variance
+of the learned value functions and the learned policies for the case with λ = 1.0 and the case
+with λ = 0.9. In the time-consistent case, we only employ DPG to update the policy and use the
+martingale loss for policy evaluation as in Cheng et al. (2025); while the full Algorithm 1 is invoked
+in the time-inconsistent case. All other parameters are retained identical to those in the previous
+experiment. The plots show that both the value function variance and the policy variance are
+significantly larger in the time-inconsistent case, which agrees with the common intuition that
+accomplishing a learning task under a time-inconsistent preference should cost more endeavor and
+time. This significant difference can be attributed to the inherent complexity and instability of
+inner fixed point iterations to learn the auxiliary function f (t, x, z, s) in the intra-personal game
+to resolve the issue of time-inconsistency.
+(a)
+ (b)
+ (c)
+Figure 5: (a): The learnt equilibrium value function vs the true equilibrium value function and
+the learnt equilibrium policy vs the true equilibrium with (x, z) = (3, 1). (b): Training loss of
+value function. (c): Training loss of policy function.
+The unified and model-free DPG-FPI Algorithm 1 enables us to visualize the more intricate
+and instable learning procedure when the agent chooses a non-standard time preference to eval-
+uate the portfolio management. In addition, in view that time-inconsistency brings more evident
+instability in the learned equilibrium along the iterations (as in Figure 6), we can further justify
+that the choice of deterministic policies might be more preferable than those approaches using
+stochastic polices because deterministic polices can help stabilize the learning iterations and im-
+prove the robustness of the algorithm with respect to environment; see Figures 3 and 4 and
+discussions therein.
+Acknowledgements: Xiang Yu is supported by the Hong Kong RGC General Research Fund
+(GRF) under grant no. 15211524 and the Hong Kong Polytechnic University research grant under
+no. P0045654.
+38
+
+=== page 39 ===
+(a)
+ (b)
+Figure 6: (a): Variance of learnt (equilibrium) value function. (b): Variance of learnt (equilib-
+rium) policy function. The state variables are set to (t, x, z) = (0.5, 3, 1).
+References
+Bj¨ork, T. and Murgoci, A. (2014). A theory of Markovian time-inconsistent stochastic control in discrete
+time. Finance and Stochastics, 18(3): 545-592.
+Bj¨ork, T., Khapko, M. and Murgoci, A. (2017). On time-inconsistent stochastic control in continuous time.
+Finance and Stochastics, 21(2): 331-360.
+Bj¨ork, T., Khapko, M. and Murgoci, A. (2021). Time-Inconsistent Control Theory with Finance Applica-
+tions. Springer.
+Bo, L., Huang, Y. and Yu, X. (2025). On optimal tracking portfolio in incomplete markets: The reinforce-
+ment learning approach. SIAM Journal on Control and Optimization, 63(1): 321-348.
+Bo, L., Huang, Y., Yu, X. and Zhang, T. (2024). Continuous-time q-learning for jump-diffusion models
+under Tsallis entropy. Preprint, available at arXiv:2407.03888.
+Cao, H., Dong, Y. and Yang, Z. (2025). A two-fold randomization framework for impulse control problems.
+Preprint, available at arXiv:2509.12018.
+Cheng, Z., Guo, X. and Zhang, Y. (2025). Deterministic policy gradient for reinforcement learning with
+continuous time and space. Preprint, available at arXiv:2509.23711.
+Dai, M., Dong, Y. and Jia, Y. (2023). Learning equilibrium mean-variance strategy. Mathematical Finance,
+33(4), 1166-1212.
+Dai, M., Dong, Y. and Li, L. (2025). Reinforcement learning for arbitrage strategies in stock index futures.
+Preprint, available at SSRN 5403455.
+Dai, M., Sun, Y., Xu, Z. Q. and Zhou, X. Y. (2026). Learning to optimally stop diffusion processes,
+with financial applications. Management Science, available at: https://doi.org/10.1287/mnsc.2024.
+07614.
+Dianetti, J., Ferrari, G. and Xu, R. (2024). Exploratory optimal stopping: A singular control formulation.
+Preprint, available at arXiv:2408.09335.
+Dong, Y. (2024). Randomized optimal stopping problem in continuous time and reinforcement learning
+algorithm. SIAM Journal on Control and Optimization, 62(3): 1590-1614.
+39
+
+=== page 40 ===
+Ekeland, I. and Lazrak, A. (2006). Being serious about non-commitment: subgame perfect equilibrium in
+continuous time. Preprint, available at arXiv:math/0604264.
+Gao, X., Li, L. and Zhou, X. Y. (2026). Reinforcement learning for jump-diffusions, with financial appli-
+cations. Mathematical Finance, available at: https://doi.org/10.1111/mafi.70027.
+Guo, X., Xu, R. and Zariphopoulou, T. (2022). Entropy regularization for mean field games with learning.
+Mathematics of Operations Research, 47(4), 3239-3260.
+Huang, Y., Li, M., Yu, X. and Zhou, Z. (2025). Continuous-time reinforcement learning for optimal switch-
+ing over multiple regimes. Preprint, available at arXiv:2512.04697.
+Huang, Y.-J., Yu, X. and Zhang, K. (2026). Policy iteration achieves regularized equilibrium under time
+inconsistency. Preprint, available at arXiv:2603.06145.
+Jia, Y., Ouyang, D. and Zhang, Y. (2025). Accuracy of discretely sampled stochastic policies in continuous-
+time reinforcement learning. Preprint, available at arXiv:2503.09981.
+Jia, Y. and Zhou, X. Y. (2022a) Policy evaluation and temporal-difference learning in continuous time and
+space: A martingale approach. Journal of Machine Learning Research, 23(154): 1–55.
+Jia, Y. and Zhou, X. Y. (2022b). Policy gradient and actor-critic learning in continuous time and space:
+Theory and algorithms. Journal of Machine Learning Research, 23(275): 1-50.
+Jia, Y. and Zhou, X. Y. (2023). q-Learning in continuous time. Journal of Machine Learning Research,
+24(161): 1-61.
+Kunita, K. (2019). Stochastic Flows and Jump-Diffusions. Springer-Verlag, New York.
+Sethi, D., ˇSiˇska, D. and Zhang, Y. (2025). Entropy annealing for policy mirror descent in continuous time
+and space. SIAM Journal on Control and Optimization, 63(4), 3006-3041.
+Strotz, R. H. (1955). Myopia and inconsistency in dynamic utility maximization. Review of Economic
+Studies, 23(3): 165-180.
+Szpruch, L., Treetanthiploet, T. and Zhang, Y. (2024): Optimal scheduling of entropy regularization for
+continuous-time linear-quadratic reinforcement learning. SIAM Journal on Control and Optimization,
+62(1), 135-166.
+Tang, W., Zhang, Y. P. and Zhou, X. Y. (2022). Exploratory hjb equations and their convergence. SIAM
+Journal on Control and Optimization, 60(6), 3191-3216.
+Wang, H., Zariphopoulou, T. and Zhou, X. Y. (2020). Reinforcement learning in continuous time and
+space: A stochastic control approach. Journal of Machine Learning Research, 21(198): 1-34.
+Wang, B., Gao, X. and Li, L. (2026a). Reinforcement learning for continuous-time optimal execution:
+actor-critic algorithm and error analysis. Finance and Stochastics, 30, 597-655.
+Wang, Z., Yu, X., Zhang, J. and Zhou, Z. (2026). Equilibrium under time-inconsistency: A new existence
+theory by vanishing entropy regularization. Preprint, available at arXiv:2603.10321.
+Wei, X. and Yu, X. (2025). Continuous-Time q-learning for mean-field control problems. Applied Mathe-
+matics & Optimization, 91(1):10.
+Yao, D., Zhang, S. and Zhou, X. Y. (2006). Tracking a financial benchmark using a few assets. Operations
+Research, 54(2): 232-246.
+40

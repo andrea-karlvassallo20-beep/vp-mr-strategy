@@ -1,0 +1,743 @@
+=== page 1 ===
+Towards Inverse Reinforcement Learning for Limit Order Book Dynamics
+Jacobo Roa-Vicens 1 2 Cyrine Chtourou 1 Angelos Filos 3 Francisco Rul·lan 2 Yarin Gal 3 Ricardo Silva 2
+Abstract
+Multi-agent learning is a promising method to
+simulate aggregate competitive behaviour in ﬁ-
+nance. Learning expert agents’ reward functions
+through their external demonstrations is hence
+particularly relevant for subsequent design of real-
+istic agent-based simulations. Inverse Reinforce-
+ment Learning (IRL) aims at acquiring such re-
+ward functions through inference, allowing to
+generalize the resulting policy to states not ob-
+served in the past. This paper investigates whether
+IRL can infer such rewards from agents within
+real ﬁnancial stochastic environments: limit or-
+der books (LOB). We introduce a simple one-
+level LOB, where the interactions of a number of
+stochastic agents and an expert trading agent are
+modelled as a Markov decision process. We con-
+sider two cases for the expert’s reward: either a
+simple linear function of state features; or a com-
+plex, more realistic non-linear function. Given
+the expert agent’s demonstrations, we attempt to
+discover their strategy by modelling their latent
+reward function using linear and Gaussian process
+(GP) regressors from previous literature, and our
+own approach through Bayesian neural networks
+(BNN). While the three methods can learn the
+linear case, only the GP-based and our proposed
+BNN methods are able to discover the non-linear
+reward case. Our BNN IRL algorithm outper-
+forms the other two approaches as the number of
+samples increases. These results illustrate that
+complex behaviours, induced by non-linear re-
+ward functions amid agent-based stochastic sce-
+narios, can be deduced through inference, encour-
+aging the use of inverse reinforcement learning
+for opponent-modelling in multi-agent systems.
+1JPMorgan Chase & Co., London, United Kingdom
+2Department of Statistical Science, University College London,
+United Kingdom 3Department of Computer Science, University of
+Oxford, United Kingdom. Correspondence to: Jacobo Roa-Vicens
+<jacobo.roavicens@jpmorgan.com>.
+Published as a workshop paper on AI in Finance: Applications and
+Infrastructure for Multi-Agent Learning at the 36 th International
+Conference on Machine Learning, Long Beach, California, PMLR
+97, 2019. Copyright 2019 by the author(s).
+1. Introduction
+Limit order books play a central role in the formation of
+prices for ﬁnancial securities in exchanges globally. These
+systems centralize limit orders of price and volume to buy
+or sell certain securities from large numbers of dealers and
+investors, matching bids and offers in a transparent process.
+The dynamics that emerge from this aggregate process (Preis
+et al., 2006; Cont et al., 2010) of competitive behaviour
+fall naturally within the scope of multi-agent learning, and
+understanding them is of paramount importance to liquidity
+providers (known as market makers) in order to achieve
+optimal execution of their operations. We focus on the
+problem of learning the latent reward function of an expert
+agent from a set of observations of their external actions in
+the LOB.
+Reinforcement learning (RL) (Sutton & Barto, 2018) is
+a formal framework to study sequential decision-making,
+particularly relevant for modelling the behaviour of ﬁnan-
+cial agents in environments like the LOB. In particular, RL
+allows to model their decision-making process as agents
+interacting with a dynamic environment through policies
+that seek to maximize their respective cumulative rewards.
+Inverse reinforcement learning (Russell, 1998) is therefore
+a powerful framework to analyze and model the actions of
+such agents, aiming at discovering their latent reward func-
+tions: the most "succinct, robust and transferable deﬁnition
+of a task" (Ng et al., 2000). Once learned, such reward func-
+tions can be generalized to unobserved regions of the state
+space, an important advantage over other learning methods.
+Overview. The paper starts at Section 2 by introducing
+the foundations of IRL, relevant aspects of the maximum
+causal entropy model used, and useful properties of Gaus-
+sian processes and Bayesian neural networks applied to IRL.
+A formal description of the limit order book model follows.
+In Section 3, we formulate the one-level LOB as a ﬁnite
+Markov decision process (MDP) and express its dynamics
+in terms of a Poisson binomial distribution. Finally, we in-
+vestigate the performance of two well-known IRL methods
+(maximum entropy IRL and GP-based IRL), and propose
+and test an additional IRL approach based on Bayesian neu-
+Opinions expressed in this paper are those of the authors, and
+do not necessarily reﬂect the view of JP Morgan.
+arXiv:1906.04813v1  [cs.LG]  11 Jun 2019
+
+=== page 2 ===
+Towards Inverse Reinforcement Learning for Limit Order Book Dynamics
+ral networks. Each IRL method is tested on two versions
+of the LOB environment, where the reward function of the
+expert agent may be either a simple linear function of state
+features, or a more complex and realistic non-linear reward
+function.
+Related Work. Agent-based models of ﬁnancial market
+microstructure are extensively used (Preis et al., 2006;
+Navarro & Larralde, 2017; Wang & Wellman, 2017). In
+most setups, mean-ﬁeld assumptions (Lasry & Lions, 2007)
+are made to obtain closed form expressions for the dynamics
+of the complex, multi-agent environment of the exchanges.
+We make similar assumptions to obtain a tractable ﬁnite
+MDP model for the one-level limit order book.
+Previous attempts have been made to model the evolution of
+the behaviour of large populations over discrete state spaces,
+combining MDPs with elements of game theory (Yang et al.,
+2017), using maximum causal entropy inverse reinforce-
+ment learning. Their focus had been around social media
+data. Recently, Hendricks et al. (2017) used IRL in ﬁnancial
+market microstructure for modelling the behaviour of the
+different classes of agents involved in market exchanges
+(e.g. high-frequency algorithmic market makers, machine
+traders, human traders and other investors). We draw in-
+spiration from them, and distinguish two types of agents:
+automatic agents that induce our environment’s dynamics,
+and active expert agents that trade in such environment. We
+focus on inferring the expert agents’ objectives from the
+point of view of an external observer.
+Our simpliﬁed MDP model could be seen as a variant of the
+multi-agent Blotto environment (Borel, 1921; Tukey, 1949;
+Roberson, 2006; Balduzzi et al., 2019). Blotto is a resource
+distribution game consisting of two opponent armies having
+each a limited number of soldiers that need to be distributed
+across multiple areas or battleﬁelds. Each area is won by the
+army that has the highest number of soldiers. The winner
+army is the one that has majority over the highest number
+of battleﬁelds. This environment is often used to model
+electoral competition problems where parties have a limited
+budget and need to reach a maximum number of voters. In
+our environment, only two areas are used (best bid and ask),
+but the decisions are conditional to a state, hence the MDP
+could be seen as a contextual 2-area Blotto variant.
+Contributions. We propose a multi-agent LOB model
+which provides the possibility of obtaining transition prob-
+abilities in closed form, enabling the use of model-based
+IRL, without giving up reasonable proximity to real world
+LOB settings. The reward functions we propose have a clear
+ﬁnancial interpretation, and allow ﬂexible and comparable
+testing of different IRL methods in a setup that can be scaled
+to higher dimension versions of the environment. We then
+provide results for the three IRL methods discussed: max-
+imum entropy IRL, Gaussian process-based IRL, and our
+IRL approach based on Bayesian neural networks. Results
+show that BNNs are able to recover the target rewards, out-
+performing comparable methods both in IRL performance
+and in terms of computational efﬁciency.
+2. Background
+2.1. Inverse Reinforcement Learning
+We base our IRL experiments on a Markov decision process
+consisting of a tuple ⟨S,A,T,r,γ,P0⟩. S represents the
+state space; A the set of eligible actions; T represents the
+model’s transition dynamics, where T (s′,a,s) = p(s′|s,a)
+is the transition probability to state s′ from state s through
+action a; r(s,a) is the unknown reward function we intend
+to recover; the discount factor γ takes values in [0, 1]; and
+P0 represents the initial state distribution.
+Reinforcement learning aims under its general forward for-
+mulation at ﬁnding an optimal policy π∗ that maximizes the
+expected cumulative reward E
+[∑T
+t=0 γtr(st)|π∗] , where
+the state-action pairs induced by policy π∗ and transi-
+tion dynamics T are denoted in a sequence or trajectory
+x = {(st,at)}T t=0.
+On the other hand, inverse reinforcement learning aims at
+recovering through inference (see Figure 1) an unknown
+reward function r(s,a), where we assume π∗(a|s) to be an
+optimal policy from where a collection of expert demonstra-
+tions D = {xn}N n=1 is drawn. However, one of the main
+difﬁculties of the IRL problem is its ill-posed nature, as
+there could be more than one optimal policy that explains
+a given set of demonstrations D (Ng et al., 1999). This
+ambiguity is handled by the maximum entropy framework
+(Ziebart et al., 2008).
+D = {{(sn t,an t )}T t=0}N n=1 MDP\r = ⟨S,A,T,γ,P0⟩
+Solve MDP
+Q(s,a; ˆrθ),V(s; ˆrθ)
+IRL
+RL
+Optimize w.r.t. θ
+Evaluate MaxEnt Objective: p(D|ˆrθ)
+ˆrθ
+Figure 1. Flow diagram of maximum entropy-based IRL.
+Maximum Causal Entropy Model. The principle of
+maximum causal entropy (Ziebart, 2010) assumes that the
+
+=== page 3 ===
+Towards Inverse Reinforcement Learning for Limit Order Book Dynamics
+distribution of trajectories generated by the optimal policy
+follows π∗(a|s) ∝ exp {Q′ (st,at)} (Ziebart et al., 2008;
+Haarnoja et al., 2017), where Q′ is a is a soft Q-function
+that incorporates the treatment of sequentially-revealed in-
+formation, regularizing the objective of forward reinforce-
+ment learning with respect to differential entropy H(·) as
+described in Fu et al. (2017): Q′ (st,at) = rt(s,a) +
+E(st+1 ,...)∼π
+[∑T
+t′=tγt′ (r (st′,at′) + H (π (·|st′))) ] .
+The inference problem for an unknown reward function
+r(s,a) thus boils down to maximizing the likelihood
+P (D|r) as in Levine et al. (2011):
+exp
+∑
+i
+∑
+t
+[
+Q
+′r
+si,t,ai,t −log
+∑
+a′
+exp(Q
+′r
+si,t,a′i,t )
+]
+2.2. IRL methods considered
+The three inverse reinforcement learning methods that we
+will test on our LOB model for both linear and exponen-
+tial expert rewards are: maximum entropy IRL (MaxEnt),
+Gaussian processes-based IRL (GPIRL), and our implemen-
+tation through Bayesian neural networks (BNN IRL). These
+methods are deﬁned as follows:
+Maximum Entropy IRL. Proposed by Ziebart (2010),
+this method builds on the maximum causal entropy objec-
+tive function described above, combined with a linearity
+assumption on the structure of the reward as a function of
+the state features: r(s) = wTφ(s), where φ(s) : S↦→ Rm
+is the m-dimensional mapping from the state to the feature
+vector. The IRL problem then boils down to the inference
+of such w.
+Gaussian Process-based IRL. Maximum causal entropy
+provides a method to infer values of the reward function on
+speciﬁc points of the state space. This is enough for cases
+where the MDP is ﬁnite and where the observed demonstra-
+tions cover all the state space, which are not very common.
+In this context, it is important to learn a structure of re-
+wards that mirrors as closely as possible the behaviour of
+the expert agent.
+While many prior IRL methods assume linearity of the re-
+ward function, GP-based IRL (Levine et al., 2011), expands
+the function space of possible inferred rewards to non-linear
+reward structures. Under this model, the reward function
+r is modeled by a zero-mean GP prior with a kernel or co-
+variance function kθ. If Xf ∈ Rn,m is the feature matrix
+deﬁning a ﬁnite number n of m-dimensional states, and f
+is the reward function evaluated at Xf : f = r(Xf ), then
+f|X,θ∼N (0,Kf,f ) where [Kf,f ]i,j = kθ(xi,xj).
+The GPIRL objective (Levine et al., 2011) is then maxi-
+mized with respect to the ﬁnite rewards f and θ:
+p(f,θ,D|Xf ) =
+[∫
+r
+p(D|r)p(r|f,θ,Xf )dr
+]
+p(f,θ|Xf )
+Inside the above integral, we can recognize the IRL objec-
+tive p(D|r), the GP posterior p(r|f,θ,Xf ) and the prior
+of f and θ. To mitigate the intractability of this integral,
+Levine et al. (2011) use the Deterministic Training Condi-
+tional (DTC) approximation, which reduces the GP posterior
+to its mean function.
+Bayesian Neural Networks applied to IRL. A neural
+network (NN) is a superposition of multiple layers con-
+sisting of linear transformations and non-linear functions.
+Inﬁnitely wide NNs whose weights are random variables
+have been proven to converge to a GP (Neal, 1995; Williams
+& Jacobs, 1997) and hence represent a universal function
+approximator (Cybenko, 1989). However, this convergence
+property is not applicable to ﬁnite NNs, which are the net-
+works used in practice. Bayesian neural networks are equiv-
+alent networks in the ﬁnite case. BNNs have been the fo-
+cus of multiple studies (Neal, 1995; MacKay, 1992; Gal &
+Ghahramani, 2016) and are known for their useful regular-
+ization properties. Since exact inference is computationally
+challenging, variational inference has instead been used
+to approximate these models (Hinton & Van Camp, 1993;
+Peterson, 1987; Graves, 2011; Gal & Ghahramani, 2016).
+Given a dataset Z = {(xn,yn)}N n=1, we wish to learn the
+mapping {(xn → yn)}N n=1 in a robust way. A BNN can
+be characterized through a prior distribution p(w) placed
+on its weights, and the likelihood p(Z|w). An approximate
+posterior distribution q(w) can be ﬁt through Bayesian vari-
+ational inference, maximizing the evidence lower bound
+(ELBO):
+Lq = Eq[log p(Z|w)] − KL[q(w)‖p(w)]
+We parametrize q(w) with θ and use the mean-ﬁeld vari-
+ational inference approximation (Peterson, 1987), which
+assumes that the weights of each layer factorize to indepen-
+dent distributions. We choose a diagonal Gaussian prior
+distribution p(w) and solve the optimization problem:
+max
+θ
+Lqθ
+In the context of the IRL problem, we leverage the beneﬁts
+of BNNs to generalize point estimates provided by maxi-
+mum causal entropy to a reward function in a robust and
+efﬁcient way. Unlike in GPIRL, where the full objective
+is maximized at each iteration, BNN IRL consists of two
+separate steps:
+
+=== page 4 ===
+Towards Inverse Reinforcement Learning for Limit Order Book Dynamics
+• Inference step: we ﬁrst optimize the IRL objective
+p(D|ˆr), obtaining a ﬁnite number of point estimates of
+the reward {ˆr(sn) = ˆrn}N n=1 over a ﬁnite number of
+states {sn ∈S}N n=1
+• Learning step: secondly, we use these point estimates
+to train a BNN that learns the mapping between state
+features s ∈S and their respective inferred reward
+values ˆr(s) ∈ R.
+The number of point estimates used is the number of states
+existing in the expert’s demonstrations. This means that we
+do not use each state in the state space once, but as many
+times as it exists in the demonstrations D. This is equivalent
+to tailoring the learning rate of the Bayesian neural network
+to match the state visitation counts.
+2.3. Limit Order Book
+Our experimental setup builds on limit order books (LOBs):
+here we introduce some basic deﬁnitions following the con-
+ventions of Gould et al. (2013) and Zhang et al. (2019).
+Two types of orders exist in an LOB: bids (buy orders) and
+asks (sell orders). A bid order for an asset is a quote to
+buy the underlying asset at or below a speciﬁed price Pb(t).
+Conversely, the ask order is a quote to sell the asset at or
+above a certain price Pa(t). For a certain price, the bid
+and ask orders have respective sizes (volumes) Vb(t) and
+Va(t). Each level (l) of the LOB is represented by one
+pair (p(l) b (t),v(l) b (t)) or (p(l) a (t),v(l) a (t)), generally ranked
+in decreasing order of competitiveness.
+3. Experiments
+Experimental Setup. Our environment setup is a one-
+level LOB, resulting from the interaction of N (Markovian)
+trading agents (TA) and an expert agent (EA trader). With-
+out loss of generality, the EA is regulated to have up to
+Imax inventory (amount of securities in their portfolio). The
+EA is unaware of the strategies of each of the other trading
+agents, but adapts to them through trial and error, as in re-
+inforcement learning frameworks (Sutton & Barto, 2018).
+The EA solves the following MDP ⟨S,A,T,r,γ,P0⟩:
+• State Space S. The environment state at time-step t,
+st, is a 3-dimensional vector:
+st =
+[
+v(1) b (t) v(1) a (t) i(EA)(t) ]T ∈S (1)
+where v(1) b (t), v(1) a (t) ∈ R+ are the volumes
+available in the one-level LOB through the best
+bid and ask levels, respectively, and i(EA)(t) ∈
+{−Imax,..., 0,..., +Imax} is the inventory held by the
+expert agent at time-step t.
+• Action Space A. The expert agent chooses to take an
+action at at time-step t, by selecting volumes v(EA) b (t)
+and v(EA) a (t) to match the trading objectives deﬁned by
+their reward with those available in the LOB through
+the other traders, at the best bid and ask, respectively:
+at =
+[
+v(EA) b (t) v(EA) a (t) ]T ∈A (2)
+where v(EA) b (t) + v(EA) a (t) ≤ N (see Transition Dy-
+namics below). The EA is here an active market partic-
+ipant, which actively sells at the best ask and buys at
+the best bid, while the trading agents on the other side
+of the LOB only place passive orders.
+• Transition Dynamics T . At each time-step t, the n-th
+trader, n ∈{1,..,N}, places a single order, o(n) t at
+either side of the LOB (best bid, or best ask). The
+traders follow stochastic policies:
+π(n)(·|st; τ (n)) = Ber
+
+ e
+v(1) b (t−1)
+τ (n)
+e
+v(1) b (t−1)
+τ (n) + e
+v(1) a (t−1)
+τ (n)
+
+ (3)
+o(n) t ∼π(n)(·|st; τ (n)) (4)
+where o(n) t = 1 corresponds to a trader placing an or-
+der at the best bid, and o(n) t = 0 at the best ask. By
+construction, each of the trading agents has to place
+exactly one order, a bid or an ask, at each time-step.
+Ber(·) denotes the Bernoulli distribution. The tempera-
+ture parameters τ = (τ1,...,τn) are independent and
+unknown to the expert agent.
+Hence, the aggregate intermediate bid orders that were
+generated by the N trading agents, v(TA) b (t) are the
+sum of N independent Bernoulli variables, whose pa-
+rameter is conditioned on the environment state st and
+the idiosyncratic temperature parameters τ.
+Therefore, the number of intermediate bids is dis-
+tributed according to a Poisson binomial distribution
+(Shepp & Olkin, 1981), whose probability mass func-
+tion can be expressed in closed form. Since each of the
+trading agents (but not the EA) should place exactly
+one order, the aggregate intermediate ask orders are
+v(TA) a (t) = N −v(TA) b (t). The aggregate bids and
+asks of the trading agents form an intermediate state
+called the belief state bt = (v(TA) b (t),v(TA) a (t)).
+Although the EA can only see the last available LOB
+snapshot contained in st, their orders (at) are executed
+against the intermediate state bt. This could be com-
+pared in real world LOBs to a slippage effect. Based
+on the number of bids and asks ﬁnally matched by the
+
+=== page 5 ===
+Towards Inverse Reinforcement Learning for Limit Order Book Dynamics
+EA in the LOB, their inventory is updated as a net long
+or short position. Considering the above dynamics of
+the LOB, the transition matrix T , can be calculated
+exactly. This allows for an exact solution of the MDP.
+An illustration of the dynamics is provided in Figure 2.
+• Reward Function r. The selection of the reward func-
+tion is crucial, since it induces the behaviour of the
+agent (Berger, 2013). The reward function can be ei-
+ther a function of state st and action at; or equivalently,
+following the dynamics T , of the next state st+1, (Sut-
+ton & Barto, 2018). We follow the latter convention,
+and use the following two reward functions for the
+expert agent to test each IRL method considered:
+1. Linear reward, equal to the EA’s hit count:
+r(s) = N −v(1) b −v(1) a (5)
+This reward is equivalent to the hit count of the
+EA because there are always exactly N orders in
+the intermediate state bt, and therefore the next
+state st resulting from the execution of the EA’s
+active orders at against the TA orders bt, can be
+effectively seen as the remaining orders, i.e. the
+number of orders out of a maximum of N that the
+EA was not able to match.
+This reward function does not incentivize directly
+to sell inventory. However, since the episode
+is terminated when maximum inventory Imax
+is exceeded, the market maker is implicitly
+motivated not to violate this constraint, since
+the simulation will then be terminated and the
+cumulative reward will be reduced.
+2. Exponential reward is a model widely used in
+economic theory to characterize levels of risk aver-
+sion (Pratt, 1964). We may use it to deﬁne a non-
+linear reward function that depends on both the
+inventory of the EA and their hit count:
+r(s) = 1 −e−α∗(N−v(1) b −v(1) a −β∗|i(EA) |) (6)
+where α,β ∈ R≥0 are chosen based on the level
+of risk aversion of the agent.
+Both reward structures are illustrated in Figures 3- 4.
+Results and Discussion. Our experiments are performed
+on synthetic data, where N = 3 is the number of trading
+agents with temperatures τ = (0.1, 0.5, 1.0), and Imax = 5.
+We also consider an episodic setup, where the simulation is
+terminated either when the maximum inventory is violated,
+or T = 5 time-steps are completed. The initial state is
+uniformly sampled from the non-terminal states in S.
+ρ0 s0
+r0
+τ
+b1
+a1
+s1
+r1
+b2
+a2
+s2
+r2
+a3
+···
+···
+···
+Figure 2. Model of our Markov decision process for a one-level
+LOB environment. The expert agent takes actions at (diamond
+yellow nodes), conditioned on the observed states st (shaded circle
+nodes), receiving reward rt (polygon red nodes). The trading
+agents, given the deterministic temperature parameters τ (black
+square node), place orders which comprise the latent belief state
+bt. The next state st+1 is a function of the expert agent’s action
+and the latent belief states, which the expert agent should learn to
+infer in order to optimize cumulative returns.
+0 20 40 60 80 100
+Discrete State, s
+0
+2Reward, r
+Linear Reward
+0 20 40 60 80 100
+Discrete State, s
+100
+0
+Reward, r
+Exponential Reward
+Figure 3. Reward functions (i.e. linear and exponential) with re-
+spect to the discrete (enumerated) states, e.g. s = 0 corresponds
+to an inventory of −Imax = −5 and to bid and ask volumes of 0;
+while s = 1 corresponds to an inventory of -5, a bid volume of 0
+and and ask volume of 1, etc.
+• Performance metric. Following previous IRL litera-
+ture (Jin et al., 2017; Wulfmeier et al., 2015) we eval-
+uate the performance of each method through their
+respective Expected Value Differences (EVD). EVD
+quantiﬁes the difference between:
+1. the expected cumulative reward earned by fol-
+lowing the optimal policy π∗ implied by the true
+rewards;
+
+=== page 6 ===
+Towards Inverse Reinforcement Learning for Limit Order Book Dynamics
+0 1 2 3
+Best bid volume, v(1) b
+0123
+Best ask volume, v(1) a
+Linear Reward
+for i(EA) = 0
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+0 1 2 3
+Best bid volume, v(1) b
+0123
+Best ask volume, v(1) a
+Exponential Reward
+for i(EA) = 0
+0.0
+0.2
+0.4
+0.6
+0.8
+Figure 4. Reward functions (linear and exponential) with respect
+to the state features: volume of best bid and ask and expert agent’s
+inventory.
+2. the expected cumulative reward earned by follow-
+ing the policy ˆπ implied by the rewards inferred
+through IRL.
+EVD = E
+[ T∑
+t=0
+γtr(st)|π∗] − E [ T∑
+t=0
+γtr(st)|ˆπ ] (7)
+Since the expert’s observed behaviour could have been
+generated by different reward functions, we compare
+the EVD yielded by inferred rewards per method, rather
+than directly comparing each inferred reward against
+the ground truth reward.
+MaxEnt GPIRL BNNIRL
+210 212 214
+Number of Demonstrations
+0.2
+0.0
+0.2
+0.4
+EVD
+Linear Reward
+210 212 214
+Number of Demonstrations
+0.2
+0.0
+0.2
+0.4
+EVD
+Exponential Reward
+Figure 5. EVD for both the linear and the exponential reward func-
+tions as inferred through MaxEnt, GP and BNN IRL algorithms
+for increasing numbers of demonstrations. EVDs are all evaluated
+on 100,000 trajectories each. The standard errors are plotted for
+10 independent evaluations.
+We run two versions of our experiments, where the expert
+agent has either a linear or an exponential reward function.
+Each IRL method is run for 512, 1024, 2048, 4096, 8192
+and 16384 demonstrations. The results obtained are pre-
+sented in Figure 5: as expected, all three IRL methods tested
+(MaxEnt IRL, GPIRL, BNN-IRL), learn fairly well linear
+reward functions. However, for an agent with an exponen-
+tial reward, GPIRL and BNN-IRL are able to discover the
+latent function signiﬁcantly better, with BNN outperforming
+as the number of demonstrations increases. In addition to
+improved EVD, our BNN-IRL experiments provide a sig-
+niﬁcant improvement in computational time as compared to
+GPIRL, hence enabling potentially more efﬁcient scalability
+of IRL on LOBs to state spaces of higher dimensions.
+4. Conclusions
+In this paper we attempt an application of IRL to a stochastic,
+non-stationary ﬁnancial environment (the LOB) whose com-
+peting agents may follow complex reward functions. While
+as expected all the methods considered are able to recover
+linear latent reward functions, only GP-based IRL (Levine
+et al., 2011) and our implementation through BNNs are able
+to recover more realistic non-linear expert rewards, thus
+mitigating most of the challenges imposed by this stochastic
+multi-agent environment. Moreover, our BNN method out-
+performs GPIRL for larger numbers of demonstrations, and
+is less computationally intensive. This may enable future
+work to study LOBs of higher dimensions, and on increas-
+ingly realistic number and complexity of agents involved.
+References
+Balduzzi, D., Garnelo, M., Bachrach, Y., Czarnecki, W. M.,
+Perolat, J., Jaderberg, M., and Graepel, T. Open-ended
+learning in symmetric zero-sum games. arXiv preprint
+arXiv:1901.08106, 2019.
+Berger, J. O. Statistical decision theory and Bayesian anal-
+ysis. Springer Science & Business Media, 2013.
+Borel, E. La théorie du jeu et les équations intégrales à
+noyau symétrique. Comptes rendus de l’Académie des
+Sciences, 173(1304-1308):58, 1921.
+Cont, R., Stoikov, S., and Talreja, R. A stochastic model
+for order book dynamics. Operations Research, 58(3):
+549–563, 2010.
+Cybenko, G. Approximation by superpositions of a sig-
+moidal function. Mathematics of control, signals and
+systems, 2(4):303–314, 1989.
+Fu, J., Luo, K., and Levine, S. Learning robust rewards
+with adversarial inverse reinforcement learning. arXiv
+preprint arXiv:1710.11248, 2017.
+Gal, Y. and Ghahramani, Z. Dropout as a bayesian approxi-
+mation: Representing model uncertainty in deep learning.
+In Proceedings of The 33rd International Conference on
+Machine Learning, volume 48 of Proceedings of Machine
+Learning Research, pp. 1050–1059. PMLR, 20–22 Jun
+2016.
+Gould, M. D., Porter, M. A., Williams, S., McDonald, M.,
+Fenn, D. J., and Howison, S. D. Limit order books. Quan-
+titative Finance, 13(11):1709–1742, 2013.
+
+=== page 7 ===
+Towards Inverse Reinforcement Learning for Limit Order Book Dynamics
+Graves, A. Practical variational inference for neural net-
+works. In Advances in neural information processing
+systems, pp. 2348–2356, 2011.
+Haarnoja, T., Tang, H., Abbeel, P., and Levine, S. Rein-
+forcement learning with deep energy-based policies. In
+Proceedings of the 34th International Conference on Ma-
+chine Learning-Volume 70, pp. 1352–1361. JMLR. org,
+2017.
+Hendricks, D., Cobb, A., Everett, R., Downing, J., and
+Roberts, S. J. Inferring agent objectives at different
+scales of a complex adaptive system. arXiv preprint
+arXiv:1712.01137, 2017.
+Hinton, G. and Van Camp, D. Keeping neural networks sim-
+ple by minimizing the description length of the weights.
+In in Proc. of the 6th Ann. ACM Conf. on Computational
+Learning Theory. Citeseer, 1993.
+Jin, M., Damianou, A. C., Abbeel, P., and Spanos, C. J.
+Inverse reinforcement learning via deep gaussian process.
+In UAI. AUAI Press, 2017.
+Lasry, J.-M. and Lions, P.-L. Mean ﬁeld games. Japanese
+journal of mathematics, 2(1):229–260, 2007.
+Levine, S., Popovic, Z., and Koltun, V. Nonlinear inverse
+reinforcement learning with gaussian processes. In Ad-
+vances in Neural Information Processing Systems, pp.
+19–27, 2011.
+MacKay, D. J. A practical bayesian framework for backprop-
+agation networks. Neural computation, 4(3):448–472,
+1992.
+Navarro, R. M. and Larralde, H. A detailed heterogeneous
+agent model for a single asset ﬁnancial market with trad-
+ing via an order book. PloS one, 12(2):e0170766, 2017.
+Neal, R. M. Bayesian learning for neural networks, volume
+118. Springer Science & Business Media, 1995.
+Ng, A. Y., Harada, D., and Russell, S. J. Policy invariance
+under reward transformations: Theory and application to
+reward shaping. In Proceedings of the Sixteenth Interna-
+tional Conference on Machine Learning, ICML ’99, pp.
+278–287, 1999. ISBN 1-55860-612-2.
+Ng, A. Y., Russell, S. J., et al. Algorithms for inverse
+reinforcement learning. In ICML, pp. 663–670, 2000.
+Peterson, C. A mean ﬁeld theory learning algorithm for
+neural networks. Complex systems, 1:995–1019, 1987.
+Pratt, J. W. Risk aversion in the small and in the large.
+Econometrica, 32(1/2):122–136, 1964. ISSN 00129682,
+14680262.
+Preis, T., Golke, S., Paul, W., and Schneider, J. J. Multi-
+agent-based order book model of ﬁnancial markets. Eu-
+rophysics Letters (EPL), 75(3):510–516, aug 2006. doi:
+10.1209/epl/i2006-10139-0.
+Roberson, B. The colonel blotto game. Economic Theory,
+29(1):1–24, 2006.
+Russell, S. Learning agents for uncertain environments
+(extended abstract). In Proceedings of the Eleventh An-
+nual Conference on Computational Learning Theory, pp.
+101–103. ACM Press, 1998.
+Shepp, L. A. and Olkin, I. Entropy of the sum of indepen-
+dent bernoulli random variables and of the multinomial
+distribution. In Contributions to probability, pp. 201–206.
+Elsevier, 1981.
+Sutton, R. S. and Barto, A. G. Reinforcement learning: An
+introduction. MIT press, 2018.
+Tukey, J. W. A problem of strategy. Econometrica, 17(1):
+73, 1949.
+Wang, X. and Wellman, M. P. Spooﬁng the limit order book:
+An agent-based model. In Proceedings of the 16th Con-
+ference on Autonomous Agents and MultiAgent Systems,
+pp. 651–659. International Foundation for Autonomous
+Agents and Multiagent Systems, 2017.
+Williams, L. R. and Jacobs, D. W. Stochastic completion
+ﬁelds: A neural model of illusory contour shape and
+salience. Neural computation, 9(4):837–858, 1997.
+Wulfmeier, M., Ondruska, P., and Posner, I. Maximum en-
+tropy deep inverse reinforcement learning. arXiv preprint
+arXiv:1507.04888, 2015.
+Yang, J., Ye, X., Trivedi, R., Xu, H., and Zha, H. Deep
+mean ﬁeld games for learning optimal behavior policy of
+large populations. CoRR, abs/1711.03156, 2017.
+Zhang, Z., Zohren, S., and Roberts, S. Deeplob: Deep con-
+volutional neural networks for limit order books. IEEE
+Transactions on Signal Processing, 2019.
+Ziebart, B. D. Modeling Purposeful Adaptive Behavior with
+the Principle of Maximum Causal Entropy. PhD thesis,
+Pittsburgh, PA, USA, 2010. AAI3438449.
+Ziebart, B. D., Maas, A. L., Bagnell, J. A., and Dey, A. K.
+Maximum entropy inverse reinforcement learning. In
+AAAI, volume 8, pp. 1433–1438. Chicago, IL, USA, 2008.
+Disclaimer
+Opinions and estimates constitute our judgement as of the
+date of this Material, are for informational purposes only
+and are subject to change without notice. This Material
+
+=== page 8 ===
+Towards Inverse Reinforcement Learning for Limit Order Book Dynamics
+is not the product of J.P. Morgan’s Research Department
+and therefore, has not been prepared in accordance with
+legal requirements to promote the independence of research,
+including but not limited to, the prohibition on the dealing
+ahead of the dissemination of investment research. This
+Material is not intended as research, a recommendation,
+advice, offer or solicitation for the purchase or sale of any
+ﬁnancial product or service, or to be used in any way for
+evaluating the merits of participating in any transaction. It
+is not a research report and is not intended as such. Past
+performance is not indicative of future results. Please con-
+sult your own advisors regarding legal, tax, accounting or
+any other aspects including suitability implications for your
+particular circumstances. J.P. Morgan disclaims any respon-
+sibility or liability whatsoever for the quality, accuracy or
+completeness of the information herein, and for any reliance
+on, or use of this material in any way.
+Important disclosures at: www.jpmorgan.com/disclosures

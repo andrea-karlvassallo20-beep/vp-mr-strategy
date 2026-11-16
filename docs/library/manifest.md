@@ -25,6 +25,22 @@ log is `acquisition_log.json`.
 - **50 papers paywalled or preprint-only**: no legal bulk route
   found; their knowledge is synthesized (below).
 
+## Expanded library: 100 additional legal-OA papers
+
+`src/library_expand.py` searched OpenAlex (OA-filtered) and the
+arXiv API across the project's topic families (microstructure/LOB,
+Hawkes/self-excitation, order flow/VPIN, market impact/execution,
+backtesting/overfitting, regime switching, change-point/optimal
+transport, ML-finance, volatility, crypto microstructure) and
+acquired **100 more legally open-access PDFs** with extracted text:
+- PDFs: `pdfs/` (total 110 with the core catalogue)
+- Texts: `text/` (page-marked plain text)
+- Index: `expanded_index.md` / `expanded_index.json` (topic tag,
+  title, authors, year, venue, file)
+Duplicates against the 68-paper core catalogue are excluded;
+off-topic strays (e.g. literal "transport infrastructure" matches)
+are filtered; no paywalled or bot-blocked source is scraped.
+
 ## Synthesis status
 
 - **68 one-page summaries** in `summaries/` (one per catalogue

@@ -1,0 +1,1144 @@
+=== page 1 ===
+Financial Markets Prediction with Deep Learning
+Jia Wang∗, Tong Sun∗, Benyuan Liu∗, Yu Cao∗ and Degang Wang†
+∗Department of Computer Science
+University of Massachusetts Lowell, Lowell, Massachusetts 01854
+Email: {jwang,tsun,bliu,ycao}@cs.uml.edu
+†GRC Capital LLC, Wellesley, Massachusetts 02481
+Email: degang.wang@gmail.com
+Abstract—Financial markets are difﬁcult to predict due to
+its complex systems dynamics. Although there have been some
+recent studies that use machine learning techniques for ﬁnancial
+markets prediction, they do not offer satisfactory performance on
+ﬁnancial returns. We propose a novel one-dimensional convolu-
+tional neural networks (CNN) model to predict ﬁnancial market
+movement. The customized one-dimensional convolutional layers
+scan ﬁnancial trading data through time, while different types of
+data, such as prices and volume, share parameters (kernels) with
+each other. Our model automatically extracts features instead
+of using traditional technical indicators and thus can avoid
+biases caused by selection of technical indicators and pre-deﬁned
+coefﬁcients in technical indicators. We evaluate the performance
+of our prediction model with strictly backtesting on historical
+trading data of six futures from January 2010 to October
+2017. The experiment results show that our CNN model can
+effectively extract more generalized and informative features than
+traditional technical indicators, and achieves more robust and
+proﬁtable ﬁnancial performance than previous machine learning
+approaches.
+Index Terms—Deep learning, convolutional neural networks,
+Finance.
+I. INTRODUCTION
+Financial market is a very complex adaptive system. The
+complexity mainly derives from the interaction among markets
+and market participants—the current environment of markets
+inﬂuence strategies of market participants, while the overall
+behavior of market participants decides the trend of ﬁnan-
+cial market. According to the Adaptive Markets Hypothesis
+(AMH) [17], behavioral biases of market participants, such as
+loss aversion, overconﬁdence, and overreaction, always exist.
+Moreover, once market environment changes, the heuristics
+of the old environment may not work any longer and thus
+degenerate to behavioral biases. As a result, ﬁnancial market’s
+trend interwoven with market participants’ biased strategies
+make ﬁnancial market very difﬁcult to predict.
+There have been many attempts to predict the market move-
+ment using various approaches. Technical indicators/technical
+analysis [1] has been traditionally used in [2]–[4], [24], but
+these methods tend to lose predictive power after they are
+published. Recently there have been some studies that use ma-
+chine learning techniques (e.g., feedforward neural networks,
+SVM, ensembles) for ﬁnancial market prediction [6], [22].
+They achieved good performance in terms of the benchmark of
+machine learning, however, have no comparable results from
+the ﬁnancial perspective.
+In a nutshell, the essence of ﬁnancial markets prediction is
+to ﬁnd out generalized and informative features from the joint
+distribution of prices and volumes [16]. We need to train a
+model to represent a generalized joint distribution based on
+current market environment. In this paper, we propose and
+develop a deep convolutional neural network model (CNN) to
+automatically extract features from historical ﬁnancial trading
+data and to predict the price movement. Through the multi-
+layer customized 1-D convolutions, noise can be ﬁltered out,
+meanwhile highly correlated underlying features emerge and
+are clustered to corresponding channels for further feature
+combinations in fully connected layers. The whole process
+is end-to-end so that potentially negative inﬂuence brought by
+human interference, such as selection of technical indicators
+and pre-deﬁned coefﬁcients in technical indicators, can be
+avoided.
+To our knowledge, this is among the ﬁrst efforts to use
+deep CNN to predict ﬁnancial markets and we verify the
+performance of our model using strict backtests. We test our
+model with six futures from Chicago Mercantile Exchange
+and New York Mercantile Exchange. Backtest results show
+that our 1-D CNN model achieves signiﬁcantly higher average
+annual return and more robust performance (higher Sharpe
+ratio1) over previous approaches based on Nearest Neighbor,
+SVM, and Deep Feedforward Networks.
+We also observe that our 1-D CNN model without using
+the technical indicators as input achieves better results than
+the model that uses the technical indicators. This shows that
+our 1-D CNN model can effectively extract more generalized
+and informative features than those represented by traditional
+technical indicators. Our results conﬁrm the observation that
+common metrics in machine learning, such as accuracy and F1
+score, are not suitable for ﬁnancial markets prediction because
+different types of prediction errors have different impacts
+on ﬁnancial performance [22]. In our study, we propose a
+modiﬁed version of the F-measure score, called Weighted-
+F-Score, to address this issue. Our experiments show that
+Weighted-F-Score highly correlates with average annual return
+and Sharpe ratio in our backtest results with the minimum
+cross-correlate coefﬁcient of 0.79 and 0.84, respectively.
+We summarize our contributions as follows:
+1Sharpe ratio is the average return earned in excess of the risk-free rate per
+unit of volatility or total risk. It is widely used for calculating risk-adjusted
+return.
+arXiv:2104.05413v1  [q-fin.ST]  5 Apr 2021
+
+=== page 2 ===
+1) Cross-Data-Type One-dimensional Convolution. Reg-
+ular 2-D convolutions are not directly applicable for
+this research because we may not convolve different
+elements of ﬁnancial historical trading data, such as
+price and volume, to produce meaningful results. The
+regular 1-D convolution do not apply either because
+it can not capture the features to represent the joint
+distribution of elements of ﬁnancial historical trading
+data. To address the above problem, we propose a
+variant of 1-D convolution, called Cross-Data-Type 1-D
+convolution. Based on the customized 1-D convolution,
+our model outperforms other methods by 6.1%-53.0%
+on average annual return and 53.0%-199.0% on Sharpe
+ratio.
+2) Deep Features Auto-extraction. Many machine learn-
+ing methods for ﬁnancial market prediction use technical
+indicators as input. We propose to replace traditional
+technical indicators with deep features extracted by
+Cross-Data-Type 1-D convolution in order to capture
+more generalized and informative features. To our best
+knowledge, this is among the ﬁrst methods that use
+CNN to extract features instead of traditional technical
+indicators. Our experiments show this method achieves
+state-of-the-art result both in ﬁnance return and machine
+learning benchmark.
+3) Correlation between Finance and Machine Learning
+metrics. Different types of predicting errors have dif-
+ferent impacts on ﬁnancial market trading. For example,
+the error that the prediction is up when the price actually
+goes down or vice versa leads to more loss in trading.
+However, common metrics of machine learning, such
+as accuracy and F1 score, do not discriminate different
+types of errors so that they weakly correlate with ﬁnan-
+cial metrics. We propose a modiﬁed version of F score
+for Type I and Type II errors, called Weighted-F-Score,
+in order to address the weak correlation between Ma-
+chine Learning and Finance metrics. Our results show
+that Weighted-F-Score highly correlates with Finance
+metrics (the minimum Cross-correlation value is 0.79).
+The remainder of the paper is structured as follows. Related
+work on ﬁnancial market prediction with technical analysis
+and machine learning methods is presented in Section II. The
+architecture and customized convolutional kernel design of our
+1-D CNN model are presented in Section III. The datasets,
+the backtest strategy, and the machine learning metric that
+we use in this research, Weighted-F-Score, are described in
+Section IV. The experiments results are presented in Section
+V, followed by discussing and concluding remarks.
+II. RELATED WORK
+As a method to predict price movements of ﬁnancial mar-
+kets, technical indicators/technical analysis has been exten-
+sively used by market practitioners since 1800s [21]. Although
+it is still controversial whether technical analysis goes against
+Efﬁcient Market Hypothesis [20], [23], some studies, such as
+[15] and [26], provide evidences of its forecastability.
+Following traditional charting analysis, researchers’ interest
+has turned into automated trading based on pattern recogni-
+tion and machine learning since the 1990s. [8] proposes to
+predict one-year daily long or short signals by a single-layer
+feedforward networks trained by last four-year daily returns
+of Dow Jones Industrial Average. [7] proposes a nonlinear
+model based on technical indicators model that outperforms
+moving average rules in terms of both returns and Sharpe
+ratio in European exchange markets for 1978-1994. [13]
+applies support vector machines to the daily Korea composite
+stock price index with 12 technical indicators. [9] introduces
+recurrent neural networks to address difﬁculties with non-
+stationarity, overﬁtting, and unequal a priori class probabilities.
+[22] introduces ensembles to improve forecastability based on
+decision trees, SVM, and feedforward networks.
+Deep Learning has been popular in many ﬁelds of artiﬁcial
+intelligence since the breakthrough on Imagenet challenge by
+[14]. [6] applies 5-layer Deep Feedforward Networks to pre-
+dict 43 Commodity and FX futures prices’ trend. [5] proposes
+a deep learning method to predict stock markets using Natural
+Language Processing on ﬁnancial news. [28] uses Long Short
+Term Memory networks [29] combined with Inverse Fourier
+Transform to capture multiple frequency features underlying
+the ﬂuctuation of stock prices.
+It is worth noting that among the aforementioned studies
+for automated trading, few of them has released related
+results about ﬁnancial proﬁtability. To our knowledge, [6],
+[7] presents a series of ﬁnancial based results, such as cu-
+mulative return and Sharpe ratio, although the results are not
+very encouraging and their models’ proﬁtability may not be
+convincing.
+III. MODEL DESIGN
+A. Cross-Data-Type 1-D CNN
+CNN has been known as an effective model for automatic
+feature extraction in many ﬁelds such as computer vision
+and natural language processing. However, the structure of
+ﬁnancial data does not directly allow for regular convolutions.
+On one hand, although we can organize ﬁnancial trading
+records into 2-D frames, the regular 2-D convolution is not
+suitable because convolving different types of data may pro-
+duce nonsensical results. On the other hand, the regular 1-
+D convolution is defective because data of each type needs
+parameter sharing while it also needs clear boundaries in order
+to avoid producing nonsensical results as in the regular 2-
+D convolution case. To address this problem, we propose a
+novel 1-D convolution architecture called Cross-Data-Type 1-
+D CNN (CDT 1-D CNN). As illustrated in Figure 1, input
+data is organized into 2-D frames, where the x-axis denotes
+time and contains a certain number of trading records, and the
+y-axis denotes data types and contains prices, volumes, and
+technical indicators (if any). All kernels are one-dimensional
+and only scan along the x-axis. After each convolutional layer,
+a max-pooling layer is used to reduce the x-axis dimension of
+feature maps.
+
+=== page 3 ===
+o1 o2 o3 o4 o5 o6 o7 o8 o9
+h1 h2 h3 h4 h5 h6 h7 h8 h9
+l1 l2 l3 l4 l5 l6 l7 l8 l9
+c1 c2 c3 c4 c5 c6 c7 c8 c9
+v1 v2 v3 v4 v5 v6 v7 v8 v9
+Open Price
+High Price
+Low Price
+Close Price
+Volume
+x-axis: Timeline
+y-axis: Data Types
+o
+′
+1 o
+′
+2 o
+′
+3 o
+′
+4 o
+′
+5 o
+′
+6 o
+′
+7 o
+′
+8 o
+′
+9
+h
+′
+1 h
+′
+2 h
+′
+3 h
+′
+4 h
+′
+5 h
+′
+6 h
+′
+7 h
+′
+8 h
+′
+9
+l
+′
+1 l
+′
+2 l
+′
+3 l
+′
+4 l
+′
+5 l
+′
+6 l
+′
+7 l
+′
+8 l
+′
+9
+c
+′
+1 c
+′
+2 c
+′
+3 c
+′
+4 c
+′
+5 c
+′
+6 c
+′
+7 c
+′
+8 c
+′
+9
+v
+′
+1 v
+′
+2 v
+′
+3 v
+′
+4 v
+′
+5 v
+′
+6 v
+′
+7 v
+′
+8 v
+′
+9
+C
+′
+o
+′′
+1 o
+′′
+2 o
+′′
+3 o
+′′
+4 o
+′′
+5 o
+′′
+6 o
+′′
+7 o
+′′
+8 o
+′′
+9
+h
+′′
+1 h
+′′
+2 h
+′′
+3 h
+′′
+4 h
+′′
+5 h
+′′
+6 h
+′′
+7 h
+′′
+8 h
+′′
+9
+l
+′′
+1 l
+′′
+2 l
+′′
+3 l
+′′
+4 l
+′′
+5 l
+′′
+6 l
+′′
+7 l
+′′
+8 l
+′′
+9
+c
+′′
+1 c
+′′
+2 c
+′′
+3 c
+′′
+4 c
+′′
+5 c
+′′
+6 c
+′′
+7 c
+′′
+8 c
+′′
+9
+v
+′′
+1 v
+′′
+2 v
+′′
+3 v
+′′
+4 v
+′′
+5 v
+′′
+6 v
+′′
+7 v
+′′
+8 v
+′′
+9
+C
+′′
+. . .
+o∗ 1 o∗ 2 o∗ 3
+h∗ 1 h∗ 2 h∗ 3
+l∗ 1 l∗ 2 l∗ 3
+c∗ 1 c∗ 2 c∗ 3
+v∗ 1 v∗ 2 v∗ 3
+M ∗
+o∗∗ 1 o∗∗ 2 o∗∗ 3
+h∗∗ 1 h∗∗ 2 h∗∗ 3
+l∗∗ 1 l∗∗ 2 l∗∗ 3
+c∗∗ 1 c∗∗ 2 c∗∗ 3
+v∗∗ 1 v∗∗ 2 v∗∗ 3
+M ∗∗
+. . .
+. . .
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+1
+2
+3
+4
+5
+6
+1
+2
+3
+dense dense
+FC
+FC
+Softmax
+Cross-Data-Type 1-D Convolution Layers
+1-D Max Pooling Layers Fully Connected Layers
+1
+Fig. 1: Cross-Data-Type 1-D Convolution Architecture. The 1-D kernels (the red and blue one) scan along with the x-axis
+while each one of them goes to every position of input 2-D frames by a stride of one. The C
+′
+and C
+′′
+represent the output
+channels of the red and blue kernel, respectively. A max-pooling layers follows a convolutional layer, and only max-pooling
+layers condense the dimensions of the x-axis. The M∗ and M∗∗ represent the output channels of the max-pooling operations
+(the orange and green one) by a stride of three.
+The scan strategy of the CDT 1-D kernels is different from
+that of the regular 1-D or 2-D convolution: all the kernels
+scan only along the x-axis while each one of them goes to
+every position of the 2-D frames. That means, once a kernel
+ﬁnishes the scan for one row (the x-axis), it will turn to scan
+from the start point of the next row and so forth until the
+whole 2-D frame is scanned. As illustrated in Figure 1, the
+1x3 red and blue kernel scan the whole 2-D input frame
+respectively, and they only touch three elements of one data
+type at each time. In other words, data of different types can
+share parameters by the scan strategy. It is crucial because
+it matches up the characteristics of the structure of ﬁnancial
+data. Unlike in computer vision’s datasets, the 2-D frames
+contain only one type of data pixel, the 2-D frames in our
+datasets contains prices, volumes, and technical indicators (if
+any). However, according to [16], the joint distribution of
+these types of data has strong forecastability over marginal
+distributions of every single one. Therefore, on one hand, we
+cannot directly convolve different types of data; on the other
+hand, we want to preserve the parameter sharing so that the
+model can represent the desirable joint distribution effectively.
+Although this is evident in computer vision applications, in our
+study, it needs more explanation. Take one technical indicator,
+Typical Point (TP ), for instance,
+TP = Phigh + Plow + Pclose
+3 (1)
+Now assume that these three prices need to be scaled for
+training purposes and assume that the effect of the activation
+is ignored, we can modify Equation (1) to:
+TP
+′
+=
+P
+′
+high + P
+′
+low + P
+′
+close
+3 (2)
+where P
+′
+high = αhighPhigh, P
+′
+low = αlowPlow , P
+′
+close =
+αclosePclose. To preserve the properties of TP after the
+scaling, we should have αhigh = αlow = αclose. Note that the
+parameter sharing in the CDT 1-D CNN guarantees outputs
+from the same channel to be scaled by the same value. In this
+mutual relationship among different data types are preserved
+and inherited layer after layer, and thus underlying features
+emerge with training iterations.
+B. Without technical indicators
+Technical indicators may capture proﬁtable patterns in ﬁ-
+nancial markets, which is the main reason why it has been
+popular among market practitioners over one hundred years.
+However, how to choose indicators relies on the experience
+of practitioners and the popularity of indicators. Although
+feature selection methods such as Information Gain and
+correlation-based ﬁlters [22] can be helpful, the indicator
+candidates pool still limits the model’s performance. Also,
+some machine learning algorithms with technical indicators,
+such as Nearest-neighbour and SVM, are reported to achieve
+occasional rather than consistent success [26]. These facts may
+reveal the limitation of technical indicators/technical analysis
+that human interventions, such as choosing technical indicators
+and deﬁning parameters of technical indicators, bring negative
+effects. Inspired by the evolution of computer vision research
+from extracting hand-designed features such as SIFT [19] to
+autonomously learning features within training process [14],
+[27], we argue that the CDT 1-D CNN model is more suitable
+for proﬁtable patterns extraction over technical analysis by the
+three following reasons:
+1) The CDT 1-D CNN model itself is a nonlinear and
+autonomously-trained variant of technical analysis. The
+fundamental elements of technical analysis, technical
+indicators, which are mathematical formulas based on
+historical data of prices and volumes, may be approxi-
+mated by the convolutional and fully connected layers.
+
+=== page 4 ===
+Take another technical indicators, Moving Average Con-
+vergence Divergence (MACD), for instance:
+EMAn[i] = αPclose[i] + (1 −α)EMAn[i− 1] (3)
+MACD = EMAa −EMAb (4)
+where n, a, and b denote time spans, and a > b.
+i denotes the ith time of a given time span, and
+i ∈ [1,n]. Pclose[i] denotes the close price at the ith
+time, EMAn[i] denotes Exponential Moving Average,
+and EMAn[1] = Pclose[1]. α denotes a predeﬁned
+coefﬁcient. EMAn is, in fact, equivalent to an inﬁnite
+impulse response (IIR) ﬁlter for Pclose in the period n,
+which can be implemented by convolutions. Thus after a
+subtraction operation provided in fully connected layers,
+the functionality of MACD can be realized.
+2) More importantly, in previous studies the coefﬁcients
+of technical indicators, such as α, n, a, and b in
+Equation (3) and (4), are predeﬁned by users and
+thus not trainable. However, deep learning models need
+to train parameters to learn distributed representations
+with learning algorithms, such as loss function and
+back propagation. Therefore, non-trainable coefﬁcients
+of technical indicators are inﬂexible for training process
+so that the effectiveness of technical indicators relies on
+user experience and knowledge rather than the joint dis-
+tribution of training data. Formally, our model computes
+a function as follows:
+y
+′
+t = F ( ⃗Xt,W ) (5)
+where Xt is the t-th input vector, and W represents
+trainable parameters (e.g. weights of convolution kernels
+and fully connected layers) in the model. Meanwhile,
+the model minimizes a loss function within the t-th
+prediction y
+′
+t and the t-th ground truth yt:
+Et = L(y
+′
+t,yt) (6)
+In other words, the training process is to ﬁnd the value
+of W that minimizes Et. Now assume the ⃗Xt is a vector
+of technical indicators at the t-th time as follows:
+⃗Xt = ⋃
+a∈N
+Ta(⃗xt, Θ) (7)
+where ⃗xt is the raw ﬁnancial trading data vector at the t-
+th time that includes prices and volume only, ⋃ a∈N T ()
+represents a set of functions of technical indicators,
+and Θ denotes a collection of predeﬁned coefﬁcients
+in the functions of technical indicators. Since prices and
+volume in raw ﬁnancial trading data reﬂect all available
+information [20], and all technical indicators are based
+on raw ﬁnancial trading data. Therefore, technical in-
+dicators do not provide additional information beyond
+raw ﬁnancial trading data, and prediction models cannot
+adjust predeﬁned Θ so that bias and overﬁtting issues
+may occur.
+IV. EXPERIMENTAL SETUP
+A. Data
+The datasets we used in our study are historical trading
+records of four commodity futures and two equity index
+futures, including WTI Crude Oil (CL), Natural Gas (NG),
+Soybeans (S), Gold (GC), E-mini Nasdaq 100 (NQ), and E-
+mini S&P 500 (ES). Since there are no open datasets available
+thus far, the six datasets in our study are collected from online
+brokers. The datasets of the six futures range from January
+2010 to October 2017, each dataset contains 330,000-400,000
+5-minute trading records. Each record has the following seven
+attributes: date, time, open price, high price, low price, close
+price, and trading volume.
+A large variety of technical indicators have been developed
+to predict the future price levels, or simply the general price
+direction, of a security by looking at past patterns. We choose
+technical indicators according to their functionality and popu-
+larity. For lagging indicators, which are often used to identify
+and conﬁrm the strength of a pattern or trend, we pick EMA,
+MACD Histogram, and Bollinger Bands. For leading indica-
+tors, which usually change before a trend or pattern and are
+thus used during periods of sideways or non-trending ranges,
+we pick Relative Strength Index (RSI), Commodity Channel
+Index (CCI), Volume Weighted Average Price (VWAP), On-
+balance Volume (OBV), Average Directional Index (ADX),
+Accumulation Distribution Line (ADL), and Chaikin Money
+Flow (CMF). Also, we include technical indicators regarded as
+neither lagging nor leading indicators such as Rate of Change
+(ROC), which is used to measure the change of prices over
+time. Different time spans are used to generate EMA, MACD
+Histogram, Bollinger Bands, ROC, RSI, CCI, CMF, and ADX.
+Together with the original ﬁve attributes (open, high, low,
+close prices, and trading volumes), each data point has a total
+number of 46 attributes.
+Our model predicts the future price movement every two
+hours and makes the trading decisions accordingly based on
+the prediction outcome. The reason that our model works with
+a two-hour time interval is two folds:
+1) Longer time intervals provide necessarily data sequence
+size for convolutions. Each 24 consecutive 5-minute data
+records are organized to form a data frame, where 1-D
+convolution is applied along the timeline. For the sake
+of fair comparisons between our MLP and 1-D CNN
+models, the datasets fed to the MLP model also have
+the same time interval.
+2) The price change of a commodity over a shorter time
+interval is usually much smaller than that over a longer
+time interval. For example, the average price change of
+CL over a 5-minute time interval is $0.02 compared to
+$0.10 over a 2-hour time interval. The proﬁtability of
+trading over short time intervals is thus diminished after
+slippage and transaction cost are applied.
+Another vital part of our data pre-processing is labeling.
+The popular way for labeling stock or future price movements
+is based on a ﬁxed threshold for the log return of the price. For
+
+=== page 5 ===
+40
+60
+80
+100CloseMonthly Return x100%
+(a): Cumulative Return
+Close
+CumRet (right)
+Jan-2012
+Apr-2012
+Jul-2012
+Oct-2012
+Jan-2013
+Apr-2013
+Jul-2013
+Oct-2013
+Jan-2014
+Apr-2014
+Jul-2014
+Oct-2014
+Jan-2015
+Apr-2015
+Jul-2015
+Oct-2015
+Jan-2016
+Apr-2016
+Jul-2016
+Oct-2016
+Jan-2017
+Apr-2017
+Jul-2017
+-0.1
+0.0
+0.1
+0.2
+0.3
+(b): Monthly Portfolio Return
+0
+1
+2
+3
+4
+5
+Cumulative Return x100%
+1
+Fig. 2: Cumulative and Monthly Return of the future CL by the CDT 1-D CNN without technical indicators . (a): The
+cumulative return of the future CL stays positive over 71 months, and it eventually achieves 500%. (b): The Monthly Return
+of the future CL over 71 months. 60 of the 71 months are proﬁtable, and only two months have negative return lower than
+-5%.
+example, the data point at time t is marked as “going up” or
+“going down” if the log return of the price at time t+1 over t is
+above or below the pre-speciﬁed threshold. However, because
+the aforementioned method does not thoroughly consider the
+distribution of future price’s trend [18], we adopt the dynamic
+threshold method as described in [25]:
+lt+1 =
+
+
+
+up, if ct+1 ≥ct (1 + αvt)
+down, if ct+1 ≤ct (1 −αvt)
+ﬂat, otherwise
+(8)
+where ct and vt represent the close price and volatility of a
+commodity price at time t, and α is a parameter that can be
+adjusted to balance the three classes. In our study, the volatility
+is measured by using the standard deviation of the past ten data
+points of any given time and α is set to be 0.55.
+B. Criterion
+1) Backtest (From Finance Viewpoint): Previous studies
+usually choose buy-and-hold strategy as the baseline. However,
+we believe that this strategy is too simple to serve as a baseline.
+Take the future CL for instance, if we placed and held one
+contract since July 2014, our asset thus far would shrink
+around 70%. In our research, the backtest strategy that we
+use is more conservative than that in [6], [7]. Speciﬁcally, we
+use high transaction cost to make our backtest result more
+conservative:
+S = 5F (9)
+B
+′
+= 2B (10)
+T = n(M(B
+′
++ S) + C) (11)
+where S denotes slippage, the difference between the expected
+price of a trade and the price at which the trade is actually
+executed. F denotes minimum price ﬂuctuation, the smallest
+increment of price movement possible in trading a given
+contract. B denotes bid-ask spread, the amount by which the
+ask price exceeds the bid price for an asset in the market. B
+′
+denotes magniﬁed bid-ask spread. M denotes the multiplier,
+the deliverable quantity of commodities and option contracts
+that are traded on an exchange. C denotes commissions per
+contract, the ﬁxed fee to brokers. n denotes the number of con-
+tracts. T denotes transaction cost. Note that we intentionally
+raise S by three times and B by two times to make our backtest
+result conservative enough. Take CL for instance, the bid-ask
+spread is $0.01, the minimum price ﬂuctuation is $0.01, the
+multiplier is 1,000 times, and the commissions is $2.75 at
+Interactive Brokers2, the proﬁt of a trade with one contract
+needs to gain no less than $145.50; otherwise, this trade will
+end up losing money.
+The backtest strategy that we use follows a principle with
+minimum human interventions—at any time, depending on the
+predicting price movement at next time interval, the trading
+strategy determines whether to enter or leave short/long trades.
+The detailed breakdown of this strategy is that the ﬁrst Up or
+Down predicting label renders the test into the long trade
+or the short trade, respectively. After that, once a turning
+point appears, for example, the current trading status is the
+long trade but the next predicting label is Down, the trading
+strategy will leave the long trade and enter the short trade.
+Note that the term T in Equation (9) is calculated for each
+trade. In our experiments, we allocate $100,000 as initial
+capital, and use Equation (9) for transaction cost. The number
+of contracts is one, and all other terms in Equation (9), (10),
+and (11) follow the standard settings of futures markets.
+2) Weighted F Score (From Machine Learning Viewpoint):
+The commonly used metrics in machine learning, such as
+2https://www.interactivebrokers.com
+
+=== page 6 ===
+accuracy and F1 score, do not correlate well with the trading
+performance (e.g., proﬁt return, Sharpe ratio) in this research.
+As shown in our backtest strategy, the Up and Down predic-
+tion of commodity prices play important roles in the automated
+trading process, directly triggering long and short trades and
+affecting the bottom line. We categorize wrong predictions of
+price movement into three types, in the order of criticality for
+proﬁtable operations. The ﬁrst type of errors has a prediction
+in the opposite direction of actual price movement, i.e., the
+prediction is ”up” when the price goes down, and vice versa.
+This will lead to trading in the wrong direction and hurt the
+return. The second type of errors occurs when the price change
+is ﬂat, but the model predicts it to go up or down. This will
+trigger the strategy to enter long or short positions without
+a clear price moving trend, and may incur a moderate loss
+caused by slippage and transaction costs. The third type of
+errors happens when the price moves up or down, but the
+model predicts it to stay ﬂat, resulting in lost opportunities to
+enter potentially proﬁtable trades.
+To address the speciﬁc characteristics, we propose a modi-
+ﬁed version of F score, called Weighted F Score. It is similar to
+the original F score for Type I and Type II errors, however, we
+use the aforementioned three types of prediction errors instead
+of Type I and Type II errors. The basic idea of Weighted F
+Score is that, we assign different weights to different types of
+error in order to raise the priority of critical errors (e.g., the
+ﬁrst type of errors mentioned above) and to lower the priority
+of noncritical errors (e.g., the third type of errors). Formally,
+Ntp = Ntu + Ntd + β2 3 Ntf (12)
+E1st = Ewutd + Ewdtu (13)
+E2nd = Ewutf + Ewdtf (14)
+E3rd = Ewf tu + Ewf td (15)
+F =
+(
+1 + β2 1 + β2 2 ) Ntp
+(1 + β2 1 + β2 2 ) Ntp + E1st + β2 1 E2nd + β2 2 E3rd (16)
+where Ntp denotes True Positive, E1st,E2nd, and E3rd denote
+the ﬁrst type, second type, and third type of errors, respec-
+tively. Moreover, Ntu denotes True Up, Ntd denotes True
+Down, Ntf denotes True Flat, Ewutd denotes Wrong Up
+but True Down, Ewdtu denotes Wrong Down but True
+Up, Ewutf denotes Wrong Up but True Flat, Ewdtf de-
+notes Wrong Down but True Flat, Ewf tu denotes Wrong
+Flat but True Up, Ewf td denotes Wrong Flat but True
+Down. β1, β2, and β3 denote the weighting parameters for
+Second-Level, Third-Level Errors, and True Flat, respec-
+tively. In our study, we set β1 to 0.5, β2 and β3 to 0.125.
+V. EXPERIMENTS AND RESULTS
+We choose Nearest-neighbour, Support Vector Machines
+(SVM), and Deep Feedforward Networks (MLP) as the base-
+lines [6], [7], [13]. The implementation of the MLP and
+CNN models is based on Tensorﬂow framework3, and the
+3https://www.tensorﬂow.org
+CL NG NQ S ES GC
+−20
+0
+20
+40
+60
+80
+Average Annual Return%
+SVM MLP w/ TIs
+regular 1-D CNN w/o TIs CDT 1-D CNN w/ TIs
+CDT 1-D CNN w/o TIs
+CL NG NQ S ES GC
+−1
+0
+1
+2
+3
+Sharpe Ratio
+SVM MLP w/ TIs
+regular 1-D CNN w/o TIs CDT 1-D CNN w/ TIs
+CDT 1-D CNN w/o TIs
+1
+Fig. 3: The average annual return of the six futures over
+71 months. The CDT 1-D CNN without technical indicators
+(TIs) outperform the baselines by 12.4%-63.3%.
+implementation of SVM and NN is based on Sklearn frame-
+work4. For SVM, we follow the settings by [13]—the kernel
+is radial basis function (RBF), C = 78, and σ2 = 25. Since
+[6] does not release the full set of hyperparameters, we use
+grid search method to deﬁne our MLP model’s setting—it
+has 6 hidden layers, and with the ascending order of depth,
+unit number of each layer is 300, 200, 100, 50, 25, and 10,
+respectively. Also, we use Adam Optimization Algorithm [30],
+1E-3 initial training rate, 0.7 dropout, 1E-5 L2 weight decay
+and 12-sample mini-batch for better generalization [12]. We
+also use the rectiﬁed linear unit (ReLU) as the activation
+function and use normalized initialization to initialize weight
+parameters [10], [11]. These deﬁnitions of hyperparameters
+are also applied in all the MLP and CNN models.
+Moreover, sequential training sessions proceed by moving
+windows. Each moving window consists of a training set, a
+validation set, and a test set. The size of these sets is 142,416
+(2-year), 192 (4-week), and 96 (2-week) trading records,
+respectively. The three types of datasets are in chronological
+order to avoid the leaking problem [22]. Each training session
+starts from scratch with the corresponding moving window,
+and the moving step between adjacent windows is 96 (2-week).
+The combined prediction results from the whole training
+sessions are used as input of the backtest.
+The CDT 1-D CNN model used in our study consists
+of three CDT 1-D convolutional and max-pooling layers,
+two fully connected layers (1,000 and 500 units), and an
+output softmax layer. With the ascending order of depth, the
+kernels of each convolutional layer are 4x32, 3x64, and 2x128,
+respectively. The strides of each max-pooling layer are 4, 3,
+and 2, respectively. As a result of the CDT 1-D convolutions
+and max-pooling operations along with x-axis, the dimensions
+of time decrease from 24 to 1. Meanwhile the dimensions of
+the channels increase from 1 to 128.
+To give a whole picture of the feature extraction ability
+of our CDT 1-D CNN model, we test the following four
+scenarios: MLP with technical indicators, regular 1-D CNN
+without technical indicators, CDT 1-D CNN with technical
+indicators, and CDT 1-D CNN without technical indicators.
+4http://scikit-learn.org
+
+=== page 7 ===
+w/ TIs? CL NG NQ S ES GC
+SVM ✓ 50.2% 41.0% 45.4% 43.0% 41.1% 38.6%
+MLP ✓ 49.3% 51.1% 52.3% 48.1% 43.1% 41.9%
+regular 1-D CNN 50.4% 50.9% 54.8% 50.4% 50.8% 44.8%
+CDT 1-D CNN 57.4% 52.5% 55.9% 51.7% 51.8% 47.3%
+✓ 54.1% 48.6% 49.2% 49.4% 47.7% 44.2%
+TABLE I: Weighted F Score (WFS). The CDT 1-D CNN without technical indicators (TIs) outperforms other models.
+CL NG NQ S ES GC
+−20
+0
+20
+40
+60
+80
+Average Annual Return%
+SVM MLP w/ TIs
+regular 1-D CNN w/o TIs CDT 1-D CNN w/ TIs
+CDT 1-D CNN w/o TIs
+CL NG NQ S ES GC
+−1
+0
+1
+2
+3
+Sharpe Ratio
+SVM MLP w/ TIs
+regular 1-D CNN w/o TIs CDT 1-D CNN w/ TIs
+CDT 1-D CNN w/o TIs
+1
+Fig. 4: The Sharpe ratio of the six futures over 71
+months. The CDT 1-D CNN without technical indicators (TIs)
+signiﬁcantly outperform the baselines.
+the average annual return, Sharpe ratio, and weighted F score
+of the ﬁve approaches for the six futures are shown in Figure 3,
+Figure 4, and Table I, respectively. The cumulative return and
+monthly return of the WTI crude oil (CL) futures are plotted
+in Figure 2. We also calculate the cross-correlation between
+the metrics of ﬁnance and machine learning, which is shown
+in Figure 5. Since Nearest-neighbour’s results are similar to
+SVM’s, we omit its results in the aforementioned table and
+ﬁgures.
+Our CDT 1-D CNN model achieves the best performance
+(57.4% weighted F score, 71.9% average annual return, and
+2.72 Sharpe ratio) for the WTI crude oil (CL) futures. As
+plotted in Figure 2, the cumulative return of the CL futures
+stays positive during the nearly 7-years period and eventually
+goes up to 500%. We notice that our CDT 1-D CNN model
+is able to turn around quickly when drawdowns happen. Only
+two of the 13 negative return months have lower than 5%
+drawdown. In contrast, the highest proﬁtable month has 29.5%
+positive return and the proﬁt of 40 months is higher than 5%.
+Although the regular 1-D CNN model achieves good result
+sometimes, such as 54.8% weighted F score (WFS), 10.8%
+average annual return (AAR), and 0.76 Sharpe ratio (SR)
+for the E-mini S&P 500 (ES) futures, its robustness is not
+consistent in that its performance for the Natural Gas (NG),
+Soybeans (S), Gold (GC) futures is as low as that of the base-
+lines. Compared to our CDT 1-D CNN model, the maximum
+performance degradation of the regular 1-D CNN model is
+up to 7.0% for WFS, 40.4% for AAR and 1.60 for SR for
+the CL futures, and the average degradation is up to 4.3%
+WFS, 25.5% AAR, and 1.41 SR. These experiments conﬁrm
+the effectiveness of the scan strategy of our CDT 1-D CNN
+model.
+CL NG NQ S ES GC
+−0.1
+0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1
+1.1
+1.2
+Cross Correlations
+AAR Vs. AC SR Vs. AC
+AAR Vs. WFS SR Vs. WFS
+1
+Fig. 5: Cross-Correlation between Metrics in Finance and
+Machine Learning. Weighted F score (WFS) highly correlates
+with average annual return (AAR)/Sharpe ratio (SR) on all the
+futures’ experiments.
+As plotted in Figure 5, the cross-correlation between Accu-
+racy (AC) and average annual return (AAR)/Sharpe ratio (SR)
+varies from -0.01 for the AAR of the Gold (GC) futures to 0.91
+for AAR of the E-mini S&P 500 (ES) futures. In contrast, our
+proposed weighted F score (WFS) highly correlates with both
+AAR and SR, and has the highest score of cross-correlation
+for each of the futures. It conﬁrms our argument in Section
+IV-B2 that correlation between Weighted F Score and average
+annual return/Sharpe ratio is signiﬁcantly larger than that
+between common metrics in machine learning and average
+annual return/Sharpe ratio with the most of the futures.
+Technical indicators are effective to MLP, but they bring
+negative effects to 1-D CNN. As shown in Figure 3 and 4, for
+commodity futures (CL, NQ, S, and GC), CDT 1-D CNN with
+technical indicators degrade by 6.1%-53.0%, 53.0%-199.0%,
+and 2.3%-6.7% for average annual return (AAR), Sharpe ratio
+(SR), and weighted F score (WFS), respectively, compared
+to that of CDT 1-D CNN without technical indicators. Except
+for the probable reason we mentioned in Section III-B, another
+one is that redundant data types make the parameter sharing
+difﬁcult to work. Parameters can be updated by back propa-
+gation of each data type, but unfortunately, not all technical
+indicators correlate with price trends all the time. Therefore,
+some useful features may be counteracted by the unnecessary
+parameter updates.
+VI. DISCUSSION
+Long-term features. Thus far we only consider features
+within two hours by CDT 1-D convolutions, and relations
+among data inputs are mutually independent. However, we
+believe that there may exist informative features within longer
+
+=== page 8 ===
+time spans. In our future research, We will explore more com-
+plex model architectures, such as recurrent neural networks
+combined with convolutional kernels, in order to capture both
+short-term and long-term features.
+Data quality. We notice that some big losses in our backtest
+experiments result from data missing in the raw ﬁnancial
+trading data. The prices and volume of the current data
+point may correlate with the upcoming price trend, but may
+be rarely informative for the one-day-later trend. The data
+missing of raw ﬁnancial data also brings negative effect to
+training process due to the mismatch between the label and
+the intrinsic information of the current data point. We will
+develop appropriate data preprocessing methods to solve this
+issue.
+Labeling. Although our experiments verify that supervised
+training based on our three-class labeling strategy can achieve
+state-of-the-art performance in both ﬁnance and machine
+learning benchmark, this labeling strategy cannot distinguish
+more precise classes, such as violent surge, moderate surge,
+crash, and edge down. We plan to investigate more ﬁne-grained
+labeling strategy and study its impact on the performance.
+VII. CONCLUSION
+In this paper, we propose and develop a deep convolutional
+neural network model to predict the market movement. It
+uses a novel 1-D convolution, called Cross-Data-Type 1-
+D Convolution, to capture extracts directly from ﬁnancial
+historical trading data. Backtest results show that our model
+can effectively extract features that are more generalized and
+informative than those represented by traditional technical in-
+dicators. Experiment results show that our model outperforms
+the baselines by 12.4%-63.3% on average annual return and
+99%-245% on Sharpe ratio over previous machine learning
+approaches. In addition, we propose a new measure, weighted
+F-score, which better correlates with ﬁnancial returns than
+traditional machine learning performance metrics.
+REFERENCES
+[1] Achelis SB. Technical Analysis from A to Z. New York: McGraw Hill;
+2001 Apr.
+[2] Aiolﬁ M, Favero CA. Model uncertainty, thick modelling and the pre-
+dictability of stock returns. Journal of Forecasting. 2005 Jul 1;24(4):233-
+54.
+[3] Brock W, Lakonishok J, LeBaron B. Simple technical trading rules and
+the stochastic properties of stock returns. The Journal of ﬁnance. 1992
+Dec 1;47(5):1731-64.
+[4] Elroy D and Paul M. Murphy’s law and market anomalies. The Journal
+of Portfolio Management, 25(2):53–69, 1999.
+[5] Ding X, Zhang Y, Liu T, Duan J. Deep learning for event-driven stock
+prediction. InIjcai 2015 Jul 25 (pp. 2327-2333).
+[6] Dixon M, Klabjan D, Bang JH. Classiﬁcation-based ﬁnancial markets
+prediction using deep neural networks. Algorithmic Finance. 2016 Jul
+18(Preprint):1-1.
+[7] Fern´andez-Rodr´ıguez F, Sosvilla-Rivero S, Andrada-Felix J. Technical
+analysis in foreign exchange markets: evidence from the EMS. Applied
+Financial Economics. 2003 Jan 1;13(2):113-22.
+[8] Gencay R. The predictability of security returns with simple technical
+trading rules. Journal of Empirical Finance. 1998 Oct 1;5(4):347-59.
+[9] Giles CL, Lawrence S, Tsoi AC. Noisy time series prediction using
+recurrent neural networks and grammatical inference. Machine learning.
+2001 Jul 1;44(1-2):161-83.
+[10] Glorot X, Bengio Y. Understanding the difﬁculty of training deep feed-
+forward neural networks. InProceedings of the thirteenth international
+conference on artiﬁcial intelligence and statistics 2010 Mar 31 (pp. 249-
+256).
+[11] Glorot X, Bordes A, Bengio Y. Deep sparse rectiﬁer neural networks.
+InProceedings of the Fourteenth International Conference on Artiﬁcial
+Intelligence and Statistics 2011 Jun 14 (pp. 315-323).
+[12] Goodfellow I, Bengio Y, Courville A, Bengio Y. Deep learning. Cam-
+bridge: MIT press; 2016 Nov 18.
+[13] Kim KJ. Financial time series forecasting using support vector machines.
+Neurocomputing. 2003 Sep 1;55(1-2):307-19.
+[14] Krizhevsky A, Sutskever I, Hinton GE. Imagenet classiﬁcation with
+deep convolutional neural networks. InAdvances in neural information
+processing systems 2012 (pp. 1097-1105).
+[15] Lo AW, MacKinlay AC. Stock market prices do not follow random
+walks: Evidence from a simple speciﬁcation test. The review of ﬁnancial
+studies. 1988 Jan 1;1(1):41-66.
+[16] Lo AW, Mamaysky H, Wang J. Foundations of technical analysis:
+Computational algorithms, statistical inference, and empirical implemen-
+tation. The journal of ﬁnance. 2000 Aug 1;55(4):1705-65.
+[17] Lo AW. The adaptive markets hypothesis. The Journal of Portfolio
+Management, 30(5):15–29, 2004.
+[18] Marcos Lopez de Prado. The 7 reasons most machine learning funds
+fail (presentation slides). 2017.
+[19] Lowe DG. Object recognition from local scale-invariant features. In-
+Computer vision, 1999. The proceedings of the seventh IEEE interna-
+tional conference on 1999 (Vol. 2, pp. 1150-1157). Ieee.
+[20] Fama EF. Efﬁcient capital markets: A review of theory and empirical
+work. The journal of Finance. 1970 May 1;25(2):383-417.
+[21] Park CH, Irwin SH. What do we know about the proﬁtability of technical
+analysis?. Journal of Economic Surveys. 2007 Sep 1;21(4):786-826.
+[22] Rechenthin MD. Machine-learning classiﬁcation techniques for the
+analysis and prediction of high-frequency stock direction. The University
+of Iowa; 2014.
+[23] Samuelson PA. Proof that properly anticipated prices ﬂuctuate randomly.
+IMR; Industrial Management Review (pre-1986). 1965 Apr 1;6(2):41.
+[24] Sullivan R, Timmermann A, White H. Data-snooping, technical trading
+rule performance, and the bootstrap. The journal of Finance. 1999 Oct
+1;54(5):1647-91.
+[25] Sun T, Wang J, Zhang P, Cao Y, Liu B, Wang D. Predicting Stock
+Price Returns Using Microblog Sentiment for Chinese Stock Market.
+InBig Data Computing and Communications (BIGCOM), 2017 3rd
+International Conference on 2017 Aug 10 (pp. 87-96). IEEE.
+[26] Timmermann A, Granger CW. Efﬁcient market hypothesis and forecast-
+ing. International Journal of forecasting. 2004 Jan 1;20(1):15-27.
+[27] Zeiler MD, Fergus R. Visualizing and understanding convolutional
+networks. InEuropean conference on computer vision 2014 Sep 6 (pp.
+818-833). Springer, Cham.
+[28] Zhang L, Aggarwal C, Qi GJ. Stock Price Prediction via Discovering
+Multi-Frequency Trading Patterns. InProceedings of the 23rd ACM
+SIGKDD International Conference on Knowledge Discovery and Data
+Mining 2017 Aug 13 (pp. 2141-2149). ACM.
+[29] Hochreiter S, Schmidhuber J. Long short-term memory. Neural compu-
+tation. 1997 Nov 15;9(8):1735-80.
+[30] Kingma DP, Ba J. Adam: A method for stochastic optimization. arXiv
+preprint arXiv:1412.6980. 2014 Dec 22.

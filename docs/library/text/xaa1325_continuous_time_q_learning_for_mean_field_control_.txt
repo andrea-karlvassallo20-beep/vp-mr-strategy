@@ -1,0 +1,1787 @@
+=== page 1 ===
+Continuous time q-learning for mean-field control problems
+Xiaoli Wei ∗ Xiang Yu †
+Abstract
+This paper studies the q-learning, recently coined as the continuous time counterpart
+of Q-learning by Jia and Zhou (2023), for continuous time mean-field control problems in
+the setting of entropy-regularized reinforcement learning. In contrast to the single agent’s
+control problem in Jia and Zhou (2023), we reveal that two different q-functions naturally
+arise in mean-field control problems: (i) the integrated q-function (denoted by q) as the
+first-order approximation of the integrated Q-function introduced in Gu et al. (2023), which
+can be learnt by a weak martingale condition using all test policies; and (ii) the essential
+q-function (denoted by qe) that is employed in the policy improvement iterations. We show
+that two q-functions are related via an integral representation. Based on the weak martin-
+gale condition and our proposed searching method of test policies, some model-free learning
+algorithms are devised. In two examples, one in LQ control framework and one beyond LQ
+control framework, we can obtain the exact parameterization of the optimal value function
+and q-functions and illustrate our algorithms with simulation experiments.
+Keywords: continuous time reinforcement learning, integrated q-function, mean-field con-
+trol, weak martingale characterization, test policies
+1 Introduction
+Mean-field control (MFC) problems, also known as McKean-Vlasov control problems, concern
+stochastic systems of large population where the agents interact through the distribution of their
+states and the optimal decision is made by a social planner to attain the Pareto optimality. It
+has been seen rapid progress in both theories and applications in the study of MFC problems in
+the past two decades. The comprehensive survey of this topic and related studies can be found
+in Carmona and Delarue (2018a) and Carmona and Delarue (2018b).
+By nature, the model parameters in the stochastic system with a large population of agents
+are generally difficult to observe or estimate, and it is a desirable research direction to design
+efficient learning algorithms for solving the MFC problems under the unknown environment.
+Reinforcement learning (RL) provides many well-suited learning algorithms for this purpose that
+enables the agent to learn the optimal control through the trial-and-error procedure. Through
+the exploration and exploitation in RL, the agent takes an action and observes a reward outcome
+that signals the influence of the agent’s action such that the agent can learn to select actions
+based on past experiences and by making new choices. Recently, many exploration-exploitation
+∗Email: xiaoli.wei@hit.edu.cn, Institute for Advance Study in Mathematics, Harbin Institute of Technology,
+China.
+†Email: xiang.yu@polyu.edu.hk, Department of Applied Mathematics, The Hong Kong Polytechnic University,
+Kowloon, Hong Kong.
+1
+arXiv:2306.16208v4  [cs.LG]  1 Nov 2024
+
+=== page 2 ===
+RL algorithms for single agent’s control problems were quickly adopted and generalized in many
+multi-agent and mean-field reinforcement learning applications.
+Despite its substantial success in wide applications, the theoretical study of reinforcement
+learning has been predominantly limited to discrete time models, especially in the MFC and
+mean-field game problems. Gu et al. (2023) discussed the correct form of Q-function in an inte-
+gral form in Q-learning and established the dynamic programming principle (DPP) for learning
+MFC problems. Gu et al. (2021a,b) proposed a model-free Q learning in a centralized way and an
+actor-critic algorithm in a decentralized manner for MFC problems with convergence analyses.
+Carmona et al (2023) studied MFC with common noise under both closed-loop and open-loop
+policies through the lens of mean-field Markov decision process, which also unveiled the correct
+form of the Q-function and its dynamic programming principle and adapted existing (deep) RL
+methods to the mean-field setting. Angiuli et al. (2022, 2023) studied unified two-timescale RL
+algorithms to solve infinite horizon asymptotic MFC and mean-field game problems in finite
+and continuous state-action space, respectively. The corresponding convergence result is stud-
+ied in the subsequent work Angigli et al. (2023). There also exists a variety of model-based
+or model-free RL algorithms for MFCs that can be found, for instance in Mondal et al. (2022,
+2023); Pasztor et al. (2021). On the other hand, for continuous time stochastic control problems
+by a single agent, Wang et al. (2020), Jia and Zhou (2022a,b, 2023) have laid the overarching
+theoretical foundation for reinforcement learning in continuous time with continuous state space
+and possibly continuous action space. In particular, Jia and Zhou (2023) developed a contin-
+uous time q-learning theory by considering the first order approximation of the conventional
+Q-function. Given a stochastic policy, the value function and the associated q-function can be
+characterized by martingale conditions of some stochastic processes in Jia and Zhou (2023) in
+both on-policy and off-policy settings. Several actor-critic algorithms are devised therein for
+solving underlying RL problem. Convergence or regret analyses of continuous-time single-agent
+stochastic control problems have been conducted in Giegrich et al. (2024); Szpruch et al. (2021)
+for linear-quadratic or linear-convex models. For continuous time mean-field LQ games, Guo et
+al. (2022) examined the theoretical justification that entropy regularization helps stabilizing and
+accelerating the convergence to the Nash equilibrium. Li et al. (2023) concerned the model-based
+policy iteration reinforcement learning method for continuous time infinite horizon mean-field
+LQ control problems. Recently, Frikha et al. (2023) generalized the policy gradient algorithm
+in Jia and Zhou (2022b) to continuous time MFC problems and devised actor-critic algorithms
+based on a gradient expectation representation of the value function, where the value function
+and the policy are learnt alternatively via the observed samples of the state and a model-free
+estimation of the population distribution.
+As demonstrated in Jia and Zhou (2023), one important advantage of continuous time frame-
+work lies in its robustness with respect to the time discretization in the algorithm design and
+implementations. Inspired by Jia and Zhou (2023), we are particularly interested in whether,
+and if yes, how the continuous time q-learning can be applied in learning McKean-Vlasov con-
+trol problems in the mean-field model with infinitely many interacting agents. Contrary to Jia
+and Zhou (2023), our first contribution is to reveal that two distinct q-functions are generically
+needed to learn continuous time McKean-Vlasov control problems. In fact, due to the feature of
+mean-field interactions with the population, it has been shown in Gu et al. (2023); Carmona et al
+(2023) in the discrete time setting that the time consistency and DPP only hold for the so-called
+integrated Q-function (or IQ) for learning MFC problems, where the IQ-function depends on
+2
+
+=== page 3 ===
+the distribution of both the state and the control, i.e., the state space of the state variable and
+the action variable needs to be appropriately enlarged to the Wasserstein space of probability
+measures so that the time-consistency can be guaranteed. Similar to the counterpart in Gu
+et al. (2023); Carmona et al (2023), we also show that the correct definition of the continuous
+time q-function, as the first order approximation of the IQ-function, needs to be defined on
+the distribution of the state and the control as an integral form of the Hamiltonian operator.
+This integral form of the q-function is called the integrated q-function in the present paper,
+which is crucial in establishing a weak martingale characterization of the value function and
+the q-function using all test policies in a neighbourhood of the target policy. However, on the
+other hand, from the relaxed control formulation with the entropy regularizer and its associated
+exploratory HJB equation, the optimal policy can be obtained as a Gibbs measure related to the
+Hamiltonian operator directly. Therefore, the integrated q-function actually can not be utilized
+directly to learn the optimal policy. Instead, a proper way is to introduce another q-function
+that is defined as the Hamiltonian (without the integral form) plus the temporal dispersion,
+which can be employed in the policy improvement iterations. To distinguish two different q-
+functions in our setting, we shall call the first order approximation of the IQ-function as the
+continuous time integrated q-function, denoted by q (see Definition 3.1); and we shall name the
+second q-function related to the policy improvement as the essential q-function, denoted by qe
+(see Definition 3.3).
+One key finding of the present paper is the integral representation between q and qe involving
+all test policies, see the relationship in (3.13). As a result, we can employ the weak martingale
+characterization of the integrated q-function (see Theorems 4.3 and 4.4) to devise the learning
+algorithm in the following order: (i) We first parameterize the value function J θ(t, µ) and
+the essential q-function qψ e , and then obtain the parameterized q-function qψ from the integral
+relationship that shares the same parameter ψ of qψ e . (ii) By minimizing the weak martingale
+loss under all test policies, we devise updating rules for the parameters in the integrated q-
+function qψ. Here, a new challenge we encounter is to decide the searching rule of test policies in
+the weak martingale characterization. To address this issue, we consider the minimization of the
+weak martingale loss robust with respect to all test policies, i.e., the updating rule is determined
+by a minmax problem. We propose a method based on the average of some test policies close
+to the target policy, which does not create new parameters. In addition, it is worth noting that
+the test policy instead of the target policy will be used to generate samples and observations
+due to the dependence of the distribution of the action in the integrated q-function, therefore
+making our learning algorithms similar to the off-policy learning in the conventional Q-learning,
+see Remark 4.5. (iii) After the updating of the parameter ψ in q from step (ii), the parameter
+of qe is also updated that gives the updating rule of the associated policy.
+On the other hand, it is shown in Gu et al. (2023) that the IQ-function in the discrete
+time framework is generally nonlinear in the distribution of control, and hence it is difficult
+to characterize the distribution of the optimal policy. By contrast, it is interesting to see that
+our integrated q-function, as the first order derivative of the IQ-function with respect to time,
+admits a linear integral form of the distribution in (3.13), which is more suitable for the name
+of “integrated function” of the distribution of the population and allows the explicit connection
+between the optimal policy and the essential q-function, see Remark 3.5.
+To illustrate our model-free q-learning algorithms, we study two concrete examples in fi-
+nancial applications, namely the optimal mean-variance portfolio problem in the LQ control
+3
+
+=== page 4 ===
+framework and the mean-field optimal R&D investment and consumption problem beyond the
+LQ control framework. In both examples, we can derive the explicit expressions of the opti-
+mal value function and two q-functions from the exploratory HJB equation and hence obtain
+their exact parameterized forms. From simulation experiments, we illustrate the satisfactory
+performance of our q-learning algorithm and the proposed searching method of test policies.
+The remainder of this paper is organized as follows. Section 2 introduces the exploratory
+learning formulation for continuous time McKean-Vlasov control problems. In Section 3, the
+definitions of the continuous time integrated q-function and the essential q-function are given and
+their relationship is established. The weak martingale characterization of the value function and
+two q-functions using test policies are established in Section 4. Some offline and online q-learning
+algorithms using the average-based test policies are presented in Section 5. Section 6 examines
+two concrete financial applications and numerically illustrates our q-learning algorithms in some
+simulation experiments. Section 7 concludes the contributions of the paper and discusses some
+directions for future research.
+2 Problem Formulation
+2.1 Strong Control Formulation
+Let (Ω, F , P) be the probability space that supports a n-dimensional Brownian motion W =
+(Ws)s∈[0,T ]. We denote by FW = (F W s )s∈[0,T ] the P-completion filtration of W . We assume that
+there is a sub-algebra G of F such that G is independent of FW and is “rich enough” in the
+sense that for any µ ∈ P2(Rd), there exists a G-measurable random variable ξ such that Pξ = µ.
+Indeed, such G exists if and only if there exists a G-measurable random variable U with the
+uniform distribution U ([0, 1]) that is independent of W = (Ws)s≥0. We denote by F = (Fs)s≥0
+the filtration defined by Fs = F W s ∨ G, see section 2 in Cosso et al. (2023) for more details.
+The state dynamics of the controlled McKean-Vlasov SDE is given by
+dXs = b(s, Xs, PXs , as)ds + σ(s, Xs, PXs , as)dWs, Xt = ξ ∼ µ, (2.1)
+where PXs denotes the probability distribution of Xs. In the present paper, we only consider
+the model without common noise, leaving the case with common noise as future study.
+The goal of the McKean-Vlasov control problem is to find the optimal F-progressively mea-
+surable sequence of actions {as}t≤s≤T valued in the space A ⊂ Rm that maximizes the expected
+discounted total reward
+V ∗(t, µ) := sup
+{as}t≤s≤T
+E
+Z T
+t
+e−β(s−t)r(s, Xs, PXs , as)ds + e−β(T −t)g(XT , PXT ) PXt = µ  . (2.2)
+One can show that the optimal value function is law-invariant and V ∗ : [0, T ] × P2(Rd) → R
+satisfies the dynamic programming principle
+V ∗(t, µ) = sup
+{as}t≤s≤T
+E
+Z t+h
+t
+e−β(s−t)r(s, Xs, PXs , as)ds + e−βhV ∗(t + h, PXt+h )
+
+.
+4
+
+=== page 5 ===
+Furthermore, when b, σ, r and g are known, the optimal value function satisfies the following
+dynamic programming equation
+∂V ∗
+∂t (t, µ) − βV ∗(t, µ) +
+Z
+Rd
+sup
+a∈A
+H
+ 
+t, x, µ, a, ∂µV ∗(t, µ)(x), ∂x∂µV ∗(t, µ)(x)  µ(dx) = 0,
+with the terminal condition V ∗(T, µ) = R Rd g(x, µ)µ(dx) := ˆg(µ), where ∂µV ∗(t, µ)(x) is defined
+via the lifting identification and it is called L-derivative of V ∗ with respect to the measure µ, see
+Lions (2006) and Definition 5.22 in Carmona and Delarue (2018a), and ∂x∂µV ∗(t, µ)(x) denotes
+the partial derivative of ∂µV ∗(t, µ)(x) with respect to x, and the Hamiltonian operator H is
+defined by
+H(t, x, µ, a, p, q) = b(t, x, µ, a)⊺p + 1 2 Tr   σσ⊺(t, x, µ, a)q  + r(t, x, µ, a). (2.3)
+2.2 Exploratory Formulation
+We now consider the situation when the model is unknown, i.e., we do not have the exact
+information of the model parameters b and σ in state dynamics (2.1) and the reward function
+r in (2.2). To determine the optimal control in face of the unknown model, we choose to
+apply the reinforcement learning based on the trial-and-error procedure. That is, what the
+representative agent (social planner) can do is to try a sequence of actions (as)s∈[0,T ] and observe
+the corresponding state process (X a s )s∈[0,T ] and the distribution (PX as )s∈[0,T ] along with a stream
+of discounted running rewards r(s, X a s , PX as , as)s∈[0,T ] and continuously update and improve her
+actions based on these observations.
+To describe the exploration step in reinforcement learning, we can randomize the actions and
+consider its distribution as a relaxed control. To this end, we need to assume that (Ω, F , {Fs}s, P)
+is rich enough to support a continuum of independent random variables (Zs)s∈[0,T ] that are
+uniformly distributed on [0, 1] and also independent of W ; See Theorem 1 in Sun (2006) for the
+construction of (Zs)s∈[0,T ]. Note that the additional randomness (Zs)s∈[0,T ] allows the agent to
+freely randomize his action at each time s.
+Let π be a stochastic control that maps (t, x, µ) ∈ [0, T ] × Rd × P2(Rd) → P(A), where
+P(A) is the space of probability measures on A. At each time s ∈ [0, T ], an action as :=
+a(s, Xs, PXs , Zs) is sampled from π(·|s, Xs, PXs ). Fix a stochastic policy π and an initial pair
+(t, µ) ∈ [0, T ] × P2(Rd), let us consider the controlled McKean-Vlasov SDE
+dX π s = b(s, X π s , PX πs , aπ s )ds + σ(s, X π s , PX πs , aπ s )dWs, X π t ∼ µ, aπ s ∼ π(·|s, X π s , PX πs ). (2.4)
+When coefficients b and σ are Lipschitz in (t, x, µ) ∈ [0, T ] × Rd × P2(Rd) for every action a ∈ A,
+the existence and uniqueness of solution of (2.4) can be proved by following Theorem 5.1.1 in
+Stroock and Caradhan (1997). The solution to (2.4) is denoted as X t,µ,π = {X t,µ,π s , t ≤ s ≤ T }.
+To encourage the exploration in continuous time, we adopt the Shannon entropy regularizer
+suggested by Wang et al. (2020), and the value function of the exploration formulation is given
+by
+J(t, µ; π) = E
+Z T
+t
+e−β(s−t) r(s, X π s , PX πs , aπ s ) − γ log π(aπ s |s, X π s , PX πs )  ds
+5
+
+=== page 6 ===
++ e−β(T −t)g(X π T , PX π T ) X π t ∼ µ  . (2.5)
+Due to the Shannon entropy regularization in (2.5), it is clear that the value function under
+the policy without a density becomes −∞. Therefore, we shall restrict our attention to policies
+that admit densities. A stochastic policy π is called admissible if π admits a density function
+and is jointly measurable with respect to (t, x, µ, a) ∈ [0, T ] × Rd × P2(Rd) × A and supp(π) = A.
+We denote by Π the set of admissible (stochastic) policies π.
+We also consider the dynamics (2.6), viewed intuitively as the average of the sample trajec-
+tories X π in (2.4) over randomized actions.
+dXs = bπ(s, Xs, PXs , π(·|s, Xs, PXs ))ds + σπ(s, Xs, PXs , π(·|s, Xs, PXs ))dWs, (2.6)
+where
+bπ(s, x, µ) :=
+Z
+A
+b(s, x, µ, a)π(a|s, x, µ)da, σπ(s, x, µ) :=
+sZ
+A
+σσ⊺(s, x, µ, a)π(a|s, x, µ)da.
+The wellposedness of (2.6) is guaranteed under Assumption 2.1 (i) and its solution is denoted
+by ˜X π = { ˜X π s , t ≤ s ≤ T }. In appendix A, we also rigorously prove the connection between
+(2.4) and (2.6) in the sense that X π s and ˜X π s have the same law for every s ∈ [t, T ] by showing
+that they correspond to the same martingale problem.
+As PX πs = P ˜X πs , the objective function in (2.5) is equivalent to
+J(t, µ; π) = E
+Z T
+t
+e−β(s−t) rπ(s, ˜X π s , P ˜X πs ) + γEπ(s, ˜X π s , P ˜X πs ))  ds (2.7)
++ e−β(T −t)g( ˜X π T , P ˜X π T )  ˜X π t ∼ µ  ,
+where we denote
+rπ(t, x, µ) :=
+Z
+A
+r(t, x, µ, a)π(a|t, x, µ)da, Eπ(t, x, µ) := −
+Z
+A
+log π(a|t, x, µ)π(a|t, x, µ)da.
+Then the value function associated with the admissible policy π satisfies the dynamic pro-
+gramming equation:
+∂J
+∂t (t, µ; π) − βJ(t, µ; π) + Eξ∼µ
+h Z
+A
+h
+H
+ 
+t, ξ, µ, a, ∂µJ(t, µ; π)(ξ), ∂x∂µJ(t, µ; π)(ξ)
+
+(2.8)
+− γ log π(a|t, ξ, µ)
+i
+π(a|t, ξ, µ)da
+i
+= 0,
+with the terminal condition J(T, µ; π) = ˆg(µ) :=
+R
+Rd g(x, µ)µ(dx).
+In addition, let us denote
+M2(µ) :=
+Z
+Rd
+|x|2µ(dx).
+We shall make the following regularity assumptions on coefficients and reward functions
+throughout the paper (see Assumption 2.1 and Remark 2.1 in Frikha et al. (2023)).
+6
+
+=== page 7 ===
+Assumption 2.1 (i) For f ∈ {bπ, σπ}, the derivatives ∂xf (t, x, µ), ∂2 xf (t, x, µ), ∂µf (t, x, µ)(v)
+and ∂v∂µf (t, x, µ)(v) exist for any (t, x, v, µ) ∈ [0, T ] × Rd × Rd × P2(Rd), are bounded
+and locally Lipschitz continuous with respect to x, µ, v uniformly in t ∈ [0, T ]. For all
+(t, x, µ) ∈ [0, T ] × Rd × P2(Rd), we have |f (t, x, µ)| ≤ C(1 + |x| + M2(µ)).
+(ii) For any t ∈ [0, T ], rπ(t, ·), Eπ(t, ·) and g(·) ∈ C2,2(Rd × P2(Rd)).
+(iii) There exists some constant C < ∞, such that for any (t, x, v, µ) ∈ [0, T ]×Rd ×Rd ×P2(Rd),
+we have
+|rπ(t, x, µ)| + |Eπ(t, x, µ)| + |g(x, µ)| ≤ C(1 + |x|2 + M2(µ)),
+|∂xrπ(t, x, µ)| + |∂xEπ(t, x, µ)| + |∂xg(x, µ)| ≤ C(1 + |x| + M2(µ)),
+|∂µrπ(t, x, µ)(v)| + |∂µEπ(t, x, µ)(v)| + |∂µg(x, µ)(v)| ≤ C(1 + |x| + |v| + M2(µ)),
+|∂v∂µrπ(t, x, µ)(v)| + |∂2 xrπ(t, x, µ)| + |∂v∂µEπ(t, x, µ)(v)|
++ |∂2 xEπ(t, x, µ)| + |∂v∂µg(x, µ)(v)| + |∂2 xg(x, µ)| ≤ C(1 + M2(µ)).
+Under Assumption 2.1, Proposition 2.1 of Frikha et al. (2023) guarantees that the function
+J(t, µ; π) defined in (2.5) is of C1,2([0, T ] × P2(Rd)).
+The objective of the social planner is to maximize J(t, µ; π) over all admissible policies
+J ∗(t, µ) = sup
+π∈Π
+J(t, µ; π). (2.9)
+We can derive the exploratory HJB equation for the optimal value function J ∗(t, µ) by
+∂J ∗
+∂t (t, µ) +
+Z
+Rd
+sup
+π∈P(A)
+Z
+A
+
+H
+ 
+t, x, µ, a, ∂µJ ∗(t, µ)(x), ∂x∂µJ ∗(t, µ)(x)  (2.10)
+− γ log π(a)
+
+π(a)da
+
+µ(dx) − βJ ∗(t, µ) = 0.
+The optimal policy π satisfies a Gibbs measure or widely-used Boltzmann policy in RL after
+normalization that
+π∗(a|t, x, µ) = exp
+n
+1
+γ H
+ 
+t, x, µ, a, ∂µJ ∗(t, µ)(x), ∂x∂µJ ∗(t, µ)(x) o
+R
+A exp
+n
+1
+γ H
+ 
+t, x, µ, a, ∂µJ ∗(t, µ)(x), ∂x∂µJ ∗(t, µ)(x) o da . (2.11)
+Plugging (2.11) into (2.10), we get that
+∂J ∗
+∂t (t, µ) + γ
+Z
+Rd
+log
+Z
+A
+exp
+n 1
+γ H
+ 
+t, x, µ, a, ∂µJ ∗(t, µ)(x), ∂x∂µJ ∗(t, µ)(x) o daµ(dx) (2.12)
+− βJ ∗(t, µ) = 0,
+with the terminal condition J ∗(T, µ) = ˆg(µ).
+Recall that the goal of MFC is to find the optimal policy that maximizes J(t, µ; π). Let us
+consider the operator I : Π → Π that
+I(π) =
+exp
+n
+1
+γ H
+ 
+t, x, µ, a, ∂µJ(t, µ; π)(x), ∂x∂µJ(t, µ; π)(x)
+o
+R
+A exp
+n
+1
+γ H
+ 
+t, x, µ, a, ∂µJ(t, µ; π)(x), ∂x∂µJ(t, µ; π)(x)
+o
+da
+. (2.13)
+7
+
+=== page 8 ===
+Theorem 2.2 (Policy improvement result) For any given π ∈ Π, define π′ = I(π), with
+I given in (2.13). Then
+J(t, µ; π′) ≥ J(t, µ; π).
+Moreover, if the map I in (2.13) has a fixed point π∗ ∈ Π, then π∗ is the optimal policy of (2.9).
+Proof. For two given admissible policies π, π′ ∈ Π, and any 0 ≤ t ≤ T , by applying Itˆo’s
+formula to the value function J(s, PX π′ s ; π) between t and T , we get that
+e−βT J(T, PX π′ T ; π) − e−βtJ(t, PX π′ t ; π)
++ E
+Z T
+t
+Z
+A
+e−βs
+h
+r(s, X π′ s , PX π′ s , a) − γ log π′(a|s, X π′ s , PX π′ s ) i π′(a|s, X π′ s , PX π′ s )dads 
+=
+Z T
+t
+e−βs
+h ∂J
+∂t (s, PX π′ s ; π) − βJ(s, PX π′ s ; π)
+i
+ds
++ E
+Z T
+t
+Z
+A
+h
+H
+ 
+s, X π′ s , PX π′ s , a, ∂µJ(s, PX π′ s ; π)(X π′ s ), ∂x∂µJ(s, PX π′ s ; π)(X π′ s ) 
+− γ log π′(a|s, PX π′ s , X π′ s ) i π′(a|s, PX π′ s , X π′ s )dads  . (2.14)
+From Lemma 9 in Jia and Zhou (2023), it follows that for any (s, y, µ) ∈ [0, T ] × Rd × P2(Rd),
+Z
+A
+h
+H(s, y, µ, a, ∂µJ(s, µ; π)(y), ∂x∂µJ(s, µ; π)(y)) − γ log π′(a|s, y, µ) i π′(a|s, y, µ)da
+≥
+Z
+A
+h
+H(s, y, µ, a, ∂µJ(s, µ; π)(y), ∂x∂µJ(s, µ; π)(y)) − γ log π(a|s, y, µ)
+i
+π(a|s, y, µ)da.
+Therefore, it holds that
+e−βT J(T, PX π′ T ; π) − e−βtJ(t, PX π′ t ; π) (2.15)
++ E
+Z T
+t
+Z
+A
+e−βs
+h
+r(s, X π′ s , PX π′ s , a) − γ log π′(a|s, X π′ s , PX π′ s ) i π′(a|s, X π′ s , PX π′ s )dads  ≥ 0.
+Letting PX π′ t = µ and rearranging terms in (2.15) yield the desired result that
+J(t, µ; π) ≤ e−β(T −t)J(T, PX π′ T ; π)
++ E
+Z T
+t
+Z
+A
+e−βs
+h
+r(s, X π′ s , PX π′ s , a) − γ log π′(a|s, X π′ s , PX π′ s ) i π′(a|s, X π′ s , PX π′ s )dads 
+=e−β(T −t) ˆg(PX π′ T )
++ E
+Z T
+t
+Z
+A
+e−βs
+h
+r(s, X π′ s , PX π′ s , a) − γ log π′(a|s, X π′ s , PX π′ s ) i π′(a|s, X π′ s , PX π′ s )dads 
+=J(t, µ; π′).
+The learning procedure in Theorem 2.2 starts with some policy π and produces a new policy
+π′ by setting π′ = I(π). We next estimate the distance between π and π′.
+8
+
+=== page 9 ===
+Lemma 2.3 Under Assumption 2.1, define π′ = I(π) with I given in (2.13) for any given
+π ∈ Π, then we have
+0 ≤ Daverage KL (π∥π′) :=
+Z
+Rd
+DKL(π(·|t, x, µ)∥π′(·|t, x, µ))µ(dx) ≤ δ(µ) := C(1 + M2(µ)), (2.16)
+where C is a generic constant. Furthermore, if π is a fixed point of I, then Daverage KL (π∥π′) = 0.
+Proof. By the definition of DKL, we have that
+DKL(π(·|t, x, µ)∥π′(·|t, x, µ)) =
+Z
+A
+log π(a|t, x, µ) π′(a|t, x, µ) π(a|t, x, µ)da
+= − 1 γ Z A H(t, x, µ, ∂µJ(t, µ; π)(x), ∂x∂µJ(t, µ; π)(x))π(a|t, x, µ)da
++ log
+Z
+A
+exp
+n 1
+γ H
+ 
+t, x, µ, a, ∂µJ(t, µ; π)(x), ∂x∂µJ(t, µ; π)(x)
+o
+da
++
+Z
+A
+log π(a|t, x, µ)π(a|t, x, µ)da.
+It then follows from (2.8) that
+Daverage KL (π∥π′) =
+Z
+Rd
+DKL(π(·|t, x, µ)∥π′(·|t, x, µ))µ(dx)
+= ∂J ∂t (t, µ; π) − βJ(t, µ; π)
++
+Z
+Rd
+log
+Z
+A
+exp
+n 1
+γ H
+ 
+t, x, µ, a, ∂µJ(t, µ; π)(x), ∂x∂µJ(t, µ; π)(x)
+o
+daµ(dx).
+We then estimate Daverage KL (π∥π′). Under Assumption 2.1, the proof of Proposition 2.1 in Frikha
+et al. (2023) implies that
+sup
+t∈[0,T ]
+n
+| ∂J ∂t (t, µ; π)| + |J(t, µ; π)| + |∂µJ(t, µ; π)(x)| + |∂x∂µJ(t, µ; π)(x)| o ≤ C(1 + M2(µ)).
+Consequently, the desired result holds that Daverage KL (π∥π′) ≤ C(1 + M2(µ)).
+3 q-Functions for Continuous Time Mean-field Control
+The aim of this section is to examine the continuous time analogue of the discrete time IQ-
+function and Q-learning for mean-field control problems (see Gu et al. (2023); Carmona et
+al (2023)). In particular, in the framework of continuous time McKean-Vlasov control, it is
+an interesting open problem that what is the correct definition of the integrated q-function
+comparing with the q-function for a single agent’s control problem in Jia and Zhou (2023) and
+the IQ-function in the discrete time framework in Gu et al. (2023); Carmona et al (2023)? In
+addition, it is important to explore how can one utilize the learnt integrated q-function to learn
+the optimal policy?
+9
+
+=== page 10 ===
+3.1 Soft Q-learning for Mean-field Control
+To better elaborate our definitions of continuous time q-functions for mean-field control prob-
+lems, let us first detour in this subsection to discuss the correct definition and results of Q-
+learning with entropy regularizer (soft Q-learning) in the discrete time framework.
+We consider a mean-field Markov Decision Process (MDP) X = {Xt, t = 0, 1, . . . , T } with
+a finite state space X and a finite action space A, and a transition probability of mean-field
+type P(Xt+1 = x′|Xt = x, PXt = µ, at = a) =: p(x′|x, µ, a). At each time step t, an ac-
+tion is sampled from a stochastic policy π. The social planner’s expected total reward is
+E[PT −1 t=0 βtr(Xt, PXt , at) + g(XT , PXT )], with β := exp(−α) ∈ (0, 1).
+The value function at each time t associated with a given policy π is defined as
+J(t, µ; {πs}s≥t) = E
+h T −1X
+s=t
+β(s−t)[r(X π s , PX πs , aπ s ) − γ log π(aπ s |s, X π s , PX πs )] + β(T −t)g(X π T , PX π T ) i ,
+with PX π t = µ. The Bellman equation for J is given by
+J(t, µ; {πs}s≥t) = E
+
+r(X π t , µ, aπ t ) − γ log π(aπ t |s, X π t , µ)  + βJ(t + 1, PX π t+1 ; {πs}s≥t+1). (3.1)
+When the social planner takes the policy h at time t, and then the policy {πs}s≥t+1 afterwards,
+the integrated Q-function (see Gu et al. (2023) without the entropy regularizer) is defined by
+Q(t, µ, h; {πs}s≥t+1)
+=E
+
+r(X h t , PX h t , ah t ) − γ log h(ah t |t, X h t , PX h t ) 
++ βE
+ T −1X
+s=t+1
+βs−(t+1) r(X π s , PX πs , aπ s ) − γ log π(a ¯π s |s, X π s , PX πs ) X π t+1 ∼ PX h t+1 
+=E
+
+r(X h t , PX h t , ah t ) − γ log h(ah t |t, X h t , PX h t )  + βJ(t + 1, PX h t+1 ; {πs}s≥t+1), (3.2)
+with the terminal condition Q(T, µ, h) = Eξ∼µ[g(ξ, µ)].
+Next, we consider the optimal value function J ∗(t, µ) := sup{πs}s≥t+1 J(t, µ; {πs}s≥t+1) and
+the optimal Q-function and Q∗(t, µ, h) = sup{πs}s≥t+1 Q(t, µ; h; {πs}s≥t+1) associated with the
+optimal policy π∗. First, the DPP or the Bellman equation for J ∗ is
+J ∗(t, µ) = sup
+π
+n
+Eµ,π
+
+r(ξ, µ, aπ t ) − γ log π(aπ t |t, ξ, µ)  + βJ ∗(t + 1, PX t,µ,π t+1 ) o , (3.3)
+where for any measurable function f , µ ∈ P2(Rd) and h ∈ Π, we denote
+Eµ,h[f (ξ, ah)] := Eξ∼µ,ah∼h(·|t,ξ,µ)[f (ξ, ah)] =
+Z
+Rd
+Z
+A
+f (x, a)h(a|t, x, µ)daµ(dx). (3.4)
+From (3.2) and (3.3), we have the relation between the optimal value function and the optimal
+Q-function
+J ∗(t, µ) = sup
+h
+Q∗(t, µ, h). (3.5)
+10
+
+=== page 11 ===
+Substituting (3.5) to the Bellman equation for J ∗, we obtain that
+J ∗(t, µ) = sup
+π
+n
+Eµ,π
+
+r(ξ, µ, aπ t ) − γ log π(aπ t |t, ξ, µ)  + β sup
+h′
+Q∗(t + 1, PX t,µ,π t+1 ; h′) o
+= sup
+π
+n X
+x∈X
+X
+a∈A
+ 
+r(x, µ, a) − γ log π(a|t, x, µ)
+
+π(a|t, x, µ)µ(x)
++ β sup
+h′
+Q∗(t + 1, Φ(t, µ, π), h′) o , (3.6)
+where Φ, which characterizes the evolution of PX π t over time, is defined by Φ(t, µ, h)(x′) =P
+x∈X
+P
+a∈A p(x′|x, µ, a)h(a|t, x, µ)µ(x).
+To derive the optimal policy, we need to find the candidate policy that achieves suph Q∗(t, µ, h)
+for any µ ∈ P2(X ) and t ∈ 0, 1, . . . , T − 1, or equivalently we can search for the optimal policy
+by solving the optimization problem on the right hand side of (3.6). However, due to the non-
+linear dependence of suph′ Q∗(t + 1, Φ(t, PX π t , π), h′) in π, it is impossible to obtain an explicit
+expression of π∗. Therefore, for McKean-Vlasov control problems in the mean-field model, we
+reveal that the introduction of the entropy regularizer does not provide any help to derive the
+distribution of the optimal policy π∗, which differs significantly from the soft Q-learning for the
+single agent’s stochastic control problem, see Jia and Zhou (2023).
+Moreover, taking the supremum over all {πs}s≥t+1 in (3.2), and substituting (3.5) to (3.2),
+we can heuristically obtain the DPP or the Bellman equation for the optimal IQ-function that
+Q∗(t, µ, h) = Eµ,h  r(ξ, µ, ah t ) − γ log h(ah t |t, ξ, µ)  + β sup
+h′
+Q∗(t + 1, PX t,µ,h t+1 , h′), (3.7)
+with the terminal condition Q∗(T, µ, h) = Eξ∼µ[g(ξ, µ)].
+Note that when γ = 0, (3.7) coincides with the Bellman equation for the optimal IQ-function
+established in Gu et al. (2023), in which the correct definition of the IQ-function Q(t, µ, h)
+defined on the distribution of both the population and the action is proposed for MFC such that
+the time consistency and DPP hold. In (3.7) for the learning MFC problem with the entropy
+regularizer, it is straightforward to modify arguments in Gu et al. (2023) and similarly prove
+the correct DPP for the optimal IQ-function with an additional entropy term associated with
+h.
+On the other hand, when there is no mean-field interaction, i.e., there is no population
+distribution in the transition probability p or in the reward r, the terminal payoff g and the
+stochastic policy π, the problem degenerates to the single-agent Q learning. We can use either
+the single-agent Q-function denoted by Q∗ single or the IQ-function to learn the optimal policy. In
+fact, these two Q-functions are related by the equation
+Q∗(t, µ, h) = X
+x∈X
+X
+a∈A
+ 
+Q∗ single(t, x, a) − γ log h(a|t, x)  h(a|t, x)µ(x), (3.8)
+which implies that the optimal policy that attains suph Q∗(t, µ, h) can be explicitly written by
+π∗(a|t, x) = exp{ 1 γ Q∗ single(t, x, a)} P
+a∈A exp{ 1 γ Q∗ single(t, x, a)} , (3.9)
+11
+
+=== page 12 ===
+which has been shown in Jia and Zhou (2023).
+According to (3.8), we see that (3.7) can be reformulated in terms of Q∗ single that
+Q∗ single(t, x, a) = r(t, x, a) + β X
+x′∈X
+γ log
+X
+a∈A
+exp
+ 1
+γ Q∗ single(t + 1, x′, a) 	 p(x′|t, x, a)
+= r(t, x, a) + βE
+
+γ log
+X
+a∈A
+exp
+ 1
+γ Q∗ single(t + 1, X t,x,a t+1 , a) 	Xt = x, at = a  ,
+(3.10)
+and that (3.5) can be expressed in terms of Q∗ single and J ∗ single that
+J ∗ single(t, x) = sup π  X a∈A   Q∗ single(t, x, a) − γ log π(a|t, x)  π(a|t, x) 	 . (3.11)
+Equations (3.9)-(3.11) are consistent with results for the single-agent soft Q-learning, see e.g.
+Sutton and Barto (2018) and Jia and Zhou (2023).
+3.2 Two Continuous Time q-functions
+Due to the large population of interacting agents as well as the technical issue discussed in
+Remark 4.2 below, we need to consider the randomized action h ∈ Π on the interval [t, t + ∆t)
+in the IQ-function in the McKean-Vlasov control framework (see Gu et al. (2023)), which differs
+significantly from the perturbed policy with a constant action in Jia and Zhou (2023) for a
+single agent. Therefore, let us consider a “perturbed policy” ¯π ∈ Π, which takes h ∈ Π on
+[t, t + ∆t), and then π ∈ Π on [t + ∆t, T ). By Lemma 2.3, it is sufficient to restrict h within the
+ball Bδ(µ)(π) = {h ∈ Π : Daverage KL (π||h) ≤ δ(µ)} centered at π that significantly reduces the
+searching space of policies h.
+Denote ρt,µ,π s := PX t,µ,π s for any π ∈ Π for notational simplicity. The state process X t,µ, ¯π s on [t, T ) is governed by
+dX t,µ, ¯π s = b(s, X t,µ, ¯π s , ρt,µ, ¯π s , ah s )ds + σ(s, X t,µ, ¯π s , ρt,µ, ¯π s , ah s )dWs, s ∈ [t, t + ∆t), X t,µ, ¯π t ∼ µ,
+dX t,µ, ¯π s = b(s, X t,µ, ¯π s , ρt,µ, ¯π s , aπ s )ds + σ(s, X t,µ, ¯π s , ρt,µ, ¯π s , aπ s )dWs, s ∈ [t + ∆t, T ), X t,µ, ¯π t+∆t ∼ ρt,µ,h t+∆t.
+Based on the definition in (3.2), we can first consider the discrete time integrated Q-function
+defined on [0, T ] × P2(Rd) × Bδ(µ)(π) × Π with the time interval ∆t and the entropy regularizer
+that
+Q∆t(t, µ, h; π) (3.12)
+=E
+Z t+∆t
+t
+Z
+A
+e−β(s−t)
+h
+r(s, X t,µ, ¯π s , ρt,µ, ¯π s , a) − γ log h(a|s, X t,µ, ¯π s , ρt,µ, ¯π s ) i h(a|s, X t,µ, ¯π s , ρt,µ, ¯π s )dads
++
+Z T
+t+∆t
+Z
+A
+e−β(s−t)
+h
+r(s, X t,µ, ¯π s , ρt,µ, ¯π s , a) − γ log π(a|s, X t,µ, ¯π s , ρt,µ, ¯π s ) i π(a|s, X t,µ, ¯π s , ρt,µ, ¯π s )dads
++ e−β(T −t)g(X t,µ, ¯π T , ρt,µ, ¯π T ) X t,µ, ¯π t ∼ µ 
+=E
+Z t+∆t
+t
+Z
+A
+e−β(s−t)
+h
+r(s, X t,µ, ¯π s , ρt,µ, ¯π s , a) − γ log h(a|s, X t,µ, ¯π s , ρt,µ, ¯π s ) i h(a|s, X t,µ, ¯π s , ρt,µ, ¯π s )da 
+12
+
+=== page 13 ===
++ e−β∆tJ(t + ∆t, ρt,µ, ¯π t+∆t; π) − J(t, µ; π) + J(t, µ; π)
+=E
+Z t+∆t
+t
+Z
+A
+e−β(s−t)
+h
+H
+ 
+s, X t,µ,h s , ρt,µ,h s , a, ∂µJ(s, ρt,µ,h s ; π)(X t,µ,h s ), ∂x∂µJ(s, ρt,µ,h s ; π)(X t,µ,h s ) 
+− γ log h(a|s, X t,µ, ¯π s , ρt,µ, ¯π s ) i h(a|s, X t,µ, ¯π s , ρt,µ, ¯π s )dads 
++
+Z t+∆t
+t
+h ∂J
+∂t (s, ρt,µ,h s ; π) − βJ(s, ρt,µ,h s ; π) i ds + J(t, µ; π)
+=J(t, µ; π) + ∆t
+ ∂J
+∂t (t, µ; π) − βJ(t, µ; π) + Eξ∼µ
+h Z
+A
+
+H
+ 
+t, ξ, µ, a, ∂µJ(t, µ; π)(ξ), ∂x∂µJ(t, µ; π)(ξ)
+
+− γ log h(a|t, ξ, µ)
+
+h(a|t, ξ, µ)da
+i
++o(∆t),
+where we have applied Itˆo’s formula to e−β∆tJ(t + ∆t, ρt,µ, ¯π t+∆t; π) − J(t, µ; π) in the third equality.
+Definition 3.1 Fix a stochastic policy π ∈ Π. For any (t, µ, h) ∈ [0, T ] × P2(Rd) × Bδ(µ)(π),
+we define the continuous time integrated q-function by
+q(t, µ, h; π) := ∂J ∂t (t, µ; π) − βJ(t, µ; π) + Eµ,h h H   t, ξ, µ, ah, ∂µJ(t, µ; π)(ξ), ∂x∂µJ(t, µ; π)(ξ) i
++ γEξ∼µ[Eh(t, ξ, µ)].
+We also call the integrated q-function associated with the optimal policy π∗ in (2.11) as the
+optimal integrated q-function, which is defined by
+q∗(t, µ, h) := ∂J ∗
+∂t (t, µ) − βJ ∗(t, µ) + Eµ,h
+h
+H
+ 
+t, ξ, µ, ah, ∂µJ ∗(t, µ)(ξ), ∂x∂µJ ∗(t, µ)(ξ) i
++ γEξ∼µ[Eh(t, ξ, µ)].
+Remark 3.2 In the framework of learning MFC, with a fixed small time step size ∆t, the
+integrated Q-function Q∆t(t, µ, h; π) is related to our integrated q-function in the following sense:
+Q∆t(t, µ, h; π) ≈ J(t, µ; π) + q(t, µ, h; π)∆t.
+That is, q(t, µ, h; π) is the first-order derivative of the integrated Q-function Q∆t(t, µ, h; π) with
+respect to ∆t.
+Contrary to the discrete time Q-learning algorithm that learns Q∆t, the q-learning algorithm
+learns zeroth-order and first-order terms of Q∆t simultaneously. These two terms are indepen-
+dent of ∆t and therefore robust to the choice of the time discretization in implementations (see
+the discussion and numerical comparison results in Jia and Zhou (2023) for the single agent’s
+control problem).
+Definition 3.3 If there exists a function qe : [0, T ] × Rd × P2(Rd) × A → R such that
+q(t, µ, h; π) − γEξ∼µ[Eh(t, ξ, µ)] = Eµ,h[qe(t, ξ, µ, ah; π)], (3.13)
+it is called the essential q-function, which plays the essential role in the policy improvement and
+the characterization of the optimal policy.
+Contrary to the integrated q-function, the function qe above is defined on [0, T ]×Rd ×P2(Rd)×
+A, independent of h. The following result ensures the existence of an essential q-function in our
+current framework.
+13
+
+=== page 14 ===
+Lemma 3.4 There exists at least one essential q-function qe given in Definition 3.3.
+Proof. Note from Definition 3.3 that
+q(t, µ, h; π) − γEξ∼µ[Eh(t, ξ, µ)]
+= ∂J ∂t (t, µ; π) − βJ(t, µ; π) + Eµ,h h H   t, ξ, µ, ah, ∂µJ(t, µ; π)(ξ), ∂x∂µJ(t, µ; π)(ξ) i ,
+is linear in h. Therefore, we can always define
+qe(t, x, µ, a; π) := ∂J ∂t (t, µ; π) − βJ(t, µ; π) (3.14)
++ H
+ 
+t, x, µ, a, ∂µJ(t, µ; π)(x), ∂x∂µJ(t, µ; π)(x)
+
+.
+Then I defined in (2.13) can be written in terms of the essential q-function qe that
+I(π) =
+exp( 1 γ qe(t, x, µ, a; π)) R
+A exp( 1 γ qe(t, x, µ, a; π))da .
+Remark 3.5 It is worth noting that the integrated Q-function Q∆t(t, µ, h; π) in general discrete
+time MFC problems has an implicit and nonlinear dependence on h, which has three direct
+consequences: (i) in contrast to single-agent control problems where the optimal policy is in the
+form of Gibbs measure (3.9), the optimal policy π∗ in the discrete time MFC Q-learning cannot
+be expressed in terms of Gibbs measure and does not exhibit any explicit distribution; (ii) the
+relationship in (3.8) does not hold in general even when there is no entropy that γ = 0; (iii) the
+counterpart of the essential q-function in the discrete time framework does not exist. Indeed, one
+cannot define a discrete time Q-function only depending on a (independent of h) that satisfies
+the DPP, see the discussions in Gu et al. (2023).
+By contrast, as the first order derivative of Q∆t(t, µ, h; π) with respect to time ∆t, the inte-
+grated q-function q(t, µ, h; π) modified by the entropy term γEξ∼µ[Eh(t, ξ, µ)] has the nice linear
+dependence on the control policy h in view of the integral relationship (3.13). As a consequence,
+solving the optimization problem suph{J(t, µ; π∗) + q(t, µ, h; π∗)∆t} leads to an explicit form of
+π∗ in (2.11). This illustrates another advantage of working in continuous time framework for
+MFC as it is more convenient to characterize the optimal policy π∗ and establish the relationship
+between the optimal policy π∗ and the q-function to devise algorithms for policy improvement.
+We also note that the integrated q-function q(t, µ, h; π) is more natural for the name “integrated
+function” as it (modified by the entropy) can be expressed as a linear double-integral in (3.13)
+that explicitly integrates the distribution of the state and the action of the population, while
+the discrete time integrated Q-function Q∆t(t, µ, h; π) aggregates the distribution in an implicit
+manner.
+Finally, we stress that the integrated q-function is unique, but the essential q-function is not.
+In fact, any function κ(x, µ) satisfying
+R
+Rd κ(x, µ) = 0 can be added to (3.14) and still be an
+essential q-function.
+4 Weak Martingale Characterizations
+The first result below gives a characterization of the integrated q-function associated with a
+given policy π ∈ Π under the assumption that the value function J is known.
+14
+
+=== page 15 ===
+Theorem 4.1 (Characterization of the integrated q-function) Let π ∈ Π, its value func-
+tion J and a continuous function ˆq : [0, T ] × P2(Rd) × Bδ(µ)(π) → R be given. Then ˆq is the
+integrated q-function if and only if ˆq satisfies
+ˆq(t, µ, π) = 0, (4.1)
+and for any (t, µ, h) ∈ [0, T ] × P2(Rd) × Bδ(µ)(π), the value of
+e−βsJ(s, PX t,µ,h s ; π) − e−βtJ(t, µ; π) +
+Z s
+t
+e−βt′
+h
+ˆr(t′, PX h t′ , h) − ˆq(t′, PX h t′ , h)+γE[Eh(t, X h t′ , PX h t′ )] i dt′
+is 0, where {X h s , t ≤ s ≤ T } is the solution to (2.4) under the policy h with PX h t = µ, and ˆr :
+[0, T ]×P2(Rd)×Bδ(µ)(π) → R is the aggregated reward defined by ˆr(t, µ, h) = Eµ,h  r(t, ξ, µ, ah)  .
+Proof. By (2.8) and Definition 3.1, it is a direct consequence that (4.1) holds.
+Applying Itˆo’s formula to J(t′, PX h t′ ; π) between t and s, 0 ≤ t < s ≤ T , we get that
+e−βsJ(s, PX hs ; π) − e−βtJ(t, µ; π) +
+Z s
+t
+e−βt′
+h
+ˆr(t′, PX h t′ , h) − ˆq(t′, PX h t′ , h) + γE[Eh(t, X h t′ , PX h t′ )] i dt′
+=
+Z s
+t
+e−βt′
+ ∂
+∂t J(t′, PX h t′ ; π) − βJ(t′, PX h t′ ; π)
++
+Z
+Rd
+Z
+A
+H
+ 
+t′, X h t′ , PX h t′ , a, ∂µJ(t′, PX h t′ ; π)(X h t′ ), ∂x∂µJ(t′, PX h t′ ; π)(X h t′ )  h(a|t′, X h t′ , PX h t′ )daPX h t′ (dx)
++γE[Eh(t, X h t′ , PX h t′ )] − ˆq(t′, PX h t′ , h)
+
+dt′
+=
+Z s
+t
+e−βt′
+h
+q(t′, PX h t′ , h; π) − ˆq(t′, PX h t′ , h) i dt′ = 0.
+Conversely, we need to show
+Z s
+t
+e−βt′
+h
+q(t′, PX h t′ , h; π) − ˆq(t′, PX h t′ , h) i dt′ = 0 (4.2)
+implies that q(t, µ, h; π) ≡ ˆq(t, µ, h), which will be proved by contradiction. Denote f (t, µ, h) =
+q(t, µ, h; π)−ˆq(t, µ, h). Then f is a continuous function that maps [0, T ]×P2(Rd)×Bδ(µ)(π) to R.
+Suppose that the claim does not hold. Then there exists (t∗, µ∗, h∗) ∈ [0, T ] × P2(Rd) × Bδ(µ)(π)
+and ϵ > 0 such that f (t∗, µ∗, h∗) > ϵ. As f is continuous, there exists δ > 0 such that when
+max{|t − t∗|, W2(µ, µ∗)} < δ, f (t, µ, h∗) > ϵ 2 . Now let us consider the process X h∗ s starting from
+(t∗, µ∗), i.e., X h∗ s , t∗ ≤ s ≤ T } with X h∗ t∗ ∼ µ∗. Define
+τ := inf{t > t∗ : W2(PX h∗ t , µ∗) > δ} ∧ (t∗ + δ).
+Then it holds that
+R τ
+t∗ e−βt′ f (t′, PX h∗ t′ , h∗)dt′ > 0, which contradicts with (4.2), and our conclu- sion holds.
+Remark 4.2 It is worth noting that if the policy h in the integrated Q-function is replaced with
+a constant action a, the proof of Theorem 4.1 will fail. This is the technical reason for us to
+consider a policy h in Q∆t in (3.12) instead of a constant action a.
+15
+
+=== page 16 ===
+The following result characterizes both the integrated q-function and the value function J
+associated with a given policy π.
+Theorem 4.3 (Characterization of the value function and the integrated q-function)
+Let π ∈ Π, a continuous function ˆJ : [0, T ] × P2(Rd) → R and a continuous function ˆq :
+[0, T ] × P2(Rd) × Bδ(µ)(π) → R be given. Then ˆJ and ˆq are respectively the value function and
+the integrated q-function associated with π if and only if ˆJ and ˆq satisfy
+ˆJ(T, µ) = ˆg(µ), ˆq(t, µ, π) = 0, (4.3)
+and for any (t, µ, h) ∈ [0, T ] × P2(Rd) × Bδ(µ)(π), the value of
+e−βs ˆJ(s, PX hs ) − e−βt ˆJ(t, µ) +
+Z s
+t
+e−βt′  ˆr(t′, PX h t′ , h) − ˆq(t′, PX h t′ , h)+γE[Eh(t, X h t′ , PX h t′ )]  dt′
+(4.4)
+is 0, where {X h s , t ≤ s ≤ T } is the solution to (2.4) under the stochastic policy h with PX h t = µ.
+Furthermore, suppose that there exists a function ˆqe : [0, T ] × Rd × P2(Rd) × A → R such that
+ˆq(t, µ, h) − γEξ∼µ[Eh(t, ξ, µ)] = Eµ,h[ˆqe(t, ξ, µ, ah)] for any h ∈ Bδ(µ)(π), and it holds further
+that π(a|t, x, µ) =
+exp{ 1 γ ˆqe(t,x,µ,a)}R
+A exp{ 1 γ ˆqe(t,x,µ,a)}da , then π is an optimal policy and ˆJ is the optimal value
+function, i.e. ˆJ = J ∗.
+Proof. The “if” part is a direct consequence by following the same argument as in the proof
+of Theorem 4.1. We therefore only prove the “only if” direction. Note that
+e−βs ˆJ(s, PX hs ) − e−βt ˆJ(t, µ) +
+Z s
+t
+h
+ˆr(t′, PX h t′ , h) − ˆq(t′, PX h t′ , h)+γE[Eh(t, X h t′ , PX h t′ )] i dt′ = 0.
+From the proof of Theorem 4.1, it holds that
+∂
+∂t
+ˆJ(t, µ) − β ˆJ(t, µ) + E
+h Z
+A
+H
+ 
+t, ξ, µ, a, ∂µ ˆJ(t, µ)(ξ), ∂x∂µ ˆJ(t, µ)(ξ)  h(a|t, ξ, µ)da i
++ γEξ∼µ[Eh(t, ξ, µ)] − ˆq(t, µ, h) = 0.
+Letting h = π and combining with ˆq(t, µ, π) = 0 yields that
+∂
+∂t
+ˆJ(t, µ) − β ˆJ(t, µ) + E
+h Z
+A
+
+H
+ 
+t, ξ, µ, a, ∂µ ˆJ(t, µ)(ξ), ∂x∂µ ˆJ(t, µ)(ξ) 
+− γπ(a|t, ξ, µ)
+	
+π(a|t, ξ, µ)da
+i
+= 0.
+This, together with the terminal condition ˆJ(t, µ) = ˆg(µ), yields that ˆJ(t, µ) = J(t, µ; π) by
+virtue of Feynman-Kac formula (2.8). Furthermore, based on Theorem 4.1, one has ˆq(t, µ, h) =
+q(t, µ, h; π).
+Finally, if π(a|t, µ, x) =
+exp{ 1 γ ˆqe(t,x,µ,a)}R
+A exp{ 1 γ ˆqe(t,x,µ,a)}da , then π = Iπ. This implies that π is an optimal
+policy and ˆJ is the optimal value function J ∗.
+We end this subsection with the characterization of the optimal value function and optimal
+essential q-function qe.
+16
+
+=== page 17 ===
+Theorem 4.4 (Characterization of the optimal value function and essential q-function)
+Let ˆJ ∗ : [0, T ] × P2(Rd) → R and ˆq∗ e : [0, T ] × Rd × P2(Rd) × A → R be continuous functions.
+Then ˆJ ∗, ˆq∗ e and ˆπ∗(a|t, x, µ) := exp{ 1 γ ˆq∗ e (t,x,µ,a)}R
+A exp{ 1 γ ˆq∗e (t,x,µ,a)}da are respectively the optimal value function
+J ∗, the optimal essential q-function q∗ e and the associated optimal policy π∗ if and only if
+ˆJ ∗(T, µ) = ˆg(µ),
+Z
+Rd
+log
+Z
+A
+exp
+ 1
+γ ˆq∗ e (t, x, µ, a) 	 daµ(dx) = 0, (4.5)
+and for any (t, µ, h) ∈ [0, T ] × P2(Rd) × Bδ(µ)( ˆπ∗), it holds that
+e−βs ˆJ ∗(s, PX hs ) − e−βt ˆJ ∗(t, µ) +
+Z s
+t
+e−βt′
+n
+ˆr(t′, PX h t′ , h) (4.6)
+−
+Z
+Rd×A
+ˆq∗ e (t′, X h t′ , PX h t′ , a)h(a|t′, X h t′ , PX h t′ )daPX h t′ (dx) o dt′ = 0.
+Remark 4.5 Theorem 4.4 characterizes the optimal value function and the optimal essential
+q-function in terms of a weak martingale condition (4.6) using all test policies and the consis-
+tency condition (4.5), which is the foundation for designing learning algorithms from the social
+planner’s perspective. On one hand, utilizing the martingale condition in (4.6) requires us to
+employ the test policy h to generate samples and observations instead of the target policy π,
+which has a similar flavor of the off-policy q-learning for stochastic control by a single agent in
+Jia and Zhou (2023) that is based on observations of the given behavior policy. On the other
+hand, we highlight that the feature of mean-field interactions requires us to test all policies h
+in the neighbourhood of the target policy π to fully characterize the optimal value function and
+the optimal q-function. The necessity of searching all test policies differs significantly from the
+standard off-policy q-learning in Jia and Zhou (2023) where any given behavior policy together
+with the consistency condition is sufficient to fully characterize the optimal value function and
+the optimal q-function.
+Remark 4.6 We emphasize that both the integrated q-function and the essential q-function
+are crucial in our current setting. The integrated q-function is important from the theoretical
+perspective while the essential q-function is convenient for implementing the algorithms.
+Firstly, recall that in single agent control problems, q-function originates from the time deriva-
+tive of Q-function in the discrete time framework, which is the main reason that the proposed
+q-learning algorithms are regarded as the continuous-time counterpart of Q-learning algorithms.
+As noted in Remark 3.5, our integrated q-function is also the time derivative of the discrete-time
+integrated Q-function in MFC problems as studied in Gu et al. (2023); Carmona et al (2023),
+however, the discrete-time version of the essential q-function does not exist! Therefore, without
+first introducing the integrated q-function, it will be difficult to introduce the definition of the es-
+sential q-function. Secondly, as the essential q-function is not unique (see Remark 3.5), we have
+to first show that the integrated q-function and the value function can be fully characterized by
+the weak martingale condition (see Theorem 4.1), which then yields the martingale condition of
+the essential q-function described in Theorem 4.4. For the purpose of the implementation of the
+algorithm, we can then replace the integrated q-function by the essential q-function in Theorem
+4.4 using the integral representation in (3.13).
+Remark 4.7 One relevant work is Frikha et al. (2023), which investigated the policy gradient
+algorithm for continuous time MFC problems. It is worth noting that both RL approaches have
+17
+
+=== page 18 ===
+pros and cons: In their representation of the policy gradient (see (3.3) in Theorem 3.1 in Frikha
+et al. (2023)), there is an additional term H that can only be computed under the assumption
+when the model is separable. This term H does not appear in our q-learning approach, which
+is a main advantage of our q-learning algorithm to cope with MFC problems. However, as a
+price to pay, we have to utilize infinitely many test polices h to fully determine the integrated
+q-function, which is not needed in Frikha et al. (2023). When the population distribution cannot
+be observed, we have also established a comparison between the policy gradient algorithm in
+Frikha et al. (2023) and the q-learning algorithm from the representative agent’s perspective, see
+proposition 5.6 in Wei et al. (2024).
+5 Algorithms under Continuous Time q-Learning
+In this subsection, we assume that the social planner has a simulator for the state distribution and
+we learn directly the optimal value function and the optimal q-function according to Theorem 4.4.
+First, the parametrized function approximators J θ and qψ e are chosen such that the consistency
+condition (4.5) is satisfied that
+J θ(T, µ) = ˆg(µ) and
+Z
+Rd
+log
+Z
+A
+exp
+ 1
+γ qψ e (t, x, µ, a) 	 daµ(dx) = 0. (5.1)
+and we have the parameterized policy
+πψ(a|t, x, µ) = exp{ 1 γ qψ e (t, x, µ, a)} R
+A exp{ 1 γ qψ e (t, x, µ, a)da} .
+In what follows, it is assumed that the constant
+R
+A exp{ 1 γ qψ e (t, x, µ, a)da} is known. We
+first devise the q-learning algorithm in an offline setting. We can utilize the weak martingale
+condition (4.4) in Theorem 4.4 to devise the updating rules for parameters by minimizing the
+loss function robust with respect to all test policies in an offline setting. Denote
+M θ,ψ,h s := e−βsJ θ(s, PX hs ) +
+Z s
+0
+e−βt′  ˆr(t′, PX h t′ , h) − Z Rd Z A qψ e (t′, x, PX h t′ , a)h(a|t′, x, PX h t′ )daPX h t′ 	 dt′,
+where PX h t := PX 0,µ,h t is the population state distribution associated with h starting from 0.
+According to (4.6), the parameters θ and ψ will be updated by optimizing mean-square TD
+error averaged over all test policies that
+inf
+θ,ψ
+L(θ, ψ) := 1 2 inf θ,ψ
+Z
+h∈Bδ(µ)(πψ )
+ ˙M θ,ψ,h s 2dsν(dh), (5.2)
+where ˙M θ,ψ,h s is the time derivative of M θ,ψ,h s and called TD error rate and ν is a probability
+measure defined on Bδ(µ)(πψ) ⊂ Π with supp(ν) = Bδ(µ)(πψ). The loss function L(θ, ψ) has a
+similar sprit of mean-square temporal difference error in the setting of the deterministic dynam-
+ics, see Doya (2020) and also the discussion in section 3.1 in Jia and Zhou (2022b). The infimum
+of the loss function inf θ,ψ L(θ, ψ) = 0 implies that the inside integrand is zero for almost surely t
+and all h, which, combined with Theorem 4.6, indicates that J θ and qψ are indeed respectively
+the optimal value function and the optimal Q-function.
+18
+
+=== page 19 ===
+The key issue in the implementation is that we need all test policy h to generate sample
+trajectories to achieve the purpose of learning. In practice, it is impossible to implement all test
+policies h to ensure (5.2) to hold. In this paper, we propose a parametrization method that
+is based on the fact the test policy has the same parametrized form as the policy πψ yet with
+distinct parameter ˜ψ ∈ Bδ (ψ), where Bδ (ψ) is a ball with radius δ centered at ψ. It is then
+sufficient to consider the average of the weak martingale loss over ˜ψ ∈ Bδ (ψ).
+inf
+θ,ψ
+Z
+˜ψ∈Bδ (ψ)
+ ˙M θ,ψ,h ˜ψ s 2dsd ˜ψ. (5.3)
+Average-based test policies: As the practical implementation is of discrete fashion, we
+choose a sequence of test policies h ˜ψ1 , h ˜ψ2 , . . . , h ˜ψM using the parameterized policy πψ. More
+precisely, at the beginning of each episode j, we use ψ to randomly generate M parameters
+˜ψ1, . . . , ˜ψM , which corresponds to M test policies h ˜ψ1 , . . . , h ˜ψM . For example, ˜ψ1, . . . , ˜ψM are
+i.i.d. drawn from ψ · U ([p(j), q(j)]), where U ([p(j), q(j)]) is uniform distribution on [p(j), q(j)].
+In this case, we discretize [0, T ] on the grid {tk = k∆t, k = 0, 1, . . . , K} and hence the weak
+martingale loss function is averaged over all test policies
+1
+2M
+MX
+m=1
+K−1X
+k=0
+δθ,ψ,h ˜ψm k 2∆t, (5.4)
+where P
+X h ˜ψm t := P X 0,µ,h ˜ψm t is the population state distribution associated with h ˜ψm , 1 ≤ m ≤ M
+starting from 0, and δθ,ψ,h ˜ψm k is given by
+δθ,ψ,h ˜ψm k =e−βtk  J θ(tk+1, µm tk+1 ) − J θ(tk, µm tk ) ∆t + ˆrm tk − βJ θ(tk, µm tk )
+−
+Z
+Rd×A
+qψ e (tk, x, µm tk , a)h ˜ψm (a|tk, x, µm tk )daµm tk (dx)  .
+It is shown in Theorem 5.4 in Wei et al. (2024) that as M → +∞ and ∆t → 0, the solution of
+(5.4) converges to that of (5.3).
+We then apply the vanilla gradient descent to update θ and ψ:
+θ ← θ − αθ
+1
+M
+MX
+m=1
+∆mθ, ψ ← ψ − αψ 1 M MX m=1 ∆mψ,
+where µm tk and ˆrm tk , 0 ≤ k ≤ K − 1 are observed state distribution and observed aggregated
+reward associated with the test policy h ˜ψm , and αθ and αψ are learning rates and
+Gm tk = e−2βtk
+
+J θ(tk+1, µm tk+1 ) − J θ(tk, µm tk ) +   ˆrm tk − βJ θ(tk, µm tk ) (5.5)
+−
+Z
+Rd×A
+qψ e (tk, x, µm tk , a)h ˜ψm (a|tk, x, µm tk )daµm tk (dx)  ∆t  ,
+∆mθ =
+K−1X
+k=0
+Gm tk
+ 1
+∆t
+  ∂J θ
+∂θ (tk+1, µm tk+1 ) − ∂J θ ∂θ (tk, µm tk )  − βJ θ(tk, µm tk )  , (5.6)
+19
+
+=== page 20 ===
+∆mψ = −
+K−1X
+k=0
+Gm tk
+Z
+Rd×A
+∂qψ e
+∂ψ (ti, x, µm ti , a)h ˜ψm (a|ti, x, µm ti )daµm ti (dx). (5.7)
+The pseudo-code is described in Algorithm 1.
+Remark 5.1 Generally speaking, it is computationally costly to evaluate the integrals in (5.5)-
+(5.7). However, in numerical examples in Section 6, we can leverage the model structure to
+explicitly compute these integrals. In particular, in the first example in subsection 6.1, qψ e is
+quadratic in x and a, and the parameterized test policy h ˜ψ is taken as the normal distribution
+so that the integrals become functions of expectation and variance of the population distribution
+µ. In general cases, we may have to compute these integrals by a Monte Carlo approach or the
+approximation of qψ e using simple functions, such as polynomials of x and a.
+As the social planner has access to the full information of the population distribution, the pop-
+ulation distribution is generated by a simulator (µ′, ˆr) = Environment∆t(t, µ, h) in Algorithms
+1-2 that is based on the time discretized version of Fokker-Planck equation. More precisely,
+consider the time discretized SDE
+Xtk+1 ≈ Xtk + b(tk, Xtk , µtk , ah)∆t + σ(tk, Xtk , µtk , ah t )(Wtk+1 − Wtk ), ah ∼ h(·|tk, Xtk , µtk ).
+Denote the probability transition function of by p(dx′|t, Xtk , µtk , ah) := P(Xtk+1 ∈ dx′|Xtk ),
+then p is a normal distribution N
+ 
+Xtk + b(tk, Xtk , µtk , ah)∆t, σσ⊺(tk, Xtk , µtk , ah)∆t  . By the
+law of total probability
+µtk+1 (dx′) =
+Z
+Rd
+Z
+A
+p(dx′|t, x, µtk , a)h(a|t, x, µtk )daµtk (dx). (5.8)
+(5.8) implies the evolution of population state distribution µtk over the time.
+Remark 5.2 In practice, instead of computing (5.8), we assume that the social planner has ac-
+cess to an environment simulator that updates moments of the population distribution. Precisely,
+this is represented by
+(¯µtk+1 , ¯µ2,tk+1 , . . . , ¯µm,tk+1 , ˆr) = Environment∆t(tk, ¯µtk , ¯µ2,tk , . . . , ¯µm,tk , h), m ∈ N∗,
+where ¯µt,m =
+R
+Rd xmµt(dx) denotes the m-th moment of µ. For example, moments up to second
+order are sufficient for the linear quadratic framework. See (6.7)-(6.8) for the simulator of the
+mean-variance example and (6.12) for mean-field optimal consumption problem.
+Remark 5.3 The information structure (i.e. what an agent can observe) plays a significant
+role in the reinforcement learning of MFC problems. In this study, we consider MFC from the
+perspective of the social planner, who can observe macroscopic quantities, including population
+distributions µt and aggregated rewards ˆrt. In contrast, Wei et al. (2024) studies MFC from
+the viewpoint of the representative agent, who lacks the access to population distributions µt and
+can only observe his own states xt and rewards rt. It is assumed therein that the representative
+agent updates the population distributions based on his observed states. Consequently, different
+information structures will lead to distinct q-functions with different martingale characterizations
+and environment simulators.
+20
+
+=== page 21 ===
+We can also similarly devise the q-learning algorithm in an online-setting where the param-
+eters are updated in real-time. Similar to the previous algorithm, we can minimize the loss
+function over all average-based test policies {h ˜ψ1 , . . . , h ˜ψM } between tk and tk+1 that
+1
+2M
+MX
+m=1
+J θ(tk+1, P X h ˜ψm tk+1 ) − J θ(tk, P X h ˜ψm tk ) +  ˆr(tk, P X h ˜ψm tk , h ˜ψm )
+−
+Z
+Rd
+Z
+A
+qψ e (tk, x, P X h ˜ψm tk , a)h ˜ψm (a|tk, x, P X h ˜ψm tk )P X h ˜ψm tk (dx) − βJ θ(tk, P X h ˜ψm tk )  ∆t  2 .
+We can then apply gradient descent (GD) to the above loss function after the time discretization
+of [0, T ] on the grids {tk = k∆t, k = 0, . . . , K − 1} and obtain the updating rules for θ and ψ
+that
+θ ← θ − αθ
+1
+M
+MX
+m=1
+∆mθ, ψ ← ψ − αψ 1 M MX m=1 ∆mψ,
+where µm tk , 0 ≤ k ≤ K − 1 and ˆrm tk , 0 ≤ k ≤ K − 1 are observed state distribution and reward
+associated to the test policy h ˜ψm , and αθ and αψ are learning rates and
+δm k = J θ(tk+1, µm tk+1 ) − J θ(tk, µm tk ) +  ˆrtk − βJ θ(tk, µm tk ) (5.9)
+−
+Z
+Rd
+Z
+A
+qψ e (tk, x, µm tk , a)h ˜ψm (a|tk, x, µm tk )µm tk (dx)  ∆t,
+∆mθ = δm k   ∂J θ ∂θ (tk+1, µm k+1) − ∂J θ ∂θ (tk, µm tk ) − βJ θ(tk, µm tk )∆t  , (5.10)
+∆mψ = −δm k
+Z
+Rd
+Z
+A
+∂qψ e
+∂ψ (tk, x, µm tk , a)h ˜ψm (a|t, x, µm tk )µm tk (dx)∆t. (5.11)
+The pseudo-code is described in Algorithm 2. We remark that the dynamic is deterministic from
+the perspective of the social planner and thus the updating rule has a similar spirit as Doya’s
+Temporal Difference (TD) algorithm for deterministic dynamics Doya (2020).
+Remark 5.4 For Algorithms 1 and 2, we again emphasize that the test policy h is used to the
+environment simulator instead of the target policy π, which makes our algorithms similar to the
+so-called off-policy in conventional Q-learning. However, the feature of mean-field interactions
+requires us to explore all test policies to meet the weak martingale condition, and hence makes
+our algorithms different from the standard off-policy learning. The parameters in the policy (or
+q-function) are used and updated in the learning procedure but the resulting policy π does not
+participate in the procedure directly. All samples and observations are based on our chosen test
+policy h, which can be adaptively updated by our proposed two different methods.
+21
+
+=== page 22 ===
+Algorithm 1 Offline q-Learning Algorithm
+Inputs: initial state distribution µ0, horizon T , time step ∆t, number of mesh grids K, number
+of test policies M , initial learning rates αθ and αψ, functional forms of parameterized value
+function J θ(·, ·) and qψ e (·, ·, ·, ·) satisfying (4.5) and temperature parameter γ.
+Required program: Moments simulator or environment simulator (µ′, ˆr) =
+Environment∆t(t, µ, h ˜ψ) that takes current time–state distribution pair (t, µ) and the test
+policy h ˜ψ as inputs and generates state distribution µ′ at time t + ∆t and the aggregated
+reward ˆr at time t as outputs.
+Learning procedure:
+Initialize θ and ψ.
+for episode j = 1 to N do
+Observe the initial state distribution µ0 and store µm tk ← µ0.
+for m = 1 to M do
+Draw ˜ψm from ψ · U ([p(j), q(j)]) and set the test policy h ˜ψm .
+Initialize k = 0.
+while k < K do
+Apply the test policy h ˜ψm to the environment simulator (µ, ˆr) =
+Environment∆t(tk, µm tk , h ˜ψm ), and observe the new state distribution µ and the
+aggregated reward ˆr as output. Store µm tk+1 ← µ and ˆrm tk ← ˆr.
+Update k ← k + 1.
+end while
+For every k = 0, 1, · · · , K − 1, compute Gm tk :T , ∆mθ and ∆mψ according to (5.5)-(5.7).
+end for
+Update θ and ψ by θ ← θ − αθ 1 M PM m=1 ∆mθ, ψ ← ψ − αψ 1 M PM m=1 ∆mψ.
+end for
+22
+
+=== page 23 ===
+Algorithm 2 Online q-Learning Algorithm
+Inputs: initial state distribution µ0, horizon T , time step ∆t, number of mesh grids K, number
+of behavior policies M , initial learning rates αθ and αψ, functional forms of parameterized value
+function J θ(·, ·) and qψ e (·, ·, ·, ·) satisfying (4.5) and temperature parameter γ.
+Required program: Moments simulator or environment simulator (µ′, ˆr) =
+Environment∆t(t, µ, h ˜ψ) that takes current time–state distribution pair (t, µ) and the test
+policy h ˜ψ as inputs and generates the state distribution µ′ at time t + ∆t and the aggregated
+reward ˆr at time t as outputs.
+Learning procedure:
+Initialize θ and ψ.
+for episode j = 1 to N do
+Initialize k = 0. Observe the initial state distribution µ0 and store µm tk ← µ0, m = 1, . . . , M .
+while k < K do
+for m = 1 to M do
+Draw ˜ψm from ψ · U ([p(j), q(j)]) and set the test policy h ˜ψm . Apply the test policy
+h ˜ψm to environment simulator (µ, ˆr) = Environment∆t(tk, µm tk , h ˜ψm ), and observe new
+state distribution µ and the aggregated reward ˆr as output. Store µm tk+1 ← µ and
+ˆrm tk ← ˆr.
+Compute δm k , ∆mθ and ∆mψ according to (5.9)-(5.11).
+end for
+Update θ and ψ by θ ← θ − αθ 1 M PM m=1 ∆mθ, ψ ← ψ − αψ 1 M PM m=1 ∆mψ.
+Update k ← k + 1.
+end while
+end for
+23
+
+=== page 24 ===
+6 Financial Applications
+6.1 Mean-Variance Portfolio Optimization
+Let us consider the wealth process that satisfies the SDE that
+dX π s = aπ s   bds + σdWs  , aπ s ∼ π(·|s, X π s , PX πs ), s ≥ t, X0 = x, (6.1)
+where aπ s is the wealth amount invested in the risky asset at time s, b is the excess return and
+σ is the volatility. The learning mean-variance portfolio optimization problem with entropy
+regularizer is defined by
+J(t, µ; π) = E[X π T ] − λVar(X π T ) − γE
+Z T
+t
+Z
+R
+log π(a|s, X π s , PX πs )π(a|s, X π s , PX πs )da
+
+.
+The Hamiltonian operator is given by H(t, x, µ, a, p, q) = bap + 1 2 σ2a2q. It then follows that
+Z
+R
+exp
+n 1
+γ H(t, x, µ, a, p, q)
+o
+da = exp
+ 
+− b2p2
+2σ2qγ
+ Z
+R
+exp
+ 1
+2γ qσ2(a + bp qσ2 )2  da
+= exp
+ 
+− b2p2
+2γσ2q
+r
+− 2πγ qσ2 .
+As J ∗(t, µ) satisfies (2.10), we have J ∗(T, µ) = −λVar(µ) + ¯µ and the exploratory HJB equation
+is given by
+∂J ∗
+∂t (t, µ) + γ
+Z
+R
+log
+Z
+R
+exp
+n ba
+γ ∂µJ ∗(t, µ)(x) + σ2a2 2γ ∂x∂µJ ∗(t, µ)(x) o daµ(dx) (6.2)
+= ∂J ∗
+∂t (t, µ) − b2 σ2 Z R
+∂µJ ∗(t, µ)(x)  2
+2∂x∂µJ ∗(t, µ)(x) µ(dx) + γ 2 Z R log 2πγ −σ2∂x∂µJ ∗(t, µ)(x) µ(dx) = 0.
+Denote Var(µ) :=
+R
+R(x − ¯µ)2µ(dx), ¯µ := R R xµ(dx). We conjecture that J ∗(t, µ) satisfies the
+quadratic form
+J ∗(t, µ) = A(t)Var(µ) + C(t)¯µ + D(t). (6.3)
+It then holds that
+∂J ∗
+∂t (t, µ) = ˙A(t)Var(µ) + ˙C(t)¯µ + ˙D(t),
+∂µJ ∗(t, µ)(x) = 2A(t)(x − ¯µ) + C(t), ∂x∂µJ ∗(t, µ)(x) = 2A(t).
+Plugging these into the exploratory HJB equation (6.2), we get that
+h
+˙A(t) − b2
+σ2 A(t)
+i
+Var(µ) + ˙C(t)¯µ +
+h
+˙D(t) − b2
+σ2
+C(t)2
+4A(t) + γ 2 log πγ −σ2A(t) i = 0.
+By the terminal conditions A(T ) = −λ, C(T ) = 1 and D(T ) = 0, we can obtain the explicit
+solution of the ODEs that
+A(t) = −λ exp
+  b2
+σ2 (t − T )
+
+, C(t) = 1,
+24
+
+=== page 25 ===
+D(t) = γb2
+4σ2 (t − T )2 − (t − T ) γ 2 log πγ σ2λ + 1 4λ exp   − b2 σ2 (t − T )  − 1 4λ .
+Then, we can take the essential q-function q∗ e as
+q∗ e (t, x, µ, a) = −λσ2 exp   b2 σ2 (t − T )  a + b σ2 (x − ¯µ) − b 2λσ2 exp(− b2 σ2 (t − T )) 2
+− b2λ σ2 exp( b2 σ2 (t − T ))  (x − ¯µ)2 − Var(µ)  − b2 σ2 (x − ¯µ) − γ 2 log πγ σ2λ + γb2 2σ2 (t − T ).
+It then follows that the optimal policy π∗ is
+π∗(·|t, x, µ) = N  − b σ2   x − ¯µ − 1 2λ exp(− b2 σ2 (t − T ))  , γ 2λσ2 exp(− b2 σ2 (t − T ))  . (6.4)
+When model parameters b, σ and λ are unknown, we can derive the parameterized functions
+J θ and qψ e by
+J θ(t, µ) = − 1 4θ3 exp(θ1(t − T ))Var(µ) + ¯µ + γθ1 4 (t − T )2 + θ2(t − T ) (6.5)
++ θ3 exp(−θ1(t − T )) − θ3,
+qψ e (t, x, µ, a) = − exp(ψ1 + ψ2(t − T )) 2   a + ψ3(x − ¯µ) + ψ4 exp(−ψ2(t − T )) 2 − γ 2 log(2πγ) + γ 2 ψ1
++ ψ2γ 2 (t − T ) − ψ2(x − ¯µ) + ψ5 exp(ψ2(t − T )))   (x − ¯µ)2 − Var(µ)  , (6.6)
+where θ = (θ1, θ2, θ3)⊺ ∈ R3, ψ = (ψ1, . . . , ψ5) ∈ R5. Note that the above parameterizations
+satisfy the constraints in (5.1). It then follows that πψ(·|t, x, µ) = N (−ψ3(x−¯µ)−ψ4 exp(−ψ2(t−
+T ))
+
+, γ exp(−ψ1 − ψ2(t − T ))). Note that ψ5 does not make any contribution to learn πψ and is
+redundant to be learnt by the q-learning algorithm.
+The following simulator will be used in Algorithms 1-2 to generate sample trajectories.
+Simulator Under the policy h ˜ψ, the equation (6.1) becomes
+d ˜Xt = b
+Z
+R
+ah
+˜ψ(a|t, ˜Xt, P ˜Xt )dadt + σ q a2h ˜ψ(a|t, ˜Xt, P ˜Xt )dadWt
+= −b
+
+˜ψ3   ˜Xt − E[ ˜Xt]  + ˜ψ4 exp(− ˜ψ2(t − T )  dt
++ σ
+r
+˜ψ3( ˜Xt − E[ ˜Xt]) + ˜ψ4 exp(− ˜ψ2(t − T ))
+2
++ γ exp(− ˜ψ1 − ˜ψ2(t − T ))dWt.
+First we calculate the mean of ˜Xt that ¯µt = ¯P ˜X hψ t by taking the expectation on both sides of
+the above SDE, which yields that dE[ ˜Xt] = −b ˜ψ4 exp(− ˜ψ2(t − T ))dt. We thus deduce that
+¯µtk+1 ≃ ¯µtk − b ˜ψ4 exp(− ˜ψ2(tk − T ))∆t. (6.7)
+We next compute the variance of ˜Xt: Var(P ˜Xt ) = Var( ˜Xt) by applying Itˆo’s formula to  ˜Xt − E[ ˜Xt] 2 and then taking expectation that
+dVar( ˜Xt) =
+
+(σ2 ˜ψ2 3 − 2b ˜ψ3)Var( ˜Xt) + σ2 ˜ψ2 4 exp(−2 ˜ψ2(t − T )) + γ exp(− ˜ψ1 − ˜ψ2(t − T ))  dt.
+25
+
+=== page 26 ===
+Table 1:
+θ1 θ2 θ3 ψ1 ψ2 ψ3 ψ4
+true value 0.25 -0.358 0.1667 -0.288 0.25 1 -0.333
+learnt by Algorithm 1 0.249 -0.356 0.162 -0.288 0.234 1.012 -0.334
+The Euler approximation of Var( ˜Xt) is given by
+Var( ˜Xtk+1 ) = Var( ˜Xtk ) +
+
+(σ2 ˜ψ2 3 − 2b ˜ψ3)Var( ˜Xtk ) + σ2 ˜ψ2 4 exp(−2 ˜ψ2(tk − T )) (6.8)
++ γσ2 exp(− ˜ψ1 − ˜ψ2(tk − T ))  ∆t.
+Note that the simulator in terms of (E[ ˜X h ˜ψ tk ], Var( ˜X h ˜ψ tk )) is deterministic. The aggregate reward
+is simulated according to ˆrtk = 0 and ˆrtK = E[ ˜XT ] − λVar( ˜XT ).
+We first set the coefficients of the simulator to T = 1, b = 0.25, σ = 0.5, λ = 1.5, β = 0.
+Nest, we set the known model parameters as: γ = 0.5, β = 0, the time step ∆t = 0.05,
+the number of episodes N = 2500, the number of test policies M = 10, the lower bound of
+uniform distribution p(j) = 0, the upper bound of uniform distribution q(j) = 2 j0.25 . We set the
+initialization of ¯µm 0 ∼ N (0, 1) and Varm(µ0) ∼ U ([0, 1]) respectively, and choose the initialization
+of θ = (−0.5, 0.5, 0.5)⊺, ψ = (0.5, −0.5, 1.5, −0.5)⊺. The learning rates (αθ, αψ) are chosen by
+αθ(j) = ( 0.015 j0.22 , 0.01 j0.1 , 0.025 j0.11 ),
+αψ(j) = ( 0.035 j0.09 , 0.11 j0.1 , 0.02 j0.2 , 0.01 j0.15 ).
+Based on the offline q-learning Algorithm 1, we plot in Figure 1 the numerical results on the
+convergence of parameters θ and ψ for the optimal value function and the optimal essential q-
+function qe, and summarize the learnt parameters for the optimal value function and the optimal
+essential q-function qe in Table 1.
+6.2 Mean-Field Optimal Consumption Problem
+We consider the mean-field R&D project process that is governed by the McKean-Vlasov SDE
+dXs = asbE[Xs]ds + σE[Xs]dWs − csds, (as, cs) ∼ π(·|s, Xs, PXs ), Xt = x > 0, (6.9)
+with b > 0 and σ > 0. Here, as is the drift control of the R&D investment and cs > 0 is the
+consumption rate. Let us consider the problem of expected utility on consumption subjecting
+to the quadratic cost of control in the following form that
+J(t, µ; {as}s≥t, {cs}s≥t) = E
+Z T
+t
+e−β(s−t)U (cs)ds −
+Z T
+t
+e−β(s−t)a2 s ds
+
+with the logrithmic utility function U (x) = log x. The exploratory control-consumption perfor-
+mance after the entropy regularizer is defined by
+J(t, µ; π) = E
+Z T
+t
+Z
+R×R+
+
+e−β(s−t)
+
+U (c) − e−β(s−t)a2 − γ log π(a, c|s, X π s , PX πs )  π(a, c|s, X π s , PX πs )dadcds  .
+26
+
+=== page 27 ===
+Figure 1: Convergence of value function and q-function for Algorithm 1. Paths of learnt parameters
+for value function (top left) and paths of learnt parameters for q-function (top right) vs optimal parameters shown
+in the dashed line. The change of the weak martingale loss value over iterations (bottom left) and the change
+of L2- error over iterations (bottom right) along a trajectory (¯µtk , Var(µ)tk )k with ¯µ0 = 0 and Var(µ)0 = 0.5
+controlled by the learnt policy and by the optimal policy.
+The Hamiltonian operator is given by
+H(t, x, µ, a, c, p, q) = (b¯µa − c)p + 1 2 ¯µ2σ2q + log(c) − a2.
+It then follows that
+Z
+R×R+
+exp
+ 1
+γ H(t, x, µ, a, c, p, q)
+
+dadc
+= exp
+ 1
+2γ ¯µ2σ2q  Z R exp  1 γ abp¯µ − 1 γ a2  da Z R+ exp  1 γ log(c) − p γ c  dc
+=√γπ exp  1 2γ ¯µ2σ2q  exp  b2p2 ¯µ2 4γ  Γ(1 + 1/γ) ( p γ )1+1/γ
+With the terminal condition J ∗(T, µ) = 0, we can write the exploratory HJB equation by
+∂J ∗
+∂t (t, µ) − βJ ∗(t, µ) + γ
+Z
+R+
+log
+Z
+R×R+
+exp
+ 1
+γ H(t, x, µ, a, c, ∂µJ ∗(t, µ)(x), ∂x∂µJ ∗(t, µ)(x)  dadcµ(dx)
+= ∂J ∗
+∂t (t, µ) − βJ ∗(t, µ) + 1 2 ¯µ2σ2
+Z
+R+
+∂x∂µJ ∗(t, µ)(x)µ(dx) + 1 4 b2 ¯µ2
+Z
+R+
+(∂µJ ∗(t, µ)(x))2µ(dx)
++ γ 2 log(γπ) + γ log Γ(1 + 1 γ ) − (1 + γ) Z R+ log  ∂µJ ∗(t, µ)(x) γ  µ(dx). (6.10)
+27
+
+=== page 28 ===
+Suppose that J ∗(t, µ) satisfies the following form
+J ∗(t, µ) = B(t) log ¯µ + D(t),
+with the terminal conditions B(T ) = D(T ) = 0. It holds that
+∂J ∗(t, µ)
+∂t = ˙B(t) log ¯µ + ˙D(t), ∂µJ ∗(t, µ)(v) = B(t) 1 ¯µ , ∂v∂µJ ∗(t, µ)(v) = 0.
+Plugging these derivatives back into the exploratory HJB equation, we get that
+
+˙B(t) − βB(t) + 1 + γ
+
+log ¯µ + ˙D(t) − βD(t) + 1 4 b2B2(t) + γ 2 log(γπ) + γ log Γ(1 + 1/γ)
+− (1 + γ) log
+ B(t)
+γ
+
+= 0.
+Together with B(T ) = 0, we first get that B(t) = 1+γ β (1 − e−β(T −t)) and
+˙D(t) − βD(t) + 1 4 b2 (1 + γ)2 β2 (e−2β(T −t) − 2e−β(T −t) + 1) + K − (1 + γ) log(1 − e−β(T −t)) = 0,
+(6.11)
+where the constant K := γ 2 log(γπ) + γ log Γ(1 + 1/γ) − (1 + γ) log  1+γ βγ  .
+We can then obtain the explicit solution D(t) of the ODE (6.11) with D(T ) = 0 as
+D(t) =A1e−2β(T −t) + A2e−β(T −t) + A3(1 − e−β(T −t)) log(1 − e−β(T −t)) + A4te−β(T −t) + A5,
+where
+A1 := − b2(1 + γ)2 4β3 , A2 := (1 + γ)T − b2(1 + γ)2 2β2 T − K β ,
+A3 := − 1 + γ β , A4 := −(1 + γ) + b2(1 + γ)2 2β2 , A5 := b2(1 + γ)2 4β3 + K β .
+As a result, we have the explicit essential q-function q∗ e as
+q∗ e (t, x, µ, a, c) = ∂J ∗(t, µ) ∂t − βJ ∗(t, µ) + H(t, x, µ, a, c, ∂µJ ∗(t, µ)(x), ∂v∂µJ ∗(t, µ)(x))
+= − a2 + 1 + γ β b(1 − e−β(T −t))a − 1 + γ β ¯µ (1 − e−β(T −t))c + log c − (1 + γ) log ¯µ
+− b2(1 + γ)2
+4β2 (e−β(T −t) − 1)2 − K + (1 + γ) log(1 − e−β(T −t)).
+Moreover, the separation form holds that π∗(a, c|t, x, µ) = π∗ 1 (a|t, x, µ)π∗ 2 (c|t, x, µ), where
+π∗ 1 (a|t, x, µ) := N  b(1+γ) 2β (1−e−β(T −t)), γ 2  and π∗ 2 (c|t, x, µ) := Gamma(1+ 1 γ , 1+γ γβ ¯µ (1−e−β(T −t))).
+Therefore, when the model parameters are unknown, we can parameterize the optimal value
+function J, the optimal essential q-function qe and the optimal policy π∗ respectively that
+J θ(t, µ) = 1 + γ β (1 − e−β(T −t)) log ¯µ + θ1e−2β(T −t) + θ2e−β(T −t)
+28
+
+=== page 29 ===
+− 1 + γ β (1 − e−β(T −t)) log(1 − e−β(T −t)) + θ3te−β(T −t) + θ4,
+qψ e (t, x, µ, a, c) = −(1 + γ) log ¯µ + ψ1(1 − e−β(T −t))a − a2 + ψ2(e−β(T −t) − 1)2
+− 1 + γ β ¯µ (1 − e−β(T −t))c + log c − K + (1 + γ) log(1 − e−β(T −t))
+πψ 1 (a|t, x, µ) = N  ψ1 2 (1 − e−β(T −t)), γ 2  , πψ 2 (c|t, x, µ) = Gamma(1 + 1 γ , 1 + γ γβ ¯µ (1 − e−β(T −t))).
+The parameters are θi, i = 1, . . . , 4 and ψj , j = 1, 2. We also require qψ 2 to satisfy (5.1). In this
+case, ψ2 = − ψ2 1 4 .
+The following simulator will be used in Algorithms 1-2 to generate sample trajectories.
+Simulator Under the stochastic policy h ˜ψ = h ˜ψ 1 h ˜ψ 2 , the dynamics (6.9) becomes
+d ˜Xs =bE[ ˜Xs]
+Z
+R
+ah
+˜ψ
+1 (a|s, ˜Xs, P ˜Xs )dads −
+Z
+R+
+ch
+˜ψ
+2 (c|s, ˜Xs, P ˜Xs )dcds + σE[ ˜Xs]dWs
+=
+˜ψ1b
+2 (1 − e−β(T −s))E[ ˜Xs]ds − β 1 − e−β(T −s) E[ ˜Xs]ds + σE[ ˜Xs]dWs.
+By taking the expectation on both sides of the above SDE, we obtain that
+dE[ ˜Xs] = ˜ψ1b 2 (1 − e−β(T −s))E[ ˜Xs]ds − β 1 − e−β(T −s) E[ ˜Xs]ds.
+The Euler approximation of ¯µt = dE[ ˜Xs] is
+log ¯µtk+1 = log ¯µtk +
+ ˜ψ1b
+2 (1 − e−β(T −s)) − β 1 − e−β(T −s)  ∆t. (6.12)
+The simulated reward is then given by
+ˆrtk =
+Z
+R
+Z
+R+
+log ch
+˜ψ
+2 (c|tk, x, P ˜Xtk )dcP ˜Xtk (dx) −
+Z
+R
+Z
+R
+a2h ˜ψ 1 (a|tk, x, P ˜Xtk )daP ˜Xtk (dx)
+=
+Γ′(1 + 1 γ )
+Γ(1 + 1 γ ) − log
+  1 + γ
+γβ (1 − e−β(T −t))  + log ¯µ + ˜ψ2 1 4 (1 − e−β(T −t))2 + γ2 4 .
+We first set coefficients of the simulator to T = 1, b = 0.5, σ = 0.5. We next set the known
+parameters as: γ = 0.25, β = 2, the time step ∆t = 0.1, the number of episodes N = 8000, the
+number of test policies M = 10, the lower bound of uniform distribution p(j) = 0, the upper
+bound of uniform distribution q(j) = 2 j0.6 , the log mean log µm 0 , 1 ≤ m ≤ M that is initialed to
+be 0, and the learning rates (αθ, αψ) are chosen by
+αθ(j) =
+(
+( 0.05 j0.22 , 0.2 j0.15 , 0.2 j0.25 , 0.5), if j ≤ 4500,
+( 0.05 j0.4 , 0.2 j0.15 , 0.2 j0.55 , 0.5 j0.01 ), if 4500 < j ≤ 8000,
+and
+αψ(j) =
+( 0.15
+j0.31 , if j ≤ 4500,
+0.15
+j0.61 , if 4500 < j ≤ 8000.
+29
+
+=== page 30 ===
+Table 2:
+θ1 θ2 θ3 θ4 ψ1
+true value -9.765 ×10−5 1.085 -1.248 0.163 0.0625
+learnt by Algorithm 1 0.0796 1.107 -1.281 0.119 0.0667
+Based on the offline q-learning Algorithm 1, we plot in Figure 2 the numerical results on the
+convergence of parameters θ and ψ for the value function and q-function, and also summarize
+the learnt parameters for the optimal value function and the optimal essential q-function qe in
+Table 2.
+Figure 2: Convergence of value function and q-function for Algorithm 1. Paths of learnt parameters
+for value function (top left) and path of learnt parameters for q-function (top right) vs optimal parameters shown
+in the dashed line. The change of the weak martingale loss value over iterations (bottom left) and the change of
+L2-error over iterations (bottom right) along a trajectory (log(¯µtk ))k with log(¯µ0) = 0 controlled by the learnt
+policy and by the optimal policy.
+7 Conclusion
+This paper aims to lay the theoretical foundation of the continuous time q-learning for mean-
+field control problems, which can be viewed as the bridge between the discrete time Q-learning
+with the integrated Q-function for MFC problems studied in Gu et al. (2023) and the continuous
+time q-learning with the q-function for single agent’s control problems studied in Jia and Zhou
+(2023). In our framework, two different q-functions are introduced for the purpose of learning,
+namely the integrated q-function q that is defined as the first order derivative of the integrated Q-
+function with respect to time and the essential q-function qe that is used for policy improvement
+iterations. Comparing with two counterparts in Gu et al. (2023) and Jia and Zhou (2023),
+we establish the weak martingale characterization of the value function and the integrated q-
+function through test polices in the neighbourhood of the target policy in a similar flavor of
+30
+
+=== page 31 ===
+off-policy learning. To learn the essential q-function from the double integral representation,
+we propose the average-based loss function by searching test policies in the same form of the
+parameterized target policy but with randomized parameters. In two examples, one in the LQ
+control framework and one beyond the LQ control framework, we can illustrate the effectiveness
+of our q-learning algorithm.
+Several interesting future extensions can be considered. Firstly, we may consider the con-
+trolled common noise in the mean-field control problem, where the optimal policy no longer
+admits the explicit form as a Gibbs measure. Instead, we can provide the first order condition of
+the optimal policy using the linear functional derivative with respect to probability measures. It
+is an interesting open problem to investigate the correct form of the continuous time integrated
+q-function and the associated q-learning. Secondly, it will also be appealing to investigate the
+decentralized continuous time q-learning from the representative agent’s perspective and pro-
+vide the correct q-function and policy iteration rules based on observations of the representative
+agent’s individual state dynamics. At last, we are also interested in establishing some theoretical
+convergence results on the policy improvement iterations and continuous time q-learning in the
+mean field model.
+Acknowledgement: We sincerely thank two referees for their constructive comments and
+suggestions. X. Wei is supported by National Natural Science Foundation of China grant under
+no.12201343. X. Yu is supported by the Hong Kong Polytechnic University research grant under
+no. P0045654.
+Declarations
+Competing interests The authors have no competing interests to declare that are relevant to
+the content of this article.
+A Connection between formulations (2.4) and (2.6)
+Lemma A.1 X π s and ˜X π s , as solutions to (2.4) and (2.6) respectively, have the same distribution
+for each s ∈ [t, T ] as they correspond to the same martingale problem.
+Proof. Let C∞ c (Rd) denote the set of infinitely differentiable function φ : Rd → R with compact
+set, and let ∇ϕ and ∇2ϕ denote the gradient and Hessian of φ, respectively. We define the
+infinitesimal generator
+La s φ := b(s, x, µ, a)⊺∇φ(x) + 1 2 Tr   σσ⊺(s, x, µ, a)∇2φ  . (A.1)
+Given (t, µ) ∈ [0, T ] × P2(Rd) and fixed π ∈ Π, a solution to the martingale problem for the
+generator La in (A.1) is a probability measure m such that
+φ(Xs) −
+Z s
+t
+Z
+A
+La uφ(u, Xu, mXu , a)π(a|u, Xu, mXu )dadu, s ≥ t (A.2)
+is a m-martingale for all φ ∈ C∞ c (Rd). The martingale formulation (A.2) was studied in Karoui
+and M´el´eard (1990) and then generalized to MFC theory in Lacker (2017) for the limit theory
+of N -player dynamics to the controlled McKean-Vlasov dynamics.
+31
+
+=== page 32 ===
+Note that when ˜X π s satisfies (2.6), Itˆo’s formula implies that ˜X π satisfies (A.2). Furthermore,
+we can also apply Itˆo’s formula to X π s satisfying (2.4) and take the conditional expectation given
+Fr, t ≤ r ≤ s,
+E[φ(X π s )|Fr] − φ(ξ) = E h Z s
+t
+Laπ u φ(u, X π u , Pπ Xu )du Fr i
+=E
+h Z s
+t
+La uφ(u, X π u , Pπ Xu )π(a|u, Xu, PXu )du Fr i ,
+where in the last equality we have used the fact the action aπ is sampled from π independent
+of W , and hence E[φ(Xu, PXu , au)|Fr] = E[
+R
+A φ(Xu, PXu , a)π(a|u, Xu, PXu )da|Fr] for all φ.
+Therefore, X π s also satisfies (A.2). It follows from the uniqueness of the martingale problem
+that ˜X π s and X π s are the same in law.
+References
+A. Angiuli, J. P. Fouque and M. Lauri`ere. (2022). Unified reinforcement Q-learning for mean field game
+and control problems. Mathematics of Control, Signals, and Systems, 34(2), 217-271.
+A. Angiuli, J.P. Fouque, R. Hu and A.Raydan (2023). Deep reinforcement learning for infinite horizon
+mean field problems in continuous spaces. Preprint, available at arXiv:2309.10953.
+A. Angiuli, J.P. Fouque, M. Lauri`ere and M. Zhang (2023). Convergence of multi-scale reinforcement Q-
+learning algorithms for mean field game and control problems. Preprint, available at arXiv:2312.06659.
+R. Carmona and F. Delarue (2018a): Probabilistic Theory of Mean Field Games with Applications, Vol
+I. Springer.
+R. Carmona and F. Delarue (2018b): Probabilistic Theory of Mean Field Games with Applications, Vol
+II. Springer.
+R. Carmona, J. P. Fouque and L. H. Sun (2015): Mean field games and systemic risk. Communications
+in Mathematical Sciences, 13(4):911-933.
+R. Carmona, M. Lauri`re. and Z. Tan. (2023): Model-free mean-field reinforcement learning: mean-field
+MDP and mean-field Q-learning. Annals of Applied Probability, 33(6B), 5334-5381.
+A. Cosso, F Gozzi, I. Kharroubi, H. Pham and M. Rosestolato (2023): Optimal control of path-dependent
+McKean-Vlasov SDEs in infinite dimension. The Annals of Applied Probability, 33(4):2863-918.
+K. Doya (2020). Reinforcement learning in continuous time and space. Neural Computation,
+12(1):219–245.
+M. Giegrich, C. Reisinger and Y. Zhang (2024): Convergence of policy gradient methods for finite-
+horizon exploratory linear-quadratic control problems. SIAM Journal on Control and Optimization,
+62(2):1060-92.
+H. Gu, X. Guo, X. Wei and R. Xu (2021): Mean-field controls with Q-learning for cooperative MARL:
+convergence and complexity analysis. SIAM Journal on Mathematics of Data Science, 3(4):1168-96.
+H. Gu, X. Guo, X. Wei, R. Xu (2021): Mean-field multi-agent reinforcement learning: A decentralized
+network approach. Forthcoming in Mathematics of Operations Research.
+H. Gu, X. Guo, X. Wei and R. Xu (2023): Dynamic programming principles for mean-field controls with
+learning. Operations Research, 71(4), 1040-1054.
+32
+
+=== page 33 ===
+X. Guo, R. Xu and T. Zariphopoulou (2022): Entropy regularization for mean field games with learning.
+Mathematics of Operations Research, 47(4), 3239-3260.
+X. Guo, A. Hu and Y. Zhang (2023): Reinforcement learning for linear-convex models with jumps via
+stability analysis of feedback controls SIAM Journal on Control and Optimization, 61(2), 755-787.
+N. Frikha, M. Germain, M. Lauri`ere, H. Pham. and X. Song (2023). Actor-Critic learning for mean-field
+control in continuous time. Preprint, available at arXiv:2303.06993.
+Y. Jia and X. Y. Zhou (2022a): Policy gradient and actor-critic learning in continuous time and space:
+Theory and algorithms. Journal of Machine Learning Research. 23, 1-50.
+Y. Jia and X. Y. Zhou (2022b): Policy evaluation and temporal-difference learning in continuous time
+and space: A martingale approach. Journal of Machine Learning Research. 23, 1-55.
+Y. Jia and X. Y. Zhou (2023): q-learning in continuous time. Journal of Machine Learning Research. 24,
+1-61.
+N. E. Karoui and S. M´el´eard (1990): Martingale measures and stochastic calculus. Probability theory and
+related fields. 84(1), 83-101.
+D. Lacker (2017): Limit theory for controlled McKean-Vlasov dynamics. SIAM Journal on Control and
+Optimization, 55(3):1641-1672.
+N. Li, X. Li and Z. Xu (2023): Policy iteration reinforcement learning method for continuous time mean
+field linear-quadratic optimal problem. Preprint, available at arXiv:2305.00424.
+P.-L. Lions (2006): Cours au coll`ege de france: Th´eorie des jeux `a champ moyens. Audio Conference.
+W.U. Mondal, M. Agarwal, V. Aggarwal and S.V. Ukkusuri (2022): On the approximation of cooperative
+heterogeneous multi-agent reinforcement learning (MARL) using mean field control (MFC). Journal
+of Machine Learning Research, 23(129), 1-46.
+W.U. Mondal, V. Aggarwal and S. V. Ukkusuri (2023): Mean-field control based approximation of multi-
+agent reinforcement learning in presence of a non-decomposable shared global state. Preprint, available
+at arXiv:2301.06889.
+B. Pasztor, I. Bogunovic and A. Krause(2021): Efficient model-based multi-agent mean-field reinforce-
+ment learning. Preprint, available at arXiv:2107.04050.
+L. Szpruch, T. Treetanthiploet and Y. Zhang. (2021): Exploration-exploitation trade-off for continuous-
+time episodic reinforcement learning with linear-convex models. To appear in Annals of Applied Prob-
+ability.
+J. Schulman, X. Chen and P. Abbeel (2017): Equivalence between policy gradients and soft Q-learning.
+Preprint arXiv:1704.06440.
+Y. Sun (2006): The exact law of large numbers via Fubini extension and characterization of insurable
+risks. Journal of Economic Theory, 126(1), pp.31-69.
+R. S. Sutton and A. G. Barto (2018): Reinforcement learning: An introduction. MIT press.
+D. Stroock and S. Varadhan (1997): Multidimensional diffusion processes. volume 233 of Grundlehren
+der mathematischen Wissenschaften. Springer–Verlag Berlin Heidelberg.
+H. Wang, T. Zariphopoulou and X. Y. Zhou (2020): Reinforcement learning in continuous time and
+space: A stochastic control approach. Journal of Machine Learning Research, 21(1):8145-8178.
+X. Wei, X. Yu and F. Yuan (2024): Unified continuous-time q-learning for mean-field game and mean-field
+control problems. Preprint, available at arXiv:2407.04521.
+33

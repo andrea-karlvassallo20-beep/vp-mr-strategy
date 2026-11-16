@@ -1,0 +1,1107 @@
+=== page 1 ===
+Forecasting high-frequency ﬁnancial time series:
+an adaptive learning approach with the order book data
+Parley Ruogu Yang∗
+11 Sep 2020
+ABSTRACT
+This paper proposes a forecast-centric adaptive learning model that engages with the past studies
+on the order book and high-frequency data, with applications to hypothesis testing. In line with
+the past literature, we produce brackets of summaries of statistics from the high-frequency bid
+and ask data in the CSI 300 Index Futures market and aim to forecast the one-step-ahead prices.
+Traditional time series issues, e.g. ARIMA order selection, stationarity, together with potential
+ﬁnancial applications are covered in the exploratory data analysis, which pave paths to the adaptive
+learning model. By designing and running the learning model, we found it to perform well compared
+to the top ﬁxed models, and some could improve the forecasting accuracy by being more stable and
+resilient to non-stationarity. Applications to hypothesis testing are shown with a rolling window,
+and further potential applications to ﬁnance and statistics are outlined.
+JEL classiﬁcation: C40, C52, C53, C58.
+MSC2020 classiﬁcation: 62M10, 68T05, 91B84. 91G15.
+Key words: forecasting methods, statistical learning, high-frequency order book.
+ACKNOWLEDGEMENT
+I thank Dr Mihai Cucuringu (Department of Statistics, University of Oxford and The Alan Turing
+Institute) and Dr Alex Shestopaloﬀ (School of Mathematical Sciences, Queen Mary University of
+London and The Alan Turing Institute) for their advice and support during the research. I thank
+CIFCO Guangzhou for providing the high-frequency dataset for which the empirical study can be
+based upon, and I am also grateful to St Anne’s College, University of Oxford for its Graduate
+Student Research Grant, for which the cost of running computing machine is partially funded.
+∗Faculty of Mathematics, University of Cambridge, and Department of Statistics, University of Oxford.
+Contact: ry266@cam.ac.uk
+arXiv:2103.00264v1  [q-fin.ST]  27 Feb 2021
+
+=== page 2 ===
+Contents
+1 Introduction and Literature Review 1
+2 Data 2
+2.1 Data description, data cleaning and computing deployment . . . . . . . . . . . . . . 2
+2.2 Feature generation from the order book . . . . . . . . . . . . . . . . . . . . . . . . . 4
+2.3 Exploratory data analysis . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+3 Methodology and Results 10
+3.1 General setting . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+3.2 The ﬁxed models: the univariate and the multivariate . . . . . . . . . . . . . . . . . 11
+3.3 Results from the ﬁxed models . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+3.4 Adaptive learning model groups . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+3.5 Results from adaptive learning model groups . . . . . . . . . . . . . . . . . . . . . . 20
+3.6 A closer look at adaptive learning results . . . . . . . . . . . . . . . . . . . . . . . . . 24
+4 Application to Hypothesis Testing on models 27
+4.1 Method . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+4.2 Result . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+5 Discussion, Extension, and Conclusion 33
+A Additional statistical notes 35
+A.1 On the ADF test . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 35
+A.2 On MAE and MSE . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 35
+B Additional ﬁgures and tables 36
+
+=== page 3 ===
+1 Introduction and Literature Review
+Time series can be described as a sequence of observations indexed by the time, which, by the nature
+of it, can be separated into the past and the future. The study of predicting the future based on the
+past information is deﬁned as forecasting, which is of great importance to the society — forecasting
+ﬁnancial time series, e.g. the price of an asset, can be inﬂuential to the decisions of both the private
+and the public sectors. As the computerisation of ﬁnancial markets develops, higher frequency of
+the observation on the variables are taken and can be analysed. Consequently, forecasting such a
+high-frequency object becomes increasingly important.
+At a higher level, the statistical approach undertaken for learning the big data and obtaining better
+prediction has evolved in the recent decades, in both the theory (Shalev-Shwartz and Ben-David
+2014) and the applications, e.g. LSTM and deep learning (Hochreiter and Schmidhuber 1997;
+Goodfellow, Bengio, and Courville 2016). Various methods of learning, e.g. clustering, neural
+networks and other synthetic models have been developed and many of which have helped to solve
+socio-economic problems (Aghabozorgi, Shirkhorshidi, and Wah 2015; Chakraborty and Joseph
+2017). The application of statistical learning algorithms to dynamically assess forecasts has also
+shown a contribution to the empirical time series econometrics literature (Yang 2020).
+However, due to the nature that time series dataset is indexed by time, and the fact that many
+structures (mathematically, such a concept is quantiﬁed by functional forms and parameters) change
+over time, one needs to pay particular attention while applying generically-developed learning
+methods to a ﬁnancial time series environment (Sirignano and Cont 2018). Econometricians refer
+suchauniquetimeseriesissueas"time-varyingparameters", whichcouldalsorelatetothestationarity
+of a model — essentially questioning the validity of the boundedness of the variables over time.1
+RecentproposalsondealingwiththesehavebeensuggestedbyAndresandHarvey(2012)andHarvey
+(2013), with some empirical studies being done (Harvey and Sucarrat 2014). Additionally, adapting
+learning methods to improve traditional ARIMA models’ forecast has also been studied empirically
+(Z. Li, Han, and Song 2020). In this paper, we use the classical approach of window-estimation,
+thereby focusing on the contemporary relationship between variables to ensure time-variability. The
+choice of window sizes vary, as shown later in the adaptive learning, diﬀerent sizes could be preferred
+from time to time.
+In terms of generating features (explanatory variables) to help to forecast the price, the order book
+data becomes particularly helpful. In this paper, the order book data consists of the quantities and
+prices for the best bid and ask — meaning the ones at which the asset can be traded immediately
+sold and bought, respectively. Statistics of these can be summarised into order ﬂow imbalance,
+which synthetically involves the prices and quantities on both sides, or order imbalance, which deals
+with solely the quantities on both sides. The earlier has been studied by Cont, Stoikov, and Talreja
+(2010) and Cont, Kukanov, and Stoikov (2014) and the latter by Avellaneda, Reed, and Stoikov
+1 One may refer to Klenke (2013) for a more rigorous deﬁnition on stationarity.
+1
+
+=== page 4 ===
+(2011) and Stoikov (2014).
+While more sophisticated learning models could be used, e.g. deep learning models (Sirignano and
+Cont 2018), we start from a traditional time series modelling and statistical learning perspective and
+subsequently propose learning models that can adapt to the past (thus called adaptive learning).
+Such a model has a better interpretability and numerous potential applications, e.g. hypothesis
+testing. A general reference on the foundation of model selection is from Akaike (1974) and Hastie,
+Tibshirani, and Friedman (2001). Additionally, penalisation plays a key role in the study of time
+series model selection (Cai and Wang 2014; Zbonakova, X. Li, and Härdle 2018), and functional
+penalisations, for instance, the MDL criterion has also shown its empirical usefulness (Rubio et al.
+2007). These motivate the formation of adaptive learning proposed here.
+Standard mathematical concepts and statistical notations are used in this paper. The concept of
+functional sets, as used in Vapnik (2000), is highlighted later in section 3 as will be used frequently.
+Standard time series notations are used throughout, with the main reference on stationarity issues
+being Banerjee et al. (1993) and Harris and Sollis (2003) and other ARIMA modellings being Harvey
+(1993)andFuller(1996). BayesianhypothesistestisadaptedatthelevelofKoop, Poirier, andTobias
+(2007), with standard frequentist test being assumed at the level of Casella and Berger (2008).
+Details of the data cleaning, feature generation, and their exploratory analysis are written in
+section 2. Modelling and learning proposals, together with the results are presented in section 3,
+followed by an application to hypothesis testing in section 4 and the discussions in section 5.
+In terms of the key contribution from this paper, we engage with the existing methods on feature
+generation and traditional ARIMA formation, then propose a forecast-centric learning model, the
+adaptive learning, to approach model selections and post-estimation penalisation. Such a learning
+model helps to conﬁrm the reachability of certain level of accuracy of the forecasting, improves the
+forecasting in volatile and non-stationary markets, and can also be applied into further analogies
+such as on its formation and hypothesis testing.
+2 Data
+2.1 Data description, data cleaning and computing deployment
+2.1.1 Description, time brackets and VWM
+We base the statistical modelling on the intra-day price data of the CSI 300 Index Futures (hereafter
+called "the asset") provided by CIFCO Guangzhou. We focus the time range from 10th November
+2017 to 17th April 2018, and there are 105 trading days in the range.
+In a usual trading day, there are two trading sessions: one in the morning (0930—1130) and the
+other in the afternoon (1300—1500).2 In the dataset, we expect one or two raw entries within each
+2 Further details can be retrieved from the exchange website: http://www.cffex.com.cn/en_new/
+2
+
+=== page 5 ===
+second, while some omissions occur throughout. In each of the raw entry, the best bid and ask data
+together with the latest traded price and volumes are observed. As a decision to summarise the
+data, we divide each of the session into 24 brackets of 5-minute slots and index them by the end
+time, e.g. 0935 refers to the bracket from the ﬁrst second of 0930 to the last second of 0934.3 This is
+supported by the fact that noisiness and emptiness of the data and lack of transactions do exist. If
+summaries were to be made on a minute-level basis, while any brackets larger than 5 minutes would
+be less regarded as a high-frequency time series, as each session only has 2 hours.
+A summary of statistics and a histogram of the number of observations within each bracket are
+available in Table 11 and Figure 18 respectively in the appendix. Table 1 below serves as an
+example of translation between the brackets, thereafter "observations", the time, and in the ﬁnancial
+environment.
+Number of Brackets 12 24 48
+Time 1 hour 2 hours 4 hours
+Financial Remark half trading session 1 trading session 1 trading day
+Table 1: A guide between the number of observations, time, and ﬁnancial meanings.
+Within each bracket, we compute the Volume-Weighted-Mean (VWM) of the asset price. This is
+achieved by obtaining the arithmetic sum of the product of the trading volume and price in each
+of the raw entry, divided by the total volume. Summary of statistics is supplied in Table 11 in the
+appendix, and a line plot of the VWM is supplied in Figure 1 below.
+Figure 1: Plot of the VWM of the CSI 300 Index
+CSI300IndexFutures.html.
+3 In HHMMSS format, that is from 093001 to 093500.
+3
+
+=== page 6 ===
+2.1.2 Computing deployment
+Due to the computing complexity, cloud resources with parallel computing techniques are utilised.
+In particular, we deploy multi-core parallel computing tasks using the machines on Google Colab
+and AWS, which is achieved by centralising the function and distributing the parameters we wish to
+compute over diﬀerent CPU cores, followed by result collections individually. Codes for execution
+and visualisation are written in Python 3.
+2.2 Feature generation from the order book
+As suggested by the literature review, we generate the Order Imbalance (OIB) and the Order Flow
+Imbalance (OFI) for each of the raw entries as follows:
+eOIB s =BQs −AQs BQs + AQs (1a)
+eOFI s =BQs1[BPs ≥BPs−1] −BQs−11[BPs ≤BPs−1]
++ AQs−11[APs ≤APs−1] −AQs1[APs ≥APs−1] (1b)
+where we use s as the index label for the time of the raw entry, BQs,AQs as the best bid and ask
+quantities respectively, and BPs,APs as the best bid and ask prices respectively.
+We provide a general interpretation without going deep into the theory here. For the OIB, when
+the bid quantity is relatively high, the OIB is more positive and vice versa if the ask quantity is
+relatively high. For the OFI, it can be seen as a signed contribution of the order book events to the
+supply or demand of the market of the asset. Say if someone buys passively through the current bid
+price, then es = BQs−BQs−1 represents the size of that order cancellation. If the bid price were to
+change — depending on up or down, es can represent the size of a price-improving order (es = BQs
+if BPs >BPs−1), serving as a quantity for a rise in the demand; or the last order in the queue that
+was removed (es = −BQs−1 if BPs <BPs−1), thus a quantity for a drop in the demand. Likewise
+for the ask side symmetrically, where an increase in AP, for example, signiﬁes a decrease in supply
+of the asset.
+Within each time bracket, we need to ﬁnd representable summaries of statistics to represent the
+behaviour of each of the two features within, technically, {eOIB s ,eOFI s |t− 1 < t(s) ≤ t} where t(s)
+indicates the time bracket that entry s belongs to. Now, the mean within each bracket are the usual
+choice and is consistent with the intuition. In addition, we consider a p-score deﬁned as
+p–scoret := Φ
+(mean({es|t− 1 <t(s) ≤t})
+sd({es|t− 1 <t(s) ≤t})
+)
+(2)
+where Φ(·) is the normal CDF and mean(·) and sd(·) are the mean and standard deviation of the
+sequence. Summary of statistics of all of these feature generated are presented in Table 11, with a
+line plot below in Figure 2. The beneﬁt of having a normal transformation, as seen from the plot or
+summary, is that the value can be restricted into a small range (theoretically [0, 1]), which deals with
+4
+
+=== page 7 ===
+any potential spiky moves of the fraction, while the cost is the decrease of variance associated with
+the increase of stability, which is not a huge trouble as it also brings time series models a beneﬁt of
+stationarity.
+Figure 2: Plot of the four features generated
+2.3 Exploratory data analysis
+2.3.1 Initial prices of the session: exemption and dummies
+Here we draw particular attention for the ﬁrst and last observation of each session. Economically
+speaking, between the two trading sessions there could be large underlying events causing potential
+price movements, while the market is not open. This creates a high potential for the diﬀerence
+between the closing price of the previous session and the opening price of the current session to be
+large. We investigate these diﬀerences below.
+Day Gap Lunch Gap The rest
+count 104 105 4830
+mean 1.92 -0.44 -0.10
+std 25.48 3.76 4.73
+min -134.03 -16.01 -52.51
+max 79.36 6.75 32.49
+Table 2: Summary of statistics for the gaps.
+As shown in Table 2, the day gap, i.e. the diﬀerence between the ﬁrst VWM observation in a
+morning’s session and the last in the previous afternoon’s session, is distributed much wider and
+have extreme values compared to the rest. This can be additionally supported by the histogram in
+Figure 18 in the appendix. While lunch gap, i.e. the gap between the start of the afternoon’s session
+and the end of the morning’s session, is small, to ensure consistency we exclude both of these gaps
+from estimation. This is done by adding dummies when the time lands at these points.
+5
+
+=== page 8 ===
+To additionally ensure the stableness of forecasting models and that it has the ability to learn the
+new environment within each session before making forecasts, we exclude the ﬁrst 6 observations,
+i.e. 30 minutes, of the session from forecasting.
+2.3.2 Rolling ADF tests
+One crucial concern of time series is its stationarity. The approach undertaken to test the null
+hypothesis of unit root against the alternative hypothesis of stationarity, is via an Augmented
+Dickey-Fuller (ADF) test. Though, here we are interested in modelling the temporal relationships
+between variables, for which we are more concerned with the stationarity of the dependent variable,
+VWM of the price, in a short window. Hence we introduce the rolling ADF test, for which we collect
+the p-value, i.e. the probability of rejecting the null conditional on the null being true4, over time.
+Let yt be the VWM of the price at bracket t. Then, given a choice of window size w, we run an
+ADF test on the set {yτ}t−1 τ =t−w for every t, and collect the result as pt(d; w) where d is the level of
+diﬀerence.5 Interpretation of the result can be made by observing pt(d; w) against a critical value,
+which we take as 0.05 as usual.
+Starting from d = 0, if pt(0; w) < 0.05, we conclude {yτ}t−1 τ =t−w is stationary, else we seek for a
+higher order iteratively: until pt(d; w) < 0.05 where we conclude {∆dyτ}t−1 τ =t−w+d is stationary while
+{∆d−1yτ}t−1 τ =t−w+d−1 is not. 6
+We run this for three window sizes (12, 48, 96) and levels of diﬀerence (0,1,2) and draw, in Figure 3,
+the line plot and histograms of the p-values for each of the combination.
+The choppiness of the p-values for small-window sized data (when w = 12) are signiﬁcantly shown,
+while the larger ones seem stable with occasions where pt(1; w) > 0.05, meaning occasionally the
+2nd level diﬀerence would be required for there to be a stationary model.
+These exploratory results help to decide how the time series model should be formed, as detailed in
+section 3.
+4 Which is also the type I error.
+5 Further details on the deployment of the test can be seen in subsection A.1.
+6 ∆ here is the diﬀerence operator, e.g. ∆yt = yt −yt−1 and ∆kyt = ∆k−1(yt −yt−1)∀k≥ 2.
+6
+
+=== page 9 ===
+Figure 3: Results from rolling ADF tests for diﬀerent window sizes: 12 (top two), 48 (centre two),
+and 96 (bottom two).
+7
+
+=== page 10 ===
+2.3.3 The SR statistics: a trading perspective
+A natural extension from a ﬁnancial time series model is its proﬁtability from trading. One good
+model should produce a reasonable return while maintaining suitable risks. This performance can
+be evaluated by the Sharpe Ratio (SR). Here we explain the construction towards such a statistics
+and provide baseline and feature-based results.
+Let Pt be the price of the asset at time t. Then the return for buying it at time t and selling
+it at time t + 1 is Pt+1−Pt Pt . For each trading session after the forecasting exemption, we have 17
+such opportunities, hence, given a theoretically zero-mean time series feature αt for which the sign
+indicates the forecasted direction, we set the proﬁt or loss in the trading session (PLsession s ) as
+PLsession s :=
+ts+17∑
+t=ts+1
+sign(αt)Pt+1 −Pt Pt (3)
+where ts + 1 locates the time index to the start of the session, and accordingly ts + 18 is the last
+observation of the session. For standard reporting on day proﬁts or loss and further SR computation,
+we also produce the proﬁt or loss in the trading day (PLday d ) as
+PLday d := PLsession sd + PLsession sd+1 (4)
+where sd locates the morning session of a trading day d. Now, the annualised SR is deﬁned as
+SR =
+√
+252 mean(PLday d )
+sd(PLday d ) (5)
+wheremean(PLday d ) andsd(PLday d ) standforthemeanandstandarddeviationofPLday d respectively.
+In the baseline situation, we consider a buy-and-hold treatment, hence PLsession s is deﬁned by simply
+buying from the start and selling at the last, thus Pts+18−Pts+1 Pts+1 . Other statistics follows.
+The results of these are plotted in Figure 4, which clearly shows the inability for the features
+themselves to achieve positive returns, while the baseline also performs badly.
+8
+
+=== page 11 ===
+Figure 4: Plot of the cumulative PLday d over time
+Baseline OFI mean OIBmean
+mean (PLday d ) -0.0016 -0.0010 -0.0017
+std (PLday d ) 0.0093 0.0092 0.0063
+min (PLday d ) -0.0394 -0.0397 -0.0184
+max (PLday d ) 0.0210 0.0206 0.0197
+SR -2.71 -1.79 -4.20
+Table 3: Summary of statistics of PLday d and SR
+As a remark when SR is served as a performance metric later, the αt is naturally set as Pt+1|t −Pt
+where Pt+1|t is the forecast of Pt+1 at time t, and Equation 3 can be interpreted as the trading proﬁt
+or loss if one buys whenever the next price is forecasted to raise or sell otherwise.
+9
+
+=== page 12 ===
+3 Methodology and Results
+3.1 General setting
+Let yt be the one-dimensional discrete time series of interest (the dependent variable), and let xt be
+the multi-dimensional discrete time series of features (explanatory variables). We are interested in
+forecasting the one-step-ahead future of the dependent variable conditional on the information up
+to time t, namely yt+1|t.
+In the common practice of time series, one studies the model of the underlying process and then use
+the model to conduct forecasting (e.g. Prado and West (2010)). Here we take a diﬀerent approach:
+we ﬁrst appreciate the conditional forecast as a value from a map that takes the information set (Φt)
+and functional parameters (θt,ht), then build models to learn the appropriate parameters based on
+the previous observations. Mathematically,
+yt+1|t = f(Φt; θt; ht)
+where Φt := {(yt, xt), (yt−1, xt−1),..., (y1, x1)} = {yτ, xτ|τ ∈ [t]}, θt ∈ Θ(ht) is the parameter to be
+speciﬁed in the function, and ht ∈ H speciﬁes the functional form, thus determines the parameter
+space Θ(ht).7 We manually design sensible models to construct H and sensible learning methods on
+θt and ht to do good on reducing forecasting error — we consider the usual MSE and MAE as the
+performance indicators.8 MSE has a better theoretical foundation while MAE is more interpretable.9
+We also consider the SR statistics which serve as an interpretable performance indicator in the
+context of ﬁnancial time series.
+At each of time t, xt is four dimensional: the ﬁrst and second entries are, respectively, the mean of
+OIB and OFI; the third and fourth entries are, respectively, the p-score of OIB and OFI.
+We index each h ∈ H by h(ι,w,p,d,q), which controls an ARIMAX(p,d,q)-type of forecasting
+model with w for window size and ι for the explanatory variables. For a given p,d,q, we consider a
+forecasting formula
+yt+1|t(h) = ct + g1,t(p,d)yt + g2,t(q) ˆεt(h) + g3,t(xt) (6)
+where ct is a constant, g1 and g2 are the appropriate ARIMAX operator functions: g1 is speciﬁed by
+the autoregressive lag p and diﬀerence parameter d, and g2 is speciﬁed by the moving average lag q.
+ˆεt(h) are the residuals from the model h. g3,t(xt) summarises the explanatory variables’ contribution
+to forecasting.
+In the followings, we ﬁrst elaborate each of the speciﬁcations of h with the associated method to
+pin down θt, thus named "ﬁxed models", then discuss adaptive learning models where ht can be
+7 Here we note {f(·; ·; h)|h∈H} is a set of functions, this is the same notation as was used by Vapnik (2000).
+8 See subsection A.2 for exact formulation.
+9 See the theoretical foundation of MSE, for instance, at the Corollary 8.17 of Klenke (2013) where we view
+conditional expectation as projection.
+10
+
+=== page 13 ===
+time-varying by learning from the past. A general computing approach to obtain the result is shown
+in algorithm 1.
+Algorithm 1: Algorithm for obtaining the forecasts with a ﬁxed h (ﬁxed models)
+Input: Data {Φt}t∈T , speciﬁcation of h, desired forecasting index set T, and validation data
+{yt+1}t∈T.
+Output: Forecasts {yt+1|t(h)}t∈T and the performance metric.
+1. For t∈T, repeat:
+(a) Train parameters θt(h) on the windowed dataset Φt \ Φt−w, then obtain forecast
+yt+1|t(h) = E[yt+1|θt(h), Φt,h]
+2. Evaluate the performance metric.
+3.2 The ﬁxed models: the univariate and the multivariate
+3.2.1 Univariate framework
+In univariate models, the strategy to train the parameters θ∗ t ∈ Θ(h) is rather classical: for a given
+h(ι,w,p,d,q) with with ι∈{0,..., 6}, we ﬁt the following model in a w-windowed dataset:
+At time τ ∈{t−w + 1,...,t}:
+Γt(p)∆(d)yτ = µt + Φt(q)ετ+ <βt(ι), xτ−1 > +dumτ ; ετ ∼iidN(0,σ2 t ) (7)
+Γt(p), ∆(d), Φt(q) are the lag operator functions under an ARIMAX (p,d,q) speciﬁcation with
+constant µt, e.g. Γt(p) = (1 −γ1,tL−...−γp,tLp) where L is the lag operator, i.e. Lyt = yt−1. The
+dumτ term dynamically adds the number of required dummies as proposed in subsection 2.3.
+The univariate model groups are speciﬁed by ι ∈ {0,..., 6}. In model group 0, we set β(0) :=
+(0, 0, 0, 0), implyingthatthemodelisruninanARIMA(p,d,q)fashionwithoutexplanatoryvariables.
+In model groups 1 and 2 we put β(1) := (β1, 0, 0, 0), β(2) := (0,β2, 0, 0) meaning that we solely use
+the mean OIB in model group 1 and the mean OFI in model group 2. In model group 3, we utilise
+both the mean OIB and mean OFI, thus β(3) := (β1,β2, 0, 0). Likewise for model groups 4 to 6
+where in 4 and 5 we consider individually each of the p-scores, then in model group 6 we combine
+them.
+We ﬁt the model using a Maximum Likelihood Estimation (MLE) based on the speciﬁed dataset at
+each time t, thus obtain the relevant parameters to implement forecasting in Equation 6.
+In the next paragraph we give an example to clarify the relationship between Equation 6 and
+Equation 7.
+11
+
+=== page 14 ===
+3.2.2 Univariate example
+In this example we take p = d = q = 1,ι = 3. Then Equation 7 becomes
+(1 −γtL)(1 −L)yτ = µt + (1 + φtL)ετ+ <βt(3), xτ−1 > +dumτ ; ετ ∼iidN(0,σ2 t ) (8a)
+andwemayalsowrite<βt(3), xt−1 >= βt,1xt−1,1+βt,2xt−1,2 inscalarform. Withthesespeciﬁcations,
+we can summarise all parameters10 to estimate as θt = (µt,γt,φt,βt,1,βt,2,σ2 t ) ∈ Θ(h) ⊊ R6, and in
+fact, by the standard time series set up we can pin down to the speciﬁed parameter region:
+Θ(h) = {θ∈ R6|θ2 ∈ (−1, 1),θ6 ∈ (0, +∞)}
+Further into forecasting: once we obtained the appropriate θ∗ t ∈ Θ(h), we proceed to Equation 6,
+which becomes
+yt+1|t = µ∗ t + (1 + γ∗ t )yt −γ∗ tyt−1 + φ∗ t ˆεt+ <βt(3)∗, xt > (8b)
+Equivalently, wecanwritect = µ∗ t, g1,t(p,d) = 1+γ∗ t−γ∗ tL, g2,t(q) = φ∗ t andg3,t(xt) =<βt(3)∗, xt >.
+3.2.3 Univariate choices of parameter
+So far we explained the structure and strategy to train θ∗ t ∈ Θ(h). Here we specify the choices of the
+model parameters. For the ARIMAX parameters, we put p,q ∈{0, 1, 2} and d ∈{1, 2}, with the
+choice of window sizes w ∈{12, 24, 48, 96}. We therefore have 72 models for each one of the seven
+univariate model groups, hence 504 models in total.
+The reason for the window choices are from their corresponding ﬁnancial meanings — as one may
+note from the initial data cleaning (Table 1 in particular), 12 observations refer to one trading hour
+while 24 refers to a session. Likewise for 48, 96 which means one and two trading days respectively.
+As a result, p,q may vary but rather restrictively due to the degrees of freedom, especially for
+smaller window sizes, hence the choice. The choice of d can be both motivated from the literature
+and the rolling-ADF observations done previously (Figure 3). While d = 1 may be suﬃcient, in
+many occasions we need d> 1 for stationarity purposes, hence the choices for two potential values
+of d.
+3.2.4 Multivariate framework
+In multivariate model groups, we aim for the same forecasting formula as Equation 6 but implement
+a vector training strategy: for a given h(ι,w,p,d,q) with ι ∈{7,..., 12}, we train θ∗ t ∈ Θ(h) by
+a VARMA(p,q) on a stacked vector St := (∆(d)yt, xt) ∈ R5. We ﬁt the following model in a
+w-windowed dataset:
+10 Apart from the dummies’ term, which are straightforward to estimate.
+12
+
+=== page 15 ===
+At time τ ∈{t−w + 1,...,t}:
+Γt(p)M(ι)Sτ = µt + Φt(q)ετ + dumτ ; ετ ∼iidN(0, Σt) (9)
+Here we ﬁrst note the role of M(ι): it transforms the stacked vector St to another which we
+subsequently perform VARMA on. In particular, M(ι) ∈{0, 1}n×5 where n∈{2, 3} is the number
+of parameters we plan to have. Accordingly, Γt(p) and Φt(q) are the lag operator functions under a
+VARMA (p,q) speciﬁcation with n dimensional variable, and the dumτ term dynamically adds the
+number of required dummies as proposed in subsection 2.3.
+The speciﬁcation on M(ι) serves in the same spirit as was the βt(ι) in Equation 7: it selects the
+relevant entries of xt to interact with yt and eventually contribute to the g3,t part of forecasting.
+For model groups 7 and 8, mean OIB and mean OFI, respectively, are the sole interaction being
+investigated, that is, M(7),M(8) ∈{0, 1}2×5 and M(7)1,1 = M(7)2,2 = 1 with the remaining entries
+being zero, M(8)1,1 = M(8)2,3 = 1 with the rest being zero.
+Similarly, training is done by MLE, and we proceed into an example.
+3.2.5 Multivariate example
+Consider p = q = d = 1,ι = 7. Write ~Sτ := M(7)Sτ = ((1 −L)yτ, xτ,1) ∈ R2. Then Equation 9
+becomes11
+(I2 −γtL)~Sτ = µt + (I2 + φtL)ετ ; ετ ∼iidN(0, Σt) (10a)
+We note here γt,φt, Σt ∈ R2×2 ∼= R4 therefore θt = (µt,γt,φt, Σt) ∈ Θ(h) ⊊ R2 × R2×2×3 ∼= R14
+Upon obtaining the appropriate θ∗ t ∈ Θ(h), forecasting proceeds:
+yt+1|t = µ∗ t,1 + yt + γ∗ t,1,1(yt −yt−1) + γ∗ t,1,2xt,1 + φ∗ t,1,1 ˆεt,1 + φ∗ t,1,2 ˆεt,2 (10b)
+ThisisEquation6withthespeciﬁcationsct = µ∗ t,1,g1,t(p,d) = 1+γ∗ t,1,1(1−L),g2,t(q) =<φ∗ t, (1, 0) >
+and g3,t(xt) = γ∗ t,1,2xt,1.
+3.2.6 Multivariate choices of parameter
+For the VARMA parameters, we put p = 1, q ∈{0, 1},d ∈{1, 2} with w ∈{48, 96}. Hence 48
+models are constructed in total. One may recognise this as a more restricted choice of parameters
+— the choices of w are limited to the larger ones due to the degrees of freedom. Take the previous
+example where the parameters to estimate is equivalent to 14 dimensional, it is not realistic to be
+implemented when window sizes are small. For the same reason, we cap p,q ≤ 1 while if p = 0 we
+get little meaning in the vector models, hence p is ﬁxed at 1 and q may take one of the two values.
+11 Ignoring the dummy variables.
+13
+
+=== page 16 ===
+3.3 Results from the ﬁxed models
+As a summary of the results thus far, we ﬁrst plot the scatter and histograms in Figure 5, then, in
+Table 4, Table 5, and Figure 6, we produce tables and plots for the top-performing models under the
+MSE ranking and the SR. Table 12 in the appendix is also produced to summarise the relationship
+between model groups and explanatory variable(s).
+For a general result, we make scatter plots and histograms for all but the outliers models — those
+which have an MSE greater than 100 are excluded from the plot. As can be observed from Figure 5,
+large-window models, in general, produce lower MSE, potentially beneﬁted from its overall stability,
+while outstanding small-window may also have small MSE with large SR. The linear relationship
+between MSE and SR is weakly negative and with many points far below or above the ﬁtted line.
+This supports the discrepancy as observed later, that some models may only perform well in one of
+the two metrics.
+Model Group (p,d,q) w MSE MAE SR
+0 (0,1,1) 96 20.97 3.34 0.13
+0 (1,1,0) 96 21.03 3.35 0.69
+5 (0,1,1) 96 21.22 3.36 0.99
+Model Group (p,d,q) w MSE MAE SR
+5 (0,1,0) 48 22.30 3.47 5.76
+2 (0,1,0) 48 22.46 3.48 4.81
+5 (0,1,2) 96 27.53 3.82 4.60
+Table 4: Univariate models: top 3 models ranked by MSE (upper) and SR (lower)
+Fortop-performingmodels, asseenfromTable4, dependingonwhichmetricweuse, the"top-performing"
+models could vary — while models without any features (the top 2 of the upper table) perform well
+in MSE or MAE, their SR is rather low; with a slightly worse MSE and MAE models with features,
+here, in particular, the ones with either OFI mean or OFI p-score can obtain high SR, as seen from
+the lower table.
+An interesting observation about window size may also be made — all of the models listed above are
+of size equal or greater than 48, similar out-performance may also be observed from the histograms
+of MSE in Figure 5. This corroborates with the classical statistical concern on stability, as the ones
+with smaller window sizes may have unstable estimations which occasionally induces large errors,
+therefore perform badly in MSE or MAE, but not necessarily in SR.
+14
+
+=== page 17 ===
+Figure 5: Scatter plots and histograms for each of the individual models. SR is on the vertical
+axis and the MSE is on the horizontal axis. The red line is the linear ﬁt between these two. The
+window-size 12 results are plotted in black with the window-size 24 results plotted in green on the
+top panel, and likewise the window-size 48 in black and 96 in green on the bottom panel. Dots
+represent univariate models and crosses represent multivariate models. Black and purple lines in the
+histogram refer to the median and mean respectively.
+15
+
+=== page 18 ===
+We take a particular notice on one 12-window-sized model with (p,d,q) = (0, 1, 1) from the model
+group 4 — it has the ﬁfth-highest ranking in the SR with MSE, MAE, and SR reported as 34.22,
+4.22, and 4.28 respectively. This from another viewpoint shows the importance of having another
+performance metric — while small-window models obtain drastic forecasts from time to time, their
+overall ability to forecast, or at least the direction (as the SR statistic is constructed in a way that
+it depends on the sign of the forecast rather on the magnitude of the forecast) may still be good.
+In fact, when looking at vector models below, we note this phenomenon to be rather signiﬁcant as
+shown at the top row of the lower table of Table 5. Indeed, smaller window sizes12 cause instability,
+to an extent that 2 outliers of the 3600 13 forecasts contribute largely to the bad-performing MSE
+and MAE.
+Model Group (p,d,q) w MSE MAE SR
+10 (1,1,0) 96 21.03 3.37 1.39
+11 (1,1,0) 96 21.24 3.37 1.78
+8 (1,1,0) 96 21.26 3.38 1.99
+Model Group (p,d,q) w MSE MAE SR
+11 (1,1,1) 48 1603.69 4.42 3.24
+8 (1,1,0) 48 21.95 3.43 3.15
+8 (1,1,1) 48 22.97 3.51 2.73
+Table 5: Multivariate models: the top 3 models ranked by MSE (upper) and SR (lower)
+In terms of the top-performing vector models ranked by MSE, it is close to the univariate results with
+a slightly higher SR. While the top-performing vector models ranked by SR does not outperform the
+onesfromunivariategroups. Thisprovidesevidencethatvectormodelsdonotperformoutstandingly
+well in the context of one-step-ahead forecasting and windowed estimation.
+We also plot a cumulative PL of each of the top models in Figure 6 along with the aforementioned
+one from the 12-window-sized and the baseline. As can be seen, the univariate models can perform
+better than the vector models, while the large-sized univariate model, i.e. the one with the lowest
+MSE, has a modest level of cumulative PL throughout. This could be explained by its ability to
+produce low errors, beneﬁted from its stability from larger degrees of freedom, but not able to catch
+the time-varying change of the underlying parameters, hence the ability to forecast the sign and
+make trading proﬁts is rather low.
+12 Here we note that w = 48 is relatively small in the context of vector models, due to the dimension of parameters
+it needs to estimate. One may observe from Figure 5 that indeed the distribution of vector models for w = 48 is much
+wider compared to the same windowed univariate models, and several extreme points exist.
+13 As checked in details of their distribution.
+16
+
+=== page 19 ===
+Figure 6: Plot of the cumulative PLday d over time (Note: the legend is coded by model group number,
+window size, and p,d,q values.)
+3.4 Adaptive learning model groups
+3.4.1 Principle of learning
+In the above twelve model groups, we ﬁx ht constant throughout. Here, we consider an adaptive
+method to learn ht. We also notice that, in the h(11, 48, 1, 1, 1) for example, some drastic outliers
+could worsen the performance, especially if evaluated by the MSE. Hence we ﬁrst shrink the
+functional set H by assigning certain error and outlier handling ability as below:
+˜Ht =
+{
+h∈H
+⏐⏐⏐⏐yt+1|t(h) is positive and ⏐⏐⏐⏐ yt+1|t(h) yt − 1 ⏐⏐⏐⏐< 0.05 } (11)
+This makes sure the set of functions we are selecting from are not outliers. Now, let time index
+W be large enough so we can run all the previous model groups and obtain a suitable amount of
+forecasting error ϵτ +1(h) from each of the model h, which is deﬁned as follows. At any t ≥ W,
+we have access to models in the group 0 to 12, which produce forecasts yτ +1|τ(h) for each of the
+h ∈ H, t− 1 ≥ τ ≥ W . We write ϵτ +1(h) := yτ +1 −yτ +1|τ(h) and the adaptive learning aims to
+learn from the errors available up to time t, together with other information available, to make a
+decision on the model to employ at time t.
+A general strategy to train ht at time t is to construct a loss function 𝓁(Φt,H) = 𝓁(Φt,h,H\{h})
+and solve the appropriate minimisation problem:
+h∗ t = arg min
+h∈ ˜Ht
+𝓁(Φt,h,H\{h}) (12)
+The associated computing procedure is supplied in algorithm 2.
+17
+
+=== page 20 ===
+Algorithm 2: Algorithm for obtaining the forecasts with a time-varying ht
+Input: Data {Φt}t∈T, functional sets H, speciﬁcation of the loss function 𝓁(·,·), desired
+forecasting index set T, and validation data {yt+1}t∈T.
+Output: Forecasts {yt+1|t(h∗ t )}t∈T with the associated functions {h∗ t}t∈T, and the performance
+metric.
+1. For t∈T, repeat:
+(a) Produce ˜Ht according to Equation 11.
+(b) Evaluate and execute the minimisation given by Equation 12. Then get h∗ t with
+yt+1|t(h∗ t ) = E[yt+1|θt(h∗ t ), Φt,h∗ t ].
+2. Evaluate the performance metric.
+In the followings, we consider two groups of speciﬁcations of the loss function, with the ﬁrst one
+motivated from Yang (2020).
+3.4.2 Adaptive learning on errors
+In model group 13, we construct 14
+𝓁(Φt,h,H\{h}) = Lglobal({ϵτ}t τ =W ) = ∑
+t−47≤τ≤t
+λt−τ Llocal(|ϵτ|) (13)
+The above line deﬁnes the loss by solely focusing on the errors in the past 48 observations, which
+are diminishing geometrically at a rate λ ∈ (0, 1]. The local loss function Llocal(·) is speciﬁed as a
+continuously diﬀerentiable combination between zero, square loss, and absolute loss, with constants
+C1,C2 where 0 ≤C1 ≤C2 ≤∞: 15
+Llocal(x; C1,C2) =
+
+
+
+(C2 −C1)x + C2 1 −C2 2 2 if x>C2
+(x−C1)2
+2 if C2 ≥x>C1
+0 otherwise
+(14)
+Beneﬁtedfromthehigh-frequencydataset, diﬀerentlyfromYang(2020), wehereplaceatime-varying
+constants at which the losses switch — we trial diﬀerent quantiles of {|εt(h)|
+⏐⏐h ∈ H} to set
+C1(t),C2(t). E.g. C1(t) can be the 25% quantile of {|εt(h)|
+⏐⏐h ∈ H} and C2(t) can be 50% or
+75% quantile of {|εt(h)|
+⏐⏐h ∈ H}. Note here that the quantiles have the beneﬁt of outliers-resilient
+as it relates to the distribution rather than expectation of the set. The time-varying parameter
+here assists the local penalisation to be done in a time-varying manner and thus the minimisation
+process.
+As to the selection of parameters, we consider λ ∈{0.8, 0.85, 0.9, 0.95, 0.99, 1} and 25%, 50%, 75%
+14 Now and thereafter, we abbreviate ϵτ(h) as ϵτ where h is clearly emphasised on the left hand side of the equation.
+15 Note also that if C1 = 0 and C2 = ∞, the local loss becomes proportional to the MSE contribution, similar to
+the ones proposed by Yang (2020).
+18
+
+=== page 21 ===
+quantiles for the C1,C2. Some interpretation on the λ can be made based on its logarithmetic and
+exponential properties — the half period of 0.95 for example, is around 13.5 thus having λ = 0.95
+essentially reviews the past 14 observations with little role being played by the further ones, while
+λ = 0.8 is more extreme, as its half period is only about 3.1. A general table is supplied in Table 13.
+3.4.3 Adaptive learning with functional awards and penalties
+One concern about purely focusing on the forecasting error is the potential to misﬁt as the functional
+form plays a role in the degree of freedom and may also be of importance when selecting which model
+to adapt as the most appropriate one for h∗ t. The classical approach that adds penalisation on the
+model selection criteria is from Akaike (1974), and later the Lasso methods, in particular, the fused
+lasso (Tibshirani et al. 2005). Though we are diﬀerent from the previous methods as we focus on
+the out-of-sample loss rather than the in-sample likelihood.
+Here, in model group 14, we take a more time-varying approach: we consider a penalisation or
+reward, depending on the particular design, between the function of concern h and the previous
+choice h∗ t−1, write as D(h,h∗ t−1).
+𝓁(Φt,h,H\{h}) = Lglobal({ϵτ}t τ =W ) + D(h,h∗ t−1) (15)
+In the followings, we ﬁrst consider, in type-1, purely penalising the diﬀerence in each of the variables
+that form h, i.e. the time series parameters and the window sizes.
+In type-1 we design
+D(h,h∗ t−1; C3,C4) = C3|p + d + q−p∗ t−1 −d∗ t−1 −q∗ t−1| + C4|w−w∗ t−1| (16a)
+where C3,C4 > 0.
+As speciﬁed, we pool the p,d,q together and, due to the size diﬀerence, treat w separately. The fact
+we pool p,d,q together can be appreciated as the change in the complexity, in particular, number
+of lags and diﬀerences in total. Another potential way is to separate them and penalise the change
+one by one.16 What is also interesting to consider is the fact that we may still have a preference
+to large-window sized models due to their stability, hence an additional reward can be made to
+encourage switches into smaller window-sized models and diﬀerenced orders, hence the followings
+for type-2 and 3:
+D(h,h∗ t−1; C3,C4,C5) = C3|p + q−p∗ t−1 −q∗ t−1| + C4(48 −w) + C5|d−d∗ t−1| (16b)
+16 For instance, C3,1|p−p∗ t−1| + C3,2|d−d∗ t−1| + C3,3|q−q∗ t−1|.
+19
+
+=== page 22 ===
+where C3 > 0, C4,C5 < 0 in type 2. Now, in type-3 we put
+D(h,h∗ t−1; C3,C4,C5) = C3|p + q−p∗ t−1 −q∗ t−1|1[d = d∗] + C4(48 −w) + C5|d−d∗ t−1| (16c)
+where C3 > 0, C4,C5 < 0.
+Both of the speciﬁcations have a strictly increasing reward for smaller window sizes as small-window
+sized ones get a more negative value on the C4(48 −w) term, which proceed into a beneﬁcial status
+at the minimisation stage. The diﬀerence between the type-2 and 3 is that in type-3, penalisation
+on the p,q terms are only applied if d stayed the same — this paves path for potential switches in
+d, which may be desirable when instability breaks out and later ﬁnished.
+We inherit the parametrisation in model group 13, while for the C3,C4,C5, we consider the following
+time-varying parametrisation. Let
+l∗ t := min
+h∈ ˜Ht
+Lglobal({ϵτ}t τ =W )
+and we set C3(t),C4(t),C5(t) ∝l∗ t. In particular, for type-1, we put
+C3(t) = 1 10l∗ t, C4 = 1 168l∗ t
+and for type-2 and 3,
+C3(t) = 1 8l∗ t, C4(t) = − 1 72l∗ t, C5(t) = −1 2l∗ t
+The rationale behind these particular fractions is that we aim to control the maximum loss being
+added from each term of the D(h,h∗ t−1) to be half of l∗ t, and likewise for the magnitude of the rewards
+in the type-2 and 3.
+3.5 Results from adaptive learning model groups
+Model Group type λ (C1,C2) MSE MAE SR
+14 1 1 (50%,75%) 22.05 3.42 1.54
+13 1 (50%,75%) 22.14 3.42 2.07
+14 2 0.99 (50%,75%) 22.32 3.45 1.15
+14 3 0.99 (50%,75%) 22.38 3.45 1.37
+Model Group type λ (C1,C2) MSE MAE SR
+14 1 0.85 (50%,75%) 22.52 3.47 2.90
+14 3 0.8 (25%,50%) 33.14 4.15 2.63
+13 0.85 (50%,75%) 22.51 3.47 2.56
+14 2 0.8 (25%,50%) 28.33 3.85 2.41
+Table 6: Top models from each model group-type, ranked by MSE (upper) and SR (lower)
+20
+
+=== page 23 ===
+For each of the type in model group 14 and throughout the model group 13, we select the best model
+ranked in either MSE or SR and list them above in Table 6. Compared against Table 4, we see the
+adaptively learnt models may achieve similar, though no better results, compared to the ones in the
+ﬁxed models, both when measured in MSE and SR. This motivates the later subsection where we
+look closer into some of the periods that adaptively learnt models outperform the best one from the
+ﬁxed model groups.
+Figure 7: Plot of the cumulative PLday d over time
+To have a more ﬁnancial comparison, we observe in Figure 7, the cumulative PL plotted ﬁrst within
+themselves and then with the top ones from the ﬁxed model groups. Compared to the best model
+measured in MSE, which performs poorly in the SR, the adaptively learnt models obtain higher
+cumulative returns while not high enough compared to the ones which are the best individual
+models measured in SR.
+21
+
+=== page 24 ===
+Model code 100× mean 100× std 100× min 100× max SR
+M5_48_PDQ010 0.28 0.74 -1.02 3.72 5.96
+M4_12_PDQ011 0.20 0.71 -1.55 2.34 4.38
+M11_48_PDQ111 0.15 0.73 -1.17 2.63 3.29
+MG14_50+75_type-1_085 0.13 0.71 -1.10 2.70 2.89
+MG14_25+50_type-3_08 0.12 0.71 -1.42 2.30 2.61
+MG13_50+75_1 0.09 0.73 -1.47 2.48 2.05
+MG14_50+75_type-1_1 0.07 0.73 -1.16 2.48 1.53
+M10_96_PDQ110 0.07 0.79 -1.26 3.42 1.46
+M0_96_PDQ011 0.03 0.70 -1.74 1.95 0.58
+Baseline -0.17 0.95 -3.94 2.10 -2.76
+Note about the number of days: after some data for the initialisation of models, we have 99
+trading days starting from 20th November 2017, which explains the small diﬀerence between the
+baseline data here and the ones in Table 3.
+Note about the model code: for ﬁxed models, they are coded by model group, window size, and
+p,d,q parameters; for the learning models, they are coded by model group, C1,C2 in percentage,
+type number (if applies), and λ.
+Table 7: Summary of statistics of PLday d (columns 1 to 4, within which all entries are multiplied by
+100 for cleanness) and SR (column 5)
+Another ﬁnancial comparison can be made from Table 7, that the standard deviation, min, and max
+of the daily return from the adaptive learning models are all in line with the top-performing ﬁxed
+models, which intuitively explains the stability of these adaptively learnt models.
+The beneﬁt of adaptive learning models is one could look into the formation of each of the models.
+As shown in Figure 8, we may see the preferences of the model parameters through the period —
+univariate models encapsulate a majority, d = 2 is occasionally visited, and there is a good blend of
+usage of explanatory variables and the other time series parameters.
+The choices of window sizes, depending on the design, may vary largely — in particular, M4 has a
+strong preference towards the smaller ones and, in terms of explanatory variables, it prefers to use
+none of them.
+Inthefollowingsubsection, wetakeacloserlookatperiodswhenadaptivelearningresultsoutperform
+the ﬁxed models.
+22
+
+=== page 25 ===
+Model number assigned for Figure 8 Model Group type λ (C1,C2)
+M1 13 1 (50%,75%)
+M2 14 1 1 (50%,75%)
+M3 14 1 0.85 (50%,75%)
+M4 14 3 0.8 (25%,50%)
+Table 8: Model number assigned for Figure 8
+Figure 8: Plots of the formation of the four model groups: variables (top left), window sizes (top
+right), p,d,q parameters and their training method (bottom)
+23
+
+=== page 26 ===
+3.6 A closer look at adaptive learning results
+We ﬁrst observe a period when prices are volatile and most of the models obtain large forecasting
+errors. We zoom into a ﬁve trading day period starting from 8th February 2018. As plotted in the
+top of Figure 9, there is a large drop and subsequently big ﬂuctuations around. We label M0 as the
+best-performing individual model in terms of MSE, which is the sized 96, (p,d,q) = (0, 1, 1) model
+with no explanatory variable, and as we see from the second plot of Figure 9, the forecasting errors
+can be spiky and occasionally large, contributing a large MAE and MSE on average, as tabled in
+Table 9.
+We observe from two outstanding models from the model group 14 — labelled as M1, the type-3 with
+λ = 1 and (C1,C2) = (50%, 75%) andlabelledasM2, thetype-2withλ = 0.9, (C1,C2) = (50%, 75%)
+while C5(t) adjusted to −l∗ t.
+Model and error M0 (|ϵt|) M1 (|ϵt|) M2 (|ϵt|) M0 (ϵ2 t) M1(ϵ2 t) M2(ϵ2 t)
+mean 6.30 6.14 6.08 83.99 83.44 81.94
+min 0.05 0.03 0.03 0.00 0.00 0.00
+max 51.81 51.52 51.52 2684.70 2654.32 2654.32
+Table 9: Summary of the absolute forecasting errors (columns 1 to 3) and squared forecasting errors
+(columns 4 to 6)
+As observed from Table 9, the MAE and MSE in this period are generally high, while the adaptively
+learnt models have reduced them to a certain extent. The second plot of Figure 9 plots the absolute
+forecasting error of M0 and M2, and the third row of plots of Figure 9 show the level of improvement
+(if positive) or worsening (if negative) from M0 to M1 on the left, and from M0 to M2 on the right.
+The selection of window sizes may also explain the source of improvement — shorter ones are selected
+during a few periods when the prices are relatively unstable, and the relevant p,q parameters are
+changed throughout. These details can be further seen from the bottom of Figure 9. Among the M1
+and M2, some diﬀerence can also be observed in the variable selection and training method, though
+most of the time no explanatory variable and univariate training methods are preferred.
+The trend that adaptive learning models seem to perform better in the non-stationary part of the
+data motivates another review on the performance of adaptive learning models. Here we consider
+the non-stationary data as observed in the subsection 2.3 — there were time when, at the level of
+window-sized 12 that we reject the null hypothesis of the ADF tests at 5% signiﬁcance level for both
+0-diﬀ, 1-diﬀ, and 2-diﬀ, meaning that yt is not stationary even after twice the diﬀerence. There are
+152 observations of this nature that intersect with the forecasting set, and below in Table 10, we
+provide a summary of statistics for the forecasting errors.
+24
+
+=== page 27 ===
+Figure 9: The ﬁrst plot: the price during the 5 trading-day period; the second plot: plot of absolute
+forecasting errors of M0 and M2; the bottom four plots: error comparison and model formations of
+M1 (left) and M2 (right).
+
+=== page 28 ===
+Model and error M0 (|ϵt|) M1 (|ϵt|) M0 (ϵ2 t) M1 (ϵ2 t)
+mean 3.30 3.39 26.28 24.73
+min 0.01 0.05 0.00 0.00
+max 24.69 22.86 609.76 522.41
+Table 10: Summary of the absolute forecasting errors (columns 1 to 2) and squared forecasting errors
+(columns 3 to 4)
+In Table 10, we see the best-ﬁxed model (M0) to have moderate MAE and MSE while the adaptively
+learnt one (M1) has slightly smaller MSE beneﬁted from its avoidance from the large errors. The
+histogram in Figure 10 also supports such evidence — errors from M1 have less distribution on the
+right tail.
+Figure 10: Histograms of the absolute errors (left) and the squared errors in log10 scale (right)
+The formation of the adaptively learnt model presented here can be found below in Figure 11: it
+has a high proportion of model group 0, meaning there are a vast majority of models being purely
+ARIMA without explanatory variables, while the window sizes tend to be the smaller ones and
+avoids the 96. The diﬀerence order is usually taken at 1, similar to the others observed previously.
+Figure 11: Histograms of the window sizes (left), diﬀerence order (centre), and model group (right)
+26
+
+=== page 29 ===
+4 Application to Hypothesis Testing on models
+Having had adaptively learnt models combining diﬀerent explanatory variables, training methods,
+ARIMA parameters, and window sizes, one may want to test statistically the signiﬁcance of certain
+functional classes within the selection over certain periods. Here we provide two approaches: the
+simple Bayesian framework where we set the prior to be proportional to the inverse of the size of
+the hypothesis class and updates the likelihood by simple counting, and a frequentist framework
+whereby binomial distribution can be assumed and thus p-values can be produced.
+4.1 Method
+4.1.1 A simple Bayesian hypothesis testing
+For a subset of functions H 1 ⊊ H 0 ⊆H, consider the following hypothesis:
+H0 :Functions in the set H 1 have the same or lower chance of being selected than the ones in H 0 \H 1.
+HA :Functions in the set H 1 have a higher chance of being selected than the ones in H 0 \H 1.
+Note that here, "being selected" refers to that a particular function in the functional set H 0 or H 1
+being selected by the adaptive learning model.
+We consider a Bayesian framework to test the above hypothesis: write π(H0) and π(HA) as the prior
+for H0 and HA, respectively, and π(yt|H0), π(yt|HA) as the (conditional) likelihood for a testing
+observation value yt based on the hypothesis H0 and HA respectively.
+We deﬁne the following probabilities:
+π(H0) := |H 1| |H 0| (17)
+π(yt|H0) := 1[Function in H 0 \H 1 is selected] = 1[h∗ t ∈H 0 \H 1] (18)
+π(yt|HA) := 1[Function in H 1 is selected] = 1[h∗ t ∈H 1] (19)
+And as a result, given a period of data y := {yt}T1 t=T0 , the Bayes factor for HA is computed as:
+BA0(y) := π(HA|y) π(H0|y) (20a)
+= π(HA) ×π(y|HA) π(H0) ×π(y|H0) (20b)
+= |H 0 \H 1| |H 1| × ∑T1 t=T0 1[h∗ t ∈H 1] ∑T1
+t=T0 1[h∗ t ∈H 0 \H 1] (20c)
+We note from this setting, that if the true underlying process was H0, the Bayes factor tends
+to 1 or lower, and otherwise higher than 1. In case the fraction in Equation 20c contains 0 in
+27
+
+=== page 30 ===
+the denominator, we assign the Bayes factor with inﬁnity and assign a high value in the plot for
+illustration.
+4.1.2 A frequentist hypothesis testing
+Another way to test the hypothesis, or a more common frequentist approach, can be done by simply
+assuming, in case of H0, a model in H 1 is chosen with probability |H 1| |H 0| as we assume no better
+performance under the null.
+Suppose we have a period of test data y := {yt}T1 t=T0 , then write n1 as the number of t such that
+h∗ t ∈ H 1.17 Under null hypothesis, we have n1 ∼ Bin(T1 −T0 + 1,|H 1| |H 0|) as there are T1 −T0 + 1
+number of observations each with a likelihood of at most |H 1| |H 0| to be chosen.18 We can therefore set
+the relevant critical value for the hypothesis testing, as well as the p-value. As usual, a close-to-zero
+(usually set as less than 0.05) p-value indicates a rejection of null in favour of the alternative HA.
+4.2 Result
+We use the above approach to test seven hypotheses, each over a period of ﬁve trading days,
+within which there are 180 forecasting samples.19 We use three adaptive learning models to test
+simultaneously: we label M1 as the one with λ = 1 from model group 13, M2 as the one with λ = 0.8
+from model group 13, and M3 as the one with λ = 1 from model group 14 type 1. All of them are
+with (C1,C2) = (50%, 75%). The choices of M1 and M3 are because of their good performance
+in MSE (see Table 6) while M2 is picked as a representative of low λ — which corresponds to
+a shorter-memory selection, aiding statistical conclusion here, though perform relatively badly in
+MSE ranking. Also, it is worth taking note that M3 may be slightly questionable while performing
+the frequentist test, as the set-ups from the model group 14 could lead to highly-correlated model
+choices due to the term D(h,h∗ t−1), which contradicts with the underlying assumption of binomial
+distribution in the null hypothesis.
+The ﬁrst hypothesis testing is to test the window size: whether it is 96 or not. Hence the functional
+set is H 1 = {h(ι,w,p,d,q)|w = 96} and H 0 = H. As shown in Figure 12, we see this to be signiﬁcant
+on many days for both tests — a high Bayes factor can be observed in all models, for all periods
+but one. Likewise, a close to, if not 0, p-value can also be observed for a almost all periods. Such a
+frequent rejection of the null hypothesis means that the adaptive learning models still have a high
+reliance on the large-windowed models.
+17 That is, n1 = ∑T1 t=T0 1[h∗ t ∈H 1]. 18 More precisely, here we follow the traditional step to obtain a Binomial distribution from T1 −T0 + 1 number of
+iid Bernoulli with probability being the set as the proportion.
+19 When required later, a higher-frequency can also be made, for which the results are more spiky due to the small
+sample.
+28
+
+=== page 31 ===
+Figure 12: Bayesian testing result (left) and frequentist testing result (right)
+We now consider a hypothesis about whether the model group is zero. Hence the functional set is
+H 1 = {h(ι,w,p,d,q)|ι = 0} and H 0 = H. We see from Figure 13 that the signiﬁcance is high in
+most periods. Hence we could conclude these adaptive learning models to have a high occupation
+of model group zero, therefore the use of explanatory variable could be low, in many periods.
+Figure 13: Bayesian testing result (left) and frequentist testing result (right)
+We question about the training method — whether the parameters are trained in univariate or vector
+models. Here we have H 1 = {h(ι,w,p,d,q)|ι≤ 6} and H 0 = H. From the previous examples, the
+univariate choice may be intuitively true, as multivariate models are rarely used, and from the testing
+results, such an intuition is conﬁrmed. Indeed, as shown in Figure 14, in both Bayesian and the
+frequentist, signiﬁcance can be shown in all periods, and the magnitude of the Bayes factor is also
+29
+
+=== page 32 ===
+gigantic.
+Figure 14: Bayesian testing result (left) and frequentist testing result (right)
+Now, we wonder if the signiﬁcance of small-window model exists, compared to the already-tested
+signiﬁcantlarge-windowmodels(fromFigure12). Inthiscase, wehaveH 1 = {h(ι,w,p,d,q)|w = 12}
+and H 0 = {h(ι,w,p,d,q)|w ∈{12, 96}}. The p-values are almost all 1, and the Bayes factors, as
+shown in the left panel of Figure 15, is rather low, meaning the small-windows model are not picked
+signiﬁcantly compared to the large one. We also attempt to "zoom-in" by using a 1-day period, for
+which the Bayes factors are plotted in the right panel. The p-values are mostly 1 or close-to 1, while
+the Bayes factors, as can be seen, are somewhat spiky — this can be due to the way the Bayes factor
+is constructed, but it suggests some instability as the value is spiky, for most models. This means,
+despite the small-window models are non-signiﬁcant at a larger scale, they may occasionally play a
+part, as suggested by the Bayes factors on a 1-day period.
+Likewise, in the followings we test the signiﬁcance of certain choices of variables compared to a wider
+set, in particular, we ﬁrst consider the sole choice of OFI mean compared against its combination
+with OIB mean or solely the OIB mean, which leads to H 1 = {h(ι,w,p,d,q)|ι ∈ {2, 8}} and
+H 0 = {h(ι,w,p,d,q)|ι∈{1, 2, 3, 7, 8, 9}}. Test results, as shown in Figure 16, suggest no dominance
+by the OFI mean for all but one period from a frequentist viewpoint, while the Bayes factor is
+occasionally large, meaning signiﬁcance may exist for some periods. This is due to the fact that the
+set by null hypothesis (H 0) may not occupy a large amount of functions being chosen,20 contributing
+to a spiky and potentially large Bayes factor by occasion.
+20 As shown in Figure 13, the model without explanatory variable is of high signiﬁcance.
+30
+
+=== page 33 ===
+Figure 15: Bayesian testing result in a 5-day period (left) and in an 1-day period (right)
+Note on the right panel: inﬁnity is plotted as 3 here.
+Figure 16: Bayesian testing result (left) and frequentist testing result (right)
+Note on the left panel: inﬁnity is plotted as 220 here, with a logarithm scale (log10) being used.
+We now run the same test for OFI p-score compared against its combination with OFI p-score
+or solely the OIB p-score. Hence H 1 = {h(ι,w,p,d,q)|ι ∈{5, 11}} and H 0 = {h(ι,w,p,d,q)|ι ∈
+{4, 5, 6, 10, 11, 12}}. As shown in Figure 19 in the appendix, the signiﬁcance is not huge although
+the Bayes factor may be occasionally high — this, as explained in the previous part, can be purely
+due to the lack of samples occupied by H 0.
+Finally, we concern about the choice of the diﬀerence order, thus H 1 = {h(ι,w,p,d,q)|d = 2} and
+H 0 = H. As shown in Figure 17, while testing this in a 5-day period, one may easily conclude the
+31
+
+=== page 34 ===
+insigniﬁcance of H 1 due to its consistently low Bayes factor and likewise the constantly almost-unity
+in the p-value; once zoomed into the 1-day period, the result becomes spiky in both the Bayesian
+and the frequentist tests, implying that the signiﬁcance of 2nd diﬀerence being chosen is occasionally
+high.
+Figure 17: Bayesian testing result (left) and frequentist testing result (right) with 5-day period (up)
+and 1-day period (down)
+Note on the lower left panel: inﬁnity is plotted as 18 here.
+As a conclusion from these testing, we see a signiﬁcant component of large-window sized models and
+models without explanatory variables being selected by the top learning models, while instability
+and spikiness occur, in every aspect of the model choices, especially as we zoom into a 1-day period.
+This is because occasionally, statistical signiﬁcance can be found for 2nd diﬀerence, small-window
+models, as well as groups of some explanatory variables.
+32
+
+=== page 35 ===
+5 Discussion, Extension, and Conclusion
+As a general discussion about the adaptive learning, we reﬂect ﬁrst from the statistical intuition:
+what is ht and why do we care to learn ht? The ever-changing structure, as being frequently studied,
+requires certain awareness by the model on the time-variability, not only on the parameters, but
+also the functional forms. Classical treatments on time series, e.g. Harvey (1989) and Harvey (1993)
+oﬀer the chance of parameter variation, while modern deep learning models, e.g. Sirignano and Cont
+(2018) can help on learning the ht.
+However, some issue may occur in the learning on ht — interpretability is one, and ultimately the
+design could be questionable. Here we design a model-adapting and time-adaptive learning regime,
+to oﬀer higher interpretability and allow testing to be undertaken. Statistical conclusions may also
+be drawn from the adaptive learning models, for example, the explanatory variables may not be of
+good use for many occasions, as concluded in the testing.
+The design, particularly Equation 12 and Equation 15, allows H to be potentially inﬁnite. For
+instance, one could set H to contain inﬁnitely many p but set the move to be at most 1 from each
+time, i.e. D(h,h∗ t−1) takes inﬁnity if |p−p∗ t−1|> 1. This allows the model to be theoretically more
+variable and contributes to the ultimate learning on ht. Another more computationally expensive,
+but also important extension is to dynamically learn the "hyper-parameter". Here we have a variety
+of parameters, C1(t),C2(t) for example, being set with constant proportion to certain statistics from
+the past — these constants are which the model could have learnt, though the search of which would
+take high computational power. An interesting extension would be to learn these parameters and
+discuss the improvement on the learning.
+We also note the ﬁnancial applicability of such an adaptive learning model: extra parameters can also
+be introduced to engage with practical application to trading, e.g. the loss function in Equation 12
+could take a speciﬁcation that relates to a rolling-averaged proﬁt and loss, or a more realistic proﬁt
+and loss with trading barriers, e.g. ∑ts+17 t=ts+1 sign(αt)1[αt ∈ R(Φt,H)]Pt+1−Pt Pt where R(Φt,H) is a
+time-varying region for the signal to be strong enough to trade, which can be one of the parameters
+being learnt. Such an extension may also engage with the contemporary econometric methods in
+conditional heteroskedasticity (Harvey 2013).
+An additional direction is to engage with the study on penalisation, in particular the penalisation
+on estimation. In time series, due to the moving average terms, MLE is mostly inevitable, thus the
+penalisationmustbedoneinthefashionofpenalisedMLE(pMLE).Herewefocusonthepenalisation
+on functional forms post-estimation while using the MLE at the ﬁrst stage. An extension would be to
+engage with the theory of pMLE, e.g. from Cole, Chu, and Greenland (2013) and Spokoiny (2018),
+and use the adaptive learning to appreciate the value of penalisation in the context of forecasting.
+A particular modelling issue, as has been shown here, is the distaste towards multivariate models
+— this can be due to the failure of capturing the underlying time-varying parameters together with
+low degrees of freedom. This has also been studied by Wilms et al. (2017) and more thoughts on
+33
+
+=== page 36 ===
+penalisation and potentially "smart identiﬁcation" using the past information could be worked on.
+Inconclusion, weproposeaforecast-centriclearningmodelthataimstoadapttothepastinformation
+in a time series context. Such a model requires inputs of diﬀerent functional forms, as well as training
+methods to produce parametric estimation and forecasting — these are handled by the traditional
+ARIMAmodelsandexplanatoryvariableswhicharegeneratedfromtheorderbook. Theresultofthe
+learning model is comparable to the top models if the models were to be ﬁxed, and can outperform
+the ﬁxed models in relatively volatile and non-stationary market conditions. Additionally, stability
+is more ensured and the error-handling, functional penalisation, and potentially other criteria can
+be encoded as part of the model selection process. Since the process is intuitive and interpretable,
+many extensions and applications can be made, for which we have shown an application to statistical
+testing, in both a Bayesian and a frequentist context.
+34
+
+=== page 37 ===
+A Additional statistical notes
+A.1 On the ADF test
+Here we adapt the following procedure for ADF Test with a constant. Let {yt}T1 t=T0 be the dataset
+we would like to run the test on. Regress
+yt = µ +
+p∑
+j=1
+φjyt−j + εt, εt ∼iidN(0,σ2), t∈{T0 + p,...,T1} (21)
+The speciﬁc test is
+H0 : φ1 = 1
+H1 : φ1 < 1
+Then construct test statistics t :=
+ˆφ1−1
+sd( ˆφ1) where ˆφ1 and sd( ˆφ1) are the MLE estimates and standard
+deviationestimatesforφ1 respectivelyfromestimatingEquation21. Theasymptoticresultsuggests21
+tH0 ∼ DFT1−T0−p. Thus, at a picked signiﬁcance level, the critical value tc is picked from DFT1−T0−p
+distribution and conclude:22
+• Reject H0 and conclude stationarity if t<tc;
+• Do not reject H0 and conclude non-stationarity if t≥tc.
+There are a variety of choices of p one could take, usually p ≤ (T1 −T0 + 1)
+1
+3 (Said and Dickey
+1984). Here, to ensure consistency across diﬀerent windows, we decide to put p = 2, as otherwise
+the small-window tests and later models get over-ﬁtted.
+A.2 On MAE and MSE
+Let {yt+1|t}t∈T be the forecasts and let {yt+1}t∈T be the validation data. Write card(T ) as the
+cardinality of the index set T, then the MAE and MSE are:
+MAE =(card(T ))−1 ∑
+t∈T
+|yt+1|t −yt+1|
+MSE =(card(T ))−1 ∑
+t∈T
+|yt+1|t −yt+1|2
+21 See Fuller (1996).
+22 Note: tc is negative here.
+35
+
+=== page 38 ===
+B Additional ﬁgures and tables
+OFI mean OFI p-score OIBmean OIB p-score VWM Number per bracket
+count 5040 5040 5040 5040 5040 5040
+mean 0.17 0.54 0.00 0.51 4068.21 424.79
+std 0.10 0.02 0.06 0.06 141.09 84.88
+min -0.25 0.45 -0.39 0.20 3734.99 81
+25% quantile 0.10 0.52 -0.03 0.47 3996.03 377
+50% quantile 0.16 0.54 0.00 0.51 4052.03 431
+75% quantile 0.23 0.55 0.04 0.55 4137.43 483
+max 0.95 0.62 0.33 0.77 4421.84 601
+Table 11: Summary of statistics for features (column 1 to 4), the VWM (column 5), and the number
+of observations per 5-minute bracket (column 6).
+Model Group 0 1,3,7,9 2,3,8,9 4,6,10,12 5,6,11,12
+Explanatory Variables None OIBmean OFI mean OIBp-score OFI p-score
+Table 12: Explanatory variables used in each of the ﬁxed model groups
+λ 1 0.99 0.95 0.9 0.85 0.8
+logλ(0.5) ∞ 68.97 13.51 6.58 4.27 3.11
+λ47 1 0.62 0.09 0.01 0 0
+Table 13: Logarithmic and exponential properties amongst the choices of λ (Up to two decimal
+places)
+36
+
+=== page 39 ===
+Figure 18: Upper: histogram of the number of observations per bracket.
+Centre and Lower: histogram of the day gap, lunch gap, and the others, laid down on the same
+scale.
+Figure 19: Bayesian testing result (left) and frequentist testing result (right)
+37
+
+=== page 40 ===
+References
+Aghabozorgi, Saeed, Ali Seyed Shirkhorshidi, and Teh Ying Wah (2015). “Time-series clustering–A
+decade review.” In: Information Systems 53, pp. 16–38.
+Akaike, H. (1974). “A new look at the statistical model identiﬁcation.” In: IEEE Transactions on
+Automatic Control 19.6, pp. 716–723.
+Andres,PhilippandAndrewCHarvey(2012).“TheDyanamicLocation/ScaleModel:withapplications
+to intra-day ﬁnancial data.” In: Cambridge Working Papers in Economics 1240.
+Avellaneda, Marco, Josh Reed, and Sasha Stoikov (2011). “Forecasting prices from level-I quotes in
+the presence of hidden liquidity.” In: Algorithmic Finance 1, pp. 35–43.
+Banerjee, Anindya et al. (1993). Co-integration, Error Correction, and the Econometric Analysis of
+Non-Stationary Data. 1st ed. Oxford University Press.
+Cai, Zongwu and Xian Wang (2014). “Selection of Mixed Copula Model via Penalized Likelihood.”
+In: Journal of the American Statistical Association 109.506, pp. 788–801.
+Casella, George and Roger L Berger (2008). Statistical Inference. 2nd ed. Cengage Learning.
+Chakraborty,ChiranjitandAndreasJoseph(2017).“Machinelearningatcentralbanks.” In: Cambridge
+Working Papers in Economics 674.
+Cole, S. R., H. Chu, and S. Greenland (2013). “Maximum Likelihood, Proﬁle Likelihood, and
+Penalized Likelihood: A Primer.” In: American Journal of Epidemiology 179.2, pp. 252–260.
+Cont, Rama, Arseniy Kukanov, and Sasha Stoikov (2014). “The Price Impact of Order Book Events.”
+In: Journal of Financial Econometrics 12.1, pp. 47–88.
+Cont,Rama,SashaStoikov,andRishiTalreja(2010).“AStochasticModelforOrderBookDynamics.”
+In: Operations Research 58.3, pp. 549–563.
+Fuller, Wayne A (1996). Introduction to Statistical Time Series. 2nd ed. Wiley.
+Goodfellow, Ian, Yoshua Bengio, and Aaron Courville (2016). Deep Learning. The MIT Press.
+Harris, Richard and Robert Sollis (2003). Applied Time Series Modelling and Forecasting. 1st ed.
+Wiley.
+Harvey, Andrew C (1989). Forecasting, structural time series models and the Kalman Filter. 1st ed.
+Reprint 2001. Cambridge University Press.
+— (1993). Time Series Models. 2nd ed. Harvester Whetasheaf.
+— (2013). Dynamic Models for Volatility and Heavy Tails: With Applications to Financial and
+Economic Time Series. 1st ed. Econometric Society Monographs. Cambridge University Press.
+Harvey, Andrew C and Genaro Sucarrat (2014). “EGARCH models with fat tails, skewness and
+leverage.” In: Computational Statistics & Data Analysis 76, pp. 320–338.
+Hastie, Trevor, Robert Tibshirani, and Jerome Friedman (2001). The elements of statistical learning:
+data mining, inference, and prediction. 1st ed. Springer.
+Hochreiter,SeppandJürgenSchmidhuber(1997).“LongShort-TermMemory.” In: Neural Computation
+9.8, pp. 1735–1780.
+Klenke, Achim (2013). Probability Theory: A Comprehensive Course. 2nd ed. Springer.
+38
+
+=== page 41 ===
+Koop, Gary,Dale J.Poirier, and Justin L. Tobias(2007). Bayesian Econometric Methods. Cambridge
+University Press.
+Li, Zhenwei, Jing Han, and Yuping Song (2020). “On the forecasting of high-frequency ﬁnancial
+time series based on ARIMA model improved by deep learning.” In: Journal of Forecasting. doi:
+10.1002/for.2677.
+Prado, Raquel and Mike West (2010). Time Series: Modeling, Computation, and Inference. 1st ed.
+Taylor and Francis Group.
+Rubio, Gines et al. (2007). “Kernel Methods Applied to Time Series Forecasting.” In: Computational
+and Ambient Intelligence. Ed. by Francisco Sandoval et al. 1st ed. Springer, pp. 782–789.
+Said, Said E. and David A. Dickey (1984). “Testing for Unit Roots in Autoregressive-Moving Average
+Models of Unknown Order.” In: Biometrika 71.3, pp. 599–607.
+Shalev-Shwartz, Shai and Shai Ben-David (2014). Understanding Machine Learning: From Theory
+to Algorithms. Cambridge University Press.
+Sirignano, Justin and Rama Cont (2018). Universal features of price formation in ﬁnancial markets:
+perspectives from Deep Learning. arXiv:1803.06917.
+Spokoiny,Vladimir(2018).Penalized maximum likelihood estimation and eﬀective dimension.arXiv:1205.0498v4.
+Stoikov, Sasha (2014). “Time is Money: Estimating the Cost of Latency in Trading.” In: Market
+Microstructure: Confronting Many Viewpoints, Paris.
+Tibshirani, Robert et al. (2005). “Sparsity and smoothness via the fused lasso.” In: Journal of the
+Royal Statistical Society: Series B (Statistical Methodology) 67.1, pp. 91–108.
+Vapnik, Vladimir N. (2000). The Nature of Statistical Learning Theory. 2nd. Springer.
+Wilms, Ines et al. (2017). Sparse Identiﬁcation and Estimation of Large-Scale Vector AutoRegressive
+Moving Averages. arXiv:1707.09208.
+Yang, Parley Ruogu (2020). “Using The Yield Curve To Forecast Economic Growth.” In: Journal of
+Forecasting. doi: 10.1002/for.2676.
+Zbonakova, Lenka, Xinjue Li, and Wolfgang K. Härdle (2018). “Penalized Adaptive Forecasting
+With Large Information Sets and Structural Changes.” In: SSRN Electronic Journal. IRTG 1792
+Discussion Paper 2018-039.
+39
