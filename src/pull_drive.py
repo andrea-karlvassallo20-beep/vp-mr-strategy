@@ -29,7 +29,7 @@ def main(argv=None) -> int:
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     target = args.url or (f"https://drive.google.com/uc?id={args.file_id}")
-    cmd = [sys.executable, "-m", "gdown", "-f", "-O", str(args.out), target]
+    cmd = [sys.executable, "-m", "gdown", "-O", str(args.out), target]
     print(" ".join(cmd))
     r = subprocess.run(cmd)
     if r.returncode != 0 or not args.out.exists():
