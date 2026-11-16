@@ -537,3 +537,18 @@ done plus the companion; next by triage rank: "Modeling
 microstructure price dynamics with symmetric Hawkes and
 diffusion" and "Optimal Execution with Dynamic Order Flow
 Imbalance".
+
+
+- 2026-11-16 (library ritual, paper 3): VPIN/order-flow-toxicity read
+  (docs/library/vpin_toxicity_review.md, records 046/047/048 via the
+  flagged summaries + the Andersen-Bondarenko contestation). Four items:
+  we hold true aggressor flags the papers had to approximate (BVC becomes
+  a diagnostic, never the production classification); the vol-tautology
+  sibling in its original habitat (no VPIN reading without its
+  vol-conditioned twin); the clock is the object (the taker harness's
+  trade-count-bucket VPIN is a different object from A4's volume-bucket
+  construction - the crossing is a ledger entry, never silent); and the
+  contestation is why C8 insists on pre-registered kill lines. C8 spec
+  A4 gained three conditional pre-commitments, BEFORE any L2 data. Queue
+  next: the passive-cancel/frozen-book regime read (the mechanism the
+  replay days make most alive), then the remaining prose pages.
