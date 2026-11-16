@@ -96,6 +96,6 @@ each era — and freeze it in the amendment log.
 
 C8 is the right next claim — the first two-family test, and the
 Tesla-day anatomy is its motivating observation — but as written it
-条件s on a state this programme just buried; restate it as a pure
+conditions on a state this programme just buried; restate it as a pure
 difference-of-differences interaction, arm the Hawkes placebo, fix
 VPIN's clock, define the market factor, and then it is ready.
