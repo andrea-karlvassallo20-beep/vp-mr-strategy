@@ -1,4 +1,4 @@
-# Salient / vp-mr-strategy — A Falsification-First Market Research Programme
+# Salient / Salient Market Hypothesis — A Falsification-First Market Research Hobby Project
 
 **The one-line summary:** a research knowledge base and falsification lab for
 one primary question — *out of the whole universe of markets, WHAT has become
