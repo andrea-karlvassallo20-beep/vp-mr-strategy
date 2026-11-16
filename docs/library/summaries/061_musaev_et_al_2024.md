@@ -1,7 +1,7 @@
 # 061 — Adaptive Algorithms for Change Point Detection in Financial Time Series (Musaev, Grigoriev & Kolosov, 2024)
 
 **Venue:** AIMS Mathematics | **Category:** Regime switching & state-space
-**Status:** Open-access at the publisher (AIMS); not machine-downloadable from this environment — summary synthesized from LLM internal knowledge. Verify against library source before production.
+**Status:** Downloaded legally (AIMS Press PDF via OpenAlex); full text: `docs/library/text/061_musaev_grigoriev_kolosov.txt`.
 
 ## Summary
 A recent survey/methods paper on change-point detection for

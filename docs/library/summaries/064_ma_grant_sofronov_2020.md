@@ -1,7 +1,7 @@
 # 064 — Multiple Change Point Detection and Validation in Autoregressive Time Series (Ma, Grant & Sofronov, 2020)
 
 **Venue:** Statistical Papers | **Category:** Regime switching & state-space
-**Status:** Synthesized from LLM internal knowledge (Paywalled paper).
+**Status:** Downloaded legally (Springer OA PDF via OpenAlex); full text: `docs/library/text/064_ma_grant_sofronov.txt`.
 
 ## Summary
 Methods for detecting MULTIPLE change points in autoregressive

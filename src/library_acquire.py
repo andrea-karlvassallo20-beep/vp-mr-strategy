@@ -7,6 +7,11 @@ Legal routes only:
   2. Unpaywall (papers with a DOI: returns OA locations when the
      publisher version or an accepted manuscript is legally
      open-access). Requires an email address for the API.
+  3. OpenAlex (open metadata catalogue; by DOI and by title search,
+     returns best_oa_location.pdf_url when a legal OA copy exists).
+
+Semantic Scholar was tried and removed: its fuzzy title match
+returned a wrong paper (034), so the route is not used.
 
 No paywall circumvention, no scraping of publisher sites, no shared
 credentials. Papers with no legal OA route are reported as
@@ -30,6 +35,8 @@ import sys
 import urllib.parse
 import urllib.request
 from pathlib import Path
+
+USER_AGENT = "vp-mr-strategy-library/1.0"
 
 ARXIV_KNOWN = {
     "018": "1011.6402",   # Cont-Kukanov-Stoikov, Price Impact of Order Book Events
@@ -77,6 +84,32 @@ def parse_catalog(path):
         entries.append({"id": pid, "title": title, "year": year,
                         "venue": parts[4], "doi": doi, "raw": line})
     return entries
+
+
+def _json_get(url):
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        return json.loads(resp.read())
+
+
+def openalex_oa(doi=None, title=None):
+    """Legal OA PDF URL via OpenAlex, by DOI or title search."""
+    try:
+        if doi:
+            w = _json_get("https://api.openalex.org/works/doi:" + doi)
+        else:
+            data = _json_get("https://api.openalex.org/works?search="
+                             + urllib.parse.quote(title) + "&per-page=1")
+            results = data.get("results") or []
+            if not results:
+                return None
+            w = results[0]
+        if not w.get("open_access", {}).get("is_oa"):
+            return None
+        loc = w.get("best_oa_location") or {}
+        return loc.get("pdf_url") or loc.get("landing_page_url")
+    except Exception:
+        return None
 
 
 def unpaywall_best_oa(doi, email):
@@ -147,6 +180,10 @@ def main():
                 arx = arxiv_find(title)
                 if arx:
                     pdf_url, source, status = arxiv_pdf_url(arx), f"arXiv:{arx}", "oa"
+                else:
+                    oalex = openalex_oa(doi=entry["doi"], title=title)
+                    if oalex and (oalex.lower().endswith(".pdf") or "/pdf" in oalex.lower()):
+                        pdf_url, source, status = oalex, "OpenAlex", "oa"
 
         if pdf_url:
             slug = f"{pid}_{slugify(title)}"

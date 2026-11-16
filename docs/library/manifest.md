@@ -11,14 +11,19 @@ log is `acquisition_log.json`.
 
 ## Acquisition status (68-paper catalogue)
 
-- **7 papers downloaded and text-extracted** (arXiv, legal):
-  011, 018 (Cont-Kukanov-Stoikov OFI), 019, 038, 044, 065 (DML),
-  068. PDFs in `pdfs/`, plain text with page markers in `text/`.
-- **2 papers open-access at the publisher** (SAGE Open 060, AIMS
-  Mathematics 061) but not machine-downloadable from this
-  environment; to be fetched manually in the codespace.
-- **59 papers paywalled or preprint-only**: no legal bulk route
-  found in this session; their knowledge is synthesized (below).
+- **10 papers downloaded and text-extracted** (legal OA):
+  011, 018 (Cont-Kukanov-Stoikov OFI), 019, 038, 043 (WATCH — the
+  research lead, IEEE author version via arXiv:2201.07125), 044,
+  061 (AIMS), 064 (Springer OA), 065 (DML), 068. PDFs in `pdfs/`,
+  plain text with page markers in `text/`. Sources: arXiv (known
+  IDs + title search) and OpenAlex; the Semantic Scholar route was
+  tried, returned one wrong paper (034), and was removed.
+- **8 papers legally open-access but publisher bot-blocked**
+  (004, 007, 009, 015, 016, 026, 059, 060 — Wiley/SAGE/Annual
+  Reviews/SIAM direct PDFs return HTTP 403 to non-browser agents):
+  to be fetched manually in the codespace browser. Not scraped.
+- **50 papers paywalled or preprint-only**: no legal bulk route
+  found; their knowledge is synthesized (below).
 
 ## Synthesis status
 
