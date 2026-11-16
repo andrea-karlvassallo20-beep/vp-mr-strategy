@@ -57,7 +57,8 @@ def append_history() -> None:
 def main() -> int:
     ok = True
     for script in ("mega_universe.py", "build_dormancy_page.py",
-                   "heatmap_page.py", "surprise_ledger.py"):
+                   "heatmap_page.py", "surprise_ledger.py",
+                   "misses_2x2.py"):
         print(f"=== {script} ===")
         if not run(script):
             print(f"[fail] {script} exited non-zero")
