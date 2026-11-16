@@ -32,7 +32,7 @@ criterion passed; the 100-snapshot ground truth needs a paid subscription —
 the owner's call); the pre-registered taker track ran on free aggTrades and
 **T3 tested-fail** (wall-clock exposure does not remove the arrival-density
 dependence — it is vol-mediated); T1/T2 are cached and **pending the owner's
-decision** (`paper/research/t1_t2_decision_memo_2026-11-16.md`); and the
+decision** (`paper/research/phase1_daily/t1_t2_decision_memo_2026-11-16.md`); and the
 endpoint has been re-framed in writing: **a WHEN instrument, straddle-logic,
 sized by the posterior on MOVE, not UP** — because the 0.505 direction
 boundary has survived everything, including the watchlist whose four primed
@@ -271,19 +271,23 @@ input.
 | Path | What it is |
 |---|---|
 | `paper/research/orderflow_program.md` | The constitution: data inventory, claims ledger, kill lines, blocked-on-data record |
-| `paper/research/c1_hazard_report.md` | The C1 experiment and its verdict (FAILED, all kill lines) |
+| `paper/research/phase1_daily/c1_hazard_report.md` | The C1 experiment and its verdict (FAILED, all kill lines) |
 | `paper/research/c1_l2_test_spec.md` | The L2 experiment, fully specified, not run |
 | `paper/research/l2_data_acquisition_spec.md` | Exactly what data must arrive and pass the gate |
 | `paper/research/l0_gate/` | The executed Layer 0 gate report (2026-10-01 → 10-04) |
-| `paper/research/taker_falsification_*.json` | T3's tested-fail record (and the cached T1/T2 harness state) |
-| `paper/research/t1_t2_decision_memo_2026-11-16.md` | The T1/T2 decision memo (owner's call) |
-| `paper/research/smh_methodology_review_2026-11-15.md` | The methodology review: endpoint re-framed, five weaknesses, the unblocked queue |
-| `paper/research/LEARNING_NOTES.md` | Plain-language guide: the book knowledge base and the lab |
+| `paper/research/phase2_l2/taker_falsification_*.json` | T3's tested-fail record (and the cached T1/T2 harness state) |
+| `paper/research/phase1_daily/t1_t2_decision_memo_2026-11-16.md` | The T1/T2 decision memo (owner's call) |
+| `paper/research/phase1_daily/smh_methodology_review_2026-11-15.md` | The methodology review: endpoint re-framed, five weaknesses, the unblocked queue |
+| `paper/research/phase1_daily/LEARNING_NOTES.md` | Plain-language guide: the book knowledge base and the lab |
 | `KNOWLEDGE.md`, `KNOWLEDGE_SMH.md` | The Market Studies knowledge base (13 books studied; the source of the ideas) |
 | `src/` | Ingestion, verification gate, event clock, CPCV, feature calculators, C1-L2 harness, the taker falsification runner, the mega-universe scanner, board refresh |
-| `tests/` | 113 tests, all green, including failure-path tests (gap, leakage, kill lines) |
+| `tests/` | 123 tests, all green on a complete environment (incl. scikit-learn), including failure-path tests (gap, leakage, kill lines) |
 | `docs/` | The site: thesis, working manual, causal chains, books, clues, night-before sauce move, board, dormancy map (1,299 series), library (100 resources + articles catalogue), claims ledger, instrument |
 | `strategy/`, `paper/` | The earlier Salient system: gated strategy core, nightly paper-trading loop, research batteries |
+| `Makefile`, `.devcontainer/` | One-click codespace deployment: `make gate-day` / `make gate DAY=...` runs the whole L2 gate process (see CLOUD_DEPLOY.md section 0) |
+| `paper/research/phase1_daily/`, `paper/research/phase2_l2/` | The research record, filed by phase (see `paper/research/README.md`) |
+| `archive/` | Superseded/duplicate artifacts, kept for the record (see `archive/README.md`) |
+| `docs/smh_paper_draft.md`, `docs/reading_list.md`, `docs/roadmap_1_year.md` | The null-time theory pack: the paper skeleton, the adversarial OFI/Hawkes reading curriculum, the 1-year roadmap |
 
 ## The Epistemic Contract (why this can be trusted)
 

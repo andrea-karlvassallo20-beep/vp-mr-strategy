@@ -6,7 +6,7 @@ no parameter tuned. This document supersedes and extends §4 of
 that section now points here. Kill lines are armed before the data exists.
 
 The math this claim stands on was verified on 2026-11-16
-(`paper/research/math_verification_2026-11-16.md`): the CKS OFI formula is
+(`paper/research/phase1_daily/math_verification_2026-11-16.md`): the CKS OFI formula is
 byte-exact to the arXiv source (arXiv:1011.6402v3), the Hawkes
 log-likelihood is exact against an independent oracle, the branching
 ratio is the true spectral radius ρ(G) cross-validated against the `tick`

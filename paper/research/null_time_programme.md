@@ -145,3 +145,52 @@ The queue's order is the recommendation: T1 first (it is armed and the data is p
 for), the misses curriculum second (it is the base-rate spine), the library third (it
 sharpens kill lines), the website pass fourth (it prevents rot). The owner decides; the
 memo rule stands.
+
+## 6. Null-time session 2026-11-16 (second): infrastructure, organization, theory
+
+Executed under the owner's autonomous null-time directive (frozen protocols
+honored: no L2 run, no new data, no new claims, no kill lines moved):
+
+- **One-click deployment**: `.devcontainer/devcontainer.json` (Python 3.12 +
+  numpy/pandas/pyarrow/scipy/lifelines/scikit-learn/pytest on codespace boot,
+  plus the C1-L2 harness compile check), a root `Makefile` wrapping the whole
+  gate process (`make env / pull-free / gate / convert / censor /
+  harness-check / board / test`), `src/convert_to_parquet.py` (chunked
+  csv.gz -> parquet with a binding row-count verification), and
+  `CLOUD_DEPLOY.md` section 0 for the one-click path.
+- **Tree organization**: `archive/` (the stray KNOWLEDGE (1).md duplicate and
+  the root copy of the AVFI research page, byte-identical to the docs copy),
+  `paper/research/phase1_daily/` and `paper/research/phase2_l2/` (dated
+  reports, audits, memos, completed pre-registrations and their results
+  filed by phase; live-automation outputs and the ACTIVE specs stay at the
+  root - see `paper/research/README.md`). Every stale path mention in
+  README/docs updated the same commit (prose rot rule).
+- **Website honesty pass**: the landing page and the clue dossier now state
+  the programme status: Phase 1 (Daily/AVFI) CLOSED, Phase 2 (Crypto L2)
+  ACTIVE, both citing the claims ledger.
+- **Theory**: `docs/smh_paper_draft.md` (the paper skeleton: the three
+  deaths, the C7-L2 second life, the C1-L2 transition, the KM/Cox/CPCV
+  review notes, the falsification section), `docs/reading_list.md` (the
+  adversarial OFI/Hawkes curriculum, library papers cited, candidates
+  honestly flagged as unacquired), `docs/roadmap_1_year.md` (the two-branch
+  plan and the pre-declared multiplicity rules for any portfolio scaling).
+- **Forward-test reminder**: the ex-ante macro timeline
+  (`data/macro_timeline.csv`) extended with the three confirmed December
+  2026 events (NFP 12-04, FOMC 12-09, CPI 12-10, sources
+  federalreserve.gov / bls.gov), verified through `src/macro_censor.py`
+  (19 events parse). NOTE for the owner: this repo contains no "Amendment 9
+  Sunday macro booking script" - the amendments numbered 1-2 in the tree
+  belong to the earlier NQ/AVFI programme record, and the macro machinery
+  here is the ex-ante censoring timeline above. Nothing was invented to
+  fill the gap; if Amendment 9 lives in another project, it needs its own
+  environment check there.
+- **Methodology review findings** (recorded in docs/smh_paper_draft.md
+  section 4, no code changed): the KM censoring and Breslow-Cox risk sets
+  are correct; three honest edge-case notes (unconverged-fit SEs, the
+  series-grouped rather than chronological OOF split in the daily harness -
+  the L2 harness splits on wall-clock CPCV instead, and the frozen
+  episode-builder skip quirk) are stated for the paper, not patched.
+- Tests: the full pytest suite green except 5 pre-existing failures caused
+  only by scikit-learn being absent from this sandbox (env gaps, not code);
+  scikit-learn is now in the devcontainer and `make env` so the codespace
+  does not share that gap.
