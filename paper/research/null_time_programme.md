@@ -537,3 +537,15 @@ done plus the companion; next by triage rank: "Modeling
 microstructure price dynamics with symmetric Hawkes and
 diffusion" and "Optimal Execution with Dynamic Order Flow
 Imbalance".
+
+
+- 2026-11-16 (library ritual, paper 2): Hardiman-Bouchaud branching-ratio
+  deep-read (docs/library/hardiman_bouchaud_branching_review.md) — the
+  model-independent mean-variance estimator (n ≈ 1 − μ_W/σ²_W), its one-sided
+  LOW bias, median-only aggregation (the estimator's mean is −∞), and the
+  kernel-misspecification artifact (power-law data fits as critical under an
+  exponential kernel). C8's T-H trigger gained three pre-conditions BEFORE
+  any L2 data: bootstrap-band firing (not point estimates), the
+  kernel-family control, and the mean-variance cross-check as a standing
+  diagnostic. Queue next: the VPIN/order-flow-toxicity read, then the
+  remaining prose pages against the ledger.
