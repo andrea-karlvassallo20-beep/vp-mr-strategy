@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The OHLCV Verdict — vp-mr-strategy</title>
+<link rel="stylesheet" href="site.css">
+<style>
+body{background:#0b0e14;color:#c9d1d9;font-family:Georgia,serif;margin:0;padding:2rem;max-width:1100px;margin:auto}
+h1{color:#fff;font-size:2.2rem;letter-spacing:.02em}
+h2{color:#35ff9e;border-bottom:1px solid #24304a;padding-bottom:.3rem;margin-top:2.8rem}
+h3{color:#fff}
+table{border-collapse:collapse;width:100%;font-size:.9rem;margin:1rem 0}
+th,td{border:1px solid #24304a;padding:.45rem .6rem;text-align:left;vertical-align:top}
+th{background:#161b26;color:#35ff9e}
+tr:nth-child(even) td{background:#11151f}
+.note{color:#8b949e;font-size:.9rem;font-style:italic}
+.big{font-size:1.15rem}
+.num{font-family:monospace;color:#ffd166}
+.dead{color:#ff6b6b;font-weight:bold}
+.verdict{border:1px solid #ff6b6b;border-radius:8px;padding:1.2rem;margin:1.5rem 0;background:#1a0f0f}
+.verdict h2{color:#ff6b6b;border:0;margin-top:0}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html">Thesis</a>
+  <a href="manual.html">The working manual</a>
+  <a href="causal.html">Causal chains</a>
+  <a href="books.html">The books, taught</a>
+  <a href="clues.html">The clue dossier</a>
+  <a href="criteria.html">The night-before sauce move</a>
+  <a href="v4_charts.html">The board, colored</a>
+  <a href="dormancy.html">The dormancy map</a>
+  <a href="resources.html">The library</a>
+  <a href="ledger.html">The claims ledger</a>
+  <a href="ohlcv_verdict.html" aria-current="page">The OHLCV verdict</a>
+  <a href="instrument.html">The instrument (live)</a>
+</nav>
+
+<div class="epigraph"><p>"You will not find the lion by looking where the noise is. And you will not find him by looking where the quiet is, either — if the quiet is all you measured."</p></div>
+
+<main>
+<div class="kicker">How the 30-minute study was done &middot; what the numbers said &middot; why the answer is a victory</div>
+<h1>The OHLCV Verdict<span class="dot">.</span></h1>
+
+<p class="note">The plain-language record of the programme's grandest falsification: how a six-year, 78-asset, 5.3-million-row dataset was studied, and how the conclusion — <b style="color:#ff6b6b">OHLCV-derived compression is statistically worthless for predicting forward returns</b> — was arrived at without ever training a model.</p>
+
+<div class="verdict">
+<h2>The conclusion, in one line</h2>
+<p><span class="big">All OHLCV-derived edges are dead. The program now rests entirely on the L2 order book data.</span></p>
+<p class="note">Owner-confirmed, 2026-11-16. The full technical record: <code>paper/research/c7_30m_test_result.md</code>; the executive summary: <code>docs/EXECUTIVE_SUMMARY.md</code>.</p>
+</div>
+
+<h2>1 &middot; The data</h2>
+<p>A 1.27GB parquet: <span class="num">5,308,089</span> rows &times; 43 columns, <span class="num">78</span> crypto perpetuals, six years of <b>30-minute bars</b> (2020-07 &rarr; 2026-06). Momentum, reversal, volatility, liquidity (Amihud, ADV), betas, cross-asset lead-lag vs BTC/ETH/SOL — every feature derived from OHLCV (open-high-low-close-volume). No order book. No queue. No cancellations.</p>
+<p>The label: <b><code>y_hold</code> = the 4-hour forward return, rank-normalized cross-sectionally per era</b> — recovered empirically from the panel's own prices (per-era Spearman 0.71&ndash;0.87 against the computed 4h forward return) and confirmed by the owner. <code>responder</code>, the second label, is the next-30-minute return — a different question, kept out of this test.</p>
+
+<h2>2 &middot; How it was studied — five steps, in order</h2>
+
+<h3>Step 1: the intake audit</h3>
+<p>Before anything touched the data: schema, coverage, integrity. Fully dense (zero nulls), timestamps in microseconds, no missing calendar days. One open item — the label definition — was resolved empirically rather than guessed.</p>
+
+<h3>Step 2: the leakage audit</h3>
+<p>For 60 eras spread across the whole file, every feature's cross-sectional correlation with the label. <b>No leaks</b> — the strongest feature sat at |&rho;| = 0.196, far below the 0.80 leak line. But the audit found something just as important: the six "volatility" features are <b>one factor wearing six names</b> — &sigma;20 vs f_vol_21: 0.99; vs realized_vol_30: 0.94; vs f_range_21: 0.92. "Quietness" is a single axis, not six independent clues.</p>
+
+<h3>Step 3: pre-registration — the rules locked before the answer existed</h3>
+<p>Five kill lines in writing, and a frozen split manifest: train 2020&ndash;2023, validation 2024&ndash;2025, test 2025&ndash;2026 (untouched to this day). Purge at every boundary for the 4-hour label horizon; a 24-hour embargo because crypto regimes shift. This is what makes the verdict trustworthy: no rule was invented after seeing the result.</p>
+
+<h3>Step 4: the test — and the control group that made it honest</h3>
+<p>The question was never "does quietness predict?" — quietness is the baseline. The question was: <b>does the PRIMED state — quiet AND at the bottom of its 63-day range, the "coil" — predict MORE than quietness alone?</b> Every era split its assets into two groups:</p>
+<table>
+<tr><th>group</th><th>definition</th><th>per era (mean)</th></tr>
+<tr><td><b>Primed</b></td><td>&sigma;20 in the bottom 33% <b>AND</b> momentum in the bottom 35% — the coiled state</td><td>9.0 assets</td></tr>
+<tr><td><b>Control</b></td><td>&sigma;20 in the bottom 33% but NOT at the range bottom — quiet, not coiled</td><td>12.5 assets</td></tr>
+</table>
+<p>If the coil adds anything real, Primed must beat Control. The comparison isolates the costume from the wearer.</p>
+
+<h3>Step 5: the result</h3>
+<table>
+<tr><th>statistic</th><th>value</th></tr>
+<tr><td>eras evaluated (validation window, 2024-02 &rarr; 2025-06)</td><td><span class="num">16,402</span> (1.64M rows)</td></tr>
+<tr><td>Primed &minus; Control, mean label per era</td><td><span class="num">+0.00211</span> — essentially zero</td></tr>
+<tr><td>day-block bootstrap 95% CI</td><td><span class="num">[&minus;0.01059, +0.01454]</span> — <b class="dead">includes zero</b></td></tr>
+<tr><td>per-era Spearman (primed indicator vs label)</td><td><span class="num">+0.0131</span></td></tr>
+<tr><td>eras with a positive difference</td><td><span class="num">8,271 / 16,402 = 50.4%</span> — <b class="dead">a coin flip</b></td></tr>
+<tr><td>era-shuffled placebo</td><td>the observed difference sits deep inside the placebo distribution</td></tr>
+</table>
+
+<h2>3 &middot; How "worthless" was arrived at</h2>
+<p>The vol-tautology kill line fired: the Primed state does not outperform the Quiet-Not-Primed control. And this is the <b>third independent death</b> of the compression family:</p>
+<table>
+<tr><th>test</th><th>resolution</th><th>how it died</th></tr>
+<tr><td><b>C1</b> — compression duration-dependence</td><td>daily bars, BTC &amp; ETH, 2021&ndash;2026</td><td>vol-tautology: after conditioning on realized volatility alone, the compression flag's hazard-ratio CI included 1.0 in 4/4 cells; a block-temporal placebo reproduced the entire effect</td></tr>
+<tr><td><b>The watchlist</b> — four primed coils (KAVA, HOLO, GENIUS, SOL)</td><td>daily, forward test (window open)</td><td>all four broke downward within days; the coil fired without promising direction — observational, not claimed</td></tr>
+<tr><td><b>C7-30m</b> — compression priming</td><td>30-minute bars, 78 assets, 6 years, 16,402 eras</td><td>vol-tautology: Primed &minus; Control CI includes zero; 50.4% of eras positive — a coin flip</td></tr>
+</table>
+<p>Three different resolutions, three different universes, the same verdict: <b>compression measured from OHLCV is volatility wearing a costume.</b> The C1 death was not a resolution artifact — it reproduced everywhere it was re-asked. The coil identifies <i>movement</i>; it does not identify rank, sign, or 4-hour edge.</p>
+
+<h2>4 &middot; Why this is a victory</h2>
+<p>Because the programme's product is the elimination of noise. Every dead claim is a question you never have to wonder about again — and this one was the programme's founding intuition, tested honestly at three resolutions and buried with the mechanism named. What remains is not "promising"; it is <b>untested</b>: the L2 order-book family (C1-L2, C5, C6, C7-panel), where compression would be measured from the book itself — resting liquidity aging, asks pulling, queues draining — the things candles cannot see. The Tesla-day anatomy (a +10% hour with near-balanced taker flow; the book did the work) is the observation that keeps that family worth gating.</p>
+
+<h2>5 &middot; What this page cannot tell you</h2>
+<p class="note">That the L2 family will survive. It is untested, not alive — it faces its own armed kill lines the day the order-book data passes the gate. And nothing anywhere in this record touches direction: the 0.505 boundary [0.497, 0.513] is unbroken, and the endpoint remains a WHEN instrument, sized by the posterior on MOVE, not UP.</p>
+</main>
+</body>
+</html>
