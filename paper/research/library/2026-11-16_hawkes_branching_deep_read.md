@@ -101,3 +101,36 @@ launders. The Hardiman-Bouchaud position is itself contested
 (Filimonov-Sornette replied in the reflexivity debate); the C8
 spec carries both readings and the owner decides what the trigger
 layer claims.
+
+## Convergent-read addendum (second session, same paper)
+
+A parallel null-time session deep-read this same paper against the
+same question before seeing this note. The two reads converge on
+the grade (no kill line changed; K7 sharpened) and on the core
+pre-declarations. Its three points, folded into the same
+ratification queue and recorded here so nothing is lost:
+
+1. **Estimator identity must be named and frozen.** The MLE path is
+   biased UP on short windows while the mean-variance estimator is
+   biased DOWN on finite windows — silently switching estimators
+   moves n_c across the 0.8 threshold without touching a
+   parameter. Mandate the mean-variance value as a reported
+   cross-check beside the MLE value.
+2. **W must be fixed relative to the estimated kernel timescale**
+   (their guidance: W >> beta^-1, they use 20x) on calibration
+   data BEFORE the threshold is armed — absolute-clock W and
+   timescale-relative W are different choices and must be named.
+3. **The timestamp clock must be pre-declared**: the exchange
+   timestamp governs, the identical-timestamp fraction inside the
+   trigger window is reported, and the placebo preserves
+   intra-timestamp jitter (the two-minimum likelihood pathology
+   in the paper comes from exchange-side millisecond bundling).
+
+Plus the honest prior both reads share: on near-critical arrival
+processes, n_c > 0.8 may be the NORM rather than the exception —
+which is exactly why the placebo's 95th percentile, not the
+threshold's absolute value, is what arms the trigger. The
+ratification queue (session 3's two sharpenings, this note's K7
+sharpening and W-ladder, the Amendment 1 controversy
+qualification) stands at zero armed; the owner's word is the only
+trigger.
