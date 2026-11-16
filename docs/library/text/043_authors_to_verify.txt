@@ -1,0 +1,995 @@
+=== page 1 ===
+© 2022 IEEE. Personal use of this material is permitted.
+Permission from IEEE must be obtained for all other uses, in
+any current or future media, including reprinting/republishing
+this material for advertising or promotional purposes, creating
+new collective works, for resale or redistribution to servers or
+lists, or reuse of any copyrighted component of this work in
+other works.
+DOI: 10.1109/BigData52589.2021.9671962
+arXiv:2201.07125v1  [cs.AI]  18 Jan 2022
+
+=== page 2 ===
+WATCH: Wasserstein Change Point Detection for
+High-Dimensional Time Series Data
+Kamil Faber
+Institute of Computer Science
+AGH University of Science and Technology
+Krakow, Poland
+kfaber@agh.edu.pl
+Roberto Corizzo
+Department of Computer Science
+American University
+Washington, DC, USA
+rcorizzo@american.edu
+Bartlomiej Sniezynski
+Institute of Computer Science
+AGH University of Science and Technology
+Krakow, Poland
+bartlomiej.sniezynski@agh.edu.pl
+Michael Baron
+Department of Mathematics and Statistics
+American University
+Washington, DC, USA
+baron@american.edu
+Nathalie Japkowicz
+Department of Computer Science
+American University
+Washington, DC, USA
+japkowic@american.edu
+Abstract—Detecting relevant changes in dynamic time series
+data in a timely manner is crucially important for many data
+analysis tasks in real-world settings. Change point detection
+methods have the ability to discover changes in an unsupervised
+fashion, which represents a desirable property in the analysis of
+unbounded and unlabeled data streams. However, one limitation
+of most of the existing approaches is represented by their
+limited ability to handle multivariate and high-dimensional data,
+which is frequently observed in modern applications such as
+trafﬁc ﬂow prediction, human activity recognition, and smart
+grids monitoring. In this paper, we attempt to ﬁll this gap by
+proposing WATCH, a novel Wasserstein distance-based change
+point detection approach that models an initial distribution and
+monitors its behavior while processing new data points, providing
+accurate and robust detection of change points in dynamic
+high-dimensional data. An extensive experimental evaluation
+involving a large number of benchmark datasets shows that
+WATCH is capable of accurately identifying change points and
+outperforming state-of-the-art methods.
+Index Terms—Change Point Detection, Big Data, High-
+Dimensional Data, Time series.
+I. INTRODUCTION
+Change point detection is of fundamental importance in
+modern data analysis problems characterized by dynamic time
+series data in which the statistical properties of the distribution
+change over time. One attractive characteristic of change point
+algorithms is their ability to analyze data in an unsupervised
+manner [1], [2], which is ideal in analytical settings where
+data ﬂows in an unbounded way and without annotations, as
+in data streams [3]. The change point detection problem is also
+implicitly connected to anomaly detection [4]–[7] and concept
+drift detection in data streams [8], [9]. However, while change
+point detection focuses on the identiﬁcation of points where
+the data distribution changes (and remains in that state for a
+certain amount of time), anomaly detection focuses on iden-
+tifying out of distribution (even single) data points. Although
+a similarity between change point detection and concept drift
+detection can be noticed, change point detection assumes a
+more general connotation of change, whereas a more bounded
+characterization is made in concept drift detection [10], [11].
+An analysis of the existing literature in change point detec-
+tion reveals a large number of approaches. However, modern
+real-world applications such as trafﬁc ﬂow prediction [12],
+human activity recognition [13], and renewable energy plants
+monitoring in smart grids [14]–[16] and settings characterized
+by geo-distributed data [17], [18] are strongly characterized by
+multivariate and often high-dimensional data. One limitation of
+most change point detection methods described in the literature
+is that they perform well strictly with univariate data or
+multivariate data with a limited number of dimensions [19]. As
+soon as the data dimensionality increases, their performance
+presents a drop in terms of accuracy or a signiﬁcant increase
+in terms of execution time, which represents a known obstacle
+for online data analysis algorithms that rely on timely feedback
+from the change point detection procedure.
+In this paper, we address this gap by proposing WATCH, a
+method based on the Wasserstein distance speciﬁcally targeted
+for high-dimensional time series data. The method models an
+initial distribution and monitors its behavior while process-
+ing new incoming data points. Change points are identiﬁed
+considering the Wasserstein distance between data points and
+the modeled distribution, which evolves over time. When a
+change point is detected, the previously known distribution
+is replaced to reﬂect the new distribution. An extensive
+experimental evaluation shows that our method signiﬁcantly
+outperforms state-of-the-art change point detection methods
+on high-dimensional datasets. Moreover, the method achieves
+competitive performance on many of the benchmark datasets
+commonly used in the change point detection community.
+The remainder of the paper is structured as follows. Section
+II discusses an overview of existing change point detection
+approaches in the literature. Section III describes our proposed
+method. Section IV provides details on our experimental setup,
+followed by Section V which discusses our results. Finally,
+
+=== page 3 ===
+Section VI concludes the paper, summarizing our contributions
+and showcasing directions for future work.
+II. BACKGROUND
+In this section we give an overview of some popular change
+point detection approaches in the literature. Methods can be
+broadly grouped in three main categories: ofﬂine, Bayesian,
+and non-parametric. Ofﬂine approaches include likelihood
+ratio methods, which analyze the probability distributions of
+data before and after a candidate change point, in order to
+conﬁrm the candidate as an actual change point if the two
+distributions are signiﬁcantly different. One notable example is
+the CUSUM method, which triggers a detection when the cu-
+mulative sum of observations exceeds a given threshold value.
+A method known as At Most One Change [20] generalized this
+approach to testing for differences in the maximum likelihood.
+Typically, methods in this class calculate the logarithm of
+the likelihood ratios within two consecutive intervals and
+monitor it over time [21], [22]. Another variant of this method
+considers dimensionality reduction as a pre-processing step
+[23]. One major drawback of such methods is that they rely on
+predeﬁned parametric models, which make them less ﬂexible
+in real-world scenarios [2].
+Some ofﬂine methods can discover multiple change points
+within a time series, performing a greedy binary segmentation
+according to a cost function. Examples of methods in this
+class are Binary Segmentation [24] and Segment Neighbor-
+hoods [25]. An interesting variant of the binary segmentation
+approach which leverages the CUSUM statistic is Wild Binary
+Segmentation [26]. Extensions leveraging pruning approaches
+and presenting an improved time efﬁciency include Pruned
+Exact Linear Time [27] and Robust Functional Pruning Op-
+timal Partitioning [28], which is also robust to outliers. It is
+noteworthy that these methods are restricted to the analysis of
+univariate datasets.
+Probabilistic methods include ofﬂine and online Bayesian
+methods. A non-conventional ofﬂine change point detection
+approach is the Prophet method: a Bayesian time series
+forecasting approach that supports time series with change
+points [29]. A popular online method in this class is Bayesian
+Online Change Point Detection [30] which is based on the
+assumption that a data sequence may be divided into non-
+overlapping states partitions and the data points in each state
+are independent and identically distributed according to some
+probability distribution. Methods in this class calculate the run
+length distribution according to Bayes’ theorem and update
+the corresponding statistics. Change point prediction is then
+carried out by comparing probability values. Recent extensions
+include support for Model Selection [31] and spatio-temporal
+models [32]. Variants of Bayesian methods are based on the
+Gaussian Process (GP) method, which generalizes a Gaussian
+distribution as a collection of random variables, any ﬁnite
+number of which have a joint Gaussian distribution [33], [34].
+Non-parametric methods for change point detection are
+based on hypothesis testing, using a test statistic and a
+custom threshold. Examples of methods in this class include
+TABLE I: Change point detection methods featured in our
+experiments.
+Method Name Reference
+Ofﬂine
+At Most One Change AMOC [20]
+Binary Segmentation BINSEG [24]
+Segment Neighborhoods SEGNEIGH [25]
+Wild Binary Segmentation WBS [26]
+Pruned Exact Linear Time PELT [27]
+Robust Functional Pruning Optimal Partitioning RFPOP [28]
+Bayesian
+Bayesian Online Change Point Detection BOCPD [30]
+BOCPD with Model Selection BOCPDMS [31]
+BOCPD with Spatio-temporal models RBOCPDMS [32]
+Prophet PROPHET [29]
+Non-parametric
+Nonparametric Change Point Detection CPNP [35]
+Kernel Change-Point Analysis KCPA [36]
+Energy Change Point ECP [37]
+[35], Kernel Change-Point Analysis [36], and Energy Change
+Point [37]. It is worthwhile mentioning that non-conventional
+change detection approaches based on deep neural networks
+are also investigated in the literature [16], [38], even though
+the scope of this study focuses on purely statistical change
+point detection.
+III. METHOD
+In this section we describe WATCH, our novel change point
+detection approach based on the Wasserstein distance. We
+divide the discussion in two stages: in the ﬁrst subsection
+we introduce the Wasserstein distance discussing its potential
+for the task at hand; in the second subsection we provide
+algorithmic details about our method.
+A. Wasserstein distance
+The Wasserstein metric is a distance function deﬁned by
+a probability distribution on a given metric space M. An
+intuitive explanation of the metric provided in the literature
+views the distribution as a unit amount of earth (soil) piled on
+M, where the metric represents the minimum ”cost” of turning
+one pile into the other. This cost is assumed to be the amount
+of earth that needs to be moved, multiplied by the mean
+distance it has to be moved. Because of this analogy, the metric
+is known in computer science as the earth mover’s distance.
+Recent works in the machine learning literature incorporated
+this distance in model pipelines and showed its potential in
+providing disentangled representations [39].
+According to the Wasserstein distance deﬁnition in [40], let
+P (Rd) be the set of Borel probability measures on Rd and
+Pp(Rd) be the subset of such measures with a ﬁnite moment
+of order p∈ [1, inf). For P, Q ∈P (Rd), let Γ(P, Q) be the set
+of probability measures γ on Rd × Rd with marginals P and
+Q, i.e., such that γ(B× Rd) = P(B) and γ(Rd×B) = Q(B)
+for Borel sets B ⊆ Rd. dist(˙) is the Euclidean norm. The
+p-Wasserstein distance between P, Q ∈Pp(Rd) is:
+Wp(P, Q) = ( inf γ∈Γ(P,Q)
+∫
+Rd ×Rd
+dist(x−y)p ∂γ(x,y))
+1
+p
+. (1)
+
+=== page 4 ===
+Fig. 1: Difference between Wasserstein distance and Kullbach-
+Leibler (KL) divergence.
+In terms of random variables X and Y with laws P and Q,
+respectively, the p-Wasserstein distance is the smallest value
+of {E(dist(X−Y ))p} 1 P over all possible joint distributions
+γ ∈ Γ(P, Q) of (X, Y). It is important to note that the
+original formulation of the Wasserstein distance is intractable
+in nature. Therefore, practitioners estimate it relying on an ap-
+proximated implementation. Intuitively, given a k-dimensional
+vector space V ⊂ Rk, we can map the distributions (P,Q) to
+corresponding sets of k-dimensional data points G,H ⊆ V .
+In our work, the Wasserstein distance WP is calculated using
+the SAG approximated computational method as explained in
+[40]. From now on, we refer to the approximated version of
+the Wasserstein distance as WA ≈Wp.
+The rationale for the adoption of the Wasserstein distance in
+our approach is that, unlike the Kullback-Leibler divergence,
+it is a probability metric that measures the work required to
+transport the probability mass from one distribution state to
+another. This characteristic provides a smooth and signiﬁcant
+representation of the distance between distributions, making it
+a good candidate in domains where analyzing the similarity of
+outcomes is more relevant than an exact likelihood matching.
+Figure 1 shows an intuitive representation of meaningful
+information carried by the Wasserstein distance: although the
+measures between the red and the blue distributions are the
+same in terms of Kullback-Leibler divergence, the Wasser-
+stein distance measures “the work” required to transport the
+probability mass from the red state to the blue state.
+It is noteworthy that the Wasserstein distance is gaining trac-
+tion in recent machine learning methods and notably in neu-
+ral network architectures such as Wasserstein Auto-Encoders
+(WAE), that share many of the properties of Variational Auto-
+Encoders (VAEs) such as stable training, encoder-decoder
+architecture, and a nice latent manifold structure, while also
+generating samples of higher quality [41]. As indicated in [39],
+a WAE encodes the data into a low-dimensional latent space
+similarly to a VAE. However, instead of regularizing each data
+point, it regularizes the averaged encoding distribution. This
+approach allows the encoding distribution to capture essential
+information and still match the prior distribution.
+Our work builds upon distance-based change point de-
+tection approaches, which have shown success in the pre-
+vious literature [42], [43]. Our intuition is that adopting a
+more informative distance metric such as the Wasserstein
+distance, which beneﬁts from the properties described above,
+could trigger more timely and accurate detection of change
+points. This assumption may be particularly relevant in high-
+dimensional datasets, where the large number of dimensions
+adds complexity to the change point detection task, causing
+phenomena such as collinearity, feature noise, and fractional
+distance when few of the features values change.
+B. Algorithm
+The input of the algorithm is a time series of data sam-
+ples I = (I1,I2,...,IT ), where each data sample is a d-
+dimensional vector: It ∈ Rd. The parameters of the algorithm
+are the following:
+• κ – the minimum number of points that must be present
+in the current representation of distribution to trigger
+change point detection. This parameter controls how
+many samples are required before knowing the current
+distribution well enough for change point detection.
+• µ – the maximum number of points that can be present in
+the current representation of distribution. This parameter
+allows to control the size of the memory preventing
+possible bottlenecks deriving from a large number of
+samples.
+• ϵ – the ratio controlling how distant the samples can be
+from the current distribution to be still considered a part
+of the same.
+• ω – size of the mini-batch in which the data are processed.
+Intuitively, our method learns a new representation of a
+distribution D in an unsupervised manner using an initial
+set of data points. Subsequently, the method incrementally
+stores newly available samples in a buffer. Once the desired
+capacity of the buffer (which is controlled by the κ parameter)
+is reached, the change detection procedure is activated. In this
+process, we collect newly arriving points in mini-batches of
+length ω (sliding non-overlapping windows), and calculate the
+Wasserstein distance of every mini-batch B with respect to D.
+If the distance is lower than the desired threshold γ (controlled
+by the ϵ parameter), we qualify B as belonging to D. The
+threshold is determined as:
+η(D, ϵ) = ϵ max
+B∈D
+WA(B,D). (2)
+Consequently, D is updated to reﬂect the new data points.
+On the contrary, if the distance is higher than γ, we assume
+that the current mini-batch B being analyzed belongs to a
+different distribution. Therefore, we annotate this point in time
+as a change point and start creating a new distribution to
+replace D. Once D reaches its storage capacity controlled by
+µ, the oldest samples are removed to accommodate new ones,
+
+=== page 5 ===
+in order to keep an up-to-date representation of the distribution
+D. A pseudo-code of the algorithm is presented in Algorithm
+1. A signiﬁcant advantage of our approach is that it compares
+two sets of points instead of working on the parameters
+of speciﬁc distributions. This mechanism allows to compare
+distributions of unknown types, without limiting the scope to
+only the most popular ones, such as Normal distributions. In
+the following sections we describe our experimental setup and
+discuss our results.
+Input : I = (I1,I2,...,IT ) Time series data
+Result: R: Set of change points
+Parameters: κ Min points required in current distrib.
+before starting detection
+µ Max points stored for current distrib.
+ϵ Threshold ratio for the distance value
+ω Mini-batch size
+1 Set current distribution D←∅
+2 R←∅
+3 B ← Process I into sequence (B1,B2,...,B T ω ) of non-overlapping mini-batches Bi of size ω
+4 for Bi ∈ B do
+5 if |D|<κ then
+6 D←D∪Bi
+7 if |D|>= κ then
+8 Determine η from Eq. (2) with D and ϵ
+9 end
+10 else
+11 υ←WA(Bi,D)
+12 if υ >η then
+13 Set change point c←i∗ω
+14 R←R∪{c}
+15 D←{Bi}
+16 else
+17 if |D|<µ then
+18 D←D∪Bi
+19 Determine η from Eq. 2 with D and ϵ
+20 end
+21 end
+22 end
+23 end
+Algorithm 1: Pseudo-code of the proposed WATCH
+method
+IV. EXPERIMENTAL SETUP
+In this study we adopt the Turing Change Point Detection
+(TCPD) benchmark [44] in order to compare the results
+obtained with our method with state-of-the-art algorithms. In
+the following subsection, we introduce the benchmark and
+motivate its adoption. Then, we discuss our additional datasets
+and the metrics used for the evaluation of results.
+TABLE II: Multivariate datasets analyzed
+Name Samples Dimensions
+apple 622 2
+bee waggle 6 609 4
+gas sensor 1000 128
+har 1623 561
+mnist 131 784
+movement 360 90
+occupancy 509 4
+run log 376 2
+trafﬁc 135 17
+A. Turing Change Point Detection (TCPD) benchmark
+This benchmark allows us to evaluate the 13 algorithms
+described in Table I on 42 time series datasets. There is
+also the possibility to extend the benchmark to new methods
+and datasets, which provides a solid ground for the eval-
+uation of new change point detection algorithms designed
+by researchers and practitioners. It is also noteworthy that
+many existing algorithms work just on univariate data and
+cannot handle multivariate datasets. Moreover, the majority
+of the datasets (38 out of 42) available in the benchmark are
+univariate (or single-dimensional), and only 4 are multivariate
+(or multi-dimensional). Furthermore, these 4 datasets (apple,
+bee waggle 6, occupancy, run log) present a number of di-
+mensions ranging from 2 to 4. For this reason, we extended the
+benchmark with 5 datasets with a signiﬁcantly higher number
+of dimensions, ranging from 17 to 784. Further details of the
+added datasets are reported in Section IV-B. Table II presents
+all datasets used in our experimental evaluation.
+There are two modes of experiments in the TCPD bench-
+mark:
+• default – in this mode the algorithms are run with default
+parameters;
+• best – in this mode the algorithms are run with various
+combinations of parameter values (grid search) and the
+best conﬁguration is selected.
+Summary results obtained with the default and best mode
+across all datasets are reported in Table III, whereas detailed
+results obtained with the best mode on each single dataset are
+reported in Table IV, V, VI, and VII.
+B. Additional high-dimensional datasets
+We added the following datasets to evaluate the performance
+of the methods on more challenging data presenting a higher
+number dimensions than 4:
+1) har: The Human Activity Recognition dataset intro-
+duced in [45] contains records of 6 types of human
+activities including w alking, sitting, standing. Given
+the sequential nature of the data, it is straightforward
+to determine change points based on activity changes
+in the labels for each human participant. We perform
+experiments separately for all human participants and
+report the average values of the metrics.
+2) gas sensor: The Gas Sensor Array Drift Dataset [46]
+contains measurements from 16 sensors exposed to 6
+
+=== page 6 ===
+different gases at various concentration levels. Given
+the large number of dimensions (128) and time points
+(13910), we selected a portion of 1000 samples in order
+to allow all methods to complete their computation in a
+feasible amount of time. Change points are determined
+in the same way as in the har dataset, taking into account
+class changes in the time series data.
+3) movement: The Libras movement dataset contains
+records of hand movements types in ofﬁcial Brazilian
+signal language [47]. There are 360 samples described
+by 90 dimensions. We determine the change points based
+on labels’ changes in the same way as in the har dataset.
+4) mnist: The MNIST dataset [48] contains images of
+handwritten digits. We reproduced a sequential scenario
+selecting 131 images, and a varying number of images
+(from 6 to 35) for each class to obtain a more chal-
+lenging scenario with non-evenly spaced change points.
+Each image has a size of 28 × 28, which is ﬂattened to
+obtain a 784-dimensional feature vector.
+5) trafﬁc: This dataset contains urban trafﬁc records of
+the city of Sao Paulo in Brazil [49]. There are 135
+samples described by 17 dimensions. We ﬁrst perform
+discretization on the slowness attribute (continuous) to
+obtain a discrete attribute with three labels (low, medium,
+and high). Then, we determine change points based on
+label changes in the sequential data.
+C. Metrics
+In our experiments, we adopt the metrics provided by the
+authors of the TCPD benchmark [44] to keep consistency and
+to allow an easy comparison for future works. As indicated
+in [44], the existing metrics for change point detection can
+be divided between classiﬁcation and clustering metrics. One
+metric for each category is adopted: F1-score for classiﬁcation
+and Covering for clustering.
+F1-score: Change point detection algorithms may be evalu-
+ated in terms of classiﬁcation between change-point and non-
+change point classes [44]. Usually, datasets are affected by
+class imbalance due to a low number of change points. There-
+fore, metrics that are highly vulnerable to class imbalance are
+not suitable for this case. Examples of more robust metrics
+are:
+• P – Precision: the ratio of correctly detected change
+points over the number of all detected change points,
+• R – Recall: the ratio of correctly detected change points
+over the number of actual change points.
+The F1-score can be applied to provide a single performance
+measure, incorporating both Precision and Recall. The F1
+score is deﬁned as:
+F1 = PR P + R. (3)
+As the TCPD benchmark may contain many ground truth sets
+of change points provided by human annotators, Precision
+and Recall are adjusted to handle this situation. This aspect
+implies that only detected change points that are not present
+in any ground truth are considered false positives, while the
+Recall is calculated as the average for each source of ground
+truth to encourage ﬁnding all change points from all ground
+truths (from all annotators). The details on those metrics
+are presented in [44] and [50]. The TCPD benchmark also
+considers the margin of error around the actual change points
+to allow for minor discrepancies. In the results provided by
+the original paper and in our work, we use a margin of error
+of value 5.
+Covering metric (Cover): The covering metric was initially
+presented in [51] to assess the quality of the segmentation
+for multiple segments (subsets of pixels representing separate
+objects) in the image domain. Simply put, the covering metric
+describes how well the predicted segments cover ground truth
+segments. In our case, each segment corresponds to a speciﬁc
+subsequence of contiguous points from the input time series. In
+order to deﬁne the covering metric, we ﬁrst need to introduce
+the Jaccard Index. It is a statistic used for measuring the
+similarity of sample sets. It is also known as Intersection
+over Union, as it measures the overlap between the predicted
+segmentation and the ground truth. The Jaccard Index is
+deﬁned as:
+J(A,A′) = |A∩A′| |A∪A′| (4)
+The deﬁnition of the covering metric of partition G by
+partition G′ is introduced in [51] for images segmentation and
+adjusted to time series data in [44]:
+Cover(G′,G) = 1 T ∑ A∈G |A| max A′∈G′ J(A,A′) (5)
+To determine a single measure of performance while having
+a collection of ground truth partitions provided by the human
+annotators and a partition given by an algorithm, the average
+of Cover(G′,G) for all annotators is computed.
+D. Implementation
+WATCH is implemented in Python v3.9 and numpy v1.19.5.
+We also used the R implementation of the Wasserstein distance
+provided in [40], and called it from the Python code using the
+rpy2 v3.4.5 bridge. All experiments are run on a machine with
+an Intel Core i7-8750H CPU, GeForce GTX 1050 Ti Mobile
+GPU and 32 GB of RAM.
+V. RESULTS AND DISCUSSION
+In the following, we discuss our experimental results in
+three subsections: A) summary results across all datasets
+considering default and best modes, B) detailed results on mul-
+tivariate (multi-dimensional) datasets, and C) detailed results
+on univariate (uni-dimensional) datasets.
+A. Summary results analysis
+Table III shows the summary of the average results across all
+datasets and methods. The layout of the table organizes results
+into four sections based on dimensions of the data (univariate,
+
+=== page 7 ===
+TABLE III: Results organized into sections based on dimen-
+sions of the data and the mode of experiments. The values
+correspond to the average of runs for each section. Blank val-
+ues indicate that the method is not suited for multidimensional
+data. The highest values for each section of the table are shown
+in bold.
+Univariate Multivariate
+Default Best Default Best
+Algorithm Cover F1 Cover F1 Cover F1 Cover F1
+AMOC 0.680 0.677 0.726 0.778
+BINSEG 0.682 0.716 0.760 0.833
+BOCPD 0.614 0.675 0.769 0.857 0.486 0.558 0.717 0.798
+BOCPDMS 0.626 0.507 0.737 0.620 0.249 0.235 0.317 0.292
+CPNP 0.514 0.594 0.538 0.648
+ECP 0.505 0.592 0.711 0.789 0.456 0.496 0.634 0.683
+KCPA 0.068 0.121 0.619 0.679 0.162 0.187 0.565 0.662
+PELT 0.666 0.692 0.706 0.766
+PROPHET 0.542 0.495 0.574 0.537
+RBOCPDMS 0.579 0.411 0.422 0.349 0.194 0.191 0.077 0.102
+RFPOP 0.374 0.485 0.403 0.517
+SEGNEIGH 0.658 0.659 0.763 0.832
+WBS 0.319 0.408 0.417 0.519
+ZERO 0.573 0.658 0.573 0.658 0.255 0.325 0.255 0.325
+WATCH 0.540 0.570 0.797 0.898 0.427 0.488 0.713 0.836
+multivariate), and the mode of the experiments (default, best).
+The values correspond to the average of runs for each section.
+Considering the results obtained for the best mode with
+multivariate datasets, the WATCH method outperforms all other
+ones in terms of F1. The second best performing method,
+BOCPD, has an average F1 of 0.798, while WATCH has an
+average F1 of 0.836, resulting in a 4.76% improvement. The
+other methods, ECP and KCPA, are strongly outperformed
+by 22.40% and 26.28%, respectively. Focusing on the Cover
+metric, the WATCH method performs very similarly to the best
+method BOCPD, reporting a sligthly lower value (0.55%).
+It is noteworthy, however, that WATCH achieves signiﬁcantly
+better Cover than the ECP and KCPA. Focusing on the results
+obtained for univariate datasets, it is noteworthy that the
+proposed method WATCH outperforms other methods in terms
+of both Cover and F1 also for these simpler datasets.
+B. Results on multivariate datasets
+Results in terms of the F1 and Cover metrics values for
+multivariate datasets are reported in Table IV and V. In
+this work we are particularly focused on high-dimensional
+datasets since they most closely represent complex real-world
+scenarios that are not supported by the majority of change
+point detection methods (we note that only 6 out of 14
+competitor methods considered in our experiments support
+the analysis of multivariate data). In the following, we brieﬂy
+discuss results obtained on each multivariate dataset, whereas
+results on univariate datasets are reported separately in the
+following subsection. Results obtained by our method in terms
+of both F1 and Cover metrics follow a similar pattern. For the
+sake of conciseness, we focus our discussion on the F1 metric,
+which we believe is the most representative in most scenarios
+with time series data:
+• apple – WATCH outperforms all other competitors, im-
+proving the results by at least 2.72% considering the
+second best performing method, BOCPD.
+• bee waggle 6 – WATCH achieves the same performance
+as BOCPD and ZERO methods both in terms of F1 and
+Cover.
+• gas sensor – WATCH achieves a lower F1 performance
+than ECP and BOCPD. Considering that the WATCH
+behavior internally depends on a distance metric, we
+attribute this loss to a possible fractional distance issue
+depending on the large number of dimensions of this
+dataset (128). More speciﬁcally, if there are just few
+dimensions determining the change points, they may be
+harder to detect since the overall distance may not change
+signiﬁcantly. However, it is noteworthy the performance
+in terms of F1 and Cover is still relatively close to the
+best performing methods: a 4.73% margin in terms of F1
+with respect to ECP, which loses with most of the other
+datasets analyzed.
+• har – WATCH signiﬁcantly outperforms all other methods.
+Considering ECP, the second best performing method,
+WATCH improves its F1 score by 2.59%, and BOCPD
+by 14.64%. We consider this result as a representative
+case of success, considering both the large number of
+dimensions in this dataset (561) and the signiﬁcant real-
+world implications, including human activity recognition
+and fall detection among others.
+• movement – WATCH greatly outperforms other methods,
+with a 8.32% improvement in F1 score over BOCPD.
+Pairwise comparisons with other methods reveal even
+greater improvements.
+• mnist – WATCH presents a huge margin of improvement
+when compared to other methods: at least 27.47% when
+compared to KCPA, the second best performing method.
+• occupancy – WATCH outperforms ECP, the second best
+performing method, by 3.86% in terms of F1 score,
+achieving an almost perfect score (close to 1).
+• run logs - WATCH does not obtain competitive results on
+this dataset, presenting signiﬁcantly worse results than the
+other methods. However, it is important to note that this
+dataset has only 2 dimensions. A quick inspection at the
+data shows that one dimension (overall travel distance
+of the runner) is monotonically increasing since it is
+accumulated over time, and therefore does not follow a
+typical data distribution. This data characteristic suggests
+that WATCH is unable to correctly detect changes due to
+the Wasserstein distance values being dominated by one
+of the two dimensions, yielding a large number of false
+positives. We argue that this dataset is atypical in nature,
+and is not representative of our main target, i.e. high-
+dimensional data. In this special case, the outcome may
+be completely different by just excluding the cumulative
+distance as a dimension, and limiting the analysis of the
+other dimension (running pace).
+• trafﬁc - WATCH signiﬁcantly outperforms other methods,
+achieving an F1 score that is higher by 9.95% than the
+second-best performing method, BOCPD, and by 54.6%
+than the third-best performing method, BOCPDMS. We
+
+=== page 8 ===
+TABLE IV: F1 for multivariate datasets and methods. Values are unavailable either due to a failure (F) or the method timing
+out (T). Highest values for each time series are shown in bold.
+Dataset BOCPD BOCPDMS ECP KCPA RBOCPDMS ZERO WATCH
+apple 0.916 0.445 0.745 0.634 F/T 0.594 0.941
+bee_waggle_6 0.929 0.481 0.233 0.634 0.245 0.929 0.929
+gas_sensor 0.619 T 0.634 0.444 F/T 0.091 0.604
+har 0.792 F/T 0.885 0.831 F/T 0.148 0.908
+mnist 0.533 T 0.625 0.706 F/T 0.167 0.900
+movement 0.769 T 0.651 0.571 T 0.125 0.833
+occupancy 0.919 0.735 0.932 0.812 F/T 0.341 0.968
+run_log 1.000 0.469 0.990 0.909 0.380 0.446 0.671
+traffic 0.703 0.500 0.451 0.414 0.296 0.083 0.773
+TABLE V: Cover for multivariate datasets and methods. Values are unavailable either due to a failure (F) or the method timing
+out (T). Highest values for each time series are shown in bold.
+Dataset BOCPD BOCPDMS ECP KCPA RBOCPDMS ZERO WATCH
+apple 0.846 0.720 0.758 0.462 F/T 0.425 0.748
+bee_waggle_6 0.891 0.889 0.116 0.730 0.205 0.891 0.891
+gas_sensor 0.742 T 0.781 0.435 F/T 0.094 0.743
+har 0.732 F/T 0.832 0.729 F/T 0.084 0.802
+mnist 0.464 T 0.611 0.698 F/T 0.123 0.697
+movement 0.766 T 0.732 0.384 T 0.067 0.699
+occupancy 0.645 0.556 0.666 0.581 F/T 0.236 0.671
+run_log 0.824 0.327 0.819 0.729 0.329 0.304 0.603
+traffic 0.546 0.357 0.387 0.332 0.158 0.073 0.561
+1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0
+bocpd bocpdmsecp kcpa zeroWATCH
+CD
+Fig. 2: F1 rank plot for multivariate data in the best mode.
+1.0 1.5 2.0 2.5 3.0 3.5 4.0 4.5 5.0 5.5 6.0
+bocpd bocpdmsecp kcpa zeroWATCH
+CD
+Fig. 3: Cover rank plot for multivariate data in the best mode.
+argue that this dataset is representative of our scope of
+analysis due to the strong real-world implication of trafﬁc
+monitoring.
+As we can see, the WATCH method achieves the best results
+with 7 out of 9 multivariate datasets. Most importantly, it
+provides consistent and robust detections with the datasets
+presenting the highest dimensionality (HAR and MNIST).
+In order to assess the statistical signiﬁcance of our results,
+we adopt a rank plot for both metrics (F1 and Cover) com-
+puted by averaging the ranks obtained by the algorithm over
+all datasets [52]. More speciﬁcally, Holm’s procedure was
+adopted to calculate the signiﬁcant differences considering
+all the different algorithms [53]. Figure 2 shows that WATCH
+strongly outperforms other methods in terms of F1. Looking at
+the ﬁgure, the pairwise difference between any two combina-
+tions of algorithms is signiﬁcant if their distance exceeds the
+critical difference (CD). In terms of Cover, looking at Figure 3
+reveals a slightly lower performance for WATCH, which is not
+signiﬁcantly worse than BOCPD. Moreover, it is noteworthy
+that WATCH still obtains the best rank values compared to all
+other algorithms considered in our study.
+C. Univariate results analysis
+Although this work focuses on multivariate data, it is
+noteworthy that WATCH presents a consistent performance also
+with the univariate datasets available in TCPD benchmark.
+Table VI and Table VII show the results in terms of F1
+and Cover for all univariate datasets and algorithms. Overall,
+WATCH achieves the best F1 results with 23 out of 38 datasets.
+Considering the Cover metric, WATCH shows the highest value
+with 20 datasets. Moreover, Table III, shows that WATCH
+achieves the best average values of F1 and Cover for univariate
+datasets in the best experiment mode.
+The results of WATCH for univariate datasets strongly sug-
+gest that the method may be successfully applied not only for
+multivariate (and particularly high-dimensional) but also for
+
+=== page 9 ===
+TABLE VI: F1 for univariate datasets (best mode). Values are unavailable either due to a failure (F), the method timing out
+(T) or missing values in the series unsupported by the method (M). Highest values for each time series are shown in bold.
+Dataset AMOC BINSEG BOCPD BOCPDMS CPNP ECP KCPA PELT PROPHET RBOCPDMS RFPOP SEGNEIGH WBS ZERO WATCH
+bank 1.000 1.000 1.000 0.500 0.054 0.182 0.333 0.400 1.000 T 0.015 1.000 0.043 1.000 1.000
+bitcoin 0.507 0.690 0.733 0.533 0.611 0.648 0.665 0.735 0.446 T 0.284 0.735 0.690 0.450 0.806
+brent_spot 0.465 0.670 0.609 0.239 0.607 0.641 0.553 0.586 0.249 T 0.521 0.586 0.564 0.315 0.677
+businv 0.588 0.588 0.588 0.455 0.386 0.370 0.294 0.490 0.275 0.370 0.261 0.588 0.289 0.588 0.588
+centralia 0.909 1.000 1.000 1.000 1.000 0.909 1.000 1.000 0.763 0.846 1.000 1.000 0.556 0.763 0.974
+children_per_woman 0.678 0.663 0.712 0.405 0.344 0.551 0.525 0.637 0.310 0.504 0.246 0.637 0.500 0.507 0.844
+co2_canada 0.544 0.856 0.924 0.479 0.642 0.875 0.867 0.670 0.482 0.542 0.569 0.872 0.681 0.361 0.893
+construction 0.696 0.709 0.709 0.410 0.602 0.709 0.634 0.709 0.324 0.340 0.185 0.709 0.523 0.696 0.966
+debt_ireland 0.760 1.000 1.000 0.892 0.958 0.980 1.000 1.000 0.469 0.748 0.824 1.000 0.538 0.469 0.958
+gdp_argentina 0.889 0.947 0.947 0.583 0.818 0.824 0.800 0.947 0.615 0.452 0.615 0.947 0.421 0.824 0.947
+gdp_croatia 1.000 0.824 1.000 0.583 1.000 0.824 0.583 0.824 0.824 0.824 0.400 0.824 0.167 0.824 1.000
+gdp_iran 0.696 0.652 0.862 0.492 0.620 0.824 0.734 0.808 0.652 0.737 0.636 0.808 0.576 0.652 0.889
+gdp_japan 1.000 0.889 1.000 0.615 0.667 1.000 0.500 0.889 0.889 0.889 0.222 0.889 0.222 0.889 1.000
+global_co2 0.929 0.929 0.889 0.458 0.667 0.929 0.667 0.929 0.463 0.547 0.293 0.929 0.250 0.846 0.846
+homeruns 0.812 0.829 0.829 0.650 0.650 0.812 0.829 0.812 0.723 0.397 0.661 0.812 0.664 0.659 0.974
+iceland_tourism 0.947 0.947 0.947 0.486 0.391 1.000 0.486 0.643 0.220 0.667 0.200 0.947 0.200 0.947 1.000
+jfk_passengers 0.776 0.776 0.776 0.650 0.602 0.651 0.437 0.776 0.354 T 0.491 0.776 0.437 0.723 0.723
+lga_passengers 0.561 0.620 0.704 0.563 0.606 0.892 0.526 0.537 0.366 T 0.592 0.537 0.674 0.535 0.774
+measles 0.947 0.947 0.947 0.486 0.118 0.103 0.281 0.153 0.391 F/T 0.030 0.947 0.041 0.947 0.947
+nile 1.000 1.000 1.000 0.800 1.000 1.000 0.824 1.000 0.824 0.667 1.000 1.000 1.000 0.824 1.000
+ozone 0.776 0.723 0.857 0.778 0.750 1.000 0.667 1.000 0.723 0.651 0.429 1.000 0.286 0.723 1.000
+quality_control_1 1.000 1.000 1.000 0.667 0.667 1.000 0.667 1.000 0.500 0.286 0.667 1.000 0.667 0.667 0.800
+quality_control_2 1.000 1.000 1.000 0.667 1.000 1.000 1.000 1.000 0.750 0.429 1.000 1.000 1.000 0.750 1.000
+quality_control_3 1.000 1.000 1.000 0.766 0.571 1.000 1.000 1.000 0.667 T 0.800 1.000 1.000 0.667 1.000
+quality_control_4 0.810 0.873 0.787 0.561 0.658 0.787 0.658 0.780 0.780 T 0.241 0.780 0.608 0.780 0.909
+quality_control_5 1.000 1.000 1.000 0.500 1.000 1.000 1.000 1.000 1.000 0.500 1.000 1.000 1.000 1.000 1.000
+rail_lines 0.846 0.846 0.966 0.889 0.966 0.966 0.800 0.846 0.537 0.730 0.615 0.889 0.205 0.537 0.966
+ratner_stock 0.776 0.824 0.868 0.559 0.396 0.776 0.754 0.824 0.280 T 0.203 0.824 0.378 0.571 0.824
+robocalls 0.800 0.966 0.966 0.750 0.862 0.966 0.966 0.966 0.636 0.846 0.714 0.966 0.714 0.636 0.966
+scanline_126007 0.710 0.920 0.921 0.829 0.906 0.870 0.838 0.889 0.644 T 0.649 0.889 0.818 0.644 0.833
+scanline_42049 0.485 0.879 0.962 0.889 0.713 0.910 0.908 0.910 0.269 T 0.460 0.910 0.650 0.276 0.924
+seatbelts 0.824 0.838 0.683 0.583 0.735 0.683 0.621 0.683 0.452 0.383 0.563 0.735 0.583 0.621 0.974
+shanghai_license 0.966 0.868 0.868 0.605 0.600 0.868 0.465 0.868 0.532 0.389 0.357 0.868 0.385 0.636 0.778
+uk_coal_employ M M M 0.617 M 0.513 0.513 M 0.639 M M M M 0.513 0.941
+unemployment_nl 0.742 0.889 0.876 0.592 0.747 0.744 0.744 0.788 0.566 F/T 0.628 0.788 0.801 0.566 0.876
+us_population 1.000 0.889 1.000 0.615 0.232 0.471 0.276 0.500 0.159 T 0.889 0.889 0.113 0.889 0.889
+usd_isk 0.785 0.704 0.785 0.678 0.674 0.785 0.601 0.657 0.489 0.510 0.462 0.678 0.636 0.489 0.785
+well_log 0.336 0.914 0.832 0.743 0.822 0.928 0.776 0.873 0.149 T 0.923 0.873 0.832 0.237 0.869
+TABLE VII: Cover for univariate datasets (best mode). Values are unavailable either due to a failure (F), the method timing
+out (T) or missing values in the series unsupported by the method (M). Highest values for each time series are shown in bold.
+Dataset AMOC BINSEG BOCPD BOCPDMS CPNP ECP KCPA PELT PROPHET RBOCPDMS RFPOP SEGNEIGH WBS ZERO WATCH
+bank 1.000 1.000 1.000 0.997 0.103 0.238 0.509 0.509 1.000 T 0.036 1.000 0.053 1.000 1.000
+bitcoin 0.771 0.771 0.822 0.773 0.364 0.772 0.778 0.794 0.723 T 0.168 0.771 0.409 0.516 0.816
+brent_spot 0.503 0.650 0.667 0.265 0.437 0.653 0.571 0.659 0.527 T 0.235 0.659 0.310 0.266 0.652
+businv 0.574 0.562 0.693 0.459 0.402 0.690 0.405 0.647 0.539 0.459 0.123 0.647 0.154 0.461 0.554
+centralia 0.675 0.675 0.753 0.650 0.675 0.753 0.675 0.675 0.675 0.624 0.568 0.675 0.253 0.675 0.753
+children_per_woman 0.804 0.798 0.801 0.427 0.486 0.718 0.613 0.798 0.521 0.715 0.154 0.798 0.284 0.429 0.868
+co2_canada 0.527 0.747 0.773 0.584 0.528 0.751 0.739 0.705 0.605 0.617 0.497 0.752 0.552 0.278 0.742
+construction 0.629 0.575 0.585 0.571 0.375 0.524 0.395 0.423 0.561 0.575 0.154 0.575 0.300 0.575 0.735
+debt_ireland 0.635 0.717 0.688 0.729 0.777 0.798 0.747 0.777 0.321 0.396 0.489 0.777 0.248 0.321 0.832
+gdp_argentina 0.737 0.737 0.737 0.711 0.461 0.737 0.367 0.667 0.592 0.711 0.346 0.737 0.326 0.737 0.737
+gdp_croatia 0.708 0.708 0.708 0.675 0.708 0.708 0.623 0.708 0.708 0.708 0.353 0.708 0.108 0.708 0.773
+gdp_iran 0.583 0.583 0.583 0.611 0.448 0.583 0.505 0.505 0.583 0.692 0.248 0.583 0.295 0.583 0.730
+gdp_japan 0.802 0.802 0.802 0.777 0.522 0.802 0.525 0.802 0.802 0.802 0.283 0.802 0.283 0.802 0.802
+global_co2 0.758 0.758 0.758 0.745 0.381 0.665 0.602 0.743 0.284 0.745 0.368 0.758 0.338 0.758 0.758
+homeruns 0.694 0.683 0.694 0.681 0.537 0.694 0.501 0.683 0.575 0.506 0.392 0.683 0.407 0.511 0.694
+iceland_tourism 0.946 0.946 0.946 0.936 0.393 0.842 0.655 0.830 0.498 0.936 0.293 0.946 0.512 0.946 0.946
+jfk_passengers 0.844 0.839 0.837 0.855 0.583 0.807 0.563 0.839 0.373 T 0.393 0.839 0.514 0.630 0.812
+lga_passengers 0.434 0.541 0.547 0.475 0.478 0.653 0.536 0.534 0.446 T 0.426 0.543 0.501 0.383 0.604
+measles 0.951 0.951 0.951 0.950 0.098 0.105 0.400 0.232 0.616 F/T 0.046 0.951 0.084 0.951 0.951
+nile 0.888 0.880 0.888 0.870 0.880 0.888 0.758 0.880 0.758 0.876 0.880 0.880 0.880 0.758 0.888
+ozone 0.721 0.600 0.602 0.735 0.458 0.676 0.451 0.635 0.574 0.755 0.358 0.627 0.309 0.574 0.822
+quality_control_1 0.996 0.992 0.996 0.990 0.721 0.989 0.620 0.992 0.693 0.780 0.706 0.992 0.687 0.503 0.882
+quality_control_2 0.927 0.922 0.927 0.921 0.922 0.927 0.927 0.922 0.723 0.637 0.922 0.922 0.922 0.638 0.923
+quality_control_3 0.997 0.996 0.997 0.987 0.831 0.997 0.997 0.996 0.500 T 0.978 0.996 0.996 0.500 0.993
+quality_control_4 0.742 0.673 0.673 0.670 0.508 0.540 0.535 0.673 0.673 T 0.077 0.673 0.506 0.673 0.673
+quality_control_5 1.000 1.000 1.000 0.994 1.000 1.000 1.000 1.000 1.000 0.994 1.000 1.000 1.000 1.000 1.000
+rail_lines 0.786 0.786 0.768 0.769 0.786 0.768 0.773 0.786 0.534 0.769 0.482 0.786 0.103 0.428 0.784
+ratner_stock 0.874 0.914 0.906 0.872 0.382 0.874 0.771 0.914 0.444 T 0.162 0.914 0.182 0.450 0.906
+robocalls 0.666 0.788 0.808 0.741 0.677 0.808 0.808 0.760 0.601 0.682 0.569 0.760 0.559 0.601 0.808
+scanline_126007 0.634 0.633 0.631 0.677 0.433 0.390 0.494 0.444 0.503 T 0.316 0.633 0.329 0.503 0.523
+scanline_42049 0.425 0.861 0.892 0.875 0.577 0.866 0.860 0.862 0.441 T 0.257 0.862 0.690 0.211 0.874
+seatbelts 0.683 0.797 0.800 0.630 0.809 0.800 0.702 0.797 0.635 0.533 0.660 0.797 0.727 0.528 0.832
+shanghai_license 0.930 0.920 0.920 0.911 0.474 0.920 0.497 0.920 0.804 0.763 0.381 0.920 0.351 0.547 0.847
+uk_coal_employ M M M 0.504 M 0.356 0.356 M 0.481 M M M M 0.356 0.650
+unemployment_nl 0.627 0.669 0.669 0.572 0.503 0.515 0.476 0.650 0.507 F/T 0.246 0.650 0.447 0.507 0.651
+us_population 0.803 0.803 0.737 0.801 0.391 0.508 0.271 0.506 0.135 T 0.803 0.803 0.050 0.803 0.803
+usd_isk 0.865 0.764 0.853 0.866 0.540 0.858 0.714 0.791 0.436 0.770 0.166 0.791 0.401 0.436 0.858
+well_log 0.463 0.828 0.793 0.769 0.779 0.835 0.798 0.782 0.411 T 0.787 0.782 0.768 0.225 0.798
+
+=== page 10 ===
+1 2 3 4 5 6 7 8 9 10 11 12 13 14
+amocbinsegbocpd bocpdmscpnpecp kcpapelt prophetrfpopsegneigh wbszeroWATCH
+CD
+Fig. 4: F1 rank plot for univariate data in the best mode.
+1 2 3 4 5 6 7 8 9 10 11 12 13 14
+amocbinsegbocpd bocpdms cpnpecp kcpapelt prophet rfpopsegneigh wbszeroWATCH
+CD
+Fig. 5: Cover rank plot for univariate data in the best mode.
+univariate time series datasets. The rank plots for univariate
+datasets reported in Figure 4 and 5 show that, overall, WATCH
+positions itself as the best (in terms of Cover) and second best
+(in terms of F1) method and signiﬁcantly outperforms most of
+the other competitors. This result validates our considerations
+made inspecting the numerical values of the metrics in Tables
+VI and VII.
+VI. CONCLUSION
+In this work we addressed the change point detection
+problem focusing on multivariate and high-dimensional data,
+which represents a challenging scenario for most of state-of-
+the-art methods. We proposed WATCH, a novel Wasserstein
+distance-based change point detection approach that models
+the current data distribution and monitors its behavior over
+time. A threshold-ratio based approach is used to adaptively
+detect change points in dynamically changing time series data.
+An extensive experimental evaluation with a large number of
+benchmark datasets reveals the potential of our method, which
+outperforms all considered competitors in the majority of the
+cases. A statistical evaluation was performed to validate the
+obtained results. As future work, we aim to investigate possible
+extensions of our method to leverage periodic behavior in time
+series data, as well as possible applications in lifelong learning
+settings.
+ACKNOWLEDGMENTS
+The work presented in this article was partially funded by
+DARPA through the project “Lifelong Streaming Anomaly
+Detection” (Grant N. A19-0131-003 and A21-0113-002). We
+also acknowledge the support of NVIDIA through the donation
+of a Titan V GPU.
+REFERENCES
+[1] M. I. Baron, “Nonparametric adaptive change point estimation and on
+line detection,” Sequential Analysis, vol. 19, no. 1-2, pp. 1–23, 2000.
+[2] S. Aminikhanghahi and D. J. Cook, “A survey of methods for time series
+change point detection,” Knowledge and information systems, vol. 51,
+no. 2, pp. 339–367, 2017.
+[3] J. Gama, Knowledge discovery from data streams. CRC Press, 2010.
+[4] R. Corizzo, M. Ceci, G. Pio, P. Mignone, and N. Japkowicz, “Spatially-
+aware autoencoders for detecting contextual anomalies in geo-distributed
+data,” in Discovery Science. Cham: Springer International Publishing,
+2021, pp. 461–471.
+[5] V. Chandola, A. Banerjee, and V. Kumar, “Anomaly detection: A survey,”
+ACM computing surveys (CSUR), vol. 41, no. 3, pp. 1–58, 2009.
+[6] K. Faber, L. Faber, and B. Sniezynski, “Autoencoder-based ids for cloud
+and mobile devices,” in 2021 IEEE/ACM 21st International Symposium
+on Cluster, Cloud and Internet Computing (CCGrid). IEEE, 2021, pp.
+728–736.
+[7] S. Ryan, R. Corizzo, I. Kiringa, and N. Japkowicz, “Pattern and
+anomaly localization in complex and dynamic data,” in 2019 18th
+IEEE International Conference On Machine Learning And Applications
+(ICMLA). IEEE, 2019, pp. 1756–1763.
+[8] B. Krawczyk, B. Pfahringer, and M. Wo´zniak, “Combining active
+learning with concept drift detection for data stream mining,” in 2018
+IEEE International Conference on Big Data (Big Data). IEEE, 2018,
+pp. 2239–2244.
+[9] V. M. Souza, F. A. Chowdhury, and A. Mueen, “Unsupervised drift
+detection on high-speed data streams,” in 2020 IEEE International
+Conference on Big Data (Big Data). IEEE, 2020, pp. 102–111.
+[10] G. I. Webb, R. Hyde, H. Cao, H. L. Nguyen, and F. Petitjean, “Charac-
+terizing concept drift,” Data Mining and Knowledge Discovery, vol. 30,
+no. 4, pp. 964–994, 2016.
+[11] S. Wares, J. P. Isaacs, and E. Elyan, “Data stream mining: methods and
+challenges for handling concept drift,” SN Applied Sciences, 2019.
+[12] A. Essien, I. Petrounias, P. Sampaio, and S. Sampaio, “A deep-learning
+model for urban trafﬁc ﬂow prediction with trafﬁc events mined from
+twitter,” World Wide Web, vol. 24, no. 4, pp. 1345–1368, 2021.
+[13] J.-L. Reyes-Ortiz, L. Oneto, A. Sama, X. Parra, and D. Anguita,
+“Transition-aware human activity recognition using smartphones,” Neu-
+rocomputing, vol. 171, pp. 754–767, 2016.
+[14] M. Ceci, R. Corizzo, F. Fumarola, M. Ianni, D. Malerba, G. Maria,
+E. Masciari, M. Oliverio, and A. Rashkovska, “Big data techniques for
+supporting accurate predictions of energy production from renewable
+sources,” in Proceedings of the 19th International Database Engineering
+& Applications Symposium, 2015, pp. 62–71.
+[15] G. Habault, Y. Nishimura, K. Yoshihara, and C. Ono, “Detecting errors
+in short-term electricity demand forecast using people dynamics,” in
+2019 IEEE International Conference on Big Data (Big Data). IEEE,
+2019, pp. 4163–4168.
+[16] M. Ceci, R. Corizzo, N. Japkowicz, P. Mignone, and G. Pio, “Echad:
+embedding-based change detection from multivariate time series in smart
+grids,” IEEE Access, vol. 8, pp. 156 053–156 066, 2020.
+[17] L. Zhu, X. Su, and X. Tai, “A high-dimensional indexing model for
+multi-source remote sensing big data,” Remote Sensing, vol. 13, no. 7,
+p. 1314, 2021.
+[18] R. Corizzo, M. Ceci, and N. Japkowicz, “Anomaly detection and repair
+for accurate predictions in geo-distributed big data,” Big Data Research,
+vol. 16, pp. 18–35, 2019.
+[19] K. Prabuchandran, N. Singh, P. Dayama, A. Agarwal, and V. Pandit,
+“Change point detection for compositional multivariate data,” Applied
+Intelligence, pp. 1–26, 2021.
+[20] D. V. Hinkley, “Inference about the change-point in a sequence of
+random variables,” 1970.
+[21] Y. Kawahara and M. Sugiyama, “Sequential change-point detection
+based on direct density-ratio estimation,” Statistical Analysis and Data
+
+=== page 11 ===
+Mining: The ASA Data Science Journal, vol. 5, no. 2, pp. 114–127,
+2012.
+[22] M. Basseville, I. V. Nikiforov et al., Detection of abrupt changes: theory
+and application. prentice Hall Englewood Cliffs, 1993, vol. 104.
+[23] S. V. Georgakopoulos, S. K. Tasoulis, and V. P. Plagianakos, “Efﬁcient
+change detection for high dimensional data streams,” in 2015 IEEE
+International Conference on Big Data (Big Data), 2015, pp. 2219–2222.
+[24] A. J. Scott and M. Knott, “A cluster analysis method for grouping means
+in the analysis of variance,” Biometrics, pp. 507–512, 1974.
+[25] I. E. Auger and C. E. Lawrence, “Algorithms for the optimal identi-
+ﬁcation of segment neighborhoods,” Bulletin of mathematical biology,
+vol. 51, no. 1, pp. 39–54, 1989.
+[26] P. Fryzlewicz, “Wild binary segmentation for multiple change-point
+detection,” The Annals of Statistics, vol. 42, no. 6, pp. 2243–2281, 2014.
+[27] R. Killick, P. Fearnhead, and I. A. Eckley, “Optimal detection of
+changepoints with a linear computational cost,” Journal of the American
+Statistical Association, vol. 107, no. 500, pp. 1590–1598, 2012.
+[28] P. Fearnhead and G. Rigaill, “Changepoint detection in the presence of
+outliers,” Journal of the American Statistical Association, vol. 114, no.
+525, pp. 169–183, 2019.
+[29] S. J. Taylor and B. Letham, “Forecasting at scale,” The American
+Statistician, vol. 72, no. 1, pp. 37–45, 2018.
+[30] R. P. Adams and D. J. MacKay, “Bayesian online changepoint detec-
+tion,” arXiv preprint arXiv:0710.3742, 2007.
+[31] J. Knoblauch, J. E. Jewson, and T. Damoulas, “Doubly robust bayesian
+inference for non-stationary streaming data with beta-divergences,”
+Advances in Neural Information Processing Systems, vol. 31, pp. 64–75,
+2018.
+[32] J. Knoblauch and T. Damoulas, “Spatio-temporal bayesian on-line
+changepoint detection with model selection,” in International Confer-
+ence on Machine Learning. PMLR, 2018, pp. 2718–2727.
+[33] V. Chandola and R. R. Vatsavai, “Scalable time series change detection
+for biomass monitoring using gaussian process.” in CIDU, 2010, pp.
+69–82.
+[34] S. Brahim-Belhouari and A. Bermak, “Gaussian process for nonstation-
+ary time series prediction,” Computational Statistics & Data Analysis,
+vol. 47, no. 4, pp. 705–712, 2004.
+[35] K. Haynes, P. Fearnhead, and I. A. Eckley, “A computationally efﬁ-
+cient nonparametric approach for changepoint detection,” Statistics and
+Computing, vol. 27, no. 5, pp. 1293–1305, 2017.
+[36] Z. Harchaoui, E. Moulines, and F. R. Bach, “Kernel change-point
+analysis,” in Advances in neural information processing systems, 2009,
+pp. 609–616.
+[37] D. S. Matteson and N. A. James, “A nonparametric approach for multiple
+change point analysis of multivariate data,” Journal of the American
+Statistical Association, vol. 109, no. 505, pp. 334–345, 2014.
+[38] H. Du and Z. Duan, “Finder: A novel approach of change point detection
+for multivariate time series,” Applied Intelligence, 06 2021.
+[39] B. Gaujac, I. Feige, and D. Barber, “Learning disentangled represen-
+tations with the wasserstein autoencoder,” in Joint European Confer-
+ence on Machine Learning and Knowledge Discovery in Databases.
+Springer, 2021, pp. 69–84.
+[40] M. Hallin, G. Mordant, and J. Segers, “Multivariate goodness-of-ﬁt tests
+based on wasserstein distance,” 2021.
+[41] I. Tolstikhin, O. Bousquet, S. Gelly, and B. Sch¨olkopf, “Wasserstein
+auto-encoders,” in 6th International Conference on Learning Represen-
+tations (ICLR 2018). OpenReview. net, 2018.
+[42] T. Dasu, S. Krishnan, S. Venkatasubramanian, and K. Yi, “An
+information-theoretic approach to detecting changes in multidimensional
+data streams,” Interfaces, 01 2006.
+[43] S. Aminikhanghahi, T. Wang, and D. J. Cook, “Real-time change
+point detection with application to smart home time series data,” IEEE
+Transactions on Knowledge and Data Engineering, vol. 31, pp. 1010–
+1023, 2019.
+[44] G. J. J. van den Burg and C. K. I. Williams, “An evaluation of change
+point detection algorithms,” arXiv preprint arXiv:2003.06222, 2020.
+[45] D. Anguita, A. Ghio, L. Oneto, X. Parra, and J. L. Reyes-Ortiz, “A public
+domain dataset for human activity recognition using smartphones,” in
+ESANN, 2013.
+[46] “Gas Sensor Array Drift Dataset at Different Concentrations,” UCI
+Machine Learning Repository, 2013.
+[47] Dias, Daniel, Peres, Sarajane, Bscaro, and Helton, “Libras Movement,”
+UCI Machine Learning Repository, 2009.
+[48] “The MNIST database of handwritten digits,” Online:
+http://yann.lecun.com/exdb/mnist/.
+[49] “Behavior of the urban trafﬁc of the city of Sao Paulo in Brazil,” UCI
+Machine Learning Repository, 2018.
+[50] D. Martin, C. Fowlkes, and J. Malik, “Learning to detect natural
+image boundaries using local brightness, color, and texture cues,” IEEE
+Transactions on Pattern Analysis and Machine Intelligence, vol. 26,
+no. 5, pp. 530–549, 2004.
+[51] P. Arbel´aez, M. Maire, C. Fowlkes, and J. Malik, “Contour detection
+and hierarchical image segmentation,” IEEE Transactions on Pattern
+Analysis and Machine Intelligence, vol. 33, no. 5, pp. 898–916, 2011.
+[52] J. Demˇsar, “Statistical comparisons of classiﬁers over multiple data sets,”
+The Journal of Machine Learning Research, vol. 7, pp. 1–30, 2006.
+[53] S. Holm, “A simple sequentially rejective multiple test procedure,”
+Scandinavian journal of statistics, pp. 65–70, 1979.

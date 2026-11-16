@@ -1,137 +1,209 @@
-"""Legal open-access acquisition for the Library's article catalogue.
+#!/usr/bin/env python3
+"""Library acquisition: download legally available open-access papers.
 
-For every record in docs/articles_catalogue_data.txt:
-  1. Resolve a DOI via Crossref title search (free, public API).
-  2. Query Unpaywall (free, legal OA locator) for a legally free PDF.
-  3. Fallback: arXiv API title search (preprints).
-  4. Fallback: a known http link from the record itself.
+Legal routes only:
+  1. arXiv (papers with a known arXiv id, or found via the arXiv API
+     by title search).
+  2. Unpaywall (papers with a DOI: returns OA locations when the
+     publisher version or an accepted manuscript is legally
+     open-access). Requires an email address for the API.
+  3. OpenAlex (open metadata catalogue; by DOI and by title search,
+     returns best_oa_location.pdf_url when a legal OA copy exists).
 
-Only legally free versions are downloaded (open-access, preprints,
-author-shared). Paywalled articles are NOT scraped; they are listed in
-the manifest for the owner to supply. Every obtained file records its
-source URL in the manifest.
+Semantic Scholar was tried and removed: its fuzzy title match
+returned a wrong paper (034), so the route is not used.
 
-Output: docs/library/pdfs/*.pdf + docs/library/manifest.md
+No paywall circumvention, no scraping of publisher sites, no shared
+credentials. Papers with no legal OA route are reported as
+"paywalled" and their summaries are synthesized from internal
+knowledge instead (labelled as such in docs/library/summaries/).
+
+Usage:
+    export UNPAYWALL_EMAIL="you@example.com"
+    python3 src/library_acquire.py [--catalog docs/articles_catalogue_data.txt]
+
+Outputs:
+    docs/library/pdfs/<id>_<slug>.pdf     downloaded OA PDFs
+    docs/library/text/<id>_<slug>.txt     extracted plain text (pypdf)
+    docs/library/acquisition_log.json      per-paper status
 """
 
+import argparse
 import json
 import re
-import time
+import sys
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "docs/library/pdfs"
-EMAIL = "library@vp-mr-strategy.local"  # Unpaywall requires an email contact
+USER_AGENT = "vp-mr-strategy-library/1.0"
+
+ARXIV_KNOWN = {
+    "018": "1011.6402",   # Cont-Kukanov-Stoikov, Price Impact of Order Book Events
+    "011": "1803.00567",  # Peyre & Cuturi, Computational Optimal Transport (tutorial basis)
+    "019": "1904.03429",  # Peyre & Cuturi, User's Guide to Optimal Transport
+    "038": "1502.03562",  # Bailey et al., The Backtest Overfitting Problem
+    "044": "1701.07875",  # Arjovsky et al., Wasserstein GAN
+    "065": "1608.00060",  # Chernozhukov et al., Double/Debiased ML
+    "068": "0706.1062",   # Clauset, Shalizi & Newman, Power-Law Distributions
+}
+
+ARXIV_QUERY = "http://export.arxiv.org/api/query?search_type=all&query={q}&max_results=5"
+PDF_DIR = Path("docs/library/pdfs")
+TEXT_DIR = Path("docs/library/text")
+LOG_PATH = Path("docs/library/acquisition_log.json")
 
 
-def _get_json(url, timeout=25):
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (research-library-indexer)"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.load(r)
+def slugify(text):
+    text = re.sub(r"[^A-Za-z0-9]+", "_", text).strip("_")
+    return text[:60].lower()
 
 
-def crossref_doi(title, author):
-    q = urllib.parse.quote(f'{title} {author.split("(")[0]}')
+def http_get(url, timeout=60):
+    req = urllib.request.Request(url, headers={"User-Agent": "vp-mr-strategy-library/1.0"})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.read()
+
+
+def parse_catalog(path):
+    """Yield (paper_id, title, authors, year, venue, doi, arxiv_hint)."""
+    entries = []
+    for line in Path(path).read_text().splitlines():
+        if not line.strip():
+            continue
+        parts = [p.strip() for p in line.split("|")]
+        if len(parts) < 7:
+            continue
+        pid = parts[0].split()[0]
+        title_auth = parts[2]
+        m = re.match(r"(.+?)\s*\((\d{4})\)", title_auth)
+        title, year = (m.group(1), m.group(2)) if m else (title_auth, "")
+        doi = parts[5] if len(parts) > 5 else ""
+        if doi and not re.match(r"^10\.\d{4,9}/", doi):
+            doi = ""
+        entries.append({"id": pid, "title": title, "year": year,
+                        "venue": parts[4], "doi": doi, "raw": line})
+    return entries
+
+
+def _json_get(url):
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        return json.loads(resp.read())
+
+
+def openalex_oa(doi=None, title=None):
+    """Legal OA PDF URL via OpenAlex, by DOI or title search."""
     try:
-        d = _get_json(f"https://api.crossref.org/works?query.bibliographic={q}&rows=3")
-        for it in d["message"]["items"]:
-            if "DOI" in it and abs(len(it.get("title", [""])[0]) - len(title)) < 0.6 * max(len(title), 1):
-                return it["DOI"]
-        # fall back to top hit if reasonably close
-        items = d["message"]["items"]
-        if items and "DOI" in items[0]:
-            t0 = items[0].get("title", [""])[0].lower()
-            if title.lower()[:30] in t0:
-                return items[0]["DOI"]
-    except Exception:
-        pass
-    return None
-
-
-def unpaywall_pdf(doi):
-    try:
-        d = _get_json(f"https://api.unpaywall.org/v2/{doi}?email={EMAIL}")
-        loc = d.get("best_oa_location") or {}
-        pdf = loc.get("url_for_pdf") or loc.get("url")
-        return pdf if pdf else None
+        if doi:
+            w = _json_get("https://api.openalex.org/works/doi:" + doi)
+        else:
+            data = _json_get("https://api.openalex.org/works?search="
+                             + urllib.parse.quote(title) + "&per-page=1")
+            results = data.get("results") or []
+            if not results:
+                return None
+            w = results[0]
+        if not w.get("open_access", {}).get("is_oa"):
+            return None
+        loc = w.get("best_oa_location") or {}
+        return loc.get("pdf_url") or loc.get("landing_page_url")
     except Exception:
         return None
 
 
-def arxiv_pdf(title):
-    q = urllib.parse.quote(f'all:"{title}"')
+def unpaywall_best_oa(doi, email):
+    if not doi or not email:
+        return None
+    url = f"https://api.unpaywall.org/v2/{doi}?email={urllib.parse.quote(email)}"
     try:
-        d = _get_json(f"http://export.arxiv.org/api/query?search_query={q}&max_results=2")
-        m = re.search(r"<entry>.*?<id>(http://arxiv.org/abs/[^<]+)</id>", d if isinstance(d, str) else "", re.S)
+        data = json.loads(http_get(url))
     except Exception:
-        # arXiv returns Atom XML, not JSON
-        try:
-            req = urllib.request.Request(
-                f"http://export.arxiv.org/api/query?search_query={q}&max_results=2",
-                headers={"User-Agent": "Mozilla/5.0"})
-            with urllib.request.urlopen(req, timeout=25) as r:
-                xml = r.read().decode()
-            m = re.search(r"<id>(http://arxiv.org/abs/[^<]+)</id>", xml)
-            if m:
-                aid = m.group(1).split("/abs/")[-1]
-                return f"http://arxiv.org/pdf/{aid}.pdf"
-        except Exception:
-            pass
-    return None
+        return None
+    loc = data.get("best_oa_location") or {}
+    pdf_url = loc.get("url_for_pdf") or loc.get("url")
+    return {"pdf": pdf_url, "license": loc.get("license"),
+            "is_oa": data.get("is_oa")}
 
 
-def download(url, dest):
+def arxiv_find(title):
+    q = urllib.parse.quote(f'ti:"{title}"')
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=60) as r:
-            data = r.read()
-        if len(data) < 20_000 or not data[:5].startswith(b"%PDF"):
-            # some OA links serve HTML landing pages; try pdf-suffix variants
-            if not url.endswith(".pdf") and "pdf" not in url:
-                alt = url.rstrip("/") + ".pdf"
-                req = urllib.request.Request(alt, headers={"User-Agent": "Mozilla/5.0"})
-                with urllib.request.urlopen(req, timeout=60) as r2:
-                    data = r2.read()
-            if len(data) < 20_000 or not data[:5].startswith(b"%PDF"):
-                return False
-        dest.write_bytes(data)
-        return True
+        xml = http_get(ARXIV_QUERY.format(q=q)).decode("utf-8", "replace")
     except Exception:
+        return None
+    m = re.search(r"<id>http://arxiv.org/abs/([0-9.]+)</id>", xml)
+    return m.group(1) if m else None
+
+
+def arxiv_pdf_url(arxiv_id):
+    return f"https://arxiv.org/pdf/{arxiv_id}"
+
+
+def extract_text(pdf_bytes, out_path):
+    try:
+        from pypdf import PdfReader
+    except ImportError:
+        out_path.write_text("[pypdf not installed; PDF saved but text not extracted]\n")
         return False
+    import io
+    reader = PdfReader(io.BytesIO(pdf_bytes))
+    pages = [p.extract_text() or "" for p in reader.pages]
+    out_path.write_text("\n\n".join(f"=== page {i+1} ===\n{t}"
+                                   for i, t in enumerate(pages)))
+    return True
 
 
 def main():
-    import pandas as pd  # noqa
-    OUT.mkdir(parents=True, exist_ok=True)
-    recs = json.load(open("/tmp/recs.json"))
-    manifest = []
-    for r in recs:
-        num, title = r["num"], r["title"]
-        dest = OUT / f"{num}_{re.sub(r'[^A-Za-z0-9]+', '_', title[:40]).strip('_')}.pdf"
-        got, src = False, None
-        doi = r["doi"] or None
-        if not doi:
-            doi = crossref_doi(title, r["authors"]); time.sleep(1.0)
-        if doi:
-            pdf = unpaywall_pdf(doi); time.sleep(0.8)
-            if pdf and download(pdf, dest):
-                got, src = True, f"Unpaywall/OA via DOI {doi}"
-        if not got:
-            ax = arxiv_pdf(title); time.sleep(0.8)
-            if ax and download(ax, dest):
-                got, src = True, "arXiv preprint"
-        if not got and r["link"].startswith("http"):
-            if download(r["link"], dest):
-                got, src = True, r["link"]
-        manifest.append({"num": num, "title": title, "doi": doi or "",
-                        "obtained": got, "source": src or "",
-                        "file": dest.name if got else ""})
-        print(num, "OK" if got else "paywalled/none", flush=True)
-    json.dump(manifest, open("/tmp/manifest.json", "w"), indent=1)
-    n_ok = sum(m["obtained"] for m in manifest)
-    print(f"\nOBTAINED {n_ok}/{len(manifest)}")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--catalog", default="docs/articles_catalogue_data.txt")
+    ap.add_argument("--email", default=None)
+    args = ap.parse_args()
+    email = args.email or ""
+    PDF_DIR.mkdir(parents=True, exist_ok=True)
+    TEXT_DIR.mkdir(parents=True, exist_ok=True)
+
+    log = {}
+    for entry in parse_catalog(args.catalog):
+        pid, title = entry["id"], entry["title"]
+        status = "paywalled"
+        source = None
+        pdf_url = None
+
+        if pid in ARXIV_KNOWN:
+            pdf_url, source, status = arxiv_pdf_url(ARXIV_KNOWN[pid]), f"arXiv:{ARXIV_KNOWN[pid]}", "oa"
+        else:
+            oa = unpaywall_best_oa(entry["doi"], email)
+            if oa and oa.get("pdf"):
+                pdf_url, source, status = oa["pdf"], f"Unpaywall ({oa['license']})", "oa"
+            else:
+                arx = arxiv_find(title)
+                if arx:
+                    pdf_url, source, status = arxiv_pdf_url(arx), f"arXiv:{arx}", "oa"
+                else:
+                    oalex = openalex_oa(doi=entry["doi"], title=title)
+                    if oalex and (oalex.lower().endswith(".pdf") or "/pdf" in oalex.lower()):
+                        pdf_url, source, status = oalex, "OpenAlex", "oa"
+
+        if pdf_url:
+            slug = f"{pid}_{slugify(title)}"
+            try:
+                data = http_get(pdf_url)
+                (PDF_DIR / f"{slug}.pdf").write_bytes(data)
+                extracted = extract_text(data, TEXT_DIR / f"{slug}.txt")
+                status = "downloaded" + ("" if extracted else " (text extraction pending pypdf)")
+                print(f"[{pid}] {status}: {source} -> {slug}.pdf")
+            except Exception as e:
+                status = f"oa-found-download-failed ({e})"
+                print(f"[{pid}] {status}", file=sys.stderr)
+        else:
+            print(f"[{pid}] {status}: no legal OA route; summary will be synthesized")
+        log[pid] = {"title": title, "doi": entry["doi"], "venue": entry["venue"],
+                    "status": status, "source": source}
+
+    LOG_PATH.write_text(json.dumps(log, indent=2))
+    n = sum(1 for v in log.values() if v["status"].startswith(("downloaded", "oa")))
+    print(f"\nAcquired {n}/{len(log)} papers. Log: {LOG_PATH}")
 
 
 if __name__ == "__main__":
