@@ -59,6 +59,78 @@ class LedgerError(Exception):
     pass
 
 
+MEGA_CSV = Path("paper/research/clue_scan/mega_dormancy_table.csv")
+BINANCE_KLINES = Path("data/raw/top500_klines")
+YAHOO_KLINES = Path("data/raw/mega_klines")
+
+
+def _mega_data_file(series, venue):
+    """The cached klines CSV for a mega-board series (None if unknown)."""
+    if venue in ("perp", "spot"):
+        p = BINANCE_KLINES / f"{series}.csv"
+    elif venue == "yahoo":
+        p = YAHOO_KLINES / f"{series.replace('=', '_').replace('^', '')}.csv"
+    else:
+        return None
+    return str(p) if p.exists() else None
+
+
+def _mega_last_date(data_file):
+    if not data_file:
+        return None
+    try:
+        df = pd.read_csv(data_file, usecols=["date"])
+        return str(df["date"].iloc[-1]) if len(df) else None
+    except Exception:
+        return None
+
+
+def seal_from_mega(mega_csv=MEGA_CSV, k_per_class=20,
+                   ledger_path=LEDGER, timestamp_utc_us=None,
+                   horizon_bars=HORIZON_BARS):
+    """Seal the LIVING board (mega dormancy table) at t0.
+
+    The mega table is what the nightly board_refresh maintains; this
+    adapter maps it onto the ledger's entry schema so the sealed-score-
+    vs-realized-jump record accumulates EVERY NIGHT while the L2 phase
+    waits on data. dormancy_score is sealed as the primed_score field
+    (it is the same coil logic, dormancy-weighted); evr_m/vol_ratio are
+    absent from the mega schema and sealed as null rather than invented.
+    last_date is read from the cached klines (the bar the score was
+    computed on) so the horizon gate stays strict.
+    """
+    mega = pd.read_csv(mega_csv)
+    mega["primed"] = mega["primed"].astype(bool)
+    entries = []
+    for cls, sub in mega[mega["primed"]].groupby("class"):
+        top = sub.sort_values(
+            "dormancy_score", ascending=False).head(k_per_class)
+        for _, r in top.iterrows():
+            data_file = _mega_data_file(r["series"], r.get("venue", ""))
+            entries.append({
+                "series": r["series"], "class": cls,
+                "primed_score": float(r["dormancy_score"]),
+                "comp_days": int(r["comp_days"]),
+                "rvol_pct": float(r["rvol_pct"]),
+                "range_pos": float(r["range_pos"]),
+                "vol_ratio": None, "evr_m": None,
+                "last_date": _mega_last_date(data_file),
+                "data_file": data_file,
+            })
+    entries = [e for e in entries if e["last_date"] and e["data_file"]]
+    if not entries:
+        raise LedgerError("no primed candidates with resolvable klines")
+    record = {
+        "type": SNAPSHOT_RECORD,
+        "timestamp_utc_us": timestamp_utc_us or _now_us(),
+        "horizon_bars": horizon_bars,
+        "n_series_on_board": int(len(mega)),
+        "board_source": "mega_dormancy_table.csv",
+        "entries": entries,
+    }
+    return _append(record, ledger_path)
+
+
 def _canonical_json(obj) -> str:
     return json.dumps(obj, sort_keys=True, separators=(",", ":"),
                       ensure_ascii=False, default=float)
@@ -276,10 +348,13 @@ def study(ledger_path=LEDGER, study_md=STUDY_MD):
 
 
 def main():
-    from board_heatmap import build_board, save_board
-    board = build_board()
-    save_board(board)
-    rec = seal_snapshot(board)
+    if MEGA_CSV.exists():
+        rec = seal_from_mega()
+    else:
+        from board_heatmap import build_board, save_board
+        board = build_board()
+        save_board(board)
+        rec = seal_snapshot(board)
     print(f"sealed snapshot {rec['sha256'][:12]}: "
           f"{len(rec['entries'])} candidates, "
           f"horizon {rec['horizon_bars']} bars")
