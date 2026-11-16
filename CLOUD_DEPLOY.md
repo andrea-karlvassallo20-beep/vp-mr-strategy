@@ -2,6 +2,28 @@
 
 Purpose: run the L2 gate and the C1-L2 pipeline on real Tardis data in a cloud dev container, instead of a local machine. Codespaces gives you a real Python environment (pandas, pyarrow, scipy, lifelines) with enough disk for the tick files, which the sandbox used for the gating and dry-run work could not provide.
 
+## 0. One-click setup (preferred)
+
+The repo ships a devcontainer and a Makefile, so the whole environment and the gate process are one command each.
+
+1. Open the repo on GitHub, click the green Code button, then the Codespaces tab, then "Create codespace on main". The `.devcontainer/devcontainer.json` boots Python 3.12 and automatically installs numpy, pandas, pyarrow, scipy, lifelines, scikit-learn and pytest on first start (the `postCreateCommand` also runs the C1-L2 harness compile check, which touches no data and reports no result).
+2. Add `TARDIS_API_KEY` as a Codespaces secret (repo Settings, Codespaces, Secrets) if you will pull paid days; free first-of-month days need no key.
+3. In the terminal, the Makefile drives the whole gate process:
+
+```bash
+make env          # manual fallback if the devcontainer already did it
+make gate-day     # the verified free day: pull incremental_book_L2 + book_snapshot_25, then gate
+make pull DAY=2026-10-10 && make gate DAY=2026-10-10   # any other day (paid: needs $TARDIS_API_KEY)
+make convert DAY=2026-10-10   # csv.gz -> parquet with verified row counts (src/convert_to_parquet.py)
+make censor       # the ex-ante macro timeline audit (src/macro_censor.py)
+make board        # the nightly descriptive board refresh (seal -> resolve -> study)
+make test         # the pytest suite
+```
+
+`make gate` runs `src/gate_tardis_sample.py` (criteria 2 and 3, the repo-native gate for Tardis CSVs) and writes its sample log to `paper/research/phase2_l2/gate_sample_<DAY>.txt`. Gate first, convert second, label and fit last - nothing is evaluated before the gate passes (section 9).
+
+The manual steps below remain the reference for every stage the Makefile wraps.
+
 ## 1. Provision the codespace
 
 1. Open the repo on GitHub, click the green Code button, then the Codespaces tab, then "Create codespace on main".
@@ -76,7 +98,7 @@ def convert_day(src, dst, chunksize=2_000_000):
         header = False
 ```
 
-The convert_to_parquet.py copy from the sandbox has never been executed (no pandas there); its first real run happens here, so verify the row counts of one parquet against its CSV before batch-converting.
+The committed `src/convert_to_parquet.py` (wrapped by `make convert DAY=...`) implements exactly this chunked conversion and refuses to succeed unless the parquet row count equals the CSV row count; its first real run happens here, so still verify one day end to end before batch-converting.
 
 ## 7. Run the C1-L2 pipeline
 

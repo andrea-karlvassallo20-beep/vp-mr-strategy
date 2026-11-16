@@ -196,7 +196,7 @@ def main():
     print(f"sequence gap rate:        {seq_note}")
     ok = mid_rate >= 0.99 and depth_rate >= 0.99
     print("\nGATE SAMPLE: " + ("PASS (criteria 2 and 3)" if ok else "FAIL"))
-    out = Path("paper/research/gate_sample_"
+    out = Path("paper/research/phase2_l2/gate_sample_"
                + Path(args.diffs).stem.split("_")[2] + ".txt")
     out.parent.mkdir(exist_ok=True)
     out.write_text(

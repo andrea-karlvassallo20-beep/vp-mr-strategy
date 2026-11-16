@@ -4,7 +4,7 @@ Status: DRAFT for owner review. Nothing in this document has been
 computed on data; no model has been trained; the TEST eras are
 untouched. Kill lines below are armed BEFORE any C8 measurement,
 following the C7 pre-registration discipline
-(`paper/research/c7_30m_preregistration.md`).
+(`paper/research/phase1_daily/c7_30m_preregistration.md`).
 
 ## 0. What C8 is
 
