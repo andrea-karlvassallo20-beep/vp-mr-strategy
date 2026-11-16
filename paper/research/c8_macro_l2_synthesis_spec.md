@@ -214,3 +214,89 @@ the data shows the perp book's regime baseline differs from the
 equity regime (e.g. n_c naturally above 0.8 in crypto), that is a
 KILL-LINE-7 (boundary-constraint) finding to be reported, not a
 threshold to be re-tuned after seeing the answer.
+## AMENDMENT LOG — proposed by the independent review (PR #134), pending owner acceptance
+
+Status: PROPOSED. Nothing below has been measured. These amendments
+exist because the review (paper/research/phase2_l2/c8_spec_review_2026-11-16.md)
+found the original spec conditions on a state that C7-30m just buried,
+does not identify the interaction as written, and leaves two analyst
+degrees of freedom unbounded. Per §4's own discipline, they are
+recorded here before any C8 measurement. C8 is NOT ARMED until these
+are accepted (or amended further) by the owner.
+
+**Numbering note (added when this log was moved into the authoritative
+spec, 2026-11-16):** this log was drafted against the superseded draft's
+seven-line set. Mapped to THIS document's K1–K11: A1/A2 bind to K1–K2
+(the interaction and joint-superiority lines; K1's model becomes the
+ΔΔ interaction model of A2); A3 binds to K7 (the Hawkes line) and the
+placebo lines K3/K4 — its "costume check" is K8 here; A4 is MOOT as
+written, because this spec's frozen trigger set is Hawkes + OFI only
+(VPIN is a documented future extension, not a trigger) — A4 therefore
+reads as a conditional pre-commitment: if a VPIN trigger is ever added,
+its clock is the volume-bucket construction and any alternative enters
+K5's multiplicity ledger; A5 sharpens K8's control (the rolling L2
+activity factor gains the A5 market-book first-PC definition as its
+frozen form). The "K1–K7 unchanged" sentence in the mapping section
+below refers to the draft's numbering and is superseded by this note.
+
+### Amendment A1 — the hypothesis restated as a pure interaction
+
+Original: "the known `y_hold` information in the macro Primed state is
+amplified when the L2 book shows endogenous, toxic flow."
+
+Amended: **"the micro state's effect on 4-hour forward rank returns
+may DIFFER between Primed and quiet-not-Primed assets. Interactions
+can exist without main effects; the dead C7-30m main effect
+(+0.00211, CI includes zero, 16,402 eras) does not extinguish this
+claim, and equally does not support it. If the micro effect does not
+differ between the two macro cells, C8 is dead."**
+
+### Amendment A2 — the estimand is the difference-of-differences
+
+Original Δ = E[y|Primed,Micro] − E[y|Primed,¬Micro] (within-Primed
+contrast only).
+
+Amended: **ΔΔ = Δ(Primed) − Δ(Quiet-Control)**, where
+Δ(g) = E[y|g,Micro] − E[y|g,¬Micro] within each macro cell g, and
+Quiet-Control is the C7 control group (quiet, not range-bottom).
+The Micro-within-Control arm is MANDATORY. DML orthogonalization with
+the vol factor and the market factor (A5) as nuisances, purged
+cross-fitted folds, per the original §2 machinery. A within-Primed
+contrast alone can no longer be reported as a C8 result: a positive
+within-Primed reading with an equal within-Control reading is "micro
+predicts everywhere" — a C5/C6 claim wearing C8's name.
+
+### Amendment A3 — the Hawkes threshold is armed with its own placebo
+
+The micro indicator "n_c > 0.8" is retained ONLY with: (i) the exact
+estimator pre-declared — exponential kernel, Ozaki-recursion MLE,
+µs exchange timestamps, per math_cheatsheet §2; (ii) a
+**shuffled-arrival placebo**: per bar, fit the same estimator to
+time-shuffled arrivals; the placebo n_c distribution is recorded on
+TRAIN, and the production threshold must exceed the placebo's 95th
+percentile. If shuffled arrivals also produce n_c > 0.8 on a material
+share of bars, the threshold measures estimator bias, not endogeneity,
+and K1's costume check is void until the threshold is re-set above the
+placebo.
+
+### Amendment A4 — VPIN's clock is fixed
+
+VPIN is computed on the **original volume-bucket construction**
+(buckets attributed to 30m bars by bucket start time). The fixed-bar
+alternative is NOT silently available: if it is ever tried, it is
+counted in K3's multiplicity ledger as a separate configuration.
+
+### Amendment A5 — the market-book common factor is defined
+
+The "market-book factor" nuisance is: **the first principal component
+of the cross-sectional micro indicators within each era** (the era's
+n_c, OFI, VPIN values across assets, standardized). Frozen here;
+any change is a logged amendment, not a runtime choice.
+
+### Effect on the kill lines
+
+K1–K7 are unchanged in wording, but K1's "micro-augmented model" now
+means the ΔΔ interaction model of A2, and K2's placebo applies to the
+ΔΔ statistic. K3's multiplicity count gains one entry: {2 macro
+conditioning choices: Primed-vs-Control and Quiet-vs-Control} — the
+second is the honest sensitivity arm, counted, not hidden.
