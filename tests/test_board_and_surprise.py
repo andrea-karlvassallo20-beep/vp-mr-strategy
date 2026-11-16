@@ -252,3 +252,73 @@ def test_tile_color_monotonic():
     assert c0 != c1 != c2
     assert _tile_color(0) == _tile_color(-0.3)
     assert _tile_color(1) == _tile_color(1.7)
+
+
+def test_seal_from_mega_maps_living_board(tmp_path, monkeypatch):
+    # the nightly cycle seals the LIVING board: mega schema -> ledger schema
+    klines = tmp_path / "klines"
+    klines.mkdir()
+    dates = [f"2026-01-{d:02d}" for d in range(1, 26)]
+    pd.DataFrame({"date": dates, "close": [100.0] * 25}).to_csv(
+        klines / "BTCUSDT.csv", index=False)
+    mega = pd.DataFrame({
+        "series": ["BTCUSDT", "ETHUSDT", "AAPL"],
+        "class": ["crypto", "crypto", "etf"],
+        "venue": ["perp", "perp", "yahoo"],
+        "n_days": [500, 500, 500],
+        "comp_days": [40, 3, 60],
+        "rvol_pct": [10.0, 50.0, 5.0],
+        "range_pos": [0.2, 0.9, 0.1],
+        "stretch_z": [-1.0, 0.0, -1.5],
+        "ret30": [0.0, 0.0, 0.0],
+        "last_4sigma_days_ago": [400, 10, 500],
+        "primed": [True, False, True],
+        "dormancy_score": [5.0, 1.0, 6.0],
+    })
+    mega_csv = tmp_path / "mega.csv"
+    mega.to_csv(mega_csv, index=False)
+    monkeypatch.setattr(sl, "BINANCE_KLINES", klines)
+    monkeypatch.setattr(sl, "YAHOO_KLINES", klines)
+    ledger = tmp_path / "ledger.jsonl"
+    rec = sl.seal_from_mega(mega_csv=mega_csv, k_per_class=5,
+                            ledger_path=ledger, timestamp_utc_us=1_000)
+    # only primed candidates are sealed; ETHUSDT (not primed) is absent
+    sealed = {e["series"] for e in rec["entries"]}
+    assert sealed == {"BTCUSDT"}
+    entry = rec["entries"][0]
+    assert entry["primed_score"] == 5.0
+    assert entry["last_date"] == "2026-01-25"
+    assert entry["data_file"].endswith("BTCUSDT.csv")
+    # absent mega fields are sealed null, never invented
+    assert entry["evr_m"] is None and entry["vol_ratio"] is None
+    assert rec["board_source"] == "mega_dormancy_table.csv"
+    assert sl.verify_chain(ledger)
+    # resolution machinery works on the mega-sealed entry
+    # (future bars APPENDED past the sealed last_date, base intact)
+    pd.DataFrame({
+        "date": dates + [f"2026-02-{d:02d}" for d in range(1, 12)],
+        "close": [100.0] * 25 + [100.0] * 5 + [130.0] + [100.0] * 5,
+    }).to_csv(klines / "BTCUSDT.csv", index=False)
+    out = sl.resolve_pending(ledger_path=ledger)
+    assert len(out) == 1
+    assert out[0]["realized_jump"] == pytest.approx(0.3, abs=1e-6)
+
+
+def test_seal_from_mega_unresolvable_excluded(tmp_path, monkeypatch):
+    # a primed candidate whose klines cannot be found is NOT sealed:
+    # a score that cannot be resolved against data is not a prediction
+    mega = pd.DataFrame({
+        "series": ["GHOSTUSDT"], "class": ["crypto"], "venue": ["perp"],
+        "n_days": [500], "comp_days": [40], "rvol_pct": [10.0],
+        "range_pos": [0.2], "stretch_z": [-1.0], "ret30": [0.0],
+        "last_4sigma_days_ago": [400], "primed": [True],
+        "dormancy_score": [5.0],
+    })
+    mega_csv = tmp_path / "mega.csv"
+    mega.to_csv(mega_csv, index=False)
+    monkeypatch.setattr(sl, "BINANCE_KLINES", tmp_path / "nope")
+    monkeypatch.setattr(sl, "YAHOO_KLINES", tmp_path / "nope")
+    with pytest.raises(sl.LedgerError):
+        sl.seal_from_mega(mega_csv=mega_csv,
+                          ledger_path=tmp_path / "ledger.jsonl",
+                          timestamp_utc_us=1_000)
