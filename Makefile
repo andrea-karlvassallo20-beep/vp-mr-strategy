@@ -8,7 +8,7 @@ SNAPS := $(RAW)/book_snapshot_25_$(SYMBOL)_$(DAY).csv.gz
 PARQP := $(PARQ)/incremental_book_L2_$(SYMBOL)_$(DAY).parquet
 BASE := https://datasets.tardis.dev/v1/binance-futures
 
-.PHONY: help env pull-free pull gate convert censor harness-check board test gate-day
+.PHONY: help env pull-free pull gate convert censor harness-check board test guard gate-day
 
 help:
 	@echo "One-command L2 gate process (run from the codespace, repo root)."
@@ -56,5 +56,8 @@ gate-day: pull-free gate
 board:
 	$(PYTHON) src/board_refresh.py
 
-test:
+guard:
+	$(PYTHON) src/integrity_guard.py
+
+test: guard
 	$(PYTHON) -m pytest tests -q
