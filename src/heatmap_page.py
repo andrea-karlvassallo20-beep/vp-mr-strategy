@@ -5,15 +5,27 @@ all commodities, all indexes, crypto, the main 500 stocks - scored by
 what is most likely to make the next significant jump, then tracked
 over time to study what surprises.
 
-Generates docs/heatmap.html from paper/research/clue_scan/board_table.csv
-plus the surprise ledger (surprise_ledger.py). The page is the visual
-front of the descriptive clue program: one tile per series, colored by
-priming score (dark = nothing coiled, amber = compression building,
-red = deepest coil on the board), grouped by class, with the sealed
-surprise study beneath once resolutions exist.
+Generates docs/heatmap.html from the LIVING board: mega_dormancy_table.csv
+(the table the nightly board_refresh cycle maintains) when it exists,
+falling back to board_table.csv. The page reads whichever board is
+current - it can no longer silently render a stale universe while the
+refresh cycle moves on (the bug that once left the page at 817 tiles
+while the living board held 1,299).
+
+Two board schemas are normalized to one internal frame:
+  - the mega dormancy table: dormancy_score (higher = deeper coil,
+    min-max normalized within the board for color), primed flag,
+    artifact derived from |ret30| > 20%, genesis from n_days < 90.
+  - the clue-scan board table: primed_score, eligible, artifact_flag,
+    genesis_flag as committed.
+
+Sections are data-driven: every class present on the board gets a
+section, in CLASS_ORDER plus first-appearance order for unknown classes.
+No class is ever silently dropped again (the etf class was invisible
+until this became data-driven).
 
 DESCRIPTIVE ONLY. The multiplicity warning is binding at its worst on a
-board of ~800 series: extremes are found by construction. The score
+1,300-series board: extremes are found by construction. The score
 ranks candidates; it tests nothing, and WHICH WAY is refused. The only
 path from this page to knowledge is C7's kill lines - the surprise
 ledger exists precisely so the ranking is judged against sealed
@@ -24,36 +36,99 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import surprise_ledger as sl  # noqa: E402
 
-BOARD_CSV = Path("paper/research/clue_scan/board_table.csv")
+CLUE = Path("paper/research/clue_scan")
+MEGA_CSV = CLUE / "mega_dormancy_table.csv"
+BOARD_CSV = CLUE / "board_table.csv"
 PAGE = Path("docs/heatmap.html")
 
 CLASS_TITLES = {
     "commodity": "Commodities",
     "index": "Indexes",
+    "world_index": "World indexes (frontier and war-adjacent included)",
+    "rate": "Rates",
+    "fx": "FX (majors, EM, the Iranian rial)",
     "equity": "Large-cap equities",
+    "global_equity": "Global mega-caps (non-US)",
     "sp500": "S&P 500 (full constituents)",
-    "crypto": "Crypto (top 500 by market cap)",
+    "sp400": "S&P 400 (mid caps)",
+    "sp600": "S&P 600 (small caps)",
+    "etf": "ETFs",
+    "crypto": "Crypto",
 }
+
+# Section order when known; any class not listed here is appended after,
+# in first-appearance order - the page can never silently drop a class.
+CLASS_ORDER = ["commodity", "index", "world_index", "rate", "fx",
+               "equity", "global_equity", "sp500", "sp400", "sp600",
+               "etf", "crypto"]
 
 NAV = """<nav>
   <a href="index.html">Thesis</a>
-  <a href="concepts.html">Every concept, taught</a>
+  <a href="manual.html">The working manual</a>
   <a href="causal.html">Causal chains</a>
   <a href="books.html">The books, taught</a>
   <a href="clues.html">The clue dossier</a>
-  <a href="criteria.html">The night-before source</a>
-  <a href="falsification.html">Falsification record</a>
-  <a href="infrastructure.html">Data &amp; machinery</a>
-  <a href="knowledge.html">Knowledge base</a>
+  <a href="criteria.html">The night-before sauce move</a>
   <a href="v4_charts.html">The board, colored</a>
   <a href="heatmap.html" aria-current="page">The heat map</a>
+  <a href="dormancy.html">The dormancy map</a>
+  <a href="resources.html">The library</a>
+  <a href="ledger.html">The claims ledger</a>
   <a href="instrument.html">The instrument (live)</a>
 </nav>"""
+
+
+def load_board(mega_csv=MEGA_CSV, board_csv=BOARD_CSV):
+    """The living board, normalized: one frame, one score column, flags."""
+    if Path(mega_csv).exists():
+        df = pd.read_csv(mega_csv)
+        score = df["dormancy_score"].astype(float)
+        span = float(score.max()) or 1.0
+        out = pd.DataFrame({
+            "series": df["series"],
+            "class": df["class"],
+            "score": score / span,
+            "score_label": "dormancy score (normalized)",
+            "comp_days": df["comp_days"],
+            "rvol_pct": df["rvol_pct"],
+            "range_pos": df["range_pos"],
+            "ret30": df.get("ret30", np.nan),
+            "eligible": df["primed"].astype(bool),
+            "artifact_flag": (df.get("ret30", 0).abs() > 0.20),
+            "genesis_flag": df["n_days"] < 90,
+            "last_date": "",
+            "vol_ratio": np.nan,
+            "source": "mega_dormancy_table.csv",
+        })
+    elif Path(board_csv).exists():
+        df = pd.read_csv(board_csv)
+        out = pd.DataFrame({
+            "series": df["series"],
+            "class": df["class"],
+            "score": df["primed_score"].astype(float),
+            "score_label": "priming score",
+            "comp_days": df["comp_days"],
+            "rvol_pct": df["rvol_pct"],
+            "range_pos": df["range_pos"],
+            "ret30": df.get("ret30", np.nan),
+            "eligible": df["eligible"].astype(bool),
+            "artifact_flag": df["artifact_flag"].astype(bool),
+            "genesis_flag": df["genesis_flag"].astype(bool),
+            "last_date": df.get("last_date", ""),
+            "vol_ratio": df.get("vol_ratio", np.nan),
+            "source": "board_table.csv",
+        })
+    else:
+        raise SystemExit("no board found - run the board refresh first")
+    out["artifact_flag"] = out["artifact_flag"].fillna(False).astype(bool)
+    out["genesis_flag"] = out["genesis_flag"].fillna(False).astype(bool)
+    return out.sort_values("score", ascending=False).reset_index(drop=True)
 
 
 def _tile_color(score):
@@ -71,7 +146,7 @@ def _tile_color(score):
 
 
 def _tile(row):
-    score = float(row["primed_score"])
+    score = float(row["score"])
     color = _tile_color(score)
     dim = "" if row["eligible"] else " opacity:.38;"
     flag = ""
@@ -93,11 +168,11 @@ def _class_section(cls, sub):
     n_elig = int(sub["eligible"].sum())
     deep = int((sub["comp_days"] >= 20).sum())
     top = sub.iloc[0] if len(sub) else None
-    top_s = (f'{top["series"]} ({top["primed_score"]:.2f})'
+    top_s = (f'{top["series"]} ({top["score"]:.2f})'
              if top is not None else "-")
     return f"""<section>
 <h2>{CLASS_TITLES.get(cls, cls)}<span class="dot">.</span></h2>
-<p class="dim">n={len(sub)} &middot; eligible={n_elig} &middot;
+<p class="dim">n={len(sub)} &middot; primed={n_elig} &middot;
 deep coils (20d+)={deep} &middot; hottest: <b>{top_s}</b></p>
 <div class="tilegrid">
 {tiles}
@@ -107,17 +182,16 @@ deep coils (20d+)={deep} &middot; hottest: <b>{top_s}</b></p>
 
 def _top_table(board, k=20):
     rows = []
-    for _, r in board[board["eligible"]].head(k).iterrows():
+    for i, (_, r) in enumerate(
+            board[board["eligible"]].head(k).iterrows(), start=1):
         rows.append(
-            f"<tr><td>{int(r['board_rank'])}</td><td>{r['series']}</td>"
-            f"<td>{r['class']}</td><td>{r['primed_score']:.3f}</td>"
+            f"<tr><td>{i}</td><td>{r['series']}</td>"
+            f"<td>{r['class']}</td><td>{r['score']:.3f}</td>"
             f"<td>{int(r['comp_days'])}</td><td>{r['rvol_pct']:.1f}</td>"
-            f"<td>{r['range_pos']:.2f}</td><td>{r['vol_ratio']:.2f}</td>"
-            f"<td>{r['last_date']}</td></tr>")
+            f"<td>{r['range_pos']:.2f}</td></tr>")
     return """<table>
-<tr><th>Board rank</th><th>Series</th><th>Class</th><th>Priming score</th>
-<th>Coil days</th><th>RVol pct</th><th>Range pos</th><th>Vol ratio</th>
-<th>Scored at</th></tr>
+<tr><th>Rank</th><th>Series</th><th>Class</th><th>Score</th>
+<th>Coil days</th><th>RVol pct</th><th>Range pos</th></tr>
 """ + "\n".join(rows) + "</table>"
 
 
@@ -136,18 +210,22 @@ def _surprise_section(ledger_path):
     rows = []
     for cls, b in s["per_class"].items():
         rho = b["spearman_rho"]
+        rho_s = "n/a" if rho is None else f"{rho:.3f}"
+        p_s = "n/a" if b["p_value"] is None else f"{b['p_value']:.3f}"
+        top5_s = ("n/a" if b["mean_jump_top5"] is None
+                  else f"{b['mean_jump_top5']:.4f}")
+        rest_s = ("n/a" if b["mean_jump_rest"] is None
+                  else f"{b['mean_jump_rest']:.4f}")
         rows.append(
-            f"<tr><td>{cls}</td><td>{b['n']}</td>"
-            f"<td>{rho:.3f} (p={b['p_value']:.3f})</td>"
-            f"<td>{b['median_jump']:.4f}</td>"
-            f"<td>{b['mean_jump_top5']:.4f}</td>"
-            f"<td>{b['mean_jump_rest']:.4f}</td></tr>")
-    o = s["overall"]
+            f"<tr><td>{cls}</td><td>{b['n']}</td><td>{rho_s} (p={p_s})</td>"
+            f"<td>{b['median_jump']:.4f}</td><td>{top5_s}</td>"
+            f"<td>{rest_s}</td></tr>")
     surprises = "\n".join(
         f"<tr><td>{r['series']}</td><td>{r['class']}</td>"
         f"<td>{r['primed_score']:.3f}</td>"
         f"<td>{r['realized_jump']:.4f}</td><td>{r['jump_direction']}</td></tr>"
         for r in s["biggest_surprises"])
+    o = s["overall"]
     return f"""{head}
 <p>Descriptive only: the sealed top-k are extremes by construction, so
 the study asks whether the <b>ranking</b> carried information - Spearman
@@ -170,17 +248,20 @@ rho between the sealed priming score and the realized 10-bar max
 <code>paper/research/clue_scan/surprise_study.md</code></p>"""
 
 
-def build_page(board_csv=BOARD_CSV, ledger_path=sl.LEDGER, page=PAGE):
-    board = pd.read_csv(board_csv)
-    board["eligible"] = board["eligible"].astype(bool)
-    board["artifact_flag"] = board["artifact_flag"].astype(bool)
-    board["genesis_flag"] = board["genesis_flag"].astype(bool)
+def build_page(mega_csv=MEGA_CSV, board_csv=BOARD_CSV,
+               ledger_path=sl.LEDGER, page=PAGE):
+    board = load_board(mega_csv, board_csv)
+    score_label = board["score_label"].iloc[0]
+    source = board["source"].iloc[0]
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     n_elig = int(board["eligible"].sum())
-    top = board[board["eligible"]].iloc[0]
+    top = board[board["eligible"]].iloc[0] if n_elig else board.iloc[0]
 
     sections = []
-    for cls in ("commodity", "index", "equity", "sp500", "crypto"):
+    present = [c for c in CLASS_ORDER if (board["class"] == c).any()]
+    extras = [c for c in board["class"].dropna().unique()
+              if c not in CLASS_ORDER]
+    for cls in present + extras:
         sub = board[board["class"] == cls]
         if len(sub):
             sections.append(_class_section(cls, sub))
@@ -193,17 +274,17 @@ def build_page(board_csv=BOARD_CSV, ledger_path=sl.LEDGER, page=PAGE):
 <title>Salient &mdash; The heat map</title>
 <link rel="stylesheet" href="site.css">
 <style>
-.tilegrid {{ display: flex; flex-wrap: wrap; gap: 6px; }}
-.tile {{ display: flex; flex-direction: column; justify-content: center;
-  min-width: 92px; padding: 8px 10px; border-radius: 8px; color: #070b12;
-  position: relative; }}
-.tile .tname {{ font-family: var(--mono); font-size: 11px; font-weight: 700;
-  max-width: 130px; overflow: hidden; text-overflow: ellipsis;
+.tilegrid {{ display: flex; flex-wrap: wrap; gap: 3px; }}
+.tile {{ display: inline-flex; flex-direction: row; align-items: center;
+  gap: 5px; height: 21px; padding: 1px 7px; border-radius: 4px;
+  color: #070b12; position: relative; white-space: nowrap; }}
+.tile .tname {{ font-family: var(--mono); font-size: 9.5px; font-weight: 700;
+  max-width: 110px; overflow: hidden; text-overflow: ellipsis;
   white-space: nowrap; }}
-.tile .tscore {{ font-size: 16px; font-weight: 700; }}
-.tile .tmeta {{ font-size: 10px; opacity: .75; }}
-.tile .tflag {{ position: absolute; top: 3px; right: 6px; font-size: 9px;
-  text-transform: uppercase; letter-spacing: .5px; opacity: .7; }}
+.tile .tscore {{ font-size: 10px; font-weight: 700; opacity: .85; }}
+.tile .tmeta {{ display: none; }}
+.tile .tflag {{ font-size: 8px; text-transform: uppercase;
+  letter-spacing: .5px; opacity: .6; }}
 .legend {{ display: flex; gap: 0; border-radius: 6px; overflow: hidden;
   height: 12px; max-width: 420px; }}
 .legend i {{ flex: 1; }}
@@ -219,35 +300,38 @@ def build_page(board_csv=BOARD_CSV, ledger_path=sl.LEDGER, page=PAGE):
 
 <div class="epigraph">
 "Look at EVERYTHING." So the board holds everything: all commodities, all
-indexes, crypto, the full S&amp;P 500. Each tile is one series, colored by
-priming score - how coiled, compressed and primed it measures tonight.
-Dark: nothing. Amber: compression building. Red: the deepest coils on the
-board.
+indexes - world, frontier and war-adjacent included - rates, FX down to
+the Iranian rial, the full S&amp;P 500, non-US mega-caps, ETFs, crypto.
+Zoom out: the board reads as a checkerboard - color first, one flat cell
+per series, dark = nothing coiled, amber = compression building, red =
+the deepest coils alive tonight. Hover any cell for its name and
+grievance.
 </div>
 
-<p><span class="big">Descriptive only.</span> The priming score ranks
-candidates; it tests nothing. Scanning ~800 series for extremes finds
+<p><span class="big">Descriptive only.</span> The score ranks
+candidates; it tests nothing. Scanning ~1,300 series for extremes finds
 extremes by construction - the multiplicity warning is binding. WHICH WAY
 is refused by measurement: priming is directionless, on purpose. The only
 path from this page to knowledge is C7's kill lines. What this page adds
-is time: every night the top candidates are <b>sealed</b> into a
-hash-chained ledger with their scores, and once the 10-bar horizon passes,
-the realized jump is resolved against the same data - so "what surprised"
-is studied against sealed predictions, never against memory.</p>
+is time: the top candidates are <b>sealed</b> into a hash-chained ledger
+with their scores, and once the 10-bar horizon passes, the realized jump
+is resolved against the same data - so "what surprised" is studied
+against sealed predictions, never against memory.</p>
 
 <div class="grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0">
 <div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)">Series on the board</div><div style="font-size:22px;font-weight:700">{len(board)}</div></div>
-<div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)">Eligible candidates</div><div style="font-size:22px;font-weight:700">{n_elig}</div></div>
-<div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)">Hottest tile</div><div style="font-size:22px;font-weight:700">{top["series"]} <span style="color:var(--accent2)">{top["primed_score"]:.2f}</span></div></div>
+<div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)">Primed candidates</div><div style="font-size:22px;font-weight:700">{n_elig}</div></div>
+<div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)">Hottest tile</div><div style="font-size:22px;font-weight:700">{top["series"]} <span style="color:var(--accent2)">{top["score"]:.2f}</span></div></div>
 <div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)">Board built</div><div style="font-size:22px;font-weight:700">{now}</div></div>
 </div>
 
 <div class="legend" aria-hidden="true">
 <i style="background:{_tile_color(0)}"></i><i style="background:{_tile_color(.25)}"></i><i style="background:{_tile_color(.5)}"></i><i style="background:{_tile_color(.75)}"></i><i style="background:{_tile_color(1)}"></i>
 </div>
-<p class="dim" style="margin-top:4px">priming score 0 &rarr; 1 &middot;
+<p class="dim" style="margin-top:4px">{score_label} 0 &rarr; 1 &middot;
 dimmed tiles: move-already-happened (artifact) or too new (genesis filter,
-&lt;90d listing)</p>
+&lt;90d listing) &middot; board source:
+<code>{source}</code></p>
 
 {"".join(sections)}
 
@@ -263,9 +347,10 @@ dimmed tiles: move-already-happened (artifact) or too new (genesis filter,
 
 </main>
 <footer style="font-size:12px;color:var(--faint);padding:0 32px 32px">
-Generated by src/heatmap_page.py from paper/research/clue_scan/board_table.csv
-and logs/board_surprise_ledger.jsonl. Descriptive only - candidates, not
-claims; C7 stays sealed.
+Generated by src/heatmap_page.py from {source}
+and logs/board_surprise_ledger.jsonl, regenerated by the nightly
+src/board_refresh.py cycle. Descriptive only - candidates, not claims;
+C7 stays sealed.
 </footer>
 </body>
 </html>
@@ -273,7 +358,8 @@ claims; C7 stays sealed.
     Path(page).parent.mkdir(parents=True, exist_ok=True)
     Path(page).write_text(html)
     return {"page": str(page), "n_series": len(board),
-            "n_eligible": n_elig, "generated_utc": now}
+            "n_eligible": n_elig, "source": source,
+            "generated_utc": now}
 
 
 def main():
