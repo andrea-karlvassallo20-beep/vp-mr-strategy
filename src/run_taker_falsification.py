@@ -645,6 +645,17 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     S, M, haw = build_spells(args.data_dir, args.timeline, args.cache_dir)
+    # Startup artifact: spells from the window's first day carry an
+    # undefined trailing-sigma covariate (the 24h window is incomplete at
+    # t0). A spell with an undefined covariate is not interpretable and
+    # is dropped - a data-startup exclusion, not a tuning choice; the
+    # count is printed, never silent.
+    covs = ["sigma_h", "compression", "time_in_comp_h", "dur_h", "hod"]
+    n0 = len(S)
+    S = S.dropna(subset=covs).reset_index(drop=True)
+    if n0 - len(S):
+        print(f"dropped {n0 - len(S)} startup spells with undefined trailing "
+              f"covariates (first-day incomplete windows)", flush=True)
     splits = make_splits(S)
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
