@@ -171,3 +171,46 @@ lives anywhere.
    lines 1–11 armed.
 4. The convexity sizing framework — the decision context, pre-registered
    so a pass has somewhere to go besides celebration.
+
+## Amendment 1 (2026-11-16, post-declaration): the 0.8 threshold,
+source-grounded
+
+Added AFTER the kill lines were frozen; it changes no threshold and
+arms no new line — it documents, from the newly acquired source
+itself, why the frozen 0.8 is the right calibration.
+
+Source: Filimonov & Sornette, "Quantifying the Reflexivity of
+Financial Markets: Towards a Prediction of Flash Crashes"
+(downloaded legally; extracted text:
+`docs/library/text/xf29859_quantifying_reflexivity_in_financial_markets_towar.txt`).
+
+What the source says, with page cites to the extracted PDF:
+
+- **The modern regime is 0.7-0.8.** On the E-mini S&P 500
+  (1998-2010), the branching ratio is "consistently above 0.6 and,
+  since 2007, between 0.7 and 0.8 with spikes at 0.9" (PDF p. 13);
+  the regime history is itemized on p. 14 (0.3 -> 0.6 in 2000-02,
+  0.6 -> 0.7 by 2006, 0.7-0.8 after Q1-2007).
+- **The flash-crash signature is a PRECURSORY rise toward
+  criticality.** For May 6, 2010: "a precursory early rise of n
+  followed by strong increase culminating very close to the
+  critical value n = 1" (PDF p. 17); the exogenous April 27, 2010
+  crash, in contrast, shows n remaining constant (PDF p. 17) — the
+  discriminator between an endogenous and an exogenous event is
+  exactly whether n moves BEFORE the price does.
+- **The activity contrast:** ~1.5 mid-price changes/second in 2008
+  vs. a peak of 194/second at the May 6 flash crash (PDF p. 9).
+
+Reading for C8: 0.8 is the TOP of the source's modern regime
+(0.7-0.8), i.e. the frozen threshold selects states that are
+unusually endogenous even by post-2007 standards, without waiting
+for the near-critical values (n -> 1) that only appear at the
+crisis itself. The source's precursory-rise finding is the
+mechanistic license for C8's claim structure (the trigger must
+LEAD, not accompany): if the BTCUSDT perp book shows n climbing
+within primed states before breakout, that is the same signature
+the source documented on equities. The threshold stays 0.8; if
+the data shows the perp book's regime baseline differs from the
+equity regime (e.g. n_c naturally above 0.8 in crypto), that is a
+KILL-LINE-7 (boundary-constraint) finding to be reported, not a
+threshold to be re-tuned after seeing the answer.
