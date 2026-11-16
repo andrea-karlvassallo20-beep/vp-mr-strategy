@@ -257,8 +257,114 @@ of per-path performance as the honest answer.
 
 ---
 
+## 4. Kyle's Lambda (market depth / price impact)
+
+Kyle (1985), "Continuous Auctions and Insider Trading": in
+equilibrium, the market maker sets price as a linear function of
+aggregate order flow, and the coefficient is the market's depth
+parameter. The price impact regression form used empirically (and
+the bridge to CKS's OFI slope) is:
+
+$$\Delta P_t = \lambda\, q_t + \epsilon_t, \qquad
+\hat\lambda = \frac{\operatorname{Cov}(\Delta P, q)}{\operatorname{Var}(q)}
+= \frac{\sum_t q_t\, \Delta P_t}{\sum_t q_t^2}, \qquad
+\text{depth} \propto \frac{1}{\lambda}$$
+
+where $q_t$ is signed order flow (signed volume, or signed OFI).
+Kyle's equilibrium value for a Gaussian setup is
+$\lambda = \frac{2\sigma_u}{\Sigma}$ ($\sigma_u$ noise-trade rate,
+$\Sigma$ informed-trader precision), tying depth to adverse
+selection: the more private information, the steeper the impact.
+Amihud's illiquidity $|r_t|/\text{volume}_t$ is its per-period cousin.
+
+**Verify against library source before production** (paywalled;
+synthesized from LLM internal knowledge).
+
+```python
+def kyle_lambda(d_mid, signed_flow):
+    """Kyle's lambda: OLS slope of mid-price change on signed flow.
+
+    d_mid: (T,) mid-price changes per interval.
+    signed_flow: (T,) signed volume or signed OFI over the same intervals.
+    Returns lambda_hat: price impact per unit of flow (depth ~ 1/lambda).
+    """
+    denom = (signed_flow ** 2).sum()
+    if denom == 0:
+        return np.nan
+    return (signed_flow * d_mid).sum() / denom
+```
+
+---
+
+## 5. VPIN (Volume-Synchronized Probability of Informed Trading)
+
+Easley, Lopez de Prado & O'Hara (2012), "Flow Toxicity and
+Liquidity in a High-Frequency World": sample trades in the volume
+clock; each fixed-size volume bucket $i$ is split into buy/sell
+fractions by **bulk volume classification** — the standardized
+price change over the bucket, passed through the normal CDF, gives
+the buy proportion. VPIN is the mean absolute imbalance over the
+last $n$ buckets:
+
+$$z_i = \frac{P_i - P_{i-1}}{\sigma_P}, \qquad
+V^{buy}_i = V_i\, \Phi(z_i), \qquad
+V^{sell}_i = V_i\, \big(1 - \Phi(z_i)\big)$$
+
+$$OI_i = \frac{\big|V^{buy}_i - V^{sell}_i\big|}{V_i}, \qquad
+\text{VPIN} = \frac{1}{n}\sum_{i=1}^{n} OI_i$$
+
+The theoretical target is the sequential-trade probability of
+informed trading (order flow toxicity):
+
+$$\Pi = \frac{\alpha\,\mu}{\alpha\,\mu + 2\epsilon}$$
+
+with $\mu$ the informed-arrival rate, $\epsilon$ the uninformed rate
+per bucket, and $\alpha$ the event probability. Andersen-Bondarenko
+later contested VPIN's predictive claims — treat as a candidate
+signal, not established fact.
+
+**Verify against library source before production** (paywalled;
+synthesized from LLM internal knowledge).
+
+```python
+def vpin(prices, volumes, bucket_v, n_buckets=50):
+    """VPIN via volume buckets and bulk volume classification.
+
+    prices: (T,) trade prices; volumes: (T,) trade sizes (same units).
+    bucket_v: volume per bucket (e.g. 1/50 of average daily volume).
+    n_buckets: window length in buckets for the VPIN average.
+    Returns vpin_series: one value per completed bucket window
+    (aligned to the last bucket of each window).
+    """
+    from math import erf, sqrt
+    total = np.cumsum(volumes)
+    edges = np.searchsorted(total, np.arange(1, np.floor(total[-1] / bucket_v) + 1) * bucket_v)
+    edges = np.unique(edges[edges < len(prices)])
+    if len(edges) < 2:
+        return np.array([])
+    bounds = np.concatenate(([0], edges))          # bucket boundaries (index space)
+    p_start = prices[bounds[:-1]]
+    p_end = prices[np.minimum(bounds[1:], len(prices) - 1)]
+    d_p = p_end - p_start
+    sigma_p = d_p.std()
+    if sigma_p == 0:
+        return np.array([])
+    z = d_p / sigma_p
+    phi = 0.5 * (1.0 + np.vectorize(erf)(z / sqrt(2.0)))   # standard normal CDF
+    oi = np.abs(2.0 * phi - 1.0)                          # |Vb - Vs| / V
+    if len(oi) < n_buckets:
+        return np.array([])
+    kernel = np.ones(n_buckets) / n_buckets
+    return np.convolve(oi, kernel, mode="valid")
+```
+
+---
+
 ## Library status
 
-The three critical papers are now executable. The library task is
-closed; see `docs/library/manifest.md`. Active work: L2 Codespaces
-deployment (`CLOUD_DEPLOY.md`, `.devcontainer`).
+The five critical formulas (OFI, Hawkes, CPCV, Kyle's lambda, VPIN)
+are executable above. The full 68-paper catalogue is synthesized in
+`docs/library/summaries/`; acquisition status is in
+`docs/library/acquisition_log.json`; see
+`docs/library/manifest.md`. Active work: L2 Codespaces deployment
+(`CLOUD_DEPLOY.md`, `.devcontainer`).
