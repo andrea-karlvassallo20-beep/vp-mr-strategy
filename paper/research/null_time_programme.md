@@ -194,3 +194,42 @@ honored: no L2 run, no new data, no new claims, no kill lines moved):
   only by scikit-learn being absent from this sandbox (env gaps, not code);
   scikit-learn is now in the devcontainer and `make env` so the codespace
   does not share that gap.
+
+## 7. Null-time session 3 (2026-11-16, post-merge of PR #136): the base-rate spine built, library deep-read session 1 executed
+
+Owner directive: use null time on methodology, reading, and whatever
+advances the endpoint. Executed against this queue's own priorities, no
+L2, no new claims, no kill lines moved:
+
+- **The misses curriculum 2x2, pre-declared and built** (`src/misses_2x2.py`):
+  the existing misses tables condition on MOVES only (coverage); the
+  base-rate question needs the silent denominator. The pre-declared
+  protocol: one row per series-day over the cached klines universes; the
+  frozen C7 priming rule (comp_days >= 20 AND rvol_pct <= 33 AND
+  range_pos <= 0.35) computed causally per day, PARITY-PINNED to
+  move_study._pre_move_state by a dedicated test (definition drift is a
+  bug, not a choice); moved = at least one >=4-sigma day strictly inside
+  the next 10 bars (the ledger's horizon, the dormancy sigma); the
+  strict-horizon gate the ledger already uses. Outputs the per-class
+  table (base rate, P(move|primed), P(move|unprimed), lift,
+  false-alarm rate, coverage) plus per-series CSV and a dated report.
+  Wired into the nightly board_refresh cycle; ~15s for the whole board
+  (bisect-maintained running percentile - numerically identical, parity
+  tested). 5 new tests (parity, strict horizon, engineered ground
+  truth both ways, rate arithmetic). Its first real run happens in the
+  codespace where the klines live - like convert_to_parquet, it refuses
+  to invent data and exits 1 where no klines are cached.
+- **Library deep-read session 1** (`paper/research/library/
+  2026-11-16_cks_ofi_deep_read.md`): CKS "The Price Impact of Order Book
+  Events" read against the killing question. Grade: NO kill line changed;
+  two sharpenings for the C8 amendment - (1) the review's blocking
+  "market-book common factor" now has a theory-named candidate
+  definition (depth: beta = c/AD^lambda means depth IS the common
+  impact factor by construction), and (2) the "extreme OFI" threshold
+  must be pre-declared in depth/tick-normalized units or it is an
+  analyst-tunable degree of freedom (the sibling of the beta bug);
+  plus the recorded caveat that OFI is cancel-blind by definition, so
+  C5's passive-cancellation mechanism is not testable through OFI alone.
+- Nothing else: T1 stays armed awaiting the owner's word and the
+  codespace; the blocked list stays blocked; the macro timeline stays
+  owner-curated.
