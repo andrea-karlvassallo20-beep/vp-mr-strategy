@@ -126,9 +126,16 @@ def test_resolution_requires_passed_horizon(tmp_path):
     entry = json.loads(ledger.read_text())["entries"][0]
     _kline_csv(tmp_path / "k.csv", dates, closes)
     # point the sealed entry at our kline file (rewrite with a valid
-    # rehash - the chain must accept an honest rewrite, refuse tampering)
+    # rehash - the chain must accept an honest rewrite, refuse tampering).
+    # ALL OTHER entries must point at nonexistent files: build_board's
+    # default data_file points at the real kline caches, and when those
+    # exist on disk the fixture entries resolve against REAL market data,
+    # making the test environment-dependent (it failed on any checkout
+    # that had data/raw/top500_klines present).
     rec = json.loads(ledger.read_text())
-    rec["entries"][0]["data_file"] = str(tmp_path / "k.csv")
+    for i, e in enumerate(rec["entries"]):
+        e["data_file"] = (str(tmp_path / "k.csv") if i == 0
+                           else str(tmp_path / "missing.csv"))
     rec["sha256"] = sl._record_sha256(rec)
     ledger.write_text(sl._canonical_json(rec) + "\n")
     assert sl.verify_chain(ledger)
