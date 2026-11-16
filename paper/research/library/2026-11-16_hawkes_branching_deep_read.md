@@ -1,95 +1,103 @@
-# Library deep-read, session 2: Hardiman & Bouchaud (2014), "Branching ratio approximation for the self-exciting Hawkes process"
+# Library deep-read session 2 — Hardiman & Bouchaud, "Branching ratio
+# approximation for the self-exciting Hawkes process" (arXiv:1403.5227v3)
 
-Read against ONE question: **what here kills C1-L2 (or C8) faster, or
-changes a kill line?** Source: the extracted text
-(`docs/library/text/x36082b_branching_ratio_approximation_for_the_self_excitin.txt`,
-arXiv:1403.5227v3); page markers cited inline.
+Read 2026-11-16, against ONE question: **what here would kill C1-L2
+or C8 faster, or change their kill lines?** Source: the legally
+acquired, page-marked extracted text
+(`docs/library/text/x36082b_branching_ratio_approximation_for_the_self_excitin.txt`);
+all page cites are to that PDF.
 
-## What the paper establishes
+## The paper in one paragraph
 
-- The branching ratio n = integral of the Hawkes kernel maps to a
-  branching-process interpretation: the fraction of events that are
-  endogenous "daughters" of prior events (p. 1). n >= 1 is
-  non-stationary; n -> 1 is "critical".
-- MLE branching-ratio estimation (n-hat = alpha-hat/beta-hat for the
-  exponential kernel) has named pitfalls (p. 2): the estimate is heavily
-  kernel-choice dependent, and on imperfect event data the
-  log-likelihood surface can have TWO minima - the global one driven by
-  spurious sub-millisecond clustering from exchange timestamp BUNDLING,
-  the local one fitting the true lower-frequency dynamics.
-- Their model-independent estimator needs only the mean and variance of
-  the event count in a window W: n-tilde = 1 - sqrt(mu_W / sigma2_W)
-  (Eq. 7, p. 3). Poisson statistics (variance = mean) gives n = 0.
-- Bias direction: sigma2_W/W under-estimates the autocovariance
-  integral for finite W, so Eq. 7 GENERALLY UNDER-ESTIMATES n, becoming
-  exact only as W -> infinity (p. 3).
-- Window choice is a real trade-off (p. 3-4): W must be much larger
-  than the correlation timescale (they use W = 20 x beta^-1) but small
-  enough that the sample has enough windows to estimate the variance;
-  too-large W has too few observations.
-- The scale-sensitivity result (p. 2): with FIXED W, the branching-ratio
-  estimate of S&P futures mid-price changes drifts upward over years as
-  market latency falls; scaling W down over time (halving every ~18
-  months) recovers a CONSTANT estimate near criticality (n ~ 1). A
-  fixed-window n is therefore confounded with the market's own speed.
+Hardiman & Bouchaud introduce a model-independent branching-ratio
+estimator — ñ = 1 − √(μ_W/σ²_W) from the mean and variance of event
+counts in a window W (Eq. 7, PDF p. 3) — and use it to re-examine
+the Filimonov-Sornette reflexivity results. They reproduce the
+flash-crash analysis (PDF p. 5) and the 1998-2013 upward trend at
+fixed W (PDF p. 6, Fig. 6), but show that when W is rescaled to
+track the market's speeding-up interaction timescale (halving
+every 18 months), the trend vanishes: reflexivity is approximately
+**scale-invariant**, and as W → ∞ the branching ratio converges to
+**criticality (n → 1)** with 1 − ñ ∝ W^−0.37 on 2010 E-mini data
+(PDF p. 5, Fig. 5; two regimes with a ~5-minute transition).
 
-## Findings, graded by whether they change a kill line
+## Findings, graded (does any kill line move?)
 
-**Changed no kill line.** C8's eleven lines (including the Hawkes
-boundary-constraint majority and the shuffled-arrival placebo) stand.
-Four sharpenings for the C8 amendment, to be ratified by the owner
-before arming:
+**NO kill line changes.** All five C1-L2 lines and C8's eleven
+stand. But this paper is the most serious qualification yet for
+the C8 trigger layer, and it sharpens K7 (the Hawkes
+boundary-constraint line) from a convergence check into a
+**window-scale question**:
 
-1. **The two estimators have OPPOSITE biases, so the estimator itself
-   must be pre-declared.** Our MLE path on 30-minute windows was found
-   biased UPWARD (C8 review A3 - hence the placebo); Hardiman-Bouchaud's
-   mean-variance estimator is biased DOWNWARD on finite windows. An
-   analyst who silently switched estimators could move n_c across the
-   0.8 threshold in either direction without touching any parameter.
-   Proposal for the amendment: name the estimator (MLE, exponential
-   kernel, Ozaki recursion as verified in the cheatsheet), name W, and
-   record the mean-variance value as a mandatory cross-check reported
-   alongside, with the placebo above whichever is used.
+1. **[sharpening, owner must ratify] The 0.8 threshold is an
+   estimator-at-scale-W statement, not a true-n statement.** The
+   mean-variance estimator is *systematically biased downward* for
+   finite W (PDF p. 3: "our approximation systematically
+   underestimates the branching ratio since our finite window size
+   does not completely cover the region of support of the
+   autocorrelation function"), and the MLE estimator's β̂ — hence
+   n̂ = α̂/β̂ — is capped by the timestamp randomization scale (PDF
+   p. 5: ms randomization gives β̂⁻¹ ≈ 10⁻²; intra-second
+   randomization prevents β̂⁻¹ exceeding ~1s). Consequence for C8:
+   the pre-declared protocol must fix, BEFORE the data, (a) the
+   estimation window W (and ideally a small W-ladder, e.g. 10s /
+   30s / 5min, reported together), (b) the timestamp-precision
+   handling, and (c) that the 0.8 threshold applies to the
+   estimator at the frozen W. A threshold without its W is
+   analyst-tunable — the exact sibling of the β-factor bug the
+   math verification already caught.
+2. **[qualification of Amendment 1, to be recorded honestly]**
+   Amendment 1 grounded 0.8 in Filimonov-Sornette's 0.7-0.8 modern
+   regime. This paper REPRODUCES those numbers at fixed W (PDF
+   p. 6) and simultaneously argues the trend is a fixed-W artifact
+   (PDF p. 6, Fig. 7: Moore's-law-rescaled W gives an
+   approximately constant branching ratio). Both readings put the
+   market near criticality — which is GOOD for the trigger's
+   existence — but they disagree about what crossing 0.8 means
+   ("unusually endogenous" vs "the window scale moved"). The C8
+   file should carry the controversy, not hide it: the F-S numbers
+   remain the calibration source; Hardiman-Bouchaud is the
+   standing caveat.
+3. **[gift, free to take] A model-independent cross-estimator.**
+   ñ = 1 − √(μ_W/σ²_W) (Eq. 7, PDF p. 3; sample estimators Eqs. 8-9)
+   needs no kernel choice, no MLE, one line of numpy — the paper's
+   central point is that kernel choice is the MLE method's main
+   pitfall (PDF p. 2). C8 should run it beside the MLE as the
+   robustness check: if the two estimators disagree on WHICH bars
+   are above 0.8, the trigger is not ready to govern anything.
+4. **[gate item] Timestamp bundling corrupts the MLE.** The
+   global likelihood minimum can describe packet clustering inside
+   the millisecond rather than true dynamics (PDF p. 2). Tardis
+   carries microsecond timestamps — no randomization needed —
+   but the L0 gate should assert timestamp resolution on arrival
+   (the existing `intake_audit.py` timestamp-units assertion is
+   exactly this; note it in the C8 execution order).
+5. **[interpretive caution] "Critical" does not mean
+   "Hawkes-true."** The authors insist the n → 1 conclusion holds
+   only if the Hawkes model is the right representation; markets
+   may be more complicated, with n = 1 + long-ranged kernel the
+   best HAWKES description of non-Hawkes dynamics (PDF pp. 1-2,
+   p. 6). For C8: the trigger measures endogeneity AS MODELED;
+   the claim language should never say "the market is critical,"
+   only "the branching ratio estimator crosses the pre-declared
+   line at the pre-declared scale."
 
-2. **The timestamp-bundling trap is a live hazard in OUR data.** The
-   paper's two-minimum pathology comes from events bundled into the
-   same millisecond by the exchange feed. Tardis CSVs carry BOTH
-   exchange and local timestamps; the C8 event stream must pre-declare
-   the clock (exchange timestamp, the event clock audit already prefers
-   it) and add a bundling check: the fraction of identical-timestamp
-   events in the trigger window is reported, and the placebo is run
-   with intra-timestamp jitter preserved. This is the sibling of the
-   beta bug: an estimator-level artifact that no parameter choice can
-   fix downstream.
+## What this paper would have killed if we had done it wrong
 
-3. **W must be pre-declared relative to the kernel timescale, not the
-   convenience of the window.** Their guidance W >> beta^-1 (they use
-   20x) with enough windows for the variance. For a 30-minute trigger
-   window this means beta^-1 must be estimated on calibration data
-   BEFORE the threshold is armed, and W fixed thereafter - otherwise W
-   is a free knob that tunes n_c.
+If C8 had frozen 0.8 without freezing W, and then chosen W after
+seeing which bars light up — that is a tunable trigger, and this
+paper is the recipe for tuning it invisibly (Fig. 2, PDF p. 4:
+the estimate converges only as W grows; Fig. 3: near-critical
+processes give 1 − ñ ∝ W^−ε, so W selection IS n selection). The
+sharpening in item 1 closes exactly this hole. Grade: **no kill
+line changed; one kill line (K7) materially sharpened, pending the
+owner's ratification** — same protocol as session 1's two
+sharpenings; nothing is armed by this note.
 
-4. **The drift artifact guards the regime-reproduction kill line.**
-   The paper shows fixed-W n drifts as market latency changes. Binance
-   fee-tier changes, engine upgrades, and venue outages are latency
-   events; a C8 "era shuffle" that fails while the raw n_c series shows
-   a drift would be read exactly through this lens: is the reflexivity
-   real, or did the clock speed change? The regime-reproduction line
-   already exists; this note is the citation that sharpens its reading.
+## Standing caveat
 
-5. **Criticality is the honest prior.** If crypto trade arrivals are
-   near-critical with long memory (as equities appear to be), then n_c
-   > 0.8 may be the NORM rather than the exceptional state, and the
-   threshold's discriminating power is what the placebo must establish
-   - reinforcing that the 0.8 line is unarmed until the placebo's 95th
-   percentile is known.
-
-## Grade
-
-Session grade: **no kill line changed; three pre-declarations
-required before arming C8 (estimator identity + W fixed to the
-estimated kernel timescale + the clock/bundling check), one cross-check
-mandated (mean-variance n reported beside MLE n), one reinforcing
-citation (fixed-window drift -> regime-reproduction reading).** This
-note and session 1 (CKS OFI) together give the C8 amendment its
-estimator-hygiene section.
+A library is ammunition, not evidence. This note cites; it never
+launders. The Hardiman-Bouchaud position is itself contested
+(Filimonov-Sornette replied in the reflexivity debate); the C8
+spec carries both readings and the owner decides what the trigger
+layer claims.
