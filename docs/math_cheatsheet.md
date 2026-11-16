@@ -10,43 +10,56 @@ numpy-vectorized and depend only on `numpy`.
 
 ### 1a. Order flow imbalance at the best quotes (OFI)
 
-Let $P^b_n, q^b_n$ be the best bid price and size after the $n$-th book
-event, $P^a_n, q^a_n$ the best ask. Define $\Delta P^b_n = P^b_n - P^b_{n-1}$,
-$\Delta q^b_n = q^b_n - q^b_{n-1}$, and likewise for the ask. The paper
-(Eq. 2.2-2.4) defines the order flow at the top of book:
+EXTRACTED VERBATIM FROM THE arXiv LATEX SOURCE (arXiv:1011.6402v3,
+Sec. 2.1, verified 2026-11-16 against the rendered source). Let
+$P^B_n, q^B_n$ be the best bid price and size after the $n$-th book
+event, $P^A_n, q^A_n$ the best ask. The paper defines the contribution
+of the $n$-th event to the size of the bid and ask queues:
 
-$$e^b_n = \Delta q^b_n \cdot \mathbb{1}\{\Delta P^b_n > 0\}
-       + (\Delta q^b_n)^{+} \cdot \mathbb{1}\{\Delta P^b_n = 0\}
-       - q^b_{n-1} \cdot \mathbb{1}\{\Delta P^b_n < 0\}$$
+$$e_n = \mathbb{1}\{P^B_n \geq P^B_{n-1}\}\, q^B_n
+       - \mathbb{1}\{P^B_n \leq P^B_{n-1}\}\, q^B_{n-1}
+       - \mathbb{1}\{P^A_n \leq P^A_{n-1}\}\, q^A_n
+       + \mathbb{1}\{P^A_n \geq P^A_{n-1}\}\, q^A_{n-1}$$
 
-$$e^a_n = -q^a_{n-1} \cdot \mathbb{1}\{\Delta P^a_n > 0\}
-       + (-\Delta q^a_n)^{+} \cdot \mathbb{1}\{\Delta P^a_n = 0\}
-       + \Delta q^a_n \cdot \mathbb{1}\{\Delta P^a_n < 0\}$$
+The indicators are NON-STRICT, and this matters: when the price is
+unchanged both indicators fire and the event contributes the queue
+change $q_n - q_{n-1}$ (added liquidity positive, removed negative).
+When the bid improves the event contributes the FULL new queue $q^B_n$
+(a price-improving limit order); when the bid drops it contributes
+$-q^B_{n-1}$ (the withdrawn old queue, whether by market order or
+cancel); the ask side is symmetric with signs reversed. Earlier versions
+of this cheatsheet restated $e_n$ as a $\Delta q$-decomposition that
+differs from the source on price-changing branches; that restatement is
+retired. The order flow imbalance over $[t_{k-1}, t_k]$ aggregates the
+event contributions:
 
-$$e_n = e^b_n - e^a_n$$
+$$OFI_k = \sum_{n=N(t_{k-1})+1}^{N(t_k)} e_n$$
+
+and the linear impact relation (their Eq. 2) is
+$\Delta P_k = \beta\, OFI_k + \epsilon_k$.
 
 ```python
 import numpy as np
 
 def ofi_top_level(pb, qb, pa, qa):
-    """Cont-Kukanov-Stoikov OFI at the best quotes.
+    """Cont-Kukanov-Stoikov OFI at the best quotes, the EXACT source
+    formula (arXiv:1011.6402v3, Sec. 2.1). Matches features.top_of_book_ofi.
 
     pb, qb: (T,) best bid price and size after each book event
     pa, qa: (T,) best ask price and size after each book event
-    Returns e: (T-1,) order flow per event.
+    Returns e: (T,) order flow per event, e[0] = 0.
     """
-    d_pb, d_qb = np.diff(pb), np.diff(qb)
-    d_pa, d_qa = np.diff(pa), np.diff(qa)
-    qb_prev, qa_prev = qb[:-1], qa[:-1]
-
-    e_b = (np.where(d_pb > 0, d_qb, 0.0)          # bid price improved: size change
-           + np.where(d_pb == 0, np.maximum(d_qb, 0.0), 0.0)  # same price: added liquidity
-           - np.where(d_pb < 0, qb_prev, 0.0))     # bid price dropped: old size withdrawn
-    e_a = (- np.where(d_pa > 0, qa_prev, 0.0)      # ask price up: old size withdrawn
-           + np.where(d_pa == 0, np.maximum(-d_qa, 0.0), 0.0)  # same price: added liquidity
-           + np.where(d_pa < 0, d_qa, 0.0))        # ask price down: size change
-    return e_b - e_a
+    d_pb, d_pa = np.diff(pb, prepend=pb[0]), np.diff(pa, prepend=pa[0])
+    return (np.where(d_pb >= 0, qb, 0.0)
+            - np.where(d_pb <= 0, np.concatenate([[qb[0]], qb[:-1]]), 0.0)
+            - np.where(d_pa <= 0, qa, 0.0)
+            + np.where(d_pa >= 0, np.concatenate([[qa[0]], qa[:-1]]), 0.0))
 ```
+
+Verified literally against the arXiv source by `src/verify_math_library.py`
+(25 randomized books x 2000 events, max abs diff 0.0), which found and fixed
+two defects in the prior implementation: sign-flipped ask-side branches and
+dropped same-price queue changes.
 
 ### 1b. Integrated OFI and the linear impact regression
 

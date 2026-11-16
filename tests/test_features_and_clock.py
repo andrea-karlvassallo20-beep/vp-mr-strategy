@@ -102,8 +102,14 @@ def test_ofi_touch_moves():
     ofi = top_of_book_ofi(book)
     assert len(ofi) == 5
     assert not ofi["ofi"].isna().any()
+    # exact arXiv:1011.6402v3 expectations. Row 1: bid improves -> +q^B_n
+    # (1.0). Row 2: prices unchanged -> d(q^B) - d(q^A) = +1.0. Row 3: bid
+    # drops (-q^B_{n-1} = -2.0) AND ask drops (-q^A_n = -1.0) -> -3.0.
+    # Row 4: prices unchanged -> +1.0 (bid) - 1.0 (ask) = 0.0.
     assert ofi["ofi"].iloc[1] == 1.0
-    assert ofi["ofi"].iloc[3] == -1.0
+    assert ofi["ofi"].iloc[2] == 1.0
+    assert ofi["ofi"].iloc[3] == -3.0
+    assert ofi["ofi"].iloc[4] == 0.0
 
 
 def test_band_depth_proxy():

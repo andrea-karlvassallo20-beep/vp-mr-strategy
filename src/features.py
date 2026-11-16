@@ -53,18 +53,27 @@ def vpin_trade_buckets(trades: pd.DataFrame, bucket_size: int = 2000,
 def hawkes_loglik(times: np.ndarray, types: np.ndarray, T: float,
                   mu: np.ndarray, alpha: np.ndarray, beta: float) -> float:
     """Exact log-likelihood of a 2-dim (d = types.max()+1) exponential-kernel
-    Hawkes process via the recursive R-sums. times sorted, T = window end."""
+    Hawkes process via the recursive R-sums. times sorted, T = window end.
+    Kernel convention: phi_mn(t) = alpha[m, n] * exp(-beta * t), i.e. alpha is
+    the AMPLITUDE matrix and the branching matrix is G = alpha / beta. The
+    intensity of type m uses ROW m of alpha (excitation OF m BY n), matching
+    the row convention of the excitation compensator below. Verified against
+    tick's ModelHawkesExpKernLogLik and an O(N^2) brute-force oracle by
+    src/verify_math_library.py (which found and fixed three prior defects:
+    a phantom event at t_0 in every dimension, a transposed alpha in the
+    intensity, and a branching ratio reported as eig(alpha) instead of
+    eig(alpha / beta))."""
     d = mu.shape[0]
     n = len(times)
     dt = np.diff(times, prepend=times[0])
     decay = np.exp(-beta * dt)
     R = np.zeros((n, d))
-    prev = np.ones(d)
+    prev = np.zeros(d)
     for k in range(n):
         prev = prev * decay[k]
         R[k] = prev
         prev[types[k]] += 1.0
-    lam = mu[types] + np.array([alpha[:, types[k]] @ R[k] for k in range(n)])
+    lam = mu[types] + np.array([alpha[types[k]] @ R[k] for k in range(n)])
     if (lam <= 0).any():
         return -np.inf
     ll = np.log(lam).sum()
@@ -126,7 +135,9 @@ def fit_hawkes(times_us: np.ndarray, types: np.ndarray,
         "loglik": float(-res.fun),
         "converged": bool(converged),
         "optimizer": optimizer,
-        "branching_ratio": float(np.max(np.abs(np.linalg.eigvals(a)))),
+        "branching_ratio": float(np.max(np.abs(np.linalg.eigvals(a / beta)))),
+        "branching_note": ("spectral radius of G = alpha / beta (amplitude "
+                           "convention, shared fixed beta)"),
         "excitation_half_life_s": float(np.log(2.0) / beta),
     }
 
@@ -450,9 +461,14 @@ def top_of_book_ofi(book: pd.DataFrame) -> pd.DataFrame:
     """Top-of-book OFI from bookTicker-format frames.
 
     book: normalized frame (ts_exchange_us, update_id, bid_price, bid_qty,
-    ask_price, ask_qty). OFI per Cont/Kukanov/Stoikov at the touch:
-    e_n = I{bid moved up} * bid_qty_n - I{bid moved down} * bid_qty_{n-1}
-        - I{ask moved down} * ask_qty_n + I{ask moved up} * ask_qty_{n-1}
+    ask_price, ask_qty). OFI per Cont/Kukanov/Stoikov (arXiv:1011.6402v3,
+    Sec. 2.1), the EXACT source formula with non-strict indicators so the
+    same-price case contributes the queue change (both indicators fire):
+    e_n = I{P^B_n >= P^B_{n-1}} q^B_n - I{P^B_n <= P^B_{n-1}} q^B_{n-1}
+          - I{P^A_n <= P^A_{n-1}} q^A_n + I{P^A_n >= P^A_{n-1}} q^A_{n-1}
+    Verified literally against the arXiv source by src/verify_math_library.py
+    (which found and fixed two prior discrepancies: ask-side branches were
+    sign-flipped and same-price queue changes were dropped).
     """
     req = {"ts_exchange_us", "bid_price", "bid_qty", "ask_price", "ask_qty"}
     if not req.issubset(book.columns):
@@ -461,10 +477,10 @@ def top_of_book_ofi(book: pd.DataFrame) -> pd.DataFrame:
     db = b["bid_price"].diff()
     da = b["ask_price"].diff()
     ofi = (
-        np.where(db > 0, b["bid_qty"], 0.0)
-        + np.where(db < 0, -b["bid_qty"].shift(1), 0.0)
-        + np.where(da > 0, -b["ask_qty"].shift(1), 0.0)
-        + np.where(da < 0, b["ask_qty"], 0.0)
+        np.where(db >= 0, b["bid_qty"], 0.0)
+        + np.where(db <= 0, -b["bid_qty"].shift(1), 0.0)
+        + np.where(da <= 0, -b["ask_qty"], 0.0)
+        + np.where(da >= 0, b["ask_qty"].shift(1), 0.0)
     )
     out = pd.DataFrame({
         "ts_exchange_us": b["ts_exchange_us"],

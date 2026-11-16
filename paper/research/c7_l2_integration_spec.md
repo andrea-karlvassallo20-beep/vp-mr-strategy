@@ -64,6 +64,11 @@ and says so. The alternatives are refused:
 
 ## 4. C8 — the interaction claim (declared, untested, kill lines armed)
 
+> SUPERSEDED as a full pre-registration by
+> `c8_macro_l2_synthesis_spec.md` (eleven armed kill lines, frozen state
+> definitions, 4h/24h hazard horizons). The declaration is reproduced
+> here for continuity; the full spec is authoritative.
+
 - **CLAIM:** microstructure timing features (OFI absorption, Hawkes
   branching, cancellation imbalance) carry MORE out-of-fold timing
   information when the instrument's macro state is C7-primed than when it
