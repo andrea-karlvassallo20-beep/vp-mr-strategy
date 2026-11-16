@@ -31,6 +31,8 @@ from .quality import (
     check_panel,
     LeakageError,
 )
+from .factors import PRICE_FACTORS, compute_all, momentum, reversal, volatility, range_position, amihud_illiquidity, dollar_volume
+from .evaluation import ic_series, ic_summary, quantile_returns, top_bucket_turnover
 
 __all__ = [
     "SECURITY_MASTER_COLUMNS",
@@ -49,4 +51,16 @@ __all__ = [
     "missingness_report",
     "check_panel",
     "LeakageError",
+    "PRICE_FACTORS",
+    "compute_all",
+    "momentum",
+    "reversal",
+    "volatility",
+    "range_position",
+    "amihud_illiquidity",
+    "dollar_volume",
+    "ic_series",
+    "ic_summary",
+    "quantile_returns",
+    "top_bucket_turnover",
 ]
