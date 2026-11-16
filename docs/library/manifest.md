@@ -75,3 +75,40 @@ summaries and the cheat sheet.
 
 The library task is closed. Active work: the L2 Codespaces
 deployment (`CLOUD_DEPLOY.md`, `.devcontainer`).
+
+
+## Round 3 (PR #132): 29 additional legal-OA PDFs, zero overlap with rounds 1-2
+
+Acquired via Unpaywall (Crossref DOI resolution) + arXiv title search + published OA links. Every file byte-checked as %PDF-. Sources:
+
+- **004** A Test for Superior Predictive Ability — arXiv preprint
+- **007** The Deflated Sharpe Ratio — arXiv preprint
+- **009** The Probability of Backtest Overfitting — arXiv preprint
+- **018** The Price Impact of Order Book Events — Unpaywall/OA via DOI 10.1093/jjfinec/nbt003
+- **020** Optimal Execution of Portfolio Transactions — arXiv preprint
+- **029** Random Forests — arXiv preprint
+- **031** Autoregressive Conditional Heteroscedasticity — arXiv preprint
+- **032** Generalized Autoregressive Conditional Heteroskedasticity — arXiv preprint
+- **033** Realized Volatility — Unpaywall/OA via DOI 10.3386/w8160
+- **034** Do Stock Prices Move Too Much to Be Justified by Subsequent Changes in Dividends? — Unpaywall/OA via DOI 10.3386/w0456
+- **035** On the Cross-Section of Expected Returns — arXiv preprint
+- **036** On the Predictability of Stock Returns: An Asset-Allocation Perspective — Unpaywall/OA via DOI 10.3386/w4997
+- **039** The Cross-Section of Volatility and Expected Returns — Unpaywall/OA via DOI 10.3386/w10852
+- **042** The Statistics of Sharpe Ratios — arXiv preprint
+- **043** WATCH: Wasserstein Change Point Detection for High-Dimensional Time Series — Unpaywall/OA via DOI 10.1109/BigData52589.2021.9671962
+- **044** Wasserstein GAN — arXiv preprint
+- **045** Long Memory in Stock Market Prices and a New Model — Unpaywall/OA via DOI 10.3386/w2984
+- **049** A Mathematical Framework for Modeling Order Book Dynamics — arXiv preprint
+- **052** Commonality in Liquidity — arXiv preprint
+- **053** Cross-Impact of Order Flow Imbalance in Equity Markets — arXiv preprint
+- **058** Trade Co-occurrence, Trade Flow Decomposition and Conditional Order Imbalance — arXiv preprint
+- **059** A Stochastic Partial Differential Equation Model for Limit Order Book Dynamics — arXiv preprint
+- **061** Adaptive Algorithms for Change Point Detection in Financial Time Series — Unpaywall/OA via DOI 10.3934/math.20241674
+- **062** Can the Markov Switching Model Forecast Exchange Rates? — Unpaywall/OA via DOI 10.3386/w4210
+- **063** Long Memory and Regime Switching — Unpaywall/OA via DOI 10.3386/t0264
+- **064** Multiple Change Point Detection and Validation in Autoregressive Time Series — Unpaywall/OA via DOI 10.1007/s00362-020-01198-w
+- **065** Double/Debiased Machine Learning for Treatment and Structural Parameters — Unpaywall/OA via DOI 10.3386/w23564
+- **066** Statistical Modeling: The Two Cultures — arXiv preprint
+- **068** A Practical Guide to Heavy Tails — Unpaywall/OA via DOI 10.1137/070710111
+
+The 39 still-missing paywalled articles remain the owner's supply list (DOIs in the round-3 manifest section below).
