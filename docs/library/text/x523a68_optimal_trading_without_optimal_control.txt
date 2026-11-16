@@ -1,0 +1,1127 @@
+=== page 1 ===
+Optimal trading without optimal control∗
+Bastien Baldacci† Jerome Benveniste‡ Gordon Ritter§
+December 25, 2020
+Abstract
+A hypothetical risk-neutral agent who trades to maximize the expected proﬁt of the next
+trade will approximately exhibit long-term optimal behavior as long as this agent uses the vector
+p = ∇V (t, x) as eﬀective microstructure alphas, where V is the Bellman value function for
+a smooth relaxation of the problem. Eﬀective microstructure alphas are the steepest-ascent
+direction of V , equal to the generalized momenta in a dual Hamiltonian formulation. This simple
+heuristics has wide-ranging practical implications; indeed, most utility-maximization problems
+that require implementation via discrete limit-order-book markets can be treated by our method.
+1 Introduction
+Consider an investor whose preferences are described by a utility function of wealth, u(w), as per
+Arrow (1963) and Pratt (1964). Let wT denote the investor’s wealth at some known ﬁnal time T.
+The investor attempts to maximize the expectation of utility of ﬁnal wealth, E[u(wT )], by trading
+ﬁnancial assets. The mechanism by which buyers meet sellers and trades occur is known as the
+market microstructure. In this work, the microstructure is assumed to be a continuous double auction
+electronic order book with time priority, although our methods could be generalized to include other
+kinds of market microstructure. In continuous limit-order-book microstructure, trades are eﬀected
+by submitting limit orders to an exchange’s matching engine. For each security being traded, the
+investor must determine the price levels at which to submit buy and sell orders and the associated
+share quantities attached to those orders. In real markets, the price levels are discrete; the minimum
+possible price increment is the quote resolution allowed by the exchange, known as the tick size.
+Alternatively, the investor may decide to refrain from placing any orders or cancel some existing
+orders. Other decision variables include order type and venue. Considering all of these details, we
+see that the instantaneous action space is an inconveniently large discrete space; we discuss ways of
+simplifying it later on.
+∗Bastien Baldacci gratefully acknowledge the ﬁnancial support of the ERC Grant 679836 Staqamof and would like
+to thank Iuliia Manziuk (Ecole Polytechnique) for fruitful discussions.
+†École Polytechnique, CMAP, 91128, Palaiseau, France, bastien.baldacci@polytechnique.edu.
+‡Courant Institute of Mathematical Science, New York University, 251 Mercer St., New York, NY 10012
+§Courant Institute of Mathematical Science, New York University, 251 Mercer St., New York, NY 10012 (corre-
+sponding author), ritter@post.harvard.edu
+1
+arXiv:2012.12945v1  [q-fin.TR]  23 Dec 2020
+
+=== page 2 ===
+Problem 1. The investor seeks the optimal dynamic strategy for choosing an action at ∈At at each
+time t, where At is the set of possible actions at time t, optimal in the sense of maximizing the expected
+utility of ﬁnal wealth, E[u(wT )].
+Problem 1 is mathematically deep and perhaps intractable; it is essentially a stochastic optimal
+control problem over high-dimensional discrete action and state spaces. According to Cont and
+Kukanov (2017), “Although simultaneous optimization of order timing, type, and routing decisions
+is an interesting problem, it also appears to be intractable...” and even this is a special case of
+Problem 1.
+The purpose of the present paper is to give practically implementable methods which execution desks
+could start using right away to solve Problem 1 approximately. Our approximation method breaks
+the problem up into two parts. The ﬁrst part is to construct a smooth relaxation of the problem,
+which is essentially the continuous-time and continuous-space limit; the second part is to adjust our
+microstructure decisions to track the smooth relaxation optimally. The key feature of all smooth
+relaxations is that they hide microstructure details behind smooth cost functions meant to represent
+the average cost of trading at a given rate; they provide no guidance on microstructure-level decisions,
+eﬀectively assuming all executions use market orders. In particular, if we can predict the probability
+of a passive ﬁll at any given instant (e.g., based on order book imbalance), it is not clear how to use
+this information in the context of a smooth relaxation, whereas our model provides a very clear and
+obvious way for the implementor to take advantage of predictions of passive ﬁll completion.
+Let V (t,x) denote the Bellman value function for the smooth relaxation, deﬁned to be the remaining
+expected-utility gain from time t obtained from following the best policy when the current state at
+time t is x. There is also, in principle, a value function for Problem 1 deﬁned in the same way, but the
+latter appears to be intractable. The present paper’s key idea is to exploit the value function of the
+smooth relaxation to provide eﬀective microstructure alphas that adjust the microstructure decisions
+toward long-term optimality. The vector
+p := ∇V (t,x) ∈ Rd (1.1)
+plays a central role in our approach, where d ≥ 1 is the number of traded assets. As deﬁned, p
+is the direction of steepest ascent for the value function. In our heuristics, (1.1) encodes all of the
+information about the long-term utility function is needed to make the microstructure decision, so it
+provides the key link between the trading schedule and the order routing problem.
+In order to describe our policy for selecting the best microstructure action, we must ﬁrst introduce
+some more notation. Write Ri,t(v,a) for the (random) proﬁt (or loss, if negative) from an order of
+quantity v on stock i using action a over a short interval [t,t + δt]. The action a includes the trader’s
+choice of whether to trade passively or aggressively. A trader’s expected proﬁt E[Ri,t(v,a)] depends
+on the trading cost associated with the pair (v,a), and also on the trader’s views concerning the
+short-horizon midpoint price return
+rmid i = midi(t + δt)/midi(t) − 1.
+With no subscript, rmid denotes the d-dimensional vector of all midpoint returns for all assets.
+Deﬁnition 1.1. The term eﬀective microstructure alphas, as used in this paper, will denote a
+set of parameters given to a microstructure trader in the place of E[rmid], for the purpose of satisfying
+either a short-term goal or a long-term goal.
+2
+
+=== page 3 ===
+Microstructure alphas, as deﬁned, could be a simple prediction of rmid, or, more interestingly, they
+could be purposely skewed to encourage trading to increase expected utility (ie. increase long-term
+alpha and reduce risk) as we shall suggest in Equation (1.3). Our heuristics is, at time t, for each
+security indexed by i ∈ {1,...,d}, choose an instantaneous action a⋆ i which solves the following
+maximization (over the ﬁnite set At,i of possible actions on the asset i at time t):
+ai ⋆ = argmax
+a∈At,i
+E[Ri,t(va,a)] for all i∈{1,...,d}, (1.2)
+where: E[rmid] = p := ∇V (t,x), (1.3)
+and follow this action over the interval [t,t + δt). Here va denotes the quantity associated with action
+a; for example “a = aggressive buy 100 shares” means va = 100. Note also that rmid and p are
+n-vectors, so the equation E[rmid] = p expresses the trader’s views in all n assets.
+Thereisaverygoodintuitivejustiﬁcationfor(1.2)-(1.3). Weshowlaterthat, undercertainconditions,
+the optimal instantaneous trading rate at any time t in the smooth relaxation is given by
+argmax
+v
+{⟨p,v⟩−c(v)}, (1.4)
+where c(v) is the average cost of trading at rate v. The expression ⟨p,v⟩−c(v) is the instantaneous
+analogue of expected proﬁt minus cost, if your expected return is p.
+The rest of the paper is organized as follows. In Section 2, we present an example of a long-term
+trading schedule, the Almgren-Chriss case, and how to compute the value function V (t,x) and its
+gradientp. We further show how pis related to the generalized momenta of the Hamiltonian approach.
+In Section 3, we derive the heuristics (1.2) by analogy with the smooth case and show how the trader
+can choose its short-term alpha in order to minimize the error with respect to the trading schedule.
+In Section 4, we present a general microstructure trading framework on a portfolio of cross-listed
+assets, taking into account long and short-term trading signals as well as many components of market
+microstructure (spread, imbalance, probability of ﬁlling etc.). We also show how this heuristics can be
+applied to the problem of multi-asset market-making. Finally, Section 5 shows a detailed numerical
+example which illustrates the dangers of separating portfolio construction from execution, and in
+which our method generates an improvement that is both statistically and economically signiﬁcant.
+2 The long-term trading curve
+In this section, we recall the optimal portfolio liquidation framework of Almgren and Chriss (2001) in
+continuous time and show how to solve the problem using the Hamiltonian method. In the process,
+we introduce notation that is used in the rest of the paper.
+Variations of the Almgren-Chriss model are used in execution desks all over the world. Indeed it
+is safe to say that the Almgren-Chriss model (usually with some custom extensions) has been used
+to execute trillions of dollars’ worth of customer orders. We also believe that the Almgren-Chriss
+model, used in conjunction with the presented heuristics for microstructure decisions, is a reasonable
+choice if the trader has no alpha forecasts (with the possible exception of microstructure forecasts).
+Moreover, the computations we do here generalize in a straightforward way to extensions of the
+Almgren-Chriss model, such as to include long-term alpha. One of the key pieces of intuition that
+3
+
+=== page 4 ===
+allows us to generalize the model, we feel, comes from Theorem 1 which makes the connection between
+microstructure alpha, Hamilton’s generalized momentum, and the steepest-ascent direction of the
+long-term value function. For all of these reasons, we feel this is a useful example to do in detail.
+We consider a trader in charge of a portfolio of d ≥ 1 assets, of initial positions q0 = (q1 0,...,qd 0)T
+where qi 0 ∈ R for all i∈{1,...,d}. The trader wants to unwind this portfolio over the time horizon
+[0,T ], where T > 0. Given a control process (vi t)t∈[0,T ] representing the trading rate on asset i, the
+inventory process of the i-th asset is given by
+qi t = qi 0 −
+∫ t
+0
+vi sds, i∈{1,...,d}. (2.1)
+For each stock, we consider Gaussian price dynamics:
+dSi t = σidWi t,
+where the Brownian motions (Wi t )t∈[0,T ] are such that (S1 t,...,Sd t )t∈[0,T ] has a nonsingular covariance
+matrix Σ.
+We treat all temporary impact as instantaneous and permanent impact as linear, hence irrelevant in
+the continuous-time case. In the single-asset case, if we trade ∆q dollars in some small time interval
+of length ∆t, and this costs λ∆q/∆t times traded notional for some λ > 0, then the total cost in
+dollars per unit time is
+λ(δq/δt)2 ≡c(δq/δt),
+where c(v) = λv2. However, c(·) does not need to be quadratic, merely convex. In the multi-asset case,
+we simply set c : Rd → R+. As an aside, we note that these impact assumptions are an approximation
+that is only ever assumed to be valid within a certain regime. For example, if we repeatedly aggress
+with medium to large order sizes within a short time-frame, it is unrealistic to assume that the impact
+will revert instantly.
+The trader attempts to maximize the expectation of utility of ﬁnal wealth. Due to the nonlinear
+nature of most utility functions, this is inconvenient to work with. If time is discrete and if the multi-
+period asset return vector follows an elliptical distribution, then there exists some constant κ> 0 for
+which it is equivalent to maximize the mean-variance quadratic form:
+E[wT ] − κ 2 V[wT ],
+where wT is the trader’s wealth at terminal time. This is essentially the Markowitz prescription.
+Following Almgren and Chriss (2001), most authors and practitioners replace the variance of ﬁnal
+wealth V[wT ] with the integrated instantaneous variance, leading to the standard continuous-time
+approximation of the mean-variance form,
+∫ T
+0
+
+− κ 2 qT t Σqt −c( ˙qt)  dt.
+We shall now recast the maximization of the mean-variance form of the utility function as a problem
+in the calculus of variations. As in classical mechanics, it has both a Lagrangian and a Hamiltonian
+formulation, which are convex duals to each other. The Hamiltonian is related to the Lagrangian
+by the Legendre-Fenchel transform. In the following, we deﬁne what we mean by the term “smooth
+relaxation” which is not standard terminology.
+4
+
+=== page 5 ===
+Deﬁnition 2.1. Let qT ∈ Rd be a desired ﬁnal portfolio to be achieved at time T. The smooth
+relaxation problem associated to c(·), Σ,qT is deﬁned to be:
+V (0,q0) = min q∈C2([0,T ],Rd)
+∫ T
+0
+L(qs, ˙qs) ds subject to q0 = q0,qT = qT, (2.2)
+where the (autonomous) Lagrangian is given by:
+L(q,v) = c(v) + 1 2κ(q−qT )′Σ(q−qT ), (2.3)
+and κ> 0 is the risk-aversion constant.
+The terminology of Deﬁnition 2.1 arises because Problem 1 is non-smooth and perhaps intractable,
+given that the action space of Problem 1 is discrete and quite large. In this sense (2.2) is a relaxation
+of the intractable problem to the space of twice-diﬀerentiable paths C2([0,T ], Rd). In this paper, most
+of our results assume autonomous Lagrangians for simplicity. However, non-autonomous Lagrangians
+also arise in trading problems. For example, an alpha forecast which attenuates for large t entails a
+time-dependent linear term in (2.2).
+An application of the Euler-Lagrange formula to (2.2) leads to a system of second-order equations.
+By a standard trick, a ﬁrst-order system can be obtained if we introduce the so-called generalized
+momenta p, deﬁned as
+p := ∂vL(q, ˙q). (2.4)
+If the conditions of the implicit function theorem are satisﬁed, we could solve (2.4) for ˙q, obtaining
+˙q = φ(q,p),
+for some function φ deﬁned implicitly by (2.4). The Euler equation then takes the form
+˙p = ∂qL(q, ˙q) = ∂qL(q,φ(q,p)) ≡ψ(q,p),
+where this deﬁnes ψ.
+As the functions φ,ψ are algebraic (not involving derivatives), we have a system of 2d ﬁrst-order
+ODEs given by
+˙q = φ(q,p), ˙p = ψ(q,p) (2.5)
+These equations can be expressed more symmetrically by introducing the Hamiltonian
+H(q,p) := pφ(q,p) −L(q,φ(q,p)).
+Equations (2.5) are equivalently written in a form known as Hamilton’s equations:
+˙q = Hp(q,p), ˙p = −Hq(q,p). (2.6)
+Suppose c(v) = 1 2 vTΛv where Λ = diag(λ1,...,λd) is a diagonal matrix. We assume that no trading
+is free of cost, so λi > 0 for all i. From (2.3) and (2.4), we see that the generalized momenta are
+p = Λ ·q and hence algebraically solving, one has φ(q,p) = Λ−1p. The Hamiltonian is then
+H(q,p) = 1 2pΛ−1p− 1 2κqTΣq.
+Hamilton’s equations then become:
+˙q = Λ−1p, ˙p = κΣq, (2.7)
+and some technical computations lead to the following proposition.
+5
+
+=== page 6 ===
+Lemma 2.2. The solution to (2.2) is given by
+q⋆ t = (C T)−1Ω
+(
+eD
+1
+2 (T−t) −e−D
+1
+2 (T−t)
+)(
+eD
+1
+2 T −e−D
+1
+2 T
+)−1
+ΩTC Tq0, (2.8)
+where Σ = CC T is the Cholesky decomposition of C and ΩDΩT is a spectral decomposition of the
+positive deﬁnite matrix κ 2 C TΛ−1C.
+The trading curve (2.8) can be computed in advance, and corresponds to the order scheduling decision.
+We end this section by showing that the gradient of the value function (2.2) is equal to the generalized
+momenta p.
+Theorem 1. Let V : [0,T ] × Rd → R be continuously diﬀerentiable in time and space such that:
+V (t,qt) = − min q∈C2([t,T ],Rd)
+∫ T
+t
+L(qs,vs) ds subject to q0 = q0,qT = qT (2.9)
+where for all s ∈ [0,T ], ˙qs = vs and L(q,v) is separable.1 The function V deﬁned in (2.9) satisﬁes
+the Hamilton-Jacobi-Bellman diﬀerential equation:
+∂tV (t,q) + H(q,∇V ) = 0, (2.10)
+where H(q,p) = supv {⟨p,v⟩−L(q,v)}, with the singular ﬁnal condition:
+V (T,q) =
+
+}
+
+0, if q = qT
+∞, if q⁄= qT.
+Proof. Let q⋆ be the path that solves (2.9) on [t,T ] with initial condition q⋆ t = q. By the dynamic
+programming principle, we have for h> 0
+V (t,q) = −
+∫ t+h
+t
+L(q⋆ s, ˙q⋆ s)ds + V (t + h,q⋆ t+h). (2.11)
+As V (t + h,q⋆ t+h) = V (t,q) + ∫t+h t ( ∂tV (s,qs) + ⟨∇V (s,qs) · ˙q⋆ s⟩ ) ds, Equation (2.11) can be rewritten
+as
+0 =
+∫ t+h
+t
+(
+∂tV (s,qs) + ⟨∇V (s,qs) · ˙q⋆ s −L(q⋆ s, ˙q⋆ s) ) ds.
+The conclusion follows from an application of the Bellman’s optimality principle, see Dreyfus (1960),
+which gives the desired Hamilton-Jacobi-Bellman equation.
+The above theorem gives the desired interpretation of the generalized momenta p in terms of the value
+function. Indeed, along an optimal trajectory q⋆, we have
+∇V|x=q⋆ t = ∂vL(q⋆ t, ˙q⋆ t ) = pt ∀ t∈ [0,T ],
+where the second equality is just the deﬁnition of p from (2.4).
+1The value function (2.2) satisﬁes these hypothesis, as the associated optimal control (2.8) is continuously diﬀeren-
+tiable with respect to time and the Lagrangian of the problem is quadratic with respect to both of its variables.
+6
+
+=== page 7 ===
+3 From smooth relaxation to microstructure decision
+In this section, we prove our main theorem, Theorem 2, which shows how a risk-neutral instantaneous-
+proﬁt maximizer (or “myopic agent”) can achieve long-term optimality given a judicious choice of
+microstructure alpha model. In other words, there is a speciﬁc microstructure alpha model related to
+Hamilton’s generalized momenta, which, if used by a microstructure trader, encourages the trader to
+take positions that are optimal at a much longer horizon.
+Suppose now that L is coercive of degree r > 1. One may prove that H coincides with the Fenchel
+conjugate of L:
+H(q,p) = sup
+v∈Rd
+{⟨p,v⟩−L(q,v)}. (3.1)
+It follows that H is convex in the p variable. We now restrict attention to autonomous and separable
+Lagrangians that take the form
+L(q,v) = c(v) + f(q), (3.2)
+which includes the mean-variance example discussed before. Under the assumption (3.2), duality
+between the Lagrangian and Hamiltonian implies that the optimal instantaneous trade ˙q∗(t) at each
+time t is the argument v which solves the maximization problem in (3.1). That is,
+˙q⋆ = argmax
+v
+{
+⟨p,v⟩−c(v)
+}
+. (3.3)
+where (3.2) implies we can safely omit the term f(q).
+One can interpret (3.3) as optimization in a risk-neutral world. Indeed, suppose a risk-neutral agent
+had a vector of expected returns, which happened to exactly equal the vector of generalized momenta,
+p, and sought only to maximize net proﬁt, irrespective of risk. In that case, (3.3) is the problem faced
+by this agent. This agent can be considered “myopic” because any information concerning more than
+one period ahead is available to the agent only indirectly, insofar as pdepends on the rest of the trading
+path. This intuition is related to the interpretation of the generalized momenta as the gradient of
+the value function. Indeed, for a myopic risk-neutral investor who does not face transaction costs,
+the “value function” of a position of size x is simply the expected proﬁt over the next period, i.e.,
+V (t,q) = r·q where r is the vector of expected returns, but then ∇V = r. The following deﬁnition
+characterizes what a myopic agent is. Moreover, we emphasize that, throughout the paper, V (·,·)
+corresponds to the value function of a long-term optimization problem (whose gradient provide the
+eﬀective microstructure alphas), whereas W (·,·) denotes the value function of the myopic agent.
+Deﬁnition 3.1. A myopic agent with microstructure alphas p is deﬁned to be a risk-neutral trader
+seeking to maximize instantaneous net proﬁt by choosing trading rate given by
+˙q⋆ = argmax
+v
+{
+⟨p,v⟩−c(v)
+}
+, (3.4)
+where p denotes a set of microstructure alphas, as in Deﬁnition 1.1. The value function of the
+myopic trader at time t∈ [0,T ] for an inventory q∈ Rd is deﬁned as
+W (t,q) =
+∫ T
+t
+(
+⟨ps,v⋆ s⟩−c(v⋆ s) ) ds, (3.5)
+where v⋆ is deﬁned as the solution of (3.4).
+7
+
+=== page 8 ===
+In other words, the value function of a myopic trader deﬁned in (3.5) is simply the sum of his
+instantaneous trading gains over time. The following proposition shows that a myopic trader sending
+market orders only has to choose p = ∇V in order to minimize the error between his value function
+and the long-term objective function V.
+Theorem 2. Assume that L takes the separable form (3.2). A myopic agent with instantaneous cost
+function c(·) must choose microstructure alphas p = ∇V in order to minimize the absolute error
+between his value function and the long-term objective function V deﬁning the trading schedule. More
+precisely, for all (t,q) ∈ [0,T ] ×∏d i=1  min(qi 0,qi T ), max(qi 0,qi T )  ,
+⏐⏐⏐W (t,q) −V (t,q) ⏐⏐⏐≤κ(T −t)|q−qT|TΣ|q−qT| 2 ,
+and we have the uniform bound
+sup
+(t,q)∈[0,T ]×
+∏d
+i=1[min(qi 0,qi T ),max(qi 0,qi T )]
+⏐⏐⏐W (t,q) −V (t,q) ⏐⏐⏐≤κT|q0 −qT|TΣ|q0 −qT| 2 ,
+where |q0 −qT| =
+(
+|q1 0 −q1 T|,...|qd 0 −qd T| ) .
+Proof. Themyopictraderaimsatminimizingc(v)−pv, whereforthemomentpremainsundetermined,
+at each trading time. Over [t,T ] the trader’s problem can be written:
+W (t,q) = maxv
+∫ T
+t
+[⟨ps,vs⟩−c(vs)] ds.
+We choose quadratic costs c(v) = η 2 ‖v‖2 2, where‖·‖2 is the Euclidian norm and the ﬁrst order condition
+with respect to v gives W (t,q) =
+∫T
+t
+‖ps‖2 2
+2η ds. On the other hand, the value function V (t,q) becomes
+∫ T
+t
+{
+1
+2η‖∂vL(q⋆ s,v⋆ s)‖2 2 + 1 2κ(q⋆ s −qT )TΣ(q⋆ s −qT )
+}
+ds,
+where q⋆ is deﬁned by (2.8) and v⋆ is its derivative with respect to time. Therefore,
+|V (t,q) −W (t,q)| =
+⏐⏐⏐⏐ ∫ T t { 1 2η‖∂vL(q⋆ s,v⋆ s)‖2 2 + 1 2κ(q⋆ s −qT )TΣ(q⋆ s −qT ) −‖ps‖2 2 2η } ds ⏐⏐⏐⏐,
+and the minimum with respect to p is attained at ps = ∂vL(q⋆ s,v⋆ s) = ∇V (s,q⋆ s), because p must
+depend only of the instantaneous trading rate and L is separable and additive. The bounds are
+obtained easily by deﬁnition of the space of inventories.
+This simple result has several important consequences. Suppose one wants to avoid the use of optimal
+control and still wants to follow the Almgren-Chriss trading curve. In that case, one can simply solve
+the static optimization problem (3.3) at discrete times (the times of trading), using p = ∇V. Equation
+(3.3) does not give a full set of instructions for the trader with a long-term trading schedule who has
+to interact with a continuous limit order book market, but it can serve as a guide. Indeed, the order
+routing problem, treated notably in Cont and Kukanov (2017), takes into account the possibility
+to send limit, market, or cancel orders to several liquidity venues, depending on their spread and
+8
+
+=== page 9 ===
+imbalance. Stochastic control appears to be ineﬃcient for this problem, as one needs to solve a
+high-dimensional Hamilton-Jacobi-Bellman equation. Methods involving deep reinforcement learning
+have been developed for optimal trading, see for example Baldacci and Manziuk (2020), but they
+lead to high computation time, especially if one wants to deal with a portfolio of assets traded on
+several venues. The advantage of the methodology presented in this paper is that one can avoid
+optimal control and solve a simple static optimization problem to determine the optimal action at
+each discrete trading time.
+Remark 3.2. The bounds on the absolute error between the value function of the myopic agent and
+the long-term objective function enable to compute the accuracy of the myopic trader. For example,
+take the liquidation over T = 1 day of q1 0 = q2 0 = 2000 shares of 2 assets, with correlation ρ = 0.6
+and daily volatilities σ1 = 0.015 and σ2 = 0.02. The absolute error between the two value functions is
+uniformy bounded in time and inventories by 2 × 10−2.
+In Theorem 2, the myopic trader does not consider the properties of an order book, such as the possi-
+bility to submit limit and market orders or to wait. In this case, the optimal eﬀective microstructure
+alpha p (in the sense of minimization of the error with respect to the Almgren-Chriss value function
+V) should not be equal to the generalized momenta because we add microstructure eﬀects for the
+myopic trader that are not present in the trading schedule represented by ∇V.
+With a suﬃciently simple ﬁll model, the myopic trader’s problem dealing with microstructure eﬀects
+can be solved in closed form. This closed-form expression (see Example 3.3) illustrates the contrast
+between the two possible decisions the trader must face, as mentioned above.
+Example 3.3. For the sake of readability, we assume d = 1. Suppose that the myopic trader can
+choose between submitting a limit order (with ﬁll probability 0 < f < 1) or a market order (with the
+cost of crossing the spread equal to s> 0). The myopic trader’s optimization problem is:
+sup
+v
+{
+(pv− η 2v2 −sv)1{pv−η 2 v2−sv>f(pv−η 2 v2)} + f(pv− η 2v2)1{pv−η 2 v2−sv<f(pv−η 2 v2)}
+}
+.
+Computations lead to the following decisions:
+passive order if p< 2s 1 −f, aggressive otherwise,
+and the optimal microstructure alpha is given by:
+p⋆ t = 1√f|∇V (t,q⋆ t )|sgn ( ∇V (t,q⋆ t ) ) if p⋆ t < 2s 1 −f, p⋆ t = |∇V (t,q⋆ t )|sgn ( ∇V (t,q⋆ t ) ) + s otherwise.
+The use of the generalized momenta as eﬀective microstructure alpha has a wide range of practical
+implications. First, it oﬀers a way to bridge the gap between order placement decisions and scheduling
+decisions, usually decoupled in practice. Second, the microstructure formulation helps to tackle classic
+optimal control on limit order books. For example, a realistic optimal trading framework dealing with
+a portfolio of assets on several liquidity venues is in practice intractable due to the dimensionality
+of the problem. In the method presented in this paper, the optimal controls of the trader (that is,
+the volume sent on each venue for each asset by the mean of limit and market orders) are derived
+through a simple static optimization problem, which can be solved for a large number of assets on a
+large number of venues. The convergence through the trading schedule is guaranteed by choice of the
+eﬀective microstructure alpha p.
+9
+
+=== page 10 ===
+Remark 3.4. Note that, in the framework of Example (3.3), if the spread s tends to zero and the
+ﬁlling probability f tends to one, we recover the framework of a myopic sending market orders only,
+and the optimal eﬀective microstructure alpha is given by ∇V.
+This method can easily handle the increasing complexity coming from the microstructure eﬀects
+(short term alpha, imbalance, and spread of each venue, etc.). In the next section, we present a
+general microstructure trading model taking into account the main stylized facts combining order
+placement and order routing of a portfolio of assets. We show that using the method proposed in this
+paper can be applied to solve in practice two important problems in systematic trading: the multi-
+asset, multi-venue optimal trading problem and the multi-asset, multi-venue optimal market-making
+problem.
+4 A general microstructure trading model with long-term
+trading schedule
+4.1 Optimal trading
+We ﬁrst provide a deﬁnition of the problem.
+Deﬁnition 4.1. Consider an agent trading a portfolio of correlated assets, where each asset is listed on
+one or more liquidity venues. The multi-asset, multi-venue optimal trading problem consists
+in determining at a given time and for each asset, the optimal quantity to buy or sell on each venue,
+for given market conditions and a pre-computed trading schedule, as well as the optimal limit at which
+such quantity should be posted.
+The framework described here is inspired by Baldacci and Manziuk (2020). Consider a trading
+schedule for d≥ 1 assets q⋆ ∈ Rd (the Almgren-Chriss trading schedule described in Equation (2.8),
+for example) with associated value function V (t,q⋆ t ). For each asset i ∈{1,...,d}, the trader splits
+his limit and market orders between Ni ≥ 1 liquidity venues. We assume that he wants to unwind
+the portfolio so that qT = 0d. For all i∈{1,...,d},n∈{1,...,Ni}, the order book of the asset i on
+the venue n is characterized by the following quantities:
+• the bid-ask spread process (ψi,n t )t∈[0,T ] taking values in the state space ψ i,n = {δi,n,...,Jδi,n},
+• the imbalance process (Ii,n t )t∈[0,T ] taking values in the state space I i,n = {Ii,n 1 ,...,Ii,n K },
+where J,K ∈ N denote the number of possible spreads and imbalances respectively and δi,n stands
+for the tick size of i-th asset on the n-th venue. Note that the dynamics are unspeciﬁed, meaning
+that any continuous-time stochastic process with discrete values can be considered for the purpose of
+simulation.
+Deﬁnition 4.2. A market regime is, for asset i∈{1,...,d}, a set of spread and imbalance values
+on the diﬀerent venues n∈{1,...,Ni}.
+We deﬁne the sets Ψ = {Ψ1,..., Ψ#Ψ},I = {I1,...,I#I} of disjoint intervals, representing diﬀerent
+market regimes of interest in terms of spreads and imbalances.
+10
+
+=== page 11 ===
+Example 4.3. Assume d = 1 and for all n∈{1,...,N}, δn = δ. The set Ψ = { δ,{2δ, 3δ},{4δ, 5δ} }
+denotes three spread regimes: low (one tick), medium (two or three ticks), and high (four or ﬁve ticks).
+Example 4.4. Assume d = 1 and for all n ∈{1,...,N} and k ∈{1,...,K} that In k = Ik. In this
+case the set I =
+{
+[−1,−0.66], (−0.66,−0.33], (−0.33, 0.33], (0.33, 0.66], (0.66, 1]
+}
+denotes ﬁve regimes
+of imbalance: low (−33% to 33%), medium on the ask (resp. bid) from 33% to 66% (resp. from −66%
+to −33%) and high on the ask (resp. bid) from 66% to 100% (resp. from −100% to −66%).
+The number of, possibly partially, ﬁlled ask orders on the asset i in the venue n is modeled by a Cox
+process denoted by Ni,n with intensities λi,n
+(
+ψi t,Ii t,pi,n t ,𝓁i t ) where pi,n t ∈ Qi,n ψ represent the limit at
+which the trader sends a limit order of size 𝓁i,n t , and
+Qi,n ψ = {0, 1} if ψi,n = δi,n, and {−1, 0, 1} otherwise.
+Practically, on asset i, for n ∈{1,...,Ni}, when the spread is equal to the tick size, the trader can
+post at the ﬁrst best limit (pi,n = 0) or the second best limit (if pi,n = 1). When the spread is equal
+to two ticks or more, the trader can either create a new best limit (pi,n = −1) or post at the best or
+the second best limit as previously. The arrival intensity of a buy market order at time t on the venue
+n∈{1,...,Ni} for asset i at the limit p∈Qi,n ψ , given a couple (ψi t,Ii t) = m of spread and imbalance
+on each venue, is equal to λi,n,m,p > 0. When the trader posts limit orders of volume 𝓁i,n t on the n-th
+venue for n ∈{1,...,Ni}, the probability that it is executed is equal to fλ(𝓁i t), where fλ(·) ∈ [0, 1]
+is a continuously diﬀerentiable function, decreasing with respect to each of its coordinate. Therefore,
+the arrival intensity of an ask market order ﬁlling the buy limit order of the trader for asset i on the
+n-th venue at the limit pi,n t , given spread and imbalance (ψi t,Ii t) is a multi-regime function deﬁned by
+λi,n(ψi t,Ii t,pi,n t ,𝓁i t) = fλ(𝓁i t) ∑
+m∈Mi,p∈Qi,n ψ
+λi,n,m,p1{(ψi t,Ii t)∈m,pi,n t =p}, (4.1)
+where Mi = ΨNi ×INi . Moreover, we allow for partial execution, the fact of which we represent
+by random variables ϵi,n t ∈ [0, 1]. The proportion of executed volume for limit orders in each venue
+depends on the spread and the imbalance in all Ni venues for asset i, as well as the volume and the
+limit of the order chosen by the trader. We assume a categorical distribution with R > 0 diﬀerent
+execution proportions ωr,r∈{1,...,R} for each venue with P(ϵi,n t = ωr) = ρi,n,r(ψi t,Ii t,pi,n t ,𝓁i t), where
+ρi,n,r(ψi t,Ii t,pi,n t ,𝓁i t) = fρ(𝓁i t) ∑
+m∈Mi,p∈Qi,n ψ
+ρi,n,m,p,r1{(ψi t,Ii t)∈m,pi,n t =p}, (4.2)
+where fρ(·) is a continuously diﬀerentiable function, decreasing with respect to each of its coordinate.
+We allow for the execution of market orders (denoted by a point process (Ji,n t )t∈[0,T ]) on each venue
+of size (vi,n t )t∈[0,T ] ∈ [0,v] where v > 0 and Ji,n t = Ji,n t− + 1. We assume that market orders are always
+fully executed but this assumption can be relaxed easily. As each asset must be bought or sold, we
+deﬁne ∆ = (∆1,..., ∆d) where for i ∈{1,...,d}, ∆i = 1 if qi 0 > 0,−1 otherwise. The inventory
+process on each asset is deﬁned by
+qi t = qi 0 − ∆i
+Ni ∑
+n=1
+(∫ t
+0
+𝓁i,n s ϵi,n s dNi,n s +
+∫ t
+0
+vi,n s dJi,n s
+)
+.
+11
+
+=== page 12 ===
+The myopic trader has an eﬀective microstructure (peﬀ,i t )t∈[0,T ] in order to follow the pre-computed
+execution curve q⋆i t on each asset, but also a short-term alpha (pshort,i t )t∈[0,T ] which is a function of the
+current spread and imbalance mi of all the venues where asset i is listed.
+Remark 4.5. The microstructure alpha considered for each asset is the sum of a direct microstructure
+alpha depending on the market regimes and an eﬀective microstructure alpha that gives a signal to
+follow the long-term objective function. The sum of these two terms gives the magnitude of the buy
+or sell signal. For example, suppose peﬀ,i is small and positive, indicating that ﬁlling a buy order
+would be a slight improvement to the value function. Suppose with peﬀ,i alone, the system would have
+recommended a passive buy order. Now suppose a strongly-positive microstructure alpha, denoted
+pshort,i, is also present; then the combination peﬀ,i + pshort,i in place of peﬀ,i should recommend a more
+aggressive action, such as a spread-crossing buy order.
+Finally, the cost function of a limit order of size 𝓁 at limit p on venue n for asset i is deﬁned as
+ci,n,L(𝓁,p) and ci,n,M(v) for the cost function of a market order of size v on venue n for asset i.
+The myopic trader acts at discrete times and at time t ∈ [0,T ] for (ψi t,Ii t) ∈ mi,i ∈{1,...,d}, his
+optimization problem is
+max
+{
+sup
+𝓁,p
+{ d∑
+i=1
+Ni ∑
+n=1
+λi,n(mi,pi,n,𝓁i)E
+(
+peﬀ,i + pshort,i,n(mi) ) 𝓁i,nϵi,n −ci,n,L(ϵi,n𝓁i,n,pi,n) } ,
+sup
+v
+{ d∑
+i=1
+Ni ∑
+n=1
+(
+peﬀ,i + pshort,i,n(mi) ) vi,n −ci,n,M(vi,n) }} , (4.3)
+where the expectation is taken with respect to the variables ϵi,n for all i∈{1,...,d},n∈{1,...,Ni}.
+This is a simple static optimization which can be solved for a large number of assets and venues using
+a multidimensional root-ﬁnding method. The output is, for each state mi, the optimal volumes and
+limits 𝓁⋆i,n(mi),p⋆i,n(mi) for each asset on each liquidity venue. We deﬁne the value function of the
+myopic trader at time t as
+W (t,ψ,I,q) =
+∫ T
+t
+max
+{ d∑
+i=1
+Ni ∑
+n=1
+λi,n(ψi s,Ii s,p⋆i,n s ,𝓁⋆i s )E
+(
+plong,i s + pshort,i,n s (ψi s,Ii s) ) 𝓁⋆i,n s ϵi,n s
+−ci,n,L(ϵi,n s 𝓁⋆i,n s ,p⋆i,n s )
+
+,
+d∑
+i=1
+Ni ∑
+n=1
+(
+plong,i s + pshort,i,n s (ψi s,Ii s) ) v⋆i,n s −ci,n,M(v⋆i,n) } ds
+where ψt = ψ,It = I,qt = q. As in Theorem 2, the myopic trader has now to choose the long-term
+alpha peﬀ to match the trading schedule q⋆. This leads to the following optimization setting for all
+mi ∈Mi:
+max
+{
+sup
+𝓁,p
+{ d∑
+i=1
+Ni ∑
+n=1
+λi,n(mi,pi,n,𝓁i)E
+(
+peﬀ,i + pshort,i,n(mi) ) 𝓁i,nϵi,n −ci,n,L(ϵi,n𝓁i,n,pi,n) } ,
+sup
+v
+{ d∑
+i=1
+Ni ∑
+n=1
+(
+peﬀ,i + pshort,i,n(mi) ) vi,n −ci,n,M(vi,n) }} ,
+peﬀ = argminpeﬀ
+⏐⏐⏐V (·,q⋆ · ) −W (·,ψ·,I·,q·) ⏐⏐⏐.
+(Opt-Trd)
+12
+
+=== page 13 ===
+In this general framework, order scheduling with a long-term target is easily tractable even for a large
+portfolio of assets, as the trader has to solve a static optimization problem at each trading time. For
+a parsimonious model of ﬁlling probabilities, the eﬀective microstructure alpha can be computed in
+closed form. Note that each time a ﬁll is received that changes the portfolio holdings, and/or each
+time a signiﬁcant amount of time passes, the eﬀective microstructure alpha peﬀ must be recomputed.
+Remark 4.6. The methodology presented in this paper leads to entirely tractable optimization prob-
+lems, even for a large number of assets. This is the case when we have a closed-form solution for the
+long-term value function V, which can be computed quickly. It also suggests an approximation of the
+eﬀective microstructure alpha, that is to take peﬀ,i t = ∇iV (t,q⋆ · ). This heuristics will be used in the
+next section to solve a diﬀerent control problem.
+4.2 Market-making
+The great advantage of the framework presented in this paper is that it avoids the use of optimal
+control to tackle optimal trading problems. The trader solves a simple static optimization problem,
+and the use of the generalized momenta as a long-term alpha plays the role of the trading schedule.
+Similar ideas can be applied to the market-making problem, with some minor changes.
+Deﬁnition 4.7. Consider an agent trading on a portfolio of correlated assets, where each of them
+is listed on one or several liquidity venues. His goal is to earn the diﬀerence between the bid and
+ask prices (the bid-ask spread) while keeping his inventory close to zero to avoid an unwanted large
+exposure and be forced to buy at a higher price or sell at a lower price in order to unwind this
+position. The multi-asset, multi-venue optimal market-making problem consists in deriving
+at a given time, for each asset, the optimal quantity to buy or sell in each venue, for given market
+conditions, as well as the optimal limit at which such quantity should be posted, with an inventory
+vector mean-reverting around zero or some predetermined target.
+The market-making problem has been introduced in the ﬁnancial literature by Ho and Stoll (1981);
+Glosten and Milgrom (1985). Ho and Stoll presented a framework to tackle inventory management,
+while Grossman and Miller proposed a 3 periods model that encompassed both market-makers and
+ﬁnal customers, enabled them to understand what happens at equilibrium, and contributed to the
+important literature on the price formation process. The seminal reference of the recent literature
+on market-making is the work of Avellaneda and Stoikov in Avellaneda and Stoikov (2008), who
+proposed a stochastic control framework to tackle the quoting and inventory management problems.
+Since then, a vast literature on optimal market-making has emerged, basically adding many features
+to the Avellaneda and Stoikov framework, see for example Cartea et al. (2014); Guéant et al. (2013)
+and the two textbooks Cartea et al. (2015); Guéant (2016). These works deal with single asset
+market-making, and the considered framework is more suitable for OTC markets rather than order-
+driven markets. The problem of multi-asset market-making, dealing with the curse of dimensionality,
+has been addressed via deep reinforcement learning methods, see for example Guéant and Manziuk
+(2019). Models for optimal market-making in limit order books have been developed for the single
+asset case, see Guilbaud and Pham (2013), for example. All these models suﬀer from the same problem
+when dealing with a portfolio of assets: solving a high-dimensional Hamilton-Jacobi-Bellman equation
+makes the problem almost intractable in practice. In this section, we propose an adaptation of the
+previously described heuristics to tackle the multi-asset market-making problem in limit order books.
+13
+
+=== page 14 ===
+4.2.1 The long-term objective function
+Our methodology to solve optimal control problems in high dimension relies on the fact that the
+eﬀective microstructure alphas come from a long-term objective function computed analytically. This
+is the case of the Almgren-Chriss trading curve, which hides the microstructure eﬀects that are in-
+corporated in the myopic optimization problem. However, as stated previously, the main constraint
+of the optimal market-making problem is that, even for market-making on OTC markets, the value
+function’s computation is very time-consuming. We propose to use the gradient of an approximation
+of the value function of the optimal market-making problem on OTC markets as the eﬀective mi-
+crostructure alphas for the optimal market-making problem in order books. To this end, we borrow
+the OTC framework of Bergault et al. (2020) and recall their modeling assumptions brieﬂy.
+For i∈{1,...,d}, the reference price of asset i is modeled by a process Si t with dynamics
+dSi t = σidWi t,
+where (Wi t,...,Wd t ) is a d-dimensional Brownian motion with variance-covariance matrix Σ. At each
+t∈ [0,T ], the market-maker chooses the prices Pi,b t ,Pi,a t at which she is ready to buy/sell each asset
+i. These prices are given by
+Pi,b t = Si t −δi,b t , Pi,a t = Si t + δi,a t ,
+where δt = (δ1,b t ,δ1,a t ,...,δd,b t ,δd,a t ) are the control processes of the market-maker corresponding to the
+bid and ask spreads set on each asset i. For i∈{1,...,d}, the point processes Ni,b t ,Ni,a t denote the
+total number of bid and ask transactions between 0 and t on asset i. Their intensities are given by
+Λi,b(δi,b t ), Λi,a(δi,a t ) where the functions Λi,b, Λi,a satisfy some technical conditions, see Bergault et al.
+(2020) for details. These conditions are suﬃciently general to allow the use of several form of intensity
+such as exponential, logistic, SU Johnson etc.
+The transaction size for asset i is constant and denoted by zi, and the inventory process of the
+market-maker for asset i is
+dqi t = zi
+(
+dNi,b t −dNi,a t ) , qt = (q1 t,...,qd t )T.
+The cash process of the market-maker has the following dynamics:
+dXt =
+d∑
+i=1
+(
+Pi,a t dNi,a t −Pi,b t dNi,b t ) .
+The optimization problem of the market-maker is deﬁned by
+sup
+δ
+E
+
+XT +
+d∑
+i=1
+qi TSi T − γ 2 ∫ T 0 qT s Σqsdt  ,
+and simple computations2 give the associated value function at time t for a given inventory vector
+qt = q:
+V (t,q) = sup
+δ
+Et
+ d∑
+i=1
+∫ T
+t
+(
+δi,a s Λi,a(δi,a s ) + δi,b s Λi,b(δi,b s ) − γ 2 qT s Σqs
+)
+dt
+
+, (4.4)
+2It can be shown by simple change of variables that the value function of this control problem is only a functional
+of the time and the inventories.
+14
+
+=== page 15 ===
+where Et denote the conditional expectation with respect to the canonical ﬁltration at time t and
+γ > 0 is the risk-aversion of the market-maker. He wishes to maximize the sum of his cash process
+and the mark-to-market value of his inventory. The running penalty forces him to mean-revert his
+inventories to zero. We now state the main proposition of Bergault et al. (2020) that provides a closed
+form approximation of V (t,q), and refer to this article for the proof.
+Proposition 4.8. Deﬁne the functions
+Hi,b(p) = sup
+δ
+{Λi,b(δ)(δ−p)}, Hi,a(p) = sup
+δ
+{Λi,a(δ)(δ−p)},
+and the constants αi,b j = (Hi,b)j(0),αi,a j = (Hi,a)j(0), where the superscript j ∈{0, 1, 2} denote the
+derivative of order j. Deﬁne also for k∈ N
+∆i,b j,k = αi,b j (zi)k, ∆i,a j,k = αi,a j (zi)k,
+Vb j,k =
+(
+∆1,b j,k,..., ∆d,b j,k
+)
+, Va j,k =
+(
+∆1,a j,k,..., ∆d,a j,k
+)
+,
+Db j,k = diag
+(
+∆1,b j,k,..., ∆d,b j,k
+)
+, Da j,k = diag
+(
+∆1,a j,k,..., ∆d,a j,k
+)
+.
+Then if αi,b 2 + αi,a 2 > 0, the value function of the optimal control problem (4.4) can be approximated
+by the function
+˜V (t,q) = −qTA(t)q−qTB(t) −C(t), (4.5)
+where A : [0,T ] →S++ d ,B : [0,T ] → Rd and C : [0,T ] → R are deterministic functions given by
+A(t) = 1 2D − 1 2 + ˆA ( e ˆA(T−t) −e− ˆA(T−t) )( e ˆA(T−t) + e− ˆA(T−t) )−1 D − 1 2 + ,
+B(t) = −2e−2
+∫T
+t A(u)D+du
+∫ T
+t
+e2
+∫T
+s A(u)D+duA(s)
+(
+V− + D−D
+(
+A(s)
+))
+ds
+C(t) = −Tr(Db 0,1+a 0,1)(T −t) −Tr
+(
+(Db 1,2 + Da 1,2)
+∫ T
+t
+A(s)ds
+)
+−V T −
+∫ T
+t
+B(s)ds
+− 1 2 ∫ T t D ( A(s) )T (Db 2,3 + Da 2,3)D ( A(s) ) ds− 1 2 ∫ T t B(s)TD+B(s)ds
+−
+∫ T
+t
+B(s)TD−B(s)ds,
+with
+D+ = Db 2,1 + Da 2,1,D− = Db 2,2 −Da 2,2,V− = Vb 1,1 −Va 1,1, ˆA = √γ ( D 1 2 +ΣD 1 2 + ) 1 2 ,
+and D is the linear operator mapping a matrix onto the vector of its diagonal and S++ d is the set of
+d×d deﬁnite positive matrix.
+The approximated value function (4.5) is quadratic, therefore, sub-diﬀerentiable with respect to the
+vector of inventories q and the deterministic functions A(t),B(t),C(t) can be computed in closed
+form. It takes into account the main property of a “high-level” multi-asset market-making problem,
+that is, the correlation structure between the assets. By analogy with Section 4.1, its sub-gradient
+can be chosen as an eﬀective microstructure alpha to mean revert toward a ﬂat inventory.
+15
+
+=== page 16 ===
+Remark 4.9. In order to compute eﬃciently the value function in (4.5), note that the matrix A can
+be diagonalized and therefore approximated with a principal component analysis. The expressions of
+A,B,C do not provide intuition about the long-term behavior of the market-maker. However, in an
+asymptotic framework, that is when T → +∞, we obtain
+A→T→+∞
+1
+2
+√γΓ,
+B →T→+∞−D
+− 1 2
++ ˆA ˆA+D − 1 2 + ( V− + 1 2 √γD−D(Γ) ) ,
+where Γ = D
+− 1 2
++
+(
+D
+1
+2
++ΣD
+1
+2
++
+) 1
+2
+D
+− 1 2
++ and ˆA+ is the Moore-Penrose generalized inverse of ˆA. If we perform
+a principal component analysis on the variance-covariance matrix Σ, we observe that the buy or
+sell signal (depending on the sign of the inventories) coming from the sub-gradient of V (t,q) is an
+increasing function of the eigenvalues of Σ and the risk-aversion parameter γ. Thus, choosing the
+sub-gradient of V (t,q) as an eﬀective microstructure alpha should provide a mean-reverting signal for
+a myopic agent, taking into account the correlation between the assets.
+4.2.2 Multi-asset multi-venue optimal market-making in limit order book
+We now derive the solution to the multi-asset multi-venue optimal market-making problem using our
+heuristics. We take the same modeling notation as in 4.1. Assuming bid and ask symmetry for sake of
+simplicity, we introduce the processes Ni,n,b,Ni,n,a to model the number of (possibly partially-ﬁlled)
+bid and ask orders on the asset i in the venue n of intensity λi,n(ψi,Ii,pi,n,b,𝓁i,b) for the bid side and
+λi,n(ψi,Ii,pi,n,a,𝓁i,a) for the ask side, where the function λ is deﬁned by (4.1). The quantity 𝓁i,n,b
+(resp. 𝓁i,n,a) is the volume sent on the n-th venue of the i-th asset on the bid (resp. ask) side. The
+quantity pi,n,b (resp. pi,n,a) is the limit chosen by the market-maker on the n-th venue of the i-th
+asset on the bid (resp. ask) side to send a limit order. The distribution of the random variables ϵi,n,b t
+and ϵi,n,a t are deﬁned as in Equation (4.2). The market-maker can also send market orders on the bid
+and ask sides (denoted by point processes Ji,n,b t ,Ji,n,b t ) on each venue of size vi,n,b t ,vi,n,a t . Its inventory
+process on each asset is deﬁned by
+qi t =
+(∫ t
+0
+𝓁i,n,b s ϵi,n,b s dNi,n,b s +
+∫ t
+0
+vi,n,b s dJi,n,b s
+)
+−
+(∫ t
+0
+𝓁i,n,b s ϵi,n,b s dNi,n,b s +
+∫ t
+0
+vi,n,b s dJi,n,b s
+)
+∈ Z.
+The problem faced by a market-maker is slightly diﬀerent compared to a classic trader. While the
+trader must follow a predetermined target, the market-maker’s inventory must revert toward zero.
+Therefore, we seek a long-term alpha that gives a signal to our myopic market-maker of the form “sell
+for high inventory, buy for low inventory” with diﬀerent type of aggressiveness (limit or market order)
+depending on the level of inventory. Contrary to optimal execution, there is no optimal inventory in
+market-making problems at a given time t ∈ [0,T ], which explains the dependence of the long-term
+alpha on the current inventory.
+As stated previously, the eﬀective microstructure alphas should be the gradient of a value function
+corresponding to a “high-level” multi-asset market-making problem (which hides the microstructure
+eﬀects). This value function should be in closed form to recompute the gradient quickly when the
+market-maker trades and too much time passed. Thus, we propose to use the sub-gradient of the value
+function (4.5) corresponding to an approximation of the multi-asset market-making value function
+in OTC markets as a proxy for eﬀective microstructure alphas used by a market-maker acting on a
+16
+
+=== page 17 ===
+portfolio of assets listed on several order book platforms. By analogy with Section 4.1, at each time
+step t, for an inventory vector q∈ Rd, the market-maker solves the following optimization problem:
+max
+{
+sup
+𝓁,p
+{ d∑
+i=1
+Ni ∑
+n=1
+∑
+j∈{b,a}
+λi,n(mi,pi,n,j,𝓁i,j)E
+(
+peﬀ,i+pshort,i,n(mi) ) 𝓁i,n,jϵi,n,j−ci,n,L(ϵi,n,j𝓁i,n,j,pi,n,j) } ,
+sup
+vb
+{ d∑
+i=1
+Ni ∑
+n=1
+(
+peﬀ,i + pshort,i,n(mi) ) vi,n,b −ci,n,M(vi,n,b) } , (Opt-MM)
+sup
+va
+{ d∑
+i=1
+Ni ∑
+n=1
+(
+peﬀ,i + pshort,i,n(mi) ) vi,n,a −ci,n,M(vi,n,a) }} ,
+peﬀ,i = ∇i ˜V (t,q).
+The control problem is essentially a choice between sending limit orders or market orders in each
+venue for each asset. The eﬀective microstructure alpha helps the market-maker to mean revert his
+inventory toward zero. For example, assume that the market-maker received a large buy passive ﬁlling
+in asset i. The eﬀective microstructure alpha, that is the i-th component of the gradient of the long-
+term utility function ˜V, will point down which is a strong sell signal. Therefore, the market-maker
+will send a sell market order to reduce his long position. Note that the eﬀective microstructure alpha
+takes into account the correlation structure between the assets, meaning that the market-maker can
+hedge a long position in an asset with a short position in another positively correlated asset.
+5 Numerical results
+Mathematical elegance and simplicity are to be prized, of course, but an execution model cannot pass
+the test of practicality until it helps us execute portfolio transitions.
+One of the most important features of our framework, as compared with a plain-vanilla, Almgren-
+Chriss executor, it allows the executor to consider market microstructure and use passive orders,
+hence avoiding certain types of market impact and spread costs. The main point we wish to make
+in this example is that our method potentially avoids the pitfalls of a purely-passive execution model
+because it can consider the utility gradient (and its multi-period analog, the gradient of the value
+function) in the formation of aggression levels. With this speciﬁc aim in mind, we consider the
+liquidation of a market-neutral portfolio with our method and contrast this with comparable results
+for a purely-passive method.
+The speciﬁc example we choose is the liquidation of a market-neutral portfolio on October 15, 2008.
+The portfolio to be liquidated is long IBM and short AAPL. We choose the long position in IBM
+arbitrarily to be 1000 shares. We estimate the CAPM beta of each security, denoted ˆβi where i = 1, 2,
+using three years of daily data, and size the short position so that the beta exposure of the portfolio∑
+ihi ˆβi is near zero.
+5.1 Transaction cost model and microstructure simulation
+We take κ = 10−3 and we assume c(v) = vTΛv for some diagonal matrix Λ = diag(λ1,...,λd). This
+reduces the transaction cost modeling problem to one of estimating appropriate values for each λi.
+17
+
+=== page 18 ===
+Let advpi denote our prediction of the daily dollar volume in the i-th security. The notation “advp”
+comes from the fact that it is computed as the average daily volume “adv” in shares, times the price
+“p”. For simplicity we assume trading one percent of advpi will cause 20 basis points of market impact,
+with extension by linearity, meaning that
+λi = 20 × 10−4 × 1 0.01advpi . (5.1)
+For very large trades (say, more than 0.05 advpi), simple models such as (5.1) break down. For this
+reason, we restrict our attention in this example to trades that are relatively small with respect to
+the anticipated volume.
+One of the most challenging aspects of this study is simulating passive execution, which we deﬁned
+previously as a process of continually joining the queue on the near side of the limit order book until
+the order is ﬁlled, but never crossing the spread.
+We are limited to the academic data sets available via the Wharton Research Data Services (WRDS).
+For this exercise, we used the New York Stock Exchange Trade and Quote (TAQ) database, which
+contains intraday transactions data on trades and quotes for all securities listed on the New York
+Stock Exchange (NYSE) and American Stock Exchange (AMEX), as well as Nasdaq National Market
+System (NMS) and SmallCap issues.
+The TAQ database represents the aggregate inside quote for each exchange. Therefore, it includes
+both specialists and the public limit order book. Only having access to the consolidated feed, we
+construct a conservative simulation of when passive ﬁlls occur. Speciﬁcally, if we have a “buy” limit
+order (the entire process is similar for limit “sell” orders with “bid” replaced by “ask”) which is
+simulated as existing in the queue on the bid side of the order book, when can we assume such an
+order was ﬁlled? Conservatively, if the order book changes and the new ask price is less or equal to the
+existing limit order price, we assume that markets would have cleared in the process of this change,
+and our limit order would have been ﬁlled, at least partially. We limit the amount of ﬁll to the posted
+quantity at the new ask price. If this quantity is simulated to have been taken out, then no further
+ﬁlls are allowed to occur in the simulation until the price level changes. We assume that when the
+price level of the NBBO has changed, the liquidity is also replenished to the reported value at the
+new price level. This is a fairly conservative set of conventions; in reality, a larger number of passive
+ﬁlls could occur than merely the ones we simulate. This is because if there are multiple limit orders
+in the queue, one limit order can, of course, be ﬁlled without either bid or ask price levels changing.
+Predicting the probability of a passive ﬁll, denoted fi above, is equivalent to predicting the next
+transition of the limit order book and hence requires a model of limit order book dynamics. Indeed,
+such ﬁll probabilities are one of the possible outputs of the very detailed model of Cont et al. (2010)
+or the microstructure trading model presented in the previous section. As our data set is only the
+consolidated feed, we simply take fi = 0.1 as the passive ﬁll probability.
+5.2 Results
+As indicated above, we construct a market-neutral portfolio of d = 2 securities in which the long side
+is initially 1000 shares of IBM. Security i = 1 is IBM and i = 2 is AAPL. We estimate the security
+betas to the S&P 500 (via regression on several years of daily data) as
+ˆβ1 = 0.705, ˆβ2 = 1.276 . (5.2)
+18
+
+=== page 19 ===
+We begin the simulation at 10:00 am on October 15, 2008, rather than immediately at the open
+since there are often outlier quotes, wide spreads and other eﬀects around the open. The most recent
+midpoint price of IBM at 10:00 am was p1 = 93.06 and for AAPL, p2 = 105.985.
+For convenience, we keep track of a cash balance for each position. The n1 = 1000 shares of IBM
+are ﬁnanced by borrowing n1p1 = USD 93,060 in cash and purchasing a position initially worth USD
+93,060, so the net value (cash plus stock) of that position is initially zero. Similarly, the short position
+in AAPL is obtained by borrowing n2 = −485 shares and immediately selling them for USD 51,403,
+and this position also initially has a net (cash + stock) value of zero. Note that with these holdings,
+(5.2) implies that the portfolio’s beta is
+n1p1 ˆβ1 + n2p2 ˆβ2 ≈ 0 .
+Any cash generated from further stock sales or cash used for further purchases of the same security
+is considered part of the separate cash balance allocated to that position. As prices change and as
+orders are ﬁlled, the values of each position will ﬂuctuate.
+Letni,t denote the number of shares held in thei-th security at timet, andpi,t the latest midpoint price
+as of time t. Also, let ci,t denote the amount of cash (which can be positive or negative) attributed to
+the i-th security at time t, according to the accounting conventions outlined above. These variables
+change throughout the lifetime of the execution.
+The value of a position is the number of shares held times the most recent midpoint price, plus the
+total amount of cash associated to the position, i.e. ni,tpi,t + ci,t. The value of a portfolio is the sum
+of the values of all its positions, i.e.
+valuet :=
+d∑
+i=1
+(ni,tpi,t + ci,t). (5.3)
+The value process (5.3), and especially its drift, is one measure of the execution’s quality. If the value
+tends to drift downward, as in the AlwaysPassive model detailed below, then the execution desk is
+losing money due to slippage. This is perhaps the typical situation – one expects execution to have
+associated costs. A particularly pleasant situation arises when the drift of the portfolio value process
+(5.3) is zero, as in Figure 2, and it is possible that with very good microstructure alphas added to
+the generalized momenta, the drift could even become positive. All monetary values are reported in
+USD. The predicted daily volumes are estimated to
+advp1 ≈ 1.16 × 109, advp2 ≈ 6.13 × 109 .
+The covariance matrix is
+Σ = 10−4 ×
+(
+15.5728 17.7558
+17.7558 28.6519
+)
+,
+which implies a correlation of 0.84 among the two assets and daily volatilities of approximately 3.9%
+and 5.4%.
+The output of our algorithm is the instantaneous aggression level: aggressive, passive, or wait. There
+is not a unique benchmark to gauge such an algorithm’s performance, but it is sensible to compare a
+complicated method of choosing the aggression level to a simple method for choosing the aggression
+19
+
+=== page 20 ===
+level, to see if the additional complexity is justiﬁed. Hence one could compare it to a constant
+aggression level – always passive.
+Figure 1 reveals that, as the market was falling, the passive “buy” orders in AAPL were all ﬁlled very
+quickly, while unsurprisingly the “sell” orders in IBM were ﬁlled very slowly, and indeed were not
+even ﬁnished by the end of the trading day. This drove the Gross Market Value (gmv) down while
+pushing the net and beta higher, where we deﬁne
+βt :=
+∑
+i
+ni,tpi,t ˆβi, nett := ∑
+i
+ni,tpi,t, gmvt :=
+∑
+i
+|ni,tpi,t|, (5.4)
+with ˆβi given by (5.2). Thus the portfolio had βt > 0 in a falling market. Note that the losses incurred
+in this manner do not become gains if the sign of the market move is reversed; they remain losses
+irrespective of the market’s direction. In a rising market, the “always passive” model would have
+the same problem: the “sell” orders would be ﬁlled quickly, the “buy” orders would linger, and the
+portfolio would build up negative beta in a rising market.
+Figure 1: Portfolio holdings in the “always passive” model, and portfolio characteristics: gross market
+value (gmv), net, and βt given by (5.4).
+We now show the analogous graphs for the simplest version of our execution model developed in the
+previous section. Note that the model retains a fairly small beta exposure throughout the lifetime of
+the execution. This is because CAPM beta is also a factor in the APT risk model, and the generalized
+momenta point along the gradient of the Hamilton-Jacobi-Bellman value function and hence drive
+trading towards the optimal value of multiperiod utility (including the risk term). This is the key
+advantage of our model over simpler execution algorithms.
+20
+
+=== page 21 ===
+Figure 2: Portfolio holdings in the sophisticated model, and portfolio characteristics: gross market
+value (gmvt), nett, and βt given by (5.4).
+Finally, we consider the portfolio value over the lifetime of the execution. Note that in our model, the
+value process (5.3) is approximately driftless, which as explained above is a desirable property, and
+outperforms the “always passive” value process realization. In particular, in our model valuet is able
+to avoid negative drift in a falling market precisely because the portfolio remains approximately beta-
+neutral. In a portfolio with many assets (large n), our method would allow it to remain approximately
+neutral to all factors in the APT model.
+Figure 3: Portfolio value (5.3) over the lifetime of the execution, for both execution methods.
+The diﬀerence in Figure 3 is both statistically and economically signiﬁcant. The t-statistic for the
+diﬀerence is about 78, hence signiﬁcant at the 99.999% level. Moreover, the dollar value of the
+diﬀerence between the two methods is about 1.5% of the initial gross market value to be liquidated.
+6 Conclusion
+In this paper, we present a framework to perform optimal trading, taking into account market mi-
+crostructure and a long-term trading schedule without the use of optimal control. This approach relies
+on the use of the generalized momenta p = ∇V (t,q) as the eﬀective microstructure alpha. We show
+21
+
+=== page 22 ===
+that a myopic agent sending only market orders with such alpha will minimize the error with respect
+to the long-term trading schedule. Moreover, when we add the possibility of passive execution, the
+long-term alpha can be chosen as a transformation of the generalized momenta p. We also present
+a general microstructure trading framework for the multi-asset multi-venue optimal trading problem.
+For a parsimonious model of ﬁll probabilities, the eﬀective microstructure alpha can be computed in
+closed form. We apply the same heuristics to derive an optimal market-making model that is tractable
+for a large number of assets and venues.
+Based on the dual formulation of the classic Almgren-Chriss optimization problem, this simple heuris-
+tics has wide-ranging practical implications. In addition to bridging the gap between order placement
+and scheduling, it simpliﬁes optimal trading problems that are usually intractable using optimal
+control due to the high-dimensional Hamilton-Jacobi-Bellman equation resulting from the control
+problem. This is of particular importance for a quantitative execution desk wishing to trade a high
+number of cross-listed assets. It opens up many avenues for future exploration. One set of projects
+is to consider trading problems beyond the typical buy-side utility-maximization, which can still be
+viewed within the unifying framework of a myopic risk-neutral wealth-maximizer, whose microstruc-
+ture alphas are aligned with the value function gradient.
+References
+R. Almgren and N. Chriss. Optimal execution of portfolio transactions. Journal of Risk, 3:5–40, 2001.
+K. J. Arrow. Liquidity preference, lecture vi in “lecture notes for economics 285, the economics of
+uncertainty”, pp 33-53. 1963.
+M. Avellaneda and S. Stoikov. High-frequency trading in a limit order book. Quantitative Finance, 8
+(3):217–224, 2008.
+B. Baldacci and I. Manziuk. Adaptive trading strategies across liquidity pools. arXiv preprint
+arXiv:2008.07807, 2020.
+P. Bergault, D. Evangelista, O. Guéant, and D. Vieira. Closed-form approximations in multi-asset
+market making, 2020.
+Á. Cartea, S. Jaimungal, and J. Ricci. Buy low, sell high: A high frequency trading perspective.
+SIAM Journal on Financial Mathematics, 5(1):415–444, 2014.
+Á. Cartea, S. Jaimungal, and J. Penalva. Algorithmic and high-frequency trading. Cambridge Univer-
+sity Press, 2015.
+R. Cont and A. Kukanov. Optimal order placement in limit order markets. Quantitative Finance, 17
+(1):21–39, 2017.
+R. Cont, S. Stoikov, and R. Talreja. A stochastic model for order book dynamics. Operations Research,
+58(3):549–563, 2010.
+S. E. Dreyfus. Dynamic programming and the calculus of variations. Journal of Mathematical Analysis
+and Applications, 1(2):228–239, 1960.
+22
+
+=== page 23 ===
+L. R. Glosten and P. R. Milgrom. Bid, ask and transaction prices in a specialist market with hetero-
+geneously informed traders. Journal of ﬁnancial economics, 14(1):71–100, 1985.
+O. Guéant. The Financial Mathematics of Market Liquidity: From optimal execution to market
+making, volume 33. CRC Press, 2016.
+O. Guéant and I. Manziuk. Deep reinforcement learning for market making in corporate bonds:
+beating the curse of dimensionality. Applied Mathematical Finance, 26(5):387–452, 2019.
+O. Guéant, C.-A. Lehalle, and J. Fernandez-Tapia. Dealing with the inventory risk: a solution to the
+market making problem. Mathematics and ﬁnancial economics, 7(4):477–507, 2013.
+F. Guilbaud and H. Pham. Optimal high-frequency trading with limit and market orders. Quantitative
+Finance, 13(1):79–94, 2013.
+T. Ho and H. R. Stoll. Optimal dealer pricing under transactions and return uncertainty. Journal of
+Financial economics, 9(1):47–73, 1981.
+J. W. Pratt. Risk aversion in the small and in the large. Econometrica: Journal of the Econometric
+Society, pages 122–136, 1964.
+23

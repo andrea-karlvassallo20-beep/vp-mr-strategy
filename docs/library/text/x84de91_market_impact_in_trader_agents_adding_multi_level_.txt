@@ -1,0 +1,628 @@
+=== page 1 ===
+Market Impact in Trader-Agents: Adding Multi-Level Order-Flow
+Imbalance-Sensitivity to Automated Trading Systems
+Zhen Zhanga and Dave Cliffb
+Department of Computer Science, University of Bristol, Bristol BS8 1UB, U.K.
+ad19014@bristol.ac.uk, csdtc@bristol.ac.uk
+Keywords: Market Impact, Adaptive Trader Agents, Financial Markets, Multi-Agent Systems.
+Abstract: Financial markets populated by human traders often exhibit so-called “market impact”, where the prices
+quoted by traders move in the direction of anticipated change, before any transaction has taken place, as
+an immediate reaction to the arrival of a large (i.e., “block”) buy or sell order in the market: traders in the
+market know that a block buy order is likely to push the price up, and that a block sell order is likely to push
+the price down, and so they immediately adjust their quote-prices accordingly. In most major ﬁnancial markets
+nowadays very many of the participants are “robot traders”, autonomous adaptive software agents, rather than
+humans. This paper addresses the question of how to give such trader-agents a reliable anticipatory sensitivity
+to block orders, such that markets populated entirely by robot traders also show market-impact effects. This
+is desirable because impact-sensitive trader-agents will get a better price for their transactions when block
+orders arrive, and because such traders can also be used for more accurate simulation models of real-world
+ﬁnancial markets. In a 2019 publication Church & Cliff presented initial results from a simple deterministic
+robot trader, called ISHV, which was the ﬁrst such trader-agent to exhibit this market impact effect. ISHV
+does this via monitoring a metric of imbalance between supply and demand in the market. The novel contri-
+butions of our paper are: (a) we critique the methods used by Church & Cliff, revealing them to be weak, and
+argue that a more robust measure of imbalance is required; (b) we argue for the use of multi-level order-ﬂow
+imbalance (MLOFI: Xu et al., 2019) as a better basis for imbalance-sensitive robot trader-agents; and (c) we
+demonstrate the use of the more robust MLOFI measure in extending ISHV, and also the well-known AA
+and ZIP trading-agent algorithms (which have both been previously shown to consistently outperform human
+traders). Our results demonstrate that the new imbalance-sensitive trader-agents introduced in this paper do
+exhibit market impact effects, and hence are better-suited to operating in markets where impact is a factor of
+concern or interest, but do not suffer the weaknesses of the methods used by Church & Cliff. We have made
+the source-code for our work reported here freely available on GitHub.
+To be presented at the 13th International Conference on Agents and Artiﬁcial Intelligence (ICAART2021),
+Vienna, 4th–6th February 2021.
+aORCID: 0000-0002-4618-6934
+bORCID: 0000-0003-3822-9364
+arXiv:2012.12555v1  [q-fin.TR]  23 Dec 2020
+
+=== page 2 ===
+1 INTRODUCTION
+Financial markets populated by human traders often exhibit so-called market impact, where the prices quoted by
+traders shift in the direction of anticipated change, as a reaction to the arrival of a large (i.e., “block”) buy or
+sell order for a particular asset: that is, mere knowledge of the presence of the block order is enough to trigger a
+change in the traders’ quote-prices, before any transaction has actually taken place, because the traders know that
+a block buy order is likely to push the price of the asset up, and a block sell order is likely to push the price down,
+and so they adjust their quote-prices accordingly, in anticipation of the shift in price that they foresee coming as a
+consequence of the block-trade completing. This is bad news for the trader trying to buy or sell a block order: the
+moment she reveals her intention to buy a block, the market-price goes up; the moment she reveals her intention
+to sell, the price goes down. From the perspective of a block-trader, the market price moves against her, whether
+she is buying or selling, and this happens not because of the price she is quoting, but because of the quantity that
+she is attempting to transact.
+Block-traders’ collective desire to avoid market impact has long driven the introduction of automated trading
+techniques such as “VWAP engines” (which break block orders into a sequence of smaller sub-orders that are
+released into the market over a set period of time, with the intention of achieving a speciﬁc volume-weighted
+average price, hence VWAP), and has also driven the design of major new electronic exchanges such as London
+Stock Exchange’s (LSE’s) Turquoise Plato trading venue (London Stock Exchange Group, 2019), in which block-
+traders are allowed to obscure the size of their blocks in a so-called dark pool market, with LSE’s automated
+matching engine identifying one or more willing counterparties and only making full details of the block-trade
+known to all market participants after it has completed: see (Petrescu and Wedow, 2017) for further discussion.
+Many of the world’s major ﬁnancial markets now have very high levels of automated trading: in such markets
+most of the participants, the traders, are “robots” rather than humans: i.e., software systems for automated trading,
+empowered with the same legal sense of agency as a human trader, and hence “software agents” in the most literal
+sense of that phrase. Given that these software agents typically replace more than one human trader, and given
+that those human traders were widely regarded to have required a high degree of intelligence (and remuneration)
+to work well in a ﬁnancial market, it is clear that the issue of designing well-performing robot traders presents
+challenges for research in agents and artiﬁcial intelligence, and hence is a research topic that is central to the
+themes of the ICAART conference.
+This paper addresses the question of best how to give robot traders an appropriate anticipatory sensitivity
+to large orders, such that markets populated entirely by robot traders also show market-impact effects. This is
+desirable because the impact-sensitive robot traders will get a better price for their transactions when block orders
+do arrive, and also because simulated market populated by impact-sensitive automated traders can be studied to
+explore the pros and cons of various impact-mitigation or avoidance techniques. We show here that well-known
+and long-established trader-agent strategies can be extended by giving them appropriately robust sensitivity to
+the imbalance between buy and sell orders issued by traders on the exchange, orders that are aggregated on the
+market’s limit order-book (LOB), the data-structure at the heart of most electronic exchanges.
+To the best of our knowledge, the ﬁrst paper to report on the use of an imbalance metric to give automated
+traders impact-sensitivity was the recent 2019 publication by Church & Cliff, in which they demonstrated how
+a minimal nonadaptive trader-agent called Shaver (which, following the convention of practice in this ﬁeld,
+is routinely referred to in abbreviated form via a psuedo-ticker-symbol: “SHVR”) could be extended to show
+impact effects by addition of an imbalance metric, and Church & Cliff gave the name ISHV to their Imbalance-
+SHVR trader-agent (Church and Cliff, 2019). SHVR is a trader-agent strategy built-in to the popular open-source
+ﬁnancial exchange simulator called BSE (BSE, 2012), which Church & Cliff used as the platform for their
+research. Although Church & Cliff deserve some credit for the proof-of-concept that ISHV provides, we argue
+here that the imbalance-metric they employed is too fragile for practical purposes because very minor changes
+in the supply and demand can cause their metric to swing wildly between the extremes of its range. One of
+the major contributions of our paper here is the demonstration that a much better, more robust, metric known as
+multi-level order-ﬂow imbalance (MLOFI) can be used instead of the comparatively very fragile metric proposed
+by Church & Cliff. Another major contribution of this paper is our demonstration of the addition of MLOFI-
+based impact-sensitivity to the very well-known and widely cited public-domain adaptive trader-agent strategies
+ZIP (Cliff, 1997) and AA (Vytelingum, 2006; Vytelingum et al., 2008). Although our primary aim was to add
+impact sensitivity to these two machine-learning-based trader-agent strategies, we also demonstrate in this paper
+that ISHV can be altered/extended to use MLOFI, and our improvement of Church & Cliff’s work in that regard
+
+=== page 3 ===
+is an additional contribution of this paper.
+The extended versions of the AA, ZIP, and ISHV trader-agent strategies that we introduce here are named
+ZZIAA, ZZIZIP, and ZZISHV respectively. In this paper, after our criticism of Church & Cliff’s methods, we
+described more mathematically sophisticated approaches to measuring imbalance, which are more robust, and
+which we incorporate into our agent extensions. We then present results from testing our extended trader-agents
+on BSE, the same platform that was used in Church & Cliff’s work. Full details of the work reported here are
+available in (Zhang, 2020b), and all the relevant source-code has been made freely available on GitHub (Zhang,
+2020a).
+The structure of the rest of this paper is as follows. Section 2 presents a broad overview of relevant back-
+ground material: readers already familiar with automated trading systems and contemporary electronic ﬁnancial
+exchanges can safely skip ahead straight to Section 3. In Section 3 we give a brief summary of Church & Cliff’s
+2019 work and then provide our detailed critique of their core method, which we demonstrate to be signiﬁcantly
+lacking in robustness, and we then describe our MLOFI approach in detail. Then Section 4 is where we describe
+the steps taken to add MLOFI-based impact-sensitivity to ZIP, AA, and ISHV; and the results from those extended
+trading algorithms are presented in Section 5. We discuss further work and draw our conclusions in Section 6.
+2 BACKGROUND
+Since the mid-1990s researchers in universities and in the research labs of major corporations such as IBM and
+Hewlett-Packard have published details of various strategies for autonomous trader-agents, often incorporating
+AI and/or machine learning (ML) methods so that the automated trader can adapt its behaviors to prevailing
+market conditions. Notable trading strategies in this body of literature include: Kaplan’s “Sniper” strategy (Rust
+et al., 1992); Gode & Sunder’s ZIC (Gode and Sunder, 1993); the ZIP strategy developed at Hewlett-Packard
+(Cliff, 1997); the GD strategy reported by Gjerstad & Dickhaut (Gjerstad and Dickhaut, 1997) the MGD and
+GDX automated traders developed by IBM researchers (Tesauro and Das, 2001; Tesauro and Bredin, 2002);
+Gjerstad’s HBL (Gjerstad, 2003); Vytelingum’s AA (Vytelingum, 2006; Vytelingum et al., 2008)); and the Roth-
+Erev approach (see e.g. (Pentapalli, 2008)). However, for reasons discussed at length in a recent review of key
+papers in the ﬁeld (Snashall and Cliff, 2019) this sequence of publications concentrated on the issue of developing
+trading strategies for orders that all had the same ﬁxed-size quantity, and that quantity was always one. That is,
+none of the key papers listed here deal with trading strategies for outsize block orders, and none of them directly
+explore the issue of how an automated trader can best deal with, or avoid, market impact.
+Trader-agent strategies such as Sniper, ZIC, ZIP, GD and MGD were all developed to operate in electronic
+markets that were based on old-school open-outcry trading pits, as were common on major ﬁnancial exchanges
+until face-to-face human-to-human bargaining was replaced by negotiation of trades via electronic communica-
+tion media; but more recent work has concentrated on developing trading agents that issue bids and asks (i.e.
+quotations for orders to buy or to sell) to a centralised electronic exchange (such as a major stock-market like
+NYSE or NASDAQ or LSE) where the exchange’s matching engine then either matches the trader’s quote with
+a willing counterparty (in which case a transaction is recorded between the two counterparties, the buyer and
+the seller) or the quote is added to a data-structure called the Limit Order Book (LOB) that is maintained by the
+exchange and published to all traders whenever it changes. The LOB aggregates and anonymises all outstand-
+ing orders: it has two sides or halves: the bid-side and the ask-side. Each side of the book shows a summary
+of all outstanding orders, arranged from best to worst: this means that the bid-side is arranged in descending
+price-order, and the ask side is arranged in ascending price-order, such that at the “top of the book” on the two
+sides the best bid and ask are visible. For all orders currently sat on the LOB, if there are multiple orders at the
+same price then the quantities of those orders are aggregated together, and often multiple orders at the same price
+will be later matched with a counterparty in a sequence given by the orders’ arrival times, in a ﬁrst-in-ﬁrst-out
+fashion. The public LOB shows only, for each side of the book, the prices at which orders have been lodged with
+the exchange, and the total quantity available at each of those prices: if no orders are resting at the exchange for
+a particular price, then that price is usually omitted from the LOB rather than being shown with a corresponding
+quantity of zero. Illustrations of LOBs appear later in this paper, commencing with Figure 2.
+The difference between the price of the best bid on the LOB at time t and the price of the best ask at t is
+known as the spread. The mid-point of the spread (i.e. the arithmetic mean of the best bid and the best ask) is
+known as the mid-price which is denoted here by Pmid. The mid-price is very commonly used as a single-valued
+
+=== page 4 ===
+statistic to summarise the current state of the market, and as an estimate of what the next transaction price would
+be. However, the midprice pays no attention to the quantities that are bid and offered. If the current best bid is
+for a quantity of one at a price of $10 and the current best ask is for a quantity of 200 at a price of $20 then the
+mid-price is $15 but that fails to capture that there is a much larger quantity being offered than being bid: basic
+microeconomics, the theory of supply and demand, would tell even the most casual observer that with such heavy
+selling pressure then actual transaction prices are likely to trend down – in which case the mid-price of $15 is
+likely to be an overestimate of the next transaction price. Similarly, if the bid and ask prices remain the same but
+the imbalance between supply and demand is instead reversed, then the fact that there is a revealed desire for 200
+units to be purchased but only one unit on sale at the current best ask would surely be a reasonable indication
+that transaction prices are likely to be pushed up by buying pressure, in which case the mid-price of $15 will
+turn out to be an underestimate. This lack of quantity-sensitivity in the mid-price calculation leads many market
+practitioners to instead monitor the micro-price, denoted here by Pmicro, which is a quantity-weighted average of
+the best bid and best ask prices, and which does move in the direction indicated by imbalances between supply
+and demand at the top of the LOB: see, e.g., (Cartea et al., 2015).
+To the best of our knowledge the ﬁrst impact-sensitive trading algorithm was ISHV (Church and Cliff, 2019).
+ISHV is based on the SHVR trader built into the popular BSE public-domain ﬁnancial-market simulator (BSE,
+2012; Cliff, 2018). A SHVR trader simply posts the buy/sell order with its price set one penny higher/lower
+than the current best bid/ask. This single instruction gives it a parasitic nature, in the sense that it can mimic the
+price-convergence behaviour of other strategies being used by other traders in the market.
+Instead of shaving the best bid or offer by one penny, Church & Cliff’s ISHV trader instead chooses to shave
+by an amount ∆s which varies with ∆m deﬁned in Equation 1:
+∆m = Pmicro − Pmid (1)
+The difference of the micro-price and the mid-price can identify the degree of supply/demand imbalance to a
+useful extent. If ∆m ≈ 0, there is no obvious imbalance in the market. If ∆m < 0, then the quantities of the best
+bid and the best offer on the LOB indicate that supply exceeds demand and the subsequent transactions prices are
+likely to decrease; whereas ∆m > 0 indicates that demand outweighs supply and subsequent transaction prices
+will have an upward tendency.
+The pseudocode for ISHV is shown in Figure 1. It implements a function that maps from ∆m to ∆s to
+determine how much it will shave off its price. For a buyer, if ∆m < 0, it knows the price will shift in its favour
+and shaves its price as little as possible (the exchange’s minimum tick-size ∆p – often one penny or one cent –
+is chosen). However, if ∆m > 0, ISHV “believes” the later prices will be worse and attempts to shave a large
+amount off (C∆p + M∆m∆p). C and M are two constants that determine the SHVR’s response to the imbalance
+(they are the y−intersect and gradient for a linear response function; nonlinear response functions could be used
+instead). Church & Cliff showed that ISHV can identify and respond appropriately to the presence of a block
+order signal at the top of the LOB.
+Figure 1: Pseudocode for the bidding behavior of ISHV, source from (Church and Cliff, 2019).
+Church & Cliff were careful to ﬂag their ISHV trader as only a proof-of-concept (PoC): ISHV was developed
+to enable the study of coupled lit/dark trading polls such as LSE Turquoise Plato system in commercial operation
+in London, as mentioned in the Introduction to this paper. Without impact-sensitive trader-agents, it is not possible
+
+=== page 5 ===
+to build agent-based models of contemporary real-world trading venues such as LSE Turquoise Plato. Having
+experimented further with Church & Cliff’s PoC system, we came to realise that there are severe limitations in
+ISHV as described in Figure 1: these limitations stem from the fact that Equation 1, which is at the heart of ISHV,
+uses values only found at the top of the LOB. That is, Equation 1 involves only the price and quantity of the best
+bid and the best ask. As we will demonstrate in the next section, this makes the method introduced by Church &
+Cliff so fragile that it is unlikely to be usable in anything but the simplest of simulation studies; as we show in
+the next section, for real-world markets it is necessary to look deeper into the LOB, to go beyond the top of the
+LOB.
+3 FRAGILITY OF THE LOB-TOP
+For brevity, we will limit ourselves here to presenting a qualitative illustrative example which demonstrates
+how wildly fragile the Church & Cliff method is. For a longer and more detailed discussion, see Chapter 3 of
+(Zhang, 2020b).
+Consider a situation in which the top of the LOB has a best bid price of $10 and a best ask price of $20, as
+before, and where the quantity at the best bid is 200 and at the best ask is 1. As we explained in the previous
+section, this huge imbalance between supply and demand at the top of the book indicate that the excess demand
+is likely to push transaction prices up in the immediate future. Church & Cliff’s ISHV does the right thing in this
+situation.
+Now consider what happens if the next order to arrive at the exchange is a bid for $11 at a quantity of 1.
+Because this fresh bid is at a higher price than the current best bid, it is inserted at the top of the bid-side of the
+LOB. The previous best-bid, for 200 at $10, gets shufﬂed down to the second layer of the LOB. At that point, the
+best bid and the best ask each show a quantity of one, and so ISHV acts as if there is no imbalance in the market,
+despite the fact when viewing the whole LOB it is clear that the quantity bid is now 201 (i.e. 1 at $11 and 200 at
+$10) while the ask quantity is still only 1: if anything, the imbalance has increased but ISHV reacts as if it had
+disappeared because ISHV looks only at the top of the LOB.
+There is more that could be said, but this should be enough to convince the reader that any impact-sensitive
+trader-agent algorithm that looks only at the data at the top of the LOB is surely going to get it wrong very often,
+because it is ignoring the supply and demand information, the quantities and the prices, which lie deeper in the
+LOB. What we introduce in the rest of this paper addresses this problem.
+4 MEASURING IMBALANCE
+A reliable metric is needed to capture the quantity imbalance between the supply side and the demand side, at
+multiple levels in the LOB (i.e., not just the top) and which can quantitatively indicate how much the imbalance
+will affect the market. We ﬁrst discuss the Order-Flow Imbalance (OFI) metric introduced by (Cont et al., 2014)
+and then describe the extension of this into a reliable Multi-Level OFI (MLOFI) metric very recently reported
+by (Xu et al., 2019). After that, we show how MLOFI can be used to give robust impact-sensitivity to ISHV
+(Church and Cliff, 2019), AA (Vytelingum, 2006; Vytelingum et al., 2008), and ZIP (Cliff, 1997). AA and ZIP
+are of particular interest because in previous papers published at IJCAI and at ICAART it was demonstrated that
+these two trader-agent strategies can each reliably outperform human traders (Das et al., 2001; De Luca and Cliff,
+2011b; De Luca and Cliff, 2011a; De Luca et al., 2011).
+4.1 Order Flow Imbalance (OFI)
+Cont et al. argued that previous studies modelling impact are extremely complex, and that instead a single factor,
+the order ﬂow imbalance (OFI), can adequately explain the impact (R2 = 67% in their research) (Cont et al.,
+2014). They indicated that OFI has a positive linear relation with mid-price changes, and that the market depth
+D is inversely proportional to the scope of the relationship. OFI means the net order ﬂow at the bid-side and the
+ask-side, and the market depth, D, represents the size at each bid/ask quote price.
+To calculate the OFI they focused on the “Level 1 order book”, i.e. the best bid and ask at the top of the LOB.
+Between any two events (eventn and eventn−1), only one change happens in the LOB (check the condition from
+
+=== page 6 ===
+top to bottom, and from left to right; in other words, we should compare the change of price ﬁrst and if the price
+does not change, then compare the change of quantity). Using D ↑ and D ↓ to respectively denote an increase and
+a reduction in demand; and S ↑ and S ↓ to denote an increase/decrease in supply, Cont et al. had:
+pb n > pb n−1 ∨ qb n > qb n−1 =⇒ D ↑
+pb n < pb n−1 ∨ qb n < qb n−1 =⇒ D ↓
+pa n < pa n−1 ∨ qa n > qa n−1 =⇒ S ↑
+pa n > pa n−1 ∨ qa n < qa n−1 =⇒ S ↓
+Where pb is the best bid price; qb the size of the best bid price; pa the best ask price; and qa the size of the
+best ask price. The variable en is deﬁned to measure this tick change between two events, (eventn and eventn−1),
+shown in Equation 2, where I can be regarded as a Boolean variable.
+en = I{pbn>pb n−1}qb n − I{pbn≤pb n−1}qb n−1
+−I{pan<pa n−1}qa n + I{pan≥pa n−1}qa n−1 (2)
+The rules for I are as follows, and only one of them will happen between any two consecutive events:
+1. if pb increases, en = qb n
+2. if pb decreases, en = −qb n−1
+3. if pa increases, en = qa n−1
+4. if pa decreases, en = −qa n
+5. if pb remains same and qb n ⁄= qb n−1, en = qb n − qb n−1
+6. if pa remains same and qa n ⁄= qa n−1, en = qa n−1 − qa n
+If N(tk) is the number of events during [0, tk], then OFIk refers to the cumulative effect of en that has
+occurred over the time interval [tk − 1, tk], as shown in Equation 3.
+OFIk =
+N(tk)
+∑
+n=N(tk−1)+1
+en (3)
+After this, a linear regression equation can be built, per Equation 4, where ∆Pk = (Pk − Pk−1)/δ and δ is the tick
+size (1 cent in Cont et al.’s experiments), β is the price impact coefﬁcient, and εk is the noise term mainly caused
+by contributions from lower levels of the LOB:
+∆Pk = βOFIk + εk (4)
+Moreover, Cont et al. stated that the market depth, D, is an important contributing factor to the ﬂuctuations, and
+is inversely proportional to mid-price changes. They deﬁned the average market depth, ADk, in the “Level 1 order
+book” as shown in Equation 5; and β can be measured by ADk, shown in Equation 6, where λ and c are constants
+and vk is a noise term.
+ADk = 1 2(N(Tk) − N(Tk) − 1) N(Tk) ∑ N(Tk−1)+1 (qB n + qA n ) (5)
+βk = c ADλ k + vk (6)
+Given equations 4 and 6, the relationship between ∆P and OFI and AD is constructed as seen in Equation 7,
+according to which, Cont et al. ran the linear regression by using the 21-trading-day data from 50 randomly
+chosen US stocks, and the average R2 = 67%. They demonstrated that OFI is positive in relation to the change
+of mid-price. If OFI > 0, meaning a net inﬂow on the bid side or a net outﬂow on the ask side, the mid-price has
+a signiﬁcantly increasing momentum, and the higher OFI is, the more the mid-price will increase. Conversely, if
+OFI < 0, meaning a net outﬂow on the bid side or a net inﬂow on the ask side, the mid-price has a signiﬁcantly
+decreasing momentum, and the lower OFI is, the more the mid-price will decrease.
+∆Pk = c ADλ k OFIk + εk (7)
+
+=== page 7 ===
+OFI is clearly a useful metric, but it operates only on values found at the top of the LOB, i.e. the best bid
+and ask. In that sense, it is as sensitive to changes at the top of the book as is the Church & Cliff ∆m metric.
+Next we describe how OFI can be extended to be sensitive to values at multiple levels in the LOB, which gives
+us Multi-Level OFI, or MLOFI.
+4.2 Multi-Level Order Flow Imbalance
+Fortunately, (Xu et al., 2019) demonstrated how to measure multi-level order ﬂow imbalance (MLOFI). A
+quantity vector, v, is used to record the OFI at each discrete level in the LOB: see Equation 8, where m denotes
+the depth of price level in the LOB. The level-m bid-price refers to the m-highest prices among bids in the LOB,
+and the level-m ask-price refers to the m-lowest prices among asks in the LOB.
+v =
+( MLOFI1
+MLOFI2...
+MLOFIm
+)
+(8)
+The time when an nth event occurs is denoted by τn; pm b (τn) signiﬁes the level-m bid-price; pm a (τn) denotes
+the level-m ask-price; qm b (τn) refers to the total quantity at the level-m bid-price, and qm a (τn) refers to the total
+quantity at the level-m ask-price.
+Similar to the OFI deﬁned in Section 4.1, the level-m OFI between two consecutive events occurring at times
+τs and τn (s = n − 1) can be calculated as follows:
+∆W m(τn) =
+
+
+
+qm b (τn), if pm b (τn) > pm b (τs)
+qm b (τn) − qm b (τs), if pm b (τn) = pm b (τs)
+−qm b (τm), if pm b (τn) < pm b (τs) (9)
+and
+∆V m(τn) =
+
+
+
+−qm a (τm), if pm a (τn) > pm a (τs)
+qm a (τn) − qm a (τs), if pm a (τn) = pm a (τs)
+qm a (τn), if pm a (τn) < pm a (τs) (10)
+where ∆W m(τn) measures the order ﬂow imbalance of the bid side in the level-m and ∆V m(τn) measures the order
+ﬂow imbalance of the ask side in the level-m.
+From equations 9 and 10, we can get the MLOFI in the level-m over the time interval [tk − 1,tk]:
+MLOFIm k = ∑
+{n|tk−1<τn<tk}
+em(τn) (11)
+where
+em(τn) = ∆W m(τn) − ∆V m(τn) (12)
+We now give four illustrative examples of the MLOFI mechanism in action. Figure 2 shows the situation of
+the LOB at time tk−1, and there is only one event that occurs during the time interval [tk−1,tk], and here we’ll only
+consider the 3-level OFI.
+Figure 2: The LOB at time tk−1.
+
+=== page 8 ===
+Figure 3: The LOB at time tk: a new buy order comes.
+4.2.1 Case 1: New order at level-1 of the LOB
+A new buy order comes into the LOB and occupies the best-bid position shown in Figure 3.
+• Level-1: since p1 b(tk) > p1 b(tk−1) (i.e. 93 > 90), MLOFI1 k = q1 b(tk) = 5;
+• Level-2: since p2 b(tk) > p2 b(tk−1) (i.e. 90 > 87), MLOFI2 k = q2 b(tk) = 7;
+• Level-3: since p3 b(tk) > p3 b(tk−1) (i.e. 87 > 82), MLOFI3 k = q3 b(tk) = 2;
+So, the quantity vector vk is:
+vk =
+( 5
+7
+2
+)
+(13)
+All three numbers in vk are positive, which indicates the upward trend of the price.
+4.2.2 Case 2: Partial fulﬁllment or cancellation
+A new sell limit order crosses the spread, or a buy limit order at the best-bid position cancels. Figure 4 shows the
+resultant LOB.
+Figure 4: The LOB at time tk: crossing the spread or a buy order cancellation.
+For the level-1, as p1 b(tk) = p1 b(tk−1) (i.e. 90 = 90), MLOFI1 k = q1 b(tk) − q1 b(tk−1) = 2 − 5 = −3;
+For the level-2, as p2 b(tk) = p2 b(tk−1) (i.e. 87 = 87), MLOFI2 k = q2 b(tk) − q2 b(tk−1) 2 − 2 = 0;
+For the level-3, as p3 b(tk) = p3 b(tk−1) (i.e. 82 = 82), MLOFI2 k = q3 b(tk) − q3 b(tk−1) = 0;
+So, the quantity vector vk is:
+vk =
+(−3
+0
+0
+)
+(14)
+Where −3 at Level 1 indicates a potential downward trend for the price, because the total demand on the bid
+side decreases.
+4.2.3 Case 3: full fulﬁllment or cancellation
+This is similar to Case 2, but (as illustrated in Figure 5) assumes that all orders at Level 1 in the ask book (A1)
+are transacted by an incoming buy order, or that the order in A1 is cancelled. In this case, we need to consider the
+change on the ask side:
+• A1: p1 a(tk) > p1 a(tk−1) (i.e. 98 > 95), =⇒ ∆V 1(tk) = −q1 a(tk−1) = −3; MLOFI1 k = −∆V 1(tk) = 3;
+• A2: p2 a(tk) > p2 a(tk−1) (i.e. 100 > 98), =⇒ ∆V 1(tk) = −q2 a(tk−1) = −5; MLOFI2 k = −∆V 1(tk) = 5;
+
+=== page 9 ===
+Figure 5: The LOB at time tk: crossing the spread or a sell order cancellation.
+• A3: p3 a(tk) > p3 a(tk−1) (i.e. 105 > 100), =⇒ ∆V 1(tk) = −q2 b(tk−1) = −1; MLOFI3 k = −∆V 1(tk) = 1;
+So, the quantity vector vk shown in Equation 15 demonstrates that if the supply reduces or a buy has sufﬁcient
+interest to transact, the price tends to go up.
+vk =
+( 3
+5
+1
+)
+(15)
+4.2.4 Case 4: New order at level-m of the LOB
+Figure 6: The LOB at time tk: crossing the spread or a sell order cancellation.
+Assuming now that a new large-sized order comes to the level-2 ask, if we only consider order ﬂow imbalance
+in the top level of the LOB, we cannot detect this new block order. This is the reason why we choose to use
+MLOFI.
+As there is no change in the level-1 bid, MLOFI1 k = 0. Because a new order comes to the second-level bid,
+p2 b(tk) > p2 b(tk−1) (i.e. 89 > 87) and MLOFI2 k = q2 b(tk) = 100. Based on the same rule, MLOFI3 k = q3 b(tk) = 2.
+So, the quantity vector vk is:
+vk =
+( 0
+100
+2
+)
+(16)
+If we only care about ﬁrst-level order ﬂow imbalance, we get OFI = 0. However, if we consider second and
+third levels, we get MLOFI2 k = 100 and MLOFI3 k = 2, which indicate a huge surplus on the demand side. If a
+trader can obtain this information and take action accordingly, it may result in larger proﬁts or smaller losses.
+5 ZZIAA: AA traders with impact
+In this section we describe how ZZIAA is created, by the addition of MLOFI-style imbalance-sensitivity to
+the original AA trader strategy. Our intention for ZZIAA was to develop an “impact-sensitive” module that is not
+deeply embedded into the original AA so that, if successful, this relatively independent module could also easily
+be applied to other trading algorithms. For this reason we chose the Widrow-Hoff delta rule to update the quote
+of the ZZIAA towards an impact-sensitive quote, as shown in Equation 17. The pAA(t + 1) is derived from the
+long-term and short-term factors using the information at time t (see (Vytelingum et al., 2008)), and τ(t) is the
+target price computed with consideration of MLOFI:
+pIAA(t + 1) = pAA(t + 1) + ∆(t) (17)
+
+=== page 10 ===
+where
+∆(t) = β(τ(t) − pAA(t + 1)) (18)
+and
+τ(t) = pbenchmark(t) + ooffset(t) (19)
+The core of the IAA derivation is how to ﬁnd τ(t), which consists of two parts, the benchmark price
+pbenchmark(t) and ooffset(t). The pbenchmark(t) depends on whether the mid-price exists. As Equation 20 shows,
+if the mid-pice is available, we can set pbenchmark(t) as the mid-price, but if it is not, we set pbenchmark(t) as
+pAA(t + 1), which can be obtained at time t.
+pbenchmark(t) =
+{
+pmid(t), if ∃pmid
+pAA(t + 1), if ∄pmid (20)
+The ooffset(t) is derived from the MLOFI and the average depth. Assume that we consider M numbers of
+levels MLOFI in the LOB, shown in Equation 21, and that each MLOFI captures the last N events shown in
+Equation 22.
+a(t) =
+
+
+MLOFI1(t)
+MLOFI2(t) ...
+...
+MLOFIM(t)
+
+ (21)
+where
+MLOFIM(t) =
+N
+∑
+n=1
+em n (22)
+We can deﬁne the average market depth for m levels in a similar way:
+d(t) =
+
+
+AD1(t)
+AD2(t) ...
+...
+ADM (t)
+
+ (23)
+where:
+ADM(t) = 1 N N ∑ n=1 qa Mn + qb Mn 2 (24)
+Knowing the quantity vector a(t), we need a mechanism to switch this vector to a scalar. Similar to Equation 7,
+we deﬁne the offset as Equation 25.
+voffset =
+i=m−1
+∑
+i=0
+αi c ∗ MLOFI(i+1)(t) AD(i+1)(t) (25)
+where α is the decay factor (initialized as 0.8) and c is a constant (we use c = 5). Note: if ADm(t) = 0, the item
+αm−1 c∗MLOFIm(t) ADm(t) will not be counted.
+To summarise, our work extends AA by the novel introduction of prior contributions to the econometrics of
+LOB imbalance from Cont et al. and of Xu et al. in the following ways:
+• Cont et al. and Xu et al. run linear regressions to build their model and use statistical methods to test the
+signiﬁcance of factors. The constants such as c come from modelling real-world data. However our version
+does not run a linear regression and the constants such as c and α are determined based on previous studies
+(Cont et al., 2014; Xu et al., 2019). We can check the model’s performance by exploring different values of
+constants.
+• In the prior work, MLOFIM(t) and ADM(t) are inﬂuenced by the events within a speciﬁed time interval. In
+contrast, in our work, MLOFIM(t) and ADM(t) are calculated based on the last N events that occurred in the
+LOB, regardless of length of the time interval between successive events.
+
+=== page 11 ===
+6 RESULTS
+Because our MOLFI-based “impact sensitive” module added to AA was deliberately developed in a non-
+intrusive way, it can easily be replicated into any other algorithm. In this section we ﬁrst show results from
+ZZIAA and then we follow those with results from adding the MLOFI module to ISHV (giving ZZISHV), and to
+ZIP (giving ZZIZIP). Because of space limitations, the performance comparisons shown here focus on situations
+where the imbalance would cause a problem for the non-imbalance sensitive versions of the trader agents – and we
+demonstrate that our extended trader agents are indeed superior. Extensive sets of further results are presented in
+(Zhang, 2020b), which demonstrate that the extended trader-agents perform the same as the unextended versions
+in situations where there is no imbalance to be concerned about in the LOB.
+For each A:B comparison we ran 100 trials in BSE (BSE, 2012), the same open-source simulator of a ﬁnancial
+exchange that was used by Church & Cliff. Each trial involved creating a market where there were N traders of
+type A (e.g., ZIP) and N traders of type B (e.g., ZZIZIP) who were allocated the role of buyers, and similarly N
+of type A and N of type B who were allocated the role of sellers. Thus one market trial involved a total of 4N
+trader-agents: for the results presented here we used N = 10. As is entirely commonplace in all such experimental
+work, buyers were issued with assignments of cash, and sellers with assignments of items to sell, and each trader
+was given a private limit price: the price below which a seller could not sell and above which a buyer could not
+buy. The distribution of limit prices in the market determines that market’s supply and demand curves, and the
+intersection of those two curves indicates the competitive equilibrium price that microeconomic theory tells us to
+expect transaction prices to converge to.
+Although very many of the previous trader-agent papers that we have cited here have monitored the efﬁciency
+of the traders’ activity in the market, we instead monitored proﬁtability (which only differs from efﬁciency by
+some constant coefﬁcient). Each individual market trial would allow the traders to interact via the LOB-based
+exchange in BSE for a ﬁxed period of time, and at the end of the session the average proﬁt of the Type A
+traders would be recorded, along with the average proﬁt of the Type B traders. In the results presented here
+we conducted 100 independent and identically distributed market trials for each A:B comparison, giving us 100
+pairs of proﬁtability ﬁgures. To summarise those results we plot as box-and-whisker charts the distribution of
+proﬁtability values for traders of Type A, the distribution of proﬁtability values for traders of Type B, and the
+distribution of proﬁtability-difference values (i.e., for each of the 100 trials, for trial t compute the difference
+between the proﬁtability of Type A traders and the proﬁtability of Type B traders in trial i). To determine whether
+the differences we observed were statistically signiﬁcant, we used the Wilcoxon-Mann-Whitney U Test.
+6.1 ZZIAA
+Figure 7 summarises the comparison data generated between AA and ZZIAA. In the U test, when comparing
+the ZZIAA with AA, p = 0.007 which meant that the proﬁt difference between ZZIAA and AA was statistically
+signiﬁcant.
+6.2 Comparison of ZZISHV and ISHV
+We can see from Figure 8 that the proﬁt generated by ZZISHV was much greater than ISHV. However, this only
+means that ZZISHV is better than ISHV under this particular market condition, and this might not be the case
+under other market conditions. In the test, the outperformance of ZZISHV can easily be explained: as a seller,
+when ISHV met favourable imbalances, it worked like SHVR and posted a price one penny lower than the current
+best ask; in contrast, under the same condition, ZZISHV chose to set price ∆p higher than the current best ask
+and seek for transaction opportunities some time later. For example, assume that the current best ask is 70 and
+ISHV will post an order with the price equal to 69. Assume that ZZISHV gets the offset value equal to 20 from
+the “impact-sensitive” module, and the quoted price will be 90.
+The aim of both ISHV and ZZISHV is the same: to be sensitive to imbalances in the market. The former uses
+a function that maps from ∆m to ∆s to achieve this objective and ∆m is generated based on the mid- and micro-
+prices in the market. In contrast, the latter uses MLOFI to achieve the goal. The biggest difference between ISHV
+and ZZISHV is that ISHV can only be sensitive to imbalances at the top of the LOB and the MLOFI mechanism
+helps ZZISHV to be sensitive to m-level imbalances on the LOB and thus detect them earlier than ISHV in some
+cases. The drawback comes in determination of appropriate parameter values for both ISHV and ZZISHV, where
+
+=== page 12 ===
+Figure 7: Proﬁt distributions from original AA tested against ZZIAA.
+Figure 8: Performance of ZZISHV and ISHV when facing large-sized orders from the bid side.
+trial-and-error is the best current option. In the map function of ISHV (∆s = C∆p ± M.∆m.∆p if the imbalance
+is signiﬁcant), the parameters C and M were somewhat arbitrarily set by (Church and Cliff, 2019) to C=2 and
+M=1. For ZZISHV, when quantifying MLOFI, we use Equation 25, and the key parameter c and decay factor α
+are artiﬁcially determined. We set m = 5 (consistent with the result from (Cont et al., 2014)) and α = 0.8. The
+optimal values of these parameters are not known; poor choices of these constants may cause agents to perform
+badly.
+
+=== page 13 ===
+6.3 Comparison of ZZIZIP and ZIP
+ZZIZIP is ZIP with the addition of the MLOFI module. In the example we present here, sellers will face an
+excess imbalance from the demand side. The box plots in Figure 9 illustrate the results: ZZIZIP has less variance
+than ZIP and their median proﬁtability was slightly higher than that of ZIP; in the second ﬁgure, we can see
+that although there were some outliers on both the top and bottom, and the bottom whisker was located below
+zero, the whole box was distributed beyond zero. Employing the U Test, we got p = 0.002 and can therefore
+conclude that the proﬁt generated by ZZIZIP was statistically signiﬁcantly greater than ZIP. Despite this, it is
+worth noting that the average difference in proﬁtability is less than half of the difference between AA and IAA,
+given that other conditions remain unchanged. So, our next question is: what causes the smaller difference in
+proﬁts between ZZIZIP and ZIP?
+Figure 9: Performance of ZIP and ZZIZIP when facing large-sized orders from the bid side.
+To answer this, we need to examine how ZIP works. ZIP uses the Widrow-Hoff Delta rule to update its next
+quote-price towards its current target price. The current target price is based on the last quote price in the market.
+Due to this, the last quote price affects the bidding behaviour of ZIP considerably. In this test, on the ask side, the
+10 ZIP sellers were not impact-sensitive and the 10 ZZIZIP sellers were. But, although the ZIP traders were not
+themselves impact-sensitive, they were affected by the quote prices coming from the ZZIZIP active in the same
+market, and so the ZIPs’ quote prices approached the ZZIZIPs’ to some extent. In other words, this adaptive
+mechanisms within the non-impact-sensitive ZIP gave it a degree of impact-sensitivity, because it was inﬂuenced
+by the activities of the impact-sensitive traders in the market. In the test, if we treat ZZIZIP and ZIP as a group,
+the average proﬁt generated is 84.82 (95% CI: [82.16, 87.48]). If we replace 10 ZZIZIPs with 10 ZIPs (total 20
+ZIP sellers), the average proﬁt of ZIP is 79.21 (95% CI: [77.11, 81.31]). With the presence of ZZIZIP, all sellers
+tend to make more proﬁt.
+7 DISCUSSION & CONCLUSION
+We know of no paper prior to (Church and Cliff, 2019) in which trader-agents are given a sensitivity to quantity
+imbalances between the bid and ask sides of the LOB. Such imbalances are often (but not always) caused by the
+arrival of one or more block orders on one side of the LOB. In this paper we have provided a constructive critique
+of Church & Cliff’s method, pointing out the extreme fragility of imbalance-sensitivity metrics like theirs that
+monitor only the top of the LOB. We then explained the OFI and MLOFI metrics of (Cont et al., 2014) and (Xu
+et al., 2019) respectively, and demonstrated how MLOFI could be integrated within Vytelingum’s AA trading-
+
+=== page 14 ===
+agent strategy to give ZZIAA. We demonstrated that ZZIAA performs extremely well: it performs the same as
+AA when there is no imbalance, and signiﬁcantly outperforms AA in the presence of major LOB imbalance. We
+then showed how the imbalance-sensitivity mechanisms that we developed for ZZIAA can readily be incorporated
+into other trading-agent algorithms such as ZIP (Cliff, 1997) and SHVR (Cliff, 2018). Results from ZZIZIP and
+ZZISHV are similarly very good and further demonstrate that the mechanisms developed here have given robust
+imbalance-sensitivity to a range of trader-agent strategies. In future work we intend to explore the addition of
+MLOFI-based impact-sensitivity to contemporary adaptive trader-agents based on deep learning neural networks
+(le Calvez and Cliff, 2018; Wray et al., 2020). Complete details of the work described here are given in (Zhang,
+2020b) and all of our relevant source-code for the system described here has been made freely available as open-
+source code on GitHub (Zhang, 2020a), enabling other researchers to examine, replicate, and extend our work.
+REFERENCES
+BSE (2012). Bristol Stock Exchange open-source ﬁnancial exchange simulator. GitHub repository:
+https://github.com/davecliff/BristolStockExchange.
+Cartea, A., Jaimungal, S., and Penalva, J. (2015). Algorithmic and High-Frequency Trading. Cambridge Univer-
+sity Press.
+Church, G. and Cliff, D. (2019). A simulator for studying automated block trading on a coupled darks/lit ﬁnancial
+exchange with reputation tracking. Proceedings of the European Modelling and Simulation Symposium.
+Cliff, D. (1997). Minimal-intelligence agents for bargaining behaviors in market-based environments. Hewlett-
+Packard Labs Technical Report HPL-97-91.
+Cliff, D. (2018). An open-source limit-order-book exchange for teaching and research. In Proceedings of the
+IEEE Symposium Series on Computational Intelligence (SSCI-2018), pages 1853–1860.
+Cont, R., Kukanov, A., and Stoikov, S. (2014). The price impact of order book events. Journal of Financial
+Econometrics, 12(1):47–88.
+Das, R., Hanson, J., Tesauro, G., and Khephart, J. (2001). Agent-human interactions in the continuous double
+auction. Proceedings IJCAI-2001, pages 1169–1176.
+De Luca, M. and Cliff, D. (2011a). Agent-human interactions in the continuous double auction, redux. Proceed-
+ings ICAART-2011.
+De Luca, M. and Cliff, D. (2011b). Human-agent auction interactions: Adaptive-aggressive agents dominate.
+Proceedings IJCAI-2011.
+De Luca, M., Szostek, C., Cartlidge, J., and Cliff, D. (2011). Studies of interactions between human traders and
+algorithmic trading systems. Driver Review 13, UK Government Ofﬁce for Science, Foresight Project on
+the Future of Computer Trading in Financial Markets. http://bit.ly/RoifIu.
+Gjerstad, S. (2003). The impact of pace in double auction bargaining. Working paper, Department of Economics,
+University of Arizona.
+Gjerstad, S. and Dickhaut, J. (1997). Price formation in continuous double auctions. Games and Economic
+Behavior, 22(1):1–29.
+Gode, D. K. and Sunder, S. (1993). Allocative efﬁciency of markets with zero-intelligence traders. Journal of
+Political Economy, 101(1):119–137.
+le Calvez, A. and Cliff, D. (2018). Deep learning can replicate adaptive traders in a limit-order-book ﬁnancial
+market. In Proceedings of the IEEE Symposium Series on Computational Intelligence (SSCI-2018), pages
+1876–1883.
+London Stock Exchange Group (2019). Turquoise trading service. Description Version 3.35.5.
+Pentapalli, M. (2008). A comparative study of Roth-Erev and Modiﬁed Roth-Erev reinforcement learning algo-
+rithms for uniform-price double auctions. PhD thesis, Iowa State University.
+Petrescu, M. and Wedow, M. (2017). Dark pools in european equity markets: emergence, competition and
+implications. ECB Occasional Paper, 193.
+
+=== page 15 ===
+Rust, J., Palmer, R., and Miller, J. H. (1992). Behaviour of trading automata in a computerized double auction
+market. In The Double Auction Market: Theories and Evidence, pages 155–198. Addison Wesley.
+Snashall, D. and Cliff, D. (2019). Adaptive-aggressive traders don’t dominate. In van den Herik, J., Rocha,
+A., and Steels, L., editors, Agents and Artiﬁcial Intelligence: Selected Papers from ICAART 2019, pages
+246–269. Springer.
+Tesauro, G. and Bredin, J. L. (2002). Strategic sequential bidding in auctions using dynamic programming. In
+Proc. First Int. Joint Conf. on Autonomous Agents and Multiagent Systems: part 2, pages 591–598.
+Tesauro, G. and Das, R. (2001). High-performance bidding agents for the continuous double auction. Proc. 3rd
+ACM Conference on E-Commerce, pages 206–209.
+Vytelingum, K., Cliff, D., and Jennings, N. (2008). Strategic bidding in continuous double auctions. Artiﬁcial
+Intelligence, 172(14):1700–1729.
+Vytelingum, P. (2006). The structure and behaviour of the Continuous Double Auction. PhD thesis, University
+of Southampton.
+Wray, A., Meades, M., and Cliff, D. (2020). Automated creation of a high-performing algorithmic trader via deep
+learning on level-2 limit order book data. In Proceedings of the IEEE Symposium Series on Computational
+Intelligence (SSCI-2020).
+Xu, K., Gould, M., and Howison, S. (2019). Multi-level order-ﬂow imbalance in a Limit Order Book. SSRN
+3479741.
+Zhang, Z. (2020a). GitHub repository: https://github.com/ davecliff/BristolStockExchange/tree/master/ZhenZhang.
+Zhang, Z. (2020b). An impact-sensitive adaptive algorithm for trading on ﬁnancial exchanges. Master’s thesis,
+University of Bristol Dept. of Computer Science.

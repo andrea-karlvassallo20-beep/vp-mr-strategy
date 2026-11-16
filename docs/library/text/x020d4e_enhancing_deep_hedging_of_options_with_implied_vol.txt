@@ -1,0 +1,1951 @@
+=== page 1 ===
+Enhancing Deep Hedging of Options with Implied Volatility
+Surface Feedback Information∗
+Pascal Françoisa, Geneviève Gauthierb, Frédéric Godin†c, and Carlos Octavio
+Pérez-Mendozac
+aDepartment of Finance, HEC Montréal, Canada
+bGERAD and Department of Decision Sciences, HEC Montréal, Canada
+cConcordia University, Department of Mathematics and Statistics, Canada
+August 14, 2025
+Abstract
+We present a dynamic hedging scheme for S&P 500 options, where rebalancing decisions are
+enhanced by integrating information about the implied volatility surface dynamics. The optimal
+hedging strategy is obtained through a deep policy gradient-type reinforcement learning algorithm.
+The favorable inclusion of forward-looking information embedded in the volatility surface allows our
+procedure to outperform several conventional benchmarks such as practitioner and smiled-implied
+delta hedging procedures, both in simulation and backtesting experiments. The outperformance is
+more pronounced in the presence of transaction costs.
+JEL classification: C45, C61, G32.
+Keywords: Deep reinforcement learning, optimal hedging, implied volatility surfaces.
+∗We thank John Hull and Zissis Poulos for valuable feedback about this work. We also gratefully acknowledge
+fruitful discussions with the participants from the Banff International Research Station (BIRS), the CANSSI Ontario
+Statistics Cast Seminars, Wilfrid Laurier University, and the International Association for Quantitative Finance
+(IAQF), New York, seminars. François acknowledges a fellowship from the Canadian Derivatives Institute. Gauthier
+is supported by the Natural Sciences and Engineering Research Council of Canada (NSERC, RGPIN-2019-04029), a
+professorship funded by HEC Montréal, and the HEC Montréal Foundation. Godin is funded by NSERC (RGPIN-
+2024-04593). Data availability statement: The raw data (option prices) are available from OptionMetrics. The
+estimated model parameters are included in the code available at the github platform. Conflict of interest
+statement: No conflict of interest is reported by the authors.
+†Corresponding author. Email addresses: pascal.francois@hec.ca (François), genevieve.gauthier@hec.ca (Gau-
+thier), frederic.godin@concordia.ca (Godin), carlos.octavio.perez92@gmail.com (Pérez-Mendoza).
+arXiv:2407.21138v2  [q-fin.RM]  12 Aug 2025
+
+=== page 2 ===
+1 Introduction
+Since the advent of the Black and Scholes (1973) framework, dynamic hedging has become a
+standard financial risk management tool for managing the risk associated with options portfolios.
+The Black and Scholes (1973) framework has the remarkable property that delta hedging –a hedging
+strategy invested exclusively in the underlying asset and the money market account– achieves the
+perfect replication of a European-style contingent claim. In practice, this property is lost due to
+frictions. Most notably, considering the infrequent rebalancing of the hedging portfolio, classic
+delta hedging, which is inherently local, can no longer protect against infinitesimal shocks in the
+underlying asset price. Such an imperfect hedge inevitably yields a hedging error that has to be
+managed.
+Several works have subsequently extended the idealized setting of the Black-Scholes framework to
+account for imperfect hedging, incorporating features such as discrete-time rebalancing (Boyle and
+Emanuel, 1980), transaction costs (Leland, 1985; Boyle and Vorst, 1992; Toft, 1996; Meindl and
+Primbs, 2008; Zakamouline, 2009; Lai and Lim, 2009), trading constraints (Edirisinghe et al., 1993)
+or liquidity costs (Frey, 1998; Cetin et al., 2010; Guéant and Pu, 2017). Another very important
+avenue for the development of a hedging procedure is the computation of the delta (and other
+"Greek" sensitivity parameters) which purely relies on market data and does not require stringent
+postulates about stochastic dynamics of associated risk factors: see among others, Bates (2005),
+Alexander and Nogueira (2007), and François and Stentoft (2021). This approach utilizes implied
+volatility (IV) surfaces to derive the Greeks, specifically the option delta and gamma, based on a
+mild scale-invariance assumption for the underlying asset return distribution.
+This paper builds on existing literature by developing an approach that incorporates IV surface
+information to derive optimal hedging positions. Unlike traditional methods focusing on local
+conditions, we adopt a global perspective, minimizing the risk metric associated with the terminal
+hedging error in a multi-period horizon framework. We leverage developments in risk-aware
+reinforcement learning (RL) to find the sequence of hedge ratios optimizing the hedger’s total
+risk until the option expiry, a setup analogous to Buehler et al. (2019)’s deep hedging approach.
+1
+
+=== page 3 ===
+The novelty of our work lies in integrating factors that influence IV surface dynamics into the
+state variable set for determining hedging positions. The hedging agent therefore relies on market
+expectations for the underlying return distributions over several temporal horizons, producing
+genuine optimal forward-looking multi-stage hedging decisions informed by IV surfaces. To conduct
+our numerical experiments, we use the JIVR model of François et al. (2023), which is a parsimonious
+and tractable econometric model representing the joint dynamics of the underlying asset return
+and five interpretable factors driving the IV surface of the S&P 500. Notably, the model has been
+estimated on a data period spanning more than 25 years of daily option data, reflecting market
+behavior in a wide array of scenarios, including several financial crises.
+Hedging procedures with risk-aware reinforcement learning procedures have received substantial
+attention from the literature recently, see for instance the following non-exhaustive list: Halperin
+(2019), Cao et al. (2020), Du et al. (2020), Carbonneau and Godin (2021), Carbonneau (2021),
+Giurca and Borovkova (2021), Horvath et al. (2021), Imaki et al. (2021), Lütkebohmert et al.
+(2022), Xu and Dai (2022), Cao et al. (2023), Carbonneau and Godin (2023), Marzban et al.
+(2023), Mikkilä and Kanniainen (2023), Pickard and Lawryshyn (2023), Raj et al. (2023), Wu and
+Jaimungal (2023) and Neagu et al. (2024). Nevertheless, to the best of our knowledge, our paper is
+the first to conduct multi-stage RL-based hedging that incorporates IV surface information directly
+as state variables.
+This study focuses on hedging procedures using the underlying asset as the only hedging instrument.
+Hedging strategies that add other instruments such as options potentially improve the quality of
+the hedge (by managing other Greeks like the gamma or the vega) but they come with higher
+transaction costs. In addition, they require a precise timely execution of trades between the option
+and the underlying asset markets. As a matter of fact, delta hedging has been a long-lasting risk
+management problem that continues to draw the attention of researchers (Hull and White, 2017).
+It remains relevant for several market participants including option market makers (Huh et al.,
+2015; Kokholm and Egebjerg, 2024), although the extent of their delta hedging has been recently
+challenged (Hu et al., 2023), insurance companies (Augustyniak and Boudreault, 2012; Sun and
+Platen, 2019), structured products issuers (Entrop and Fischer, 2020; Henderson et al., 2020), or
+2
+
+=== page 4 ===
+proprietary trading firms (Ni et al., 2005; O’Donovan et al., 2023).
+Our RL approach is shown to substantially outperform delta-based hedging strategies acting as
+benchmarks. In particular, RL agents trained with asymmetric objective functions such as the
+conditional value-at-risk (CVaR) or the semi-mean squared-error (SMSE) offer superior tradeoffs
+between profitability and downside risk. The outperformance of RL agents is even more pronounced
+in the presence of transaction costs, as such agents manage to develop hedging strategies that
+remain efficient in terms of risk mitigation while generating lower turnover. A variable importance
+analysis highlights that the conditional variance of the underlying asset returns, the level of the IV
+surface and its slope all significantly influence hedging performance, irrespective of the risk metric
+employed within the objective function.
+The out-of-sample backtesting study highglights that RL-based hedging strategies can outperform
+traditional benchmarks, particularly when the algorithm is given access to rich market information
+such as the implied volatility (IV) surface. In the presence of transaction costs, RL approaches
+demonstrate superior hedging performance. However, in the absence of transaction costs, the
+benefits of RL hedging are contingent on the quality of the informational inputs—without IV
+surface data, the RL agent fails to outperform delta hedging in terms of mean squared error. These
+findings highlight the potential of reinforcement learning as a flexible and powerful tool for risk
+management, provided that it is informed with relevant market signals.
+The rest of the paper is organized as follows. Section 2 frames the hedging problem in terms of a
+deep reinforcement learning framework. Section 3 provides the components of the JIVR model.
+Section 4 presents the numerical results, assessments, and global feature importance analysis.1
+Section 5 presents the out-of-sample backtest study. Section 6 concludes.
+2 The hedging problem
+The mathematical formulation of the hedging problem considered herein, along with the solution
+approach based on deep reinforcement learning, are described in this section.
+1The Python code to replicate the numerical experiments from this paper can be found at the following link:
+https://github.com/cpmendoza/DeepHedging_JIVR.git.
+3
+
+=== page 5 ===
+2.1 The hedging optimization problem
+This paper introduces a dynamic hedging strategy for European-style options that leverages insights
+provided by the implied volatility surface. The approach aims to minimize some risk measure
+applied to the terminal hedging error.
+The European option payoff Ψ(ST ) depends on the price of the underlying asset at maturity,
+denoted as T trading days. The hedging strategy involves managing a self-financing portfolio
+composed of both the underlying asset and a risk-free asset, with daily rebalancing. The strategy
+is represented by the predictable process {(ϕt, δt)}T t=1, where ϕt is the cash held at time t − 1 and
+carried forward to the next period, and δt denotes the number of shares of the risky asset S held
+during the interval (t − 1, t]. The time-t portfolio value is
+V δ t = ϕtert∆ + δtSteqt∆
+where rt is the time-t annualized continuously compounded risk-free rate, qt is the annualized
+underlying asset dividend yield, both on the interval (t − 1, t], and ∆ = 1 252 . To account for
+transaction costs the self-financing condition entails
+ϕt+1 + δt+1St = V δ t − κSt | δt+1 − δt |, (1)
+where κ is the rate of proportional transaction costs.
+The optimal hedging problem is an optimization task where an agent seeks to minimize the risk
+exposure associated with a short position in the option. More precisely, it is a sequential decision
+problem where the agent looks for the best sequence of actions δ = {δt}T t=1 that minimizes a penalty
+function ρ applied to the hedging error at maturity for a short position, defined as
+ξδ T = Ψ(ST ) − V δ T .
+4
+
+=== page 6 ===
+Note that ξδ T is a loss variable, with profits being represented by −ξδ T . The problem is
+δ∗ = arg min
+δ
+ρ
+ 
+ξδ T  , (2)
+where ρ is a risk measure, acting as the penalty function. Each time-t action (ϕt+1, δt+1) is of
+feedback-type, with such decision being a function of current available information on the market:
+δt+1 = ˜δ(Xt) for some function ˜δ with state variables vector Xt. Section 4.3.2 further describes
+these state variables that include the underlying asset current value as well as some information
+about the implied volatility surface, among others. Due to Equation (1), ϕt+1 is fully characterized
+when δt+1 is specified, and as such the time-t action to be chosen is simply δt+1.
+In this paper we consider three penalty functions that are very popular in the literature:
+• Mean Square Error (MSE): ρ(ξδ T ) = E[(ξδ T )2].
+• Semi Mean-Square Error (SMSE): ρ(ξδ T ) = E[(ξδ T )21 {ξδ T ≥0}].
+• Conditional Value-at-Risk (CVaRα): ρ(ξδ T ) = E[ξδ T | ξδ T ≥ VaRα(ξδ T )], where α ∈ (0, 1) and
+VaRα(ξδ T ) is the Value-at-Risk defined as VaRα(ξδ T ) = minc{c : P(ξδ T ≤ c) ≥ α} and α = 95%
+or 99% in this work.
+The MSE was first proposed in the seminal variance-optimal hedging framework of Schweizer (1995),
+which was later extended to the multivariate case by Rémillard and Rubenthaler (2013). The SMSE
+is a particular case of the asymetric polynomial penalty considered for instance subsequently in
+Pham (2000), François et al. (2014) and Carbonneau and Godin (2023). It provides the advantage
+over the MSE to avoid penalizing hedging gains. Lastly, we consider CVaR as a standard metric for
+measuring potential catastrophic tail events, frequently mandated by financial regulators for use in
+financial institutions. This metric has also been explored in global hedging contexts in Melnikov
+and Smirnov (2012), Godin (2016), Buehler et al. (2019), Carbonneau and Godin (2021) or Cao
+et al. (2023), among others.
+Historically, an alternative method for addressing the problem described in Equation (2) employs
+backward recursion within dynamic programming frameworks. However, this approach is hindered
+5
+
+=== page 7 ===
+by the curse of dimensionality, limiting its practical applicability. To overcome these limitations,
+we tackle Problem (2) using reinforcement learning.
+2.2 Reinforcement learning and deep hedging
+The optimal hedging problem (2) can be formulated as a reinforcement learning (RL) problem
+because it is a feedback sequential decision-making task. In this framework, an agent learns a
+policy (the investment strategy δ) which dictates trading actions to be applied as a function of
+state variables to minimize the hedging objective highlighted in Equation (2). More precisely, the
+problem consists in learning the mapping ˜δ.
+Consistently with Buehler et al. (2019), the problem established in (2) is solved by direct estimation
+of the policy through a deep policy gradient approach that relies on the estimation of the mapping
+˜δ by an Artificial Neural Network (ANN). Denoting by ˜δθ the policy obtained when ˜δ is estimated
+by an ANN with parameters θ, the objective function we need to minimize is thus
+O(θ) = ρ
+
+ξ
+˜δθ
+T
+
+. (3)
+2.2.1 Neural network architecture
+We propose an architecture reminiscent of these used in Koochali et al. (2019) and Fecamp et al.
+(2020), which consists in a Recurrent Neural Network with a Feedforward Connection (RNN-FNN)
+that combines the traditional Long Short-Term Memory Network (LSTM) and the Feedforward
+Neural Network (FFNN) architectures. The inclusion of LSTM layers mitigates problems related
+to vanishing gradients.2 The RNN-FNN network is defined as a composition of LSTM cells {Cl}L1 l=1
+and FFNN layers {Lj }L2 j=1 under the following functional representation:
+˜δθ(Xt) = (LJ ◦ LL2 ◦ LL2−1 ◦ ... ◦ L1| {z }
+FFNN layers
+◦ CL1 ◦ CL1−1... ◦ C1| {z }
+LSTM cells
+)(Xt).
+The LSTM cell Cl is a mapping that transforms a vector Z (C, l−1) t of dimension d(C, l−1) into a vector
+2Vanishing gradients arise when the gradients of the penalty function become extremely small, leading to slow or
+halted training (details can be found in Goodfellow et al. (2016)).
+6
+
+=== page 8 ===
+Z (C, l) t of dimension d(C, l) based on the following equations, considering Z (C, 0) t = Xt:
+i(l) = sigm(W (l) i Z (C, l−1) t + b(l) i ),
+o(l) = sigm(W (l) o Z (C, l−1) t + b(l) o ),
+c(l) = i(l) ⊙ tanh(W (l) c Z (C, l−1) t + b(l) c ),
+Z (C, l) t = o(l) t ⊙ tanh(c(l)),
+where sigm(·) and tanh(·) are respectively the sigmoid and hyperbolic tangent functions applied
+element-wise and ⊙ is the Hadamard product. Layer Lj represents a FFNN layer that maps the
+input vector Z (L, j−1) t of dimension d(L, j−1) into a vector Z (L, j) t of dimension d(L, j) by applying
+a linear transformation TLj (Z (L, j−1) t ) = WLj Z (L, j−1) t + bLj and, subsequently, an element-wise
+non-linear activation function gLj , i.e., Lj (Z (L, j−1) t ) = (gLj ◦ TLj )(Z (L, j−1) t ) for j ∈ {1, ..., L2, J},
+considering Z (L, 0) t = Z (C, L1) t .
+The trainable parameters θ of the RNN-FNN network are listed below:
+• If L1 ≥ l ≥ 1: W (l) i , W (l) o , W (l) c ∈ Rd(C, l)×d(C, l−1) and b(l) i , b(l) o , b(l) c ∈ Rd(C, l)×1 with d(C, 0)
+defined as the original dimension of the network input.
+• If L2 ≥ j ≥ 1: WLj ∈ Rd(L, j)×d(L, j−1) and bLj ∈ Rd(L, j) with d(L, 0) = d(C, L1).
+• If j = J: WLJ ∈ R1×d(L, L2) and bLJ ∈ R.
+The selected hyperparameter values for our experiments are detailed in Section 4.3.1.
+2.2.2 Neural network optimization
+The RNN-FNN network is optimized with the Mini-batch Stochastic Gradient Descent method
+(MSGD). This training procedure relies on updating iteratively all the trainable parameters of the
+network based on the recursive equation
+θj+1 = θj − ηj ∇θ ˆO(θj ), (4)
+7
+
+=== page 9 ===
+where θj is the set of parameters obtained after iteration j, ηj is the learning rate (step size) which
+determines the magnitude of change in parameters on each time step,3 ∇θ is the gradient operator
+with respect to θ and ˆO is the Monte Carlo estimate of the objective function (3) computed on a
+mini-batch. Additional details are provided in Appendix B of the supplementary material.
+3 Joint market dynamics
+This section describes the JIVR model of François et al. (2023), which provides market dynamics
+that we use to represent the joint evolution of the S&P 500 index price and its associated Implied
+Volatility (IV) surface. Such model is used to construct the state space of the hedging problem.
+The JIVR model takes the form of an econometric model directly specifying the evolution of the
+shape of the volatility surface.4 The model has been crafted through the careful analysis of option
+price data spanning multiple economic periods and crises, with factor loadings being designed to
+mimic the most important loadings from a principal component analysis on volatility surfaces. The
+advantages of the JIVR model are twofold. First, the empirical approach used for its construction,
+which relies on daily fitting to IV data, enables the accurate representation of all segments on
+the IV surface on a daily basis. Second, it is very tractable and does not rely on the filtering of
+latent factors driving volatility dynamics as in multiple competing models that rely on risk-neutral
+dynamics to construct volatility surfaces.
+3.1 Daily implied volatility surface representation
+On any given day, the cross-section of option prices on the S&P 500 index is captured through
+the IV surface model introduced by François et al. (2022) which characterizes the entire surface
+parsimoniously with a linear combination of five factors. More precisely, the time-t IV of an option
+with time-to-maturity τt = T −t 252 years and (scaled) moneyness Mt = 1√τt log Ste(rt−qt)τt K , where K is
+3This parameter can be either deterministic or adaptive, i.e., it may be adjusted during the training period. For
+more details on this, please refer to Goodfellow et al. (2016).
+4The direct modeling of the volatility surface is aligned with the so-called "instrumental approach" philosophy
+detailed in Rebonato (2004), which exhibits more flexibility and treats volatility surfaces as objects possessing
+intrinsic characteristics on their own, not being fully characterized by the underlying asset.
+8
+
+=== page 10 ===
+the strike price, is
+σ(Mt, τt, βt) =
+5X
+i=1
+βt,ifi(Mt, τt) (5)
+where βt = (βt,1, βt,2, βt,3, βt,4, βt,5) stands for the IV factor coefficients at time t and the func-
+tions {fi}5 i=1 represent the long-term at-the-money (ATM) level, the time-to-maturity slope, the
+moneyness slope, the smile attenuation and the smirk, respectively (see Appendix C.1 of the
+supplementary material for their specification). Following the same data processing and estimation
+procedure outlined in the aforementioned study, we extract the daily time series of the IV factor
+coefficients spanning from January 4, 1996, to December 31, 2020.5
+3.2 Joint Implied Volatility and Return (JIVR)
+The JIVR model proposed by François et al. (2023) leverages the IV representation (5) and provides
+explicit joint dynamics for the IV surface and the S&P 500 index price.
+The first building block of the JIVR model represents the daily underlying asset excess log-return,
+Rt+1 = log
+
+St+1
+St
+
+− (rt − qt)∆. It integrates an NGARCH(1,1) process with Normal Inverse
+Gaussian (NIG) innovations to capture volatility clusters and reproduce fat tailed asymmetric
+returns, while borrowing information from the volatility surface to anchor the evolution of the
+conditional variance process ht,R. The second building block includes a multivariate heteroskedastic
+autoregressive processes with non-Gaussian innovations for all implied volatility factor coefficients.
+The multivariate time series representation of the JIVR model is presented in detail in Appendix C.2
+of the supplementary material.
+The full model is characterized by the current market conditions (St, {βt,i}5 i=1, βt−1,2, ht,R, {ht,i}5 i=1),
+which are respectively the underlying S&P 500 index price, IV factor coefficients, and conditional
+variances for the S&P 500 return and for such coefficients.
+Following François et al. (2023), the maximum likelihood estimation is applied to S&P 500 excess
+returns alongside the time series estimates of surface coefficients {βt,i}5 i=1. As a byproduct, we
+5The sample comes from OptionMetrics database, to which the conventional data exclusion filters are applied.
+9
+
+=== page 11 ===
+obtain daily estimates of conditional variance series ht,R and {ht,i}5 i=1 for the time period extending
+between January 4, 1996 and December 31, 2020.
+4 Numerical study
+In this section, simulation and backtesting experiments are conducted to evaluate the performance
+of the proposed hedging approach.
+4.1 Stochastic market generator
+4.1.1 Market simulator
+The JIVR model is used in subsequent simulation experiments to generate paths of the variables
+pertaining to market dynamics (St, {βt,i}5 i=1, ht,R, {ht,i}5 i=1), which drive the hedging decisions.6 The
+initial conditions ({β0,i}5 i=1, h0,R, {h0,i}5 i=1) are randomly chosen among values prevailing in our data
+sample extending between January 4, 1996 and December 31, 2020. This constitutes a wide variety
+of states of the economy. Following the determination of initial values, the simulation progresses
+through all time steps in two distinct phases. First, a sequence of NIG innovations {ϵt}T t=1 is
+simulated using the Monte Carlo method considering the dependence structure of contemporaneous
+innovations. Second, equations of Section C.2 from the supplementary material are used to obtain
+values for (Rt, {βt,i}5 i=1, ht,R, {ht,i}5 i=1) for t = 1, . . . , T based on the simulated innovations.
+4.1.2 Market parameters for numerical experiments
+The initial underlying asset value is normalized to S0 = 100 for simplicity. The options be-
+ing hedged are assumed to be European call options (Ψ(ST ) = max(ST − K, 0)) with maturi-
+ties T ∈ {21, 63, 126} days for short-term, medium-term and long-term maturities, and strikes
+K ∈ {90, 100, 110} for in-the-money (ITM), at-the-money (ATM) and out-of-the-money (OTM)
+options, respectively.7 Various levels of proportional transaction cost are considered, namely
+κ ∈ {0%, 0.05%, 0.5%, 1%}. The initial value of the hedging strategy, V δ 0 , is set to the price of the
+option being hedged, which is provided by the prevailing implied volatility surface. The annualized
+6Coefficient βt−1,2 is omitted from the state space due to its minor impact.
+7Unreported numerical results of European put options exhibit a similar pattern due to the Put-Call parity
+formula.
+10
+
+=== page 12 ===
+continuously compounded risk-free rate and dividend yield are assumed to be constant and are
+estimated using data from the period 2016 to 2020, with values set to r = 2.66% and q = 1.77%,
+respectively. Other parameters of the model are specified in Section C.2.
+4.2 Benchmarks
+We benchmark RL hedging strategies against the performance of three delta hedging strategies
+using the following deltas: (i) the practitioner’s Black-Scholes delta hedging (DH) which applies
+the current implied volatility into the Black-Scholes formula to obtain the hedged option’s delta;
+(ii) the Leland (1985) delta (DH-L), which modifies the DH to reflect proportional transaction
+costs; and (iii) the Smile-implied delta (SI) introduced by Bates (2005) and whose closed-form
+expression for the IV model (5) is provided by François et al. (2022). The explicit formulas for
+these three benchmarks are detailed in Appendix A.
+4.3 Neural network settings
+4.3.1 Neural network architecture
+We employ the RNN-FNN architecture from Section 2.2.1 with two LSTM cells (L1 = 2) of width
+56 (di = 56 for i = 1, 2) and two FFNN-hidden layers (L2 = 2) of width 56 with ReLU activation
+function (i.e., gLi (x) = max(0, x) for i = 1, 2). In the context of the output FFNN layer LJ , which
+maps the output of hidden layers Z (L, L2) t into the position in the underlying asset δt, the standard
+deep hedging framework typically employs a linear activation function. However, this activation
+function tends to induce RL agents to adopt doubling strategies, increasing the position in the
+underlying asset several orders of magnitude over the current position on each period after any loss
+until the cumulative loss amount is fully recovered. Such strategies are definitely undesirable from
+the perspective of sound risk management. Therefore, we opt to introduce a leverage constraint
+through the output layer activation function. This leverage constraint is a dynamic upper bound on
+the activation function, denoted as gLJ (Z, t) = min(Z, Bt(Z)), with Z = TLJ (Z (L, L2) t ) representing
+the typical deep hedging underlying asset position, and Bt(Z) the highest position in the index
+that can be held in the portfolio. Such an upper bound avoids excessive leverage and limits the
+11
+
+=== page 13 ===
+borrowing capacity, i.e., the cash held satisfies ϕt+1(Xt) ≥ −B for all Xt and t, and B > 0.8 The
+latter, in conjunction with the self-financing constraint (1), establishes the dynamic upper bound
+as
+Bt(Z) =
+
+
+
+V0+B
+S0 if t = 0
+Vt+B+κStδt
+St(1+κ) if t > 0 and Z ≥ δt
+Vt+B−κStδt
+St(1−κ) if t > 0 and Z < δt.
+(6)
+Appendix E.1 of the supplementary material provides numerical experiments that illustrate the ne-
+cessity of including a leverage constraint in the network architecture to alleviate the aforementioned
+issues.
+Our numerical experiments demonstrate the superiority of the RNN-FNN architecture over stan-
+dalone LSTM and FFNN networks, considering a leverage constraint of B = 100 for all agents.
+These results are presented in Appendix E.2 of the supplementary material. Additionally, agents are
+trained as described in Section 2.2.2 on a training set of 400,000 independent simulated paths with
+mini-batch size of 1,000 and a learning rate of 0.0005 that is progressively adapted by the ADAM
+optimization algorithm.9 In addition, we include a regularization method called dropout with
+parameter p = 0.5 to reduce the likelihood of overfitting and enhance the model performance on
+unseen data.10 The training procedure is implemented in Python, using Tensorflow and considering
+the Glorot and Bengio (2010) random initialization of the initial parameters of the neural network.
+Numerical results are obtained from a test set of 100,000 independent paths.
+4.3.2 State space selection
+The nature of the hedging problem, combined with the JIVR model, establishes a decision
+framework where the optimal decision is entirely defined by the state variables at time t, denoted
+as Xt = (V δ t , δt, τt, St, {βt,i}5 i=1, ht,R, {ht,i}5 i=1).
+8This type of leverage condition has been previously employed in the literature. For instance, the seminal paper
+of Harrison and Pliska (1981) assumes a restricted borrowing capacity to maintain a positive wealth throughout the
+entire hedging period.
+9ADAM is a dynamic learning rate algorithm engineered to accelerate training speeds in deep neural networks
+and achieve rapid convergence, details can be seen in Goodfellow et al. (2016).
+10Full details of the dropout regularization method can be seen in Goodfellow et al. (2016). The selection of
+p = 0.5 stems from our numerical experiments detailed in Appendix E.3 of the supplementary material, indicating
+that this value consistently outperforms others across all penalty functions.
+12
+
+=== page 14 ===
+However, implementing numerical methods within the deep policy gradient approach across the
+entire state space may lead to overfitting. In fact, other studies utilizing the RL framework have
+reported optimal results with a reduced state space. For instance, Buehler et al. (2019) and Cao
+et al. (2023) employ the deep hedging algorithm without including the portfolio value V δ t in the
+state space configuration. Similarly, Carbonneau (2021) employs the deep hedging framework in a
+frictionless market without including δt in the state space. We explore three different state space
+configurations. The first configuration aims to replicate the full state space, denoted by
+(V δ t , δt, τt, St, {βt,i}5 i=1, ht,R, {ht,i}5 i=1), (7)
+typically considered in a dynamic optimization task with the portfolio value as a state variable.
+The second state space does not consider the portfolio value and also omits the variance of the IV
+coefficients {ht,i}5 i=1 under the intuition that these coefficients have a second-order effect, with the
+IV surface coefficients {βt,i}5 i=1 capturing most of the variability. Hence, the reduced state space is
+defined as
+(δt, τt, St, {βt,i}5 i=1, ht,R).
+The current position δt is required for the RL agent to learn about the transaction cost associated
+with the next rebalancing. This state space component is no longer useful when κ = 0. For that
+reason, we remove this component in absence of transaction cost. In such case, the reduced state
+space is denoted by
+(τt, St, {βt,i}5 i=1, ht,R).
+Our numerical experiments consider the three aforementioned state spaces to hedge a European
+ATM call option with maturity N = 63 days, while taking into account four different transaction
+cost rates κ ∈ {0%, 0.05%, 0.5%, 1%}. The impact of the option moneyness and maturity on
+hedging performance are studied in later subsections. Additionally, our numerical experiments
+involve four RL agents: RL-CVaR95%, RL-CVaR99%, RL-MSE, and RL-SMSE. These agents aim
+to minimize different penalty functions.
+Figure 1 illustrates the estimated value of the four penalty functions in proportion to that obtained
+13
+
+=== page 15 ===
+Figure 1: Optimal penalty function value for a short position in an ATM call option with maturity
+of 63 days under various state spaces and transaction cost levels.
+0.0 0.2 0.4 0.6 0.8 1.0
+Transaction cost (%)
+0.70
+0.75
+0.80
+0.85
+0.90
+0.95
+1.00RL-CVaR:95%
+0.0 0.2 0.4 0.6 0.8 1.0
+Transaction cost (%)
+0.65
+0.70
+0.75
+0.80
+0.85
+0.90
+0.95
+1.00RL-CVaR:99%
+0.0 0.2 0.4 0.6 0.8 1.0
+Transaction cost (%)
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0RL-MSE
+0.0 0.2 0.4 0.6 0.8 1.0
+Transaction cost (%)
+0.4
+0.5
+0.6
+0.7
+0.8
+0.9
+1.0RL-SMSE
+Results are computed using 100,000 out-of-sample paths according to the conditions outlined in Section 4.3.1.
+Each panel illustrates the optimal penalty function value of an RL agent considering four transaction cost
+levels. These values are normalized by the estimated values of each penalty function obtained with DH-L for
+each transaction cost level. Agents are trained under the specified penalty functions considering three state
+spaces: full state space (V δ t , δt, τt, St, {βt,i}5 i=1, ht,R, {ht,i}5 i=1) (red curve), and the two reduced state spaces
+(δt, τt, St, {βt,i}5 i=1, ht,R, {ht,i}5 i=1) (green curve) and (τt, St, {βt,i}5 i=1, ht,R, {ht,i}5 i=1) (blue curve).
+with DH-L, ρ(ξδ T )/ρ(ξDH-L T ), across different transaction cost rates for all agents. These numerical
+results reveal that RL agents outperform DH-L for all considered state space configurations, as the
+relative values of the penalty functions are substantially lower than the reference line value of 1.
+Moreover, theseresultsconfirmthatincludingtheportfoliovalueinthefullstatespaceisunnecessary
+for our approach, as metrics under the reduced state space (green curve) show lower values than
+those achieved by agents using the full state space (red curve). This is consistent with the work of
+Buehler et al. (2019), Cao et al. (2020), Buehler et al. (2022), and Cao et al. (2023), where RL
+techniques are applied in the hedging context without considering the portfolio value as a state
+variable.
+In the absence of transaction costs, Figure 1 confirm that the inclusion of δt in the reduced
+state space is unnecessary, as the incremental performance with and without it is negligible.
+Conversely, in the presence of transaction costs, agents trained under the reduced state space
+14
+
+=== page 16 ===
+(δt, τt, St, {βt,i}5 i=1, ht,R) demonstrate superior performance (green curve), and the outperformance
+with respect to benchmarks becomes more pronounced as the transaction cost rate increases. This
+observation underscores the importance of considering previous positions in the underlying when
+optimizing rebalancing actions, as the former is indicative of transaction costs to be paid for the
+various possible actions.
+The superiority of RL agents trained on the reduced state space can be explained by the bias-
+variance dilemma, where the informational content provided by some of the variables (reduction in
+bias) is insufficient to compensate for additional complexity and instability (variance) they cause
+during training. This is seemingly why removing the IV parameters’ variances {ht,i}5 i=1 from the
+state space increases the performance in this experiment. Our numerical results indicate that the
+network architecture considered for the agents acting in our proposed high-dimensional environment
+does not require the full state space. In fact, the performance of the agents deteriorates for some
+transaction cost levels when the volatilities of the IV coefficients are included, as shown in Figure
+1, and the time required to converge to optimal solutions during training increases by an average
+of 190% compared to RL agents under the reduced state space across all experiments.
+In all subsequent experiments, we consider the reduced state space (δt, τt, St, {βt,i}5 i=1, ht,R) in the
+presence of transaction costs and the state space (τt, St, {βt,i}5 i=1, ht,R) in the absence of transaction
+costs to enhance parsimony.
+4.4 Benchmarking of hedging strategies
+In this section, we compare the performance of RL agents with classic hedging approaches.
+Aggregated results are presented in Section 4.4.1, while the segmentation among various states of
+the economy is shown in Section 4.4.2. The following subsections break down the performance of
+the RL agents with respect to moneyness and maturity of the hedged option, or to transaction cost
+levels, demonstrating the robustness of the RL approach. Finally, Section 5 outlines a comparison
+of performance over historical paths spanning from January 5, 1996, to December 31, 2020.
+15
+
+=== page 17 ===
+4.4.1 Benchmarking over randomized economic conditions
+We begin by comparing the hedging performance of the benchmarks and RL agents trained
+under the four penalty functions: CVaR95%, CVaR99%, MSE, and SMSE. This comparison is
+performed in terms of estimated values of all penalty functions and the average Profit and Loss,
+Avg P&L = E[−ξδ T ], across all paths in a test set. Additionally, we employ the CVaR deviation
+measure, defined as CVaRα(ξδ T − E[ξδ T ]), as a deviation metric for the hedging error in the test
+set. In such test set, initial economic conditions (the initial value of state variables in the path)
+are sampled randomly among historical values from our sample. It therefore reflects aggregate
+performance across various economic conditions. Our analysis focuses on hedging a European ATM
+call option with a maturity of N = 63, under the assumption of no transaction costs, which is
+κ = 0.
+Table 1: Aggregated hedging metrics for a short position in a 63-day ATM call option.
+Benchmark Reinforcement Learning
+Metric DH SI CVaR95% CVaR99% MSE SMSE
+Avg P&L 0.356 0.498 0.380 0.321 0.285 0.374
+CVaRα(ξδ T − E[ξδ T ]) 2.159 3.005 1.646 1.720 1.766 1.652
+CVaR95% 1.803 2.507 1.266 1.399 1.481 1.278
+CVaR99% 3.442 4.351 2.312 2.198 2.625 2.245
+MSE 0.898 1.818 1.243 1.362 0.657 1.018
+SMSE 0.298 0.564 0.184 0.214 0.183 0.151
+Avg P&L/CVaRα(ξδ T − E[ξδ T ]) 0.165 0.166 0.231 0.187 0.161 0.227
+Results are computed using 100,000 out-of-sample paths in the absence of transaction costs (κ = 0%). Agents
+are trained under the reduced state space (τt, St, {βt,i}5 i=1, ht,R) according to the conditions outlined in Section
+4.3.1. DH stands for delta hedging, whereas SI is the smile-implied delta hedging.
+Table 1 presents hedging performance metrics attained by both benchmarks and RL agents. Every
+RL agent achieves the lowest value for the corresponding metric which they used as objective
+function during training, which is expected. Furthermore, the numerical results indicate that
+RL agents provide hedging strategies that are much less risky than benchmarks, as evidenced by
+metrics such as CVaR95%, CVaR99%, and SMSE. In particular, when computing the variation rate
+16
+
+=== page 18 ===
+between the estimated value of each of these metrics obtained by RL agents relative to the value
+obtained by DH, we observe an average reduction rate across RL agents of 24%, 31%, and 38%,
+respectively. Similarly, when comparing with SI delta strategies, we observe average reductions
+across RL agents of 45%, 46%, and 67%, respectively. Moreover, in terms of the MSE metric, the
+MSE agent demonstrates significant superiority over benchmarks, reducing 26% and 63% compared
+to DH and SI delta strategies, respectively.
+Regarding average Profit and Loss (P&L), SI delta yields higher profitability; however, it also entails
+increased risk. In contrast, RL agents trained using CVaR95%, CVaR99%, and SMSE as penalty
+functions obtain lower values compared to SI delta strategies, but they reach a more favorable trade-
+off between profitability and risk management as shown by the ratio Avg P&L/CVaRα(ξδ T − E[ξδ T ]),
+which yields greater values for these agents. Additionally, RL agents achieve lower risk than both
+the DH and SI delta hedging strategies, which highlights enhanced risk management.
+4.4.2 Impact of the state of the economy on performance
+In this section, we analyze the performance metrics of hedging strategies across clusters of paths
+representing different economic states, as detailed in Table 2. A path is assigned to a cluster if its
+state variable initial values are drawn from the subset of dates corresponding to that cluster. This
+approach helps isolate the impact of economic conditions on performance and assess the robustness
+of RL hedging strategies. Again, we hedge an ATM European call option with a maturity of
+N = 63 days under the assumption of no transaction cost.
+17
+
+=== page 19 ===
+Table 2: Clusters of dates representing different time periods.
+Period Time frames Avg option price
+Regular 1 05/01/1996 - 28/02/1997 $3.849
+Crisis 1 (Asian financial crisis) 03/03/1997 - 31/12/1998 $5.351
+Regular 2 04/01/1999 - 31/12/1999 $5.301
+Crisis 2 (Dot-com bubble crisis) 03/01/2000 - 31/12/2002 $5.758
+Regular 3 02/01/2003 - 31/12/2007 $3.877
+Crisis 3 (Global financial crisis) 02/01/2008 - 31/12/2009 $8.009
+Regular 4 04/01/2010 - 31/01/2020 $3.728
+Crisis 4 (Covid-19 pandemic crisis) 03/02/2020 - 31/12/2020 $6.486
+These periods aim to approximate different states of the economy to highlight the performance of our approach
+within time windows capturing the financial fluctuations characteristic of each economic crisis. The column
+"Avg option price" displays the average option price of an ATM call option with maturity of 63 days per cluster.
+Our numerical results, illustrated in Figure 2, indicate that both benchmarks and RL agents are
+sensitive to the environment, showcasing better performance during regular periods compared
+to financial crises in terms of risk, as shown by the two right plots showing the CVaR95% and
+SMSE metrics. Additionally, both approaches tend to offer more profitable strategies during crisis
+periods and periods of high volatility (for instance, even though Regular period 2 is not labeled as
+a crisis period, it is characterized by economic recovery with significant market fluctuations). This
+trend can be explained by the fact that higher volatility during these periods leads to a higher risk
+premium, increasing the initial portfolio value and thus the final P&L, as highlighted by the Avg
+P&L metric (see the top left panel of Figure 2). Regarding the MSE metric, the results align with
+the Avg P&L metric, with both approaches showing superior performance during regular periods
+(except for Regular period 2 which exhibited high volatility), as higher profits are detrimental for
+the MSE metric penalizing upside risk.
+18
+
+=== page 20 ===
+Figure 2: Hedging metrics for a short position in an ATM call option with maturity of 63 days
+under different states of the economy.
+Regular 1 Crisis 1 Regular 2 Crisis 2 Regular 3 Crisis 3 Regular 4 Crisis 4
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0Avg P&L
+Regular 1 Crisis 1 Regular 2 Crisis 2 Regular 3 Crisis 3 Regular 4 Crisis 40
+1
+2
+3
+4CVaR:95%
+Regular 1 Crisis 1 Regular 2 Crisis 2 Regular 3 Crisis 3 Regular 4 Crisis 40
+1
+2
+3
+4
+5MSE
+DH
+SI
+RL-CVaR:95%
+RL-CVaR:99%
+RL-MSE
+RL-SMSE
+Regular 1 Crisis 1 Regular 2 Crisis 2 Regular 3 Crisis 3 Regular 4 Crisis 40.00
+0.25
+0.50
+0.75
+1.00
+1.25
+1.50SMSE
+Results are computed using 100,000 out-of-sample paths in the absence of transaction costs (κ = 0%). Agents
+are trained under the reduced state space (τt, St, {βt,i}5 i=1, ht,R) according to the conditions outlined in Section
+4.3.1. The results are organized chronologically across the periods outlined in Table 2.
+The results that are segregated by time period align with the aggregated findings. Indeed, for
+any of the CVaR95%, MSE, and SMSE risk metrics, the RL agent which was trained with such
+risk metric as its objective function consistently exhibits lower values than benchmarks across all
+periods. These differences are particularly notable during crisis periods, where DH and SI delta
+tend to be riskier, while RL agents demonstrate greater stability. The higher values in the MSE
+statistic of agents trained under CVaR and SMSE can be attributed to the fact that these objective
+functions only penalize hedging losses, allowing agents to seek positive returns on average. This is
+consistent with the Avg P&L panel, where CVaR and SMSE agents tend to display more profitable
+strategies than the MSE agent.
+These results demonstrate the robustness of the RL approach across various environments, exhibiting
+greater stability in scenarios with extreme behavior and improving hedging performance in terms
+of the penalty functions considered in the hedging problem. Additionally, they support our initial
+findings, indicating that RL agents do not significantly sacrifice profitability even during extreme
+market conditions, a phenomenon that could be attributed to higher initial option prices during
+these periods, as shown in Table 2.
+19
+
+=== page 21 ===
+4.4.3 Impact of moneyness level on performance
+We investigate the robustness of our approach with respect to the moneyness level of the option
+being hedged by including OTM and ITM call options with a maturity of N = 63 days in
+our analysis. Our findings, depicted in Figure 3, demonstrate that RL consistently outperforms
+benchmarks with respect to the objective function considered during the training process, regardless
+of the option moneyness.
+Figure 3: Hedging metrics for a short position in OTM, ATM and ITM call options with a
+maturity of 63 days.
+Avg P&L CVaR:95% MSE SMSE
+Moneyness = ATM
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0Metric values
+Avg P&L CVaR:95% MSE SMSE
+Moneyness = ITM
+Avg P&L CVaR:95% MSE SMSE
+Moneyness = OTM
+DH
+SI
+RL-CVaR:95%
+RL-CVaR:99%
+RL-MSE
+RL-SMSE
+Results are computed using 100,000 out-of-sample paths in the absence of transaction costs (κ = 0%). Agents
+are trained under the reduced state space (τt, St, {βt,i}5 i=1, ht,R) according to the conditions outlined in Section
+4.3.1. The average option price stands at $0.59 for OTM options, $3.89 for ATM options, and $11.37 for ITM
+options.
+In line with our previous experiments, we observe that SI delta tends to offer more profitable
+strategies compared to benchmarks, while DH demonstrates a similar level of profitability for ATM
+and ITM options. However, this trend does not hold for OTM options, where RL agents not only
+exhibit better risk management but also yield more profitable strategies on average (refer to CVaR
+and SMSE agents for OTM options in Figure 3). The discrepancy can be attributed to the fact
+that RL agents trained under CVaR and SMSE do not track the option value nor penalize gains
+at maturity, allowing agents to profit from OTM paths at maturity. In contrast, DH and SI are
+option tracking methodologies that aim to replicate the option value at maturity, thereby reducing
+20
+
+=== page 22 ===
+potential gains for OTM options at maturity. The latter is consistent with the RL agent trained
+under the MSE, which achieves the minimum MSE value for OTM options and the lowest Avg
+P&L, as it penalizes both gains and losses.
+4.4.4 Impact of option maturity on performance
+As a third test to assess the robustness of our approach, we compare the performance of RL agents
+against benchmarks when hedging ATM call options with different maturities: 21, 63, and 126
+days, in absence of transaction costs. Our results, illustrated in Figure 4, show that the average
+profitability of hedging strategies increases with option maturity (see Avg P&L in the top left
+panel). However, the risk also increases with maturity for all hedging strategies (refer to CVaR95%
+and SMSE depicted in the panels positioned at the top and bottom right corners), as expected.
+Figure 4: Hedging metrics for a short position in ATM call options with maturities of 21, 63 and
+126 days.
+21-Days 63-Days 126-Days0.0
+0.2
+0.4
+0.6Avg P&L
+21-Days 63-Days 126-Days0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0CVaR:95%
+21-Days 63-Days 126-Days0
+1
+2
+3MSE
+DH
+SI
+RL-CVaR:95%
+RL-CVaR:99%
+RL-MSE
+RL-SMSE
+21-Days 63-Days 126-Days0.0
+0.2
+0.4
+0.6
+0.8SMSE
+Results are computed using 100,000 out-of-sample paths in the absence of transaction costs (κ = 0%). Agents
+are trained under the reduced state space (τt, St, {βt,i}5 i=1, ht,R) according to the conditions outlined in Section
+4.3.1. Average prices are $2.15, $3.89 and $5.65 for options with maturities of 21 days, 63 days and 126 days,
+respectively.
+These results also demonstrate consistent behavior across all maturities for all hedging metrics,
+displaying a uniform distribution among the different strategies across all maturity levels. In line
+with our previous experiments, RL agents consistently outperform benchmarks with respect to
+asymmetric penalty functions for all maturities, regardless of the penalty function used during
+21
+
+=== page 23 ===
+training. Furthermore, in the case of the MSE metric (bottom left panel in Figure 4), the RL agent
+trained under that penalty function displays the lowest value across all maturities.
+4.4.5 Impact of transaction costs on performance
+We now investigate scenarios where hedgers encounter transaction costs, which is meant to reflect
+more realistic hedging scenarios. Specifically, we analyze the hedging effectiveness of RL agents in
+comparison to benchmarks, including the DH-L strategy. Our examination focuses on hedging an
+ATM European call option with a maturity of N = 63 days across varying levels of transaction
+costs assumed to be 0.05%, 0.5% and 1%.
+Figure 5 illustrates the performance of benchmarks and RL agents, with the four panels depicting
+the Avg P&L, CVaR95%, MSE, and SMSE metrics. In general, as expected, the performance of
+each strategy tends to deteriorate as transaction costs increase. However, performance drops are
+more pronounced for benchmarks than for RL agents. As anticipated, RL agents consistently
+outperform benchmarks in terms of downside risk (observe CVaR95% and SMSE metrics depicted
+in the panels positioned at the top and bottom right corners of Figure 5) across all transaction
+cost levels, regardless of the penalty function used during training. Furthermore, while DH-L
+adjusts the strategies in terms of the transaction cost level and performs better than the other
+benchmarks, RL strategies display superior metrics, highlighting their better capacity to adapt to
+different transaction cost levels.
+In contrast to our previous results where SI delta provides more profitability, the results regarding
+the Avg P&L metric (see top left panel in Figure 5) indicate that this profitability is influenced
+by the inclusion of transaction costs, making the SI delta hedging less profitable strategy as
+transaction costs increase, whereas RL agents tend to exhibit much lower average losses due to
+their adaptability. In terms of MSE, benchmarks exhibit a more sensitive behavior than the RL
+agents regarding the increase in transaction costs, especially when the transaction costs are set at
+0.5% and 1% (see the bottom-left panel of Figure 5), irrespective of the penalty function considered
+during training.
+Table 3 displays descriptive statistics about hedging costs, defined as the sum of discounted
+22
+
+=== page 24 ===
+Figure 5: Hedging metrics for a short position in an ATM call option with a maturity of 63 days
+under different transaction cost levels.
+TC:0% TC:0.05% TC:0.5% TC:1.0%
+2.0
+1.5
+1.0
+0.5
+0.0
+0.5
+Avg P&L
+TC:0% TC:0.05% TC:0.5% TC:1.0%0
+2
+4
+6CVaR:95%
+TC:0% TC:0.05% TC:0.5% TC:1.0%0
+2
+4
+6
+8MSE
+DH
+Smile
+DH-L
+RL-CVaR:95%
+RL-CVaR:99%
+RL-MSE
+RL-SMSE
+TC:0% TC:0.05% TC:0.5% TC:1.0%0
+2
+4
+6
+8SMSE
+Results are computed using 100,000 out-of-sample paths under the reduced state space (τt, St, {βt,i}5 i=1, ht,R)
+without transaction costs, and under (δt, τt, St, {βt,i}5 i=1, ht,R) in the presence of transaction cost. Agents are
+trained according to the conditions outlined in Section 4.3.1. The average option price is $3.89 with a standard
+deviation of $1.29. The acronym TC stands for transaction cost. DH Black-Scholes delta hedging, DH-L for
+Leland delta hedging and SI for smile-implied delta hedging.
+transaction costs over a path,
+T −1X
+t=0
+e−r∆tκSt | δt+1 − δt |, (8)
+across different transaction cost levels. In the cases of DH and SI delta strategies, which overlook
+transaction costs, we observe a higher cost of hedging due to significant variations in the position
+of the underlying asset during rebalancing across different time steps, thereby leading to lower
+profitability as transaction costs increase. This trend is evident in the case of SI delta which incurs
+the highest average hedging cost, followed by DH and DH-L, when the transaction cost rate is
+set to 0.5% and 1%. These results consistently align with the performance differences observed in
+Figure 5, where benchmarks are associated with the highest losses.
+Furthermore, although none of the agents directly aim to minimize transaction costs, we observe
+that RL agents with asymmetric penalty functions tend to offer hedging strategies with lower costs,
+as shown by the highlighted values in Table 3. This underscores the robustness of RL agents in
+addressing transaction costs, as they minimize the penalty function and thereby indirectly reduce
+the cost of hedging. Conversely, the RL agent trained under the MSE criterion tends to exhibit
+23
+
+=== page 25 ===
+Table 3: Hedging costs when hedging a short ATM call option position with a maturity of N = 63
+days under various transaction cost levels.
+Benchmark - Delta Reinforcement Learning
+κ Metric DH SI DH-L CVaR95% CVaR99% MSE SMSE
+0.05% Mean 0.138 0.142 0.136 0.112 0.108 0.150 0.113
+Std 0.041 0.048 0.040 0.024 0.021 0.042 0.025
+0.5% Mean 1.376 1.420 1.223 0.751 0.788 0.767 0.674
+Std 0.412 0.482 0.317 0.137 0.137 0.205 0.127
+1% Mean 2.753 2.839 2.260 1.245 1.259 1.139 1.031
+Std 0.824 0.964 0.535 0.203 0.212 0.254 0.188
+The average cost of hedging is computed by evaluating the hedging cost across 100,000 out-of-sample independent
+paths. Transaction cost levels are assumed to be proportional to the trade size. The lowest values across all
+hedging strategies are highlighted in bold. The average option price is $3.89 with a standard deviation of $1.29.
+Std stands for standard deviation.
+higher average costs compared to the other agents. This can be attributed to the MSE agent
+penalizing both negative and positive returns, creating additional turnover in some situations to
+avoid large profits.
+4.5 Global importance of IV surface factors
+We now investigate to what extent the risk factors characterizing the IV surface described in
+Equation (5) contribute to total performance of our model. We employ the Shapley Additive
+Global Importance (SAGE) methodology, introduced by Covert et al. (2020), to evaluate their
+impact. Specifically, let ρ
+
+ξ
+˜δθ (X)
+T
+
+be the risk measure when the model is trained with the state
+space X. The amount of risk reduction achieved by adding the state variables ({βt,i}5 i=1, ht,R) to a
+baseline model ˜δθ with state variables (τt, St) is
+ρ
+
+ξ
+˜δθ (τt,St)
+T
+
+− ρ
+
+ξ
+˜δθ (τt,St,{βt,i}5 i=1,ht,R)
+T
+
+=
+X
+j∈{{βt,i}5 i=1,ht,R}
+Cj
+where Cj , the contribution of variable j to the total risk reduction, is
+Cj =
+X
+X⊆{τt,St,{βt,i}5 i=1,ht,R}\{j}
+|X|!(5 − |X|)!
+6!
+h
+ρ
+
+ξ
+˜δθ (X)
+T
+
+− ρ
+
+ξ
+˜δθ (X,j)
+T
+i
+.
+24
+
+=== page 26 ===
+Exact contributions Cj cannot be negative, although their estimates sometimes are. Negative
+values may occur for the contributions we present that are evaluated out-of-sample. Our numerical
+experiments involve training RL agents using four penalty functions: CVaR95%, CVaR99%, MSE,
+and SMSE. We analyze the global importance of these state variables across different moneyness
+and maturities to comprehend their impact on the performance of the RL agents. The global
+importance of state variables is normalized by the risk reduction achieved by the respective RL
+agent to present contributions in the same order of magnitude: the relative global importance is
+Cj
+ρ
+
+ξ
+˜δθ (τt,St)
+T
+
+− ρ
+
+ξ
+˜δθ (τt,St,{βt,i}5 i=1,ht,R)
+T
+ , for j ∈ {ht,R} ∪ {βt,i}5 i=1. (9)
+The relative global importance of the IV characteristic βt,i and the return conditional variance
+ht,R to the risk reduction depends on the moneyness and the time-to-maturity of the option to be
+hedged, as well as on the choice of risk measure.
+Figure 6 studies the case of 63-day-to-maturity call options. It illustrates the relative contribution
+of each state variable across moneyness levels. Overall, the conditional variance of the underlying
+asset returns, the long-term ATM level β1 and the time-to-maturity slope β2 of the IV surface play
+a major role, no matter what risk measure or moneyness is considered. This underscores that RL
+agents utilize both the historical variance process and market expectations of future volatility to
+adjust positions in the underlying asset. The moneyness slope, the smile attenuation and the smirk
+have a second order effect.
+Figure 7 presents contributions to hedging risk reduction for three option maturities, namely 21, 63
+or 126 business days. It underscores the persistent significance of the conditional variance process
+{ht,R} across the various option maturities. Its contribution is even more important for short-term
+maturities. This reflects the fact that ht,R has a direct impact on immediate market shocks. Both
+β4 and β5 are additional contributors mostly for short-term options when CVaR risk measures are
+considered. Intuitively, high values of the smile attenuation (β4) and the smirk (β5) indicate a
+steep slope and a strong smirk for the short term smile which, in turn, induces a high exposure to
+tail risk for short term options.
+25
+
+=== page 27 ===
+Figure 6: Normalized global importance of state variables when hedging a European call options
+with a maturity N = 63 days, across various moneyness levels.
+Beta 1 Beta 2 Beta 3 Beta 4 Beta 5 h-R
+0.1
+0.0
+0.1
+0.2
+0.3
+0.4
+RL-CVaR:95%
+Beta 1 Beta 2 Beta 3 Beta 4 Beta 5 h-R
+0.0
+0.2
+0.4
+0.6RL-CVaR:99%
+Beta 1 Beta 2 Beta 3 Beta 4 Beta 5 h-R
+0.0
+0.1
+0.2
+0.3
+0.4
+0.5RL-MSE
+Moneyness
+OTM
+ATM
+ITM
+Beta 1 Beta 2 Beta 3 Beta 4 Beta 5 h-R
+0.0
+0.1
+0.2
+0.3
+0.4RL-SMSE
+Results are computed using 100,000 out-of-sample paths in the absence of transaction costs (κ = 0%). Each
+panel illustrates the Shapley values for all state variables ({βt,i}5 i=1, ht,R) and different moneyness: OTM, ATM,
+and ITM. These results are shown for the four RL agents: RL-CVaR95%, RL-CVaR99%, RL-MSE, and RL-SMSE.
+The Shapley values are normalized by the risk reduction achieved by the respective agent according to Equation
+(9).
+Figure 7: Global importance of state variables when hedging a European ATM call options, across
+various maturities.
+Beta 1 Beta 2 Beta 3 Beta 4 Beta 5 h-R
+0.0
+0.2
+0.4
+0.6RL-CVaR:95%
+Beta 1 Beta 2 Beta 3 Beta 4 Beta 5 h-R
+0.50
+0.25
+0.00
+0.25
+0.50
+0.75
+1.00
+RL-CVaR:99%
+Beta 1 Beta 2 Beta 3 Beta 4 Beta 5 h-R
+0.0
+0.1
+0.2
+0.3
+0.4RL-MSE
+Maturity
+21
+63
+126
+Beta 1 Beta 2 Beta 3 Beta 4 Beta 5 h-R
+0.5
+0.0
+0.5
+1.0
+RL-SMSE
+Results are computed using 100,000 out-of-sample paths in the absence of transaction costs (κ = 0%). Each
+panel illustrates the Shapley values for all state variables under different maturities: 21, 63, and 126 business
+days. These results are shown for the four RL agents: CVaR95%, CVaR99%, MSE, and SMSE. The Shapley
+values are normalized by the risk reduction achieved by the respective agent according to Equation (9).
+26
+
+=== page 28 ===
+5 Backtesting
+We conduct out-of-sample backtesting experiments to assess the model’s performance on actual
+data. Specifically, we evaluate the effectiveness of our approach using traded option prices observed
+between December 31, 2020, and October 31, 2023, ensuring that the RL agents, trained on
+simulated data reflecting estimated dynamics from January 1996 to December 2020, are tested on
+realized market data they have never previously encountered.
+All options enter the sample as soon as their remaining time-to-maturity is 63 business days, at
+which point a short position is taken and hedged.11 All retained options are European calls that are
+around-the-money, defined as having an underlying price within ±10% of the strike.12 This leaves
+us with 4,134 hedged contracts. The state variables are reconstructed from historical data using
+François et al. (2022) and François et al. (2023). In the presence of transaction costs, the state
+space is augmented to include the current portfolio position, resulting in (τt, St, {βt,i}5 i=1, ht,R, δt),
+where δt denotes the number of shares held at time t.
+We compare the performance of benchmark strategies—DH, SI, and DH-L (with transaction
+costs)—against our RL-based approaches. We also include a benchmark RL agent that excludes
+the IV surface from its input features, namely {βt,i}5 i=1. This restricted RL strategy exhibits weaker
+risk reduction in the simulation environment, as highlighted by the Shapley value decomposition
+from Section 4.5 which reveals a positive contribution from the incorporation of IV coefficients.
+We evaluate whether this performance gap persists in the out-of-sample backtest. All strategies
+are assessed using three risk metrics: MSE, SMSE, and CVaR95%.
+11To ensure liquidity and reliability throughout the hedging period, we retain only options that report non-zero
+values for best bid, trading volume, and open interest at the onset. These filters are based on the fields best_bid,
+volume, and open_interest from OptionMetrics. We include all options that meet the criteria within the test set
+period.
+12Because option prices are proportional to the initial value of the underlying asset in our framework, we normalize
+all prices such that the initial value of the underlying is $100. This allows us to replicate conditions similar to those
+used to train the RL algorithms, without any loss of generality.
+27
+
+=== page 29 ===
+Figure 8: Backtest risk metrics on hedging errors, with and without transaction costs.
+MSE SMSE CVaR:95%
+Metric
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+0.961
+0.800
+2.1302.078
+0.746
+2.272
+1.078
+0.418
+2.097
+0.966
+0.351
+1.788
+Panel A: Transaction set to 0%
+RL - MSE
+RL - SMSE
+RL - CVaR
+RL (no IV)
+DH
+SI
+DH-L
+MSE SMSE CVaR:95%
+Metric
+0.0
+0.5
+1.0
+1.5
+2.0
+2.5
+3.0
+1.839 1.832
+2.868
+2.028
+0.906
+2.435
+1.571
+0.795
+2.371
+1.111
+0.493
+2.263
+0.971
+0.402
+1.801
+Panel B: Transaction set to 0.05%
+Backtests are conducted on 4,134 around-the-money call options, using actual market prices observed between
+December 31, 2020 and October 31, 2023.
+As shown in Figure 8 the RL algorithm with IV information and the smile-implied delta hedging,
+both of which leverage the IV surface, deliver comparable performance in terms of MSE. They are
+closely followed by the RL algorithm with restricted information, while the practitioners’ delta
+hedging lags significantly behind. When transaction costs are introduced, both RL algorithms
+outperform all variants of delta hedging strategies. When focusing on tail risk measures—SMSE and
+CVaR95%—RL strategies consistently outperform traditional benchmarks. Moreover, incorporating
+the IV surface information yields additional performance gains.
+The superior performance of RL strategies over delta-based benchmarks is further illustrated in
+Figure 9. When the risk metric is the MSE, the goal is to center the hedging error around zero.
+As shown in Panel A, the RL strategy is more successful in achieving such objective than the
+practitioner’s delta hedge.
+For asymmetric risk metrics such as SMSE and CVaR, the objective shifts toward limiting exposure
+to extreme losses. Panels B and C show that the RL strategies produce notably thinner right tails
+in the hedging error distributions, reflecting a more effective control of downside risk. A similar
+pattern is observed in panels D, E, and F, where RL strategies with the full market information
+also outperform their counterparts that exclude the IV surface information.
+These findings suggest that RL-based hedging can serve as an effective risk management tool.
+However, the inclusion of relevant information from the implied volatility surface is required to
+28
+
+=== page 30 ===
+Figure 9: Backtest hedging error distributions, without transaction costs.
+0
+100
+200
+300
+400
+500Frequency
+Panel A: MSE Panel B: SMSE Panel C: CVaR
+DH
+RL
+4
+ 2
+ 0 2 4
+Hedging error
+0
+100
+200
+300
+400
+500Frequency
+Panel D: MSE
+4
+ 2
+ 0 2 4
+Hedging error
+Panel E: SMSE
+4
+ 2
+ 0 2 4
+Hedging error
+Panel F: CVaR
+RL (no IV)
+RL
+The results are based on hedging 4134 around-the-money call options using real market prices observed between
+December 31, 2020 and October 31, 2023. No transaction costs are applied.
+unleash its full potential; its performance depends on the quality and completeness of the input
+data.
+6 Conclusion
+This study introduces a novel deep hedging framework that integrates forward-looking volatility
+information through a functional representation of the IV surface, combined with backward-looking
+conventional state variables. Our implementation employs deep policy gradient methods and
+utilizes a neural network architecture consisting of LSTM cells and FFNN layers to enhance
+training efficiency. Additionally, the architecture incorporates a budget constraint mitigating the
+incentive to gamble and enabling the agent to learn hedging strategies that are more effective for
+risk management.
+Our approach consistently outperforms traditional benchmarks both in the absence and presence
+of transaction costs. The stability of our approach is assessed across various economic states using
+simulated data, demonstrating greater robustness than benchmarks in extreme scenarios such as
+29
+
+=== page 31 ===
+economic crises.
+The global importance analysis of IV factors confirms the significant enhancement of hedging
+performance in terms of risk reduction relative to the penalty functions. Our analysis underscores
+the critical importance of key factors such as the underlying asset return conditional variance
+process (hR), the long-term ATM IV level (β1) and the time-to-maturity slope (β2). RL agents
+utilize both the historical variance process and market expectations of future volatility to adjust
+positions in the underlying asset. Out-of-sample backtests underscore the critical role of IV surface
+information in unlocking the full potential of RL-based hedging strategies.
+References
+Alexander, C. and Nogueira, L. M. (2007). Model-free hedge ratios and scale-invariant models.
+Journal of Banking & Finance, 31(6):1839–1861.
+Augustyniak, M. and Boudreault, M. (2012). An out-of-sample analysis of investment guarantees
+for equity-linked products: Lessons from the financial crisis of the late 2000s. North American
+Actuarial Journal, 16(2):183–206.
+Bates, D. S. (2005). Hedging the smirk. Finance Research Letters, 2(4):195–200.
+Black, F. and Scholes, M. (1973). The pricing of options and corporate liabilities. Journal of
+Political Economy, 81(3):637–654.
+Boyle, P. P. and Emanuel, D. (1980). Discretely adjusted option hedges. Journal of Financial
+Economics, 8(3):259–282.
+Boyle, P. P. and Vorst, T. (1992). Option replication in discrete time with transaction costs. The
+Journal of Finance, 47(1):271–293.
+Buehler, H., Gonon, L., Teichmann, J., and Wood, B. (2019). Deep hedging. Quantitative Finance,
+19(8):1271–1291.
+Buehler, H., Gonon, L., Teichmann, J., Wood, B., Mohan, B., and Kochems, J. (2022). Deep
+hedging: Hedging derivatives under generic market frictions using reinforcement learning. In
+Swiss Finance Institute Research Paper. [Sl]: SSRN.
+Cao, J., Chen, J., Farghadani, S., Hull, J., Poulos, Z., Wang, Z., and Yuan, J. (2023). Gamma and
+30
+
+=== page 32 ===
+vega hedging using deep distributional reinforcement learning. Frontiers in Artificial Intelligence,
+6:1129370.
+Cao, J., Chen, J., Hull, J., and Poulos, Z. (2020). Deep hedging of derivatives using reinforcement
+learning. The Journal of Financial Data Science.
+Carbonneau, A. (2021). Deep hedging of long-term financial derivatives. Insurance: Mathematics
+and Economics, 99:327–340.
+Carbonneau, A. and Godin, F. (2021). Equal risk pricing of derivatives with deep hedging.
+Quantitative Finance, 21(4):593–608.
+Carbonneau, A. and Godin, F. (2023). Deep equal risk pricing of financial derivatives with
+non-translation invariant risk measures. Risks, 11(8):140.
+Cetin, U., Soner, H. M., and Touzi, N. (2010). Option hedging for small investors under liquidity
+costs. Finance and Stochastics, 14:317–341.
+Covert, I., Lundberg, S. M., and Lee, S.-I. (2020). Understanding global feature contributions with
+additive importance measures. Advances in Neural Information Processing Systems, 33:17212–
+17223.
+Darling, D. A. (1957). The Kolmogorov-Smirnov, Cramér-von Mises tests. The Annals of
+Mathematical Statistics, 28(4):823–838.
+Du, J., Jin, M., Kolm, P. N., Ritter, G., Wang, Y., and Zhang, B. (2020). Deep reinforcement
+learning for option replication and hedging. The Journal of Financial Data Science, 2(4):44–57.
+Dumas, B., Fleming, J., and Whaley, R. E. (1998). Implied volatility functions: Empirical tests.
+The Journal of Finance, 53(6):2059–2106.
+Edirisinghe, C., Naik, V., and Uppal, R. (1993). Optimal replication of options with transactions
+costs and trading restrictions. Journal of Financial and Quantitative Analysis, 28(1):117–138.
+Entrop, O. and Fischer, G. (2020). Hedging costs and joint determinants of premiums and spreads
+in structured financial products. Journal of Futures Markets, 40(7):1049–1071.
+Fecamp, S., Mikael, J., and Warin, X. (2020). Deep learning for discrete-time hedging in incomplete
+markets. Journal of Computational Finance, 25(2).
+31
+
+=== page 33 ===
+François, P. and Stentoft, L. (2021). Smile-implied hedging with volatility risk. Journal of Futures
+Markets, 41(8):1220–1240.
+François, P., Galarneau-Vincent, R., Gauthier, G., and Godin, F. (2022). Venturing into uncharted
+territory: An extensible implied volatility surface model. Journal of Futures Markets, 42(10):1912–
+1940.
+François, P., Galarneau-Vincent, R., Gauthier, G., and Godin, F. (2023). Joint dynamics for
+the underlying asset and its implied volatility surface: A new methodology for option risk
+management. SSRN.
+François, P., Gauthier, G., and Godin, F. (2014). Optimal hedging when the underlying asset follows
+a regime-switching Markov process. European Journal of Operational Research, 237(1):312–322.
+Frey, R. (1998). Perfect option hedging for a large trader. Finance and Stochastics, 2:115–141.
+Giurca, A. and Borovkova, S. (2021). Delta hedging of derivatives using deep reinforcement learning.
+Available at SSRN 3847272.
+Glorot, X. and Bengio, Y. (2010). Understanding the difficulty of training deep feedforward neural
+networks. In Proceedings of the thirteenth international conference on artificial intelligence and
+statistics, pages 249–256. JMLR Workshop and Conference Proceedings.
+Godin, F. (2016). Minimizing CVaR in global dynamic hedging with transaction costs. Quantitative
+Finance, 16(3):461–475.
+Godin, F. (2019). A closed-form solution for the global quadratic hedging of options under geometric
+Gaussian random walks. The Journal of Derivatives, 26(3):97–107.
+Goodfellow, I., Bengio, Y., and Courville, A. (2016). Deep learning. MIT press.
+Guéant, O. and Pu, J. (2017). Option pricing and hedging with execution costs and market impact.
+Mathematical finance, 27(3):803–831.
+Halperin, I. (2019). The QLBS Q-learner goes NuQLear: Fitted Q iteration, inverse RL, and
+option portfolios. Quantitative Finance, 19(9):1543–1553.
+Harrison, J. M. and Pliska, S. R. (1981). Martingales and stochastic integrals in the theory of
+continuous trading. Stochastic Processes and their Applications, 11(3):215–260.
+32
+
+=== page 34 ===
+Henderson, B. J., Pearson, N. D., and Wang, L. (2020). Pre-trade hedging: Evidence from the
+issuance of retail structured products. Journal of Financial Economics, 137(1):108–128.
+Horvath, B., Teichmann, J., and Žurič, Ž. (2021). Deep hedging under rough volatility. Risks,
+9(7):138.
+Hu, J., Kirilova, A., Muravyev, D., and Ryu, D. (2023). Options market makers. Available at
+SSRN 4633451.
+Huh, S.-W., Lin, H., and Mello, A. S. (2015). Options market makers’ hedging and informed
+trading: Theory and evidence. Journal of Financial Markets, 23:26–58.
+Hull, J. and White, A. (2017). Optimal delta hedging for options. Journal of Banking & Finance,
+82:180–190.
+Imaki, S., Imajo, K., Ito, K., Minami, K., and Nakagawa, K. (2021). No-transaction band network:
+A neural network architecture for efficient deep hedging. arXiv preprint arXiv:2103.01775.
+Kokholm, T. and Egebjerg, S. (2024). A model for the hedging impact of option market makers.
+Available at SSRN.
+Koochali, A., Schichtel, P., Dengel, A., and Ahmed, S. (2019). Probabilistic forecasting of sensory
+data with generative adversarial networks–forGAN. IEEE Access, 7:63868–63880.
+Lai, T. L. and Lim, T. W. (2009). Option hedging theory under transaction costs. Journal of
+Economic Dynamics and Control, 33(12):1945–1961.
+Leland, H. E. (1985). Option pricing and replication with transactions costs. The Journal of
+Finance, 40(5):1283–1301.
+Lütkebohmert, E., Schmidt, T., and Sester, J. (2022). Robust deep hedging. Quantitative Finance,
+22(8):1465–1480.
+Marzban, S., Delage, E., and Li, J. Y.-M. (2023). Deep reinforcement learning for option pricing
+and hedging under dynamic expectile risk measures. Quantitative Finance, 23(10):1411–1430.
+Meindl, P. J. and Primbs, J. A. (2008). Dynamic hedging of single and multi-dimensional options
+with transaction costs: A generalized utility maximization approach. Quantitative Finance,
+8(3):299–312.
+33
+
+=== page 35 ===
+Melnikov, A. and Smirnov, I. (2012). Dynamic hedging of Conditional Value-at-Risk. Insurance:
+Mathematics and Economics, 51(1):182–190.
+Mikkilä, O. and Kanniainen, J. (2023). Empirical deep hedging. Quantitative Finance, 23(1):111–
+122.
+Neagu, A., Godin, F., Simard, C., Kosseim, L., et al. (2024). Deep hedging with market impact. To
+appear in proceedings of the 37th Canadian Conference on Artificial Intelligence (CAIAC 2024).
+Ni, S. X., Pearson, N. D., and Poteshman, A. M. (2005). Stock price clustering on option expiration
+dates. Journal of Financial Economics, 78(1):49–87.
+O’Donovan, J., Yu, G. Y., and Zhang, J. (2023). Retail option trading and market quality: Evidence
+from high-frequency data. In Proceedings of the EUROFIDAI-ESSEC Paris December Finance
+Meeting.
+Pham, H. (2000). Dynamic Lp-hedging in discrete time under cone constraints. SIAM Journal on
+Control and Optimization, 38(3):665–682.
+Pickard, R. and Lawryshyn, Y. (2023). Deep reinforcement learning for dynamic stock option
+hedging: A review. Mathematics, 11(24):4943.
+Raj, S., Kerenidis, I., Shekhar, A., Wood, B., Dee, J., Chakrabarti, S., Chen, R., Herman, D., Hu,
+S., Minssen, P., et al. (2023). Quantum deep hedging. Quantum, 7:1191.
+Rebonato, R. (2004). Volatility and correlation: the perfect hedger and the fox. John Wiley & Sons.
+Rémillard, B. and Rubenthaler, S. (2013). Optimal hedging in discrete time. Quantitative Finance,
+13(6):819–825.
+Schweizer, M. (1995). Variance-optimal hedging in discrete time. Mathematics of Operations
+Research, 20(1):1–32.
+Sun, J. and Platen, E. (2019). Benchmarked risk minimizing hedging strategies for life insurance
+policies. Available at SSRN 3347449.
+Toft, K. B. (1996). On the mean-variance tradeoff in option replication with transactions costs.
+Journal of Financial and Quantitative Analysis, 31(2):233–263.
+Warde-Farley, D., Goodfellow, I. J., Courville, A., and Bengio, Y. (2013). An empirical analysis of
+34
+
+=== page 36 ===
+dropout in piecewise linear networks. arXiv preprint arXiv:1312.6197.
+Wu, D. and Jaimungal, S. (2023). Robust risk-aware option hedging. Applied Mathematical Finance,
+30(3):153–174.
+Xu, W. and Dai, B. (2022). Delta-gamma–like hedging with transaction cost under reinforcement
+learning technique. The Journal of Derivatives.
+Zakamouline, V. (2009). The best hedging strategy in the presence of transaction costs. International
+Journal of Theoretical and Applied Finance, 12(06):833–860.
+A Benchmarks
+The three benchmarks outlined in this appendix operate under the premise that the implied
+volatilities follow the IV model introduced in Equation (5).
+The Black and Scholes (1973) pricing formula for an European call option is:
+Callt = Ste−qtτt Φ(dt) − Ke−rtτt Φ(dt − σ(Mt, τt, βt)√τt)
+where dt = log( St K )+(rt−qt+ 1 2 σ(Mt,τt,βt)2)τt σ(Mt,τt,βt)√τt , σt is the implied volatility of the option and Φ is the
+cumulative distribution function of the standard normal distribution. Moreover, the Black-Scholes
+delta is
+∆BS t = e−qtτt Φ(dt).
+The Leland delta, as proposed by Leland (1985), presents a variation of the option replication
+approach outlined in the work of Black and Scholes (1973), incorporating parameters such as the
+transaction cost proportion κ and the rebalancing frequency λ.
+∆L t = e−qtτt Φ  ˜dt  ,
+where ˜dt = log( St K )+(rt−qt+ 1 2 ˜σ2 t )τt ˜σt √τt with ˜σ2 t = σ(Mt, τt, βt)2 h 1 + p 2/π 2κ σ(Mt,τt,βt) √ λ i .
+35
+
+=== page 37 ===
+François et al. (2022) provide the delta associated to the IV surface under model (10):
+∆SI t = e−qtτt
+
+Φ(dt,1) + ϕ(dt,1) ∂σ ∂M 
+with
+dt,1 = Mt
+σ(Mt, τt, βt) + 1 2 σ(Mt, τt, βt)√τt,
+and
+∂σ
+∂M = βt,31 {Mt≥0} + βt,3
+ 
+1 −
+ e2Mt − 1
+e2Mt + 1
+2!
+1 {Mt<0} + βt,42Mte−M 2 t log  T Tmax 
+− βt,581M 2 t e27M 3 t log  T Tmax  1 {Mt<0}.
+36
+
+=== page 38 ===
+Supplementary material (not part of the paper)
+B Details for the MSGD training approach
+The MSGD method estimates the penalty function O(θ), which is typically unknown, through
+small samples of the hedging error called batches. Let Bj = {ξ
+˜δθj
+T,i }
+Nbatch
+i=1 be the j-th batch where
+Nbatch is the batch size and ξ
+˜δθj
+T,i denotes the hedging error of the i-th path in the j-th batch defined
+as
+ξ
+˜δθj
+T,i = Ψ(ST,(j−1)Nbatch+i) − V
+˜δθj
+T,i for i ∈ {1, . . . , Nbatch}, j ∈ {1, ...N },
+where ST,(j−1)Nbatch+i is the price of the underlying asset at time T in the ((j − 1)Nbatch + i)-th
+simulated path, V
+˜δθj
+T,i is the terminal value of the hedging strategy for that path when θ = θj and
+the simulated states are Xi.
+The penalty function estimation for the batch B is
+ˆC (MSE)(θj , Bj ) = 1 Nbatch
+NbatchX
+i=1
+
+ξ
+˜δθj
+T,i
+2
+,
+ˆC (SMSE)(θj , Bj ) = 1 Nbatch
+NbatchX
+i=1
+
+ξ
+˜δθj
+T,i
+2
+1 (
+ξ
+˜δθj
+T ,i ≥0
+) ,
+ˆC (CVaR)(θj , Bj ) = dVaRα(Bj ) + 1 (1 − α)Nbatch
+NbatchX
+i=1
+max
+
+ξ
+˜δθj
+T,i − dVaRα(Bj ), 0
+
+,
+where dVaRα(Bj ) = ξ
+˜δθj
+T,⌈α·Nbatch⌉ is the estimation of the VaR obtained from the ordered sample
+{ξ
+˜δθj
+T,[i]}
+Nbatch
+i=1 and ⌈·⌉ is the ceiling function. These empirical approximations are used to estimate
+the gradient of the penalty function required in Equation (4).13
+The selection of batch size plays a key role in the MSGD training approach as we empirically
+measure tail risk. A larger batch size provides a more accurate gradient estimate by averaging
+gradients computed over more simulated paths, thereby promoting stable convergence during
+13In particular, the gradient of these estimations has analytical expressions for FFNN, LSTM networks and thus
+for RNN-FNN networks. Details about gradient of the empirical objective function are provided in Goodfellow et al.
+(2016).
+37
+
+=== page 39 ===
+training. However, large batch sizes may introduce certain disadvantages such as increased memory
+requirements, slower convergence, and potential generalization issues. We adopt the batch size
+used in Carbonneau (2021) (Nbatch = 1,000), which achieves a good balance between accuracy and
+convergence.
+C Joint Implied Volatility and Return model
+C.1 Daily implied volatility surface
+The functional representation of the IV surface model introduced by François et al. (2022) is
+σ(Mt, τt, βt) = βt,1
+|{z}
+f1: Long-term ATM IV
++βt,2 e−
+√
+τt/Tconv
+| {z }
+f2: Time-to-maturity slope
++βt,3
+
+Mt1 {Mt≥0} + e2Mt − 1 e2Mt + 1 1 {Mt<0}  | {z }
+f3: Moneyness slope
++ βt,4
+
+1 − e−M 2 t
+
+log(τt/Tmax)
+| {z }
+f4: Smile attenuation
++βt,5
+
+1 − e(3Mt)3
+
+log(τt/Tmax)1 {Mt<0}
+| {z }
+f5: Smirk
+, τt ∈ [Tmin, Tmax] (10)
+where Tmax is set to 5 years, Tmin = 6/252 and Tconv = 0.25. As in Dumas et al. (1998), a minimum
+threshold of 0.01 is applied to the volatility surface to prevent negative values.
+C.2 Joint Implied Volatility and Return
+The JIVR model proposed by François et al. (2023) has 6 components, one for the underlying asset
+excess returns and the other 5 for fluctuations of the IV surface coefficients. The S&P 500 excess
+return follows:
+Rt+1 = ξt+1 − ψ(
+p
+ht+1,R∆) +
+p
+ht+1,R∆ϵt+1,R,
+ht+1,R = Yt + κR(ht,R − Yt) + aRht,R(ϵ2 t,R − 1 − 2γRϵt,R), (11)
+Yt =
+
+ωR σ
+
+0, 1 12 , βt
+2
+,
+where the equity risk premium is
+ξt+1 = ψ(−λ
+p
+ht+1,R∆) − ψ((1 − λ)
+p
+ht+1,R∆) + ψ(
+p
+ht+1,R∆), (12)
+38
+
+=== page 40 ===
+the process {ϵt,R}T t=0 is a sequence of iid standardized NIG random variables with parameters
+ζR and φR,14 and ψ is their cumulant generating function.15 Parameters of the excess return
+component of the model are thus ΘR = (λ, κR, γR, aR, ωR, ζR, φR).
+The evolution of the long-term factor (β1) is
+βt+1,1 = α1 +
+5X
+i=1
+θ1,j βt,j +
+p
+ht+1,1∆ϵt+1,1,
+ht+1,1 = Ut + κ1(ht,1 − Ut) + a1ht,1(ϵ2 t,1 − 1 − 2γ1ϵt,1), (13)
+Ut =
+
+ω1 · σ
+
+0, 1 12 , βt
+2
+.
+For the other 4 coefficients, i ∈ {2, 3, 4, 5}, the time evolution satisfies
+βt+1,i = αi +
+5X
+j=1
+θi,j βt,j + νβt−1,21{i=2} +
+p
+ht+1,i∆ϵt+1,i,
+ht+1,i = σ2 i + κi(ht,i − σ2 i ) + aiht,i(ϵ2 t,i − 1 − 2γiϵt,i), (14)
+where {ϵt,i}5 i=1 aretime-independentstandardizedNIGrandomvariableswithparameters {(ζi, φi)}5 i=1,
+respectively. Parametersare {ω1, ν, Θ1, Θ2, Θ3, Θ4, Θ5} with Θi = (αi, {θi,1}5 i=1, σi, κi, ai, γi, ζi, φi)}5 i=1.
+The JIVR model also imposes a dependence structure on contemporaneous innovations ϵt =
+(ϵt,R, ϵt,1, ..., ϵt,5) through a Gaussian copula parameterized in terms of a covariance matrix Σ of
+14The standard NIG random variable ϵ follows the probability density function with parameters ζ and φ:
+f (x) =
+B1
+ r
+φ6
+φ2 +ζ2 + (φ2 + ζ 2)
+
+x + φ2 ζ φ2 +ζ2
+2
+!
+π
+r
+1
+φ2 +ζ2 + φ2 +ζ2 φ6
+
+x + φ2 ζ φ2 +ζ2
+2 e
+
+φ4
+φ2 +ζ2 +ζ
+
+x+ φ2 ζ φ2 +ζ2  ,
+where B1(·) denotes the modified Bessel function of the second kind with index 1. The common (α, β, δ, µ)-
+specification can be obtained by replacing β and γ (γ =
+p
+α2 − β2), with ζ and φ, respectively, and imposing a null
+mean and unit variance to express δ and µ interms of α, β.
+15For − p ζ 2 + φ2 − ζ < z < p ζ 2 + φ2 − ζ, the cumulant generating function is given by
+ψ(z) = φ2
+φ2 + ζ 2
+
+−ζz + φ2 − φ p φ2 + ζ 2 − (φ + ζ)2  .
+39
+
+=== page 41 ===
+dimension 6 × 6.
+Estimates of all JIVR model parameters are taken from Table 5 and Table 6 of François et al.
+(2023).
+D JIVR Model parameters
+Table 4: Estimated Gaussian copula parameters
+ϵt,R ϵt,1 ϵt,2 ϵt,3 ϵt,4 ϵt,5
+ϵt,R 1.000
+ϵt,1 -0.550 1.000
+ϵt,2 -0.690 0.140 1.000
+ϵt,3 0.030 -0.030 -0.0100 1.000
+ϵt,4 -0.220 0.250 0.120 0.280 1.000
+ϵt,5 -0.340 0.170 0.370 0.130 -0.050 1.000
+40
+
+=== page 42 ===
+Table 5: JIVR model parameter estimates
+Parameter β1 β2 β3 β4 β5 S&P500
+α 0.000899 0.008400 0.000770 -0.001393 0.000657 λ 2.711279
+θ1 0.996290 -0.013869 0.002841
+θ2 0.003669 0.877813 0.001300
+θ3 -0.032640 0.997071 0.003722 -0.004198
+θ4 0.980269
+θ5 -0.047789 0.986019
+ν 0.089445
+σ
+√
+252 0.380279 0.052198 0.048641 0.051536
+ω 0.267589 0.977291
+κ 0.838220 0.965751 0.974251 0.945377 0.980844 0.888977
+a 0.134152 0.098272 0.092646 0.102201 0.100502 0.056087
+γ -0.111813 -1.482862 0.096766 0.060558 -0.102996 2.507796
+ζ 0.143760 0.852943 0.029109 -0.159051 0.092664 -0.641306
+φ 1.351070 1.538928 2.284780 1.449977 1.428477 2.039669
+E Network fine-tuning
+E.1 Bounded strategies - leverage constraint
+This section presents a comparison of the hedging performance of RL agents trained under the full
+state space considering the CVaR95% as penalty function. The comparison is conducted considering
+two RL agents: (i) RL-CVaR95%-LC, agent subject to a leverage constraint equivalent to the initial
+value of the underlying asset, set at B = 100, and (ii) RL-CVaR95%, agent operating without
+leverage constraints. This comparison evaluates the estimated values of all penalty functions and
+the average Profit and Loss (Avg P&L). This analysis aims to elucidate the impact of boundary
+conditions on RL agent behavior and performance when hedging of a European ATM call option
+with a maturity of N = 63 days in the absence of transaction costs, i.e., κ = 0%).
+Table 6 outlines that the agent without a leverage constraint shows more profitable strategies;
+41
+
+=== page 43 ===
+however, it also leads to very large losses. For instance, out-of-sample CVaR99% and SMSE metrics
+exhibit higher values for this agent, compared to its counterpart with a leverage constraint.
+Table 6: RNN-FNN hedging error statistics of a short position in a ATM call option with maturity
+of 63 days.
+Function RL-CVaR95%-LC RL-CVaR95%
+Avg P&L 0.440 0.715
+CVaR95% 1.294 1.242
+CVaR99% 2.502 2.622
+MSE 1.205 14.650
+SMSE 0.241 0.327
+Results are computed using 100,000 out-of-sample paths in the absence of transaction costs (κ = 0%). Agents
+are trained under the full state space (V δ t , δt, τt, St, {βt,i}5 i=1, ht,R, {ht,i}5 i=1) according to the conditions outlined
+in Section 4.3.1. The average option price is $3.89 with a standard deviation of $1.29. RL-CVaR95%-LC
+denotes the RL agent trained with a leverage constraint, while RL-CVaR95% refers to the agent without it. Best
+performances are highlighted in bold.
+Moreover, our numerical experiments demonstrate that the agent without leverage constraints learns
+doubling strategies, which are incompatible with sound risk management practices. For instance,
+Figure 10 illustrates such behavior through three panels associated with the hedging process of a
+deep OTM path (first panel).16 We observe that the agent, without a leverage constraint, tends to
+increase its position in the underlying (third panel) when a loss in the portfolio value is observed
+(second panel), aiming to recover the loss over the long run with doubling strategies. Conversely,
+agents trained with a leverage constraint control their position in the underlying asset, resulting in
+the learning of different and less risky strategies.
+E.2 Network architecture selection
+In this section, we investigate the superiority of the RNN-FNN architecture compared to con-
+ventional architectures introduced in deep hedging literature, such as the FFNN and the LSTM
+architectures. In line with our previous experiments, we consider four penalty functions to train the
+agents under the full state space: CVaR95%, CVaR99%, MSE, and SMSE. Again, our experiment
+16For the purpose of this experiment, a deep OTM path refers to the trajectory of the underlying asset that keeps
+the option significantly out-of-the-money.
+42
+
+=== page 44 ===
+Figure 10: Doubling strategy dynamics for a short position in a ATM call option with a maturity
+of 63 days.
+0 10 20 30 40 50 60
+Time step
+70
+80
+90
+100Value
+Stock price
+Strike
+0 10 20 30 40 50 60
+Time step
+10.0
+7.5
+5.0
+2.5
+0.0
+2.5
+5.0
+Portfolio value
+Option price
+0 10 20 30 40 50 60
+Time step
+0.0
+0.5
+1.0
+1.5
+2.0Number of shares
+Agent with cash constraint
+Agent without cash constraint
+Results are obtained using a deep OTM path in the absence of transaction costs (κ = 0%), with agents trained
+according to the conditions outlined in Section 4.3.1. The training encompasses the full state space and utilizes
+CVaR95% as a penalty function. The agent referred to as "Agent with cash constraint" incorporates a leverage
+constraint of B = 100, whereas the agent labeled "Agent without cash constraint" does not.
+focuses on hedging a short position of a European ATM call option with a maturity of N = 63
+days, assuming no transaction costs.
+The superiority of the RNN-FNN over the LSTM and the FFNN is evaluated based on the optimal
+value of each penalty function. Figure 11 illustrates the optimal values of each penalty function for
+each architecture, normalized by the estimated value obtained with DH. Notably, the RNN-FNN
+setup considered in this paper significantly outperforms both the benchmark and other architectures.
+Conversely, the FFNN does not surpass the benchmark for the MSE, and the LSTM exhibits
+almost the same performance as the benchmark.
+A second test to demonstrate the superiority of our architecture involves computing the optimal
+values of the penalty functions over various clusters of paths. The objective is to isolate the impact
+of different state of the economy on performance and assess the robustness of our architecture.
+Figure 12 displays the optimal values of each architecture normalized by the estimated values
+obtained by DH for all penalty functions. Notably, RNN-FNN agents outperform both the
+benchmark and other architectures across all penalty functions, regardless of the economic conditions
+underwhichthesimulationswereconducted. Conversely, FFNNandLSTMagentsfailtooutperform
+the benchmark across all states of the economy when the agents are trained under the CVaR95%,
+MSE and SMSE penalty functions, as shown in the top-left, bottom-left and bottom-right panels,
+respectively.
+43
+
+=== page 45 ===
+Figure 11: Network performance for a short position in a ATM call option with a maturity of 63
+days.
+CVaR:95% CVaR:99% MSE SMSE
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4
+1.6Metric values
+FFNN
+LSTM
+RNN-FNN
+Results are computed using 100,000 out-of-sample paths in the absence of transaction costs (κ = 0%). Agents
+are trained under the reduced state space (τt, St, {βt,i}5 i=1, ht,R, {ht,i}5 i=1) according to the conditions outlined
+in Section 4.3.1. The setup for the different networks follows the architecture described in Section 2.2.1, with
+L1 = 0 and L2 = 4 for the FFNN, L1 = 4 and L2 = 0 for the LSTM, and L1 = 2 and L2 = 2 for RNN-FNN.
+Results show optimal values obtained from agents trained under CVaR95%, CVaR99%, MSE, and SMSE for the
+three networks. These values are normalized by the estimated values of each penalty function obtained with DH.
+Results obtained under various economic conditions unequivocally demonstrate the superiority
+of the RNN-FNN network across all performance metrics. Moreover, the RNN-FNN not only
+offers better performance in terms of risk management but also reduces computational costs and
+implementation complexity, with an average reduction in training time of 46%.
+E.3 Dropout parameter selection
+The process of selecting the dropout parameter for the regularization method involved evaluating
+the performance of four agents across a range of potential parameter values. These agents are
+trained using the full state space, considering four penalty functions: CVaR95%, CVaR99%, MSE,
+and SMSE. The performance of the agents is measured in terms of the estimated values of the
+penalty functions after hedging a short position of a European call option with a maturity of
+N = 63 days, with no transaction costs.
+Figure 13 illustrates a comparison of the optimal values of penalty functions normalized by the
+estimated values obtained using DH. It is noteworthy that the RNN-FNN network consistently
+17 The periods aim to approximate different states of the economy considering the time frames specified in Table 2.
+44
+
+=== page 46 ===
+Figure 12: Neural network performance for a short position in an ATM call option with a maturity
+of 63 days: sensitivity to the state of the economy.
+Regular 1 Crisis 1 Regular 2 Crisis 2 Regular 3 Crisis 3 Regular 4 Crisis 40.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4CVaR:95%
+FFNN
+LSTM
+RNN-FNN
+Regular 1 Crisis 1 Regular 2 Crisis 2 Regular 3 Crisis 3 Regular 4 Crisis 40.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4CVaR:99%
+Regular 1 Crisis 1 Regular 2 Crisis 2 Regular 3 Crisis 3 Regular 4 Crisis 40.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4MSE
+Regular 1 Crisis 1 Regular 2 Crisis 2 Regular 3 Crisis 3 Regular 4 Crisis 40.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4SMSE
+Results are computed using 100,000 out-of-sample paths in the absence of transaction costs (κ = 0%). Agents
+are trained under the reduced state space (τt, St, {βt,i}5 i=1, ht,R, {ht,i}5 i=1) according to the conditions outlined
+in Section 4.3.1. Each panel illustrates the values obtained by different architectures for the following hedging
+metrics: Avg P&L, CVaR95%, MSE, and SMSE. These metrics are normalized by the estimated values of each
+penalty function obtained with DH. The setup for the different networks follows the architecture described in
+Section 2.2.1, with L1 = 0 and L2 = 4 for the FFNN, L1 = 4 and L2 = 0 for the LSTM, and L1 = 2 and L2 = 2
+for RNN-FNN.17
+outperforms the benchmark regardless of the dropout parameter value. Additionally, the selection of
+the dropout parameter remains consistent across all objective functions, with a dropout probability
+(p) of 50% yielding optimal performance. Consequently, for all our experiments, a dropout
+regularization parameter of p = 50% is adopted. This parameter drives the likelihood of randomly
+dropping out a fraction of the units within a neural network during training, thereby generating
+varied architectures for each training iteration. As demonstrated in Warde-Farley et al. (2013), this
+method not only effectively mitigates overfitting but also boosts performance, which is consistent
+with our numerical results.
+45
+
+=== page 47 ===
+Figure 13: RNN-FNN performance for a short position in an ATM call option with a maturity of
+63 days: the effect of the dropout parameter in the training phase.
+RL-CVaR:95% RL-CVaR:99% RL-MSE RL-SMSE
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+1.2
+1.4Metric values
+p=0%
+p=25%
+p=50%
+p=60%
+p=80%
+Results are computed using 100,000 out-of-sample paths in the absence of transaction costs (κ = 0%). Agents
+are trained under the reduced state space (τt, St, {βt,i}5 i=1, ht,R, {ht,i}5 i=1) according to the conditions outlined
+in Section 4.3.1. All the metrics are expressed in proportion of values obtained under DH.
+F Quadratic hedging problem
+This appendix aims to compare the closed-form solution of the quadratic hedging problem as
+outlined by Godin (2019) with our own approach within the framework of Black-Scholes market
+dynamics, where log-returns are assumed to adhere to a Gaussian distribution. Table 7 illustrates
+performance metrics using three distinct penalty functions from two experiments analyzing the
+hedging error of an ATM call option with a strike price of K=100, with maturities of 63 days and
+252 days. The experiments involve 16 time steps and 5 time steps for rebalancing, respectively.
+The outcomes of the 63-day maturity ATM option reveal that the RL agents outperform the two
+benchmarks, Black-Scholes delta (BS) and the quadratic hedging solution (QH), examined in this
+study. Additionally, the performance gap between the RL agent trained with the full state space
+(RL-Full) and the agent trained with the reduced state space (RL-Reduced) is negligible. In fact,
+the Kolmogorov-Smirnov test fails to reject the null hypothesis that the hedging errors of both
+agents are equally distributed, with a confidence level of 99.9%.18
+18The Kolmogorov-Smirnov test, outlined in Darling (1957), is a non-parametric statistical test used to determine
+whether two samples differ significantly.
+46
+
+=== page 48 ===
+Table 7: RNN-FNN hedging error statistics for a short position ATM call option with two different
+maturities and rebalancing periods under the MSE as penalty function.
+Maturity: 63, Time steps:16 Maturity: 252, Time steps:5
+Function BS QH RL-F RL-R BS QH RL-F RL-R
+Avg P&L 0.005 -0.081 -0.014 -0.009 0.185 -0.335 -0.279 -0.216
+CVaR95% 1.942 2.619 1.897 1.931 7.291 6.662 6.596 6.514
+CVaR99% 2.896 3.748 2.808 2.881 10.62 10.488 9.913 9.624
+MSE 0.684 1.272 0.681 0.683 8.691 7.609 7.865 7.834
+SMSE 0.367 0.647 0.350 0.359 5.292 3.721 3.852 3.941
+These results are computed considering the hedging error of 99,000 out-of-sample independent paths from the
+Black-Scholes market with yearly parameters µ = 0.0892 and and σ = 0.1952. The RNN-FNN is trained based
+on 400,000 independent paths under the same scheme.
+Conversely, results of the 252-day maturity ATM option reveal that the QH approach exhibits
+slightly superior performance in MSE, as anticipated due to its closed-form nature. However,
+the performance of RL agents demonstrates stronger potential in terms of risk management,
+evident from their ability to yield the lowest CVaR values and closely approximate the MSE of
+the closed-form solution. Moreover, the agent trained with the reduced state space (RL-Reduced)
+exhibits enhanced performance compared to its counterpart trained with the full state space.
+Consistent with the findings detailed in Section 4.3.2 regarding the dynamics of the JIVR model,
+the RL agent trained with the reduced state space exhibits improved the rate of convergence
+during the training phase. For instance, as depicted in Figure 14, the penalty curve evolution
+for the RL-MSE agent over 50 epochs illustrates this trend. This approach effectively reduces
+computational costs during training and accelerates convergence to optimal performance. These
+numerical outcomes confirm that our method achieves robust performance without necessitating
+the inclusion of portfolio value, even within the Quadratic Hedging framework with Black-Scholes
+market dynamics.
+47
+
+=== page 49 ===
+Figure 14: RNN-FNN loss function for a short position ATM call option with maturity N = 63
+days and 16 time steps for rebalancing.
+0 10 20 30 40 50
+Epochs
+1
+2
+3
+4
+5
+6
+7
+8Loss function
+RRNFNN - Full
+RNNFNN - Reduced
+Results are computed considering the MSE as the loss functions and the hedging error of 99,000 out-of-sample
+independent paths with random initialization for the validation loss curve (full line) and 400,000 independent
+paths fot the training loss curve (dash line). Simulations are performed based on the Black-Scholes model and
+agents are trained considering the cash constraint of B = 100.
+G In-sample backtest
+In this section, we benchmark our approach using a historical path of the JIVR model spanning from
+January 5, 1996, to December 31, 2020, to assess the effectiveness of RL agents. This experiment
+examines their performance based on the historical series {Rt, βt}. Specifically, we evaluate the
+hedging performance considering a new European ATM call option with a maturity of 63 days
+every 21 business days along this historical path. The option prices, serving as initial hedging
+portfolio values, are determined with the prevailing IV surface on the day the hedge is initiated.
+To assess the robustness of the model under more general market conditions, we conduct a
+comparison of cumulative P&Ls, which are computed as the cumulative sums of the P&L achieved
+by each strategy at the maturity of each option during the analyzed period. As illustrated in
+Figure 15, which depicts the evolution of the cumulative P&L across two panels, each representing
+a different transaction cost level, the gap in cumulative P&L between RL agents and benchmarks
+significantly widens as transaction cost rates increase. This, again, highlights the adaptability of
+the RL approach to various market conditions.
+48
+
+=== page 50 ===
+Figure 15: Cumulative P&L for ATM call options with a maturity of 63 days under real asset
+price dynamics.
+1996 2000 2004 2008 2012 2016 2020
+Date
+0
+20
+40
+60
+80
+100
+120
+140Cumulative P&L
+Panel A: TC: 0.05%
+DH
+SI
+DH-L
+RL-CVaR:95%
+RL-CVaR:99%
+RL-MSE
+RL-SMSE
+1996 2000 2004 2008 2012 2016 2020
+Date
+250
+200
+150
+100
+50
+0
+Panel B: TC: 0.5%
+Results are computed based on the observed P&L from hedging 296 simulated ATM Call options under real
+market conditions observed from May 1, 1996, to December 31, 2020. A new option is considered every 21
+business days. Agents are trained under the reduced state space (δt, τt, St, {βt,i}5 i=1, ht,R) according to the
+conditions outlined in Section 4.3.1.
+In contrast to the findings presented in Section 4.4.1, where SI delta yielded the highest profitability
+among all strategies, the RL approach achieved the highest profitability in historical paths.
+Specifically, agents trained under the MSE and SMSE emerged as the most profitable ones.
+Moreover, RL agents consistently outperform benchmarks across most of the transaction cost
+levels. However, when the transaction cost is small (left panel), Benchmarks exhibit a better
+cumulative P&L compared to the RL agent trained under the CVaR99% penalty function at the
+end of the period, December 31, 2020. Nevertheless, benchmarks also demonstrate more variability
+and larger losses, such as those observed between 2008 and 2012. In contrast, RL agents show a
+smaller decrease in cumulative P&L, indicating more resilience during crisis periods. In general,
+the observed performance of the RL agents under historical data is consistent with our findings
+under simulated data, indicating the robustness of our approach.
+49

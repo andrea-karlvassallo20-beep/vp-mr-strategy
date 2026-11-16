@@ -1,0 +1,1948 @@
+=== page 1 ===
+High-Frequency Volatility Estimation With Fast Multiple
+Change Points Detection∗∗
+El Mehdi Ainasse †2, Greeshma Balabhadra †2, and Pawe l Polak ‡ 1,2,3
+1Center of Excellence in Wireless and Information Technology, Stony Brook
+University, USA
+2 Department of Applied Mathematics and Statistics, Stony Brook University, USA
+3Institute for Advanced Computational Science, Stony Brook University, USA
+Abstract
+We propose a method for constructing sparse high-frequency volatility estimators
+that are robust against change points in the spot volatility process. The estimators we
+propose are ℓ1-regularized versions of existing volatility estimators. We focus on power
+variation estimators as they represent a fundamental class of volatility estimators. We
+establish consistency of these estimators for the true unobserved volatility and the
+change points locations, showing that minimax rates can be achieved for particular
+volatility estimators. The new estimators utilize the computationally efficient least
+angle regression algorithm for estimation purposes, followed by a reduced dynamic
+programming step to refine the final number of change points. In terms of numerical
+performance, these estimators are not only computationally fast but also accurately
+identify breakpoints near the end of the sample, both features highly desirable in today’s
+electronic trading environment. In terms of out-of-sample volatility prediction, our new
+estimators provide more realistic and smoother volatility forecasts, outperforming a
+broad range of classical and recent volatility estimators across various frequencies and
+forecasting horizons.
+Keywords: Bipower Variation; Change Points; High-Frequency; Trend Filter; Volatility
+Estimation.
+∗∗We are grateful for the helpful comments and suggestions by Gary Kazantsev, W. Brent Lindquist, Ste-
+fan Mittnik, Andrew Mullhaupt, Zari Rachev, and Stan Uryasev, as well as the participants of Bloomberg’s
+CTO Data Science Speaker Series, the Financial Math Seminar at Texas Tech University, and the 2023
+Winter School in Quantitative Finance at the University of Zurich.
+†These authors contributed equally.
+‡Corresponding author at Department of Applied Mathematics and Statistics at Stony Brook University,
+United States. E-mail address: pawel.polak@stonybrook.edu.
+1
+arXiv:2303.10550v3  [q-fin.ST]  30 Jun 2024
+
+=== page 2 ===
+1 Introduction
+The detection of sudden shifts in volatility has been extensively studied (Malik, 2003, Wang
+and Moore, 2009, Kumar and Maheswaran, 2013, and references therein). While some
+of this work has focused on the detection of structural breaks in volatility for particular
+classical time-series models such as ARCH and GARCH (Kokoszka and Teyssi´ere, 2002,
+Mikosch and St˘aric˘a, 2004, Rapach and Strauss, 2008, Shi and Ho, 2015, Li et al., 2021, Hu
+and Gangopadhyay, 2023, and references therein), a lot of work on detecting change points
+in the volatility of (financial) time series has been more general (Chen and Gupta, 1997,
+H¨ardle and Tsybakov, 1997, Wang and Zivot, 2000, Mercurio and Spokoiny, 2004, Pitarakis,
+2004, Lavielle and Teyssiere, 2007; and more recently, Mohr and Neumeyer, 2021, and
+Todorov and Zhang, 2023). Notably, Ross (2013) showed that modeling financial volatility
+as a process with structural breaks gives an improved fit compared to commonly used
+parametric volatility modeling techniques. Detecting changes in volatility has significant
+applications from a risk perspective (Spokoiny, 2009) but also in terms of asset allocation
+(Nystrup et al., 2016).
+Under the assumption of no arbitrage, it is known that the price process of an asset is
+a semi-martingale (Delbaen and Schachermayer, 1994). Specifically, the dynamics of the
+log-price process are given by an Itˆo diffusion in which the volatility process σ is typically
+assumed to be c`adl`ag. Working in this context, we specifically consider the problem of
+detecting change points in the spot volatility of an Itˆo semi-martingale. This problem has
+been treated in the literature to detect a single change-point (Iacus and Yoshida, 2012,
+Bibinger et al., 2017, Li and Xing, 2022). We aim to offer a data-driven approach to detect
+multiple change points without assuming a particular parametric form for the volatility
+process.
+Recent literature demonstrates that LASSO-based methods yield remarkable perfor-
+mance in terms of volatility forecasting (Audrino and Knaus, 2016, Ding et al., 2021,
+Maciak, 2021, Li et al., 2022, Christensen et al., 2022). Using LASSO for change-point
+detection (Harchaoui and L´evy-Leduc, 2010, Tibshirani, 2014), we aim to not only detect
+2
+
+=== page 3 ===
+change points but also propose spot variance estimators that consistently estimate the true
+underlying variance process. Although our work can be widely applied to various volatility
+proxies, much of our exposition (particularly in the empirical section) will focus on the
+LASSO filtering of volatility proxies based on power variation estimators for integrated
+variance. This choice is motivated by the ease of exposition (as power variation estimators
+are heavily used in practice), by the results in Liu et al. (2015) who show that 5-minute
+Realized Variation (RV) is a benchmark that is hard to outperform by any other estimator
+in a statistically significant way, and by our empirical results which show that the jump ro-
+bust extension—Bipower Variation (BV) from Barndorff-Nielsen and Shephard (2004)—is
+the best-performing estimator.
+Although our estimator is piecewise constant in the simplest case (i.e. assuming that
+the volatility itself is of finite total variation), there exist numerous volatility estimators
+constructed under piecewise stationarity assumptions on the volatility that achieve high
+forecast accuracy (long-term and short-term) compared to classical parametric estimators –
+see Mercurio and Spokoiny (2004), St˘aric˘a and Granger (2005), Davies et al. (2012), Fried
+(2012), Fryzlewicz et al. (2006), Ross (2013), Chin et al. (2016), Korkas and Fryzlewicz
+(2017), Chen et al. (2018), Guterding and Boenkost (2018) and references therein. In the
+same vein as this literature, we also report improvement in volatility forecasting in com-
+parison to parametric estimators (e.g., GARCH-(1, 1), FIGARCH, and realized GARCH),
+despite piecewise constancy of our LASSO-based estimators. Unlike the existing literature,
+however, we propose a simpler data-driven approach that does not rely on complex modeling
+methods. Additionally, we do not propose a particular spot volatility estimator but rather a
+method for detecting change points in any particular volatility proxy, and we show that the
+resulting filtered volatility proxy is itself a consistent estimator enjoying superior forecasting
+properties. As in Harchaoui and L´evy-Leduc (2010), we recast the multiple change-point
+estimation problem as a variable selection problem: we use the Least Angle Regression
+(LARS) algorithm from Efron et al. (2004), and the Dynamic Programming (DP) step to
+implement the Least Squares Total Variation (LSTV∗) algorithm for breakpoint location
+detection, and simultaneous estimation of the latent spot volatility process. The theory
+3
+
+=== page 4 ===
+for the proposed estimators is developed, assuming the potential presence of jumps in the
+price process and microstructure noise. We provide fairly general results, both asymptotic
+and non-asymptotic, regarding the ℓ2-consistency of the proposed LASSO-filtered estima-
+tors in terms of fit. We also propose asymptotic results for the consistency of the change
+points. In particular, we do not necessarily assume that the jumps in the prices or that the
+microstructure noise is normally distributed.
+The main contributions of our paper consist of developing a new class of estimators
+for the high-frequency spot volatility process that results from a change-point filtering al-
+gorithm. Our algorithm uses discrete samples of a volatility proxy as the observations.
+There are numerous proxies in the literature, but we essentially categorize them as proxies
+based on integrated volatility and proxies based on kernels. We show that the LASSO
+volatility estimator inherits the theoretical guarantees for the consistency of breakpoint lo-
+cation and volatility estimation from the consistency of the original high-frequency volatility
+proxy without structural breaks. By doing so, we extend the consistency results proposed
+by Harchaoui and L´evy-Leduc (2010) to the given latent process—the spot volatility of
+high-frequency returns—and we prove it under more general sub-Weibull distribution as-
+sumptions on the log-price jump process and the microstructure noise. Empirically, we
+show that the forecasting performance of the proposed estimator is much better than a
+broad spectrum of different volatility models often used in practice for all of the data
+frequencies, as well as one-step-ahead and daily forecasting horizon periods. In particu-
+lar, the proposed high-frequency volatility estimator outperforms classical QV and BV by
+Barndorff-Nielsen and Shephard (2004); more recent refinements such as realized volatility
+and bipower variation (RVB) and realized volatility and quarticity (RVQ) by Yu (2020);
+the heavy-tailed t-GARCH model with Student-t innovations; its long-memory extension
+—the t-FIGARCH model from Shi and Ho (2015); as well as the recent TGUH approach to
+change point detection in high-frequency volatility by Fryzlewicz (2018); and, finally, the
+mixed-frequency approach—the HAR model from Corsi (2009), where the HAR model is
+used only for multi-step (daily) volatility forecast.
+The rest of the paper is organized as follows. In Section 2, we introduce various types
+4
+
+=== page 5 ===
+of volatility proxies under consideration and present the main assumptions and formula-
+tion of the model featuring the LASSO-filtered spot volatility process based on a given
+volatility proxy. Section 3 discusses change point detection via ℓ1 regularization. Section
+4 outlines our consistency results. In Section 5, we demonstrate empirical examples using
+simulated and real data. Section 6 highlights our proposed volatility estimators’ versatil-
+ity and practical application. Finally, in Section 7, we conclude. The Online Appendix
+provides supplementary information, including details on the sub-Weibull distributions, a
+comparison between the classical LSTV algorithm and our indirect LSTV algorithm, proofs
+of all the theorems, technical lemmas, and non-asymptotic results for the consistency of the
+estimated change points.
+2 High-Frequency Volatility Modeling
+Let p(t) denote the stochastic process representing the log-price of an asset at time t ≥ 0.
+As shown in Delbaen and Schachermayer (1994), under the assumption of no arbitrage,
+p(t) must be a semi-martingale (p ∈ SM), For all p ∈ SM, the Quadratic Variation (QV)
+process can be defined as a probability limit of the sum
+[p] (t) = p- lim
+n→∞
+n−1X
+i=0
+(p (ti+1) − p (ti))2 , (1)
+for any sequence of partitions t0 = 0 < t1 < . . . < tn = t with supj (ti+1 − ti) → 0 for
+n → ∞. Note that pti+1 − pti is the log-return rt of the price for t = ti+1.
+We assume that the log-price process p is a semi-martingale whose local martingale
+component is given by
+R t
+0 σ(s)dW (s), for some function σ. We also assume that the price
+has a jump component J with finite activity.
+Example 2.1. Consider the stock price dynamics given by the Merton Jump Diffusion
+(MJD) process
+dpt = (µ(t) − µJ ν)dt + σ(t)dWt + d
+NtX
+i=1
+Qi (2)
+where µ(t) and σ(t) are drift and spot volatility, respectively, Wt is a standard Brownian
+5
+
+=== page 6 ===
+motion, and PNt i=1 Qi is a compound Poisson process with normal distributed jumps Qi i.i.d.∼
+N (µJ , σ2 J ) and intensity Nt ∼ Poisson(ν), where ∼ denotes distributional equivalence. The
+two processes are independent and adapted to the filtration {Ft}t≥0, associated with the
+Brownian motion {Wt}t≥0. Hence, by using Itˆo isometry for the jump process, one gets
+[p](t) =
+Z t
+0
+σ2(s)ds +
+NtX
+i=1
+Q2 i ,
+the sum of Integrated Variance (IV) and the aggregated squared jump components.
+More generally, we assume that the observed log-price process at times ti := iT /n takes
+the form
+p(ti) := p∗(ti) + ξ(ti); i = 1, · · · , n
+where p∗ is the true log-price process, ξ represents the micro-structure noise, where ξ(t1), · · · , ξ(tn)
+are i.i.d. centered sub-Weibull random variables with constant variance ω2. The true log-
+price process p∗ is assumed to satisfy the stochastic differential equation
+dp(t) := µ(t)dt + σ(t)dW (t) + dJ(t); t ∈ [0, T ],
+with µ(t) representing the drift process, σ(t) representing the spot volatility, and J(t) is the
+log-price jump process. Note that typically, J(t) is assumed to be of the form PN (t) i=1 Qj ,
+where N (t) is a counting process of finite activity, and the Qj ’s are i.i.d. Gaussian random
+variables. In our case, we replace the Gaussianity assumption by assuming that the Qj ’s
+are sub-Weibull random variables – an extension of sub-Gaussianity.
+Assumption 2.2. Both µ and σ are adapted, c`adl`ag, and jointly independent of W .
+Assumption 2.3. The drift process µ is predictable and locally bounded, and the volatility
+process σ is locally bounded away from zero.
+Assumption 2.2 consists of regularity conditions on the local behavior of the spot drift
+and spot volatility functions. This assumption is satisfied by a large number of stochastic
+volatility models, including those in which µ and σ have continuous trajectories.
+6
+
+=== page 7 ===
+Without loss of generality, we can further assume that µ and σ are uniformly bounded
+and that inf τ >0 σ(τ ) > 0 a.s. (See Andersen et al. (2012) and references therein.)
+Under the i.i.d. assumptions on the observations of the microstructure noise and the
+log-price jumps, the log-returns riT /n := p(iT /n) − p((i − 1)T /n) of p satisfy
+E
+h
+r2 iT /n
+i
+:=
+Z iT /n
+(i−1)T /n
+σ2(t)dt + 2ω2 + X
+(i−1)T /n≤t<iT /n
+(∆J(s))2,
+where ∆J(s) := J(s) − J(s−).
+In the absence of micro-structure noise and jumps, it then follows that
+n
+T E
+h
+r2 iT /n
+i
+− σ2((i − 1)T /n) −−−−−→
+n→+∞
+0,
+since it follows that
+Z iT /n
+(i−1)T /n
+σ2(t)dt − T n σ2((i − 1)T /n) −−−−−→ n→+∞ 0 a.s.
+by Lebesgue’s theorem. (See Andersen et al., 2012 for details.)
+Replacing r2 iT /n by particular transformations of the increments of the log returns al-
+lows for jump-robustness and/or robustness against microstructure noise. For instance,
+particular products of powers of the absolute values of consecutive log-returns are robust
+against jumps (Barndorff-Nielsen et al., 2006, Barndorff-Nielsen and Shephard, 2006) –
+with the classic case being that of consecutive log-returns, encountered in the context of
+bipower variation as an estimator of the integrated variance (Barndorff-Nielsen and Shep-
+hard (2004)). Similarly, truncated squared returns are also jump-robust (Andersen et al.,
+2012, Jacod and Reiss, 2014). Further extensions of power variation estimators allow for
+robustness against both jumps and microstructure noise: Podolskij and Vetter (2009). In
+particular, the presence of jumps in the price process or micro-structure noise does not
+prevent the construction of consistent spot volatility proxies.
+7
+
+=== page 8 ===
+For a survey of several estimators of integrated volatility in the presence of microstruc-
+ture noise and jumps, we refer the reader to Brownlees et al. (2020). These estimators
+for the integrated volatility are sums of functions of the returns whose increments can be
+chosen as proxies for the spot volatility. In the next section, we show that the consistency
+of such integrated volatility estimators (in mean, or a.s.) implies that their increments are
+consistent proxies of the spot volatilities with respect to Means Squared Error. Note that
+one can also use intra-day returns to estimate the integrated volatility over a small interval,
+but these are not under consideration in this paper as we do not assume fixed time intervals
+but rather assume that our sampling points are equidistant with a distance of 1/n.
+The other type of volatility proxies under consideration are kernel-based spot volatility
+estimators. These proxies are pointwise estimators of the spot volatility and consistent in
+the uniform sense (i.e., with respect to the sup-norm). In this case, MSE consistency is
+immediate. (This will also be briefly discussed in the following section.) Suppose there are
+no jumps in the log-price process p and no microstructure noise. Consider the truncated
+realized variance as an estimator of the quadratic variation [p](t) of the log-price in a
+stochastic volatility model:
+f[p]n(t) :=
+nX
+i=1
+1{t>ti−1}r2 ti−1 =
+nX
+i=1
+H(t − ti−1)r2 ti−1 ,
+where H denotes the Heaviside function. This estimator satisfies
+f[p]n(t) P−−−−−→ n→+∞ [p](t) = Z t 0 σ2(s)ds,
+and so in particular, for h > 0, one has:
+f[p]n(t + h) − f[p]n(t)
+h
+P−−−−−→
+n→+∞
+1
+h
+Z t+h
+t
+σ2(s)ds.
+Therefore, as h → 0, the left side of the limit converges to the spot volatility at t plus
+the square of the jump at t. Hence, picking h := hn −−−−−→ n→+∞ 0, we can approximate the
+8
+
+=== page 9 ===
+spot volatility (plus squared jump, if any) by
+p- lim
+n→+∞
+f[p]n(t + hn) − f[p]n(t)
+hn
+.
+Note that
+f[p]n(t + h) − f[p]n(t)
+h =
+nX
+i=1
+H(t − ti−1 + h) − H(t − ti−1)
+h r2 ti−1 ,
+and the quotient (H(t − ti−1 + h) − H(t − ti−1))/h converges to δ(t − ti−1), as h → 0,
+where δ is the Dirac delta function. Therefore, one can extend this idea by using smooth
+approximations of the Dirac delta function. This leads to a more powerful class of esti-
+mators: non-parametric kernel-based spot volatility estimators introduced by Kristensen
+(2010), and more generally spot volatility estimators based on delta sequences introduced
+by Mancini et al. (2015) which generalize numerous existing volatility estimators in the
+literature, and are consistent uniformly in probability, i.e.,
+p- lim
+h→0
+sup
+τ ∈[0,T ]
+˜σ2 h(τ ) − σ2(τ )  = 0,
+where τ 7→ ˜σ2 h(τ ) refers to the spot volatility estimator in question (which could be kernel-
+based, built from delta sequences, etc). Strictly speaking, the limit holds for τ ∈ (0, T ) but
+can be extended to the boundary points by choosing boundary kernels or local polynomial
+estimators. The latter is relevant to the context of this paper: Refer to Kristensen (2010,
+§4) for more details. In the context of kernel-based spot variance estimators, it is typical
+to have an additional H¨older-type regularity assumption on the paths of the spot variance
+function τ 7→ σ2(τ ):
+Assumption 2.4. The spot variance path τ 7→ σ2(τ ) lies in the space of functions Cm,γ ([0, T ])
+for some m ≥ 0 and γ ∈ [0, 1], where Cm,γ ([0, T ]) denotes the space of functions f that are
+m-times differentiable and whose m-th derivative satisfies
+f (m)(τ + η) − f (m)(τ )  ≤ L(τ, |η|) |η|γ + o(|η|γ ) as η → 0 a.s.,
+9
+
+=== page 10 ===
+where η 7→ L(τ, η) is a slowly varying (random) function at zero, and τ 7→ L(τ, 0) is
+continuous.
+Typical construction in the absence of jumps and microstructure noise is the following:
+˜σ2(τ ) :=
+nX
+i=1
+Kh(ti−1 − τ )r2 ti−1 ,
+where Kh(s) := K(s/h)/h for some kernel function h. Subject to regularity conditions, for
+h := hn converging to 0 as n → +∞ at a suitable rate, ˜σ2 hn is then a consistent estimator
+of σ2 uniformly.
+Naturally, a number of regularity assumptions on the kernel need to hold for the spot
+variance estimators to be consistent:
+Assumption 2.5. The kernel function K : R → R is continuously differentiable and
+bounded and satisfies
+•
+Z
+R
+K(x)dx = 1;
+• |x|
+K(j)(x)  −−−−−→
+|x|→+∞
+0 for j = 0, 1;
+• There exists Λ, L < +∞ such that
+K(i)(u)  ≤ Λ, and for some ν > 1, K(j)(u)  ≤
+Λ |u|−ν for |u| ≥ L, i = 0, 1;
+•
+Z
+R
+xiK(x)dx = 0; i = 0, · · · , rK − 1 and
+Z
+R
+|x|rK |K(x)| dx < +∞ for some rK ≥ 1.
+For a survey of such estimators in a more general context – in the presence of jumps
+and/or micro-structure – we refer the reader to Kanaya and Kristensen (2016). This survey,
+in addition to Kristensen (2010), discusses the particular assumptions on the spot drift
+and volatility processes, showing that certain assumptions (such as independence) are not
+strictly necessary. We note that numerous existing integrated variance proxies can be
+adapted as spot volatility proxies, as above, by introducing kernels as weights for the
+increments of the integrated variance proxy.
+Note that this approach for variance estimation has been studied earlier in the more
+general context of non-parametric regression via the difference sequence method, under
+10
+
+=== page 11 ===
+similar assumptions to Assumption 2.4 on the paths of σ2 – see Brown and Levine (2007)
+and references therein. Functional estimators of the spot variance σ2 in the context of Ito
+diffusions, under assumptions similar to Assumption 2.4, have been studied even earlier by
+Hoffmann (1999), who also demonstrated their connections to nonparametric regression.
+Surprisingly, the latter shows that the minimax convergence rate n−q/(1+q) is the same
+under Lp-loss errors for all p ∈ [1, +∞) over certain Besov functional spaces Bs,p,∞ where
+s > 1 + 1/p is the degree of regularity. The result of Kristensen (2010) extends the result
+of the L∞-loss, while the minimax result of Brown and Levine (2007) is a result on the
+L2-loss.
+We further note that a generalization of Assumption 2.4, Figueroa-L´opez and Li (2020,
+Assumption 3) (with corresponding adjustments to Assumption 2.5), is satisfied by most
+volatility processes that are studied in the literature, including fractional Brownian Motion.
+The construction of kernel-based spot variance proxies has been further generalized to
+delta sequences (Mancini et al., 2015), where the kernel Khn is replaced by a sequence fn of
+functions that approximate the Dirac delta. This larger class of estimators includes various
+functional estimators, including wavelet estimators.
+2.1 On jumps and micro-structure noise
+Microstructure noise can be eliminated by subtracting an estimator ˆω2 of the variance of
+the microstructure noise. In the case of proxies based on integrated volatility, the integrated
+volatility estimator increments can be re-written in a way that includes the subtracted term
+(see Zhang et al., 2005, Podolskij and Vetter, 2009). The microstructure noise can also be
+filtered out via other methods (see Barndorff-Nielsen et al., 2008). These approaches can be
+adapted to the case kernel-based spot variance proxies (see Figure 5). Likewise, the jumps
+in the log-price process can be filtered out by an appropriate choice of integrated variance
+increments – such as consecutive returns (bipower and multi-power variation estimators).
+The latter can also be adapted to the case of kernel-based spot variance estimators. In
+what follows, we will assume that the chosen proxy has the desired robustness properties
+as the proxy remains the user’s choice. While there may be methods of comparing various
+11
+
+=== page 12 ===
+volatility proxies (Patton, 2011), we do not aim to choose the best possible proxy. We
+would instead aim to filter the volatility levels implied by a given particular proxy using
+change-point detection via LASSO.
+2.2 A Discussion Of Consistency
+First, let us address spot variance proxies constructed using estimators for integrated vari-
+ance. Suppose that we are given an estimator of the integrated variance from 0 to T
+with increments fIV(τi), with i = 1, · · · , ¯n, where n is the number of samples, and ¯n de-
+pends on n, and τi := iT /¯n for i = 0, · · · , ¯n. For instance, for the classical realized
+variance estimator, ¯n = n with fIV(τi) := r2 iT /n. For bi-power variation estimators, ¯n = n
+with fIV(τi) := |riT /n| r(i+1)T /n . More generally, for multi-power variation estimators,
+¯n = n − N + 1, where N is the number of consecutive returns chosen as increments. In this
+paper, we only consider N = 1 and N = 2 for multi-power variation estimators. We note
+that ¯n can also depend on n non-linearly (e.g. ¯n := n1/2 in Podolskij and Vetter, 2009).
+As per the previous section, we have
+¯nX
+i=1
+fIV(τi) −−−−−→ n→+∞
+Z T
+0
+σ2(t)dt,
+where the convergence is assumed to hold in mean or a.s. Note that this assumption,
+although seemingly strong, does hold for several estimators, including classical estimators
+(see Kallenberg and Sztencel, 1991, Proof of Theorem 2.1; Andersen et al., 2001, §2.1 -
+Theory; and Jacod and Reiss, 2014, Proof of Theorem 3.2).
+Let us denote the integrated variance from τi−1 to τi by IV(τi); i.e.
+IV(τi) :=
+Z τi
+τi−1
+σ2(t)dt; i = 1, . . . , n.
+As remarked before, our local boundedness and regularity assumptions imply that
+√
+¯n
+¯nX
+i=1
+
+IV(τi) − T ¯n · σ2(τi−1)  −−−−−→ n→+∞ 0.
+12
+
+=== page 13 ===
+(See Barndorff-Nielsen et al., 2006 or Andersen et al., 2012 for details.) Therefore, as
+P¯n
+i=1 IV(τi) =
+Z T
+0
+σ2(t)dt, it follows that
+¯nX
+i=1
+
+fIV(τi) − T ¯n · σ2(τi−1)  −−−−−→ n→+∞ 0.
+Proposition 2.6. Let {˜zi}¯n i=1 and {zi}¯n i=1 be a sequence of random variables such that
+max
+
+OP
+ 
+sup1≤i≤¯n |zi|
+
+, OP
+ 
+sup1≤i≤¯n |˜zi|
+	
+= OP(ν¯n) in mean or a.s. If P¯n i=1(˜zi − zi) =
+o(¯n−a), in mean or a.s. then ¯n−1 P¯n i=1(˜zi − zi)2 = oP(¯n−aν¯n).
+Otherwise, if P¯n i=1(˜zi − zi) = O(¯n−a), in mean or a.s., then
+1
+¯n
+¯nX
+i=1
+(˜zi − zi)2 =
+
+
+
+OP (¯n−aν¯n) , for a < 1,
+OP
+ 
+¯n−1 log(¯n)ν¯n  , for a = 1,
+OP
+ 
+¯n−1ν¯n  , for a > 1
+in mean or a.s.
+In our case, zi := σ2(τi−1) and ˜zi := fIV(τi). In particular, the realized variance in-
+crements fIV(τi)’s are consistent proxies of the integrated variances IV(τi)’s in MSE, as
+long as ν¯n has a suitable growth rate. It is however not clear that the instant vari-
+ance proxies given by the ˜σ2 IV(τi) := ¯nT −1 fIV(τi) would also be consistent estimates of
+the σ2(τi−1) spot variances in MSE. Indeed, denote ˜σ2 IV :=   ˜σ2 IV(τ0), · · · , ˜σ2 IV(τ¯n−1)  and
+σ2 :=   σ2(τ0), · · · , σ2(τ¯n−1)  , and likewise for IV and fIV. The majority of integrated
+volatility estimators found in the literature satisfy
+¯nX
+j=1
+fIV(τi) −
+Z T
+0
+σ2(t)dt = O(n−a)
+in mean, for some a ≤ 1/2 (see e.g. Jacod and Reiss, 2014, Mancini, 2011, and Barndorff-
+Nielsen et al., 2006). In addition, under assumptions 2.2 and 2.3, the supremum of the
+IV(τi)’s is bounded by T /¯n. In the absence of jumps, the supremum of the increments of
+bipower variation is OP(log(¯n)/¯n). (See Barndorff-Nielsen et al., 2006.)
+13
+
+=== page 14 ===
+Alternatively, in the presence of jumps, note that for thresholding estimators, the in-
+crements are bounded by the threshold n−β for some β ∈ (0, 1) by construction, and such
+estimators,
+¯nX
+i=1
+fIV(τi) −
+Z T
+0
+σ2(t)dt = O(n−a)
+holds for a := 1 − ρBG/2, where ρBG ∈ (0, 2] is the Blumenthal-Getoor index measuring the
+degree of activity of the small jumps. In that case, ℓ2-consistency can be achieved.
+Now in the case of kernel estimators with kernel K and bandwidth h := hn, recall that
+the spot variance kernel proxy τ 7→ ˜σ2 K,hn (τ ) satisfies the uniform consistency
+sup
+τ ∈[an,T −an]
+˜σ2 K,hn (τ ) − σ2(τ )  P−−−−−→ n→+∞ 0,
+under assumptions 2.4, 2.5 and given that an, hn, an/hn −−−−−→ n→+∞ 0 at a suitable rate. As we
+will see later, the highest attainable convergence rate of these spot variance kernel proxies
+is the minimax rate convergence of adaptive regression splines and adaptive trend filters
+for suitable bandwidth choices hn. Let ˜σ2 K,hn and σ2 denote the vectors
+˜σ2 K,hn :=   ˜σ2 K,hn (t1), · · · , ˜σ2 K,hn (tn−1)  and σ2 :=   σ2(t1), · · · , σ2(tn−1)  .
+The uniform consistency above then implies that
+ ˜σ2 K,hn − σ2  ∞ P−−−−−→ n→+∞ 0, which then
+implies that 1√n
+ ˜σ2 K,hn − σ2  2 P−−−−−→ n→+∞ 0, in virtue of the fact that n−1/2 ∥·∥2 ≤ ∥·∥∞. The
+same holds more generally for estimators based on delta sequences. We omit the exact
+rates, which will be addressed in later sections.
+3 Change Point Detection With ℓ1-Regularization
+3.1 Multiple Change-Point Detection via LASSO
+We are interested in estimating the change points in the latent spot variance process σ2 by
+detecting changes in a consistent proxy ˜σ of the latter. As previously discussed, we consider
+two broad classes of possible proxies:
+14
+
+=== page 15 ===
+• Those based on integrated variance, whereby a proxy for the integrated variance over
+short equidistant time intervals is chosen and then appropriately rescaled, resulting
+in a proxy for the spot variance
+• Those based on kernels, whereby the spot variance can be directly approximated in
+a fashion similar to kernel density estimation.
+In the case of proxies based on integrated volatility, we assume that the true change
+points locations are t∗ 1, · · · , t∗ K∗ and that the mean of the σ2 is piecewise constant:
+IV(t) := IV∗ k; t∗ k−1 + T /¯n ≤ t ≤ t∗ k; k = 1, · · · , K∗; t = T /¯n, · · · , T,
+where t∗ 0 := τ0 = 0 and t∗ K∗+1 = T . Likewise, for the proxy ˜IV 2 , we assume
+fIV(t) := fIV ∗ k; ˜t∗ k−1 ≤ t ≤ ˜t∗ k − T /¯n; k = 1, · · · , ˜K∗ + 1; t = T /¯n, · · · , T.
+In the case of kernel-based spot variance proxies, we assume that the true change points
+locations are t∗ 1, · · · , t∗ K∗ and that the mean of the σ2 is piecewise constant:
+σ2(t) := s2∗ k ; t∗ k−1 + T /¯n ≤ t ≤ t∗ k; k = 1, · · · , K∗; t = T /¯n, · · · , T.
+Likewise, for the proxy ˜σ2, we assume
+˜σ2 K,hn (t) := ˜s2∗ k ; ˜t∗ k−1 ≤ t ≤ ˜t∗ k − T /¯n; k = 1, · · · , ˜K∗ + 1; t = T /¯n, · · · , T.
+The change-point locations are estimated by solving the minimization problem
+bϑ :=
+
+ˆϑ1, · · · , ˆϑ¯n
+
+= min
+ϑ1,··· ,ϑ¯n
+1
+¯n
+nX
+i=1
+( ˜ϑi − ϑi)2 + λn
+¯n−1X
+i=1
+|ϑi+1 − ϑi| , (3)
+where ˜ϑi denotes either of fIV(τi) or ˜σ2 K,hn (τi). The change-point locations are then
+recovered from the jumps in the ˆϑi’s. In the integrated volatility case, the estimates of the
+levels of spot variance are given by nT −1 cIV(τ1), · · · , nT −1 cIV(τ¯n).
+15
+
+=== page 16 ===
+This problem is viewed as a LASSO problem since the penalty term can be rewritten
+as ∥β∥1 with βi := ϑi+1 − ϑi. Let T ∗ denote the set of change points of s 7→ ϑ(s) and let
+eT denote the set of change points of s 7→ eϑ(s). We denote the the size of T ∗ by s∗, and
+likewise for ˜s. Note that s∗ and ˜s are also the exact number of non-zero components of ϑ
+and ˜ϑ respectively, the latter being known as the zero “norm” ∥·∥0.
+As in Lin et al. (2017), let us define the smallest distance between the change points of
+ϑ as
+Wn := min k=1,··· ,K∗
+t∗ k+1 − t∗ k 
+and the smallest distance between consecutive levels of ϑ as
+Hn := min k=1,··· ,K∗ |ϑk+1 − ϑk| ,
+and define ˜Wn and eHn similarly.
+These quantities are necessary to establish sharp error bounds for bϑ as an estimator of
+eϑ. More specifically, in the noise-less case, the following general proposition on change-point
+estimators corresponds to Lin et al. (2017, Theorem 1).
+Proposition 3.1. Let λ := λ¯n > 0 be arbitrary. Then ˆϑ satisfies
+1√¯n ˆϑ − ˜ϑ  2 ≤ 8λn
+s
+˜s
+¯n ˜W¯n .
+This follows from the Basic Inequality in the proof of Lin et al. (2017, Theorem 1) by
+setting ϵ ≡ 0. The difference between this proposition and Lin et al. (2017, Theorem 1) is
+that the log-terms do not appear, allowing for potentially fast convergence rates.
+In particular, note that for fIV, Proposition 3.1 implies that
+1√¯n  cIV − fIV  2 ≤ 8λn
+s
+˜s
+¯n ˜W¯n ,
+16
+
+=== page 17 ===
+and so, in particular, it follows that
+1√¯n bσ2 IV − ¯nT −1 fIV  2 ≤ 8T −1λn
+s
+¯n˜s
+˜W¯n .
+In the case of integrated volatility proxies, contamination by microstructure noise and
+jumps can be introduced as follows.
+Assumption 3.2. Suppose that we are given an estimator of integrated volatility that is
+not robust against jumps and microstructure noise in the following way:
+¯nX
+i=1
+fIV(τi) −−−−−→ n→+∞
+Z T
+0
+(σ2(s) + ω2(s))ds +
+NTX
+i=1
+Q2 j ,
+where ω2 denotes the variance of the micro-structure noise, which we assume to be bounded
+uniformly: maxs∈[0,T ] ω2(s) < +∞, NT denotes a stationary point process, and the Qj ’s
+are i.i.d. random variables with finite fourth moment. (See Podolskij and Vetter, 2009
+for instance.) Under this assumption, we consider this model for the true latent integrated
+volatility:
+IV(t) := IV∗ + ξ(t); ˜t∗ k−1 ≤ t ≤ ˜t∗ k − T /¯n; k = 1, · · · , ˜K∗ + 1; t = T /¯n, · · · , T,
+where ˜t∗ 0 := τ0 = 0, ˜t∗ ˜K∗+1 = T , and ξ(τi) :=
+Z τi
+τi−1
+ω2(s)ds +
+NτiX
+j=1+Nτi−1
+Q2 j ; j = 1, · · · , ¯n.
+Note that although the ξ(τi)’s are not centered, they are i.i.d. with distribution
+Z τi
+τi−1
+ω2(s)ds +
+NτiX
+j=1+Nτi−1
+Q2 j ∼
+Z τi
+τi−1
+ω2(s)ds +
+Nτi −Nτi−1X
+j=1
+Q2 j ∼
+Z τi
+τi−1
+ω2(s)ds +
+NT /¯nX
+j=1
+Q2 j .
+Denoting by Q the common distribution of the Qj ’s and using Wald’s identities, we have
+E
+
+
+NT /¯nX
+j=1
+Q2 j
+
+ = O(T /¯n), and E
+
+
+
+
+NT /¯nX
+j=1
+Q2 j
+
+
+2
+ = O(T /¯n)(E[Q4] + E[Q2]2) as ¯n → +∞
+by (Beutler and Leneman, 1966a, Theorem 3.3.1, Theorem 3.4.1). (See also Beutler and
+17
+
+=== page 18 ===
+Leneman, 1966b for a concrete exposition with numerous examples, including Poisson re-
+newal processes.)
+Since ω2 is assumed to be uniformly bounded, it follows that the first and second moments
+of each ξ(τi) are, in fact, O(¯n−1).
+3.2 The LARS-LSTV Algorithm
+To estimate the piecewise constant signal Harchaoui and L´evy-Leduc (2010), adapt the
+Least Angle Regression (LARS) algorithm to solve the LSTV objective function from (3).
+The ℓ1-regularized estimators are obtained using the algorithm below.
+In particular, our change points detection method consists of two steps. First is the
+following LSTV algorithm, which takes K = Kmax, an upper bound for the number of
+breakpoints, and returns the most significant Kmax change points candidates.
+1. Initialization: k = 0; set bT¯n,0 = ∅ (change points locations) and ˆϑ[0] i = 0, for i =
+1, . . . , ¯n (estimated integrated/spot variance).
+2. While k < Kmax:
+• Change point addition: Find ˆtk such that
+ˆtk = arg max
+τ ∈
+n
+0, T ¯n ,..., (¯n−1)T ¯n o \ bT¯n,k−1
+ ¯nX i=τ ϑi − ¯nX i=τ ˆϑ[k−1] i  .
+Update the set of change points candidates: bT¯n,k = bT¯n,k−1 ∪ ˆtk 	 .
+• Update: ˆϑ[k] i , for i = 1, . . . , ¯n, as a piecewise constant fit to the θi’s with change
+points at bT¯n,k, i.e., for all sorted ˆt(j) ∈ bT¯n,k, where j = 1 . . . , k,
+ˆϑ[k] m def = (ˆt(j) − ˆt(j−1))−1
+ˆt(j) X
+i=ˆt(j)+1
+ϑi ∀m = ˆt(j−1) + 1, . . . , ˆt(j).
+• Descent direction computation: Compute wk = (XT k Xk)−11k, where Xk is a
+matrix which consists of the columns of X indexed by the elements of bT¯n,k.
+18
+
+=== page 19 ===
+• Descent step search: Search for bγ such that
+bγ = min
+τ ∈
+n
+0, t ¯n ,..., (¯n−1)T ¯n o \ bT¯n,k
+ P¯n
+i=τ ϑi − P¯n i=τ ˆϑ[k] i )
+1 − P¯n i=τ wk,i ,
+P¯n
+i=τ ϑi + P¯n i=τ ˆϑ[k] i
+1 + P¯n i=τ wk,i
+!
+.
+• Zero-crossing check : Let αj = sign( ˆϑ[k] j+1 − ˆϑ[k] j ), if
+bγ > eγ
+def
+= min
+j
+(αj wk,j )−1
+
+
+¯nX
+i=j
+ˆϑ[k] i
+
+ ,
+then, decrease bγ down to eγ, and remove eτ from bT¯n,k, where
+eτ
+def
+= arg min
+j∈ bT¯n,k
+(αj wk,j )−1
+
+
+¯nX
+i=j
+ˆϑ[k] i
+
+ .
+The second step consists of the reduced Dynamic Programming (rDP) method to de-
+termine the final and optimal set of change points. First, for every K ≤ Kmax, the rDP
+step finds K change points by searching through the set bTn,Kmax = {t1, . . . , tKmax } instead
+of all of the points {τ1, . . . , τ¯n}. The objective function for the rDP step for each K in
+{1, . . . , Kmax} is
+J(K) = min
+t1<...<tK
+KX
+k=1
+tkX
+i=tk−1+1
+(ϑi − ˆϑk)2, where ˆϑk def = (tk − tk−1)−1
+tkX
+i=tk−1+1
+ϑi.
+Hence, for every K ≤ Kmax, the selected K change points reduce the sum of square errors
+the most among all the K combinations of the candidate change points. For the model
+selection, i.e., to select the optimal number of change points, following Harchaoui and
+L´evy-Leduc (2010), we use ρk = J(k + 1)/J(k) and pick bK : bK = mink≥1{ρk ≥ 1 − ξ},
+where ξ is the model selection threshold parameter, and in all of the empirical analysis below
+it is set to ξ = 0.03. The two-step algorithm we denote by LSTV∗(QV) and LSTV∗(BV)
+for quadratic variation and bi-power variation increments, respectively, and the rDP step
+on the LSTV results.
+Empirically, we observe that the rDP step, with O(K3 max) complexity, eliminates false
+19
+
+=== page 20 ===
+change point candidates from the LSTV step, which has O(Kmaxn log(n)) complexity. Since
+Kmax is the maximum number of plausible breakpoints, which is much smaller than n, the
+algorithm has an overall complexity of O(Kmaxn log(n)).
+3.3 Connections to Adaptive Trend Filtering
+We now highlight connections between the LASSO-based LSTV multiple change-point de-
+tection and adaptive trend filtering (Tibshirani, 2014). The latter establishes minimax
+convergence properties of adaptive piecewise polynomial estimators, which we will discuss
+momentarily.
+Let {yi}¯n i=1 be a time series modeled as
+yj := f (τi) + εj ; j = 1, · · · , ¯n,
+where the times τ1, · · · , τ¯n are equidistant, i.e. τi+1 − τi := T /¯n, and ε1, · · · , ε¯n are centered
+i.i.d. sub-Gaussian random variables of order α ≤ 2. Now consider the following sets for
+κ ≥ 0:
+• The knot super set Tκ :=
+
+
+
+
+τκ/2+2, · · · , τ¯n−κ/2
+	
+ifκ is even,
+
+τ(κ+1)/2, · · · , τ¯n−(κ+1)/2
+	
+ifκ is odd.
+;
+• The set of restricted locally adaptive regression splines
+Gκ := {g : [0, T ] → R : g is a κ-th degree spline with knots contained in Tκ} ;
+• The set of unrestricted locally adaptive regression splines
+Fκ :=
+n
+g : [0, T ] → R : g is κ times weakly differentiable and TV
+
+g(κ)
+
+< +∞
+o
+.
+where κ-th degree splines are defined as piece-wise polynomial functions of order at most
+20
+
+=== page 21 ===
+κ, and TV(h) denotes the total variation of a function h : [0, T ] → R defined by
+TV(h) := sup
+( PX
+i=1
+|h(τi+1) − h(τi)| : τ1 < · · · < τP is a partition of [0, T ]
+)
+< +∞.
+The κ-th order locally adaptive regression estimate is given by
+ˆfG = min f ∈Gκ 1 ¯n ¯nX i=1 (yi − f (τi))2 + λ κ! · TV  f (κ)  ,
+while its unrestricted counterpart is given by
+ˆfF ∈ min f ∈Fκ 1 ¯n ¯nX i=1 (yi − f (τi))2 + λ κ! · TV  f (κ)  .
+Note that the set membership symbol for the unrestricted case emphasizes that the solution
+might not be unique. It is, however, unique for κ = 0 and κ = 1. The corresponding
+discretization for both problems is
+( ˆϑ1, · · · , ˆϑ¯n) = min ϑ=(ϑ1,··· ,ϑ¯n)∈R¯n 1 ¯n ¯nX i=1 (yi − ϑi)2 + λ κ! D(κ+1)ϑ  1 , (4)
+where D(κ+1) ∈ R(¯n−κ−1)×¯n is the discrete difference operator of order κ. When κ = 0,
+D(1) =
+
+ −1 1 0 · · · 0 0 0 −1 1 · · · 0 0 ... ... ... · · · ... ...
+0 0 0 · · · −1 1
+
+ ∈ R(¯n−1)×¯n,
+and D(κ+1) = D(1) · D(κ) for κ ≥ 1. Equivalently,
+D(1)ϑ = (ϑ2 − ϑ1, · · · , ϑ¯n − ϑ¯n−1) and D(κ+1)ϑ = D(1)
+
+D(k)ϑ  for κ ≥ 1.
+The restricted locally adaptive regression spline estimate ˆfG and its unrestricted coun-
+terpart ˆfF coincide for κ = 0 and κ = 1. In addition, the discrete estimates ˆϑ1, · · · , ˆϑ¯n
+21
+
+=== page 22 ===
+coincide with the locally adaptive regression spline estimates at the sampling times, mean-
+ing
+ˆϑi := ˆf (τi); i = 1, · · · , ¯n,
+with ˆf denoting either of the locally adaptive regression estimates. For κ ≥ 2, the estimates
+are generically different but asymptotically equivalent in MSE. Moreover, assuming that
+the true function f belong to the class Fκ, the estimates given by 4 converge to the values of
+the true function f in MSE at the minimax rate OP(n−(2κ+2)/(2κ+3)) for λ = Θ(n1/(2κ+3)).
+As it should be clear by this point, the LSTV multiple change-point detection is identical
+to the discrete κ = 0 order trend filtering. The κ = 1 order trend filtering is also of natural
+consideration in our context in that one may seek to detect change points in the spot
+variance by detecting trends in the integrated variance.
+In our context, the time series {yi}¯n i=1 represents the series of samples of the proxies
+for the integrated/spot variance, but without the sub-Gaussian noise contamination as one
+may choose proxies that are robust against both jumps and microstructure noise. However,
+we allow for noise contamination in the case of integrated variance under Assumption 3.2.
+We refer the reader to Tibshirani (2014) for further details and a detailed exposition.
+4 Consistency Results
+In this section, we discuss the theoretical guarantees of our proposed LASSO estimators.
+We cover minimax results and concentration results.
+4.1 Consistency Results for Estimators Based on Integrated Variance
+We start a general proposition and then describe a number of general results regarding
+estimators based on integrated variance and spot variance estimators derived from those.
+We defer results regarding kernel-based estimators to the next as those are systematically
+minimax.
+We first discuss the case of estimates based on integrated volatility. We focus on the
+case where the proxy is robust against jumps and microstructure noise.
+22
+
+=== page 23 ===
+As before, let IV(τi) :=
+Z τi
+τi−1
+σ2(s)ds. For convenience, we consider the root MSE
+rather than MSE to analyze the consistency of the change-point detection estimates. Let
+
+cIV(τ1), · · · , cIV(τ¯n)
+
+denote the solution to Problem 4 with fIV(τ1), · · · , fIV(τ¯n) as the target
+values. Now let IV denote the vector of integrated variances and similarly for fIV and cIV.
+Furthermore, let σ2 denote the vector of spot variances. By the triangle inequality, we have
+1√¯n  cIV − T ¯n σ2  2 ≤ 1√¯n  cIV − fIV  2 + 1√¯n  fIV − IV  2 + 1√¯n IV − T ¯n σ2  2 .
+Proposition 4.1. Let fIV(τ1), · · · , fIV(τ¯n) be increments of an integrated volatility proxy
+satisfying ¯n−1
+ cIV − fIV  2
+2
+= OP(¯n−˜a). Suppose that σ2 satisfies ¯n−1
+IV − T ¯n σ2  2 2 =
+OP(¯n−a). If ¯n−1
+ cIV − fIV  2
+2
+= OP(¯n−ˆa), for a given choice of λn, then cIV is a consistent
+estimator of T ¯n−1σ2 in MSE with a rate of OP(¯n−ω) where ω = min {˜a1 + ˜a2, a1 + a2, ˆa}.
+Moreover, for the same choices of α, β and ˆa, ˆσ2 IV := ¯nT −1 · cIV is a consistent estimator
+of σ2 in MSE with a rate of OP(¯n−ω+1) for ω > 1.
+Corollary 4.2. Let ˜a1, ˜a2 and ˆa be as in Proposition 4.1. If σ2 satisfies assumptions 2.3 and
+2.2, then a1 = 2 and a2 = 1, and hence Proposition 4.1 holds with ω := min {˜a1 + ˜a2, 3, ˆa}.
+In particular, if min {˜a1 + ˜a2, ˆa} = 1/(2κ+3), then ˆσ2 IV := ¯nT −1· cIV is a minimax estimator
+of σ2 in the class of locally adaptive regression splines of order κ.
+Typically, we expect α ≤ 1/2 for most integrated volatility estimators, and β < 2 in the
+absence of jumps, while Proposition 3.1 shows that we can expect cIV to be a consistent
+estimator of IV for λ¯n := ¯n−ˆa(¯n ˜W¯n)−1/2˜s1/2. In general, we can let ˆa = ˜a1 + ˜a2 in λ¯n.
+Example 4.3. For a suitably chosen ˆa, Proposition 4.1 and Corollary 4.2 hold for multi-
+power variation estimators (Barndorff-Nielsen et al., 2006) whose powers add up to 2 and
+whose maximum M satisfies M < 2, where ˜a1 and ˜a2 are given by ˜a1 = 1 − M/2 = ˜a2.
+This holds in the presence of jumps but does not assume the presence of micro-structure
+noise. In particular, if M < 2 − (2κ + 3)−1, then ˆσ2 IV := ¯nT −1 · cIV is a minimax estimator
+of σ2 in the class of locally adaptive regression splines of order κ.
+Example 4.4. Proposition 4.1 and Corollary 4.2 hold for thresholding estimators (Mancini,
+23
+
+=== page 24 ===
+2011) with threshold ¯n−β , β ∈ (0, 1). For such estimators, the rate of convergences is
+¯n−β(1−ρBG/2) for ρBG < 1 and β ≤ (2 − ρBG)−1, or for ρBG ≥ 1, where ρBG ∈ (0, 2] is the
+Blumenthal-Getoor index. This holds in the presence of jumps but does not assume the
+presence of micro-structure noise.
+Note that for the previous two examples, ¯n is of the order of n, and so the rates with
+respect to n hold with respect to ¯n. This may, of course, not be the case for certain proxies
+(e.g., Podolskij and Vetter, 2009 where ¯n = n1/2).
+Example 4.5. The realized kernels of Barndorff-Nielsen et al. (2008) also satisfy Proposi-
+tion 4.1 and Corollary 4.2 for numerous choices of weighing functions (kernels) and band-
+widths. This assumes the presence of both jumps and microstructure noise.
+Now consider the non-robust case in the form of Assumption 3.2. Let ξ denote the
+vector whose components are given by
+ξ(τi) =
+Z τi
+τi−1
+ω2(s)ds +
+NτiX
+j=1+Nτi−1
+Q2 j .
+Recall that the first and second and moments of the ξ(τi)’s are O
+ 
+¯n−1 . In that case,
+IV is replaced by IV + ξ, and we have:
+1√¯n  cIV − T ¯n σ2  2 ≤ 1√¯n  cIV − fIV  2 + 1√¯n  fIV − (IV + ξ)  2 + 1√¯n ∥ξ∥2+ 1√¯n IV − T ¯n σ2  2 .
+Compared to the contamination-free case, all we need to do is ensure that ¯n−1/2 ∥ξ∥2
+goes to zero sufficiently fast. The latter is a matter of guaranteeing suitable convergence
+rates for sums of i.i.d. random variables. More specifically, we have:
+¯n−1 ∥ξ∥2 2 = ¯n−1
+¯nX
+i=1
+ξ2(τi) = ¯n−1
+¯nX
+i=1
+ξ2(τi) + O   ¯n−1 ,
+where Z := Z − E[Z].
+Proposition 4.6. Let fIV(τ1), · · · , fIV(τ¯n) be increments of an integrated volatility proxy sat-
+isfying ¯n−1
+ ˜IV − (IV + ξ)  2
+2
+= OP(¯n−˜a). Suppose further that σ2 satisfies ¯n−1 IV − T ¯n−1σ22 2 =
+24
+
+=== page 25 ===
+OP(n−a), and that ¯n−1 P¯n i=1 ξ2(τi) = OP(¯n−aξ ). If ¯n−1  cIV − fIV  2 2 = OP(¯n−ˆa), for a given
+choice of λn, then cIV is a consistent estimator of T ¯n−1σ2 in MSE with a rate of OP(¯n−ϖ)
+where ϖ = min {˜a, a, aξ , 1, ˆa}.
+The growth rate of ¯n−1 P¯n i=1 ξ2(τi) can be determined using general results on sums
+of random variables such as Baum and Katz (1965), Klass and Teicher (1977), as well as
+Liang et al. (2010) and references therein. These results allow us to establish convergence
+rates under assumptions on the moments of the summands.
+Remark 4.7. Note that since ϖ ≤ 1, the consistency of ˆσ2 IV := ¯nT −1 · cIV as an estimator
+of σ2 cannot be achieved with respect to MSE.
+4.2 Consistency Results for Kernel-Based Estimators
+In this section, we consider results for kernel-based estimators. Let K be a kernel satisfying
+Assumption 2.5 and let ˜σ2 K,hn and σ2 denote the vectors
+˜σ2 K,hn :=   ˜σ2 K,hn (t1), · · · , ˜σ2 K,hn (tn−1)  and σ2 :=   σ2(t1), · · · , σ2(tn−1)  ,
+and let ˆσ2 K,hn be the adaptive trend filtering estimate of ˜σ2 K,hn . Note that the estimator
+˜σ2 K,hn is not assumed to be jump-robust or noise-free.
+Then by Kristensen (2010, Theorem 3), we have:
+Proposition 4.8. Suppose that the σ2 satisfies Assumption 2.4 for some m ∈ N≥0 and
+γ ∈ [0, 1] and let K be a kernel satisfying Assumption 2.5 with rK ≥ m + γ. If hn be a
+kernel bandwidth such that (nhn)−1 −−−−−→ n→+∞ 0, then ˜σ2 K,hn is a consistent estimator of σ2
+in MSE with a rate of
+OP
+ 
+hm+γ n  + OP
+ log(n)√nhn  + OP  ˆRn  ,
+where ˆRn is the rate of convergence of ˆσ2 K,hn to ˜σ2 K,hn for a given λ = λn.
+Corollary 4.9. Suppose that the assumptions of Proposition 4.8 on σ2 and K hold, and
+let hn = O(n−1/(2(m+γ)+1)) and λn := Θ(n1/(2κ+3)). Then for m = κ and γ = 1, ˆσ2 K,hn is a
+25
+
+=== page 26 ===
+minimax estimator of σ2 in MSE in the class of locally adaptive regression splines of order
+κ.
+Note that the convergence rates in Proposition 4.8 and Corollary 4.9 depend on n, not ¯n
+(which could be a power of n), unlike our results on estimators based on integrated variance.
+Moreover, the kernel-based estimators satisfy more general functional assumptions whose
+regularity can be directly tied to the order of the spline estimator.
+These minimax rates of convergence are also achieved by a similar class of functional
+estimators studied by Hoffmann (1999), as well as those based on the difference sequence
+method (Brown and Levine, 2007) and those based on the delta sequences (Mancini et al.,
+2015.
+Note that these results can be extended to similarly constructed estimators that are
+robust to micro-structure and/or jumps: see Kanaya and Kristensen (2016), Mancini et al.
+(2015), Cai et al. (2020), Figueroa-L´opez and Wu (2022).
+4.3 Consistent Estimation of Change Points Locations
+We present results on the consistent estimation of the change point locations. Let T denote
+the set of change points in the latent volatility process σ2, i.e.
+T :=
+
+i ∈ {1, · · · , m} : σ2(τi) ̸= σ2(τi+1) 	 ,
+where m = ¯n or m = n, depending on the type of volatility proxy. The sets eT and bT are
+defined similarly.
+For two discrete sets A and B, define the metrics
+d(A|B) := max
+b∈B
+min
+a∈A
+|a − b| and dH (A, B) := max {d(A|B), d(B|A)} . (5)
+The first metric is a one-sided screening distance from B to A, measuring the furthest
+distance of an element in B to its closest element in A. It can be seen as a measure of how
+well the set B covers the set A. The second metric, the Hausdorff distance, is a symmetric
+26
+
+=== page 27 ===
+distance between A and B.
+We now recall two theorems of Lin et al. (2017) regarding approximate change point
+screening. These theorems are generic, assuming no specific data model or any particular
+assumptions on the estimator. The first theorem is the following.
+Theorem 4.10. (Lin et al., 2017, Theorem 4) Let ˜ϑ = ( ˜ϑ(τ1), · · · , ˜ϑ(τm)) be an es-
+timator for ϑ = (ϑ(τ1), · · · , ϑ(τm)) such that m−1
+˜ϑ − ϑ  2
+2
+= OP ( ˜Rm). Let Wm :=
+mink∈{1,··· ,K∗}
+t∗ k+1 − t∗ k  be the smallest distance between the change points of ϑ and let
+Hm := mink∈{1,··· ,K∗} |ϑk+1 − ϑk|, where K∗ is the true number of change points of ϑ. If
+m ˜RmH −2 m = o(Wm), then
+d
+
+eT T  = OP(m ˜RmH −2 m ).
+Lin et al. (2017) propose a post-screening procedure for the estimated change points
+that eliminate estimated change points that lie far away from true change points. This
+procedure is based on a further filtering of ˜ϑ:
+Fi( ˜ϑ) := b−1 m ·
+
+
+i+bmX
+j=i+1
+˜ϑj −
+iX
+j=i−bm+1
+˜ϑj
+
+ for i = bm, · · · , m − bm,
+for an integer bandwidth bm > 0.
+Theorem 4.11. (Lin et al., 2017, Theorem 5) Let ˜ϑ be such that m−1
+eϑ − ϑ  2
+2
+= OP( ˜Rm)
+and define the evaluation locations
+IF := {i ∈ {bm, · · · , m − bm} : i ∈ T or i + bm ∈ T or i − bm ∈ T } ∪ {bm, m − bm}.
+Let the set eSF ( eTm) :=
+n
+i ∈ IF :
+Fi( ˜ϑ)  ≥ eTm o for a threshold level eTm. If bm, eTm satisfy
+mRmH −2 m b−1 m −−−−−→ m→+∞ 0, 2bm ≤ Wm, and lim m→+∞ eTm Hm ∈ (0, 1),
+then the filtered change points satisfy
+P
+
+dH
+
+SF ( eTm), T
+
+≤ 2bm
+
+−−−−−→
+m→+∞
+1,
+27
+
+=== page 28 ===
+where, Wm and Hm are as defined in Theorem 4.10.
+Note that the minimum separations between change points for ¯n−1T σ2 and σ2 are
+identical, and we denote both by W¯n. Denoting by H¯n the minimum separation between
+the levels of σ2, it is clear that T ¯n−1H¯n is the minimum separation between the levels of
+σ2.
+Proposition 4.12. Let fIV denote an estimator of the integrated variance IV. Suppose
+that the assumptions of Proposition 2.6 hold, and let OP (¯n−ω) be the rate of convergence
+of cIV to T ¯n−1σ2 in MSE. If ¯n−ω−1H −2 ¯n = o(W¯n), then the set of estimated change points
+bT satisfies
+d
+
+bT T  = OP(¯n−ω−1H −2 ¯n ).
+Proposition 4.13. Let eσ2 K,h denote an estimator of the spot variance σ2. Suppose the
+assumptions of Proposition 4.8 hold. If n−ω−1H −2 n = o(Wn), then as (nhn)−1 −−−−−→ n→+∞ 0,
+the set of estimated change points bT satisfies
+d
+
+bT T  = OP  hm+γ n + log(n)√nhn + ˆRn  H −2 n  ,
+where ˆRn is the rate of convergence of bσ2 K,h to eσ2 K,h for a given λ = λn. In particular, for
+λn = Θ(n1/(2(κ+1)+1) and hn = O(n−1/(2(m+γ)+1)) with m = κ and γ = 1, we have
+d
+
+bT T  = OP  n−1/(2(κ+1)+1  .
+5 Empirical Analysis
+In the first simulation, we confirm that our estimators can accurately capture the spot
+volatility process, even when multiple change points are present. We calculate the log-
+returns r1,t, . . . , rn,t from the simulated price data, employing the MJD model from (2)
+with S0 = 1, µ = 0.02, ν = 1, µJ = 0.0, σJ = 0.015. These parameters are taken from
+Ait-Sahalia et al. (2013) and correspond to a one-minute sampling frequency. We simulate
+n = 3900 observations corresponding to approximately ten trading days of 1-minute data.
+28
+
+=== page 29 ===
+Spot volatility is modeled as a step function σ(s), featuring five break points and six levels.
+Namely, σ(s) ∈ {2.12, 1.51, 2.35, 1.83, 2.44, 1.65, 3.13} × 10−4. These values are calibrated
+from NYSE TAQ Apple minute data from January 2016 to February 2022, each listed
+above as the one-year median of minute-level standard deviation. We display the simulated
+price series alongside the corresponding log-returns in Figure 1—the change points in the
+volatility are not easily discernible from the price or returns series in the figure. The bottom
+panel in Figure 1 displays the corresponding squared returns together with the comparison
+between the actual spot variance and the estimated values using the LSTV∗(BV) change
+points detection method with ξ = 0.3, and Kmax = 8, i.e., Kmax > K∗ = 5. The estimator
+successfully detects all the breakpoints and provides a close fit with a small mean-square
+error between the true and estimated spot volatility. As for LSTV∗(QV), it yields a very
+similar fit and is excluded from the plot.
+Figure 1: Simulated stock prices using the MJD dynamic given in Example 2.1 with six levels of
+the spot volatility σ = {2.12, 1.51, 2.35, 1.83, 2.44, 1.65, 3.13} ∗ 10−4, µ = 0.02, ν = 1, µJ = 0.0,
+σJ = 0.015. Top figure: Simulated stock price values. Middle figure: Corresponding log-returns,
+where the volatility regimes are visible with breakpoints at 780, 1170, 1950, 3120, and 3510. Bottom
+figure: Log-returns squared, and a comparison of LSTV∗(BV) estimator fit vs. the simulated spot
+variance process.
+Next, to evaluate the sensitivity of the LSTV∗ method to the size and location of the
+change point in the data, we simulate a single breakpoint at various positions and sizes
+29
+
+=== page 30 ===
+Figure 2: Hausdorff error comparison of LSTV∗(BV) estimator fit for simulated stock prices with
+jumps and fixed levels of volatility with the position of jump size vs. changes in the size of jumps for
+different MJD models from Example 2.1. Top left: heat map is for classical Geometric Brownian
+Motion (MJD with no jumps) simulated stock prices of total sample size 3900 with µ = 0.22 and var-
+ious levels of sigma changes per row - (σ1, σ2) are (0.15, 0.18), (0.15, 0.21), (0.15, 0.24), (0.15, 0.27),
+(0.15, 0.3), respectively. Each column indicates the position of the breakpoint in percentiles of actual
+data - 0.01, 0.025, 0.1, 0.5, 0.95, 0.995, 0.999. Top right, bottom left, and bottom right: heat
+maps are MJD simulations with µJ = 0.0, σJ = 0.015 and jump intensities ν = 1, 3, 10, respectively.
+within the simulated data. Our simulation focuses on locating the breakpoint rather than
+estimating the correct number of breakpoints. Therefore, we set Kmax = 1 and keep ξ = 0.3
+in the LSTV∗ algorithm. We calculate the average Hausdorff distance between true and
+estimated change points using Equation 5 over 10000 random paths from the MJD model,
+using the same parameters as in the first simulation. To assess the robustness of our results,
+we set the jump intensity ν at four different levels, including the no-jumps case (i.e., the
+GBM case), as specified in the caption of Figure 2. We vary the size of the change point
+and its position relative to the sample size as described in the y- and x-labels of Figure 2.
+The results presented in Figure 2 demonstrate that the LSTV∗(BV) method accurately
+30
+
+=== page 31 ===
+estimates the true breakpoint and is robust against varying jump intensity levels and change
+point locations. Across most simulations, the Hausdorff distance is less than 0.1% of the
+observations, which corresponds to less than three observations, even when the change point
+is of the order of 0.03 and located at the 0.995 percentile of the sample (i.e., with only 20
+observations following the change point).
+Next, we compare the accuracy in detecting the locations of multiple change points for
+the proposed LSTV∗(BV) model against other multiple change point detection methods.
+Similarly to the simulations above, we consider the GBM and MJD processes with the
+aforementioned parameters. The number of true change points is set to K∗ = 1, 2, 5, 10,
+and we perform 10000 simulations per parameter combination. The spot volatility levels
+are the same as above and vary from 2 to 11 depending on the number of change points
+K∗. We utilized the previously determined σ values to generate a variety of computational
+simulations with randomly drawn volatility levels in different orders and magnitudes corre-
+sponding to the values used in the first simulation. These simulations encompass a broad
+spectrum of potential scenarios. Among these scenarios, we included the so-called staircase
+scenario as delineated by Lin et al. (2017). For the benchmarks, we consider two recently
+introduced methods, Tail Greedy Unbalanced Haar transformation (TGUH) by Fryzlewicz
+(2018), and locally refined change point (LRCP) estimator by Wang et al. (2020), both have
+been implemented using the original R packages breakfast and change points developed by
+the authors of the respective papers. We are interested in the accuracy of the location of
+the detected (multiple) change points; hence, for LSTV∗(BV), we set Kmax = K∗. Table 1
+summarizes average Hausdorff errors from 10,000 simulations as a percentage of the sample
+size. The LSTV∗(BV) outperforms the other approaches in five out of eight cases, and in
+the remaining cases, it performs similarly to the other methods.
+We now evaluate the proposed estimator on real financial data from the New York Stock
+Exchange (NYSE) from January 2018 through June 2022. We select the ten largest stocks
+in terms of average market capitalization based on data from NYSE Trade & Quote (TAQ).
+Because the trading times for the stocks are not synchronized, and prices are subject to
+market microstructure noise and end-of-day effects, we use mid-prices and impute missing
+31
+
+=== page 32 ===
+GBM MJD
+K∗ LSTV∗(BV) TGUH LRCP LSTV∗(BV) TGUH LRCP
+1 9.042 9.686 8.940 17.802 17.868 17.814
+2 4.630 4.760 5.802 5.110 4.996 4.988
+5 4.780 4.858 13.868 4.780 5.434 14.162
+10 11.670 12.310 19.444 10.670 10.442 20.742
+Table 1: Comparison of Hausdorff error (as a percentage of the sample size) between LSTV∗(BV),
+TGUH, and LRCP methods for different values of K ∗ (average across 10000 simulations).
+values with historical prices. We obtain cleaned returns aggregated to frequencies of 1, 5,
+15, 30, and 60 minutes during trading hours between 9:30 a.m. and 4:00 p.m. The number
+of daily observations varies from 6 to 390, depending on the frequency. We do not include
+overnight returns, as they are influenced by external factors.
+For example, we plot the 1-minute frequency squared returns of Tesla (TSLA) for two
+weeks of August 2022 in Figure 3. Using the LSTV∗(BV) estimator with Kmax = 100 and
+ξ = {0.05, 0.1, 0.2, 0.3}, we find that although there are many jumps in the price process
+as can be seen from the isolated spikes in the squared log returns, the algorithm detects
+only significant change points. As anticipated, most of these change points occur around
+market open and close times, and as we increase the threshold value, the number of de-
+tected change points decreases. For example, in Figure 3, 4 change points are detected on
+day 7 for δ = 0.05, whereas for δ = 0.3, only 1 change point is detected. Interestingly,
+there is no significant difference in the detected change points between δ = 0.2 and δ = 0.3,
+suggesting that the algorithm exhibits low sensitivity to the threshold parameter. Ulti-
+mately, users should determine the appropriate Kmax and δ based on data frequency and
+observed market regime changes tailored to the specific requirements of volatility prediction
+applications. In risk management and trading, this includes the forecasting horizon, level
+of transaction costs, market liquidity, frequency of rebalancing, and other market frictions.
+These quantities vary for different market participants, making the flexibility of choosing
+Kmax and δ a practical feature of the proposed model. Moreover, as indicated by the es-
+timates in Figure 3, volatility levels are altered mostly only by significant and persistent
+events. This provides more stability in the predicted volatility and is important in practical
+implementation.
+32
+
+=== page 33 ===
+Figure 3: Tesla squared 1-minute returns over two weeks in August 2020, accompanied by the corre-
+sponding estimated volatilities using LSTV∗(BV) with a maximum change points Kmax = 100, and
+threshold parameter ξ = {0.05, 0.1, 0.2, 0.3}. The location of the detected change points is indicated
+with dots on the x-axis. Notably, an increase in the threshold (ξ) results in a decrease in the number
+of detected change points.
+33
+
+=== page 34 ===
+Figure 4: One-step-ahead forecasts from the rolling window exercise for the Apple 60 min stock
+using two weeks of the rolling window from January 2018 to August 2020. Row-wise, comparing
+BV, realized RV-GARCH, LSTV∗(BV), and smoothed LSTV∗(BV) models. First column: fore-
+casted volatility values. Second column: log of the volatilities. Third column: auto-correlation
+functions of the forecasted volatilities.
+Next, to assess the forecasting ability of the proposed estimators, we compare them
+to various benchmarks. We conduct a rolling window exercise, in which we estimate our
+models and generate one-step-ahead forecasts for different data frequencies. Specifically,
+for a given window of data consisting of observations r1,n, r2,n, · · · , rt,n, we aim to forecast
+the spot volatility term one-step-ahead matching the frequency of the input data, as well
+as the integrated variance over one-day-ahead period.
+Formally, to calculate the forecasts, we use the falling factorial basis from Wang et al.
+(2014) and form the predictions at arbitrary points as derived in Ramdas and Tibshi-
+rani (2016). We estimate the piecewise constant component of the volatility. Hence, the
+falling factorial basis prediction reduces to extrapolating the last estimated volatility bσ(t/n)
+34
+
+=== page 35 ===
+obtained from the corresponding model within a given rolling window to t + 1 for our high-
+frequency estimators.
+We consider a broad spectrum of volatility estimators commonly used in practice as
+benchmarks. Starting from the classical QV and BV estimators introduced by Barndorff-
+Nielsen and Shephard (2004), we also include more recent refinements, such as the realized
+volatility and bipower variation (RVB) and realized volatility and quarticity (RVQ) estima-
+tors proposed by Yu (2020). In addition, we consider the heavy-tailed t-GARCH model with
+Student-t innovations and its long-memory extension, the t-FIGARCH model, introduced
+by Shi and Ho (2015). We also considered kernel-based volatility estimators introduced by
+Barndorff-Nielsen et al. (2008). Finally, we include the mixed-frequency approach of the
+HAR-RV model proposed by Corsi (2009). However, the HAR-RV model can only be a
+benchmark for multi-step (daily) volatility forecasts. Regarding truncation-based estima-
+tors mentioned in Section 4, we investigated the forecasting performance of MinRV/MedRV
+estimators proposed by Andersen et al. (2012), and they performed worse than considered
+power estimators. Hence, they are omitted from the final comparison results.
+If there are no change points, the LSTV∗(QV) and LSTV∗(BV) estimators reduce to the
+original QV and BV estimators, respectively. The forecasting exercises below set Kmax = 1
+and ξ = 0.3. Allowing for one change point improves forecasting performance across all
+models, assets, and frequencies considered below, ξ = 0.3 is as in Harchaoui and L´evy-Leduc
+(2010). We also experimented with Kmax > 1 and different ξ values—higher Kmax require
+careful selection of ξ. In general, the user should decide on the appropriate choice of Kmax
+and ξ based on market regimes that she observes in her data and specific applications of
+the estimated volatility.
+In Figure 4, we compare rolling window-based one-step-ahead forecasted volatilities and
+log forecasted volatilities of Apple’s 60-minute frequency returns using BV, the realized RV-
+GARCH by Hansen and Lunde (2011), and LSTV∗(BV) models. The forecasted volatilities
+for the BV model exhibit many spikes across consecutive rolling windows, while the realized
+RV-GARCH produces forecasts with few spikes. By contrast, our proposed model provides
+much smoother and more realistic forecasts, as seen from their auto-correlation structure.
+35
+
+=== page 36 ===
+We can use a simple exponential-moving average filter to smooth the forecasts further. The
+bottom plots in Figure 4 show the results of applying this filter, with the parameter λ
+chosen to minimize the overall squared error. The proposed estimator, although piecewise
+constant in-sample, when looking at forecasts from consecutive rolling windows, preserves
+more stylized facts of a typical volatility process out-of-sample than more flexible parametric
+models encompassing the same stylized facts in their dynamics in-sample. If volatility
+forecasting is the main goal, preserving stylized facts, out-of-sample arguably should be
+considered more important than the flexibility of the in-sample fit, and our parsimonious
+model allows us to achieve that.
+To compare the forecast performance of different models quantitatively in our rolling
+window exercise, we use the prediction Average Squared Error (ASE) following the approach
+of Fryzlewicz et al. (2006),
+ASEf,N (M) = 1 N NX t=1  ¯σ2 t+f |t(M) − fX s=1 r2 t+s !2 (6)
+where N is the number of rolling windows, f is the forecast horizon in each window, ¯σ2 t+f |t
+denotes the forecasted integrated variance from t + 1 to t + f using model M, and r2 t+s are
+the squared returns at time t + s. In order to compare a given model M1 to a benchmark
+M2, we report percentage improvement results computed as
+100 ASEf,N (M1) − ASEf,N (M2) ASEf,N (M2)
+In the left panels of Figure 5, we compare the forecasting ability of our proposed methods
+to the classical QV and BV estimators by Barndorff-Nielsen and Shephard (2004), as well as
+the more recent refinements of them, including the realized volatility and bipower variation
+(RVB) and realized volatility and quarticity (RVQ) estimators proposed by Yu (2020) and
+realized kernel (RK) estimator introduced by Barndorff-Nielsen et al. (2008). The top panel
+of Figure 5 includes results for the one-step-ahead forecast. Daily volatility forecasts are
+widely used in trading, e.g., for volatility-adjusted position sizing, and in risk management,
+36
+
+=== page 37 ===
+e.g., for daily Value-at-Risk forecasts. The bottom panel of Figure 5 shows results for
+the one-day-ahead forecast. The daily forecast also includes the HAR-RV model by Corsi
+(2009). All the percentage improvements are relative to the BV model as the benchmark.
+The LSTV∗(QV) outperforms the original QV, but it is still worse than the jump-robust
+BV. Among all the models, data frequencies, and forecast horizons, only the LSTV∗(BV)
+outperforms the original BV method with a significant improvement of around 5% and 20%
+for one-step-ahead and one-day-ahead forecasts, respectively. In the daily forecast, even the
+HAR-RV model is outperformed by our approach.
+In Figure 6a, we compare our approach with GARCH models, which capture better the
+in-sample dynamics of the volatility, including the original GARCH(1,1), t-GARCH(1,1),
+and the more recent long-memory variation of GARCH model—FIGARCH(1,1)—proposed
+by Shi and Ho (2015). As a benchmark, we again used the BV estimator. Our original
+LSTV∗(QV) and LSTV∗(BV) estimators capture the piecewise constant component of the
+volatility; in case more accurate in-sample volatility dynamics are of interest, we also in-
+troduce a variation of our estimator by using the estimated volatility from LSTV∗(BV)
+as innovations for the FIGARCH model. This is referred to as LSTV∗(FIGARCH). We
+find that both FIGARCH and LSTV∗(FIGARCH) perform worse than the benchmark BV,
+while LSTV∗(BV) outperforms all other methods across all frequencies of the data. The
+LSTV∗(FIGARCH) performs on par or better than the original FIGARCH, but it is out-
+performed by the BV and LSTV∗(BV) estimators.
+To assess the forecasting performance of our LSTV∗(BV) model with respect to other
+models, we use the Diebold-Mariano (DM) test statistic from Diebold and Mariano (2002).
+We use the forecasts from the exercise in Figure 5, and calculate our model’s DM test
+statistic p-values against benchmark model BV as shown in Figure 6b. LSTV∗(BV) models
+are significantly better than BV in frequencies 5-min, 15-min, 30-min, and 60-min with
+p-values< 0.05. This shows that LSTV∗(BV) outperforms BV significantly in terms of
+forecast accuracy. Whereas in 1-min frequency, LSTV∗(BV) outperforms BV with a chosen
+significance level of 0.1.
+The theoretical limitation of the total-variation-based change points detection methods
+37
+
+=== page 38 ===
+Figure 5: Percentage improvements of volatility forecasts for different frequencies of data in terms
+of predicted ASE from (6) relative to the performance of the BV estimator (negative values are
+truncated). Top Panel: One-step-ahead forecast. Bottom Panel: One-day-ahead forecast.
+38
+
+=== page 39 ===
+(a) Figure 6a: LST V ∗(BV ) vs. GARCH-
+based models t-GARCH, FIGARCH, and
+LSTV∗(FIGARCH), all relative to the BV es-
+timator (30-min and 60-min omitted because of poor
+performance of all the GARCH based models). Only
+the proposed LST V ∗(BV ) outperforms the original
+BV estimator in all panels and frequencies.
+.
+(b) Figure 6b: Boxplots of Diebold-Mariano (DM) p-
+values for the ten stocks considered in the Figure 5.
+The LSTV∗(BV) forecasts are compared against the
+benchmark model BV. Notably, LSTV∗(BV) demon-
+strates significant outperformance over BV, with p-
+values falling below 0.05 for most tickers across 5-
+min, 15-min, 30-min, and 60-min and for several
+tickers at the 1-min frequency.
+compared with the TGUH approach is the slower convergence rate in the weak sparsity
+case, i.e., when the number of change points goes to infinity together with the sample size,
+see Lin et al. (2017) and references therein. Nevertheless, as shown in Lin et al. (2016), the
+LSTV method achieves optimal convergence rate in strong sparsity cases when the number
+of change points does not grow with the number of observations. Since we are working with
+high-frequency data and infill-asymptotics, even when the number of observations goes to
+infinity, they cover the same time interval; hence, the number of change points should re-
+main the same. Hence, assuming constant change points on the fixed time interval can be
+considered realistic. This is supported by the following forecasting exercise in which we
+compare our LSTV∗(BV) with the TUGH method from Fryzlewicz (2018). Table 2 sum-
+marizes the results regarding the relative percentage improvement of predicted ASE from
+(6). Using a rolling window of two weeks of data with different frequencies (1 min, 5 min,
+15 min, 30 min, and 60 min), we detect change points using the two methods, estimate the
+corresponding volatilities, and provide one-day-ahead forecasts. We use our LSTV∗(BV)
+with the maximal number of allowed change points Kmax ∈ {1, 5, 10, 50} and the threshold
+39
+
+=== page 40 ===
+parameter ξ ∈ {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9}, respectively. Our method performs
+better than TGUH in most cases across frequencies and independently of Kmax and ξ pa-
+rameters. We perform best in the case of Kmax = 1, 5, 10, which is usually the case for
+two weeks of high-frequency data. The observed improvement remains consistent across
+the entire threshold range, indicating that the forecast is relatively insensitive to variations
+in the additional threshold parameter. The choice of Kmax can be left to the user’s dis-
+cretion, considering factors such as the training window, characteristics of the assets under
+consideration, and overall market conditions.
+Threshold ξ
+Freq Kmax 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9
+1 min 1 -7.75 -7.75 -7.75 -7.75 -7.75 -7.75 -7.75 -7.75 -7.75
+5 29.93 30.67 30.64 30.67 31.05 31.48 31.38 31.27 32.67
+10 19.24 20.33 20.40 20.28 22.49 23.93 24.72 26.12 26.60
+50 -14.17 -5.99 -1.61 -1.59 0.24 2.86 3.39 3.63 5.65
+5 min 1 44.06 44.06 44.06 44.06 44.06 44.06 44.06 44.06 44.06
+5 -13.62 -12.66 -11.85 -11.81 -11.11 -10.93 -9.46 -8.17 -7.45
+10 -13.26 -13.17 -12.26 -11.56 -11.70 -11.34 -11.46 -11.13 -11.80
+50 3.93 4.67 6.20 5.31 4.01 3.56 3.43 3.88 3.97
+15 min 1 10.54 10.54 10.54 10.54 10.54 10.54 10.54 10.54 10.54
+5 -2.59 -2.61 -1.48 7.93 8.38 8.83 7.84 8.23 6.47
+10 -0.02 0.76 -0.27 -2.87 -1.58 -2.84 -3.17 -2.97 -3.49
+50 5.58 6.73 8.39 9.87 10.85 10.11 9.65 10.51 9.95
+30 min 1 -3.00 -3.00 -3.00 -3.00 -3.00 -3.00 -3.00 -3.00 -3.00
+5 7.16 7.16 7.85 8.22 8.22 9.18 9.90 8.55 9.91
+10 5.15 -2.16 -2.87 -1.18 1.04 2.41 2.90 4.04 4.72
+50 -4.34 -1.14 1.71 5.08 5.14 8.19 8.31 8.38 8.31
+60 min 1 88.03 88.03 88.03 88.03 88.03 88.03 88.03 88.03 88.03
+5 89.62 89.55 89.44 89.38 89.38 89.44 89.42 89.46 89.66
+10 88.69 88.81 88.92 89.03 89.10 89.12 89.16 89.31 89.26
+50 89.54 89.63 89.87 89.94 90.19 90.12 90.14 90.25 90.37
+Table 2: Percentage improvements of one-day-ahead forecasting in terms of the Average Squared
+Error (ASE) as in (6) from LSTV∗(BV) method with respect to Tail Greedy Unbalanced Haar
+transformation (TGUH) by Fryzlewicz (2018) as a benchmark.
+6 Extensions and Further Research
+In addition to their performance in high-frequency volatility estimation, our proposed
+volatility estimators can be extended to capture other stylized facts of high-frequency
+volatility, demonstrating their versatility and practical applicability. For example, one
+can filter jumps from the stock prices separately from the volatility estimation by adding
+40
+
+=== page 41 ===
+the ℓ1 regularization term to the objective function in (3).
+Similarly, intraday or weekly seasonality, a well-known statistical characteristic of high-
+frequency stock volatility, can be incorporated into our ℓ1 volatility filter. One approach
+for incorporating seasonality is to follow Vatter et al. (2015) and incorporate smooth trend
+and seasonality into the framework. To capture both effects, the objective function (3) can
+be modified as follows:
+1
+n
+ ˜ϑt − Xβ − s − v  2 2 + λ ∥β∥1 + γ ∥v∥1
+s.t. st+p = sT t = 1, . . . , n − p,
+where s = (s1, . . . , sn)′ ∈ Rn is the seasonal periodic component with known period p,
+vector v ∈ Rn is the sparse spikes component, and the parameter γ ≥ 0 controls jumps
+intensity.
+If the exact seasonality pattern needs to be estimated from the data, one can use
+1
+n
+ ˜ϑt − Xβ − s − v  2 2 + λ ∥β∥1 + γ ∥v∥1 + X ω∈Ω (|aω| + |bω|)
+s.t. st =
+X
+ω∈Ω
+aω sin(ωt) + bω cos(ωt) t = 1, . . . , n.
+The s = (s1, . . . , sn)′ ∈ Rn filter is responsible for selecting the best frequencies from an
+over-complete dictionary Ω. In this case, the frequency does not need to be known a priori,
+and the penalty term discourages greedily using the dictionary. For an adaptive version of
+this filter and a fast coordinate descent algorithm for estimation, see Souto et al. (2016).
+Secondly, one of the assumptions in our analysis so far is that the stock returns are
+equally spaced because the data used in Section 5 consists of TAQ data aggregated to 1,
+5, 10, 30, and 60-minute intervals. We can extend our method to tick-level data, which
+is irregularly spaced. First, consider the estimation of the underlying continuous volatility
+from a finite number of data points. Equation (3) can be extended to a continuous form as
+41
+
+=== page 42 ===
+follows:
+1
+n
+nX
+i=1
+(ϑi − xti )2 + λ
+Z tn
+t1
+| ˙x| dt.
+This can be simplified by using the standard interpolation problem as explained in Kim
+et al. (2009). In particular, we can solve
+1
+n
+nX
+i=1
+
+˜ϑi − xti
+2
++ λ
+nX
+i=2
+ xti+1 − xti ti+1 − ti  .
+Using the optimal points xti , i = 1, . . . , n, we can recover the solution to the original
+piecewise linear trend filtering problem: the piecewise-linear function, x∗ T , for x∗ ti , given by
+x∗ T = ti+1 − t ti+1 − ti x∗ i ,
+where i = 1, . . . , n, is the optimal piecewise constant volatility. To reflect the non-equally
+spaced data, one can modify the proposed LSTV∗ algorithm by modifying the matrix X to
+include the time increments from the regularization term. Alternatively, one can use the
+modified version of the primal-dual algorithm described in Kim et al. (2009).
+In this paper, we assumed that the observed returns are the true returns. In ultra-high-
+frequency data, one needs to accommodate the assumption of microstructure noise. We
+can do that by using a realized kernel estimator FK(rT ), where K stands for the specific
+kernel function (see Barndorff-Nielsen et al., 2008, 2009, 2011a,b, and Lunde et al., 2015).
+Indeed, if we have p(t) = p∗(t) + ϵ(t), where p(t) denotes the observed price at t, p∗(t)
+denotes the true price at t, and ϵ denotes the micro-structure noise; then the returns satisfy
+rT = r∗ T + uT , where uT = ϵ(t) − ϵ(t − 1), and one can construct a kernel-based estimator
+FK that satisfies
+p- lim
+n→+∞
+FK(rT ) = [r∗ T ]and p- lim n→+∞ = FK(uT ) = 0,
+where rT is the vector of high frequency returns; as before, [r∗ T ] is the quadratic variation
+of the true returns; and uT = (u1, · · · , un).
+Finally, the estimators proposed in this paper allow the construction of an estimator of
+the jump component. Namely, one can take the differences between increments of the QV
+42
+
+=== page 43 ===
+and BV estimator and plug them into the objective function with ℓ1 regularization not on
+the difference but on the series itself, i.e.,
+bu(λ) := argmin
+u∈Rn−1
+L(u) (7)
+where L(u) := 1 n  ˜FRV(rT ) − FBP(rT ) − u  2 2 + λ ∥u∥1 ,
+where ˜FRV is the original FRV with the first element r2 1,t in the vector removed. The bu(λ)
+in (7) estimates the jump component of the price process. They can be obtained via the
+original LARS or any other LASSO-related algorithm. Since ˜FRV(rT ) − FBP(rT ) satisfies
+our consistency condition for the jump component, the results in this paper also show that
+bu(λ) will be consistent for the true jump sizes and their locations.
+7 Conclusions
+In this paper, we have introduced a new family of high-frequency volatility estimators.
+By leveraging the LSTV change point detection framework and adding ℓ1 regularization
+to two classical estimators (quadratic variation and bipower variation), we have proposed
+consistent estimators for volatility estimation and breakpoint detection. Simulation results
+demonstrate that the proposed estimators accurately identify breakpoints and outperform
+classical and recent high-frequency volatility estimators in out-of-sample volatility predic-
+tion at all frequencies and forecasting horizons.
+Our proposed estimators offer practical advantages, such as their ability to accurately
+identify breakpoints close to the end of the sample and provide more realistic and smoother
+volatility forecasts that accurately capture the stylized facts of volatility when looking at
+consecutive out-of-sample predictions. In future research, we plan to extend the proposed
+estimators to the multivariate case and incorporate other stylized facts of (ultra) high-
+frequency financial returns using the extensions discussed in Section 6.
+43
+
+=== page 44 ===
+References
+Yacine Ait-Sahalia, Jianqing Fan, and Yingying Li. The leverage effect puzzle: Disentangling sources
+of bias at high frequency. Journal of Financial Economics, 109(1):224–249, 2013.
+Torben G. Andersen, Tim Bollerslev, Francis X. Diebold, and Heiko Ebens. The distribution of
+realized stock return volatility. Journal of Financial Economics, 61(1):43–76, 2001.
+Torben G Andersen, Dobrislav Dobrev, and Ernst Schaumburg. Jump-robust volatility estimation
+using nearest neighbor truncation. Journal of Econometrics, 169(1):75–93, 2012.
+Tom M Apostol. Introduction to analytic number theory. Springer Science & Business Media, 2013.
+Francesco Audrino and Simon D. Knaus. Lassoing the har model: A model selection perspective on
+realized volatility dynamics. Econometric Reviews, 35(8-10):1485–1521, 2016.
+Milad Bakhshizadeh, Arian Maleki, and Victor H de la Pena. Sharp concentration results for heavy-
+tailed distributions. Information and Inference: A Journal of the IMA, 12(3):1655–1685, 05
+2023.
+Ole E. Barndorff-Nielsen and Neil Shephard. Power and bipower variation with stochastic volatility
+and jumps. Journal of Financial Econometrics, 2:1–48, 2004.
+Ole E Barndorff-Nielsen and Neil Shephard. Multipower variation and stochastic volatility. In
+Stochastic finance, pages 73–82. Springer, 2006.
+Ole E. Barndorff-Nielsen, Neil Shephard, and Matthias Winkel. Limit theorems for multipower
+variation in the presence of jumps. Stochastic Processes and their Applications, 116(5):796–806,
+2006.
+Ole E. Barndorff-Nielsen, Peter R Hansen, Asger Lunde, and Neil Shephard. Designing realized
+kernels to measure the ex-post variation of equity prices in the presence of noise. Econometrica,
+76:1481–1536, 2008.
+Ole E. Barndorff-Nielsen, Peter R Hansen, Asger Lunde, and Neil Shephard. Realised kernels in
+practice: trades and quotes. Econometrics Journal, 12:C1–C32, 2009.
+Ole E. Barndorff-Nielsen, Peter R Hansen, Asger Lunde, and Neil Shephard. Multivariate realised
+kernels: consistent positive semi-definite estimators of the covariation of equity prices with noise
+and non-synchronous trading. Journal of Econometrics, 162:149–169, 2011a.
+44
+
+=== page 45 ===
+Ole E. Barndorff-Nielsen, Peter R Hansen, Asger Lunde, and Neil Shephard. Subsampling realised
+kernels. Journal of Econometrics, 160:204–219, 2011b.
+Leonard E. Baum and Melvin Katz. Convergence rates in the law of large numbers. Transactions
+of the American Mathematical Society, 120(1):108–123, 1965.
+Frederick J. Beutler and Oscar A. Z. Leneman. The theory of stationary point processes. Acta
+Mathematica, 116(none):159 – 190, 1966a.
+Frederick J. Beutler and Oscar A.Z. Leneman. Random sampling of random processes: Stationary
+point processes. Information and Control, 9(4):325–346, 1966b.
+Aur´elien F. Bibaut, Alex Luedtke, and Mark J. van der Laan. Sufficient and insufficient conditions
+for the stochastic convergence of ces`aro means, 2020.
+Markus Bibinger, Moritz Jirak, and Mathias Vetter. Nonparametric change-point analysis of volatil-
+ity. The Annals of Statistics, 45(4):1542 – 1578, 2017.
+Lawrence D. Brown and M. Levine. Variance estimation in nonparametric regression via the differ-
+ence sequence method. The Annals of Statistics, 35(5):2219–2232, 2007.
+Christian Brownlees, Eulalia Nualart, and Yucheng Sun. On the estimation of integrated volatility
+in the presence of jumps and microstructure noise. Econometric Reviews, 39(10), 2020.
+Jingwei Cai, Quanxin Zhu, and Ping Chen. Nonparametric threshold estimation of spot volatility
+based on high-frequency data for time-dependent diffusion models with jumps. Advances in
+Difference Equations, 2020.
+Jie Chen and A. K. Gupta. Testing and locating variance changepoints with application to stock
+prices. Journal of the American Statistical Association, 92(438):739–747, 1997. ISSN 01621459.
+Ying Chen, Qian Han, and Linlin Niu. Forecasting the term structure of option implied volatility:
+The power of an adaptive method. Journal of Empirical Finance, 49:157–177, 2018.
+Wen Cheong Chin, Min Cherng Lee, and Grace Lee Ching Yap. Heterogeneous autoregressive
+model with structural break using nearest neighbor truncation volatility estimators for DAX.
+Springerplus, 5(1):1883, November 2016.
+Kim Christensen, Mathias Siggaard, and Bezirgen Veliyev. A Machine Learning Approach to Volatil-
+ity Forecasting*. Journal of Financial Econometrics, 21(5), 2022.
+45
+
+=== page 46 ===
+Fulvio Corsi. A simple approximate long-memory model of realized volatility. Journal of Financial
+Econometrics, 7(2):174–196, 2009.
+Laurie Davies, Christian H¨ohenrieder, and Walter Kr¨amer. Recursive computation of piecewise
+constant volatilities. Computational Statistics & Data Analysis, 56(11):3623–3631, 2012.
+Freddy Delbaen and Walter Schachermayer. A general version of the fundamental theorem of asset
+pricing. Mathematische Annalen, 300(1):463–520, 1994.
+Francis X. Diebold and Roberto S. Mariano. Comparing predictive accuracy. Journal of Business
+and Economic Statistics, 20(1):134–144, Jan 2002.
+Yi Ding, Dimos Kambouroudis, and David G. McMillan. Forecasting realised volatility: Does the
+lasso approach outperform har? Journal of International Financial Markets, Institutions and
+Money, 74, 2021.
+Bradley Efron, Trevor Hastie, Iain Johnstone, and Robert Tibshirani. Least angle regression. The
+Annals of Statistics, 32(2):407–451, 2004.
+Jos´e E Figueroa-L´opez and Bei Wu. Kernel estimation of spot volatility with microstructure noise
+using pre-averaging. Econometric Theory, pages 1–50, 2022.
+Jos´e E. Figueroa-L´opez and Cheng Li. Optimal kernel estimation of spot volatility of stochastic
+differential equations. Stochastic Processes and their Applications, 130(8):4693–4720, 2020.
+Roland Fried. On the online estimation of local constant volatilities. Computational Statistics &
+Data Analysis, 56(11):3080–3090, 2012.
+Piotr Fryzlewicz. Tail-greedy bottom-up data decompositions and fast multiple change-point detec-
+tion. The Annals of Statistics, 46(6B):3390 – 3421, 2018.
+Piotr Fryzlewicz, Theofanis Sapatinas, and Suhasini Subba Rao. A haar: Fisz technique for locally
+stationary volatility estimation. Biometrika, 93(3):687–704, 2006.
+Friedrich G¨otze, Holger Sambale, and Arthur Sinulis. Concentration inequalities for polynomials in
+α-sub-exponential random variables. Electronic Journal of Probability, 26:1–22, 2021.
+Daniel Guterding and Wolfram Boenkost. The heston stochastic volatility model with piecewise
+constant parameters — efficient calibration and pricing of window barrier options. J. Comput.
+Appl. Math., 343(C):353–362, dec 2018.
+46
+
+=== page 47 ===
+Peter Reinhard Hansen and Asger Lunde. Forecasting volatility using high frequency data. The
+Oxford Handbook of Economic Forecasting, 2011.
+Z. Harchaoui and C. L´evy-Leduc. Multiple change-point estimation with a total variation penalty.
+Journal of the American Statistical Association, 105(492):1480–1493, 2010.
+Marc Hoffmann. Adaptive estimation in diffusion processes. Stochastic Processes and their Appli-
+cations, 79(1):135–163, 1999.
+Huaiyu Hu and Ashis Gangopadhyay. A semiparametric approach to the detection of change-
+points in volatility dynamics of financial data. Communications in Statistics - Simulation and
+Computation, pages 1–21, 2023.
+W. H¨ardle and A. Tsybakov. Local polynomial estimators of the volatility function in nonparametric
+autoregression. Journal of Econometrics, 81(1):223–242, 1997.
+Stefano M. Iacus and Nakahiro Yoshida. Estimation for the change point of volatility in a stochastic
+differential equation. Stochastic Processes and their Applications, 122(3):1068–1092, 2012.
+Jean Jacod and Markus Reiss. A remark on the rates of convergence for integrated volatility
+estimation in the presence of jumps. The Annals of Statistics, 42(3):1131 – 1144, 2014.
+Olav Kallenberg and Rafal Sztencel. Some dimension-free features of vector-valued martingales.
+Probability Theory and Related Fields, 88(2), Jun 1991.
+Shin Kanaya and Dennis Kristensen. Estimation of stochastic volatility models by nonparametric
+filtering. Econometric Theory, 32(4):861–916, 2016.
+Seung-Jean Kim, Kwangmoo Koh, Stephen Boyd, and Dimitry Gorinevsky. ℓ1 trend filtering. Siam
+Review - SIAM REV, 51:339–360, 2009.
+Michael Klass and Henry Teicher. Iterated Logarithm Laws for Asymmetric Random Variables
+Barely with or Without Finite Mean. The Annals of Probability, 5(6):861 – 874, 1977.
+Piotr Kokoszka and Gilles Teyssi´ere. Change-point detection in GARCH models: asymptotic and
+bootstrap tests. LIDAM Discussion Papers CORE 2002065, Universit´e catholique de Louvain,
+Center for Operations Research and Econometrics (CORE), December 2002.
+Karolos K. Korkas and Piotr Fryzlewicz. Multiple change-point detection for non-stationary time
+series using wild binary segmentation. Statistica Sinica, 27(1):287–311, 2017.
+47
+
+=== page 48 ===
+Dennis Kristensen. Nonparametric filtering of the realized spot volatility: A kernel-based approach.
+Econometric Theory, 26(1):60–93, 2010.
+Arun Kumar Kuchibhotla and Abhishek Chakrabortty. Moving beyond sub-gaussianity in high-
+dimensional statistics: applications in covariance estimation and linear regression. Information
+and Inference: A Journal of the IMA, 11(4):1389–1456, 2022.
+Dilip Kumar and S. Maheswaran. Detecting sudden changes in volatility estimated from high, low
+and closing prices. Economic Modelling, 31:484–491, 2013.
+Marc Lavielle and Gilles Teyssiere. Adaptive detection of multiple change-points in asset price
+volatility. In Long memory in economics, pages 129–156. Springer, 2007.
+Xiafei Li, Chao Liang, and Feng Ma. Forecasting stock market volatility with a large number of
+predictors: New evidence from the ms-midas-lasso model. Annals of Operations Research, Apr
+2022.
+Yifan Li, Ingmar Nolte, and Sandra Nolte. High-frequency volatility modeling: A markov-switching
+autoregressive conditional intensity model. Journal of Economic Dynamics and Control, 124,
+2021.
+Zhicheng Li and Haipeng Xing. High-frequency quote volatility measurement using a change-point
+intensity model. Mathematics, 10:634, 02 2022.
+Han Ying Liang, De Li Li, and Andrew Rosalsky. Complete moment and integral convergence for
+sums of negatively associated random variables. Acta Mathematica Sinica, English Series, 26(3):
+419–432, Mar 2010.
+Kevin Lin, James Sharpnack, Alessandro Rinaldo, and Ryan J Tibshirani. Approximate recovery
+in changepoint problems, from ℓ2 estimation error rates. arXiv preprint arXiv:1606.06746, 2016.
+Kevin Lin, James L Sharpnack, Alessandro Rinaldo, and Ryan J Tibshirani. A sharp error analysis
+for the fused lasso, with application to approximate changepoint screening. Advances in Neural
+Information Processing Systems, 30, 2017.
+Lily Y Liu, Andrew J Patton, and Kevin Sheppard. Does anything beat 5-minute rv? a comparison
+of realized measures across multiple asset classes. Journal of Econometrics, 187(1):293–311, 2015.
+48
+
+=== page 49 ===
+Asger Lunde, Kevin Sheppard, and Neil Shephard. Econometric analysis of vast covariance matrices
+using composite realized kernels and their application to portfolio choice. Journal of Business
+and Economic Statistics, 34:504–518, 2015.
+Mat´uˇs Maciak. Quantile lasso in arbitrage-free option markets. Econometrics and Statistics, 18:
+106–116, 2021.
+Farooq Malik. Sudden changes in variance and volatility persistence in foreign exchange markets.
+Journal of Multinational Financial Management, 13(3):217–230, 2003.
+Cecilia Mancini. The speed of convergence of the threshold estimator of integrated variance. Stochas-
+tic Processes and their Applications, 121(4):845–855, 2011.
+Cecilia Mancini, Vanessa Mattiussi, and Roberto Ren`o. Spot volatility estimation using delta se-
+quences. Finance and Stochastics, 2015.
+Danilo Mercurio and Vladimir Spokoiny. Statistical inference for time-inhomogeneous volatility
+models. The Annals of Statistics, 32(2):577 – 602, 2004.
+Thomas Mikosch and C˘at˘alin St˘aric˘a. Changes of structure in financial time series and the garch
+model. REVSTAT-Statistical Journal, 2:41–73, Jun. 2004.
+Maria Mohr and Natalie Neumeyer. Nonparametric volatility change detection. Scandinavian Jour-
+nal of Statistics, 48(2):529–548, 2021.
+Peter Nystrup, Bo William Hansen, Henrik Madsen, and Erik Lindstr¨om. Detecting change points
+in vix and s&p 500: A new approach to dynamic asset allocation. Journal of Asset Management,
+17(5):361–374, Sep 2016.
+Andrew J. Patton. Volatility forecast comparison using imperfect volatility proxies. Journal of
+Econometrics, 160(1):246–256, 2011.
+Jean-Yves Pitarakis. Least squares estimation and tests of breaks in mean and variance under
+misspecification. The Econometrics Journal, 7(1):32–54, 2004.
+Mark Podolskij and Mathias Vetter. Estimation of volatility functionals in the simultaneous presence
+of microstructure noise and jumps. Bernoulli, 15(3):634 – 658, 2009.
+Aaditya Ramdas and Ryan J. Tibshirani. Fast and flexible ADMM algorithms for trend filtering.
+Journal of Computational and Graphical Statistics, 25(3):839–858, 2016.
+49
+
+=== page 50 ===
+David E. Rapach and Jack K. Strauss. Structural breaks and garch models of exchange rate volatility.
+Journal of Applied Econometrics, 23(1):65–90, 2008.
+Gordon J. Ross. Modelling financial volatility in the presence of abrupt changes. Physica A:
+Statistical Mechanics and its Applications, 392(2):350–360, 2013.
+Holger Sambale. Some notes on concentration for α-subexponential random variables. In High
+Dimensional Probability IX, pages 167–192, 2023.
+Yanlin Shi and Kin-Yip Ho. Modeling high-frequency volatility with three-state figarch models.
+Economic Modelling, 51:473–483, 2015.
+Mario Souto, Joaquim Dias Garcia, and Gustavo C. do Amaral. ℓ1 adaptive trend filter via fast
+coordinate descent. 2016 IEEE Sensor Array and Multichannel Signal Processing Workshop
+(SAM), 2016.
+Vladimir Spokoiny. Multiscale local change point detection with applications to value-at-risk. The
+Annals of Statistics, 37(3):1405–1436, 2009.
+C˘at˘alin St˘aric˘a and Clive Granger. Nonstationarities in stock returns. The Review of Economics
+and Statistics, 87(3):503–522, 2005.
+Ryan J. Tibshirani. Adaptive piecewise polynomial estimation via trend filtering. The Annals of
+Statistics, 42(1):285 – 323, 2014.
+Viktor Todorov and Yang Zhang. Testing for anticipated changes in spot volatility at event times.
+Econometric Theory, 2023.
+Thibault Vatter, Hau-Tieng Wu, Val´erie Chavez-Demoulin, and Bin Yu. Non-parametric estimation
+of intraday spot volatility: disentangling instantaneous trend and seasonality. Econometrics, 3
+(4):864–887, 2015.
+Daren Wang, Yi Yu, and Alessandro Rinaldo. Univariate mean change point detection: Penalization,
+CUSUM, and optimality. Electronic Journal of Statistics, 14(1), 2020.
+Jiahui Wang and Eric Zivot. A bayesian time series model of multiple structural changes in level,
+trend, and variance. Journal of Business & Economic Statistics, 18(3):374–386, 2000.
+Ping Wang and Tomoe Moore. Sudden changes in volatility: The case of five central european stock
+markets. Journal of International Financial Markets, Institutions and Money, 19(1):33–46, 2009.
+50
+
+=== page 51 ===
+Yu-Xiang Wang, Alex Smola, and Ryan Tibshirani. The falling factorial basis and its statistical
+applications. Proceedings of the 31st International Conference on Machine Learning, 32(2):730–
+738, 2014.
+Xisheng Yu. Nonparametric estimation of quadratic variation using high-frequency data. Mathe-
+matical Methods in the Applied Sciences, 2020.
+Huiming Zhang and Haoyu Wei. Sharper sub-weibull concentrations. Mathematics, 10(13), 2022.
+Lan Zhang, Per Mykland, and Yacine Ait-Sahalia. A tale of two time scales: Determining integrated
+volatility with noisy high-frequency data. Journal of the American Statistical Association, pages
+1394–1411, 2005.
+51
+
+=== page 52 ===
+Appendix
+8 Sub-Weibull random variables
+A random variable X with sub-Weibull distribution with tail parameter α is one such that
+∀t > 0 : P (|X − E[X]| ≥ t) ≤ 2 exp (−(t/C)α)
+for some α, C > 0. The parameters α = 1 and α = 2 correspond to sub-exponential
+and sub-Gaussian random variables, respectively. This class of heavy-tailed distributions
+(and a corresponding notion for random vectors) has recently been defined and studied by
+Kuchibhotla and Chakrabortty (2022). (See also Zhang and Wei (2022).) Concentration
+inequalities for such random variables (and the corresponding random vectors) have also
+been recently derived by G¨otze et al. (2021) and Sambale (2023). Many of these results
+have been extended to a larger class of heavy-tailed distributions by Bakhshizadeh et al.
+(2023).
+We recall a couple of properties of sub-Weibull distributions. Note that an equivalent
+definition of the class subWeib(α) can be stated in terms of Orlicz-(quasi-)norms. Indeed,
+X ∈ subWeib(α) if and only if
+∥X∥Ψα := inf {η > 0 : E [exp ((X/η)α)] ≤ 2}
+is finite. Here, Ψα denotes the Orlicz function s 7→ exp(sα) − 1, α > 0.
+Note that in general, the constant C in the tail bound definition of a sub-Weibull random
+variable X and ∥X∥Ψα are proportional to each other by a positive factor depending only
+on α. (See Sambale (2023) and G¨otze et al. (2021).)
+Proposition 8.1. Let X1 and X2 be sub-Weibull random variables with tail parameters
+α1 and α2, respectively. Then, X1X2 and X1 + X2 are sub-Weibull with respective tail
+parameters α1 + α2 and max(α1, α2).
+52
+
+=== page 53 ===
+Proposition 8.2. Let the random variables X1, · · · , Xn ∈ subWeib(α), with α > 0, be
+independent, and suppose that ∥Xi∥Ψα ≤ M for all i = 1, · · · , n. Then, for all n ≥ 1 and
+t > 0, we have
+P
+ 
+1
+n
+ nX i=1 (Xi − E(Xi))  ≥ t ! ≤ 2 exp  − 1 Cα · tαnα/2 M α !
+where Cα > 0 is a universal constant depending only on α.
+This follows from the proof of (Sambale, 2023, Lemma 5.2).
+9 Technical Lemmas
+Lemma 9.1. Let
+ bt1, · · · , btn  denote the LASSO change point estimates, and let  ˆϑ1, · · · , ˆϑn 
+denote the LASSO estimator of F (rT ). Then
+ bt1, · · · , btn  and  ˆϑ1, · · · , ˆϑn  satisfy
+∀ℓ ∈
+n
+1, · · · ,
+ bA(λ)  o : nX
+i=btℓ
+ϑi −
+nX
+i=btℓ
+ˆϑi = nλ 2 sign  ˆϑbtℓ(λ) − ˆϑbtℓ(λ)−1  , and (8)
+∀j ∈ {1, · · · , n} :
+ nX i=j ϑi − nX i=j ˆϑi  ≤ nλ 2 . (9)
+The vector
+
+ˆϑ1(λ), · · · , ˆϑn(λ)
+
+satisfies:
+ˆϑj (λ) = bηkforbtk−1(λ) ≤ j ≤ btk(λ) − 1, (10)
+for some constant values bη1, · · · , bη bK , where bK ≥ 1.
+For a proof, see (Harchaoui and L´evy-Leduc, 2010). The proof relies on a minimization
+criterion based on sub-gradients for each one of the objective functions.
+In what follows, let Z[r, s] := Ps i=r Zi for any random vector Z = (Z1, · · · , Zn).
+Lemma 9.2. Let ζ J 1 , · · · , ζ J n be subWeib(α) random variables representing the compound
+Poisson jump components. If {νn}n≥1 and {µn}n≥1 are two positive sequences such that
+53
+
+=== page 54 ===
+µα n να n [log(n)]−1 −−−−−→ n→+∞ +∞, then
+P
+
+ sup
+1≤rn<sn≤n
+|rn−sn|≥ζn
+ ζJ [rn, sn − 1] sn − rn  ≥ µn
+
+ −−−−−→ n→+∞ 0.
+Proof. Clearly,
+P
+
+ sup
+1≤rn<sn≤n
+|rn−sn|≥ζn
+ ζJ [rn, sn − 1] sn − rn  ≥ µn
+
+ ≤ X
+1≤rn<sn≤n
+|rn−sn|≥ζn
+P
+ ζJ [rn, sn − 1] sn − rn  ≥ µn  .
+Next, we have:
+P
+ ζJ [rn, sn − 1] sn − rn  ≥ µn  = P    Nτsn−1,tX j=Nτrn−1,t +1 Q2 j  ≥ µn |sn − rn|  
+= P
+
+
+ Nτsn−1,tX j=1 Q2 j − Nτrn−1,tX j=1 Q2 j  ≥ µn |sn − rn|  
+≤ P
+
+
+ Nτsn−1,tX j=1 Q2 j  ≥ 1 2 µn |sn − rn|  
++ P
+
+
+ Nτrn−1,tX j=1 Q2 j  ≥ 1 2 µn |sn − rn|  
+≤ 4 exp (−Cαµα n |sn − rn|α) ,
+where Cα is an absolute constant depending on α, ∥Q∥Ψα , and T . Summing over 1 < rn <
+sn ≤ n with |rn − sn| ≥ νn, we obtain
+P
+
+ sup
+1≤rn<sn≤n
+|rn−sn|≥ζn
+ ζJ [rn, sn − 1] sn − rn  ≥ µn
+
+ ≤ 4
+ n(n − 1)
+2
+
+exp (−Cαµα n ζ α n )
+≤ 2 exp
+
+2 log(n)
+
+1 − Cα
+µα n να n
+log(n)
+
+,
+and the latter upper bound converges to 0 as µα n ζ α n [log(n)]−1 −−−−−→ n→+∞ +∞.
+54
+
+=== page 55 ===
+10 Proofs
+In this section, we present the proof of the results outlined in the paper.
+Proposition 2.6. By Abel’s summation formula:
+nX
+i=1
+(˜zi − zi)2 =
+nX
+i=1
+(˜zi + zi)(˜zi − zi) = (˜zn + zn)Sn −
+n−1X
+k=1
+Sk [(˜zk+1 − zk+1) − (˜zk − zk)] ,
+where Sk := Pk i=1(˜zi − zi). Therefore,
+ 1 n X i=1 (˜zi − zi)2  ≤ 2  sup 1≤i≤n |zi| + sup 1≤i≤n |˜zi|   1 n nX k=1 Sk  .
+Suppose now that
+nX
+i=1
+(˜zi − zi) = o(n−a)
+holds in mean (resp. a.s.). Then, by the results of (Bibaut et al., 2020), it follows that
+n−1 Pn i=1(˜zi − zi)2 = o(n−a) in mean (resp. a.s.) as well.
+Otherwise, if n−1 Pn i=1(˜zi − zi) = O(n−a) in mean or almost surely, then by (Apostol,
+2013, Theorem 3.2) (using Euler’s summation formula), it follows that:
+1
+n
+nX
+k=1
+Sk =
+
+
+
+O
+ 
+n− max(1,a) ; fora ̸= 1,
+O (log(n)/n) ; fora = −1
+,
+in mean, or almost surely, and so the same holds for n−1 Pn i=1(˜zi − zi)2.
+Proposition 4.1. By the definition of bβ, we have:
+1
+n
+F (rt) − bβ  2 2 + λ Dbβ  1 ≤ 1 n F (rt) − σ2 t 2 2 + λ Dσ2 t  1 .
+We thus have:
+1
+n
+bβ − σ2 t  2 2 + 2 n D F (rt) − σ2 t , bβ − σ2 t E 2 ≤ λ Dσ2 t  1 − Dbβ  1  .
+55
+
+=== page 56 ===
+Using the Cauchy-Schwarz inequality and the fact that ∥·∥1 ≤ √n ∥·∥2, we obtain:
+1
+n
+bβ − σ2 t  2 2 ≤ 2 n F (rt) − σ2 t  2 · bβ − σ2 t  2 + 2λ√n bβ − σ2 t  2 .
+Dividing through by n−1/2
+bβ − σ2 t  2 results in the bound
+1√n bβ − σ2 t  2 ≤ 2√n F (rt) − σ2 t  2 + 2λn.
+Now using the triangle inequality, we obtain:
+1
+2√n
+ˆβ − σ2 t  2 ≤ 1√n F (rt) − σ2 t − χ · ζJ  2 + χ · 1√n ζJ  2 + λn.
+This establishes the result.
+56

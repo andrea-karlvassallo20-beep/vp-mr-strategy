@@ -1,0 +1,1258 @@
+=== page 1 ===
+AlphaLogics: A Market Logic-Driven Multi-Agent System for
+Scalable and Interpretable Alpha Factor Generation
+Zhangyuhua Weng 1 Shengli Zhang 1 Taotao Wang 1 Yihan Xia 1
+College of Electronic and Information Engineering, Shenzhen University
+2410043007@mails.szu.edu.cn, zsl@szu.edu.cn, ttwang@szu.edu.cn,
+xiayihan2023@email.szu.edu.cn
+Abstract
+Factor investing is ultimately grounded in market
+logic—the latent mechanism behind observed al-
+pha factors that explains why they should persist
+across assets and regimes. However, recent factor
+mining prioritizes factor discovery over logic dis-
+covery, producing complex alpha factors with un-
+clear rationale, while market logic remains largely
+handcrafted and difficult to scale. To address
+this challenge, we propose AlphaLogics, a market
+logic-driven multi-agent system for factor mining.
+AlphaLogics consists of three key components: (i)
+Market Logic Mining: reverse-extracting market
+logic from historical factor libraries to construct
+an initial market logic library; (ii) Guided Fac-
+tor Generation: using given market logics (gen-
+erated in i&iii) to guide new factors generation
+and optimization with backtesting feedback; and
+(iii) Market Logic Generation: generating new
+market logics conditioned on the initial market
+logic library, and refining each market logic by
+aggregating the backtest outcomes of its guided
+factors, continuously refreshing the library. Ex-
+periments on CSI 500 and S&P 500 show that Al-
+phaLogics consistently improves predictive met-
+rics and risk-adjusted returns over representative
+baselines, while producing a market logic library
+that remains empirically useful for guiding further
+factor discovery.
+1. Introduction
+With the rapid digitalization of financial markets, quantita-
+tive investing increasingly relies on alpha factors as core
+building blocks that shape return stability and risk exposure
+(Gu et al., 2020). Classical factor design is grounded in
+market logic, offering interpretability but limited scalabil-
+ity, whereas market data-driven mining scales efficiently
+yet often lacks economic grounding and robustness (Zhang
+et al., 2020). Bridging this trade-off—scalable factor gener-
+ation with interpretable market logic and cross-cycle robust-
+ness—remains a central challenge in quantitative finance
+(Zhang et al., 2020).
+Traditional factor research starts from market logic, dis-
+tilling economic regularities into structured mathemati-
+cal forms (Fama & French, 2015); Historical factor li-
+braries such as Alpha191 embed interpretable reasoning
+(e.g., momentum, reversal, volatility, and price–volume
+interaction) and show practical relevance (Guotai Junan
+Securities, 2025). However, this paradigm is slow and dif-
+ficult to scale because discovery depends on expert itera-
+tion and extensive cross-cycle validation (Cui et al., 2021).
+In contrast, Machine learning methods can generate mas-
+sive candidate pools—ranging from widely used composite
+factors in Alpha101 to large-scale automated frameworks
+(Kakushadze, 2016; Zhang et al., 2020; Ren et al., 2024;
+Shi et al., 2025)—but the resulting factors are often hard to
+interpret due to missing theoretical or behavioral constraints
+(Tatsat & Shater, 2025; Rudin & Radin, 2019; Tong et al.,
+2024).
+Large language models (LLMs) offer a promising path to in-
+ject domain knowledge and structured reasoning into factor
+generation (Nie et al., 2024; Ding et al., 2023). Existing sys-
+tems such as Alpha-GPT and AlphaAgent demonstrate that
+natural-language ideas and semantic constraints can guide
+factor construction and mitigate performance decay (Wang
+et al., 2025; Tang et al., 2025). Nevertheless, prior LLM-
+based frameworks predominantly optimize factors, rather
+than treating market logic itself as an explicit, verifiable,
+and optimizable research object.
+In scientific modeling, explicit hypotheses serve as struc-
+tural priors that constrain the search space and enhance
+interpretability. Quantitative investing implicitly relies on
+this mechanism as well, yet the acquisition of high-quality
+market logic has long been limited by expert experience and
+heuristic exploration.
+To address this gap, we propose AlphaLogics, a market
+1
+arXiv:2603.20247v1  [q-fin.CP]  10 Mar 2026
+
+=== page 2 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+logic-driven multi-agent system for factor mining, which
+treats market logic as an explicit and iteratively improvable
+object. AlphaLogics consists of three key components: (i)
+Market Logic Mining. This Stage reverse-extracts mar-
+ket logic from historical public factor libraries—Alpha101
+(Kakushadze, 2016), Alpha191 (Guotai Junan Securities,
+2025), Alpha158 (Qlib Team, 2025a), and Alpha360 (Qlib
+Team, 2025b)—motivated by their empirical robustness
+across markets (Gu et al., 2020; Afzal et al., 2023; Hibbeln
+et al., 2025) to construct an initial market logic library. (ii)
+Guided Factor Generation. Using new market logics (gen-
+erated in i&iii) as guidance, this Stage generates candidate
+factors and optimizes them with backtesting feedback. (iii)
+Market Logic Generation. This Stage generates new mar-
+ket logics conditioned on the initial market logic library,
+and refines each market logic by aggregating the backtest
+performances of its guided factors, continuously refreshing
+the market logic library. In this work, we focus on technical
+market logic derived from OHLCV and price–volume pat-
+terns, and do not model fundamental or accounting-based
+signals.
+We evaluate the AlphaLogics on CSI 500 (China) and S&P
+500 (U.S.) from January 2021 to December 2024(On the
+held-out test period); after trading costs, it achieves annu-
+alized excess returns of 16.72% (IR = 1.5266) and 13.75%
+(IR = 1.2658), respectively, and further experiments show
+that iterative market-logic optimization improves the quality
+of logic-guided factors over time.
+The main contributions of this work are summarized as
+follows:
+1. Construction of a market logic library: We extract
+underlying market logic from historical factor libraries,
+building a comprehensive repository of reliable market
+logics to support factor engineering.
+2. Automated generation and optimization of market
+logic: AlphaLogics mitigates the reliance on human-
+generated market logic by generating and iteratively
+refining new market logic, enhancing both scalability
+and quality.
+3. Extensive multi-market validation: Empirical ex-
+periments across multiple markets show that factors
+generated under AlphaLogics achieve superior perfor-
+mance compared to existing methods, while the as-
+sociated market logic remains more transparent and
+interpretable.
+2. Related Work
+Factor construction sits at the core of quantitative investing
+and has evolved with asset pricing theory and AI. We review
+Figure 1. Comparison of advantages and disadvantages of alpha
+factor mining methods. Manual Market Logic-driven factor min-
+ing (left) offers high interpretability but lacks scalability; Market
+data driven factor mining (middle) scales well but often lacks in-
+terpretability; Our method (right) offers high interpretability and
+scalability.
+three streams: Manual Market Logic-driven design, Market
+Data-Driven modeling, and LLM-driven factor construction,
+highlighting their trade-offs and the gap our work targets.
+2.1. Manual Market Logic-Driven Factor Construction
+Classical factor models derive economically interpretable
+pricing factors from observables such as fundamentals and
+market behavior. The Fama–French three-factor model
+(Fama & French, 1993) and its five- and six-factor exten-
+sions (Fama & French, 2015; 2018) embed explicit market
+logic around size, value, profitability, investment, and mo-
+mentum. These approaches offer clear economic narratives
+but rely on expert design and long validation cycles, limiting
+scalability and responsiveness in high-dimensional markets.
+2.2. Market Data-Driven Factor Construction
+Machine learning enables scalable, data-driven factor con-
+struction (Gu et al., 2020; Ye et al., 2024). Nonlinear models
+and automatic feature extraction capture complex signals
+from price, volume, text, and microstructure (Gu et al., 2020;
+Liu, 2025; Feng et al., 2024). However, these factors often
+lack explicit market logic, weakening interpretability and
+theoretical grounding and exacerbating regime instability
+and overfitting concerns (Liao et al., 2025).
+2.3. LLM-Driven Factor Construction
+LLM-based frameworks largely focus on automating factor
+generation and refinement via generation–backtesting loops
+(Kou et al., 2024; Duan et al., 2025; Tang et al., 2025), while
+leaving market logic implicit and manually crafted rather
+than generated and evolved—making it time-consuming to
+build and hard to scale.
+2
+
+=== page 3 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+To bridge this gap, we propose AlphaLogics, which treats
+market logic as an explicit, optimizable object to combine
+scalability with interpretability.
+3. Methodology
+Figure 2 summarizes AlphaLogics in three stages: (1) Mar-
+ket Logic Mining to build an initial logic library from his-
+torical factor libraries, (2) Factor Generation to generate
+and refine factors with backtesting feedback under given
+market logics, and (3) Market Logic Generation to gen-
+erate new market logics conditioned on the initial market
+logic library, and refining each market logic by aggregating
+the backtest outcomes of its guided factors, continuously
+refreshing the library.
+3.1. Market Logic Mining
+We extract market logic from historical factor libraries via a
+structured multi-agent interpretation pipeline.
+We mine latent logic from Alpha101 (Kakushadze, 2016),
+Alpha191 (Guotai Junan Securities, 2025), Alpha158 (Qlib
+Team, 2025a), and Alpha360 (Qlib Team, 2025b), using
+three agents to abstract factor expressions from “mathemat-
+ical formula → financial meaning → market logic”. We
+represent a single market logic as the following pair:
+H = ⟨C, B⟩ (1)
+where C is a conjunction/disjunction of predicates ci =
+(v, op, θ, w) over market variables, and B = (y, d, h) speci-
+fies target, direction, and horizon. We distinguish the human-
+readable H, structured Hstruct, and executable constraints
+Γ = COMPILE(Hstruct), which constrain variables, oper-
+ator families, parameter ranges, and sign/direction. Ap-
+pendix A.4 provides the schema and a COMPILE exam-
+ple.Here H is human-readable and specifies only coarse C
+and B. The structured instantiation into Hstruct and compila-
+tion into Γ are performed later by the LogicToFinanceCon-
+straintAgent (Section 3.2).
+FormulaStructureAgent. The FormulaStructureAgent
+takes a factor’s mathematical formula as input and focuses
+on analyzing its operational structure and formal properties.
+The output is a structured description of the factor’s compu-
+tational logic without introducing financial interpretation.
+FinancialSemanticsMappingAgent. After obtaining the
+structural logic, the FinancialSemanticsMappingAgent
+maps mathematical operations into canonical financial and
+behavioral-finance semantics.
+MarketLogicAbstractionAgent. Finally, the MarketLogi-
+cAbstractionAgent abstracts financial semantics into explicit
+market logic, expressed in natural language. The output is a
+human-readable market logic H with explicit C, B seman-
+tics, which is later canonicalized into Hstruct.
+The example below illustrates factor-to-market logic extrac-
+tion.
+Example Factor:
+f = −TS CORR(RANK(open),
+RANK(volume),
+10)
+FormulaStructureAgent : Identifies cross-sectional
+ranking on price and volume, followed by 10-day
+rolling correlation with sign reversal.
+FinancialSemanticsMappingAgent : Maps price
+to initial reaction and sentiment; maps volume to
+participation and confirmation; correlation measures
+persistent price–volume co-movement.
+MarketLogicAbstractionAgent : Extracts Market
+Logic: “(C) Price movements lacking volume con-
+firmation are more likely driven by short-lived senti-
+ment and mean-revert; (B) thus the expected short-
+horizon forward return is negative, while strong vol-
+ume confirmation indicates information assimilation
+and trend continuation.”
+This step converts historical factors into a scalable, inter-
+pretable logic library Hinit.
+3.2. Factor Generation & Optimization
+We search for factors guided by new market logics, using
+backtesting feedback for optimization.
+Formally, a single technical factor can be expressed as:
+ft = O(xt−k:t) (2)
+where xt−k:t is the lookback window and O is an operator
+composition.
+Factors are generated from a fixed DSL with parameterized
+operators (Appendix A.2).
+Algorithm 1 fixes H, canonicalizes it into Hstruct, compiles
+constraints Γ, and refines factors within Γ using backtest-
+ing feedback, with both canonicalization and compilation
+handled by the LogicToFinanceConstraintAgent. Selection
+and early stopping use J (Rval) on Dval only. When im-
+provements stop, we summarize per-logic performance (at
+minimum the best validation metrics) for the outer loop.
+Agents are listed below. For brevity in Algorithms 1 and
+2, we use abbreviated agent names: L2FC-Agent (LogicTo-
+FinanceConstraintAgent), FEG-Agent (FactorExpression-
+GeneratorAgent), FPF-Agent (FactorPerformanceFeedback-
+Agent), MLGA-Agent (MarketLogicGeneratorAgent), and
+MLRD-Agent (MarketLogicRefinementDirectionAgent).
+LogicToFinanceConstraintAgent: Transforms the human-
+3
+
+=== page 4 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+Figure 2. The autonomous workflow of AlphaLogics. The framework operates in three stages: (1) Market Logic Mining extracts
+latent market logic from historical factor libraries; (2) Guided Factor Generation guides new factors generation and optimization with
+backtesting feedback; (3) Market Logic Generation generates new market logics conditioned on the initial market logic library, and
+refining each market logic by aggregating the backtest outcomes of its guided factors, continuously refreshing the library.
+readable market logic H produced by the MarketLogicAb-
+stractionAgent into a normalized structured form Hstruct
+by standardizing variable names and filling required fields
+without changing semantics, and then implements Γ =
+COMPILE(Hstruct) to map structured market logic to exe-
+cutable constraints over variables, operator families, param-
+eter ranges, and sign/direction consistency implied by B.
+The goal of this stage is to convert the high-level market
+logic into a constraint description with financial semantic
+consistency.
+FactorExpressionGeneratorAgent: Under the financial
+semantics and operational constraints provided by Γ, the
+FactorExpressionGeneratorAgent generates mathematical
+factor expressions that satisfy the market logical seman-
+tics. The generation process involves the selection of basic
+operators, time windows, parameter values, and operator
+combination methods, enabling the factors to be directly cal-
+culated and back-tested in the quantitative trading system.
+Backtest Engine: Given factors F generated by the Fac-
+torExpressionGeneratorAgent and historical data split into
+Dtrain, Dval, and Dtest, the Backtest Engine runs training
+and validation backtests and returns (Rtrain, Rval). Here
+Rtrain, Rval are the corresponding sets of backtest metrics
+(e.g., IC/IR/AR/MDD). The final backtest results are re-
+ported on Dtest.
+FactorPerformanceFeedbackAgent: Because LLM gen-
+eration is stochastic, factors produced under the same logic
+can vary. The agent maintains a buffer of the most recent M
+candidates and their Dval metrics under a fixed Γ, performs
+cross-candidate comparison, and returns structured feed-
+back to guide the next generation. We set M to the per-logic
+candidate budget and reset the buffer when switching to a
+new market logic.
+If factors’ performance on Dval (J (Rval)) stops improving,
+the Inner Loop terminates and returns a logic-level evidence
+summary ELogic (at minimum including R⋆ val) for the outer
+loop (Section 3.3).
+3.3. Market Logic Generation & Optimization
+We optimize market logic itself when factor performance
+under a fixed logic stops improving.
+When successive rounds under a fixed logic stop improv-
+ing, the testable prediction structure of that logic is likely
+saturated rather than the factor search space being too small.
+Algorithm 2 generates and refines market logic based on
+accumulated performance from the Inner Loop. Each newly
+generated market logic is appended to the market logic li-
+brary, which grows over rounds and becomes part of the
+conditioning context for subsequent generation. Each logic
+is treated as a testable objection, and we keep the best H ⋆ by
+maximizing J (R⋆ val) on Dval. The outer loop calls the Mar-
+ketLogicRefinementDirectionAgent after each inner-loop
+run to aggregate historical evidence and propose refinement
+directions.
+MarketLogicGeneratorAgent: Generates human-readable
+4
+
+=== page 5 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+Algorithm 1 Inner Loop: Factor Optimization under Fixed
+Market Logic H
+Input: H (human-readable market logic, generated by MLGA-
+Agent),
+Dtrain/Dval (train/validation splits),
+objective J (scalar on validation metrics, e.g., IR),
+early-stop Tearly
+Output: ELogic (logic-level evidence summary), R⋆ val (best vali-
+dation metrics under H)
+c ← 0; R⋆ val ← NONE
+f bfactor ← NONE
+(Hstruct, Γ) ← L2FC-AGENT(H)
+while c < Tearly do
+F ← FEG-AGENT(Γ | f bfactor)
+(Rtrain, Rval) ← BACKTESTENGINE(F ; Dtrain, Dval)
+if R⋆ val = NONE or J (Rval) > J (R⋆ val) then
+R⋆ val ← Rval; c ← 0
+else
+c ← c + 1
+end if
+if c < Tearly then
+f bfactor ← FPF-AGENT(Hstruct, F, Rval)
+end if
+end while
+ELogic ← ⟨Hstruct, R⋆ val⟩
+return ELogic, R⋆ val
+market logic H = ⟨C, B⟩. In the first round it conditions
+only on the initial market logic library Hinit; in later rounds
+it conditions on the expanded library together with the cur-
+rent market logic Hcurrent, market logic history Hhist, and
+accumulated feedback to propose refinements. Each newly
+generated market logic is appended to the library and be-
+comes part of the conditioning context in subsequent rounds.
+The role of this Agent is not to randomly generate text
+descriptions, but to diverge based on the extracted market
+logics, ensuring that the new market logics still correspond
+to market mechanisms that can be quantitatively character-
+ized.
+MarketLogicRefinementDirectionAgent: The core com-
+ponent of the Outer Loop is the MarketLogicRefinementDi-
+rectionAgent, which is invoked after each inner-loop run to
+act directly on market logic rather than fine-tuning factor ex-
+pressions. This agent takes the current market logic Hcurrent,
+the historical market logic set Hhist, the accumulated logic
+evidence history Ehist returned by the Inner Loop, and the
+market logic-level feedback history f bLogic hist as inputs. It sum-
+marizes and reflects the market logic from a cross-factor
+perspective and provides refinement suggestions. Specifi-
+cally, this agent will comprehensively analyze the following
+information: (1) The performance distribution of different
+factors in time, market conditions, and risk dimensions un-
+der this market logic; (2) Components in the market logic
+that may be too broad, vague, or mismatched with the actual
+market structure.
+Algorithm 2 Outer Loop: Market Logic Optimization
+Input: Hinit: Initial logic library; Dtrain, Dval
+T : Max optimization attempts; J (·): scalar objective on Dval
+Output: H ⋆: Optimized market logic
+Hlib ← Hinit
+Hcurrent ← MLGA-AGENT(Hlib)
+Hlib.append(Hcurrent)
+Hhist ← [Hcurrent]; Ehist ← [ ]; f bLogic hist ← [ ]
+Hbest ← Hcurrent; Ebest ← NONE; t ← 0
+while t < T do
+(ELogic, R⋆ val) ← INNERLOOP(Hcurrent; Dtrain, Dval)
+Update history: Ehist.append(ELogic)
+f bLogic ← MLRD-AGENT(Hcurrent, Hhist, Ehist, f bLogic hist )
+f bLogic hist .append(f bLogic)
+if Ebest = NONE or J (R⋆ val) > J (Ebest) then
+Hbest ← Hcurrent; Ebest ← R⋆ val
+end if
+Hnew ← MLGA-AGENT(Hlib, Hcurrent, Hhist, Ehist, f bLogic hist )
+Hhist.append(Hnew)
+Hlib.append(Hnew)
+Hcurrent ← Hnew; t ← t + 1
+end while
+return H ⋆ ← Hbest
+Based on the refinement suggestions, the MarketLogicGen-
+eratorAgent refines or restructures the market logic and
+feeds it back into the next inner-loop round.
+4. Experiments
+4.1. Experimental Setup
+We conduct backtesting in Qlib (Yang et al., 2020) on CSI
+500 (China A-share) and S&P 500 (U.S.) using OHLCV
+data from Baostock (BaoStock, 2024) and Yahoo Finance
+(Aroussi, 2024). We filter stocks with fewer than 100 trading
+days and report metrics in Appendix A.5. The data split
+is train (2015.01–2019.12), validation (2020.01–2020.12),
+and test (2021.01–2024.12).
+No-leakage and unified evaluation protocol. We strictly
+split Dtrain, Dval, and Dtest. All optimization signals (early
+stopping, factor/logic selection, and feedback) use Dval only;
+Dtrain is used only for fitting LightGBM and computing
+factor values. The final backtest results are reported on
+Dtest. All baselines share the same stock universe, time
+split, OHLCV inputs, top-outside rule, and cost model, and
+output a cross-sectional score per date (LightGBM on base
+plus generated factors for factor methods; model predic-
+tions for deep baselines), so differences come from signal
+construction.
+AlphaLogics use four base factors (intraday return, daily
+return, 20-day relative volume, normalized daily range) and
+concatenate them with generated factors to train LightGBM
+(Ke et al., 2017). Features and returns are cross-sectionally
+Z-scored. For each market logic, we train LightGBM on
+5
+
+=== page 6 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+Dtrain, evaluate a predefined selection objective J (e.g., val-
+idation IR, IC, ICIR, AR, and MDD) on Dval for early
+stopping and model selection. After training the model
+on Dtrain ∪ Dval, we run a final backtest on Dtest and report
+the resulting performance metrics. Backtesting uses a top-
+outside strategy (select the 50 top-ranked stocks based on the
+predicted returns and exclude the 5 lowest-ranked stocks.).
+Transaction costs are included: CSI 500 buy 0.0005/sell
+0.0015; S&P 500 buy 0.0000/sell 0.0005.The Inner Loop
+uses an early-stopping threshold of Tearly = 3.
+For agent-based and LLM-based baselines, we align bud-
+gets across markets and methods, fixing the number of trials,
+evolution rounds, and candidate factors per round as de-
+scribed earlier. And all methods are evaluated with the
+same top-outside strategy. This setup isolates the impact of
+market logic guidance rather than differences in evaluation
+protocol.
+4.2. Benchmark Results on CSI 500 and S&P 500
+We compare AlphaLogics with representative baselines on
+predictive and portfolio metrics across both markets.
+We include deep time-series models, tree-based models,
+professional quant models, LLM baselines, and multi-agent
+factor systems (Table 1). For agent-based baselines (RD-
+Agent, AlphaAgent) and AlphaLogics, we align budgets:
+each run uses 20 trials with 5 evolution rounds using GPT-
+3.5-turbo (Ouyang et al., 2022), with identical caps on LLM
+calls and candidate factors per round. We also include O3-
+mini and Deepseek-V3.1 as direct factor generators (no
+market logic constraints), using the same DSL and data
+split; results are averaged over 20 independent trials.
+Table 1 shows that AlphaLogics is best on IC/ICIR and
+AR/IR with the lowest MDD in both markets. In CSI 500, IR
+reaches 1.5266 versus 1.2230 for AlphaAgent; in S&P 500,
+IR reaches 1.2658 and remains the best among baselines.
+The joint improvement on IC/ICIR and AR/IR indicates that
+AlphaLogics consistently delivers stronger rank-correlation
+signals and more stable portfolio outcomes than all base-
+lines.
+4.3. Validity of Market Logic Mining: Reconstructing
+Factor Behavior from Explanations
+We assess extraction accuracy by reconstructing factor be-
+havior from LLM explanations.
+Following Section 3.1, we extract market logic from his-
+torical factor libraries using a three-stage pipeline (mathe-
+matical formula, financial explanation, logic abstraction).
+Because market logic has no direct ground truth, we evaluate
+whether LLM explanations can reconstruct factor behavior.
+We rebuild factor formulas from explanations and compare
+Figure 3. Comparison of market logic-guided factor generation on
+CSI 500 and S&P 500 (train 2015.01–2019.12, validation 2020.01–
+2020.12, test 2021.01–2024.12). The results demonstrate that
+across all models and market settings, factors generated with mar-
+ket logic guidance consistently outperform unconstrained genera-
+tion in terms of IC and IR metrics.
+their outputs to the originals. Two formulas are equiva-
+lent if their cross-sectional rankings and time-series trends
+match in over 90% of cases. We repeat this 100 times using
+Gemini-2.5-Flash and report consistency.
+Table 2 shows consistency above 95% for math explanations
+and 92–99% for financial explanations, supporting accurate
+extraction of market logic from historical factor libraries.
+This accuracy is essential because market logic serves as
+the control signal for downstream factor generation. High
+reconstruction consistency suggests that the mining pipeline
+preserves both the structural and semantic aspects of the
+original factors, enabling the market logic library to provide
+faithful guidance in later optimization stages.
+4.4. Ablation: Effect of Executable Logic Constraints
+(Γ)
+We test whether structured market logic constraints improve
+factor quality.
+We compare factor generation with and without executable
+market-logic constraints. In the constrained setting, we
+compile Hstruct into Γ and enforce Γ via DSL parsing and
+constraint checking; invalid programs are rejected and regen-
+erated. In the unconstrained setting, we remove Γ and allow
+free composition within the same DSL operator set and
+parameter ranges, keeping prompts and budgets otherwise
+identical. Each setting is repeated 20 times and averaged.
+We test CSI 500 and S&P 500 with GPT-3.5-Turbo (Ouyang
+et al., 2022), DeepSeek V3 (Liu et al., 2024), and Gemini-
+2.5-Flash (Comanici et al., 2025). Figure 3 shows consistent
+gains in IC and IR across models and markets, indicating
+6
+
+=== page 7 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+Table 1. Comparison of factor performance on CSI 500 and S&P 500 over the held-out test period (2021.01–2024.12), using a fixed split:
+train (2015.01–2019.12), validation (2020.01–2020.12), and test (2021.01–2024.12). Bold indicates the best performance among all
+methods for each metric within the same market.
+Method CSI 500 (2021.01–2024.12) S&P 500 (2021.01–2024.12)
+IC ICIR AR IR MDD IC ICIR AR IR MDD
+LSTM (Graves, 2012) 0.0162 0.1173 6.33% 0.8494 -10.45% 0.0032 0.0177 -7.29% -0.9732 -21.91%
+Transformer (Vaswani et al., 2017) 0.0150 0.1234 4.03% 0.3650 -22.85% 0.0014 0.0108 0.82% 0.0952 -17.71%
+LightGBM (Ke et al., 2017) 0.0116 0.0972 0.88% 0.0782 -24.37% -0.0014 -0.0131 -1.23% -0.1517 -28.28%
+TRA (Lin et al., 2021) 0.0199 0.1765 1.60% 0.1467 -26.11% 0.0030 0.0204 -3.92% -0.4541 -34.15%
+GRU (Chung et al., 2014) 0.0115 0.0994 -1.71% -0.1733 -22.05% 0.0050 0.0297 -1.14% -0.0970 -32.10%
+XGBoost (Chen, 2016) 0.0122 0.1066 5.37% 0.4372 -26.33% -0.0028 -0.0056 -0.65% -0.0936 -22.63%
+MLP (Taud & Mas, 2017) 0.0115 0.0975 5.42% 0.4671 -23.34% -0.0007 -0.0056 -1.09% -0.1432 -23.33%
+O3-mini (OpenAI, 2025b) 0.0171 0.1673 5.22% 0.5819 -10.64% 0.0021 0.0242 3.31% 0.2404 -19.94%
+Deepseek-V3.1 (DeepSeek, 2025) 0.0184 0.1758 4.93% 0.4861 -16.71% 0.0026 0.0246 3.73% 0.2270 -20.40%
+AlphaForge (Shi et al., 2025) 0.0111 0.1345 3.15% 0.3020 -25.28% 0.0026 0.0326 2.13% 0.3130 -28.00%
+RD-Agent (Li et al., 2025) 0.0112 0.0966 1.01% 0.0930 -22.27% 0.0019 0.0165 1.61% 0.1873 -17.73%
+AlphaAgent (Tang et al., 2025) 0.0221 0.2092 12.46% 1.2230 -6.65% 0.0060 0.0515 8.57% 0.9653 -9.44%
+AlphaLogics 0.0251 0.2312 16.72% 1.5266 -5.31% 0.0093 0.0878 13.75% 1.2658 -9.06%
+Table 2. Consistency rates between original factor formulas and
+formulas reconstructed from LLM-provided interpretations. Math.
+Expl. denotes reconstruction consistency based on mathematical
+explanations of factor formulas (e.g., window length, smoothing,
+ranking, and normalization operations), while Fin. Expl. denotes
+consistency based on financial explanations mapping factors to
+economic meaning and market behavior.
+Factor Library Math. Expl. Fin. Expl.
+Alpha101 97.5% 92.7%
+Alpha158 98.1% 95.5%
+Alpha360 100.0% 98.8%
+Alpha191 94.9% 93.8%
+that market logic reduces unproductive exploration and im-
+proves stability.
+The constrained setting filters the search space by enforc-
+ing logic-consistent operators and behavioral assumptions,
+while the unconstrained setting freely composes expressions
+without such structure. The gap between the two highlights
+that even strong LLMs benefit from explicit market logic,
+which helps prioritize economically meaningful patterns
+over spurious correlations.
+4.5. Analysis: Benefit of Outer-Loop Market Logic
+Refinement
+We test whether iterative logic optimization improves factor
+outcomes.
+We evaluate the evolution of market logic using H = ⟨C, B⟩,
+where higher-quality logic should stably yield better factors
+under fixed constraints.
+Figure 4 shows upward trends in IC, IR, annual returns, and
+stability as rounds progress. Stronger LLMs help overall
+performance, while the optimization loop consistently im-
+proves market logic. The outer-loop refinement aggregates
+performance across all factors generated under the same
+market logic, producing refinement suggestion at the logic
+level rather than at the single-factor level. This encourages
+market logics refinement (e.g., tightening conditions or em-
+phasizing specific behaviors) instead of merely searching
+for a better expression, enabling the system to improve the
+underlying market logic over time.
+4.6. Component Study: Scaling with Logic Library Size
+& Cross-Round Persistence
+We ablate library size and cross-round persistence to test
+which components drive stability.
+We vary the number of market logic instances from 1 to 6
+under the same pipeline and backtesting setup, using GPT-
+5-mini (OpenAI, 2025a), to test whether a small logic set is
+sufficient.
+Figure 5 shows stable, near-monotonic gains in IC, ICIR,
+AR, and IR as the library grows, supporting the need for a
+larger market logic library.
+We compare transient market logic (single-round usage)
+with persistent market logic (reused and optimized across
+rounds) to test the necessity of the Inner Loop (Algorithm 1).
+Table 3 shows that transient logic degrades over rounds,
+while persistent logic improves steadily. Persisting mar-
+ket logic and accumulating feedback are critical for fully
+exploring logic potential (Appendix A.6).
+The library-size ablation further indicates that expanding
+the market logic inventory increases the diversity of market
+logic available for factor construction, reducing the chance
+that the search is bottlenecked by an overly narrow market
+7
+
+=== page 8 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+Figure 4. Evolution indicators of market logic. We test GPT-3.5-Turbo (Ouyang et al., 2022), DeepSeek V3 (Liu et al., 2024), and Gemini-
+2.5-Flash (Comanici et al., 2025) on CSI 500 and S&P 500, using early stopping of 3 for each logic and selecting the best-performing
+factor under the current logic in each round. The results show that as iteration rounds progress, the optimal factors corresponding to
+different rounds show an overall upward trend in key metrics such as IC, IR, cumulative returns, and stability.
+Figure 5. The influence of market logic quantity on factor quality.
+Increasing the number of market logic yields stable and nearly
+monotonic improvements across IC, ICIR, AR, and IR.
+Table 3. Ablation study on market logic persistence for verifying
+the necessity of the Inner Loop design (Algorithm 1). The transient
+setting applies each market logic to guide factor generation only
+once, whereas the persistent setting reuses the same market logic
+across multiple rounds to enable deeper exploration.
+Round IC ICIR
+Transient Persistent Transient Persistent
+1 0.0182 0.0199 0.1776 0.1792
+2 0.0181 0.0208 0.1794 0.1951
+3 0.0188 0.0214 0.1767 0.2033
+4 0.0169 0.0222 0.1556 0.2071
+5 0.0165 0.0232 0.1320 0.2137
+logic set. Combined with persistence across rounds, Al-
+phaLogics can both explore a broader space of candidate
+market logics and deepen evaluation for each market logic
+over time.
+5. Conclusion
+We propose AlphaLogics, a market logic-driven multi-agent
+system for scalable and interpretable alpha factor genera-
+tion, integrating market logic extraction, feedback-based
+optimization, and logic-guided factor generation into a uni-
+fied pipeline. Experiments across multiple historical factor
+libraries show that explicitly modeling and iteratively opti-
+mizing market logic improves both factor quality and stabil-
+ity, while enabling interpretable explanations of generated
+factors.
+AlphaLogics provides an explicit market-logic layer that im-
+proves interpretability and auditability in automated factor
+research, enabling practitioners to reason about why a factor
+should work and how it generalizes across regimes. The
+framework can be applied to quantitative research pipelines
+and systematic factor discovery in portfolio construction,
+especially where transparent factor rationale is required. By
+treating market logic as a reusable asset, AlphaLogics also
+supports continual expansion of logic libraries for scalable
+alpha mining.
+8
+
+=== page 9 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+Impact Statement
+This work advances LLM-driven factor discovery in quanti-
+tative finance by modeling market logic as an interpretable
+and optimizable intermediate representation, which may im-
+prove transparency, auditability, and diagnostic analysis in
+automated factor research and portfolio modeling. Potential
+applications include quantitative research and systematic
+investment workflows; however, large-scale deployment of
+LLM-based automated factor generation and trading sys-
+tems could influence market dynamics under widespread
+adoption of similar strategies. We do not advocate indis-
+criminate production use, and instead view explicit logic
+modeling as a step toward more responsible deployment by
+enabling practitioners to better understand, evaluate, and
+constrain LLM-driven decisions, while future work should
+further examine broader economic, regulatory, and systemic
+implications.
+References
+Afzal, F., Choudhury, T. T., and Kamran, M. Volatility
+spillover effect between pakistan and shanghai stock ex-
+changes using copula and dynamic conditional correla-
+tion model. International Journal of Islamic and Middle
+Eastern Finance and Management, 16(1):59–80, 2023.
+Aroussi, R. yfinance: Download market data from ya-
+hoo! finance’s api. https://pypi.org/project/
+yfinance/, 2024.
+BaoStock. Baostock: A tool for obtaining historical
+data of china stock market. https://pypi.org/
+project/baostock/, 2024.
+Chen, T. Xgboost: A scalable tree boosting system. Cornell
+University, 2016.
+Chung, J., Gulcehre, C., Cho, K., and Bengio, Y. Empirical
+evaluation of gated recurrent neural networks on sequence
+modeling. arXiv preprint arXiv:1412.3555, 2014.
+Comanici, G., Bieber, E., Schaekermann, M., et al. Gem-
+ini 2.5: Advanced reasoning, multimodality, and long
+context capabilities. arXiv preprint arXiv:2507.06261,
+2025.
+Cui, C., Wang, W., Zhang, M., Chen, G., Luo, Z., and Ooi,
+B. C. Alphaevolve: A learning framework to discover
+novel alphas in quantitative investment. In Proceedings
+of the 2021 International conference on management of
+data, pp. 2208–2216, 2021.
+DeepSeek. Deepseek-v3.1 release. DeepSeek API Docs
+(News), 2025. https://api-docs.deepseek.
+com/news/news250821 (accessed 2026-01-19).
+Ding, Y., Jia, S., Ma, T., Mao, B., Zhou, X., Li, L., and
+Han, D. Integrating stock features and global informa-
+tion via large language models for enhanced stock return
+prediction. arXiv preprint arXiv:2310.05627, 2023.
+Duan, Y., zhang, c., and Li, J. Factormad: A multi-agent
+debate framework based on large language models for
+interpretable stock alpha factor mining. In Proceedings of
+the 6th ACM International Conference on AI in Finance,
+pp. 605–613, 2025.
+Fama, E. F. and French, K. R. Common risk factors in
+the returns on stocks and bonds. Journal of financial
+economics, 33(1):3–56, 1993.
+Fama, E. F. and French, K. R. A five-factor asset pricing
+model. Journal of financial economics, 116(1):1–22,
+2015.
+Fama, E. F. and French, K. R. Choosing factors. Journal of
+financial economics, 128(2):234–252, 2018.
+Feng, G., He, J., Polson, N. G., and Xu, J. Deep learning in
+characteristics-sorted factor models. Journal of Financial
+and Quantitative Analysis, 59(7):3001–3036, 2024.
+Graves, A. Long short-term memory. pp. 37–45. Springer,
+2012.
+Gu, S., Kelly, B., and Xiu, D. Empirical asset pricing via
+machine learning. The Review of Financial Studies, 33
+(5):2223–2273, 2020.
+Guotai Junan Securities. Guotai junan 191 alpha fac-
+tor library: Technical report and implementation code.
+GitHub Repository, 2025. https://github.com/
+SelenaMa9812/Guotai-Junan-191-Alpha.
+Hibbeln, M. T., Jentsch, C., Kopp, R. M., and Urban, N.
+Model validation for forecasting: Out-of-sample vs. out-
+of-time, 2025.
+Kakushadze, Z. 101 formulaic alphas. Wilmott, 2016(84):
+72–81, 2016.
+Ke, G., Meng, Q., Finley, T., Wang, T., Chen, W., Ma,
+W., Ye, Q., and Liu, T.-Y. Lightgbm: A highly efficient
+gradient boosting decision tree. volume 30, 2017.
+Kou, Z., Yu, H., Luo, J., Peng, J., Li, X., Liu, C., Dai,
+J., Chen, L., Han, S., and Guo, Y. Automate strategy
+finding with llm in quant investment. arXiv preprint
+arXiv:2409.06289, 2024.
+Li, Y., Yang, X., Yang, X., Xu, M., Wang, X., Liu, W., and
+Bian, J. R&d-agent-quant: A multi-agent framework for
+data-centric factors and model joint optimization. arXiv
+preprint arXiv:2505.15155, 2025.
+9
+
+=== page 10 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+Liao, Y., Ma, X., Neuhierl, A., and Schilling, L. The un-
+certainty of machine learning predictions in asset pricing.
+arXiv preprint arXiv:2503.00549, 2025.
+Lin, H., Zhou, D., Liu, W., and Bian, J. Learning multi-
+ple stock trading patterns with temporal routing adaptor
+and optimal transport. In Proceedings of the 27th ACM
+SIGKDD conference on knowledge discovery & data min-
+ing, pp. 1017–1026, 2021.
+Liu, A., Feng, B., Xue, B., et al. Deepseek-v3 technical
+report. arXiv preprint arXiv:2412.19437, 2024.
+Liu, H. Deep learning for conditional asset pricing models.
+arXiv preprint arXiv:2509.04812, 2025.
+Nie, Y., Kong, Y., Dong, X., Mulvey, J. M., Poor, H. V., Wen,
+Q., and Zohren, S. A survey of large language models for
+financial applications: Progress, prospects and challenges.
+arXiv preprint arXiv:2406.11903, 2024.
+OpenAI. Gpt-5 mini model. OpenAI API Documentation
+(Models), 2025a. https://platform.openai.
+com/docs/models/gpt-5-mini (accessed 2026-
+01-19).
+OpenAI. o3-mini: Efficient reasoning model for fast
+and cost-effective inference. https://platform.
+openai.com/docs/models/o3-mini, 2025b.
+Ouyang, L., Wu, J., Jiang, X., Almeida, D., Wainwright, C.,
+Mishkin, P., Zhang, C., Agarwal, S., Slama, K., Ray, A.,
+et al. Training language models to follow instructions
+with human feedback. Advances in neural information
+processing systems, 35:27730–27744, 2022.
+Qlib Team. Alpha158 factor library: Data han-
+dler in microsoft qlib. Qlib Documentation,
+https://qlib.readthedocs.io/en/
+latest/component/data.html, 2025a.
+Qlib Team. Alpha360 factor library: High-dimensional
+factor dataset in microsoft qlib. Qlib Documenta-
+tion, https://qlib.readthedocs.io/en/
+latest/component/data.html, 2025b.
+Ren, W., Qin, Y., and Li, Y. Alpha mining and enhanc-
+ing via warm start genetic programming for quantitative
+investment. arXiv preprint arXiv:2412.00896, 2024.
+Rudin, C. and Radin, J. Why are we using black box models
+in ai when we don’t need to? a lesson from an explainable
+ai competition. Harvard Data Science Review, 1(2):1–9,
+2019.
+Shi, H., Song, W., Zhang, X., Shi, J., Luo, C., Ao, X.,
+Arian, H., and Seco, L. A. Alphaforge: A framework
+to mine and dynamically combine formulaic alpha fac-
+tors. In Proceedings of the AAAI Conference on Artificial
+Intelligence, volume 39, pp. 12524–12532, 2025.
+Tang, Z., Chen, Z., Yang, J., Mai, J., Zheng, Y., Wang,
+K., Chen, J., and Lin, L. Alphaagent: Llm-driven alpha
+mining with regularized exploration to counteract alpha
+decay. In Proceedings of the 31st ACM SIGKDD Confer-
+ence on Knowledge Discovery and Data Mining V. 2, pp.
+2813–2822, 2025.
+Tatsat, H. and Shater, A. Beyond the black box:
+Interpretability of llms in finance. arXiv preprint
+arXiv:2505.24650, 2025.
+Taud, H. and Mas, J.-F. Multilayer perceptron (mlp). In Ge-
+omatic approaches for modeling land change scenarios,
+pp. 451–455. Springer, 2017.
+Tong, H., Li, J., Wu, N., Gong, M., Zhang, D., and Zhang, Q.
+Ploutos: Towards interpretable stock movement predic-
+tion with financial large language model. arXiv preprint
+arXiv:2403.00782, 2024.
+Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones,
+L., Gomez, A. N., Kaiser, Ł., and Polosukhin, I. Attention
+is all you need. volume 30, 2017.
+Wang, S., Yuan, H., Zhou, L., Ni, L., Shum, H. Y., and
+Guo, J. Alpha-gpt: Human-ai interactive alpha mining
+for quantitative investment. In Proceedings of the 2025
+Conference on Empirical Methods in Natural Language
+Processing: System Demonstrations, pp. 196–206, 2025.
+Yang, X., Liu, W., Zhou, D., Bian, J., and Liu, T.-Y. Qlib:
+An ai-oriented quantitative investment platform. arXiv
+preprint arXiv:2009.11189, 2020.
+Ye, J., Goswami, B., Gu, J., Uddin, A., and Wang, G.
+From factor models to deep learning: Machine learn-
+ing in reshaping empirical asset pricing. arXiv preprint
+arXiv:2403.06779, 2024.
+Zhang, T., Li, Y., Jin, Y., and Li, J. Autoalpha: an ef-
+ficient hierarchical evolutionary algorithm for mining
+alpha factors in quantitative investment. arXiv preprint
+arXiv:2002.08245, 2020.
+10
+
+=== page 11 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+A. Appendix
+A.1. Public Factor Libraries
+To validate the effectiveness of the proposed factor interpretation–market-logic evolution–factor generation framework,
+we select four widely recognized public factor libraries from both academia and industry as the empirical foundation
+of our study. These libraries cover technical factors with varying levels of complexity and distinct design philosophies,
+enabling a comprehensive evaluation of the framework across market logic extraction, market logic evolution, and new
+factor generation.
+Table 4. Overview of Major Public Factor Libraries.
+Factor Library Institution number Core Characteristics
+Alpha101 WorldQuant 101 Uses ranking, lag, and cross-sectional normalization; focuses on momentum, rever-
+sal, and price–volume interaction.
+Alpha191 Guotai Junan 191 Covers momentum, volatility, microstructure, and trading behavior.
+Alpha158 Microsoft Research 158 Rich operator set with strong cross-market generalization.
+Alpha360 Microsoft Research 360 Largest public technical factor library; encompasses price, volume, volatility, and
+technical indicators.
+The four types of factor libraries play two core roles in this study: Firstly, as the input source for the deconstruction of the
+“factor-market logic” relationship; Secondly, as the initial population for the evolution of market logic.
+A.2. Factor DSL and Parameter Ranges
+Factor expressions are generated by composing operators from a fixed DSL. We group operators into families and treat their
+parameters as positive integers without global bounds; in practice they are limited only by data availability.
+Table 5. Operator families and parameter ranges used in the factor DSL.
+Family Examples Parameters (range)
+Arithmetic +, −, ×, / –
+Cross-sectional rank, zscore –
+Time-series aggregation ts mean, ts std, ts min, ts max, ts sum window w ∈ N+
+Time-series change ts delta lag ℓ ∈ N+
+Time-series relation ts corr, ts cov window w ∈ N+
+Smoothing/decay ts decay, ts wma window w ∈ N+
+A.3. Factor Operations Library
+We provide the full set of operations allowed in factor expressions. These concrete operators instantiate the families in
+Table 5; expressions may only use the operations below.
+Cross-sectional functions.
+• RANK(A): Ranking of each element in the cross-sectional dimension of A.
+• ZSCORE(A): Z-score of each element in the cross-sectional dimension of A.
+• MEAN(A): Mean value of each element in the cross-sectional dimension of A.
+• STD(A): Standard deviation in the cross-sectional dimension of A.
+• SKEW(A): Skewness in the cross-sectional dimension of A.
+• KURT(A): Kurtosis in the cross-sectional dimension of A.
+• MAX(A): Maximum value in the cross-sectional dimension of A.
+• MIN(A): Minimum value in the cross-sectional dimension of A.
+11
+
+=== page 12 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+• MEDIAN(A): Median value in the cross-sectional dimension of A.
+Time-series functions.
+• DELTA(A, n): Change in value of A over n periods.
+• DELAY(A, n): Value of A delayed by n periods.
+• TS MEAN(A, n): Mean value of sequence A over the past n days.
+• TS SUM(A, n): Sum of sequence A over the past n days.
+• TS RANK(A, n): Time-series rank of the last value of A in the past n days.
+• TS ZSCORE(A, n): Z-score for each sequence in A over the past n days.
+• TS MEDIAN(A, n): Median value of sequence A over the past n days.
+• TS PCTCHANGE(A, p): Percentage change in the value of sequence A over p periods.
+• TS MIN(A, n): Minimum value of A in the past n days.
+• TS MAX(A, n): Maximum value of A in the past n days.
+• TS ARGMAX(A, n): Index (relative to the current time) of the maximum value of A over the past n days.
+• TS ARGMIN(A, n): Index (relative to the current time) of the minimum value of A over the past n days.
+• TS QUANTILE(A, p, q): Rolling quantile of sequence A over the past p periods, where q ∈ (0, 1).
+• TS STD(A, n): Standard deviation of sequence A over the past n days.
+• TS VAR(A, p): Rolling variance of sequence A over the past p periods.
+• TS COVARIANCE(A, B, n): Covariance between sequences A and B over the past n days.
+• TS MAD(A, n): Rolling median absolute deviation of sequence A over the past n days.
+• PERCENTILE(A, q, p): Quantile of sequence A with q ∈ (0, 1); if p is provided, compute the rolling quantile
+over the past p periods.
+• HIGHDAY(A, n): Number of days since the highest value of A in the past n days.
+• LOWDAY(A, n): Number of days since the lowest value of A in the past n days.
+• SUMAC(A, n): Cumulative sum of A over the past n days.
+Moving averages and smoothing functions.
+• SMA(A, n, m): Simple moving average of A over n periods with modifier m.
+• WMA(A, n): Weighted moving average of A over n periods, with weights decreasing from 0.9 to 0.9n.
+• EMA(A, n): Exponential moving average of A over n periods, with decay factor 2/(n + 1).
+• DECAYLINEAR(A, d): Linearly weighted moving average of A over d periods, with weights increasing from 1 to d.
+Mathematical operations.
+• PROD(A, n): Product of values in A over the past n days; use * for general multiplication.
+• LOG(A): Natural logarithm of each element in A.
+12
+
+=== page 13 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+• SQRT(A): Square root of each element in A.
+• POW(A, n): Raise each element in A to the power of n.
+• SIGN(A): Sign of each element in A (one of 1, 0, or -1).
+• EXP(A): Exponential of each element in A.
+• ABS(A): Absolute value of A.
+• MAX(A, B): Maximum value between A and B.
+• MIN(A, B): Minimum value between A and B.
+• INV(A): Reciprocal (1/x) of each element in sequence A.
+• FLOOR(A): Floor of each element in sequence A.
+Conditional and logical functions.
+• COUNT(C, n): Count of samples satisfying condition C in the past n periods.
+• SUMIF(A, n, C): Sum of A over the past n periods if condition C is met.
+• FILTER(A, C): Filter multi-column sequence A based on condition C, with the same size as A.
+• (C1)&&(C2): Logical and between conditions C1 and C2 (e.g., close > open).
+• (C1)||(C2): Logical or between conditions C1 and C2.
+• (C1)?(A):(B): If condition C1 holds, return A; otherwise return B.
+Regression and residual functions.
+• SEQUENCE(n): Single-column sequence of length n ranging from 1 to n; it should be nested in REGBETA or
+REGRESI as argument B.
+• REGBETA(A, B, n): Regression coefficient of A on B using the past n samples, where A must be multi-column
+and B may be single- or multi-column.
+• REGRESI(A, B, n): Residual of regression of A on B using the past n samples, where A must be multi-column
+and B may be single- or multi-column.
+Technical indicators.
+• RSI(A, n): Relative Strength Index of sequence A over n periods.
+• MACD(A, short window, long window): Moving Average Convergence Divergence of sequence A, defined
+as the difference between short- and long-window EMAs.
+• BB MIDDLE(A, n): Middle Bollinger Band, the n-period SMA of sequence A.
+• BB UPPER(A, n): Upper Bollinger Band, middle band plus two standard deviations over n periods.
+• BB LOWER(A, n): Lower Bollinger Band, middle band minus two standard deviations over n periods.
+13
+
+=== page 14 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+A.4. Logic Schema and Compilation Example
+Structured schema. We store Hstruct as a typed record with fields: (i) C, a Boolean formula over predicates (v, op, θ, w);
+(ii) B = (y, d, h) with target y, direction d ∈ {+1, −1}, and horizon h.
+Deterministic compilation and enforcement. Γ = COMPILE(Hstruct) is a deterministic rule-based mapping from predicate
+types to allowed variable families, operator families in the factor DSL, parameter constraints, and sign/direction constraints.
+Generated programs are parsed by a DSL validator and checked against Γ; invalid programs are rejected and regenerated.
+Example. Logic Hstruct:
+C: (price_trend_up over w=1) AND (volume_trend_not_up over w=1)
+B: (y = forward_return, d = -1, h = 1)
+Compiled constraints Γ:
+• Variables must include {price, volume}.
+• Operator families: allow {rank, zscore, ts delta, ts corr, ts mean}.
+• Parameter ranges: w ∈ N+, ℓ ∈ N+ (Appendix A.2).
+• Direction: prefer factors with negative IC on Dval.
+A.5. Effectiveness Evaluation Metrics
+In the market logic - factor evolution framework, we measure the effectiveness of market logic by using the factors generated
+under its guidance. The evaluation of the factors needs to be conducted from three dimensions - “predictive ability, return
+performance, and risk control” through multiple indicators:
+Information Coefficient (IC): The IC is computed using the Spearman rank correlation:
+ICt = corrSpearman(ft, rt+1) (3)
+where t indexes trading days, ft is the cross-sectional vector of factor scores for all tradable stocks at time t, rt+1 is the
+corresponding vector of realized next-period returns, and corrSpearman(·, ·) is computed across the cross section at each t.
+The final IC is obtained as the time-series average of ICt.
+Information Coefficient Information Ratio (ICIR): Defined as the ratio of the mean to the standard deviation of the IC
+time series:
+ICIR = E[IC] σ[IC] (4)
+where E[IC] is the time-series mean of ICt over the evaluation period, and σ[IC] is the time-series standard deviation of ICt.
+Annualized Return (AR): Based on a factor-constructed investment portfolio:
+AR = ¯r × annualization factor (5)
+where rt denotes the per-period portfolio (or excess) return at time t, ¯r = E[rt] is its time-series mean, and the annualization
+factor is the number of trading periods per year (e.g., 252 for daily data).
+Information Ratio (IR): Defined as the ratio of annualized excess return to annualized tracking error:
+IR = AR
+σ[r] ×
+√
+annualization factor
+(6)
+where σ[r] is the time-series standard deviation of per-period (excess) returns rt, and
+√
+annualization factor annualizes the
+tracking error; AR is defined above.
+Maximum Drawdown (MDD): The maximum drawdown during the backtesting period:
+MDD = max
+t
+ peakt − trought
+peakt
+
+(7)
+14
+
+=== page 15 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+where peakt is the running maximum of the cumulative portfolio value up to time t, trought is the minimum cumulative
+value observed after that peak within the drawdown episode, and the maximum is taken over the full backtest period.
+A.6. Market Logic Optimization Example
+To further illustrate the evolution process of persistent market logic, we present a representative logic trajectory optimized
+under our proposed framework (based on price–volume divergence and short-term reversal logic):
+• Initial market logic: “(C) When an asset’s intraday high increases but volume does not correspondingly rise; (B) the
+asset may experience a short-term price reversal in the next trading period.”
+• Iteration 1: Added volume-to-K-line body ratio information: “(C) When the closing price rises with declining volume,
+and the K-line body (closing price minus opening price) occupies a small proportion of daily price fluctuation; (B) this
+indicates insufficient upward momentum and a higher probability of reversal.”
+• Iteration 2: Introduced gap signals: “(C) When an asset gaps up (opening price higher than previous high) but volume
+shrinks, and the gap is not held (closing price below opening); (B) this ‘gap-up with volume shrink + bearish close’
+combination signals a strong reversal.”
+• Iteration 3: Combined high-price and low-volume information: “(C) When recent prices are at relatively high levels
+while volume is low; (B) this ‘high-price low-volume’ state indicates weak buying support and signals a strong
+reversal.”
+• Iteration 4: Considered divergence strength and timing of volume surges: “(C) The first occurrence of volume
+contraction with price increase after a strong uptrend (divergence) serves as a reversal warning, and cumulative volume-
+price divergence over consecutive days strengthens the reversal signal; (B) the first bearish candle with increased
+volume post-divergence marks the optimal entry point.”
+This optimization path demonstrates the ability of persistent market logic to gradually absorb factor feedback, refine signals,
+and combine conditions across iterations, highlighting the framework’s explicit modeling and cross-round optimization of
+market logic.
+A.7. Agent Prompt Templates
+We provide JSON prompt templates and explicit output schemas for all agents in the pipeline.
+FormulaStructureAgent.
+{
+"system": "Decompose the factor formula into operational structure and formal
+properties only. Identify sub-expressions, map operators to mathematical
+meaning using the factor operations library, and note any inferred operators.
+Use only variables {open, close, high, low, volume, return} with canonical
+meanings. Do not provide financial interpretation.",
+"instruction": "Identify sub-expressions, map operators to mathematical meaning
+using the factor operations library, and return a structured decomposition.",
+"input_schema": {
+"formula": "<string>",
+"factor_operations_library": "<string>"
+},
+"output_schema": {
+"components": [
+{
+"name": "<string>",
+"expression": "<string>",
+"mathematical_meaning": "<string>"
+}
+]
+}
+15
+
+=== page 16 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+}
+FinancialSemanticsMappingAgent.
+{
+"system": "Translate mathematical factor components into financial interpretations
+. Preserve mathematical_meaning exactly, and connect each component to market
+behavior, investor psychology, trading patterns, liquidity, information flow,
+and risk-return characteristics using the factor operations library.",
+"instruction": "Given factor_formula, mathematical_analysis, and
+factor_operations_library, add financial_interpretation to each component;
+preserve mathematical_meaning exactly and return only JSON. Use only variables
+{open, close, high, low, volume, return} with their standard meanings.",
+"input_schema": {
+"factor_formula": "<string>",
+"mathematical_analysis": {
+"components": [
+{
+"name": "<string>",
+"expression": "<string>",
+"mathematical_meaning": "<string>"
+}
+]
+},
+"factor_operations_library": "<string>"
+},
+"output_schema": {
+"components": [
+{
+"name": "<string>",
+"expression": "<string>",
+"mathematical_meaning": "<string>",
+"financial_interpretation": "<string>"
+}
+]
+}
+}
+MarketLogicAbstractionAgent.
+{
+"system": "Abstract component-level financial semantics into explicit market logic
+H with C/B semantics. Provide a concise, human-readable logic_text and
+explicit C (conditions) and B (target, direction, horizon) to support
+downstream canonicalization.",
+"instruction": "Given component_analysis, infer the market logic H. Provide a
+human-readable logic_text plus explicit C (conditions) and B (target/direction/
+horizon). Avoid formula details and keep the logic generalizable.",
+"input_schema": {
+"component_analysis": {
+"components": [
+{
+"name": "<string>",
+"expression": "<string>",
+"mathematical_meaning": "<string>",
+"financial_interpretation": "<string>"
+}
+]
+16
+
+=== page 17 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+}
+},
+"output_schema": {
+"logic_text": "<string>",
+"c_text": "<string>",
+"b_text": "<string>"
+}
+}
+LogicToFinanceConstraintAgent.
+{
+"system": "Canonicalize H into H_struct (C as a Boolean formula over predicates; B
+with target, direction, horizon), then compile constraints Gamma over
+variables, operator families, parameter ranges, and direction consistency.",
+"instruction": "Canonicalize H into H_struct (C as a Boolean formula over
+predicates, B with target/direction/horizon), then compile constraints Gamma.",
+"input_schema": {
+"logic_text": "<string>",
+"c_text": "<string>",
+"b_text": "<string>",
+"dsl_operators": ["<string>"]
+},
+"output_schema": {
+"H_struct": {
+"C": {
+"formula": "<string>",
+"predicates": [
+{"id": "<string>", "v": "<string>", "op": "<string>", "theta": "<string>",
+"w": "<int>"}
+]
+},
+"B": {"y": "<string>", "d": "<+1|-1>", "h": "<int>"}
+},
+"Gamma": {
+"allowed_variables": ["<string>"],
+"operator_families": ["<string>"],
+"parameter_constraints": {"window": "positive integer", "lag": "positive
+integer"},
+"direction_constraint": "<string>"
+},
+"canonicalization_notes": "<string>"
+}
+}
+FactorExpressionGeneratorAgent.
+{
+"system": "Generate candidate factor expressions that satisfy Gamma. Select
+operators, time windows, and compositions consistent with allowed variables,
+operator families, and parameter constraints; ensure direction consistency.",
+"instruction": "Generate candidate factor expressions consistent with Gamma. Use
+allowed variables, operator families, parameter constraints, and direction
+constraints. Incorporate feedback if provided, and return up to max_candidates
+expressions with brief rationale and operator list.",
+"input_schema": {
+"Gamma": "<object>",
+"feedback": "<string or object or null>",
+17
+
+=== page 18 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+"max_candidates": "<int>"
+},
+"output_schema": {
+"factors": [
+{"expression": "<string>", "rationale": "<string>", "operators": ["<string>"]}
+],
+"notes": "<string>"
+}
+}
+FactorPerformanceFeedbackAgent.
+{
+"system": "Summarize candidate performance under a fixed logic. Compare validation
+metrics across candidates, identify the best expression, diagnose weaknesses,
+and suggest edits to guide the next generation.",
+"instruction": "Compare recent candidates under the same logic and validation
+metrics. Identify the best expression and key metrics, explain weaknesses, and
+suggest edits to guide the next generation.",
+"input_schema": {
+"H_struct": "<object>",
+"candidates": [
+{"expression": "<string>", "metrics": {"IC": "<float>", "IR": "<float>", "MDD
+": "<float>"}}
+]
+},
+"output_schema": {
+"summary": {"best_expression": "<string>", "key_metrics": "<string>"},
+"feedback": ["<string>"],
+"suggested_edits": [{"action": "<tighten|relax|shift>", "detail": "<string>"}]
+}
+}
+MarketLogicGeneratorAgent.
+{
+"system": "Generate new market logic H = <C,B> based on historical logics and
+feedback. Ensure the logic reflects plausible market mechanisms and remains
+consistent with the structured C/B schema.",
+"instruction": "Use H_init_lib to seed the first-round logic; in later rounds use
+H_init_lib, H_current, H_hist, E_hist, and fb_hist to propose a new market
+logic grounded in existing market mechanisms and distinct from prior logics.
+Output a human-readable logic with explicit C and B semantics.",
+"input_schema": {
+"H_init_lib": ["<string>"],
+"H_current": "<string or null>",
+"H_hist": ["<string>"],
+"E_hist": ["<object>"],
+"fb_hist": ["<object>"],
+"round": "<int>"
+},
+"output_schema": {
+"logic_text": "<string>",
+"c_text": "<string>",
+"b_text": "<string>"
+}
+}
+18
+
+=== page 19 ===
+AlphaLogics for Market Logic-Driven Factor Generation
+MarketLogicRefinementDirectionAgent.
+{
+"system": "Analyze evidence and propose logic refinement directions. Aggregate
+factor performance across time, market conditions, and risk dimensions;
+identify logic components that are too broad, vague, or mismatched with market
+structure.",
+"instruction": "Analyze historical evidence and propose logic refinements.
+Summarize factor performance distribution across time, market conditions, and
+risk dimensions, and identify logic components that are too broad, vague, or
+mismatched with market structure.",
+"input_schema": {
+"H_current": "<string>",
+"H_hist": ["<string>"],
+"E_hist": ["<object>"],
+"fb_hist": ["<object>"]
+},
+"output_schema": {
+"refinement_actions": [
+{"action": "<tighten|relax|shift|reweight>", "target": "<C or B field>", "
+detail": "<string>"}
+],
+"focus_variables": ["<string>"],
+"horizon_suggestion": "<string>",
+"rationale": "<string>"
+}
+}
+19

@@ -1,0 +1,764 @@
+=== page 1 ===
+Backtest of Trading Systems on Candle Charts
+Stanislaus Maier-Paape
+Institut f¨ur Mathematik, RWTH Aachen,
+Templergraben 55, D-52052 Aachen, Germany
+maier@instmath.rwth-aachen.de
+Andreas Platen
+Institut f¨ur Mathematik, RWTH Aachen,
+Templergraben 55, D-52052 Aachen, Germany
+platen@instmath.rwth-aachen.de
+December 18, 2014
+Abstract In this paper we try to design the necessary calculation needed for backtesting
+trading systems when only candle chart data are available. We lay particular emphasis on
+situations which are not or not uniquely decidable and give possible strategies to handle
+such situations.
+Keywords backtest evaluation, historical simulation, trading system, candle chart,
+imperfect data
+JEL classiﬁcation C15, C63, C99
+1 Introduction
+Since at least a decade more and more software solutions for self-designable trading systems
+have emerged (e.g. Ninjatrader, Tradestation, Tradesignal online, Nanotrader, Investox, to
+name just a few). All of the listed also incorporate a backtesting (also called historical simu-
+lation) tool including helpful statistical data on the trading success, i.e. it is possible to run
+a trading system on historical data to simulate the trades. The idea is that trading systems
+which were successful in the past should be successful in the future as well. Analogously a
+trading system which performs bad on historical data cannot be trusted and is supposed to
+be unsuccessful in the future. This makes backtesting an important tool for designing trading
+systems.
+Although already several years on the market we found that many of the software solutions
+perform calculations sometimes incorrectly. This concerns even situations which are uniquely
+decidable. When backtests are evaluated just on the knowledge of candle data, however, there
+are always situations, which can not or not uniquely (SNU: situation which is not unique)
+be determined, see e.g. the book of Pardo [10, Chapter 6, Section “Software Limitations”]
+or Harris [5, Chapter 6]. Pardo [10] and Harris [5] describe this problem but do not discuss
+the backtest algorithm itself and how to deal with such problems. The least what a backtest
+engine should do in these situations is to warn the user about these problems. Also the user
+arXiv:1412.5558v1  [q-fin.TR]  17 Dec 2014
+
+=== page 2 ===
+2 S. MAIER-PAAPE, AND A. PLATEN
+should be informed, how such situations are handled. We suggest that there should be four
+diﬀerent strategies to choose from:
+I. worst case (wc): the SNU is evaluated as the worst possible case for the user.
+II. best case (bc): the SNU is evaluated as the best possible case for the user.
+III. ignore (ig): the entry signal or the whole trade is ignored.
+IV. exact (ex): to resolve the problem, more data (sometimes even tick data)
+have to be loaded.
+To the best of the author’s knowledge there is no publication about backtest algorithms
+itself but only for the statical evaluation of backtests. Typical statistical measures like Sharpe
+ratio, average trade, proﬁt factor and many more, see e.g. [7, Chapter 22], give hints on how
+the trading system performs.
+Therefore we discuss the procedure of backtest evaluation based on candle/bar chart data
+in detail. Further information about backtesting and some limitations can be found e.g. in the
+books of Chan [4, Chapter 3], Pardo [10, Chapter 6] and Harris [5, Chapter 6] and for trading
+options in the book of Izraylevich and Tsudikman [6, Chapter 5].
+It is well known that a backtest is just a simulation over the past and does not predict
+future behavior of a trading system. The ability to accurately simulate a parameter dependent
+trading system on some chart data can rapidly lead to an overestimation of the parameters
+by optimizing these parameters to reach the best performance on the historical data. Ni and
+Zhang [8] present a method to improve the eﬃciency of backtesting a trading strategy for
+diﬀerent parameter choices but they do not explain the backtest evaluation itself. The result
+could be an optimal trading system but only well adjusted to the past. In general this does not
+mean that this parameter setting is also appropriate in the future and gives a stable strategy.
+In contrast this can lead to tremendous losses. This phenomena is called backtest overﬁtting,
+see [1, 2, 3] and also [9, Chapter 6] for a detailed discussion. Therefore backtesting needs to
+be used carefully but, nevertheless, gives important information about a trading strategy.
+Clearly the above remarks and references show that a correct interpretation of backtest
+results is a diﬃcult and more or less up to now unsolved problem. However, this is not the
+subject of our considerations in this paper. Here we want to focus the attention on how the
+backtest evaluation itself has to be calculated correctly.
+Due to symmetry, it suﬃces to consider entry orders for long positions only. Therefore we
+discuss only long positions unless we explicitly refer to short orders. Since market orders are
+to be executed at the open of the next candle, problems of backtest evaluation for the position
+entry only occur for “limit buy” (with limit level l∗), “stop buy” (with stop level b∗) and
+“stop limit buy” (with stop level b∗ and limit level l∗) long orders, see e.g. [9, Chapter 4] for
+deﬁnition of some order types.
+We discuss the principal part of this paper, i.e. the decisions for backtest evaluation, in Sec-
+tion 2, while in Subsection 2.1 we need to make some assumptions and discuss some limitations
+of a backtest. In Subsections 2.2 to 2.4 we discuss the question when and how a position has
+to be opened with the classical “EnterLongLimit()”, “EnterLongStop()” and “EnterLongStop-
+Limit()” orders, respectively. In all three cases the decision tree is only given for the ﬁrst bar of
+the trade. Since typically a trading setup includes immediate stop losses (at s∗) or target levels
+(at t∗), even in the ﬁrst bar besides the pure position entry, there are numerous other things to
+check. Once the ﬁrst bar of the trade has ﬁnished or in case we enter the position immediately
+
+=== page 3 ===
+BACKTEST OF TRADING SYSTEMS ON CANDLE CHARTS 3
+at the beginning of the period the decisions for such an active position in succeeding bars is
+simpler. The decision tree for the latter is given in Subsection 2.5. We close the discussion
+with the conclusion in Section 3.
+2 Backtest evaluation algorithm
+We look at situations for diﬀerent entry and exit setups. All orders are generated at the end
+of a candle so that these orders can be ﬁlled in the next candle. Therefore we take a look at
+this next candle for diﬀerent orders. The examined candle has the four values H = High, L =
+Low, O = Open and C = Close.
+2.1 Assumptions and limitations
+In order to be able to perform exact calculations we ﬁrst need to make a continuity assumption
+on the price evolution within a candle.
+Assumption 1. (No intra-period gaps)
+We assume that the price evolution inside the period skips no nearby tick-values, i.e. starting
+at the open until the end of the period at the close all price moves during that period (up or
+down) come only as ± 1 tick. Intra-period gaps, i.e. moves by more than one tick, thus are
+not allowed.
+This assumptions is essential for determining intra-period entry or exit prices, e.g. at limit
+or stop levels. In live trading, however, this assumption is not realistic. To overcome this
+problem usually slippage is introduced for each backtest trade, see e.g. the book of Pardo [10,
+Chapter 6, Section “Realistic Assumptions”] for a detailed discussion.
+Additionally we need to assume that all orders are ﬁlled at the requested price.
+Assumption 2. (Market liquidity)
+We assume that we trade on a perfectly liquid market. I.e. our orders do not aﬀect the price
+changes and are fully ﬁlled at the corresponding entry or stop level.
+Of course this assumption is also not realistic. Similar to Assumption 1 slippage can help
+to get more reasonable results.
+Since all prices (measured as tick-values) are integers we need to make sure that all values
+given by the user (like limit level l∗, etc.) are of the same type to avoid rounding errors, see
+also [10, Chapter 6, Section “Software Limitations”].
+Assumption 3. (Rounded values)
+All values like limit price, target and stop loss level are given as numbers which are rounded to
+the corresponding next possible price value which depends on the tick size.
+For long positions the stop level b∗ for stop buy order and the target level t∗ are rounded up
+while the stop loss level s∗ and limit price l∗ are rounded down.
+For short positions the stop level b∗ for stop buy order and the target level t∗ are then rounded
+down while the stop loss level s∗ and limit price l∗ needs to be rounded up.
+This way to round the values does not change any decision during the backtest evaluation
+but it corrects the price values used for the computation of the outcomes of each trade.
+In case the long position is coupled with a stop loss order (stop level s∗) or a target order
+(target level t∗) we always assume s∗ < l∗ < t∗ and s∗ < b∗ < t∗.
+
+=== page 4 ===
+4 S. MAIER-PAAPE, AND A. PLATEN
+Next we need to make some simpliﬁcation for the best and worst case for SNUs. Suppose
+we are invested in a stock and there is a SNU with the two options of exit the position at
+target level t∗ or to stay invested. Of course exit at t∗ should immediately lead to a win trade.
+However, if we change the target in the next period it is possible to earn even more money if
+we do not exit the position at this moment but later in one of the subsequent candles. This
+can also aﬀect upcoming trades which in general depend on the current status (invested or not
+invested) and thus can increase the complexity of the decisions needed to be done for the real
+(globally) best case. Therefore we always choose the simplest setting which is best for the user
+at the current period. In this easy example this would be to immediately exit the position at
+target level t∗.
+Assumption 4. (Worst and best case)
+Best and worst case decisions in situations which cannot be uniquely determined (SNU) should
+be made on premise that it is best/worst for the current period only.
+2.2 Entry of a long position with “limit buy” order
+Here the long position is only opened, once the price reaches the limit level l∗ (or below). This is
+the situation of an entry with the classical “EnterLongLimit()” order optionally supplemented
+by stop loss s∗ and target levels t∗. We assume s∗ < l∗ < t∗. The decision trees are shown in
+Figures 1 to 3.
+limit buy at l∗
+L ≤ l∗
+buy at
+min{O, l∗}
+L > l∗
+do not buy
+(a) Only limit buy long order.
+limit buy at l∗
+stop loss at s∗
+s∗ < l∗ L ≤ l∗
+buy at
+min{O, l∗} L ≤ s∗
+exit at
+min{O, s∗}
+L > s∗
+do not exit
+L > l∗
+do not buy (b) Limit buy long order supplemented with stop loss.
+Figure 1: Entry setups with limit buy long order.
+limit buy at l∗
+target at t∗
+l∗ < t∗ L ≤ l∗
+buy at
+min{O, l∗} H < t∗
+do not exit
+H ≥ t∗
+O > l∗
+C ≥ t∗
+exit at t∗
+C < t∗
+exit is not de-
+terminable
+wc: do not exit
+bc: exit at t∗
+ig: ignore entry
+signal / trade
+O ≤ l∗
+exit at t∗
+L > l∗
+do not buy
+A
+Figure 2: Entry setup with limit buy long order supplemented with target.
+
+=== page 5 ===
+BACKTEST OF TRADING SYSTEMS ON CANDLE CHARTS 5
+limit buy at l∗
+stop loss at s∗
+target at t∗
+s∗ < l∗ < t∗
+L > s∗
+same as
+without stop
+H ≥ t∗
+L ≤ s∗
+buy at
+min{O, l∗} O ≤ s∗
+exit at O
+O > s∗
+exit at s∗ or t∗
+wc: exit at s∗
+bc: exit at t∗
+ig: ignore entry
+signal / trade
+H < t∗
+same as
+without target
+B
+Figure 3: Entry setup with limit buy long order supplemented with stop loss and target.
+A
+t∗
+l∗
+buy
+exit
+buy
+(a) Cases for Figure 2.
+B
+t∗
+l∗
+s∗
+buy
+exit buy
+exit (b) Cases for Figure 3.
+Figure 4: Variations of possible price development within a candle for SNU with limit buy long
+order.
+In Figures 2 and 3 the cases marked with A and B, respectively, are two SNUs, i.e. if
+we cannot load extra data like tick data to make these situations unique, there are multiple
+possibilities for the correct position entry and/or exit. Figure 4 shows one example for each
+possibility for both SNUs A and B.
+We always assume s∗ < l∗ because of the following reason: In case s∗ ≥ l∗ the position would
+be closed right after it is opened, which makes no sense and should therefore be forbidden by
+the software, i.e. these order should be canceled/ignored.
+If t∗ ≤ l∗ the same would happen if O ≥ t∗ and of course L ≤ l∗. However, if O < t∗ the
+position would be opened at the beginning of the period which is equivalent to a market order
+executed at the open of the subsequent period. In this case the trade would not immediately
+be stopped and thus can be handled as in Subsection 2.5 if it is not ignored in advance.
+From the decision trees in Figures 1 to 3 we see that for limit orders only a combination
+involving a target where the target is reached in the entry period leads to SNUs. If there is no
+target or if the target is far away all situations are uniquely decidable.
+2.3 Entry of a long position with “stop buy” order
+Here the long position is only opened, once the price reaches the stop level b∗ (or above), created
+by the classical “EnterLongStop()” order. Again the order can optionally be supplemented by
+stop loss (s∗) and target levels (t∗) with s∗ < b∗ < t∗. The decision trees are shown in Figures 5
+to 7 and the examples for the SNUs in Figure 8.
+
+=== page 6 ===
+6 S. MAIER-PAAPE, AND A. PLATEN
+stop buy at b∗
+H ≥ b∗
+buy at
+max{O, b∗}
+H < b∗
+do not buy
+(a) Only stop buy long order.
+stop buy at b∗
+target at t∗
+b∗ < t∗ H ≥ b∗
+buy at
+max{O, b∗} H ≥ t∗
+exit at
+max{O, t∗}
+H < t∗
+do not exit
+H < b∗
+do not buy (b) Stop buy long order supplemented with target.
+Figure 5: Entry setups with stop buy long order.
+stop buy at b∗
+stop loss at s∗
+s∗ < b∗ H ≥ b∗
+buy at
+max{O, b∗} L > s∗
+do not exit
+L ≤ s∗
+O < b∗
+C ≤ s∗
+exit at s∗
+C > s∗
+exit is not de-
+terminable
+wc: exit at s∗
+bc: do not exit
+ig: ignore entry
+signal / trade
+O ≥ b∗
+exit at s∗
+H < b∗
+do not buy
+C
+Figure 6: Entry setup with stop buy long order supplemented with stop loss.
+stop buy at b∗
+stop loss at s∗
+target at t∗
+s∗ < b∗ < t∗
+L > s∗
+same as
+without stop
+H ≥ t∗
+L ≤ s∗
+buy at
+max{O, b∗}
+O < t∗
+exit at s∗ or t∗
+wc: exit at s∗
+bc: exit at t∗
+ig: ignore entry
+signal / trade
+O ≥ t∗
+exit at O
+H < t∗
+same as
+without target
+D
+Figure 7: Entry setup with stop buy long order supplemented with stop loss and target.
+C
+b∗
+s∗
+buy
+exit
+buy
+(a) Cases for Figure 6.
+D
+t∗
+b∗
+s∗
+buy
+exit buy
+exit (b) Cases for Figure 7.
+Figure 8: Variations of possible price development within a candle for SNU with stop buy long
+order.
+
+=== page 7 ===
+BACKTEST OF TRADING SYSTEMS ON CANDLE CHARTS 7
+Since an entry stop order is some kind of mirrored version of the entry limit order, we now
+have SNUs for the entry stop order supplemented with an initial stop loss level.
+Again, the case t∗ ≤ b∗ makes no sense, because the position would be closed immediately
+after the opening, compare the case s∗ ≥ l∗ for long limit order.
+In the case b∗ ≤ s∗ the position is either to be closed after opening if O ≤ b∗ or, if O > b∗,
+we have an equivalent case to a market order.
+2.4 Entry of a long position with “stop limit buy” order
+Here a limit buy order at level l∗ is only generated, once the price reaches the stop level b∗
+(or above), as is generated by the classical “EnterLongStopLimit()” order. I.e. the trader in
+principle wishes to have an “EnterLongLimit()” order at level l∗, but to activate that order he
+ﬁrstly wants that the prices reach the stop level b∗ (or higher). Again this order may optionally
+be supplemented by stop loss (s∗) or target levels (t∗). We assume s∗ < min{l∗, b∗}≤ l∗ < t∗.
+The decision trees are shown in Figures 9 to 12, and examples for the SNUs in Figures 13 to
+16, respectively.
+stop limit buy
+at l∗ and b∗ H ≥ b∗
+limit order at
+l∗ is active O ≥ b∗
+same as limit
+buy at l∗
+O < b∗
+activation of
+limit order
+intra period b∗ > l∗
+L ≤ l∗
+C > l∗
+entry is not
+determinable
+wc: no entry
+bc: buy at l∗
+ig: ignore entry
+signal / trade
+C ≤ l∗
+buy at l∗
+L > l∗
+do not buy,
+but limit
+order at l∗ for
+next period
+b∗ ≤ l∗
+buy at b∗
+H < b∗
+do not buy
+E
+Figure 9: Entry setup with stop limit buy long order.
+This entry order type is much more complex and therefore leads to larger decision trees and
+much more SNUs. Even the worst cases and/or best cases for some SNUs are not uniquely
+determinable because there are situations where a position can be opened or there is just an
+active limit order at the end of the candle, see e.g. SNU E. In general it is not clear whether
+it is worst or best to have an active limit order or an open position at the end of the candle in
+such cases. Because of Assumption 4 we decide to measure the quality of an open trade by the
+current value of the trade which in this case is the diﬀerence between the close of the candle
+and the entry price of the position. If the close is larger than the entry price we currently are
+in a positive trade (and thus the best case) which is better than having just an active limit
+order (worst case), and vice versa if the close is below the entry price.
+
+=== page 8 ===
+8 S. MAIER-PAAPE, AND A. PLATEN
+stop limit buy
+at l∗ and b∗
+stop loss at s∗
+s∗ <
+min{l∗, b∗} L ≤ s∗
+H < b∗
+do nothing
+H ≥ b∗
+limit order at
+l∗ is active O ≥ b∗
+same as limit
+buy at l∗ and
+stop loss at s∗
+O < b∗
+activation of
+limit order
+intra period
+C > l∗
+l∗ < b∗
+entry is not
+determinable
+wc: buy at l∗
+exit at s∗
+bc: buy at l∗
+no exit
+ig: ignore entry
+signal / trade
+l∗ ≥ b∗
+buy at b∗
+exit is not de-
+terminable
+wc: exit at s∗
+bc: no exit
+ig: ignore entry
+signal / trade
+s∗ < C ≤ l∗
+buy at min{l∗, b∗}
+exit is not de-
+terminable
+wc: exit at s∗
+bc: no exit
+ig: ignore entry
+signal / trade
+C ≤ s∗
+buy at min{l∗, b∗}
+exit at s∗
+L > s∗
+same as
+without stop
+F
+G H
+Figure 10: Entry setup with stop limit buy long order supplemented with stop loss.
+stop limit buy
+at l∗ and b∗
+target at t∗
+t∗ > l∗ H ≥ t∗
+H < b∗
+do nothing
+H ≥ b∗
+limit order at
+l∗ is active O < b∗
+activation of
+limit order
+intra period L ≤ l∗
+b∗ ≤ l∗
+buy at b∗
+exit at t∗
+b∗ > l∗
+entry is not
+determinable
+C ≤ l∗
+open position at the end
+of the period is possible
+wc: buy at l∗
+bc: buy at l∗
+exit at t∗
+ig: ignore entry
+signal / trade
+l∗ < C < t∗
+open position at the end
+of the period is possible
+wc: limit buy order
+at l∗ and target
+at t∗ for next
+period
+bc: buy at l∗
+exit at t∗
+ig: ignore entry
+signal / trade
+C ≥ t∗
+no open position at
+the end of the period
+wc: limit buy order
+at l∗ and target
+at t∗ for next
+period
+bc: buy at l∗
+exit at t∗
+ig: ignore entry
+signal / trade
+L > l∗
+limit buy
+order at l∗ and
+target at t∗ for
+next period
+O ≥ b∗
+same as limit
+buy at l∗ and
+target at t∗
+H < t∗
+same as
+without target
+I J K
+Figure 11: Entry setup with stop limit buy long order supplemented with target.
+
+=== page 9 ===
+BACKTEST OF TRADING SYSTEMS ON CANDLE CHARTS 9
+stop limit buy
+at l∗ and b∗
+target at t∗
+stop loss at s∗
+s∗ < l∗ < t∗
+s∗ < b∗ L > s∗
+same as
+without stop
+L ≤ s∗ and
+H ≥ t∗
+H < b∗
+do nothing
+H ≥ b∗
+limit order at
+l∗ is active O < b∗
+activation of
+limit order
+intra period
+b∗ > l∗
+C > l∗
+entry is not
+determinable
+wc: buy at l∗
+exit at s∗
+bc: buy at l∗
+exit at t∗
+ig: ignore entry
+signal / trade
+C ≤ l∗
+buy at l∗
+exit is not de-
+terminable (open
+position at the end
+of the period is
+possible, if s∗ < C)
+wc: exit at s∗
+bc: exit at t∗
+ig: ignore entry
+signal / trade
+b∗ ≤ l∗
+buy at b∗
+exit is not de-
+terminable (no
+open position at the
+end of the period)
+wc: exit at s∗
+bc: exit at t∗
+ig: ignore entry
+signal / trade
+O ≥ b∗
+same as limit
+buy at l∗, stop
+loss at s∗ and
+target at t∗
+H < t∗
+same as
+without target
+L
+M N
+Figure 12: Entry setup with stop limit buy long order supplemented with stop loss and target.
+E
+b∗
+l∗
+limit active
+buy
+limit active
+Figure 13: Variations of possible price development within a candle for SNU with stop limit
+buy long order for Figure 9.
+F
+b∗
+l∗
+s∗
+limit active
+buy
+limit active
+buy
+exit
+G
+b∗
+l∗
+s∗
+limit active limit active
+buy
+limit active
+buy
+exit
+H
+l∗
+b∗
+s∗
+buy buy
+exit
+Figure 14: Variations of possible price development within a candle for SNU with stop limit
+buy long order for Figure 10.
+
+=== page 10 ===
+10 S. MAIER-PAAPE, AND A. PLATEN
+I
+t∗
+b∗
+l∗
+limit active
+exit
+buy
+limit active
+buy
+J
+t∗
+b∗
+l∗
+limit active limit active
+buy
+limit active
+exit
+buy
+K
+t∗
+b∗
+l∗
+limit active
+exit
+buy
+limit active
+Figure 15: Variations of possible price development within a candle for SNU with stop limit
+buy long order for Figure 11.
+L
+t∗
+l∗
+b∗
+s∗
+buy
+exit buy
+exit
+M
+t∗
+b∗
+l∗
+s∗
+limit active limit active
+buy
+limit active
+exit
+buy
+limit active
+buy
+exit
+N
+t∗
+b∗
+l∗
+s∗
+limit active
+buy
+limit active
+exit
+buy
+limit active
+buy
+exit
+Figure 16: Variations of possible price development within a candle for SNU with stop limit
+buy long order for Figure 12.
+2.5 Exit from an active long position
+The ﬁnal discussion deals with the case of an active long position, i.e. at the end of the prior
+period a long position remained open. This also includes situations where a market order was
+generated in the prior candle such that a long position is opened right at the open of the
+current period. The decision trees for the current period are shown in Figures 17 and 18 and
+the examples for the SNUs in Figure 19.
+stop loss at s∗
+L ≤ s∗
+exit at
+min{O, s∗}
+L > s∗
+do not exit
+(a) Only stop loss.
+target at t∗
+H < t∗
+do not exit
+H ≥ t∗
+exit at
+max{O, t∗} (b) Only target.
+Figure 17: Exit setups during an active long position.
+
+=== page 11 ===
+BACKTEST OF TRADING SYSTEMS ON CANDLE CHARTS 11
+stop loss at s∗
+target at t∗
+s∗ < t∗
+O ≥ t∗
+exit at O
+s∗ < O < t∗
+H < t∗
+L ≤ s∗
+exit at s∗
+L > s∗
+do not exit
+H ≥ t∗
+L ≤ s∗
+exit at s∗ or t∗
+wc: exit at s∗
+bc: exit at t∗
+ig: ignore whole
+trade
+L > s∗
+exit at t∗
+O ≤ s∗
+exit at O
+O
+Figure 18: Exit setup during an active long position with both, stop loss and target.
+O
+t∗
+s∗
+exit
+exit
+Figure 19: Variations of possible price development within a candle for SNU during an active
+long position for Figure 18.
+3 Conclusions
+The precise listing of the backtest evaluation algorithm in the preceding section shows very
+clearly that not uniquely decidable situations (SNUs) are omnipresent when only candle data
+are available. This is not consistent with the fact that wide spread software solutions ignore
+that problem completely. An honest evaluation should give users the choice of worst/best case
+calculations. Future software solutions should be able to reload ﬁner candle or tick data for
+the bars in question in order to evaluate backtests exactly.
+References
+[1] Bailey, D. H., J. M. Borwein, M. L. de Prado and Q. J. Zhu: The Probability of
+Backtest Overﬁtting. Available at SSRN, DOI: 10.2139/ssrn.2326253, 2014.
+[2] Bailey, D. H., J. M. Borwein, M. L. de Prado and Q. J. Zhu: Pseudo-Mathematics
+and Financial Charlatanism: The Eﬀects of Backtest Overﬁtting on Out-of-Sample Per-
+formance. Notices of the AMS, 61(5):458–471, 2014. http://www.ams.org/notices/
+201405/rnoti-p458.pdf.
+[3] Carr, P. P. and M. L. de Prado: Determining Optimal Trading Rules without Back-
+testing. arXiv:1408.1159 [q-ﬁn.PM], 2014.
+
+=== page 12 ===
+12 S. MAIER-PAAPE, AND A. PLATEN
+[4] Chan, E. P.: Quantitative Trading: How to Build Your Own Algorithmic Trading Busi-
+ness. Wiley trading series. John Wiley & Sons, Hoboken, 2009.
+[5] Harris, M.: Proﬁtability and Systematic Trading. Wiley trading series. John Wiley &
+Sons, Hoboken, 2008.
+[6] Izraylevich, S. and V. Tsudikman: Automated Option Trading: Create, Optimize,
+and Test Automated Trading Systems. FT Press, Upper Saddle River, NJ, 2012.
+[7] Kirkpatrick, C. D. and J. Dahlquist: Technical Analysis: The Complete Resource
+for Financial Market Technicians. FT Press, Upper Saddle River, NJ, 2nd edition, 2011.
+[8] Ni, J. and C. Zhang: An Eﬃcient Implementation of the Backtesting of Trading Strate-
+gies. In Pan, Y., D. Chen, M. Guo, J. Cao and J. Dongarra (editors): Parallel
+and Distributed Processing and Applications, volume 3758 of Lecture Notes in Computer
+Science, pages 126–131. Springer, Heidelberg, 2005. DOI: 10.1007/11576235 17.
+[9] Pardo, R.: Design, Testing, and Optimization of Trading Systems. John Wiley & Sons,
+Hoboken, 1992.
+[10] Pardo, R.: The Evaluation and Optimization of Trading Strategies. John Wiley & Sons,
+Hoboken, 2nd edition, 2008.

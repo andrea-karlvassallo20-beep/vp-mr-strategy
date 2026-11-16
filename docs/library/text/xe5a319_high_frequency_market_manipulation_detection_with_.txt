@@ -1,0 +1,2434 @@
+=== page 1 ===
+High-Frequency Market Manipulation Detection with a
+Markov-modulated Hawkes process
+Timothée Fabre1,2 and Ioane Muni Toke1
+1Université Paris-Saclay, CentraleSupélec, Laboratoire MICS, France.
+2SUN ZU Lab, Paris, France.
+February 7, 2025
+Abstract
+This work focuses on a self-exciting point process defined by a Hawkes-like intensity and
+a switching mechanism based on a hidden Markov chain. Previous works in such a set-
+ting assume constant intensities between consecutive events. We extend the model to gen-
+eral Hawkes excitation kernels that are piecewise constant between events. We develop an
+expectation-maximization algorithm for the statistical inference of the Hawkes intensities
+parameters as well as the state transition probabilities. The numerical convergence of the es-
+timators is extensively tested on simulated data. Using high-frequency cryptocurrency data
+on a top centralized exchange, we apply the model to the detection of anomalous bursts of
+trades. We benchmark the goodness-of-fit of the model with the Markov-modulated Poisson
+process and demonstrate the relevance of the model in detecting suspicious activities.
+Keywords – Hawkes process, Regime switching, Cryptocurrency, Wash trading, Ramping,
+Price manipulation
+Contents
+1 Introduction 2
+1.1 Literature review . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 2
+1.2 Contribution and outline of the paper . . . . . . . . . . . . . . . . . . . . . . . . 3
+2 The Markov-Modulated Hawkes Process 4
+2.1 Mathematical framework . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+2.2 A piecewise constant intensity function . . . . . . . . . . . . . . . . . . . . . . . . 5
+3 Estimation procedure 7
+3.1 The likelihood function . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+3.2 An Expectation-Maximization algorithm . . . . . . . . . . . . . . . . . . . . . . . 8
+3.3 Estimation of past states . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+3.4 Goodness of fit . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+3.5 Numerical validation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 14
+4 Application 17
+4.1 Data and intensity seasonality . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+4.2 Detection of suspicious traded volume . . . . . . . . . . . . . . . . . . . . . . . . 18
+5 Conclusion 23
+1
+arXiv:2502.04027v1  [stat.ME]  6 Feb 2025
+
+=== page 2 ===
+A Proofs 25
+A.1 Proof of Proposition 2.1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+A.2 Proof of Lemma 2.1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+A.3 Proof of Proposition 2.2 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 27
+A.4 Proof of Proposition 2.3 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+A.5 Proof of Proportion 3.1 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29
+A.6 Proof of Proposition 3.3 . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30
+B Supplementary figures 32
+1 Introduction
+Due to their ability to model events that cluster over time, Hawkes processes have been ex-
+tensively studied in recent years. Their interpretability has been highlighted in many areas of
+application, for example in finance. Mathematically, a univariate linear Hawkes process is a
+counting process (Nt)t≥0 with an intensity process (λt)t≥0 that depends on the history of the
+process N . The intensity is usually defined as
+λt = µ +
+Z
+(−∞,t]
+ϕ(t − s)dNs, (1)
+where µ is the baseline intensity and ϕ is the kernel, a non-negative function that quantifies the
+excitation effect of past events.
+In many real-world applications, the parameters of the Hawkes process are not static and can
+change over time in response to exogenous factors or regimes. For instance, in electronic financial
+markets, the intensity of trades can vary with respect to microstructure variables such as liquidity
+and order flow imbalances. To capture such dynamics, we propose a new point process with a
+Hawkes-like intensity whose parameters vary according to a regime-switching mechanism based
+on a continuous time Markov chain (CTMC).
+1.1 Literature review
+The use of Hawkes processes has been explored extensively in the microstructure literature as
+they are natural candidates for limit order book models. Non-linear extensions can capture
+inhibitory behaviors and lead to a better reproduction of order flow dynamics (Lu and Abergel,
+2018). Although significant progress has been made towards the discovery of the true kernel
+shape (Bacry and Muzy, 2016; Fosset et al., 2022; Fabre and Muni Toke, 2024), careful empirical
+studies suggest that the intensity itself depends on exogenous factors such as bid-ask spread and
+liquidity imbalance, e.g. see Muni Toke and Yoshida (2017) and Muni Toke and Yoshida (2020).
+For example, extreme bid-ask spreads are often correlated with higher market uncertainty, which
+potentially increases market activity.
+State-dependent Hawkes processes are designed to infer the relationship between intensities and
+market features. The first (Morariu-Patrichi and Pakkanen, 2022) postulates that the parameters
+of the kernel depend on the state of the market that is to be defined. Each pre-defined state is
+associated with a corresponding set of unknown parameters. Although the framework provides
+great flexibility, it is highly sensitive to the market characterization provided as input. The other
+approach specifies the intensity process as a multiplicative model, composed of a linear Hawkes
+process intensity and a state-dependent factor (Sfendourakis and Muni Toke, 2023; Wu et al.,
+2023). In this case, the parameters of the Hawkes intensity do not depend on the market state,
+but are rather multiplied by a factor that is a function of a features vector.
+2
+
+=== page 3 ===
+We decide to take a different point of view and do not explicitly characterize the market state
+with observable quantities. Instead, we consider that the parameters of the Hawkes process
+depend on a continuous time Markov chain (CTMC) that can explore a finite number of states
+that are not observed. In fact, each state may encode a specific configuration of market features
+that can be characterized once the parameters of the model are estimated. The idea is to use an
+unsupervised technique to identify states of the market that are associated with different levels
+of endogeneity and exogeneity. The Markov-modulated Poisson process has been applied many
+times to real-world problems, see Meier-Hellstern (1984), Kawashima and Saito (1990), Davison
+et al. (1993) and more recently in Bergault et al. (2024). Nevertheless, the Markov-modulated
+Hawkes process (MMHP) has received much less attention due to the multiple challenges that
+arise in their estimation. A workaround was proposed in Wang (2010); Wang et al. (2012) by
+considering a stepwise decay instead of a continuous one, which allowed the authors to design an
+expectation-maximization (EM) algorithm for parameter estimation. In a more recent work, Wu
+et al. (2022) propose to use Bayesian inference for the estimation of a MMHP with one Poisson
+regime and one Hawkes regime on small data sets.
+As an application, we are interested in detecting suspicious trading activity on illiquid cryp-
+tocurrencies through the unsupervised identification of extreme bursts of trades. In particular,
+we focus on a particular wash trading tactic, which involves the execution of a large number
+of fake orders within a short period of time. The goal is to generate a significant increase in
+both traded volume and trade intensity in order to mislead other agents. Wash trading activity
+has been studied on both traditional and cryptocurrency markets, see e.g., Imisiker and Tas
+(2018); Nekrasova and Neugebauer (2023); Aloosh and Li (2024). When the agents identifica-
+tion numbers are available, graph theory can be a powerful tool for the detection of suspicious
+transactions (Cao et al., 2015; Victor and Weintraud, 2021; Chen et al., 2023; Tošić et al., 2023;
+Jayant, 2023). Nevertheless, traders’ IDs – even anonymous – are not provided by centralized
+venues, which makes wash trading detection extremely challenging. Many indirect detection
+methodologies have been proposed – see, e.g. Cong et al. (2023) – and rely on anomaly iden-
+tification in either first digit distribution of trade sizes or price impact of time-bucketed signed
+volumes. The latter technique is intuitive and convenient: set a time window W , e.g. W = 10
+minutes, discretize the observation time frame in buckets of size W and for each bucket, compute
+the mid-price move and the signed traded volume. If wash trading activity occurred in a bucket,
+then it is likely that a large signed traded volume together with a small price move has been
+observed. Many detection methods can follow from this simple framework, like fitting a linear
+regression model and identifying outliers corresponding to small price moves. The problem of
+such indirect methodologies is that it is extremely sensitive to arbitrary choices such as the cho-
+sen time window W , the price move model, the characterization of a suspicious bucket, and it
+is not suitable for live detection. Furthermore, in a recent work, Falk et al. (2023) demonstrate
+how current indirect techniques can fail substantially for fake volume identification. To the best
+of our knowledge, our work is the first to propose an application of Markov-modulated point
+processes to the detection of suspicious events in a trading environment.
+1.2 Contribution and outline of the paper
+Our main contributions are summarized below.
+- We introduce a novel self-exciting point process whose intensity is piecewise constant be-
+tween event times, with a discretization step parameter δ.
+- Inspired by Wang (2010), we develop an estimation procedure for such processes with a
+general non-negative, decreasing kernel function. We provide a Viterbi algorithm for state
+estimation in both historical and online settings, and proceed to numerical experiments on
+simulations to validate the estimation method. We provide elements about the numerical
+3
+
+=== page 4 ===
+convergence of the model to its continuous version.
+- Finally, we characterize two types of suspicious trading behaviors and apply the model to
+cryptocurrency trade data. We show that it is able to identify extreme bursts of events
+that do not generate price changes. We delve deeper into the analysis of the characterized
+states and demonstrate the robustness of our model as it is able to detect suspicious trading
+activity even weeks after the in-sample data.
+The paper is organised as follows. Section 2 introduces the Markov-modulated Hawkes process
+(MMHP) with δ-piecewise constant intensity and its continuous version. We discuss how the
+piecewise constant intensity enables us to solve the ordinary differential equations (ODEs) that
+are required for the computation of the likelihood. An EM algorithm is developed in Section 3,
+and a careful validation experiment is conducted on simulations. In Section 4 we focus on the
+estimation of the model on cryptocurrency market data, and we provide an extensive analysis of
+the states that are characterized.
+2 The Markov-Modulated Hawkes Process
+2.1 Mathematical framework
+Let (Ω, F , P, (Ft)t≥0) be a filtered probability space. Consider a point process (Nt)t≥0 with
+occurrence times (tn)n∈{1,...,K}, with convention t0 = 0 and parameters varying according to
+an unobservable M-state irreducible and aperiodic continuous-time Markov chain (St)t≥0. Let
+Ft := σ(Ns, 0 ≤ s ≤ t), for t ≥ 0.
+We denote the infinitesimal generator of the underlying Markov process by Q := (qij )1≤i,j≤M
+such that qi := −qii = P j̸=i qij , 1 ≤ i ≤ M . Let ξ0 be the initial distribution vector, with
+elements
+ξi 0 = P(S0 = i), 1 ≤ i ≤ M, (2)
+and we denote by π the stationary distribution of S.
+TheobservedHawkesprocessisassumedtobecharacterizedbythefollowingconditionalintensity
+λt = λ(t|Ft) :=
+MX
+i=1
+1{St=i}λi t (3)
+:=
+MX
+i=1
+1{St=i}
+
+µi +
+Z t
+−∞
+ϕi(t − s) dNs
+
+(4)
+=
+MX
+i=1
+1{St=i}
+ 
+µi + X
+tk <t
+ϕi(t − tk)
+!
+, (5)
+where µi and ϕi are respectively the baseline and the kernel associated to state i.
+Let Λt be the diagonal matrix with coefficients (λi t)1≤i≤M and denote by IM the identity matrix
+of size M . Let xn := tn − tn−1 be the duration between the (n − 1)-th and n-th event of the
+process N .
+Definition 2.1 (Forward transition matrix). Let tn−1 and tn be two successive jump times of
+N , and let
+H (n) ij (u) := P   Stn−1+u = j, Ntn−1+u − Ntn−1 = 0 | Stn−1 = i, Ftn−1  , 1 ≤ i, j ≤ M, 0 ≤ u ≤ xn.
+(6)
+The forward transition matrix from tn−1 to tn−1 +u is denoted by H (n)(u) ::=  H (n) ij (u)  1≤i,j≤M .
+4
+
+=== page 5 ===
+Proposition 2.1 (Forward ODEs). The forward transition matrix is the solution of the system
+of ordinary differential equations
+dH (n)
+du (u) = H (n)(u)   Q − Λtn−1+u  , u ∈]0, xn], (7)
+with initial condition H (n)(0) = IM .
+For the sake of readability, the proof is shown in appendix, in Section A.
+Equation (7) is a system of ordinary differential equations that does not have a trivial analytic
+solution. It would be the case if the coefficient matrix Au := Q − Λtn−1+u was not time-
+dependent (we would get the exponential of a matrix as a solution of the ODE). But here,
+since the coefficients are time-dependent, the commutativity property does not necessarily hold
+(∀ (s, t), AsAt ̸= AtAs).
+Definition 2.2 (Backward transition matrix). Let tn−1 and tn be two successive jump times of
+N and let
+G(n) ij (u) := P (Stn = j, Ntn − Ntn−u = 0 | Stn−u = i, Ftn−u) , 1 ≤ i, j ≤ M, 0 ≤ u ≤ xn. (8)
+The backward transition matrix from tn − u to tn is denoted by G(n)(u) :=  G(n) ij (u)  1≤i,j≤M .
+Lemma 2.1. The forward and backward transition matrices follow the equality
+H (n)(tn − tn−1) = H (n)(t − tn−1)G(n)(tn − t), tn−1 ≤ t ≤ tn. (9)
+Proposition2.2 (BackwardODEs). The backward transition matrix is the solution of the system
+of ordinary differential equations
+dG(n)
+du (u) = (Q − Λtn−u) G(n)(u), u ∈]0, xn], (10)
+with initial condition G(n)(0) = IM .
+Finally, let
+F (n) ij (x) := P   Stn−1+Xn = j, Xn ≤ x | Stn−1 = i, Ftn−1  , 1 ≤ i, j ≤ M, x ≥ 0, (11)
+where Xn denotes the random duration after tn−1. Letf (n) ij (x), x ≥ 0, be the associated density
+and f (n)(x) :=  f (n) ij (x)  1≤i,j≤M its matrix form. Following Meier-Hellstern (1987) and Rydén
+(1996), we have
+f (n)(x) = H (n)(x)Λtn−1+x, x ≥ 0. (12)
+2.2 A piecewise constant intensity function
+TheODEsofProposition2.1andProposition2.2donothaveasimpleanalyticsolution. Thus, we
+propose to use a piecewise constant kernel function in the spirit of the Markov-modulated Hawkes
+process with stepwise decay (MMHPSD) of Wang (2010). Our approach naturally extends the
+MMHPSD by allowing the intensity to decrease between event times.
+Denote by δ > 0 the time step that characterizes the frequency at which the intensity varies
+between events, and define
+ω(t) := sup{u ≤ t, Nu − Nu− = 1}, (13)
+5
+
+=== page 6 ===
+t
+λt
+δ = 10
+δ = 1
+δ = 0.5
+δ = 0.1
+continuous
+(a) A trajectory sample of MMHPs intensities with
+varying δ togetherwiththeircontinuouscounterpart.
+tn tn+1
+t
+φ(ω(t) + 𝓁(t)δ − tn)
+Arrival of a new event
+at time tn+1: ω(t) = tn+1
+initial event
+MMHP-δ kernel
+δ-piecewise constant kernel
+continuous kernel φ
+truncature at event time
+(b) The evolution of the MMHP-δ kernel when a new
+event arrives.
+Figure 1: An illustration of the dynamics of MMHP-δ intensity.
+the last arrival time of an event before t and
+ℓ(t) := max{l ∈ N, ω(t) + l δ ≤ t}, (14)
+the number of disjoint sub-intervals of length δ that fit into the interval [ω(t), t].
+For convenience, we will use the notation ln := ℓ(t− n ), and we define ∆n such that: tn − tn−1 =
+lnδ + ∆n.
+Definition 2.3. Let N be a Markov-modulated Hawkes process as defined in Section 2. The
+conditional intensity with δ-piecewise constant kernel is defined as
+λt =
+MX
+i=1
+1{St=i}λi t (15)
+=
+MX
+i=1
+1{St=i}
+
+µi +
+Z t
+−∞
+ϕi (ω(t) + ℓ(t)δ − s) dNs
+
+(16)
+=
+MX
+i=1
+1{St=i}
+(
+µi + X
+tk <t
+ϕi (ω(t) + ℓ(t)δ − tk)
+)
+. (17)
+Recall that Λt is the diagonal matrix with coefficients (λi t)1≤i≤M . The MMHP model with
+δ-piecewise constant kernel is hereafter called the MMHP-δ model.
+A sample trajectory of the MMHP-δ intensity is provided in Figure 1. We show an example of
+how the intensity evolves with respect to δ and how it compares to its continuous counterpart.
+The behavior of the δ-stepwise decay of an exponential kernel is displayed, showing how the
+decay adapts to a new event time in order to preserve the piecewise constant property with step
+δ of the overall intensity: the remaining time to next decay τ ≤ δ is reinitialized with value δ at
+each event time.
+Under the δ-piecewise constant kernel framework, the forward and backward ODEs of Equations
+(7) and (10) can be explicitly solved.
+6
+
+=== page 7 ===
+Proposition 2.3. If the intensity is given by Equation (15), the forward transition matrix is
+H (n)(u) = Ξ(n) ℓ(tn−1+u)e(Q−Λtn−1+ℓ(tn−1+u)δ )(u−ℓ(tn−1+u)δ), 0 ≤ u ≤ xn, (18)
+for which we define the following quantity
+Ξ(n) k :=
+kY
+r=1
+e((Q−Λtn−1+(r−1)δ )δ), 1 ≤ n ≤ K, 1 ≤ k ≤ ℓn. (19)
+Similarly, the backward transition matrix is written as, for u ∈ [0, xn]
+
+
+
+G(n)(u) = e(Q−Λtn−1+ℓnδ )u if u ≤ ∆n,
+G(n)(u) = e(Q−Λtn−1+ℓ(tn−u)δ )(u−((ℓn−ℓ(tn−u)−1)δ+∆n))Ψ(n) ℓn−ℓ(tn−u)−1e(Q−Λtn−1+ℓnδ )∆n else,
+(20)
+for which we define the following quantity
+Ψ(n) k :=
+kY
+r=1
+e(Q−Λtn−1+(ℓn−(k−r)−1)δ )δ , 1 ≤ n ≤ K, 1 ≤ k ≤ ℓn. (21)
+Here, the notation eA stands for the matrix exponential of A and we use the convention Q0 r=1 Ar =
+IM .
+3 Estimation procedure
+3.1 The likelihood function
+Let K be the number of observations, and let T := {tn}1≤n≤K be the ordered set of observed
+event times and X := {xn = tn − tn−1}1≤n≤K be the set of observed durations, with the
+convention t0 = 0. Note that we do not consider that the process N jumps at time 0. For
+notational simplicity, we assume that the observation time frame [0, T ] is such that tK = T .
+Denote by L(Θ, T ) the likelihood of the model with the set of parameters Θ := ΘM ∪ ΘH , where
+ΘM := {(ξi 0)1≤i≤M , (qij )1≤i,j≤M } is the set of Markov chain parameters and ΘH is the set of
+point process parameters.
+In Wang (2010), the authors give a simple form of the complete likelihood L. After simplification,
+the resulting log-likelihood isseparated into twoparts: the Markov chainpart which characterizes
+past state transitions and the Hawkes part which is expressed in terms of past event occurrences
+characterized by the underlying Hawkes process. We use the same idea and write the complete
+likelihood for the MMHP in the proposition below.
+Proposition 3.1. The log-likelihood of an MMHP with parameters Θ := ΘM ∪ ΘH over the
+observations T can be written as
+L(Θ, T ) = log LM (ΘM , T ) + log LH (ΘH , T ), (22)
+where
+log LM (ΘM , T ) =
+MX
+i=1
+
+
+1{S0=i} log ξi 0 − Diqi +
+MX
+j=1,j̸=i
+wij log qij
+
+
+ , (23)
+and
+log LH (ΘH , T ) =
+MX
+i=1
+( KX
+n=1
+1{Stn =i} log λi tn (ΘH ) −
+Z T
+0
+1{St=i}λi t(ΘH ) dt
+)
+, (24)
+7
+
+=== page 8 ===
+for which we define the time S spends in state i over [0, T ]
+Di :=
+Z T
+0
+1{St=i}dt =
+m+1X
+p=1
+1{sp=i}(up − up−1), (25)
+and the number of times S jumps from state i to state j over [0, T ]
+wij :=
+Z T
+0
+lim
+∆→0+
+1
+∆ 1{St−∆=i, St=j}dt =
+mX
+p=1
+1{sp=i,sp+1=j}. (26)
+The proof is based on Wang (2010) and is given in Appendix, in Section A.
+In the rest of the paper, we sometimes write λt(Θ) instead of λt(ΘH ) or simply λt for the sake
+of readability when the context allows us to do so.
+3.2 An Expectation-Maximization algorithm
+In this section, we design an Expectation-Maximization (EM) algorithm that can be used to
+estimate the parameters. To this extent, we first develop the computations that are needed for
+the E-step. Finally, we describe the M-step and wrap up the estimation procedure by providing
+a detailed algorithm.
+3.2.1 Expectation step
+Definition 3.1. Let t ≥ 0, and n such that Nt = n. The forward likelihood of being in state i
+at time t is
+αi t := p (T1 = t1, . . . , Tn = tn, tn ≤ t < tn+1, St = i) , 1 ≤ i ≤ M, (27)
+where p is a convenient generic notation for the density.
+The forward likelihood vector at time t is αt := (αi t)1≤i≤M .
+The backward likelihood conditionally on being in state i at time t is
+βi t := p   Tn+1 = tn+1, . . . , TK = tK , tn < t ≤ tn+1  St = i  , 1 ≤ i ≤ M. (28)
+The backward likelihood vector at time t is βt := (βi)1≤i≤M .
+Proposition 3.2. Let t ≥ 0, and n such that Nt = n. The forward likelihood of being in state i
+at time t and the backward likelihood conditionally on being in state i at time t satisfy
+αi t = ξ0
+nY
+k=1
+f (k)(xk) H (n+1) (t − tn) 1i, 1 ≤ i ≤ M, (29)
+βi t = 1′ i G(n+1) (tn+1 − t) Λt− n+1
+KY
+k=n+2
+f (k)(xk) 1, 1 ≤ i ≤ M, (30)
+where 1i is the RM vector the elements of which are zeros except the ith entry which is 1, and 1
+is the RM vector of ones.
+The first step of the EM algorithm consists in taking the expectation of the log-likelihood condi-
+tionally on the entire history FT , over the state variable S with the current parameter estimate
+bΘ. By doing so, we can infer the expected path of the unobserved process S using the information
+we have about the observed process N .
+Intherestofthepaper, wewillusethefollowingdefinitionsoffilteredandsmoothedprobabilities.
+8
+
+=== page 9 ===
+Definition 3.2. The filtered probability of being in state i at time t is
+ξi t|t := P(St = i|Ft), 1 ≤ i ≤ M. (31)
+The smoothed probability of being in state i at time t is
+ξi t|T := P(St = i|FT ), 1 ≤ i ≤ M. (32)
+We will also use the same notations as in Roberts et al. (2006),
+cn := L(n − 1)f (n)(xn)1, (33)
+L(n) := L(0)
+nY
+k=1
+f (k)(xk)
+ck
+, (34)
+R(n) :=
+KY
+k=n
+f (k)(xk)
+ck
+R(K + 1), 1 ≤ n ≤ K, (35)
+with conditions L(0) = ξ0, R(K + 1) = 1.
+Note that the likelihood can be expressed as
+L(Θ, T ) =
+KY
+n=1
+cn = α′ tβt, 0 ≤ t ≤ T, (36)
+and we have the following expressions of the filtered and smoothed probabilities
+ξi t|t = αi t α′ t1 , (37)
+ξi t|T = αi tβi t L(Θ, T ) , 1 ≤ i ≤ M, 0 ≤ t ≤ T. (38)
+We first compute the expected log-likelihood conditionally on the history of events and an esti-
+mation bΘ of the parameters. We will show that it is natural to define the following quantities
+P (n) := Λt− n R(n + 1)L(n − 1), (39)
+Ω(n) k := Ψ(n) ℓn−k−1e(Q−Λtn−1+ℓnδ )∆n P (n)Ξ(n) k , (40)
+C(n) k :=
+
+
+Q − Λtn−1+kδ Ω(n) k
+OM Q − Λtn−1+kδ
+
+
+2M ×2M
+, (41)
+D(n) :=
+
+
+Q − Λtn−1+ℓnδ P (n) Ξ(n) ℓn
+OM Q − Λtn−1+ℓnδ
+
+
+2M ×2M
+, (42)
+where we denoted by OM the M × M matrix filled with zeros. Moreover, we will denote by
+[A]M ⊠M the upper-right block matrix of size M of A, Aij the element of A at row i and column
+j, and ⊙ the Hadamard product, i.e. the element-wise multiplication.
+An analytic expression of the expected log-likelihood needed during the E-step is provided by
+the following proposition.
+9
+
+=== page 10 ===
+Proposition 3.3. Given an estimated set of parameters bΘ, the expected log-likelihood of the
+E-step for the MMHP can be written as
+E
+
+log L(Θ, T )|FT , bΘ
+
+= E
+
+log LM (Θ, T ) FT , bΘ  + E  log LH (Θ, T ) FT , bΘ  , (43)
+with
+E
+
+log LM (Θ, T ) FT , bΘ  = MX
+i=1
+
+
+ξi 0|T ( bΘ) log ξi 0 − E(Di|FT , bΘ)qi +
+MX
+j=1,j̸=i
+E(wij |FT , bΘ) log qij
+
+
+ ,
+(44)
+and
+E
+
+log LH (Θ, T ) FT , bΘ  = MX
+i=1
+( KX
+n=1
+ξi tn|T ( bΘ) log λi tn (Θ) −
+Z T
+0
+ξi t|T ( bΘ)λi t(Θ)dt
+)
+. (45)
+Furthermore, in the case of the MMHP-δ, we have the analytic expressions
+E
+
+Di|FT , bΘ
+
+=
+KX
+n=1
+1
+cn
+"ℓn−1X
+k=0
+h
+eC(n) k δ iM ⊠M + h eD(n)∆n iM ⊠M
+#
+ii
+, (46)
+E
+
+wij |FT , bΘ
+
+= bqij
+KX
+n=1
+1
+cn
+"ℓn−1X
+k=0
+h
+eC(n) k δ iM ⊠M + h eD(n)∆n iM ⊠M
+#
+ji
+, (47)
+Z T
+0
+ξi t|T ( bΘ)λi tdt =
+KX
+n=1
+1
+cn
+"ℓn−1X
+k=0
+Λtn−1+kδ ⊙
+h
+eC(n) k δ iM ⊠M + Λtn−1+ℓnδ ⊙ h eD(n)∆n iM ⊠M
+#
+ii
+,
+(48)
+and the smoothed probabilities ξi tn|T are given by Equation (38).
+The proof is given in Appendix, in Section A.
+3.2.2 Maximization step
+The second step of the EM algorithm consists in maximizing the expected likelihood obtained
+at the E-step. Thus, our goal is to solve the following optimization problem
+Θ∗ = argmax
+Θ
+E
+
+log L(Θ, T )|FT , bΘ
+
+. (49)
+We can maximize the two likelihood terms of Proposition 3.3 separately to get the new optimal
+set of Markov chain parameters ΘM ∗ and the new optimal set of Hawkes parameters ΘH∗. Thus
+the above problem may be divided into two independent optimization problems
+ΘM ∗ = argmax
+ΘM
+E
+
+log LM (ΘM , T )|FT , bΘ  , (50)
+ΘH∗ = argmax
+ΘH
+E
+
+log LH (ΘH , T )|FT , bΘ  . (51)
+The proposition below provides the parameter update equations for the M-step.
+10
+
+=== page 11 ===
+Proposition 3.4. The update equations of the Markov chain parameters (Q, ξ0) are
+q∗ ij = E(wij |FT , bΘ) E(Di|FT , bΘ) , 1 ≤ i, j ≤ M, i ̸= j, (52)
+q∗ ii = −
+MX
+j=1,j̸=i
+q∗ ij , 1 ≤ i ≤ M. (53)
+ξi 0 ∗ = bξi 0 1i R(1), 1 ≤ i ≤ M. (54)
+In the MMHP-δ model, the updates of the Hawkes parameters (µ, α, β) are obtained by solving
+the following optimization problem
+ΘH∗ = argmax
+ΘH
+MX
+i=1
+KX
+n=1
+L(n)1i1⊺ i R(n + 1) log λi tn   ΘH 
+−
+KX
+n=1
+1
+cn
+Tr
+ ℓn−1X
+k=0
+Λtn−1+kδ
+ 
+ΘH  ⊙ h eC(n) k δ iM ⊠M + Λtn−1+ℓnδ   ΘH  ⊙ h eD(n)∆n iM ⊠M
+!
+.
+(55)
+Proof. Use Equation (44) and write the first order condition of the optimization problem. After
+rearranging terms, the update equations of the Markov chain parameters are obtained. Con-
+cerning the update of the Hawkes parameters, use Equations (45) and (48) to get the objective
+function.
+The complete EM estimation procedure is described in Algorithm 1.
+Algorithm 1 EM algorithm for the MMHP-δ
+1. Set a maximum number of steps E to take and a log-likelihood improvement threshold ε
+as a stopping criterion.
+2. Initialize the estimated parameters bΘ and the current log-likelihood as log L = −∞. Com-
+pute the sequence (ℓn)1≤n≤K .
+3. For r = 1 to E:
+(a) E-step:
+i. Compute the diagonal intensity matrices Λtn−1+kδ , 1 ≤ n ≤ K, 0 ≤ k ≤ ℓn, the
+forward and backward transition matrices H (n)(xn) and G(n)(xn), 1 ≤ n ≤ K,
+and deduce recursively L(n), cn, R(n), for 1 ≤ n ≤ K.
+ii. Compute the matrix exponentials eC(n) k δ , 1 ≤ n ≤ K, 0 ≤ k ≤ ℓn − 1, and eD(n)∆n ,
+1 ≤ n ≤ K. Compute their upper-right block of size M × M .
+iii. Compute E(wij |FT , bΘ), 1 ≤ i, j ≤ M , and E(Di|FT , bΘ), 1 ≤ i ≤ M .
+(b) Check the log-likelihood stopping criterion: if PK n=1 log cn − log L < ε, leave the loop.
+Set log L = PK n=1 log cn.
+(c) M-step:
+i. Use the update equations of Proposition 3.4 for the Markov chain parameters and
+use a non-linear optimization algorithm to maximize the expected log-likelihood
+with respect to the Hawkes parameters.
+ii. Update the estimated parameters bΘ with the new estimates.
+4. Output: An estimation bΘ of the optimal parameters.
+11
+
+=== page 12 ===
+3.3 Estimation of past states
+Suppose that we estimated the model parameters Θ∗. One important feature of hidden Markov
+chains is the estimation of the sequence of past states, knowing the history of events and the
+estimated parameters. We propose here a Viterbi algorithm to handle this task.
+3.3.1 At event times
+Denote by S∗ := (s∗ n)1≤n≤K the optimal sequence of states at event times such that:
+S∗ = argmax
+S=(sn)1≤n≤K
+p (S, FT |Θ∗) . (56)
+We get the following optimization problem
+S∗ = argmax
+S=(sn)1≤n≤K
+KY
+n=1
+p
+
+Stn = sn, Nt− n − Ntn−1 = 0, Ntn − Nt− n = 1|Stn−1 = sn−1, Ftn−1
+
+. (57)
+Using previous notations and Equation (12),
+S∗ = argmax
+S:=(sn)n∈{0,...,K}
+KY
+n=1
+Hsn−1sn (xn)λsn (tn). (58)
+Solving this problem with brute force is not computationally feasible for a history of thousands
+of events. The Viterbi algorithm enables us to handle this issue. To this extent, we define
+ηi n := max (s1,s2,...,sn−1) p   St1 = s1, . . . , Stn−1 = sn−1, Stn = i, Ftn |Θ∗ , 1 ≤ i ≤ M, 2 ≤ n ≤ K,
+(59)
+with ηi 1 = p(S0 = i, St1 = i, Nt− 1 = 0, Nt1 = 1).
+The sequence (ηn)n is computed using the dynamic programming equation
+ηj n = max 1≤i≤M ηi n−1H (n) ij (xn)λj (tn), 1 ≤ j ≤ M, 2 ≤ n ≤ K. (60)
+We introduce the notation
+ψj n := argmax
+1≤i≤M
+ηi n−1H (n) ij (xn), 1 ≤ j ≤ M, 2 ≤ n ≤ K, (61)
+with ψj 1 = 0. Thus,
+ηj n = ηψj n n−1H (n) ψj nj (xn)λj (tn), 1 ≤ j ≤ M, 2 ≤ n ≤ K. (62)
+The optimal sequence of states is obtained by operating the backward recursion
+s∗ n = ψ s∗ n+1 n+1 , 1 ≤ n ≤ K − 1, (63)
+from the terminal condition s∗ K = argmax 1≤i≤M ηi K .
+It is noteworthy that in practice, float computation errors can arise for very small values of
+transition matrices, leading to ηj n = 0, for n ≥ n0, for a particular n0, and 1 ≤ j ≤ M . To
+avoid these numerical instabilities, we recommend working with the logarithm of densities. The
+algorithm is equivalent to the computation of the recursion ηj n = max 1≤i≤M log ηi n−1H (n) ij (xn) +
+log λj (tn) for all (j, n), 1 ≤ j ≤ M, 2 ≤ n ≤ K.
+We describe the estimation procedure in Algorithm 2.
+12
+
+=== page 13 ===
+Algorithm 2 Viterbi algorithm for the MMHP-δ
+1. Initialize ηi 1 = H (1) ii (x1)µi, ψj 1 = 0.
+2. For n = 1 to K:
+- Compute
+ηj n = max 1≤i≤M ηi n−1H (n) ij (xn)λj (tn), 1 ≤ j ≤ M, (64)
+and
+ψj n := argmax
+1≤i≤M
+ηi n−1H (n) ij (xn), 1 ≤ j ≤ M. (65)
+3. Initialize s∗ K = argmax 1≤i≤M ηi K .
+4. For n = 1 to K:
+- Compute
+s∗ n = ψ s∗ n+1 n+1 , 1 ≤ n ≤ K − 1, (66)
+5. Output: The optimal sequence of states S∗ as defined in Equation (58).
+3.3.2 Online estimation
+In order to compute the sequence of states in a live environment, we need to infer the optimal
+state at times between events. In this case, the recursion is similar but involves the computation
+of a specific transition matrix that we denote by R. It is defined such that, for 1 ≤ i, j ≤ M ,
+R(n) ij (u, u′) := P   Stn−1+u′ = j, Ntn−1+u′ − Ntn−1+u = 0 | Stn−1+u = i, Ftn−1+u  , 0 ≤ u < u′ ≤ xn.
+(67)
+The transition matrix R can be written in terms of the forward transition matrix and its inverse.
+The formula is given by the following lemma.
+Proposition 3.5. The transition matrix R is given by
+R(n)(u, u′) = h H (n)(u) i−1 H (n)(u′), 0 ≤ u ≤ u′ ≤ xn. (68)
+Proof. The result comes from Definition 2.1
+The online Viterbi algorithm is described in Algorithm 3. Note that there is no backward
+recursion as for the historical version since we only need the maximum value of the transition
+density at the current time.
+3.4 Goodness of fit
+We proceed to a residual analysis to assess whether the estimated model correctly approximates
+the real data generation process. Since the state process S is unobservable, we estimate the
+intensity λt with bλt using
+bλt := E   λt  FT  = MX
+i=1
+ξi t|T λi t. (70)
+Define the residual transformed duration
+τn :=
+Z tn
+tn−1
+bλtdt, 1 ≤ n ≤ K. (71)
+13
+
+=== page 14 ===
+Algorithm 3 Online Viterbi algorithm for the MMHP
+1. Set a history of past observations such that tK = T is the starting point of the online
+algorithm, and set ∆ as the discretization time step for the live algorithm. The sequence
+of states will be continuously updated.
+2. Apply Algorithm 2 to compute ηj K , 1 ≤ j ≤ M .
+3. Set t = T .
+4. While True: Denote by t′ the current time.
+(a) If an event has occurred:
+i. K ← K + 1
+ii. tK ← t′
+iii. Compute
+ηj K = max 1≤i≤M ηi K−1H (K) ij (tK − t)λj (tK ), 1 ≤ j ≤ M. (69)
+iv. t ← tK
+(b) Else:
+i. ηj K ← max 1≤i≤M ηi K R(K+1) ij (t, t′), 1 ≤ j ≤ M.
+ii. t ← t′
+(c) Set s∗ t = argmax
+1≤i≤M
+ηi K .
+5. Output: A live feed of optimal states s∗ t .
+Then, a classical result in point process theory (Daley et al., 2003) is that if the sequence of
+event times (tn)1≤n≤K was generated by a point process with intensity process (bλt)t≥0, then τn
+must follow an exponential distribution with unit parameter. Once the sequence of transformed
+inter-arrival times (τn)1≤n≤K is computed, a Q-Q plot can be performed to visually assess the
+goodness of fit with respect to the exponential distribution. The following proposition provides
+an analytic formula for the transformed duration of an MMHP-δ.
+Proposition 3.6. Under the δ-piecewise constant intensity assumption, we have
+τn = 1 cn Tr
+ ℓn−1X
+k=0
+Λtn−1+kδ ⊙
+h
+eC(n) k δ iM ⊠M + Λtn−1+ℓnδ ⊙ h eD(n)∆n iM ⊠M
+!
+, 1 ≤ n ≤ K. (72)
+Proof. For all n, 1 ≤ n ≤ K, write
+τn =
+Z tn
+tn−1
+bλtdt =
+MX
+i=1
+Z tn
+tn−1
+ξi t|T λi tdt.
+Use Equation (48) to deduce the result.
+3.5 Numerical validation
+In this section, we validate the estimation procedure by conducting numerical experiments on
+simulated data. We show that the EM algorithm proposed in Section 3 provides satisfactory
+results in terms of convergence with respect to the number of events and the number of EM
+steps. We repeatedly run the experiment and show the stability of the results across simulations
+using box plots.
+To preserve the Markov property and minimize computation time, we will use exponential kernels
+in the rest of the paper,
+ϕi(t) := αie−βit, 1 ≤ i ≤ M. (73)
+14
+
+=== page 15 ===
+500 1000 1500 2000
+EM step
+0.6
+0.8
+1.0
+1.2
+1.4
+µ1
+(a) µ1
+500 1000 1500 2000
+EM step
+0.5
+1.0
+1.5
+2.0
+µ2 (b) µ2
+500 1000 1500 2000
+EM step
+0.5
+1.0
+1.5
+2.0
+α1 (c) α1
+500 1000 1500 2000
+EM step
+3
+4
+5
+6α2 (d) α2
+500 1000 1500 2000
+EM step
+1
+2
+3
+4β1
+(e) β1
+500 1000 1500 2000
+EM step
+8
+10
+12
+14
+16β2 (f) β2
+500 1000 1500 2000
+EM step
+0.5
+1.0
+1.5
+2.0
+2.5
+q1 (g) q1
+500 1000 1500 2000
+EM step
+1
+2
+3q2 (h) q2
+Figure 2: Convergence with respect to the number of EM steps — Box plots of the parameters
+with respect to the number of EM steps. Whiskers represent 5% and 95% quantiles. The plain
+line represents the true parameter.
+However, note that the estimation procedure holds for any general positive kernel.
+The parameters used in the experiment are
+M = 2, µ = (1.0, 1.0)′, α = (1.0, 4.0)′, β = (2.0, 10.0)′,
+Q =
+−1.0 1.0
+1.0 −1.0
+
+, ξ0 = (0.5, 0.5).
+Convergence with respect to the number of EM steps We simulate 100 samples of 6,400
+events of the MMHP with δ-piecewise constant kernel with δ = 0.1. The box plots of the EM
+estimators as functions of the number of steps are shown in Figure 2. The convergence is quickly
+obtained for all Hawkes parameters as less than 500 steps are required. Concerning the Markov
+chain parameters, up to 1000 steps are needed to reach convergence. Other parameter settings
+led to similar results, showing that in empirical applications, the estimated Hawkes parameters
+might be more reliable than the Markov chain ones if the number of EM steps is small.
+Convergence with respect to the number of events We simulate 100 samples of the
+MMHP with δ-piecewise constant kernel with δ = 0.1 and study the convergence of the EM
+estimators towards the true parameters with respect to the number of events. The number of
+EM steps is set to 2,000. The boxplots are displayed in Figure 3. We get the desired convergence
+for all parameters, satisfactory results being obtained for samples of sizes greater than 1,600
+events. We also display the convergence of the standard deviations of the estimated parameters
+amongst the 100 simulations on Figure 4. Slopes of order K−γ with γ ∈ {0.5, 1} are plotted for
+visual reference.
+Quality of the estimation with respect to δ We simulate 100 samples of 6,400 events of
+the MMHP-δ with δ ∈ {0.01, 0.1, 1} . The boxplots of the EM estimators as functions of δ are
+displayed in appendix, in Figure 11. We observe that the algorithm is able to retrieve the true
+parameters in all cases.
+15
+
+=== page 16 ===
+100 200 400 800 1600 3200 6400
+Number of events
+0
+1
+2
+3
+4µ1
+(a) µ1
+100 200 400 800 1600 3200 6400
+Number of events
+0
+5
+10
+15µ2 (b) µ2
+100 200 400 800 1600 3200 6400
+Number of events
+0
+1
+2
+3α1 (c) α1
+100 200 400 800 1600 3200 6400
+Number of events
+0
+5
+10
+15α2 (d) α2
+100 200 400 800 1600 3200 6400
+Number of events
+0
+5
+10
+15
+20
+25β1
+(e) β1
+100 200 400 800 1600 3200 6400
+Number of events
+0
+20
+40
+60
+80
+100β2 (f) β2
+100 200 400 800 1600 3200 6400
+Number of events
+0
+2
+4
+6q1 (g) q1
+100 200 400 800 1600 3200 6400
+Number of events
+0
+2
+4
+6
+8q2 (h) q2
+Figure 3: Convergence with respect to the number of events — Box plots of the parameters with
+respect to the number of events. Whiskers represent 5% and 95% quantiles. The plain line
+represents the true parameter.
+102 103
+Number of events
+10−1
+100
+101
+σK
+K−0.5
+K−1
+(a) µ1
+102 103
+Number of events
+10−1
+100
+101
+σK
+K−0.5
+K−1 (b) µ2
+102 103
+Number of events
+10−2
+10−1
+100
+σK
+K−0.5
+K−1 (c) α1
+102 103
+Number of events
+10−1
+100
+101
+σK
+K−0.5
+K−1 (d) α2
+102 103
+Number of events
+10−1
+100
+101
+102
+σK
+K−0.5
+K−1
+(e) β1
+102 103
+Number of events
+101
+102
+103
+σK
+K−0.5
+K−1 (f) β2
+102 103
+Number of events
+10−1
+100
+101
+σK
+K−0.5
+K−1 (g) q1
+102 103
+Number of events
+10−1
+100
+101
+σK
+K−0.5
+K−1 (h) q2
+Figure 4: Convergence with respect to the number of events — Standard deviation of the esti-
+mated parameters with respect to the number of events.
+16
+
+=== page 17 ===
+200 400 800 1600
+Number of events
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+KS p-value
+(a) KS test, δ = 1
+200 400 800 1600
+Number of events
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+KS p-value (b) KS test, δ = 0.1
+200 400 800 1600
+Number of events
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+KS p-value (c) KS test, δ = 0.01
+0.0 2.5 5.0 7.5
+Theoretical quantile
+0.0
+2.5
+5.0
+7.5
+Empirical quantile
+δ = 0.01
+δ = 0.1
+δ = 1.0 (d) Average QQ plots and
+95% confidence intervals
+Figure 5: Convergence towards the continuous MMHP — Box plots of the p-values of the
+Komogorov-Smirnov test for three values of δ, and average QQ-plots of the simulation experi-
+ments with respect to the parameter δ. For the box plots, the dashed line represents the 5%
+threshold and whiskers represent 5% and 95% quantiles. For the QQ plot, dashed lines represent
+the average empirical quantiles, and shaded areas represent its 95% confidence intervals.
+Convergence towards the MMHP with continuous kernel As δ → 0, the kernel with
+δ-piecewise constant kernel should tend to its continuous version. We now validate this assertion
+on simulations. We simulate 100 samples of the MMHP with continuous decay and estimate
+its δ-stepwise decay version with varying δ. After each estimation, we compute the transformed
+inter-arrival times given by Equation (72) and compute the p-value of the Kolmogorov-Smirnov
+test with respect to the exponential distribution. The results are displayed in Figure 5. We show
+the box plots of the p-values with respect to the number of events and the average QQ-plot with
+respect to the exponential distribution. We observe that as δ → 0, we are not able to reject the
+null hypothesis of an exponentially distributed transformed inter-arrival time, meaning that the
+model approximates its continuous counterpart for small δ. The QQ plot provides more evidence
+as it becomes closer to the line y = x as δ gets smaller. Additional material is displayed in Figure
+10 of the Appendix concerning the convergence of the parameters towards the true values of the
+continuous MMHP.
+4 Application
+In this section, we apply the MMHP-δ model to cryptocurrency trade data on a centralized
+exchange (CEX) and show its ability to identify suspicious trading patterns. We compare the
+model with the Markov-modulated Poisson process (MMPP).
+4.1 Data and intensity seasonality
+The dataset is composed of trades executed for SEI-USD between December 1st, 2023 and
+March 31st, 2024 on Coinbase. The SEI token was issued on CEXs in 2023 which makes it
+a great candidate for suspicious trading detection. With every trade comes a timestamp with
+microsecond precision. This timestamp corresponds to the time at which the matching engine
+of the market processed the transaction. Transactions are aggregated according to their order
+identification number allowing to recover the full marketable orders.
+It is well known that trade data exhibits non-stationary properties such as intraday seasonality,
+i.e. the intensity of trades vary significantly throughout the day, and a part of these variations
+are predictable (traditional market opening and closing times). Applying the MMHP model on
+such non-stationary data could lead to inaccurate estimations of the parameters (even though
+previous empirical results of Hawkes processes suggest that fits are rather robust with respect to
+seasonality in financial timeseries (Rambaldi et al., 2017; Fabre and Muni Toke, 2024)). Hence,
+we apply the following procedure. We compute the trading intensity at time t, denoted by ¯Λ(t),
+17
+
+=== page 18 ===
+over 5-minutes bins each day. Then, we compute the average of these intensities per bin over
+the time period, with a 95% confidence interval. We also compute the daily trading intensity
+each day, and its average over the time period per weekday, with a 95% confidence interval. The
+results are displayed in Figure 6. We observe an intraday seasonality, and a weekday seasonality
+with less trading intensity during the weekend. The intensity appears to be reasonably stable
+from 05:00 to 12:00 UTC, exhibiting smaller variance and no apparent drift. We therefore restrict
+our sample by focusing on the time interval 5:00-12:00 UTC every day. Furthermore, in order to
+account for weekday seasonality, when we estimate the model on a given weekday, we test the
+model on the corresponding day of the following week. For example, the first model is estimated
+on December 1st, 2023, and then tested on December 8th, 2023.
+MondayTuesday
+WednesdayThursday
+Friday
+SaturdaySunday
+0.0
+0.2
+0.4
+0.6
+¯Λ(t)
+(a) Weekday seasonality
+0 4 8 12 16 20 24
+Hour of the day
+0.2
+0.4
+0.6
+0.8
+¯Λ(t) (b) Intraday seasonality
+Figure 6: Intraday seasonality — Intensity of marketable orders expressed in number of events
+per second, computed over the day for the weekday seasonality, and over bins of 5 minutes for
+the intraday seasonality. The intensity is averaged over the 4 months. The error bar of the
+weekday seasonality plot and the dark shade of the intraday seasonality plot both represent the
+95% confidence interval. The red shaded aread represents the time period from 5:00 to 12:00
+that is used in the empirical experiment.
+4.2 Detection of suspicious traded volume
+4.2.1 Characterization of high-frequency wash trading
+The Committee of European Securities Regulators (CESR) defines wash trading as “the practice
+of entering into arrangements for the sale or purchase of an financial instrument where there
+is no change in beneficial interests or market risk or where the transfer of beneficial interest or
+market risk is only between parties who are acting in concert or collusion” 1. From this definition,
+wash trades can either be executed by a single trading account or by multiple trading accounts.
+In practice, most of the large centralized exchanges have implemented a self-trade prevention
+(STP) mechanism in their matching engine. By enforcing STP, venues prevent agents to trade
+against themselves, mitigating the risk of fake volume generation. Nevertheless, a trader can still
+create many accounts and execute wash trades without being suspected.
+The desired effect of wash trading activity is a substantial increase of traded volume, appearing as
+informationto otheragents, thustriggering bona fide executions. Note that centralized exchanges
+can also profit from this market abuse since a venue’s ranking greatly depends on its reported
+traded volume.
+1https://www.esma.europa.eu/esmas-activities/markets-and-infrastructure/market-integrity
+18
+
+=== page 19 ===
+From a limit order book perspective, wash trading may either be materialized by the execution of
+one large trade against one large limit order, or by the execution of multiple trades against one or
+multiple limit orders. The former tactic generates trading patterns that are not difficult to spot:
+one may for example monitor the trade sizes and investigate large trades that consume entirely
+the first limit but do not trade-through. However, the latter wash trading method splits one
+large trade into many smaller ones with different sizes, making it much more trickier to identify.
+Furthermore, the second tactic not only manipulates the traded volume, but also the arrival rate
+of transactions. Since this rate is often a key feature of price formation models used by trading
+engines, the second method may therefore trigger manipulated order flows. We therefore focus
+on this tactic in the remainder of the section.
+4.2.2 Suspicious trading detection with the MMHP-δ model
+Let us denote by Kb and Ka the number of bid and ask trades and let (P b,a n )1≤n≤Kb,a be the
+sequence of prices of trades hitting the bid side — indexed by b — or the ask side — indexed by
+a — and let (tb,a n )1≤n≤Kb,a be the corresponding sequence of arrival times. When the execution
+of an order leads to many trades, e.g. a trade-through, the trade price is the one associated to
+the first transaction.
+We apply the MMHP-δ model to the detection of extreme bursts of transactions that occur on
+the same side of the limit order book. We apply a filter to the trades that are used in the
+estimation. Since the transactions that compose a wash trading tactic are executed against the
+same price limit, we restrict the analysis to trades with zero price return, i.e. we consider the
+sub-sample of arrival times {τ b,a k } := {tb,a n : P b,a n − P b,a n−1 = 0}.
+We estimate the parameters of a MMHP-δ with exponential kernel on the observations {τk} on
+each trading day from December 1st, 2023 to March 24th, 2024. A goodness-of-fit procedure
+is applied to each model on the same weekday of the following week, from December 8th, 2023
+to March 31st, 2024. We use 3 different values of δ, which are {100, 10, 1} seconds. Note that
+a MMHP-δ with δ = 100s could be considered as a proxy of the MMHPSD process of Wang
+(2010). For each parameter δ, two models are estimated separately, one for trades on the bid
+side (sell trades), and one for trades hitting the ask side (buy trades).
+Once the time step δ is set, one needs to specify a number of regimes M . A common practice is
+to estimate the model with different values of M , and then select the model that minimizes an
+information criterion such as the Akaike information criterion (AIC) or the Bayesian information
+criterion (BIC), see Psaradakis and Spagnolo (2003); Krolzig (2013). Hence, we estimate the
+models for M ∈ {2, 3, 4} on each day, compute the corresponding AICs, and rank the models
+from 1 to 12 (best to worse) on each day. We report the median rank of each model in Table
+1. Firstly, the MMHP-δ demonstrates a superior fit compared to the MMPP. Furthermore,
+it is evident that increasing the number of regimes enhances the quality of fit as measured
+by the information criterion. Additionally, for each regime configuration, a reduction in the
+discretization step δ appears to improve the criterion. These findings suggest evidence that the
+MMHP-δ model with stepwise decreasing kernel provides a better representation of the data than
+the MMHPSD model proposed by Wang (2010). Although the results indicate that the MMHP-δ
+models with four regimes and small δ minimize the AIC criterion, we stress that going further
+in terms of the number of regimes was not possible due to limited computational resources.
+As an example, for the estimation of the MMHP-δ over a single day, the computation time
+is approximately 15 minutes with δ = 100s and around ten hours with δ = 1s. Indeed, with
+exponential kernels, the computation of the likelihood has a time complexity that is of the order
+of O(N + T δ−1), where N is the sample size, and T is the size of the period in calendar time.
+In the rest of this section, we set the number of states to M = 3, which represents a trade-off
+between flexibility to capture extreme bursts and computational time. The states are sorted from
+19
+
+=== page 20 ===
+Table 1: Selection of the discretization step δ and the number of regimes M - Median rank of
+each model among the 12 models, with respect to the AIC criterion.
+M δ = 1 δ = 10 δ = 100 MMPP
+2 9 10 11 12
+3 4 5 6 8
+4 3 2 4 5
+0 5
+Theoretical quantile
+0
+5Empirical quantile
+MMPP
+δ = 100
+δ = 10
+δ = 1
+(a) Bid side
+0 5
+Theoretical quantile
+0
+5Empirical quantile
+MMPP
+δ = 100
+δ = 10
+δ = 1 (b) Ask side
+Figure 7: Goodness-of-fit — Median QQ plots and their 95% confidence intervals, computed
+on a daily basis over the out-of-sample data from December 8th, 2023 to March 31st, 2024.
+Confidence intervals are computed via bootstrapping.
+1 to 3 with respect to the excitation parameter α of the exponential kernel form ϕ(t) = αe−βt.
+The larger the hidden state, the larger this parameter. As a benchmark, an MMPP is estimated
+with M = 3 regimes.
+We first provide a goodness-of-fit evaluation by computing the transformed residuals of the out-
+of-sample durations from December 8th, 2023 to March 31st, 2024. In Figure 7, we show the
+median QQ plot with its 95% confidence interval for the MMPP and all MMHP-δ. The median is
+computed on the daily out-of-sample QQ plots, and the confidence intervals are estimated using
+bootstrapping. We observe the MMHP-δ with small δ (1 or 10) provides better results than the
+MMPP in terms of out-of-sample goodness-of-fit. Moreover, as expected, setting a large time
+step δ seems to worsen the QQ plot. In the rest of the numerical experiments, the results that
+involve the MMHP-δ are obtained with δ = 1s.
+Once the MMHP-δ model is calibrated, we run the Viterbi algorithm — described in Algorithm
+2 — to get the sequence of states from December 8th, 2023 to March 31st, 2024. In our setting,
+trades classified in state 3 are natural candidates for suspicious trading activity. The estimated
+stationary distributions indicate that the MMHP-δ model is 90.31% of the time in state 1 (normal
+activity), 9.55% of the time in state 2 (high activity), and 0.14% of the time in state 3 (extreme
+bursts) — here, note that time refers to calendar time. In terms of volume traded, suspicious
+trading represents 24.20% of the buy volume and 21.39% of the sell volume during the period,
+totaling 216M USD. For comparison, these figures are 25% of the buy volume and 24.30% of
+the sell volume for the MMPP model, totaling 233M USD. Hence, the introduction of a Hawkes
+component not only fits the data better but also makes the detection more conservative. As
+such, the MMPP could lead to more false positives than the MMHP-δ for the same number of
+regimes.
+20
+
+=== page 21 ===
+11:17:31 11:17:34 11:17:37
+t
+0.4885
+0.4890
+0.4895
+0.4900
+0.4905
+best bid price
+best ask price
+sell trade
+buy trade
+suspicious trade
+(a) BBOs’ dynamics and trade prices
+11:17:31 11:17:34 11:17:37
+t
+10−1
+100
+101
+102
+103
+104
+USD
+sell trade
+buy trade
+suspicious trade (b) Trade sizes
+Figure 8: Suspicious trading activity — An example of “suspicious” behavior identified by the
+bid MMHP-δ as the extreme burst regime (state 3), anomalies detected on December 26th, 2023
+UTC time zone.
+We show a typical example of suspicious trading activity that is spotted by the MMHP-δ on the
+sell trades, and we display an overview of the market at this specific time in Figure 8. We observe
+that the model is able to detect sudden bursts of trades. Looking at the trade sizes reveals that
+tens to hundreds of orders are executed against the same price within a very small time frame,
+i.e. of the order of milliseconds, providing the empirical evidence of a high-frequency activity.
+Even more interestingly, a significant price bump is observed following the trade burst. Such
+patterns indicate that this asset could be highly sensitive to fake volume generation.
+We provide more examples in the appendix. Figures 12, 13, and 14 show how the joint use of
+a MMHP-δ model and the Viterbi algorithm detects suspicious trading activity and potential
+price manipulation in buy and sell trades.
+4.2.3 Characterization of market states
+Beyond suspicious trading detection, it is very interesting that we are able to characterize the
+market states identified by the MMHP-δ model. We now proceed to two experiments to that
+end. The first experiment analyzes the liquidity imbalance signal in the three market states,
+while the second one computes a price response function upon regime change.
+Liquidity imbalance We measure the liquidity imbalance at the best queues before a regime
+change. Denote by qb k and by qa k the volumes at the best bid queue and at the best ask queue at
+time (τ b k )−, i.e. right before the kth event time. We define the liquidity imbalance measure
+Ik := qb k − qa k qb k + qa k . (74)
+We compute this measure at each state transition, i.e. when a trade occurs without moving the
+price and the Markov chain switches to state i, 1 ≤ i ≤ M , we record the value of the liquidity
+imbalance I right before this event. A well-known stylised facts of market microstructure is the
+dependence of the arrival rate of trades on the best queue imbalance. In practice, one finds that
+the intensity of sell trades is a decreasing function of the imbalance (and an increasing function
+21
+
+=== page 22 ===
+−1.0 −0.5 0.0 0.5 1.0
+Imbalance
+0.0
+0.2
+0.4
+0.6
+0.8
+Density
+state 3
+state 2
+state 1
+(a) Imbalance distribution before
+state transition, bid
+−1.0 −0.5 0.0 0.5 1.0
+Imbalance
+0.0
+0.2
+0.4
+0.6
+Density
+state 3
+state 2
+state 1
+(b) Imbalance distribution before
+state transition, ask
+1 25 50 75 100
+h
+1
+2
+3
+4
+5R(h, s)
+state 1
+state 2
+state 3
+(c) Mid price response function af-
+ter state transition with 95% con-
+fidence intervals
+Figure 9: Suspicious trading activity — Market characterization of the trading activity regimes
+identified by the MMHP-δ model. The price response is expressed in basis points and the horizon
+in number of mid price moves.
+for the intensity of buy trades). But this measure does not distinguish between market regimes
+and heterogeneity of agents as it is computed over all data points.
+Price response In the spirit of Bouchaud et al. (2003), we define a price response to the arrival
+of trades but we adapt the framework to a regime-specific price response. Let pn be the nth
+mid-price change, εn the sign of the last passive trade that occurred before the nth mid-price
+change (with event time that is an element of {τ b,a k }), and Sn the state of the hidden Markov
+chain for this trade. We define the mid-price response function as
+R(h, s) := E
+
+εn
+ pn+h
+pn
+− 1
+  Sn = s, Sn−1 ̸= s  , 1 ≤ h ≤ H, 1 ≤ s ≤ M. (75)
+The response R(h, s) measures the average positive return conditioned on a trade at time 0, h
+mid-price moves later, and conditioned to a regime transition to state s at time 0.
+The results are displayed in Figure 9. For completeness, we also make the same experiment using
+the entire trading day, without accounting for intraday seasonality, and report the results in
+Appendix, in Figure 15. In this case, we train the MMHP-δ on December 1st, 2023 and compute
+the metrics on the rest of the period. Strikingly, we observe that the extreme burst regime occurs
+with an imbalance distribution that is inversely skewed compared to what we usually measure.
+For example, for sell trades, the classical result is that the imbalance distribution before the
+arrival of the trade is left-skewed, which is what we observe for the “normal” regime, i.e. state
+1. As we get closer to the burst regime, the distribution skews on the opposite side, revealing
+an atypical behavior for such trades. It shows that when the market is in the third state, even
+though the imbalance is large and an upward price move or the arrival of a buy trade is expected
+to happen, the opposite happens, causing the well-known imbalance-intensity relationship to
+break. Concerning the mid-price response to a state transition, we see that the arrival of burst
+regimes is, on average, followed by significant price moves even though the burst trades do not
+consume the entire queue. A possible interpretation is that market makers cancel orders that are
+pending deep in the book, creating large liquidity gaps before the first queue is either filled or
+canceled. This provides evidence of a significant price impact of the burst regime, demonstrating
+that a manipulative agent could use this microstructure property to manipulate the price by
+sending many orders to execute against herself.
+22
+
+=== page 23 ===
+5 Conclusion
+This paper presents a novel approach to market manipulation detection in cryptocurrency mar-
+kets through the use of regime-switching point processes. We introduced a point process with
+a Hawkes-like intensity whose parameters’ dynamics are driven by a continuous time Markov
+chain. In this model, “Hawkes-like” stands for the piecewise constant kernel that is defined, with
+a discretization step that is kept constant between events. This specification trick enabled us to
+develop an estimation procedure, built upon an Expectation-Maximization (EM) algorithm. We
+demonstrated the convergence of the process to its continuous version as the discretization step
+becomes small, and we proved the robustness of the method using simulated data. Concerning
+the model, an important point needs to be discussed and highlighted. By introducing a kernel
+that is piecewise constant between events, and not over the entire time frame, we diverge from
+traditional Hawkes processes. This detail of specification makes the theory of Hawkes processes
+— e.g. the computation of endogeneity ratios or the stationarity condition — unusable and an
+exploration of the new process’s theoretical properties would be of interest.
+Applying the model to real cryptocurrency trade data, we effectively demonstrated its ability to
+identify extreme bursts of trades, underscoring its practical utility in real-world market scenarios.
+Further analysis enabled us to characterize the states of the Markov chain in relation to the limit
+order book, providing deeper insights into market dynamics. Notably, if these identified bursts
+are not due to manipulative behavior, it suggests that the imbalance property, often referred
+to as the "worst-kept secret of high-frequency traders," is highly sensitive to market regimes.
+Our methodology showed promising results in detecting fake volume and pinging activities,
+highlighting its potential for broader market surveillance applications. Future research should
+aim to refine the theoretical foundations of this process and explore additional applications across
+various trading environments to enhance its robustness and applicability. Given the absence of
+anonymous trading agent IDs, our detection method falls into the category of indirect detection
+methodologies and is therefore prone to false positives. To mitigate this issue, complementary
+detection rules should be incorporated into the detection algorithm.
+References
+Aloosh, A. and Li, J. (2024). Direct evidence of bitcoin wash trading. Management Science.
+Bacry, E. and Muzy, J.-F. (2016). First-and second-order statistics characterization of
+Hawkes processes and non-parametric estimation. IEEE Transactions on Information The-
+ory, 62(4):2184–2202.
+Bergault, P., Bertucci, L., Bouba, D., Guéant, O., and Guilbert, J. (2024). Price-aware auto-
+mated market makers: Models beyond brownian prices and static liquidity. arXiv preprint
+arXiv:2405.03496.
+Bouchaud, J.-P., Gefen, Y., Potters, M., and Wyart, M. (2003). Fluctuations and response in
+financial markets: the subtle nature of random price changes. Quantitative finance, 4(2):176.
+Cao, Y., Li, Y., Coleman, S., Belatreche, A., and McGinnity, T. M. (2015). Detecting wash trade
+in financial market using digraphs and dynamic programming. IEEE transactions on neural
+networks and learning systems, 27(11):2351–2363.
+Chen, S., Chen, J., Yu, J., Luo, X., Wang, Y., and Zheng, Z. (2023). The dark side of NFTs: A
+large-scale empirical study of wash trading. arXiv preprint arXiv:2312.12544.
+Cong, L. W., Li, X., Tang, K., and Yang, Y. (2023). Crypto wash trading. Management Science,
+69(11):6427–6454.
+23
+
+=== page 24 ===
+Daley, D. J., Vere-Jones, D., et al. (2003). An introduction to the theory of point processes:
+volume I: elementary theory and methods. Springer.
+Davison, A., Ramesh, N., Barnett, V., and Turkman, K. (1993). A stochastic model for times of
+exposures to air pollution from a point source. Statistics for the Environment, pages 123–138.
+Fabre, T. and Muni Toke, I. (2024). Neural Hawkes: Non-parametric estimation in high dimen-
+sion and causality analysis in cryptocurrency markets. arXiv preprint arXiv:2401.09361.
+Falk, B. H., Tsoukalas, G., and Zhang, N. (2023). Crypto wash trading: Direct vs. indirect
+estimation. arXiv preprint arXiv:2311.18717.
+Fosset, A., Bouchaud, J.-P., and Benzaquen, M. (2022). Non-parametric estimation of quadratic
+Hawkes processes for order book events. The European Journal of Finance, 28(7):663–678.
+Imisiker, S. and Tas, B. K. O. (2018). Wash trades as a stock market manipulation tool. Journal
+of behavioral and experimental finance, 20:92–98.
+Jayant, A. (2023). The economics of wash trading. Available at SSRN.
+Kawashima, K. and Saito, H. (1990). Teletraffic issues in atm networks. Computer Networks
+and ISDN Systems, 20(1-5):369–375.
+Krolzig, H.-M. (2013). Markov-switching vector autoregressions: Modelling, statistical inference,
+and application to business cycle analysis, volume 454. Springer Science & Business Media.
+Lu, X. and Abergel, F. (2018). High-dimensional Hawkes processes for limit order books: mod-
+elling, empirical analysis and numerical calibration. Quantitative Finance, 18(2):249–264.
+Meier-Hellstern, K. (1984). A statistical procedure for fitting Markov modulated Poisson pro-
+cesses. Technical report, Univ. of Delaware.
+Meier-Hellstern, K.S.(1987). AfittingalgorithmforMarkov-modulatedPoissonprocesseshaving
+two arrival rates. European Journal of Operational Research, 29(3):370–377.
+Morariu-Patrichi, M. and Pakkanen, M. S. (2022). State-dependent Hawkes processes and their
+application to limit order book modelling. Quantitative Finance, 22(3):563–583.
+Muni Toke, I. and Yoshida, N. (2017). Modelling intensities of order flows in a limit order book.
+Quantitative Finance, 17(5):683–701.
+Muni Toke, I. and Yoshida, N. (2020). Analyzing order flows in limit order books with ratios of
+Cox-type intensities. Quantitative Finance, 20(1):81–98.
+Nekrasova, E. and Neugebauer, T. (2023). Does wash trading impact information dissemination
+in security markets? Available at SSRN 4644462.
+Psaradakis, Z. and Spagnolo, N. (2003). On the determination of the number of regimes in
+markov-switching autoregressive models. Journal of time series analysis, 24(2):237–252.
+Rambaldi, M., Bacry, E., and Lillo, F. (2017). The role of volume in order book dynamics: a
+multivariate Hawkes process analysis. Quantitative Finance, 17(7):999–1020.
+Roberts, W. J., Ephraim, Y., and Dieguez, E. (2006). On Rydén’s EM algorithm for estimating
+MMPPs. IEEE Signal Processing Letters, 13(6):373–376.
+Rydén, T. (1994). Parameter estimation for Markov modulated Poisson processes. Stochastic
+Models, 10(4):795–829.
+24
+
+=== page 25 ===
+Rydén, T. (1996). An EM algorithm for estimation in Markov-modulated Poisson processes.
+Computational Statistics & Data Analysis, 21(4):431–447.
+Sfendourakis, E. and Muni Toke, I. (2023). LOB modeling using Hawkes processes with a state-
+dependent factor. Market Microstructure and Liquidity.
+Tošić, A., Hrovatin, N., and Vičič, J. (2023). Beyond the surface: Advanced wash trading
+detection in decentralized NFT markets. arXiv preprint arXiv:2312.16603.
+Van Loan, C. (1978). Computing integrals involving the matrix exponential. IEEE transactions
+on automatic control, 23(3):395–404.
+Victor, F. and Weintraud, A. M. (2021). Detecting and quantifying wash trading on decentralized
+cryptocurrency exchanges. In Proceedings of the Web Conference 2021, pages 23–32.
+Wang, T. (2010). Statistical models for earthquakes incorporating ancillary data. PhD thesis,
+Massey University.
+Wang, T., Bebbington, M., and Harte, D. (2012). Markov-modulated Hawkes process with
+stepwise decay. Annals of the Institute of Statistical Mathematics, 64:521–544.
+Wu, J., Ward, O. G., Curley, J., and Zheng, T. (2022). Markov-modulated Hawkes processes for
+modeling sporadic and bursty event occurrences in social interactions. The Annals of Applied
+Statistics, 16(2):1171–1190.
+Wu, P., Rambaldi, M., Muzy, J.-F., and Bacry, E. (2023). Queue-reactive Hawkes models for
+the order flow. Market microstructure and liquidity.
+A Proofs
+A.1 Proof of Proposition 2.1
+The forward transition matrix is the solution of the system of ordinary differential
+equations
+dH (n)
+du (u) = H (n)(u)   Q − Λtn−1+u  , u ∈]0, xn],
+with initial condition H (n)(0) = IM .
+Proof. Let 1 ≤ i, j ≤ M , u, ∆u > 0. With elementary probability calculus and by using the
+25
+
+=== page 26 ===
+Markov property of S, we get
+H (n) ij (u + ∆u) = P   Stn−1+u+∆u = j, Ntn−1+u+∆u − Ntn−1 = 0 | Stn−1 = i, Ftn−1 
+=
+MX
+k=1
+P
+ 
+Stn−1+u+∆u = j, Stn−1+u = k, Ntn−1+u+∆u − Ntn−1 = 0 | Stn−1 = i, Ftn−1
+
+=
+MX
+k=1
+P
+ 
+Stn−1+u+∆u = j, Stn−1+u = k, Ntn−1+u+∆u − Ntn−1+u = 0,
+Ntn−1+u − Ntn−1 = 0 | Stn−1 = i, Ftn−1
+
+=
+MX
+k=1
+P
+ 
+Stn−1+u = k, Ntn−1+u − Ntn−1 = 0 | Stn−1 = i, Ftn−1
+
+× P
+ 
+Stn−1+u+∆u = j,
+Ntn−1+u+∆u − Ntn−1+u = 0 | Stn−1+u = k, Stn−1 = i, Ntn−1+u − Ntn−1 = 0, Ftn−1
+
+=
+MX
+k=1
+H (n) ik (u)P   Stn−1+u+∆u = j, Ntn−1+u+∆u − Ntn−1+u = 0
+| Stn−1+u = k, Stn−1 = i, Ntn−1+u − Ntn−1 = 0, Ftn−1
+
+=
+MX
+k=1
+H (n) ik (u)P   Stn−1+u+∆u = j, Ntn−1+u+∆u − Ntn−1+u = 0 | Stn−1+u = k,
+Ntn−1+u − Ntn−1 = 0, Ftn−1
+
+=
+MX
+k=1
+H (n) ik (u)P   Stn−1+u+∆u = j | Stn−1+u = k, Ntn−1+u − Ntn−1 = 0, Ftn−1 
+× P
+ 
+Ntn−1+u+∆u − Ntn−1+u = 0 | Stn−1+u+∆u = j, Stn−1+u = k, Ntn−1+u − Ntn−1 = 0, Ftn−1
+
+=
+MX
+k=1
+H (n) ik (u)P   Stn−1+u+∆u = j | Stn−1+u = k 
+× P
+ 
+Ntn−1+u+∆u − Ntn−1+u = 0 | Stn−1+u+∆u = j, Stn−1+u = k, Ntn−1+u − Ntn−1 = 0, Ftn−1
+
+.
+By applying a Taylor series expansion with ∆u → 0, we get
+H (n) ij (u + ∆u) =
+MX
+k=1
+H (n) ik (u) (δkj + qkj ∆u + o(∆u))  1 − λk tn−1+u∆u + o(∆u) 
+=
+MX
+k=1
+H (n) ik (u) n δkj +  qkj − δkj λk tn−1+u  ∆u + o(∆u) o , (76)
+where
+λk tn−1+u = µk + X
+tl≤tn−1
+ϕk(tn−1 − tl + u).
+Using Equation (76),
+1
+∆u
+
+H (n) ij (u + ∆u) − H (n) ij (u)  = 1 ∆u X k̸=j H (n) ik (u)   qkj ∆u + o(∆u) 
+− 1 ∆u H (n) ij (u)   (qj + λj tn−1+u)∆u + o(∆u)  ,
+which leads to
+lim
+∆u→0+
+1
+∆u
+
+H (n) ij (u + ∆u) − H (n) ij (u)  = −H (n) ij (u)  qj + λj tn−1+u  + X
+k̸=j
+H (n) ik (u)qkj .
+Since H (n) ij (0) = δij , 1 ≤ i, j ≤ M we obtain the desired result.
+26
+
+=== page 27 ===
+A.2 Proof of Lemma 2.1
+The forward and backward transition matrices follow the equality
+H (n)(tn − tn−1) = H (n)(t − tn−1)G(n)(tn − t), tn−1 ≤ t ≤ tn.
+Proof. Let 1 ≤ i, j ≤ M , tn−1 ≤ t ≤ tn. By using the Markov property of S, we have
+H (n) ij (t− n − tn−1) = P  Stn = j, Nt− n − Ntn−1 = 0 | Stn−1 = i, Ftn−1 
+= P
+
+Stn = j, Nt− n − Nt = 0, Nt − Ntn−1 = 0 | Stn−1 = i, Ftn−1
+
+=
+MX
+k=1
+P
+
+Stn = j, St = k, Nt− n − Nt = 0, Nt − Ntn−1 = 0 | Stn−1 = i, Ftn−1
+
+=
+MX
+k=1
+P
+ 
+St = k, Nt − Ntn−1 = 0 | Stn−1 = i, Ftn−1
+
+× P
+
+Stn = j, Nt− n − Nt = 0 | St = k, Stn−1 = i, Nt − Ntn−1 = 0, Ftn−1
+
+=
+MX
+k=1
+H (n) ik (t − tn−1)P  Stn = j, Nt− n − Nt = 0 | St = k, Nt − Ntn−1 = 0, Ftn−1 
+=
+MX
+k=1
+H (n) ik (t − tn−1)P  Stn = j, Nt− n − Nt = 0 | St = k, Ft 
+=
+MX
+k=1
+H (n) ik (t − tn−1)G(n) kj (tn − t).
+A.3 Proof of Proposition 2.2
+The backward transition matrix is the solution of the system of ordinary differential
+equations
+dG(n)
+du (u) = (Q − Λtn−u) G(n)(u), u ∈]0, xn],
+with initial condition G(n)(0) = IM .
+Proof. Let 0 ≤ u ≤ xn andwritetheequationofLemma2.1withthechangeofvariable u := tn−t
+H (n)(tn − tn−1) = H (n)(tn − tn−1 − u)G(n)(u).
+Differentiating both sides of Equation (77) with respect to u leads to
+H (n)(tn − tn−1 − u) dG(n) du (u) = dH (n) du (tn − tn−1 − u)G(n)(u).
+We then use Proposition 2.1 to obtain
+dG(n)
+du (u) =
+h
+H (n)(tn − tn−1 − u) i−1 dH (n) du (tn − tn−1 − u)G(n)(u)
+= (Q − Λtn−u) G(n)(u).
+27
+
+=== page 28 ===
+A.4 Proof of Proposition 2.3
+If the intensity is given by Equation (15), the forward transition matrix is
+H (n)(u) = Ξ(n) ℓ(tn−1+u)e(Q−Λtn−1+ℓ(tn−1+u)δ )(u−ℓ(tn−1+u)δ), 0 ≤ u ≤ xn, (77)
+for which we define the following quantity
+Ξ(n) k :=
+kY
+r=1
+e((Q−Λtn−1+(r−1)δ )δ), 1 ≤ n ≤ K, 1 ≤ k ≤ ℓn. (78)
+Similarly, the backward transition matrix is written as, for u ∈ [0, xn]
+
+
+
+G(n)(u) = e(Q−Λtn−1+ℓnδ )u if u ≤ ∆n,
+G(n)(u) = e(Q−Λtn−1+ℓ(tn−u)δ )(u−((ℓn−ℓ(tn−u)−1)δ+∆n))Ψ(n) ℓn−ℓ(tn−u)−1e(Q−Λtn−1+ℓnδ )∆n else,
+(79)
+for which we define the following quantity
+Ψ(n) k :=
+kY
+r=1
+e(Q−Λtn−1+(ℓn−(k−r)−1)δ )δ , 1 ≤ n ≤ K, 1 ≤ k ≤ ℓn. (80)
+Here, the notation eA stands for the matrix exponential of A and we use the conven-
+tion Q0 r=1 Ar = IM .
+Proof. Under the δ-piecewise constant intensity of Equation (15), Equation (7) is
+dH (n)
+du (u) = H (n)(u)   Q − Λtn−1+ℓ(tn−1+u)δ  , 0 < u ≤ xn,
+H (n)(0) = IM . (81)
+Note that for all u ∈ [0, xn], Λtn−1+u = Λtn−1+ℓ(tn−1+u)δ and that Λtn−1+ℓ(tn−1+u)δ is the same
+whether Λ is the MMHP-δ intensity or its continuous counterpart. We apply a discretization to
+the domain ]0, xn] with intervals of the form ]kδ, (k + 1)δ], and we get the following set of ODEs
+dH (n)
+du (u) = H (n)(u)   Q − Λtn−1+kδ  , u ∈]kδ, (k + 1)δ], 0 ≤ k ≤ ℓn. (82)
+This system is easily solved iteratively, using the initial condition, for k = 0, H (n)(0) = IM and
+for 1 ≤ k ≤ ℓn,
+H (n)(kδ) =
+kY
+r=1
+e(Q−Λtn−1+(r−1)δ )δ , (83)
+leading to the desired expression of the forward transition matrix.
+The same idea is applied to the backward transition matrix. Indeed, Equation (10) is
+dG(n)
+du (u) =
+ 
+Q − Λtn−1+ℓ(tn−u)δ
+
+G(n)(u), 0 < u ≤ xn,
+G(n)(0) = IM . (84)
+28
+
+=== page 29 ===
+By operating a discretization to the domain ]0, xn] with intervals of the form ]kδ + ∆n, (k + 1)δ +
+∆n] and ]0, ∆n], we first get the ODE over the residual time to tn
+dG(n)
+du (u) =
+ 
+Q − Λtn−1+ℓnδ
+
+G(n)(u), 0 < u < ∆n,
+G(n)(0) = IM , (85)
+and then the following ODEs over the δ-intervals
+dG(n)
+du (u) =
+ 
+Q − Λtn−1+(ℓn−k−1)δ
+
+G(n)(u), kδ +∆n < u ≤ (k +1)δ +∆n, 0 ≤ k ≤ ℓn −1. (86)
+Again, this system is iteratively solved at each step k and we obtain the initial conditions
+G(n)(kδ + ∆n) =
+kY
+r=1
+e(Q−Λtn−1+(ℓn−(k−r)−1)δ )δ e(Q−Λtn−1+ℓnδ )∆n , 0 ≤ k ≤ ℓn − 1. (87)
+We finally get the desired expression of the backward transition matrix.
+A.5 Proof of Proportion 3.1
+The log-likelihood of an MMHP with parameters Θ := ΘM ∪ΘH over the observations
+T can be written as
+L(Θ, T ) = log LM (ΘM , T ) + log LH (ΘH , T ),
+where
+log LM (ΘM , T ) =
+MX
+i=1
+
+
+1{S0=i} log ξi 0 − Diqi +
+MX
+j=1,j̸=i
+wij log qij
+
+
+ ,
+and
+log LH (ΘH , T ) =
+MX
+i=1
+( KX
+n=1
+1{Stn =i} log λi tn (ΘH ) −
+Z T
+0
+1{St=i}λi t(ΘH ) dt
+)
+,
+for which we define the time S spends in state i over [0, T ]
+Di :=
+Z T
+0
+1{St=i}dt =
+m+1X
+p=1
+1{sp=i}(up − up−1),
+and the number of times S jumps from state i to state j over [0, T ]
+wij :=
+Z T
+0
+lim
+∆→0+
+1
+∆ 1{St−∆=i, St=j}dt =
+mX
+p=1
+1{sp=i,sp+1=j}.
+Proof. Denote by (up)1≤p≤m the ordered sequence of unobserved transition times of the Markov
+chain S over the time interval [0, T ], with the conventions u0 = 0, um+1 = T . Let (sp)1≤p≤m
+be the sequence of states such that St = sp, for any t ∈ [up−1, up). Let zp := Nup − Nup−1 ,
+1 ≤ p ≤ m + 1, be the number of events between the two state transition times up−1 and up,
+with the convention z0 = 0. Define
+ρk :=
+kX
+p=0
+zp, 0 ≤ k ≤ m + 1,
+29
+
+=== page 30 ===
+the number of events in the interval [0, uk]. The likelihood of the model is
+L(Θ, T ) = ξs1 0
+
+
+mY
+p=1
+e−qsp (up−up−1)qspsp+1
+
+ e−qsm+1 (T −um)
+m+1Y
+p=1
+zpY
+k=1
+λsp tρp−1+k e −
+R tρp−1+k
+tρp−1+k−1 λ
+sp
+t dt
+=
+ MX
+i=1
+1{s0=i}ξi 0
+!
+exp
+
+−
+mX
+p=1
+MX
+i=1
+1{sp=i}qi(up − up−1)
+
+
+
+
+mY
+p=1
+X
+1≤i,j≤M,i̸=j
+1{sp=i,sp+1=j}qij
+
+
+× exp
+ 
+−
+MX
+i=1
+1{sm+1=i}qi(T − um)
+! m+1Y
+p=1
+ MX
+i=1
+1{sp=i} exp
+ 
+−
+Z tρp
+tρp−1
+λi tdt
+! zpY
+k=1
+λi tρp−1+k
+!
+.
+By taking the logarithm of both sides of the equation, we obtain
+log L(Θ, T ) =
+MX
+i=1
+1{s0=i} log ξi 0 −
+MX
+i=1
+m+1X
+p=1
+1{sp=i}(up − up−1)qi +
+X
+1≤i,j≤M,i̸=j
+mX
+p=1
+1{sp=i,sp+1=j} log qij
++
+MX
+i=1
+m+1X
+p=1
+1{sp=i}
+ zpX
+k=1
+log λi tρp−1+k −
+Z tρp
+tρp−1
+λi tdt
+!
+=
+MX
+i=1
+
+1{s0=i} log ξi 0 −
+m+1X
+p=1
+1{sp=i}(up − up−1)qi +
+MX
+j=1,j̸=i
+mX
+p=1
+1{sp=i,sp+1=j} log qij
+
+
++
+MX
+i=1
+KX
+n=1
+ 
+1{stn =i} log λi tn −
+Z tn
+tn−1
+1{st=i}λi tdt
+!
+.
+Use the definitions of Di and wij in Equations (25) and (26) to complete the proof.
+A.6 Proof of Proposition 3.3
+Given an estimated set of parameters bΘ, the expected log-likelihood of the E-step can
+be written as
+E
+
+log L(Θ, T )|FT , bΘ
+
+= E
+
+log LM (Θ, T ) FT , bΘ  + E  log LH (Θ, T ) FT , bΘ  ,
+with
+E
+
+log LM (Θ, T ) FT , bΘ  = MX
+i=1
+
+
+ξi 0|T ( bΘ) log ξi 0 − E(Di|FT , bΘ)qi +
+MX
+j=1,j̸=i
+E(wij |FT , bΘ) log qij
+
+
+ ,
+and
+E
+
+log LH (Θ, T ) FT , bΘ  = MX
+i=1
+( KX
+n=1
+ξi tn|T ( bΘ) log λi tn (Θ) −
+Z T
+0
+ξi t|T ( bΘ)λi t(Θ)dt
+)
+.
+Furthermore, we have the analytic expressions
+E
+
+Di|FT , bΘ
+
+=
+KX
+n=1
+1
+cn
+"ℓn−1X
+k=0
+h
+eC(n) k δ iM ⊠M + h eD(n)∆n iM ⊠M
+#
+ii
+,
+E
+
+wij |FT , bΘ
+
+= bqij
+KX
+n=1
+1
+cn
+"ℓn−1X
+k=0
+h
+eC(n) k δ iM ⊠M + h eD(n)∆n iM ⊠M
+#
+ji
+,
+30
+
+=== page 31 ===
+Z T
+0
+ξi t|T ( bΘ)λi tdt =
+KX
+n=1
+1
+cn
+"ℓn−1X
+k=0
+Λtn−1+kδ ⊙
+h
+eC(n) k δ iM ⊠M + Λtn−1+ℓnδ ⊙ h eD(n)∆n iM ⊠M
+#
+ii
+,
+and the smoothed probabilities are given by Equations (37) and (38).
+Proof.
+E
+
+log LM (Θ, T ) FT , bΘ  = MX
+i=1
+
+
+ξi 0|T ( bΘ) log ξi 0 − E(Di|FT , bΘ)qi +
+MX
+j=1,j̸=i
+E(wij |FT , bΘ) log qij
+
+
+ ,
+Using the work of Rydén (1994), we can write
+E
+
+Di|FT , bΘ
+
+=
+Z T
+0
+αi tβi t
+L dt, 1 ≤ i ≤ M,
+E
+
+wij |FT , bΘ
+
+=
+Z T
+0
+qij
+αi tβj t
+L dt, 1 ≤ i, j ≤ M, i ̸= j.
+We now aim at computing the integrals
+Z T
+0
+αi tβj t
+L dt,
+Z T
+0
+αi tβi t
+L λi t dt, 1 ≤ i, j ≤ M.
+Using the δ-piecewise constant kernel hypothesis, write
+Z T
+0
+αi tβi t
+L λi tdt =
+KX
+n=1
+1
+L
+Z tn
+tn−1
+αi tβi t λi tdt
+=
+KX
+n=1
+1QK
+k=1 ck
+Z tn
+tn−1
+π
+n−1Y
+k=1
+f (k)(xk)λi tH (n) (t − tn−1) 1i1′ iG(n) (tn − t) Λt− n
+KY
+k=n+1
+f (k)(xk)1dt
+=
+KX
+n=1
+1
+cn
+Z xn
+0
+Λtn−1+x ⊙ G(n)(xn − x)P (n)H (n)(x)dx
+
+ii
+=
+KX
+n=1
+1
+cn
+ ℓn−1X
+k=0
+Λtn−1+kδ ⊙
+Z (k+1)δ
+kδ
+G(n)(xn − x)P (n)H (n)(x)dx
++ Λtn−1+ℓnδ ⊙
+Z ℓnδ+∆n
+ℓnδ
+G(n)(xn − x)P (n)H (n)(x)dx
+
+ii
+=
+KX
+n=1
+1
+cn
+ ℓn−1X
+k=0
+Λtn−1+kδ ⊙
+Z δ
+0
+G(n)(xn − (x + kδ))P (n)H (n)(x + kδ)dx
++ Λtn−1+ℓnδ ⊙
+Z ∆n
+0
+G(n)(xn − (x + ℓnδ))P (n)H (n)(x + ℓnδ)dx
+
+ii
+=
+KX
+n=1
+1
+cn
+ ℓn−1X
+k=0
+Λtn−1+kδ ⊙
+Z δ
+0
+e(Q−Λtn−1+kδ )(δ−x)Ω(n) k e(Q−Λtn−1+kδ )xdx
++ Λtn−1+ℓnδ ⊙
+Z ∆n
+0
+e(Q−Λtn−1+ℓnδ )(∆n−x)P (n)Ξ(n) ℓn e(Q−Λtn−1+ℓnδ )∆n dx
+
+ii
+.
+We end up computing integrals of matrix exponentials. Following Van Loan (1978), as recom-
+mended in Roberts et al. (2006), we get
+Z δ
+0
+e(Q−Λtn−1+kδ )(δ−x)Ω(n) k e(Q−Λtn−1+kδ )xdx = h eC(n) k δ iM ⊠M ,
+31
+
+=== page 32 ===
+2.0 1.0 0.5 0.1 0.05 0.01 0.005
+δ
+0.0
+0.5
+1.0
+1.5
+µ1
+(a) µ1
+2.0 1.0 0.5 0.1 0.05 0.01 0.005
+δ
+0
+2
+4
+6
+8µ2 (b) µ2
+2.0 1.0 0.5 0.1 0.05 0.01 0.005
+δ
+0.0
+0.5
+1.0
+1.5
+2.0
+α1 (c) α1
+2.0 1.0 0.5 0.1 0.05 0.01 0.005
+δ
+0
+2
+4
+6α2 (d) α2
+2.0 1.0 0.5 0.1 0.05 0.01 0.005
+δ
+0
+1
+2
+3
+4
+5β1
+(e) β1
+2.0 1.0 0.5 0.1 0.05 0.01 0.005
+δ
+0
+20
+40
+60
+80
+100β2 (f) β2
+2.0 1.0 0.5 0.1 0.05 0.01 0.005
+δ
+0
+1
+2
+3q1 (g) q1
+2.0 1.0 0.5 0.1 0.05 0.010.005
+δ
+0.0
+2.5
+5.0
+7.5
+10.0
+12.5
+q2 (h) q2
+Figure 10: Convergence towards the continuous MMHP — Box plots of the parameters with
+respect to the parameter δ. Whiskers represent 5% and 95% quantiles. The plain line represents
+the true parameter used for the simulation of the MMHP with continuous kernel.
+and Z ∆n
+0
+e(Q−Λtn−1+ℓnδ )(∆n−x)P (n)Ξ(n) ℓn e(Q−Λtn−1+ℓnδ )∆n dx = h eD(n)∆n iM ⊠M .
+Finally, we obtain
+Z T
+0
+αi tβi t
+L λi(t)dt =
+KX
+n=1
+1
+cn
+"ℓn−1X
+k=0
+Λtn−1+kδ ⊙
+h
+eC(n) k δ iM ⊠M + Λtn−1+ℓnδ ⊙ h eD(n)∆n iM ⊠M
+#
+ii
+.
+In particular, we have the following formula for the integrated transition probability
+Z T
+0
+αi tβj t
+L dt =
+KX
+n=1
+1
+cn
+"ℓn−1X
+k=0
+h
+eC(n) k δ iM ⊠M + h eD(n)∆n iM ⊠M
+#
+ji
+,
+which completes the proof.
+B Supplementary figures
+This appendix provides additional figures that do not appear in the main text in order to enhance
+readability. Figure 10 displays boxplots of the estimated parameters for the MMHP with δ-
+piecewise constant intensity with respect to δ, from the simulation experiments of Section 3.
+It shows the convergence of the parameters towards those of the continuous MMHP. Finally,
+Figure 11 displays boxplots of the estimated parameters for three MMHPs with different steps
+δ of Section 3. We observe that the stability of the estimated parameters does not appear to
+depend on δ.
+32
+
+=== page 33 ===
+0.01 0.1 1.0
+δ
+0.5
+1.0
+1.5
+µ1
+(a) µ1
+0.01 0.1 1.0
+δ
+0
+1
+2µ2 (b) µ2
+0.01 0.1 1.0
+δ
+0.75
+1.00
+1.25
+1.50
+α1 (c) α1
+0.01 0.1 1.0
+δ
+3
+4
+5α2 (d) α2
+0.01 0.1 1.0
+δ
+2
+3β1
+(e) β1
+0.01 0.1 1.0
+δ
+8
+10
+12
+14
+16β2 (f) β2
+0.01 0.1 1.0
+δ
+0.5
+1.0
+1.5
+2.0
+q1 (g) q1
+0.01 0.1 1.0
+δ
+2
+4q2 (h) q2
+Figure 11: Convergence with respect to δ — Box plots of the parameters with respect to the
+parameter δ. Whiskers represent 5% and 95% quantiles. The plain line represents the true
+parameter.
+08:51:56 08:52:02 08:52:09
+t
+0.73850
+0.73875
+0.73900
+0.73925
+0.73950
+0.73975
+best bid price
+best ask price
+sell trade
+buy trade
+suspicious trade
+(a) BBOs’ dynamics and trade prices
+08:51:56 08:52:02 08:52:09
+t
+102
+103
+104
+USD
+sell trade
+buy trade
+suspicious trade (b) Trade sizes
+Figure 12: Suspicious trading activity — An example of “suspicious” behavior identified by the
+bid MMHP-δ as the extreme burst regime (state 3), anomalies detected on March 6th, 2024 UTC
+time zone.
+33
+
+=== page 34 ===
+10:21:25 10:21:32 10:21:46
+t
+0.72175
+0.72200
+0.72225
+0.72250
+0.72275
+0.72300
+0.72325
+0.72350
+best bid price
+best ask price
+sell trade
+buy trade
+suspicious trade
+(a) BBOs’ dynamics and trade prices
+10:21:25 10:21:32 10:21:46
+t
+102
+103
+104
+USD
+sell trade
+buy trade
+suspicious trade (b) Trade sizes
+Figure 13: Suspicious trading activity — An example of “suspicious” behavior identified by the
+ask MMHP-δ as the extreme burst regime (state 3), anomalies detected on Janurary 15th, 2024
+UTC time zone.
+11:31:33 11:31:34 11:31:36
+t
+0.8356
+0.8358
+0.8360
+0.8362
+0.8364
+best bid price
+best ask price
+sell trade
+buy trade
+suspicious trade
+(a) BBOs’ dynamics and trade prices
+11:31:33 11:31:34 11:31:36
+t
+102
+103
+104
+USD
+sell trade
+buy trade
+suspicious trade (b) Trade sizes
+Figure 14: Suspicious trading activity — An example of “suspicious” behavior identified by the
+ask MMHP-δ as the extreme burst regime (state 3), anomalies detected on March 3th, 2024 UTC
+time zone.
+34
+
+=== page 35 ===
+−1.0 −0.5 0.0 0.5 1.0
+Imbalance
+0.0
+0.2
+0.4
+0.6
+0.8
+1.0
+Density
+state 3
+state 2
+state 1
+(a) Imbalance distribution before
+state transition, bid
+−1.0 −0.5 0.0 0.5 1.0
+Imbalance
+0.0
+0.2
+0.4
+0.6
+0.8
+Density
+state 3
+state 2
+state 1
+(b) Imbalance distribution before
+state transition, ask
+1 25 50 75 100
+h
+1
+2
+3
+4
+5R(h, s)
+ state 1
+state 2
+state 3
+(c) Mid price response function af-
+ter state transition with 95% con-
+fidence intervals
+Figure 15: Suspicious trading activity — Market characterization of the trading activity regimes
+identified by the MMHP-δ model, when the model is trained on December 1st, 2023, without
+taking into account the intraday seasonality.
+35

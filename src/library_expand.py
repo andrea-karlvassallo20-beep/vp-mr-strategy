@@ -27,7 +27,8 @@ PDF_DIR = Path("docs/library/pdfs")
 TEXT_DIR = Path("docs/library/text")
 INDEX_JSON = Path("docs/library/expanded_index.json")
 INDEX_MD = Path("docs/library/expanded_index.md")
-TARGET = 100
+import sys
+TARGET = int(sys.argv[sys.argv.index("--target") + 1]) if "--target" in sys.argv else 200
 MAX_PDF_BYTES = 20 * 1024 * 1024
 
 QUERIES = [
@@ -67,6 +68,24 @@ QUERIES = [
     ("microstructure", "deep learning limit order book prediction DeepLOB"),
     ("impact", "meta-order execution hidden impact"),
     ("regimes", "hidden Markov model financial time series"),
+    ("marketmaking", "Avellaneda Stoikov market making"),
+    ("marketmaking", "market maker inventory risk dealer"),
+    ("perps", "perpetual futures funding rate"),
+    ("perps", "cryptocurrency basis futures arbitrage"),
+    ("defi", "automated market maker decentralized exchange"),
+    ("defi", "DeFi liquidity protocol"),
+    ("hft", "realized kernels high frequency price noise"),
+    ("hft", "synchronization error asynchronous trading Epps"),
+    ("pointproc", "autoregressive conditional duration trade arrivals"),
+    ("pointproc", "point process financial intraday seasonality"),
+    ("network", "financial networks systemic risk"),
+    ("network", "lead-lag cross-correlation stock returns"),
+    ("text", "text mining news stock returns"),
+    ("rl", "reinforcement learning trading market making"),
+    ("mlfinance", "transformer attention time series forecasting"),
+    ("mlfinance", "generative adversarial network financial time series"),
+    ("crypto", "stablecoin design dynamics"),
+    ("crypto", "extreme events cryptocurrency jumps"),
     ("info", "price discovery information content trades Hasbrouck"),
     ("info", "informed trading adverse selection spread"),
 ]

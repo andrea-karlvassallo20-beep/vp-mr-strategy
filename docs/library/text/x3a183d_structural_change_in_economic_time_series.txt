@@ -1,0 +1,479 @@
+=== page 1 ===
+Structural Change in (Economic) Time Series
+Christian Kleiber ∗
+Abstract
+Methods for detecting structural changes, or change points, in time series data are
+widely used in many ﬁelds of science and engineering. This chapter sketches some basic
+methods for the analysis of structural changes in time series data. The exposition is
+conﬁned to retrospective methods for univariate time series. Several recent methods for
+dating structural changes are compared using a time series of oil prices spanning more than
+60 years. The methods broadly agree for the ﬁrst part of the series up to the mid-1980s, for
+which changes are associated with major historical events, but provide somewhat diﬀerent
+solutions thereafter, reﬂecting a gradual increase in oil prices that is not well described
+by a step function. As a further illustration, 1990s data on the volatility of the Hang Seng
+stock market index are reanalyzed.
+Keywords: change point problem, segmentation, structural change, time series.
+JEL classiﬁcation: C22, C87.
+1 Introduction
+In time series analysis, the point of reference is that of a stationary stochastic process; i.e.,
+a process for which the sequence of ﬁrst and second-order moments is constant (‘weak sta-
+tionarity’), or even the sequence of the entire marginal distributions (‘strict stationarity’).
+In practice, many time series exhibit some form of nonstationarity: changing levels, changing
+variances, changing autocorrelations, or a combination of some or all of these aspects. These
+phenomena are then called structural changes or structural breaks and the associated statis-
+tical methodology is sometimes called change point analysis. Such phenomena may be seen
+as ‘complex’ in the sense of this Volume, in that classical models with constant coeﬃcients
+are rejected by the data.
+Structural change methodology is widely used in economics, ﬁnance, bioinformatics, engineer-
+ing, public health, and climatology, to mention just a few ﬁelds of application. An interesting
+recent contribution (Kelly and ´O Gr´ada, 2014) disputes the existence of a ‘little ice age’ for
+parts of Central and Northern Europe between the 14th and 19th century. Using structural
+change methodology (of the type used below) on temperature reconstructions spanning sev-
+eral centuries, Kelly and ´O Gr´ada ﬁnd no evidence for sustained falls in mean temperatures
+prior to 1900, instead several relevant series are best seen as white noise series. One explana-
+tion for the contradiction to the established view is the climatological practice of smoothing
+data prior to analysis. When the raw data are in fact uncorrelated, such preprocessing can
+introduce spurious dependencies (the ‘Slutsky eﬀect’).
+∗Date: April 25, 2016.
+Correspondence: Christian Kleiber, Faculty of Business and Economics, Universit¨at Basel, Peter Merian-Weg
+6, CH-4002 Basel, Switzerland. E-mail: christian.kleiber@unibas.ch
+1
+arXiv:1702.06913v1  [q-fin.ST]  17 Feb 2017
+
+=== page 2 ===
+More than 25 years ago, a bibliography on structural change methodology and applications
+published in the economics literature (Hackl and Westlund, 1989) already lists some 500 ref-
+erences, and the literature has grown rather rapidly since then. More recently, a bibliography
+available with the R package strucchange provides more than 800 references, ending in 2006
+(Zeileis, Leisch, Hornik and Kleiber, 2002). Recent surveys of the methodology include Perron
+(2006), Aue and Horv´ath (2013) and Horv´ath and Rice (2014). Much of this methodology
+relies quite heavily on functional central limit theorems (FCLTs), an excellent reference is
+Cs¨org˝o and Horv´ath (1997).
+Apart from practical relevance of the associated issues, one reason for the large number of
+publications is that the notion of ‘structural change’ can be formalized in many diﬀerent
+ways. In terms of statistical hypothesis tests, the null hypothesis of ‘no structural change’ is
+reasonably clear (model parameters are constant), but the alternative can mean many things:
+a parameter (or several parameters) change(s) its (their) value(s) abruptly (once, twice, or
+more often), or it changes gradually according to a stochastic mechanism (e.g., via a random
+coeﬃcient model), or it switches randomly among a small number of states (e.g., via a hidden
+Markov model), etc. There are many further possibilities.
+The available methodology therefore incorporates ideas from a variety of ﬁelds: linear models,
+sequential analysis, wavelets, etc. In economics, there is comparatively greater interest in
+changes in regression models, whereas in many other ﬁelds of application interest is focused
+on changes in a univariate time series. A further dividing line is on-line (sequential) analysis
+of a growing sample vs. oﬀ-line (retrospective) analysis of a ﬁxed sample.
+This chapter provides some basic ideas of change point methodology along with empirical
+examples. It is biased towards least-squares methods, methodology used in economics and
+ﬁnance as well as availability in statistical software. The following section outlines selected
+methods in the context of a simple signal-plus-noise model. For reasons of space, the exposition
+is conﬁned to retrospective analysis of changes in univariate time series. In section 3, several
+recent algorithms are explored for dating structural changes in a series of oil prices. Section 4
+dates volatility changes in Hang Seng stock market index returns, thereby revisiting data
+formerly studied in Andreou and Ghysels (2002). The ﬁnal section provides some references
+for sequential analysis of structural change and also for more complex data structures.
+2 Some basic ideas in change point analysis
+To ﬁx ideas, consider a signal-plus-noise model for an observable (univariate) quantity yi,
+yi = µi + ei, i = 1,...,T,
+where µi is the (deterministic) signal and ei is the noise, with E[ei] = 0 and Var[ei] = σ2.
+As noted above, this chapter is conﬁned to changes in a univariate time series. However, for
+many methods, there is a regression version with µi = x⊤ i βi, where xi is a vector of covariates
+and βi the corresponding set of regression coeﬃcients. In the classical setting, the ei form a
+sequence of independent and identically distributed (i.i.d.) random variables, but many more
+recent contributions, especially in economics and ﬁnance, consider dependent processes.
+2
+
+=== page 3 ===
+2.1 Testing for structural change
+In terms of statistical testing, the null hypothesis of interest is H0 : µi = µ0 for all i; i.e.,
+the signal exhibits no change. (For the regression version, the corresponding null hypothesis
+is H0 : βi = β0 for all i.) Under the null hypothesis, natural estimates of µ0 are the recursive
+estimates ˆµk = k−1 ∑k i=1 yi, k = 1,...,T ; i.e., the sequence of sample means computed from
+a growing sample. The corresponding recursive residuals are ˜ei = yi − ˆµi−1, i = 2,...,T .
+A classical idea is to study the ﬂuctuations of partial (or cumulative) sums (CUSUMs) of these
+recursive residuals and to reject the null hypothesis of parameter stability if their ﬂuctuations
+are excessive. In order to assess signiﬁcance, introduce an empirical ﬂuctuation process indexed
+by t∈ [0, 1] as the process of partial sums of the recursive residuals via
+˜ST (t) = 1 ˆσT √ T
+[Tt]∑
+i=1
+˜ei, 0 ≤t≤ 1,
+where [Tt] denotes the integer part of Tt and ˆσ2 T some consistent estimate of σ2. This object
+is often called the Rec-CUSUM process as it is based on recursive residuals. It is well known
+that under the above assumptions this empirical ﬂuctuation process can be approximated by
+a Brownian motion, B(t), 0 ≤t≤ 1, and hence the enormous literature on properties of this
+stochastic process can be used to assess the ﬂuctuations in the recursive residuals. Excessive
+ﬂuctuation is determined from the crossing probabilities of certain boundaries, this is the
+approach proposed in the seminal paper by Brown, Durbin and Evans (1975).
+However, from a regression point of view, the ordinary least-squares (OLS) residuals ˆei =
+yi − ˆµT are perhaps a more natural starting point, leading to the test statistic
+max
+k=1,...,T
+⏐⏐⏐⏐⏐ 1 ˆσT √ T k∑ i=1 ˆei ⏐⏐⏐⏐⏐. (1)
+As OLS residuals are correlated and sum to zero by construction, the limiting process corre-
+sponding to the OLS-CUSUM process is no longer a Brownian motion. Instead, the limiting
+process is now a Brownian bridge, B0(t), with B0(t) = B(t) −t B(1), 0 ≤ t ≤ 1, and the
+relevant limiting quantity for assessing signiﬁcant deviation from the null hypothesis is
+sup
+0≤t≤1
+|B0(t)|,
+the supremum of the absolute value of a Brownian bridge on the unit interval (Ploberger
+and Kr¨amer, 1992). This object is well known in the statistical literature, and quantiles of its
+distribution provide critical values for a test based on (1).
+To brieﬂy illustrate the machinery, consider a time series of measurements of the annual ﬂow
+of the river Nile at Aswan, for the period 1871 to 1970. This series is part of any binary
+distribution of R (R Core Team, 2016) under the name Nile and has been used repeatedly in
+the statistical literature on change point methods. The following illustrations make use of the
+R package strucchange, which among other things implements structural change detection
+using empirical ﬂuctuation processes and related techniques. It should be noted that the
+original paper (Zeileis et al., 2002) describing the software documents the ﬁrst release of the
+package, but many methods were added in subsequent years, including the methods for dating
+structural changes that are used in the next section. The package is still actively maintained,
+but the main developments happened some 10 years ago.
+3
+
+=== page 4 ===
+Nile river discharges
+Time
+Nile
+1880 1900 1920 1940 1960
+600 800 1200
+OLS−CUSUM process
+Time
+Empirical fluctuation process
+1880 1900 1920 1940 1960
+−1 0 1 2 3
+Figure 1: Nile river discharges: Raw data (left) and OLS-CUSUM process (right).
+Figure 1 plots the time series (left panel) and the corresponding OLS-CUSUM process (right
+panel) along with a boundary indicating the 5% critical value for the test statistic (1). It is
+seen that the empirical ﬂuctuation process crosses the boundary, and hence the hypothesis of
+a constant level is rejected at the 5% level.
+The test statistic (1), often called the OLS-CUSUM test, measures the maximal absolute
+deviation from zero of the corresponding OLS-CUSUM process. There are many variations
+of this idea. For example, it is possible to use other functionals of the empirical ﬂuctuation
+process, such as the range or some average of the ﬂuctuations. It is also possible to study
+moving instead of cumulative sums, leading to moving sum (MOSUM) processes. Or, instead
+of the ﬂuctuations in the residuals, one can directly assess the ﬂuctuations in the estimates
+themselves; there are again recursive and moving versions (Kuan and Hornik, 1995). In the
+univariate case considered here, the latter idea is equivalent to CUSUMs or MOSUMs of the
+residuals, but in the regression case it leads to new procedures. It is also possible to assess
+ﬂuctuations in ﬁrst-order conditions of ﬁtting methods other than least squares, for example
+likelihood methods (Zeileis, 2005).
+Also, applications in economics and ﬁnance often involve dependent data, so that the ma-
+chinery described above requires adjustments. These involve the long-run variance,
+ω2 = lim
+T→∞
+Var( ˜ST (1)).
+If a consistent estimator ˆω2 of ω2 is available, then ˆω−1 ˜ST (t) or ˆω−1 ˆST (t) can, in many settings
+of interest, again be approximated by a Brownian motion or a Brownian bridge.
+2.2 Dating structural changes
+Having found evidence for the presence of structural change it is of interest to estimate the
+change points themselves. In economics, basic references for dating structural changes are Bai
+and Perron (1998, 2003), which among other things provide a method for obtaining conﬁdence
+4
+
+=== page 5 ===
+Time
+Nile
+1880 1900 1920 1940 1960
+600 800 1200
+Time
+Nile
+1880 1900 1920 1940 1960
+600 800 1200
+Figure 2: Nile river discharges: Model with constant level (left) vs. model with two regimes
+(right).
+intervals for the break dates. The associated point estimation issue – the segmentation of the
+sample into homogeneous parts – dates back at least to Bellman and Roth (1969).
+The model of interest is now a step function for the signal. With m+1 segments (corresponding
+to m breaks), this is
+yi = µj + ei, τj−1 + 1 ≤ i ≤ τj, j = 1,...,m + 1. (2)
+Here j is the segment index and {τ1,...,τm} denotes the set of the break points. By conven-
+tion, τ0 = 0 and τm+1 = T .
+Given the break points τ1,...,τm, the least squares estimate of µj is the sample mean of the
+observations pertaining to segment j. The resulting aggregate residual sum of squares is given
+by
+RSS(τ1,...,τm) =
+m+1∑
+j=1
+rss(τj−1 + 1,τj), (3)
+where rss(τj−1 + 1,τj) is the residual sum of squares for segment j. The problem of dating
+structural changes is to ﬁnd the break points ˆτ1,..., ˆτm that minimize the objective function,
+{ˆτ1,..., ˆτm} = argmin{τ1,...,τm}RSS(τ1,...,τm), (4)
+over all partitions {τ1,...,τm} with τj −τj−1 ≥ Tmin. Here Tmin is a bandwidth parameter
+to be speciﬁed by the user, it deﬁnes the minimal segment length. For a given number m of
+break points, their optimal location can be found using a dynamic programming algorithm.
+The number of change points m itself can be determined via information criteria, the break-
+points() function in strucchange employs the Bayesian Information Criterion (BIC). Below,
+this algorithm is referred to as breakpoints. More details on the implementation may be
+found in Zeileis, Kleiber, Kr¨amer and Hornik (2003).
+5
+
+=== page 6 ===
+Returning to the Nile river ﬂows, Figure 2 (left panel) provides the ﬁt for a traditional
+autoregressive model of order one (AR(1)) with constant parameters. Clearly, the ﬁt is quite
+poor in that for the ﬁrst part of the series the data are almost always above the ﬁtted mean
+level, whereas after approximately the year 1900 they are mostly below. In contrast, Figure 2
+(right panel) provides a model with a changing level, the BIC suggesting a model with a
+single break corresponding to the year 1898. There is a simple explanation for this break: the
+opening of the Aswan dam in 1898. It is worth noting that after modelling the break there
+is no need for further modelling of any dependence about the changing level: the dependence
+implied by the ﬁtted AR(1) process (left panel), with an autoregressive parameter of 0.51, is
+spurious and stems from the neglected data feature of a changing level.
+3 Dating changes in a commodity price series
+This section revisits an empirical example presented in Zeileis et al. (2003), namely dating
+structural breaks in a time series of oil prices. That paper considered a quarterly index of
+import prices of petroleum products obtained from the German Federal Statistical Oﬃce
+– hereafter referred to as the German oil price data – for the period 1960(1) to 1994(4)
+(base year: 1991). The present paper uses a much longer series, a quarterly time series of
+spot prices for West Texas Intermediate (WTI) – hereafter referred to as the WTI data –
+from 1947(1) to 2013(3). It is publicly available from the FRED database of the Federal Re-
+serve Bank of St. Louis, more speciﬁcally from https://research.stlouisfed.org/fred2/
+series/OILPRICE/. The series is deﬂated using the GDP deﬂator (base year: 2009), which is
+available from https://research.stlouisfed.org/fred2/series/GDPDEF/. This deﬂated
+version is given in Figure 3 (data are in logarithms). The task is to compare a change point
+model for the WTI data with the corresponding segmentation for the older German oil price
+data, and also to try out several more recent dating algorithms, on which more below.
+For ease of reference, the older series along with a segmentation with three regimes is given
+in Figure 4 (data are again in logarithms). The three breaks are for the quarters 1973(3),
+1979(1) and 1985(1). The ﬁrst two breaks correspond to two major historical events, the
+ﬁrst oil crisis (the Arab oil embargo following the Yom Kippur war) and the beginning of
+the Iranian revolution. The break in 1985(1) may be seen as resulting from demand shifts,
+quarrels within OPEC, and the entry of several new suppliers (namely Great Britain, Mexico,
+and Norway) in international oil markets (Zeileis et al., 2003).
+Repeating the exercise with the newer WTI data and a minimal segment size of 10 quarters,
+the BIC now favors a segmentation with 10 regimes. The resulting solution is provided in
+the second panel of Figure 5. There is good agreement for the breaks corresponding to major
+historical events, here estimated at 1973(4) and 1979(2). Beginning in the second half of the
+1990s, there is a gradual trend in the newer series that is not described well by a step function.
+Also, the two oil price series diﬀer visibly in the ﬁrst half of the 1980s, leading to two estimated
+change points for the newer series, at 1982(4) and 1985(4). These diﬀerences result from the
+fact that the older series is a price index while the newer is for a single product; also, there
+appear to be exchange rate eﬀects in the older series.
+We next compare the least-squares-based solution with two recent methods. The ﬁrst method
+(Matteson and James, 2014) uses ideas from cluster analysis combined with a nonparametric
+form of ANOVA based on so-called energy statistics (Rizzo and Sz´ekely, 2010). The latter
+are functions of distances between statistical observations in Euclidean spaces (and beyond),
+6
+
+=== page 7 ===
+Time
+log(Oil Price)
+1950 1960 1970 1980 1990 2000 2010
+2.5
+3.0
+3.5
+4.0
+4.5
+Figure 3: Quarterly spot prices for West Texas Intermediate (WTI). Source: Federal Reserve
+Bank of St. Louis (FRED databse).
+the name derives from an analogy with Newton’s gravitational potential energy. It should
+be noted that this method assesses diﬀerences in entire distributions, not just level shifts.
+However, there is a variant that assesses only changes in the mean; the relevant settings for
+this variant are used below. An implementation is available in the R package ecp (James
+and Matteson, 2014). The package oﬀers several methods, here only the algorithm named
+e.divisive there is used, a form of hierarchical clustering. The second method is wild binary
+segmentation (Fryzlewicz, 2014) (hereafter: WBS), a stochastic algorithm that uses ideas from
+the wavelets literature. The setup analyzed in the original paper is (2) with i.i.d. Gaussian
+noise. An implementation is available in the R package wbs.
+All three procedures require speciﬁcation of a trimming parameter, for the least-squares ap-
+proach and e.divisive this is the minimal segment length (or ‘cluster size’, in the terminology
+of the ecp package), details diﬀer from method to method. For e.divisive, the minimal seg-
+ment size was again set to 10 quarters, here yielding 9 breaks. For WBS, which does not need
+a minimal segment size, the maximum number of breaks was ﬁxed at 10 for comparability
+reasons. The solutions are provided in the third and fourth panel of Figure 5. There is good
+agreement for the major historical events, while the algorithms diﬀer somewhat for the sec-
+ond half of the series. This partly reﬂects the problems with this part of the series mentioned
+above. Overall, WBS tries to adapt to smaller details towards the end of the series. It is also
+worth noting that, using the settings recommended by the authors of the software, the WBS
+algorithm favors a solution with no fewer than 35 breaks. Clearly, not all of the estimated
+breaks will be of economic interest. This appears to be a problem in some ﬁnancial applica-
+tions, where alarms can be frequent with long series. As an example, not all changes identiﬁed
+in Fryzlewicz (2014) for the S&P 500 index will likely be of practical relevance.
+7
+
+=== page 8 ===
+Time
+log(Oil Price)
+1960 1965 1970 1975 1980 1985 1990 1995
+3.5
+4.0
+4.5
+5.0
+5.5
+Figure 4: German oil price data, 1960(1) to 1994(4) (base year: 1991). Data source: German
+Federal Statistical Oﬃce. Segmentation as in Zeileis et al. (2003).
+Figure 5 provides an overall comparison of all solutions. The display highlights similarities
+and diﬀerences of the solutions obtained from the algorithms. Notably the breakpoints and
+e.divisive solutions are very similar. In contrast, wbs is more faithful to the more lively part
+towards the end of the series. breakpoints has one further change point in the second half
+of the 1990s (namely for the quarter 1997(1)), the other breaks diﬀer, with one exception,
+by at most two quarters. For example, the break corresponding to the ﬁrst oil crisis is in
+1973(4) according to breakpoints and in 1974(1) according to e.divisive. For the Iranian
+revolution break, the algorithms give 1979(2) and 1979(4), respectively.
+4 Dating changes in the volatility of a stock market index
+The previous section considered changes in the mean of a time series. It is also possible to
+study changes in other characteristics of the data, for example variances or autocorrelations.
+With ﬁnancial time series, for example stock returns, assessing risks is a central issue; both
+squared and absolute returns may be seen as measures of risk. Assessing changes in such
+transformed returns can be viewed as an indirect check of structural change in GARCH-type
+models of volatility.
+As a brief empirical illustration, we revisit an example from Andreou and Ghysels (2002).
+They consider four stock market indices (FTSE, Hang Seng, Nikkei, S&P500) with an eye on
+changes associated with the Asian and Russian ﬁnancial crises in the second half of the 1990s.
+Here we just consider one of these series, the Hang Seng index for the period 1989–01–04 to
+2001–10–19, giving T = 3338 observations. For comparability reasons, the data are taken from
+8
+
+=== page 9 ===
+3.0
+3.5
+4.0
+4.5
+5.0
+3.0
+3.5
+4.0
+4.5
+3.0
+3.5
+4.0
+4.5
+3.0
+3.5
+4.0
+4.5
+WTI databreakpointse.divisivewbs
+1945
+1950
+1955
+1960
+1965
+1970
+1975
+1980
+1985
+1990
+1995
+2000
+2005
+2010
+Figure 5: WTI data (top panel) and segmentations obtained from three algorithms: break-
+points, e.divisive and wbs.
+Datastream. The data for the segmentation algorithm are the Hang Seng absolute returns (for
+which more breaks are found than for the more common squared returns). The original paper
+documents only the maximal number of breaks used but not the minimal segment size. Here
+we use a minimal segment size corresponding to 10% of the length of the series, which should
+permit recovery of the segmentation from Andreou and Ghysels (2002). This is only partly
+possible, however.
+Figure 6 provides a plot of the absolute returns along with two models. The original paper
+suggests that a segmentation with three breaks, for the dates 1992-07-03, 1995-01-24 and
+1997-08-15, is optimal. The 3-breaks solution found by breakpoints (the dashed line in the
+plot) diﬀers, it ﬁnds 1995-06-14, 1997-08-15 and 1998-11-30, so only the last break from the
+paper is recovered. Also, the breakpoints solution has no break prior to 1995 but a new
+break after 1997.
+9
+
+=== page 10 ===
+It is also worth noting that the method ﬁnds a further break upon increasing the maximum
+number of breaks. Setting the latter to ﬁve breaks, a segmentation with four breaks is found.
+Interestingly, the new break at 1993-10-01 is before 1995, although not overly close to the 1992-
+07-03 break of Andreou and Ghysels (2002). Further experiments with the minimal segment
+length (down to 5% of the length of the series) and the admissible number of breaks (up to
+10) suggest that the results are quite sensitive to the settings of these parameters. The only
+break that is practically always found is for August 1997, it is often estimated at 1997-08-15
+and is associated with the Asian ﬁnancial crisis.
+1990 1992 1994 1996 1998 2000 2002
+0.00
+0.02
+0.04
+0.06
+0.08
+Time
+absolute returns
+Figure 6: Segmentation of Hang Seng absolute returns with breakpoints. Dashed line: max-
+imal number of breaks 3, minimal segment size 10%. Solid line: maximal number of breaks 5,
+minimal segment size 10%.
+5 Discussion and outlook
+This chapter has illustrated some basic ideas in change point analysis. The exposition was
+conﬁned to retrospective methods for univariate time series. (Most of) The methods described
+have extensions to regression models (Perron, 2006). Many further topics had to be excluded,
+notably the timely topic of on-line monitoring and also structural change in multivariate or
+functional data. For on-line monitoring, in some ﬁelds referred to as surveillance or ‘quickest
+detection’ problems, see the survey by Fris´en (2009) and references therein, for an exposition
+of associated optimality issues in a ﬁnancial setting see Shiryaev (2002). Multivariate and
+10
+
+=== page 11 ===
+functional data are brieﬂy addressed in the recent survey by Horv´ath and Rice (2014), where
+further references may be found.
+The literature will likely continue to grow rapidly, for several reasons: The classical methods
+are largely conﬁned to linear models ﬁtted via least squares methods. Nonlinear models for
+discrete-valued data are needed in some applications, but here the literature is still relatively
+small. Also, the growing number of large data sets demands improvements on the algorithmic
+side. Unfortunately, many recent methods are not readily available in statistical software,
+which to some extent hinders progress. A further big challenge is the uniﬁcation of this widely
+scattered literature.
+Computational Details
+All results were obtained using R 3.2.4, with the packages strucchange 1.5-1, ecp 2.0.0, and
+wbs 1.3, on PCs running Mac OS X, version 10.10.5. Some plots were drawn using the package
+ggplot2 2.1.0 (Wickham, 2009).
+References
+Andreou, E. and Ghysels, E. (2002). Detecting multiple breaks in ﬁnancial market volatil-
+ity dynamics. Journal of Applied Econometrics, 17 579–600.
+Aue, A. and Horv´ath, L. (2013). Structural breaks in time series. Journal of Time Series
+Analysis, 34 1–16.
+Bai, J. and Perron, P. (1998). Estimating and testing linear models with multiple structural
+changes. Econometrica, 66 47–78.
+Bai, J. and Perron, P. (2003). Computation and analysis of multiple structural change
+models. Journal of Applied Econometrics, 18 1–22.
+Bellman, R. and Roth, R. (1969). Curve ﬁtting by segmented straight lines. Journal of
+the American Statistical Association, 64 1079–1084.
+Brown, R. L., Durbin, J. and Evans, J. M. (1975). Techniques for testing the constancy
+of regression relationships over time. Journal of the Royal Statistical Society B, 37 149–163.
+Cs¨org˝o, M. and Horv´ath, L. (1997). Limit Theorems in Change-Point Analysis. John
+Wiley & Sons.
+Fris´en, M. (2009). Optimal sequential surveillance for ﬁnance, public health, and other
+areas. Sequential Analysis, 28 310–337.
+Fryzlewicz, P. (2014). Wild binary segmentation for multiple change-point detection. An-
+nals of Statistics, 42 2243–2281.
+Hackl, P. and Westlund, A. (1989). Statistical analysis of “structural change”: An anno-
+tated bibliography. Empirical Economics, 14 167–192.
+Horv´ath, L. and Rice, G. (2014). Extensions of some classical methods in change point
+analysis. TEST, 23 219–255.
+11
+
+=== page 12 ===
+James, N. A. and Matteson, D. S. (2014). ecp: An R package for nonparametric multiple
+change point analysis of multivariate data. Journal of Statistical Software, 62 1–25. URL
+http://www.jstatsoft.org/v62/i07/.
+Kelly, M. and ´O Gr´ada, C. (2014). Change points and temporal dependence in reconstruc-
+tions of annual temperature: Did Europe experience a Little Ice Age? Annals of Applied
+Statistics, 8 1372–1394.
+Kuan, C.-M. and Hornik, K. (1995). The generalized ﬂuctuation test: A unifying view.
+Econometric Reviews, 14 135–161.
+Matteson, D. S. and James, N. A. (2014). A nonparametric approach for multiple change
+point analysis of multivariate data. Journal of the American Statistical Association, 109
+334–345.
+Perron, P. (2006). Dealing with structural breaks. In Palgrave Handbook of Econometrics,
+Vol. 1: Econometric Theory (K. Patterson and T. C. Mills, eds.). Palgrave Macmillan,
+278–352.
+Ploberger, W. and Kr¨amer, W. (1992). The CUSUM test with OLS residuals. Econo-
+metrica, 60 271–285.
+R Core Team (2016). R: A Language and Environment for Statistical Computing. R Foun-
+dation for Statistical Computing, Vienna, Austria. URL http://www.R-project.org/.
+Rizzo, M. L. and Sz´ekely, G. J. (2010). DISCO analysis: A nonparametric extension of
+analysis of variance. Annals of Applied Statistics, 4 1034–1055.
+Shiryaev, A. N. (2002). Quickest detection problems in the technical analysis of ﬁnancial
+data. In Mathematical Finance – Bachelier Congress 2000: Selected Papers from the First
+World Congress of the Bachelier Finance Society, Paris, June 29 – July 1, 2000 (H. Geman,
+D. Madan, S. Pliska and T. Vorst, eds.). Springer, 487–521.
+Wickham, H. (2009). ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag, New
+York.
+Zeileis, A. (2005). A uniﬁed approach to structural change tests based on ML scores, F
+statistics, and OLS residuals. Econometric Reviews, 24 445–466.
+Zeileis, A., Kleiber, C., Kr¨amer, W. and Hornik, K. (2003). Testing and dating of
+structural changes in practice. Computational Statistics & Data Analysis, 44 109–123.
+Zeileis, A., Leisch, F., Hornik, K. and Kleiber, C. (2002). strucchange: An R package
+for testing for structural change in linear regression models. Journal of Statistical Software,
+7 1–38. URL http://www.jstatsoft.org/v07/i02/.
+12

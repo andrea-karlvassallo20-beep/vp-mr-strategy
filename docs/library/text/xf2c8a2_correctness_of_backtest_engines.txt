@@ -1,0 +1,673 @@
+=== page 1 ===
+arXiv:1509.08248v1  [q-fin.TR]  28 Sep 2015
+Correctness of Backtest Engines
+Robert Löw
+Institut für Mathematik, RWTH Aachen,
+Templergraben 55, D-52052 Aachen, Germany
+robert.loew@rwth-aachen.de
+Stanislaus Maier-Paape
+Institut für Mathematik, RWTH Aachen,
+Templergraben 55, D-52052 Aachen, Germany
+maier@instmath.rwth-aachen.de
+Andreas Platen
+Institut für Mathematik, RWTH Aachen,
+Templergraben 55, D-52052 Aachen, Germany
+platen@instmath.rwth-aachen.de
+September 29, 2015
+Abstract In recent years several trading platforms appeared which provide a backtest
+engine to calculate historic performance of self designed trading strategies on underlying
+candle data. The construction of a correct working backtest engine is, however, a subtle task
+as shown by Maier-Paape and Platen (cf. [arXiv:1412.5558, q-ﬁn.TR]). Several platforms
+are struggling on the correctness.
+In this work, we discuss the problem how the correctness of backtest engines can be veriﬁed.
+We provide models for candles and for intra-period prices which will be applied to conduct
+a proof of correctness for a given backtest engine if the here provided tests on speciﬁc model
+candles are successful. Furthermore, we hint to algorithmic considerations in order to allow
+for a fast implementation of these tests necessary for the proof of correctness.
+Keywords backtest evaluation, historical simulation, trading system, candle chart, im-
+perfect data, price model, correctness test, backtest correctness
+JEL classiﬁcation C15, C63, C88, C99
+1. Introduction
+The use of trading software allows for programming trading strategies which are then automat-
+ically executed. Typically, software solutions for this task also provide a backtest engine which
+evaluates the user-written scripts on historical data and provides the user with performance
+values, entries and exits of positions and further data which would have occurred if the trading
+script was used in the past. In general, the historical data is not exact in the sense that the
+price at a speciﬁc time is not known. Instead, prices are summed up for time periods in so called
+candle data or bar data which consists of the maximum price (high), the minimum price (low),
+the price at the beginning of the period (open) and the price at the end of the period (close)
+for a given period length (e.g. one candle per day). Due to this lack of information the unique
+decidability of several combinations of orders is lost when only candle data are available, see
+e.g. [7] and also the book of Pardo [10, Chapter 6, Section “Software Limitations”] or Harris [5,
+Chapter 6].
+Before going into the details of our backtest correctness testing model, it is worth noting
+that, besides the above mentioned problems, there are also other limitations of backtesting
+which cannot be neglected, see e.g. the books of Chan [4, Chapter 3], Pardo [10, Chapter 6]
+
+=== page 2 ===
+R. Löw, S. Maier-Paape, and A. Platen
+and Harris [5, Chapter 6] and for trading options the book of Izraylevich and Tsudikman [6,
+Chapter 5]. Since a backtest just simulates the behavior of a trading system over the past it
+is strongly limited in predicting the future. However, it is common to optimize a parameter
+dependent strategy over the historical data to maximize some objective function. Such an
+optimization process can rapidly get very time consuming. Therefore to eﬃciently backtest a
+trading system for diﬀerent parameter choices Ni and Zhang [8] presented a method, but they
+do not explain the backtest evaluation itself. Computing such an “optimal” parameter setting
+does not ensure optimal parameters for the future but can even lead to tremendous losses.
+Here one often speaks of backtest overﬁtting, see [1, 2, 3] and also [9, Chapter 6] for a detailed
+discussion. Therefore even a correct backtest engine needs to be applied carefully. Nevertheless
+it gives important information about a trading strategy.
+The aim of this paper, however, is not about a “right” application of backtest results, but on
+how to verify whether or not the backtests are performed correctly in the ﬁrst place.
+One instance where common software solutions often struggle is the non-uniqueness of cor-
+rect results of backtest engines. Almost all of them do not consider this issue. Furthermore,
+even if situations are obviously uniquely decidable, severals platforms sometimes have incor-
+rect evaluations of their backtest engines. It is, however, of great importance for the users to
+have reliable correct backtest evaluations. Therefore Maier-Paape and Platen [7] asked how
+backtest engines should decide for certain given standard order setups like limit and stop entry
+orders combined with typical intra-period stop or target exit orders, when only candle data are
+available. They could limit these examinations to single candles, arguing that any trade can be
+split up into several candles with diﬀerent active orders. For the order combinations discussed,
+they provided decision trees with which for a given candle, depending on open, close, high and
+low value, the correct behavior of a backtest engine can be determined. They also introduced
+decision modes which provide deterministic rules for situations which are not uniquely decid-
+able due to the lack of information in candle data. However, due to the numerous possibilities
+which can occur in diﬀerent situations, it is hard to verify whether a given backtest engine of
+some trading platform is calculating its backtests correctly or not. In this paper, we therefore
+provide means for an algorithmic approach to this problem.
+In order to check whether a given backtest engine behaves according to the requirements
+presented in [7], it is necessary to design test data. That means that we are looking for a ﬁnite
+number of so called “test candles”. After checking the backtest evaluation on these ﬁnitely
+many candles, we want to be able to conclude general correctness of the backtest engine under
+reasonable assumptions.
+This work is divided into ﬁve sections. In Section 2 we discuss the preliminaries under
+which our examinations are conducted and formalize the problem discussed. The main result
+of Section 3 is the development of a concept of “model candles”, which allows for a proof of
+correctness of backtest engines in speciﬁc situations. In Section 4, a model for intra-period
+prices will be introduced which allows to obtain the desired condition that guarantees the
+completeness of all model candles and all corresponding possible outcomes of a backtest. We
+end this paper in Section 5 with our conclusions.
+2. Problem statement and preliminaries
+First, we want to specify the situation which we examine. In Section 2.1 we give some assump-
+tions needed to make the decisions for a backtest unique. Since we can reduce the problem
+Page 2
+
+=== page 3 ===
+Correctness of Backtest Engines
+of testing for correctness to one single candle for each situation we deﬁne the setup for such
+situations in Section 2.2. The concept of a backtest engine is explained in Section 2.3.
+2.1. Assumptions
+At this point, we will not make speciﬁc assumptions about the candles which we examine.
+Clearly, every candle satisﬁes
+low ≤ min {open, close} ≤ max {open, close} ≤ high.
+Due to lack of information caused by the candle data, some general assumptions have to be
+made.
+Assumptions 2.1 (see [7, Section 2.1]).
+• No intra-period gaps: We assume a continuous intra-period price development during a
+candle.
+• Market liquidity: All orders are ﬁlled at the requested price and thus without slippage.
+• Local worst case/best case: Worst case and best case decisions are determined locally, i.e.
+the proﬁt of a trade is evaluated as if it were closed on the close of the candle.
+• Local decision: The backtest engine decides only by considering the candle in question.
+Previous and future candles do not inﬂuence the decision made.
+Remark 2.2. Some of these assumptions are quite unreasonable for realistic price charts and
+markets. However, since the backtest engine has only candle data at hand, these assumptions
+are necessary and reasonable to decide a possible outcome of these market situations.
+To ease the understanding of the concepts presented, we will use an example throughout this
+work.
+Example 2.3. At the beginning of a candle, we might have no open position but two active
+orders, e.g. a stop buy entry order at level 53, which enters a long position if the price reaches
+53, and a protective stop loss order at level 51, which exits the long position (but only if it is
+opened beforehand) if the price falls below 51. Given an arbitrary candle, the backtest engine
+should now decide which of these orders is executed and whether or not there are open positions
+at the end of the candle.
+2.2. The setup and intra period prices
+We can formalize which orders are active and what the position is prior to the candle.
+Deﬁnition 2.4. Suppose we have m ∈ N orders at levels L1 < . . . < Lm, respectively, with
+Li ∈ R rounded to tick size of the asset for all 1 ≤ i ≤ m. Let p ∈ {−1, 0, 1} denote the position
+status which was present prior to the candle in question, where 0 stands for a ﬂat position, −1
+for a short position and 1 for a long position. A combination of such m orders and the position
+type p is called a setup.
+Page 3
+
+=== page 4 ===
+R. Löw, S. Maier-Paape, and A. Platen
+In the following we only consider setups which allow for at most one entry execution and
+one exit execution. The available entry orders are limit buy/sell and stop buy/sell, i.e. “Enter-
+LongLimit”, “EnterShortLimit”, “EnterLongStop” and “EnterShortStop”. As exit orders we use
+stop loss and proﬁt target (cf. [7, Section 2.2, 2.3 and 2.5] for the relevant decision trees). Note
+that we neglect market orders for entry and exit since they are trivially decidable. We do not
+investigate whether the results presented can be generalized to setups which allow for at most
+a entry and a exit executions, where 1 < a ∈ N, but analogous concepts might be applicable.
+Furthermore, we exclude the trivial case m = 0 in which no order is active.
+Now, we can formalize Example 2.3.
+Example 2.5. We use the combination of a stop buy entry (EnterLongStop) order at level
+L2 = 53 and a protective stop loss exit order at level L1 = 51 attached to that entry order with
+p = 0 as an example setup.
+For technical reasons only, the intra-period prices of a candle will be assumed to be continuous
+as follows, where we denote the set of all continuous functions g : A → B by C(A, B) and deﬁne
+R+ := {x ∈ R | x ≥ 0}.
+Deﬁnition 2.6. We call f ∈ C([a, b], R+) with a, b ∈ R and a < b an intra-period price
+function (IPF). By
+C(f ) :=
+(
+f (a), f (b), max
+t∈[a,b]
+f (t), min
+t∈[a,b]
+f (t)
+)
+∈ (R+)4
+we denote the corresponding candle of the IPF f .
+Here, a and b are interpreted as the starting time and ending time of a period which is
+summed up to a candle and f (t) as the price at time t for a ≤ t ≤ b. Obviously, for each candle
+c ∈ (R+)4 one can construct an IFP f such that C(f ) = c.
+2.3. Backtest engines and results
+Given an intra-period price function, we can deﬁne its result.
+Deﬁnition 2.7. We deﬁne the result of an IPF f with respect to a given setup as the combi-
+nation of (entryf , exitf ), where entry and exit result from the correct application of the orders
+of the given setup. If entry or exit do not occur, they are denoted by value −1, respectively.
+We denote the result of the IPF f by R(f ). Formally, for a given setup, this can be regarded
+as function
+R :
+⋃
+a,b∈R,a<b
+C([a, b], R+) → (R+ ∪ {−1})2. (1)
+With this, the combined candle data and result (CR) of f with respect to a given setup
+can be deﬁned as the combination CR(f ) := (C(f ), R(f )).
+Remarks 2.8. Note that results and CRs are deﬁned depending on IPFs, which means that all
+CRs correspond to intra-period prices which fulﬁll the ﬁrst two assumptions made in Assump-
+tions 2.1.
+For given setup and candle data (open, close, high, low), ﬁnding all possible results (entry,
+exit) can be reformulated as ﬁnding im(CR) ∩
+(
+{(open, close, high, low)} × R2) . Note that this
+set can have more than just one element, which means that the result for this candle is not
+unique.
+Page 4
+
+=== page 5 ===
+Correctness of Backtest Engines
+For a given ﬁxed setup, we can formalize the concept of a backtest engine used in this work.
+As we want to examine the behavior of a backtest engine on candle data, we can take such
+a candle as input data. The backtest engine should return a possible entry price at which a
+position may be opened and a possible exit price at which the position may be closed. Of course,
+entry or exit might not occur or might not have a price which can be uniquely determined (cf.
+Remark 2.8). Thus, the backtest engine also needs a “backtest decision mode” (short: backtest
+mode) which makes the entry and exit price unique.
+Deﬁnition 2.9. For BM := {best case, worst case, ignore} we interpret a value in (R+)4 ×
+BM as the combination of the candle data (open, close, high, low) ∈ (R+)4 and the backtest
+mode according to Assumptions 2.1.
+For a given setup, we call a mapping
+E : (R+)4 × BM → (R+ ∪ {−1})2
+a backtest engine.
+The result E(c0, M) ∈ (R+ ∪ {−1})2 for a candle c0 ∈ (R+)4 and a backtest mode M ∈ BM
+is interpreted as the combination of entry price and exit price, respectively, where again −1
+denotes no entry/no exit.
+Remark 2.10. On a particular chart, here a candle chart, the backtest engine of a platform
+decides the outcomes of a given strategy. It has to simulate scripts which are typically executed
+at the end of each candle and place orders. Furthermore, it has to keep track of placed orders
+and open positions. When all orders placed before a candle, which form the setup, are known,
+the backtest engine has to decide which of these orders are executed. Here, we consider only
+this last part of a backtest engine. So for us, a backtest engine E has only the candle data (and
+the setup) as input, whereas the result function R from (1) requires an IPF, i.e. intra-period
+data. Thus, E has to ﬁnd results which correspond to the given candle, i.e. for a given candle
+c0 the backtest engine has to ﬁnd a result r0 ∈ (R+ ∪ {−1})2 s.t. r0 = R(f ) and c0 = C(f )
+for an appropriate IPF f . The backtest mode speciﬁes which IPF has to be chosen if there are
+several results possible corresponding to the given candle.
+Continuing Example 2.5, we show these concepts in application.
+Example 2.11. Using the setup from Example 2.5 (stop buy entry order at L2 = 53, stop loss
+exit order at L1 = 51 with a ﬂat position before the candle, i.e. p = 0) and the IPF
+f :
+[
+0, 5 2 π ] → R+, t ↦→ sin(t) + 52,
+(see Figure 1 (a)) we obtain the CR
+(C(f ), R(f )) = (open = 52, close = 53, high = 53, low = 51, entryf = 53, exitf = 51).
+In this example, we can see the non-uniqueness of results, if only a candle is given, by
+considering the IPF
+g :
+[
+0, 3 2 π ] → R+, t ↦→ − sin(t) + 52,
+(see Figure 1 (b)) with the same resulting candle as for f , i.e. C(f ) = C(g), but the result
+R(g) = (entryg = 53, exitg = −1) ⁄= R(f ).
+Page 5
+
+=== page 6 ===
+R. Löw, S. Maier-Paape, and A. Platen
+51
+53
+0 5 2 π
+f
+(a) IPF f .
+51
+53
+0 3 2 π
+g
+(b) IPF g.
+Figure 1: IPFs from Example 2.11 with the resulting candles.
+Here, g corresponds to the best case for this candle and f to the worst case, as with a ﬁctional
+close of the candle we have for the cash value of f and g that
+close − entryg = close − 53 = 53 − 53 = 0 > −2 = 51 − 53 = exitf − entryf .
+At this point, we actually do not know whether there could be other cases, but for this setup
+there are at most 2 possible results for a given candle. Choosing a backtest mode M ∈ BM then
+makes the decision for the backtest engine unique and allows to either choose the result from f ,
+or from g or also to ignore this trade.
+Since we cannot check a backtest engine for each candle contained in the inﬁnitely dimensional
+space (R+)4 we need to reduce the problem to ﬁnitely many model candles. However, for this
+step we need the backtest engine to be stable under transformation of candles which we discuss
+in the next section.
+3. Suitable test cases for a proof of correctness
+In this section we want to examine whether or not a given backtest engine works correctly. For
+this goal, we design “model candles”, i.e. a set of ﬁnitely many candles which allow for a proof
+of correctness under the assumption of “stability under transformations”, a concept which will
+be introduced as well.
+In general, the values of a CR do not coincide with the levels of the underlying setup, but we
+observe that possible values for entry and exit prices are the open of the candle and the levels
+of the setup. The exact values of open, close, high and low are not important for the resulting
+entry and exit, but rather their position relative to the levels L1, . . . , Lm. We therefore deﬁne
+l2i−1 := Li for i = 1, . . . , m and introduce intermediate levels l2i with Li < l2i < Li+1 such that
+l0 < l1 < . . . < l2m. Restricting the candle data to these values results in a system of ﬁnitely
+many representative candles. We observe that the number of representative candles is at
+most (2m + 1)4, as open, close, high and low can only take the 2m + 1 values l0, . . . , l2m.
+Example 3.1. In Example 2.5, we may choose
+l0 := 50 < l1 = L1 = 51 < l2 := 52 < l3 = L2 = 53 < l4 := 54. (2)
+Figure 2 shows all representative candles for this setup.
+In order to further restrict the levels li to ﬁxed values, we need to introduce a notion of
+transformation from one set of levels to another one.
+Page 6
+
+=== page 7 ===
+Correctness of Backtest Engines
+l0
+l1
+l2
+l3
+l4
+Figure 2: All 105 possible candles with values in {l0, . . . , l4} from Example 3.1.
+Deﬁnition 3.2. A strictly monotonously increasing bijective function
+T : R+ → R+
+is in the following called a transformation. In order to apply a transformation to results, we
+set T (−1) := −1 for entries and exits.
+A transformation can be used to transfer setups, candles, IPFs, results and CRs from one set
+of levels to another one.
+Example 3.3. Continuing Example 3.1 with levels given in (2) and examining the correspond-
+ing CR (52, 51, 53, 51, 53, 51) of the IPF f from Example 2.11, we might apply the transforma-
+tion
+T : R+ → R+, t ↦→ 2t + 1.
+This results in a setup with the same orders but at levels
+˜l0 := 101 < ˜l1 = ˜L1 = 103 < ˜l2 := 105 < ˜l3 = ˜L2 = 107 < ˜l4 := 109
+and a transformation of the CR given by (105, 103, 107, 103, 107, 103) ∈ R6.
+Apparently, this tuple itself is a CR, i.e. it is derived from an IPF. This can be shown by
+using the IPF f from Example 2.11 and transforming it to T ◦ f .
+Now we introduce the main assumption about the given backtest engine, which will allow us
+to prove correctness of that backtest engine.
+Deﬁnition 3.4. We call a backtest engine E stable under transformations, if the following
+holds true for any given IPF f , transformation T and setup at levels L1, . . . , Lm:
+If the result of the backtest engine E with backtest mode M ∈ BM is given by
+E(C(f ), M) = (entry, exit),
+then the result of the backtest engine after transformation for the new setup at levels T (L1), . . . ,
+T (Lm) and the new IPF given by T ◦ f yields
+E(C(T ◦ f ), M) = (T (entry), T (exit)) =: T (entry, exit).
+Remark 3.5. For a backtest engine, it is desirable to be stable under transformations. This is
+due to the structure of orders which are independent of the exact levels but depend only on their
+relative values. The decision trees in [7], which outline how correct results for several order
+setups can be obtained, are also independent of the exact levels and only depend on relative
+values. Therefore the decision tree and thus also the corresponding results are naturally stable
+under transformations. We conclude that results only depend on relative positions of orders,
+or, formally, for all IPFs f we have R(T ◦ f ) = T (R(f )).
+Additionally, by the monotonicity of transformations, best cases remain best cases and worst
+cases remain worst cases under transformations, which can again be seen in the decision trees
+in [7].
+Page 7
+
+=== page 8 ===
+R. Löw, S. Maier-Paape, and A. Platen
+L1 = l1
+l2 = l2,1
+l2,2
+l2,3
+l2,4
+L2 = l3
+(a) “model candles”.
+L1 = l1
+l2
+L2 = l3
+(b) corresponding “representative candle”.
+Figure 3: An example of candles with values in {l2,j | j = 1, . . . , 4} (see Deﬁnition 3.6).
+From representative candles with values in {l0, . . . , l2m}, we can now cover almost all possible
+candles by applying transformations, but some important cases are missing: The “generic” can-
+dle has a range [low, high] that does not include any level from {L1, . . . , Lm} but nonetheless
+the values for open, close, high and low may diﬀer from each other (see Figure 3 (a) for exam-
+ples of such candles). These cases are not covered by the considerations made so far, but can
+easily be taken into account by the following considerations. Combining our observations, we
+arrive at the set of “model” candles we want to examine by introducing four intermediate levels
+between Li−1 and Li.
+Deﬁnition 3.6. Let a setup at levels L1, . . . , Lm be given. Furthermore, choose values l2i, l2i−1,
+l2i,j ∈ R+ for i = 1, . . . , m and j = 1, . . . , 4 with
+l0 = l0,1 < l0,2 < l0,3 < l0,4 < L0,
+l2i−1 := Li < l2i = l2i,1 < l2i,2 < l2i,3 < l2i,4 < l2i+1 := Li+1 for 1 ≤ i ≤ m − 1,
+Lm < l2m = l2m,1 < l2m,2 < l2m,3 < l2m,4.
+A model candle is a candle with values
+open, close, high, low ∈ {li | 0 ≤ i ≤ 2m} ∪ {l2i,j | 0 ≤ i ≤ m, 1 ≤ j ≤ 4}
+with the further restriction
+∀i ∈ {0, . . . , m} ∃ri ∈ {1, . . . , 4} : if {open, close, high, low} ∩ {l2i,j | 1 ≤ j ≤ 4} ⁄= ∅
+then {open, close, high, low} ∩ {l2i,j | 1 ≤ j ≤ 4} = {l2i,j | 1 ≤ j ≤ ri} . (3)
+Figure 3 shows examples of some candles, where in this extremal case we have up to 12 model
+candles for one of the representative candles introduced.
+In this way, we obtain suﬃciently many candles to cover the “generic” candles described
+above as well.
+Remarks 3.7. Condition (3) for the sublevels l2i,j is introduced to minimize the use of these
+additional levels by, ﬁguratively speaking, ﬁlling up the levels l2i,j for a ﬁxed i by increasing j
+as far as necessary. This reduces the total number of model candles.
+For an application of the construction, all values can be chosen equidistant. It is important
+to consider the tick size used and especially to not choose the sublevels l2i,j with too little
+Page 8
+
+=== page 9 ===
+Correctness of Backtest Engines
+distance. For example if we have a tick size of 0.01 we could choose li := 50.05 + i and
+l2i,j := 49.95 + 2i + 0.1j for i = 0, . . . , m, j = 1, . . . , 4, which allows us to also check for
+rounding errors.
+With all these preparations, we are now able to conduct a proof of correctness for given
+backtest engine and setup.
+Theorem 3.8. Let a backtest engine E be given which is stable under transformations for
+a setup at (ordered) levels L1 < . . . < Lm. If the backtest engine works correctly (e.g. for
+the criteria given in [7]) on the set of all model candles of this setup with ﬁxed li, l2i,j as in
+Deﬁnition 3.6, then it works correctly on this setup with any (ordered) levels ˜L1 < . . . < ˜Lm
+(and arbitrary candles).
+Proof. Let an arbitrary candle c = (open, close, high, low) ∈ (R+)4, ordered levels ˜L1, . . . , ˜Lm ∈
+R+ and a backtest mode M be given. Set (~entry, ~exit) := E(c, M).
+We have to show that (~entry, ~exit) is a correct result for the candle c, i.e. that there exists
+some IPF ˜f with c = C( ˜f) and R( ˜f) = (~entry, ~exit), or, if M = ignore and there is no unique
+result, that (~entry, ~exit) = (−1, −1).
+In order to do this let us deﬁne ˜l2i−1 := ˜Li for 1 ≤ i ≤ m and ˜l2i,j , ˜li ∈ R+ such that the
+requirements from Deﬁnition 3.6 are fulﬁlled and open, close, high, low ∈
+{
+˜li | 0 ≤ i ≤ 2m
+}
+∪{
+˜l2i,j | 0 ≤ i ≤ m, 1 ≤ j ≤ 4
+}
+which fulﬁll the minimal sublevel condition (3) for the level ˜l2i,j
+instead of l2i,j . Such a choice is obviously always possible.
+Now we construct a transformation T that transforms the setup at levels ˜Li to the setup at
+levels Li. This can be done by setting T (0) = 0, T (˜l2i−1) = l2i−1, T (˜l2i,j ) = l2i,j for i = 0, . . . , m
+and j = 1, . . . , 4 and interpolating piecewise linearly in between these values. Formally,
+T : R+ → R+, t ↦→
+
+
+
+l0,1
+˜l0,1 t, t < ˜l0,1,
+l2i,j + (t − ˜l2i,j ) l2i,j+1 −l2i,j ˜l2i,j+1 −˜l2i,j , ˜l2i,j ≤ t < ˜l2i,j+1, 0 ≤ i ≤ m, 1 ≤ j ≤ 3,
+li + (t − ˜li) li+1,1 −li ˜li+1,1 −˜li , ˜li ≤ t < ˜li+1,1, i odd,
+li−1,4 + (t − ˜li−1,4) li −li−1,4 ˜li −˜li−1,4 , ˜li−1,4 ≤ t < ˜li, i odd,
+l2m,4 − ˜l2m,4 + t, t ≥ ˜l2m,4.
+By construction, T is continuous, strictly monotonously increasing and bijective. Further-
+more, T (c) := (T (open), T (close), T (high), T (low)) is a model candle w.r.t. Li, li, li,j (cf. Fig-
+ure 4).
+By assumption, E works correctly on model candles w.r.t. Li, li, li,j . Therefore, we know that
+E(T (c), M) is the desired result of the model candle T (c) and (T (c), E(T (c), M)) the desired
+CR.
+If M = ignore and there is no unique result for T (c), this still holds true after applying the
+inverse transformation T −1, so we have (−1, −1) = E(T (c), M) = E(c, M) by stability under
+transformations, which is the correct result by Remark 3.5.
+Otherwise, i.e. M ⁄= ignore or the result for T (c) is unique, there exists an IPF f = fT (c),M
+(depending on T (c) and M only) such that C(f ) = T (c) and R(f ) = E(T (c), M), because each
+result corresponds to some IPF. Then clearly C(T −1 ◦ f ) = c. Therefore setting ˜f := T −1 ◦ f ,
+Page 9
+
+=== page 10 ===
+R. Löw, S. Maier-Paape, and A. Platen
+˜Li = ˜l2i−1
+˜l2i = ˜l2i,1
+˜l2i,2
+˜l2i,3
+˜l2i,4 ˜Li+1 = ˜l2i+1
+(a) Candle c and levels ˜Li , ˜li, ˜li,j .
+Li = l2i−1
+l2i = l2i,1
+l2i,2
+l2i,3
+l2i,4
+Li+1 = l2i+1
+(b) Candle T (c), a model candle w.r.t. Li, li , li,j .
+Figure 4: An example of the application of the transformation T on an arbitrary candle.
+we already have C( ˜f) = c as desired. Furthermore, applying the stability of E under the
+transformation T −1 (cf. Deﬁnition 3.4), we obtain
+(~entry, ~exit) def.= E(c, M) = E(C(T −1 ◦ f ), M) stability u.t. of E = T −1(E(C(f ), M)).
+Since, by construction, C(f ) = T (c) and R(f ) = E(T (c), M), we conclude from the stability
+under transformation of results (cf. Remark 3.5) that
+(~entry, ~exit) = T −1(E(T (c), M)) = T −1(R(f )) = R( ˜f),
+which is, again by Remark 3.5, the correct result.
+As c and ˜L1, . . . , ˜Lm were chosen arbitrarily, we conclude general correctness of E for this
+setup.
+Theorem 3.8 allows us to reduce the veriﬁcation of a stable backtest engine to simply check
+the backtest evaluation on one set of model candles. Therefore this set is focused in the next
+section.
+4. A model for intra-period prices
+Our goal in this section is to develop a model for IPFs which allows for only ﬁnitely many model
+price functions but still results in all possible CRs. The results for all CRs are needed to test
+a given backtest engine by comparing its results with correct results. They can be determined
+by the means of this section with the help of a correct reference backtest engine on the ﬁnitely
+many model price functions.
+We can restrict ourselves to model candles which do not take the values l2i,2, l2i,3, l2i,4, but
+only l2i = l2i,1 for all 1 ≤ i ≤ m, because, as we see below, we can reconstruct the results for
+the model candles with values in l2i,2, l2i,3, l2i,4.
+Remark 4.1. Let a setup and a backtest mode M be given.
+Furthermore, let c = (open, close, high, low) be a model candle w.r.t. the levels
+L := {li | 0 ≤ i ≤ 2m} ∪ {l2i,j | 0 ≤ i ≤ m, 1 ≤ j ≤ 4} ,
+i.e. c ∈ L4. We can obtain the result for c by ﬁrst applying the substitution
+l2i,j ↦→ l2i for all 0 ≤ i ≤ m, 1 ≤ j ≤ 4
+Page 10
+
+=== page 11 ===
+Correctness of Backtest Engines
+to c which leads to a new candle c′. Calculating the result r′ of c′ and then “re-substituting”
+l2i0 ↦→ l2i0 ,j0 in case l2i0 ,j0 = open of the candle c
+in r′ gives us the result r. Indeed, r is the desired result for c.
+This procedure is possible due to the fact that entry and exit can only occur at levels Li or at
+the open value.
+Example 4.2. Remark 4.1 can be illustrated for our setup from Example 2.5 (EnterLongStop
+at L2, stop loss at L1) with the model candle
+c := (open = l4,2, close = l4,1 = l4, high = l4,3, low = l3 = L2),
+which has the unique result r := (entry = open = l4,2, exit = −1). By substituting l4,j with l4
+for all 1 ≤ j ≤ 4, we get the representative candle
+c′ := (open′ = l4, close′ = l4, high′ = l4, low′ = l3 = L2)
+with the unique result r′ := (entry′ = open′ = l4, exit′ = −1). We can reconstruct r from r′ by
+substituting l4 = open′ ↦→ open = l4,2 in r′.
+The following model for intra period prices allows only for the values l0, . . . , l2m at certain
+interpolation points.
+Deﬁnition 4.3. An intra-period model price series (IPMS) w.r.t. a given setup is a ﬁnite
+sequence s := (li1 , . . . , lik ) with 0 ≤ ij ≤ 2m for all 1 ≤ j ≤ k and ij+1 = ij + 1 or ij+1 = ij − 1
+for all 1 ≤ j ≤ k − 1. We call |s| := k the size of the IPMS. By M := Mm, we denote the set
+of all IPMS w.r.t. a number of levels m.
+The connection with intra-period price functions is the following:
+Observation 4.4. Every IPMS s = (li1 , . . . , lik ) can be interpreted as an IPF by using piecewise
+linear interpolation as follows: Deﬁne f (s) : [1, k] → R+ by
+f (s)(t) := li⌊t⌋ + (t − ⌊t⌋)(li⌊t⌋+1 − li⌊t⌋ ), where lik+1 := lik ,
+such that f (s)(j) = lij for j = 1, . . . , k. Indeed, f (s) is continuous by construction.
+Through this connection, we deﬁne the result of an IPMS.
+Deﬁnition 4.5. For a given setup with m levels, we deﬁne
+R : M → (R+ ∪ {−1})2, s ↦→ R(f (s))
+and call R(s) the result of s.
+Similarly, by C(s) := C(f (s)) we denote the candle resulting from s.
+Example 4.6. In Example 2.5, an IPMS could be given by s := (l2 = 52, l3 = 53, l2 = 52, l1 =
+51, l2 = 52, l3 = 53). The corresponding piecewise linear IPF f (s) in a graphical representation
+is given in Figure 5.
+This example has the same CR as the IPF f in Example 2.11, which is generalized in the
+following theorem.
+Page 11
+
+=== page 12 ===
+R. Löw, S. Maier-Paape, and A. Platen
+50 = l0
+51 = l1
+52 = l2
+53 = l3
+54 = l4
+Figure 5: IPF f (s) for IPMS s in Example 4.6 with the resulting candle.
+Theorem 4.7. Every CR r ∈ {l0, . . . , l2m}4 × (R+ ∪ {−1})2 is the CR of an IPMS.
+Proof. Let f ∈ C([a, b], R+) be an IPF with C(f ) ∈ {l0, . . . , l2m}4 such that (C(f ), R(f )) = r
+for an arbitrary but ﬁxed CR r. Such an f exists by the deﬁnition of CRs, see Deﬁnition 2.7.
+In order to construct an IPMS with the same result r, we use piecewise linear interpolation:
+W.l.o.g. we assume that f assumes values in {l0, . . . , l2m} only at ﬁnitely many discrete points,
+because otherwise we can easily modify f in such a way without changing the CR r. Now
+deﬁne t1, . . . , tk s.t.
+tj < tj+1 for all 1 ≤ j ≤ k − 1,
+f (tj ) ∈ {l0, . . . , l2m} for all 1 ≤ j ≤ k, and
+f (t) /∈ {l0, . . . , l2m} for all t ∈ [a, b] \ {t1, . . . , tk} .
+Next, we remove all those tj from the {t1, . . . , tk} with f (tj ) = f (tj−1) (remember that one
+requirement for an IPMS s is that sj+1 ⁄= sj ) by deﬁning t′ j s.t.
+{
+t′ 1, . . . , t′ k′ } = {t1, . . . , tk} \ {tj | f (tj ) = f (tj−1)} and t′ j < t′ j+1 for all 1 ≤ j ≤ k′ − 1.
+By continuity of f and the intermediate value theorem, s := (f (t′ 1), . . . , f (t′ k′ )) is an IPMS and,
+again by the intermediate value theorem, R(s) = R(f ) = r.
+Example 4.6 gives actually the IPMS obtained from f in Example 2.11 by the construction
+in the proof of Theorem 4.7.
+For an algorithmic approach, we want to limit ourselves to ﬁnitely many IPMSs from which
+all CRs can be obtained. For this, we need to limit the size of the IPMSs.
+Deﬁnition 4.8. By Mn we denote the set of all CRs of IPMSs of size of at most n, i.e.
+Mn := {r | ∃s ∈ M, |s| ≤ n, r = (C(s), R(s))} .
+Now we can limit the size of IPMSs used to obtain all possible CRs for a given setup.
+Theorem 4.9. For given setup and n0 ∈ N, the following holds true: If Mn0 = Mn0 +1, then
+Mn = Mn0 for all n ≥ n0.
+Proof. We show that Mn = Mn+1 implies Mn+1 = Mn+2. Then, the claim follows inductively.
+For the following construction we perform four steps. An example for these steps are illus-
+trated in four images in Figure 6, respectively, to which we refer correspondingly.
+Page 12
+
+=== page 13 ===
+Correctness of Backtest Engines
+Let Mn = Mn+1 and s = (li1 , . . . , lin+2 ) be an IPMS of size n + 2 with CR r = (C(s), R(s)) =
+(open, close, high, low, entry, exit) ∈ Mn+2 (cf. Figure 6 (a)). We have to construct an IPMS
+of size of at most n + 1 which has the same CR r.
+Consider the IPMS s′ = (li1 , . . . , lin+1 ) which is the same IPMS as s but shortened by the
+last element, i.e. we have s = (s′, lin+2 ) (cf. Figure 6 (b)). The size of s′ is n + 1 and we denote
+its CR by r′ = (C(s′), R(s′)) = (open′, close′, high′, low′, entry′, exit′) ∈ Mn+1. By deﬁnition
+of an IPMS we have |close′ − lin+2 | = 1. By assumption we have r′ ∈ Mn, i.e. there exists an
+IPMS ¯s′ of size |¯s′| ≤ n with CR r′ (cf. Figure 6 (c)). W.l.o.g. let |¯s′| = n (otherwise, the same
+proof can be conducted with a diﬀerent index in use).
+We construct ¯s ∈ Rn+1 as the concatenation ¯s := (¯s′, lin+2 ) with CR ¯r = (C(¯s), R(¯s)) =
+(open, close, high, low, entry, exit) (cf. Figure 6 (d)). Indeed, ¯s is an IPMS, as ¯sn = ¯s′ n = close′
+and by deﬁnition |¯sn − ¯sn+1| = |close′ − lin+2 | = 1.
+We now claim that ¯s has the CR r, i.e. ¯r = r. By the structure as concatenation it is obvious
+that open = open′ = open and close = lin+2 = close. Furthermore, the high and low values
+can be determined as maximum and minimum, respectively:
+high = max
+{
+max ¯s′, lin+2 } C(¯s′)=C(s′ ) = max{high′, lin+2 } = max{li1 , . . . , lin+1 , lin+2 } = high,
+low = min
+{
+low′, lin+2 } = low.
+Therefore we have C(¯s) = C(s).
+If there is no entry for s, the same holds true for ¯s because the range [low, high] = [low, high]
+contains no level of an entry order. If the entry occurs during the ﬁrst n+ 1 interpolation points
+of s, we get entry = entry′ = entry. Otherwise the entry of s was executed on the (n + 2)nd
+interpolation point with value entry = lin+2 . Then entry′ is −1 and we obtain entry = lin+2 .
+Therefore entry = entry. Analogously, it follows that exit = exit.
+In conclusion, R(¯s) = R(s) and thus ¯r = r, but |¯s| = n + 1 and therefore r ∈ Mn+1.
+This allows for an algorithmic approach to ﬁnd all relevant CRs.
+Corollary 4.10. In order to obtain all possible CRs of model candles with values in {l0, . . . , l2m}
+for a given setup, it suﬃces to compute Mn0 , where n0 = min {n | Mn = Mn+1}.
+Proof. The claim follows from Theorem 4.7 and Theorem 4.9.
+Remark 4.11. In the proof of Theorem 4.9, we showed that for ¯s′ and s′ the equality
+(C(¯s′), R(¯s′)) = (C(s′), R(s′))
+carries forward after appending lin+2 as
+(C(¯s′, lin+2 ), R(¯s′, lin+2 )) = (C(s′, lin+2 ), R(s′, lin+2 )).
+Analogously and by induction, we obtain the following: If the CRs of two IPMSs s1 and s2 are
+the same, so are the CRs of all IPMSs obtained from s1 and s2 by concatenation of arbitrary
+consistent IPMSs, i.e. if C(s1) = C(s2) and R(s1) = R(s2) then
+for all k ∈ N, s3 ∈ Rk such that (s1, s3) and (s2, s3) are IPMSs, the following holds true:
+C((s1, s3)) = C((s2, s3)) and R((s1, s3)) = R((s2, s3)).
+Therefore an algorithm only needs to consider one of these IPMSs when appending other IPMSs,
+which yields an enormous speedup for the calculation of all model candles and their results.
+Page 13
+
+=== page 14 ===
+R. Löw, S. Maier-Paape, and A. Platen
+Example 4.12. Continuing Example 2.5, we can apply the results. In order to abbreviate
+notation, we set li := i here. Algorithmically we found the value n0 = 11 to be suﬃciently large
+in the sense of Corollary 4.10. The example for the constructions from the proof of Theorem 4.9
+shown in Figure 6 has the following data:
+s =(1, 2, 3, 4, 3, 2, 1, 0, 1, 2, 3, 4, 3), |s| = 13,
+(C(s), R(s)) = (open = 1, close = 3, high = 4, low = 0, entry = 3, exit = 1),
+s′ =(1, 2, 3, 4, 3, 2, 1, 0, 1, 2, 3, 4), |s′| = 12,
+(C(s′), R(s′)) = (open′ = 1, close′ = 4, high′ = 4, low′ = 0, entry′ = 3, exit′ = 1),
+¯s′ =(1, 2, 3, 2, 1, 0, 1, 2, 3, 4), |¯s′| = 10, (C(¯s′), R(¯s′)) = (C(s′), R(s′)),
+¯s =(1, 2, 3, 2, 1, 0, 1, 2, 3, 4, 3), |¯s| = 11, (C(¯s), R(¯s)) = (C(s), R(s)).
+0 = l0
+1 = l1
+2 = l2
+3 = l3
+4 = l4
+(a) Initial IPMS s.
+0 = l0
+1 = l1
+2 = l2
+3 = l3
+4 = l4
+(b) Shortened IPMS s′.
+0 = l0
+1 = l1
+2 = l2
+3 = l3
+4 = l4
+(c) IPMS ¯s′ with the same result as s′ , but smaller
+size.
+0 = l0
+1 = l1
+2 = l2
+3 = l3
+4 = l4
+(d) IPMS ¯s with the same result as s, but smaller
+size.
+Figure 6: Construction of smaller IPMS with the same CR (cf. Proof of Theorem 4.9 and
+Example 4.12).
+5. Conclusion
+In this work, we provided the utilities to test correctness of backtest engines for setups with
+at most one entry and one exit. By this many practical situations are covered, such as Enter-
+Long/Short Limit/Stop with accompanying intra-period stop loss and target orders.
+By constructing all relevant intra-period price functions, which we could limit to ﬁnitely many
+intra-period model price series (IPMSs), and then running a reference backtest for IPMSs, we
+can obtain the correct result for all model candles. Comparing these results with the results of
+a given backtest engine on all model candles, we can decide correctness of the backtest engine
+under the assumption of stability under transformations by the results of Section 3.
+Many of those concepts can be generalized to more complex situations with more than one
+entry or exit. It remains to be shown how our results can be transferred to these setups.
+Furthermore, in that case there would no longer necessarily be unique worst cases and best
+cases.
+Page 14
+
+=== page 15 ===
+Correctness of Backtest Engines
+Another extension of our work could be the consideration of other order types, e.g. OCO-
+orders (i.e. “one cancels other”), which would require a revision of the theory presented.
+Acknowledgement
+Robert Löw was funded by an Undergraduate Fund Project 2015, RWTH Aachen.
+References
+[1] D. H. Bailey, J. M. Borwein, M. L. de Prado, and Q. J. Zhu. The probability of backtest
+overﬁtting. Available at SSRN, DOI: 10.2139/ssrn.2326253, 2014.
+[2] D. H. Bailey, J. M. Borwein, M. L. de Prado, and Q. J. Zhu. Pseudo-
+mathematics and ﬁnancial charlatanism: The eﬀects of backtest overﬁtting
+on out-of-sample performance. Notices of the AMS, 61(5):458–471, 2014.
+http://www.ams.org/notices/201405/rnoti-p458.pdf.
+[3] P. P. Carr and M. L. de Prado. Determining optimal trading rules without backtesting.
+arXiv:1408.1159 [q-ﬁn.PM], 2014.
+[4] E. P. Chan. Quantitative Trading: How to Build Your Own Algorithmic Trading Business.
+Wiley trading series. John Wiley & Sons, Hoboken, 2009.
+[5] M. Harris. Proﬁtability and Systematic Trading. Wiley trading series. John Wiley & Sons,
+Hoboken, 2008.
+[6] S. Izraylevich and V. Tsudikman. Automated Option Trading: Create, Optimize, and Test
+Automated Trading Systems. FT Press, Upper Saddle River, NJ, 2012.
+[7] S. Maier-Paape and A. Platen. Backtest of trading systems on candle charts. To appear
+in IFTA Journal, 2016 Edition, 2014. arXiv:1412.5558 [q-ﬁn.TR].
+[8] J. Ni and C. Zhang. An eﬃcient implementation of the backtesting of trading strategies.
+In Y. Pan, D. Chen, M. Guo, J. Cao, and J. Dongarra, editors, Parallel and Distributed
+Processing and Applications, volume 3758 of Lecture Notes in Computer Science, pages
+126–131. Springer, Heidelberg, 2005. DOI: 10.1007/11576235_17.
+[9] R. Pardo. Design, Testing, and Optimization of Trading Systems. John Wiley & Sons,
+Hoboken, 1992.
+[10] R. Pardo. The Evaluation and Optimization of Trading Strategies. Wiley trading series.
+John Wiley & Sons, Hoboken, 2nd edition, 2008.
+Page 15

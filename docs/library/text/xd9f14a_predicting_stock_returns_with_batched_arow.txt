@@ -1,0 +1,423 @@
+=== page 1 ===
+Predicting Stock Returns with Batched AROW
+Rachid Guennouni Hassani♣1, Alexis Gilles♦2, Emmanuel Lassalle♥2
+and Arthur Dénouveaux♠2
+1École Polytechnique
+2Machina Capital
+March 23, 2020
+Abstract
+We extend the AROW regression algorithm developed by Vaits and Crammer
+in [VC11] to handle synchronous mini-batch updates and apply it to stock
+return prediction. By design, the model should be more robust to noise and
+adapt better to non-stationarity compared to a simple rolling regression. We
+empirically show that the new model outperforms more classical approaches by
+backtesting a strategy on S&P500 stocks.
+♣ rachid.guennouni-hassani@polytechnique.edu
+♦ agilles@machinacap.com
+♥ elassalle@machinacap.com
+♠ adenouveaux@machinacap.com
+1
+arXiv:2003.03076v2  [q-fin.CP]  20 Mar 2020
+
+=== page 2 ===
+1 Introduction
+Financial markets exhibit highly non-stationary behaviors, making it diﬃcult to build
+predictive signals that do not decay too rapidly (see [SCSG13, Con01] for empirical
+studies of return time series). A standard method for capturing these changes in time
+series data consists in using a rolling regression, that is, a linear regression model
+trained on a rolling window and kept as static model during a prediction period.
+However, the size of historical training data as well as the duration of the prediction
+period have a direct impact on the performance of the resulting model: using too
+many training data would result in a model that does not react quickly enough to
+sudden changes while short training and prediction windows would make the model
+unstable (see for instance [IJR17]).
+Online learning algorithms are suited to situations where data arrives sequentially.
+New information is taken into account by updating the model parameters in a
+supervised fashion. More precisely, an online learning algorithm repeats the following
+steps indeﬁnitely: receive a new instance xt, make a prediction ˆyt, receive the correct
+label yt for the instance and update the model accordingly.
+In the particular case of regression, online models are also good candidates to handle
+the non-stationarity inherent in ﬁnancial time series while keeping a certain memory
+of what has been learnt from the beginning. The recursive least squares (RLS)
+algorithm is a well known approach to online linear regression problems (e.g. [SD91]),
+yet it updates the model parameters using one sample at a time. However, building
+predictive models on stock markets, one should take into account the very low signal
+over noise ratio, and one way to do so is to ﬁt a single model for predicting all the
+stock returns of a trading universe (hence ﬁtting on much more data). It allows us to
+have more training data covering shorter periods, but it comes with the diﬃculty of
+updating the model parameters synchronously with all the data available at a given
+time.
+In this paper we extend AROW for regression ([VC11]), an algorithm similar to RLS,
+in order to take into account a batch of instances for the online update instead of
+doing one update per sample. Indeed the latter approach would introduce a spurious
+order in information that actually occur synchronously and should be captured as
+such. Like RLS (see [Hay96]), AROW suﬀers logarithmic regret in the stationary
+case, but also comes with a bound on regret in the general case. We test it on the
+universe of S&P500 stocks on a daily strategy and show it outperforms the rolling
+regression on the same set of features in backtest.
+2
+
+=== page 3 ===
+2 Adaptive Weight Regularization
+When training online models, we try to ﬁnd the right balance between reactivity to
+new information and accumulation of predictive power over time. For instance, the
+family of models introduced in [CDK+06] aggressively update their parameters by
+guaranteeing a certain performance on new data (expressed in terms of geometric
+margin). But even regularized versions of these algorithms do not take into account
+the fact that some features might be less noisy than others. In other words, they are
+not suited for cases where we would like updates to be more aggressive on particular
+parameters than on the rest of the weight vector.
+Subsequent online learning algorithms introduced in [DCP08] and [CKD13] maintain
+a Gaussian distribution on weight vectors representing the conﬁdence the model has
+in its parameters. From this point of view, the mean (resp. the variance) of the
+distribution represents the knowledge (resp. the conﬁdence in the parameters). In
+that framework, when receiving new feature vector and target (xt,yt), we would
+like the Gaussian parameters to be updated by solving the following optimization
+problem:
+(µt, Σt) = arg min
+µ,Σ
+DKL(N (µ, Σ) ∥ N (µt−1, Σt−1))
+s.t. Pw∼N (µ,Σ) 𝓁yt,w
+⊤
+xt ⩽ϵ ⩾η
+where DKL is the Kullback-Leibler divergence and 𝓁 is the classical mean square
+loss. The idea behind this optimization is to ﬁnd the minimal changes in knowledge
+and conﬁdence such that minimum regression performance is achieved with a given
+probability threshold η.
+Although that formulation is tractable (in particular there is an explicit formula for
+the KL divergence between two Gaussian distributions), it is not convex in µ and Σ.
+With AROW, Vaits and Crammer use a simpler but convex objective ([VC11]):
+C(µ, Σ) =DKL(N (µ, Σ) ∥ N (µt−1, Σt−1))+λ1𝓁(yt,µ
+⊤
+xt)+λ2x
+⊤
+t Σxt (1)
+where λ1 and λ2 are hyperparameters to adjust the tradeoﬀ between the three
+components of the objectives. These three components should be understood as
+follows:
+3
+
+=== page 4 ===
+1. the parameters should not change much per update;
+2. the new model should perform well on the current instance;
+3. the uncertainty about the parameters should reduce as we get additional data.
+As such, the model is well suited for non-stationary regression. However the updates
+only take into account a single instance at the time. Because we want a single model
+for all the stocks here, we need to extend this approach to synchronously update the
+parameters on all cross-sectional information available at a given time, which is the
+purpose of the next section.
+3 Synchronous Batch Updates
+We now assume that between the updates at times t and t−1, we have K synchronous
+instances (xk t,yk t), k= 1,...,K of the features and targets. They correspond to the
+observation of a complete universe of stocks at a given time. Applying an AROW
+update would introduce a fake order between the instances and potentially hurt the
+performance (see Section 5 for more details). In order to take into account all the new
+information at once in a single batch, we extend the cost function from equation 1 as
+follows:
+C(µ, Σ) =DKL(N (µ, Σ) ∥ N (µt−1, Σt−1))
++ λ1
+K
+K
+=
+k=1
+𝓁y
+k
+t,µ
+⊤
+x
+k
+t+ λ2 Kx k t ⊤ Σx k t .
+For simplicity of presentation, we set λ1 =λ2 = 1 2r where r> 0 and R=rK. Using
+DKLN (µ1, Σ1) ∥ N (µ2, Σ2)	 = 1 2 log det Σ2 det Σ1 
++ Tr(Σ
+−1
+2 Σ1)
++ 1 2(µ2 −µ1) ⊤ Σ −1 2 (µ2 −µ1)− d 2 ,
+and setting
+Xt = [x
+1
+t⋯x
+K
+t ]
+⊤
+, Yt = [y
+1
+t⋯y
+K
+t ]
+⊤
+.
+4
+
+=== page 5 ===
+we get, remembering that 𝓁 is the mean square loss,
+C(µ, Σ) =1 2 log det Σt−1 det Σ 
++ 1 2 Tr(Σ −1 t−1Σ)+ 1 2(µt−1 −µ) ⊤ Σ −1 t−1(µt−1 −µ)
+− d 2 + 1 2R ∥Yt −µ ⊤ Xt∥ 2 + Tr(XtΣX ⊤ t ) .
+The main result of this article is the following: minimizing the cost function C has an
+explicit solution given by
+Σt = Σt−1 − Σt−1X
+⊤
+t R Idd+XtΣt−1X
+⊤
+t 
+−1
+XtΣt−1
+µt =µt−1 − Σt−1X
+⊤
+t R Idd+XtΣt−1X
+⊤
+t 
+−1
+(Xtµt−1 −Yt) .
+(2a)
+(2b)
+From now on we refer to this batch version of AROW as BAROW, and detail the
+steps to the solution in the next section.
+4 Deriving the Update Formulas
+As for AROW, BAROW’s cost function C is convex. To prove 2a and 2b it is thus
+enough to look at the critical points of C. We start by computing ∂C/∂Σ and, using
+formulas from [PP12] chapter 2, we ﬁnd
+∂C
+∂Σ(µ, Σ) =−1 2 Σ −1 − Σ −1 t−1 − 1 RX ⊤ t Xt
+ .
+The Kailath variant of the Woodbury identity (see [PP12] chapter 3) yields
+Σ
+−1
+t−1 + 1 RX ⊤ t Xt
+−1
+= Σt−1 − Σt−1X
+⊤
+t R Id +XtΣt−1X
+⊤
+t 
+−1
+XtΣt−1
+and allows us to deduce that ∂C/∂Σ vanishes for
+Σ = Σt−1 − Σt−1X
+⊤
+t R Id +XtΣt−1X
+⊤
+t 
+−1
+XtΣt−1 ,
+which is formula 2a.
+5
+
+=== page 6 ===
+Similarly, one ﬁnds
+∂C
+∂µ(µ, Σ) = Σ
+−1
+t−1(µ−µt−1)+ 1 R(X ⊤ t Xtµ−X ⊤ t Yt),
+so that ∂C/∂µ= 0 if and only if
+µ= Σ
+−1
+t−1 + 1 RX ⊤ t Xt
+−1
+Σ
+−1
+t−1µt−1 + 1 RX ⊤ t Yt
+= Σ
+−1
+t−1 + 1 RX ⊤ t Xt
+−1
+Σ
+−1
+t−1µt−1 + 1 R Σ −1 t−1 + 1 RX ⊤ t Xt
+−1
+X
+⊤
+t Yt.
+We deal with the two terms separately. For the ﬁrst one we use again the Kailath
+variant of the Woodbury equality and get
+Σ
+−1
+t−1 + 1 RX ⊤ t Xt
+−1
+Σ
+−1
+t−1µt−1 = Id −Σt−1X
+⊤
+t (R Id +XtΣt−1Xt)
+−1
+Xtµt−1
+=µt−1 − Σt−1X
+⊤
+t (R Id +XtΣt−1Xt)
+−1
+Xtµt−1 .
+For the second term, ﬁrst notice that:
+Σ
+−1
+t−1 + 1 RX ⊤ t Xt
+ Σt−1X
+⊤
+t = X
+⊤
+t + 1 RX ⊤ t XtΣt−1X ⊤ t 
+= 1 RX ⊤ t R Id +XtΣt−1X ⊤ t 
+so that
+Σ
+−1
+t−1 + 1 RX ⊤ t Xt
+ Σt−1X
+⊤
+t R Id +XtΣt−1X
+⊤
+t 
+−1
+Yt
+is equal to
+1
+RX
+⊤
+t R Id +XtΣt−1X
+⊤
+t R Id +XtΣt−1X
+⊤
+t 
+−1
+Yt.
+Simplifying (R Id +XtΣt−1X ⊤ t ) we get
+1
+R Σ
+−1
+t−1 + 1 RX ⊤ t Xt
+−1
+X
+⊤
+t Yt = Σt−1X
+⊤
+t R Id +XtΣt−1X
+⊤
+t 
+−1
+Yt.
+Finally, combining the two terms, we get
+µ=µt−1 − Σt−1X
+⊤
+t (R Id +XtΣt−1Xt)
+−1
+Xtµt−1 + Σt−1X
+⊤
+t R Id +XtΣt−1X
+⊤
+t 
+−1
+Yt
+=µt−1 − Σt−1X
+⊤
+t (R Id +XtΣt−1Xt)
+−1
+(Xtµt−1 −Yt),
+which was the claimed formula.
+6
+
+=== page 7 ===
+5 Backtesting a Strategy using BAROW
+BAROW combines the adaptability of AROW to non-stationary data and the ad-
+vantage of taking into account all new information synchronously. We tested the
+model against two baselines as return predictor for a trading strategy on the S&P500
+universe.
+We backtested a long-short strategy taking daily positions proportional to the predic-
+tion generated by a regression model on stock returns and showed it outperforms the
+following baselines:
+1. A rolling regression updated daily and using the past 12 months of data for
+training.
+2. AROW regression with single instance updates (500 updates per day).
+Figure 1 – Estimated Return of each model
+7
+
+=== page 8 ===
+We ran the backtest on 2,250 days from 2011 to 2019, allowing a burn-in period of 12
+months for AROW and BAROW before starting to use them as return predictors.
+We also tweaked the R hyperparameter on 2010 for AROW and BAROW. To avoid
+the strategy having too high sensitivity to market moves, we neutralized daily returns
+using a multi-factor model (including beta, volatility and a variety of other indicators,
+see [KL15] for a detailed discussion about risk models). These neutralized returns
+are the regression targets yt. We used features based on MACD indicators such as
+those described in [CNL14].
+We estimated daily returns of a strategy taking positions proportional to the pre-
+dictions as the cross-sectional correlation between the predictions and the realized
+returns, multiplied by the cross-sectional standard deviation of the returns.
+As expected, we can see that the baseline using AROW updates stock per stock is
+not suited to learn a generic predictor for the universe. Its cumulative return appears
+random compared to the two other models. That empirically justiﬁes the batch
+update computed in BAROW.
+Now if we compare BAROW to the rolling linear regression, we directly see that
+performances drift away from each other. BAROW signiﬁcantly outperforms the
+baselines, illustrating the beneﬁts of online learning models for non-stationary data.
+model Return Sharpe MaxDD Calmar
+AROW 0.5% 0.1 -3.02% 0.18
+Linear 31.3% 4.0 -0.58% 53.6
+BAROW 38.1% 5.1 -0.61% 62.2
+Table 1 – Performance statistics of each model
+We provide some usual performance statistics in table 1. Speciﬁcally, we report
+the total return over the period, the Sharpe ratio of expected return (Sharpe), the
+maximum drawdown (MaxDD), and the Calmar ratio (Calmar, deﬁned as return
+over the period divided by MaxDD). One should be aware that using such short
+targets to predict induces a very high turnover in the portfolio, resulting in lower net
+performance after transaction costs are applied.
+8
+
+=== page 9 ===
+6 Discussion
+Our BAROW algorithm outperformed its baseline in a backtest, yet the question
+of how Σ impacts the model updates remains. The model forces Σ to converge,
+causing the model to be less and less able to adapt quickly. That trade-oﬀ between
+adaptability and robustness might not be the right one in volatility periods when one
+could require more dynamic updates. One way to address it is to schedule reset of
+the covariance matrix as experimented in [VC11]. In our case it might be beneﬁcial
+to reset the covariance matrix conditionally on any market event we consider as a
+trigger for more dynamic updates.
+The outperformance of BAROW vs its baseline and the adaptability/robustness
+trade-oﬀ mentioned above could both be further analyzed by increasing the backtest
+frequency (e.g. 1-min bars). A higher frequency would likely enable shorter training
+and prediction windows, hereby enhancing the potential overperformance of BAROW
+vs the linear baseline.
+Also, the backtest results described above are a mere sum of single-stock returns and
+do not include any form of risk management at the overall portfolio level, which could
+further enhance the risk-adjusted performance of each approach.
+Finally, it is worth pointing out that BAROW results are signiﬁcantly impacted by
+the method used to neutralize returns that serve as the regression target. Usual
+standardization methods have exhibited periods of higher correlation of residuals in
+recent years. These likely stem from stakeholders relying on similar risk models and
+an ever-spreading use of machine learning type of strategies.
+References
+[CDK+06] Koby Crammer, Ofer Dekel, Joseph Keshet, Shai Shalev-Shwartz, and
+Yoram Singer. Online passive-aggressive algorithms. J. Mach. Learn. Res.,
+7:551–585, 2006.
+[CKD13] Koby Crammer, Alex Kulesza, and Mark Dredze. Adaptive regularization
+of weight vectors. Machine Learning, 91(2):155–187, May 2013.
+[CNL14] Terence Chong, Wing-Kam Ng, and Venus Liew. Revisiting the per-
+formance of macd and rsi oscillators. Journal of Risk and Financial
+Management, 7(1):1–12, Feb 2014.
+9
+
+=== page 10 ===
+[Con01] Rama Cont. Empirical properties of asset returns: stylized facts and
+statistical issues. Quantitative Finance, 1:223–236, 2001.
+[DCP08] Mark Dredze, Koby Crammer, and Fernando Pereira. Conﬁdence-weighted
+linear classiﬁcation. In Proceedings of the 25th international conference
+on Machine learning - ICML ’08, pages 264–271, Helsinki, Finland, 2008.
+ACM Press.
+[Hay96] Monson H. Hayes. Statistical Digital Signal Processing and Modeling. John
+Wiley & Sons, Inc., USA, 1st edition, 1996.
+[IJR17] Atsushi Inoue, Lu Jin, and Barbara Rossi. Rolling window selection
+for out-of-sample forecasting with time-varying parameters. Journal of
+Econometrics, 196(1):55 – 67, 2017.
+[KL15] Zura Kakushadze and Jim Liew. Custom v. standardized risk models.
+Risks, 3(2):112–138, May 2015.
+[PP12] K. B. Petersen and M. S. Pedersen. The matrix cookbook, nov 2012.
+Version 20121115.
+[SCSG13] Thilo A. Schmitt, Desislava Chetalova, Rudi Schäfer, and Thomas Guhr.
+Non-stationarity in ﬁnancial time series: Generic features and tail behavior.
+EPL (Europhysics Letters), 103(5):58003, sep 2013.
+[SD91] L.L. Scharf and C. Demeure. Statistical Signal Processing: Detection,
+Estimation, and Time Series Analysis. Addison-Wesley series in electrical
+and computer engineering. Addison-Wesley Publishing Company, 1991.
+[VC11] Nina Vaits and Koby Crammer. Re-adapting the Regularization of Weights
+for Non-stationary Regression. In Algorithmic Learning Theory, pages
+114–128, 2011.
+10

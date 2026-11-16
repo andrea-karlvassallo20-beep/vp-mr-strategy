@@ -1,0 +1,1632 @@
+=== page 1 ===
+Simulating and analyzing a sparse order book: an application to
+intraday electricity markets
+Philippe Bergault∗ Enzo Cognéville†
+Abstract
+This paper presents a novel model for simulating and analyzing sparse limit order books (LOBs), with
+a specific application to the European intraday electricity market. In illiquid markets, characterized by
+significant gaps between order levels due to sparse trading volumes, traditional LOB models often fall
+short. Our approach utilizes an inhomogeneous Poisson process to accurately capture the sporadic nature
+of order arrivals and cancellations on both the bid and ask sides of the book. By applying this model to the
+intraday electricity market, we gain insights into theunique microstructural behaviors andchallengesof this
+dynamic trading environment. The results offer valuable implications for market participants, enhancing
+their understanding of LOB dynamics in illiquid markets. This work contributes to the broader field
+of market microstructure by providing a robust framework adaptable to various illiquid market settings
+beyond electricity trading.
+Key words: Algorithmic trading, limit order books, market microstructure, Poisson processes, liquidity,
+volatility, market simulator, electricity intraday prices.
+1 Introduction
+The study of limit order books (LOBs) is fundamental to understanding the microstructure of financial mar-
+kets. A LOB records all outstanding buy and sell orders, providing a detailed snapshot of market supply and
+demand at various price levels. While much research has focused on liquid markets, where trading is frequent
+and order books are dense, illiquid markets present a different set of challenges. In illiquid markets, trading
+volumes are sparse, and orders are infrequent, resulting in LOBs with significant gaps between order levels.
+This sparsity can greatly impact market dynamics, price formation, and trading strategies.
+Illiquid LOBs are characterized by large gaps between price levels due to the irregular and sparse nature of
+order placements and cancellations. The lack of continuous order flow requires models that can accurately
+capture the structural gaps and discontinuities within the LOB. Traditional models, which often assume a
+more liquid and continuously active market with a large tick-to-spread ratio, may not be suitable for these
+settings. Instead, there is a need for models that reflect the sparse distribution of orders and capture the
+distinctive characteristics of trading in illiquid markets.
+The first empirical analysis of LOB dynamics can be dated back to the end of the 20th century, see for
+instance Biais et al. [5], Luckock [25], and Maslov [26]. With a focus on liquid stocks, Bouchaud et al. [7] and
+Potters and Bouchaud [28] study statistics of incoming limit order prices, the shape of the average LOB, the
+typical lifetime of a limit order as a function of the distance from the best price, as well as the price impact
+∗Université Paris Dauphine-PSL, CEREMADE, 75775 Paris Cedex 16, bergault@ceremade.dauphine.fr.
+†EDF R&D & FiME, enzo.cogneville@edf.fr.
+1
+arXiv:2410.06839v1  [q-fin.TR]  9 Oct 2024
+
+=== page 2 ===
+function, for which they demonstrate a logarithmic dependence on the volume traded. The price impact of
+specific order book events is studied in more depth in Eisler et al. [14]. A tractable LOB model based on
+a multiclass queueing system is proposed in Cont et al. [11], and is then used to compute various transition
+probabilities of the price conditional on the state of the LOB. Several papers such as Cont and De Larrard
+[9] or Chávez-Casillas and Figueroa-López [8] focus on the dynamics of the best bid and ask limits, allowing
+them to propose a very parsimonious model that still captures the main properties of the price process. Using
+an approach similar to that of Cont et al. [11], the authors of Abergel and Jedidi [1] show the importance
+of the cancellation structure in the stability of the LOB and study the diffusive limit of the price process.
+In Abergel and Jedidi [2], they generalize their approach to incorporate Hawkes processes with exponential
+kernels instead of standard Poisson processes (see also the book Abergel et al. [3]). Huang et al. [20] intro-
+duces the queue-reactive model, in which the intensities of the flows depend on the state of the LOB. This
+approach is extended in Huang and Rosenbaum [22], in which the authors also study the system’s ergodicity
+and the asymptotic scaling limit of the price process. A different approach is used in Kelly and Yudovina
+[23], where the bid and ask limit orders arrive as independent Poisson processes and the associated prices
+are i.i.d. random variable; in this sense, this model is the closest to the one proposed in our paper (see also
+Muni Toke and Yoshida [27] for a model close to the one we propose here). An agent-based model is proposed
+in Huang et al. [21], relying on the interactions between a noise trader, an informed trader, and market
+makers. In the proposed framework, the whole order book shape can be derived from these simple interac-
+tions. Horst and Kreher [18] and Horst and Paulsen [19] obtain fluid limits for the LOB dynamics and prove
+convergence of the price-volume process to coupled ODE-PDE systems. More recently, Cont and Müller [10]
+introduced a continuous approximation of the limit order book, where the dynamics is governed by a system
+of stochastic partial differential equations (see Baldacci and Bergault [4] for an application of this framework
+to a problem of market making regulation). All those papers have in a common a focus on very liquid assets,
+for which the bid-ask spread as well as the gaps between price levels correspond to a very small number of ticks.
+In this paper, we propose a novel model for simulating and analyzing sparse limit order books. Our approach
+leverages an inhomogeneous Poisson process to model the arrival of market orders, limit orders, and cancella-
+tions on both the bid and ask sides of the LOB. This framework allows us to incorporate the sporadic nature
+of order flows, providing a more accurate representation of dynamics in illiquid markets where significant
+gaps between order levels are common. To demonstrate the applicability and robustness of this model, we
+apply it to the European intraday electricity market. This market has undergone substantial transformations
+in recent years, driven by the increasing integration of renewable energy sources, market liberalization, and
+technological advancements in trading mechanisms. By modeling the LOB in this context, we aim to gain
+deeper insights into the unique behaviors and challenges of trading in the intraday electricity market.
+Intraday electricity markets emerged at the beginning of the 21st century in Europe. Since 2018, the European
+Cross-Border Intraday Solution (XBID) connects the intraday markets of 14 countries, thus bringing more
+liquidity to those very illiquid markets. The behavior of those markets has been an active field of academic
+research since then. Using Hawkes processes, Favetto [15] and Graf von Luckner and Kiesel [16] show that the
+order book activity increases exponentially as time approaches maturity. The dynamics of intraday electricity
+prices has been studied in Deschatre and Warin [13] using a common shock Poisson model that allows the
+authors to reproduce the correlation structure as well as the Samuelson effect, i.e. the increase of volatility
+as time to maturity decreases. With a different approach based on marked Hawkes processes, Deschatre and
+Gruet [12] proposes an alternative model for the price dynamics and are able to reproduce some stylized facts
+such as the Samuelson effect.
+Our study contributes to the existing literature in several ways. First, it provides a comprehensive exami-
+nation of LOB dynamics in illiquid markets, addressing a significant gap in market microstructure research.
+2
+
+=== page 3 ===
+Second, our model offers a robust framework for simulating order flows and cancellations, adaptable to various
+illiquid market settings beyond electricity trading. Third, our empirical analysis and simulation results offer
+practical insights for market participants, including traders, regulators, and policymakers, who must navigate
+the complexities of intraday electricity markets.
+The structure of this paper is as follows: Section 2 presents an empirical analysis of the behavior of LOBs
+on the intraday electricity market, using data provided by EPEX Spot. Section 3 outlines the theoretical
+framework of our proposed model, detailing the assumptions and mathematical foundations underpinning the
+inhomogeneous Poisson process. Section 4 discusses the simulation results, providing a comprehensive anal-
+ysis of the LOB dynamics, their implications for market participants, and our suggestions for future research
+directions.
+2 Behavior of the order book
+This section draws heavily from the work of Deschatre and Gruet [12] and Deschatre and Warin [13], due to
+the reproducibility of their results and their straightforward approach to understanding the characteristics of
+the electricity market.
+2.1 Dataset
+To conduct our study, we use European electricity market data sourced from EPEX Spot, focusing specifically
+on the German and French markets. Each day at 3 p.m., 24 distinct markets open, each corresponding to an
+hour-long delivery period for the following day. These markets, termed products, end their trading periods
+5 minutes before what we define as maturity. For instance, the product 18H denotes data from the delivery
+period starting at 6 p.m. and ending at 7 p.m. in the respective country. Although markets also exist for
+30-minute and 15-minute delivery periods, we have not incorporated these into our analysis. Our study ex-
+clusively employs the 2021 dataset, encompassing daily files that comprehensively logs all market interactions
+across products [0H to 23H].
+This dataset includes detailed information on market orders, limit orders, cancellations, price changes, vol-
+ume changes, as well as specifics regarding the product and its corresponding delivery period. Initially, we
+reconstructed the supply curve for every instance of market activity by using a method close to the one
+described by Grindel and Graf von Luckner [17]. Utilizing this reconstructed data, we can instantaneously
+ascertain the rank of each limit order at any given time. We consider the mid-price as the arithmetic aver-
+age of the best ask price and the best bid price. Consequently, if there is no liquidity on one side (bid or
+ask) there is no mid-price. The tick size is 0.01e/MWh, and the used timestamp is accurate to one millisecond.
+One hour before delivery, cross-border trading is not possible anymore. This change impacts liquidity and,
+consequently, price behavior. For this reason, we do not use data provided in this last hour.
+To provide a comprehensive market overview, we present several statistical graphs. Figure 1 illustrates the
+evolution of the mid-price throughout a trading session, demonstrating a notable increase in liquidity over
+time. This observation is further supported by Figure 2, which depicts the intensity of market movements.
+2.2 Increasing intensity of actions on the market
+Numerous studies, including those by Favetto [15] and Graf von Luckner and Kiesel [16], have documented the
+exponential growth of order book activity in electricity markets over trading periods. This time-dependent
+3
+
+=== page 4 ===
+01-06 16H 01-06 20H 01-07 00H
+Date
+45
+50
+55
+60
+65
+70
+75
+80
+85Price ( .MWh ¹)
+Product
+3H
+2H
+1H
+0H
+01-06 18H 01-07 00H 01-07 06H 01-07 12H
+Date
+80
+90
+100
+110
+120Price ( .MWh ¹)
+Product
+15H
+14H
+13H
+12H
+Figure 1: Intraday mid-prices evolution for the trading session on January 07, 2021
+11.0 8.5 6.0 3.5 1.0
+Time to maturity (h)
+0
+100
+200
+300
+400
+500Intensity (h 1)
+Product
+3H
+2H
+1H
+0H
+23.0 16.3 9.7 3.0
+Time to maturity (h)
+0
+200
+400
+600
+800
+1000Intensity (h 1)
+Product
+15H
+14H
+13H
+12H
+Figure 2: Mean intensity of interactions with the market on January, 2021
+exponential intensity in price changes has been observed in research by Deschatre and Gruet [12], as well
+as Deschatre and Warin [13]. Our analysis of the data confirms an exponential increase in price change
+intensity as the time to maturity decreases. Moreover, this Samuelson effect extends beyond price changes to
+encompass all market interactions, as depicted in Figure 2. For a given maturity, the corresponding intensity
+curve has been calculated from the average number of interaction changes over a trading session with a 10-
+minute windows. This observation was also spotted on other maturities and in the two countries considered
+(France and Germany).
+2.3 Sparsity and illiquidity
+As observed in the last section, the liquidity of the electricity market appears to be limited. This is illustrated
+in Figure 3. Following the methodology of Blais and Protter [6], we made a movie of the evolution of the
+supply curve throughout a trading session. We saw that the supply curve become more linear at the end of
+session, while retaining nonlinearity for larger volumes. Concurrently, we observed a reduction in spread, as
+4
+
+=== page 5 ===
+800
+ 600
+ 400
+ 200
+ 0 200 400 600 800
+Cumulated volume (MWh)
+200
+0
+200
+400
+600
+800
+Mean price per MWh
+Side
+ask
+bid
+(a) Entire liquidity curve
+75
+ 50
+ 25
+ 0 25 50 75
+Cumulated volume (MWH)
+90
+95
+100
+105
+110
+115Mean price per MWh
+Side
+ask
+bid (b) Zoomed liquidity curve
+Figure 3: Liquidity curve on January 07, 2021, for product 18H, 2 hours before maturity
+01-06 14H 01-06 16H 01-06 19H 01-06 21H
+Date
+0
+5
+10
+15
+20
+25
+30
+35Spread ( )
+Product
+1H
+0H
+01-06 14H 01-06 19H 01-07 00H 01-07 04H 01-07 09H
+Date
+0
+5
+10
+15
+20
+25
+30
+35Spread ( )
+Product
+13H
+12H
+Figure 4: Spread evolution on January 07, 2021
+depicted in Figure 4 and Figure 5. Notably, Figure 3b highlights a distinct nonlinearity for volumes beyond
+[-75; 50] MWh. Additionally, while trading volumes tend to rise towards session ends, they consistently fail to
+sufficiently fill most tick prices adjacent to the mid-price. This chronic liquidity deficit is further underscored
+by the sparse distribution of open orders at any given time t, as depicted in Figure 6. Consequently, the
+scarcity of available limit orders across price ticks renders the models referenced in introduction (Section 1)
+impractical for our analysis.
+3 Mathematical model for a sparse order book
+Let T > 0 be the time at which the market closes, and K ∈ N⋆. We consider a 2K−dimensional process
+( ¯St)t =
+
+S−K t , . . . , S−1 t , S1 t , . . . , SK t
+
+t
+representing the K best prices at the bid and at the ask, respectively.
+More precisely, for k = 1, . . . , K and t ∈ [0, T ], S¯k t represents the k−th best bid price and Sk t represents the
+k−th best ask price.
+5
+
+=== page 6 ===
+0.0 0.2 0.4 0.6 0.8
+Time to maturity (s 1)
+5
+10
+15
+20
+25
+30
+35Spread ( )
+Product
+17H
+18H
+19H
+Figure 5: Average spread values by normalized time to maturity on 2021
+76 78 80 82 84 86 88
+Price ( )
+0.0
+2.5
+5.0
+7.5
+10.0
+12.5
+15.0
+17.5Volume (MWh)
+Side
+Ask
+Bid
+Figure 6: Top four available limit orders on both sides of the LOB on May 5th, 2021, for product 18H, 2
+hours before maturity
+For t ∈ [0, T ] we denote by S0 t and St the mid-price and the spread, respectively, at time t, i.e.
+S0 t = S−1 t + S1 t 2 , and St = S1 t − S−1 t .
+We also introduce the 2K-dimensional process ( ¯Vt)t =
+
+V −K t , . . . , V −1 t , V 1 t , . . . , V K t
+
+t
+representing the vol-
+umes associated with each of the prices above.
+Finally, we introduce the cumulative volumes
+  ¯Vt  t =  V −K t , . . . , V −1 t , V 1 t , . . . , V K t  t given for k = 1, . . . , K by
+V −k t =
+kX
+i=1
+V −i t , and V k t =
+kX
+i=1
+V i t .
+3.1 Market orders
+We introduce N −M
+
+dt, dξ, QK−1 k=1 dzk, QK−1 k=1 dζk  and N M  dt, dξ, QK−1 k=1 dzk, QK−1 k=1 dζk  the two marked
+point processes modeling the arrival of market orders at the bid and at the ask. The size of each market order
+6
+
+=== page 7 ===
+is modeled by a random variable. Moreover, every time the first limit at the bid or at the ask are consumed,
+all the limits are shifted, and we need to introduce a new K−th limit. The volume at this new K−th limit as
+well as its distance to the previous K−th limit are modeled by a two random variables that are drawn at the
+time of the market order. Note that there might be several limits to introduce if several limits are consumed
+by the market order ; to deal with this issue, we always draw K − 1 new limits and then only use the limits
+that we actually need.
+Mathematically, we assume that N ¯M
+
+dt, dξ, QK−1 k=1 dzk, QK−1 k=1 dζk  and N M  dt, dξ, QK−1 k=1 dzk, QK−1 k=1 dζk 
+have intensity kernels
+
+ν−M t (dξ, QK−1 k=1 dzk, QK−1 k=1 dζk)  t and  νM t (dξ, QK−1 k=1 dzk, QK−1 k=1 dζk)  t respectively given by:
+ν−M t
+ 
+dξ,
+K−1Y
+k=1
+dzk,
+K−1Y
+k=1
+dζk
+!
+= λ−M (t, St−)ϕ−M (ξ, V −K t− )dξ
+K−1Y
+k=1
+ 
+f −K−1(t, zk)ϕ−K−1(ζk)dzkdζk  ,
+and
+νM t
+ 
+dξ,
+K−1Y
+k=1
+dzk,
+K−1Y
+k=1
+dζk
+!
+= λM (t, St−)ϕM (ξ, V K t−)dξ
+K−1Y
+k=1
+ 
+f K+1(t, zk)ϕK+1(ζk)dzkdζk  ,
+where
+• λ−M and λM are deterministic functions representing the intensity of arrival of market orders at the
+bid and at the ask as a function of the time and the current spread,
+• ϕ−M (·, V) and ϕM (·, V) are probability density functions with support in (0, V), representing the distri-
+bution of the volume of a market order ; more precisely, we assume that a single market order cannot
+consume at once an entire side of the order book,
+• f −K−1(t, .) and f K+1(t, .) are probability density functions representing the distribution of the distance
+of the new K−th limit to the previous K−th limit at the bid and at the ask, respectively,
+• ϕ−K−1 and ϕK+1 are probability density functions representing the distribution of the volume at the
+new K−th limit at the bid and at the ask, respectively.
+3.2 Limit orders
+There is of course a possibility that an agent inserts a new limit order between two existing limit orders,
+or between the first limit and the mid-price. We introduce two marked point processes N −L(dt, dz, dζ) and
+N L(dt, dz, dζ) representing the insertion of a limit order at the bid and at the ask, respectively. The intensity
+kernels
+
+ν−L t (dz, dζ)  t and   νL t (dz, dζ)  t of N −L(dt, dz, dζ) and N L(dt, dz, dζ) are respectively given by
+ν−L t (dz, dζ) = λ−L(t)f −L(t, z)ϕ−L(ζ)dzdζ,
+and
+νL t (dz, dζ) = λL(t)f L(t, z)ϕL(ζ)dzdζ,
+where
+• λ−L and λL are deterministic functions of time representing the intensity of insertion of a limit order
+at the bid and at the ask, respectively,
+7
+
+=== page 8 ===
+75 80 85 90
+Price ( )
+0
+5
+10
+15
+20
+25
+Volume (MWh)
+S1 t S2 t S3 t S4 tS 1 t
+S 2 t
+S 3 t
+S 4 t
+V3 t
+V4 t
+Mid price
+Ask
+Bid
+(a) LOB at t
+75 80 85 90
+Price ( )
+0
+5
+10
+15
+20
+25
+Volume (MWh)
+S1 t+
+dt
+S2 t+
+dt
+S3 t+
+dt
+S4 t+
+dt
+S
+1
+t+
+dt
+S
+2
+t+
+dt
+S
+3
+t+
+dt
+S
+4
+t+
+dt
+V1 t + dt
+V2 t + dt
+z1 z2
+1
+2
+New mid price
+Ask
+Bid
+Market order
+New limits (b) LOB at t + dt
+Figure 7: Evolution of the LOB between t and t + dt. A market order of ξ = 12M W h and generated by
+ϕM (., V) (grey area) appears and consumes more than two limits. Consequently, S3 t and S4 t are shifted to
+become respectively S1 t+dt and S2 t+dt at t + dt. Additionally, two new limits must be generated to ensure
+that the number of limits remains constant. The distance z1 from the last existing limit S4 t is generated by
+f K+1(t, .), and its associated volume ζ1 is generated by ϕK+1. The second limit is generated following the
+same process, immediately after the previous one.
+• f −L(t, .) is a probability density function representing the distance between the best ask S1 t and a newly
+inserted order at the bid,
+• f L(t, .) is a probability density function representing the distance between the best bid S−1 t and a newly
+inserted order at the ask,
+• ϕ−L and ϕL are probability density functions representing the distribution of the volume of a new limit
+order at the bid and at the ask.
+3.3 Cancel orders
+Finally, orders can be canceled, in which case, as for market orders, all the limits are shifted, and we need to
+introduce a new K−th limit. The distance between this new K−th limit and the previous K−th limit, as
+well as its volume, is modeled by a random variable that is drawn at the time of the cancel. Mathematically,
+we introduce K marked point processes at the bid N −K,C (dt, dz, dζ), . . . , N −1,C (dt, dz, dζ), and K marked
+point processes at the ask N 1,C (dt, dz, dζ), . . . , N K,C (dt, dz, dζ), where for k = 1, . . . , K, N −k,C (dt, dz, dζ)
+(resp. N k,C (dt, dz, dζ)) represents the cancellation of the k−th limit order at the bid (resp. at the ask). The
+intensity kernel
+
+ν−k,C t (dz, dζ)  t of N −k,C (dt, dz, dζ) is given by
+ν−k,C t (dz, dζ) = λ−C (t) f −K−1(t, z)ϕ−K−1(ζ)dzdζ,
+and the intensity kernel
+
+νk,C t (dz, dζ)  t of N k,C (dt, dz, dζ) is given by
+νk,C t (dz, dζ) = λC (t) f K+1(t, z)ϕK+1(ζ)dzdζ
+where λ−C and λC are deterministic functions representing the intensity of cancellation of the k−th limit or-
+der at the bid and at the ask, respectively. Of course, these functions could also depend on other parameters,
+8
+
+=== page 9 ===
+72 74 76 78 80 82 84 86 88 90
+Price ( )
+0
+5
+10
+15
+20
+Volume (MWh)
+S1 t S2 t S3 t S4 tS 1 t
+S 2 t
+S 3 t
+S 4 t
+V 1 t
+V 2 t
+Mid price
+Ask
+Bid
+(a) LOB at t
+72 74 76 78 80 82 84 86 88 90
+Price ( )
+0
+5
+10
+15
+20
+Volume (MWh)
+S1 t+
+dt
+S2 t+
+dt
+S3 t+
+dt
+S4 t+
+dt
+S
+1
+t+
+dt
+S
+2
+t+
+dt
+S
+3
+t+
+dt
+S
+4
+t+
+dt
+V 1 t + dt = 1
+V 2 t + dt
+z1
+New mid price
+Ask
+Bid
+Removed order
+New limits (b) LOB at t + dt
+Figure 8: Evolution of the LOB between t and t + dt. At time t a new limit order arrives with a volume ζ
+generated by ϕL and a price that is distant from the best ask S1 t about z1e. z1 is generated by f −L(t, .). This
+new inserted limit will shift other limits. Consequently, the last bid order must be deleted to ensure that the
+number of limits remains constant.
+such as the distance of order k to the best order on the opposite side; however we observed no significant
+dependence of this type in our dataset, so we choose a simple time-dependent intensity function in order to
+keep the model as simple as possible.
+3.4 Remarks
+Before moving on to the next part, a few remarks are in order. First of all, notice that we choose most of the
+random variables drawn at each event time to be mutually independent. This assumption is only made for
+the sake of simplicity, as the notations are already quite heavy, but can easily be relaxed. More generally, the
+model can be made more realistic by incorporating other dependence in the intensity functions, for instance
+on the volumes at the first limit for the intensity of market orders.
+An important assumption in our model is that there is a single order at each limit, i.e., an agent will never
+insert a limit order on top of an already existing limit order. This assumption may seem very wrong in the
+case of highly liquid assets, but it makes sense in a sparse order book in which at each time the distance
+between two limit orders is very large compared to the tick size. Indeed, in this case, there is no particular
+reason for an agent to place a limit order at the same position as the limit order of an other agent, as she can
+just place it a few tick closer to the mid-price in order to be filled in priority.
+A related point concerns the cancel orders. Indeed, contrary to the other orders, there is no volume associ-
+ated with a cancel order, because we do not consider partial cancellation here, only full cancellation. Hence
+when an order is cancelled, the whole limit disappears. This is a small simplification made for the sake of
+parsimony ; a part of the effect of a partial cancellation can be taken into account in the model if we see
+partial cancellations in the data as a full cancellation followed by a smaller insertion at the same limit.
+Finally, observe that, every time a limit disappear, (either because of a cancel or market order), we introduce
+a new limit at the end in the form of a random variable. Of course, in a real order book, this “next” limit
+9
+
+=== page 10 ===
+72.5 75.0 77.5 80.0 82.5 85.0 87.5 90.0
+Price ( )
+0
+5
+10
+15
+20
+25
+Volume (MWh)
+S1 t S2 t S3 t S4 tS 1 t
+S 2 t
+S 3 t
+S 4 t
+V 3 t
+V 4 t
+Mid price
+Ask
+Bid
+(a) LOB at t
+72.5 75.0 77.5 80.0 82.5 85.0 87.5 90.0
+Price ( )
+0
+5
+10
+15
+20
+25
+Volume (MWh)
+z1 S1 t+
+dt
+S2 t+
+dt
+S3 t+
+dt
+S4 t+
+dt
+S
+1
+t+
+dt
+S
+2
+t+
+dt
+S
+3
+t+
+dt
+S
+4
+t+
+dt
+V 3 t + dt
+V 4 t + dt = 1
+Mid price
+Ask
+Bid
+Cancel order
+New limit (b) LOB at t + dt
+Figure 9: Evolution of the LOB between t and t + dt. The last bid order limit is cancelled. Consequently, a
+new limit must be generated to ensure that the number of limits remains constant. The distance z1 from the
+last existing limit S4 t is generated by f −K−1(t, .), and its associated volume ζ1 is generated by ϕ−K−1.
+generally already exists, it is just not present in our model because we only consider the K first limits. This
+trick of inserting a new limit in order to keep the number of limits constant in our model can be seen as a
+simple (but reasonable nonetheless) boundary condition that yields little to no impact on the behaviour of
+the order book around the first limits, as long as K is large enough. In this sense, if one intends to use this
+model to test an optimal execution algorithm, for instance, this boundary condition will have a negligible
+impact on the result.
+3.5 Order book dynamics
+We assume that, almost surely, there is no simultaneous jumps between all the marked point processes intro-
+duced above.
+In order to simplify the notation (with a slight abuse), we denote respectively by N −M
+
+dt, dξ, QK−1 k=1 dzk 
+and N M
+
+dt, dξ, QK−1 k=1 dzk  the random measures
+N −M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk
+!
+=
+Z
+(ζ1,...,ζK−1)∈RK−1 +
+N ¯M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk,
+K−1Y
+k=1
+dζk
+!
+and
+N M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk
+!
+=
+Z
+(ζ1,...,ζK−1)∈RK−1 +
+N M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk,
+K−1Y
+k=1
+dζk
+!
+,
+by N −M (dt, dξ) and N M (dt, dξ) the random measures
+N −M (dt, dξ) =
+Z
+(z1,...,zK−1)∈RK−1 +
+N ¯M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk
+!
+and
+N M (dt, dξ) =
+Z
+(z1,...,zK−1)∈RK−1 +
+N M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk
+!
+,
+10
+
+=== page 11 ===
+by N −L(dt, dz) and N L(dt, dz) the random measures given by
+N −L(dt, dz) =
+Z
+ζ∈R+
+N −L(dt, dz, dζ) and N L(dt, dz) =
+Z
+ζ∈R+
+N L(dt, dz, dζ),
+and by
+
+N −K,C t
+
+t
+, . . . ,
+
+N −1,C t
+
+t
+and
+
+N 1,C t
+
+t
+, . . . ,
+
+N K,C t
+
+t
+the processes given by
+N −k,C t =
+Z t
+0
+Z
+z∈R+
+Z
+ζ∈R+
+N −k,C (ds, dz, dζ) and N k,C t =
+Z t
+0
+Z
+z∈R+
+Z
+ζ∈R+
+N k,C (ds, dz, dζ)
+for k = 1, . . . , K.
+3.5.1 Prices dynamics
+We can now write the dynamics of the vector process ( ¯St)t. For k = 1, we have
+dS−1 t =
+Z
+ξ∈R+
+K−1X
+i=1
+ 
+S−i−1 t− − S−i t−  1{V −i t− ≤ξ}N −M (dt, dξ) +   S−2 t− − S−1 t−  dN −1,C t
++
+Z
+z∈R+
+ 
+S1 t− − z − S−1 t−  1{S1 t−−z∈[S−1 t− ,S1 t−[}N −L(dt, dz),
+and similarly
+dS1 t =
+Z
+ξ∈R+
+K−1X
+i=1
+ 
+Si+1 t− − Si t−  1{V i t−≤ξ}N M (dt, dξ) +   S2 t− − S1 t−  dN 1,C t
++
+Z
+z∈R+
+ 
+S−1 t− + z − S1 t−  1{S−1 t− +z∈]S−1 t− ,S1 t−]}N L(dt, dz).
+In both these equations, the first term corresponds to the arrival of a market order. If the size of the market
+order exceeds the cumulative volume of the first k limits, then the first limit is shifted accordingly: the new
+first limit is the previous (k + 1)-th limit. The second term corresponds to the cancellation of the order at
+the first limit: in that case, the new first limit is the previous second limit. Cancellation of orders at other
+limits do not impact the first limit. Finally, the last term corresponds to the arrival of a limit order within
+the current bid-ask spread: in that case, the new first limit is this new limit order.
+For 1 < k < K, we have
+dS−k t =
+Z
+ξ∈R+
+Z
+(z1,...,zK−1)∈RK−1 +
+ 
+1{ξ≥V −K+k−1 t− }
+
+S−K t− −
+K−k+1X
+j=1
+zj − S−k t−
+
++
+K−kX
+i=1
+
+S−k−i t− − S−k−i+1 t−
+
+1{V −i t− ≤ξ<V −K+k−1 t− }
+!
+N −M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk
+!
++
+Z
+z∈R+
+
+S1 t− − z − S−k t−
+
+1{S1 t−−z∈[S−k t− ,S−k+1 t− [}N −L(dt, dz)
++
+Z
+z∈R+
+
+S−k+1 t− − S−k t−
+
+1{S1 t−−z>S−k+1 t− }N −L(dt, dz) +
+kX
+l=1
+
+S−k−1 t− − S−k t−
+
+dN −l,C t ,
+11
+
+=== page 12 ===
+and similarly
+dSk t =
+Z
+ξ∈R+
+Z
+(z1,...,zK−1)∈RK−1 +
+ 
+1{ξ≥V K−k+1 t− }
+
+SK t− +
+K−k+1X
+j=1
+zj − Sk t−
+
++
+K−kX
+i=1
+
+Sk+i t− − Sk+i−1 t−
+
+1{V i t−≤ξ<V K−k+1 t− }
+!
+N M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk
+!
++
+Z
+z∈R+
+
+S−1 t− + z − Sk t
+
+1{S−1 t− +z∈]Sk−1 t− ,Sk t−]}N L(dt, dz)
++
+Z
+z∈R+
+
+Sk−1 t− − Sk t−
+
+1{S−1 t− +z<Sk−1 t− }N L(dt, dz) +
+kX
+l=1
+
+Sk+1 t− − Sk t−
+
+dN l,C t .
+In both these equations, the first term corresponds to the arrival of a market order. It can be decomposed
+into two part: the first part deals with the case where the market order consumes K − k + 1 limits (or more),
+in which case new limits have to be introduce after the (previous) last limit, in the form of random variables;
+the second part deals with the case where the market order only consumes a small number of limits, so that
+the k-th limit can be replaced by an already existing limit and does not have to be drawn as a random variable.
+The second term corresponds to the arrival of a limit order between the (k − 1)-th and the k-th limit: in that
+case, the new k-th limit is this new limit order. The third term deals with limit orders arriving before the
+(k − 1)-th limit, in which case the k-th limit is simply shifted.
+The last term corresponds to the cancellation of orders before the k-th limit: in that case, the new k-th limit
+is the previous (k + 1)-th limit. Cancellation of orders at limits above k do not impact the k-th limit.
+Finally, for k = K we have
+dS−K t = −
+Z
+ξ∈R+
+Z
+(z1,...,zK−1)∈RK−1 +
+K−1X
+j=1
+zj 1{V −j t− ≤ξ}N −M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk
+!
++
+Z
+z∈R+
+
+S1 t− − z − S−K t−
+
+1{S1 t−−z∈[S−K t− ,S−K+1 t− [}N −L(dt, dz)
++
+Z
+z∈R+
+
+S−K+1 t− − S−K t−
+
+1{S1 t−−z>S−K+1 t− }N −L(dt, dz) −
+KX
+l=1
+Z
+z∈R+
+zN −l,C (dt, dz),
+and similarly
+dSK t =
+Z
+ξ∈R+
+Z
+(z1,...,zK−1)∈RK−1 +
+K−1X
+j=1
+zj 1{V j t−≤ξ}N M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk
+!
++
+Z
+z∈R+
+ 
+S−1 t− + z − SK t  1{S−1 t− +z∈]SK−1 t− ,SK t−]}N L(dt, dz)
++
+Z
+z∈R+
+
+SK−1 t− − SK t−
+
+1{S−1 t− +z<SK−1 t− }N L(dt, dz) +
+KX
+l=1
+Z
+z∈R+
+zN l,C (dt, dz).
+In both these equations, the first term corresponds to the arrival of a market order. In this case, as soon as
+the size of the market order exceeds the side of the first limit, the K-th limit has to be replaced by a new
+12
+
+=== page 13 ===
+limit in the form of a random variable.
+The second term corresponds to the arrival of a limit order between the (K −1)-th and the K-th limit: in that
+case, the new K-th limit is this new limit order. The third term deals with limit orders arriving before the
+(K − 1)-th limit, in which case the K-th limit is simply shifted: the new K-th limit is the previous (K − 1)-th
+limit.
+The last term corresponds to the cancellation of orders: in that case, the new K-th has to be introduced in
+the form of a random variable.
+3.5.2 Volumes dynamics
+We can now write the dynamics of ( ¯Vt)t. For k = 1, we have
+dV −1 t =
+Z
+ξ∈R+
+ K−1X
+i=1
+ 
+V −i−1 t− − V −i t−  1{V −i t− ≤ξ} − ξ
+!
+N −M (dt, dξ) +   V −2 t− − V −1 t−  dN −1,C t
++
+Z
+z∈R+
+Z
+ζ∈R+
+ 
+ζ − V −1 t−  1{S1 t−−z∈[S−1 t− ,S1 t−[}N −L(dt, dz, dζ),
+and similarly
+dV 1 t =
+Z
+ξ∈R+
+ K−1X
+i=1
+ 
+V i+1 t− − V i t−  1{V i t−≤ξ} − ξ
+!
+N M (dt, dξ) +   V 2 t− − V 1 t−  dN 1,C t
++
+Z
+z∈R+
+Z
+ζ∈R+
+ 
+ζ − V 1 t  1{S−1 t− +z∈]S−1 t− ,S1 t−]}N L(dt, dz, dζ).
+In both these equations, the first term corresponds to the arrival of a market order. If the size of the market
+order exceeds the cumulative volume of the first i limits but not that of the first i + 1 limits, then the new first
+limit is the previous i + 1-th limit, and the corresponding volume is the previous the cumulative volume of
+the first i + 1 limits minus the volume of the market order. The second term corresponds to the cancellation
+of the order at the first limit: in that case, the new first limit is the previous second limit, and the volumes
+are shifted accordingly. Cancellation of orders at other limits do not impact the first limit. Finally, the
+last term corresponds to the arrival of a limit order within the current bid-ask spread: in that case, the new
+first limit is this new limit order, and the corresponding volume is introduced in the form of a random variable.
+For 1 < k < K, we have
+dV −k t =
+Z
+ξ∈R+
+Z
+(z1,...,zK−1)∈RK−1 +
+Z
+(ζ1,...,ζK−1)∈RK−1 +
+ 
+1{ξ≥V −K+k−1 t− }
+
+ζK−k+1 − V −k t−
+
++ 1{ξ<V −K+k−1 t− }
+ K−kX
+i=1
+
+V −k−i t− − V −k−i+1 t−
+
+1{V −i t− ≤ξ} − ξ
+!
+N −M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk,
+K−1Y
+k=1
+dζk
+!
++
+Z
+z∈R+
+Z
+ζ∈R+
+
+ζ − V −k t−
+
+1{S1 t−−z∈[S−k t− ,S−k+1 t− [}N −L(dt, dz, dζ)
++
+Z
+z∈R+
+
+V −k+1 t− − V −k t−
+
+1{S1 t−−z>S−k+1 t− }N −L(dt, dz) +
+kX
+l=1
+
+V −k−1 t− − V −k t−
+
+dN −l,C t ,
+13
+
+=== page 14 ===
+and similarly
+dV k t =
+Z
+ξ∈R+
+Z
+(z1,...,zK−1)∈RK−1 +
+Z
+(ζ1,...,ζK−1)∈RK−1 +
+ 
+1{ξ≥V K−k+1 t− }
+
+ζK−k+1 − V k t−
+
++ 1{ξ<V K−k+1 t− }
+ K−kX
+i=1
+
+V k+i t− − V k+i−1 t−
+
+1{V i t−≤ξ} − ξ
+!
+N M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk,
+K−1Y
+k=1
+dζk
+!
++
+Z
+z∈R+
+Z
+ζ∈R+
+
+ζ − V k t
+
+1{S−1 t− +z∈]Sk−1 t− ,Sk t−]}N L(dt, dz, dζ)
++
+Z
+z∈R+
+
+V k−1 t− − V k t−
+
+1{S−1 t− +z<Sk−1 t }N L(dt, dz) +
+kX
+l=1
+
+V k+1 t− − V k t−
+
+dN l,C t .
+In both these equations, the first term corresponds to the arrival of a market order. It can be decomposed
+into two parts: the first part deals with the case where the market order consumes K − k + 1 limits (or
+more), in which case new limits have to be introduce after the (previous) last limit, and the correspond-
+ing volumes are introduced in the form of random variables; the second part deals with the case where the
+market order only consumes a small number of limits, so that the k-th limit can be replaced by an already ex-
+isting limit and does not have to be drawn as a random variable, and the volumes are then shifted accordingly.
+The second term corresponds to the arrival of a limit order between the (k − 1)-th and the k-th limit: in that
+case, the new k-th limit is this new limit order, and the corresponding volume is introduced in the form of a
+random variable. The third term deals with limit orders arriving before the (k − 1)-th limit, in which case
+the k-th limit is simply shifted.
+The last term corresponds to the cancellation of orders before the k-th limit: in that case, the new k-th limit
+is the previous (k + 1)-th limit, and volumes are just shifted accordingly. Cancellation of orders at limits
+above k do not impact the k-th limit.
+Finally, for k = K we have
+dV −K t =
+Z
+ξ∈R+
+Z
+(z1,...,zK−1)∈RK−1 +
+Z
+(ζ1,...,ζK−1)∈RK−1 +
+1{V −1 t− ≤ξ}
+
+ζ1 − V −K t−
+
+N −M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk,
+K−1Y
+k=1
+dζk
+!
++
+Z
+z∈R+
+Z
+ζ∈R+
+
+ζ − V −K t−
+
+1{S1 t−−z∈[S−K t− ,S−K+1 t− [}N −L(dt, dz, dζ)
++
+Z
+z∈R+
+
+V −K+1 t− − V −K t−
+
+1{S1 t−−z>S−K+1 t− }N −L(dt, dz) +
+KX
+l=1
+Z
+z∈R+
+Z
+ζ∈R+
+
+ζ − V −K t−
+
+N −l,C (dt, dz),
+and similarly
+dV K t =
+Z
+ξ∈R+
+Z
+(z1,...,zK−1)∈RK−1 +
+Z
+(ζ1,...,ζK−1)∈RK−1 +
+1{V 1 t−≤ξ}
+ 
+ζ1 − V K t−  N M
+ 
+dt, dξ,
+K−1Y
+k=1
+dzk,
+K−1Y
+k=1
+dζk
+!
++
+Z
+z∈R+
+Z
+ζ∈R+
+ 
+ζ − V K t−  1{S−1 t− +z∈[SK−1 t− ,SK t−[}N L(dt, dz, dζ)
++
+Z
+z∈R+
+
+V K−1 t− − V K t−
+
+1{S−1 t− +z<SK−1 t t−}N L(dt, dz) +
+KX
+l=1
+Z
+z∈R+
+Z
+ζ∈R+
+ 
+ζ − V K t−  N l,C (dt, dz).
+14
+
+=== page 15 ===
+In both these equations, the first term corresponds to the arrival of a market order. In this case, as soon as
+the size of the market order exceeds the side of the first limit, the K-th limit has to be replaced by a new
+limit in the form of a random variable, and the corresponding volume is drawn as well.
+The second term corresponds to the arrival of a limit order between the (K −1)-th and the K-th limit: in that
+case, the new K-th limit is this new limit order, and the volume is introduced in the ofrm of a random vari-
+able. The third term deals with limit orders arriving before the (K − 1)-th limit, in which case the K-th limit
+is simply shifted: the new K-th limit is the previous (K − 1)-th limit, and the volumes are shifted accordingly.
+The last term corresponds to the cancellation of orders: in that case, the new K-th has to be introduced in
+the form of a random variable, and the corresponding volume as well.
+4 Numerical analysis
+4.1 Parameters
+For our numerical experiments, we consider the last 4 hours (i.e. T = 4 h) of trading for the 6 p.m. maturity.
+1 We chose to only represent the 5 first limits on each side of the order book, i.e. K = 5. In this section,
+we describe the functional forms and parameters used for the simulations. The data suggest some spread
+dependencies and symmetric parameters at bid and ask sides. These can be seen in Figure 10.
+For the market orders, the data suggest a function λM = λ−M of the form:
+λM (t, S) = λ−M (t, S) = ¯λM e−κM (T −t)e−βM S
+for the intensity of arrival, and we approximate the distribution ϕM (ξ, V)dξ = ϕ−M (ξ, V)dξ by a discrete
+distribution of the form
+6X
+i=1
+pM i δvM i ∧V (dξ).
+This distribution is bounded by V in accordance with our assumption that a single market order cannot
+consume the K first limits of the order book.
+Using standard statistical estimation methods such as least squares regression (see Laruelle [24] for more
+details), we obtain the following values:
+• ¯λM = 45.72 h−1
+• κM = 0.51 h−1
+• βM = 0.5 e−1
+• pM = (0.480, 0.158, 0.314, 0.032, 0.012, 0.004)
+• vM = (1., 2., 5., 10., 15., 25.) M W h.
+Similarly for the limit orders, the data suggest a function λL = λ−L of the form
+λL(t) = λ−L(t) = ¯λLe−κL(T −t)
+1We focus exclusively on the XBID market, which closes one hour before the delivery period. Therefore, we analyze data
+from 1 p.m. to 5 p.m. for a delivery maturity at 6 p.m.
+15
+
+=== page 16 ===
+for the intensity of arrival, a probability density function
+f L(t, z) = f −L(t, z) = 1z>0βL t e−βL t z
+for the distance to the best price on the opposite side, corresponding to an exponential distribution with a
+time varying parameter given by βL t = ALe−bL(T −t). As before, we approximate the distribution ϕL(ζ)dζ =
+ϕ−L(ζ)dζ by a discrete distribution of the form
+6X
+i=1
+pL i δvL i (dζ).
+Again, a standard statistical estimation method gives the following values:
+• ¯λL = 450 h−1
+• κL = 5.22 · 10−4 h−1
+• AL = 0.145 e−1
+• bL = 0.02 h−1
+• pL = (0.322, 0.152, 0.464, 0.022, 0.011, 0.029)
+• vL = (1., 2., 5., 10., 15., 25.) M W h.
+For the cancel orders, we use again a function λC = λ−C of the form
+λC (t) = λ−C (t) = ¯λC e−κC (T −t),
+with the following values
+• ¯λC = 72 h−1
+• κC = 0.6 h−1.
+Finally, for a newly inserted order after the K−th limit, it is natural to consider
+f K+1(t, z) = f −K−1(t, z) = f L(t, z) = 1z>0βL t e−βL t z ,
+and similarly we approximate the distribution ϕK+1(ζ)dζ = ϕ−K−1(ζ)dζ by the discrete distribution
+6X
+i=1
+pL i δvL i (dζ).
+4.2 Results
+In this section, we run different simulations of the order book using the parameters introduced above. and we
+analyze the results. We stop the simulations one hour before maturity, as it corresponds to the decoupling of
+the electricity markets. We start with an initial mid price of 50 e, and consider that the order book at the
+initial time is symmetric, with limits at the bid placed at the prices 45 e, 44 e, 42 e, 39 e, 35 e, and limits
+at the ask placed at the prices 55 e, 56 e, 58 e, 61 e, 65 e.
+16
+
+=== page 17 ===
+0.0 2.5 5.0 7.5 10.0 12.5 15.0 17.5 20.0
+Spread (  from the best opposite order price)
+0.000
+0.005
+0.010
+0.015
+0.020
+0.025
+0.030
+0.035Count (per second)
+Historical datas
+Fitted curve
+(a) Spread dependence of market orders
+0 20 40 60 80 100
+Spread (  from the best opposite order price)
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0.14Count (per second)
+Exponential regression
+Historical asks
+Historical bids (b) New limit order distribution
+Figure 10: Historical data approximation
+51 52 53 54 55 56 57
+Price
+0
+2
+4
+6
+8
+10
+12
+14
+16Volume
+Order book at time t = T 1
+(a)
+50 55 60 65 70
+Price
+0
+2
+4
+6
+8
+10
+12
+14
+16Volume
+Order book at time t = T 1
+ (b)
+40 42 44 46 48
+Price
+0
+2
+4
+6
+8
+10
+12
+14
+16Volume
+Order book at time t = T 1
+(c)
+35 40 45 50 55
+Price
+0
+1
+2
+3
+4
+5
+6
+7Volume
+Order book at time t = T 1
+ (d)
+Figure 11: Simulations of the order book at T − 1 (bid in blue, ask in red).
+17
+
+=== page 18 ===
+1.01.52.02.53.03.54.04.55.0
+Time to maturity
+48
+50
+52
+54
+56Price
+Evolution of the mid price
+(a)
+1.01.52.02.53.03.54.04.55.0
+Time to maturity
+50
+55
+60
+65
+70
+75
+80Price
+Evolution of the mid price (b)
+1.01.52.02.53.03.54.04.55.0
+Time to maturity
+38
+40
+42
+44
+46
+48
+50Price
+Evolution of the mid price
+(c)
+1.01.52.02.53.03.54.04.55.0
+Time to maturity
+42
+44
+46
+48
+50Price
+Evolution of the mid price (d)
+Figure 12: Simulations of the mid price
+Figure 11 shows four simulations of the state of the order book one hour before maturity. We observe in
+particular that, as expected, our model allows for very large spreads between the different limits of the order
+book. Figure 12 shows the corresponding prices. We see that price movements increase when time gets close
+to maturity, which corresponds to what we observe in practice – see Figure 1.
+Figure 14a shows the distribution of spreads one hour before maturity obtained with 10000 Monte-Carlo
+simulations. The average spread is around 6.10 e, which is in line with what we observe in practice (see
+figure 13a) with an average spread around 7.30 e.
+Similarly, we show in Figures 14b and 14c the distribution of the distance between the second limits on each
+side and between the third limits on each side, respectively. For the former, we obtain an average spread of
+10.70 e, while for the latter we obtain an average spread of 14.20 e, which is again close to what we observe
+in practice as we can see in figures 13b and 13c with for the second limit an average price around 9.90 e, and
+on the third limit we have an average spread of 13.74 e. 2
+2The spike observed in Figures 14b and 14c near the mean of the distribution is due to our choice for the initial state of the
+order book; it disappears if one randomizes this initial condition.
+18
+
+=== page 19 ===
+0 20 40 60 80 100
+Spread
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0.14
+(a) First limit
+0 20 40 60 80 100
+Spread
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12 (b) Second limit
+0 20 40 60 80 100
+Spread
+0.00
+0.02
+0.04
+0.06
+0.08 (c) Third limit
+Figure 13: Historical spread distribution of the first three limits on t ∈ [T − 5; T − 1] on September 01, 2021
+to November 30, 2021 (the red line represents the mean).
+0 20 40 60 80 100
+Spread
+0.00
+0.02
+0.04
+0.06
+0.08
+0.10
+0.12
+0.14
+(a) First limit
+0 20 40 60 80 100
+Spread
+0.00
+0.01
+0.02
+0.03
+0.04
+0.05
+0.06 (b) Second limit
+0 20 40 60 80 100
+Spread
+0.00
+0.01
+0.02
+0.03
+0.04
+0.05
+0.06 (c) Third limit
+Figure 14: Simulated spread distributions for 10000 simulations (the red line represents the mean).
+As expected, the main drawback of our Poisson model is the lack of extreme events: the simulated distribution
+always seem more localized around the mean than that of the historical data, the latter consistently exhibiting
+a slightly higher standard deviation. This can be solved for instance by incorporating Hawkes processes in
+the model.
+4.3 Microstructure noise
+One of the main issue to reproduce LOBs is to take into account microstructure noise identified on electricity
+marketbyDeschatreandGruet[12]andDeschatreandWarin[13]. Inthispaperweusetheempiricalquadratic
+variation of the price process as a metric to assess the precision of our model. Figures 15 demonstrates that
+the signature plot of simulated LOB (using the average of 50 trajectories) is very similar to the empirical
+signature plots, computed from the quadratic variation of the mid-price S(t) over a time period [t0, T ] using
+a time step τ > 0 where t0 and T respectively represent five hours and one hour before the maturity. The
+realized volatility function used here is:
+ˆC(τ ) = 1 T
+T /τX
+n=0
+|S((n + 1)τ ) − S(nτ )|2.
+As anticipated, with an increase in the step time τ , the realized volatility decreases until it stabilizes.
+19
+
+=== page 20 ===
+0 200 400 600 800 1000
+Time step (s)
+200
+400
+600
+800
+1000
+1200
+1400
+1600Realized volatility ( /MWh)2. h 1
+Product
+15H
+18H
+20H
+(a) Historical results on products 15H, 18H, 20H
+0 200 400 600 800 1000
+Time step (s)
+300
+400
+500
+600
+700Realized volatility ( /MWh)2. h 1
+ (b) Simulated results for a 18H calibration
+Figure 15: Mean daily signature plots of the last 5 hours before the maturity computed and calibrated on all
+sessions between July and October, 2021
+20
+
+=== page 21 ===
+References
+[1] Frédéric Abergel and Aymen Jedidi. A mathematical approach to order book modeling. International
+Journal of Theoretical and Applied Finance, 16(05):1350025, 2013.
+[2] Frédéric Abergel and Aymen Jedidi. Long-time behavior of a hawkes process–based limit order book.
+SIAM Journal on Financial Mathematics, 6(1):1026–1043, 2015.
+[3] Frédéric Abergel, Marouane Anane, Anirban Chakraborti, Aymen Jedidi, and Ioane Muni Toke. Limit
+order books. Cambridge University Press, 2016.
+[4] Bastien Baldacci and Philippe Bergault. Optimal incentives in a limit order book: A spde control
+approach. Market Microstructure and Liquidity, 2024.
+[5] Bruno Biais, Pierre Hillion, and Chester Spatt. An empirical analysis of the limit order book and the
+order flow in the paris bourse. the Journal of Finance, 50(5):1655–1689, 1995.
+[6] Marcel Blais and Philip Protter. An analysis of the supply curve for liquidity risk through book data.
+International Journal of Theoretical and Applied Finance (IJTAF), 13:821–838, 09 2010. doi: 10.1142/
+S0219024910006017.
+[7] Jean-Philippe Bouchaud, Marc Mézard, and Marc Potters. Statistical properties of stock order books:
+empirical results and models. Quantitative finance, 2(4):251, 2002.
+[8] Jonathan A Chávez-Casillas and José E Figueroa-López. A one-level limit order book model with memory
+and variable spread. Stochastic Processes and their Applications, 127(8):2447–2481, 2017.
+[9] Rama Cont and Adrien De Larrard. Price dynamics in a markovian limit order market. SIAM Journal
+on Financial Mathematics, 4(1):1–25, 2013.
+[10] Rama Cont and Marvin S Müller. A stochastic partial differential equation model for limit order book
+dynamics. SIAM Journal on Financial Mathematics, 12(2):744–787, 2021.
+[11] Rama Cont, Sasha Stoikov, and Rishi Talreja. A stochastic model for order book dynamics. Operations
+research, 58(3):549–563, 2010.
+[12] Thomas Deschatre and Pierre Gruet. Electricity intraday price modelling with marked hawkes processes.
+Applied Mathematical Finance, 29(4):227–260, 2022.
+[13] Thomas Deschatre and Xavier Warin. A common shock model for multidimensional electricity intraday
+price modelling with application to battery valuation. arXiv preprint arXiv:2307.16619, 2023.
+[14] Zoltan Eisler, Jean-Philippe Bouchaud, and Julien Kockelkoren. The price impact of order book events:
+market orders, limit orders and cancellations. Quantitative Finance, 12(9):1395–1419, 2012.
+[15] Benjamin Favetto. The european intraday electricity market : a modeling based on the hawkes process.
+April 2019. URL https://hal.science/hal-02089289.
+[16] Nikolaus Graf von Luckner and Rüdiger Kiesel. Modeling market order arrivals on the german intraday
+electricity market with the hawkes process. Journal of Risk and Financial Management, 14(4):161, 2021.
+[17] Ria Grindel and Nikolaus Graf von Luckner. Forecasting of the id3 using limit order book data. Available
+at SSRN 4017248, 2022.
+21
+
+=== page 22 ===
+[18] Ulrich Horst and Dörte Kreher. Second order approximations for limit order books. Finance and Stochas-
+tics, 22:827–877, 2018.
+[19] Ulrich Horst and Michael Paulsen. A law of large numbers for limit order books. Mathematics of
+Operations Research, 42(4):1280–1312, 2017.
+[20] W. Huang, C.-A. Lehalle, and M. Rosenbaum. Simulating and analyzing order book data: the queue-
+reactive model. Journal of the American Statistical Association, 110(509):107–122, 2015.
+[21] W. Huang, M. Rosenbaum, and P. Saliba. From Glosten-Milgrom to the whole limit order book and
+applications to financial regulation. SSRN preprint 3343779, 2019.
+[22] Weibing Huang and Mathieu Rosenbaum. Ergodicity and diffusivity of markovian order book models: a
+general framework. SIAM Journal on Financial Mathematics, 8(1):874–900, 2017.
+[23] Frank Kelly and Elena Yudovina. A markov model of a limit order book: thresholds, recurrence, and
+trading strategies. Mathematics of Operations Research, 43(1):181–203, 2018.
+[24] Sophie Laruelle. Hors-série microstructure des marchés/n 1-juin 2013.
+[25] Hugh Luckock. A statistical model of a limit order market. Sidney University preprint (September 2001),
+2001.
+[26] Sergei Maslov. Simple model of a limit order-driven market. Physica A: Statistical Mechanics and its
+Applications, 278(3-4):571–578, 2000.
+[27] Ioane Muni Toke and Nakahiro Yoshida. Modelling intensities of order flows in a limit order book.
+Quantitative Finance, 17(5):683–701, 2017.
+[28] Marc Potters and Jean-Philippe Bouchaud. More statistical properties of order books and price impact.
+Physica A: Statistical Mechanics and its Applications, 324(1-2):133–140, 2003.
+22

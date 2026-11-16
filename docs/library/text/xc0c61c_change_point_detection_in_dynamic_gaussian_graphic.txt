@@ -1,0 +1,2939 @@
+=== page 1 ===
+Change point detection in dynamic Gaussian graphical models:
+the impact of COVID-19 pandemic on the US stock market
+Beatrice Franzolini1, Alexandros Beskos2, Maria De Iorio3, Warrick Poklewski
+Koziell4, and Karolina Grzeszkiewicz5
+1,3Singapore Institute for Clinical Sciences, Agency for Science, Technology and
+Research, Singapore, Republic of Singapore
+2,3,4Department of Statistical Science, University College London, UK
+3Yong Loo Lin School of Medicine, National University of Singapore, Singapore,
+Republic of Singapore
+5Yale-NUS College, Singapore, Republic of Singapore
+2The Alan Turing Institute, London, UK
+Abstract
+Reliable estimates of volatility and correlation are fundamental in economics and
+finance for understanding the impact of macroeconomics events on the market and
+guiding future investments and policies. Dependence across financial returns is likely
+to be subject to sudden structural changes, especially in correspondence with major
+global events, such as the COVID-19 pandemic. In this work, we are interested in
+capturing abrupt changes over time in the conditional dependence across US industry
+stock portfolios, over a time horizon that covers the COVID-19 pandemic. The selected
+stocks give a comprehensive picture of the US stock market. To this end, we develop a
+Bayesian multivariate stochastic volatility model based on a time-varying sequence of
+graphs capturing the evolution of the dependence structure. The model builds on the
+Gaussian graphical models and the random change points literature. In particular, we
+treat the number, the position of change points, and the graphs as object of posterior
+inference, allowing for sparsity in graph recovery and change point detection. The high
+dimension of the parameter space poses complex computational challenges. However,
+the model admits a hidden Markov model formulation. This leads to the development of
+an efficient computational strategy, based on a combination of sequential Monte-Carlo
+and Markov chain Monte-Carlo techniques. Model and computational development are
+widely applicable, beyond the scope of the application of interest in this work.
+1 Introduction
+Understanding the temporal evolution of the dependence structure among time series is a
+fundamental topic in many fields, such as psychology (Williams, 2021), speech recognition
+(Bilmes, 2004), genomics (Yin and Li, 2011), and, in particular, finance. In this latter con-
+text, estimates of volatility and correlation of different financial instruments are largely used
+for portfolio allocation, option-pricing, and to draw conclusions about the impact of macroe-
+conomic events on the markets with the goal of guiding future investments and policies. In
+particular, estimates of correlation are key to minimise the risk of investment portfolios
+and define hedging strategies (see, among others, Lien et al., 2002; Lee, 2010; Thampanya
+et al., 2020; Dutta et al., 2021). Changes in correlation modify the return/risk profile of the
+1
+arXiv:2208.00952v3  [stat.ME]  23 May 2023
+
+=== page 2 ===
+investments and are of interest to both investors and policy makers. To understand how
+to better prepare for and deal with future major global events, it is important to estimate
+the impact of the COVID-19 pandemic on the volatility and the dependence structure of
+financial instruments (Just and Echaust, 2020; Sakurai and Kurosaki, 2020; Alqaralleh and
+Canepa, 2021; Guidolin et al., 2021; Yousfi et al., 2021; Derbali et al., 2022; Dey et al.,
+2022). Global “catastrophic” events, such as financial crises, often lead to sudden changes
+in the dependence structure across. Financial markets’ reaction to the pandemic appears
+to be no exception: around the end of February 2020 the Dow Jones and S&P 500 fell by
+11% and 12%, respectively, marking the biggest weekly decline since the financial crisis of
+2008, to the point that the Financial Times described such decline as the “quickest cor-
+rection since the Great Depression”. Standard statistical approaches assume time-varying
+dependence to change smoothly over time, which appears to be an unrealistic assumption
+when investigating financial shocks. In this manuscript, we develop statistical machinery
+to detect abrupt changes in the correlation structure among time series. Such machinery is
+employed to detect the impact of the COVID-19 pandemic on the US stock market and, in
+particular, on cross-industry relationships.
+There exists a vast literature on models for time-varying second moments. More specifi-
+cally, there are two main approaches: conditional volatility models, as the well-known ARCH
+and GARCH (Engle, 1982; Bollerslev et al., 1994; Bollerslev, 1986; Engle and Bollerslev,
+1986; Bauwens et al., 2006; Silvennoinen and Ter¨asvirta, 2009; Boudt et al., 2019), and
+stochastic volatility models (e.g., Taylor, 1982; Wiggins, 1987; Hull and White, 1987; Asai
+et al., 2006). The former class specifies second moments at a certain time t as a determin-
+istic function of past values of observations, volatility, and possibly covariance, given model
+parameters. The latter assumes second moments to follow a latent stochastic process, typ-
+ically of Markovian structure, so that, even conditionally on all past information, volatility
+and correlations are unobservable random variables evolving over time. While stochastic
+volatility models are often more flexible and may achieve better inferential performances
+when compared to conditional volatility approaches (Chan, 2013; Clark and Ravazzolo,
+2015), they are more difficult to estimate since the likelihood is typically intractable, see,
+e.g., Nilsson (2016).
+Within both classes, a further distinction may be made between models that explic-
+itly target the covariance matrix Σt and those focusing on the precision matrix Ωt = Σ−1 t ,
+specifically allowing for zero entries in Ωt to favour parsimony. In this work, we develop
+a Bayesian stochastic volatility model for the precision matrix. Specifically, the precision
+matrix at time t is modelled conditionally on a graph at time t, which describes the depen-
+dence structure among time series. As such, our work lies within the literature on Gaussian
+graphical models (GGMs) (see, e.g., Carvalho and West, 2007; Wang and West, 2009; Prado
+and West, 2010; Wang, 2010; Chandra et al., 2021). This approach presents an important
+advantage: GGMs target conditional independence instead of marginal, leading to possi-
+ble identification of macro-components (represented, for instance, by hubs and cliques in
+the graph) and safeguarding against spurious relationships, in the sense that GGMs aid
+understanding if pairwise correlations between variables can be fully or partially explained
+by their relationship with one or more additional variables. The identification of graph
+substructures is of particular interest in finance, where hubs may be interpreted as risk
+factors driving the market, while cliques represent financial instruments exposed to the
+same unobserved risk factor. See Figure 1 for a toy example clarifying the role of graph
+substructures in financial markets and, in particular, the interpretation of hubs as risk fac-
+tors. Moreover, marginal dependence and Pearson correlation simply measure the pairwise
+co-movement between two investments, but do not provide any indication on whether a risk
+2
+
+=== page 3 ===
+Market n.1
+X Y
+Z
+X = Z + ϵx
+Y = Z + ϵy
+Z = ϵz
+Market n.2
+X Y
+Z
+X = W + ϵx
+Y = W + ϵy
+Z = W + ϵz
+Market n.3
+X Y
+Z
+X = W + ϵx
+Y = W + ϵy
+Z = ϵz
+Market n.4
+X Y
+Z
+X = ϵx
+Y = ϵy
+Z = ϵz
+Figure 1: Toy example of graphs substructures in a financial market with three assets.
+Market n.1: the asset Z acts as common risk factor in the market driving the dependence
+and is a hub. Market n.2: the return of all three assets X, Y , and Z are driven by an
+unobservable risk factor W and the tree assets form a clique. Market n.3: X and Y are
+driven by a common risk factor, not affecting the asset Z. Market n.4: the three assets are
+independent and the graph does not include any edge. Here ϵz , ϵx, ϵy are white noises.
+Portfolio
+Name Industry Description
+NoDur Consumer Nondurables Food, Tobacco, Textiles, Apparel, Leather, Toys
+Durbl Consumer Durables Cars, TVs, Furniture, Household Appliances
+Manuf Manufacturing Machinery, Trucks, Planes, Chemicals, Off Furn, Paper
+Enrgy Energy Oil, Gas, and Coal Extraction and Products
+HiTec Business Equipment Computers, Software, and Electronic Equipment
+Telcm Telecommunications Telephone and Television Transmission
+Shops Shops Wholesale, Retail, and Some Services
+Hlth Health Healthcare, Medical Equipment, and Drugs
+Utils Utilities Utilities
+Table 1: Industry portfolios descriptions. SIC codes for each portfolio are available
+at https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/Data_Library/det_
+10_ind_port.html
+factor generating the co-movement is specific to the two investments or it is common also
+to other financial instruments of interest. On the contrary, entries of the precision matrix
+represent co-movements conditionally on the effect of all the other instruments considered
+in the model (Michis, 2022), so that an entry is non-zero if and only if the two returns are
+dependent conditionally on all other investments.
+Changes over time of second moments can be smooth or abrupt. The focus of this work
+is on changes of the second type. Standard versions of the models cited so far assume
+variances and covariances changing smoothly over time and, in particular, between any
+two consecutive time points. For instance, Carvalho and West (2007) propose a Bayesian
+dynamic stochastic volatility model based on GGMs and conditional independence. In
+their construction, the graph structure is kept constant over time, while the covariance
+matrix changes smoothly between any two consecutive time points. However, this feature
+is often in contrast with what is observed in financial markets, where volatility clusters
+(i.e., periods with a persistent value of volatility, that are interrupted by sudden changes)
+and correlation breakdowns (i.e., substantial changes in correlations during stressed times
+and financial crises) are well documented (see, for example, Von Furstenberg et al., 1989;
+Contessi et al., 2014).
+3
+
+=== page 4 ===
+From December 31,2018 
+ to May 1, 2020
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+From March 4,2019 
+ to Sepetmber 18, 2020
+NoDur
+Durbl
+Manuf Enrgy
+HiTec
+Telcm
+Shops
+Hlth Utils
+From July 22,2019 
+ to February 5, 2021
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+From December 9,2019 
+ to June 25, 2021
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+From April 27, 2020 
+ to November 12, 2021
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+From Sepetmber 14, 2020 
+ to December 31, 2021
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+Figure 2: Moving window: graph estimated with the R package GGMselect (Bouvier et al.,
+2022). The four central graphs are computed on 80 time points, while the first and the last
+graphs refer respectively to the the first 70 and last 68 weeks. The window is moved by 20
+time points at the time from one graph to the next.
+To detect the possible effect of COVID-19 pandemic on the US stock market, we analyse
+the correlation structure between nine industry portfolios, considering logarithmic weekly
+returns in the years 2019, 2020, and 2021. Weekly returns are computed starting from
+the daily returns available at Kenneth R. French’s Data Library. The Kenneth R. and
+French’s Data Library provides also portfolio returns corresponding to more fragmented
+definitions of industries. However, our goal is to detect possible macro effects of the pan-
+demic in the market, and for this reason, we focus on the industry portfolios described in
+Table 1. Thanks to diversification within the same portfolio, the corresponding returns are
+less volatile and appropriately represent the tendency of a whole industry. More details
+about the construction of the portfolios can be found in Section 5.
+Figure 2 shows empirical estimates of a graph describing the conditional dependence
+structure over time. The estimates are obtained using a moving window of 80 weeks,
+shifting in steps of 20 weeks from one graph to the next. Graph estimates are obtained
+using an adaptive lasso approach as implemented in the R package GGMselect (Bouvier
+et al., 2022). From this preliminary analysis, changes in dependence are already evident, as
+well as the role of hub of the manufacturing and consumer non-durables industries. However,
+it is difficult to determine whether the pandemic had an effect on the overall structure and
+when. Moreover, it is well known that edge estimation in GGMs is sensitive to sample
+size and this empirical approach is highly dependent on the arbitrary choice of the window
+size (and corresponding sample size). To achieve our inferential goals, a sound modelling
+strategy is needed to be able to effectively infer the existence and location of change points
+due to sudden changes, still borrowing information across the entire time horizon.
+Sudden changes in volatility and dependence have been modelled generalizing either con-
+ditional or stochastic volatility models with the introduction of Markov switching regimes
+4
+
+=== page 5 ===
+(see, among others, So et al., 1998; Haas et al., 2004; Bianchi et al., 2019; Caporale and
+Zekokh, 2019). However, in a frequentist framework, Markov switching approaches require
+an arbitrary choice of the number of different regimes and, consequently, ad hoc criteria for
+model choice (see also Cribben and Yu, 2017). A full Bayesian model for evolving graphs
+has been introduced by Warnick et al. (2018); similarly to Markov switching models, here
+the graph evolves assuming one possible state out of a finite number of exchangeable (not
+consecutive) states. Still in a Bayesian framework, Schwaller and Robin (2017) develop a
+strategy for change point detection in graphical models, which, in order to preserve compu-
+tational tractability, assumes independent consecutive graphs. Their method has the often
+unrealistic implication that the graphs are estimated independently without borrowing in-
+formation across the entire time horizon. Recently, Keshavarz et al. (2020) have proposed an
+accurate algorithmic procedure, which employs multiple frequentist tests to detect abrupt
+changes in the precision matrix of a GGM, however, the procedure does not provide es-
+timates of the graph’s structure. Alternatively, penalised likelihood techniques have been
+successfully employed for estimating dynamic GGMs (Zhou et al., 2010; Kolar and Xing,
+2012; Danaher et al., 2014; Yang et al., 2015; Gibberd and Nelson, 2017; Hallac et al.,
+2017; Roy et al., 2017; Bybee and Atchad´e, 2018; Cribben, 2019; Yang and Peng, 2020;
+Liu et al., 2021), however, such approaches do not allow for uncertainty quantification on
+the number and temporal location of the abrupt changes and the graph topology. Similar
+limitations are shared also by algorithmic approaches, as the one proposed by Anastasiou
+et al. (2022). A detailed comparison between our contribution and penalised likelihood
+approaches is provided in Sections 4 and 5.
+In this work, we introduce a Bayesian dynamic GGM to detect abrupt changes in the
+conditional dependence structure between time series. Our proposal is a piece-wise constant
+stochastic volatility model. It favours sparsity at three levels by explicitly penalizing: (i)
+the number of change points; (ii) the number of edges within each graph; (iii) the number
+of edges which are activated (appear) and deactivated (disappear) at each change point. In
+a Bayesian framework, it is straightforward, at least in principle, to perform posterior infer-
+ence also on the number of change points and on their location. Finally, we note that our
+model does not assume global Gaussianity, which would imply the existence of a single Gaus-
+sian distribution for the entire temporal span. The assumption of global Gaussianity poses
+challenges in the analysis of financial returns, which are typically characterised by heavy
+tails and changes of behaviour. In our setup, we assume local Gaussianity, between two con-
+secutive change points. Our assumption on the return distribution possibly accommodates
+the excess of kurtosis typically observed in financial returns’ empirical distributions. More
+precisely, the introduction of change points allows the Multivariate Gaussian distribution
+to change along the overall time horizon so that the observed empirical distribution can be
+thought of as been drawn from a mixture of Gaussians, which can accommodate heavy tails
+(Cui, 2012).
+The paper is structured as follows. In Section 2, the dynamic GGM is presented. Sec-
+tion 3 contains a discussion of the computational challenges, the proposed algorithm, and
+a simulation study to assess the performance of the sequential Monte-Carlo procedure. Re-
+sults on simulated data and on the US stock market data can be found in Sections 4 and 5,
+respectively. Section 6 concludes the paper with a discussion about future directions and
+extensions. In Supplementary Material we provide the dataset, R codes to reproduce all
+the results in this work, and additional results on the algorithm, simulation studies, and
+the application.
+5
+
+=== page 6 ===
+2 The dynamic Gaussian graphical model
+We first introduce some definitions and notation. Let G = (V, E) represent an undirected,
+simple, and unweighted graph, where V = {1, . . . , p}, p ≥ 1, corresponds to the set of
+labelled nodes and E ⊆ { (h, k) ∈ V × V : h < k } the set of edges linking pairs of nodes.
+There is a one-to-one correspondence between G and its p × p adjacency binary matrix
+A, which is defined as follows. The element A[h, k] on the h−th row and k−th column is
+equal to 1 when an edge exists between nodes h and k, and to 0 otherwise. Note that A is
+symmetric with zeros on the main diagonal, since G is simple. When each node corresponds
+to a random variable, the graph structure can be used to encode conditional independence
+so that an edge is present between vertices h and k if and only if the h−th and k−th random
+variables are dependent conditionally on all other variables in the graph (Lauritzen, 1996).
+A powerful modelling tool is offered by GGMs, which assume that the distribution of
+the random variables represented by the nodes in V is Multivariate Gaussian. Then, the
+precision matrix Ω can be modelled conditionally on the graph, so that the presence of an
+edge between two nodes in G implies a non-zero entry in the precision matrix between the
+corresponding random variables, while the absence of an edge implies a zero entry. Let the
+cone M + be the space of symmetric positive-definite matrices on Rp×p. For graph G and
+adjacency matrix A, M +(G) ⊂ M + denotes the set of the matrices, M , with M [h, k] = 0 if
+and only if A[h, k] = 0, for any h ̸= k, so that Ω ∈ M +(G).
+In a time series setting, let Gt = (V, Et) describe the (conditional) dependence structure
+at time t between p time series, each corresponding to one node in V . We propose a prior
+distribution for the process {Gt, t ≥ 1}, obtained by letting t vary, which lies in the class of
+stochastic volatility models.
+Data are collected at common discrete time points t = 1, 2, . . . , T . We denote with
+Yt the vector of observations at time t on the p variables (i.e., returns at week t for the
+considered industry portfolios) and with Y1:T = [Yt]T t=1 the T × p data matrix. We assume
+that, conditionally on a time-indexed collection of precision matrices {Ωt, t = 1, . . . , T }, the
+vectors of observations are normally distributed and independent over time, i.e.,
+Yt | Ωt ind∼ Np(0, Ω−1 t ) for t = 1, . . . , T (1)
+where Np(µ, Σ) denotes a p-variate Gaussian distribution with mean µ and covariance ma-
+trix Σ.
+We model Ωt conditionally on a graph at time t, Gt. Then, to allow for time-varying
+dependence structure among the p variables, we introduce a sequence of random change
+points. A time point t is said to be a change point if the dependence structure among the p
+observable variables changes between t − 1 and t, i.e., if Gt ̸= Gt−1 and, consequently, Ωt ̸=
+Ωt−1. Let c1:κ = (c1, c2, . . . , cκ) be the (possibly empty) vector of ordered change points,
+which, similarly to the precision matrices and the graphs, are unobserved. Here, κ ≥ 0
+denotes the (random) number of change points. In what follows, we use the conventions
+c1:0 = ∅, c0 = 1, and cκ+1 = T + 1. Note that between consecutive change points the graph
+and the corresponding precision matrix are kept constant. Given the sequence of graphs,
+G1:T = {Gt, t = 1, . . . , T }, and change points, we assume that
+Ω1 | G1 ∼ WG1 (d, D) (2)
+and, for t ≥ 2,
+Ωt | Ωt−1, Gt, c1:κ ∼
+(
+WGt (d, D), if t ∈ {c1, . . . , cκ}
+δΩt−1 , otherwise (3)
+6
+
+=== page 7 ===
+where, δx denotes the Dirac delta distribution at x and WG(d, D) the G-Wishart distribution
+(see Roverato, 2002; Dobra et al., 2011), with shape parameter d > 2 and inverse scale
+matrix parameter D ∈ M +. Its density w.r.t. the Lebesgue measure of dimension equal to
+the free elements of a matrix in M +(G) is
+P (Ω|G) = 1 IG(d, D) |Ω|(d−2)/2 exp  − 1 2 tr(D Ω) 	 , Ω ∈ M +(G)
+The stated constraints for hyper-parameters d and D suffice to ensure the integrability of
+the above density (Diaconis and Ylvisaker, 1979). The normalizing constant is equal to
+IG(d, D) =
+Z
+M +(G)
+|Ω|(d−2)/2 exp  − 1 2 tr(D Ω) 	 dΩ
+and will be used later to compute the marginal likelihood of the data conditionally only on
+the graph structure.
+To complete the model, we next describe the graph dynamics. Denote with At the
+adjacency matrix corresponding to Gt, then, for all h, k ∈ {1, . . . , p} with h < k, we specify
+the prior distributions
+A1[h, k] | ω iid∼ Bernoulli
+ 2ω
+p − 1
+
+(4)
+and, for t ≥ 2,
+At[h, k] | At−1[h, k], c1:κ, z ind∼
+(
+| At−1[h, k] − Bernoulli
+
+2z
+p−1
+
+|, if t ∈ {c1, . . . , ck}
+δAt−1[h,k], otherwise
+(5)
+Notice that the hyper-parameter ω ∈ [0, (p − 1)/2] controls the graph sparsity, so that
+the expected number of edges for the initial graph a priori equals p ω, while the hyper-
+parameter z ∈ [0, (p − 1)/2] controls the impact of an event on graph structure when a
+change point is reached, in particular, the (a priori) expected number of edges that will
+change is equal to p z. Our prior choice is reminiscent of the one proposed in Jones et al.
+(2005), who recommend setting a prior edge inclusion probability equal to 2/(p − 1) so that
+the expected number of edges is p. The extra parameters ω and z allow for more control on
+graph sparsity and temporal dependence. We note that alternative priors can be employed
+to model the precision matrix and the graph as, for instance, the graphical horseshoe (Li
+et al., 2019) and the prior proposed by Banerjee and Ghosal (2015). The former is a prior
+used directly on the precision matrix, which requires (arbitrary) thresholding of its entries in
+order to recover a sparse graph representation. The latter is more similar to our modelling
+strategy and consists of three elements: (i) Bernoulli priors for the entries of the adjacency
+matrix, conditionally on a maximum number of edges; (ii) a Laplace prior on the non-zero
+off-diagonal elements of the precision matrix, and (iii) an exponential prior for the diagonal
+elements, still imposing the positive definiteness of the matrix. This construction is still
+computationally intensive.
+Equations (1) and (2)-(5) can be viewed as observation and state dynamics, respec-
+tively, of a hidden Markov model with the unobserved signal corresponding to the pair
+{(Gci , Ωci ), i = 0, 1, . . . , κ} (see Figure 3 for a graphical representation). For more details
+see, for example, West and Harrison (2006).
+Finally, the prior distribution for c1:κ is chosen as
+c1:κ|κ ∼ Uniform(Tκℓ)
+κ | p0 ∼ Truncated − Geometric(p0) for κ = 0, 1, . . . , KT ℓ
+(6)
+7
+
+=== page 8 ===
+Latent
+Observed Y1 . . . Yc1−1 Yc1 . . . Yc2−1 . . . Yck . . . YT
+Ωc0 Ωc1 Ωcκ
+Gc0 Gc1 . . . Gcκ
+Figure 3: Graphical representation of the model conditionally on change points. Both
+graph and precision matrix are constant between change points. Observations (Yt) are
+independent conditionally on the model parameters over time, while are iid between change
+points. Moreover, the precision matrices {Ωci , i = 1, . . . , κ} are conditionally independent
+given the sequence {Gci , i = 1, . . . , κ}.
+for hyper-parameter p0 ∈ (0, 1), so that the (a priori) number of expected change points is
+E[κ] = 1 − p0
+p0
+1 − (1 − p0)KT ℓ (p0 KT ℓ + 1)
+1 − (1 − p0)KT ℓ+1 (7)
+Through appropriate choice of p0 in (6), we are able to enforce the desired level of sparsity on
+the number of change points. Here, Tκℓ is the space of ordered κ-tuples c1 < · · · < cκ, with cj
+in {2, . . . , T }, under the minimum-span constraint that cj+1 −cj ≥ ℓ, for any j = 0, 1, . . . , κ,
+with the convention c0 = 1 and cκ+1 = T + 1. Moreover, KT ℓ is the maximum number
+of change points compatible with the minimum-span constraint. Notice that for KT ℓ
+of moderate size, the second term in the product in (7) is negligible and the Truncated
+Geometric in (6) approximates a standard Geometric distribution on N0 = {0, 1, . . . , }. The
+imposition of the minimum-span constraint defined by ℓ ensures likelihood identifiability
+between change points, leading to more stable computations and robust inference. Notice
+that, between any two change points, the sample covariance/precision matrix has p(p + 1)/2
+entries. To guarantee likelihood identifiability of the model, we need the number of data
+points between any two change points, i.e., (cj+1 − cj ), to be greater than p. This poses
+a trade-off: the lower ℓ, the more flexible the change-point detection procedure, and the
+higher ℓ, the more stable the estimates of the precision matrices. In the simulation study
+and in the application, we set ℓ equal to p + 2. When p = 9, this means that each precision
+matrix containing 45 entries is estimated with at least 99 single data points.
+3 Bayesian inference via sequential Monte-Carlo
+The dynamic GGM proposed herein is a hierarchical model, with the first layer represented
+by the change points, c1:κ, the second by graphs and precision matrices (Gcj , Ωcj ), and the
+third by the observations. Markov chain Monte-Carlo (MCMC) methods developed directly
+on such space of unobserved variables would face major challenges. We ignore the precision
+matrices in this discussion as they are later integrated out. Gibbs-type approaches would
+involve reversible-jump MCMC (Green, 1995), thus requiring the design of a joint update
+on the “model” space (as determined by the change-points) and model “parameters” of
+varying dimension (corresponding to the graphs). This joint space is entangled, with very
+limited space for maneuvering, as updates on the graph space would be heavily constrained
+by the strong prior Markovian dependencies amongst graphs.
+8
+
+=== page 9 ===
+Instead, we perform computationally effective posterior inference for the dynamic GGM
+through a tailored sequential Monte-Carlo (SMC) algorithm. The proposed Particle MCMC
+(PMCMC) method is quite appropriate for exploiting the hidden Markov model structure
+conditionally on the change points, and naturally disentangles the updates on the change
+points and the latent Markovian signal. See, e.g., Karagiannis and Andrieu (2013) and Pers-
+ing et al. (2015) for related ideas. The proposed PMCMC algorithm is better understood
+as comprised of an ‘outer’ cycle and an ‘inner’ cycle. In the former, the change points are
+updated via a reversible jump Metropolis-Hasting (M-H) algorithm. In the latter, a parti-
+cle filter, of enhanced performance due to a combination of adaptive tempering, dynamic
+resampling, and mutation steps, is employed to sample the sequence of graphs and com-
+pute the acceptance probability of the outer algorithm. In particular, for each M-H step,
+the inner component provides an unbiased estimate of the conditional likelihood given the
+proposed change point sequence together with a corresponding proposed graph sequence.
+Adaptive tempering and resampling steps are used to improve the robustness of such esti-
+mate, while the mutation step is used both to bring particles closer to the modal region of
+the likelihood and to avoid depletion of the number of unique particles which can otherwise
+be a consequence of successive resampling and tempering.
+The overall PMCMC algorithm is well-understood as an “exact-approximate” one, in
+the sense that it targets the correct posterior on the space of graphs and change points,
+thanks to the unbiasedness (and positivity) of the estimator provided by the inner particle
+filter.
+3.1 Outer component
+The key component in the development of the M-H step is the choice of proposal distribution,
+q(c′ 1:κ′ | c1:κ), where c1:κ and c′ 1:κ′ are the current and proposed collections of ordered change
+points, respectively. Starting from c1:κ, one of four alternative events (namely a birth, a
+death, a global move, or a local move) generates the proposed new value. With probabilities
+equal to P (B | c1:κ), P (D | c1:κ), P (Mglob | c1:κ) and P (Mloc | c1:κ), one of the following
+four events takes place, respectively: a new change point is added to the current set (birth);
+a change point is removed from the current set (death); one of the existing change points
+is moved to another position (global move); one of the existing change points is moved to
+another position in-between its neighbours (local move). When a new change point, c∗, is
+created, c∗ is chosen uniformly over the set B(c1:κ, ℓ) ⊂ {2, . . . , T } of allowed positions (i.e.,
+satisfying the minimum-span constraint), of size |B(c1:κ, ℓ)| =: n(c1:κ, ℓ) ≥ 0. Thus, in the
+birth scenario
+q(c′ 1:κ′ | c1:κ) = P (B | c1:κ) n(c1:κ, ℓ) , κ′ = κ + 1, c′ 1:κ′ = c1:κ ∪ c∗, c∗ ∈ B(c1:κ, ℓ) (8)
+When a change point, c′, is removed, the change point is chosen uniformly among the
+current change points, i.e., in the death scenario
+q(c′ 1:κ′ | c1:κ) = P (D | c1:κ) κ , κ′ = κ − 1, c′ 1:κ′ = c1:κ \ c′, c′ ∈ c1:κ (9)
+To improve mixing and posterior exploration, we introduce also two move steps. When
+a change point is moved, firstly, a change point c′ ∈ c1:κ is selected uniformly among the
+current change points and removed. Then, if the step is a global move a new change point
+is selected uniformly in B(c1:κ \c′, ℓ). If instead the step is a local move a new change point
+c∗ is selected with probability proportional to
+exp{−λ |c∗ − c′|}1 {c∗∈[¯cl,¯cr ]} (10)
+9
+
+=== page 10 ===
+for algorithmic parameter λ > 0, with
+¯cl = cl + ℓ, ¯cr = cr − ℓ
+where cl and cr denote the left-side and right-side neighbours of c′ in c0:κ+1. Thus, the
+proposal kernel for a move step is
+q(c′ 1:κ′ | c1:κ) = P (Mglob | c1:κ) κ n(c1:κ \c′, ℓ) + P (Mloc | c1:κ) e−λ |c∗−c′| κ P¯cr χ=¯cl e−λ |c∗−χ| 1 {c∗∈[¯cl,¯cr ]}
+κ′ = κ, c′ 1:κ′ = c1:κ \c′ ∪ c∗, c′ ∈ c1:κ, c∗ ∈ B(c1:κ \c′, ℓ) (11)
+Note that we prefer to write the joint kernel for both the global and local move, as the
+same configuration c′ 1:κ might be reached by both type of moves. This needs to be accounted
+for when computing the M-H acceptance probability to ensure detailed balance.
+Finally, we choose the event probabilities as
+P (B | c1:κ) =
+
+
+
+1, if κ = 0
+0, if n(c1:κ, ℓ) = 0
+qB , otherwise
+P (D | c1:κ) =
+
+
+
+0, if κ = 0
+q′ D, if n(c1:κ, ℓ) = 0
+qD, otherwise
+and P (Mglob | c1:κ) = P (Mloc | c1:κ) = [1 − P (B | c1:κ) − P (D | c1:κ)]/2
+(12)
+The Metropolis-Hastings acceptance probability is equal to
+1 ∧ P (Y1:T |c′ 1:κ′ )P (c′ 1:κ′ ) q(c1:κ|c′ 1:κ′ ) P (Y1:T |c1:κ)P (c1:κ) q(c′ 1:κ′ |c1:κ)
+where P (Y1:T | c1:κ) is the marginal likelihood of the data given the change points, i.e.,
+P (Y1:T | c1:κ) =
+Z
+P (Y1:T | G1:T )P (G1:T |c1:κ)dG1:T
+with
+P (Y1:T | G1:T ) =
+Z
+P (Y1:T | G1:T , Ω1:T )P (Ω1:T | G1:T )dΩ1:T
+Since P (Y1:T | c1:κ) is not available in closed form, it needs to be estimated. Algorithm 1
+contains the pseudo-code for the outer part of the algorithm described in this section. In
+the next section we describe the SMC algorithm to approximate the marginal likelihood.
+3.2 Inner Component: Particle Filter
+As already mentioned, the inner component of the algorithm is used to compute P (Y | c1:κ),
+i.e., the likelihood values required in the acceptance probability of the outer M-H, and to
+provide proposed samples of the graphs to be accepted or rejected by the outer algorithm.
+To compute the marginal likelihood given the change point sequence, a standard boot-
+strap particle filter with multinomial resampling carried out at each change point, samples
+N ≥ 1 particles {G(n) cj }N n=1, for 0 ≤ j ≤ κ, from the joint distribution
+NY
+n=1
+P (G(n) c0 ) ×
+κY
+j=1
+ NY
+n=1
+ NX
+l=1
+w(l) j−1
+PN
+m=1 w(m) j−1 P (G(n) cj | G(l) cj−1 ) 
+10
+
+=== page 11 ===
+Algorithm 1 Outer algorithm - Reversible jump M-H
+Input: change point sequence c1:κ; B(c1:κ, ℓ); likelihood value P (Y1:T |c1:κ);
+prior value P (c1:κ).
+Output: new change point sequence ˜c1:˜κ; B(˜c1:˜κ, ℓ); likelihood value P (Y1:T |˜c1:˜κ);
+prior value P (˜c1:˜κ).
+Sample event E from {B, D, Mglob, Mloc} according to (12);
+if E = B then
+Sample a new change point uniformly from B(c1:κ, ℓ) and propose c′ 1:κ′ = c1:κ ∪ c′;
+Compute q(c′ 1:κ′ | c1:κ) according to (8);
+else
+Sample uniformly and remove a change point c′ from c1:κ;
+if E = Mglob or Mloc then
+if E = Mglob then
+Sample a new change point c∗ uniformly from B(c1:κ \c′, ℓ);
+else
+Sample a new change point c∗ from the interval [ ¯cl, ¯cr] according to (10);
+Propose c′ 1:κ′ = c1:κ \c′ ∪ c∗ and compute q(c′ 1:κ′ | c1:κ) according to (11);
+else
+Propose c′ 1:κ′ = c1:κ \c′ and compute q(c′ 1:κ′ | c1:κ) according to (9);
+Determine B(c′ 1:κ′ , ℓ) and compute q(c1:κ | c′ 1:κ′ ) according to (8), (9), or (11), respectively;
+Compute prior P (c′ 1:κ′ ) and likelihood P (Y1:T | c′ 1:κ′ ) for proposed configuration;
+Sample u from a Uniform(0, 1);
+if u ≤
+P (Y1:T |c′ 1:κ′ )P (c′ 1:κ′ ) q(c1:κ|c′ 1:κ′ )
+P (Y1:T |c1:κ)P (c1:κ) q(c1:κ|c′ 1:κ′ ) then
+Return c′ 1:κ′ , B(c′ 1:κ′ , ℓ), P (Y1:T |c′ 1:κ′ ), P (c′ 1:κ′ ).
+else
+Return c1:κ, B(c1:κ, ℓ), P (Y1:T |c1:κ), P (c1:κ).
+where the unnormalised weights are defined as
+w(n) j = P (Ycj :cj+1−1 | G(n) cj ), 1 ≤ n ≤ N, 0 ≤ j ≤ κ
+The unbiased estimate ˆP (Y | c1:κ) of P (Y | c1:κ) could then be obtained as
+ˆP (Y1:T | c1:κ) =
+κY
+j=0
+ 1
+N
+NX
+n=1
+w(n) j  (13)
+However, it is often the case that further algorithmic advances must complement the stan-
+dard particle filter to control the variance of the estimate (13). It is well-understood that
+such variability is critically linked to the performance of the overall PMCMC algorithm.
+11
+
+=== page 12 ===
+Algorithm 2 Inner Algorithm - Particle Filter with Tempering
+Input: Data Y1:T ; change points c1:κ; number of particles N ; ESS threshold ϵ;
+number Sj of temperatures for graph j, ϕ0,j ≡ 0, ϕ0,Sj +1 ≡ 1, 0 ≤ j ≤ κ;
+number of mutation steps M ≥ 1; temperatures {ϕ1,j , . . . , ϕSj ,j };
+M-H kernel ¯Pj,s(Gcj |Gcj , Gcj −1), 0 ≤ j ≤ κ, 1 ≤ s ≤ Sj + 1; ¯P M j,s denotes M iterations of such a kernel;
+hyper-parameters ω, z, d, D.
+Output: Unbiased estimate ˆP (Y1:T |c1:κ) > 0 and proposed sequence (Gc0 , . . . , Gcκ ).
+(Actions over n are understood to be repeated for 1 ≤ n ≤ N .)
+Set ˆP = 1;
+for j in 0 : κ do
+if j = 0 then
+Sample G0,n c0 iid∼ P (Gc0 ) and set w0,n 0 = 1;
+else
+Initialise particles G0,n cj ind.∼ P (Gcj |GSj−1,n cj−1 );
+Initialise weights w0,n j = wSj−1+1,n j−1 ;
+for s in 1 : Sj + 1 do
+Calculate weights ws,n j = ws−1,n j · h P (Ycj :cj+1−1|Gs−1,n cj ) iϕj,s−ϕj,s−1 ;
+if ESS(ws,1:N j ) < ϵ N then
+ˆP ← ˆP · 1 N PN n=1 ws,n j ;
+Resample {Gs−1,n cj , GSj−1,n cj −1 } according to the weights {ws,n j };
+Mutate particles, i.e., sample Gs,n cj ind.∼ ¯P M j,s (Gcj |Gs−1,n cj , GSj−1,n cj−1 );
+Set ws,n j = 1;
+else
+set Gs,n cj = Gs−1,n cj ;
+Sample a graph Gcκ from {GSκ+1,n cκ , wSκ+1,n κ }n and retrieve its genealogy, (Gc0 , . . . , Gcκ ),
+amongst particles {GS0+1,n c0 }n,. . . , {GSκ−1+1,n cκ−1 }n.
+Return ˆP (Y1:T |G1:T ) = ˆP and the proposed sequence (Gc0 , . . . , Gcκ ).
+See e.g. Pitt et al. (2012); Doucet et al. (2015); Sherlock et al. (2015) where, in various
+model settings, standard deviations centred around 1 are proposed for the estimate of the
+logarithm of the normalising constant, with exponential decay in performance for PMCMC
+reported when the standard deviation exceeds a (not too high) threshold.
+A standard approach to reduce standard deviation for given number of particles, is
+via the application of tempering, i.e. introduction of a sequence of temperatures together
+with corresponding mutation steps. Such approach has been shown, in cases, to reduce the
+required number of particles for a target error from exponential to quadratic in the number
+T of log-likelihood terms, see e.g. Beskos et al. (2014); Ruzayqat et al. (2021). Application
+12
+
+=== page 13 ===
+of tempering will indeed be critical for the class of models we are considering in this work,
+as shown in Section 3.2.4. The temperatures are determined on-the-fly, thus avoiding the
+introduction of additional tuning parameters in the algorithm. The complete algorithm can
+be understood as a particle filter applied on a Feynman-Kac model (Del Moral, 2004) that
+we extend to include additional Markov iterations and potentials. The overall approach is
+summarised in Algorithm 2. We stress that the particle filter that includes the tempering
+and mutation steps will still provide unbiased estimates of p(Y1:T |c1:κ), and the induced
+overall PMCMC method will still target the exact posterior P (c1:κ, Gc0:cκ |Y1:T ), see e.g. the
+original paper on PMCMC (Andrieu et al., 2010) for a detailed justification.
+3.2.1 Preliminary run – Determination of temperatures
+Within Algorithm 2, the sequence of temperatures is treated as given. In practice, at each
+iteration of the outer algorithm, the temperatures are determined by a separate preliminary
+and independent execution of the particle filter, that identifies and stores the temperatures,
+that are later used within Algorithm 2. Similar ideas have been used in the SMC literature,
+see e.g. Jasra et al. (2011). That is, we first determine the temperatures according to a
+target effective sample size (ESS), and, then, apply the particle filter in Algorithm 2, with
+the obtained temperatures, to produce a robust unbiased estimator of the likelihood needed
+to compute the acceptance probability in Algorithm 1.
+We describe here how to compute the temperatures {ϕ1,j , . . . , ϕSj ,j } used in Algorithm 2,
+for Sj ≥ 0, where ϕ0,j ≡ 0, ϕ0,Sj +1 ≡ 1, and 0 ≤ j ≤ κ. Note that Sj , the number
+of temperatures, can vary across graphs at different change points, i.e., it depends on j.
+Within this subsection, particles and weights Gs,n cj , ws,n j refer to such a preliminary execution
+of the particle filter. The temperatures are selected on-the-fly, based on the target ESS,
+denoted by ESS0, with ESS0 = ϵ N , ϵ ∈ (0, 1). Consider the current collection of particles
+and weights, Gs−1,n cj and ws−1,n j , generated while filtering data points Ycj :cj+1−1, and the
+corresponding likelihood factor
+
+P (Ycj :cj+1−1 | Gcj )
+ϕs−1,j
+up to the present step. Then, the
+next temperature ϕs is determined so that the ESS equals the target, i.e., ESS(ϕs) = ESS0.
+More precisely, define the next set of weights as function of the next temperature
+ws,n j (ϕ) = h P (Ycj :cj+1−1 | Gs−1,n cj ) iϕ−ϕs−1,j
+and consider
+ESS(ϕ) :=
+PN
+n=1 wn s,j (ϕ) 2
+PN
+n=1
+
+wn s,j (ϕ) 2 = ϵ N
+whose solution – assuming it exists within (ϕs−1,j , 1] – provides the next temperature ϕs,j .
+The solution is obtained with a simple fast bisection method. If ESS(1) ≥ ϵN , we simply
+select ϕ = 1. With this procedure we obtain all temperatures related to data Ycj :cj+1−1 and
+we can then proceed to the next filtering step. We set ϵ to 1/2 to obtain a minimum ESS
+of N/2, which is a common choice (see, e.g., Chopin et al., 2020, p.133). See Algorithm 3
+for a detailed description.
+3.2.2 Determination of mutation kernel ¯P
+The mutation kernel ¯P is used within the algorithm to jitter particles, and move them
+towards the centre of the support of each filtering distribution under consideration during
+a full application of the particle filter. The addition of mutation steps has been shown
+13
+
+=== page 14 ===
+Algorithm 3 Inner Algorithm - Temperature Tuning (Preliminary particle filter)
+Input: Data Y1:T ; change points c1:k; number of particles N ;
+hyper-parameters w, z, d, D; ESS threshold ϵ; mutation steps M ≥ 1;
+M-H kernel ¯Pj,s(Gcj |Gcj , Gcj −1) that preserves the law
+P (Ycj :cj+1−1|Gcj )
+ϕj,s
+· P (Gcj |Gcj −1), ¯P M j,s denotes M iterations of such a kernel.
+Output: Temperatures {ϕ1,j , . . . , ϕSj ,j }, Sj ≥ 0, ϕ0,j ≡ 0, ϕ0,Sj +1 ≡ 1, 0 ≤ j ≤ κ.
+(Actions over n are understood to be repeated for 1 ≤ n ≤ N .)
+for j in 0 : κ do
+if j = 0 then
+Sample G0,n c0 iid∼ P (Gc0 ) and set w0,n 0 = 1;
+else
+Initialise particles G0,n cj ind.∼ P (Gcj | GSj−1,n cj−1 );
+Initialise weights w0,n j = wSj−1+1,n j−1 ;
+s ← 1; ϕ0,j ← 0; ϕs,j ← 1;
+while ϕs,j ̸= ∅ do
+Find ϕs,j ∈ (ϕs−1,j , 1] so that ESS(ϕs,j ) ≥ ϵN ;
+if ϕs,j = ∅ then
+Sj = s − 1;
+else
+Set ws,n j = h P (Ycj :cj+1−1 | Gs−1,n cj ) iϕs,j −ϕs−1,j ;
+Resample {Gs−1,n cj :cj+1−1, GSj−1,n cj −1 } according to the weights {ws,n j };
+Set ws,n j = 1;
+Mutate particles, i.e., sample Gs,n cj ind.∼ ¯P M j,s (Gcj | Gs−1,n cj , GSj−1,n cj−1 );s ← s + 1
+Set wSj +1,n j = h P (Ycj :cj+1−1 | Gs−1,n cj ) i1−ϕs−1,j ;
+Return {ϕ1,j , . . . , ϕSj ,j }, Sj ≥ 0, 0 ≤ j ≤ κ.
+to be, in many cases, critical, both in theoretical and experimental works, see e.g. Beskos
+et al. (2014); Ruzayqat et al. (2021) and Llopis et al. (2018); van Leeuwen et al. (2021),
+respectively. In Section 3.2.4, we illustrate such impact for the specific model at hand
+through a simulation study.
+For the overall algorithm to ensure a correct particle filter on an extended space, the
+user-specified mutation kernel ¯Pj,s(Gcj | Gcj , Gcj ) must have invariant distribution
+Gcj 7→
+
+P (Ycj :cj+1−1 | Gcj )
+ϕj,s
+× P (Gcj | Gcj −1)
+14
+
+=== page 15 ===
+where we use the convention that Gc0−1 = ∅ in which case the rightmost term becomes the
+prior defined by (4). This is readily achieved via a M-H step. That is, for each current
+segment cj : cj+1 − 1, temperature ϕj,s, graph Gcj , with adjacency matrix Acj = Acj [h, k],
+and given Gcj −1, we define a proposed graph G′ cj , with adjacency matrix A′ cj = A′ cj [h, k],
+using the symmetric transition
+Acj [h, k]′ | Acj [h, k] ind∼ | Acj [h, k] − Bernoulli  2s0 p−1  | (14)
+for algorithmic tuning parameter s0 ∈ (0, (p − 1)/2). Thus, under the proposal in (14), the
+expected number of flips in the edges in s0 · p. The acceptance probability for the mutation
+step is
+1 ∧
+h
+P (Ycj :cj+1−1 | G′ cj ) iϕj,s × P (G′ cj | Gcj−1 )
+
+P (Ycj :cj+1−1 | Gcj )
+ϕj,s
+× P (Gcj | Gcj−1 )
+3.2.3 Likelihood given the graph structure
+An important quantity required within the particle filter is the marginal likelihood
+P (Ycj :cj+1−1 | Gcj ) =
+Z
+M +(Gcj )
+P (Ycj :cj+1−1 | Ωcj )P (Ωcj | Gcj ) dΩcj
+Since the G-Wishart law is conjugate, we can integrate out the precision matrices Ω1:T .
+That is, we have (Atay-Kayis and Massam, 2005)
+P (Ycj :cj+1−1 | Gcj ) = 1 (2π)(cj+1−cj )p/2 IGcj (d + (cj+1 − cj ), D + Hj ) IGcj (d, D)
+where, for j = 0, . . . , κ,
+Hj =
+cj+1−1X
+i=cj
+Yi Y ⊤ i
+Notice that, while computing the likelihood of the graphs, we marginalize over Ωt and,
+thus, the particles (from the inner algorithm) consist of only the graphs. However, after
+running the particle filter and thanks to the conjugacy properties of the G-Wishart law,
+a straightforward independent sampler can be used to get both marginal and conditional
+posterior of the precision matrices, where with conditional posterior distribution we mean
+the posterior distribution conditional on the point estimates of the graphs. The normalising
+constant of the G-Wishart prior can be factorised (Roverato, 2002; Uhler et al., 2018), i.e.,
+for a given graph G,
+IG(d, D) =
+Qr
+m=1 IGPm (d, DPm )Qr
+m=2 IGSm (d, DLm ) (15)
+where P1; L2, P2; . . . ; Pr, Lr, is a perfect sequence of prime components and corresponding
+minimal separators of G (see, e.g., Chapter 2 of Lauritzen, 1996, for details) and DPm is the
+submatrix of D corresponding to the rows and columns in Pm. In the case of a decomposable
+graph G, all prime components are complete graphs. For complete graphs the G-Wishart
+distribution coincides with the Hyper-Wishart distribution (Dawid and Lauritzen, 1993),
+for which an analytical expression for the normalising constant is available:
+IGPm (d, DPm ) = 2(d+pm−1)pm/2Γpm ( d+pm−1 2 ) |DPm |(d+pm−1)
+15
+
+=== page 16 ===
+Here Γd(·) is the multivariate Gamma function of dimension d and pm is the dimension
+of DPm . Note that, by construction, the minimal separators are complete sub-graphs of
+G, thus the terms in the denominator in (15) are analytically computable. For a general,
+non-decomposable graph G, Roverato (2002); Dellaportas et al. (2003); Atay-Kayis and
+Massam (2005); Carvalho et al. (2007) propose Monte-Carlo methods for the approximation
+of IG(d, D). Herein, to compute the normalizing constant, we employ the method of Atay-
+Kayis and Massam (2005) implemented in the function gnorm of the R package BDgraph
+(Mohammadi et al., 2022). When dealing with large number of nodes, the implementation
+of more sophisticated algorithms, such as the exchange algorithm by Murray et al. (2006), is
+advisable (see, e.g., Cheng and Lenkoski, 2012; van den Boom et al., 2022, for an application
+to GGMs).
+3.2.4 Evaluation of SMC approximation
+The inner SMC algorithm provides unbiased estimates of the marginal likelihood condi-
+tionally on the change points. The variability of such estimates depends on the number of
+particles N , and the effect of the tempering and mutation steps, with the number of the
+latter, M , specified by the user. Thus, a trade-off is posed between accuracy of estimates
+and computational time.
+To assess the effect of the number of particles and the mutation step, and, in general,
+obtain insights into the performance of the SMC component, we perform a series of simu-
+lation studies. We simulate data for p = 10 nodes and T = 200 observation instances. We
+then fix the change point sequence to its known true value, and carry out 30 independent
+executions of the SMC algorithm, for each different combination of N ∈ {200, 500, 750} and
+M ∈ {0, 5, 10, 20}. Recall that the mutation steps are performed only when the ESS falls
+below the threshold ϵ N , where ϵ is here fixed to be N/2. We consider two data generating
+mechanisms. The first (Scenario A) has no change points and the p variates are mutually
+independent (see Figure B.1.1 (a) in the Supplement for the corresponding graph). In Sce-
+nario B we set a change point at t = 70, and the two graphs (before and after the change
+point) encode some non-trivial dependence. The full graph structure of Scenario B is de-
+scribed later in Section 4.1 and displayed in Figure B.1.2 of the Supplement. Figure A.1 of
+the Supplement and Figure 4 show the box-plots of the estimates of the log-likelihood, the
+standard deviation, and the running time of the inner SMC algorithm coded in R (and run
+with an Intel Xeon W-1250 processor), under scenarios A and B, respectively.
+Under Scenario A, the variability of the estimates is limited, as expected, for all pairs
+(N, M ) since data are simulated under the assumption of independence with no change
+points. However, in real scenarios, as the analysis of financial markets, this is highly un-
+likely to be the case and the computational machinery here developed is essential. Figure 4
+shows similar box-plots obtained under the more realistic and challenging Scenario B. Here,
+we obtain higher variability with values of standard deviation ranging from 2.986 to 29.297.
+These results highlight the importance of the tempering and mutation steps for the over-
+all algorithmic performance (even accounting for the increased computational time), and
+in particular for recovering the complex dependence structures. Their role is essential in
+reducing variability of the estimates of the normalising constant. Lastly, notice that com-
+putational time is increased compared to Scenario A as a consequence of: (i) the presence
+of a change point; (ii) the computational complexity of the Monte Carlo iterations used to
+compute IG(d, D), which increases when particles concentrate on less sparse graphs; (iii)
+and the increased number of times the ESS threshold is reached.
+16
+
+=== page 17 ===
+−2600 −2500 −2400
+N =  200 M = 0 
+ Stdev= 25.506 
+ Time =  1.777 sec
+−2600 −2500 −2400
+N =  200 M = 5 
+ Stdev= 6.223 
+ Time =  6.579 sec
+−2600 −2500 −2400
+N =  200 M = 10 
+ Stdev= 5.343 
+ Time =  9.293 sec
+−2600 −2500 −2400
+N =  200 M = 20 
+ Stdev= 5.208 
+ Time =  11.603 sec
+−2600 −2500 −2400
+N =  500 M = 0 
+ Stdev= 29.297 
+ Time =  4.48 sec
+−2600 −2500 −2400
+N =  500 M = 5 
+ Stdev= 5.666 
+ Time =  18.97 sec
+−2600 −2500 −2400
+N =  500 M = 10 
+ Stdev= 4.621 
+ Time =  30.719 sec
+−2600 −2500 −2400
+N =  500 M = 20 
+ Stdev= 3.883 
+ Time =  41.037 sec
+−2600 −2500 −2400
+N =  750 M = 0 
+ Stdev= 22.772 
+ Time =  6.629 sec
+−2600 −2500 −2400
+N =  750 M = 5 
+ Stdev= 5.261 
+ Time =  31.143 sec
+−2600 −2500 −2400
+N =  750 M = 10 
+ Stdev= 4.921 
+ Time =  48.138 sec
+−2600 −2500 −2400
+N =  750 M = 20 
+ Stdev= 2.986 
+ Time =  82.469 sec
+Figure 4: Log-likelihood estimates for Scenario B obtained with the particle filter by fixing
+the change points to the truth. Distinct box-plots correspond to different numbers of
+particles N and/or mutations steps M . For each pair (N, M ), we run the algorithm 30
+times and obtain the log-likelihood estimates. Each box-plot shows the distribution of such
+estimates. The variability of the estimates is rather limited for all pairs (N, M ), provided
+that M ≥ 5.
+4 Model performance on simulated data
+WE investigate model performance through a simulation study which includes five different
+scenarios. For each scenario, we simulate data for T = 200 observation times. There are
+no change points in Scenarios 1 and 2, there is one change point in Scenario 3, and there
+are three change points in Scenario 4.Finally, in Scenario 5 the dependence structure, as
+captured by the precision matrix, presents smooth changes and thus our model is misspec-
+ified. The number of nodes is p = 10 in Scenarios 1, 2, 3, and 5, and p = 20 in Scenario 4.
+In terms of the abruptness of changes in the precision matrix, Scenario 4 presents highly-
+abrupt changes, Scenario 3 presents mildly-abrupt changes, and Scenario 5 presents smooth
+changes. For a detailed description, see Sections 4.2, 4.1 and Section B.4 of the Supplement.
+To carry out posterior inference, we run the algorithm to estimate the change point
+sequence, using N = 200 particles, M = 10 mutation steps, and performing 10,000 iterations
+of the outer component, of which the first 2,000 are discarded as burn-in. Then, we re-run
+only the inner SMC with N = 1, 000 particles and M = 20 mutation steps to obtain the
+graph estimates conditionally on the maximum-a-posteriori (MAP) estimate of the change
+point sequence obtained in the first step. When the true sequence of change points is the
+null set (Scenarios 1 and 2), we initialise the MCMC chain at (c1 = 51, c2 = 101, c3 = 151),
+17
+
+=== page 18 ===
+whereas when the graph and/or the precision matrix changes (Scenario 3, 4, and 5), we
+initialise the chain to the state of zero change points. In real applications, when the change
+points are unknown, we suggest initialising the chain to no change points. The adopted
+initialization for these simulations better tests the convergence speed of the algorithm.
+The inference results for no change points show the expected good performance of the
+model in terms of both identification of change points and recovery of the dependence
+structure. The posterior concentrates on the true state of no change points, with posterior
+probability of no-change points not falling below 0.98 in all replicates. The area under the
+curve (AUC) for edge detection is approximately 1. We refer to section B of the Supplement
+for a more detailed presentation of the simulation studies for Scenarios 1, 2, and 5. The
+following Sections describe Scenarios 3 and 4.
+4.1 Simulation results for one change point
+The third simulation scenario (Scenario 3) is obtained by setting one change point at t = 70
+and generating two precision matrices as in Peterson et al. (2015) and Molinari et al.
+(2022b). In particular, we first define the Ωc0 and then derive Ωc1 as perturbation of Ωc0 ,
+which defines a mildly-abrupt change. Firstly, Ωc0 is obtained by setting diagonal elements
+equal to 1, the first off-diagonal elements to 0.5, i.e., Ωc0 [h, h + 1] = Ωc0 [h + 1, h] = 0.5, for
+h = 1, . . . , 9, and the remaining elements to 0. To construct Ωc1 , we randomly remove five
+edges among the active ones in Gc0 and set to 0 the corresponding entries in the precision
+matrix. Then we add five randomly selected edges drawn from the set of inactive edges
+in Gc0 . Finally, a precision entry equal to 0.2 is assigned to the new edges. The obtained
+matrix is not necessary positive-definite, and, to this end, we compute the nearest positive-
+definite approximation through the R function nearPD (Higham, 2002), available in the R
+package Matrix (Bates et al., 2022). The resulting graphs are shown in Figure B.1.2 of the
+Supplement. We note that the computation of the nearest positive-definite matrix may
+result in a strong shrinkage of the non-zero elements in the precision matrix, which may
+cause unrealistic high values in the correspondent covariance matrix. However, this is not
+the case in our simulation scenario (see Figure B.1.4 and B.1.5 in the Supplement, where
+the simulated covariance matrices and data are displayed). We consider 20 replicates of
+Scenario 3.
+The hyperparameter ω in (4) is determined using an approach inspired by empirical
+Bayes techniques, so that a priori the expected number of edges for the graphs is equal to
+the number of edges detected by estimating one unique graph using all the time points. To
+this end, we estimate the graph using an adaptive lasso approach, which is a modification of
+the estimation procedure proposed by Meinshausen and B¨uhlmann (2006) inspired by the
+adaptive lasso of (Zou, 2006), as implemented in the R package GGMselect (Bouvier et al.,
+2022). For the hyperparameter z in (5), we opt for z = 0.1, so that a priori we expect
+only one edge to change at each change point, favouring graph similarity. This choice
+also allows us to better understand model performance and hyperparameter sensitivity,
+as in our simulations we force 10 edges to change across the change point, an event to
+which our prior associates a probability lower than 4 · 10−8. The hyperparameter p0, which
+controls the a priori number of the change points, is set to p0 = 0.1 to favour sparsity.
+The hyperparameters of the G-Wishart distribution are set to the common values of δ = 3
+and D = Idp. In Section C.5 of the Supplement we provide hyperparameter sensitivity
+analysis carried on the real dataset. The change point detection procedure appears to be
+unsensitive to the choice of the hyperparameters and the graph recovery performance is
+limitedly affected by the choice of z.
+18
+
+=== page 19 ===
+True MAP MAP prob 90% 95%
+change point est. prob. κ = 1 C.I. C.I. Mean Median
+Rep. 10 (70) 0.306 0.971 [70, 74] [70, 79] 72.21 71
+Rep. 5 (70) 0.294 0.987 [70, 80] [70, 80] 73.34 72
+Rep. 3 (70) 0.289 0.975 [69, 79] [68, 79] 71.17 70
+Scenario 3 (70)
+Rep. 11 (68) 0.245 0.966 [68, 76] [68, 81] 70.60 70
+Rep. 20 (73) 0.179 0.965 [67, 75] [66, 77] 71.19 71
+Rep. 12 (74) 0.191 0.933 [67, 83] [67, 83] 73.53 73
+Table 2: Scenario 3: Posterior summaries for change points of the three best and three
+worst replicates in terms of MAP estimate and MAP probability. MAP estimates, MAP
+probabilities (for the posterior over all configurations of change points), posterior probability
+of the number of change points being 1, and credible intervals, mean and median of the
+position of the change point (conditionally on having one change point). Credible intervals
+are obtained computing the smallest credible sets with 90% and 95% credibility, which are
+not necessary continuous intervals, and then using the minimum and the maximum time
+points in the credible set as extremes of the provided interval.
+0.25
+0.50
+0.75
+1.00
+0.00 0.25 0.50 0.75 1.00
+PPI Threshold
+FPR
+(a) False positive rate
+0.0 0.2 0.4 0.6 0.8 1.0
+0.0 0.2 0.4 0.6 0.8 1.0
+FPR (fall−out)
+TPR (sensitivity)
+AUC = 0.86349 (b) Receiver operating characteristic curve
+Figure 5: Panel (a): FPR versus PPI threshold, for Scenario 3, computed via 20 replicates.
+Panel (b): ROC curve in Scenario 3, computed via 10 replicates.
+Table 2 contains posterior summaries of the three best and three worst replicates based
+on the accuracy in the recovery of the change point configuration. Summaries for all repli-
+cates can be found in Section B.3 of the Supplement. In all replicates, the posterior distri-
+bution of the number of change points is concentrated around 1, with a posterior probability
+greater or equal to 0.91. Moreover, though the space of sequences that satisfy the minimum
+duration constraint of ℓ = 12 for T = 200 includes more than 4 · 1012 sequences, in eight
+of the 20 replicates the MAP estimate (which minimises the 0 − 1 loss function) coincides
+with the true state c⋆ = 70, and in all replicates the MAP is contained in the interval
+[68, 74]. Moreover, Table 2 reports also the 90% and 95% credible intervals, the mean, and
+the median for the position of the change point, confirming that the posterior is concen-
+trated around the true state in all replicates. Figure 5a shows the combined false positive
+rate (FPR) of edge detection for the two graphs as a function of the threshold used for the
+posterior probability of inclusion (PPI). FPRs show a reasonable pattern, and, for the 0.5
+threshold, the FPR is 0.156. Figure 5b displays the combined ROC curve, with an AUC
+19
+
+=== page 20 ===
+approximately equal to 0.86. The graph estimates used to evaluate the FPRs are obtained
+conditionally on the estimated change point sequence, even when it does not coincide with
+the true one. Indeed, the MAP always identifies a single change point, so, we compare the
+estimated graphs before/after the estimated change point, with the true graph before/after
+the true change point for fairness of results.
+Lastly, we compare the results with those obtained by applying the group-fused graphical
+lasso (GFGL), introduced by Gibberd and Nelson (2017) (see also Gibberd and Roy, 2017),
+and the LOcal Group Graphical Lasso Estimation (loggle) of Yang et al. (2015). Similarly
+to our proposal, GFGL consists of a piece-wise constant graphical model. Differently from
+our model, it is estimated employing a penalized likelihood approach, where two penalties
+act favouring both sparsity of the graph structure (i.e., shrinkage penalty) and sparsity in
+the number of change points (i.e., smoothing penalty). The loggle approach is also based
+on a penalised likelihood approach, but it assumes that the graph topology is gradually
+changing over time and, thus, cannot be used to detect change points. We compare our
+approach with an “oracle version” of loggle, where we estimate the graphs knowing the
+position of the change points.
+From a theoretical point of view, both GFGL and loggle prohibit principled uncertainty
+quantification on the number and location of change points and graph structure. Contrarily,
+our strategy allows for straightforward uncertainty quantification, which is one of teh main
+advantages of the Bayesian framework. However, as it is well-known, Bayesian posterior
+inference typically comes at the expense of the computational time needed to estimate
+the model. So, in this scenario, GFGL and loggle produce estimates in a few seconds or
+minutes and our dynamic Gaussian graphical model requires hours to be estimated (see
+D.2 in the Supplement for details on computational time). Results from the GFGL model
+are obtained for different values of the hyperparameters λ1 and λ2. The hyperparameters
+λ1 and λ2 control respectively the shrinkage and the smoothness of the solution; for more
+details see Gibberd and Nelson (2017). Detailed output summaries for the GFGL are
+presented in Section B.3 of the Supplement. As already noticed by Gibberd and Nelson
+(2017), GFGL’s results can be highly sensitive to the choice of the hyperparameters in
+terms of both detected change points and recovered graph structure. In our experiment,
+the number of change points estimated by GFGL varies from one to seven, depending on
+the simulation replicate and on the choice of hyperparameters λ1 and λ2. The location of
+the change points also varies largely across the different simulation replicates. Contrary,
+our model identifies the correct number of change points and their approximate position
+in all replicates. The “oracle version” of the loggle model gives a FPR of 0.242 and a
+TPR of 0.825. Contrary, with our approach, if we fix the FPR to 0.242 the corresponding
+TPR is 0.895, fixing the TPR to 0.825 leads to a FPR of 0.181. (see Table B.3.2 in the
+Supplement).
+4.2 Simulation results for more changes points and nodes
+The fourth simulation scenario (Scenario 4) is obtained simulating data for T = 200 time
+points and p = 20 variables/nodes. The data generating mechanism presents three change
+points located at t = 60, t = 100 and t = 150 and, thus, four different graph structures.
+The true graph structures are displayed in Figure B.1.3 of the Supplement and obtained
+fixing the first graph G1, which presents 11 activated edges, and subsequently randomly
+changing the graph structure across change points. In correspondence of each change point,
+any active/non-active edge is deactived/activated with probability 0.4. The four precision
+matrices are then generated sampling from a G-Wishart distribution, independently con-
+ditionally on graph structure. Note that the abruptness in the changes in the dependence
+20
+
+=== page 21 ===
+0.00
+0.25
+0.50
+0.75
+1.00
+0.00 0.25 0.50 0.75 1.00
+PPI Threshold
+FPR
+(a) False positive rate
+0.0 0.2 0.4 0.6 0.8 1.0
+0.0 0.2 0.4 0.6 0.8 1.0
+FPR (fall−out)
+TPR (sensitivity)
+AUC = 0.88992 (b) Receiver operating characteristic curve
+Figure 6: Panel (a): FPR versus PPI threshold, for Scenario 4. Panel (b): ROC curve in
+Scenario 4.
+structure is higher in this scenario than in Scenario 3, since the precision matrix is gener-
+ated independently at each change point and not obtained as a perturbation of the previous
+precision matrix as in the previous section. The hyperparameters are chosen as described
+in the previous section.
+The posterior distribution for the number of change points assigns probability one to the
+correct value of 3 (see Figure B.4.1 in the Supplement). The posterior expectation for the
+first change point location is 60.68, for the second change point is 98.11, and for the third
+one is 149.94. More details on posterior inference results are provided in Section B.4 of the
+Supplement. Figure 6a shows the combined FR of edge detection for the four graphs as
+function of the threshold used for the PPI. Again, FPRs are appears reasonable for any PPI
+threshold, quickly decaying to zero, and, for the 0.5 threshold, the FPR is 0.035. Figure 6b
+displays the ROC curve, with an AUC approximately equal to 0.89. In the Supplement, we
+report also results obtained with the GFGL model of Gibberd and Nelson (2017), which,
+similarly to what already observed in the previous section, shows high variability of the
+estimates depending on the value of the hyperparameters. Moreover, in this scenario, we
+note that the GFGL model leads also to poor graph recovery even when the correct change
+points are detected (see Figures B.4.3 and B.4.4 of the Supplement). The “oracle version”
+of the loggle model produces a FPR of 0.113 and a TPR of 0.426, presenting a significant
+worse performance than our approach. For example, for a 0.5 PPI threshold we obtain a
+FPR of 0.035 and a TPR of 0.611, if we fix the FPR to 0.113 the corresponding TPR is
+0.764, fixing the TPR to 0.426 leads to a FPR of 0.021. See Table 3.
+loggle Bayesian dynamic GGM
+PPI thres. 0.5 PPI thres. 0.25 PPI thres. 0.78
+FPR 0.113 0.035 0.113 0.021
+TPR 0.426 0.611 0.764 0.426
+Table 3: Scenario 4: Comparison on graph recovery between the results obtained with the
+“oracle version” of the loggle model and our model.
+21
+
+=== page 22 ===
+0.0
+0.2
+0.4
+0.6
+0.8
+2018−12−31
+2019−03−11
+2019−05−20
+2019−07−29
+2019−10−07
+2019−12−16
+2020−02−24
+2020−05−04
+2020−07−13
+2020−09−21
+2020−11−30
+2021−02−08
+2021−04−19
+2021−06−28
+2021−09−06
+2021−11−15
+2021−12−27
+Change Points
+Posterior probability 
+Figure 7: Marginal posterior probability of every time point to be a change point.
+5 Industry returns during COVID-19 pandemic
+We apply the model to detect changes in the dependence structure of the nine industry port-
+folios’ weekly returns described in Section 1. We consider weekly data over a time horizon of
+three years: from January 2019 to December 2021 so that T = 157. When choosing which
+type of returns to include in the analysis, i.e. daily, weekly, or monthly, we are faced with a a
+trade-off: higher frequency data may show lower degree of dependence, making harder to de-
+tect structure changes in the dependence structure (see, for instance, Ab Razak et al., 2018);
+on the other hand, lower frequency data provide a less detailed representation of markets’
+trends. For this reason, we consider weekly returns to attain a more detailed level of informa-
+tion compared to monthly data and a potentially stronger signal on correlations compared
+to daily returns. Logarithmic weekly returns are computed starting from the daily returns
+available from Kenneth R. French’s Data Library at https://mba.tuck.dartmouth.edu/
+pages/faculty/ken.french/data_library.html, where the industry classification used
+to associate each stock to one of the nine portfolios is defined as follows. Stocks listed
+in the New York Stock Exchange (NYSE), the American Stock Exchange (AMEX), and
+National Association of Securities Dealers Automatic Quotation System (NASDAQ) are
+assigned to an industry at the end of June of year t based on their four-digit standard
+industrial classification (SIC) code at that time. Then, returns are computed from July of
+year t to June of year t + 1. The corresponding standardized time series are represented in
+Figure C.1 of the Supplement.
+To estimate the dependence structure for the weekly returns, we firstly run the algorithm
+to estimate the change point sequence, using 200 particles, 10 mutation steps, performing
+32,000 iterations of the outer component, of which the first 2,000 are discarded as burn-in,
+and thinning every ten iterations. Secondly, we re-run only the particle filter with 1,000
+particles and 20 mutation steps to sample the graphs from their posterior distribution condi-
+tionally on the MAP estimate of the change point configuration. The algorithm is initialised
+assuming no change points and hyperparameters are set as described in Section 4.1.
+Figure 7 shows, for each time point, the marginal posterior probability of being a change
+point and Table 4 reports the joint posterior distribution of the configurations of change
+points, which have been accepted by the algorithm. The posterior distribution on the
+22
+
+=== page 23 ===
+number of change points assigns probability 0.9984 to two change points and the remaining
+mass 0.0016 to three change points. The posterior distribution for the number and location
+of change points are highly concentrated around the posterior mode, showing a low level of
+uncertainty. Our analysis highlights a first structural change at t = 61, i.e., during the week
+starting on February 24, 2020, in correspondence of what appears to be the market’s reaction
+to the first significant world-wide increase in Coronavirus confirmed cases and deaths outside
+China over the previous weekend. In particular, during the weekend February 21-23, 2020,
+Italy, the first and hardest-hit country in Europe in 2020, reported the first local cases of
+COVID-19 (see, e.g., Just and Echaust, 2020). During the week of February 24, 2020, the
+Dow Jones and S&P 500 fell by 11% and 12%, respectively, marking the biggest weekly
+declines to occur since the financial crisis of 2008. The identification of a first change point
+in correspondence of a major shock is coherent with the known stylized fact that, during
+crisis, dependence among investments typically increases diminishing diversification benefits
+(see, for instance, Kotkatvuori- ¨Ornberg et al., 2013). A second change point is detected at
+t = 79, i.e., during the last week of June 2020, interpretable as a subsequent and partial
+re-stabilization of the financial markets after the initial and most uncertain period of the
+pandemic. The credible intervals, obtained computing the smallest credible sets with 95%
+credibility and then using the minimum and the maximum time points in the set as extremes
+of the interval, are [60, 61] and [76, 83] for the first and second change point respectively.
+Conditionally on the MAP change point configuration, estimates of the three graphs are
+provided in Figure 8, while the estimated variance and covariance matrices are displayed in
+Figure C.2.1 of the Supplement. The graphs are obtained based on the marginal PPI of the
+edges in order to control the corresponding Bayesian false discovery rate (Newton et al.,
+2004). In particular, we set the threshold of inclusion based on the PPI to 0.8 in order to
+guarantee an expected rate of false detection not higher than 0.05, i.e., a specificity of at least
+0.95 (for more details, see, Leday and Richardson, 2019; Williams, 2021). In Section C.1 of
+the Supplement we report the values of degree centrality, betweenness centrality (Freeman,
+1977), local clustering and global clustering coefficients (Watts and Strogatz, 1998) for the
+estimated graphs, which give insights into the role of each node.
+A clearly noticeable feature from Figure 8 is the increase in the number of edges from the
+first change point (8 edges) to the followings (11 and 12 edges, respectively), reflected also
+in the global measures of clustering of the graphs which varies from 0 in the pre COVID-19
+period, to 0.43 during the first COVID-19 outbreak, to 0.24 to the post COVID-19 outbreak
+change post change post change post change post
+points prob points prob points prob points prob
+(57 79) 0.0010 (59 82) 0.0073 (60 99) 0.0003 (61 81) 0.0137
+(57 82) 0.0010 (59 84) 0.0017 (61 116) 0.0010 (61 82) 0.1094
+(57 84) 0.0007 (60 78) 0.0020 (61 73) 0.0007 (61 83) 0.0650
+(57 85) 0.0003 (60 79) 0.0073 (61 74) 0.0033 (61 84) 0.0150
+(58 79) 0.0003 (60 80) 0.1010 (61 75) 0.0103 (61 85) 0.0127
+(58 82) 0.0033 (60 81) 0.0033 (61 76) 0.0133 (61 86) 0.0043
+(59 77) 0.0013 (60 82) 0.0297 (61 77) 0.0447 (61 99) 0.0010
+(59 78) 0.0007 (60 83) 0.0100 (61 78) 0.0737 (19 61 83) 0.0010
+(59 79) 0.0010 (60 84) 0.0127 (61 79) 0.3735 (39 61 83) 0.0003
+(59 81) 0.0003 (60 85) 0.0020 (61 80) 0.0694 (61 80 113) 0.0003
+Table 4: Posterior distribution of change point configuration. In bold we highlight prob-
+abilities greater than 0.05 and in blue the MAP estimate.
+
+=== page 24 ===
+From December 31, 2018
+to February 21, 2020
+Manuf
+Enrgy Utils
+NoDur
+Shops
+Durbl
+Hlth
+HiTec
+Telcm
+0.96
+1 1
+1
+1
+0.9910.99
+From February 24, 2020
+to June 26, 2020
+Manuf
+Enrgy Utils
+NoDur
+Shops
+Durbl
+Hlth
+HiTec
+Telcm
+0.82
+0.97
+0.93
+0.84
+0.94
+1
+1
+1
+0.87
+1
+0.98
+From Jun 29, 2020
+to December 31, 2021
+Manuf
+Enrgy Utils
+NoDur
+Shops
+Durbl
+Hlth
+HiTec
+Telcm
+0.97
+1
+0.97
+1
+0.88
+1
+1
+0.980.96 0.94
+0.96
+1
+Figure 8: Posterior estimates of the graphs and PPI for the selected edges. Threshold of
+inclusion is set to achieve an expected posterior specificity of at least 95%.
+(see Table C.1.3 in the Supplement). Such increase in the connectivity of the graph is co-
+herent with the hypothesis of the COVID-19 outbreak acting as a common non-measurable
+risk factor driving the returns in the market. As already noticed in the preliminary analysis
+summarised by Figure 2, the role of hub of the manufacturing portfolio (i.e., machinery,
+trucks, planes, chemicals, office furniture, paper) over the three years is confirmed. The
+corresponding degree centrality (i.e., number of vertices in the neighbourhood of the man-
+ufacturing portfolio) is the highest in all three graphs (see Table C.1.1 of the Supplement
+for more details). However, contrary to the conclusions of the initial exploratory analysis,
+consumer non-durable (i.e., food, tobacco, textiles, apparel, leather, toys) returns appear
+to play a less central role before the COVID-19 outbreak. Such evidence that was absent
+in the explanatory analysis is discovered mainly thanks to the automatic detection of the
+change points, that allow us to determine the most appropriate time window to estimate
+the graph and capture differences in structure. Moreover, we identify another hub in the
+Shops portfolio (i.e., wholesale, retail, and some services, as laundries and repair shops) in
+the time-interval after the last change point.
+In terms of volatility, in all three periods the consumer durables (i.e., cars, TVs, furni-
+ture, household appliances) and energy (i.e, oil, gas, and coal extraction and products) are
+characterised by the highest volatility. Moreover, the analysis confirms that the three peri-
+ods (pre COVID-19 outbreak, during first COVID-19 global outbreak, and after) coincide
+with small, high, and medium volatility markets, as already evident from the time-series plot
+(see Figure C.1 in the Supplement). In more detail, we note that health (i.e., healthcare,
+medical equipment, and drugs) is the only industry in the market whose portfolio presents a
+similar volatility before and after the outbreak, while all other portfolios’ returns are set to
+higher levels of variability as consequence of a long-run effect of market uncertainty. Similar
+conclusions can be drawn also for the pair-wise correlations (that can be easily computed
+from the values in Figure C.2.1 and are reported in Section C.2 of the Supplement), i.e.
+correlations are higher during COVID-19 outbreak.
+Finally, we compare our results with those obtained by applying the group-fused graph-
+ical lasso (GFGL) (Gibberd and Nelson, 2017). Output summaries for the GFGL are shown
+in Table 5 and additional figures can be found in Section C.3 of the Supplement. We esti-
+mate the GFGL model for different values of the hyperparameters λ1 and λ2. We recall that
+24
+
+=== page 25 ===
+# of change
+λ1 λ2 points change points Global clustering coef.
+0.25 60 0 () (0.72)
+0.35 60 2 (61, 80) (0, 1, 0.33)
+0.50 60 2 (61, 80) (0, 0, 0)
+0.25 55 2 (61, 80) (0.72, 0.84, 0.81)
+0.25 20 3 (61, 80, 98) (0, 1, 0.92, 0.92)
+0.35 20 4 (61, 80, 98, 99) (0, 1, 0.33, 0.33, 0)
+0.50 20 4 (61, 68, 77, 80) (0, 1, 0.88, 0.87, 0)
+0.25 10 6 (57, 61, 80, 98, 99 ,116) (0, 0, 1, 0.89, 0.90, 0.33, 0.33)
+0.35 10 4 (61, 80, 98, 116) (0, 1, 0.33, 0.33, 0)
+0.50 10 6 (57, 61, 68, 69, 77, 80) (0, 0, 1, 0.88, 0.88, 0)
+Table 5: Results obtained using GFGL for different values of the hyperparameters.
+λ1 and λ2 control the shrinkage and the smoothness of the solution of the GFGL model,
+respectively . As already noticed by Gibberd and Nelson (2017) and in the simulation
+study in Section 4, for GFGL inference results are highly sensitive to the hyperparameters
+in terms of both detected change points (see Table 5 and Figure C.3.1 in the Supplement)
+and recovered graph structure (see Figure C.3.2 in the Supplement). Here, we consider
+values for λ1 in {0.25, 0.35, 0.50} and λ2 in {10, 20, 55, 60}, which are in the range of those
+considered by Gibberd and Nelson (2017) in their work. The number of identified change
+points ranges widely from 0 to 6. However, we notice that in all estimated change point
+configurations, but the one with no estimated change points, GFGL always includes t = 61
+and at t = 80 as change points, which is consistent with the change points identified by
+our approach. Moreover, even though the graph structure estimated by the GFGL largely
+varies depending on the hyperparameters, in all settings where change points are detected,
+the graph structure connectivity increases during the COVID-19 outbreak in February 2020
+and diminishes after June 2020 (cf. the global clustering coefficients reported in Table 5 and
+Figure C.3.2 in the Supplement). This result is again consistent with teh results obtained
+with our approach. Increased graph connectivity during the COVID-19 outbreak is also
+found applying loggle; see section C.3 of the Supplement.
+6 Discussion and conclusion
+In this work, we study the impact of the COVID-19 pandemic on the US stock market,
+with a specific focus on changes in dependence structure across stocks related to different
+industries. To do so, we consider weekly returns recorded for three years starting in January
+2019. We identify two structural changes. The first change is in correspondence with the
+last week of February 2020, a date that for most countries coincided with the beginning of
+the pandemic. That same week financial markets recorded the weekly biggest losses since
+the financial crisis of 2008. The second change point is detected after approximately four
+months, when there is a reduction in market uncertainty, but the dependence structure
+as well as the volatility are not back to pre COVID-19 levels. Comparing the dependence
+structure across the three periods (i.e., before February 24th, between February 24th and
+June 26th, after June 26th) we provide many insights on the impact of the pandemic on
+the stock market and highlight whose effects appear to be persistent up to the end of 2021,
+the last year considered.
+The main methodological contribution of this work is the development of a dynamic
+25
+
+=== page 26 ===
+GGM, which allows for abrupt changes in the dependence structure of the random variables
+represented by the nodes of the graph. Our model builds on existing literature on GGMs, as
+well as random change points. Our model construction allows us to control sparsity in the
+number of change points and/or in the graph structure. We have designed a tailored SMC
+algorithm, arguing for its use in such a complex setup over other M-H based alternatives
+and demonstrating its performance on simulated data and on our motivating application.
+Our work opens up several avenues for future research.
+(a) Scalability. We have not made use of the full SMC machinery. We briefly discuss two
+directions for increase in model dimension, along the number of nodes, p, and along
+the length of time instances for observations T . In terms of the size of the graph,
+recent works have developed effective proposals, informed by the observations, for
+MCMC methods on graph posteriors, instead of previously used random-walk-type
+blind moves. See, e.g., van den Boom et al. (2022), and the references therein, for
+approaches based on Langevin-type analogues for discrete spaces, with parallelisation
+employed within the specification of the proposal. Such approaches have been seen to
+be effective for node sizes of p = O(102). In terms of the length T , recent advances on
+modelling involving change points and accompanying SMC methodologies, can permit
+for recasting models so that change points also become part of the hidden Markov
+process (see, e.g. Yildirim et al., 2013). At the same time, SMC methods based on
+state-of-art particle Gibbs approaches that incorporate backward steps to improve
+mixing over the update of the unobserved Markovian states, are shown to provide
+pseudomarginal methodologies of superior mixing compared to standard PMCMC
+(Lindsten et al., 2014). Such new algorithms are supported by strong theoretical
+results. Indicatively, the number of particles can now be allowed to remain constant,
+N = O(1), as a function of T , when PMCMC requires N = O(T ). Thus, costs for
+the overall SMC algorithm can be brought down to O(N T ), from the previous O(T 2),
+for big T – with O(N T ) not taking under consideration the option of parallelisation
+across particles.
+(b) Smooth changes. In this work, we have considered abrupt changes in edge inclusion
+probabilities. Alternatively, we could model edge inclusion probabilities as a function
+of time, for example, using autoregressive-type models. In this setup, shrinkage priors
+could be specified to link the probability of edge inclusion at time t to the same
+probability at time t − 1 (see, for instance, Molinari et al., 2022a). This approach is
+amenable to many generalizations, such as the inclusion of covariates. Moreover, the
+probability of edge inclusion at time t could be a function of the probabilities of edge
+inclusions at time t − 1 of a neighbourhood of each node.
+(c) Graph sub-structures. Here, we have presented changes between graphs as captured
+by edge flips before and after a change point. Edge detection is very sensitive to the
+number of nodes as well as sample size. It has been argued (van den Boom et al.,
+2022, and references therein) that in many applications a more robust approach is
+to shift the focus of inference to graph sub-structures such as hubs and communities,
+with the goal of capturing the evolution over time of such macro-structures which
+better describe the underlying phenomenon.
+(d) More general response types. The model can be easily extended to accommodate
+different type of responses, such as binary and count data. An easy solution would
+be the representation of such data in terms of latent variables (Albert and Chib,
+26
+
+=== page 27 ===
+1993; Chib and Greenberg, 1998). Moreover, it is straightforward to include time-
+homogeneous and time-varying covariates to model the mean of the time series, as
+well as a trend and seasonal component.
+Acknowledgements. This work was supported by the Singapore Ministry of Education
+Academic Research Fund Tier 2 under Grant MOE2019-T2-2-100. The authors are grateful
+to the Editor, an Associate Editor and five anonymous referees for insightful comments and
+suggestions, which led to a substantial improvement of the manuscript. B. Franzolini is also
+affiliated to the Bocconi Institute for Data Science and Analytics (BIDSA).
+References
+Ab Razak, R., N. H. Aminuddin, and N. Ismail (2018). Dependence measure of daily versus
+weekly returns. International Journal of Engineering and Technology (UAE) 7 (3.20),
+329–333.
+Albert, J. H. and S. Chib (1993). Bayesian analysis of binary and polychotomous response
+data. Journal of the American Statistical Association 88, 669–679.
+Alqaralleh, H. and A. Canepa (2021). Evidence of stock market contagion during the
+COVID-19 pandemic: A Wavelet-Copula-GARCH approach. Journal of Risk and Finan-
+cial Management 14, 329.
+Anastasiou, A., I. Cribben, and P. Fryzlewicz (2022). Cross-covariance isolate detect: a
+new change-point method for estimating dynamic functional connectivity. Medical image
+analysis 75, 102252.
+Andrieu, C., A. Doucet, and R. Holenstein (2010). Particle Markov chain Monte Carlo meth-
+ods. Journal of the Royal Statistical Society: Series B (Statistical Methodology) 72 (3),
+269–342.
+Asai, M., M. McAleer, and J. Yu (2006). Multivariate stochastic volatility: a review.
+Econometric Reviews 25, 145–175.
+Atay-Kayis, A. and H. Massam (2005). A Monte Carlo method for computing the marginal
+likelihood in nondecomposable Gaussian graphical models. Biometrika 92, 317–335.
+Banerjee, S. and S. Ghosal (2015). Bayesian structure learning in graphical models. Journal
+of Multivariate Analysis 136, 147–162.
+Bates, D., M. Maechler, M. Jagan, and T. A. Davis (2022). Matrix: Sparse and Dense
+Matrix Classes and Methods. R package version 1.5-3.
+Bauwens, L., S. Laurent, and J. V. Rombouts (2006). Multivariate GARCH models: a
+survey. Journal of Applied Econometrics 21, 79–109.
+Beskos, A., D. Crisan, and A. Jasra (2014). On the stability of sequential Monte Carlo
+methods in high dimensions. The Annals of Applied Probability 24, 1396–1445.
+Bianchi, D., M. Billio, R. Casarin, and M. Guidolin (2019). Modeling systemic risk with
+markov switching graphical sur models. Journal of Econometrics 210 (1), 58–74.
+Bilmes, J. A. (2004). Graphical models and automatic speech recognition. In Mathematical
+foundations of speech and language processing, pp. 191–245. Springer.
+27
+
+=== page 28 ===
+Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity. Journal of
+Econometrics 31, 307–327.
+Bollerslev, T., R. F. Engle, and D. B. Nelson (1994). ARCH models. Handbook of Econo-
+metrics 4, 2959–3038.
+Bollerslev, T., R. F. Engle, and J. M. Wooldridge (1988). A capital asset pricing model
+with time-varying covariances. Journal of Political Economy 96, 116–131.
+Boudt, K., A. Galanos, S. Payseur, and E. Zivot (2019). Multivariate GARCH models for
+large-scale applications: A survey. In Handbook of Statistics, Volume 41, pp. 193–242.
+Elsevier.
+Bouvier, A., C. Giraud, S. Huet, and N. Verzelen (2022). GGMselect: Gaussian Graphs
+Models Selection. R package version 0.1-12.5.
+Bybee, L. and Y. Atchad´e (2018). Change-point computation for large graphical models:
+A scalable algorithm for gaussian graphical models with change-points. The Journal of
+Machine Learning Research 19 (1), 440–477.
+Caporale, G. M. and T. Zekokh (2019). Modelling volatility of cryptocurrencies using
+Markov-switching GARCH models. Research in International Business and Finance 48,
+143–155.
+Carvalho, C. M., H. Massam, and M. West (2007). Simulation of hyper-inverse Wishart
+distributions in graphical models. Biometrika 94, 647–659.
+Carvalho, C. M. and M. West (2007). Dynamic matrix-variate graphical models. Bayesian
+Analysis 2, 69–97.
+Chan, J. C. (2013). Moving average stochastic volatility models with application to inflation
+forecast. Journal of Econometrics 176, 162–172.
+Chandra, N. K., P. Mueller, and A. Sarkar (2021). Bayesian scalable precision factor analysis
+for massive sparse Gaussian graphical models. arXiv preprint arXiv:2107.11316 .
+Cheng, Y. and A. Lenkoski (2012). Hierarchical Gaussian graphical models: Beyond re-
+versible jump. Electronic Journal of Statistics 6, 2309–2331.
+Chib, S. and E. Greenberg (1998). Analysis of multivariate probit models. Biometrika 85,
+347–361.
+Chopin, N., O. Papaspiliopoulos, et al. (2020). An introduction to sequential Monte Carlo.
+Springer.
+Clark, T. E. and F. Ravazzolo (2015). Macroeconomic forecasting performance under al-
+ternative specifications of time-varying volatility. Journal of Applied Econometrics 30,
+551–575.
+Contessi, S., P. De Pace, and M. Guidolin (2014). How did the financial crisis alter the
+correlations of US yield spreads? Journal of Empirical Finance 28, 362–385.
+Cribben, I. (2019). Change points in heavy-tailed multivariate time series: Methods using
+precision matrices. Applied Stochastic Models in Business and Industry 35 (2), 299–320.
+28
+
+=== page 29 ===
+Cribben, I. and Y. Yu (2017). Estimating whole-brain dynamics by using spectral clustering.
+Journal of the Royal Statistical Society. Series C (Applied Statistics), 607–627.
+Cui, K. (2012). Semiparametric Gaussian variance-mean mixtures for heavy-tailed and
+skewed data. International Scholarly Research Notices 2012.
+Danaher, P., P. Wang, and D. M. Witten (2014). The joint graphical lasso for inverse
+covariance estimation across multiple classes. Journal of the Royal Statistical Society:
+Series B (Statistical Methodology) 76, 373–397.
+Dawid, A. P. and S. L. Lauritzen (1993). Hyper Markov laws in the statistical analysis of
+decomposable graphical models. The Annals of Statistics, 1272–1317.
+Del Moral, P. (2004). Feynman-Kac formulae: genealogical and interacting particle systems
+with applications, Volume 88. Springer.
+Dellaportas, P., P. Giudici, and G. Roberts (2003). Bayesian inference for nondecomposable
+graphical Gaussian models. Sankhy¯a: The Indian Journal of Statistics, 43–55.
+Derbali, A., K. Naoui, M. B. Sassi, and M. M. Amiri (2022). Do COVID-19 epidemic
+explains the dynamic conditional correlation between china’s stock market index and
+international stock market indices? The Chinese Economy 55, 227–242.
+Dey, A. K., G. T. Hoque, K. P. Das, and I. Panovska (2022). Impacts of COVID-19 local
+spread and google search trend on the us stock market. Physica A: Statistical Mechanics
+and its Applications 589, 126423.
+Diaconis, P. and D. Ylvisaker (1979). Conjugate priors for exponential families. The Annals
+of Statistics 7, 269–281.
+Dobra, A., A. Lenkoski, and A. Rodriguez (2011). Bayesian inference for general Gaussian
+graphical models with application to multivariate lattice data. Journal of the American
+Statistical Association 106, 1418–1433.
+Doucet, A., M. K. Pitt, G. Deligiannidis, and R. Kohn (2015). Efficient implementation of
+Markov chain Monte Carlo when using an unbiased likelihood estimator. Biometrika 102,
+295–313.
+Dutta, A., E. Bouri, and M. H. Noor (2021). Climate bond, stock, gold, and oil markets:
+Dynamic correlations and hedging analyses during the COVID-19 outbreak. Resources
+Policy 74, 102265.
+Engle, R. F. (1982). Autoregressive conditional heteroscedasticity with estimates of the
+variance of United Kingdom inflation. Econometrica, 987–1007.
+Engle, R. F. and T. Bollerslev (1986). Modelling the persistence of conditional variances.
+Econometric Reviews 5, 1–50.
+Freeman, L. C. (1977). A set of measures of centrality based on betweenness. Sociometry,
+35–41.
+Gibberd, A. J. and J. D. Nelson (2017). Regularized estimation of piecewise constant
+Gaussian graphical models: The group-fused graphical lasso. Journal of Computational
+and Graphical Statistics 26, 623–634.
+29
+
+=== page 30 ===
+Gibberd, A. J. and S. Roy (2017). Multiple changepoint estimation in high-dimensional
+gaussian graphical models. arXiv preprint arXiv:1712.05786 .
+Green, P. J. (1995). Reversible jump Markov chain Monte Carlo computation and Bayesian
+model determination. Biometrika 82 (4), 711–732.
+Guidolin, M., D. La Cara, and M. G. Marcellino (2021). Boosting the forecasting power
+of conditional heteroskedasticity models to account for COVID-19 outbreaks. BAFFI
+CAREFIN Centre Research Paper (2021-169).
+Haas, M., S. Mittnik, and M. S. Paolella (2004). A new approach to Markov-switching
+GARCH models. Journal of Financial Econometrics 2, 493–530.
+Hallac, D., Y. Park, S. Boyd, and J. Leskovec (2017). Network inference via the time-varying
+graphical lasso. In Proceedings of the 23rd ACM SIGKDD International Conference on
+Knowledge Discovery and Data Mining, pp. 205–213.
+Higham, N. J. (2002). Computing the nearest correlation matrix—a problem from finance.
+IMA journal of Numerical Analysis 22, 329–343.
+Hull, J. and A. White (1987). The pricing of options on assets with stochastic volatilities.
+The journal of Finance 42, 281–300.
+Jasra, A., D. A. Stephens, A. Doucet, and T. Tsagaris (2011). Inference for L´evy-driven
+stochastic volatility models via adaptive sequential Monte Carlo. Scandinavian Journal
+of Statistics 38 (1), 1–22.
+Jones, B., C. Carvalho, A. Dobra, C. Hans, C. Carter, and M. West (2005). Experiments
+in stochastic computation for high-dimensional graphical models. Statistical Science 20,
+388–400.
+Just, M. and K. Echaust (2020). Stock market returns, volatility, correlation and liquidity
+during the COVID-19 crisis: Evidence from the Markov switching approach. Finance
+Research Letters 37, 101775.
+Karagiannis, G. and C. Andrieu (2013). Annealed importance sampling reversible jump
+MCMC algorithms. Journal of Computational and Graphical Statistics 22 (3), 623–648.
+Keshavarz, H., G. Michailidis, and Y. Atchad´e (2020). Sequential change-point detection
+in high-dimensional gaussian graphical models. The Journal of Machine Learning Re-
+search 21 (1), 3125–3181.
+Kolar, M. and E. P. Xing (2012). Estimating networks with jumps. Electronic journal of
+statistics 6, 2069.
+Kotkatvuori- ¨Ornberg, J., J. Nikkinen, and J. ¨Aij¨o (2013). Stock market correlations during
+the financial crisis of 2008–2009: Evidence from 50 equity markets. International Review
+of Financial Analysis 28, 70–78.
+Lauritzen, S. L. (1996). Graphical Models, Volume 17. Clarendon Press.
+Leday, G. G. and S. Richardson (2019). Fast Bayesian inference in large Gaussian graphical
+models. Biometrics 75, 1288–1298.
+30
+
+=== page 31 ===
+Lee, H.-T. (2010). Regime switching correlation hedging. Journal of Banking & Finance 34,
+2728–2741.
+Li, Y., B. A. Craig, and A. Bhadra (2019). The graphical horseshoe estimator for inverse
+covariance matrices. Journal of Computational and Graphical Statistics 28 (3), 747–757.
+Lien, D., Y. K. Tse, and A. K. Tsui (2002). Evaluating the hedging performance of the
+constant-correlation GARCH model. Applied Financial Economics 12, 791–798.
+Lindsten, F., M. I. Jordan, and T. B. Schon (2014). Particle Gibbs with ancestor sampling.
+Journal of Machine Learning Research 15, 2145–2184.
+Liu, B., X. Zhang, and Y. Liu (2021). Simultaneous change point inference and structure re-
+covery for high dimensional gaussian graphical models. The Journal of Machine Learning
+Research 22 (1), 12550–12611.
+Llopis, F. P., N. Kantas, A. Beskos, and A. Jasra (2018). Particle filtering for stochastic
+Navier–Stokes signal observed with linear additive noise. SIAM Journal on Scientific
+Computing 40, A1544–A1565.
+Meinshausen, N. and P. B¨uhlmann (2006). High-dimensional graphs and variable selection
+with the lasso. The annals of statistics 34, 1436–1462.
+Michis, A. A. (2022). Multiscale partial correlation clustering of stock market returns.
+Journal of Risk and Financial Management 15, 24.
+Mohammadi, R., E. Wit, and A. Dobra (2022). BDgraph: Bayesian Structure Learning in
+Graphical Models using Birth-Death MCMC. R package version 2.72.
+Molinari, M., A. Cremaschi, M. De Iorio, N. Chaturvedi, A. Hughes, and T. Tillin (2022a).
+Bayesian dynamic network modelling: an application to metabolic associations in cardio-
+vascular disease. arXiv preprint arXiv:2207.13418 .
+Molinari, M., A. Cremaschi, M. De Iorio, N. Chaturvedi, A. D. Hughes, and T. Tillin
+(2022b). Bayesian nonparametric modelling of multiple graphs with an application to
+ethnic metabolic differences. Journal of the Royal Statistical Society. Series C: Applied
+Statistics.
+Murray, I., Z. Ghahramani, and D. J. C. MacKay (2006). MCMC for doubly-intractable dis-
+tributions. In Proceedings of the Twenty-Second Conference on Uncertainty in Artificial
+Intelligence, UAI’06..
+Newton, M. A., A. Noueiry, D. Sarkar, and P. Ahlquist (2004). Detecting differential gene
+expression with a semiparametric hierarchical mixture method. Biostatistics 5, 155–176.
+Nilsson, O. (2016). On stochastic volatility models as an alternative to GARCH type models.
+Department of Statistics, Uppsala University, Sweden.
+Persing, A., A. Jasra, A. Beskos, D. Balding, and M. De Iorio (2015). A simulation approach
+for change-points on phylogenetic trees. Journal of Computational Biology 22 (1), 10–24.
+Peterson, C., F. C. Stingo, and M. Vannucci (2015). Bayesian inference of multiple Gaussian
+graphical models. Journal of the American Statistical Association 110, 159–174.
+31
+
+=== page 32 ===
+Pitt, M. K., R. dos Santos Silva, P. Giordani, and R. Kohn (2012). On some properties of
+Markov chain Monte Carlo simulation methods based on the particle filter. Journal of
+Econometrics 171, 134–151.
+Prado, R. and M. West (2010). Time series: modeling, computation, and inference. Chap-
+man and Hall/CRC.
+Roverato, A. (2002). Hyper inverse Wishart distribution for non-decomposable graphs and
+its application to Bayesian inference for Gaussian graphical models. Scandinavian Journal
+of Statistics 29, 391–411.
+Roy, S., Y. Atchad´e, and G. Michailidis (2017). Change point estimation in high dimensional
+markov random-field models. Journal of the Royal Statistical Society. Series B, Statistical
+methodology 79 (4), 1187.
+Ruzayqat, H., A. Er-Raiy, A. Beskos, D. Crisan, A. Jasra, and N. Kantas (2021). A lagged
+particle filter for stable filtering of certain high-dimensional state-space models. arXiv
+preprint arXiv:2110.00884 .
+Sakurai, Y. and T. Kurosaki (2020). How has the relationship between oil and the us stock
+market changed after the covid-19 crisis? Finance Research Letters 37, 101773.
+Schwaller, L. and S. Robin (2017). Exact bayesian inference for off-line change-point detec-
+tion in tree-structured graphical models. Statistics and Computing 27, 1331–1345.
+Sherlock, C., A. H. Thiery, G. O. Roberts, and J. S. Rosenthal (2015). On the efficiency
+of pseudo-marginal random walk Metropolis algorithms. The Annals of Statistics 43,
+238–275.
+Silvennoinen, A. and T. Ter¨asvirta (2009). Multivariate GARCH models. In Handbook of
+Financial Time Series, pp. 201–229. Springer.
+So, M. E. P., K. Lam, and W. K. Li (1998). A stochastic volatility model with Markov
+switching. Journal of Business & Economic Statistics 16, 244–253.
+Taylor, S. J. (1982). Financial returns modelled by the product of two stochastic processes-a
+study of the daily sugar prices 1961-75. Time series Analysis: Theory and Practice 1,
+203–226.
+Thampanya, N., M. A. Nasir, and T. L. D. Huynh (2020). Asymmetric correlation and
+hedging effectiveness of gold & cryptocurrencies: From pre-industrial to the 4th industrial
+revolution. Technological Forecasting and Social Change 159, 120195.
+Uhler, C., A. Lenkoski, and D. Richards (2018). Exact formulas for the normalizing con-
+stants of Wishart distributions for graphical models. The Annals of Statistics 46, 90–118.
+van den Boom, W., A. Beskos, and M. De Iorio (2022). The G-wishart weighted proposal
+algorithm: Efficient posterior computation for Gaussian graphical models. Journal of
+Computational and Graphical Statistics, 1–10.
+van den Boom, W., M. De Iorio, and A. Beskos (2022). Bayesian learning of graph sub-
+structures. arXiv preprint arXiv:2203.11664 .
+32
+
+=== page 33 ===
+van den Boom, W., A. Jasra, M. De Iorio, A. Beskos, and J. G. Eriksson (2022). Unbiased
+approximation of posteriors via coupled particle Markov chain Monte Carlo. Statistics
+and Computing 32, 1–19.
+van Leeuwen, P. J., D. Crisan, O. Lang, and R. Potthast (2021). Bayesian inference for fluid
+dynamics: A case study for the stochastic rotating shallow water model. arXiv preprint
+arXiv:2112.15216 .
+Von Furstenberg, G. M., B. N. Jeon, N. G. Mankiw, and R. J. Shiller (1989). International
+stock price movements: links and messages. Brookings Papers on Economic Activity 1989,
+125–179.
+Wang, H. (2010). Sparse seemingly unrelated regression modelling: Applications in finance
+and econometrics. Computational Statistics & Data Analysis 54, 2866–2877.
+Wang, H. and M. West (2009). Bayesian analysis of matrix normal graphical models.
+Biometrika 96, 821–834.
+Warnick, R., M. Guindani, E. Erhardt, E. Allen, V. Calhoun, and M. Vannucci (2018). A
+bayesian approach for estimating dynamic functional network connectivity in fmri data.
+Journal of the American Statistical Association 113 (521), 134–151.
+Watts, D. J. and S. H. Strogatz (1998). Collective dynamics of ‘small-world’ networks.
+nature 393, 440–442.
+West, M. and J. Harrison (2006). Bayesian forecasting and dynamic models. Springer
+Science & Business Media.
+Wiggins, J. B. (1987). Option values under stochastic volatility: Theory and empirical
+estimates. Journal of Financial Economics 19, 351–372.
+Williams, D. R. (2021). Bayesian estimation for Gaussian graphical models: Structure
+learning, predictability, and network comparisons. Multivariate Behavioral Research 56,
+336–352.
+Yang, J. and J. Peng (2020). Estimating time-varying graphical models. Journal of Com-
+putational and Graphical Statistics 29 (1), 191–202.
+Yang, S., Z. Lu, X. Shen, P. Wonka, and J. Ye (2015). Fused multiple graphical lasso. SIAM
+Journal on Optimization 25, 916–943.
+Yildirim, S., S. S. Singh, and A. Doucet (2013). An online expectation–maximization
+algorithm for changepoint models. Journal of Computational and Graphical Statistics 22,
+906–926.
+Yin, J. and H. Li (2011). A sparse conditional gaussian graphical model for analysis of
+genetical genomics data. The annals of applied statistics 5 (4), 2630.
+Yousfi, M., Y. B. Zaied, N. B. Cheikh, B. B. Lahouel, and H. Bouzgarrou (2021). Effects
+of the COVID-19 pandemic on the us stock market and uncertainty: A comparative
+assessment between the first and second waves. Technological Forecasting and Social
+Change 167, 120710.
+Zhou, S., J. Lafferty, and L. Wasserman (2010). Time varying undirected graphs. Machine
+Learning 80, 295–319.
+33
+
+=== page 34 ===
+Zou, H. (2006). The adaptive lasso and its oracle properties. Journal of the American
+statistical association 101, 1418–1429.
+34
+
+=== page 35 ===
+Supplement to “Change point detection in dynamic
+Gaussian graphical models: the impact of COVID-19
+pandemic on US stock market”
+Beatrice Franzolini, Alexandros Beskos, Maria De Iorio, Warrick Poklewski Koziell, and
+Karolina Grzeszkiewicz
+A. Evaluation of SMC approximations under scenario A
+−1439.6 −1439.2 −1438.8
+N =  200 M = 0 
+ Stdev= 0.134 
+ Time =  0.423 sec
+−1439.6 −1439.2 −1438.8
+N =  200 M = 5 
+ Stdev= 0.136 
+ Time =  0.412 sec
+−1439.6 −1439.2 −1438.8
+N =  200 M = 10 
+ Stdev= 0.132 
+ Time =  0.412 sec
+−1439.6 −1439.2 −1438.8
+N =  200 M = 20 
+ Stdev= 0.127 
+ Time =  0.412 sec
+−1439.6 −1439.2 −1438.8
+N =  500 M = 0 
+ Stdev= 0.081 
+ Time =  1.023 sec
+−1439.6 −1439.2 −1438.8
+N =  500 M = 5 
+ Stdev= 0.075 
+ Time =  1.038 sec
+−1439.6 −1439.2 −1438.8
+N =  500 M = 10 
+ Stdev= 0.07 
+ Time =  0.994 sec
+−1439.6 −1439.2 −1438.8
+N =  500 M = 20 
+ Stdev= 0.081 
+ Time =  1.017 sec
+−1439.6 −1439.2 −1438.8
+N =  750 M = 0 
+ Stdev= 0.07 
+ Time =  1.516 sec
+−1439.6 −1439.2 −1438.8
+N =  750 M = 5 
+ Stdev= 0.055 
+ Time =  1.568 sec
+−1439.6 −1439.2 −1438.8
+N =  750 M = 10 
+ Stdev= 0.065 
+ Time =  1.497 sec
+−1439.6 −1439.2 −1438.8
+N =  750 M = 20 
+ Stdev= 0.068 
+ Time =  1.544 sec
+Figure A.1: Log-likelihood estimates for Scenario A obtained with the particle filter by
+fixing the change points to the truth. Distinct box-plots correspond to different numbers
+of particles N and/or mutations steps M . For each pair (N, M ), we run the algorithm 30
+times and obtain the log-likelihood estimates. Each box-plot shows the distribution of such
+estimates. The variability of the estimates is small for all considered pairs (N, M ).
+35
+
+=== page 36 ===
+B. Simulation studies: additional figures, tables, and results
+B.1 True data generating processes for simulation studies
+True graph from t=1 to t=200
+1
+2
+3
+4
+5
+6
+7 8
+9
+10
+(a) No change points and independence
+True graph from t=1 to t=200
+1
+2
+3
+45 6
+78
+9
+10 (b) No change points and dependence
+Figure B.1.1: Graph structure of Scenarios 1 (panel a), 2 (panel b) and 5 (panel b) used as
+data generating mechanism for assessing model’s performance.
+True graph from t=1 to t=69
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+True graph from t=70 to t=200
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+Figure B.1.2: Scenario 3: graph structure used as data generating mechanism for assessing
+model’s performance.
+36
+
+=== page 37 ===
+True graph from t=1 to t=59
+1
+2
+3
+4 5
+6
+7
+8 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+True graph from t=60 to t=99
+1
+2
+3
+4
+56
+7
+8
+910
+11
+12
+13
+14 15 16 17
+1819 20
+True graph from t=100 to t=149
+1
+2
+3
+4
+5
+6
+7
+89
+10
+11
+12
+13
+1415
+16
+17
+1819 20
+True graph from t=150 to t=200
+1
+2
+3
+4
+5
+6
+78
+9
+10
+11
+12
+13 1415 16
+17
+18
+19
+20
+Figure B.1.3: Scenario 4: graph structure used as data generating mechanism for assessing
+model’s performance.
+−0.18 0.36 −0.55 0.73 −0.91 1.09 −1.27 1.45 −1.64 1.82
+0.36 −0.73 1.09 −1.45 1.82 −2.18 2.55 −2.91 3.27 −1.64
+−0.55 1.09 −1.64 2.18 −2.73 3.27 −3.82 4.36 −2.91 1.45
+0.73 −1.45 2.18 −2.91 3.64 −4.36 5.09 −3.82 2.55 −1.27
+−0.91 1.82 −2.73 3.64 −4.55 5.45 −4.36 3.27 −2.18 1.09
+1.09 −2.18 3.27 −4.36 5.45 −4.55 3.64 −2.73 1.82 −0.91
+−1.27 2.55 −3.82 5.09 −4.36 3.64 −2.91 2.18 −1.45 0.73
+1.45 −2.91 4.36 −3.82 3.27 −2.73 2.18 −1.64 1.09 −0.55
+−1.64 3.27 −2.91 2.55 −2.18 1.82 −1.45 1.09 −0.73 0.36
+1.82 −1.64 1.45 −1.27 1.09 −0.91 0.73 −0.55 0.36 −0.18
+0.0
+2.5
+5.0
+7.5
+10.0
+0.0 2.5 5.0 7.5 10.0
+0 −0.01 0 0.03 −0.34 0.25 −0.13 −0.07 0.03 1.07
+0 −0.3 0.21 −0.07 −0.17 0.33 −0.15 −0.85 1.48 0.03
+0 0.17 −0.4 0.14 0.33 −0.64 0.29 1.63 −0.85 −0.07
+0 0.03 0.15 −0.41 0.64 −1.22 1.69 0.29 −0.15 −0.13
+0 −0.07 0.01 0.24 −1.23 2.35 −1.22 −0.64 0.33 0.25
+0 0.03 0 −0.13 1.68 −1.23 0.64 0.33 −0.17 −0.34
+0 0.01 −0.76 1.46 −0.13 0.24 −0.41 0.14 −0.07 0.03
+0 −0.04 1.46 −0.76 0 0.01 0.15 −0.4 0.21 0
+0 1.06 −0.04 0.01 0.03 −0.07 0.03 0.17 −0.3 −0.01
+1 0 0 0 0 0 0 0 0 0
+0.0
+2.5
+5.0
+7.5
+10.0
+0.0 2.5 5.0 7.5 10.0
+Figure B.1.4: Scenario 3: Covariance matrices.
+−2.5
+0.0
+2.5
+0 50 100 150 200
+Time
+Returns 
+Variable
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+Figure B.1.5: Scenario 3: Simulated data - replicate n.1.
+37
+
+=== page 38 ===
+B.2 Scenarios 1 and 2: results
+The first two scenarios do not include change points among the T = 200 instances. In
+Scenario 1 all variables are independent, while in Scenario 2 we assume a non-trivial condi-
+tional independence structure represented by a graph with nine edges, shown in Figure B.1.1
+(b). We consider 10 simulation replicates for Scenario 1 and 2. The hyperparameters for
+Scenario 1 and 2 are chosen as described in Section 4.1 of the paper. The inference results
+for no change points show the expected good performance of the model in terms of both
+identification of change points and recovery of the dependence structure. In both scenarios
+the posterior on the change points concentrates on the true state of no change points, with
+posterior MAP probability not falling below 0.98 in all simulation replicates. Figure B.2.1a
+shows the false positive rate (FPR) of edge detection as function of the threshold used
+for the marginal posterior probability of edge inclusion (PPI, i.e., the posterior probability
+associated to each edge in the graph, P(A[h, k] = 1 | data)). FPRs are very low for almost
+any PPI threshold (indicatively, for a threshold of 0.5, FPR is 0 and 0.006 for Scenarios 1
+and 2, respectively). Figure B.2.1b displayes the receiver operating characteristic (ROC)
+curve for Scenario 2, with the area under the curve (AUC) approximately 1.
+True change
+point configuration
+Scenario 1 ∅
+MAP estimate MAP prob.
+Replica 1 ∅ 1
+Replica 2 ∅ 1
+Replica 3 ∅ 1
+Replica 4 ∅ 1
+Replica 5 ∅ 1
+Replica 6 ∅ 1
+Replica 7 ∅ 1
+Replica 8 ∅ 1
+Replica 9 ∅ 1
+Replica 10 ∅ 1
+Scenario 2 ∅
+MAP estimate MAP prob.
+Replica 1 ∅ 0.980
+Replica 2 ∅ 1
+Replica 3 ∅ 0.993
+Replica 4 ∅ 1
+Replica 5 ∅ 1
+Replica 6 ∅ 1
+Replica 7 ∅ 0.997
+Replica 8 ∅ 1
+Replica 9 ∅ 1
+Replica 10 ∅ 1
+Table B.2.1: Scenarios 1 and 2: Posterior summaries for change points. MAP estimates
+and MAP probabilities (for the posterior over all configurations of change points). Results
+are obtained simulating 10 replicates.
+38
+
+=== page 39 ===
+0.00
+0.25
+0.50
+0.75
+1.00
+0.00 0.25 0.50 0.75 1.00
+PPI Threshold
+FPR
+Scenario
+1
+2
+(a) False positive rate
+0.0 0.2 0.4 0.6 0.8 1.0
+0.0 0.2 0.4 0.6 0.8 1.0
+FPR (fall−out)
+TPR (sensitivity)
+AUC = 0.99975 (b) Receiver operating characteristic curve
+Figure B.2.1: Scenarios 1 and 2: Panel (a): FPR versus PPI threshold, for simulation
+Scenarios 1 and 2, computed across 10 replicates. Panel (b): ROC curve in Scenario 2,
+computed across 10 replicates.
+B.3 Scenario 3: additional results
+GFGL estimate GFGL estimate Bayesian
+True change λ1 = 0.25 λ1 = 0.50 dynamic
+point position λ2 = 10 λ2 = 60 GGM MAP
+Replica 1 (69, 70) (69) (70)
+Replica 2 (60, 69) (60, 69) (69)
+Replica 3 (47, 69, 70, 74) (69) (70)
+Replica 4 (41, 60, 68, 70) (60) (70)
+Replica 5 (67, 70) (70) (70)
+Replica 6 (26, 53, 70) (52) (69)
+Replica 7 (45, 67, 71) (45, 67) (69)
+Replica 8 (44, 56, 59, 60, 61, 63, 65) (44, 56) (71)
+Replica 9 (62, 69, 70) (69) (71)
+Scenario 3 (70) Replica 10 (67, 70) (70) (70)
+Replica 11 (25, 31, 42, 67, 68, 69) (42) (68)
+Replica 12 (69, 70) (69) (74)
+Replica 13 (21, 68, 70) (68) (69)
+Replica 14 (65, 66, 70, 87) (66) (71)
+Replica 15 (34, 54, 61, 66, 67, 68, 85) ∅ (70)
+Replica 16 (30, 36, 66, 68, 69, 70) (65) (70)
+Replica 17 (37, 52, 57, 69, 70) (49) (71)
+Replica 18 (53, 61, 70, 78) (70) (71)
+Replica 19 (38, 61, 62, 69, 70) (29, 61) (70)
+Replica 20 (67, 68, 70, 74) (67, 68) (73)
+Table B.3.1: Scenario 3: Comparison on the estimated change points between the results
+obtained with the GFGL model and our model (last column).
+39
+
+=== page 40 ===
+loggle Bayesian dynamic GGM with threshold 0.5
+FPR 0.242 0.241
+TPR 0.825 0.825
+Table B.3.2: Scenario 3: Comparison on graph recovery between the results obtained with
+the “oracle version” of the loggle model and our model.
+True MAP MAP prob 90% 95%
+change point est. prob. κ = 1 C.I. C.I. Mean Median
+Rep. 1 (70) 0.250 0.960 [68, 78] [67, 80] 71.74 70
+Rep. 2 (69) 0.299 0.987 [65, 76] [65, 79] 70.69 70
+Rep. 3 (70) 0.289 0.975 [69, 79] [68, 79] 71.17 70
+Rep. 4 (70) 0.230 0.984 [68, 78] [60, 78] 71.70 71
+Rep. 5 (70) 0.294 0.987 [70, 80] [70, 80] 73.34 72
+Rep. 6 (69) 0.301 0.985 [65, 76] [65, 79] 70.56 70
+Rep. 7 (69) 0.207 0.973 [68, 74] [68, 91] 70.27 69
+Rep. 8 (71) 0.123 0.911 [63, 84] [60, 84] 70.82 70
+Rep. 9 (71) 0.122 0.930 [69, 83] [69, 83] 75.75 75
+Scenario 3 (70) Rep. 10 (70) 0.306 0.971 [70, 74] [70, 79] 72.21 71
+Rep. 11 (68) 0.245 0.966 [68, 76] [68, 81] 70.60 70
+Rep. 12 (74) 0.191 0.933 [67, 83] [67, 83] 73.53 73
+Rep. 13 (69) 0.180 0.966 [68, 74] [67, 77] 70.99 71
+Rep. 14 (71) 0.205 0.988 [65, 81] [65, 81] 71.63 71
+Rep. 15 (70) 0.140 0.998 [66, 87] [65, 90] 73.59 70
+Rep. 16 (70) 0.140 0.985 [66, 78] [66, 78] 71.86 71
+Rep. 17 (71) 0.143 0.991 [53, 75] [53, 75] 66.82 69
+Rep. 18 (71) 0.245 0.954 [66, 80] [66, 80] 71.78 71
+Rep. 19 (70) 0.188 0.950 [69, 80] [68, 80] 71.67 71
+Rep. 20 (73) 0.179 0.965 [67, 75] [66, 77] 71.19 71
+Table B.3.3: Scenario 3: Posterior summaries for change point recovery. MAP estimates,
+MAP probabilities (for the posterior over all configurations of change points), posterior
+probability of the number of change points being 1, and credible intervals, mean and me-
+dian of the position of the change point (conditionally on having one change point). Credible
+intervals are obtained computing the smallest credible sets with 90% and 95% credibility,
+which are not necessary continuous intervals, and then using the minimum and the maxi-
+mum time points in the credible set as boundaries of the interval.
+40
+
+=== page 41 ===
+B.4 Scenarios 4: additional results
+0.00
+0.25
+0.50
+0.75
+1.00
+0 1 2 3 4 5 6 7 8 9
+Number of Change Points
+Posterior probability 
+Figure B.4.1: Scenario 4: Posterior distribution on the number of change points
+change post
+points prob
+(60, 97, 148) 0.0012
+(60, 98, 148) 0.0262
+(60, 98, 150) 0.2909
+(61, 98, 150) 0.1785
+(61, 97, 150) 0.1935
+(61, 99, 150) 0.3096
+Table B.4.1: Scenario 4: Posterior distribution of the change point configuration
+0.00
+0.25
+0.50
+0.75
+1.00
+7
+14
+21
+28
+35
+42
+49
+56
+63
+70
+77
+84
+91
+98
+105
+112
+119
+126
+133
+140
+147
+154
+161
+168
+175
+182
+189
+196
+Change Points
+Posterior probability 
+Figure B.4.2: Scenario 4: Marginal posterior probability of every time point to be a change
+point.
+41
+
+=== page 42 ===
+(a) The change points identified
+with λ1 = 0.10 and λ2 = 60 are
+{60, 63, 100}.
+(b) The change points identified
+with λ1 = 0.20 and λ2 = 60 are
+{60, 100, 150}.
+(c) The change points identified
+with λ1 = 0.50 and λ2 = 60 are
+{60, 141, 150}.
+Figure B.4.3: Scenario 4: Change points (as blue vertical lines) detected by the GFGL
+model.
+(a) The change points identified with λ1 = 0.10 and λ2 = 60 are {60, 63, 100}.
+(b) The change points identified with λ1 = 0.20 and λ2 = 60 are {60, 100, 150}.
+(c) The change points identified with λ1 = 0.50 and λ2 = 60 are {60, 141, 150}.
+Figure B.4.4: Scenario 4: Graphs estimated by the group-fused graphical lasso model for
+different values of the hyperparameters.
+42
+
+=== page 43 ===
+1
+2
+3
+4
+567
+8
+9
+10
+11
+12
+13
+14
+15 16 17
+18
+19
+20
+t = 0.15
+1
+2
+3
+4
+567
+8
+9
+10
+11
+12
+13
+14
+15 16 17
+18
+19
+20
+t = 0.4
+1
+2
+3
+4
+567
+8
+9
+10
+11
+12
+13
+14
+15 16 17
+18
+19
+20
+t = 0.63
+1
+2
+3
+4
+567
+8
+9
+10
+11
+12
+13
+14
+15 16 17
+18
+19
+20
+t = 0.88
+Figure B.4.5: Scenario 4: Graph estimation with the “oracle version” of the loggle model.x
+B.5 Scenario 5: results
+We consider a scenario for our model is highly misspecified. In this scenario, the dependence
+structure presents both an abrupt change point in the variance as well as smooth changes.
+The true data generating mechanism is as follows. The first covariance matrix is generated
+starting from a graph with 21 edges. There is a first change point at t = 60, at which
+the correlation structure remain the same as before, but standard deviations double for all
+variables. Then, starting from t = 100 the dependence structure starts to smoothly change
+according to a multivariate GARCH model (see, for instance, Silvennoinen and Ter¨asvirta,
+2009), i.e.
+Yt | Σt ind∼ Np(0, Σt) for t = 100, . . . , 200
+vech(Σt) = A vech(Yt−1Y ′ t−1) + B vech(Σt−1)
+where vech() is an operator that stacks the columns of the lower triangular part of its
+argument and A and B are p(p + 1)/2 × p(p + 1)/2 dimensional matrices, that we set to be
+diagonal (for more details on this specification of the multivariate GARCH, see Bollerslev
+et al., 1988). All entries on the diagonal of A are equal to 0.21 and all entries on the
+diagonal of B are equal to 0.80. The following figures summarize the results obtained for
+two replicates of Scenario 5.
+−4
+−2
+0
+2
+4
+0 50 100 150 200
+Time
+Returns 
+Variable
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+Figure B.5.1: Scenario 5: Simulated data - replicate n.1.
+43
+
+=== page 44 ===
+−2.5
+0.0
+2.5
+0 50 100 150 200
+Time
+Returns 
+Variable
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+Figure B.5.2: Scenario 5: Simulated data - replicate n.2.
+0.00
+0.25
+0.50
+0.75
+1.00
+0 1 2 3 4 5 6 7 8 9
+Number of Change Points
+Posterior probability 
+Figure B.5.3: Scenario 5: Posterior distribution of the number of change points - replicate
+n.1.
+0.00
+0.25
+0.50
+0.75
+1.00
+0 1 2 3 4 5 6 7 8 9
+Number of Change Points
+Posterior probability 
+Figure B.5.4: Scenario 5: Posterior distribution of the number of change points - replicate
+n.2.
+44
+
+=== page 45 ===
+0.00
+0.05
+0.10
+10
+30
+50
+70
+90
+110
+130
+150
+170
+190
+Change Points
+Posterior probability 
+Figure B.5.5: Scenario 5: Marginal posterior probability of every time point to be a change
+point - replicate n.1.
+0.00
+0.03
+0.06
+0.09
+0.12
+10
+30
+50
+70
+90
+110
+130
+150
+170
+190
+Change Points
+Posterior probability 
+Figure B.5.6: Scenario 5: Marginal posterior probability of every time point to be a change
+point - replicate n.2.
+C. US stock market analysis: additional figures and tables
+−6
+−3
+0
+3
+2019 2020 2021 2022
+Time
+Returns 
+Portfolio
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+Figure C.1: Weekly Standardised Logarithmic Returns of nine Industry Portfolios from
+January 2019 to December 2021.
+45
+
+=== page 46 ===
+C.1 Descriptive indexes and summaries of the posterior graphs
+The following tables contain degree centrality, betweenness centrality, local clustering and
+global clustering coefficients for the estimated graphs.
+Portfolios pre COVID-19 during COVID-19 post COVID-19
+Consumer Nondurables (NoDur) 2 3 4
+Consumer Durables (Durbl) 1 2 1
+Manufacturing (Manuf) 3 4 4
+Energy (Enrgy) 1 2 3
+High Technology (HiTec) 3 3 2
+Telecommunications (Telcm) 2 1 1
+Shops (Shops) 2 2 4
+Health (Hlth) 1 3 2
+Utilities (Utils) 1 2 3
+Table C.1.1: Degree centrality. Degree centrality of a certain node is the number of
+vertices in the neighbourhood of that node. In bold, we highlight the highest degree
+centrality for each graph.
+Portfolios pre COVID-19 during COVID-19 post COVID-19
+Consumer Nondurables (NoDur) 7 11.5 10
+Consumer Durables (Durbl) 0 4.5 0
+Manufacturing (Manuf) 13 14 6.67
+Energy (Enrgy) 0 0 1.33
+High Technology (HiTec) 19 3.5 2.33
+Telecommunications (Telcm) 12 0 0
+Shops (Shops) 15 0 10
+Health (Hlth) 0 5.5 2.33
+Utilities (Utils) 0 0 1.33
+Table C.1.2: Betweenness centrality. Between centrality of a certain node v is c(v) =P
+h̸=v̸=k σh,k(v)σh,k, where σh,k(v) is the number of geodesics (i.e., shortest paths) between
+nodes h and k going through node j and σh,k is the number of geodesics between nodes h
+and k. In bold, we highlight the three highest values for each graph.
+Portfolios pre COVID-19 during COVID-19 post COVID-19
+Consumer Nondurables (NoDur) 0 0 0.17
+Consumer Durables (Durbl) 0 0 0
+Manufacturing (Manuf) 0 0.17 0.50
+Energy (Enrgy) 0 1 0.67
+High Technology (HiTec) 0 0.33 0
+Telecommunications (Telcm) 0 0 0
+Shops (Shops) 0 1 0.17
+Health (Hlth) 0 0.33 0
+Utilities (Utils) 0 1 0.67
+Global clustering coefficient 0 0.43 0.24
+Table C.1.3: Local clustering coefficients Local clustering coefficients are the ratio be-
+tween the number of triangular cliques, of which the node is a part, and d (d − 1)/2, where
+d is the degree centrality of that node. Global clustering is the average of local coefficients.
+46
+
+=== page 47 ===
+C.2 Posterior estimates of precision, covariance, and correlation matrices.
+0.81 0.48 0.57 0.49 0.61 0.6 0.44 0.96 1.75
+1.4 1.47 1.44 1.57 2.11 1.03 1.37 3.61 0.96
+0.96 2.43 1.75 2.13 1.91 0.71 2.25 1.37 0.44
+1.35 0.77 1.07 1.09 0.81 2.69 0.71 1.03 0.6
+1.09 2.07 1.61 1.9 3.32 0.81 1.91 2.11 0.61
+1.47 2.3 3.07 6.93 1.9 1.09 2.13 1.57 0.49
+1.45 1.89 3.02 3.07 1.61 1.07 1.75 1.44 0.57
+1.04 7.43 1.89 2.3 2.07 0.77 2.43 1.47 0.48
+1.82 1.04 1.45 1.47 1.09 1.35 0.96 1.4 0.81
+Utils
+Hlth
+Shops
+Telcm
+HiTec
+Enrgy
+Manuf
+Durbl
+NoDur
+NoDur Durbl Manuf Enrgy HiTec Telcm Shops Hlth Utils
+36.3 50.32 46.07 52.35 29.02 32.12 27.16 27.52 53.58
+21.9 32.26 26.57 32.5 19.7 19.38 17.41 21.05 27.52
+20.75 37.92 26.44 32.34 20.8 18.36 20.46 17.41 27.16
+25.55 34.02 30.54 37.08 19.87 25.01 18.36 19.38 32.12
+22.45 38.54 28.18 34.47 24.81 19.87 20.8 19.7 29.02
+41.91 59.91 56.01 88.95 34.47 37.08 32.34 32.5 52.35
+34.51 48.99 45.22 56.01 28.18 30.54 26.44 26.57 46.07
+38.44 82.86 48.99 59.91 38.54 34.02 37.92 32.26 50.32
+28.87 38.44 34.51 41.91 22.45 25.55 20.75 21.9 36.3
+Utils
+Hlth
+Shops
+Telcm
+HiTec
+Enrgy
+Manuf
+Durbl
+NoDur
+NoDur Durbl Manuf Enrgy HiTec Telcm Shops Hlth Utils
+1.97 2.73 2.17 2.04 1.98 1.31 1.73 1.83 3.39
+1.89 3.7 2.17 1.77 2.97 1.26 2.35 3.77 1.83
+1.96 7.59 2.81 0.77 4.87 1.31 4.81 2.35 1.73
+1.86 2.07 1.87 2.23 1.47 3.42 1.31 1.26 1.31
+2.2 7.69 3.03 1.1 6.64 1.47 4.87 2.97 1.98
+3.34 1.22 5.88 21.35 1.1 2.23 0.77 1.77 2.04
+2.8 4.43 4.52 5.88 3.03 1.87 2.81 2.17 2.17
+3.09 35.25 4.43 1.22 7.69 2.07 7.59 3.7 2.73
+2.79 3.09 2.8 3.34 2.2 1.86 1.96 1.89 1.97
+Utils
+Hlth
+Shops
+Telcm
+HiTec
+Enrgy
+Manuf
+Durbl
+NoDur
+NoDur Durbl Manuf Enrgy HiTec Telcm Shops Hlth Utils
+Figure C.2.1: Posterior estimates of the variance and covariance matrices for the original
+non-standardised weekly percentage logarithmic returns. Posterior estimates are obtained
+computing the expected values of the entries in the matrix with respect to its posterior
+distribution conditionally to the graphs point estimate.
+47
+
+=== page 48 ===
+0.45 0.13 0.25 0.14 0.25 0.28 0.22 0.38
+0.54 0.28 0.44 0.31 0.61 0.33 0.48 0.38
+0.48 0.59 0.67 0.54 0.7 0.29 0.48 0.22
+0.61 0.17 0.38 0.25 0.27 0.29 0.33 0.28
+0.45 0.42 0.51 0.4 0.27 0.7 0.61 0.25
+0.41 0.32 0.67 0.4 0.25 0.54 0.31 0.14
+0.62 0.4 0.67 0.51 0.38 0.67 0.44 0.25
+0.28 0.4 0.32 0.42 0.17 0.59 0.28 0.13
+0.28 0.62 0.41 0.45 0.61 0.48 0.54 0.45
+Utils
+Hlth
+Shops
+Telcm
+HiTec
+Enrgy
+Manuf
+Durbl
+NoDur
+NoDur Durbl Manuf Enrgy HiTec Telcm Shops Hlth Utils
+0.92 0.76 0.94 0.76 0.8 0.88 0.82 0.82
+0.89 0.77 0.86 0.75 0.86 0.84 0.84 0.82
+0.85 0.92 0.87 0.76 0.92 0.81 0.84 0.82
+0.95 0.75 0.91 0.79 0.8 0.81 0.84 0.88
+0.84 0.85 0.84 0.73 0.8 0.92 0.86 0.8
+0.83 0.7 0.88 0.73 0.79 0.76 0.75 0.76
+0.96 0.8 0.88 0.84 0.91 0.87 0.86 0.94
+0.79 0.8 0.7 0.85 0.75 0.92 0.77 0.76
+0.79 0.96 0.83 0.84 0.95 0.85 0.89 0.92
+Utils
+Hlth
+Shops
+Telcm
+HiTec
+Enrgy
+Manuf
+Durbl
+NoDur
+NoDur Durbl Manuf Enrgy HiTec Telcm Shops Hlth Utils
+0.64 0.25 0.56 0.24 0.42 0.39 0.43 0.51
+0.58 0.32 0.53 0.2 0.59 0.35 0.55 0.51
+0.54 0.58 0.6 0.08 0.86 0.32 0.55 0.43
+0.6 0.19 0.48 0.26 0.31 0.32 0.35 0.39
+0.51 0.5 0.55 0.09 0.31 0.86 0.59 0.42
+0.43 0.04 0.6 0.09 0.26 0.08 0.2 0.24
+0.79 0.35 0.6 0.55 0.48 0.6 0.53 0.56
+0.31 0.35 0.04 0.5 0.19 0.58 0.32 0.25
+0.31 0.79 0.43 0.51 0.6 0.54 0.58 0.64
+Utils
+Hlth
+Shops
+Telcm
+HiTec
+Enrgy
+Manuf
+Durbl
+NoDur
+NoDur Durbl Manuf Enrgy HiTec Telcm Shops Hlth Utils
+Figure C.2.2: Posterior estimates of the correlation matrices for weekly logarithmic returns.
+Posterior estimates are obtained from the estimates in Figure C.2.1.
+.
+48
+
+=== page 49 ===
+−2.4 0 0 0 0 0 0 −0.9 8.9
+−1.3 0 0 0 −1.9 0 0 3.6 −0.9
+0 −1.8 −0.9 0 −2.9 −3.3 9.2 0 0
+−2.3 0 0 −1.5 0 6.7 −3.3 0 0
+0 0 −4.4 0 9 0 −2.9 −1.9 0
+0 0 −4.3 8.2 0 −1.5 0 0 0
+−2.5 −5 15.9 −4.3 −4.4 0 −0.9 0 0
+0 10.3 −5 0 0 0 −1.8 0 0
+9.2 0 −2.5 0 0 −2.3 0 −1.3 −2.4
+Utils
+Hlth
+Shops
+Telcm
+HiTec
+Enrgy
+Manuf
+Durbl
+NoDur
+NoDur Durbl Manuf Enrgy HiTec Telcm Shops Hlth Utils
+−0.28 0 −2.59 0.82 0 0 0 −0.31 2.41
+−2.05 2.12 1.09 0 −1.38 0 −2.3 3.46 −0.31
+0 −3.27 0 0 −0.33 0.35 5.13 −2.3 0
+−1.49 0 −2.62 0 −1.76 5.67 0.35 0 0
+0 −5.09 0.82 0 7.42 −1.76 −0.33 −1.38 0
+0 0 −2.19 1.74 0 0 0 0 0.82
+−2.81 −2.27 9.92 −2.19 0.82 −2.62 0 1.09 −2.59
+0 9.95 −2.27 0 −5.09 0 −3.27 2.12 0
+6.11 0 −2.81 0 0 −1.49 0 −2.05 −0.28
+Utils
+Hlth
+Shops
+Telcm
+HiTec
+Enrgy
+Manuf
+Durbl
+NoDur
+NoDur Durbl Manuf Enrgy HiTec Telcm Shops Hlth Utils
+−2.54 0 −0.8 0.39 0 0 0 −0.86 6.44
+−0.91 −0.26 −0.65 0 −1.42 0 0.43 4 −0.86
+0 −0.53 −2.87 1.27 −4.87 −0.25 7.31 0.43 0
+−1.4 0 −1.51 0 0.39 3.73 −0.25 0 0
+0 −0.42 −0.06 0 6.47 0.39 −4.87 −1.42 0
+0 0 −3.49 2.78 0 0 1.27 0 0.39
+−4.48 −0.45 13.6 −3.49 −0.06 −1.51 −2.87 −0.65 −0.8
+0 1.75 −0.45 0 −0.42 0 −0.53 −0.26 0
+9.2 0 −4.48 0 0 −1.4 0 −0.91 −2.54
+Utils
+Hlth
+Shops
+Telcm
+HiTec
+Enrgy
+Manuf
+Durbl
+NoDur
+NoDur Durbl Manuf Enrgy HiTec Telcm Shops Hlth Utils
+Figure C.2.3: Posterior estimates of the precision matrices for weekly standardized loga-
+rithmic returns. Posterior estimates are the entry-wise posterior expected value conditional
+on the estimated graph structure.
+49
+
+=== page 50 ===
+C.3 Results obtained with GFGL and loggle
+(a) The change points identified
+with λ1 = 0.25 and λ2 = 10 are
+{57, 61, 80, 98, 99, 116}.
+(b) The change points identified
+with λ1 = 0.35 and λ2 = 10 are
+{61, 80, 98, 116}.
+(c) The change points identified
+with λ1 = 0.55 and λ2 = 10 are
+{57, 61, 68, 69, 77, 80}.
+(d) The change points identified
+with λ1 = 0.25 and λ2 = 20 are
+{61, 80, 98}.
+(e) The change points identified
+with λ1 = 0.35 and λ2 = 20 are
+{61, 80, 98, 99}.
+(f) The change points identified
+with λ1 = 0.5 and λ2 = 20 are
+{61, 68, 77, 80}.
+(g) No change point is identified
+with λ1 = 0.25 and λ2 = 60.
+xxxxxxxxxxxx
+(h) The change points identified
+with λ1 = 0.35 and λ2 = 60 are
+{61, 80}.
+(i) The change points identified
+with λ1 = 0.5 and λ2 = 60 are
+{61, 80}.
+(j) The change points identified
+with λ1 = 0.25 and λ2 = 55 are
+{61, 80}.
+Figure C.3.1: Change points (as blue vertical lines) detected by the GFGL model.
+50
+
+=== page 51 ===
+(a) The change points identified with λ1 = 0.35 and λ2 = 10 are {61, 80, 98, 116}.
+(b) The change points identified with λ1 = 0.25 and λ2 = 20 are {61, 80, 98}.
+(c) The change points identified with λ1 = 0.35 and λ2 = 20 are {61, 80, 98, 99}.
+(d) The change points identified with λ1 = 0.5 and λ2 = 20 are {61, 68, 77, 80}.
+(e) The change points identified with λ1 = 0.35 and λ2 = 60 are
+{61, 80}.
+(f) The change points identified with λ1 = 0.25 and λ2 = 55 are
+{61, 80}.
+Figure C.3.2: Graphs estimated by the group-fused graphical lasso model on real data for
+different values of the hyperparameters.
+51
+
+=== page 52 ===
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+t = 0.2
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+t = 0.45
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+t = 0.76
+Figure C.3.3: Estimated graph using the “oracle version” of loggle.
+C.4 Pooled estimate
+Pooled estimate
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+Figure C.4.1: Estimated graph using the adaptive lasso approach as implemented in the R
+package GGMselect (Bouvier et al., 2022) assuming no change points.
+C.5 Sensitivity to the hyperparameter p0 controlling the prior on the
+number of change points and the hyperparameter z controlling edges’
+(de)activation
+hyperparameter prob. κ = 2 MAP configuration MAP prob.
+p0 = 0.20, z = 0.1 0.998 (61 79) 0.3735
+p0 = 0.50, z = 0.1 0.997 (61 79) 0.3922
+p0 = 0.80, z = 0.1 0.997 (61 79) 0.3810
+p0 = 0.20, z = 0.2 0.997 (61 79) 0.3742
+p0 = 0.20, z = 0.4 0.975 (61 79) 0.3614
+Table C.5.1: Prior sensitivity: posteriors estimates of change point configuration.
+52
+
+=== page 53 ===
+Graph from December 31, 2018 
+ to February 21, 2020
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+Graph from February 24, 2020 
+ to June 26, 2020
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+Graph from June 29, 2020 
+ to December 31, 2021
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+Figure C.5.1: Posterior estimates of the graphs obtained with z = 0.2. Threshold of inclu-
+sion is set to achieve an expected posterior specificity of at least 95%.
+Graph from December 31, 2018 
+ to February 21, 2020
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+Graph from February 24, 2020 
+ to June 26, 2020
+NoDur
+DurblManuf
+Enrgy
+HiTec
+Telcm
+Shops
+Hlth
+Utils
+Graph from June 29, 2020 
+ to December 31, 2021
+NoDur
+Durbl
+Manuf
+Enrgy
+HiTec
+TelcmShops
+Hlth
+Utils
+Figure C.5.2: Posterior estimates of the graphs obtained with z = 0.4. Threshold of inclu-
+sion is set to achieve an expected posterior specificity of at least 95%.
+z = 0.1
+Gc0 Gc1 Gc2
+Active Inactive Active Inactive Active Inactive
+z = 0.2 Active 8 0 10 8 12 5
+Inactive 0 73 1 62 1 63
+z = 0.4 Active 6 8 10 18 10 20
+Inactive 2 65 1 52 3 48
+Table C.5.1: Edge detection comparison for z = 0.1, z = 0.2, and z = 0.4.
+C.6 Goodness-of-fit: Posterior predictive checking
+The following figures showcase the posterior predictive checking for the real data. For
+brevity, plots refer to the first portfolio, however analogous results are observed for all
+portfolios under investigation. Posterior predictive checking consists in simulating data from
+the posterior predictive distribution of a new data point, in our case an entire realization
+of the time series, given the observed time series.
+53
+
+=== page 54 ===
+−6
+−4
+−2
+0
+2
+4
+2019 2020 2021 2022
+date
+NoDur
+Figure C.6.1: Posterior predictive checking for NoDur portfolio, conditionally on the change
+points configuration. Dark and light shaded areas correspond respectively to 90% and 95%
+credible intervals. The posterior predictive is obtained simulating 100 000 replicates of the
+data keeping the change points fixed.
+−6
+−4
+−2
+0
+2
+4
+2019 2020 2021 2022
+date
+NoDur
+Figure C.6.2: Posterior predictive checking for NoDur portfolio, conditionally on the graph
+topology. Dark and light shaded areas correspond respectively to 90% and 95% credible
+intervals. The black continuous line is the real observed standardised time series of returns.
+The posterior predictive is obtained simulating 100 000 replicates of the data keeping the
+graphs fixed.
+−6
+−4
+−2
+0
+2
+2019 2020 2021 2022
+date
+NoDur
+Figure C.6.3: Posterior predictive checking for NoDur portfolio, conditionally on the co-
+variance matrices. Dark and light shaded areas correspond respectively to 90% and 95%
+credible intervals. The black continuous line is the real observed standardised time series
+of returns. The posterior predictive is obtained simulating 100 000 replicates of the data
+keeping the covariance matrices fixed.
+54
+
+=== page 55 ===
+D Algorithmic mixing and computational time
+D.1 Mixing performance
+ 
+ 
+ 
+ 
+ 
+0
+1
+Change point active at t=70
+replica 1
+0
+1
+Change point active at t=70
+replica 2
+0
+1
+Change point active at t=70
+replica 3
+Figure D.1.1: Outer algorithm - simulated data - Scenario 3: Trace plots of the indicator
+variable of time point 70 being a change point. 8000 iterations after burn-in.
+55
+
+=== page 56 ===
+ 
+ 
+0
+1
+Change point active at t=61
+0
+1
+Change point active at t=79
+Figure D.1.2: Outer algorithm - real data: Trace plots of the indicator variables of time
+points 61 and 79 being change points in the real data analysis. 32000 iterations, including
+burn-in.
+D.2 Computational time
+The effective computational time needed to estimate the model obviously depends on the
+dataset dimension, i.e., number of nodes p and number of time points T , and the SMC
+parameters, i.e., number of particles N and number of mutation steps M . However, it
+depends also on the true data generating process, i.e., true number of change points and
+true graph topology, as well as on the posterior distribution of the number of change points.
+Dependence from the latter is due to the fact that exploring configurations with a high
+number of change points is computationally more expensive. Moreover, we empirically ob-
+serve that the cost for computing the marginal likelihood with the inner algorithm increases
+while exploring configurations distant from the posterior mode and the true change point
+configuration. In Table D.2.1 we report the recorded average computational time for the
+inner algorithm in the simulation studies and the real data analysis. Table D.2.2 contains
+the computational time per one iteration of the inner algorithm fixing a specific number
+of equally spaced change points proposed by the outer algorithm. Computational times
+tend to be higher in Table D.2.2 than in Table D.2.1, because the configurations evaluated
+in the former are far from the posterior mode and the true configurations, which present
+one change point. In this sense computational times in Table D.2.2 may be intended as a
+“worst case” scenario. The algorithm is coded in R, does not exploit parallelization, and is
+performed with an Intel Xeon W-1250 processor.
+56
+
+=== page 57 ===
+Data Time in seconds
+Scenario 1 0.25
+Scenario 2 0.43
+Scenario 3 0.80
+Scenario 4 3.90
+Scenario 5 0.82
+Financial data 1.07
+Table D.2.1: Average computational time in seconds for one iteration of the inner algorithm
+for the simulation studies and the application. Algorithm is coded in R, does not employ
+parallelization, and is performed with an Intel Xeon W-1250 processor.
+Nodes Particles proposed κ Time
+κ = 2 0.34 sec
+N = 50 κ = 3 0.35 sec
+κ = 4 0.49 sec
+κ = 2 0.59 sec
+p = 10 N = 100 κ = 3 0.79 sec
+κ = 4 0.81 sec
+κ = 2 1.15 sec
+N = 200 κ = 3 1.68 sec
+κ = 4 2.16 sec
+κ = 2 2.10 sec
+N = 50 κ = 3 2.67 sec
+κ = 4 3.36 sec
+κ = 2 4.10 sec
+p = 20 N = 100 κ = 3 5.52 sec
+κ = 4 6.81 sec
+κ = 2 8.21 sec
+N = 200 κ = 3 10.95 sec
+κ = 4 13.78 sec
+κ = 2 28.19 sec
+N = 50 κ = 3 1.06 min
+κ = 4 1.66 min
+κ = 2 24.65 sec
+p = 50 N = 100 κ = 3 2.67 min
+κ = 4 3.32 min
+κ = 2 1.94 min
+N = 200 κ = 3 5.27 min
+κ = 4 6.62 min
+Table D.2.2: Computational time for one iteration of the inner algorithm for different values
+of the number of nodes p, the number of particles N , and the number of change points κ
+in the configuration proposed by the outer algorithm. Here data are simulated for T = 200
+total times points. The truth presents one change point and both graphs (before and after
+the change point) have p − 1 activated edges. Algorithm is coded in R, does not employ
+parallelization, and is performed with an Intel Xeon W-1250 processor.
+57

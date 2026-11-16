@@ -1,0 +1,768 @@
+=== page 1 ===
+Hawkes processes for credit indices time series
+analysis: How random are trades arrival times?
+Achraf Bahamou, Maud Doumergue, and Philippe Donnat
+Hellebore Capital Ltd
+Michelin House, London
+Abstract. Targeting a better understanding of credit market dynam-
+ics, the authors have studied a stochastic model named Hawkes process.
+Describing trades arrival times, this kind of model allows for the cap-
+ture of self-excitement and mutual interactions phenomena. The authors
+propose here a simple yet conclusive method for ﬁtting multidimensional
+Hawkes processes with exponential kernels, based on a maximum likeli-
+hood non-convex optimization. The method was successfully tested on
+simulated data, then used on new publicly available real trading data
+for three European credit indices, thus enabling quantiﬁcation of self-
+excitement as well as volume impacts or cross indices inﬂuences.
+Keywords: Point and counting processes, multidimensional Hawkes pro-
+cess, ﬁnancial time series analysis, non-convex optimization, maximum
+likelihood optimization, credit indices.
+1 Introduction
+1.1 From credit derivative indices to Hawkes processes
+Credit indices are ﬁnancial instruments comprised of a set of credit securities,
+mainly used to hedge credit default risk. Each new index series is issued every
+6 months and expires after a deﬁned maturity. Though liquid, those indices are
+traded at a rather ”mid-frequency” rate, with trades occurring at a minute scale.
+For European indices, the market is continuously open from 7:00 to 17:00, with
+a total of ﬁve to ten billion euros reported each day on average. Fig 1 gives an
+idea of the activity on a sampled day of trading. If recent regulations have led
+to a greater public reporting of trading activities, thus releasing more amount of
+traded data, this data is by essence quite sparse. Picturing such market behaviour
+over time represents a challenging opportunity: it originally motivated the work
+presented in this article.
+This study focuses on three principal European credit indices, of the most
+traded 5-year maturity1: the Main Index, noted here itxeb, a combination of 125
+equally weighted investment grade entities; the Crossover Index, noted itxex,
+with 75 sub-investment grade names; and the Senior Financial, noted itxes, a
+subset of 30 ﬁnancial entities from Main Index, referencing senior debt.
+1 Data provided by otcstreaming.com, and available on demand.
+arXiv:1902.03714v1  [stat.AP]  11 Feb 2019
+
+=== page 2 ===
+Bahamou, A., Doumergue, M., Donnat, P.
+Fig. 1. Publicly reported trading activity on 22/05/2018 (times, volumes) for European
+credit indices itxeb, itxes & itxex.
+When trying to capture the underlying dynamics of this market, one of the
+ﬁrst questions that comes to mind is: how random is the timing of trades? A very
+naive approach is to model trades arrival times as purely random and uncorre-
+lated processes, for example a Poisson process by trying to ﬁt an exponential
+law over the distribution of inter-arrival times. Yet, such a model fails to ﬁt the
+data: from Fig 2, we can notice a high density of very short inter-arrival times,
+suggesting that some self-excitation phenomenon occurs, with trades triggering
+more trades; an intuition that every practitioner of the ﬁeld would conﬁrm.
+E(∆t) σ(∆t) Q1(∆t) Q2(∆t) Q3(∆t) Number of trades
+itxeb 7 min 10 min 1 min 3 min 8 min 22 227
+itxex 8 min 12 min 2 min 4 min 10 min 18 152
+itxes 17 min 24 min 3 min 9 min 21 min 7 194
+Table 1. Statistics on inter-arrival times ∆t (period: 03/01/2017 to 14/12/2017)
+Fig. 2. itxeb, from 15/01/2017 to 15/05/2018: right: log-scaled distribution of inter-
+arrival times; left: Q-Q plot. The red lines represent the best exponential law ﬁtting.
+With a p-value of 0.0, this model is clearly inappropriate.
+Literature review reveals that one model has recently driven considerable
+attention and a growing interest from both the scientiﬁc and quantitative com-
+munities: Hawkes processes. This model, introduced in 1971 by Hawkes ([6], [7])
+
+=== page 3 ===
+Hawkes processes for credit indices time series analysis
+to characterize earthquake tremors, can be used to describe timing of trades and
+their cross inﬂuences from a point process perspective.
+After summarizing related work for Hawkes processes, we will recall the the-
+oretical framework around this stochastic model. We will then focus on opti-
+mization methods for ﬁtting such a process and describe Two Stage Hawkes
+Likelihood Optimization (2SHLO), a maximum likelihood based algorithm to ﬁt
+multidimensional Hawkes processes with a parametric exponential kernel. Lastly,
+we will present our results, ﬁrstly on simulated data, then on credit derivative
+indices mentioned above. Hawkes processes in ﬁnance have mainly been applied
+to high frequency data. Is such a model appropriate for ”mid-frequency” credit
+data? Can we specify the impact of volumes in trades or describe mutual inﬂu-
+ences between diﬀerent indices?
+1.2 Related work
+Hawkes processes were originally designed for seismology analysis and deeply
+studied for that purpose by Ogota [12], [10], [11]. The concept has been utilized
+to model other eﬀects where self and cross ignitions happen, such as social media
+tweets cascading [14], crime occurrences due to gang retaliations [9], or ﬁnancial
+market events. As regards to ﬁnancial applications, Bowsher [4] proposed in 2002
+a generalized Hawkes process model taking into account night gaps, inter-day
+dependencies as well as intraday seasonality (with a piece-wise baseline inten-
+sity), which was used to model interactions between trades and price changes
+and also estimate of the price volatility based on mid-quote intensity for NYSE
+stock. Market price microstructure & market impact (inﬂuence of market or-
+ders on forthcoming prices) was modelled in [3], price impact was also studied
+in [1]. [13] focused on the impact of volume and order types on the limit order
+book. [2] (2015) exposes a full review of Hawkes process applications to ﬁnance,
+such as price & volatility modeling, market reﬂexivity measurement, order book
+modeling or risk contagion modeling.
+2 Modeling Self and Cross Excitement with Hawkes
+Processes
+This section re-frames the required formalism, as very clearly stated in [2], [8] or
+[15], starting from point and counting process deﬁnitions, through the key con-
+cept of intensity function. Hawkes model formulation is detailed for the reader,
+with a peculiar focus on exponential kernel structure.
+2.1 Core concepts: from counting & point processes to intensity
+functions
+Deﬁnition 1 (Point Process). Let (Ω, F ,P ) be a probability space.
+Let (tk)k∈N∗ be a sequence of non-negative random variables such that ∀k∈ N∗,
+tk <tk+1. (tk)k∈N∗ is called a (simple) point process on R+.
+
+=== page 4 ===
+Bahamou, A., Doumergue, M., Donnat, P.
+Deﬁnition 2 (Counting Process). Let (tk)k∈N be a point process. The right-
+continuous stochastic process deﬁned for all t ∈ R+ as N(t) = ∑ k∈N∗ 1tk ≤t is
+called the counting process associated with (tk)k∈N∗ .
+The study of point processes goes through a single mathematical object,
+the intensity function, which is deﬁned as the conditional probability density of
+occurrence of an event in the immediate future.
+Deﬁnition 3 (Intensity Function). Let N be a counting process adapted to
+a ﬁltration Ft. The left-continuous intensity is heuristically deﬁned as
+λ(t|Ft) = lim h→0 E
+[N(t + h) −N(t)
+h
+⏐⏐⏐⏐Ft ] (1)
+The intensity function depends on the choice of ﬁltration Ft, which represents
+the amount of information available until time t (See [5] for a rigorous deﬁnition
+of the intensity function). In the context of Hawkes processes, we will simply use
+the natural ﬁltration, with all previous information being available, and consider
+λ(t).
+Homogeneous Poisson process
+One of the simplest point processes is the homogeneous Poisson process, for
+which the intensity function is constant over time: ∀ t ≥ 0, λ(t) = λ. In that
+case, durations (or inter-event waiting times) are independent and identically
+distributed (following an exponential distribution of hazard rate λ). As presented
+in the introduction, credit trades cannot be modeled by this memory-less model.
+Let’s introduce Hawkes processes, a peculiar kind of non-homogeneous Poisson
+processes with linear dependencies over functions of past events.
+2.2 Self-excitement: one-dimensional Hawkes processes
+Deﬁnition 4 (One-dimensional Hawkes Processes).
+Let (tk)k∈N be a point process and N the associated counting process, such
+that its intensity function λ is deﬁned for each time t≥ 0 as
+λ(t) = µ(t) +
+∫ t
+−∞
+φ(t−τ) dN(τ) = µ(t) +
+∑
+ti <t
+φ(t−ti) (2)
+where µ : R ↦→ R+ is an exogenous base intensity and φ : R+ ↦→ R+ is a
+non-negative, measurable function such that ||φ||1 =
+∫∞
+0 φ(s)ds< 1.
+N is called a Hawkes process with baseline µ and kernel φ.
+The kernel φ expresses the positive inﬂuence of past events on the current
+value of the intensity. Each jump dN(τ) ⁄= 0 increases the probability of future
+events through the kernel φ. Clustering eﬀects and branching structure are well
+depicted by Hawkes processes, with the baseline activity generating immigrant
+events and descendant events enhancing the intensity.
+
+=== page 5 ===
+Hawkes processes for credit indices time series analysis
+For this study, we focus on exponential kernels, deﬁned as φ(t) = αβe−βt 1t≥0,
+with parameters α,β ≥ 0, which allows easy interpretation: α or adjacency rep-
+resents the weight of previous events while β is the decay / typical duration of
+inﬂuence for a past event.
+The branching ratio n = ||φ||1 =
+∫∞
+0 φ(s)ds represents the average number
+of descendants for any event. For exponential kernel, n = α.
+2.3 Including mutual-excitement with multidimensional Hawkes
+processes
+Deﬁnition 5 (Multidimensional Hawkes Processes).
+Let M ∈ N∗ and {(ti k)k}i=1,...,M be a M-dimensional point process.
+We denote by Nt = (N 1 t,...,NM t ) the associated counting process such that its
+vector intensity function λ : R+ ↦→ RM + , is deﬁned as, for all t≥ 0, i∈ 1,...,M:
+λi(t) = µi +
+M∑
+j=1
+∫ t
+0
+φi,j(t−τ)dNj(τ) = µi +
+M∑
+j=1
+Nj (t)∑
+n=1
+φi,j(t−tj,n), (3)
+with µ = (µi)i=1,...,M an exogenous base intensity vector
+and φ(t) = (φi,j)i,j=1,...,M a matrix-valued kernel that is component-wise
+positive and causal (null values when t< 0) and with each component belonging
+to the space of L1-integrable functions.
+Nt is called a multidimensional (or multivariate) Hawkes process with base-
+line µ and kernel φ.
+The choice of an exponential kernel can be generalized for multivariate Hawkes
+processes with kernel components being expressed as φi,j(t) = αi,jβi,je−βi,j t1t≥0.
+This article focuses on Hawkes processes with exponential kernel and constant
+baselines, to which we propose a maximum likelihood based ﬁtting method.
+3 Hawkes Processes: Model Calibration
+The most commonly used technique for parametric inference of Hawkes processes
+is a direct numerical optimization of the Maximum Likelihood, which was ﬁrst
+introduced in the work of Ogata (1978) [10]. He proved the asymptotic consis-
+tency and eﬃciency of the Maximum Likelihood Estimator (MLE) under the
+assumption of stationary condition of the underlying point process. The nega-
+tive log-likelihood function of a multidimensional Hawkes process over the time
+interval [0,t] is given in Daley & Vere-Jones [5] Proposition 13.1.VI by :
+Lt(λ) := −
+M∑
+i=1
+(∫ t
+0
+log λi(τ)dNi(τ) −
+∫ t
+0
+λi(τ)dτ
+)
+. (4)
+
+=== page 6 ===
+Bahamou, A., Doumergue, M., Donnat, P.
+Depending on the shape of kernels, Lt is generally non-convex. Classic non-
+convex numerical optimization pitfalls are to be feared: a direct numerical opti-
+mization could converge to a merely local minimum. On the other hand, it may
+take too many iterations to converge as the negative log-likelihood function can
+be ﬂat on some regions of the space of parameters. This problem is also faced
+when using an Expectation Maximization (EM) algorithm to ﬁnd the MLE.
+On the computational side, the repeated evaluation of the negative log-
+likelihood can be highly time consuming, essentially due to the nested sum in
+the ﬁrst part of 4 where the conditional intensity is also expressed as a sum over
+the history.
+3.1 Maximum Likelihood Estimation (MLE) for exponential
+multidimensional Hawkes processes
+Let’s consider a M-dimensional multivariate Hawkes model with constant base-
+lines µi and kernel functions φi,j as deﬁned in 2.3. The choice of an exponential
+kernel has proved to be very interesting as it allows intuitive and meaningful
+interpretations of its parameters and also reduces the computational cost of the
+evaluation of the negative log-likelihood function as noted by Ogata (1981) [11]
+who exhibited a recursive formula that eliminated the nested sum evaluation
+problem.
+The existing methods to ﬁt exponential parameters through MLE directly
+use non-linear optimization algorithms such as Nelder-Mead (also called down-
+hill simplex method) or BFGS, with performance decreasing as the number of
+parameters increases. This represents quite an issue as M(2M + 1) parameters
+describe a M-dimensional Hawkes process with exponential kernel.
+In addition, other existing methods often make the strong assumption that
+the decays βi,j of the exponential kernel are given and ﬁxed a priori. Conse-
+quently, the estimation of each kernel function is equivalent to the estimation
+of its adjacency coeﬃcient αi,j and since the conditional intensity λi(t) is linear
+with respect to kernel functions φi,1(t),...,φi,p(t), the negative log-likelihood
+function Lt is convex with respect to all parameters. Therefore we can use the
+widely available convex optimization machinery to ﬁnd the global minimum ef-
+ﬁciently. The main drawback of this method is the possible inaccuracy of the
+decays parameters βi,j which can lead to model mismatch.
+3.2 Introducing Two Stage Hawkes Likelihood Optimization
+(2SHLO):
+In order to combine the beneﬁts of both approaches described above, we propose
+the following estimation method to ﬁt exponential Hawkes processes.
+The negative log-likelihood function for exponential multivariate Hawkes pro-
+cesses is given by (see Ogata[11] for the recursive formulation):
+
+=== page 7 ===
+Hawkes processes for credit indices time series analysis
+Lt(µ, α, β) =
+M∑
+m=1
+(
+µmT +
+M∑
+n=1
+αmn
+∑
+{k:tn k <T}
+[1 −e−βmn (T−tn k )]
+−
+∑
+{k:tn k <T}
+log[µm +
+M∑
+n=1
+αmnβmn
+∑
+{k:tn k <tm i }
+e−βmn (tm i −tn k )] ) (5)
+As we mentioned earlier, if β is ﬁxed, then Lt(·,·,β) is convex with respect to
+parameters (µ, α). As a result it can be minimized using any convex optimization
+algorithm, for example an Accelerated Gradient Descent (AGD) which converges
+to a global minimum (µ∗(β), α∗(β)) such that:
+L∗ t (β) = Lt(µ∗(β), α∗(β), β) = min(µ,α)Lt(µ, α, β) (6)
+L∗ t (β) is still a non-convex function but deﬁned on a space with a lower
+dimension than the initial parameter space. Any non-linear heuristic algorithms
+can now be used to minimize L∗ t (β) leading to the MLE as2:
+min(µ,α,β)Lt(µ, α, β) = min(β)min(µ,α)Lt(µ, α, β) (7)
+We summarize the ﬁtting method as follow :
+Algorithm 1 Two Stage Hawkes Likelihood Optimization (2SHLO)
+Start from mean of inter arrival times β0
+for each step of Nelder-Mead method until convergence do
+for each needed computation of L∗ t (βi) do
+Start from a random (µ0, α0)
+Use Accelerated Gradient Descent to optimize Lt(µ, α, βi)
+Retrieve resulting L∗ t (βi)
+end for
+end for
+return last (β, µ∗(β), α∗(β))
+3.3 Goodness of ﬁt
+The compensator function Λ of a point process with intensity λ is deﬁned as
+∀t≥ 0, Λ(t) =
+∫t
+0 λ(s|Ft)ds. To assess the goodness of ﬁt of our estimation, we
+use the residual point process analysis theorem, as stated in [5]:
+2 if we call m = min(µ,α,β)Lt(µ, α, β), the following inequality holds for all (µ, α, β):
+m≤Lt(µ∗(β), α∗(β), β) ≤Lt(µ, α, β) 3.2 follows immediately by taking the mini-
+mum over (µ, α, β) in each side of the inequality.
+
+=== page 8 ===
+Bahamou, A., Doumergue, M., Donnat, P.
+The transformed sequence {t∗ k} = {Λ(tk)} is a realization of a unit rate Pois-
+son process if and only if the original sequence {tk} is a realization from the
+point process deﬁned by λ.
+The goodness of ﬁt can be tested by comparing the transformed estimated
+times to a standard Poisson process using QQ plots and comparison of density
+functions.
+4 Results - 2SHLO in practice
+We have been running our experiments in Python 3, relying on tick[16] library
+for Hawkes process simulations, AGD optimization and analytic tools. 2SHLO
+is also beneﬁting of well-known scipy scientiﬁc package.
+To provide an idea of the computational performance of the ﬁtting method,
+we mention that, on average, it takes 4.69 seconds to ﬁt 2 dimensional exponen-
+tial hawkes process with training length of T = 10000.
+4.1 Validating 2SHLO performances over simulated data
+To generate Hawkes processes, a few methods are available (as summarized in
+[2]), either based on thinning, time-change or cluster algorithm. We have here
+used tick functions for simulations which are based on the thinning algorithm
+described in (Ogata, 1981, p.25, Algorithm 2) [11].
+To validate the performance of the ﬁtting algorithm, we ran a series of 100
+simulation and ﬁtting procedure on the simulated 2D Hawkes time-stamps using
+diﬀerent end times T to have diﬀerent training sizes and using the following
+simulation parameters :
+µ =
+( 0.1
+0.2
+)
+α =
+( 0.5 0.00
+0.4 0.3
+)
+β =
+( 0.3 0.00
+0.2 0.2
+)
+Fig. 3 conﬁrms that the estimated parameters converge to their true opti-
+mal values for increasing N number of ticks in the training set. This reassures
+that when the Hawkes process is well speciﬁed and indeed recovers the optimal
+parameters asymptotically.
+4.2 Calibrating univariate Hawkes processes on ”mid-frequency”
+credit derivative trades
+We have ﬁtted a modiﬁed one-dimensional Hawkes process on the period from
+15/01/2017 to 15/12/2017 of reported trades data3 on 3 indices ITXEB, ITXES
+and ITXEX. The modiﬁcation consists of imposing a null value of the intensity
+in the gap between two days and the standard exponential kernel format during
+trading days so as to account for the absence of trading activity overnight. The
+model is thus slightly modiﬁed and described in the appendix section in a more
+3 The trading data have been cleaned by discarding transactions that do not reﬂect
+market signals such as roll and switch trades
+
+=== page 9 ===
+Hawkes processes for credit indices time series analysis
+Fig. 3. Estimated parameters of a 2D exponential Hawkes process trained with 2SHLO
+on simulated datasets with increasing lengths
+detailed way. Before making this modeling choice, we experimented with a more
+elaborate model that accounts for the overnight spillover eﬀect as described in
+the work of C. G.Bowsher [4] where the author deﬁnes the intensity as recursively
+depending on the level of the stochastic parts of the intensity at the end of the
+previous trading day and thus extending the eﬀect of trading days over time.
+The ﬁtting procedure resulted into a null parameter estimation of the spillover
+eﬀect which motivated the choice of the model modiﬁcation described above.
+To validate the ’universality’ of our estimates, we tested the goodness of ﬁt
+of the Hawkes model with the estimated parameters on out of sample period
+from 15/01/2018-15/07/2018. The model ﬁtted well for the 3 indices time se-
+ries (see Fig. 4) suggesting that each series has stable intrinsic parameters that
+characterize the pattern of trades arrival times.
+Estimated µ−1 Estimated α Estimated β−1
+ITXEB 22 min 0.62 20 min
+ITXEX 24 min 0.60 23 min
+ITXES 58 min 0.65 36 min
+Table 2. Estimated parameters for ITXEB, ITXES and ITXEX over the period
+(2017-01-15 to 2017-12-15)
+4.3 Measuring the inﬂuence of traded volumes
+When considering the distribution of trade volumes for credit indices, volume
+clusters are clearly outlined. For example, for index itxeb, three bins can be
+distinguished: ”small” trades, ”medium” trades and ”big” trades (See Fig. 5).
+
+=== page 10 ===
+Bahamou, A., Doumergue, M., Donnat, P.
+Fig. 4. Hawkes process ﬁtted on 2017 data and tested on 2018 data for each index
+Using multivariate Hawkes processes model, volume impacts have been modeled
+by considering 3 counting processes, splitting trades per volume size.
+By using the same model as the last section to take overnight gaps into
+consideration, the ﬁtting algorithm trained on 2018 data resulted in the following
+parameters estimates (µ and β expressed in minute−1) :
+1
+µ =
+( 40
+42
+38
+)
+α =
+( 0.40 0.07 0.57
+0.00 0.53 0.21
+0.00 0.16 0.59
+) 1
+β =
+( 12 21 53
+71 18 12
+53 14 34
+)
+Visualizing in Fig. 5 the branching ratio which corresponds the the values
+of α allows some intuitive interpretation of the ﬁtted model as it shows that
+large trades are purely self exciting process and they have a major inﬂuence
+in triggering small trades, we also notice that all trade categories have a non
+negligible self excitation component.
+4.4 Measuring cross interactions between traded indices
+We have adopted again a multivariate Hawkes processes with null intensity
+overnight model to study the cross interaction between indices trades times.
+The ﬁtting algorithm trained on 2017 data resulted in the following parameters
+estimates (µ and β expressed in minute−1) :
+1
+µ =
+( 29
+30
+125
+)
+α =
+( 0.44 0.25 0.20
+0.23 0.37 0.18
+0.07 0.08 0.45
+) 1
+β =
+( 23 9 21
+14 13 31
+39 17 25
+)
+
+=== page 11 ===
+Hawkes processes for credit indices time series analysis
+Fig. 5. Distribution of trade sizes over one week trading period 2018-05-21:2018-05-25
+(left; adjacency matrix (αi,j) of 3D exponential Hawkes ﬁtted on 3 volume bin series
+(for index itxeb).
+From Fig. 6 we can notice that itxes index is the least inﬂuenced by the other
+indices with the very low cross excitation components and a high self excitation
+component which was expected due the its low liquidity. We also notice that
+the estimated baselines of all indices are greater for this multivariate model
+compared to the uni-dimensional model which can be explained by the fact that
+we decreased the ’Poissonnian’ behaviour of the arrival times by including more
+information about the inﬂuence of other indices.
+Fig. 6. adjacency matrix (αi,j) of 3D exponential Hawkes ﬁtted on 3 indices series
+(itxeb, itxes, itxex) for the period 2017-01-15 - 2017-12-15.
+5 Conclusion
+Through point process analysis, Hawkes processes allows a relatively simple and
+interpretable representation of time dependant events with self and mutual ex-
+citements. With 2SHLO; a maximum likelihood based algorithm mixing convex
+and non-convex optimization, we have been able to ﬁt fastly and properly ex-
+ponential kernel multivariate Hawkes processes. The algorithm has been applied
+to credit derivative trading data, an unexplored ”mid-frequency” market for
+such processes. We have been able to emphasize self excitement for three index
+
+=== page 12 ===
+Bahamou, A., Doumergue, M., Donnat, P.
+trades and to measure impacts of traded volumes. With the same framework,
+we were also able to quantify cross inﬂuences between indices. Next prospects
+turns towards testing 2SHLO performances on high dimensional datasets, for in-
+stance studying both price & volume trade inﬂuences as well as market bid/ask
+dynamics on credit derivatives in a forecasting perspective.
+References
+1. Amaral, L., Papanicolaou, A.: Price Impact of Large Orders Using Hawkes Pro-
+cesses. In: NYU Tandon Research Paper No. 2874042 (2017)
+2. Bacry, E., Mastromatteo, I., Muzy, J.F.: Hawkes Processes in Finance. In: Market
+Microstructure and Liquidity, vol. 01 (2015)
+3. Bacry, E., Muzy, J.F.: Hawkes models for price and trades high-frequency dynamics.
+In: Quantitative Finance, vol. 14, pp. 1147–1166 (2013)
+4. Bowsher, C. G.: Modelling Security Market Events in Continuous Time: Intensity
+Based, Multivariate Point Process Models. In: Nuﬃeld Economics Working Paper
+(2003)
+5. Daley, D.J., Vere-Jones, D.: An introduction to the theory of point processes, vol.
+2. Springer (1988)
+6. Hawkes, A.G.: Spectra of Some Self-Exciting and Mutually Exciting Point Processes.
+In: Biometrika, vol. 58, pp. 83–90 (1971)
+7. Hawkes, A.G.: Point Spectra of Some Mutually Exciting Point Processes. In: Journal
+of the Royal Statistical Society. Series B (Methodological), vol. 33, pp. 438–443
+(1971)
+8. Laub, P., Taimre, T., Pollett, P.: Hawkes Processes. In: arXiv preprint
+arXiv:1507.02822 (2015)
+9. Mohler, G. O., Short, M. B., Brantingham, P. J., Schoenberg, F. P., Tita, G. E.: Self-
+Exciting Point Process Modeling of Crime. In: Journal of the American Statistical
+Association, vol. 106, pp. 100–108 (2011)
+10. Ogata, Y., The asymptotic behaviour of maximum likelihood estimators for sta-
+tionary point processes. Annals of the Institute of Statistical Mathematics, vol. 30,
+pp. 243-261 (1978)
+11. Ogata, Y., On Lewis simulation method for point processes, IEEE Transactions on
+Information Theory, vol. 27, pp. 23-31 (1981)
+12. Ogata, Y.: Statistical Models for Earthquake Occurrences and Residual Analysis
+for Point Processes. In: Journal of the American Statistical Association, vol. 83, pp.
+9–27 (1988)
+13. Rambaldi, M., Bacry, E., Lillo, F.: The role of volume in order book dynamics: a
+multivariate Hawkes process analysis. In: Quantitative Finance (2016)
+14. Rizoiu, M., Lee, Y., Mishra, S., Xie, L.: A Tutorial on Hawkes Processes for Events
+in Social Media. In: Frontiers of Multimedia Research, pp. 191–218 (2017)
+15. Toke, I. M., An Introduction to Hawkes Processes with Applications to Finance
+(2011) http://lamp.ecp.fr/MAS/fiQuant/ioane_files/HawkesCourseSlides.pdf
+16. Bacry E., Bompaire M., Gaﬀas S., Poulsen S., Tick: a Python library for sta-
+tistical learning, with a particular emphasis on time-dependent modelling. https:
+//x-datainitiative.github.io/tick/#
+
+=== page 13 ===
+Hawkes processes for credit indices time series analysis
+Appendix: Hawkes Processes Formulas
+5.1 The Univariate Bowsher Hawkes process model
+Deﬁnition: As described in [4], the intensity of the univariate Bowsher process
+is deﬁned recursively depending on the level of the stochastic parts of the in-
+tensity function at the end of the (d− 1)th trading day and the contributions
+of the events occurring on day d. Thus it is necessary to perform the following
+data transformation: the real half-line is partitioned into intervals of length l
+corresponding to the diﬀerent trading days. This partition is written as :
+(0,∞) = (0,τ1] ∪ (τ1,τ2] ∪···∪ (τd1,τd] ...
+The model is thus deﬁned by the (scalar) stochastic intensity :
+∀t≥ 0, λ(t) = µ + ~λ(t)
+such that :
+∀t∈]τd−1,τd] ~λ(t) = π~λ(τd−1)e−ρ(t−τd−1 ) +
+∫
+[τd−1 ,t)
+αe−β(t−u)dN(u)
+where the parameters used are :
+– ]τd−1,τd] is the interval deﬁning the day number d
+– µ is the baseline intensity
+– π is the spillover adjacency coeﬃcient
+– ρ is the spillover decay
+– α is the self excitement adjacency coeﬃcient
+– β is the self excitement decay
+– dN is the process diﬀerentiate
+The Loglikelihood: The minus loglikelihood of a univariate point process is
+deﬁned as :
+LT (λ) = −
+(∫ T
+0
+log λ(t)dNi(t) −
+∫ T
+0
+λ(t)dt
+)
+Computing the minus loglikelihood in the Hawkes Bowsher model results into
+the following closed form :
+LT (λ) = µT +
+∑
+d∈days
+π~λ(τd−1)(1 −e−ρ(τd −τd−1 ))
++α
+∑
+t∈]τd−1 ,τd ]
+(1 −e−ρ(t−τd−1 )) − ∑
+ti
+log λ(ti)
+
+=== page 14 ===
+Bahamou, A., Doumergue, M., Donnat, P.
+The Fitting procedure: As the task of computing the gradient of each pa-
+rameter of the loglikelihood is a fastidious one because of the recursive deﬁnition
+of the intensity, and also because we have only 5 parameters to ﬁt (µ,π,ρ,α,β),
+we choose to use the L-BFGS-B algorithm to perform the minimization of LT (λ)
+which had delivered satisfying performance on ﬁtting simulated data.
+Data simulation: We use the thinning algorithm to simulate artiﬁcial data
+described by the following algorithm :
+Algorithm 2 Simulation by thinning
+1. Given Bowsher Hawkes process described as above
+2. Set current time T = 0 and event counter i = 1
+3. While i≤N
+(a) Set the upper bound of Poisson intensity λ∗ = λ(T ) .
+(b) Sample inter-arrival time: draw u∼U(0, 1) and let τ = −ln(u) λ∗ (as described
+in).
+(c) Update current time: T = T + τ.
+(d) Draw s∼U(0, 1).
+(e) If s≤ λ(T ) λ∗ , accept the current sample: let Ti = T and i = i + 1.
+Otherwise reject the sample, return to step (a).
+5.2 The Day Gaps Multivariate Exponential Hawkes process model
+Deﬁnition: The intensity of the Day Gaps Multivariate Exponential Hawkes
+process is deﬁned just like the standard multivariate exponential Hawkes process
+model described in [6] given by :
+∀i∈ [1 ...D], λi(t) = µi +
+D∑
+j=1
+∫
+φij(t−s)dNj(s)
+Where :
+– D is the number of nodes
+– µi are the baseline intensities
+– φij are the kernels
+– dNj are the processes diﬀerentiates
+with an exponential parametrisation of the kernels:
+φij(t) = αijβij exp(−βijt)1t>0
+– αij are the adjacency of the kernel
+
+=== page 15 ===
+Hawkes processes for credit indices time series analysis
+– βij are the decays of the kernel
+With the modiﬁcation consisting on considering the intensity as a null func-
+tion between two consecutive days to take the day gaps into consideration :
+∀t between two consecutive days, λi(t) = 0
+The Loglikelihood: The minus loglikelihood of a Multivariate Point Process
+is deﬁned as :
+Lt(λ) := −
+M∑
+i=1
+(∫ t
+0
+log λi(τ)dNi(τ) −
+∫ t
+0
+λi(τ)dτ
+)
+.
+Computing the minus loglikelihood in The Day Gaps Multivariate Exponen-
+tial Hawkes process model results into the following closed form :
+Lt(λ) := D∗δ
+M∑
+m=1
+µm +
+M∑
+m=1
+M∑
+n=1
+αmn
+∑
+d∈days
+∑
+tn i ∈day d
+(1 −e−βmn (τd −tn i ))
+−
+M∑
+m=1
+∑
+tm i
+log(µm +
+M∑
+n=1
+αmnβmnRmn(i))
+with Rmn(i) are deﬁned using the Ogoata [11] recursive formula :
+Rmn(i) =
+∑
+{k:tn k <tm i }
+e−βmn (tm i −tn k )
+= e−βmn (tm i −tm i−1 )Rmn(i− 1) + ∑
+{k:tm i−1 ≤tn k <tm i }
+e−βmn (tm i −tn k )
+Where :
+– D is the number of days in the data
+– δ is the length of one day
+– µi are the baseline intensities
+– αij are the adjacency coeﬃcients
+– βij are the decays coeﬃcients
+– τd is the time deﬁning the last time of the day number d
+
+=== page 16 ===
+Bahamou, A., Doumergue, M., Donnat, P.
+The Fitting procedure: To ﬁt this model, we use the algorithm described
+in this paper, using the projected Newton Descent for the convex optimization
+part and Nelder Mead for the non convex optimization step. The choice of the
+newton descent is justiﬁed by the easy computation of the gradient and hessian
+matrix which is sparse and because this algorithm has a quadratic convergence
+rate compared to gradient descent methods.
+The gradient of Lt(λ) is thus given by the following close formulas :
+∂Lt(λ)
+∂µm
+= D∗δ−
+∑
+tm i
+1
+µm + ∑M n=1 αmnβmnRmn(i)
+∂Lt(λ)
+∂αmn
+=
+∑
+d∈days
+∑
+tn i ∈day d
+(1 −e−βmn (τd −tn i )) − ∑
+tm i
+βmnRmn(i)
+µm + ∑M l=1 αmlβmlRml(i)
+The hessian of Lt(λ) is given by the following close formulas :
+∂2Lt(λ)
+∂µm∂µm
+=
+∑
+tm i
+1
+(µm + ∑M n=1 αmnβmnRmn(i))2
+∂2Lt(λ)
+∂µm∂αml
+=
+∑
+tm i
+βmlRml(i)
+(µm + ∑M n=1 αmnβmnRmn(i))2
+∂2Lt(λ)
+∂αml∂µm
+=
+∑
+tm i
+βmlRml(i)
+(µm + ∑M n=1 αmnβmnRmn(i))2
+∂2Lt(λ)
+∂αmk∂αml
+=
+∑
+tm i
+βmkRmk(i)βmlRml(i)
+(µm + ∑M n=1 αmnβmnRmn(i))2
+and all other coeﬃcients are null. The ﬁtting algorithm is described as follow:
+Algorithm 3 Two Stage Hawkes Likelihood Optimization using Projected New-
+ton Descent
+Start from mean of inter arrival times β0
+for each step of Nelder-Mead method until convergence do
+for each needed computation of L∗ t (βi) do
+Start from a well chosen (µ0, α0)
+Use Projected Newton Descent to optimize Lt(µ, α, βi) :
+Retrieve resulting L∗ t (βi)
+end for
+end for
+return last (β, µ∗(β), α∗(β))
+And the projected newton descent is described as follow :
+
+=== page 17 ===
+Hawkes processes for credit indices time series analysis
+Algorithm 4 Projected Newton Descent
+Start from a well chosen x0
+for each step until convergence or iter max do
+Set prev x = x, prev obj = obj
+Set step = 1
+Set shrink = 0.5 (user choice of a shrinx in [0, 1])
+while True do
+next x = project(x - step*(∇2f(x))−1∇f(x))
+next obj = f(next x)
+if next obj > prev obj then
+step *= shrink
+else
+x = next x
+end if
+end while
+test convergence abs(next obj - prev obj) / abs(prev obj) < tolerance
+end for
+return x
+5.3 Some empirical results:
+Loglikelihood landscape: Visualizing the minus loglikelihood function for 2D
+exponential Hawkes process with regards to two non convex variables (β0,0,β1,1)
+resulted into the following ﬁgure, emphasizing the ﬂatness of the function to
+minimize and the existence of valleys that pose problem to gradient based opti-
+mization :
+Fig. 7. Lt plot for a 2D exponential Hawkes process loglikelihood with respect to
+decays variables (β0,0,β1,1), other parameters being ﬁxed: (β0,1,β1,0) = (0.1, 0.1), µ =
+(0.02, 0.25), α = ((0.3, 0.15), (0.01, 0.35))
+
+=== page 18 ===
+Bahamou, A., Doumergue, M., Donnat, P.
+Goodness of ﬁt size bins study: Assessing the goodness of ﬁt of the mul-
+tivariate Hawkes process ﬁtted on 2017 itxeb reported trades split into three
+series with regards to the size of trades:
+Fig. 8. QQPlots of goodness of ﬁt of the multivariate Hawkes process ﬁtted on 2017
+itxeb by size bin reported trades
+
+=== page 19 ===
+Hawkes processes for credit indices time series analysis
+Goodness of ﬁt Multi index study: Assessing the goodness of ﬁt of the
+multivariate Hawkes process ﬁtted on 2017 itxeb, itxes and itxex reported
+trades
+Fig. 9. QQPlots of goodness of ﬁt of the multivariate Hawkes process ﬁtted on 2017
+itxeb, itxes and itxex

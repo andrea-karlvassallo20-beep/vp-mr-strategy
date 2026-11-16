@@ -1,0 +1,1807 @@
+=== page 1 ===
+One-level limit order book models with memory and variable
+spread
+Jonathan A. Ch´avez-Casillas∗ Jos´e E. Figueroa-L´opez†
+March 15, 2016
+Abstract
+We propose a new model for the level I of a Limit Order Book (LOB), which incorporates the infor-
+mation about the standing orders at the opposite side of the book after each price change and the arrivals
+of new orders within the spread. Our main result gives a diﬀusion approximation for the mid-price pro-
+cess. To illustrate the applicability of the considered framework, we also propose a feasible method to
+compute several quantities of interest, such as the distribution of the time span between price changes
+and the probability of consecutive price increments conditioned on the current state of the book. The
+proposed method is used to develop an eﬃcient simulation scheme for the price dynamics, which is then
+applied to assess numerically the accuracy of the diﬀusion approximation.
+Keywords and phrases: Limit Order Book Modeling, Price Process Formation, Heavy Traﬃc/Diﬀusion
+Approximation.
+1 Introduction
+The evolution of trading markets has evolved considerably during the last few years. Most modern ex-
+changes use completely automated platforms called Electronic Communication Networks (ECN), which
+has signiﬁcantly increased the speed of trading to only a few milliseconds. ECN are based on a continu-
+ous double auction trading mechanism, in which any trader can submit orders to buy or sell an asset. Two
+type of orders are available: limit and market orders. A bid (ask) limit order speciﬁes the quantity and the
+price at which a trader is willing to buy (sell) the asset in question. The so-called Limit Order Book (LOB)
+aggregates all the outstanding limit orders at any given time. Limit orders with the same price are ranked
+in a ﬁrst-in-ﬁrst-out (FIFO) priority execution. More speciﬁcally, a LOB can be visualized as a system of
+(possibly empty) FIFO queues (one for each possible tick price). Figure 1 gives a graphical representation of
+a LOB. The separation between the lowest price at the ask side (called the ask price) and the highest price at
+the bid side (called the bid price) is denominated as the spread of the LOB, while the queues corresponding
+to these best bid and ask prices are called the level I of the book.
+∗Department of Mathematics and Statistics, University of Calgary, Calgary, AB T2N4C2, Canada
+(jonathan.chavezcasil@ucalgary.ca).
+†Department of Mathematics, Washington University in St. Louis, MO 63130, USA (figueroa@math.wustl.edu).
+1
+arXiv:1407.5684v3  [q-fin.TR]  13 Mar 2016
+
+=== page 2 ===
+Figure 1: Graphical representation of a Limit Order Book. The Bid Limit orders (to the left) are displayed
+in blue, while the Ask limit orders (to the right) are displayed in red.
+By contrast, market orders are requests to buy or sell a certain quantity of the asset at the best available
+price. Hence, a market order to sell (buy) the asset is matched against outstanding limit orders sitting at
+the best bid (ask) queue. Other than limit orders and market orders, cancellation of limit orders is another
+common operation, which account for a considerably large fraction of the operations in an order book
+(cf. Harris (2003)). There is obviously a tradeoﬀ between market and limit orders. While the former are
+immediately and surely executed, they provide the worst possible price. In contrast, executed limit orders
+would give better prices but there is a possibility that they won’t be executed at all.
+From the previous discussion it is clear that a price change occurs when either a queue of the book’s
+level I gets depleted (due to the cancellation of limit orders or the arrival of a market order) or a new limit
+order is posted within the spread. Hence, the best bid (ask) price decreases (increases) when the queue of
+limit orders at the best bid (ask) gets depleted, in which case the next nonempty bid (ask) queue becomes
+part of the new level I. Similarly, when the spread is larger than one tick, the best bid (ask) price increases
+(decreases) when a new bid (ask) order is posted within the spread. It is important to point out that the
+dynamics of the asset’s mid price is determined by the evolution of the book’s level I.
+In recent years, there has been a great deal of attention on modeling the dynamics of LOBs. We refer
+to Gould et al. (2013) for a recent review on the subject. Earlier works in LOB modeling include Luckock
+(1988), Kruk (2003), Mendelson (1982), and Rosu (2009) to mention just a few. More recently, Cont et al.
+(2010) proposed a continuous-time Markovian model for the order book, in which the possible ask and bid
+prices of limit orders are assumed to lie in a ﬁnite set C. The arrival of limit orders at the diﬀerent price
+levels in C are driven by independent Poisson processes, whose arrival rates are determined by the distance
+of their corresponding price level to the best bid/ask prices according to a power law relation. This approach
+was further developed in Abergel and Jedidi (2011) for a “ﬁnite frame LOB model”. More speciﬁcally, a
+ﬁxed number K of “potential” bid and ask price levels are considered. A potential bid (ask) price level is one
+at which a bid (ask) limit order could be submitted. In particular, each time the best bid (ask) price queue
+gets depleted, the frame of potential ask (bid) price levels are shifted to the left (right), hence, forgetting the
+information at the right (left) most level in the other side of the book. Similarly, each time a bid (ask) limit
+2
+
+=== page 3 ===
+order is submitted within the spread, the frame of possible ask (bid) price levels is shifted to the right (left),
+for which queues at the right (left) most price levels are assumed constant. Under the just described “ﬁxed
+moving frame” assumption, a diﬀusive limit for the mid-price process is established therein. See below for
+further discussion and comparisons with our results.
+Our main inspiration for the present work is drawn from Cont and Larrard (2013)’s seminal work, where
+a Markovian model is considered for the dynamics of level I. The main motivation of considering only the
+level I and not the entire book is twofold. Firstly, as pointed out above, the asset’s price is determined by
+the level I and, secondly, the information contained in the level I is key for many high-frequency trading
+strategies and problems. By preserving a Poissonian order ﬂow and imposing some symmetry conditions
+on the shape of the order book, Cont and Larrard (2013) prove that the mid-price process, properly scaled
+in time and space, converges to a Brownian motion. The volatility of the limiting process can explicitly be
+computed using the input parameters of the model. Unfortunately, the results therein required several strong
+assumptions, the most important of which are:
+(i) a constant volume for all type of orders: market, limit, and cancellations;
+(ii) a constant spread of one tick between the best ask and bid prices at all times;
+(iii) constant parallel price shifts of one tick after each depletion of a level I queue;
+(iv) loss of memory, in the sense that, after each level I queue depletion, the information on the remaining
+limit orders at the side which was not depleted is reset.
+The assumption of constant spread is generally well-justiﬁed for “large” tick assets, in which the tick
+size is comparable to a “typical” price increment. Indeed, as illustrated in Cont and Larrard (2013), for
+some stocks in the US market, the spread could be equal to one tick for more 98% of the observations
+within a typical day. Besides small-tick assets (e.g., EUR/USD FX), there are other situations in which the
+constant spread assumption cannot be validated. For instance, Bouchaud et al. (2009) argues that relatively
+large spreads may be created by monopolistic practices of market makers, high order processing costs, and
+large market orders. Pomponio and Abergel (2010) (see also Muni Toke and Pomponio (2012)) argue that
+traders keep track of the amounts of orders at the best quote in the LOB and typically restrict the size of
+their market orders to be less than these amounts. But, sometimes the speed of execution is more important
+than the market impact risk of large orders. In that case, orders larger than the size of the ﬁrst limit (called
+trades-through) may be submitted. Pomponio and Abergel (2010) argue that even though trade-throughs
+may rarely occur (with an occurrence probability of less than 5%), they make up for a non-negligible part
+of the daily-volume (up to 20% for the DAX index future). Since every trade-through widens the spread, a
+model that allows for variable spread is desirable.
+In this work, we propose a new model as a way to account for the possibility of a variable spread, as
+described in the previous paragraph, and to relax some of the shortcomings of the framework proposed in
+Cont and Larrard (2013). More concretely, while keeping some of the assumptions therein, such as the
+Markovian order ﬂow, one level at each side of the book, and a constant volume of order ﬂow, the proposed
+model allows for some “memory” in the dynamics of the LOB by keeping the information of the outstanding
+orders on the other side of the book after each level I queue depletion. For instance, if the best bid queue
+gets depleted, the best bid price decreases one tick, but both the price and outstanding orders of the best ask
+price are preserved. In order to avoid perpetual widening of the spread, we also allow the arrival of orders
+within the spread according to a Poisson process. As in Cont and Larrard (2013), we establish a diﬀusive
+3
+
+=== page 4 ===
+approximation for the price process, albeit using an essentially diﬀerent analysis. Concretely, our results in
+this direction build on the mathematical theory of countable positive recurrent Harris chains (see, e.g., Meyn
+and Tweedie (2009)).
+One of the main appealing features of the model in Cont and Larrard (2013) is its tractability, which,
+in particular, enables analytical computation of several LOB features, some of which are relevant for high-
+frequency trading and intraday risk management. To illustrate the applicability of the framework proposed
+in this work, we put forward a feasible method to compute several quantities of interest, conditioned on the
+initial state of the book, such as the distribution of the duration between price changes, the probability of a
+price increase, and the probability of two consecutive increments on the price. The main tool for the derived
+formulas is an explicit characterization of the joint distribution of the time of a depletion at the level I and
+the amount of orders at the remaining queue at such a time based on the eigenvalues and eigenvectors of a
+certain ﬁnite-diﬀerence operator. The developed methods are also applied to devise an eﬃcient simulation
+algorithm for the dynamics of the LOB, which is subsequently used to numerically study the convergence
+of the midprice process towards its diﬀusive limit process. The results in this manuscript are on one hand
+theoretically relevant as they allow to relax some of the strong assumptions of earlier works. On the other
+hand, these results enable to give a bottom-up construction of the some “eﬃcient” models commonly used
+at low frequencies (e.g., subordinated Brownian motion models).
+Let us ﬁnish this introduction with a brief discussion about the connection of our work with some earlier
+works. As previously mentioned, Abergel and Jedidi (2011) also obtains a diﬀusive approximation for the
+mid-price process; however, our model cannot be framed within the approach therein. To realize this, note
+that the spread the referred paper remains bounded, while in our model, it can potentially take values on
+Z+, which considerably complicates the analysis. Let us also remark that our model can still account for the
+empirical observation of Cont and Larrard (2013) that the spread spends a very large amount of time at the
+value of 1 by taking a large value for the intensity of limit order arrivals within the spread. This feature is,
+however, not possible to incorporate in the model in Abergel and Jedidi (2011) since the intensity of arrivals
+at the ﬁrst potential bid and ask price level is constant regardless this level is already occupied by limit orders
+or not.
+Another relevant work is Cont and Larrard (2012), which relaxes the assumptions of constant volume
+and no memory of Cont and Larrard (2013) (assumptions (i) and (iv) as described above), but does not
+establish a diﬀusive approximation for the price process. Instead, the main result therein is a heavy traﬃc
+approximation for the queue sizes of the LOB level I as a Markovian jump-diﬀusion process in the ﬁrst
+quadrant. On the interior of the ﬁrst quadrant, the process follows a planar Brownian motion with some
+given drift and covariance matrix. Every time that the process hits one of the axis, this is then shifted to
+the interior of the quadrant (according to some rules). Therefore, as described in Proposition 1 in Cont and
+Larrard (2013), the price process is approximated by a random walk which moves one tick to the left or right
+depending on whether the just described jump-diﬀusion process hits the x- or y-axis. Note that this is not
+the same type of continuous diﬀusive approximation for the price process as considered in this work. Let
+us also remark that, even though, in principle, Cont and Larrard (2012) relaxes the assumption (iv) of no
+memory, it imposes other technical assumptions that apparently precludes the type of memory considered
+in this work (see Remark 2.1 below for further details).
+The remainder of this paper is organized as follows. Section 2 analyses the model with variable spread
+and obtains a Functional Central Limit Theorem for the resultant price process. Section 3 introduces the
+method described above to eﬃciently compute several quantities of interest related to the LOB. In Section
+4, we analyze, via simulations, the rate of convergence to the limiting process and the behavior of the spread
+4
+
+=== page 5 ===
+and the asymptotic volatility in relation to the diﬀerent model’s parameters. To this end, we develop an
+“eﬃcient” method to simulate the dynamics of the LOB level I based on our results of Section 3. In Section
+4, we also compute numerically some of the quantities of interest considered in Section 3 and study their
+behaviors under both our assumptions and those in Cont and Larrard (2013). Finally, some of the technical
+proofs are presented in one appendix.
+2 A one-level LOB model with memory and variable spread
+In this section, we introduce a new framework for the dynamics of the level I of a LOB, which is more
+realistic than the model introduced in Cont and Larrard (2013) in that, whenever a queue is depleted, the
+position and size of the remaining queue are preserved, while a new queue is generated one tick to the left or
+right of the depleted queue depending on whether the latter was at the bid or ask side of the book. The model
+also incorporates the possibility of limit order arrivals within the spread whenever this is possible. The main
+result in this section is to establish a diﬀusive approximation for the mid-price process. More speciﬁcally,
+if {st}t≥0 denotes the mid-price process of the stock, then, for some appropriate constants σ > 0 and m, the
+following invariance principle holds:
+snt − nmt√n ⇒σWt, n →∞, (1)
+where {Wt}t≥0 is a Wiener process and, hereafter, ⇒ denotes convergence in distribution. Heuristically, if
+we think of 1/n as the time scale at which the process is observed, (1) says that the price process can be
+approximated by a Brownian motion with drift at “small” scales (typically, 10 or more seconds, depending
+on the speed of the book events that happen at the order of milliseconds).
+This section is organized as follows. We ﬁrst introduce the model and necessary notation in Subsection
+2.1. Subsection 2.2 proves a Law of Large Numbers for the inter arrival times between price changes, which
+in turn is needed to determine the appropriate time scaling of the price process. Finally, we proceed to obtain
+a Functional Central Limit Theorem (FCLT) for the price process itself in Subsection 2.3.
+2.1 LOB dynamics
+As previously explained, we only consider the level I of the order book, which suﬃces to determine the
+evolution of the price process of the asset. Concretely, as explained in the introduction, a price change can
+only occur when the outstanding orders at any side in the book are depleted or when, if possible, a set of
+new orders arrive within the spread and becomes part of the new level I of the book. Concretely, suppose
+that the best bid price is at S b and that its queue gets depleted after a market order or cancellation. Then,
+a new best bid queue is “generated” at price S b −δ, hence causing the spread to widen. The size of this
+new queue of limit orders is assumed to be generated from a distribution f b on Z+, independently of any
+other information of the LOB, while the amount and position of the limit orders at the best ask level are kept
+unchanged. Similarly, if the queue at the best ask price gets depleted after a market order or cancellation,
+then a new queue is generated at the price S a + δ, where S a is the best ask price before the order. The size of
+the new best ask queue is assumed to be generated from a distribution f a on Z+, independently of any other
+information. In that case, the bid side of the book remains unchanged.
+5
+
+=== page 6 ===
+The distributions f a and f b are meant to reﬂect the stationary behavior of the queue sizes at the next
+best queues after depletion. Throughout, we assume that both distributions f a and f b are supported on
+{1, 2,..., N∗}, for some ﬁxed N∗ ∈ Z+, which can be chosen arbitrarily large. This simplifying assumption
+is imposed in order to guarantee the recurrence of the underlying Markov chain driving the dynamics of the
+price process. Also, for simplicity, the tick is set to be δ = 1.
+When the spread is more than 1, there is also the possibility of a price change due to the arrival of a new
+set of orders within the spread at either the ask or bid side of the LOB. In the former case, the best ask price
+decreases by δ, while the bid side remains unchanged. In the latter case, the best bid price increases by δ,
+while the other side of the order book does not change. As before, the size of a new queue of limit orders
+is generated from the distribution f a or f b, independently of any other variables, depending on whether the
+new limit order is at the ask or bid side1
+We now proceed to give a formal mathematical formulation of the LOB dynamics. To that end, we need
+some notation:
+(i) Let ζ0 be the initial spread and ζi, for i ≥ 1, be the spread after the ith price change. The sizes of the
+best ask and bid queues at time t are denoted by qa t and qb t , respectively. Also, for i ≥ 1, τi represents
+the time span between the (i − 1)th and ith price changes and we set τ0 = 0.
+(ii) Throughout, { ˆYa,i}i≥0 and { ˆYb,i}i≥0 are independent sequences of i.i.d. random variables, taking values
+on ΩN∗ := {1, 2,..., N∗}, and with respective distributions f a and f b. These will indicate the amount
+of orders at the best ask or bid queues after that particular side changes in price.
+(iii) Let {La i (ζ)}i≥0,ζ∈Z+ and {Lb i (ζ)}i≥0,ζ∈Z+ be independent sequences of independent random variables such
+that La i (ζ) and Lb i (ζ) are exponentially distributed with parameter α1 {ζ>1}2. These variables are also
+independent of any other variables in the system. Hereafter, Li(ζ) := La i (ζ) ∧ Lb i (ζ). We shall interpret
+La i (ζ) and Lb i (ζ) as the times for a new set of orders to arrive at the ask and bid side, respectively, after
+the ith-price change when the spread is at the value ζ.
+(iv) For any starting point x ∈ ¯ΩN∗ := {0, 1,..., N∗}, let Q(x) := {Qt(x)}t≥0 be a continuous time Markov
+process with state space ¯ΩN∗ such that Q0(x) = x and its transition matrix Q : ¯ΩN∗ × ¯ΩN∗ → R is given
+by:
+Q j, j+1 = λ, for 0 ≤ j ≤ N∗− 1, Q j, j−1 = υ, for 1 ≤ j ≤ N∗,
+Q j, j = −(υ + λ), for 1 ≤ j ≤ N∗− 1, QN∗,N∗ = −υ, (2)
+Q j,𝓁 = 0, otherwise
+where υ := µ + θ and λ,µ,θ ∈ (0,∞) are interpreted as the intensity of arrivals of limit orders at the
+level I, market orders, and cancellations, respectively.
+(v) Finally, for any i ≥ 0 and x ∈ ¯ΩN∗, we let Qa,i(x) := {Qa,i t (x)}t≥0 and Qb,i(x) := {Qb,i t (x)}t≥0 be processes
+such that
+Qa,i(x) D = Qb,i(x) D = Q(x), (3)
+and the collection of processes {Qa,i(x), Qb,i(x)}i≥0,x∈ ¯ΩN∗ are mutually independent, and also indepen-
+dent of the processes introduced in the points (ii)-(ii).
+1Our results are still valid if one takes these distributions to be diﬀerent from the one used when a level I queue gets depleted.
+2In particular, Li(1) = Mi(1) = ∞, a.s., for all i.
+6
+
+=== page 7 ===
+We are ready to give a formal construction of the LOB dynamics. Fix τ0 = 0 and deﬁne the processes
+Xa,0 t := Qa,0 t (xa 0), Xb,0 t := Qb,0 t (xb 0), (4)
+for some arbitrary random initial queue sizes (xa 0, xb 0) ∈ Ω2 N∗, which are assumed to be independent of any of
+the other processes considered in the points (i)-(v) above. With the notation
+σa,1 := inf { t ≥ 0 : Xa,0 t = 0 } ∧ La 0(ζ0), σb,1 := inf { t ≥ 0 : Xb,0 t = 0 } ∧ Lb 0(ζ0),
+at hand, the time of the ﬁrst price change can now be deﬁned by
+T1 := τ1 := σa,1 ∧σb,1, (5)
+while, for t ∈ [0, T1), the queue sizes at the best ask and bid prices are respectively given by
+qa t = Xa,0 t , qb t = Xb,0 t .
+The number of orders at each side of the LOB and the spread at time T1 are then set as
+qa T1 := xa 1 := ˆYa,11 {τ1=σa,1} + Xa,0 τ1 1 {τ1=σb,1}, qb T1 := xb 1 := ˆYb,11 {τ1=σb,1} + Xb,0 τ1 1 {τ1=σa,1},
+ζ1 = ζ0 + 1 {τ1<La 0(ζ0)∧Lb 0(ζ0)}− 1 {τ1=La 0(ζ0)}− 1 {τ1=Lb 0(ζ0)}.
+This process is continued recursively. Concretely, for i ≥ 1, we set
+qa t := Xa,i t−Ti , qb t := Xb,i t−Ti , for t ∈ [Ti, Ti+1) , Ti+1 := Ti + τi+1,
+τi+1 := σa,i+1 ∧σb,i+1, ζi+1 = ζi + 1 {τi+1<La i (ζi)∧Lb i (ζi)}− 1 {τi=La i (ζi)}− 1 {τi=Lb i (ζi)}
+where
+Xa,i t = Qa,i t (xa i ), Xb,i t = Qb,i t (xb i ),
+σa,i+1 = inf { t > 0 : Xa,i t = 0 } ∧ La i (ζi), σb,i+1 = inf { t > 0 : Xb,i t = 0 } ∧ Lb i (ζi),
+xa i+1 := ˆYa,i+11 {τi+1=σa,i+1} + Xa,i τi+1 1 {τi+1=σb,i+1}, xb i+1 := ˆYb,i+11 {τi+1=σb,i+1} + Xb,i τi+1 1 {τi+1=σa,i+1}.
+The above formulation justiﬁes the following identities:
+P (( ˜xk,ζk,τk) ∈ B × C × D| ( ˜xk−1,ζk−1) = ( ˜x,ζ)) = P (( ˜x1,ζ1,τ1) ∈ B × C × D| ( ˜x0,ζ0) = ( ˜x,ζ)) , (6)
+P
+(
+( ˜xk,ζk,τk) ∈ B × C × D|{( ˜xi,ζi,τi)}k−1 i=0 ) = P (( ˜xk,ζk,τk) ∈ B × C × D| ( ˜xk−1,ζk−1)) , (7)
+where τ0 := 0 and ˜xk := (xb k, xa k) represent’s the sizes at the best bid and ask queues after the kth prices
+change. In particular, it follows that
+τk ⊥ {( ˜xi−1,ζi−1)}i≥0 (τk−1,...,τ1), k ≥ 2, (8)
+which, also implies the mutual independence of {τ1,...,τn} given {( ˜xi−1,ζi−1)}i≥0. Furthermore, it is easy to
+see that the process
+(Ξt, Υt) :=
+n∑
+k=0
+( ˜xk,ζk)1 [Tk,Tk+1)(t)
+is semimarkov in the sense of C¸ inlar (1975).
+7
+
+=== page 8 ===
+Remark 2.1. As mentioned in the introduction, one of the key features of the model proposed above is the
+incorporation of memory. Other recent works have also considered this feature. Notably, Cont and Larrard
+(2012) assumes that the level I queue sizes after each price change, qTi , is a function g(qT− i ,εi) of the level I
+queue sizes before the price change, qT− i , and a sequence of i.i.d. random innovations {εi}i≥1 := {(εb i ,εa i )}i≥1. One of the examples considered therein is the case of “pegged limit orders” in which qa Ti = βqa T− i + εa i and
+qb Ti = εb i , when the best bid queue gets depleted (with a similar relation holding for the case when the best
+ask queue gets depleted). Here, β is a constant proportion and (εb i ,εa i ) have distribution F in Z2 +. However,
+Assumption 3 in Cont and Larrard (2012) precludes the situation where εa i = 0, a.s., and β = 1, which is the
+type of memory we consider in this work.
+2.2 A law of large numbers for the modiﬁed interarrival times
+Our ﬁrst ingredient toward (1) is to establish a law of large numbers (LLN) for the time of the nth-price
+change, Tn = ∑n k=1 τk, using ergodic results for Markov chains. To that end, we ﬁrst introduce some needed
+notation. Let Z = {Zt}t∈N denote a Markov chain on a probability measure (Ω,F, P) with countable state
+space Ξ and transition probability matrix P : Ξ × Ξ → [0, 1]. For any probability measure µ = {µ(ˆy), ˆy ∈ Ξ}
+on Ξ, ˆy ∈ Ξ, and A ⊂ ΞZ+ = {(z1, z2,...) | zi ∈ Ξ}, we deﬁne
+Pˆy(Z q ∈ A) := P(Z q ∈ A|Z0 = ˆy), Pµ(Z q ∈ A) :=
+∑
+ˆy∈Ξ
+µ(ˆy)Pˆy(Z q ∈ A).
+As usual, Eµ denotes the expectation with respect to the probability measure Pµ. We say that an event A
+occurs P∗-a.s. if A occurs Pˆy-a.s. for all ˆy ∈ Ξ.
+Let us recall that an irreducible Markov chain on a countable state space Ξ is either transient or recurrent,
+while a set A is called Harris recurrent if
+Pz
+ ∞∑
+n=1
+1 {Zn∈A} = ∞
+ = 1, z ∈ A.
+A Markov chain is called Harris recurrent if it is irreducible and every set A is Harris recurrent. Also, the
+Markov chain Z is called positive if it is irreducible and admits an invariant probability measure, while a
+positive and Harris recurrent chain is called positive Harris (cf. Chapter 10 Meyn and Tweedie (2009)). The
+following result from Meyn and Tweedie (2009) (Theorem 17.0.1 therein) is key to obtain the aforemen-
+tioned LLN.
+Theorem 2.2. Suppose that {Zt}t∈N is a positive Harris chain with invariant probability measure π. Then,
+for any g satisfying π(|g|) := ∑
+x
+π(x)|g(x)|<∞,
+lim
+n→∞
+1
+n
+n∑
+t=1
+g(Zt) = π(g), P∗-a.s.
+In the sequel, we shall use Theorem 2.2 to show a LLN for Tn = ∑n i=1 τi by expressing each τi in terms
+of an appropriate Markov chain Z := {Zt}t∈N. Concretely, throughout the remaining of this subsection, we
+take
+Z := {Zt}t≥1 := {( ˜xt−1,ζt−1, ˜xt,ζt)}t≥1, (9)
+8
+
+=== page 9 ===
+where we recall that ˜xt := (xb t , xa t ) and ζt respectively represent the number of orders at the book’s level I
+(bid and ask) and the spread after the t−th price change (see Section 2.1 for details about the notation). By
+(7), we can see that Z is a Markov chain with countable state space
+Ξ :=
+{
+(y1, c1, y2, c2) | y1 = (ya 1, yb 1) ∈ Ω2 N∗, y2 = (ya 2, yb 2) ∈ Ω2 N∗, c1, c2 ∈ Z+, |c1 − c2| = 1 } .
+Furthermore, ﬁxing Un := ( ˜xn,ζn) and noting that U := {Un}n≥0 is itself a Markov chain by (6)-(7), it follows
+that
+P(ˆy, ˆz) := P(Zn = ˆz | Zn−1 = ˆy) = P((Un−1, Un) = ˆz | (Un−2, Un−1) = ˆy) = P(Un = (z2, d2) | Un−1 = (z1, d1)),
+where ˆy := (y1, c1, y2, c2) ∈ Ξ and ˆz := (z1, d1, z2, d2) ∈ Ξ with (y2, c2) = (z1, d1).
+Our ﬁrst objective is to prove that we can apply Theorem 2.2 to the chain Z introduced in (9). Since, for
+a countable state Markov chain, irreducibility reduces to see that all states communicate to one another, by
+the description of the dynamics of Z given in the previous section, Z is clearly irreducible. The existence
+of the invariant probability measure would hold provided that Z is positive recurrent (cf. (Asmussen, 2003,
+Corollary I.3.6)). Furthermore, since for a countable-state Markov chain, Harris recurrence is equivalent
+to plain recurrence (see the discussion below Theorem 9.0.1 in Meyn and Tweedie (2009)), Z will then be
+positive Harris chain, provided that Z is positive recurrent.
+Theorem 2.3. If α≥µ + θ, then the Markov chain Z := {Zt}t≥1 := {( ˜xt−1,ζt−1, ˜xt,ζt)}t≥1 is positive recurrent.
+A well-known suﬃcient condition for a Markov chain to be positive recurrent over a countable state
+space is given by the following so-called Foster or mean drift conditions (cf. Theorem I.5.3 in Asmussen
+(2003)) for some function h : Ξ → R, a constant ϵ > 0, and a ﬁnite set F ⊂ Ξ:
+(i) inf
+ˆz∈Ξ
+h(ˆz) >−∞, (ii)
+∑
+ˆz∈Ξ
+P(ˆy, ˆz)h(ˆz) <∞, ˆy ∈ F, (iii)
+∑
+ˆz∈Ξ
+P(ˆy, ˆz)h(ˆz) < h(ˆy) −ϵ, ˆy < F. (10)
+In order to verify that Z satisﬁes the previous conditions, we need two preliminary results. The following
+result constructs a super-harmonic function ϕ, outside the set F0 := {ˆy ∈ Ξ : ˆy = (y1, 2, y2, 1)}. Recall that ϕ
+is said to be a super-harmonic function (cf. Section 17.1.2 in Meyn and Tweedie (2009)) at some ˆy ∈ Ξ if
+(Pϕ)(ˆy) :=
+∑
+ˆz∈Ξ
+P(ˆy, ˆz)ϕ(ˆz) ≤ϕ(ˆy). (11)
+The proof of the next result is deferred to Appendix A.
+Lemma 2.4. Under the notation in Section 2.1, let ς(x) := inf{t > 0 : Qa,0 t (x1) ∧ Qb,0 t (x2) = 0}, for x :=
+(x1, x2), and let L := La 1(2) ∧ Lb 1(2) (i.e., L is exponentially distributed with rate 2α). Also, for any ˆy =
+(y1, j ± 1, y2, j) ∈ Ξ, let ϕ(ˆy) : Ξ → R be given by
+ϕ((y1, j ± 1, y2, j)) := ϕ( j) :=
+ ( 1+ √ 1−4p1(1−pN∗ ) 2p1 ) j if p1(1 − pN∗) < 1 4 , ( 1 2p1 ) j if p1(1 − pN∗) = 1 4 , ( 1−pN∗
+p1
+) j
+2
+cos( jθ) if p1(1 − pN∗) > 1 4 ,
+(12)
+9
+
+=== page 10 ===
+where
+p1 := P(L >ς((1, 1))), pN∗ := P(L >ς((N∗, N∗))), θ := arctan( √ 4p1(1 − pN∗) − 1),
+Then, ϕ is a super-harmonic function for the process Z given in (9), at any ˆy ∈ Ξ\F0, where F0 := {ˆy ∈ Ξ :
+ˆy = (y1, 2, y2, 1)}.
+The next result is crucial to construct the function h satisfying the conditions (10). Its proof is also
+deferred to Appendix A.
+Lemma 2.5. Using the notation of Lemma 2.4, for any α≥µ + θ, it holds that lim j→∞ϕ( j) = ∞.
+Finally, we can prove that the Markov chain Z is positive recurrent.
+Proof of Theorem 2.3. Consider the function ϕ(ˆy) = ϕ((y1, j ± 1, y2, j)) = ϕ( j) as given by Equation (12).
+Then, by the proof of Lemma 2.4, we know that,
+ϕ( j − 1)(1 − pN∗) + ϕ( j + 1)p1 = ϕ( j). (13)
+Take any ϵ ∈ (0, 1) and deﬁne h(ˆy) = ϕ(ˆy) −ϵ/(p1 − pN∗), and h( j) = h(ˆy), for any ˆy = (y1, j ± 1, y2, j). Notice
+that p1 > pN∗ and, by the Lemma 2.5, h( j) →∞ as j →∞. Let Θ ∈ R be such that for j > Θ, we have
+that ϕ( j) > ϵ/(p1 − pN∗), and let also F = {ˆy ∈ Ξ : ˆy = (y1, z1, y2, z2), z2 ≤ Θ + 1}. Notice that F is a ﬁnite
+set. From the deﬁnition of h and the fact that P(ˆy, ˆz) > 0 for only ﬁnitely many ˆz, it is clear that h satisﬁes
+the ﬁrst two Foster conditions shown in (10). On the other hand, following similar steps as in the proof of
+Lemma 2.4, we have that, for every ˆy < F,
+∑
+ˆz∈Ξ
+P(ˆy, ˆz)h(ˆz) = h( j − 1)P(N <ς(y2)) + h( j + 1)P(ς(y2) < N)
+= (ϕ( j − 1) −ϵ/(p1 − pN∗))P(N <ς(y2)) + (ϕ( j + 1) −ϵ/(p1 − pN∗))P(ς(y2) < N)
+≤ (ϕ( j − 1) −ϵ/(p1 − pN∗))(1 − pN∗) + (ϕ( j + 1) −ϵ/(p1 − pN∗))p1
+= ϕ( j) −ϵ(1 − pN∗ + p1)/(p1 − pN∗)
+= h( j) −ϵ = h(ˆy) −ϵ.
+This proves the last Foster condition given in (10) and the fact that Z is positive recurrent follows. □
+Once we have proved that Z satisﬁes the hypothesis of Theorem 2.2, we now introduce the functions on
+which the theorem is applied. For any ˆx = (x0, c0, x1, c1) ∈ Ξ, let
+f ( ˆx) := E(τ1| ˆx) := E (τ1| ( ˜x0,ζ0) = (x0, c0), ( ˜x1,ζ1) = (x1, c1)) ,
+gt( ˆx) := P(τ1 > t | ˆx) := P(τ1 > t|( ˜x0,ζ0) = (x0, c0), ( ˜x1,ζ1) = (x1, c1)).
+We have the following result, whose proof is deferred to Appendix A:
+Lemma 2.6. Suppose that the conditions of Theorem 2.3 hold and let π be the invariance probability of the
+chain Z. Then, P∗-a.s.,
+(i) lim
+n→∞
+1
+n
+n∑
+k=1
+f (Zk) = Eπ(τ1), (ii) lim n→∞
+1
+n
+n∑
+k=1
+gt (Zk) = Pπ(τ1 > t). (14)
+10
+
+=== page 11 ===
+In order to obtain the LLN for the interarrival times {τi}i≥1, we shall show that the Laplace transform of
+the random variables Tn = τ1 + ... + τn, properly scaled, converges to the Laplace transform of a random
+variable T, for which we need the following:
+Proposition 2.7. For u ∈ R+ and ˆx = (x0, c0, x1, c1) ∈ Ξ, deﬁne the functions
+G(u| ˆx) := E
+(
+e−uτ1
+⏐⏐⏐ ( ˜x0,ζ0, ˜x1,ζ1) = (x0, c0, x1, c1) ) ,
+κ( ˆx) := E (−τ1| ( ˜x0,ζ0, ˜x1,ζ1) = (x0, c0, x1, c1)) .
+Then, under the assumption of Proposition 2.5, for any u ∈ [0,∞],
+lim
+n→∞
+n∑
+k=1
+ln G
+( u
+n
+⏐⏐⏐⏐⏐ ˜xk−1,ζk−1, ˜xk,ζk ) = −uEπ(τ1), P∗− a.s., (15)
+where π is the stationary measure of the Markov chain {Zn}n≥0.
+Proof. First note that the statement is trivial for u = 0. By (47), τ1 <∞ a.s., thus, E (e−uτ1 | ˜x0,ζ0, ˜x1,ζ1) > 0
+a.s. Assume now that u ∈ (0,∞), then, by Jensen’s inequality,
+1
+u ln G(u| ˜x0,ζ0, ˜x1,ζ1) ≥ 1 uE ( ln e−uτ1 ⏐⏐⏐ ˜x0,ζ0, ˜x1,ζ1 ) = κ( ˜x0,ζ0, ˜x1,ζ1).
+Therefore, ln G
+(
+u
+n
+⏐⏐⏐ ˜x0,ζ0, ˜x1,ζ1 ) ≥ u n κ( ˜x0,ζ0, ˜x1,ζ1) and, thus,
+n∑
+k=1
+ln G
+(u
+n
+⏐⏐⏐⏐⏐ ˜xk−1,ζk−1, ˜xk,ζk ) ≥ u n n∑ k=1 κ( ˜xk−1,ζk−1, ˜xk,ζk), (16)
+which, by Eq. (14-i), implies that,
+lim inf
+n→∞
+n∑
+k=1
+ln G
+(u
+n
+⏐⏐⏐⏐⏐ ˜xk−1,ζk−1, ˜xk,ζk ) ≥ lim inf n→∞ u n n∑ k=1 κ( ˜xk−1,ζk−1, ˜xk,ζk) = −uEπ(τ1) P∗− a.s..
+Next, note that
+1
+u ln G(u| ˜x0,ζ0, ˜x1,ζ1) ≤ E
+( e−uτ1 − 1
+u
+⏐⏐⏐⏐⏐ ˜x0,ζ0, ˜x1,ζ1 ) = ∫ ∞ 0 −e−utP [τ1 > t | ˜x0,ζ0, ˜x1,ζ1 ] dt,
+where for the ﬁrst inequality we used that ln(x) ≤ x − 1, for x > 0, and for the last equality we used the
+the identity E(g(X)) = g(0) +
+∫ ∞
+0 g′(t)P[X > t]dt, which is valid for any positive random variable X and
+monotonic diﬀerentiable function g : [0,∞) → R. Therefore, we have that:
+ln G
+(u
+n
+⏐⏐⏐⏐⏐ ˜x0,ζ0, ˜x1,ζ1 ) ≤ u n ∫ ∞ 0 −e− u n tP [τ1 > t | ˜x0,ζ0, ˜x1,ζ1 ] dt.
+This last inequality, Fatou’s Lemma, and Eq. (14-i) yield,
+lim sup
+n→∞
+n∑
+k=1
+ln G
+(u
+n
+⏐⏐⏐⏐⏐ ˜xk−1,ζk−1, ˜xk,ζk ) ≤ lim sup n→∞ n∑ k=1 −u n ∫ ∞ 0 e− u n tP (τ1 > t | ˜xk−1,ζk−1, ˜xk,ζk) dt
+≤
+∫ ∞
+0
+lim sup
+n→∞
+(
+−ue− u n t) 1 n n∑ k=1 P (τ1 > t | ˜xk−1,ζk−1, ˜xk,ζk)  dt
+=
+∫ ∞
+0
+−uPπ (τ1 > t) dt = −uEπ(τ1), P∗− a.s.. (17)
+Together (16) and (17) imply (15). □
+11
+
+=== page 12 ===
+We are now ready to show the main result of this section.
+Theorem 2.8. Under the assumptions of Proposition 2.7, we have
+1
+n
+n∑
+k=1
+τk
+P
+→ Eπ(τ1), as n →∞, (18)
+where π is the stationary measure of the Markov chain {Zn}n≥0.
+Proof. Let ϕn(u) := Eπ
+(
+e−un−1 ∑n k=1 τk ) and Fn := σ(( ˜xk,ζk) : k ≤ n). By the conditional independence in (8),
+ϕn(u) = E
+ n∏
+k=1
+E
+(
+e−un−1τk
+⏐⏐⏐⏐Fn ) = E  n∏
+k=1
+E
+(
+e−un−1τk
+⏐⏐⏐⏐ ˜xk−1,ζk−1, ˜xk,ζk ) = E ( e ∑n k=1 ln G ( u n | ˜xk−1,ζk−1, ˜xk,ζk)) .
+Since for any positive x, ln(x) ≤ x − 1,
+ln G
+(u
+n
+⏐⏐⏐⏐⏐ ˜x0,ζ0, ˜x1,ζ1 ) ≤ G (u n ⏐⏐⏐⏐⏐ ˜x0,ζ0, ˜x1,ζ1 ) − 1 = E ( e− u n τ1 − 1 ⏐⏐⏐ ˜x0,ζ0, ˜x1,ζ1 ) ≤ 0,
+and, therefore, for every n,
+exp
+ n∑
+k=1
+ln G
+( u
+n
+⏐⏐⏐⏐⏐ ˜xk−1,ζk−1, ˜xk,ζk ) ≤ 1
+and, by Dominated Convergence Theorem and Proposition 2.7, we get
+lim
+n→∞
+ϕn(u) = lim n→∞ E
+(
+e
+−u
+n
+∑n
+k=1 τk
+)
+= e−uEπ(τ1).
+Finally, since τk is supported on the positive numbers, by the continuity theorem for Laplace transforms (see
+theorem 2 in section XIII.1 in Feller (1971)), we obtain (18). □
+2.3 Long-run dynamics of the price process
+In this section, we obtain a diﬀusive approximation for the dynamics of the midprice process of the model
+deﬁned in Section 2.1. Throughout, st denotes the stock’s midprice at time t ∈ [0,∞), while τn represents
+the time elapsed between the (n − 1)−th and the n−th price change as described in Section 2.1. Let {˜un}n≥1
+be the sequence of midprice changes. Clearly, our assumptions for the LOB dynamics described in Section
+2.1 imply that ˜un ∈{−1/2, 1/2}. It is also easy to see that the midprice process is given by
+st := s0 +
+Nt∑
+j=1
+˜u j, (19)
+where hereafter Nt := max{n |τ1 + ... + τn ≤ t} denotes the number of price changes up to time t. In this
+section, we establish the relation (1), for some constants σ> 0 and m.
+Recall from Section 2.1 that Un := ( ˜xn,ζn) = ((xb n, xa n),ζn), the number of orders in the level I of the book
+and the spread after the n−th price change, is a Markov chain (cf. Eqs. (6)-(7)). Also, recall that, for i ≥ 0,
+12
+
+=== page 13 ===
+Qa,i(x) and Qb,i(x) are independent continuous-time Markov processes with common generator deﬁned by
+(2). Deﬁne ςn := inf{t > 0 : Qa,n t ( ˜xa n−1) ∧ Qb,n t ( ˜xb n−1) = 0} and also consider the following events:
+An =
+{
+Q b,n ςn ( ˜x b n−1) = 0, ζn−1 = 1 or Q b,n ςn ( ˜x b n−1) = 0, ζn−1 > 1, Ln(ζn−1) ≥ςn } ,
+Bn = {Ln(ζn−1) <ςn, Ln(ζn−1) = La n(ζn−1), ζn−1 > 1},
+Cn =
+{
+Q a,n ςn ( ˜x a n−1) = 0, ζn−1 = 1 or Ln(ζn−1) ≥ςn, Q a,n ςn ( ˜x a n−1) = 0, ζn−1 > 1 } ,
+Dn =
+{
+Ln(ζn−1) <ςn, Ln(ζn−1) = Lb n(ζn−1), ζn−1 > 1 } ,
+where {La k(ζ)}k,ζ∈Z+ ,{Lb k(ζ)}k,ζ∈Z+ and {Lk(ζ)}k,ζ∈Z+ are the random variables deﬁned in Section 2.1.
+A positive price change would occur at time Tn if, either the ask queue got depleted (event An above) or
+a new queue arrived at the bid side (event Bn). Similarly, a negative price change would occur if either the
+bid queue got depleted (event Cn) or a new queue arrived at the ask side (event Dn). Therefore,
+˜un := 1 2 [1 {An} + 1 {Bn} ] − 1 2 [1 {Cn} + 1 {Dn} ], (20)
+represents the n−th price change, for n ≥ 1.
+As in the preceding section, an important step for analyzing the price changes would be to express those
+in terms of an appropriate Markov chain. Let Λ := {z = (y1, c1, u) : y1 ∈ Ω2 N∗, c1 ∈ Z+, u ∈{−1/2, 1/2}} and
+Vn := ( ˜xn,ζn, ˜un), (21)
+for n ≥ 1. Note that V := {Vn}n≥0 is a Markov chain over Λ since ˜xn,ζn and ˜un depend only on ( ˜xn−1,ζn−1).
+Moreover, one can see that the states of V communicate to one another and, thus, V is irreducible. Also,
+provided that the assumptions of Lemmas 2.4 and 2.5 hold, one can prove that V is recurrent, similarly to
+the proof of Theorem 2.3, and V will then be Harris recurrent due to the countability of V’s state space.
+As a consequence, V would also be positive Harris. Hereafter, we denote the stationary measure and the
+transition probabilities of V by ν and Pext(¯y, ¯z), respectively.
+As mentioned above, our main goal is to establish the coarse-grained behavior of the price process (19).
+In order to do so, we ﬁrst analyze the convergence of the process Wn := ∑n j=1 ˜u j, properly rescaled. To this
+end, the following Functional Central Limit Theorem (FCLT) for Markov Chains on a countable state space
+will be useful:
+Theorem 2.9 (Meyn and Tweedie (2009), Theorem 17.4.4). Suppose that {Vn}n≥0 is positive Harris on a
+countable state space Λ with transition and stationary probability measures Pext and ν, respectively. Let h
+be a function on Λ for which a solution ˆh to the Poisson equation,
+ˆh − Pext ˆh = h −ν(h), (22)
+exists with ν(ˆh2) <∞. Consider the partial sums of the centered functional ¯h(Vk) := h(Vk) −ν(h),
+S n(¯h) :=
+n∑
+k=1
+¯h(Vk), (23)
+and let rn(t) be the continuous piece-wise linear function that interpolates the values of
+{
+S n(¯h) } n≥0; i.e.,
+rn(t) := S ⌊nt⌋(¯h) + (nt −⌊nt⌋) [ S ⌊nt⌋+1(¯h) − S ⌊nt⌋(¯h) ] . (24)
+13
+
+=== page 14 ===
+Then, if the constant
+γ2(h) := ν (ˆh2 − (Pext ˆh)2) (25)
+is positive, it holds that,  rn(t)√ nγ2(h)  t≥0 ⇒{Wt}t≥0 , n →∞. (26)
+Remark 2.10. By taking t = 1, it follows that
+√n
+ 1 n n∑ k=1 h(Vk) −ν(h)  ⇒N(0,γ2(h)).
+The proof of the next result is deferred to Appendix A.
+Theorem 2.11. Let V := {Vn}n≥1 = {( ˜xn,ζn, ˜un)}n≥1 be the Markov chain deﬁned on (21) with stationary
+probability measure ν. Then, for h : Λ → R given by h(x, c, u) = u, there exists a solution to the Poisson
+equation ˆh with ν(ˆh2) < ∞. Furthermore, the invariance principle (26) holds true and the variance γ2(h)
+admits the representation
+γ2(h) = Eν (¯h2(V1) ) + 2 ∞∑
+k=2
+Eν
+(¯h(V1)¯h(Vk) ) , (27)
+where ¯h = h −ν(h) and the sum converges absolutely.
+In the following, we will write fn
+P
+∼ gn if limn→∞ fn/gn = 1, in probability. The following result is the
+ﬁnal ingredient towards (1):
+Lemma 2.12. Using the notation of Section 2.2,
+Ntn
+P
+∼ tn Eπ(τ1), as n →∞, (28)
+where we recall that Nt = max{n |τ1 + ... + τn ≤ t} and π is the stationary measure of the chain Zn =
+( ˜xn−1,ζn−1, ˜xn,ζn), whose existence is guaranteed by Theorem 2.3.
+Proof. Throughout, let tn := tn. Since Ntn denote the number of price changes up to time tn,
+τ1 + ... + τNtn
+Ntn
+≤ tn
+Ntn
+< τ1 + ... + τNtn +1
+Ntn
+and, thus, by (18), as n →∞, tn Ntn P → Eπ(τ1), which in turn implies (28). □
+Finally, we can state the main result on this section.
+Theorem 2.13. Let {st}t≥0 be the price process as deﬁned in Eq. (19). Then,
+{√n ( stn
+n − ν(h) Eπ(τ1)t )} t≥0 ⇒{γ(h)Wt}t≥0 , as n →∞, (29)
+where the variance γ2(h) is given as in Eq. (27).
+14
+
+=== page 15 ===
+Proof. Throughout, let tn := tn. Let us recall that st = s0 +
+Nt∑
+j=1
+˜u j and ˜un = h(Vn), for the Markov chain {Vn}n≥0
+and h : Λ → R given by h(y, c, u) = u. Now, we decompose the process ¯stn := n1/2 (stn /n − tν(h)/Eπ(τ1)) as:
+¯stn = s0√n|{z}
+In
++ 1√n
+[tn/Eπ(τ1)]∑
+j=1
+(
+˜u j −ν(h)
+)
+|                         {z                         }
+IIn
++
+ 1√n Ntn∑ j=1 ˜u j − 1√n [tn/Eπ(τ1)]∑ j=1 ˜u j  |                                 {z                                 }
+IIIn
++
+ 1√n [tn/Eπ(τ1)]∑ j=1 ν(h) −√n tν(h) Eπ(τ1)  |                                    {z                                    }
+IVn
+,
+where, as in Theorem 2.12, ν is the stationary measure of the Markov chain {Vn}n≥0. As n →∞, clearly,
+In ⇒ 0. Also, by Theorem 2.11,
+IIn ⇒γ(h)2Wt,
+where γ2(h) is given by Eq. (27). Now, since ˜u j ∈ { 1 2 ,− 1 2 } , for any ϵ > 0,
+P
+ ⏐⏐⏐⏐⏐⏐⏐ Ntn∑ j=1 ˜u j − [tn/Eπ(τ1)]∑ j=1 ˜u j ⏐⏐⏐⏐⏐⏐⏐ ≥ϵ√n  ≤ P  ⏐⏐⏐⏐⏐⏐⏐⏐ Ntn ∨[tn/Eπ(τ1)]∑ j=Ntn ∧[tn/Eπ(τ1)] ˜u j ⏐⏐⏐⏐⏐⏐⏐⏐ ≥ϵ√n 
+≤ P
+(1
+2
+⏐⏐⏐Ntn − [tn/Eπ(τ1)] ⏐⏐⏐ ≥ϵ√n )
+≤ P
+(⏐⏐⏐⏐⏐ Ntn [tn/Eπ(τ1)] − 1 ⏐⏐⏐⏐⏐ ≥ 2ϵ√n [tn/Eπ(τ1)] ) ,
+which, by Proposition 2.12, converges to 0 as n →∞. Thus, IIIn converges to 0 in probability. Finally, since
+IVn = ν(h) [tn/Eπ(τ1)]√n −√n tν(h) Eπ(τ1) is such that 0 ≤−IVn < ν(h)√n , it follows that IVn → 0, as n →∞, and, thus, we
+conclude (29). □
+3 Computation of Some LOB Features of Interest
+In this section we develop some numerical tools to evaluate some LOB model features of practical relevance
+such as the distribution of the time span between price changes, the probability of a price increase, and the
+probability of two consecutive price increments. The proposed method is based on an explicit characteri-
+zation of the joint distribution of the time and position at which a certain two-dimensional Markov chain
+starting in the ﬁrst quadrant hits the coordinate axes. The developed tools will also be used in Section 4 to
+devise an eﬃcient simulation algorithm for the midprice dynamics of the order book.
+Recall that ¯ΩN∗ := {0, 1, 2,..., N∗} and ΩN∗ := {1, 2,..., N∗}. Throughout this section, we let {Y(x, y)}(x,y)∈Ω2 N∗
+be a collection of independent processes such that, for each (x, y) ∈ Ω2 N∗,
+Y(x, y) := {Yt(x, y)}t∈N :=
+{(
+Qa,0 t (x) , Qb,0 t (y) )} t∈N, (30)
+where Qa,0(x) := {Qa,0 t (x)}t≥0 and Qb,0(x) := {Qb,0 t (x)}t≥0 are deﬁned as in Section 2.1 (see Eq. (3)). We also
+set
+AA := {(0, 1), (0, 2),..., (0, N∗)}, AB := {(1, 0), (2, 0),..., (N∗, 0)}, A := AA ∪ AB,
+ς(x, y) := inf{t > 0 : Yt(x, y) ∈ A }, L := La ∧ Lb,
+15
+
+=== page 16 ===
+where La and Lb are independent exponential variables with parameter α. These variables are meant to
+represent the times for a new set of orders to arrive at the ask and bid side, respectively. Finally,
+D
+= denotes
+equality in distribution.
+3.1 Distribution of the duration between price changes
+Here, we develop a numerical method to ﬁnd the distribution of the ﬁrst price change time τ1 given that,
+initially at time 0, there are x orders at the bid, y at the ask, and the spread is z. To this end, we ﬁrst compute
+the joint distribution of the vector (ς(x, y), Yς(x,y)(x, y)). This is obtained via the following two lemmas,
+whose proofs can be found in the Appendix A
+Lemma 3.1. Suppose that, for each ﬁxed ¯a := (¯a1, ¯a2) ∈ A , u¯a : [0, T] × ¯ΩN∗ → R satisﬁes the following
+system of diﬀerential equations:
+(
+−∂ ∂t + L ) u¯a(t, x, y) ⏐⏐⏐⏐t=T−r = 0, for 0 ≤ r < T, (x, y) ∈ ΩN∗
+u¯a(T − r, x, y) = 1 {(x,y)=¯a}, for 0 ≤ r ≤ T, (x, y) ∈ A ,
+u¯a(0, x, y) = 1 {(x,y)=¯a}, for (x, y) ∈ ¯Ω2 N∗,
+(31)
+where L u(t, x, y) is the ﬁnite diﬀerence operator given by
+L u(t, x, y) =
+ λ(u+ 1 + u+ 2 ) + υ(u− 1 + u− 2 ) − 2(λ + υ)u, (x, y) ∈{1, 2,..., N∗− 1}2, λu+ 2 + υ(u− 1 + u− 2 ) − (λ + 2υ)u, x = N∗, y ∈{1, 2,..., N∗− 1}, λu+ 1 + υ(u− 1 + u− 2 ) − (λ + 2υ)u, x ∈{1, 2,..., N∗− 1}, y = N∗, υ(u− 1 + u− 2 ) − 2υu, (x, y) = (N∗, N∗), 0, (x, y) ∈ A , (32)
+and u+ 1 = u(t, x + 1, y), u+ 2 = u(t, x, y + 1), u− 1 = u(t, x − 1, y), u− 2 = u(t, x, y − 1), and u = u(t, x, y). Then, for
+t > 0, (x, y) ∈ ¯Ω2 N∗, and ¯a := (¯a1, ¯a2) ∈ A ,
+u¯a(t, x, y) := P
+[
+ς(x, y) ≤ t, Yς(x,y)(x, y) = ¯a
+]
+. (33)
+The next result proves the existence of a solution u to the system (31) by giving an explicit representation
+of u in terms of the eigenvalues and eigenvectors of a certain ﬁnite diﬀerence operator. As a result, we obtain
+as well an explicit formulation of the joint distribution of (ς(x, y), Yς(x,y)(x, y)). Below, we let
+a + 1 :=
+{ ¯a + (0, 1), i f ¯a ∈{(1, 0), (2, 0),..., (N∗, 0)}
+¯a + (1, 0), i f ¯a ∈{(0, 1), (0, 2),..., (0, N∗)}.
+Proposition 3.2. Let ∆ be the symmetric ﬁnite diﬀerence operator deﬁned for functions w : ¯Ω2 N∗ → R as
+∆w(x, y) =
+ w+ 1 + w+ 2 + w− 1 + w− 2 − 4w, (x, y) ∈{1, 2,..., N∗− 1}2 w+ 2 + w− 1 + w− 2 − ( 4 − √ λ υ ) w, x = N∗, y ∈{1, 2,..., N∗− 1} w+ 1 + w− 1 + w− 2 − ( 4 − √ λ υ ) w, x ∈{1, 2,..., N∗− 1}, y = N∗ w− 1 + w− 2 − ( 4 − 2 √ λ υ ) w, (x, y) = (N∗, N∗) 0, (x, y) ∈ A , (34)
+16
+
+=== page 17 ===
+where w+ 1 = w(x + 1, y), w+ 2 = w(x, y + 1), w− 1 = w(x − 1, y), w− 2 = w(x, y − 1), and w = w(x, y). Let
+{ξk}N∗2 k=1 be the eigenvalues of ∆ and { fk(x, y)}N∗2 k=1 be their corresponding eigenvectors so that they constitute
+an orthonormal basis of RN∗2 . For ¯a := (¯a1, ¯a2) ∈ A , let u¯a : [0, T] × ¯Ω2 N∗ → R be deﬁned by
+u¯a(t, x, y) =
+(λ
+υ
+) ¯a1+¯a2−x−y 2  N∗2 ∑
+k=1
+√
+λυ fk
+(
+a + 1
+)
+2(λ + υ) −
+√
+λυ(4 + ξk)
+(
+1 − e−t[2(λ+υ)−(4+ξk)
+√
+λυ]) fk(x, y)1 {(x,y)∈Ω2 N∗} + 1 {(x,y)=¯a}
+.
+(35)
+Then, the function u¯a satisﬁes the system of diﬀerential equations (31) and, therefore, the identity (33) holds
+true.
+Remark 3.3. We can rewrite Eq. (35) as:
+u¯a(t, x, y) := χ
+¯a1+¯a2−x−y
+2
+N∗2 ∑
+k=1
+fk
+(
+a + 1
+)
+2 (χ1/2 −χ−1/2)2 −ξk
+(
+1 − e
+−2λt
+[
+(χ−1/2−1) 2 −ξk 2 χ−1/2 ]) fk(x, y)1 {(x,y)∈Ω2 N∗}+χ ¯a1+¯a2−x−y 2 1 {(x,y)=¯a},
+where χ := λ/υ. The previous expression shows that, as t gets larger, the joint probability distribution
+P
+[
+ς(x, y) ≤ t, Yς(x,y)(x, y) = ¯a
+]
+depends on the parameters υ and λ mostly through the quotient χ = λ/υ. Let
+us also point out that the eigenvalues of ∆ can be proven to be non-positive and, thus, u¯a(T, x, y) ∈ [0, 1].
+We are now ready to compute the distribution Fτ1 (t|x, y, z) := P[τ1 ≤ t| xa 0 = x, xb 0 = y,ζ0 = z] of the time
+τ1 it takes for the price to change conditioned on the initial state of the book. For simplicity of notation,
+throughout τ(x, y, z) represents a random time such that P(τ(x, y, z) ≤ t) = P[τ1 ≤ t| xa 0 = x, xb 0 = y,ζ0 = z],
+for any t ≥ 0. It is clear that τ(x, y, 1)
+D
+= ς(x, y) and, thus, from Eq. (35), for (x, y) < A ,
+Fτ1 (t|x, y, z) =
+(λ
+υ
+)− x+y 2 N∗2 ∑
+k=1
+√
+λυςk
+2(λ + υ) −
+√
+λυ(4 + ξk)
+(
+1 − e−t(2(λ+υ)−(4+ξk)
+√
+λυ)) fk(x, y), (36)
+where
+ςk :=
+∑
+¯a∈A
+(λ
+υ
+) ¯a1+¯a2 2
+fk
+(
+a + 1
+)
+. (37)
+On the other hand, for z ≥ 2, we have that τ(x, y, z)
+D
+= ς(x, y) ∧ L, where as before L represents the arrival
+time of a limit order within the spread. Therefore, from the independence of ς(x, y) and L, for any z ≥ 2 and
+(x, y) < A ,
+Fτ1 (t|x, y, z) = P[L ≤ t] + P[ς(x, y) ≤ t]P[L > t] = (1 − e−2αt) + Fτ1 (t|x, y, 1)e−2αt. (38)
+The expressions (36)-(38) provide an eﬃcient numerical method to compute the distribution of the time
+span between price changes given some initial level I LOB setup. The method is relatively eﬃcient since
+the main task in their evaluation is the computation of the eigenvalues {ξk}N∗2 k=1 and eigenvectors { fk(x, y)}N∗2 k=1,
+which has to be done only once, for any t ≥ 0 and z ∈{1, 2,...}.
+3.2 Probability of a price increase
+We now consider the probability of a price increase conditioned on the current state of the order book:
+p(x, y, z) := P [Price increase | x orders at Bid, y orders at Ask, and a spread z], for (x, y) < A .
+17
+
+=== page 18 ===
+A price increase occurs if the best ask queue gets depleted or if a new set of orders arrives at the bid
+side. Recall from Lemma 3.1 that u¯a(t, x, y) := P
+[
+ς(x, y) ≤ t, Yς(x,y)(x, y) = ¯a
+]
+has an explicit form given by
+Eq. (35). Set
+uB(t, x, y) := P
+[
+ς(x, y) ≤ t, Yς(x,y) ∈ AB
+]
+=
+∑
+¯a∈AB
+u¯a(t, x, y), (39)
+and note that, if the spread is z = 1,
+p(x, y, 1) = uB(∞, x, y) =
+(λ
+υ
+)− x+y 2 N∗2 ∑
+k=1
+√
+λυςk,B
+2(λ + υ) −
+√
+λυ(4 + ξk)
+fk(x, y), (40)
+where
+ςk,B :=
+∑
+¯a∈AB
+(λ
+υ
+) ¯a1+¯a2 2
+fk
+(
+a + 1
+)
+.
+In order to ﬁnd p(x, y, z) for z ≥ 2, note that
+p(x, y, z) = P
+[
+ς(x, y) ≤ L, Yς(x,y)(x, y) ∈ AB
+]
++ P
+[
+ς(x, y) > L, L = Lb] =: p1(x, y) + p2(x, y). (41)
+By conditioning on L and recalling that L ∼ exp(2α),
+p1(x, y) = 2α
+∫ ∞
+0
+uB(t, x, y)e−2αtdt
+=
+(λ
+υ
+)− x+y 2 N∗2 ∑
+k=1
+√
+λυςk,B
+2(λ + υ) −
+√
+λυ(4 + ξk)
+(
+1 − 2α
+2(λ + υ + α) − (4 + ξk)
+√
+λυ
+)
+fk(x, y). (42)
+For the second term, using the symmetry between La and Lb, p2(x, y) = 1 2 P [ς(x, y) ≥ N] and, thus,
+p2(x, y) = 1 2 ( 1 − 2α ∫ ∞ 0 P [ς(x, y) ≤ t] e−2αtdt )
+= 1 2
+1 − (λ υ )− x+y 2 N∗2 ∑ k=1 √ λυςk 2(λ + υ) − √ λυ(4 + ξk) ( 1 − 2α 2(λ + υ + α) − (4 + ξk) √ λυ ) fk(x, y) , (43)
+where ςk is deﬁned as in (37). Again, once the eigenvalues and eigenvectors of ∆ have been computed, one
+can readily compute p(x, y, z) via (42)-(43), for any (x, y) ∈ Ω2 N∗ and z ∈ Z+.
+3.3 Probability of two consecutive price increments
+Let ˆp(x, y, z) be the probability of two consecutive increments in the price given that initially there were x
+orders at the best bid, y orders at the best ask, and a spread of z. These probabilities are highly dependent
+on the initial spread. The case of an initial spread of 1 is relatively easier to analyze than any other spread
+due to the possibility of a new set of orders within the spread before the depletion of any of the level I
+queues. As will be shown below, in the latter situation, we will have to consider a probability of the form
+P [L <ς(x, y), YL(x, y) ∈{(1, j),..., (N∗, j)}], for any j. The aforementioned probability will be reformulated
+in terms of the solution to a certain initial value problem along the lines of Proposition 3.2.
+18
+
+=== page 19 ===
+Recall that every time there is a price change, a new number of orders in the LOB side that got depleted
+is generated from a discrete distribution, f a or f b, supported on {1, 2,..., N∗}, depending on whether the best
+ask or bid queues got depleted. For simplicity, in what follows we assume that f := f a = f b. Denote H a
+random variable with distribution f . In addition to the collection of random walks {Y(x, y)}(x,y)∈Ω2 N∗ described
+at the beginning of Section 3.1, we also need to consider another independent copy { ˜Y(x, y)}(x,y)∈Ω2 N∗ and ﬁx
+˜ς(x, y) := inf{t > 0 : ˜Yt(x, y) ∈ A }. Similarly, in addition to (La, Lb), we consider an independent copy
+( ˜La, ˜Lb) and ﬁx ˜L := ˜La ∧ ˜Lb. We are ready to compute ˆp(x, y, z).
+For z = 1, clearly,
+ˆp(x, y, 1) =
+N∗ ∑
+i=1
+N∗ ∑
+j=1
+P
+[
+Yς(x,y)(x, y) = ( j, 0), H = i, ˜ς( j, i) ≤ ˜L, ˜Y2 ˜ς( j,i)( j, i) ∈ AB ]
++
+N∗ ∑
+i=1
+N∗ ∑
+j=1
+P
+[
+Yς(x,y)(x, y) = ( j, 0), H = i, ˜ς( j, i) ≥ ˜L, ˜L = ˜Lb]
+=
+N∗ ∑
+i=1
+N∗ ∑
+j=1
+u( j,0)(∞, x, y) f (i)p( j, i, 2),
+where we recall that p(x, y, 2) denotes the probability of a price increase if there are x orders at the bid, y
+orders at the ask, and a spread of 2. The probability p(x, y, 2) can be computed according to (41), while
+u( j,0)(∞, x, y) can readily be found from (35) by making t →∞. It is worth mentioning that the case z = 1 is
+arguably the most important in practice since, as empirically observed in several studies, the spread spends
+a great deal of time at level 1.
+Next, let AB j := {(1, j), (2, j),..., (N∗, j)}. Now, for z = 2,
+ˆp(x, y, 2) =
+N∗ ∑
+i=1
+N∗ ∑
+j=1
+P[ς(x, y) ≤ L, Yς(x,y)(x, y) = ( j, 0), H = i, ˜ς( j, i) ≤ ˜L, ˜Y˜ς( j,i)( j, i) ∈ AB]
++
+N∗ ∑
+i=1
+N∗ ∑
+j=1
+P[ς(x, y) ≤ L, Yς(x,y)(x, y) = ( j, 0), H = i, ˜ς( j, i) ≥ ˜L, ˜L = ˜Lb]
++
+N∗ ∑
+i=1
+N∗ ∑
+j=1
+P[L <ς(x, y), L = Lb, YL(x, y) ∈ AB j , H = i, ˜Y˜ς(i, j)(i, j) ∈ AB].
+Hence, using that P
+[
+L ≤ς(x, y), L = La, Ya(x, y) ∈ AB j
+]
+= P
+[
+L ≤ς(x, y), L = Lb, YL(x, y) ∈ AB j
+]
+, we can
+write
+ˆp(x, y, 2) =
+N∗ ∑
+i=1
+N∗ ∑
+j=1
+f (i)
+{(
+2α
+∫ ∞
+0
+u( j,0)(t, x, y)e−2αtdt
+)
+p( j, i, 2) + 1 2P [ L <ς(x, y), YL(x, y) ∈ AB j ] p(i, j, 1) } .
+The probability p(x, y, 1) can be computed according to (40), while 2α
+∫ ∞
+0 u( j,0)(t, x, y)e−2αtdt can readily be
+found from (35). The problem of computing P
+[
+L ≤ς(x, y), YL(x, y) ∈ AB j
+]
+is analyzed below. Before that,
+let us note that, using similar arguments,
+ˆp(x, y, 3) =
+N∗ ∑
+i=1
+N∗ ∑
+j=1
+f (i)
+{(
+2α
+∫ ∞
+0
+u( j,0)(t, x, y)e−2αtdt
+)
+p( j, i, 2) + 1 2P [ L <ς(x, y), YL(x, y) ∈ AB j ] p(i, j, 2) } .
+19
+
+=== page 20 ===
+A similar identity holds for ˆp(x, y, z) with z ≥ 4. Therefore, the only remaining step is the computation of
+P
+[
+L ≤ς(x, y), YL(x, y) ∈ AB j
+]
+. This can be done by ﬁrst computing v j(t, x, y) := P[t <ς(x, y), Yt(x, y) ∈ AB j ]
+using similar arguments to those used in Proposition 3.2. More concretely, it turns out that v j(t, x, y) solves
+the initial value problem:
+ ( −∂ ∂t + L ) v j(t, x, y) ⏐⏐⏐⏐t=T−r = 0 for 0 ≤ r ≤ T, (x, y) ∈{1, 2,..., N∗}2, v j(T − r, x, y) = 0 for 0 ≤ r ≤ T, (x, y) ∈ A , v j(0, x, y) = 1 { (x,y)∈AB j } for (x, y) ∈{0, 1, 2,..., N∗}2. (44)
+4 Numerical Examples
+The purpose of this section is twofold. First, we analyze numerically the convergence of the midprice
+process towards its diﬀusive limit process as established in Theorem 2.13. Second, we compute some
+of the quantities of interest described in Section 3 and numerically study their behaviors under both our
+assumptions and those in Cont and Larrard (2013). For the ﬁrst problem, we develop an eﬃcient simulation
+scheme for the price process dynamics, which is much more eﬃcient than the direct simulation of all the
+LOB events (i.e., limit, market, and cancellation orders).
+Recall that for the model introduced in Section 2, the input parameters are the rates λ, µ, θ, and α. The
+ﬁrst three parameters refer to the arrival rates of limit orders, market orders, and cancellation, respectively,
+while α is the rate at which a new set of limit orders arrive in-between the bid-ask spread. Also, we need the
+distributions f b and f a for the sizes of queues at the best bid and ask price, respectively, after the best bid
+and ask price changes. For simplicity, we set f := f a = f b and recall that we are assuming that f a, f b are
+supported on the ﬁnite set {1,..., N∗}.
+For the subsequent numerical examples, we shall use the empirically estimated intensities described in
+Table 1 below, which are borrowed from Cont and Larrard (2013) (see Table 3 therein). The time units in the
+sequel are in seconds. The maximum queue size N∗ is assumed to be 10, with each unit representing a batch
+of 100 shares. Unless otherwise speciﬁed, the initial level I queue’s conﬁguration are set to be (x, y) = (5, 5),
+while the initial spread is ζ0 = 4. The distribution f is taken to be uniformly distributed in {1,..., N∗}.
+Finally, two diﬀerent choices of α are considered: α = υ + 1 and α = 2υ.
+Stock λ υ := µ + θ
+Citigroup 2204 2331
+General Electric 317 325
+General Motors 102 104
+Table 1: Estimates for the intensities of limit orders and market orders+cancellations, in number of batches
+per second (each batch representing 100 shares) on June 26th, 2008, as reported in Cont and Larrard (2013).
+4.1 Simulation and Convergence Assessment
+The most natural (and naive) way to simulate the price dynamics would consist of generating all the LOB
+events or, equivalently, all the Poisson arrival times of orders (limit, market, and cancellations), until the time
+at which either the bid or ask queue gets depleted and there is consequently a price change. We would then
+20
+
+=== page 21 ===
+reset the queue size at the side that got depleted and continue this process. Unfortunately, this procedure is
+computationally intensive and not suitable to study the coarse-grain behavior of the price process, especially
+for the purpose of Monte Carlo analysis where we require a large number of simulations. Instead, we
+propose a more eﬃcient method, in which we directly simulate the random vector (ς(x, y), Yς(x,y)(x, y)),
+without simulating the events leading to it. This in turn would allow us to obtain directly the time at which
+the level I of the order book gets depleted (or equivalently, the time of a price change) and the amount of
+outstanding limit orders at the opposite side of the book. To simulate (ς(x, y), Yς(x,y)(x, y)), we take advantage
+of the representation for their joint probability given by Eq. (35). This representation has several advantages
+since its computation requires to ﬁnd the eigenvalues {ξk} and eigenfunction { fk(x, y)}, only once, regardless
+of t and ¯a.
+By Proposition 2.12 and Theorem 2.13, we have
+E
+( st
+t
+) t→∞
+→ ν(h) Eπ(τ1), Var (st) t t→∞ → γ2(h), E ( t Nt ) t→∞ → Eπ(τ1). (45)
+In the sequel, we shall study the performance of the above asymptotic approximations for “large” t. Our
+goal is to assess how close the distribution of st is to its diﬀusive approximation for some sampling time
+spans, t, commonly used in practice (say, 1 min and 5 min). To compute the expectations and variances
+appearing in (45), we use a Monte Carlo method with 200 simulations of the order book. The results are
+shown in Table 2. As expected, the larger are the rates λ and υ, the smaller Eπ(τ1) gets and, as a result, the
+larger the expected rate of return E (st) /t becomes. We also observe that, in that case, there seems to be a
+signiﬁcant increment in the volatility √Var (st) of the asset price. This is due to the fact that increasing λ
+and υ simultaneously is equivalent to speeding up the dynamics of the process, which will necessarily result
+in higher variability.
+Scenario 1: λ = 2204, υ = 2331 Scenario 2: λ = 317, υ = 325 Scenario 3: λ = 102, υ = 104
+Case α = 2332 α = 4662 α = 2332 α = 4662 α = 2332 α = 4662 t = 60 t = 300 t = 60 t = 300 t = 60 t = 300 t = 60 t = 300 t = 60 t = 300 t = 60 t = 300
+E[st]/t -7.02 -6.44 -6.69 -6.55 -3.50 -3.55 -3.35 -3.61 -1.57 -1.74 -1.78 -1.62
+Var[st]/t 240 238 320 322 161 114 113 143 50 45 60 58
+E[t/Nt] 3.9 1000 3.9 1000 3.9 1000 3.9 1000 8.6 1000 8.6 1000 8.4 1000 8.4 1000 19.3 1000 19.3 1000 18.8 1000 18.8 1000
+Table 2: Estimates of the expected return E[st]/t, normalized variance Var(st)/t, and expected time Eπ(τ)
+between price changes.
+Next, we turn our attention to the behavior of the spread. Based again on 200 simulation and an initial
+spread of 4, Table 3 shows the percentage of the time that the spread spends at each state during the time
+interval [0, 300 sec] for the diﬀerent values of λ, υ, and α. As shown therein, the larger are the rates λ and
+υ, the longer time the spread spends in one tick. This is due to the fact that the larger these rates are, the
+quicker the spread change and, by the choice of α, the quicker it will shrink to 1. More importantly, these
+results show that, when α/υ is large enough, our model can closely replicate the stylized empirical behavior
+of the spread as illustrated, for instance, in Cont and Larrard (2013) (see Table 2 therein).
+Finally, Figures 2-4 compare the empirical density of st, based on 200 simulations, to a Gaussian density
+with mean and variance set equal to the respective sample mean and variance of the 200 replicas of st. We
+do this for t = 1min and t = 5min, which are commonly used as sampling frequencies of many statistical
+21
+
+=== page 22 ===
+estimation methods. The empirical density is obtained using the R function “density”, which computes a
+kernel density estimate3. For sake of space, we only show the graphs corresponding to α = υ + 1 (there
+is no signiﬁcant changes when α = 2υ). As seen in the graphs, the distribution of st is relatively well
+approximated by a Normal distribution for these two values of t.
+Table 3: Distribution of the time spent by the spread for diﬀerent values of λ,υ and α during [0, 300].
+Case 1 Tick 2 Ticks 3 Ticks 4+ Ticks
+α = υ + 1
+λ = 2204, υ = 2331 0.97248 0.02716 0.00035 0.00001
+λ = 317, υ = 325 0.906891 0.088491 0.004135 0.000564
+λ = 102, υ = 104 0.86881 0.12084 0.008868 0.001482
+α = 2υ
+λ = 2204, υ = 2331 0.98627 0.01365 0.00007 0.00001
+λ = 317, υ = 325 0.95327 0.045697 0.000956 0.000077
+λ = 102, υ = 104 0.94383 0.054443 0.001579 0.000148
+−6 −5 −4 −3 −2 −1 0
+0.0 0.1 0.2 0.3 0.4
+Comparative density of the rescaled price process with λ=2204, υ=2331, α=2332
+N = 200   Bandwidth = 0.3490
+Density
+Theoretical Density
+Simulated Density
+−10 −8 −6 −4
+0.0 0.1 0.2 0.3 0.4
+Comparative density of the rescaled price process with λ=2204, υ=2331, α=2332
+N = 200   Bandwidth = 0.3182
+Density
+Theoretical Density
+Simulated Density
+Figure 2: Comparison of the empirical density of the price st to a Gaussian density, when λ = 2204,
+υ = 2331, and α = 2332. The time horizon chosen is t = 60s (left panel) and t = 300s (right panel).
+3We use the default parameter settings for the kernel and bandwidth given by R, which are respectively given according to a
+Gaussian kernel and the Silverman’s “rule of thumb” (Silverman, 1986, Eq. (3.31)).
+22
+
+=== page 23 ===
+−6 −4 −2 0
+0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35
+Comparative density of the rescaled price process with λ=102, υ=104, α=105
+N = 200   Bandwidth = 0.3517
+Density
+Theoretical Density
+Simulated Density
+−9 −8 −7 −6 −5 −4 −3
+0.0 0.1 0.2 0.3 0.4
+Comparative density of the rescaled price process with λ=317, υ=325, α=326
+N = 200   Bandwidth = 0.3437
+Density
+Theoretical Density
+Simulated Density
+Figure 3: Comparison of the empirical density of the price st to a Gaussian density, when λ = 317, υ = 325,
+and α = 326. The time horizon chosen is t = 60s (left panel) and t = 300s (right panel).
+−6 −4 −2 0
+0.0 0.1 0.2 0.3 0.4
+Comparative density of the rescaled price process with λ=102, υ=104, α=210
+N = 200   Bandwidth = 0.3268
+Density
+Theoretical Density
+Simulated Density
+−7 −6 −5 −4 −3 −2 −1
+0.0 0.1 0.2 0.3 0.4 0.5
+Comparative density of the rescaled price process with λ=102, υ=104, α=210
+N = 200   Bandwidth = 0.2943
+Density
+Theoretical Density
+Simulated Density
+Figure 4: Comparison of the empirical density of the price st to a Gaussian density, when λ = 102, υ = 104,
+and α = 208. The time horizon chosen is t = 60s (left panel) and t = 300s (right panel).
+4.2 Evaluation of some quantities of interest
+To understand the impact of the assumptions made in the model and draw some further comparisons to the
+model presented in Cont and Larrard (2013), in this section, we numerically compute some of the quantities
+of interest introduced in Section 3.
+We ﬁrst consider the distribution of the time span between price changes. This distribution was compute
+in Proposition 1 of Cont and Larrard (2013), under the assumptions therein. The survival function P(τ≥ t)
+was also plotted in Figure 4 therein with λ = 12, µ + θ = 13, xa 0 = 5, and xb 0 = 4 as the input parameters. In
+the left panel of Figure 5 below, this survival probability distribution is reproduced and compared with the
+distributions obtained by the method introduced in Section 3.1 (see Eq.(36)-(38)), conditional on a spread
+of 1, for diﬀerent values of N∗. The right panel of Figure 5 also depicts the densities of the time for the next
+price change. As it can be seen from the plots, for values of N∗ close to 5, the density is more concentrated
+around 0, which is natural since the queue sizes cannot increase more than N∗, causing this time to occur
+faster. Bu, as it is expected, the survival and density functions under our model converge to those of Cont
+and Larrard (2013) when N∗ increases.
+23
+
+=== page 24 ===
+0 1 2 3 4 5
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+time t in sec
+P[τ>t]
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+C−L
+N=5
+N=6
+N=7
+N=8
+N=9
+N=10
+N=15
+N=20
+N=40
+0 1 2 3 4 5
+0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4
+time t in sec
+P[τ=t]
+0.0 0.2 0.4 0.6 0.8 1.0 1.2 1.4
+Cont
+N=5
+N=6
+N=7
+N=8
+N=9
+N=10
+N=15
+N=20
+N=40
+Figure 5: Comparison of the survival function and density of the time for the ﬁrst price change to occur
+between the model presented in Cont and Larrard (2013) and diﬀerent values of N∗ when the spread is set
+to be 1. Parameter choices: λ = 12, µ + θ = 13, xa 0 = 5, and xb 0 = 4.
+The distribution of the time for the next price to occur, when the spread is 2, is not plotted, because this
+is very similar to the one of an exponential random variable with parameter 2α. This is due to the fact that
+the recurrence condition α≥µ + θ implies that it is far more probable that a price change occurs due to the
+arrival of a new set of limit orders within the spread than the depletion of a level I queue.
+Next, we compare the probability of a price increase for diﬀerent values of xa 0, xb 0, and N∗, when the
+spread is set to be 1. Cont and Larrard (2013) provides a formula (see Proposition 3), under the assumptions
+therein, but, unfortunately, this formula is diﬃcult to implement in the asymmetric order ﬂow case. In
+contrast, the method proposed in Subsection 3.2 is more eﬃcient, since all of the quantities therein rely
+on the spectral decomposition of the discrete Laplacian (34), which, once N∗ is ﬁxed, just has to be done
+once. Figures 6 graphs the probability of price increase as a function of xa 0, for ﬁxed xb 0 = 30 (left panel)
+and xb 0 = 50 (right panel). By symmetry, we would have the same graph against xb 0 for ﬁxed values of xa 0.
+Notice that, in the ﬁrst case, when xb 0 = 30, the probability of a price increase does not varies signiﬁcantly
+with N∗, for a most of the values of xa 0. It is only when xa 0 becomes close to the value of N∗ that some
+discrepancies start to show. On the other hand, when xb 0 = 50, which is a closer value for N∗, the probability
+signiﬁcantly varies with N∗ regardless of the value of xa 0. The dashed lines therein show that, regardless of
+N∗, the probability of a price increase is always 0.5, as it should be, when xa 0 = xb 0.
+24
+
+=== page 25 ===
+Initial number of ask limit orders  x0 a
+P[ Price Increment with  x0 b=30 bid limit orders ]
+10 20 30 40 50
+0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0N=50
+N=51
+N=53
+N=54
+N=55
+N=60
+N=65
+N=70
+Initial number of ask limit orders  x0 a
+P[ Price Increment with  x0 b=50 bid limit orders ]
+1 10 20 30 40 50
+0.4 0.5 0.6 0.7 0.8 0.9 1.0
+0.4 0.5 0.6 0.7 0.8 0.9 1.0N=50
+N=51
+N=53
+N=54
+N=55
+N=60
+N=65
+N=70
+Figure 6: Comparison of the probability of a price increase as a function of xa 0 for diﬀerent values of N∗.
+The number of bid orders is ﬁxed at 30 (left panel) and 50 (right panel).
+5 Conclusions
+In this paper, a new Markovian limit order book model is presented, which allows to incorporate a non-
+constant spread and to keep the information about the outstanding orders after a level I queue gets depleted
+at either side of the LOB. Although the general rules governing the order book in the latter setting create
+a more complex dynamics, a novel eﬃcient method was developed to analyze several features of the LOB
+model of relevance in high-frequency trading.
+Our main result characterizes the coarse-grain behavior of the midprice process in terms of a Brownian
+motion with drift. This was made possible by expressing the price changes in terms of a suitable Markov
+chain. To this end, two key assumptions were needed: the boundedness of the queue sizes at every moment
+and a suﬃciently high arrival rate of new orders in between the spread compared to the intensity of arrivals
+of market order/cancellations. The latter condition is also intuitive since it prevents the spread to grow
+indeﬁnitely with positive probability. These two conditions provide a tractable framework, without lost of
+realism, for the LOB, and become relevant when studying the diﬀusive behavior of the price process for this
+model.
+It is known that markets exhibit relatively large price shifts in a small time period and, thus, the incorpo-
+ration of these “jumps” into an order book model is appealing. A natural approach to address this problem
+may be the introduction of more levels in the order book, governed by similar rules to those imposed in
+our second proposed model. The approach presented in this work is also expected to be applicable for such
+models.
+Acknowledgments: The ﬁrst author’s research was supported in part by the NSF Grant DMS-1149692. The
+authors are grateful to two anonymous referees and both the associate editor and the editor-in-chief for their
+constructive and insightful comments that greatly helped to improve the paper.
+25
+
+=== page 26 ===
+A Additional Proofs
+Proof of Lemma 2.4. Throughout, we set Yt(x, y) := (Y1 t (x, y), Y2 t (x, y)) := (Qb,0 t (x), Qa,0(y)), La := La 1(2),
+Lb := Lb 1(2), and L := La ∧ Lb. Also, let ˆy = (y1, j ± 1, y2, j) ∈ Ξ\F, where y1 = (y1 1, y2 1) ∈ Ω2 N∗, y2 = (y1 2, y2 2) ∈
+Ω2 N∗ and j > 1. In that case,
+(Pϕ)(ˆy) =
+∑
+z2=(z1 2,z2 2)∈Ω2 N∗
+P((y1, j ± 1, y2, j), (y2, j, z2, j − 1)) ϕ((y2, j, z2, j − 1))
++
+∑
+z2=(z1 2,z2 2)∈Ω2 N∗
+P((y1, j ± 1, y2, j), (y2, j, z2, j + 1)) ϕ((y2, j, z2, j + 1)),
+which, using that ϕ((y2, j, z2, k)) = ϕ(k), can then be decomposed and simpliﬁed as follows:
+(Pϕ)(ˆy) =
+N∗ ∑
+z1 2=1
+N∗ ∑
+z2 2=1
+P(L <ς(y2), L = La, Y1 L(y2) = z1 2) f a(z2 2)ϕ( j − 1)
++
+N∗ ∑
+z1 2=1
+N∗ ∑
+z2 2=1
+P(L <ς(y2), L = Lb, Y2 L(y2) = z2 2) f b(z1 2)ϕ( j − 1)
++
+N∗ ∑
+z1 2=1
+N∗ ∑
+z2 2=1
+P(ς(y2) < L, Yς(y2)(y2) = (z1 2, 0)) f a(z2 2)ϕ( j + 1)
++
+N∗ ∑
+z1 2=1
+N∗ ∑
+z2 2=1
+P(ς(y2) < L, Yς(y2)(y2) = (0, z2 2)) f b(z1 2)ϕ( j + 1)
+= ϕ( j − 1)P(L <ς(y2)) + ϕ( j + 1)P(ς(y2) < L).
+Since P(ς(y) > t) ≤ P(ς(z) > t) for y = (y1, y2), z = (z1, z2) ∈ Ω2 N∗ with z1 ≥ y1 and z2 ≥ y2, for any y2 ∈ Ω2 N∗,
+P(ς((N∗, N∗)) > t) ≥ P(ς(y2) > t) ≥ P(ς((1, 1)) > t).
+Thus,
+∑
+ˆz∈Ξ
+P(ˆy, ˆz)ϕ(ˆz) = ϕ( j − 1)P(N <ς(y2)) + ϕ( j + 1)P(ς(y2) < N)
+≤ϕ( j − 1)(1 − pN∗) + ϕ( j + 1)p1,
+From the previous expression, a suﬃcient condition for ϕ to be super-harmonic, is to satisfy the linear
+diﬀerence equation p1ϕ( j + 1) + (1 − pN∗)ϕ( j − 1) = ϕ( j), whose particular solution, satisfying the desired
+boundary conditions, is given by (12). □
+Proof of Lemma 2.5. Throughout, we set 1 = (1, 1) and N∗ = (N∗, N∗). First, we will prove that the
+condition α>µ + θ implies an upper bound for p1. The independence of ς(1) and L ∼ exp(2α) implies that
+P(L >ς(1)) =
+∫ ∞
+0 fς(1)(t)e−2αtdt, where fς(1)(t) is the probability density functions of ς(1). Using integration
+by parts,
+P(L >ς(1)) =
+∫ ∞
+0
+d
+dt (−P(ς(1) ≥ t)) e−2αtdt = 1 −
+∫ ∞
+0
+2αe−2αtP(ς(1) ≥ t)dt. (46)
+26
+
+=== page 27 ===
+Let Et be the event that there is neither a cancellation nor an arrival of market orders before time t at either
+side of the book. Since P(ς(1) ≥ t) > P(Et) = e−2(µ+θ)t, by (46) and the assumption that α>µ + θ,
+P(L >ς(1)) = 1 −
+∫ ∞
+0
+2αe−2αtP(ς(1) ≥ t)dt < 1 − α α + µ + θ ≤ 1 2.
+Thus, regardless of the sign of p1(1 − pN∗), since pN∗ < p1 < 1 2 , we have that lim j→∞ϕ( j) = ∞. □
+Proof of Lemma 2.6. We apply Theorem 2.2, for which we need to prove that π(| f |) < ∞ and π(|gt|) < ∞.
+The latter assertions hold true if we can show that, for all ˆx = (x0, c0, x1, c1) ∈ Ξ,
+E(τ1 | ˆx) ≤ C <∞, (47)
+for a constant C, since
+π(| f |) :=
+∑
+ˆx∈Ξ
+π( ˆx)E(τ1 | ˆx) ≤ C
+∑
+ˆx∈Ξ
+π( ˆx) <∞, π(|gt|) :=
+∑
+ˆx∈Ξ
+π( ˆx)P(τ1 > t | ˆx) ≤
+∑
+ˆx∈Ξ
+π( ˆx) <∞.
+To show (47), we ﬁrst need some notation. Let ς(x) be deﬁned as in Lemma 2.4. Note that
+E (τ1| ( ˜x0,ζ0) = (x0, c0)) ≤ E (τ1| ( ˜x0,ζ0) = ((N∗, N∗), 1)) = E (ς((N∗, N∗))) <∞, (48)
+where the last inequality holds, since ς((N∗, N∗)) ≤ min(ϖ1,ϖ2), where ϖi, i=1,2, is the hitting time at 0
+of a 1-dimensional birth and death process with birth rate λ and death rate µ + θ starting at N∗ (for which is
+known the expectation is ﬁnite) and ϖ1 is independent of ϖ2. Next, let R(x0, c0) = {x1 ∈ Ω2 N∗ : P(( ˜x1,ζ1) =
+(x1, c0 ± 1) | ( ˜x0,ζ0) = (x0, c0)) > 0} and let
+r± x1 ((x0, c0)) := P(( ˜x1,ζ1) = (x1, c0 ± 1) | ( ˜x0,ζ0) = (x0, c0)), c0 > 1,
+rx1 ((x0, 1)) := P(( ˜x1,ζ1) = (x1, 2) | ( ˜x0,ζ0) = (x0, 1)),
+rmin(x0) := min{r± x1 ((x0, 2)) : x1 ∈R(x0, 2)}∧ min{rx1 ((x0, 1)) : x1 ∈R(x0, 1)}.
+Since, for any c0, c1 > 1, r± x1 ((x0, c0)) = r± x1 ((x0, c1)), it follows that 0 < rmin(x0) ≤ r± x1 ((x0, c0)) for all
+c0 ∈{2, 3,...} and x1 ∈R(x0, c0). Therefore,
+rmin(x0)
+∑
+x1∈R(x0,c0)
+E(τ1 | x0, c0, x1, c0 ± 1) ≤ E(τ1|( ˜x0,ζ0) = (x0, c0)) < E(ς((N∗, N∗))) <∞.
+This implies (47), which in turn implies the result as explained above. □
+Proof of Theorem 2.11. Since the state space, Λ, is countable, every ﬁnite subset of the state space is an
+atom (e.g., see (Meyn and Tweedie, 2009, Chapter 5, pg 105) ) and, hence, we are able to construct explicitly
+the solution of the Poisson equation (22). Indeed, by Equation (17.38) in Meyn and Tweedie (2009) and the
+discussion therein, for C1 := {¯z = (x, c, u) ∈ Λ : x ∈ Ω2 N∗, c = 1, u ∈{−1/2, 1/2}}, we have that
+ˆh(¯z) = E¯z
+ σC1∑
+k=1
+¯h(Vk)
+, (49)
+27
+
+=== page 28 ===
+where σC1 = min{n ≥ 0 | Vn ∈ C1}. Since for any ¯z ∈ Λ, |h(¯z)|≤ 1/2, |h(¯z)|≤ 1 and, thus, |ˆh(¯z)|≤ E¯z(σC1 ).
+Therefore, to conclude that the invariance principle (26) holds true, it suﬃces to show that
+ν
+(
+E2 · (σC1 ) ) := ∑
+¯z∈Λ
+ν(¯z)E2 ¯z (σC1 ) <∞. (50)
+Let C j = {¯z = (x, c, u) ∈ Λ|x ∈ Ω2 N∗, c = j, u ∈{−1/2, 1/2}}. Each C j is ﬁnite and {C j} j≥1 forms a partition
+of Λ. Clearly, for every n, if Vn ∈ C j, with j ≥ 2, then Vn+1 ∈{C j−1, C j+1}. Moreover, with the notation of
+Lemma 2.4 and, as prove in the proof of Lemma 2.5, for any ¯z = (x, c, u) ∈ C j
+P(Vn+1 ∈ C j+1|Vn = ¯z) = P (ς(x) < L) ≤ P(ς(1) < L) = p1
+Consider now a birth and death process ˜Vn ∈ N with birth probability p1 and death probability 1 − p1,
+and note that
+P[Vn+1 ∈ C j−1 | Vn = ¯z] ≥ 1 − p1 = P[ ˜Vn+1 = j − 1 | ˜Vn = j].
+Denote by σ ˜V 1 the ﬁrst hitting time of ˜V to the point 1. That is, σ ˜V 1 = min{n > 0 | ˜Vn = 1}. Then, since V
+dies more frequently than ˜V, for any ¯z ∈ C j,
+E¯z[σC1 ] ≤ E j[σ
+˜V
+1 ] = j − 1 1 − 2pN∗ , (51)
+where, in the last equality we use that p1 < 1/2 (see Sericola (2013)[Section 3.1]).
+The next step is to bound the terms ν(C j) for j ≥ 2. To shorten notation, deﬁne Θ := ΩN∗ ×{−1/2, 1/2}.
+Recall that if the spread is larger than one, the spread will widen or shrink right after every price change,
+whereas if the spread is 1, it will surely widen at the next step. Thus, for any ¯y ∈ C1 and any ¯z ∈ C j with
+j ≥ 2, Pext[¯y, C2] = 1 and Pext[¯z, C j+1] + Pext[¯z, C j−1] = 1. By the deﬁnition of a stationary measure,
+ν(C1) =
+∫
+Λ
+Pext[¯z, C1]ν(d¯z) = ∑
+¯z∈C2
+Pext[¯z, C1]ν(¯z) = ∑
+¯z∈C2
+(1 − Pext[¯z, C3])ν(¯z),
+which implies that ∑
+¯z∈C2
+Pext[¯z, C3]ν(¯z) = ν(C2) −ν(C1) (52)
+Analogously,
+ν(C2) =
+∫
+Λ
+Pext[¯z, C2]ν(d¯z) = ∑
+¯z∈C1
+Pext[¯z, C2]ν(¯z) + ∑
+¯z∈C3
+Pext[¯z, C2]ν(¯z) = ν(C1) + ∑
+¯z∈C3
+(1 − Pext[¯z, C4])ν(¯z),
+which implies that ∑
+¯z∈C3
+Pext[¯z, C4]ν(¯z) = ν(C1) −ν(C2) + ν(C3) (53)
+Next, note that, for j > 2,
+ν(C j−1) =
+∫
+Λ
+Pext[¯z, C j−1]ν(d¯z)
+=
+∑
+¯z∈C j−2
+Pext[¯z, C j−1]ν(¯z) + ∑
+¯z∈C j
+(1 − Pext[¯z, C j+1])ν(¯z)
+= ν(C j) +
+∑
+¯z∈C j−2
+Pext[¯z, C j−1]ν(¯z) − ∑
+¯z∈C j
+Pext[¯z, C j+1]ν(¯z). (54)
+28
+
+=== page 29 ===
+Therefore, ∑
+¯z∈C j
+Pext[¯z, C j+1]ν(¯z) = ν(C j) −ν(C j−1) + ∑
+¯z∈C j−2
+Pext[¯z, C j−1]ν(¯z) (55)
+Applying the previous equation recursively, for all even j ≥ 2,
+∑
+¯z∈C j
+Pext[¯z, C j+1]ν(¯z) = ν(C j) −ν(C j−1) + ν(C j−2) −ν(C j−3) + ... + ν(C4) −ν(C3) + ∑
+¯z∈C2
+Pext[¯z, C3]ν(¯z),
+and, thus, by (52),
+∑
+¯z∈C j
+Pext[¯z, C j+1]ν(¯z) = ν(C j) −ν(C j−1) + ν(C j−2) −ν(C j−3) + ... + ν(C4) −ν(C3) + ν(C2) −ν(C1). (56)
+However, if j ≥ is odd, by (53),
+∑
+¯z∈C j
+Pext[¯z, C j+1]ν(¯z) = ν(C j) −ν(C j−1) + ν(C j−2) −ν(C j−3) + ... + ν(C5) −ν(C4) + ∑
+¯z∈C3
+Pext[¯z, C4]ν(¯z)
+= ν(C j) −ν(C j−1) + ν(C j−2) −ν(C j−3) + ... + ν(C5) −ν(C4) + ν(C1) −ν(C2) + ν(C3).
+(57)
+Equations (56)-(57) imply that
+ν(C j+1) =
+∑
+¯z∈C j
+Pext[¯z, C j+1]ν(¯z) + ∑
+¯z∈C j+1
+Pext[¯z, C j+2]ν(¯z).
+However, by the deﬁnition of a stationary measure,
+ν(C j+1) =
+∑
+¯z∈C j
+Pext[¯z, C j+1]ν(¯z) + ∑
+¯z∈C j+2
+Pext[¯z, C j+1]ν(¯z).
+The previous two equations yield the following relation,4
+∑
+¯z∈C j+1
+Pext[¯z, C j+2]ν(¯z) = ∑
+¯z∈C j+2
+Pext[¯z, C j+1]ν(¯z). (58)
+We are now ready to bound the term ν(C j). To that end, notice that for any ¯z ∈ C j, Pext[¯z, C j−1] ≥ (1 − p1)
+and, thus,
+ν(C j) =
+∑
+¯z∈C j−1
+Pext[¯z, C j]ν(¯z) + ∑
+¯z∈C j+1
+Pext[¯z, C j]ν(¯z)
+=
+∑
+¯z∈C j
+Pext[¯z, C j−1]ν(¯z) + ∑
+¯z∈C j+1
+Pext[¯z, C j]ν(¯z)
+≥ (1 − p1)ν(C j) + (1 − p1)ν(C j+1).
+4Eq. (58) gives some insight into the structure of the stationary measure ν and can be regarded as a “batch” version of the
+so-called Detailed Balance Conditions for Markov Chains, which are important for analyzing reversible processes (c.f. Kelly
+(2011)[Chapter 1.2]).
+29
+
+=== page 30 ===
+Therefore, ν(C j+1) ≤ν(C j)p1/(1 − p1), which, by induction, implies that
+ν(C j+1) ≤
+( p1
+1 − p1
+) j−1
+ν(C2), (59)
+Finally, by (51) and (59) and the fact that p∗ = p1/(1 − p1) < 1, for some bounded constant C∗,
+ν(E2 · (σC1 )) = ∑
+¯z∈C1
+ν(¯z)E2 ¯z (σC1 ) +
+∞∑
+j=2
+∑
+¯z∈C j
+ν(¯z)E2 ¯z (σC1 )
+= C∗ +
+∞∑
+j=2
+ν(C j)
+( j − 1
+1 − 2pN∗
+)2
+≤ C∗ + ν(C1)
+∞∑
+j=2
+(p∗) j−1
+( j − 1
+1 − 2pN∗
+)2
+<∞. (60)
+It only remains to show that the variance in the FCLT can be written as (27). But, by Theorem 17.5.3 in
+Meyn and Tweedie (2009), it is enough to show that he Markov chain {Vn}n≥1 is ergodic and there exists a
+function F : Λ → [0,∞] such that ν(F2) <∞ and
+∆F(¯z) ≤−1 + b1 {¯z∈B}, (61)
+for a constant b < ∞ and a ﬁnite set B, where ∆ is the operator ∆F(¯z) := E¯z [F(V1) − F(V0)] (c.f. Section
+14.2.1 in Meyn and Tweedie (2009)). However, it is known (c.f. Section 13.1.2 Meyn and Tweedie (2009))
+that aperiodic positive Harris chains over a countable state space are ergodic and by Proposition 14.1.2 and
+Theorem 14.2.3(ii) therein, the function F(¯z) := E¯z[σB] satisﬁes (61), where σB is the ﬁrst hitting time of
+the set B in (61). Since it was proven above that ν(E2 · [σC1 ]) <∞, we take B = C1 to conclude the proof. □
+Proof of Lemma 3.1. Let us start by noting that the generator of the two-dimensional random walk Y is
+given by the ﬁnite diﬀerence operator L deﬁned in (32). More concretely, for a function φ : ¯ΩN∗ → R,
+L φ(x, y) is deﬁned analogously to (32) but replacing u(t, x, y) with φ(x, y). For simplicity, we denote ς :=
+ς(x, y) and remark that ς is an absolutely continuous random variable. Let ¯u(t, x, y) be an arbitrary bounded
+function such that t ↦→ ¯u(t, x, y) is C1 for all (x, y) and (t, x, y) ↦→ ∂t ¯u(t, x, y) is bounded. Fix T > 0 and let
+f (t, x, y) = ¯u(T − t, x, y). Under the stated conditions, ¯u belongs to the domain of the generator L and, thus,
+the process
+f (t, Xt) −
+∫ t
+0
+( ∂
+∂r + L
+)
+f (r, Yr)dr, t ∈ [0, T]
+is a local martingale. Therefore,
+Mt := ¯u(T − t, Yt) −
+∫ t
+0
+(
+−∂ ∂t + L ) ¯u(T − r, Yr)dr, t ∈ [0, T],
+is a martingale. Let σ := T ∧ς. By the Optional Sampling Theorem,
+¯u(T, x, y) = E[¯u(T −σ, Yσ)] − E
+[∫ σ
+0
+(
+−∂ ∂t + L ) ¯u(T − r, Yr)dr ] . (62)
+30
+
+=== page 31 ===
+Now, suppose that ¯u(t, x, y) solves the following initial value problem,
+ ( −∂ ∂t + L ) ¯u(T − r, x, y) = 0 for 0 ≤ r ≤ T, (x, y) ∈{1, 2,..., M}2. ¯u(T − r, x, y) = 1 {(x,y)=¯a} for 0 ≤ r ≤ T, (x, y) ∈ A . ¯u(0, x, y) = 1 {(x,y)=¯a} for (x, y) ∈{0, 1, 2,..., M}2. (63)
+In that case, by Eq. (62),
+¯u(T, x, y) = E[¯u(T −σ, Yσ)]
+= E[¯u(T −σ, Yσ)1 {σ<T} + ¯u(T −σ, Yσ)1 {σ=T}]
+= E[1 {Yσ=¯a}1 {σ<T} + ¯u(0, Yσ)1 {σ=T}]
+= P[Yς = ¯a,ς≤ T],
+which implies that ¯u(t, x, y) = u¯a(t, x, y). □
+Proof of Proposition 3.2. Let
+w(t, x, y) =
+(λ
+υ
+) ¯a1+¯a2 2
+et(2(λ+υ)−4
+√
+λυ)1 {(x,y)=¯a}.
+Fix ˜v(t, x, y) = v(t, x, y) − w(t, x, y) and note that v(t, x, y) satisﬁes the system (66) if and only if ˜v is a solution
+to the initial value problem:
+ − ( ∂ ∂t − √ λυ∆ ) ˜v(t, x, y) = ( ∂ ∂t − √ λυ∆ ) w(t, x, y) for t ≥ 0, (x, y) ∈ ΩN∗ ˜v(t, x, y) = 0 for t ≥ 0, (x, y) ∈ A ˜v(0, x, y) = 0 for (x, y) ∈ ¯ΩN∗. (64)
+Let {ψk(t)}N∗2 k=1 and {ς ¯a k }N∗2 k=1 be such that ˜v(t, x, y) = ∑N∗2 k ψk(t) fk(x, y) and 1 {(x,y)=a+1} = ∑N∗2 k=1 ς ¯a k fk(x, y). Using
+the ﬁrst representation, the left-hand side of the ﬁrst equation in (64) becomes
+−
+( ∂
+∂t −
+√
+λυ∆
+)
+˜v(t, x, y) = −
+N∗2 ∑
+k=1
+ψ′ k(t) fk(x, y) −ψk(t) √ λυ∆ fk(x, y) = N∗2 ∑
+k=1
+[
+−ψ′ k(t) + ψk(t) √ λυξk ] fk(x, y).
+Similarly, the right-hand side of the ﬁrst equation in (64) is given by
+(∂w
+∂t −
+√
+λυ∆
+)
+w = −
+(λ
+υ
+) ¯a1+¯a2 2 √
+λυet(2(λ+υ)−4
+√
+λυ)1 {(x,y)=a+1} = −et(2(λ+υ)−4
+√
+λυ)
+(λ
+υ
+) ¯a1+¯a2 2 √
+λυ
+N∗2 ∑
+k=1
+ς ¯a k fk(x, y).
+Combining the previous two expressions and recalling that { fk(x, y)}k is an orthonormal basis, it follows that
+the function ˜v(t, x, y) = ∑ k ψk(t) fk(x, y) will solve the system (64) if and only if, for every k, the function
+ψk(t) satisﬁes the following equation:
+−ψ′ k(t) + ψk(t) √ λυξk = −et(2(λ+υ)−4 √ λυ) (λ υ ) ¯a1+¯a2 2 √ λυς ¯a k , (65)
+with the initial condition ψk(0) = 0. It is easy to see that the previous diﬀerential equation is well posed and
+has solution
+ψk(t) =
+(λ
+υ
+) ¯a1+¯a2 2 √ λυς ¯a k
+2(λ + υ) −
+√
+λυ(4 + ξk)
+[
+et
+√
+λυξk − et(2(λ+υ)−4
+√
+λυ)] .
+31
+
+=== page 32 ===
+Therefore,
+˜v(t, x, y) =
+(λ
+υ
+) ¯a1+¯a2 2 ∑
+k
+√
+λυς ¯a k
+2(λ + υ) −
+√
+λυ(4 + ξk)
+[
+et
+√
+λυξk − et(2(λ+υ)−4
+√
+λυ)] fk(x, y),
+satisﬁes the initial value problem (64), which in turn, implies that
+u(t, x, y) =
+(λ
+υ
+) ¯a1+¯a2−x−y 2  N∗2 ∑
+k=1
+√
+λυς ¯a k
+2(λ + υ) −
+√
+λυ(4 + ξk)
+(
+1 − e−t(2(λ+υ)−(4+ξk)
+√
+λυ)) fk(x, y) + 1 {(x,y)=¯a}
+,
+is a solution of (31). Then, the representation (35) immediately follows by noting that ς ¯a k = fk(a + 1) and
+rewriting the previous expression in terms of χ = λ/υ. □
+Lemma A.1. A function u : [0, T] × ¯ΩN∗ → R is a solution of the system of diﬀerential equations (31) if and
+only if the function v(t, x, y) deﬁned by
+v(t, x, y) =
+(λ
+υ
+) x+y 2
+et(2(λ+υ)−4
+√
+λυ)u(t, x, y),
+solves the system of diﬀerence equations
+ ( −∂ ∂t + √ λυ∆ ) v(t, x, y) = 0, for t ≥ 0, (x, y) ∈ ΩN∗, v(t, x, y) = ( λ υ ) ¯a1+¯a2 2 et(2(λ+υ)−4 √ λυ)1 {(x,y)=¯a}, for t ≥ 0, (x, y) ∈ A , v(0, x, y) = ( λ υ ) ¯a1+¯a2 2 1 {(x,y)=¯a}, for (x, y) ∈ ¯ΩN∗, (66)
+where ¯a = (¯a1, ¯a2) ∈ A and, for each ﬁxed t, ∆v(t, x, y) is deﬁned as in (34) with respect to x and y.
+Proof. The proof is standard and is omitted. □
+References
+Abergel, F. and Jedidi, A. A Mathematical Approach to Order Book Modeling. International Journal of
+Theoretical and Applied Finance, 16(05), 2013.
+Anderson, D. Introduction to Stochastic Processes with Applications in the Biosciences. Available at http:
+//www.math.wisc.edu/˜anderson/605F13/Notes/StochBio.pdf, 2013.
+Asmussen, S. Applied Probability and Queues 2nd. edition, Springer 2003.
+Billingsley, P. Probability and Measure Theory. 3rd edition, Wiley Series in Probability and Statistics 1995.
+Bouchaud, J. P., Farmer, J.D., and Lillo, F. How markets slowly digest changes in supply and demand. In
+T. Hens, K. Schenk-Hoppe, eds., Handbook of Financial Market: Dynamics and Evolution, Elsevier:
+Academic Press, 57-160, 2008.
+C¸ inlar, E. Introduction to Stochastic Processes. Prentice-Hall 1975.
+32
+
+=== page 33 ===
+Cont, R. and de Larrard, A. Order book dynamics in liquid markets: limit theorems and diﬀusion approxi-
+mations. Preprint available in arXiv:1202.6412v1, 2012.
+Cont, R. and de Larrard, A. Price dynamics in a Markovian limit order market. SIAM Journal for Financial
+Mathematics, 4(01), 2013.
+Cont, R. Stoikov, R. and Talreja, S. A Stochastic Model for Order Book Dynamics. Operations Research,
+(58)3, 2010.
+Feller, W. An Introduction to Probability Theory and its Applications. 2nd edition, John Wiley and Sons,
+1971.
+Gould, M., Porter, M., Williams, S., McDonald, M., Fenn, D. and Howison, S. Limit Order Books. Quanti-
+tative Finance, 13(11), 1709-1742, 2013
+Gut, A. Probability: A Graduate Course. Springer, 1995.
+Harris, L. Trading and exchanges: market microstructure for practitioners. Oxford University Press, 2003.
+Ikeda, N. and Watanabe, S. Stochastic Diﬀerential Equations and Diﬀusion Processes. North Holland Pub-
+lishing Company, 1981.
+Karatzas, I. and Shreve, S. Brownian Motion and Stochastic Calculus. Springer, 1988.
+Karlin, S. and Taylor, H. A First Course in Stochastic Processes. 2nd edition, Elsevier Academic Press,
+1975.
+Kelly, F. P. Reversibility and Stochastic Networks. Cambridge University Press, 2011.
+Kruk, L. Functional Limit Theorems for a simple auction. Mathematics of Operations Research, 28(04),
+2003.
+Kruk, L. Limiting distribution for a simple model of order book dynamics. Central European Journal of
+Mathematics, 10(06), 2012.
+Luckock, H. A steady-state model of the continuous double auction, Quantitative Finance, 3(05), 1988.
+Mendelson, H. Market behavior in a clearing house. Econometrica, 50(06), 1982.
+Meyn, S. and Tweedie R. Markov Chains and Stochastic Stability. 2nd edition, Cambridge University Press,
+2009.
+Muni Toke, I. and Pomponio, F. Modelling Trades-Through in a Limit Order Book Using Hawkes Processes.
+Economics: The Open-Access, Open-Assessment E-Journal, 6, 1-23, 2012.
+Pomponio, F., and Abergel, F. Trade-throughs: Empirical facts - Application to lead-lag measures. Proceed-
+ings of the Vth Kolkata Econophysic conference, 2011.
+Rosu, I. A Dynamic Model of the Limit Order Book. Review of Financial Studies, 22(11), 2009.
+Sericola, B. Markov Chains: Theory and Applications. 1st edition, ISTE. Wiley, 2013.
+Silverman, B. W. Density Estimation. London: Chapman and Hall, 1986.
+33

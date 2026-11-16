@@ -1,0 +1,2068 @@
+=== page 1 ===
+Estimating risks of option books using neural-SDE market
+models
+Samuel N. Cohen Christoph Reisinger Sheng Wang
+Mathematical Institute, University of Oxford
+{samuel.cohen, christoph.reisinger, sheng.wang}
+@maths.ox.ac.uk
+February 16, 2022
+Abstract
+In this paper, we examine the capacity of an arbitrage-free neural-SDE market model
+to produce realistic scenarios for the joint dynamics of multiple European options on
+a single underlying. We subsequently demonstrate its use as a risk simulation engine
+for option portfolios. Through backtesting analysis, we show that our models are more
+computationally eﬃcient and accurate for evaluating the Value-at-Risk (VaR) of op-
+tion portfolios, with better coverage performance and less procyclicality than standard
+ﬁltered historical simulation approaches.
+MSC: 91B28; 91B70; 62M45; 62P05
+Keywords: Market models; European options; risk measures; market simulators; no-
+arbitrage; neural SDE
+1 Introduction
+Managing option trade books usually requires modelling and simulating dynamics of liquid
+vanilla options. A desirable model, and therefore trajectories simulated from the model,
+should preserve statistical properties of the real data, while respecting underlying ﬁnancial
+constraints. Previous work [19] has considered building arbitrage-free neural-SDE market
+models under the real-world measure, and established corresponding model estimation algo-
+rithms that take as input time series price data of ﬁnitely many liquid options. The model
+consists of an SDE system for states representing the underlying and a small number of fac-
+tors chosen for a statistically accurate dynamic representation of the option surface and the
+minimisation of dynamic and static arbitrage. The coeﬃcients of the SDE are calibrated un-
+der hard linear inequality constraints on the joint options price processes dictated by static
+arbitrage relationships. In terms of practical applications, [19] only considers synthetic data
+simulated from a Heston stochastic local volatility model, and does not demonstrate perfor-
+mance on any concrete tasks. This paper validates the modelling approach in [19] using real
+world data, and explores the capacity of the model as a realistic option market simulator.
+In particular, we shall see that these methods yield computationally eﬃcient and accurate
+models for evaluating Value-at-Risk, with less procyclicality and better performance than
+traditional ﬁltered historical simulation [5].
+1
+arXiv:2202.07148v1  [q-fin.CP]  15 Feb 2022
+
+=== page 2 ===
+Essentially, we investigate the feasibility of using a neural-SDE market model as a gen-
+erative model for time series of option prices. Simulating synthetic data from a generative
+model is an important measure to ensure data privacy [7], and can be useful for boosting
+deep learning performance, for instance to provide an environment to train further models
+with reinforcement learning [10, 44]. Synthetic data generators are probabilistic models
+which simulate observations similar to historical data, in the sense of capturing speciﬁc
+features of the time series. Recent developments of generative models for ﬁnancial time
+series focus on generative adversarial networks (GANs) [30, 36, 42, 46, 47] and variational
+autoencoders (VAEs) [11, 48], and typically are not driven by fundamental ﬁnancial mod-
+elling principles. We highlight the work of [48] and [15], which take similar approaches to
+ours, using alternative representations of arbitrage conditions.
+Building generative models for multiple option price time series, with the same un-
+derlying asset and diﬀerent strikes and maturities, is by nature a high-dimensional prob-
+lem, where complex arbitrage constraints need to be respected among diﬀerent dimensions.
+Wiese et al. [47, 48] ﬁrst transform option prices to an equivalent representation in the
+form of discrete local volatilities [49] with simple static arbitrage constraints; they then ap-
+ply PCA to reduce the dimension and formulate a typical GAN problem. Compared with
+GAN approaches, our neural-SDE market models largely reduce the “black-box” nature of
+neural network models (see the discussion by [20]) while still retaining their computational
+advantages. Speciﬁcally, our neural-SDE market model gives drift and diﬀusion estimates of
+each risk factor modelled, which helps us to understand the expected return and volatility
+of investing in each risk factor.
+Here, we verify that these neural-SDE market models produce price paths similar to
+historical data for European equity index markets, in that they display volatility clustering
+(in the returns on the underlying index, and this is replicated in an options portfolio similar
+to VIX) and they match marginal and joint densities for the underlying and option portfo-
+lios. We then focus on risk simulation for option portfolios, which is especially convenient
+because the models are built under the real-world measure. In particular, we assess how
+well the models evaluate risks for a comprehensive set of option portfolios which represent
+typical risk proﬁles, such as (calendar) spreads, risk reversals and strangles. In fact, these
+portfolios can be viewed as statistical features of option price surfaces. We therefore verify
+that the neural-SDE market models are capable of simulating data similar to historical data,
+in the sense of capturing these highly structured while ﬁnancially meaningful features.
+Evaluating market risk for portfolios of nonlinear derivatives such as options is challeng-
+ing from both an accuracy and speed perspective. We focus on Value-at-Risk (VaR), a risk
+measure promoted by J.P. Morgan RiskMetrics [39] in the mid-1990s and quickly mandated
+by international regulators such as the US SEC and Basel committee for disclosing portfolio
+risk. Mathematically, the key is to establish a loss distribution for the evaluated portfolio.
+As our models generate samples from the full loss distribution of the portfolio, our approach
+could also be used to compute estimates of other risk measures, for example expected short-
+fall. We focus on VaR due to its common use for regulation in ﬁnancial markets, and given
+the existence of standard backtesting approaches, which allow us to verify the performance
+of our method against standard criteria.
+Parametric approaches to VaR estimation, such as the delta method [39] and delta-
+gamma method [9, 23], give closed-form approximations of the loss distribution, which are
+fast, but rely heavily on distributional assumptions on the risk factors. In addition, El-Jahel
+2
+
+=== page 3 ===
+et al. [21] have shown that these methods give biased VaR estimates due to poor local, linear
+and quadratic, approximations of the loss.
+Conversely, non-parametric methods based on Monte Carlo estimation of the loss dis-
+tribution are unbiased and consistent, and have ﬂexible distributional assumptions, but can
+present a substantial computational burden. First, a large number of samples of the risk
+factors (known as “risk scenarios”) are needed as VaR only considers the (upper) tail of
+the loss distribution. Second, for each risk scenario, one needs to re-evaluate the portfolio
+value, which is generally not available in closed-form, so computationally costly numerical
+procedures are needed. If Monte Carlo simulation is used for pricing the portfolio, one
+ends up with a two-level (or nested) simulation scheme. Variance reduction techniques can
+be used in both outer and inner levels to accelerate simulations; speciﬁcally, for the outer
+level, where quantile estimation is made, there is a vast literature discussing the use of
+control variates [31, 33], antithetic variates [2], and, more popularly, importance sampling
+or stratiﬁed sampling [25, 26, 45]. Further non-parametric VaR estimation methods include
+historical simulation [12] or volatility-ﬁltered historical simulation [3, 4, 5, 27], which sam-
+ple risk scenarios based on empirical distributions of risk factors. Nevertheless, regardless
+of how risk scenarios are simulated, the valuation of options portfolios often requires re-
+evaluation of option prices based on risk factors (for multiple simulation trajectories and
+time points), which is computationally expensive.
+In our market models, option prices are linear in the risk factors, resulting in negligible
+computational cost for re-evaluating an option portfolio for each simulated risk scenario.
+Despite the simplicity of the linear factor representation, it is suﬃciently rich to achieve
+satisfactory statistical accuracy. As shall be detailed later, we simulate risk factors from
+a ﬂexible, oﬄine trained neural-SDE with historical innovations. Through out-of-sample
+backtesting, we show that our model yields statistically and economically more appealing
+VaR estimates for various option portfolios than traditional ﬁltered historical simulation
+approaches (see, for example, Barone-Adesi, Giannopoulos and Vosper [5]).
+This paper is organised as follows. First, we review the construction and estimation
+methodology of the arbitrage-free neural-SDE market model in Section 2. Then we explain
+the dataset used, elaborate how to apply the model to real world data in Section 3, where
+the in-sample and out-of-sample performance of the model is assessed extensively. Given
+the trained model, we estimate VaR over various risk horizons and conﬁdence levels for a
+varied set of option portfolios, and backtest the out-of-sample VaR performance in Section
+4. Finally, Section 5 concludes our observations and addresses a few further extensions.
+2 Arbitrage-free neural-SDE market models
+Here we brieﬂy summarise our neural-SDE approach to constructing market models. Inter-
+ested readers may refer to [19] for a discussion of model choices, theoretical strengths and
+limitations, and other implementational details.
+3
+
+=== page 4 ===
+2.1 Factor-based market models
+We consider a ﬁnancial market with a stock1 and a collection of European call options on
+the stock. We denote by Ct(T,K) the market price at time t of an European call option with
+expiry T and strike K. Over time, the range of liquid options in (T,K)-coordinates tends
+to change stochastically. In contrast, there is usually a stable range of time-to-expiries and
+moneynesses for which the options are actively quoted and therefore price data are most
+readily available. Therefore, it is empirically advantageous to build models in terms of
+relative coordinates (τ,m), where τ = T −t is time-to-expiry and m denotes moneyness.
+Speciﬁcally, we model the normalised call price surface (τ,m) ↦→ ˜ct(τ,m) with the deﬁnition
+˜ct(τ,m) = Ct(t + τ,emFt(t + τ)) Dt(t + τ)Ft(t + τ) , (2.1)
+where Dt(T ) denotes the market discount factor for time T (assuming a deterministic in-
+terest rate), and Ft(T ) the model-independent, arbitrage-free futures price for delivery of
+the stock at T .
+We ﬁx a constant compact set Rliq ⊂{(τ,m) ∈ R2}, which represents the range of
+time-to-expiries and moneynesses where options are liquid. For each τ and m, we assume
+a time-independent linear representation of ˜ct(τ,m) by latent factors ξ∈ Rd, given by
+˜ct(τ,m) = G0(τ,m) +
+d∑
+i=1
+Gi(τ,m)ξit, (2.2)
+where Gi ∈C1,2(Rliq) for i = 0,...,d, and we refer to it as a price basis function. Thereafter,
+we model the joint dynamics of the stock price S and the factors ξ by a (d + 1)-dimensional
+diﬀusion process solving the following time-homogeneous SDE:
+dSt
+St
+= α(ξt) dt + γ(ξt) dW0,t, S0 = s0 ∈ R; (2.3a)
+dξt = µ(ξt) dt + σ(ξt) dWt, ξ0 = ζ0 ∈ Rd, (2.3b)
+where W0 ∈ R and W = [W1 ··· Wd]⊤∈ Rd are standard independent Brownian motions
+under the real-world measure P. We use αt, γt, µt and σt to denote α(ξt), γ(ξt), µ(ξt)
+and σ(ξt), respectively. We denote by Lp loc(Rd) the space of all Rd-valued, progressively
+measurable, and locally p-integrable (in t, P-a.s.) processes, and assume that α∈L1 loc(R),
+µ∈L1 loc(Rd), γ ∈L2 loc(R) and σ∈L2 loc(Rd).
+Remark 1. We assume, in the model of ξ (2.3b), that the drift and diﬀusion coeﬃcients are
+independent of S, in the sense that volatility surfaces (represented by ξ) are unaﬀected by
+the underlying price level. Nevertheless, it is possible, and simple, to add S as an additional
+argument and train the model with neural nets (as is done in [19]).
+Remark 2. For simplicity, we assume independent Brownian motions that drive the ran-
+domness in S and ξ; one can easily add a correlation structure and estimate the resulting
+larger covariance matrix, albeit with a greater risk of over-ﬁtting. In Appendix B.2, we
+discuss the performance when estimating models for S and ξ jointly with a full R(d+1)×(d+1)
+1Although we refer to the asset as “stock” throughout the paper, our methods are equally applicable to
+other assets such as equity indices, currencies or commodities.
+4
+
+=== page 5 ===
+covariance matrix. With the current model setup (2.3), in order to take into account non-
+negligible correlations between ξ and log-returns of S for realistic forward simulations, we
+randomly sample innovations from the historical residuals of the ﬁtted models (2.3), rather
+than from standard Gaussians; see the discussion in Section 3.6.
+2.2 Arbitrage considerations
+According to the First Fundamental Theorem of Asset Pricing (FFTAP) [28], a model
+admits no arbitrage if there exists a measure Q ∼ P such that the discounted price processes
+for all tradable assets are martingales. (Formally, this can be weakened to local or σ-
+martingales, depending also on the precise form of no-arbitrage assumed.) We derive an
+HJM-type drift restriction (see also [29]) for this no-arbitrage condition to hold, by analyzing
+the existence of a market price of risk process ψt = [ψ1,t ··· ψd,t]⊤. Considering a ﬁnite
+set of option speciﬁcations Lliq = {(τj,mj)}j=1,...,N ⊂Rliq, we look for a solution ψt to
+G⊤σtψt = G⊤µt −zt, where zt =
+(
+− ∂ ∂τ − 1 2γ2 t ∂ ∂m + 1 2γ2 t ∂2 ∂m2 ) ct, (2.4)
+with ct = [˜ct(τ1,m1) ··· ˜ct(τN,mN)]⊤. Here, we deﬁne G as the d×N matrix with i-
+th row Gi, where Gi = (Gij)N j=1 ∈ RN for i = 0,...,d, and Gij = Gi(τj,mj). We call
+G⊤ a price basis matrix and each of its columns a price basis vector. The relation (2.4)
+leads to a mechanism of discouraging dynamic arbitrage in the factor decoding algorithm
+(Algorithm 1 of [19]), and a metric for measuring the proportion of dynamic arbitrage in
+factor-reconstructed prices (Section 4.3 of [19]).
+Nevertheless, the HJM-type drift restrictions cannot be implemented exactly in practice,
+because our models are built on ﬁnitely many options on a ﬁxed liquid lattice in the (τ,m)-
+coordinates, which do not correspond to ﬁxed contracts (i.e. ﬁxed T and K) over time, and
+so solutions to 2.4 will not exist for a ﬁxed price basis G. Therefore, further consideration of
+no-arbitrage conditions is needed. In particular, we can consider static, model-free arbitrage
+constraints on the underlying factors. Using the construction in our previous work [18], we
+write static arbitrage constraints in the form Act ≥ ˆb, where A = (Aij) ∈ RR×N and
+ˆb = (ˆbj) ∈ RR are a known constant matrix and vector, and R is the number of static
+arbitrage constraints. Given the factor representation (2.2), we have ct = G0 + G⊤ξt.
+Consequently, the market model allows no static arbitrage among options on the liquid
+lattice Lliq if ξt satisﬁes, for all t,
+AG⊤ξt ≥ b := ˆb − AG⊤ 0 . (2.5)
+2.3 Model inference
+As the ﬁrst step of model inference, we decode the factor representation (2.2) by calibrating
+the price basis functions {Gi}d i=0. This leads to Algorithm 1 of [19], which extracts a smaller
+number of market factors from prices of ﬁnitely many options with the joint objectives of
+eliminating static and dynamic arbitrage in reconstructed prices and guaranteeing statistical
+accuracy.
+To estimate the drift and diﬀusion of the decoded factor process ξ, as speciﬁed in (2.3b),
+we represent the drift and diﬀusion functions by neural networks, referred to as neural-
+SDE. Leveraging deep learning algorithms, we train the neural networks by maximising the
+5
+
+=== page 6 ===
+likelihood of observing the factor paths, subject to the derived arbitrage constraints. As
+seen in (2.5), static arbitrage constraints are characterised by the convex polytope state
+space {y ∈ Rd : AG⊤y ≥ b} for the factors; we identify suﬃcient conditions on the drift
+and diﬀusion to restrict the factors to the polytope, using the classic results of Friedman
+and Pinsky [24]. Consequently, the neural network that is used to parameterise the drift
+and diﬀusion functions needs to be constrained. We achieve this by developing appropriate
+transformations for the output of the neural network, as detailed in Section 3 of [19].
+3 Calibration to market data
+We have seen decent performance of our modelling and inference approach when applied to
+synthetic data generated from a stochastic local volatility model (Jex, Henderson and Wang
+[35]). The focus here is to investigate its ability to capture the dynamics of real-world data,
+and whether practically useful conclusions can be drawn from these methods.
+3.1 Option price data description and pre-processing
+We study the two most traded vanilla European options listed on Eurex, namely EURO
+STOXX 50® index options and DAX® options. OptionMetrics’ IvyDB Europe [43] oﬀers
+historical daily settlement prices2 for calls with expiries of 30, 60, 91, 122, 152, 182, 273,
+365, 547, and 730 calendar days, at deltas of 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6,
+0.65, 0.7, 0.75, and 0.8. We collect daily call option prices from 2nd January 2002 to 30th
+December 2019, as well as corresponding futures curves and euro zero curves.
+We ﬁrst normalise call prices by discount factors and futures prices following (2.1).
+However, the normalised call price surfaces have ﬁxed delta parameters, rather than ﬁxed
+moneynesses, over time. Therefore, we choose the historical median moneynesses (for each
+delta-quoted option) to deﬁne our liquid option lattice Lliq, and interpolate prices to the
+ﬁxed set of moneyness parameters. We give details on the interpolation in Appendix A.
+In addition, whenever there is static arbitrage in the reported historical option prices, we
+perturb the prices using the arbitrage repair algorithm of [18]. In Appendix A, we give
+statistics on the presence of arbitrage in raw and interpolated option price data, and assess
+the impact of repairing arbitrage. We show the liquid lattice Lliq in Figure 1a.
+In Figure 1b, we show historical daily prices for the EURO STOXX 50 index, the DAX
+index, and the 1M at-the-money (ATM) normalised call options written on the two indices.
+Since the normalised option price has a deterministic bijective relation with the implied
+volatility, we see that the two options have very similar volatility dynamics in history. It is
+consequently reasonable to assume a common background model for the volatility processes
+of the two options. Therefore, we concatenate the normalised call price data of the EURO
+STOXX 50 index options and DAX options when decoding factors and learning factor
+dynamics. This enriches the dataset available for our statistical estimation problems by
+assuming that our market models are universal for options written on these two diﬀerent
+underlyings. Speciﬁcally, there is only one functional form for the drift µ(·) and the diﬀusion
+σ(·) for the factor dynamics (2.3), despite diﬀerent option underlyings. Nevertheless, the
+underlying indices’ models will not be restricted to be the same; as evidenced in Figure 1b,
+2These prices are calculated from implied volatilities that are interpolated using a methodology based on
+a kernel smoothing algorithm, according to the OptionMetrics’ IvyDB Europe reference manual [43].
+6
+
+=== page 7 ===
+−0.2 0.0 0.2
+Moneyness ln(K/F (T ))
+0.0
+0.5
+1.0
+1.5
+2.0
+Time-to-expiries (in years)
+(a) Liquid lattice Lliq.
+2002 2004 2006 2008 2010 2012 2014 2016 2018
+5000
+10000
+Index price
+EURO STOXX 50
+DAX
+2002 2004 2006 2008 2010 2012 2014 2016 2018
+0.0
+0.1
+1M ATM call option price (normalised)
+EURO STOXX 50
+DAX (b) Historical daily prices (underlying indices and 1M ATM call options).
+Figure 1: Scattergram of liquid option lattice and historical prices.
+DAX index appears to have a more positive drift3. Hence, we build a universal model for
+the factor dynamics but separate models for each index.
+Using k ∈{U,D} to distinguish data of EURO STOXX 50 index options and DAX
+options, we denote the observation times as 0 = t1 < ··· < tLk = Tk and let δt = ti −
+ti−1 = Tk/(Lk − 1) for all 2 ≤ i ≤ Lk. We split the Lk historical data samples into
+training/estimation samples {t1,...,tEk} and testing samples {tEk+1,...,tLk}. We use
+only the training samples for estimating a neural-SDE market model, while the testing
+samples will be used for testing performance of out-of-sample risk simulation, as detailed
+in Section 4.4. In Table 1, we list the details of the data used.
+Parameters #training samples Ek #testing samples Lk −Ek #options N δt
+Values 4296 (2002-01-01 − 2018-12-31) 253 (2019-01-01 − 2019-12-31) 130 1 day4
+Table 1: Details of the option data used.
+3.2 Factor decoding
+Suppose we observe price data Ck = (Ck lj) ∈ RLk×N with Ck lj = ˜ck tl(τj,mj) for k ∈{E,D}.
+Given the concatenated data C = [CE; CD] ∈ RL×N with L = LE+LD, we aim to construct
+factor data Ξ = (Ξli) ∈ RL×d with Ξli = ξi,tl. In particular, we represent C, with residuals
+Υ ∈ RL×N, by
+C = 1L ⊗ G0 + ΞG + Υ, (3.1)
+where 1L is an L-vector of ones, and ⊗ denotes the outer product of two vectors.
+Vega-weighted prices
+We call C − Υ the reconstructed prices, and the Frobenius norm ||Υ||F the reconstruction
+error. As in-the-money (ITM) and long-dated options have higher prices, the objective
+3Two factors contribute to the drift diﬀerence in the two indices: in addition to the fact that the two
+equity indices have diﬀerent constituent stocks, EURO STOXX 50 is a price return index while DAX is a
+total return index.
+4We use the Act/365 ﬁxed day count convention for converting δt = 1/365 to year fraction.
+7
+
+=== page 8 ===
+of minimising ||Υ||F is naturally more eﬀective in reducing relative calibration errors for
+ITM and long-dated option prices. To avoid overﬁtting ITM and long-dated option prices,
+practitioners often weight each option by the reciprocal of its Black–Scholes vega. In fact,
+using the approximation ∆C ≈ vega × ∆σimp, weighting prices by 1/vega approximately
+corresponds to measuring reconstruction errors in implied volatilities. To follow this ap-
+proach, we introduce a constant weight matrix Λ = diag (λ1,...,λN), and construct factors
+from CΛ instead, as the following two optimisation problems are equivalent:
+min
+Ξ,G
+‖‖‖ (C − 1L ⊗ G0 − ΞG) Λ ‖‖‖⇐⇒ min ˆΞ, ˆG ‖‖‖CΛ − 1L ⊗ ˆG0 −ˆΞ ˆG ‖‖‖.
+Now we associate the weight λ with the option vega. At time t, the Black–Scholes vega
+for the (τ,m)-option is
+Vt(τ,m) = d˜ct
+dσimp t (σimp t ; τ,m) = √τφ
+(
+− m
+σimp t √τ + 1 2σimp t √τ
+)
+> 0, (3.2)
+where φ(·) is the density of the standard normal distribution. This leads us to set
+λj = 1 ¯Vj , for each j, where ¯Vj = 1 L L∑ l=1 Vtl(τj,mj).
+Remark 3. Weighting price data by a constant matrix does not change the factor decod-
+ing algorithm (Algorithm 1 of [19]), except that the coeﬃcient and constant terms of the
+static arbitrage constraints (2.5) need to be revised. Speciﬁcally, we aim for a new factor
+representation Λct = G0 + G⊤ξt. Then the static arbitrage constraints Act ≥ˆb yield
+(
+AΛ−1) G⊤ξt ≥ bnew := ˆb − ( AΛ−1) G0.
+Nevertheless, for notational simplicity, we write C ← CΛ, A ← AΛ−1 and b ← bnew for
+the rest of the article.
+Primary and secondary factors
+While decoding more factors can improve the representation of call prices, it also leads to
+higher-dimensional models, which may over-parametrise the dynamics of noisy factors and
+lead to over-ﬁtting. To overcome these issues, we assume that some primary factors are
+modelled by the SDE (2.3) and other secondary factors are modelled as mean-reverting
+Ornstein–Uhlenbeck (OU) processes.
+We now investigate how many primary and secondary factors are needed for a reasonable
+representation of the call price data. In Section 4.3 of [19], we deﬁne three metrics to examine
+the quality of factor reconstruction, which are MAPE (mean absolute percentage error),
+PDA (proportion of dynamic arbitrage) and PSAS (proportion of statically arbitrageable
+samples)5. As discussed in the previous section, we use vega-weighted versions of these
+quantities in what follows. Applying the factor decoding algorithm (Algorithm 1 of [19]),
+we show the three metrics for a few combinations of using up to two factors in Table 2.
+5We recall that the MAPE and PSAS metrics are deﬁned by
+MAPE = 1 (L + 1)N
+L∑
+l=0
+N∑
+j=1
+⏐⏐⏐˜ctl (τj,mj)/¯Vj −G0j −∑d i=1 Gijξitl ⏐⏐⏐
+˜ctl (τj,mj)/¯Vj ,
+8
+
+=== page 9 ===
+Factors MAPE PDA PSAS
+Dynamic arb. 10.75% 2.20% 33.74%
+Dynamic arb. + Statistical acc. 4.61% 1.92% 8.26%
+Dynamic arb. + Static arb. 4.94% 1.99% 1.29%
+Statistical acc. 5.40% 13.07% 7.13%
+Statistical acc. + Dynamic arb. 5.40% 1.80% 8.13%
+Statistical acc. + Static arb. 4.82% 7.83% 0.30%
+Table 2: MAPE, PDA and PSAS metrics when including diﬀerent combinations of factors.
+Using only two factors, i.e. one statistical accuracy factor and one static arbitrage factor
+(last row in the table), we can represent the whole collection of call prices with reasonable
+accuracy. Note that the use of a static arbitrage factor is signiﬁcant in reducing the number
+of violations of the static arbitrage constraints, as evidenced by the corresponding reduction
+in PSAS. Since arbitrageable data samples are invalid inputs for the model inference and
+need to be thrown away, it is crucial to ensure a low PSAS. The high value of PDA is of
+less concern for real data and will be reduced further by including more secondary factors.
+Hence, we will restrict our attention to this simple three-factor model (i.e. two factors ξ, in
+addition to the stock index price), as it also allows us to demonstrate qualitative features
+of the model easily. See, however, Appendix B.1 for the analysis of a market model with
+three primary factors.
+We plot the price basis functions of these two factors, denoted as G1 and G2, as well as
+G0, the constant term of ˜c, in Figure 2. The points in the liquid lattice (in (τ,m) coordinates)
+are also shown on this plot. Here the real-valued functions G1 and G2 are obtained by
+interpolating the price basis vectors G1 and G2, and G0 is obtained by interpolating the
+normalised call prices averaged over time.
+m
+−0.2−0.1 0.0 0.1 0.2 τ 0.0 0.5
+1.0
+1.5
+2.0
+0.10
+0.15
+0.20
+0.25
+G0(τ, m)
+m
+−0.2−0.1 0.0 0.1 0.2 τ0.0 0.5
+1.0
+1.5
+2.0
+2
+4
+6
+8
+G1(τ, m)
+m
+−0.2−0.1 0.0 0.1 0.2 τ0.0 0.5
+1.0
+1.5
+2.0
+−0.5
+0.0
+0.5
+1.0
+G2(τ, m)
+Figure 2: Price basis functions of the normalised call price surface.
+Given these factors, we use the linear programming method (Caron, McDonald and
+Ponic [13]) to eliminate redundant constraints in the system AG⊤ξ ≥ b, which is the
+projection of the original no-arbitrage constraints, constructed in price space, to the R2
+factor space. This results in only 8 constraints, which we indicate as red dashed lines in
+PSAS = 1 −
+∑L
+l=0 1{AΛ−1 G⊤ξtl ≥b}
+L + 1 .
+The formula for PDA is somewhat involved, we refer readers to Section 4.3 of [19].
+9
+
+=== page 10 ===
+Figure 3. The convex polygonal domain bounded by these constraints (light green area) is
+the statically arbitrage-free zone for the factors, that is, provided the factor process remains
+in this region, we are guaranteed to have no static arbitrage in the reconstructed call prices
+on our liquid lattice Lliq. Shown in Figure 3 is also the cloud of factor realisation decoded
+from the market data. We observe that it has a qualitatively similar shape to that in [19]
+for simulated prices from a Heston SLV model.
+−0.02 0.00 0.02 0.04 0.06 0.08 0.10
+ξ1
+−0.05
+0.00
+0.05
+0.10
+ξ2
+Figure 3: Trajectory (black dots) of the primary R2 factors and the corresponding static arbitrage
+constraints (red dashed lines) projected to the R2 factor space.
+To further reduce the factor reconstruction error, we include a few more secondary fac-
+tors, whose dynamics are modelled as mean-reverting OU processes. We take the residuals
+from the reconstruction of call prices with two primary factors, and decode secondary factors
+consecutively (using PCA) from the residuals, with the objective of maximising statistical
+accuracy. In Figure 4, we show how various metrics change with the inclusion of more
+secondary factors. In the left most plot, the factor magnitude is deﬁned as the ratio of the
+min-max range of the corresponding factor over that of the ﬁrst primary factor, provided
+unit-norm price basis vectors. It measures the relative importance of each secondary factor
+compared to the ﬁrst primary factor, in reconstructing option prices. While MAPE and
+PDA decrease with inclusion of more secondary factors, PSAS is not always reduced. As
+an example, we choose to include 13 secondary factors resulting in MAPE = 0.48%, PDA
+= 0.06% and PSAS = 2.42%.
+Figure 4: Price reconstruction metrics with the inclusion of more secondary factors.
+Remark 4. PSAS initially increases with more secondary factors included and drops to zero
+eventually. This is because adding secondary factors leads to small perturbations of the
+price surface, potentially violating monotonicity and convexity and thus resulting in (small)
+arbitrages in reconstructed prices. In other words, the OU model for the secondary factors
+10
+
+=== page 11 ===
+does not necessarily rule out static arbitrage, particularly because their drift and diﬀusion
+do not satisfy Friedman and Pinsky’s condition. This is less important when choosing the
+number of secondary factors, ﬁrstly as we no longer need to remove arbitrageable data
+points to estimate their dynamics. Moreover, the magnitudes of secondary factors are much
+smaller than the primary ones (left most plot in Figure 4). In addition, we could always
+apply the arbitrage repair algorithm [18] to perturb our simulated secondary factors in order
+to restore monotonicity and convexity.
+3.3 Factor dynamics estimation
+The estimation of the SDE model for primary factors (2.3b) with static arbitrage constraints
+has been formulated as an unconstrained deep learning problem in Section 3 of [19]. In this
+study, we use the network architecture
+φθ = F2 ◦AReLU ◦F256 ◦AReLU ◦F256 ◦AReLU ◦F256, (3.3)
+with weight and bias parameters θ, where Fx is a fully connected layer, or aﬃne trans-
+formation, with x units, and Axxx is an activation function. Each layer F is parametric,
+but we omit the parameters for notational simplicity. In addition, to mitigate over-ﬁtting
+problems, we train both networks with 50% sparsity, meaning that the 50% smallest weights
+are pruned to zero. We implement and train our model using the standard tools within
+the Tensorﬂow [1] environment. In Figure 5, we show the evolution of training losses and
+validation losses6 over epochs during the training of the model. The loss value has a rapid
+decline for the ﬁrst a few epochs, and then gradually converges.
+0 5000 10000 15000 20000
+Epochs
+−4000
+−2000
+Loss history for model of ξ (primary)
+Training loss
+Validation loss
+Figure 5: Evolution of training losses and validation losses for the model of the primary factors.
+Next, we sample a few factor data points, and visualise their drift and diﬀusion coeﬃ-
+cients in Figure 6. As observed in the trajectory of the factor data in Figure 3, the dataset
+is distributed around a lower-dimensional manifold. For samples on the periphery of the
+dataset, the learnt drifts tend to point inwards to the manifold, while the principal direction
+of their diﬀusions tend to align with the closest boundary. This broadly agrees with the
+phenomena seen in synthetic data in [19].
+For each of the secondary factors, we discretise the OU model using the Euler–Maruyama
+scheme, which yields an AR(1) model with normal noises, and then ﬁt with the factor time
+series data using maximum likelihood estimation.
+6The ﬁrst 90% of the training samples are used for training and the last 10% are reserved as validation
+data.
+11
+
+=== page 12 ===
+−0.02 0.00 0.02 0.04 0.06 0.08
+ξ1
+−0.02
+0.00
+0.02
+0.04
+ξ2
+Drift
+−0.02 0.00 0.02 0.04 0.06 0.08
+ξ1
+−0.02
+0.00
+0.02
+0.04
+ξ2
+Diﬀusion
+Figure 6: Drift vectors (arrows on the left plot) and diﬀusion matrices (ellipses representing the principal
+components of the diﬀusion on the right plot) for some randomly selected factor data points.
+3.4 Underlying index dynamics estimation
+Let Xt = ln St, then the model for S (2.3a) implies, by Itˆo’s lemma,
+dXt = r(ξt) dt + γ(ξt) dW0,t, where r(ξt) = α(ξt) − 1 2γ2(ξt).
+Since drift estimation is well known to be noisy, we assume a constant drift for Xt, i.e,
+r(ξt) ≡r. With this assumption, an unbiased estimate for r is
+ˆr = 1 δt
+(
+1
+L− 1
+L−1∑
+l=1
+ln
+(Stl+1
+Stl
+))
+= 1 T ln (ST S0 ) . (3.4)
+Hence, for each underlying equity index, we ﬁrst estimate a constant drift using historical
+log-returns, and then train a neural-SDE model with only its diﬀusion represented by a
+neural network. In particular, for our training samples (from 2002-01-01 to 2018-12-31),
+ˆrU = −0.027, ˆrD = 0.071. Compared with the model for the primary factors, we use a
+smaller network φS,θ : R2 → R for the neural-SDE model of S:
+φS,θ = F2 ◦AReLU ◦F128 ◦AReLU ◦F128 ◦AReLU ◦F128. (3.5)
+In Figure 7, we show the evolution of training losses and validation losses over epochs during
+the training of the models for both EURO STOXX 50 index and DAX index. The loss value
+quickly drops during the ﬁrst 10 epochs, and slowly declines and converges within 50 epochs.
+To examine how well the neural network models the diﬀusion of S, we use a GARCH(1,1)
+model to estimate empirical volatilities and compare with the in-sample volatilties computed
+from the trained neural networks. As evidenced in Figure 8, the neural network models
+produce similar volatility dynamics.
+3.5 Analysis of historical residuals
+Historical residuals of the trained neural-SDE models (2.3) at time tl, for l = 1,...,L− 1,
+are computed by
+ˆZξ tl = σ−1(ξtl) ( ξtl+1 −ξtl −µ(ξtl)δt ) , ˆZS tl = γ−1(ξtl) ( ln Stl+1 Stl − ˆrδt ) .
+12
+
+=== page 13 ===
+0 200 400 600 800 1000
+Epochs
+−300
+−200
+−100
+0
+Loss history for model of S (EURO STOXX 50)
+Training loss
+Validation loss
+0 200 400 600 800 1000
+Epochs
+−300
+−200
+−100
+0
+Loss history for model of S (DAX)
+Training loss
+Validation loss
+Figure 7: Evolution of training losses and validation losses for the models of S.
+2002-01-02 2006-01-09 2009-12-22 2013-11-21 2017-10-30
+0.2
+0.4
+0.6
+0.8
+1.0
+Volatility estimates for EURO STOXX 50 index
+Neural network vol
+GARCH(1,1) vol
+2002-01-02 2005-12-02 2009-11-13 2013-10-15 2017-09-22
+0.2
+0.4
+0.6
+0.8
+1.0
+Volatility estimates for DAX index
+Neural network vol
+GARCH(1,1) vol
+Figure 8: Comparison of the volatility estimates for the option underlying indices.
+Our approximate likelihood corresponds to an assumption that (ZS t ,Zξ t ) are independent
+standard normal white noise. Therefore, it is worth checking if the estimated residuals
+( ˆZS t , ˆZξ t ) appear to be independent standard normals, within our training data. In Figure
+9, we show the normal QQ-plots of the empirical marginal distributions for the residuals.
+For the primary factors, their residuals show mild fat tails. For the underlying stock indices,
+their residuals appear slightly left-skewed, implying higher-than-expected probabilities for
+large loss.
+−4 −2 0 2 4
+Theoretical Quantiles
+−4
+−2
+0
+2
+4
+Sample Quantiles
+Residuals of ξ1
+EURO STOXX 50
+DAX
+−4 −2 0 2 4
+Theoretical Quantiles
+−4
+−2
+0
+2
+4
+Sample Quantiles
+Residuals of ξ2
+EURO STOXX 50
+DAX
+−4 −2 0 2 4
+Theoretical Quantiles
+−4
+−2
+0
+2
+4
+Sample Quantiles
+Residuals of ln S
+EURO STOXX 50
+DAX
+Figure 9: QQ-plots of historical in-sample model residuals.
+To investigate dependence between the historical residuals for each factor, we show in
+Figure 10 the scatter plots of each pair of residuals. The residuals among risk factors ξi
+look fairly uncorrelated, indicating that the trained neural nets have well captured factor
+covariances over time. However, there is evident negative correlation between the residuals
+13
+
+=== page 14 ===
+of ln S and ξ1, coinciding with the commonly seen leverage eﬀect [8]. In fact, we could
+capture the leverage eﬀect using the neural-SDE model where a full covariance matrix
+between (ln S,ξ) is speciﬁed, which consequently produces uncorrelated residuals — see
+Appendix B.2.
+−0.2 0.0 0.2
+Residuals of ξ1
+−0.4
+−0.2
+0.0
+0.2
+0.4
+Residuals of ξ2
+EURO STOXX 50
+DAX
+−0.2 0.0 0.2
+Residuals of ξ1
+−0.2
+0.0
+0.2
+Residuals of ln S
+EURO STOXX 50
+DAX
+−0.25 0.00 0.25
+Residuals of ξ2
+−0.2
+0.0
+0.2
+Residuals of ln S
+EURO STOXX 50
+DAX
+Figure 10: Scattter plots of historical in-sample model residuals.
+3.6 Out-of-sample simulation of factors and implied volatility surface
+We assess the learnt model’s ability to simulate time series data that are like the input real
+data. We take the trained model and simulate sample paths using a tamed7 Euler scheme
+(see Hutzenthaler, Jentzen and Kloeden [34]), which is given by
+ξt+δt = ξt+ µ(ξt) 1 + |µ(ξt)| √ δt δt+ σ(ξt) 1 + ‖σ(ξt)‖ √ δt Zξ t, ln St+δt St = ˆrδt+ γ(ξt) 1 + |γ(ξt)| √ δt ZS t , (3.6)
+where the values of µ, σ and γ are approximated by the trained neural networks. Rather
+than generating the innovations (ZS t ,Zξ t ) from normal distributions, we randomly sample
+them from historical residuals of the trained models. There are two major advantages
+of drawing innovations from historical residuals rather than normal distributions. First,
+historical residuals have fatter tails than normal (see Figure 9). Second, the joint historical
+residuals implicitly preserve the (potentially higher-order) dependence of (S,ξ) that fails to
+be captured by the covariance terms (see Figure 10).
+We show the time series of ξ in Figure 11 (right). In the scatter plot on the left of Figure
+11, we see that the dependence structure between ξ1 and ξ2 is well captured. In addition,
+the simulated factors remain within the no-arbitrage region, due to the hard constraints
+imposed on the drift and diﬀusion functions. We also simulate secondary factors from their
+ﬁtted OU processes, and check the similarity in distribution, as shown in Figure 12.
+The learnt model is also capable of simulating a variety of realistic patterns of implied
+volatility surface (IVS). As demonstrated in Figure 13, we pick a few IVS patterns observed
+in historical data and ﬁnd the closest (in the sense of minimising the 𝓁2 distance for ξ) ones
+in the simulated sample path.
+7We include the taming method simply to ensure stability of simulations if our neural networks were to
+produce unusually large values for drifts or volatilities.
+14
+
+=== page 15 ===
+−0.02 0.00 0.02 0.04 0.06 0.08
+ξ1
+−0.02
+0.00
+0.02
+0.04
+ξ2
+Trajectory of ξ (primary)
+Real
+Simulated
+0.00
+0.05
+Simulated ξ1t
+0 5000 10000
+t
+0.00
+0.05
+Simulated ξ2t
+0.00
+0.05
+Real ξ1t
+0 2500 5000 7500
+t
+0.00
+0.05
+Real ξ2t
+Figure 11: Simulation of primary factors from the learnt neural-SDE model, compared with the real data.
+0.00 0.02 0.04
+0
+100
+ξ3
+−0.02 0.00 0.02
+0
+100
+ξ4
+−0.02 0.00 0.02
+0
+50
+ξ5
+−0.02 0.00 0.02
+0
+200
+ξ6
+−0.02 0.00 0.02
+0
+100
+ξ7
+−0.02 0.00 0.02
+0
+200
+ξ8
+−0.02 0.00 0.02
+0
+100
+ξ9
+−0.02 0.00 0.02
+0
+200
+ξ10
+−0.02 0.00 0.02
+0
+200
+ξ11
+−0.02 0.00 0.02
+0
+200
+ξ12
+−0.02 0.00 0.02
+0
+100
+ξ13
+−0.02 0.00 0.02
+0
+100
+ξ14
+−0.02 0.00 0.02
+0
+200
+ξ15
+Real
+Simulation
+Figure 12: Distribution of OU-simulated and real secondary factors.
+−0.2 0.0 0.2
+0.50
+0.75
+Real
+τ1
+τ10
+−0.2 0.0 0.2
+Moneyness m
+0.4
+0.6
+Simulated
+(a) ES50 2008-10-17
+−0.2 0.0 0.2
+0.2
+0.3
+Real
+τ1
+τ10
+−0.2 0.0 0.2
+Moneyness m
+0.2
+0.3
+Simulated (b) ES50 2010-07-29
+−0.2 0.0 0.2
+0.25
+0.30
+0.35
+Real
+τ1
+τ10
+−0.2 0.0 0.2
+Moneyness m
+0.25
+0.30
+0.35
+Simulated (c) DAX 2002-05-29
+−0.2 0.0 0.2
+0.1
+0.2
+Real
+τ1
+τ10
+−0.2 0.0 0.2
+Moneyness m
+0.1
+0.2
+Simulated (d) DAX 2017-07-18
+Figure 13: Examples of real and simulated implied volatility surfaces.τ1 = 30 days and τ10 = 730 days.
+15
+
+=== page 16 ===
+3.7 VIX-like volatility index simulation
+We follow the CBOE VIX calculation methodology [14] to compute a volatility index from
+the real and simulated option prices. Speciﬁcally, VIX is a linear combination of OTM call
+and put option prices, which can be further written as a linear combination of call prices
+only, provided that put-call parity holds under no-arbitrage.
+In Figure 14, we compare the real historical distribution of (VIX, log-return of S) and
+one simulation using the trained market model. For the simulated VIX, both its marginal
+distribution and the joint distribution with the log-return of S look reasonably similar to
+those of the real data. This demonstrates that our model is capturing the dependence
+structure between the volatility index and the underlying S. Looking at the simulated time
+series of VIX and log-return of S, we see several occurrences of volatility clustering in the
+return series, which always coincide with high VIX values.
+10 20 30 40
+Volatility index
+−0.04
+−0.03
+−0.02
+−0.01
+0.00
+0.01
+0.02
+0.03
+0.04
+Log-return of S
+Data
+Real
+Simulation
+0 2000 4000
+20
+40
+Volatility index (simulation)
+0 2000 4000
+Time
+−0.1
+0.0
+0.1
+Log-return of S (simulation)
+0 1000 2000 3000 4000
+20
+40
+Volatility index (real)
+0 1000 2000 3000 4000
+Time
+−0.1
+0.0
+0.1
+Log-return of S (real)
+Figure 14: Simulation of the VIX-like volatility index and log-return of S (EURO STOXX 50 index),
+compared with the real data.
+4 Risk management
+As our market models are deﬁned and trained under the real-world measure, a natural
+application is to simulate risk scenarios for option portfolios. We explain how this is done,
+and compare its performance with the ﬁltered historical simulation method [27], which is
+a standard approach used widely for managing risk of futures and options by mainstream
+CCPs (see, for example, CME [17], Eurex [22] and LCH [38]).
+4.1 Measuring risk
+Consider a portfolio Π of N call options at time t with market value Πt = ∑N j=1 wjCt(Tj,Kj),
+where wj ⁄= 0 denotes the weight of the j-th call option in the portfolio. The proﬁt-and-loss
+(PnL) of the portfolio at time t + ∆t, for given time horizon ∆t, is then
+PnL∆t(Πt) = Πt+∆t−Πt =
+N∑
+j=1
+wj (Ct+∆t(Tj,Kj) −Ct(Tj,Kj)) =
+N∑
+j=1
+wjPnL∆t(Ct(Tj,Kj)).
+16
+
+=== page 17 ===
+For a chosen risk measure ϱ(·), time t and horizon ∆t, we evaluate the risk of the portfolio,
+ϱ(PnL∆t(Πt)), in broadly three steps:
+(1) Identify risk factors Θ and a value function V such that Πt ≈V (t, Θt).
+(2) Simulate Θ(m) t+∆t|Θt based on some dynamic model for Θt for m = 1,...,M, and
+compute Π(m) t+∆t ≈V (t + ∆t, Θ(m) t+∆t). Each Π(m) t+∆t is called a risk scenario.
+(3) For the m-th risk scenario, calculate the scenario PnL as V (t+∆t, Θ(m) t+∆t)−Πt, which
+is assumed to be a realisation of PnL∆t(Πt)|Θt. Therefore, the M scenario PnLs give
+an estimate of the empirical distribution8 of PnL∆t(Πt)|Θt, which the risk measure ϱ
+will be evaluated on.
+4.2 Risk simulation using the market model
+Our market models characterise option risk in terms of Θ = (S,ξ), for which the joint
+dynamics are given as the SDE system (2.3). After an oﬄine training of the SDE model, we
+discretise it and simulate the factors, which are subsequently translated to arbitrage-free
+option prices through simple linear transformations.
+More speciﬁcally, suppose we want to simulate prices for the (T,K)-call option at time
+t + ∆t. Then the simulation consists of the following steps:
+(1) Decode factors at time t. We collect prices of call options on the liquid lattice
+Lliq and normalise the prices using the time-t zero curve and futures curve. Given the
+price basis G⊤, we solve for ξt = (GG⊤)−1G(ct − G⊤ 0 ).
+(2) Simulate factors at time t + ∆t. Given the SDE model (2.3) for which the coeﬃ-
+cients are estimated by neural networks, we simulate S(m) t+∆t and ξ(m) t+∆t using the tamed
+Euler scheme (3.6) iteratively over ∆t/δt time steps, for m = 1,...,M.
+(3) Compute option prices at time t + ∆t. Under the m-th simulated scenario, we
+compute the normalised prices for the call options on Lliq as c(m) t+∆t = G⊤ 0 + G⊤ξ(m) t+∆t.
+Let h(τ,m; c) be some C1,2 function that interpolates the data (Lliq, c), then
+C(m) t+∆t(T,K) = S(m) t+∆t ×h
+(
+τt − ∆t,mt + ln St
+S(m) t+∆t ; c(m) t+∆t
+)
+,
+where τt = T −t and mt = ln(K/Ft(T )).
+Remark 5. Our model is written not in terms of prices C but in terms of the normalised
+prices ˜c. This transformation (2.1) involves discounting both for interest rates and dividends.
+While interest rates and dividends could be included as risk factors, they have only marginal
+impact on equity index options, especially when the longest expiry we consider is two years.
+We will therefore restrict our attention to the underlying risk and volatility risk. Therefore,
+we will evaluate risk of the revised option value Ct = St˜ct.
+8In general, the conditional distribution of PnL is not available in closed-form, otherwise one may be able
+to derive an analytical formula for the risk measure without simulation.
+17
+
+=== page 18 ===
+4.3 Filtered historical simulation with Heston models
+The historical simulation approach [4] simply uses historical changes of a collection of risk
+factors Θ = (x1,...,xd) to construct risk scenarios. In addition, historical changes of risk
+factors may be ﬁltered (or scaled) based on current volatility, so that the simulated risk
+scenarios are more responsive to recent market conditions. Speciﬁcally, suppose Ct(T,K) =
+V (T −t,K; Θt) and we want to simulate prices at t + ∆t. Then there are two steps:
+(1) Collect historical data of ∆t-returns rj in the j-th risk factor xj, for j = 1,...,d, over
+the last M timesteps, so we have rj(tm) for m = 1,...,M. Let σj(t) be some realised
+volatility estimate for the j-th risk factor at t. Then we deﬁne
+r(m) j (t + ∆t) = rj(tm) σj(t) σj(tm) (4.1)
+as the risk factor return under the m-th scenario, which leads to the corresponding
+risk factor scenario x(m) j (t + ∆t) by applying the return9 to xj(t).
+(2) Revalue the call option C(m) t+∆t(T,K) = V (T −t− ∆t,K; Θ(m) t+∆t).
+We use the parameters of calibrated Heston models [32] as risk factors. Speciﬁcally,
+we calibrate the Heston parameters Θ = (S0,ν0,θ,k,σ,ρ) as detailed in Appendix C to
+historical vega-weighted option prices, yielding historical observations of Θt, which are then
+used to simulate historical scenarios for option portfolios.
+4.4 Value-at-Risk backtesting analysis
+In order to assess the scenarios produced by risk simulation engines for a comprehensive
+set of risk proﬁles, we backtest various option portfolios ranging from outright options to
+heavily hedged portfolios. The list of tested portfolios is given in Table 3, with detailed
+description in Appendix D. We consider both long and short positions in each portfolio
+considered.
+Delta-exposed Delta-hedged
+Portfolio Outright Delta spread Risk reversal Delta butterﬂy Delta-hedged option Delta-neutral strangle Calendar spread VIX
+Number 140 420 60 20 60 60 90 2
+Table 3: Number of tested portfolios of various types.
+We have split the historical data into training and testing samples according to Table
+1. We use only the training samples for estimating the neural-SDE market model, which
+will then be used to calculate risks. As a measure of risk of a portfolio Π, we consider
+Value-at-Risk (VaR) at a given conﬁdence level α for a given time horizon ∆t, deﬁned as
+VaRα,∆t(Πt) = − sup {l∈ R : P (PnL∆t(Πt) <l) ≤ 1 −α}.
+9We use log returns if a risk factor is positive by deﬁnition, in which case x(m) j (t + ∆t) =
+xj(t) exp(r(m) j (t + ∆t)), or absolute return otherwise, in which case x(m) j (t + ∆t) = xj(t) + r(m) j (t + ∆t).
+18
+
+=== page 19 ===
+Given M risk simulation scenarios, the VaR is estimated by
+ˆVaRα,∆t(Πt) = − sup
+{
+l∈ R : 1 M M∑ m=1 1 { PnL(m) ∆t (Πt)<l } ≤ 1 −α } .
+For each testing sample t, we compute an ex-ante VaR forecast ˆVaRα,∆t(Πt), and observe
+an ex-post realised PnL∆t(Πt). Therefore, we can deﬁne the VaR breach
+β(Πt) = 1 {PnL∆t(Πt)<− ˆVaRα,∆t(Πt)}.
+The coverage ratio over the L testing periods is then computed as
+1 − 1 L−E L∑ l=E+1 β(Πtl).
+Prevailing VaR model backtesting methodologies mostly focus on two categories:
+(1) Coverage tests assess whether the empirical frequency of VaR breaches is consistent
+with the quantile of loss a VaR measure is intended to reﬂect. We use the widely
+cited Kupiec’s proportion of failures (PF) coverage test [37], which assumes the null
+H0 : E[β(Πt)|Θt] = 1 −α and models the VaR breach events in each testing sample
+as independent Bernoulli trials. In addition, we also consider the Basel Committee
+traﬃc light approach [6]: based on the number of breaches experienced for the 1-day
+VaR0.99 results during a 250-day testing window, the VaR measure is categorised as
+falling into the green (≤ 4), yellow (≥ 5 and ≤ 9) or red (≥ 10) zone.
+(2) Independence tests assess whether VaR breach events appear to be independent
+of each other. We use Christoﬀersen’s test [16] that considers unusually frequent
+consecutive breaches. Combining the test statistics of the Kupiec’s PF test and the
+Christoﬀersen’s independence test yields a conditional coverage (CC) mixed test [16].
+We compute VaR for horizons ∆t = 1, 2, 5 and 10 days, where 2-day and 5-day are typical
+margin periods of risk that European regulators require for risk-monitoring of exchange-
+traded and over-the-counter derivatives, respectively.
+We report the backtesting coverage and independence statistics for 1-day VaRs of EURO
+STOXX 50 index options at 0.99 and 0.95 conﬁdence levels in Table 4. We compute a
+coverage ratio for each of the tested option portfolios, and calculate its sample median and
+mean over the portfolios. The neural-SDE VaR model gives a higher mean coverage ratio
+over option portfolios, while much fewer portfolios fail the coverage and independence tests.
+At the 0.95 conﬁdence level, more portfolios fail the two-sided Kupiec PF coverage test than
+the one-sided version, indicating that both VaR models tend to overestimate risks, but the
+neural-SDE approach is less prone to underestimating risks (as indicated by the one-sided
+test failure rate of 9.39% v.s. 18.08%)10.
+To diagnose VaR coverage performances over diﬀerent option portfolios, we group port-
+folios with diﬀerent primary Greek-exposures, i.e. delta or vega, and examine whether
+10It is worth noting that since we reject the nulls in all the coverage and independence tests at the 0.05
+signiﬁcance level, a perfect VaR model is expected to fail for 5% of portfolios.
+19
+
+=== page 20 ===
+1-day VaR0.99 1-day VaR0.95
+nSDE FHS nSDE FHS
+Coverage ratio median 0.9921 0.9881 0.9484 0.9563
+Coverage ratio mean 0.9887 0.9742 0.9528 0.9321
+Kupiec PF (two-sided) 6.92% 25.23% 32.51% 33.69%
+Kupiec PF (one-sided) 6.92% 25.23% 9.39% 18.08%
+Christoﬀersen independence 0.70% 11.03% 6.10% 14.79%
+Conditional coverage 3.53% 24.88% 29.23% 34.39 %
+Basel committee traﬃc light 69.1% 29.7% 0.5% 62.4% 25.9% 10.8% N.A. N.A.
+Table 4: Summary statistics on coverage and independence tests for 1-day VaRs computed by the
+neural-SDE (nSDE) markert model and the ﬁltered historical simulation (FHS) approach. For the four
+statistical tests, i.e. Kupiec POF test (two-sided), Kupiec POF test (one-sided), Christoﬀersen’s
+independence test and conditional coverage mixed test, the table lists the percentage of the 852 tested
+option portfolios that fail each test at the 0.05 signiﬁcance level.
+their VaR breaches are synchronised during the testing window. In Figure 15, we show
+the time series of 1-day nSDE-VaR0.99 breaches for primarily delta-exposed option portfo-
+lios, and compare with positions in the underlying index. We see a few time points when
+VaR breaches happen simultaneously for multiple option portfolios, which correspond to
+synchronised VaR breaches or close-to-breaches in holding S.
+For delta-neutral and vega-exposed portfolios, we compare their VaR breaches with
+those of the VIX portfolio in Figure 16. There are few breaches observed, suggesting the
+VaR model is over conservative for these option types. We see some synchronised VaR
+breaches for vega-short positions in delta butterﬂies and the VIX. We perform a similar
+analysis for FHS-VaRs; as shown in Figure 30 in Appendix E, FHS-VaRs underestimate
+risks severely for most delta-hedged portfolios.
+While coverage and independence tests assess whether a VaR calculation approach
+achieves desirable statistical properties, regulators would also like to avoid over-procyclical
+VaR models. Procyclicality measures quantify variations in VaR values over the testing pe-
+riods. Common risk models are procyclical because they estimate higher risk for the same
+portfolio in times of market stress and lower risk in calm markets. While procyclicality
+might indicate that a model is responsive to contemporary market volatility, it may also be
+an artifact of a poorly calibrated model. Excessive procyclicality can cause liquidity stress,
+where parties posting margin have to ﬁnd additional liquid assets, often at times when it is
+most diﬃcult for them to do so. We use the trough-to-peak ratio11 proposed by the Bank of
+England [41] to measure procyclicality. After calculating the trough-to-peak ratio for each
+tested portfolio, we get a distribution of the ratio over our evaluated portfolios. In Figure
+17, we compare the trough-to-peak distributions computed from the neural-SDE and the
+FHS approach. The neural-SDE approach tends to produce less procyclical 1-day VaRs at
+both 0.99 and 0.95 conﬁdence levels. In particular, for 1-day VaR0.99, there is a substantial
+reduction in the number of portfolios with very low trough-to-peak ratio (corresponding to
+a high level of procyclicality) and an increase in the number of ratios above 0.6. Consistent
+results for other risk horizons and conﬁdence levels can be seen in Appendix E.
+11The orginal paper [41] uses peak-to-trough ratio, the ratio of the maximum risk of a constant portfolio
+to the minimum risk over a ﬁxed observation period. Here we take its reciprocal because for some heavily-
+hedged portfolio the minimum risk can be very close to 0, making the peak-to-trough ratio explode.
+20
+
+=== page 21 ===
+Figure 15: Times series of 1-day nSDE-VaR0.99 breaches (red dots) for delta-exposed option portfolios,
+compared with that for positions in the underlying index. (EURO STOXX 50 index option)
+Delta-hedged option
+Delta butterﬂy
+Delta-neutral strangle
+Calendar spread
+Long vega Short vega
+2019-01-02 2019-03-13 2019-05-27 2019-08-05 2019-10-14 2019-12-23
+Date
+−10
+−5
+0
+5
+10
+Long VIX
+VaR (long)
+Realised PnL
+2019-01-02 2019-03-13 2019-05-27 2019-08-05 2019-10-14 2019-12-23
+Date
+−10
+0
+10
+Short VIX
+VaR (short)
+Figure 16: Times series of 1-day nSDE-VaR0.99 breaches (red dots) for delta-neutral and vega-exposed
+option portfolios, compared with that for positions in the VIX portfolio.
+21
+
+=== page 22 ===
+0.0 0.2 0.4 0.6 0.8
+0
+50
+100
+150Number of option portfolios
+1-day VaR0.99
+Neural-SDE
+FHS
+0.0 0.2 0.4 0.6 0.8
+0
+100
+200Number of option portfolios
+1-day VaR0.95
+Neural-SDE
+FHS
+Figure 17: Distribution of trough-to-peak ratios (1-day VaRs) over diﬀerent tested option portfolios.
+While more backtesting results for 2-day, 5-day and 10-day VaRs and those for DAX
+options are reported in Appendix E, here we brieﬂy summarise the backtesting results for
+10-day VaRs of EURO STOXX 50 index options in Table 512. Similar to the observations
+of 1-day VaRs, the neural-SDE approach leads to less portfolios that fail the one-sided
+coverage test, the independence test and the conditional coverage test (the nulls are rejected
+at the 0.05 signiﬁcance level for all tests). This indicates that the neural-SDE approach
+has consistently superior performance for long-horizon 0.99-conﬁdence VaR calculation. For
+0.95-conﬁdence VaR, the neural-SDE approach is more conservative than the FHS approach,
+and the results are more mixed than in the 1-day case.
+10-day VaR0.99 10-day VaR0.95
+nSDE FHS nSDE FHS
+Coverage ratio median 1.0000 0.9918 0.9712 0.9637
+Coverage ratio mean 0.9963 0.9800 0.9584 0.9464
+Kupiec PF (two-sided) 4.10% 17.92% 51.52% 37.12%
+Kupiec PF (one-sided) 4.10% 17.92% 10.07% 14.05%
+Table 5: Summary statistics on coverage tests for 10-day VaRs computed by the neural-SDE (nSDE)
+market model and the ﬁltered historical simulation (FHS) approach.
+4.5 Computation time comparison
+We have carried out the backtesting analysis on a 2.4GHz 8-core Intel Core i9-9980HK CPU
+with 32GB RAM, and summarised the average elapsed time for simulating one risk scenario
+per backtested day in Table 6.
+Simulate & revaluation Repair arbitrage
+nSDE FHS (Heston) nSDE FHS (Heston)
+Expected time (ms) 5.0 147.3 14.3 N.A.
+Std. time (ms) 0.3 58.7 7.1 N.A.
+Table 6: Average and standard deviation of the elapsed time for simulation one risk scenario.
+In the FHS approach, evaluating option portfolios with simulated risk factor, i.e. the
+Heston parameters, is most time-consuming. We perform this by calling the eﬃciently im-
+12Given we consider breaches in overlapping 10-day periods, the Christoﬀersen independence test is not
+applicable.
+22
+
+=== page 23 ===
+plemented Matlab function optByHestonNI [40], which gives the option price by Heston
+model using numerical integration. In contrast, the nSDE approach evaluates option port-
+folios through a simple linear combination of simulated risk factors. This is the reason why
+the time for simulation and revaluation is reduced from 147.3 ms to 5.0 ms. The nSDE
+approach has an additional step of detecting and repairing arbitrage in the simulated op-
+tion prices, which however is computationally cheap due to the eﬃcient linear programming
+problem formulation in [18].
+5 Conclusions and further extensions
+We estimate a neural-SDE market model using historical price data of EURO STOXX 50
+and DAX index options, the top two most traded equity options listed on Eurex. We as-
+sess the in-sample goodness-of-ﬁt quality by investigating the neural network training loss
+convergence, the post-ﬁtting historical residuals, and the comparison between the volatil-
+ity estimates for ln S with the benchmark GARCH(1,1) estimates. Thereafter, we verify
+that the trained model can forward simulate long trajectories of option price (or implied
+volatility) data that have similar marginal and joint distributions to historical data. By
+backtesting the option portfolio VaR generated from the trained neural-SDE market model
+in an out-of-sample setting, we ﬁnd that the model beats the traditional ﬁltered historical
+approaches with statistically more eﬃcient coverage, less procyclicality and less computa-
+tional eﬀorts; and this is consistently true for VaRs computed with various risk horizons
+and conﬁdence levels.
+While seeing the success in applying the neural-SDE market model in simulation and
+risk management, there remain directions to extend the current framework for a wider range
+of applications. For example, a simple and straightforward extension is to examine other
+risk measures such as expected shortfall. Second, in order to model option types other than
+European vanillas, it is necessary to derive arbitrage constraints among those options, or
+to modify the approach taken accordingly.
+A Data pre-processing
+Typical data vendors13 provide historical EOD (end-of-day) option prices with parameters in the
+format of a ﬁxed set of representative time-to-expiries and Black–Scholes deltas, instead of traded
+expiries and strikes. This format is popular in industry, as it saves users great eﬀorts in building
+historical implied volatility surfaces, which otherwise requires the users themselves to reconcile traded
+option contracts that are changing over time.
+This data format is also appealing to our modelling approach, though the raw data need to be
+pre-processed to (1) get rid of static arbitrage, and (2) interpolate prices to a ﬁxed set of moneyness
+parameters. We now explain how we pre-process the OptionMetrics dataset as described in Section
+3.1.
+We use the arbitrage detection method of our previous work [18] to construct static arbitrage
+constraints in terms of option prices, and check the violation of these constraints by the data over
+time. In Figure 18, we show the histogram for the number of constructed arbitrage constraints and
+what percentage of them are violated over time. On average, there are about 3668 constraints per
+13For example, OptionMetrics (https://wrds-www.wharton.upenn.edu/pages/about/data-vendors/
+optionmetrics/), IVolatility (https://www.ivolatility.com/home.j), Nasdaq Data Link (https://data.
+nasdaq.com/data/OWF-optionworks-futures-options/documentation), Bloomberg, etc.
+23
+
+=== page 24 ===
+day. Historical option prices are almost free of static arbitrage after October 2008, before which
+there were about 8 ∼ 9% of constraint violations, in the worst cases, in 2002 and 2006.
+2002-01-02 2005-12-02 2009-11-10 2013-10-10 2017-09-18
+Date
+0.0%
+2.0%
+4.0%
+6.0%
+8.0%
+Percentage of the number of violated constraints
+3500 4000 4500
+Number of arbitrage constraints
+0
+250
+500
+750
+1000
+Histogram of the number of constraints
+Mean
+Figure 18: Statistics on the static arbitrage constraints violation for EURO STOXX 50 index option
+price data.
+We use historical median moneynesses to deﬁne our liquid option lattice Lliq (as shown in Figure
+1a), and interpolate prices to the ﬁxed set of moneyness parameters. In Figure 19, we show boxplots
+of moneynesses that are calculated over time for the ﬁxed set of 13 deltas and 10 time-to-expiries.
+The closer to the money a delta is, the less variation we observe in the corresponding moneyness.
+This implies that less interpolation error is introduced to prices for close-to-the-money options,
+assuming a C2 convex price curve over moneyness. We use cubic splines to interpolate the call
+option price curve over moneyness for each expiry.
+−0.25 0.00 0.25
+m
+∆1
+∆2
+∆3
+∆4
+∆5
+∆6
+∆7
+∆8
+∆9
+∆10
+∆11
+∆12
+∆13
+τ1 = 30 days
+−0.25 0.00
+m
+∆1
+∆2
+∆3
+∆4
+∆5
+∆6
+∆7
+∆8
+∆9
+∆10
+∆11
+∆12
+∆13
+τ2 = 60 days
+−0.25 0.00 0.25
+m
+∆1
+∆2
+∆3
+∆4
+∆5
+∆6
+∆7
+∆8
+∆9
+∆10
+∆11
+∆12
+∆13
+τ3 = 91 days
+−0.25 0.00 0.25
+m
+∆1
+∆2
+∆3
+∆4
+∆5
+∆6
+∆7
+∆8
+∆9
+∆10
+∆11
+∆12
+∆13
+τ4 = 122 days
+−0.25 0.00 0.25
+m
+∆1
+∆2
+∆3
+∆4
+∆5
+∆6
+∆7
+∆8
+∆9
+∆10
+∆11
+∆12
+∆13
+τ5 = 152 days
+−0.25 0.00 0.25
+m
+∆1
+∆2
+∆3
+∆4
+∆5
+∆6
+∆7
+∆8
+∆9
+∆10
+∆11
+∆12
+∆13
+τ6 = 182 days
+−0.25 0.00 0.25
+m
+∆1
+∆2
+∆3
+∆4
+∆5
+∆6
+∆7
+∆8
+∆9
+∆10
+∆11
+∆12
+∆13
+τ7 = 273 days
+−0.5 0.0
+m
+∆1
+∆2
+∆3
+∆4
+∆5
+∆6
+∆7
+∆8
+∆9
+∆10
+∆11
+∆12
+∆13
+τ8 = 365 days
+−0.5 0.0
+m
+∆1
+∆2
+∆3
+∆4
+∆5
+∆6
+∆7
+∆8
+∆9
+∆10
+∆11
+∆12
+∆13
+τ9 = 547 days
+−0.5 0.0 0.5
+m
+∆1
+∆2
+∆3
+∆4
+∆5
+∆6
+∆7
+∆8
+∆9
+∆10
+∆11
+∆12
+∆13
+τ10 = 730 days
+Figure 19: Boxplots of the moneynesses m corresponding to the 13 deltas for the 10 time-to-expiries.
+∆1 = 0.2, ∆13 = 0.8, and consecutive deltas have a 0.05 increment.
+After interpolating option prices to the liquid lattice Lliq for each historical date, we check the
+amount of static arbitrage in the interpolated prices and present the fraction of arbitrage constraint
+violation in Figure 20. Compared with Figure 18, the interpolation has introduced extra arbitrage
+for a few days, but in the worst case the introduced violation percentage is not greater than 2%.
+24
+
+=== page 25 ===
+Thereafter, we perturb arbitrageable prices using the 𝓁1-repair method [18] to get arbitrage-free
+prices.
+2002-01-02 2005-12-02 2009-11-10 2013-10-10 2017-09-18
+Date
+0.0%
+2.0%
+4.0%
+6.0%
+8.0%
+Percentage of the number of violated constraints
+Figure 20: Statistics on the static arbitrage constraints violation for EURO STOXX 50 index option
+prices interpolated to the liquid lattice Lliq.
+B Alternative model conﬁgurations
+Apart from the market model discussed in the main text, we present two alternative models that
+diﬀer in the number of primary factors chosen and the dependence between S and ξ. We also show
+their corresponding VaR backtesting results in Appendix E, which perform slightly worse than the
+model presented in the main text.
+B.1 A three-primary-factor market model
+In Table 7, we display the types of the three primary factors ξ = [ξ1 ξ2 ξ3]⊤ ∈ R3 we use for
+representing call option prices, as well as the resultant MAPE, PDA and PSAS. Compared with the
+two primary factors (last row in Table 2), the additional dynamic arbitrage factor reduces dynamic
+arbitrage by 6.1% and MAPE in price reconstruction error by 0.56%, but introduces 0.55% more
+static arbitrage. In Figure 21, we plot the corresponding price basis functions of these three factors.
+Factors MAPE PDA PSAS
+Dynamic arb. + Statistical acc. + Static arb. 4.26% 1.73% 0.85%
+Table 7: MAPE, PDA and PSAS metrics when including three primary factors.
+In Figure 22, the black dots give trajectories of (ξi,ξj) for i,j ∈{1, 2, 3}. For each (i,j), we also
+indicate boundaries of the polygon, that is, the 2D aﬃne projection of the 3D arbitrage-free state
+space for ξ. Speciﬁcally, let P be the R3-polytope state space for the factors ξ formed by the static
+arbitrage constraints, then the aﬃne projection of this polytope onto the (ξi,ξj)-space is given by
+πi,j(P) =
+{
+y∈ R2 : ∃ξ = (ξk) ∈P,y = [ξi ξj]⊤} .
+We plot the boundaries ∂πi,j(P) as red dashed lines in Figure 22. These boundaries (which are, in
+some sense, as wide as possible) suggest how tight the arbitrage bounds are.
+We take the three factors and model their dynamics using neural-SDEs. After training the
+models, we forward-simulate 10, 000 timesteps, and compare the pairwise joint distribution of the
+simulated factors and that of the real data, as shown in Figure 23. The trained neural-SDE model
+seems to be capable of simulating long trajectory of the three factors that are similar to the real
+data, at least in terms of pairwise joint distribution.
+25
+
+=== page 26 ===
+m
+−0.2−0.1 0.0 0.1 0.2 τ0.0 0.5
+1.0
+1.5
+2.0
+2
+4
+6
+8
+G1(τ, m)
+m
+−0.2−0.1 0.0 0.1 0.2 τ0.0 0.5
+1.0
+1.5
+2.0
+−0.5
+0.0
+0.5
+1.0
+1.5
+2.0
+G2(τ, m)
+m
+−0.2−0.1 0.0 0.1 0.2 τ0.0 0.5
+1.0
+1.5
+2.0
+−0.2
+0.0
+0.2
+0.4
+0.6
+G3(τ, m)
+Figure 21: Price basis functions of the normalised call price surface.
+−0.025 0.000 0.025 0.050 0.075
+ξ1
+−0.05
+0.00
+0.05
+0.10
+ξ2
+∂π1,2(P)
+−0.025 0.000 0.025 0.050 0.075
+ξ1
+−0.05
+0.00
+0.05
+ξ3
+∂π1,3(P)
+−0.05 0.00 0.05 0.10
+ξ2
+−0.05
+0.00
+0.05
+ξ3
+∂π2,3(P)
+Figure 22: Trajectory (black dots) of the primary R3 factors and the corresponding static arbitrage
+constraints (red and orange dashed lines), projected onto R2 spaces.
+Figure 23: Joint distribution of pairs of the simulated primary factors, compared with that of the real
+data.
+B.2 Modelling and estimating S and ξ jointly
+We build and estimate an SDE model for ˜ξ = (ln S,ξ) with a fully-speciﬁed diﬀusion matrix; in fact,
+the model (2.3) is a special case with a block-diagonal diﬀusion matrix. Given ξ ∈ Rd, compared
+with the model (2.3), the joint model has d more R-valued functions to estimate in the diﬀusion
+term, which captures dynamic correlation between ln S and each of the d factors.
+For estimating the joint model, we still use the concatenated data (of EURO STOXX 50 and
+26
+
+=== page 27 ===
+DAX options) for training the neural nets. We assume that the two stock index processes have
+the same diﬀusion function with respect to ξ but diﬀerent constant drifts estimated by (3.4). This
+enables us to use the concatenated stock index data to estimate a universal volatility function for
+the two indices. In Figure 24, we show the loss history of training the neural nets. Both the training
+and validation losses decline rapidly over the ﬁrst 1000 epochs and then converge gradually.
+0 5000 10000 15000 20000
+Epochs
+−6000
+−4000
+−2000
+Loss history for model of ξ (primary)
+Training loss
+Validation loss
+Figure 24: Evolution of training losses and validation losses for the joint model of ln S and ξ.
+To see that the joint model has reasonably captured covariances between the underlying and the
+the factors, we show in Figure 25 the scatter plots of all pairs of model residuals. Compared with
+Figure 10, the joint model takes into account the leverage eﬀect and leaves no correlation between
+residuals of ln S and ξ1.
+−0.25 0.00 0.25
+Residuals of ξ1
+−0.4
+−0.2
+0.0
+0.2
+Residuals of ξ2
+EURO STOXX 50
+DAX
+−0.25 0.00 0.25
+Residuals of ξ1
+−0.2
+0.0
+0.2
+Residuals of ln S
+EURO STOXX 50
+DAX
+−0.4 −0.2 0.0 0.2
+Residuals of ξ2
+−0.2
+0.0
+0.2
+Residuals of ln S
+EURO STOXX 50
+DAX
+Figure 25: Scattter plots of historical in-sample model residuals.
+C Heston model calibration results and historical scenarios
+Heston models are constructed from the SDE
+dSt = rtSt dt + √νtSt dWS t , (C.1a)
+dνt = k(θ−νt) dt + σ√νt dWν t , d⟨WS t ,Wν t ⟩ = ρ dt, (C.1b)
+We re-write the variance process (C.1b) as
+dνt = k(θ−νt) dt + η√νt dWS t + λ√νt dW ⊥ t , d⟨WS t ,W ⊥ t ⟩ = 0,
+where η = −σρ, λ = σ
+√
+1 −ρ2. We characterise option price surfaces by the parameters Θ =
+(S0,ν0,θ,k,η,λ). On each historical date t, we calibrate parameters for a Heston model by solving
+ˆΘt = arg min
+Θ
+N∑
+j=1
+1
+Vt(τj,mj)
+(
+cΘ(τj,mj) − ˜ct(τj,mj) )2 ,
+27
+
+=== page 28 ===
+where V is the option vega calculated through (3.2). In Figure 26, we show the time series of the
+calibrated parameters and calibration errors, measured by MAPE, for historical price data of EURO
+STOXX 50 index options. Since ν0, θ, k and λ are positive by construction, we include the positivity
+constraint for these parameters during the calibration. While η can be positive or non-positive, the
+calibrated result is always positive, implying negative correlations ρ between the index and volatility
+over time.
+2002-01-02 2009-12-30 2017-11-03
+0
+1
+ν0
+2002-01-02 2009-12-30 2017-11-03
+0.1
+0.2
+0.3
+θ
+2002-01-02 2009-12-30 2017-11-03
+0
+10
+20
+k
+2002-01-02 2009-12-30 2017-11-03
+0
+2
+4
+η
+2002-01-02 2009-12-30 2017-11-03
+0.0
+2.5
+5.0
+λ
+2002-01-02 2009-12-30 2017-11-03
+0.0%
+2.0%
+MAPE
+Figure 26: Heston model calibrated parameters and calibration errors (measured as mean absolute
+percentage error) for historical price data of EURO STOXX 50 index options.
+Given that all risk factors are positive, we compute their 1-day log-returns, based on which we
+estimate the exponentially weighted moving average (EWMA) volatilities with time decay factor
+0.95. We plot the EWMA 1-day volatility estimates over the estimation window in Figure 27. The
+RiskMetrics Technical document [39] suggests a value of 0.94 for the decay factor when estimating
+daily volatility. Nevertheless, in order to make the FHS-VaR and the nSDE-VaR more comparable,
+we optimise the choice of the decay factor by minimising the Wasserstein distance between the
+resulting EWMA vol and the in-sample neural-SDE vol in S (as shown in Figure 8). This yields the
+decay factor 0.95. Dividing the returns by the volatility estimates, we obtain historical standardised
+residuals, or historical shocks, as shown in Figure 28. The standardised residuals appear to be
+roughly stationary over time and do not exhibit volatility clustering. In order to generate risk
+scenarios for each t in the testing window, we multiply these historical shocks by the time-t 1-day
+EWMA volatility, as described in (4.1), and apply these ﬁltered returns to the time-t risk factors,
+as if these historical shocks actually occurred.
+2002-01-04 2010-01-05 2017-11-07
+0.25
+0.50
+ν0
+2002-01-04 2010-01-05 2017-11-07
+0.1
+0.2
+θ
+2002-01-04 2010-01-05 2017-11-07
+0.0
+0.5
+k
+2002-01-04 2010-01-05 2017-11-07
+0.25
+0.50
+η
+2002-01-04 2010-01-05 2017-11-07
+0.25
+0.50
+0.75
+λ
+2002-01-04 2010-01-05 2017-11-07
+0.02
+0.04
+S0
+Figure 27: EWMA 1-day volatility estimates (with time decay factor 0.95) for the Heston risk factors for
+EURO STOXX 50 index options.
+28
+
+=== page 29 ===
+2002-01-04 2010-01-05 2017-11-07
+−10
+0
+10
+ν0
+2002-01-04 2010-01-05 2017-11-07
+−10
+0
+10
+θ
+2002-01-04 2010-01-05 2017-11-07
+−10
+0
+10
+k
+2002-01-04 2010-01-05 2017-11-07
+−10
+0
+10
+η
+2002-01-04 2010-01-05 2017-11-07
+−10
+0
+10
+λ
+2002-01-04 2010-01-05 2017-11-07
+−10
+0
+10
+S0
+Figure 28: Standardised residuals of the Heston risk factors for EURO STOXX 50 index options.
+D Tested option portfolios for risk simulation
+To assess performance of a risk model, we backtest its risk evaluation of a variety of representative
+trading strategies. In particular, deﬁning a set of deltas D = {0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8} and a set
+of time-to-expiries T = {30, 60, 91, 122, 152, 182, 273, 365, 547, 730} (in calendar days), we consider:
+(1) Outright call option C(τ, ∆) with all deltas ∆ ∈D and all time-to-expiries τ ∈T . There are
+in total 7 × 10 = 70 outright test strategies.
+(2) Delta spread C(τ, ∆1) −C(τ, ∆2) with all distinguished delta pairs ∆1 > ∆2 ∈D and all
+time-to-expiries τ ∈T . There are in total
+(7
+2
+)
+× 10 = 210 delta spread test strategies.
+(3) Delta butterﬂy C(τ, ∆) + C(τ, 1 − ∆) − 2 ×C(τ, 0.5) with all deltas ∆ ∈D\{0.5} and all
+time-to-expiries τ ∈T . There are in total 3 × 10 = 30 delta butterﬂy spread test strategies.
+(4) Delta-hedged option C(τ, ∆) − ∆ ×S with ∆ = 0.5 and all time-to-expiries τ ∈T . There are
+in total 1 × 10 = 10 delta-hedged option test strategies.
+(5) Delta-neural strangle C(τ, ∆) + C(τ, 1 − ∆) −S with all deltas ∆ ∈D\{0.5} and all time-to-
+expiries τ ∈T . There are in total 3 × 10 = 30 delta-neutral strangle test strategies.
+Note that a typical delta-neutral straggle involves simultaneously buying a call and a put, i.e.
+C(τ, ∆) + P (τ,−∆). Here we use put-call parity to express such straddles in terms of only
+calls and the underlyings, ignoring cash components.
+(6) Risk reversal C(τ, ∆) −C(τ, 1 − ∆) + S with all deltas ∆ ∈{0.2, 0.3, 0.4} and all time-to-
+expiries τ ∈T . There are in total 3 × 10 = 30 risk reversal test strategies.
+Note that a typical risk reversal consists of buying an OTM call and selling an OTM put, i.e.
+C(τ, ∆) −P (τ,−∆). Here we use put-call parity to express such straddles in terms of only
+calls and the underlyings, ignoring cash components.
+(7) Calendar spread C(τ1, ∆) −C(τ2, ∆) with ∆ = 0.5 and all distinguished time-to-expiry pairs
+τ1 >τ2 ∈T . There are in total 1 ×
+(10
+2
+)
+= 45 calendar spread test strategies.
+(8) VIX, which is a linear combination of OTM call and put option prices, and can be further
+written as a linear combination of call prices only, provided that put-call parity holds under
+no-arbitrage; see details in [14].
+In total, as we consider both long and short positions, there are = 2 × (70 + 210 + 30 + 10 + 30 +
+30 + 45 + 1) = 852 tested trading strategies. Among the tested trading strategies, delta butterﬂies,
+delta-hedged options, delta-neutral strangles and calendar spreads have low values of Black–Scholes
+delta.
+29
+
+=== page 30 ===
+E More VaR backtesting results
+We show backtesting results, using the model in the main text, for 2-day, 5-day and 10-day VaRs
+for EURO STOXX 50 index option portfolios in Table 8. Similarly, we show backtesting results
+for 1-day, 2-day, 5-day and 10-day VaRs for DAX option portfolios in Table 9. Aligned with our
+observation in the main text, the nSDE-VaR model outperforms the FHS-VaR approach through
+the backtesting analysis in almost all metrics.
+2-day VaR0.99 2-day VaR0.95 5-day VaR0.99 5-day VaR0.95
+nSDE FHS nSDE FHS nSDE FHS nSDE FHS
+Coverage ratio median 0.9960 0.9920 0.9602 0.9602 0.9960 0.9879 0.9677 0.9637
+Coverage ratio mean 0.9950 0.9800 0.9602 0.9402 0.9944 0.9798 0.9618 0.9464
+Kupiec PF (two-sided) 0.12% 13.11% 38.29% 35.71% 1.41% 12.76% 45.08% 37.12%
+Kupiec PF (one-sided) 0.12% 13.11% 7.26% 15.69% 1.41% 12.76% 7.61% 14.05%
+Table 8: Summary statistics on coverage tests for 2-day and 5-day VaRs computed by the neural-SDE
+(nSDE) market model and the ﬁltered historical simulation (FHS) approach. These results are for EURO
+STOXX 50 index options.
+1-day VaR0.99 1-day VaR0.95
+nSDE FHS nSDE FHS
+Coverage ratio median 0.9881 0.9841 0.9484 0.9524
+Coverage ratio mean 0.9872 0.9726 0.9556 0.9314
+Kupiec PF (two-sided) 14.64% 19.56% 33.49% 34.19%
+Kupiec PF (one-sided) 14.64% 19.56% 6.21% 18.03%
+Christoﬀersen independence 0.47% 7.61% 4.68% 10.42%
+Conditional coverage 8.31% 19.44% 22.60% 33.49 %
+Basel committee traﬃc light 67.3% 31.1% 0.8% 56.9% 28.7% 12.9% N.A. N.A.
+2-day VaR0.99 2-day VaR0.95 5-day VaR0.99 5-day VaR0.95
+nSDE FHS nSDE FHS nSDE FHS nSDE FHS
+Coverage ratio median 0.9960 0.9920 0.9681 0.9482 0.9960 0.9839 0.9758 0.9637
+Coverage ratio mean 0.9903 0.9811 0.9602 0.9335 0.9928 0.9778 0.9644 0.9453
+Kupiec PF (two-sided) 8.31% 13.93% 54.33% 37.00% 0.00% 14.40% 58.90% 42.62%
+Kupiec PF (one-sided) 8.31% 13.93% 10.42% 20.37% 0.00% 14.40% 8.78% 14.64%
+10-day VaR0.99 10-day VaR0.95
+nSDE FHS nSDE FHS
+Coverage ratio median 1.0000 0.9794 0.9671 0.9630
+Coverage ratio mean 0.9949 0.9742 0.9659 0.9367
+Kupiec PF (two-sided) 0.12% 22.72% 43.44% 37.59%
+Kupiec PF (one-sided) 0.12% 22.72% 7.61% 20.37%
+Table 9: Summary statistics on coverage tests for 2-day, 5-day and 10-day VaRs computed by the
+neural-SDE (nSDE) market model and the ﬁltered historical simulation (FHS) approach. These results are
+for DAX options.
+In Figure 29 and 30, we show the time series of 1-day FHS-VaR0.99 breaches for delta-exposed and
+vega-exposed option portfolios respectively, and compare with those for positions in the underlying
+index and the VIX portfolio. These are results for EURO STOXX 50 index options, and are
+supposed to provide a comparison with Figure 15 and 16. The FHS-VaRs tend to have poor coverage
+performance for delta-hedged option portfolios.
+In addition to the coverage and independence test results, in Figure 31 and 32, we show the
+comparison of more procyclicality results produced by the nSDE-VaRs and the FHS-VaRs for both
+30
+
+=== page 31 ===
+Figure 29: Times series of 1-day FHS-VaR0.99 breaches (red dots) for delta-exposed option portfolios,
+compared with that for positions in the underlying index.
+Delta-hedged option
+Delta butterﬂy
+Delta-neutral strangle
+Calendar spread
+Long vega Short vega
+2019-01-02 2019-03-13 2019-05-27 2019-08-05 2019-10-14 2019-12-23
+Date
+−10
+0
+10
+Long VIX
+VaR (long)
+Realised PnL
+2019-01-02 2019-03-13 2019-05-27 2019-08-05 2019-10-14 2019-12-23
+Date
+−10
+0
+10
+Short VIX
+VaR (short)
+Figure 30: Times series of 1-day FHS-VaR0.99 breaches (red dots) for delta-neutral and vega-exposed
+option portfolios, compared with that for positions in the VIX portfolio.
+index options. The nSDE-VaRs are consistently less procyclical than the FHS-VaRs in all scenarios.
+Finally, we compare the VaR backtesting results for EURO STOXX 50 index options generated
+by the neural-SDE models with diﬀerent conﬁgurations. Speciﬁcally, we have described the model
+with three primary factors (referred to as “nSDE-3”) in Appendix B.1 and the model where a full
+diﬀusion matrix of (S,ξ) is speciﬁed (referred to as “nSDE-J”) in Appendix B.2. In Table 10, we list
+31
+
+=== page 32 ===
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8
+0
+100
+200Number of option portfolios
+2-day VaR0.99
+Neural-SDE
+FHS
+0.0 0.2 0.4 0.6 0.8
+0
+50
+100
+150Number of option portfolios
+2-day VaR0.95
+Neural-SDE
+FHS
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8
+0
+100
+200Number of option portfolios
+5-day VaR0.99
+Neural-SDE
+FHS
+0.0 0.2 0.4 0.6 0.8
+0
+100
+200Number of option portfolios
+5-day VaR0.95
+Neural-SDE
+FHS
+0.0 0.2 0.4 0.6 0.8
+0
+100
+200Number of option portfolios
+10-day VaR0.99
+Neural-SDE
+FHS
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8
+0
+100
+200Number of option portfolios
+10-day VaR0.95
+Neural-SDE
+FHS
+Figure 31: Distribution of trough-to-peak ratios over diﬀerent tested portfolios of options on the EURO
+STOXX 50 index.
+the statistics on coverage and independence tests for 1-day, 2-day and 5-day VaRs computed by the
+two models. Compared with the original model for which the related 1-day VaR backtesting results
+are shown in Table 4, the 3-factor model slightly outperforms the original 2-factor model for most
+tests, with 17.3% more portfolios in the green zone. Nevertheless, when compared with the original
+model for which the related 2-day and 5-day VaR backtesting results are shown in Table 8, neither
+the 3-factor model nor the original 2-factor model is signiﬁcantly better than the other.
+1-day VaR0.99 1-day VaR0.95
+nSDE-3 nSDE-J nSDE-3 nSDE-J
+Coverage ratio median 0.9881 0.9960 0.9643 0.9742
+Coverage ratio mean 0.9891 0.9911 0.9603 0.9667
+Kupiec PF (two-sided) 4.68% 11.12% 28.81% 51.41%
+Kupiec PF (one-sided) 4.68% 11.12% 5.15% 6.32%
+2-day VaR0.99 2-day VaR0.95 5-day VaR0.99 5-day VaR0.95
+nSDE-3 nSDE-J nSDE-3 nSDE-J nSDE-3 nSDE-J nSDE-3 nSDE-J
+Coverage ratio median 0.9960 1.0000 0.9641 0.9880 1.0000 1.0000 0.9637 0.9899
+Coverage ratio mean 0.9946 0.9938 0.9634 0.9718 0.9966 0.9946 0.9694 0.9731
+Kupiec PF (two-sided) 1.05% 3.04% 33.84% 65.11% 0.00% 3.75% 40.52% 75.76%
+Kupiec PF (one-sided) 1.05% 3.04% 4.57% 6.91% 0.00% 3.75% 2.34% 8.08%
+Table 10: Summary statistics on coverage and independence tests for 1-day, 2-day and 5-day VaRs
+computed by the neural-SDE market models of diﬀerent conﬁgurations. These results are for EURO
+STOXX 50 options.
+32
+
+=== page 33 ===
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8
+0
+50
+100
+150Number of option portfolios
+1-day VaR0.99
+Neural-SDE
+FHS
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8
+0
+100
+200Number of option portfolios
+1-day VaR0.95
+Neural-SDE
+FHS
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8
+0
+50
+100Number of option portfolios
+2-day VaR0.99
+Neural-SDE
+FHS
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8
+0
+50
+100
+150
+200Number of option portfolios
+2-day VaR0.95
+Neural-SDE
+FHS
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8
+0
+50
+100
+150
+200Number of option portfolios
+5-day VaR0.99
+Neural-SDE
+FHS
+0.0 0.2 0.4 0.6 0.8
+0
+50
+100
+150Number of option portfolios
+5-day VaR0.95
+Neural-SDE
+FHS
+0.0 0.2 0.4 0.6 0.8
+0
+50
+100
+150
+200Number of option portfolios
+10-day VaR0.99
+Neural-SDE
+FHS
+0.0 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8
+0
+50
+100
+150
+200Number of option portfolios
+10-day VaR0.95
+Neural-SDE
+FHS
+Figure 32: Distribution of trough-to-peak ratios over diﬀerent tested portfolios of options on the DAX
+index.
+Acknowledgements
+This publication is based on work supported by the EPSRC Centre for Doctoral Training in Indus-
+trially Focused Mathematical Modelling (EP/L015803/1) in collaboration with CME Group.
+Samuel Cohen and Christoph Reisinger acknowledge the support of the Oxford-Man Institute
+for Quantitative Finance, and Samuel Cohen also acknowledges the support of the UKRI Prosperity
+Partnership Scheme (FAIR) under the EPSRC Grant EP/V056883/1, and the Alan Turing Institute.
+References
+[1] M. Abadi, A. Agarwal, P. Barham, E. Brevdo, Z. Chen, C. Citro, G. S. Corrado, A. Davis,
+J. Dean, M. Devin, S. Ghemawat, I. Goodfellow, A. Harp, G. Irving, M. Isard, Y. Jia, R. Joze-
+fowicz, L. Kaiser, M. Kudlur, J. Levenberg, D. Man´e, R. Monga, S. Moore, D. Murray, C. Olah,
+M. Schuster, J. Shlens, B. Steiner, I. Sutskever, K. Talwar, P. Tucker, V. Vanhoucke, V. Va-
+sudevan, F. Vi´egas, O. Vinyals, P. Warden, M. Wattenberg, M. Wicke, Y. Yu, and X. Zheng.
+33
+
+=== page 34 ===
+TensorFlow: Large-scale machine learning on heterogeneous systems, 2015. Software available
+from tensorﬂow.org.
+[2] A. N. Avramidis and J. R. Wilson. Correlation-induction techniques for estimating quantiles
+in simulation experiments. Operations Research, 46(4):574–591, 1998.
+[3] G. Barone-Adesi and K. Giannopoulos. Non-parametric VaR techniques – myths and realities.
+Economic Notes, 30(2):167–181, 2001.
+[4] G. Barone-Adesi, K. Giannopoulos, and L. Vosper. VaR without correlations for nonlinear
+portfolios. Journal of Futures Markets, 1997.
+[5] G. Barone-Adesi, K. Giannopoulos, and L. Vosper. Backtesting derivative portfolios with ﬁl-
+tered historical simulation (FHS). European Financial Management, 8(1):31–58, 2002.
+[6] Basel Committee on Banking Supervision. Supervisory framework for the use of “backtesting”
+in conjunction with the internal models approach to market risk capital requirements. 1996.
+https://www.bis.org/publ/bcbs22.htm, Accessed: 2021-11-04.
+[7] S. M. Bellovin, P. K. Dutta, and N. Reitinger. Privacy and synthetic datasets. Stanford
+Technology Law Review, 22(1), 2019.
+[8] F. Black. Studies of stock market volatility changes. 1976 Proceedings of the American statistical
+association bisiness and economic statistics section, pages 177–181, 1976.
+[9] M. Britten-Jones and S. M. Schaefer. Non-linear value-at-risk. Review of Finance, 2(2):161–187,
+1999.
+[10] H. Buehler, L. Gonon, J. Teichmann, and B. Wood. Deep hedging. Quantitative Finance,
+19(8):1271–1291, 2019.
+[11] H. Buehler, B. Horvath, T. Lyons, I. P. Arribas, and B. Wood. A data-driven market simulator
+for small data environments, 2020. arXiv:2006.14498.
+[12] J. Butler and B. Schachter. Estimating value-at-risk with a precision measure by combining
+kernel estimation with historical simulation. Review of Derivatives Research, 1:371–390, 1997.
+[13] R. J. Caron, J. F. McDonald, and C. M. Ponic. A degenerate extreme point strategy for the
+classiﬁcation of linear constraints as redundant or necessary. Journal of Optimization Theory
+and Applications, 62(2):225–237, 1989.
+[14] CBOE. White paper: CBOE volatility index, 2019. https://cdn.cboe.com/resources/vix/
+vixwhite.pdf, Accessed: 2021-04-08.
+[15] M. Chataigner, S. Cr´epey, and M. Dixon. Deep local volatility. Risks, 8(3), 2020.
+[16] P. Christoﬀersen. Evaluating interval forecasts. International Economic Review, 39(4):841–862,
+1998.
+[17] CME Group. Futures and options margin model. https://www.cmegroup.com/clearing/
+risk-management/futures-and-options-margin-model.html. Accessed: 2022-01-18.
+[18] S. N. Cohen, C. Reisinger, and S. Wang. Detecting and repairing arbitrage in traded option
+prices. Applied Mathematical Finance, 27(5):345–373, 2020.
+[19] S. N. Cohen, C. Reisinger, and S. Wang. Arbitrage-free neural-SDE market models, 2021.
+arXiv:2105.11053.
+[20] S. N. Cohen, D. Snow, and L. Szpruch. Black-box model risk in ﬁnance, 2021. arXiv:2102.04757.
+[21] L. El-Jahel, W. Perraudin, and P. Sellin. Value at risk for derivatives. The Journal of Deriva-
+tives, 6(3):7–26, 1999.
+[22] Eurex Clearing. Eurex clearing prisma: portfolio-based risk management. https:
+//www.eurexchange.com/resource/blob/32818/7bcf119060b658ad4e487f588744140d/
+data/brochure_eurex_clearing_prisma.pdf. Accessed: 2022-01-18.
+[23] W. Fallon. Calculating value-at-risk. Wharton School, University of Pennsylvania Philadelphia,
+1996.
+[24] A. Friedman and M. A. Pinsky. Asymptotic stability and spiraling properties for solutions of
+stochastic equations. Transactions of the American Mathematical Society, 186:331–358, 1973.
+[25] P. Glasserman, P. Heidelberger, and P. Shahabuddin. Variance reduction techniques for esti-
+mating value-at-risk. Management Science, 46(10):1349–1364, 2000.
+[26] P. Glasserman, P. Heidelberger, and P. Shahabuddin. Portfolio value-at-risk with heavy-tailed
+34
+
+=== page 35 ===
+risk factors. Mathematical Finance, 12(3):239–269, 2002.
+[27] P. Gurrola-Perez and D. Murphy. Filtered historical simulation Value-at-Risk models and their
+competitors. Bank of England Working Paper, (525), 2015.
+[28] J. M. Harrison and D. Kreps. Martingales and arbitrage in multiperiod securities markets.
+Journal of Economic Theory, 20(3):381–408, 1979.
+[29] D. Heath, R. Jarrow, and A. Morton. Bond pricing and the term structure of interest rates: A
+new methodology for contingent claims valuation. Econometrica, 60(1):77–105, 1992.
+[30] P. Henry-Labordere. Generative models for ﬁnancial data. 2019. Available at SSRN https:
+//ssrn.com/abstract=3408007.
+[31] T. C. Hesterberg and B. L. Nelson. Control variates for probability and quantile estimation.
+Management Science, 44(9):1295–1312, 1998.
+[32] S. L. Heston. A closed-form solution for options with stochastic volatility with applications to
+bond and currency options. Review of Financial Studies, 6:327–343, 1993.
+[33] J. C. Hsu and B. L. Nelson. Control variates for quantile estimation. Management Science,
+36(7):8350–851, 1990.
+[34] M. Hutzenthaler, A. Jentzen, and P. E. Kloeden. Strong convergence of an explicit numerical
+method for SDEs with nonglobally Lipschitz continuous coeﬃcients. The Annals of Applied
+Probability, 22(4):1611–1641, 2012.
+[35] M. Jex, R. Henderson, and D. Wang. Pricing exotics under the smile. Risk, pages 72–75,
+November 1999.
+[36] A. Koshiyama, N. Firoozye, and P. Treleaven. Generative adversarial networks for ﬁnancial
+trading strategies ﬁne-tuning and combination. Quantitative Finance, 21(5):797–813, 2021.
+[37] P. H. Kupiec. Techniques for verifying the accuracy of risk measurement models. Journal of
+Derivatives, 3(2):73–84, 1995.
+[38] LCH. Risk management - LTD: margin models & governance. https://www.lch.com/
+risk-management/risk-management-ltd. Accessed: 2022-01-18.
+[39] J. Longerstaey and M. Spencer. RiskMetricsTM—technical document. Morgan Guaranty Trust
+Company of New York: New York, 51:54, 1996.
+[40] MathWorks. optByHestonNI. https://uk.mathworks.com/help/fininst/optbyhestonni.
+html. Accessed: 2022-01-25.
+[41] D. Murphy, M. Vasios, and N. Vause. An investigation into the procyclicality of risk-based
+initial margin models. Bank of England Financial Stability Paper, (29), 2014.
+[42] H. Ni, L. Szpruch, M. Wiese, S. Liao, and B. Xiao. Conditional Sig-Wasserstein GANs for time
+series generation, 2020. arXiv:2006.05421.
+[43] OptionMetrics. IvyDB Europe Reference Manual. https://wrds-www.wharton.upenn.edu/
+documents/1447/IvyDB_Europe_Reference_Manual_wEX3ZW6.pdf, 2020. Version 2.4.
+[44] G. Ritter and P. N. Kolm. Dynamic replication and hedging: A reinforcement learning approach.
+Journal of Financial Data Science, 1(1):159–171, 2019.
+[45] L. Sun and L. J. Hong. Asymptotic representations for importance-sampling estimators of
+value-at-risk and conditional value-at-risk. Operations Research Letters, 38(4):246–251, 2010.
+[46] S. Takahashi, Y. Chen, and K. Tanaka-Ishii. Modeling ﬁnancial time-series with generative
+adversarial networks. Physica A, 527(121261):797–813, 2019.
+[47] M. Wiese, L. Bai, B. Wood, and H. Buehler. Deep hedging: Learning to simulate equity option
+markets, 2019. arXiv:1911.01700.
+[48] M. Wiese, B. Wood, A. Pachoud, R. Korn, H. Buehler, P. Murray, and L. Bai. Multi-asset spot
+and option market simulation, 2021. arXiv:2112.06823.
+[49] J. S. Wissel. Arbitrage-free market models for liquid options. PhD thesis, ETH Z¨urich, 2008.
+35

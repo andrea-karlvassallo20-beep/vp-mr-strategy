@@ -1,0 +1,633 @@
+=== page 1 ===
+The Importance of Low Latency to Order Book Imbalance
+Trading Strategies
+David Byrd
+db@gatech.edu
+School of Interactive Computing
+Georgia Institute of Technology
+Atlanta, Georgia
+Sruthi Palaparthi
+sruthi.p@uga.edu
+Department of Computer Science
+University of Georgia
+Athens, Georgia
+Maria Hybinette
+maria@cs.uga.edu
+Department of Computer Science
+University of Georgia
+Athens, Georgia
+Tucker Hybinette Balch
+tucker@cc.gatech.edu
+School of Interactive Computing
+Georgia Institute of Technology
+Atlanta, Georgia
+ABSTRACT
+There is a pervasive assumption that low latency access to an ex-
+change is a key factor in the profitability of many high-frequency
+trading strategies. This belief is evidenced by the “arms race” under-
+taken by certain financial firms to co-locate with exchange servers.
+To the best of our knowledge, our study is the first to validate and
+quantify this assumption in a continuous double auction market
+with a single exchange similar to the New York Stock Exchange. It
+is not feasible to conduct this exploration with historical data in
+which trader identity and location are not reported. Accordingly, we
+investigate the relationship between latency of access to order book
+information and profitability of trading strategies exploiting that in-
+formation with an agent-based interactive discrete event simulation
+in which thousands of agents pursue archetypal trading strategies.
+We introduce experimental traders pursuing a low-latency order
+book imbalance (OBI) strategy in a controlled manner across thou-
+sands of simulated trading days, and analyze OBI trader profit while
+varying distance (latency) from the exchange. Our experiments sup-
+port that latency is inversely related to profit for the OBI traders,
+but more interestingly show that latency rank, rather than absolute
+magnitude, is the key factor in allocating returns among agents
+pursuing a similar strategy.
+KEYWORDS
+simulation, finance, market, strategy, artificial, intelligence, multia-
+gent, latency
+1 INTRODUCTION
+It is commonly understood that execution speed is essential for a
+successful high-frequency trading (HFT) strategy. In High Frequency
+Trading: A Practical Guide, Irene Aldridge observes that “High-
+frequency trading relies on fast, almost instantaneous, execution
+of orders” and that “even a secondâĂŹs worth of delay induced
+by hesitation or distraction on the part of a human trader can
+substantially reduce the systemâĂŹs profitability” [1]. Although
+there is a well-developed body of financial literature around such
+strategies, works that rely on analysis of historical market data
+cannot reliably quantify the precise, continuous benefit of specific
+latency levels to a strategy. Publicly available market information
+does not identify individual actors or provide a mechanism to reveal
+the latency of an actor’s order execution after a trading decision
+has been reached, so it is not feasible to use such data to infer the
+importance of latency for such strategies.
+To address this problem, we employ an agent-based interactive
+discrete event simulation to construct a market with nanosecond
+precision to fully account for agent computational delay and com-
+munication latency. We experiment within that simulated market
+to assess the effect of low latency on overall agent returns for a
+typical high-frequency strategy. As far as we know, this is the first
+published study to directly and quantitatively assess the impact of
+variable latency on a trader’s profit.
+Our work specifically focuses on market microstructure, or mak-
+ing short-term directional trading decisions based on observed
+quotes. Richard Lyons divides this group of High Frequency Trad-
+ing (HFT) strategies in two sets [16], both relating to mismatches
+in supply and demand:
+• Inventory effects pertaining to a market maker absorbing
+inventory and attempting to dissipate risk.
+• Portfolio balance effects in which the order flow produces
+a more lasting impact.
+arXiv:2006.08682v1  [q-fin.TR]  15 Jun 2020
+
+=== page 2 ===
+David Byrd, Sruthi Palaparthi, Maria Hybinette, and Tucker Hybinette Balch
+We introduce a group of experimental agents following a strategy
+from the first category, inventory effects, and investigate the effect
+of absolute and relative latency on the profitability of each such
+agent.
+2 BACKGROUND AND RELATED WORK
+Our work draws from prior lines of financial research in market
+microstructure trading and latency arbitrage, and computational
+research in discrete event simulation and agent-based modeling.
+Here we describe some of the important prior work in each area.
+2.1 Market Microstructure Trading
+Lawrence Harris described three types of stylized traders relevant
+to market microstructure trading: [7]
+(1) Liquidity traders are uninformed traders whose execution
+timelines are externally motivated by a client demand or a
+need to modify cash holdings.
+(2) Informed traders are those who have specific, private in-
+formation they believe correlates with short term price move-
+ment, which must be acted on quickly.
+(3) Value-motivated traders have an exogenous opinion on a
+stock’s true worth and are motivated to buy or sell at specific
+prices that represent significant deviations from that value.
+Harris further identifies informed traders as aggressive, utilizing
+market orders or limit orders near the spread to ensure their private
+information is monetized before its expiration. Value-motivated
+traders are characterized as more passive, placing limit orders far
+from the spread to execute only if the order flow reaches their
+notion of a fair price.
+Our study includes simulated versions of these three stylized
+strategies. We construct an environment of informed traders and
+value-motivated traders that serve as “background” market agents
+then, under various conditions, evaluate the performance of a par-
+ticular kind of liquidity trader which attempts to predict short-term
+price changes using an order book imbalance (OBI) indicator.
+Bloomfield et al constructed experimental markets to test some
+of Harris’s predictions, finding that informed traders take liquidity
+when the gap between current prices and those suggested by their
+time-sensitive information is high, but provide liquidity when that
+gap is low [3]. This provides empirical support for our simulated
+liquidity traders’ belief that a large amount of liquidity provision
+near the spread indicates impending directional movement.
+2.2 Latency Arbitrage
+Wah and Wellman have previously studied latency arbitrage with
+a simulated two-market model plus public price quotes from an
+NBBO (National Best Bid and Offer) provider [22]. They found that
+the presence of a high frequency trading (HFT) agent arbitraging
+the two markets negatively impacted the surplus achieved by other
+traders in excess of the amount it obtained for itself. The latency
+arbitrageur did improve order execution speed (a common defense
+of HFT activity) but actually caused a wider bid-ask spread.
+Our work examines a different aspect of latency arbitrage, in-
+troducing multiple competing liquidity traders which pursue a
+low-latency strategy with a single exchange. We focus on the re-
+lationship between absolute and relative communication latency
+levels and the profitability of each liquidity trader.
+2.3 Discrete Event Simulation
+We conduct our experiments in an event driven framework built
+on a discrete event simulation (DES) system kernel. Under a DES
+model, the system changes state only at the edges of discrete points
+in time. Conventional approaches to DES are either time driven
+(synchronous) or event driven (asynchronous).
+In time driven (or time “stepped”) systems, progress is driven
+by incrementally advancing time, which is typically represented
+by a global counter. The counter is increased by a fixed amount,
+the minimum resolution, and then events that have a time stamp
+matching the current counter are processed. One disadvantage of
+time stepped simulation is the wasting of computation time on steps
+during which no activity takes place. For example, when exploring
+high frequency trading (HFT), it might be important to allow agents
+to act with nanosecond time resolution. If the counter is at time t
+after some agent places an order, and the next agent will act just
+fifty microseconds later, the system will have to sequentially check
+for activity at time steps t + 1 to t + 49999 even though there will
+be no state changes.
+Event driven systems mitigate the wasted computation time
+caused by such “idling” by changing the mechanism of time pro-
+gression. Instead of incrementing a counter, the system’s simulated
+time jumps to the time stamp of the next (chronologically earliest)
+scheduled event. Progress through time is guaranteed under the
+assumption that until the simulation ends, there will always be
+some next scheduled event. Under this model, each time an agent
+acts, it will schedule its next action through a priority queue in the
+system kernel.
+To revisit the above HFT example in the event driven context,
+when an agent places an order at time t and the next agent will
+act fifty microseconds later, the kernel’s event priority queue will
+have time stamp t + 50000 as the first entry, and so the system time
+can transition directly from t to t + 50000 with no consideration
+of the time between. This can be done because the system state
+changes only through agent actions, and no action is scheduled
+during the skipped interval. Event driven simulation is efficient
+precisely because of this feature, that all time in between state
+changes is safely ignored. Event driven kernels are also amenable
+to parallelization of computation that further speeds execution,
+as demonstrated in Optimistic Simulation Time Warp [11] and in
+Conservative Simulation [5]. DES has been widely adopted and
+used to address important problems in health care [12], supply
+chain management [20], manufacturing [19], and financial markets
+[9, 10, 14, 22].
+Both Levy et al [14] and Wellman and Wah [22] take a synchro-
+nous approach to simulation, but for our larger scale experiments
+we believe that an asynchronous simulation provides greater flex-
+ibility and scalability. This view is shared by Jacobs et al [9, 10],
+who introduced a financial simulation framework called JLMSim.
+JLMSim is a discrete event simulator that incorporates trading rules
+for simple strategies and reproduces the changes in the market by
+executing buy and sell orders from an order book, but with the
+
+=== page 3 ===
+The Importance of Low Latency to Order Book Imbalance Trading Strategies
+limitation that it does not support the implementation of complex
+custom trading strategies.
+2.4 Agent Based Modeling
+Our system uses an agent based model (ABM), formed by a set of
+autonomous agents that interact with their environment, including
+other agents, to achieve their objectives. Agent based modeling and
+simulation (ABMS) has been successfully employed in a variety of
+application domains [17] such as social science [2], computational
+economics [21], and marketing [19]. We follow prior work in the
+area by modeling a stock market based on the behavior of individual
+investors [14] represented as strategic trading agents. Agent-based
+financial markets have been shown to be effective for dynamic
+situations in which investor behavior must change in response to
+the environment [13].
+Some notable agent-based simulators from the literature are
+Swarm [18], MASON [15], and Player/Stage [6]. There are also
+simulators like SASSY [8] that support large numbers of agents
+through an optimistic parallel kernel. While our system is not a
+parallel simulation kernel we draw inspiration from their design
+and currently support many thousands of agents.
+3 APPROACH
+To test the hypothesis that lower communication latency with an
+exchange will correlate with higher trading period profits for order
+book imbalance (OBI) liquidity traders, we construct an agent-based
+interactive discrete event simulation using components described
+in Background and Related Work. The simulation provides a Kernel
+which enforces the proper flow of time and through which all inter-
+agent communication must occur, and the simulation environment
+represents a modern electronic stock market in which numerous
+strategic trading agents place bids and offers with a single exchange
+agent.
+Volumes
+Prices
+1000 200 300
+$25.08
+$25.10
+$25.12
+$25.14
+$25.06
+Bid Side
+Ask Side
+Mid Price Spread
+Ask Price
+Bid Price
+Limit order to sell is added
+to the queue
+Figure 1: Example illustrating liquidity provisioned to a
+limit order book.
+3.1 Market Simulation
+At the core of our simulated market is an exchange agent which
+accepts orders to buy (bid prices) and sell (ask prices) specified
+quantities of various securities. Such orders may optionally contain
+an additional limit price which prohibits transaction at any less
+advantageous price for the submitting agent. Orders with a limit
+price, called limit orders, may not immediately transact, and will
+instead be recorded into the limit order book for the relevant security
+as shown in Figure 1, to await future transaction if a matching order
+should arrive. Orders without a limit price, called market orders,
+have no such restriction and will always transact immediately at
+the best currently available price.
+As the limit order book consists of all unfulfilled orders to trans-
+act a security, the limit prices and quantities of visible bid and ask
+orders can be interpreted as some representation of the supply and
+demand for the security at one moment in time. Measurable aspects
+of the limit order book include: the spread, or the distance between
+the highest bid and lowest ask price; the available liquidity, or the
+total volume of shares on offer; and the distribution of that liquidity,
+in particular whether it is concentrated near or far from the spread,
+and whether it is significantly greater on one side of the book than
+the other.
+Our simulated limit order book follows an order matching pro-
+cess similar to the Nasdaq exchange in the United States. That is,
+an arriving order to buy will transact with the lowest priced ask
+order already in the limit order book. If the arriving order is to sell,
+it will transact with the highest priced bid order instead. If there
+are multiple orders in the limit order book at the same price, the
+oldest order will be transacted. All transactions happen at the limit
+price of the order already in the limit order book, not the arriving
+order.
+3.2 Background Traders
+Our simulated market is not a simple backtest constructed from
+static historical data, but rather a dynamic and interactive one in
+which many agents participate in pursuit of profit, each able to
+directly impact market pricing and other agents through its actions.
+To this end we employ a population of stylized strategy agents
+divided into several families inspired by the work of Lawrence
+Harris [7]: value-motivated traders, informed traders, and liquidity
+traders. The first two represent our “background” trading popula-
+tion, which we do not alter or manipulate, and the third represents
+our experimental population.
+Both of our representative background agent strategies obtain
+noisy observations of an exogenous price-time series, sometimes
+called the fundamental series, that represents the “true value” of
+a stock independent of current market price fluctuations. These
+observations over time influence an internal value belief that dif-
+fers per agent according to the update of a Bayesian process as
+constructed by Wah et al [23]. In summary, assume a background
+agent, arriving at the market via a Poisson process, wakes at time t
+and receives observation ot . It updates an estimate of the current
+fundamental value ˜rt and that estimate’s variance ˜σ 2 t :
+˜rt ′ ←(1 −(1 − κ)δ )¯r + (1 − κ)δ ˜rt ′ (1)
+˜σ 2 t ′ ←(1 − κ)2δ ˜σ 2 t ′ + 1 −(1 − κ)2δ 1 −(1 − κ)2 σ 2 s (2)
+where t ′ is agent’s previous wake time, δ = t − t ′, κ is the funda-
+mental mean reversion parameter, and σ 2s is the shock variance of
+
+=== page 4 ===
+David Byrd, Sruthi Palaparthi, Maria Hybinette, and Tucker Hybinette Balch
+the fundamental process. Having now accounted for intervening
+time, the agent applies its new observation ot to obtain an estimate
+of the current fundamental value and that estimate’s variance:
+˜rt = σ 2n σ 2n + ˜σ 2 t ′ ˜rt ′ + ˜σ 2 t ′ σ 2n + ˜σ 2 t ′ ot (3)
+˜σ 2 t = σ 2n ˜σ 2 t ′
+σ 2n + ˜σ 2 t ′ (4)
+where σ 2n is the agent’s observation noise. With updated estimates
+˜rt and ˜σ 2 t , the agent can compute ˆrt , the final fundamental value
+rT as estimated at current time t:
+ˆrt ←(1 −(1 − κ)T −t )¯r + (1 − κ)T −t ˜rt (5)
+where ¯r is the fundamental mean, and random perturbations are
+assumed to take on a mean value of zero. This estimate of the final
+fundamental value represents the agent’s belief about what the
+stock price should be at the close of the trading day. It uses this
+value to inform its decisions concerning limit price, trade direction,
+aggressiveness of trading posture, and so on.
+Value-motivated traders tend to place limit orders away from the
+spread, intending to transact only if prices reach a level consistent
+with their private value beliefs plus a required level of surplus.
+We represent this style of trading with a common variation of
+the Zero Inteligence (ZI) trader as described by Wah et al [23],
+which estimates the final fundamental value as explained above.
+Each ZI trader is constructed with a random vector of incremental
+private values placed on the acquisition or release of one additional
+unit of stock, given the agent’s current holding, which is applied
+as an offset to the estimated final fundamental value. If qmax is
+the holding limit, then the preferences for trading agent i are the
+elements θ q i in:
+Θi = (θ −qmax +1 i , . . . , θ 0 i , θ 1 i , . . . , θ qmax i ) (6)
+where q is the quantity of stock currently held. Θi is drawn ran-
+domly from N(0, σ 2 PV ), where σ 2 PV is a selected experimental pa-
+rameter. The values are sorted in descending order ensuring dimin-
+ishing returns on private value offsets. The ZI trader places limit
+orders in a random direction (buy/sell) but selects limit prices such
+that transacted orders will always produce an expected surplus to
+the agent.
+Informed traders are represented by a class of agents taking on
+the role of an arbitrageur. These agents are broadly similar to the
+ZI agents, as they also make noisy observations of a fundamental
+value and construct a belief about the “true” worth of a stock. The
+informed traders, however, always place a directional order that
+will profit from a reversion of the order flow to the fundamental.
+Based on market conditions, these agents may place orders in one
+of two postures: aggressively with market orders or limit orders
+that cross over the spread, or passively with limit orders that do not
+cross the spread. The supply and demand information they inject
+to the order flow should be predictive of short-term price moves
+due to their approximately correct exogenous observations.
+3.3 Experimental Traders
+Liquidity traders have no opinion about the “correct” value of a
+stock. They participate in anticipation of profit by observing the
+order flows in the market for clues that suggest short-term price
+movement arising from the market microstructure itself. We inject
+a population of liquidity traders as our experimental agents of
+change, observing their impact on the market, and altering their
+communication latency to the exchange to understand the effect
+this has on the profitability of their strategy. In keeping with the
+spirit of liquidity trading, these agents are unable to observe the
+exogenous price-time series (fundamental) used by the background
+traders. Our specific choice of liquidity trader follows an order
+book imbalance (OBI) strategy which continuously tracks what
+proportion of total liquidity near the spread is on the buy side of
+the limit order book:
+I =
+˝
+b ∈B Vb˝
+o ∈O Vo
+(7)
+where B is the set of visible bid orders, O is the set of all visible
+orders, and V represents the share volume of a particular order. For
+example, when the indicator I = 0.5, liquidity is equally distributed
+between the two sides of the book, and when I = 0.6 there is 50%
+more bid than ask liquidity.
+The agent enters a directional trade when I > 0.5 + H or I <
+0.5 − H , where H is a configurable entry threshold, and exits the
+directional trade based on a trailing stop at configurable distance
+D applied to the same indicator (not the midpoint stock price). The
+order book depth (level) L at which to consider liquidity provision
+to be a positively-correlated signal is also a configurable parameter.
+4 EXPERIMENTS AND RESULTS
+We conducted two primary experiments for analysis in this work.
+Both experiments utilize a simulated market containing a single
+exchange with a limit order book mechanism accepting offers to
+transact shares of a single security. The experimental market is
+populated with 1,000 background traders, split evenly between the
+value-motivated and informed trader types described in Approach.
+Every trading agent is configured with a minimum communi-
+cation latency to the exchange. When a message is scheduled for
+transmission, the time sent is the agent’s current time plus a de-
+lay that accounts for the computational complexity of the agent’s
+strategy. The time received will be scheduled for the time sent plus
+the minimum communication latency plus a random factor drawn
+from a realistic network “jitter” model.
+For those agents requiring an exogenous price-time series, we
+employed a sparse mean-reverting fundamental as described in
+Byrd [4]. This mathematical series is a continuous form of the
+discrete mean reverting process described in Wah et al [23] with
+the addition of a second variance process which is applied at lower
+frequency but greater magnitude to represent infrequent “news
+shocks” that can change a trader’s belief about the proper valuation
+of the stock.
+We conducted a preliminary experiment in which we added ten
+OBI liquidity traders, as previously described, to the background
+population with random latency and no particular control, and
+simulated hundreds of different market days. Figure 2 compares
+the absolute latency of OBI traders to their profit at market close,
+with each grey data point representing one trader’s result for one
+full market day. We find a strong inverse Pearson correlation of r =
+−0.775. This matches our intuition that lower latency should lead
+to higher profit for this strategy. However, there is an interesting
+
+=== page 5 ===
+The Importance of Low Latency to Order Book Imbalance Trading Strategies
+Figure 2: Profit vs absolute latency of liquidity (OBI) traders.
+gap in the plot at low latency values, with a cluster of positive
+profit agents and a cluster of negative profit agents, and virtually
+no agents with profit close to zero. A desire to understand this gap
+motivated the design of our two subsequent experiments.
+4.1 Experiment 1: Absolute Latency with
+Control
+In the first experiment, the described background agents were geo-
+graphically situated around the United States relative to the location
+of the New York Stock Exchange. The minimum communication
+latency of each individual background agent was drawn from a
+uniform distribution of 21µs (roughly the other side of Manhattan)
+to 13ms (around Seattle, Washington).
+To the background population, we added ten order book im-
+balance (OBI) liquidity traders following the previously described
+indicator strategy. One liquidity trader, serving as a control, was
+always placed at the minimum latency permitted to background
+agents and eight were randomly distributed in the same range as
+the background agents. The final liquidity trader is considered the
+experimental agent for Experiment 1, for which the geographic
+location (latency) is systematically varied to measure its impact on
+the returns of all liquidity traders. All OBI liquidity traders used an
+entry threshold of H = 0.17, a trailing stop distance of D = 0.085,
+and a book depth significance parameter of L = 10.
+The experiment was carried out across 600 market simulations,
+with each representing a full market day from 9:30 AM to 4:00
+PM at nanosecond resolution. The experimental liquidity trader
+was tested for a full market day at each of thirty different levels of
+latency, ranging from exchange colocation (approx. 333ns) to Seattle,
+Washington (approx. 13ms). Each of twenty random market days (i.e.
+different exogenous price-time fundamental series) were repeated
+with the experimental agent varied among the thirty positions to
+minimize unintended perturbations in the market process. We thus
+obtained 6,000 full-day observations of the latency and profitability
+relationship of an OBI liquidity trader.
+Results. For this experiment, we logged the absolute latency of each
+liquidity trader along with its marked-to-market profit at the end
+of each trading day.
+Figure 3: Profit of experimental liquidity trader for thirty
+levels of absolute latency (log scale) across twenty market
+days. Blue line represents fixed-latency control liquidity
+trader.
+Figure 3 is a box-plot representation of the relationship between
+log-scale latency in nanoseconds and final profit for the single
+experimental liquidity trader at each tested location. The mean
+profit per tested latency is marked with a tick, the box extents
+mark one standard deviation, and the whiskers mark two standard
+deviations. Recall that a control liquidity trader (blue line) is always
+placed at the minimum permitted latency outside of colocation in an
+effort to explain the zero profit gap in the preliminary experiment.
+We can see that the experimental agent is consistently profitable
+when it is co-located, and performs quite poorly when far from
+the exchange, consistent with the earlier result. As hoped, the
+combination of a control agent and systematic latency variation
+did add interpretive value beyond the preliminary experiment.
+Let X be the experimental liquidity trader with latency LX and
+profit PX , and C be the control liquidity trader with fixed latency
+fixed latency LC and profit PC . We now note two new observations.
+First, ∀LX < LC : PX ⊥ LX . That is, once the absolute latency of
+the experimental trader is lower than that of the control trader, its
+latency does not affect its profit. Second, as soon as LX > LC there
+is an immediate transfer from PX to PC .
+Discussion. These results together suggest that latency rank among
+the competing liquidity agents is more significant to profit outcomes
+than absolute latency values. This could explain the gap in the
+preliminary plot: Depending on whether some other agent was
+even closer to the exchange, a given low latency trader might see
+very different results. However, we cannot support this claim based
+solely on Experiment 1, because the location of the other liquidity
+traders (non-experimental, non-control) on each market day is not
+considered.
+4.2 Experiment 2: Latency Rank
+In the second experiment, ten liquidity traders were again added
+to the background agent population. This time, all agents were
+randomly situated with a latency ranging from exchange colocation
+(333ns) to Seattle, Washington (13ms), with the intent to examine
+
+=== page 6 ===
+David Byrd, Sruthi Palaparthi, Maria Hybinette, and Tucker Hybinette Balch
+latency rank independent of absolute latency. Without the need
+to resimulate the same market day for control, this experiment
+was conducted across 600 different market days, producing again
+6,000 observations of OBI liquidity trader latency and profit. The
+experiment was otherwise similar to Experiment 1.
+Figure 4: Profit of multiple trials with liquidity traders dis-
+tributed randomly, identified by latency rank order within
+each trial. Lower rank traders are closer to the exchange.
+Results. For Experiment 2, the latency rank of each liquidity trader
+was logged along with the marked-to-market profit at the end
+of each trading day. For example, the liquidity trader closest to
+the exchange on a given day would be latency rank 1, the second
+closest rank 2, and so on. Absolute latency was also logged for
+visualization purposes. In Figure 4, we present a box-and-whisker
+plot of aggregated profit by latency rank among the OBI liquidity
+agents.
+Over the course of a simulated trading day, without consideration
+of absolute latency, the liquidity trader closest to the exchange
+receives mean and std marked-to-market profit of $2,681.04 and
+$1,389.37. The second closest liquidity trader receives mean and std
+profit of $-3,297.30 and $1,661.30, and the liquidity trader furthest
+from the exchange received mean and std profit of $-24,473.64 and
+$-6,449.97. This supports the notion that latency rank is the key
+factor driving the allocation of profit within this trading strategy
+population.
+However, there is a potential confounding factor. It could be
+the case that liquidity trader latency distributions were such that
+the lowest ranked agent was also always close to the exchange in
+absolute terms. A different look at the data will help to clarify this.
+In Figure 5, we plot end of day profit against log-scale nanosec-
+ond latency, with the addition of a zero profit line. Each point
+represents one liquidity trader’s result for one simulated market
+day, and each point is color-coded according to that trader’s latency
+rank for that simulated market day, with red being rank 1, blue
+being rank 2, and so on. Ranks 6-10 are aggregated into a single
+black grouping. Because this plot shows both absolute latency and
+latency rank together, we can see that the nearest liquidity trader
+(red) on a given market day does well even when situated very far
+from the exchange, and liquidity agents in ranks 2 and 3 perform
+poorly even when relatively near the exchange.
+Figure 5: Profit of multiple trials with liquidity traders dis-
+tributed randomly showing ranked and absolute latency.
+Discussion. Taking Figures 4 and 5 together, we can clearly state
+that: The liquidity trader closest to the exchange rarely loses money,
+and the second closest liquidity trader rarely makes money, regard-
+less of their absolute distance from the exchange.
+Our initial concern regarding the preliminary experiment’s zero-
+profit gap proved correct. While there was a strong inverse correla-
+tion between absolute latency and profit, this was not the primary
+factor influencing strategy returns. Profitability was rather deter-
+mined by the ordinal latency rank among agents pursuing a similar
+low-latency strategy.
+CONCLUSION
+Using a realistic agent based market simulation, we explored the
+effect of latency on the profitability of a strategy that depends on
+perishable information. We constructed an environment consisting
+of thousands of background trading agents into which we could in-
+ject low latency liquidity traders acting on an order book imbalance
+indicator.
+Through a preliminary experiment, we observed a strong in-
+verse correlation between the absolute latency and profitability of
+liquidity traders. We systematically investigated this through two
+controlled experiments and found that the result of the preliminary
+experiment was not sufficiently explanatory. While the correlation
+is real, the actual determining factor in profitability was the ordinal
+rank of latency among the population of liquidity traders.
+Regardless of absolute distance, we found that the closest liq-
+uidity trader was substantially more profitable than agents even
+slightly further away, and was the only consistently net profitable
+liquidity trader. These observed winner-take-all outcomes among
+traders pursuing the same time-sensitive strategy would seem to
+justify the apparent “arms race” to achieve the minimum possible
+latency to an exchange when engaging in market microstructure
+trading.
+REFERENCES
+[1] Irene Aldridge. 2013. High-frequency trading: a practical guide to algorithmic
+strategies and trading systems. Vol. 604. John Wiley & Sons.
+[2] Robert Axelrod. 1997. Advancing the art of simulation in the social sciences. In
+Simulating social phenomena. Springer, 21–40.
+
+=== page 7 ===
+The Importance of Low Latency to Order Book Imbalance Trading Strategies
+[3] Robert Bloomfield, Maureen OâĂŹhara, and Gideon Saar. 2005. The âĂĲmake or
+takeâĂİ decision in an electronic market: Evidence on the evolution of liquidity.
+Journal of Financial Economics 75, 1 (2005), 165–199.
+[4] David Byrd. 2019. Explaining Agent-Based Financial Market Simulation.
+arXiv:cs.MA/1909.11650
+[5] K Mani Chandy and Jayadev Misra. 1981. Asynchronous distributed simulation
+via a sequence of parallel computations. Commun. ACM 24, 4 (1981), 198–206.
+[6] Brian Gerkey, Richard T Vaughan, and Andrew Howard. 2003. The player/stage
+project: Tools for multi-robot and distributed sensor systems. In Proceedings of
+the 11th international conference on advanced robotics, Vol. 1. 317–323.
+[7] Lawrence Harris. 1998. Optimal dynamic order submission strategies in some
+stylized trading problems. Financial Markets, Institutions & Instruments 7, 2 (1998),
+1–76.
+[8] Maria Hybinette, Eileen Kraemer, Yin Xiong, Glenn Matthews, and Jaim Ahmed.
+2006. SASSY: A Design for a Scalable Agent-based Simulation System Using
+a Distributed Discrete Event Infrastructure. In Proceedings of the 38th Confer-
+ence on Winter Simulation (Monterey, California) (WSC ’06). Winter Simulation
+Conference, 926–933. http://dl.acm.org/citation.cfm?id=1218112.1218282
+[9] Bruce I Jacobs, Kenneth N Levy, and Harry M Markowitz. 2004. Financial market
+simulation. The Journal of Portfolio Management 30, 5 (2004), 142–152.
+[10] Bruce I Jacobs, Kenneth N Levy, and Harry M Markowitz. 2010. Simulating
+security markets in dynamic and equilibrium modes. Financial Analysts Journal
+66, 5 (2010), 42–53.
+[11] David Jefferson and Henry Sowizral. 1982. Fast Concurrent Simulation Using the
+Time Warp Mechanism. Part I. Local Control. Technical Report. RAND CORP
+SANTA MONICA CA.
+[12] Jonathan Karnon, James Stahl, Alan Brennan, J Jaime Caro, Javier Mar, and Jörgen
+Möller. 2012. Modeling using discrete event simulation: a report of the ISPOR-
+SMDM Modeling Good Research Practices Task Force–4. Medical decision making
+32, 5 (2012), 701–711.
+[13] Blake LeBaron. 2011. Active and passive learning in agent-based financial markets.
+Eastern Economic Journal 37, 1 (2011), 35–43.
+[14] Moshe Levy, Haim Levy, and Sorin Solomon. 1994. A microscopic model of the
+stock market: cycles, booms, and crashes. Economics Letters 45, 1 (1994), 103–111.
+[15] Sean Luke, Claudio Cioffi-Revilla, Liviu Panait, Keith Sullivan, and Gabriel Balan.
+2005. Mason: A multiagent simulation environment. Simulation 81, 7 (2005),
+517–527.
+[16] Richard K Lyons et al. 2001. The microstructure approach to exchange rates. Vol. 333.
+Citeseer.
+[17] Charles M Macal and Michael J North. 2009. Agent-based modeling and sim-
+ulation. In Proceedings of the 2009 Winter Simulation Conference (WSC). IEEE,
+86–98.
+[18] Nelson Minar, Roger Burkhart, Chris Langton, Manor Askenazi, et al. 1996. The
+swarm simulation system: A toolkit for building multi-agent simulations. (1996).
+[19] Ashkan Negahban and Jeffrey S Smith. 2014. Simulation for manufacturing system
+design and operation: Literature review and analysis. Journal of Manufacturing
+Systems 33, 2 (2014), 241–261.
+[20] Antuela A Tako and Stewart Robinson. 2012. The application of discrete event
+simulation and system dynamics in the logistics and supply chain context. Deci-
+sion support systems 52, 4 (2012), 802–815.
+[21] Leigh Tesfatsion and Kenneth L Judd. 2006. Handbook of computational economics:
+agent-based computational economics. Vol. 2. Elsevier.
+[22] Elaine Wah and Michael P Wellman. 2013. Latency arbitrage, market fragmenta-
+tion, and efficiency: a two-market model. In Proceedings of the fourteenth ACM
+conference on Electronic commerce. ACM, 855–872.
+[23] Elaine Wah, Mason Wright, and Michael P Wellman. 2017. Welfare effects of
+market making in continuous double auctions. Journal of Artificial Intelligence
+Research 59 (2017), 613–650.
