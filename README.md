@@ -31,8 +31,14 @@ depth 100% vs independent 25-level snapshots), 10-02..04 partial (sequence
 criterion passed; the 100-snapshot ground truth needs a paid subscription —
 the owner's call); the pre-registered taker track ran on free aggTrades and
 **T3 tested-fail** (wall-clock exposure does not remove the arrival-density
-dependence — it is vol-mediated); T1/T2 are cached and **pending the owner's
-decision** (`paper/research/phase1_daily/t1_t2_decision_memo_2026-11-16.md`); and the
+dependence — it is vol-mediated); **T1 EXECUTED on the unseen second
+window (2024-08-01 → 2025-02-28, 333M aggTrades): survives all five
+pre-declared kill lines, SIGN INVERTED** (every compression HR below 1.0
+— deeper taker-measured compression predicts LOWER within-spell
+trade-touch hazard; the covariate is informative and non-tautological
+but the mechanism's direction is inverted at the spell scale;
+`paper/research/t1_second_window_report.md`); T2 remains **pending the
+owner's decision** (`paper/research/phase1_daily/t1_t2_decision_memo_2026-11-16.md`); and the
 endpoint has been re-framed in writing: **a WHEN instrument, straddle-logic,
 sized by the posterior on MOVE, not UP** — because the 0.505 direction
 boundary has survived everything, including the watchlist whose four primed
@@ -152,7 +158,9 @@ fully passes. No proxy substitution is permitted.
 on taker data, **tested-fail** (trades/min HR 0.9998, 95% CI [0.99977,
 0.99983], p = 4.7e-42 after hour-of-day stratification; the density effect
 is vol-mediated). The runner stopped at the first upstream kill per
-protocol; T1/T2 await the owner's decision.
+protocol; T1 was later executed by the owner's directive on the second
+aggTrades window (survives all kill lines, sign inverted — see
+`paper/research/t1_second_window_report.md`); T2 awaits the owner's decision.
 
 **Open forward tests (not scored, windows unclosed):** the 2026-11-12
 primed-coil watchlist (KAVA, HOLO, GENIUS, SOL — all four broke downward;

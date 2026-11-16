@@ -303,3 +303,22 @@ The ratification queue now holds four candidate sharpenings
 (session 3's two, session 4's three pre-declarations counted as
 one K7 sharpening, and the 4b W-ladder/Amendment-1 pair). Zero
 armed. The owner's word is the only trigger.
+
+## Progress log
+
+- 2026-11-16 (queue start): surprise ledger wired to the living board, nightly.
+- 2026-11-16 (owner authorized T1 + misses + CKS): T1 executed on the second
+  window (survives all five kill lines, sign inverted —
+  t1_second_window_report.md); the misses curriculum quantified (873 series,
+  1,765,316 series-days: coverage 0.039, lift 2.07); CKS deep-read done
+  (five siblings named, docs/library/cks_ofi_review.md).
+- 2026-11-16 (this session): C1-L2 spec sharpened BEFORE any Tardis data
+  arrived — kill line 6 (sign guard, motivated by T1's inversion: the battery
+  had no line to catch an informative-but-inverted covariate) and kill line 7
+  (CKS literal tautology control + the AD-denominator unit test), with the
+  amendment discipline recorded (harder to pass is the only legal direction).
+  Prose-rot pass started: the claims ledger's T1 row and the README's two
+  pending-T1 sentences now state the executed verdict and the sign finding.
+  Next in the queue: the library ritual's second paper (Hawkes branching —
+  the beta lesson's other half), then the remaining prose pages against the
+  ledger.

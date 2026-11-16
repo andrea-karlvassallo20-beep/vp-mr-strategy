@@ -134,8 +134,29 @@ The daily null block-bootstrapped r/sigma. The L2 translation:
    the L2 compression effect is a volatility-clustering artifact — the same
    death as daily, and the resolution-artifact hypothesis is dead: the
    absence is real at both resolutions.
+6. **Sign guard (added 2026-11-16, BEFORE any L2 data arrived — motivated
+   by T1 on the second aggTrades window, whose compression HRs were all
+   below 1.0: informative, non-tautological, sign-inverted at the
+   taker-spell scale, and the battery had no line to catch it):** the
+   pre-registered mechanism states compression aging RAISES the
+   conditional hazard. If the compression HR point estimate is < 1.0
+   with its CI excluding 1.0, the covariate carries information but the
+   MECHANISM AS STATED is dead — record the inversion, do not
+   reinterpret the direction post hoc, do not pivot to "compression
+   predicts silence" as a claim without its own pre-declared kill lines.
+7. **CKS literal tautology control (added 2026-11-16, BEFORE any L2
+   data arrived — from the Cont-Kukanov-Stoikov deep-read,
+   docs/library/cks_ofi_review.md, siblings S1/S4):** (a) recompute the
+   OFI-impact relation EXCLUDING price-changing events from the OFI
+   aggregate (CKS footnote 3: their R-squared survived at 35-60%); if
+   the relation dies here, the OFI layer was book-mechanics wearing a
+   costume — killed. (b) Any depth-normalized OFI feature must
+   transcribe CKS's average-depth formula literally — denominator
+   2(N(T_i) - N(T_{i-1}) - 1), both sides summed — and pass a unit test
+   against a hand-built 3-event interval BEFORE the Tardis data is
+   touched; an implementation failing the unit test cannot run.
 
-If C1-L2 passes all five: the bounded conclusion is a WHEN clock measured
+If C1-L2 passes all seven: the bounded conclusion is a WHEN clock measured
 from the book, with measured HR, survival gap, and economic effect at the
 vertical barrier; no direction is claimed (the 0.505 boundary stands), and
 C5/C6 — the order-flow claims — are the next tests, on this same single
@@ -143,3 +164,9 @@ instrument, with their own pre-declared kill lines. If C1-L2 fails: name the
 dead mechanism, do not pivot, and the compression theory is closed at both
 resolutions; the program proceeds directly to C5/C6 (which never depended on
 compression) once their kill lines are restated for the verified data.
+
+Amendment discipline: kill lines 6 and 7 were added on 2026-11-16, after
+the CKS deep-read and the T1 second-window run, and BEFORE any Tardis
+full-depth data passed the L0 gate. No result of C1-L2 itself existed or
+could exist at the time of the amendment. They make the test harder to
+pass, which is the only direction amendments may go.
