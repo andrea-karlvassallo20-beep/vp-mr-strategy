@@ -308,6 +308,24 @@ VPIN is computed on the **original volume-bucket construction**
 alternative is NOT silently available: if it is ever tried, it is
 counted in K3's multiplicity ledger as a separate configuration.
 
+A4 conditional pre-commitments (added 2026-11-16 from the VPIN/order-flow
+toxicity read, docs/library/vpin_toxicity_review.md, BEFORE any L2 data
+passed the gate): if a VPIN trigger is ever added —
+1. **True flags, BVC only as diagnostic.** Where taker direction is
+   available (aggTrades `is_buyer_maker`), VPIN uses TRUE aggressor
+   flags; bulk volume classification may be computed only as a
+   comparison, with the BVC-vs-true divergence reported — the
+   Andersen-Bondarenko contestation of the flash-crash claim is
+   precisely a classification-sensitivity critique.
+2. **Vol-conditioned twin.** No VPIN reading is reportable without its
+   realized-vol-conditioned twin; a trigger must survive the same
+   vol-tautology discipline as compression, plus the era-shuffled
+   placebo.
+3. **Clock-construction ledger.** The taker harness's trade-count-bucket
+   VPIN (2,000-trade buckets, EWMA span 50) is a DIFFERENT object from
+   this spec's volume-bucket construction; any crossing between them is
+   a logged multiplicity-ledger entry, never a silent inheritance.
+
 ### Amendment A5 — the market-book common factor is defined
 
 The "market-book factor" nuisance is: **the first principal component
