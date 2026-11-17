@@ -383,6 +383,54 @@ armed. The owner's word is the only trigger.
   the beta lesson's other half), then the remaining prose pages against the
   ledger.
 
+
+## 9b. Null-time session 5 (convergent record, 2026-11-16): library deep-read session 3 (latent LOB regimes) and the macro timeline extended backward to 2019
+- **Library deep-read session 3** (`paper/research/library/
+  2026-11-16_latent_regimes_deep_read.md`): Hiremath & Hiremath, "Early
+  Detection of Latent Microstructure Regimes in Limit Order Books"
+  (arXiv:2604.20949, extracted text, page-cited), read against the
+  killing question. Grade: NO kill line changed. The paper is the C1-L2
+  hypothesis stated as theory (a stable -> latent build-up -> stress
+  DGP; compression is the latent build-up regime; positive lead time
+  iff drift-to-noise eta > sqrt(2 log(1/delta)/T1)) - the theory
+  citation for why the C1-L2 question is well-posed, and for why its
+  honest failure mode may be "below SNR", not "absent". One pre-named
+  post-mortem diagnostic (descriptive only, never a new test): their
+  46% missed detections concentrate in short-build-up/high-noise
+  cells, so a near-kill C1-L2 result should be autopsied by
+  compression-duration stratum before the mechanism is named dead.
+  Narrative constraint pinned with a citation: OFI/imbalance/volatility
+  are reactive BY CONSTRUCTION (their thesis), so C8's OFI trigger is
+  contemporaneous, never anticipatory - and their winning channels were
+  depth erosion and HMM entropy, the depth family (C6's neighborhood).
+  Their "seasonality removal is essential" (depth false-triggers at
+  predictable hours) is the empirical citation for our hour-of-day
+  stratification. Their 5-event honesty ("order-of-magnitude
+  indicators") is a culture citation for our dry-run discipline.
+- **The macro timeline extended backward** (the queue's
+  owner-curated "boring, valuable, endless" item): every FOMC
+  statement day 2019-2026H1 (59 scheduled meetings) + the eight
+  tentative 2027 meetings + the two 2020 emergency meetings, ALL
+  verified this session against federalreserve.gov's own calendar
+  pages (fomccalendars.htm for 2021-2027, fomchistorical2019/2020.htm
+  for 2019-2020) - every row hand-checked, per the queue's rule.
+  Statement times are 2:00 p.m. ET with DST handled explicitly
+  (18:00 UTC in EDT, 19:00 in EST; spot-checked: 2020-11-05 and
+  2024-12-18 read 19:00, 2019-03-20 reads 18:00). The two unscheduled
+  2020 meetings (Mar 3, Mar 15 - the COVID emergency cuts) do NOT
+  carry the regular 2 p.m. time, so they are censored conservatively
+  as all-day windows (event_type FOMC_EMERGENCY, 00:00-23:59) rather
+  than inventing a precise time. 2027 rows carry confidence
+  "tentative" (the Fed's own note: each date is tentative until
+  confirmed at the preceding meeting). Notation votes (Mar 19/23/31
+  2020, Aug 27 2020, Aug 22 2025) and the Oct 4 2019 unscheduled
+  meeting are EXCLUDED as non-decision events - the owner may curate
+  them in. CPI/NFP backward extension is NOT attempted: those
+  historical schedules are not hand-checkable from the same single
+  authoritative page, and a wrong row is worse than a missing row.
+  Timeline: 19 -> 87 events, all parse through macro_censor
+  (windows verified for first and last rows); 128 tests green.
+
 ## 9. Null-time session 5 (2026-11-16): the 500-paper edge triage and deep-read session 3
 
 Owner directive: "go through 500 PDFs for edge." Executed in three
