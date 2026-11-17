@@ -21,13 +21,14 @@ NAV_PAGES = [
     "criteria.html", "v4_charts.html", "heatmap.html", "dormancy.html",
     "ledger.html", "ohlcv_verdict.html", "math_verification.html",
     "resources.html", "books.html", "instrument.html",
+    "program.html",
 ]
 
 
 def test_render_six_top_level_entries():
     n = site_nav.render(None)
     assert n.count("<details") == 4          # 4 groups
-    assert n.count("<a href") == 14          # all pages still reachable
+    assert n.count("<a href") == 15          # all pages still reachable
     assert n.startswith("<nav>") and n.endswith("</nav>")
 
 

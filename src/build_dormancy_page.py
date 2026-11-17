@@ -70,6 +70,7 @@ page = f"""<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The dormancy heat map — vp-mr-strategy</title>
+<meta name="description" content="The dormancy map: 1,300+ series tracked by how long they have been quiet, with primed coils ringed.">
 <link rel="stylesheet" href="site.css">
 <style>
 body{{background:#0b0e14;color:#c9d1d9;font-family:Georgia,serif;margin:0;padding:2rem;max-width:1200px;margin:auto}}

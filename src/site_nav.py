@@ -33,6 +33,7 @@ GROUPS = [
         ("ledger.html", "The claims ledger"),
         ("ohlcv_verdict.html", "The OHLCV verdict"),
         ("math_verification.html", "The math, verified"),
+        ("program.html", "The programme"),
     ]),
     ("The Library", [
         ("resources.html", "The library"),
