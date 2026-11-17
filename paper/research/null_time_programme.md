@@ -501,3 +501,39 @@ Next in the queue: Aloosh & Li (2024), "Direct evidence of
 bitcoin wash trading" - the companion evidence for session 5's
 gate audit (to be acquired; Management Science, may be
 paywalled - if so, synthesized with the label, per policy).
+
+## 12. Null-time session 8 (2026-11-16): deep-read session 6 — the wash-trading audit gets its ground-truthed toolkit
+
+- **Acquisition**: Aloosh & Li, "Direct Evidence of Bitcoin Wash
+  Trading" (Management Science) found legally OA via the DCU
+  institutional repository (DORAS); downloaded and text-extracted
+  (84 pp., page-marked; PDF local per the weight policy).
+- **Library deep-read session 6**:
+  `paper/research/library/2026-11-16_wash_trading_deep_read.md`.
+  Grade: NO kill line changed. The queued wash-trading audit
+  (session 5, pending ratification) gains its sourced statistics,
+  validated against leaked ground-truth records: Benford
+  chi-squared (wash deviates 69.71, non-wash conforms 7.91),
+  unrounded-trade fraction (round-size clustering), lognormality
+  deviation, and EDM structural breaks on LOG-transformed
+  10-minute volumes (the only one at our 30m grain). The trap
+  named and closed: power-law tail fits give OPPOSITE conclusions
+  on ground-truthed data - the library's own Clauset-Shalizi-
+  Newman heavy-tail recipe would have produced a confidently
+  wrong audit, so it is explicitly excluded from the audit's
+  statistics. Mechanism refinement: self-self trades are only
+  3.35% of an average wash trader's activity (most is trading
+  with everyone, which DOES move price), so the audit must not
+  rely on the no-price-change signature alone. Scale honesty: the
+  direct evidence is a 2011-2013 leaked exchange, not modern
+  Binance perps - what transfers is the existence and the
+  toolkit, not the fraction; the audit measures our fraction.
+
+Ratification queue after this session: nine candidate
+sharpenings (the audit now carries its sourced toolkit), zero
+armed. T1 remains armed awaiting the owner's word; the blocked
+list stays blocked. Deep-read queue: 3 of the top 3 triage ranks
+done plus the companion; next by triage rank: "Modeling
+microstructure price dynamics with symmetric Hawkes and
+diffusion" and "Optimal Execution with Dynamic Order Flow
+Imbalance".
