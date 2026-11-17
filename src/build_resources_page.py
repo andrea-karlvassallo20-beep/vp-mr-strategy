@@ -15,20 +15,14 @@ received-through-068-of-104 where applicable.
 import html
 from pathlib import Path
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from site_nav import render as _render_nav
+
 ROOT = Path(__file__).resolve().parents[1]
 
-NAV = """<nav>
-  <a href="index.html">Thesis</a>
-  <a href="manual.html">The working manual</a>
-  <a href="causal.html">Causal chains</a>
-  <a href="books.html">The books, taught</a>
-  <a href="clues.html">The clue dossier</a>
-  <a href="criteria.html">The night-before sauce move</a>
-  <a href="v4_charts.html">The board, colored</a>
-  <a href="dormancy.html">The dormancy map</a>
-  <a href="resources.html" aria-current="page">The library</a>
-  <a href="instrument.html">The instrument (live)</a>
-</nav>"""
+NAV = _render_nav("resources.html")
 
 STYLE = """
 body{background:#0b0e14;color:#c9d1d9;font-family:Georgia,serif;margin:0;padding:2rem;max-width:1200px;margin:auto}

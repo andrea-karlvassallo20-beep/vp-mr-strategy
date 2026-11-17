@@ -58,6 +58,12 @@ for cls in ('crypto', 'commodity', 'index', 'equity'):
             f"<td>{r.stretch_z:.2f}</td></tr>")
 miss_rows = "\n".join(miss_rows)
 
+import sys as _sys
+from pathlib import Path as _Path
+_sys.path.insert(0, str(_Path(__file__).resolve().parent))
+from site_nav import render as _render_nav
+NAV = _render_nav("dormancy.html").replace("{", "{{").replace("}", "}}")
+
 page = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -85,20 +91,7 @@ tr:nth-child(even) td{{background:#11151f}}
 </style>
 </head>
 <body>
-<nav>
-  <a href="index.html">Thesis</a>
-  <a href="concepts.html">Every concept, taught</a>
-  <a href="causal.html">Causal chains</a>
-  <a href="books.html">The books, taught</a>
-  <a href="clues.html">The clue dossier</a>
-  <a href="criteria.html">The night-before source</a>
-  <a href="falsification.html">Falsification record</a>
-  <a href="infrastructure.html">Data &amp; machinery</a>
-  <a href="knowledge.html">Knowledge base</a>
-  <a href="v4_charts.html">The board, colored</a>
-  <a href="dormancy.html" aria-current="page">The dormancy map</a>
-  <a href="instrument.html">The instrument (live)</a>
-</nav>
+{NAV}
 
 <div class="epigraph"><p>"You will not find the lion by looking where the noise is. You will find him by noticing where he has been quiet too long."</p></div>
 

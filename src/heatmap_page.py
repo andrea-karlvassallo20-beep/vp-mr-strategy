@@ -42,6 +42,11 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import surprise_ledger as sl  # noqa: E402
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from site_nav import render as _render_nav
+
 CLUE = Path("paper/research/clue_scan")
 MEGA_CSV = CLUE / "mega_dormancy_table.csv"
 BOARD_CSV = CLUE / "board_table.csv"
@@ -69,22 +74,7 @@ CLASS_ORDER = ["commodity", "index", "world_index", "rate", "fx",
                "equity", "global_equity", "sp500", "sp400", "sp600",
                "etf", "crypto"]
 
-NAV = """<nav>
-  <a href="index.html">Thesis</a>
-  <a href="manual.html">The working manual</a>
-  <a href="causal.html">Causal chains</a>
-  <a href="books.html">The books, taught</a>
-  <a href="clues.html">The clue dossier</a>
-  <a href="criteria.html">The night-before sauce move</a>
-  <a href="v4_charts.html">The board, colored</a>
-  <a href="heatmap.html" aria-current="page">The heat map</a>
-  <a href="dormancy.html">The dormancy map</a>
-  <a href="resources.html">The library</a>
-  <a href="ledger.html">The claims ledger</a>
-  <a href="ohlcv_verdict.html">The OHLCV verdict</a>
-  <a href="math_verification.html">The math, verified</a>
-  <a href="instrument.html">The instrument (live)</a>
-</nav>"""
+NAV = _render_nav("heatmap.html")
 
 
 def load_board(mega_csv=MEGA_CSV, board_csv=BOARD_CSV):
