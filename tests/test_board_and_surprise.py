@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import surprise_ledger as sl
 from board_heatmap import build_board
-from heatmap_page import build_page, _tile_color
+from heatmap_page import build_page, _color, _squarify
 
 
 def _scan_row(series, cls, score, comp_days=30, n_days=500,
@@ -245,13 +245,35 @@ def test_heatmap_page_sections_data_driven(tmp_path):
     assert html.count('class="tile"') == 9
 
 
-def test_tile_color_monotonic():
-    c0 = _tile_color(0)
-    c1 = _tile_color(0.5)
-    c2 = _tile_color(1.0)
-    assert c0 != c1 != c2
-    assert _tile_color(0) == _tile_color(-0.3)
-    assert _tile_color(1) == _tile_color(1.7)
+def test_day_change_color_convention():
+    # the finviz convention: green up, red down, neutral at zero,
+    # capped at +-5%
+    up, ink_up = _color(0.03)
+    down, ink_down = _color(-0.03)
+    flat, _ = _color(0.0)
+    missing, _ = _color(None)
+    assert ink_up == "#070b12" and ink_down == "#070b12"
+    assert up != down and up != flat and down != flat
+    assert flat == missing
+    # caps: +10% colors the same as +5%
+    assert _color(0.10)[0] == _color(0.05)[0]
+    assert _color(-0.10)[0] == _color(-0.05)[0]
+
+
+def test_squarify_tiles_fill_the_container():
+    items = [{"series": f"s{i}", "area": 100.0 - i} for i in range(20)]
+    rects = _squarify(items, 0, 0, 1000, 300)
+    assert len(rects) == 20
+    # every tile inside the container
+    for _, x, y, w, h in rects:
+        assert 0 <= x and x + w <= 1000.0 + 0.5
+        assert 0 <= y and y + h <= 300.0 + 0.5
+    # total area filled equals the container area (no gaps by design)
+    total = sum(w * h for _, x, y, w, h in rects)
+    assert abs(total - 1000 * 300) / (1000 * 300) < 0.02
+    # every input series placed exactly once
+    placed = [r[0] for r in rects]
+    assert sorted(placed) == sorted(i["series"] for i in items)
 
 
 def test_seal_from_mega_maps_living_board(tmp_path, monkeypatch):

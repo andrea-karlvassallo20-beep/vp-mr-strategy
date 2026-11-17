@@ -1,35 +1,35 @@
-"""The heat map page - EVERYTHING, scored, sealed, studied.
+"""The heat map page — the board as a market treemap.
 
-Directive (Andrea, Nov 2026): a heat map on the website of EVERYTHING -
-all commodities, all indexes, crypto, the main 500 stocks - scored by
-what is most likely to make the next significant jump, then tracked
-over time to study what surprises.
+Directive (Andrea, Nov 2026): the page should LOOK like the market
+heat maps posted on Reddit/X — the finviz-style treemap: every series a
+tile, tile AREA sized by how big the market is, tile COLOR the day's
+move (the sea-of-green melt-up, the wall-of-red crash). The priming
+research rides along on every tile (hover), but the first read is the
+picture: green or red, big or small.
 
-Generates docs/heatmap.html from the LIVING board: mega_dormancy_table.csv
-(the table the nightly board_refresh cycle maintains) when it exists,
-falling back to board_table.csv. The page reads whichever board is
-current - it can no longer silently render a stale universe while the
-refresh cycle moves on (the bug that once left the page at 817 tiles
-while the living board held 1,299).
+Design (honest and fixed):
+  - AREA: trailing 60-day average daily dollar volume (close x volume)
+    — one consistent liquidity weight computable for every class from
+    the same cached klines. Series with no volume on Yahoo (FX, some
+    indexes) get the class-median weight, never zero: they stay
+    visible, and the substitution is stated in the legend, not hidden.
+  - COLOR: last daily % change. Green up, red down, intensity by
+    |change| capped at 5% (the finviz convention): 0% = neutral gray.
+  - LAYOUT: the squarified treemap (Bruls, Huizing & van Wijk) per
+    class — one map per section, exactly like the posted maps that are
+    one map per universe.
+  - HOVER: every tile carries the priming state (dormancy score,
+    primed flag, coil days) — the research is the tooltip; the picture
+    is the move.
 
-Two board schemas are normalized to one internal frame:
-  - the mega dormancy table: dormancy_score (higher = deeper coil,
-    min-max normalized within the board for color), primed flag,
-    artifact derived from |ret30| > 20%, genesis from n_days < 90.
-  - the clue-scan board table: primed_score, eligible, artifact_flag,
-    genesis_flag as committed.
+The board source is the living board (mega_dormancy_table.csv), falling
+back to board_table.csv. Sections are data-driven: every class present
+gets a map; no class is silently dropped.
 
-Sections are data-driven: every class present on the board gets a
-section, in CLASS_ORDER plus first-appearance order for unknown classes.
-No class is ever silently dropped again (the etf class was invisible
-until this became data-driven).
-
-DESCRIPTIVE ONLY. The multiplicity warning is binding at its worst on a
-1,300-series board: extremes are found by construction. The score
-ranks candidates; it tests nothing, and WHICH WAY is refused. The only
-path from this page to knowledge is C7's kill lines - the surprise
-ledger exists precisely so the ranking is judged against sealed
-reality, not against memory.
+DESCRIPTIVE ONLY. The color is the past day's move — it is a picture of
+what already happened, not a prediction; the priming score ranks
+candidates and tests nothing. WHICH WAY is refused by measurement.
+C7 stays sealed.
 """
 
 import sys
@@ -47,23 +47,24 @@ MEGA_CSV = CLUE / "mega_dormancy_table.csv"
 BOARD_CSV = CLUE / "board_table.csv"
 PAGE = Path("docs/heatmap.html")
 
+MAP_W = 1000
+CAP_PCT = 5.0
+
 CLASS_TITLES = {
     "commodity": "Commodities",
     "index": "Indexes",
-    "world_index": "World indexes (frontier and war-adjacent included)",
+    "world_index": "World indexes",
     "rate": "Rates",
-    "fx": "FX (majors, EM, the Iranian rial)",
+    "fx": "FX",
     "equity": "Large-cap equities",
     "global_equity": "Global mega-caps (non-US)",
-    "sp500": "S&P 500 (full constituents)",
+    "sp500": "S&P 500",
     "sp400": "S&P 400 (mid caps)",
     "sp600": "S&P 600 (small caps)",
     "etf": "ETFs",
-    "crypto": "Crypto",
+    "crypto": "Crypto (every Binance USDT market)",
 }
 
-# Section order when known; any class not listed here is appended after,
-# in first-appearance order - the page can never silently drop a class.
 CLASS_ORDER = ["commodity", "index", "world_index", "rate", "fx",
                "equity", "global_equity", "sp500", "sp400", "sp600",
                "etf", "crypto"]
@@ -85,114 +86,180 @@ NAV = """<nav>
 
 
 def load_board(mega_csv=MEGA_CSV, board_csv=BOARD_CSV):
-    """The living board, normalized: one frame, one score column, flags."""
+    """The living board, normalized (same contract as before)."""
     if Path(mega_csv).exists():
         df = pd.read_csv(mega_csv)
         score = df["dormancy_score"].astype(float)
         span = float(score.max()) or 1.0
         out = pd.DataFrame({
-            "series": df["series"],
-            "class": df["class"],
+            "series": df["series"], "class": df["class"],
+            "venue": df.get("venue", ""),
             "score": score / span,
-            "score_label": "dormancy score (normalized)",
-            "comp_days": df["comp_days"],
-            "rvol_pct": df["rvol_pct"],
-            "range_pos": df["range_pos"],
-            "ret30": df.get("ret30", np.nan),
+            "comp_days": df["comp_days"], "rvol_pct": df["rvol_pct"],
             "eligible": df["primed"].astype(bool),
-            "artifact_flag": (df.get("ret30", 0).abs() > 0.20),
-            "genesis_flag": df["n_days"] < 90,
-            "last_date": "",
-            "vol_ratio": np.nan,
             "source": "mega_dormancy_table.csv",
         })
     elif Path(board_csv).exists():
         df = pd.read_csv(board_csv)
         out = pd.DataFrame({
-            "series": df["series"],
-            "class": df["class"],
+            "series": df["series"], "class": df["class"],
+            "venue": df.get("venue", ""),
             "score": df["primed_score"].astype(float),
-            "score_label": "priming score",
-            "comp_days": df["comp_days"],
-            "rvol_pct": df["rvol_pct"],
-            "range_pos": df["range_pos"],
-            "ret30": df.get("ret30", np.nan),
+            "comp_days": df["comp_days"], "rvol_pct": df["rvol_pct"],
             "eligible": df["eligible"].astype(bool),
-            "artifact_flag": df["artifact_flag"].astype(bool),
-            "genesis_flag": df["genesis_flag"].astype(bool),
-            "last_date": df.get("last_date", ""),
-            "vol_ratio": df.get("vol_ratio", np.nan),
             "source": "board_table.csv",
         })
     else:
         raise SystemExit("no board found - run the board refresh first")
-    out["artifact_flag"] = out["artifact_flag"].fillna(False).astype(bool)
-    out["genesis_flag"] = out["genesis_flag"].fillna(False).astype(bool)
-    return out.sort_values("score", ascending=False).reset_index(drop=True)
+    return out
 
 
-def _tile_color(score):
-    """Dark -> amber -> red interpolation on the observatory palette."""
-    s = max(0.0, min(1.0, float(score)))
-    if s < 0.5:
-        t = s / 0.5
-        rgb = [int(13 + (245 - 13) * t), int(20 + (176 - 20) * t),
-               int(32 + (76 - 32) * t)]
+def _day_stats(data_file):
+    """(daily % change, trailing 60d avg dollar volume) from cached
+    klines, or (None, None)."""
+    if not data_file:
+        return None, None
+    try:
+        df = pd.read_csv(data_file)
+    except Exception:
+        return None, None
+    if "close" not in df.columns or len(df) < 2:
+        return None, None
+    close = df["close"].to_numpy(float)
+    ret1 = close[-1] / close[-2] - 1.0
+    vol = (df["volume"].to_numpy(float)
+           if "volume" in df.columns else np.zeros(len(df)))
+    dvol = close * vol
+    tail = dvol[-60:]
+    w = float(np.mean(tail[tail > 0])) if (tail > 0).any() else 0.0
+    return float(ret1), w
+
+
+def _color(chg):
+    """finviz convention: green up, red down, intensity capped at CAP_PCT."""
+    if chg is None or not np.isfinite(chg) or chg == 0:
+        return "#5c6b80", "#e8eef7"
+    c = max(-CAP_PCT, min(CAP_PCT, chg * 100.0)) / CAP_PCT
+    if c > 0:
+        r, g, b = int(46 + (0 - 46) * c), int(204 + (32 - 204) * c), \
+            int(80 + (17 - 80) * c)
     else:
-        t = (s - 0.5) / 0.5
-        rgb = [int(245 + (248 - 245) * t), int(176 + (113 - 176) * t),
-               int(76 + (113 - 76) * t)]
-    return f"rgb({rgb[0]},{rgb[1]},{rgb[2]})"
+        t = -c
+        r, g, b = int(248 - (248 - 183) * 0) , int(113 - (113 - 21) * t), \
+            int(113 - (113 - 35) * t)
+        r = 248
+    return f"rgb({r},{g},{b})", "#070b12"
 
 
-def _tile(row):
-    score = float(row["score"])
-    color = _tile_color(score)
-    dim = "" if row["eligible"] else " opacity:.38;"
-    flag = ""
-    if row["artifact_flag"]:
-        flag = '<span class="tflag">moved</span>'
-    elif row["genesis_flag"]:
-        flag = '<span class="tflag">new</span>'
-    return (f'<div class="tile" style="background:{color};{dim}" '
-            f'title="{row["series"]} score {score:.3f} comp_days '
-            f'{row["comp_days"]} rvol_pct {row["rvol_pct"]}">'
-            f'<span class="tname">{row["series"]}</span>'
-            f'<span class="tscore">{score:.2f}</span>'
-            f'<span class="tmeta">{int(row["comp_days"])}d coil</span>'
-            f"{flag}</div>")
+def _worst_row(rows):
+    """The squarify row-split decision (Bruls et al.): worst aspect
+    ratio of the candidate row, given the current remainder side."""
+    s = sum(r["area"] for r in rows)
+    side = rows[0]["side"]
+    h = s / side
+    return max(max(r["area"] / (h * h), h * h / r["area"]) for r in rows)
 
 
-def _class_section(cls, sub):
-    tiles = "\n".join(_tile(r) for _, r in sub.iterrows())
-    n_elig = int(sub["eligible"].sum())
-    deep = int((sub["comp_days"] >= 20).sum())
-    top = sub.iloc[0] if len(sub) else None
-    top_s = (f'{top["series"]} ({top["score"]:.2f})'
-             if top is not None else "-")
+def _squarify(items, x, y, w, h):
+    """Squarified treemap (Bruls, Huizing & van Wijk, 2000)."""
+    rects = []
+    items = sorted(items, key=lambda r: -r["area"])
+    total = sum(r["area"] for r in items)
+    scale = (w * h) / total if total else 1.0
+    items = [{"series": r["series"], "area": r["area"] * scale}
+             for r in items]
+    while items:
+        side = min(w, h)
+        row = []
+        while items:
+            cand = row + [dict(items[0], side=side)]
+            if not row or _worst_row(cand) <= _worst_row(row):
+                row = cand
+                items.pop(0)
+            else:
+                break
+        s = sum(r["area"] for r in row)
+        if w >= h:
+            rw = s / h
+            cx, cy, cw, ch = x, y, rw, h
+            x += rw
+            w -= rw
+        else:
+            rh = s / w
+            cx, cy, cw, ch = x, y, w, rh
+            y += rh
+            h -= rh
+        # place each item in the row
+        if cw >= ch:  # row is vertical strip: stack along ch
+            off = cy
+            for r in row:
+                ih = ch * r["area"] / s
+                rects.append((r["series"], cx, off, cw, max(ih, 1.0)))
+                off += ih
+        else:
+            off = cx
+            for r in row:
+                iw = cw * r["area"] / s
+                rects.append((r["series"], off, cy, max(iw, 1.0), ch))
+                off += iw
+    return rects
+
+
+def _tile_html(series, x, y, w_, h_, chg, weight, row, color, ink):
+    pct = "" if chg is None else f"{chg * 100:+.1f}%"
+    big = w_ >= 78 and h_ >= 40
+    mid = w_ >= 46 and h_ >= 22
+    name_font = max(9, min(17, int(w_ / 9)))
+    label = f'<span class="tname">{series}</span>'
+    if big:
+        label = (f'<span class="tname" style="font-size:{name_font}px">'
+                 f"{series}</span>"
+                 f'<span class="tpct">{pct}</span>'
+                 f'<span class="tmeta">{int(row["comp_days"])}d coil</span>')
+    elif mid:
+        label = (f'<span class="tname" style="font-size:{name_font}px">'
+                 f"{series}</span>")
+    else:
+        label = ""
+    border = "box-shadow:inset 0 0 0 1px rgba(7,11,18,.55);"
+    dim = "" if row["eligible"] else "opacity:.45;"
+    tip = (f'{series} {pct} · dormancy {row["score"]:.2f} · '
+           f'{int(row["comp_days"])}d coil · rvol_pct {row["rvol_pct"]:.1f}'
+           + (" · PRIMED" if row["eligible"] else ""))
+    return (f'<div class="tile" style="left:{x:.1f}px;top:{y:.1f}px;'
+            f'width:{w_:.1f}px;height:{h_:.1f}px;'
+            f'background:{color};color:{ink};{border}{dim}" '
+            f'title="{tip}">{label}</div>')
+
+
+def _class_map(cls, sub, stats):
+    n = len(sub)
+    height = max(220, min(980, int(0.95 * n)))
+    items = [{"series": r["series"], "area": stats[r["series"]][1]}
+             for _, r in sub.iterrows()]
+    rects = _squarify(items, 0, 0, MAP_W, height)
+    tiles = []
+    lookup = {r["series"]: r for _, r in sub.iterrows()}
+    for series, x, y, w_, h_ in rects:
+        w_ = min(w_, MAP_W - x)
+        h_ = min(h_, height - y)
+        chg, weight = stats.get(series, (None, None))
+        color, ink = _color(chg)
+        tiles.append(_tile_html(series, x, y, w_, h_, chg, weight,
+                                lookup[series], color, ink))
+    up = sum(1 for s in stats if stats[s][0] and stats[s][0] > 0)
+    down = sum(1 for s in stats if stats[s][0] and stats[s][0] < 0)
+    n_primed = int(sub["eligible"].sum())
     return f"""<section>
 <h2>{CLASS_TITLES.get(cls, cls)}<span class="dot">.</span></h2>
-<p class="dim">n={len(sub)} &middot; primed={n_elig} &middot;
-deep coils (20d+)={deep} &middot; hottest: <b>{top_s}</b></p>
-<div class="tilegrid">
-{tiles}
+<p class="dim">n={n} &middot; up {up} / down {down} &middot; primed
+{n_primed} &middot; tile area = trailing 60d dollar volume (no-volume
+series: class-median weight) &middot; color = daily change, capped at
+&plusmn;{CAP_PCT:.0f}%</p>
+<div class="treemap" style="position:relative;width:{MAP_W}px;height:{height}px;max-width:100%">
+{"".join(tiles)}
 </div>
 </section>"""
-
-
-def _top_table(board, k=20):
-    rows = []
-    for i, (_, r) in enumerate(
-            board[board["eligible"]].head(k).iterrows(), start=1):
-        rows.append(
-            f"<tr><td>{i}</td><td>{r['series']}</td>"
-            f"<td>{r['class']}</td><td>{r['score']:.3f}</td>"
-            f"<td>{int(r['comp_days'])}</td><td>{r['rvol_pct']:.1f}</td>"
-            f"<td>{r['range_pos']:.2f}</td></tr>")
-    return """<table>
-<tr><th>Rank</th><th>Series</th><th>Class</th><th>Score</th>
-<th>Coil days</th><th>RVol pct</th><th>Range pos</th></tr>
-""" + "\n".join(rows) + "</table>"
 
 
 def _surprise_section(ledger_path):
@@ -203,9 +270,9 @@ def _surprise_section(ledger_path):
             f"resolutions past horizon: <b>{len(res)}</b> &middot; "
             f"ledger: hash-chained, append-only, verify-before-write</p>")
     if not res:
-        return (head + "<p>No horizon has passed yet. The scores above are "
-                "sealed; reality gets its turn in 10 bars. Come back and "
-                "study what surprised.</p>")
+        return (head + "<p>No horizon has passed yet. The priming states on "
+                "this page are sealed nightly; reality gets its turn in 10 "
+                "bars. Come back and study what surprised.</p>")
     s = sl.study(ledger_path)
     rows = []
     for cls, b in s["per_class"].items():
@@ -229,8 +296,8 @@ def _surprise_section(ledger_path):
     return f"""{head}
 <p>Descriptive only: the sealed top-k are extremes by construction, so
 the study asks whether the <b>ranking</b> carried information - Spearman
-rho between the sealed priming score and the realized 10-bar max
-|move| - never whether one winner proves anything.</p>
+rho between the sealed score and the realized 10-bar max |move| - never
+whether one winner proves anything.</p>
 <table>
 <tr><th>Class</th><th>Resolved</th><th>Spearman rho (score vs jump)</th>
 <th>Median jump</th><th>Mean jump, top-5 sealed</th>
@@ -251,11 +318,25 @@ rho between the sealed priming score and the realized 10-bar max
 def build_page(mega_csv=MEGA_CSV, board_csv=BOARD_CSV,
                ledger_path=sl.LEDGER, page=PAGE):
     board = load_board(mega_csv, board_csv)
-    score_label = board["score_label"].iloc[0]
     source = board["source"].iloc[0]
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    n_elig = int(board["eligible"].sum())
-    top = board[board["eligible"]].iloc[0] if n_elig else board.iloc[0]
+
+    # day stats per series (change + dollar-volume weight)
+    stats = {}
+    for _, r in board.iterrows():
+        f = sl._mega_data_file(r["series"], r.get("venue", ""))
+        chg, w = _day_stats(f)
+        stats[r["series"]] = (chg, w or 0.0)
+    # no-volume classes get the class-median weight (stated, not hidden)
+    for cls, sub in board.groupby("class"):
+        ws = [stats[s][1] for s in sub["series"] if stats[s][1] > 0]
+        med = float(np.median(ws)) if ws else 1.0
+        for s in sub["series"]:
+            if stats[s][1] <= 0:
+                stats[s] = (stats[s][0], med)
+
+    n_up = sum(1 for s in stats if stats[s][0] and stats[s][0] > 0)
+    n_down = sum(1 for s in stats if stats[s][0] and stats[s][0] < 0)
 
     sections = []
     present = [c for c in CLASS_ORDER if (board["class"] == c).any()]
@@ -264,7 +345,7 @@ def build_page(mega_csv=MEGA_CSV, board_csv=BOARD_CSV,
     for cls in present + extras:
         sub = board[board["class"] == cls]
         if len(sub):
-            sections.append(_class_section(cls, sub))
+            sections.append(_class_map(cls, sub, stats))
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -274,17 +355,14 @@ def build_page(mega_csv=MEGA_CSV, board_csv=BOARD_CSV,
 <title>Salient &mdash; The heat map</title>
 <link rel="stylesheet" href="site.css">
 <style>
-.tilegrid {{ display: flex; flex-wrap: wrap; gap: 3px; }}
-.tile {{ display: inline-flex; flex-direction: row; align-items: center;
-  gap: 5px; height: 21px; padding: 1px 7px; border-radius: 4px;
-  color: #070b12; position: relative; white-space: nowrap; }}
-.tile .tname {{ font-family: var(--mono); font-size: 9.5px; font-weight: 700;
-  max-width: 110px; overflow: hidden; text-overflow: ellipsis;
-  white-space: nowrap; }}
-.tile .tscore {{ font-size: 10px; font-weight: 700; opacity: .85; }}
-.tile .tmeta {{ display: none; }}
-.tile .tflag {{ font-size: 8px; text-transform: uppercase;
-  letter-spacing: .5px; opacity: .6; }}
+.treemap {{ position: relative; max-width: 100%; }}
+.tile {{ position: absolute; overflow: hidden; display: flex;
+  flex-direction: column; justify-content: center; align-items: center;
+  gap: 1px; padding: 2px; text-align: center; }}
+.tile .tname {{ font-family: var(--mono); font-weight: 700;
+  line-height: 1.1; white-space: nowrap; }}
+.tile .tpct {{ font-weight: 700; font-size: 12px; }}
+.tile .tmeta {{ font-size: 9px; opacity: .75; }}
 .legend {{ display: flex; gap: 0; border-radius: 6px; overflow: hidden;
   height: 12px; max-width: 420px; }}
 .legend i {{ flex: 1; }}
@@ -294,51 +372,40 @@ def build_page(mega_csv=MEGA_CSV, board_csv=BOARD_CSV,
 {NAV}
 <main>
 
-<div class="kicker">Everything on one board &middot; scored &middot; sealed
-&middot; studied</div>
+<div class="kicker">Everything on one board &middot; the day&rsquo;s
+move, tile by tile</div>
 <h1>The heat map<span class="dot">.</span></h1>
 
 <div class="epigraph">
-"Look at EVERYTHING." So the board holds everything: all commodities, all
-indexes - world, frontier and war-adjacent included - rates, FX down to
-the Iranian rial, the full S&amp;P 500, non-US mega-caps, ETFs, crypto.
-Zoom out: the board reads as a checkerboard - color first, one flat cell
-per series, dark = nothing coiled, amber = compression building, red =
-the deepest coils alive tonight. Hover any cell for its name and
-grievance.
+The market heat map, Reddit-style: every series a tile, area by
+liquidity, color by the day&rsquo;s move &mdash; the sea of green on
+melt-up days, the wall of red on crash days. Zoom out and you see the
+whole market breathe. Hover any tile for its priming state: the
+research rides the tooltip; the picture is the move.
 </div>
 
-<p><span class="big">Descriptive only.</span> The score ranks
-candidates; it tests nothing. Scanning ~1,300 series for extremes finds
-extremes by construction - the multiplicity warning is binding. WHICH WAY
-is refused by measurement: priming is directionless, on purpose. The only
-path from this page to knowledge is C7's kill lines. What this page adds
-is time: the top candidates are <b>sealed</b> into a hash-chained ledger
-with their scores, and once the 10-bar horizon passes, the realized jump
-is resolved against the same data - so "what surprised" is studied
-against sealed predictions, never against memory.</p>
+<p><span class="big">Descriptive only.</span> The color is yesterday&rsquo;s
+move &mdash; a picture of what already happened, never a prediction.
+The priming score (on hover) ranks candidates; it tests nothing, and
+WHICH WAY is refused by measurement. The multiplicity warning binds on
+a ~1,300-series board. The only path from this page to knowledge is
+C7&rsquo;s kill lines.</p>
 
 <div class="grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0">
 <div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)">Series on the board</div><div style="font-size:22px;font-weight:700">{len(board)}</div></div>
-<div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)">Primed candidates</div><div style="font-size:22px;font-weight:700">{n_elig}</div></div>
-<div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)">Hottest tile</div><div style="font-size:22px;font-weight:700">{top["series"]} <span style="color:var(--accent2)">{top["score"]:.2f}</span></div></div>
+<div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)">Up / down today</div><div style="font-size:22px;font-weight:700"><span style="color:var(--good)">{n_up}</span> / <span style="color:var(--bad)">{n_down}</span></div></div>
+<div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)">Primed candidates</div><div style="font-size:22px;font-weight:700">{int(board["eligible"].sum())}</div></div>
 <div class="card" style="background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--dim)">Board built</div><div style="font-size:22px;font-weight:700">{now}</div></div>
 </div>
 
 <div class="legend" aria-hidden="true">
-<i style="background:{_tile_color(0)}"></i><i style="background:{_tile_color(.25)}"></i><i style="background:{_tile_color(.5)}"></i><i style="background:{_tile_color(.75)}"></i><i style="background:{_tile_color(1)}"></i>
+<i style="background:rgb(183,21,35)"></i><i style="background:rgb(216,70,74)"></i><i style="background:rgb(248,113,113)"></i><i style="background:#5c6b80"></i><i style="background:rgb(46,204,80)"></i><i style="background:rgb(32,158,62)"></i><i style="background:rgb(0,32,17)"></i>
 </div>
-<p class="dim" style="margin-top:4px">{score_label} 0 &rarr; 1 &middot;
-dimmed tiles: move-already-happened (artifact) or too new (genesis filter,
-&lt;90d listing) &middot; board source:
-<code>{source}</code></p>
+<p class="dim" style="margin-top:4px">&minus;5% &rarr; 0 &rarr; +5%
+(daily change, capped) &middot; dimmed tiles: not primed &middot; board
+source: <code>{source}</code></p>
 
 {"".join(sections)}
-
-<section>
-<h2>The top-20 primed candidates on the whole board<span class="dot">.</span></h2>
-{_top_table(board)}
-</section>
 
 <section>
 <h2>The surprise ledger &mdash; what jumped, vs what we sealed<span class="dot">.</span></h2>
@@ -358,8 +425,8 @@ C7 stays sealed.
     Path(page).parent.mkdir(parents=True, exist_ok=True)
     Path(page).write_text(html)
     return {"page": str(page), "n_series": len(board),
-            "n_eligible": n_elig, "source": source,
-            "generated_utc": now}
+            "n_up": n_up, "n_down": n_down,
+            "source": source, "generated_utc": now}
 
 
 def main():
