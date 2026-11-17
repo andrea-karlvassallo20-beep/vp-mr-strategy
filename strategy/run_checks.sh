@@ -144,3 +144,6 @@ python3 test_engine_parity.py
 
 echo ""
 echo "ALL SUITES GREEN"
+
+echo "=== 14 W1 WHEN-instrument engine (sizing/refusal, both ways) ==="
+python3 test_when_instrument.py
