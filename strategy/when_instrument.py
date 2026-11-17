@@ -46,6 +46,38 @@ CVAR_DECILE = 0.10            # the worst decile of simulated outcomes
 REFUSAL_ZERO = 0.0
 
 
+def _finite_float(value, name, refusals):
+    """Coerce one input to a finite float or record a refusal.
+
+    A NaN in a measured distribution is the most dangerous input a
+    falsification engine can receive: every comparison against it is
+    False, so it silently passes every kill line. Non-finite and
+    non-numeric inputs are therefore REFUSALS, never propagated.
+    """
+    try:
+        f = float(value)
+    except (TypeError, ValueError):
+        refusals.append(f"{name}: non-numeric value {value!r} - refuse")
+        return None
+    if not math.isfinite(f):
+        refusals.append(
+            f"{name}: non-finite value (NaN/inf) - the measurement is "
+            "unusable and cannot be sized")
+        return None
+    return f
+
+
+def _finite_samples(values, name, refusals):
+    """Coerce a sample list to finite floats or record a refusal."""
+    out = []
+    for v in values:
+        f = _finite_float(v, name, refusals)
+        if f is None:
+            return None
+        out.append(f)
+    return out
+
+
 def _quantile(sorted_vals, q):
     """Linear-interpolation quantile of an already-sorted sequence."""
     if not sorted_vals:
@@ -114,22 +146,45 @@ def decide(inputs):
     A size of exactly 0.0 with a non-empty refusals list is a REFUSAL.
     """
     refusals = []
-    lift_samples = inputs.get("cpcv_lift_samples")
-    baseline = inputs.get("baseline_hazard")
-    payoff = inputs.get("payoff_r_samples")
-    cost_r = inputs.get("cost_r")
-    budget = inputs.get("drawdown_budget")
+    raw_lift = inputs.get("cpcv_lift_samples")
+    raw_baseline = inputs.get("baseline_hazard")
+    raw_payoff = inputs.get("payoff_r_samples")
+    raw_cost = inputs.get("cost_r")
+    raw_budget = inputs.get("drawdown_budget")
 
-    if not lift_samples:
+    lift_samples = None
+    payoff = None
+    baseline = cost_r = budget = None
+
+    if not raw_lift:
         refusals.append("K1: lift CPCV distribution is UNKNOWN")
-    if baseline is None or not (0.0 < baseline < 1.0):
-        refusals.append("baseline hazard is UNKNOWN or out of range")
-    if not payoff:
+    else:
+        lift_samples = _finite_samples(raw_lift, "lift samples", refusals)
+    if raw_baseline is None:
+        refusals.append("baseline hazard is UNKNOWN")
+    else:
+        baseline = _finite_float(raw_baseline, "baseline hazard", refusals)
+        if baseline is not None and not (0.0 < baseline < 1.0):
+            refusals.append("baseline hazard is out of range (0, 1)")
+            baseline = None
+    if not raw_payoff:
         refusals.append("K2: payoff R-distribution is UNKNOWN")
-    if cost_r is None or cost_r < 0:
+    else:
+        payoff = _finite_samples(raw_payoff, "payoff samples", refusals)
+    if raw_cost is None:
         refusals.append("K2: round-trip cost is UNKNOWN")
-    if budget is None or budget <= 0:
+    else:
+        cost_r = _finite_float(raw_cost, "round-trip cost", refusals)
+        if cost_r is not None and cost_r < 0:
+            refusals.append("round-trip cost is negative")
+            cost_r = None
+    if raw_budget is None:
         refusals.append("drawdown budget is not declared")
+    else:
+        budget = _finite_float(raw_budget, "drawdown budget", refusals)
+        if budget is not None and budget <= 0:
+            refusals.append("drawdown budget must be positive")
+            budget = None
 
     lift_lb = lift_ub = None
     if lift_samples:
