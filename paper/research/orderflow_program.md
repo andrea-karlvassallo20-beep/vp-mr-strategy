@@ -196,6 +196,26 @@ proxy) covariates. WHICH WAY and HOW MUCH are blocked, not merely unmodeled.
   CI includes 1.0, OR OFI/VPIN correlation > 0.8 collapsing it into one
   measured layer, OR placebo (shuffled trade signs, book preserved) reproduces
   >= 50% of the effect.
+- **FEATURE PRE-CONDITIONS (added 2026-11-16 from the Huang-Lehalle-Rosenbaum
+  queue-reactive deep-read, docs/library/queue_reactive_review.md, BEFORE any
+  L2 data passed the gate — amendment discipline: harder to test is the only
+  legal direction):**
+  (a) every cancel/absorption feature is STATE-CONDITIONED on queue size and
+  depth level — their Fig. 2 shows cancellation intensity is
+  increasing-concave then saturating (flat/slightly decreasing at large
+  queues), explicitly contradicting the classical linear cancel rate; a raw
+  cancel FRACTION is confounded by the queue-size distribution and is not a
+  feature;
+  (b) FRONT-vs-REAR separation is mandatory: the withdrawal mechanism is a
+  front-of-queue phenomenon (priority value makes front orders persist and
+  rear orders churn); pooled cancels measure churn, not withdrawal;
+  (c) beside the shuffled-signs placebo, the QUEUE-REACTIVE NULL: the
+  state-conditioned intensities estimated on the gated data itself define
+  what ordinary ergodic queuing produces — any abnormal-withdrawal reading
+  must exceed it;
+  (d) the risk-set unit is the CONSTANT-MID QUEUING PERIOD (the paper's
+  periodization is the formal warrant for C5's "while price is flat"
+  clause), with the break as the event.
 - **STATUS:** blocked-on-data
 - **WHAT IT CANNOT TELL YOU:** Everything — it cannot be tested, so it tells
   you nothing. It is listed so it is on record as blocked, not as evidence.
