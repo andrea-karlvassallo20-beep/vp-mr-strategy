@@ -21,12 +21,29 @@ PRE_BUFFER_US = 15 * 60 * 10**6
 DEFAULT_RESOLUTION_MIN = 30
 
 
+def _to_us(dt: pd.Series) -> pd.Series:
+    """tz-aware datetime Series -> int64 UTC MICROseconds, version-proof.
+
+    pandas 3 changed datetime.astype('int64') from nanoseconds to
+    milliseconds; casting through numpy datetime64[ns] pins the unit on
+    every version.
+    """
+    if isinstance(dt, pd.Series):
+        dts = dt.dt.tz_convert("UTC")
+        idx = dt.index
+    else:
+        dts = dt.tz_convert("UTC")
+        idx = None
+    ns = dts.to_numpy(dtype="datetime64[ns]").astype("int64")
+    return pd.Series(ns // 1000, index=idx, dtype="int64")
+
+
 def _parse_ts(date_s: pd.Series, time_s: pd.Series) -> pd.Series:
     dt = pd.to_datetime(
         date_s.astype(str).str.strip() + " " + time_s.astype(str).str.strip(),
         utc=True, errors="raise", format="mixed",
     )
-    return (dt.astype("int64") // 1000).astype("int64")
+    return _to_us(dt)
 
 
 def load_timeline(path) -> pd.DataFrame:
@@ -34,7 +51,10 @@ def load_timeline(path) -> pd.DataFrame:
     empty; only scheduled (pre-announced) event times are returned."""
     df = pd.read_csv(path)
     if "surprise_note" in df.columns:
-        vals = df["surprise_note"].astype(str).str.strip()
+        # fillna first: under pandas 3 / Arrow strings, astype(str) keeps NA
+        # as NA instead of the string "nan", which would fail the assert on
+        # empty cells. Intent unchanged: only NON-empty notes are refused.
+        vals = df["surprise_note"].astype("string").fillna("").str.strip()
         assert (vals.isin(["", "nan", "None"])).all(), (
             "surprise_note must be empty: it is post-event information and "
             "must never enter an ex-ante model"
@@ -53,7 +73,7 @@ def load_timeline(path) -> pd.DataFrame:
             np.where(has_date, res, df["event_date_utc"].astype(str) + " " + res),
             utc=True, errors="raise", format="mixed",
         )
-        out["resolution_ts_us"] = (res_dt.astype("int64") // 1000).astype("int64")
+        out["resolution_ts_us"] = _to_us(res_dt)
         missing = df["expected_resolution_utc"].isna()
         if missing.any():
             out.loc[missing, "resolution_ts_us"] = (

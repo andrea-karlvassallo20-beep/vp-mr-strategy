@@ -271,6 +271,17 @@ def build_spells(data_dir: Path, timeline_path: Path, cache_dir: Path):
 
     S = pd.concat(spells, ignore_index=True).sort_values("t0_us").reset_index(drop=True)
     S = macro_censor.censor_spells(S, windows)
+    # warm-up hygiene: the first ~24h of the window has undefined sigma_h
+    # (24h rolling of hourly returns), and the first hour has no spread
+    # proxy; rows with undefined covariates cannot enter any model and are
+    # dropped BEFORE caching (the T1/T2 fit paths were never exercised on
+    # window 1, so this latent issue surfaces only now).
+    n_before = len(S)
+    S = S.dropna(subset=["sigma_h", "med_spread", "vpin_t0",
+                         "vpin_placebo_t0"]).reset_index(drop=True)
+    if n_before - len(S):
+        print(f"  dropped {n_before - len(S)} warm-up rows with undefined "
+              f"covariates (sigma_h / spread proxy / VPIN)", flush=True)
     S["dur_h"] = S["duration_us"] / (3600 * 10**6)
     S["dur_ec"] = S["n_trades_spell"].astype("float64")
     S["time_in_comp_h"] = S["time_in_comp_min"] / 60.0
