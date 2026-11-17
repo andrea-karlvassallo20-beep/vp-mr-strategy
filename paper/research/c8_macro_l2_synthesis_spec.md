@@ -62,6 +62,28 @@ Both kill.
   with per-pair decays and the diurnal baseline (the `fit_hawkes2`
   configuration, whose G = α/β convention is now verified). n_c → 1 is
   the reflexive market: the book going critical.
+
+  T-H pre-conditions (added 2026-11-16 from the Hardiman-Bouchaud
+  deep-read, docs/library/hardiman_bouchaud_branching_review.md,
+  BEFORE any L2 data passed the gate — amendment discipline: harder to
+  fire is the only legal direction):
+  1. **Uncertainty band, not a point estimate.** The trigger fires only
+     if the LOWER bound of the branching ratio's bootstrap band (over
+     estimation windows, MEDIAN aggregation — never the mean: the
+     mean-variance branching estimator's mean is −∞ for finite
+     samples, their §III) exceeds 0.8. A point estimate near 0.8 is
+     noise in the estimator's worst region (their Fig. 1: bias and
+     variance explode as n → 1).
+  2. **Kernel-family control.** Fit both exponential and power-law
+     kernels on the same window; if the power-law fit removes the
+     criticality (Hardiman-Bouchaud: slowly-decaying kernels fit as
+     n → 1 under an exponential misspecification), the trigger does
+     not fire — the criticality was misspecification, not the market.
+  3. **Model-independent cross-check (diagnostic line, reported every
+     run).** The mean-variance estimator n ≈ 1 − μ_W/σ²_W (their Eq. 7)
+     on the same sample, with its known one-sided bias: it reads BELOW
+     the MLE branching by construction; reading ABOVE it is a defect
+     alarm, not a finding.
 - **T-O — extreme OFI absorption.** The 4h integrated OFI (CKS exact
   formula, `top_of_book_ofi`) sits in the bottom decile of its trailing
   30-day distribution WHILE |Δmid| over the same window is < 0.5× the

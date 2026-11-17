@@ -352,6 +352,18 @@ The ratification queue now holds four candidate sharpenings
 one K7 sharpening, and the 4b W-ladder/Amendment-1 pair). Zero
 armed. The owner's word is the only trigger.
 
+
+- 2026-11-16 (library ritual, paper 2): Hardiman-Bouchaud branching-ratio
+  deep-read (docs/library/hardiman_bouchaud_branching_review.md) — the
+  model-independent mean-variance estimator (n ≈ 1 − μ_W/σ²_W), its one-sided
+  LOW bias, median-only aggregation (the estimator's mean is −∞), and the
+  kernel-misspecification artifact (power-law data fits as critical under an
+  exponential kernel). C8's T-H trigger gained three pre-conditions BEFORE
+  any L2 data: bootstrap-band firing (not point estimates), the
+  kernel-family control, and the mean-variance cross-check as a standing
+  diagnostic. Queue next: the VPIN/order-flow-toxicity read, then the
+  remaining prose pages against the ledger.
+
 ## Progress log
 
 - 2026-11-16 (queue start): surprise ledger wired to the living board, nightly.
@@ -360,6 +372,19 @@ armed. The owner's word is the only trigger.
   t1_second_window_report.md); the misses curriculum quantified (873 series,
   1,765,316 series-days: coverage 0.039, lift 2.07); CKS deep-read done
   (five siblings named, docs/library/cks_ofi_review.md).
+- 2026-11-16 (library ritual, paper 3): VPIN/order-flow-toxicity read
+  (docs/library/vpin_toxicity_review.md, records 046/047/048 via the
+  flagged summaries + the Andersen-Bondarenko contestation). Four items:
+  we hold true aggressor flags the papers had to approximate (BVC becomes
+  a diagnostic, never the production classification); the vol-tautology
+  sibling in its original habitat (no VPIN reading without its
+  vol-conditioned twin); the clock is the object (the taker harness's
+  trade-count-bucket VPIN is a different object from A4's volume-bucket
+  construction - the crossing is a ledger entry, never silent); and the
+  contestation is why C8 insists on pre-registered kill lines. C8 spec
+  A4 gained three conditional pre-commitments, BEFORE any L2 data. Queue
+  next: the passive-cancel/frozen-book regime read (the mechanism the
+  replay days make most alive), then the remaining prose pages.
 - 2026-11-16 (this session): C1-L2 spec sharpened BEFORE any Tardis data
   arrived — kill line 6 (sign guard, motivated by T1's inversion: the battery
   had no line to catch an informative-but-inverted covariate) and kill line 7
@@ -370,6 +395,54 @@ armed. The owner's word is the only trigger.
   Next in the queue: the library ritual's second paper (Hawkes branching —
   the beta lesson's other half), then the remaining prose pages against the
   ledger.
+
+
+## 9b. Null-time session 5 (convergent record, 2026-11-16): library deep-read session 3 (latent LOB regimes) and the macro timeline extended backward to 2019
+- **Library deep-read session 3** (`paper/research/library/
+  2026-11-16_latent_regimes_deep_read.md`): Hiremath & Hiremath, "Early
+  Detection of Latent Microstructure Regimes in Limit Order Books"
+  (arXiv:2604.20949, extracted text, page-cited), read against the
+  killing question. Grade: NO kill line changed. The paper is the C1-L2
+  hypothesis stated as theory (a stable -> latent build-up -> stress
+  DGP; compression is the latent build-up regime; positive lead time
+  iff drift-to-noise eta > sqrt(2 log(1/delta)/T1)) - the theory
+  citation for why the C1-L2 question is well-posed, and for why its
+  honest failure mode may be "below SNR", not "absent". One pre-named
+  post-mortem diagnostic (descriptive only, never a new test): their
+  46% missed detections concentrate in short-build-up/high-noise
+  cells, so a near-kill C1-L2 result should be autopsied by
+  compression-duration stratum before the mechanism is named dead.
+  Narrative constraint pinned with a citation: OFI/imbalance/volatility
+  are reactive BY CONSTRUCTION (their thesis), so C8's OFI trigger is
+  contemporaneous, never anticipatory - and their winning channels were
+  depth erosion and HMM entropy, the depth family (C6's neighborhood).
+  Their "seasonality removal is essential" (depth false-triggers at
+  predictable hours) is the empirical citation for our hour-of-day
+  stratification. Their 5-event honesty ("order-of-magnitude
+  indicators") is a culture citation for our dry-run discipline.
+- **The macro timeline extended backward** (the queue's
+  owner-curated "boring, valuable, endless" item): every FOMC
+  statement day 2019-2026H1 (59 scheduled meetings) + the eight
+  tentative 2027 meetings + the two 2020 emergency meetings, ALL
+  verified this session against federalreserve.gov's own calendar
+  pages (fomccalendars.htm for 2021-2027, fomchistorical2019/2020.htm
+  for 2019-2020) - every row hand-checked, per the queue's rule.
+  Statement times are 2:00 p.m. ET with DST handled explicitly
+  (18:00 UTC in EDT, 19:00 in EST; spot-checked: 2020-11-05 and
+  2024-12-18 read 19:00, 2019-03-20 reads 18:00). The two unscheduled
+  2020 meetings (Mar 3, Mar 15 - the COVID emergency cuts) do NOT
+  carry the regular 2 p.m. time, so they are censored conservatively
+  as all-day windows (event_type FOMC_EMERGENCY, 00:00-23:59) rather
+  than inventing a precise time. 2027 rows carry confidence
+  "tentative" (the Fed's own note: each date is tentative until
+  confirmed at the preceding meeting). Notation votes (Mar 19/23/31
+  2020, Aug 27 2020, Aug 22 2025) and the Oct 4 2019 unscheduled
+  meeting are EXCLUDED as non-decision events - the owner may curate
+  them in. CPI/NFP backward extension is NOT attempted: those
+  historical schedules are not hand-checkable from the same single
+  authoritative page, and a wrong row is worse than a missing row.
+  Timeline: 19 -> 87 events, all parse through macro_censor
+  (windows verified for first and last rows); 128 tests green.
 
 ## 9. Null-time session 5 (2026-11-16): the 500-paper edge triage and deep-read session 3
 
@@ -539,16 +612,24 @@ diffusion" and "Optimal Execution with Dynamic Order Flow
 Imbalance".
 
 
-- 2026-11-16 (library ritual, paper 3): VPIN/order-flow-toxicity read
-  (docs/library/vpin_toxicity_review.md, records 046/047/048 via the
-  flagged summaries + the Andersen-Bondarenko contestation). Four items:
-  we hold true aggressor flags the papers had to approximate (BVC becomes
-  a diagnostic, never the production classification); the vol-tautology
-  sibling in its original habitat (no VPIN reading without its
-  vol-conditioned twin); the clock is the object (the taker harness's
-  trade-count-bucket VPIN is a different object from A4's volume-bucket
-  construction - the crossing is a ledger entry, never silent); and the
-  contestation is why C8 insists on pre-registered kill lines. C8 spec
-  A4 gained three conditional pre-commitments, BEFORE any L2 data. Queue
-  next: the passive-cancel/frozen-book regime read (the mechanism the
-  replay days make most alive), then the remaining prose pages.
+- 2026-11-16 (library ritual, paper 4): Huang-Lehalle-Rosenbaum queue-reactive
+  model (docs/library/queue_reactive_review.md) - the deep-read aimed at C5,
+  the claim the passive-cancel mechanism belongs to. Four sharpenings, all
+  written into C5's entry in orderflow_program.md BEFORE the data:
+  (a) cancel intensity is increasing-concave then SATURATING (their Fig. 2,
+  explicitly contradicting the classical linear cancel rate) - every
+  cancel/absorption feature must be state-conditioned on queue size; a raw
+  cancel fraction (the 91.6-96.8% replay readings included) is confounded by
+  the queue-size distribution and is not a feature; (b) front-vs-rear
+  separation mandatory - the withdrawal mechanism is front-of-queue (priority
+  value makes front orders persist, rear orders churn); pooled cancels
+  measure churn, not withdrawal; (c) the queue-reactive null beside the
+  shuffled-signs placebo - the state-conditioned intensities estimated on the
+  gated data itself define what ordinary ergodic queuing produces, and any
+  abnormal-withdrawal reading must exceed it; (d) the constant-mid queuing
+  period is the risk-set unit (the formal warrant for C5's 'while price is
+  flat' clause). The four-paper ritual now stands: CKS -> C1-L2 lines 6-7;
+  Hardiman-Bouchaud -> C8 T-H pre-conditions; VPIN -> C8 A4 pre-commitments;
+  queue-reactive -> C5 feature pre-conditions. Every spec the L2 data will
+  be tested against has been sharpened BEFORE the data exists. Queue next:
+  the remaining prose pages against the ledger.
