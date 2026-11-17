@@ -539,6 +539,29 @@ diffusion" and "Optimal Execution with Dynamic Order Flow
 Imbalance".
 
 
+- 2026-11-16 (library ritual, paper 4): Huang-Lehalle-Rosenbaum queue-reactive
+  model (docs/library/queue_reactive_review.md) - the deep-read aimed at C5,
+  the claim the passive-cancel mechanism belongs to. Four sharpenings, all
+  written into C5's entry in orderflow_program.md BEFORE the data:
+  (a) cancel intensity is increasing-concave then SATURATING (their Fig. 2,
+  explicitly contradicting the classical linear cancel rate) - every
+  cancel/absorption feature must be state-conditioned on queue size; a raw
+  cancel fraction (the 91.6-96.8% replay readings included) is confounded by
+  the queue-size distribution and is not a feature; (b) front-vs-rear
+  separation mandatory - the withdrawal mechanism is front-of-queue (priority
+  value makes front orders persist, rear orders churn); pooled cancels
+  measure churn, not withdrawal; (c) the queue-reactive null beside the
+  shuffled-signs placebo - the state-conditioned intensities estimated on the
+  gated data itself define what ordinary ergodic queuing produces, and any
+  abnormal-withdrawal reading must exceed it; (d) the constant-mid queuing
+  period is the risk-set unit (the formal warrant for C5's 'while price is
+  flat' clause). The four-paper ritual now stands: CKS -> C1-L2 lines 6-7;
+  Hardiman-Bouchaud -> C8 T-H pre-conditions; VPIN -> C8 A4 pre-commitments;
+  queue-reactive -> C5 feature pre-conditions. Every spec the L2 data will
+  be tested against has been sharpened BEFORE the data exists. Queue next:
+  the remaining prose pages against the ledger.
+
+
 - 2026-11-16 (library ritual, paper 2): Hardiman-Bouchaud branching-ratio
   deep-read (docs/library/hardiman_bouchaud_branching_review.md) — the
   model-independent mean-variance estimator (n ≈ 1 − μ_W/σ²_W), its one-sided
