@@ -345,6 +345,7 @@ def build_page(mega_csv=MEGA_CSV, board_csv=BOARD_CSV,
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Salient &mdash; The heat map</title>
+<meta name="description" content="The heat map: every series on the board colored by days since its last >=4-sigma move, refreshed nightly.">
 <link rel="stylesheet" href="site.css">
 <style>
 .treemap {{ position: relative; max-width: 100%; }}
