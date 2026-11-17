@@ -114,5 +114,44 @@ try:
 except ValueError:
     check("EV on UNKNOWN payoff raises", True)
 
+# --- non-finite inputs: a NaN must REFUSE, never pass silently --------
+# (regression: NaN comparisons are all False, so an unvalidated NaN in
+# the lift samples used to bypass K1, K2 and Kelly and crash at round())
+nan_lift = dict(good)
+nan_lift["cpcv_lift_samples"] = [1.9, 2.1, float("nan"), 2.6, 3.0, 3.3, 3.8, 4.2, 4.7, 5.1]
+r = decide(nan_lift)
+check("NaN in lift samples -> refusal (never a silent pass)",
+      r["size_fraction"] == 0.0
+      and any("non-finite" in x for x in r["refusals"]))
+check("NaN refusal is not a K1 pass/fail claim",
+      not any(x.startswith("K1:") for x in r["refusals"]))
+
+inf_cost = dict(good)
+inf_cost["cost_r"] = float("inf")
+r = decide(inf_cost)
+check("inf cost -> refusal", r["size_fraction"] == 0.0
+      and any("non-finite" in x for x in r["refusals"]))
+
+nan_payoff = dict(good)
+nan_payoff["payoff_r_samples"] = [0.0, 0.5, float("nan"), 2.0, 3.5, 5.0, 8.0]
+r = decide(nan_payoff)
+check("NaN in payoff samples -> refusal", r["size_fraction"] == 0.0
+      and any("non-finite" in x for x in r["refusals"]))
+
+garbage = dict(good)
+garbage["baseline_hazard"] = "probably"
+r = decide(garbage)
+check("non-numeric baseline -> refusal", r["size_fraction"] == 0.0
+      and any("non-numeric" in x for x in r["refusals"]))
+
+nan_budget = dict(good)
+nan_budget["drawdown_budget"] = float("nan")
+r = decide(nan_budget)
+check("NaN budget -> refusal", r["size_fraction"] == 0.0
+      and any("non-finite" in x for x in r["refusals"]))
+
+check("the good case still sizes after the validation hardening",
+      decide(good)["size_fraction"] > 0.0)
+
 print(f"\n{PASS} passed, {FAIL} failed")
 sys.exit(1 if FAIL else 0)
