@@ -81,6 +81,8 @@ NAV = """<nav>
   <a href="dormancy.html">The dormancy map</a>
   <a href="resources.html">The library</a>
   <a href="ledger.html">The claims ledger</a>
+  <a href="ohlcv_verdict.html">The OHLCV verdict</a>
+  <a href="math_verification.html">The math, verified</a>
   <a href="instrument.html">The instrument (live)</a>
 </nav>"""
 
