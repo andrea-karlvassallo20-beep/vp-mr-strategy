@@ -352,6 +352,18 @@ The ratification queue now holds four candidate sharpenings
 one K7 sharpening, and the 4b W-ladder/Amendment-1 pair). Zero
 armed. The owner's word is the only trigger.
 
+
+- 2026-11-16 (library ritual, paper 2): Hardiman-Bouchaud branching-ratio
+  deep-read (docs/library/hardiman_bouchaud_branching_review.md) — the
+  model-independent mean-variance estimator (n ≈ 1 − μ_W/σ²_W), its one-sided
+  LOW bias, median-only aggregation (the estimator's mean is −∞), and the
+  kernel-misspecification artifact (power-law data fits as critical under an
+  exponential kernel). C8's T-H trigger gained three pre-conditions BEFORE
+  any L2 data: bootstrap-band firing (not point estimates), the
+  kernel-family control, and the mean-variance cross-check as a standing
+  diagnostic. Queue next: the VPIN/order-flow-toxicity read, then the
+  remaining prose pages against the ledger.
+
 ## Progress log
 
 - 2026-11-16 (queue start): surprise ledger wired to the living board, nightly.
