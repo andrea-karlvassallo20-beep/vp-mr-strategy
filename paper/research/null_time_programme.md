@@ -1527,3 +1527,69 @@ highest-value remaining entry in its tier.
   "Passive Market Impact: A Point Process Approach" (score 33,
   on the shelf) — squarely in C5's passive-withdrawal family
   after session 21's spoofability read.
+
+## 30. Null-time session 26 (2026-11-18): deep-read session 24 — passive orders move prices, and the wrong sign is model-made: the sign-register rule's theoretical demonstration
+
+- **Library deep-read session 24** (next UNREAD triage-rank entry,
+  per session 29's pointer — verified unread by the read-slug
+  mapping):
+  `paper/research/library/2026-11-18_passive_market_impact_deep_read.md`
+  on Ouazzani Chahdi, Rosenbaum & Szymanski, "Passive Market
+  Impact: A Point Process Approach" (arXiv:2412.07461v2,
+  2024/2026; CentraleSupélec/École Polytechnique/Luxembourg) -
+  the theoretical companion to session 21's spoofability read.
+  Grade: NO kill line changed; NO new candidate sharpening.
+  Findings: (a) **[reinforcing]** the paper's starting point IS
+  the wrong-sign artifact: in the constant-kappa Hawkes propagator
+  price, a resting buy metaorder's executions mechanically push
+  the price DOWN - impact of the wrong sign for a whole order
+  class, manufactured entirely by a modeling choice
+  (state-independent information content), against the empirical
+  fact that limit-order impact is comparable to market-order
+  impact with the correct sign (PDF pp. 1-3) - the queued
+  sign-register rule's (session 10) cleanest theoretical
+  demonstration, its empirical motivation untouched; (b)
+  **[reinforcing]** the fix - kappa as a DECREASING function of
+  the touched queue's volume, a price-resistance coefficient -
+  gives passive metaorder impact that is monotone during
+  execution, ~sqrt(participation) at large rates (their
+  V-profile argument; simulated exponent 0.54), with NO
+  relaxation phase; this is the equilibrium-side picture of what
+  session 21 measured, and it is C5's passive-withdrawal family's
+  theoretical warrant for causal-language territory: passive
+  depth is never a neutral regressor (PDF pp. 3-6, 14-19);
+  (c) **[cost-survival ammunition]** passive execution cost
+  schedules differ QUALITATIVELY from aggressive ones - no
+  post-execution relaxation, the book re-stations and the impact
+  stands (PDF pp. 18-19); a K7-style layer assuming the
+  aggressive impact shape for passive fills would misprice the
+  post-execution leg in a known direction, and the instantaneous-
+  impact template (eq. 4) would have to declare its flow model
+  per the session-20 Poisson-mispricing rule; (d)
+  **[interpretation caution]** a fitted kappa is a book-state
+  moment, not a constant, and moves with volatility (higher
+  volatility <-> smaller resistance; PDF pp. 19-21): any future
+  resistance- or depth-elasticity estimate is state-dependent and
+  regime-moving, joining the per-branch rule (session 9), the
+  dispersion register (session 14), and the MIHM identity
+  (session 20) in the never-read-alone family. Would-have-killed:
+  flow-based features inheriting an aggressive-order sign
+  register would carry mechanically perverse signs for passive
+  flows with NO diagnostic flagging it (the model fits, backtests
+  run, the signs are wrong); and any causal claim about passive
+  depth phrased as a "liquidity description" instead of routed
+  through C5 would have predated the theoretical statement that
+  passive placement moves the conditional price process itself.
+  Cautions: stylized one-queue-per-side model, market orders
+  independent of book state (the authors' own "unrealistic"
+  admission - the independence the model then partially repairs),
+  negative queues allowed, linearized kappa-squared calibration
+  with non-parametric estimation out of scope, 0.54 simulated
+  exponent as illustration not evidence; arXiv v2 with a 2026
+  stamp, no published version located - check before formal
+  citation. Ratification queue after this session: FOURTEEN
+  candidate sharpenings, zero armed (unchanged). T1 remains armed
+  awaiting the owner's word; the blocked list stays blocked.
+  Deep-read queue: next unread by rank per the read-slug mapping
+  is "Optimal Execution with Passive Market Impact" (score 33,
+  on the shelf) - the sibling of this paper's framework.
