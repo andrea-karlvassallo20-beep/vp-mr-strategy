@@ -3241,3 +3241,39 @@ this session, no kill line moved, nothing armed, nothing trades live.
   unsplit; W2 owed on everything; no kill line moved; nothing
   armed; ratification queue FIFTEEN candidates zero armed; nothing
   trades live. Deep-read queue parallel: next x947263 (score 32).
+
+## 65. MEASURED-PROTOCOL SESSION (2026-11-18), twenty-first of the parallel regime: the W2 fresh-window battery - PRE-REGISTERED
+
+- **Standing debt named in every recent session:** every chip owes
+  W2 fresh-window confirmation. Response: the confirmation rules
+  are now FROZEN BEFORE any fresh window exists -
+  `paper/research/when_instrument/w2_fresh_window_battery.md`.
+- **What is registered:** five one-shot candidates with minimum n
+  and hard pass/kill lines, chosen without any W2 data (none
+  exists yet): C1 the flagship washout bottom (episode study; pass
+  win>=0.55 AND mean>=+1% at n>=30; in-sample context 0.597/+9.8%);
+  C2 the aged deep-washout zone XB_old_low (pass >= baseline+5pts
+  AND >=0.63 at n>=200; context 0.753 vs 0.618); C3 the two-clock
+  age law (pass first-minus-second-half >= +5pts AND opposite-sign
+  fwd-20d means at n>=1,000/half; context 0.720/0.550 and +4.4%/
+  -2.3%); C4 absorption at lows (pass >= baseline+3pts at n>=150;
+  context 0.66); C5 young euphoria momentum (pass fwd-20d >= +2%
+  AND >= baseline+3pts at n>=100; context 0.743/+12.6% - the
+  program's only drift claim; a kill here kills ALL drift
+  language permanently).
+- **Process rules pre-committed:** one evaluation per candidate
+  when its n accumulates (weekly refetch cadence; burn-in guards
+  and the session-49 sigma>0 correction carry over verbatim;
+  top-250 membership drift structural and accepted); landing
+  exactly on a line (within 1pt) adjudicates by pre-registered
+  half-agreement - discretion removed now, not later; one miss
+  kills its chip permanently (the dead pile already holds
+  nuke_down, the Katsanos sign, V-crash shorts).
+- **Nothing in the battery arms anything**: a pass makes a chip
+  "W2-confirmed in-window"; the water decision remains the owner's
+  with the sealed one-shot battery as the final gate. Nothing
+  trades live.
+- **Deep-read queue:** unchanged, parallel - next unread by rank:
+  "State-dependent Hawkes processes and their application to limit
+  order book modelling" (x947263, score 32). Ratification queue:
+  FIFTEEN candidates, zero armed.
