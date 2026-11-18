@@ -1272,3 +1272,23 @@ x3ff3a4, on the library text shelf; also the pre-assigned burst slot 04 paper, n
 slot-04 trace exists); with the session-9 triage-audit flag on record, rank is a
 candidate reading, and the owner's library policy governs when they diverge.
 Nothing measured, no kill line moved, nothing armed, nothing trades live.
+
+## 24b. Null-time session 20 corrigendum (2026-11-18): the slot-04 attribution in entry ## 24 is wrong
+
+- What is wrong: entry ## 24 says the Huang-Rosenberg ergodicity paper "was also
+  the pre-assigned burst slot 04 paper, that slot produced no repo trace". That is
+  incorrect. The burst slot 04 assignment was "Simulating and analyzing a sparse
+  order book: an application to intraday electricity markets" (score 37, x3ff3a4),
+  which entry ## 24's own closing pointer correctly names as the slot-04 paper. The
+  burst slot 02 assignment was the Horst-Xu FLT paper (entry ## 23, correct). NO
+  burst-slot assignment is on record for the Huang-Rosenberg ergodicity paper; its
+  read was the standing queue's next UNREAD pointer (score 37, xfccac8) and nothing
+  more.
+- What is corrected: the erroneous clause in entry ## 24 is retracted here; the
+  wrong text is left unedited above, per the append-only honest-error protocol.
+  Nothing else in entry ## 24 is affected: the grade (NO kill line changed, NO new
+  candidate sharpening), every page citation, the queue count (SEVENTEEN candidates,
+  zero armed, unchanged), and the next-UNREAD pointer all stand as written. The
+  PR #171 description and its squash-commit message carried the same wrong clause;
+  git history is immutable, so this corrigendum is the correction of record.
+- Nothing measured, no kill line moved, nothing armed, nothing trades live.
