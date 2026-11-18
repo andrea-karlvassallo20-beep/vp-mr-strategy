@@ -986,3 +986,170 @@ measured, no kill line moved, nothing armed, nothing trades live.
   λ/(1−μ̂) and a size-state term σ* (Eq. 34, PDF p. 9; Eq. 36, PDF p. 10), and its own
   quantile Markov chain on mid-move sizes (Sec. 5.3, PDF pp. 16–17; transitions by
   frequency counting, PDF p. 14) recovers 28–60% of the mean residual the intensity-only
+  fixed-tick model missed on the multi-tick names (Table 8, PDF p. 18) with nothing but
+  the tape. Pre-declaration text: any short-horizon C1-L2/C8 flow feature earns an
+  incremental-claim comparison only if it adds value beyond (a) the top-of-book OFI
+  benchmark, (b) the Eq.-7 queue-imbalance comparator, AND (c) a pre-registered own-price
+  size-state persistence comparator built as the paper's quantile chain on the venue's
+  realized mid-move size distribution. Harder to pass than the standing two-null rule
+  because the third null never touches the book or event stream — immune to both
+  event-flow and depth laundering. Interpretation cautions with page cites: fixed-tick
+  constructions are structurally biased on multi-tick venues — 61%/53%/71% of mid changes
+  exceed half a tick on AAPL/AMZN/GOOG (PDF p. 15; Fig. 4, PDF p. 24) — and the C1-L2
+  venue is maximal-small-tick, so any one-tick convention must be declared against the
+  venue's actual move-size distribution; even the size-chain leaves AMZN with 20.8%
+  coefficient error (Table 9, PDF p. 18), so a residual is not evidence of a flow
+  channel. Reinforcing: implied α/β = 0.41–0.53 across all five names (Table 2, PDF
+  p. 14), per-branch estimation is the only legal shape; direction persistence flips sign
+  across names (Table 4, PDF p. 15), reinforcing the sign-register rule. Source quality:
+  single trading day, five equities, level-1 data, arXiv v1 with placeholder venue
+  pagination, N(t) counts mid-price changes not order arrivals — cite the structure,
+  never the magnitudes.
+
+  Ratification queue after this session: SIXTEEN candidate sharpenings (the fifteen
+  standing plus the size-state persistence comparator joined 2026-11-18), zero armed.
+  T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read
+  queue: the standing next UNREAD pointer set at null-time session 13 stands —
+  "Price-Aware Automated Market Makers: Models Beyond Brownian Prices and Static
+  Liquidity" (score 39, already on the library text shelf); with the session-9
+  triage-audit flag on record, rank is a candidate reading, and the owner's library
+  policy governs when they diverge. (This session was a pre-assigned parallel slot 6 of
+  24, so it does not consume the queue's top pointer.) Nothing measured, no kill line
+  moved, nothing armed, nothing trades live.
+## 21. Null-time session 17 (2026-11-18): deep-read session 15 — the Proof-Of-Human paper read as caution, both laundering directions named
+
+- **Library deep-read session 15** (a PARALLEL-FIRE SLOT ASSIGNMENT, slot 12 of 24,
+  declared as such — this paper was pre-assigned to avoid duplicate work across the
+  24 simultaneous slots, so it was read out of the standing queue's top-pointer order;
+  the standing next-UNREAD pointer is unchanged, see the close; numbering note: this
+  entry was drafted by the slot's own session against a stale tail (self-numbered session
+  16 / deep-read 14) and was renumbered machine-side to the next free numbers (session
+  17 / deep-read 15) after concurrent slots landed sessions 14-16; no existing text edited):
+  `paper/research/library/2026-11-18_rise_of_the_machines_deep_read.md`
+  on Petukhina, Reule & Härdle, "Rise of the Machines? Intraday High-Frequency
+  Trading Patterns of Cryptocurrencies" (arXiv:2009.04200v1, 2020; post-peer-review,
+  pre-copyedit version of a European Journal of Finance article; 5-minute CRIX/dyos
+  European-market data, 11 coins, Jul–Aug 2018). Grade: NO kill line changed; NO new
+  candidate sharpening. Findings, page-cited: (1) GAM diurnal/weekly seasonality with
+  highly significant smooth terms explaining only ~1% (PDF p. 15), the human-shaped
+  intraday curve (nighttime trough, 17:00–20:00 CET peak, PDF p. 16) and weekend
+  decline in returns/volume/volatility (Figs. 8–10, PDF pp. 16–18) — venue
+  corroboration for the already-recorded hour-of-day stratification and seasonality
+  items, nothing added; (2) interpretation caution: the "24/7 algorithmic trading
+  impact is rather negligible" headline (PDF pp. 19–20) is a SHAPE inference from
+  ~1%-R² smooths, in one two-month vacation window, at 5-minute grain, with no direct
+  algorithm-share measurement — agent-mix statements may never be imported from
+  seasonality shape alone, and the 2018-spot reading does not date 2024–25 perps in
+  either direction (regime-dating the session-6 fragility premise honestly);
+  (3) the on-chain/off-chain passage (PDF p. 19) reinforces the proxy-refusal layer:
+  on-chain variables are not admissible substitutes for L2 book state; (4) Table 1
+  (PDF p. 12): near-zero mostly-negative first-order return autocorrelation with
+  strongly positive absolute/squared-return autocorrelation at 5-minute grain —
+  consistent with the compression premise's volatility-clustering motivation as
+  CONTEXT ONLY (different grain, era, venue; never claim support). The counterfactual
+  named both laundering directions this paper invites: its human-driven headline
+  could have been read as undermining the L2 motivation, and its speculative
+  false-positive-cascade passage (PDF p. 19) could have been read as criticality
+  evidence for the trigger line — the no-empirical-claim-from-papers rule prevented
+  both.
+
+Ratification queue after this session: SIXTEEN candidate sharpenings (unchanged by
+this session — no sharpening was warranted by this source; the sixteen include
+concurrent slot 6's size-state persistence comparator), zero armed. T1 remains armed awaiting
+the owner's word; the blocked list stays blocked. Deep-read queue: the next UNREAD
+triage entry is unchanged — "Price-Aware Automated Market Makers: Models Beyond
+Brownian Prices and Static Liquidity" (score 39, already on the library text shelf);
+with the session-9 triage-audit flag on record, rank is a candidate reading, and the
+owner's library policy governs when they diverge. Nothing measured, no kill line
+moved, nothing armed, nothing trades live.
+
+## 22. Null-time session 18 (2026-11-18): deep-read session 16 — the price-aware AMM quoting paper graded pure theory, zero data; both laundering directions named
+
+- **Library deep-read session 16** (the standing queue's top UNREAD pointer, consumed by
+  this session — declared as such, not a parallel slot):
+  `paper/research/library/2026-11-18_price_aware_amm_deep_read.md`
+  on Bergault, Bertucci, Bouba, Guéant & Guilbert, "Price-Aware Automated Market Makers:
+  Models Beyond Brownian Prices and Static Liquidity" (arXiv:2405.03496v3, 2024; pure
+  HJB/quadratic-Hamiltonian quoting theory for a price-aware AMM under Heston-Bates,
+  Stein-Stein-with-jumps, linear Markovian Hawkes and Z-Hawkes price models, plus
+  Hawkes-vs-MMPP liquidity modeling; "No data involved in this study", PDF p. 20).
+  Triage: score 39, xd1af5a, read as the session's standing-pointer read.
+- Grade: NO kill line changed; NO new candidate sharpening. The paper is quoting-strategy
+  engineering with no empirical content, and per the standing rule it is recorded as
+  context only, never program input. Numbered findings, page-cited in the note: (1)
+  [reinforcing] the branching ratio n used matter-of-fact as "the percentage of price
+  moves that are purely endogenous" (PDF p. 11) — corroborates that the endogeneity-share
+  reading is the field default, which is exactly why the queued estimator-discipline items
+  (estimator-at-scale-W with the mean-variance cross-check, bootstrap-CI and
+  boundary-solution rules, the W-ladder) govern; (2) [reinforcing] the control literature's
+  own honest label for the exponential kernel — "Power law kernels may be more realistic
+  than exponential ones, but they do not lead to Markovian setups" (footnote 8, PDF p. 11)
+  — first-principles support for the queued ACF-shape kernel-validity gate and the
+  kernel-form-declared-with-the-spec discipline; (3) [reinforcing] the Z-Hawkes section
+  (PDF pp. 13-15) names the sign-feedback alternative family (Zumbach effect, xi_t driven
+  by sign(eta)) that linear exponential-kernel Hawkes cannot represent — concretizes the
+  already-queued kernel-family control; (4) [interpretation caution] the
+  curse-of-dimensionality verdict on Hawkes liquidity models (PDF pp. 16-18) is a
+  control-theoretic solvability statement, NOT a statistical-validity claim, and licenses
+  nothing against C8's trigger (which estimates an intensity and solves no HJB); the MMPP
+  alternative (p = 2-3 states, PDF p. 17) is a control-side discretization, not
+  regime evidence; (5) [interpretation caution] a price-aware AMM manufactures part of its
+  own flow endogeneity (markup-dependent arrival intensities, PDF p. 4; markups reacting
+  to state, PDF pp. 13-19) — binds only if venue scope ever widens to AMM/on-chain pools,
+  since the gated Tardis LOB data contains no AMM quoting loop; (6) [source-quality note]
+  arXiv v3, zero data, two Swaap Labs co-authors and funding in partnership with Swaap
+  Labs (PDF pp. 1, 20), two equation typos observed (Eq. 15, PDF p. 10, nu-for-sigma in
+  the jump integral; Eq. 20, PDF p. 11, duplicated H^{1,0}H^{1,0}); published version to
+  be checked before formal citation.
+- The counterfactual, named both ways in the note: the Hawkes-for-control rejection could
+  have been laundered into an anti-Hawkes authority against the C8 trigger (wrong problem
+  class), and the paper's plain n-as-endogeneity-share parameter could have been laundered
+  into a license to read threshold crossings as reflexivity without estimator discipline.
+  The no-empirical-import rule blocked both; nothing measured, nothing armed.
+- Inaccessible/blocked status: none this session; the extract was present, page-marked and
+  complete (21 pp.).
+
+  Ratification queue after this session: SIXTEEN candidate sharpenings (unchanged — no
+  sharpening was warranted by this source), zero armed. T1 remains armed awaiting the
+  owner's word; the blocked list stays blocked. Deep-read queue: the next UNREAD triage
+  entry is now Horst & Xu, "Functional Limit Theorems for Hawkes Processes"
+  (arXiv:2401.11495v3, slug x47738d, score 38, already on the library text shelf); with
+  the session-9 triage-audit flag on record, rank is a candidate reading, and the owner's
+  library policy governs when they diverge. Nothing measured, no kill line moved, nothing
+  armed, nothing trades live.
+
+## 22b. Null-time session 18 corrigendum (machine-side, 2026-11-18): the session-18 log push was silently truncated; the full tail restored byte-exact
+
+- What happened: the squash merge of PR #168 (session 18) carried a silently TRUNCATED
+  copy of this log file to main. The composed full log (base at commit 8e6771d5 plus the
+  session-18 entry) was ~74 KB; the file-push path delivered only the first 63,998 bytes
+  without any error, cutting the text mid-sentence inside session 16's entry ("## 20") and
+  deleting the end of that entry along with two entries that had legitimately landed
+  earlier: "## 21. Null-time session 17" (merged with CI green via PR #167 at commit
+  8e6771d5) and the freshly composed "## 22. Null-time session 18" entry. Everything else
+  in the session-18 merge was correct and landed intact; verified byte-level: the
+  deep-read note paper/research/library/2026-11-18_price_aware_amm_deep_read.md (144
+  lines, complete through its standing caveat) and docs/DECISIONS_PENDING.md (untouched,
+  as the session queued nothing).
+- What is restored, byte-exact: the tail of entry ## 20 from the cut point onward, the
+  full entry ## 21 exactly as it stood at commit 8e6771d5, and entry ## 22 exactly as
+  composed for session 18 (standing-pointer read of the score-39 queue top; grade NO
+  kill line change, NO sharpening; queue unchanged at SIXTEEN; next UNREAD pointer
+  Horst & Xu). The two versions were verified identical over their common 63,998-byte
+  prefix before restoration, and the restored file is sha256-verified against the
+  composed original. No existing character of any entry was edited; nothing was
+  renumbered; this corrigendum is appended, per the honest-error protocol.
+- Root cause and the new machine-side rule: the truncation was invisible at composition
+  time because the integrity guard ran on the full pre-push tree (which was correct),
+  while the bytes actually delivered to the push were truncated upstream of the push.
+  The session's post-merge verification checked the notes directory instead of this log
+  file, so the defect survived into the merge — a verification failure, owned here.
+  Machine-side rule adopted from this point on: every log or ledger push is verified at
+  the raw SHA of the pushed branch BEFORE the PR is merged, byte-compared against the
+  composed intended file (length and sha256 plus tail line); a push that fails the
+  comparison is re-issued, never merged on trust.
+- What was NOT affected: no claim, no kill line, no test, no data, no ratification-queue
+  count. The corrupted content was history text only. Ratification queue after this
+  corrigendum: SIXTEEN candidate sharpenings (unchanged), zero armed. T1 remains armed
+  awaiting the owner's word; the blocked list stays blocked. Nothing measured, no kill
+  line moved, nothing armed, nothing trades live.
