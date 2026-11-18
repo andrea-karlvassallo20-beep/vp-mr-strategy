@@ -2790,3 +2790,43 @@ this session, no kill line moved, nothing armed, nothing trades live.
   nothing trades live. Deep-read queue parallel: next x947263
   (score 32). Session-49 flag stands: dossiers 37/40/42 +
   smh_presence re-run under the sigma>0 guard.
+
+## 52. MEASURED SESSION (2026-11-18), tenth of the parallel regime: the sigma>0 re-runs complete - the flow-state skeleton survives the correction intact, the nuke deflations are formally confirmed in the pooled dossiers, and the results went to the PR
+
+- **Owner directive:** "post your results on the website and keep
+  seeking to improve." Results posted to PR #160 as a comment
+  (surviving candidates, honest retractions, the niche verdict, the
+  library-to-formula ledger); improvement work continued with the
+  standing session-49 flag.
+- **The re-runs (all four flagged instruments patched with the
+  session-49 sigma>0 guard and re-run):**
+  `coin_chip_dossier` (37), `vfi_extremity_dossier` (40),
+  `avfi_fade_layer_dossier` (42), `smh_presence` scan - percent-corrected
+  outputs in clue_scan.
+- **The flow-state skeleton survives the correction INTACT:** base
+  0.6449 (was 0.645); near (base x ext_low) 0.601 (unchanged);
+  divTop top_fade 0.4812 (was 0.481 - the owner's exit-state
+  validation untouched); all-nights baseline 0.5736 (was 0.576).
+  The contamination was concentrated in the nuke chips, exactly as
+  session 49 diagnosed: post_nuke_down P_first_move_up 0.5665 vs
+  baseline 0.5736 - edge GONE in the pooled dossier (formally
+  confirming the stability-split revision); post_nuke_up 0.6478 -
+  the modest nuke_up chip stands (consistent with its 0.628/0.673
+  and 0.603/0.630 stability cells under both sigma scales). The
+  negative-median rule survives everywhere (P_up_fwd60 0.40-0.43
+  across states: chips live in first-move direction, never drift).
+- **A new standout surfaced in the corrected VFI mirror cells:**
+  ext_high x base = 0.7373 (n=510, the euphoric-base mirror of the
+  washout bottom) - recorded, NOT promoted; its confirmation is the
+  same W2 the others owe. No multiplicity spent on it.
+- **Standing state after this session:** the measured skeleton is NOW
+  fully clean (every published chip sigma>0-guarded): A2 washout
+  bottom (positive in both halves under both scales), nuke_up chip
+  (above baseline in both halves under both scales), base 0.645 /
+  near 0.601 presence skeleton, divTop 0.481 exit state, and the
+  fresh candidate ext_high x base 0.737. Ratification queue
+  FIFTEEN candidates zero armed (robust-scale register included);
+  no kill line moved; nothing armed; nothing trades live.
+- **Deep-read queue:** parallel, unchanged - next unread by rank:
+  "State-dependent Hawkes processes and their application to limit
+  order book modelling" (x947263, score 32).

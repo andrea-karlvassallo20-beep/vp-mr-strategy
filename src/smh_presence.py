@@ -78,9 +78,9 @@ def smh_state(close, volume, dates=None):
         return None
     ret = close.pct_change()
     sigma = ret.rolling(SIGMA_WIN).std().shift(1)
-    move = (ret.abs() >= MOVE_SIGMA * sigma) & sigma.notna()
-    move_down = ((ret <= -MOVE_SIGMA * sigma) & sigma.notna()).astype(float)
-    move_up = ((ret >= MOVE_SIGMA * sigma) & sigma.notna()).astype(float)
+    move = (ret.abs() >= MOVE_SIGMA * sigma) & (sigma > 0)
+    move_down = ((ret <= -MOVE_SIGMA * sigma) & (sigma > 0)).astype(float)
+    move_up = ((ret >= MOVE_SIGMA * sigma) & (sigma > 0)).astype(float)
 
     rvol = ret.rolling(SIGMA_WIN).std()
     rvol_pct = rvol.rolling(PCT_WIN).rank(pct=True) * 100.0

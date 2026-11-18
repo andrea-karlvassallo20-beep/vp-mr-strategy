@@ -82,9 +82,9 @@ def series_panel(close):
     ret = close.pct_change()
 
     sigma = ret.rolling(SIGMA_WIN).std().shift(1)
-    move = (ret.abs() >= MOVE_SIGMA * sigma) & sigma.notna()
-    move_down = (ret <= -MOVE_SIGMA * sigma) & sigma.notna()
-    move_up = (ret >= MOVE_SIGMA * sigma) & sigma.notna()
+    move = (ret.abs() >= MOVE_SIGMA * sigma) & (sigma > 0)
+    move_down = (ret <= -MOVE_SIGMA * sigma) & (sigma > 0)
+    move_up = (ret >= MOVE_SIGMA * sigma) & (sigma > 0)
 
     state = {}
     dn = move_down.astype(float)
