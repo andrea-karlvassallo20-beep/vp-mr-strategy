@@ -3134,3 +3134,42 @@ this session, no kill line moved, nothing armed, nothing trades live.
   measured states - no new measurement, no kill line moved, nothing
   armed; ratification queue FIFTEEN candidates zero armed; nothing
   trades live. Deep-read queue parallel: next x947263 (score 32).
+
+## 62. OWNER-DIRECTED BUILD SESSION (2026-11-18, session 61's sibling): ALL-UNIVERSE marked charts + notes - "do this for all 250 charts until you finish"
+
+- **Owner directive:** all charts, with notes of the relative
+  position of VFI to price, the sequentiality of historical VFI
+  across zones (below 0, above 0, extremity below, extremity
+  above), and when a long or short is best made (extremities with
+  declining effort or coiled effort).
+- **Built:** `src/marked_charts_all.py` -> **184 marked charts**
+  (`clue_scan/charts/<pair>.png`) + the master index
+  `clue_scan/charts/CHART_INDEX.md` + `chart_notes.csv`. The 51
+  pairs with under 310 bars (young listings) are honestly recorded
+  in the index as insufficient history for the z axis.
+- **Each chart** (144 bars): grammar legs shaded (U-base/V-spike/
+  even), fresh-low markers at lows, absorption markers at lows,
+  fresh-high markers at highs, zero-cross-up blue markers mirrored
+  between panels; VFI-z bar panel with the zero line and shaded
+  extremity zones. **Each index row's notes:** position x flow
+  (price range position vs VFI zone), the compressed zone sequence
+  of the last 144 days (e.g. XA:40>A:7>XA:5>...), current segment
+  age in days (the flow-age axis of session 60: young segments 0.720
+  vs old 0.550), coil at lows (rvol bottom-third - the "coiled
+  effort"), recent absorption at lows, declining-effort-from-top
+  flag, and the READ: LONG-SEAT / SHORT-WATCH / "-" per the
+  measured cells (observation, never advice, W2-owing).
+- **Honest bug note (caught BEFORE commit):** the first batch's
+  flow axis returned the raw CUMSUM instead of the z (zones read
+  XA:144 everywhere); fixed and every chart re-rendered - the
+  committed set is z-correct throughout, verified by spot image
+  check and the bounded z values in the index.
+- **Board note:** a large share of top-250 pairs sit at their 252d
+  range lows right now (the market's broad capitulation), so the
+  LONG-SEAT read fires on 67 index rows - the state is common
+  market-wide today, which is exactly what the board says; the read
+  column carries the same conditions as the measured cells, nothing
+  new, nothing armed.
+- **Boundaries:** observation display only; no kill line moved;
+  ratification queue FIFTEEN candidates zero armed; nothing trades
+  live. Deep-read queue parallel: next x947263 (score 32).
