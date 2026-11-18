@@ -2487,3 +2487,43 @@ highest-value remaining entry in its tier.
   criticality and calibration issues in the Hawkes self-excited
   point process model" (xd18d70, score 30, on the shelf) - the
   origin paper's reckoning, exactly where session 44 pointed.
+
+## 46. OWNER-DIRECTED BUILD SESSION (2026-11-18), fifth of the parallel regime: SMH Presence Indicator v0.1 — the program's own indicator, every constant registered from the measured dossiers
+
+- **Owner directive:** "why not try and make your own indicator,
+  or improve on mine or try go flip a coin." Response: the coin
+  has already been flipped (289,262 archive nights across the
+  dossiers) and the chips are its measured bias; the indicator is
+  the composition of the four measured dossiers (34/37/40/42)
+  with the owner's AVFI/VPVI lineage.
+- **Built:** (1) `src/smh_presence.py` — the replication-grade
+  Python core: registered state machine (quiet rvol_pct<=33 [and
+  deep<=10], base range_pos<=0.15, comp_days>=20, VFI bottom-
+  decile gate pct<=10 per the session-42 amendment, fresh 20-bar
+  extremes, 4-sigma nukes within 2 days) mapping to the verdict
+  ladder (PRESENCE -> NEAR x1.9 arrival -> post-nuke chip states)
+  and the registered chip (.576 baseline / .748 nuke-down / .767
+  nuke-up / .645 presence / .686 vfi-extremity / .601 near); run
+  clean on the whole archive, full current-state scan saved to
+  clue_scan/smh_presence_scan.csv; (2)
+  `paper/research/when_instrument/smh_presence_pine.md` — the
+  Pine v0.1 port for the owner's chart, declared UNTESTED in Pine
+  (short-window percentile approximations declared; the Python
+  core exact and authoritative), discipline header included.
+- **The smoke run's honest read:** the scan is an OBSERVATION
+  display (like the owner's AVFI panel): no claim tested, no
+  threshold played, nothing armed; the chip numbers printed with
+  the W2-pending status so they cannot be read as validated
+  probabilities. The indicator times the FIRST BIG MOVE
+  (presence = the timing seat; near = the amplifier), leans up
+  per the registered chip, and refuses drift claims (medians
+  negative on the panel).
+- **No new measurement** beyond composing already-measured
+  quantities; no kill line moved; nothing armed; the
+  ratification queue untouched at FOURTEEN candidates zero
+  armed; nothing trades live.
+- **Deep-read queue:** unchanged, parallel - next unread by rank
+  is the named imminent follow-up: "Apparent criticality and
+  calibration issues in the Hawkes self-excited point process
+  model" (xd18d70, score 30, on the shelf) - the origin paper's
+  reckoning.
