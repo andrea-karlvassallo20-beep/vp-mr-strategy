@@ -2978,3 +2978,36 @@ this session, no kill line moved, nothing armed, nothing trades live.
   nothing armed; ratification queue FIFTEEN candidates zero armed;
   nothing trades live. Deep-read queue parallel: next x947263
   (score 32).
+
+## 57. OWNER-DIRECTED MEASURED SESSION (2026-11-18), fifteenth of the parallel regime: horizontality x effort-vs-result - the owner's clue, measured
+
+- **Owner directive:** "price charts and the relative position in
+  space relative to historical horizontalite of time and current
+  sequence of what should have happened (effort va result) I think is
+  the clue to dictate what moves next." Built:
+  `src/horizontality_effort_dossier.py` - time-at-price shelves
+  (trailing 504d, 24 log bins, day-count >= 1.5x mean = shelf,
+  prior-bar), absorption (volume surprise >= 1.5x with dead result
+  z <= 0.5 - the owner's H9 effort>result draft) and slices (thin
+  effort, big result) at/between shelves, position in 252d-range
+  thirds, shelf-age quartiles; measured against P(first big move
+  within 60d is UP), sigma>0-guarded. Artifacts:
+  `clue_scan/horizontality_effort.{csv,md}`.
+- **CONFIRMED where the owner said it lives:** absorption at the LOW
+  third off-shelf = 0.661 ALL (halves 0.735 / 0.645, above baseline
+  both halves) vs baseline ~0.573 - big effort failing to move price
+  near lows precedes up-moves; absorption overall 0.635 (n=1,998).
+  HORIZONTALITY AMPLIFIES SLICES: thin-effort slices DOWN through a
+  shelf continue (0.524, halves 0.520/0.528 - below baseline in BOTH
+  halves, vs 0.597 off-shelf) - the failed "what should have
+  happened" is the tell.
+- **The measured inversions (honest):** absorption works BETWEEN the
+  shelves (0.635 off) rather than ON them (0.611); at the HIGH third
+  absorption's halves flip (0.654/0.496) - NO distribution claim
+  taken; shelf AGE inverts the chart-read (young Q1 0.659 > old Q4
+  0.620 - the tested-level-strength picture carries nothing at this
+  grain). The clue is real; the exact geometry is being drawn by the
+  data, not the picture.
+- **Boundaries:** in-sample descriptive; no kill line moved; nothing
+  armed; ratification queue FIFTEEN candidates zero armed; nothing
+  trades live. Deep-read queue parallel: next x947263 (score 32).
