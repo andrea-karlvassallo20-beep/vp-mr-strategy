@@ -633,3 +633,175 @@ Imbalance".
   queue-reactive -> C5 feature pre-conditions. Every spec the L2 data will
   be tested against has been sharpened BEFORE the data exists. Queue next:
   the remaining prose pages against the ledger.
+
+## 13. Null-time session 9 (2026-11-16): deep-read session 7 — the branching matrix, per branch, never by its radius
+
+- **Library deep-read session 7** (next by triage rank, per
+  session 8's pointer):
+  `paper/research/library/2026-11-16_symmetric_hawkes_diffusion_deep_read.md`
+  on Lee & Seo, "Modeling microstructure price dynamics with
+  symmetric Hawkes and diffusion model using ultra-high-frequency
+  stock data" (arXiv:1908.05089v1, symmetric tick Hawkes on 10
+  NYSE S&P 500 names, 2007-2011). Grade: NO kill line changed. One
+  candidate sharpening, PENDING OWNER RATIFICATION: the per-branch
+  rule — the branching matrix Q = [[q_s, q_c], [q_c, q_s]] is read
+  PER BRANCH (self q_s vs cross q_c) with bootstrap CIs, and ONLY
+  q_s can carry the cascade interpretation; q_c is the mechanical
+  mean-reversion branch. The trigger's justification: their own
+  S&P 500 estimates show q_c DOMINATING on ordinary days (GE Jan
+  2011: alpha_c 1.3576 vs alpha_s 0.4661 on 0103; the monthly GE
+  average has alpha_c > alpha_s), so a pooled branching ratio or
+  spectral-radius reading would scream "near-critical cascade" on
+  quiet days that were merely fast mean reversion — a false
+  trigger in the FEATURE, uncatchable by label placebos. This
+  extends (does not replace) the queued CI rule (session 5) and
+  boundary-solution rule (session 7): all three live in the
+  branching reading, all three make the trigger harder to fire.
+  Reinforcing evidence recorded: (a) the moving parameter at
+  daily grain is the BASELINE RATE mu, not the excitation
+  structure (mu tracks the volatility state with GARCH-like
+  persistence; alpha_c "rather stable" through 2008) — the
+  drift-reporting item (sessions 4/4b) gains its field
+  citation; (b) the SIGN of the tick-grain realized-variance bias
+  is itself an excitation fingerprint (their signature plot rises
+  toward small tau under mutual dominance, falls under self
+  dominance) — any fixed-bias-sign variance check imports their
+  Fig. 5 as a counterexample; (c) the Hawkes volatility runs
+  15-25% ABOVE TSRV with the gap unexplained, so Hawkes-derived
+  volatilities carry a caveat, not a correction.
+
+Ratification queue after this session: TEN candidate sharpenings
+(sessions 3, 4/4b, 5, 6, 7, 9), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked. Deep-read
+queue: sessions 3-8 of the triage ranks done; next by rank: Bechler
+& Ludkovski, "Optimal Execution with Dynamic Order Flow Imbalance"
+(the flow-clock session — already acquired, text in the library).
+
+## 14. Null-time session 10 (2026-11-16): deep-read session 8 — the flow clock gains its sourced scale constant; W1's deferred horizon gains its citation
+
+- **Library deep-read session 8** (next by triage rank, per the
+  pointer above):
+  `paper/research/library/2026-11-16_dynamic_ofi_execution_deep_read.md`
+  on Bechler & Ludkovski, "Optimal Execution with Dynamic Order Flow
+  Imbalance" (arXiv:1409.2618v2; execution control with an OU
+  order-flow imbalance state the trader drifts, endogenous horizon,
+  NASDAQ ITCH flow calibration). Grade: NO kill line changed; C8's
+  A4 conditional pre-commitments stay frozen as written. One
+  candidate sharpening, PENDING OWNER RATIFICATION: the flow-clock
+  scale-constant rule — the memory scale of any future flow-state
+  estimator is declared BEFORE data as a fraction of daily volume
+  (their EWMA flow imbalance: beta = a/V_daily with the cited
+  intra-day mesoscopic range a in [10, 100], PDF p. 23), never
+  tuned after seeing the gated windows. Reinforcing evidence
+  recorded: (a) W1's deferred horizon H is the literature's
+  ENDOGENOUS CONTROL, worked: their realized horizon moves up to
+  ~50% around the static optimum with the state, and adaptive-
+  horizon gains dominate model-form gains (Table 1) — freezing a
+  single constant would have pre-registered a guess of a variable
+  the field endogenizes, so the deferral already in the W1 spec is
+  the only discipline consistent with the citation; (b) market
+  orders are <5% of total order flow (Remark 5) — a flow state from
+  prints alone reads the taker tip, not the flow, matching the C5
+  queue-reactive sharpening from the library ritual's paper 4; (c)
+  the model's own drift term (the trader's program enters the flow
+  state as dY-drift) is the control-theory form of the wash-trading
+  confound: a contaminated window's flow reading measures the
+  manipulator's drift, hence "contaminated windows are missing, not
+  zero" (session 6) keeps its footing.
+
+Ratification queue after this session: ELEVEN candidate sharpenings
+(sessions 3, 4/4b, 5, 6, 7, 9, 10), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked. Deep-read
+queue: the top triage ranks stand done through the OFI-execution
+paper; next by rank: "Modelling High-Frequency Data with Bivariate
+Hawkes Processes: Power-Law vs. Exponential Kernels" (score 41,
+below the symmetric-Hawkes/OFI pair, already in the library text
+shelf).
+
+
+## 15. Null-time session 11 (2026-11-16): deep-read session 9 — the triage scorer audited by its own queue; a weak witness recorded honestly
+
+- **Library deep-read session 9** (next by triage rank, per session
+  10's pointer):
+  `paper/research/library/2026-11-16_bivariate_hawkes_kernels_deep_read.md`
+  on Batra, "Modeling High-Frequency Data with Bivariate Hawkes
+  Processes: Power-Law vs. Exponential Kernels"
+  (arXiv:2503.14814v1, Warwick Finance Societies, 2025). Grade: NO
+  kill line changed; NO new candidate sharpening — the honest
+  finding is about the QUEUE, not the paper: this was triage rank
+  5 of 500 (score 41) and it is an 11-page student-society term
+  report (one manually-processed 2-second LOBSTER window of
+  AMD/TSLA, "over 200 events", visual comparison of intensity
+  plots, no likelihoods, no parameter tables, no out-of-sample,
+  no backtest). The triage rubric cannot see quality this deep,
+  so: (a) **TRIAGE AUDIT FLAG, recorded for the owner** — future
+  triage ranks are candidates, not promises, and the deep-read
+  queue falls back to the peer-reviewed entries after this one;
+  (b) reinforcing only, no new item: the paper's headline (the
+  power-law kernel keeps peaks the exponential kernel's rapid
+  decay smooths away) is the SAME mechanism sessions 4/4b recorded
+  against peer-reviewed ground (Hardiman-Bouchaud, the branching
+  ratio's scale problem), and its method (choosing the kernel
+  family by which fits LOOK better on one window) is the
+  cautionary exhibit for why the trigger layer's kernel form is
+  declared with the spec, BEFORE data. Nothing in the queued
+  rules changes; their assumption of a pre-declared kernel form
+  gains its negative example.
+
+Ratification queue after this session: ELEVEN candidate sharpenings,
+zero armed (unchanged — no sharpening was warranted by this source).
+T1 remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue: next by triage rank is "Optimum
+Liquidation Problem Associated with the Poisson Cluster Process"
+(score 39, peer-reviewed line, already on the library text shelf) —
+with the triage-audit caveat now on record: the scorer's rank is a
+candidate reading, and the owner's library policy (peer-reviewed
+first) governs when they diverge.
+
+## 16. Null-time session 12 (2026-11-16): deep-read session 10 — the sign-register rule; T1's honest inversion made prospective
+
+- **Library deep-read session 10** (next by triage rank, per session
+  11's pointer, under the triage-audit caveat):
+  `paper/research/library/2026-11-16_poisson_cluster_liquidation_deep_read.md`
+  on Sadoghi & Vecer, "Optimum Liquidation Problem Associated with the
+  Poisson Cluster Process" (arXiv:1507.06514v2, 2015; discrete-time
+  MDP/PDMP liquidation, Hawkes order arrivals, simulation study).
+  Grade: NO kill line changed. One candidate sharpening, PENDING
+  OWNER RATIFICATION: **the sign-register rule for excitation
+  features** — the paper's core simulation result is that DAMPING
+  (sigma < 0: your selling suppresses subsequent arrivals) and
+  EXCITATION (sigma > 0) are materially different regimes of the
+  same mechanism, with different optimal behavior and revenue
+  (Table 1: $50,000-ish damping panels vs $62,539-$94,691 exciting
+  panels). Pre-declaration text: every L2 excitation/damping feature
+  is estimated and reported TWO-SIDED with sign and CI; a negative
+  reading is recorded in its own register cell as damping, never
+  flipped, floored at zero, or discarded as a failed positive. The
+  program's precedent is T1 (the registered mechanism measured with
+  its SIGN INVERTED — every compression HR below 1.0 — and the honest
+  response was to book the inversion, not clip it); this rule makes
+  that discipline prospective and binding on the FEATURES, in the
+  only legal direction. Reinforcing evidence recorded: (a) their
+  negative-self-excitation case is explicitly strategic
+  submit/cancel behavior, "known as a 'market manipulation'" (PDF
+  pp. 29-30) — the same mechanism family as the queued spoofing
+  cautions and the C5 passive-withdrawal claim, so a damping reading
+  on a gated window must be audited (ordinary queuing suppression or
+  an actor?) before it enters any feature; (b) their
+  wait-versus-inventory-penalty balance, set by pre-declared
+  microstructure parameters, is the shape of a K7-style
+  cost-survival amendment — ammunition if the owner ever ratifies
+  cost modeling, and NOT a strategy candidate (the program never
+  trades live). Caution on the source: simulation-only, no
+  empirical calibration, arXiv preprint with a 2018 journal-
+  submission stamp and no published version found — cite the
+  structure, never the magnitudes.
+
+Ratification queue after this session: TWELVE candidate sharpenings
+(sessions 3, 4/4b, 5, 6, 7, 9, 10, 12), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked. Deep-read
+queue: next by triage rank after the liquidation paper is "Price-Aware
+Automated Market Makers: Models Beyond Brownian Prices and Static
+Liquidity" (score 39, already on the library text shelf); with the
+session-9 triage-audit flag on record, rank is a candidate reading,
+and the owner's library policy governs when they diverge.
