@@ -40,11 +40,11 @@ each case. Items are ordered by how much they gate.
   **C8 is NOT ARMED until you accept.**
   `paper/research/c8_macro_l2_synthesis_spec.md` (AMENDMENT LOG).
 - **The ratification queue** (candidate spec sharpenings from the
-  library deep-reads — thirteen candidates (the branching
+  library deep-reads — fourteen candidates (the branching
   per-branch rule, the flow-clock scale-constant rule, the
-  sign-register rule for excitation features, and the
-  estimator-mode rule for state variables joined on 2026-11-16),
-  zero armed; the owner's word is
+  sign-register rule for excitation features, the estimator-mode
+  rule for state variables, and the dispersion register joined on
+  2026-11-16), zero armed; the owner's word is
   the only trigger): enumerated with sources in
   `paper/research/null_time_programme.md` (latest section).
 

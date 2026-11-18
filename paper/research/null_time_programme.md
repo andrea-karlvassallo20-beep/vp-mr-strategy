@@ -872,3 +872,66 @@ for the owner: the top-ranked UNREAD triage entry remains
 modulated Hawkes Process" (rank 1, score 54, on the shelf), which
 may be the higher-value next read given C5/C8's manipulation
 line.
+
+## 18. Null-time session 14 (2026-11-16): deep-read session 12 — the dispersion register; a queue-pointer error, corrected
+
+- **Correction of a pointer error, first (the log's honesty is the
+  product): session 17's closing note claimed the top-ranked
+  UNREAD triage entry was "High-Frequency Market Manipulation
+  Detection with a Markov-modulated Hawkes Process" (rank 1,
+  score 54). That is wrong. Rank 1 (MMHP, Fabre & Muni Toke) was
+  deep-read as session 3 and rank 2 (Explainable Patterns in
+  Cryptocurrency Microstructure, Bieganowski & Slepaczuk) as
+  session 4 — both notes exist in
+  `paper/research/library/2026-11-16_mmhp_manipulation_deep_read.md`
+  and `..._crypto_micro_shap_deep_read.md`. The readable queue
+  applies to UNREAD entries; the next unread entry was Functional
+  Limit Theorems for Hawkes Processes (score 38), which this
+  session read. The session-17 pointer text stands unedited above;
+  this entry is its correction of record.
+- **Library deep-read session 12**:
+  `paper/research/library/2026-11-16_functional_limit_hawkes_deep_read.md`
+  on Horst & Xu, "Functional Limit Theorems for Hawkes Processes"
+  (arXiv:2401.11495v3, 2024; Humboldt/BIT; pure probability
+  theory). Grade: NO kill line changed. One candidate sharpening,
+  PENDING OWNER RATIFICATION: **the dispersion register** — the
+  paper's central theorem is that the long-run behavior of a
+  Hawkes process is determined by BOTH the branching ratio m and
+  the child-event dispersion sigma = Psi_1(infinity): subcritical
+  (m<1) NEVER displays long-range dependence whatever the kernel;
+  critical (m=1) bifurcates on sigma (weakly critical: NOT
+  asymptotically stationary, no classical FLLN/FCLT, CIR-without-
+  mean-reversion limit, C/T correlations; strongly critical:
+  FLLN/FCLT hold but the limits are long-range-dependent). The
+  consequence for the trigger layer: m-hat near 1 is an
+  UNIDENTIFIED object without its dispersion statistic.
+  Pre-declaration text: every branching-ratio reading near unity
+  carries, beside its bootstrap CI, its estimated child-event
+  dispersion Psi_1-hat with its own CI and a finite-vs-divergent
+  label under the declared kernel family. This is the rigorous
+  completion of the queue's branching machinery: per-branch
+  (session 9) fixes WHICH excitation; the dispersion register
+  fixes WHICH kernel regime; the CI and boundary-solution rules
+  fix WHICH estimate. Reinforcing evidence recorded: (a)
+  long-range dependence in arrival counts is ITSELF a
+  criticality fingerprint (subcritical never shows it; critical
+  cannot avoid it) — a kernel-free cross-check for the
+  interpretation table; (b) weakly critical processes are NOT
+  asymptotically stationary, which is exactly the initialization
+  the filter-evolution estimator modes lean on (session 9's
+  stationarity condition; session 13's estimator-mode rule gains
+  its limit-theoretic citation: the estimator is not regime-free).
+  Caution recorded: the paper is pure theory (no calibration), the
+  dispersion statistic is itself estimated on finite windows and
+  inherits the same boundary-solution pathology in its tail fit,
+  and the fixed-critical limits here are a DIFFERENT object from
+  Jaisson-Rosenbaum's nearly-unstable sequences — the queued rules
+  must not mix the two regimes when citing.
+
+Ratification queue after this session: FOURTEEN candidate
+sharpenings (sessions 3, 4/4b, 5, 6, 7, 9, 10, 12, 13, 14), zero
+armed. T1 remains armed awaiting the owner's word; the blocked
+list stays blocked. Deep-read queue: with ranks 1-8 and the
+Functional Limit Theorems entry (score 38) now read, the next
+unread by rank is "Ergodicity and diffusivity of Markovian order
+book models: a general framework" (score 37, on the shelf).
