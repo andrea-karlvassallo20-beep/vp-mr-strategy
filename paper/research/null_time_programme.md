@@ -2330,3 +2330,99 @@ stays blocked. Deep-read queue pointer: the next UNREAD triage entry
 is "Forecasting High Frequency Order Flow Imbalance" (score 32,
 x78a2e8). Nothing measured, no kill line moved, nothing armed,
 nothing trades live.
+
+## 37. Null-time session 33 (2026-11-18): deep-read session 29 — the OFI Hawkes forecasting paper read; default grade, nothing queued
+
+- **Library deep-read session 29** (the standing queue's next UNREAD
+  pointer, score 32, x78a2e8, consumed here):
+  `paper/research/library/2026-11-18_ofi_hawkes_forecasting_deep_read.md`
+  on Aditya Nittur Anantha (SigmaQuant Technologies Pvt. Ltd., Indian
+  Institute of Science) and Shashi Jain (Indian Institute of
+  Science), "Forecasting high frequency order flow imbalance using
+  Hawkes processes" (arXiv:2408.03594v1, 7 August 2024): a
+  trade-count OFI defined as the normalized difference of
+  SELL-classified and BUY-classified trade counts over a window
+  (eq. (3), PDF p. 5), with aggressor side determined
+  deterministically from the two exchange order numbers on each NSE
+  trade message, no Lee-Ready inference (PDF p. 5); bivariate
+  self- and cross-exciting Hawkes processes fitted to one day of
+  NIFTY futures trade arrivals (19 September 2018, 375 one-minute
+  windows, PDF pp. 5-7), one-minute-ahead OFI distributions
+  forecast by 500 thinning simulations per window (PDF pp. 12-13,
+  15-16), scored by the probability each empirical forecast
+  distribution assigns the realized OFI, and compared across
+  exponential, sum-of-exponentials, power-law, conditional-law, EM,
+  VAR and Poisson models with White's reality check and Hansen's
+  test for superior predictive ability (PDF pp. 7-8, 11, 16);
+  sum-of-exponentials (p 0.743) and conditional-law (p 0.257) the
+  only non-rejected benchmarks, VAR at 0.101 also not rejected at 95
+  percent (Table 4, PDF p. 16), sum-of-exponentials favored on
+  computational cost alone; minute OFI stationary and strongly
+  non-normal in appendix (PDF p. 20); BUY-BUY and SELL-SELL
+  self-excitation dominating with intermittent cross-excitation
+  episodes (PDF p. 18). Read against the ONE question. **Grade: NO
+  kill line changed. NO new candidate sharpening queued. This is the
+  default grade: nothing here earns a rule.**
+
+  Findings, page-cited: interpretation caution — the OFI name
+  collision: this paper's OFI is trade-count asymmetry (eq. (3),
+  PDF p. 5), not the Cont-Kukanov-Stoikov depth-change OFI of the
+  record's line (the paper cites CKS 2014 for a related but distinct
+  quantity, PDF p. 3); no result from this paper transfers onto the
+  record's CKS-family OFI measurements, and the distinction stays
+  live because the next queue entry (x98e019) sits in the same
+  count-family. Reinforcing, no new item — aggressor side
+  exchange-native never inferred: the stated reason for avoiding
+  Lee-Ready and bulk classification is that inference-based rules
+  misclassify in volatile, fast-moving markets (PDF p. 4),
+  corroborating the standing "aggTrades is taker prints only, no
+  taker proxy" constraint at the mechanism level; the NSE order-ID
+  mechanism itself is a venue property and transfers nowhere.
+  Reinforcing, no new item — aggregation discards event clustering
+  (PDF p. 3), but this paper does not prove the recovery: its own
+  SPA table cannot reject the VAR at 95 percent (p 0.101, Table 4,
+  PDF p. 16), the authors concede the conditional-law and VAR models
+  cannot be rejected with 95 percent confidence and flag a possible
+  same-day bias favoring sum-of-exponentials (PDF p. 17), so the
+  event-grain OFI accumulation rule queued through deep-read session
+  25 gains no corroboration here and the record says so. Source-
+  quality note — two authors, one practitioner-affiliated
+  (SigmaQuant, Indian Institute of Science); arXiv v1 only,
+  August 2024, no journal record checked; zero indexed citations;
+  single-session single-instrument NSE dataset (PDF p. 5);
+  power-law kernel fitted by ad-hoc stochastic gradient descent with
+  no convergence guarantees stated (Algorithm 5.1, PDF pp. 11-12);
+  no price prediction, no P&L, no costs, regulatory and
+  risk-management framing only (PDF p. 3); extract page-marked and
+  clean, 21 pp. The killed-if-wrong section on record: nothing in
+  the record rests on this paper, no rule was added or amended on
+  its basis, so if the SPA ranking is later shown to be an artifact
+  of the single-day sample, the loss construction, or the same-day
+  bias the authors themselves flag, nothing dies and nothing needs
+  repair; conversely, any citation of this paper as confident
+  evidence that event-time forecasting beats calendar aggregation
+  would launder a non-rejected null (VAR p 0.101, Table 4,
+  PDF p. 16) and should die in review. Standing caveat recorded:
+  one NSE session, one instrument, NIFTY futures 2018, 375
+  one-minute windows, 315 loss observations; deterministic
+  classification via NSE order numbers, a venue property; realized
+  minute OFI stationary and strongly non-normal (PDF p. 20); no
+  crypto, no BTCUSDT. Laundering directions named: INTO — no kernel
+  form, no parameterization, no window or simulation parameter, no
+  loss construction, and no p-value from this paper enters any spec,
+  default, or calibration, and the Hawkes-forecasting construction
+  is not adopted anywhere without its own pre-registration; OUT —
+  the sum-of-exponentials headline and the SPA p-values are never
+  cited as evidence that event-time modeling beats calendar
+  aggregation beyond this paper's own single-day NSE sample, never
+  as expected behavior of the programme's CKS-family OFI
+  quantities, never as expected BTCUSDT behavior, and never as
+  evidence about any market the programme measures.
+
+Ratification queue after this session: TWENTY-FOUR candidate
+sharpenings, unchanged (deep-read session 29 added none), zero armed.
+T1 remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue pointer: the next UNREAD triage entry is
+"Hybrid Vector Auto Regression and Neural Network Model for Order
+Flow Imbalance" (score 32, x98e019). Nothing measured, no kill line
+moved, nothing armed, nothing trades live.
