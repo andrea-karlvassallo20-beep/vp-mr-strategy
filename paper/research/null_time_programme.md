@@ -3079,3 +3079,36 @@ this session, no kill line moved, nothing armed, nothing trades live.
   in-sample descriptive pending W2. Nothing armed; nothing trades
   live. Ratification queue FIFTEEN candidates zero armed. Deep-read
   queue parallel: next x947263 (score 32).
+
+## 60. OWNER-DIRECTED MEASURED SESSION (2026-11-18), eighteenth of the parallel regime: the flow cube test - the zero-line hypothesis measured
+
+- **Owner directive:** "irrespective of quadrant in a 3x3x3 cube with
+  a zero line imaginary, it is any quadrant quarter half starting
+  from and going up from below to above that is a long candidate;
+  the 2nd half of a flow segment is always weakening effort that
+  causes price to go down." Built: `src/flow_cube_dossier.py` on
+  the top-250 fresh universe (baseline 0.618 - this main-crypto
+  universe skews higher-up than the old archive's 0.573, declared);
+  artifacts `clue_scan/flow_cube.{csv,md}`. Two in-flight wiring
+  bugs (double CSV header, baseline cell never fed) found and
+  fixed before the reading.
+- **CLAIM 2 - CONFIRMED IN FORCE:** first half of a positive flow
+  segment: P(first big move UP) 0.720 (n=17,967), forward-20d mean
+  **+4.36%**; second half: 0.550 (n=15,338), forward-20d mean
+  **-2.34%**. The second half of a flow segment is measured spent
+  effort that drags price down - direction AND drift agree, the
+  rare cell where even the drift speaks. SEGMENT AGE is the axis.
+- **CLAIM 1 - REFINED:** the zero-line CROSS-UP event itself reads
+  0.600 (n=205; low third 0.605) - NOT above the 0.618 baseline; the
+  chip lives in the YOUNG SEGMENT the cross opens (0.720), i.e.
+  'quarter/half from below going up' is the long only in the first
+  half of its life. Irrespective-of-quadrant directionally holds;
+  the strong cells are flow-AGE cells, not cross events.
+- **Declared next test (not run - no tuning on these cells):** a
+  causal segment-age estimator (days-since-cross buckets) - the
+  causal 5d-slope proxy is weak (weaken 0.632 vs strengthen 0.659,
+  both above baseline).
+- **Boundaries:** in-sample descriptive on the fresh top-250 cache;
+  no kill line moved; nothing armed; ratification queue FIFTEEN
+  candidates zero armed; nothing trades live. Deep-read queue
+  parallel: next x947263 (score 32).
