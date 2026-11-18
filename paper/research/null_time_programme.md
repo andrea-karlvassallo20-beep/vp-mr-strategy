@@ -2170,3 +2170,53 @@ highest-value remaining entry in its tier.
   per the read-slug mapping remains "Diffusive Limit of Hawkes
   Driven Order Book Dynamics With Liquidity Migration" (score
   31, on the shelf).
+
+## 41. Null-time session 34 (2026-11-18): deep-read session 32 — the book is spatially coupled: migration induces a Laplacian, and cross-level covariance is branch-driven
+
+- **Null-time deep-read session 32** (the parallel regime continues;
+  next UNREAD triage-rank entry per session 39's pointer, verified
+  unread by the read-slug mapping):
+  `paper/research/library/2026-11-18_liquidity_migration_diffusive_deep_read.md`
+  on Mahseredjian, "Diffusive Limit of Hawkes Driven Order Book
+  Dynamics With Liquidity Migration" (arXiv:2511.18117v1, October
+  2025; single-author, entirely theoretical, no calibration). A
+  mesoscopic LOB model whose novelty is MIGRATION events between
+  neighbouring price levels with Hawkes-modulated intensities:
+  under diffusive rescaling the queue volumes converge to a
+  reflected SDE whose spatial coupling is a DISCRETE LAPLACIAN,
+  and the limiting diffusion covariance is tied to the Hawkes
+  branching structure through an FCLT for event counts. Grade:
+  NO kill line changed; NO new candidate sharpening. Findings:
+  (a) **[reinforcing]** the spatial face of the queue-machinery
+  line (sessions 13/14/24): queue levels are NOT independent
+  queues - a depth reading at one level is entangled with its
+  neighbours' migration state, and per-level features inherit
+  cross-level coupling by construction; the existing depth
+  construction declarations cover it; (b) **[reinforcing]** the
+  FCLT covariance link is the never-read-alone family's spatial
+  face: cross-level depth correlations are functions of the
+  excitation tree - endogeneity readings, not free-standing
+  liquidity facts (joining sessions 9/12/20/31, nothing queued);
+  (c) **[source-quality note]** development-stage draft - no
+  calibration, no numerics, first-person voice, a doctoral-
+  thesis citation described loosely, and queue-reactive lineage
+  adjacent but unengaged: cite for the migration MECHANISM as a
+  possible structure, zero market facts licensed; arXiv v1
+  November 2025 no published version, check before formal
+  citation. Would-have-killed: per-level depth features computed
+  as if levels were independent would carry their neighbours'
+  migration by construction whether or not declared (the
+  Laplacian coupling is the formal statement), and cross-level
+  depth correlations read as liquidity facts would be
+  endogeneity readings wearing a liquidity costume. The
+  construction declarations and multi-reading rules predate the
+  read. Cautions: migration is a candidate mechanism, not a
+  measured phenomenon; formal asymptotic, no evidence any market
+  sits in the scaling regime; nothing here touches the daily
+  prestate grain of the dossiers. Ratification queue after this
+  session: FOURTEEN candidate sharpenings, zero armed
+  (unchanged). T1 remains armed awaiting the owner's word; the
+  blocked list stays blocked. Deep-read queue: next unread by
+  rank per the read-slug mapping is "TradeFM: A Generative
+  Foundation Model for Trade-flow and Market Microstructure"
+  (score 31, on the shelf).
