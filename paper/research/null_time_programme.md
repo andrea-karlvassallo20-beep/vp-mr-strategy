@@ -1147,3 +1147,58 @@ the owner's word; the blocked list stays blocked. Deep-read
 queue: next unread by rank is "Limit Order Book Dynamics and
 Order Size Modelling Using Compound Hawkes Process" (score 34,
 on the shelf).
+
+## 23. Null-time session 19 (2026-11-16): deep-read session 17 — inhibitory kernels fitted, not hypothetical; the wash audit's round-number baseline caution
+
+- **Library deep-read session 17** (next UNREAD triage-rank entry,
+  per session 18's pointer):
+  `paper/research/library/2026-11-17_compound_hawkes_order_size_deep_read.md`
+  on Jain, Firoozye, Kochems & Treleaven, "Limit Order Book
+  Dynamics and Order Size Modelling Using Compound Hawkes Process"
+  (arXiv:2312.08927v5, 2023-24; UCL & JPMorgan; 12D compound Hawkes
+  LOB simulator, twelve months of NASDAQ Level-2 AAPL). Grade: NO
+  kill line changed; NO new candidate sharpening. Four reinforcing
+  notes: (a) **inhibitory cross-excitation kernels are FITTED, not
+  hypothetical** — their norm matrix contains genuinely negative
+  entries (in-spread limit orders and opposing-side top cancels
+  inhibit each other), with total intensity floored at zero, and
+  the classical stability bound (max eigenvalue of the norm matrix
+  < 1) is being applied to a matrix that violates the textbook
+  sign assumptions, with the authors' own heuristic rescaling when
+  it is violated — the cross-branch sign territory of the queued
+  sign-register and per-branch rules, now on a year of measured
+  NASDAQ data; interpretation language for the trigger layer: a
+  fitted branching/norm matrix is READ with its signs, and any
+  stability bound applied to it must state its sign regime. (b)
+  **THE ROUND-NUMBER BASELINE CAUTION for the queued wash-trading
+  audit** — their stylized facts: over 40% of market orders and
+  60% of limit orders come at size 100, and outright cancels are
+  99.3% of all cancels; ordinary, non-manipulated flow is ALREADY
+  massively round-number-clustered, so the audit's round-size and
+  unrounded-fraction statistics (from Aloosh-Li's ground truth)
+  discriminate on the DEVIATION from the ordinary-flow round-number
+  profile, not on the presence of spikes — recorded explicitly so
+  the audit, when it runs, is calibrated against the window's own
+  ordinary-flow baseline rather than a smooth-size ideal no real
+  book satisfies (had it run against such an ideal, EVERY ordinary
+  book would have flagged). (c) **power-law kernels selected 100%
+  of the time (AIC)** over exponential on twelve months, with
+  day-stable kernel shapes — independent venue support for the
+  session-9 kernel caution and the dispersion register's
+  motivation. (d) **the exogenous-intensity cut-off bias, handled
+  explicitly** — non-parametric estimation with finite cut-off
+  "massively overestimates" the base rate; the authors back it out
+  via (I - Ĝ) Λ̂ — the estimator-hygiene face of the
+  drift-reporting item: an uncorrected cut-off inflates the very
+  mu the drift rule tracks. Cautions: the simulator is engineering,
+  not evidence — parsimony thresholding, heuristic stability
+  capping, i.i.d. size marks (their venue-specific finding), US
+  equities only, in-sample AIC.
+
+Ratification queue after this session: FOURTEEN candidate
+sharpenings, zero armed (unchanged; item (b) extends the queued
+wash-audit toolkit's interpretation, it does not change the
+audit). T1 remains armed awaiting the owner's word; the blocked
+list stays blocked. Deep-read queue: next unread by rank is
+"Returns and Order Flow Imbalances: Intraday Dynamics and
+Macroeconomic News Effects" (score 34, on the shelf).
