@@ -2006,3 +2006,68 @@ highest-value remaining entry in its tier.
   per the read-slug mapping remains "Trading in the Sunshine or in
   the Shade: Market Impact and Adverse Selection on Hyperliquid"
   (score 32, on the shelf).
+
+## 38. Null-time session 32 (2026-11-18): deep-read session 30 — displayed depth is conditional on the visible-flow regime, and the venue's observability geometry is load-bearing: sunshine trading on Hyperliquid
+
+- **Null-time deep-read session 30** (the parallel regime continues;
+  next UNREAD triage-rank entry per session 36's pointer, verified
+  unread by the read-slug mapping; shelf slug ends "_market_imp",
+  the prior pointer truncated it - recorded here). VENUE PROXIMITY
+  FLAG: `paper/research/library/2026-11-18_sunshine_trading_hyperliquid_deep_read.md`
+  on Barone & Lillo, "Trading in the Sunshine or in the Shade:
+  Market Impact and Adverse Selection on Hyperliquid"
+  (arXiv:2606.15715v1, 2026; Scuola Normale Superiore, Pisa) is
+  the FIRST paper in the entire deep-read queue with the program's
+  own geometry: crypto PERPETUALS on a fully on-chain CLOB,
+  USDC-margined, oracle-indexed, hourly funding, address-level
+  public data. 465k protocol-visible native TWAPs (visible from
+  inception - a natural sunshine-trading lab) vs 4.3M statistically
+  reconstructed hidden metaorders across 201 perp markets, 8 months,
+  >641M fills. Findings: visible TWAPs cost ~9 bps less temporary
+  and ~5 bps less permanent impact; hidden metaorders shadowing
+  visible same-direction flow suffer ~0.8-0.9 bps more permanent
+  displacement per 10-point visible-dominance increase (adverse
+  selection shifts to NON-announcers); and WHILE A TWAP IS ACTIVE,
+  DISPLAYED DEPTH RISES and the book TILTS toward the absorbing
+  side, scaling with announced size, not explained by pre-trends.
+  Grade: NO kill line changed; NO new candidate sharpening.
+  Findings recorded: (a) **[reinforcing]** the depth-elicitation
+  result is the equilibrium-side mirror of session 21 and session
+  24: displayed depth partially REFLECTS the prevailing
+  visible-flow/absorption-game regime, so depth features on any
+  window are entangled with it - the depth-describes-never-ground-
+  truths discipline and the Layer 0 ground-truth check already
+  cover the entanglement, nothing queued; (b) **[reinforcing]** the
+  hidden-metaorder comparison class is itself a CONSTRUCTION
+  (splitting hypothesis, same-address same-sign) - the 9 bps and
+  5 bps separators partly inherit the reconstruction's assumptions:
+  the estimator-mode family's reconstruction face; quote the
+  mechanism, never the separators as venue constants; (c)
+  **[interpretation caution]** venue observability is load-bearing
+  and NON-portable: Hyperliquid has address-level identity and
+  protocol-native visibility that Binance data does not, and 0.2s
+  consensus latency is different execution physics - the
+  venue-freeze warrant applies with extra force now that the
+  library finally contains a perp-venue study: quote mechanisms
+  with vintage and venue, port no magnitude; (d) **[reinforcing]**
+  the two program grains stay separate: visibility lives at the
+  flow grain (this paper), closeness lives at the daily prestate
+  grain (measured sessions 34/37) - no porting in either direction;
+  the K7 cost-survival file gains a template: any cost layer
+  declares the venue's visibility/latency geometry.
+  Would-have-killed: a feature layer treating displayed depth as a
+  STATIC liquidity fact would partially be reading the absorption
+  game (predicted content = visibility-regime content, an
+  entanglement no label placebo catches since labels ride the same
+  regime); cross-venue statements built from the 9 bps separator
+  without declaring the reconstruction would import a
+  splitting-hypothesis artifact as a venue fact. Cautions: one
+  venue, one 8-month crypto vintage, 201 markets major-to-thin,
+  non-randomized sunshine-vs-hidden choice (selection on trader
+  informativeness), block latency vs centralized engines, arXiv v1
+  June 2026 unpublished at read time. Ratification queue after
+  this session: FOURTEEN candidate sharpenings, zero armed
+  (unchanged). T1 remains armed awaiting the owner's word; the
+  blocked list stays blocked. Deep-read queue: next unread by rank
+  per the read-slug mapping is "Mean-Field Limits for Nearly
+  Unstable Hawkes Processes" (score 30, on the shelf).
