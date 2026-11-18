@@ -2695,3 +2695,54 @@ this session, no kill line moved, nothing armed, nothing trades live.
 - **Deep-read queue:** unchanged, parallel - next unread by rank
   remains "State-dependent Hawkes processes and their application to
   limit order book modelling" (x947263, score 32, on the shelf).
+
+## 50. OWNER-DIRECTED MEASURED SESSION (2026-11-18), eighth of the parallel regime: the niche dossier - catch bottoms / short tops, only those two, no corrections
+
+- **Owner directive:** "why not set a niche like, I like catch bottoms
+  or short tops only those 2 no corrections." Honored literally as a
+  pre-registered two-arm evaluation: positions entered at the next open,
+  touched exactly twice, no stop, no add, no adjustment; the
+  session-49 sigma>0 guard applied to every construction from the
+  start. Protocol pre-declared in
+  `src/niche_bottoms_tops_dossier.py`; artifacts
+  `clue_scan/niche_bottoms_tops.{csv,md}`.
+- **Arm A (catch bottoms): the WASHOUT bottom is the niche's real
+  content, and the program's first positive-expectancy candidate in
+  both halves.** A2 fresh-20d-low x VFI bottom-decile washout: n=404,
+  win 59.7%, mean +9.8%, median +4.7%, POSITIVE in both halves
+  (+10.8% h1 win 63.4% / +7.0% h2 win 48.0%) - the first descriptive
+  conditional in the program with positive episode expectancy in both
+  halves under the corrected construction, and it is the owner's own
+  extremity-marking instinct measured: the chip is in the WASHOUT
+  (bounded n; VFI construction burn-in means the washout state's
+  confirmation must come from fresh windows, W2, as already
+  registered). The bare fresh low (A1, median -3.1%) and the quiet
+  low (A3, negative in h2) carry nothing.
+- **Arm B (short tops): fails the "no corrections" discipline itself.**
+  Medians positive (+6 to +10% - tops DO get sold) but the left tail
+  is unbounded: B1 mean -14.1% (p5 -59.8%); B3 climax mean -19.0%
+  (p5 -91.5%, adverse excursions averaging +141% above entry); halves
+  disagree in sign. Shorting tops with no stop is a
+  sold-the-bottom-of-the-next-coin bet - the declared discipline is
+  precisely the one shorts cannot survive. Honest verdict recorded in
+  the dossier: the niche is ONE arm (catch washout bottoms, ride no
+  further than the measured event); shorting tops requires corrections
+  and is therefore OUTSIDE the declared niche - a boundary statement,
+  not a ban; a short-top arm with stops would be a new dated
+  amendment.
+- **Owner's water line (same session): "just know some day you will
+  have to get in the water." Acknowledged and recorded: the program's
+  structure exists FOR that day - W2 fresh-window confirmation first,
+  then the sealed one-shot battery on the owner's explicit go, then
+  the water. The A2 washout bottom is the program's first candidate
+  for what gets brought into the water; it is NOT armed, and the
+  discipline (no tuning, W2 first) is precisely what makes the entry
+  survivable.**
+- **Boundaries:** in-sample descriptive discovery-panel numbers; no
+  kill line moved; nothing armed; ratification queue stands at
+  FOURTEEN candidates zero armed; nothing trades live.
+- **Deep-read queue:** unchanged, parallel - next unread by rank:
+  "State-dependent Hawkes processes and their application to limit
+  order book modelling" (x947263, score 32). Flag from session 49
+  stands: the coin-chip 37 / VFI 40 / fade 42 / smh_presence
+  dossiers must be re-run under the sigma>0 guard.
