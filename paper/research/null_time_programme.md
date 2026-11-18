@@ -3360,3 +3360,36 @@ the shelf) - the paper's natural sibling.
 - **Deep-read queue:** parallel - next xce0ba3 "Order Book Queue
   Hawkes-Markovian Modeling" (score 31). Ratification queue:
   FIFTEEN candidates, zero armed.
+
+## 68. OWNER-GEOMETRY CORRECTION SESSION (2026-11-18), twenty-third of the parallel regime: "no no, there are only a few zones" - the canonical 7-state system, measured
+
+- **Owner correction honored:** the 12-state geometry (zone x price
+  third) was MY addition - the owner's canonical zoning is minimal:
+  below 0, above 0, extremity bottom, extremity top, movement to
+  extremity, plus both zero-crossings as transition states. Built
+  `src/flow_zone_system_owner.py` - the 7-state system exactly as
+  the owner enumerated it; artifacts
+  `clue_scan/flow_zone_system_owner.{csv,md}`. The 12-state artifact
+  stands in the log as an appendix (price-third dispersion), but
+  the CANONICAL system of record is the owner's.
+- **The system's shape (pooled, top-250, in-sample):**
+  EXT_TOP is the STICKIEST ATTRACTOR - self-loop 0.968, residence
+  31.3 nights, pi 38.5% (the dominant mode is the euphoric
+  top-plateau, drift-positive fwd20 +1.6%: sticky euphoria, not
+  fading, at pooled-night grain); EXT_BOT is the MOST PRODUCTIVE
+  state - P(first big move UP) 0.717, residence 20 nights, pi 4.4%
+  (the strongest chip of the system, confirming the flagship family
+  by a third independent route); MOVE_EXT is a 3-NIGHT CORRIDOR
+  (residence 3.1, chip 0.685, fwd20 +1.8%) - the approach state is
+  tradeable-time; CROSS_UP carries fwd20 +3.25% (the young-segment
+  law at transition grain) while CROSS_DN resolves 79% into BELOW
+  with down-lean 0.543; BELOW/ABOVE are the twin ~15-night
+  reservoirs. SPECTRAL: relaxation 28.5 nights in the canonical
+  geometry - the system's memory is ~1 month.
+- **Boundaries:** pooled across pairs and vintages (ensemble
+  average); first-order homogeneous Markov is a model (regime
+  drift breaks it); all in-sample; W2 owed via the pre-registered
+  battery (C2's XB cell and C5's XA_young already cover the
+  extremity states). Nothing armed; nothing trades live.
+- **Deep-read queue:** parallel - next xce0ba3 (score 31).
+  Ratification queue: FIFTEEN candidates, zero armed.
