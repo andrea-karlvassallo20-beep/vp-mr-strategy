@@ -906,3 +906,46 @@ and the owner's library policy governs when they diverge.
   owner's library policy governs when they diverge. (This session was a pre-assigned
   parallel slot 19 of 24, so it does not consume the queue's top pointer.)
   Nothing measured, no kill line moved, nothing armed, nothing trades live.
+
+## 19. Null-time session 19 (2026-11-18): deep-read session 13 — the Proof-Of-Human paper read as caution, both laundering directions named
+
+- **Library deep-read session 13** (a PARALLEL-FIRE SLOT ASSIGNMENT, slot 12 of 24,
+  declared as such — this paper was pre-assigned to avoid duplicate work across the 24
+  simultaneous slots, so it was read out of the standing queue's top-pointer order;
+  the standing next-UNREAD pointer is unchanged, see the close):
+  `paper/research/library/2026-11-18_rise_of_the_machines_deep_read.md`
+  on Petukhina, Reule & Härdle, "Rise of the Machines? Intraday High-Frequency
+  Trading Patterns of Cryptocurrencies" (arXiv:2009.04200v1, 2020; post-peer-review,
+  pre-copyedit version of a European Journal of Finance article; 5-minute CRIX/dyos
+  European-market data, 11 coins, Jul–Aug 2018). Grade: NO kill line changed; NO new
+  candidate sharpening. Findings, page-cited: (1) GAM diurnal/weekly seasonality with
+  highly significant smooth terms explaining only ~1% (PDF p. 15), the human-shaped
+  intraday curve (nighttime trough, 17:00–20:00 CET peak, PDF p. 16) and weekend
+  decline in returns/volume/volatility (Figs. 8–10, PDF pp. 16–18) — venue
+  corroboration for the already-recorded hour-of-day stratification and seasonality
+  items, nothing added; (2) interpretation caution: the "24/7 algorithmic trading
+  impact is rather negligible" headline (PDF pp. 19–20) is a SHAPE inference from ~1%-R²
+  smooths, in one two-month vacation window, at 5-minute grain, with no direct
+  algorithm-share measurement — agent-mix statements may never be imported from
+  seasonality shape alone, and the 2018-spot reading does not date 2024–25 perps in
+  either direction (regime-dating the session-6 fragility premise honestly);
+  (3) the on-chain/off-chain passage (PDF p. 19) reinforces the proxy-refusal
+  layer: on-chain variables are not admissible substitutes for L2 book state;
+  (4) Table 1 (PDF p. 12): near-zero mostly-negative first-order return
+  autocorrelation with strongly positive absolute/squared-return autocorrelation at
+  5-minute grain — consistent with the compression premise's volatility-clustering
+  motivation as CONTEXT ONLY (different grain, era, venue; never claim support).
+  The counterfactual named both laundering directions this paper invites: its
+  human-driven headline could have been read as undermining the L2 motivation, and
+  its speculative false-positive-cascade passage (PDF p. 19) could have been read as
+  criticality evidence for the trigger line — the no-empirical-claim-from-papers
+  rule prevented both.
+
+Ratification queue after this session: FOURTEEN candidate sharpenings (unchanged —
+no sharpening was warranted by this source), zero armed. T1 remains armed awaiting
+the owner's word; the blocked list stays blocked. Deep-read queue: the next UNREAD
+triage entry is unchanged — "Price-Aware Automated Market Makers: Models Beyond
+Brownian Prices and Static Liquidity" (score 39, already on the library text shelf);
+with the session-9 triage-audit flag on record, rank is a candidate reading, and the
+owner's library policy governs when they diverge. Nothing measured, no kill line
+moved, nothing armed, nothing trades live.
