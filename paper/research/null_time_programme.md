@@ -1896,3 +1896,58 @@ highest-value remaining entry in its tier.
   mapping is "Hybrid Vector Auto Regression and Neural Network
   Model for Order Flow Imbalance Prediction in High Frequency
   Trading" (score 32, on the shelf).
+
+## 36. Null-time session 31 (2026-11-18): deep-read session 29 — near-perfect one-step OFI "prediction" at second grain is persistence wearing a costume: the library's sharpest label-artifact specimen yet
+
+- **Null-time deep-read session 29** (the parallel regime continues;
+  next UNREAD triage-rank entry per session 35's pointer, verified
+  unread by the read-slug mapping):
+  `paper/research/library/2026-11-18_hybrid_var_fnn_ofi_deep_read.md`
+  on Rahman & Upadhye, "Hybrid Vector Auto Regression and Neural
+  Network Model for Order Flow Imbalance Prediction in
+  High-Frequency Trading" (arXiv:2411.08382v1, 2024; IIT Madras;
+  cites session 27's Anantha-Jain paper as alternative approach
+  [13], the chain continues). VAR-for-linear + FNN-on-residuals
+  hybrid, two-neuron buy/sell outputs, "trading intensity" side
+  classification; 10,000 seconds (~2.8 hours) of one
+  cryptocurrency's Binance order data, three ~3,000-point
+  validation sets, 120 hyperparameter configurations evaluated.
+  Grade: NO kill line changed; NO new candidate sharpening.
+  Findings: (a) **[interpretation caution]** the sharpest specimen
+  yet of the fine-grain persistence artifact: hybrid R^2 0.983-0.999
+  and 95-99 percent side-accuracy on one-step OFI, while VAR-only
+  on the SAME data reads coin flip (46-51 percent) - the 50-point
+  gap between model classes is a statement about the EVALUATION,
+  not the market; second-grain order flow is strongly
+  self-persistent, one-step "prediction" at that grain licenses
+  NOTHING at 30m-4h, and the program's label-placebo discipline
+  exists to catch exactly this class of score; (b) **[reinforcing]**
+  120 configurations chosen across 3,000-point validation sets is
+  selection on noise, quantified - the max-of-120 selection bias
+  the paper does not discuss; the estimator-mode family's selection
+  face, contrasted with session 27's authors who at least admitted
+  their SPA bias; (c) **[reinforcing]** no price prediction, no
+  cost, no timing claim anywhere - flow accuracy treated as an end
+  in itself; the "impressive empirical results" contour the house
+  rules route to standing caveats; (d) **[source-quality note]**
+  thin provenance: 2.8 hours of one unnamed cryptocurrency, a
+  synthetic set scoring the paper's highest R^2 (0.999, on data
+  the authors generated themselves), BTCUSD/BTCUSDT naming
+  inconsistency, no significance testing, arXiv v1 unpublished -
+  citation use as a specimen of the persistence artifact and
+  configuration-selection-on-noise, never as an OFI market fact.
+  Would-have-killed: if the trigger layer had ever been scored on
+  one-step-ahead flow accuracy at second grain - the natural "did
+  the features work" metric - this paper is the existence proof
+  the scoreboard can read 95-99 percent while carrying zero timing
+  information at the program's horizons; and grid-searched
+  configurations on evaluation windows carry the same max-of-N
+  bias. The label-placebo requirements and the pre-registered
+  comparison protocol predate this read. Ratification queue after
+  this session: FOURTEEN candidate sharpenings, zero armed
+  (unchanged). T1 remains armed awaiting the owner's word; the
+  blocked list stays blocked. Deep-read queue: next unread by rank
+  per the read-slug mapping is "Trading in the Sunshine or in the
+  Shade: Market Impact and Adverse Selection on Hyperliquid"
+  (score 32, on the shelf) - a perp-venue read, adjacent to the
+  program's own venue.
