@@ -3011,3 +3011,41 @@ this session, no kill line moved, nothing armed, nothing trades live.
 - **Boundaries:** in-sample descriptive; no kill line moved; nothing
   armed; ratification queue FIFTEEN candidates zero armed; nothing
   trades live. Deep-read queue parallel: next x947263 (score 32).
+
+## 58. OWNER-DIRECTED MEASURED SESSION (2026-11-18), sixteenth of the parallel regime: "charts my guy, go get dailies 1356 length or 144 or 89 weekly" - the fresh cache and the live seats board
+
+- **Owner directive:** fetch the charts - dailies at 1356 length (the
+  full burn-in: 756d percentile + 252d z + 23d flow) and the
+  owner's weekly 89/144 lengths. Fetched: 142 USD pairs from
+  Binance's public klines endpoint (read-only, no key, no auth;
+  14 archive stems have no Binance USDT listing - recorded in the
+  script output), saved to `paper/research/data_fresh/` (~19MB,
+  ~1356 bars each, archive-identical format). Delisted pairs' boards
+  carry a STALE VINTAGE flag (their last traded bar is not today).
+- **Built:** `src/fetch_dailies.py` + `src/fresh_seats_board.py` ->
+  `clue_scan/fresh_seats_board.csv` - the CURRENT-STATE board, an
+  observation display exactly like the owner's AVFI panel: per pair,
+  the measured states at the latest bar (rvol_pct, range_pos, vfi_pct,
+  fresh 20d extremes, last grammar leg, absorption at lows, nuke
+  states) plus the owner's weekly-89/144 momentum signs, and the
+  SEATS: FLAGSHIP_BOTTOM (A2 washout), U_BASE qualifier, ABSORBED_LOW,
+  PRESENCE (quiet base), DIVTOP_EXIT (flow-fade read), NUKE_STATE.
+- **Today's board highlights (2026-11-18, fresh vintages):**
+  FLAGSHIP_BOTTOM: **bonk** (fresh 20d low, vfi 9.3 bottom-decile,
+  range_pos 0.02, rvol 29.8th pct); ABSORBED_LOW today includes
+  **atm (vfi 1.3 - deepest flow washout on the board), btс is at
+  the seat boundary** (range_pos 0.18, fresh 20d low, absorption
+  recent, vfi 49 - present but NOT washed out), ape, cfx, crv, fil,
+  op, zen, bar, skl, glmr, audio, apt-era names; 20+ pairs sit in
+  PRESENCE (quiet base - the 0.645 seat). The stale-vintage
+  FLAGSHIP entries (rdnt 2026-04-01 +U_BASE, kmd, sxp) are flagged
+  and NOT claimed as live.
+- **Honest boundaries declared on the board itself:** the fresh cache
+  OVERLAPS the archive vintage (it is not an out-of-sample window);
+  this board is a current-state display, NOT the W2 confirmation -
+  the fresh windows still owe their registered confirmation, and
+  the chips printed next to the seats remain in-sample descriptives
+  pending it. Nothing armed; nothing trades live.
+- **Standing state:** ratification queue FIFTEEN candidates zero
+  armed; T1 armed awaiting the owner's word; no kill line moved.
+  Deep-read queue parallel: next x947263 (score 32).
