@@ -3277,3 +3277,48 @@ this session, no kill line moved, nothing armed, nothing trades live.
   "State-dependent Hawkes processes and their application to limit
   order book modelling" (x947263, score 32). Ratification queue:
   FIFTEEN candidates, zero armed.
+
+## 66. Deep-read session 37 (null time, nothing measured; the parallel regime continues): state-dependent Hawkes processes - the L2 arena's state-conditional excitation paper
+
+Paper: Morariu-Patrichi & Pakkanen, "State-dependent Hawkes
+processes and their application to limit order book modelling"
+(arXiv:1809.08060v3, Imperial College; INTC/Nasdaq level-I 2017-2018).
+Note: `paper/research/library/2026-11-18_state_dependent_hawkes_lob_
+deep_read.md`. Grade: NO kill line changed; NO new candidate
+sharpening. Findings:
+(a) [reinforcing] estimator-mode extended INTO THE L2 ARENA: a
+Hawkes counting process fully coupled with a book-state process
+(spread ticks ModelS / queue-imbalance buckets ModelQI) - excitation
+patterns STRONGLY state-dependent, endogeneity systematically more
+pronounced in DISEQUILIBRIUM states; pooled excitation estimates mix
+equilibrium and disequilibrium regimes (the session-48
+regime-mixing bias demonstrated at LOB grain, PDF pp. 19-20) - when
+L2 begins, every excitation/branching/endogeneity quantity declares
+its book-state conditioning (spread state, imbalance bucket;
+pp. 746: imbalance is a STATE with a transition matrix, not a raw
+regressor - a would-have-killed corollary for C8's imbalance
+factor ambitions);
+(b) [interpretation caution] apparent criticality has a STATE AXIS:
+the wide-spread state's spectral radius sits systematically ABOVE 1
+while pooled analyses read "near-critical" markets - pooled
+near-criticality may be a mixture concentrated in disequilibrium
+states, extending the session-48 apparent-criticality lesson with a
+concrete micro-axis; fragility claims from L2 must name their state;
+(c) [interpretation caution] the state-edge concentration rhymes
+across grains with the program's flow-zone geometry (the informative
+bands are the Edges: XB entries/XA exits vs LOB disequilibrium
+states) - cross-grain rhyme, no port licensed;
+(d) [source-quality note] single stock, single venue, 2.5h windows,
+2017-2018 vintage; tight bootstrap CIs on excitation profiles but
+near/above-critical radii vintage-and-venue conditional; check the
+journal version before formal citation; zero portability to the
+perp venue at daily grain.
+Would-have-killed: an L2/T2 spec fitting excitation pooled across
+book states would report "near-critical" as a free-standing fact -
+this paper measures the exact mixing bias at book grain; a C8
+imbalance factor as a raw continuous input would smuggle the same
+mixing into the macro layer. Ratification queue after this session:
+FIFTEEN candidates, zero armed. T1 remains armed awaiting the
+owner's word; the blocked list stays blocked. Next queue pointer:
+"Order Book Queue Hawkes-Markovian Modeling" (xce0ba3, score 31, on
+the shelf) - the paper's natural sibling.
