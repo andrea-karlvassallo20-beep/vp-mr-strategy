@@ -906,3 +906,49 @@ and the owner's library policy governs when they diverge.
   owner's library policy governs when they diverge. (This session was a pre-assigned
   parallel slot 19 of 24, so it does not consume the queue's top pointer.)
   Nothing measured, no kill line moved, nothing armed, nothing trades live.
+## 19. Null-time session 15 (2026-11-18): library deep-read session 13 — the size-state persistence comparator proposed as the third admission null; the fixed-tick structural-bias caution; Swishchuk–Huffman graded theory-heavy, evidence-light
+
+- **Library deep-read session 13** (a PRE-ASSIGNED parallel slot, declared as such — slot 6
+  of 24, triage score 36, so it does not consume the queue's top pointer; verified at
+  session start that no deep-read note for the slug existed and no open or unmerged closed
+  PR covered it):
+  `paper/research/library/2026-11-18_general_compound_hawkes_lob_deep_read.md`
+  on Swishchuk & Huffman, "General Compound Hawkes Processes in Limit Order Books"
+  (arXiv:1812.02298v1, 6 Nov 2018; compound Hawkes mid-price models with n-state Markov
+  chains on mid-move sizes; LLN + diffusion limits proven; LOBSTER level-1 single-day 2012
+  fits for AAPL/AMZN/GOOG/MSFT/INTC). Grade: NO kill line changed. ONE candidate
+  sharpening, PENDING OWNER RATIFICATION: **the size-state persistence comparator** — the
+  paper's diffusion limit factorizes mid-price volatility into an arrival term
+  λ/(1−μ̂) and a size-state term σ* (Eq. 34, PDF p. 9; Eq. 36, PDF p. 10), and its own
+  quantile Markov chain on mid-move sizes (Sec. 5.3, PDF pp. 16–17; transitions by
+  frequency counting, PDF p. 14) recovers 28–60% of the mean residual the intensity-only
+  fixed-tick model missed on the multi-tick names (Table 8, PDF p. 18) with nothing but
+  the tape. Pre-declaration text: any short-horizon C1-L2/C8 flow feature earns an
+  incremental-claim comparison only if it adds value beyond (a) the top-of-book OFI
+  benchmark, (b) the Eq.-7 queue-imbalance comparator, AND (c) a pre-registered own-price
+  size-state persistence comparator built as the paper's quantile chain on the venue's
+  realized mid-move size distribution. Harder to pass than the standing two-null rule
+  because the third null never touches the book or event stream — immune to both
+  event-flow and depth laundering. Interpretation cautions with page cites: fixed-tick
+  constructions are structurally biased on multi-tick venues — 61%/53%/71% of mid changes
+  exceed half a tick on AAPL/AMZN/GOOG (PDF p. 15; Fig. 4, PDF p. 24) — and the C1-L2
+  venue is maximal-small-tick, so any one-tick convention must be declared against the
+  venue's actual move-size distribution; even the size-chain leaves AMZN with 20.8%
+  coefficient error (Table 9, PDF p. 18), so a residual is not evidence of a flow
+  channel. Reinforcing: implied α/β = 0.41–0.53 across all five names (Table 2, PDF
+  p. 14), per-branch estimation is the only legal shape; direction persistence flips sign
+  across names (Table 4, PDF p. 15), reinforcing the sign-register rule. Source quality:
+  single trading day, five equities, level-1 data, arXiv v1 with placeholder venue
+  pagination, N(t) counts mid-price changes not order arrivals — cite the structure,
+  never the magnitudes.
+
+  Ratification queue after this session: FIFTEEN candidate sharpenings (the fourteen
+  standing plus the size-state persistence comparator joined 2026-11-18), zero armed.
+  T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read
+  queue: the standing next UNREAD pointer set at null-time session 13 stands —
+  "Price-Aware Automated Market Makers: Models Beyond Brownian Prices and Static
+  Liquidity" (score 39, already on the library text shelf); with the session-9
+  triage-audit flag on record, rank is a candidate reading, and the owner's library
+  policy governs when they diverge. (This session was a pre-assigned parallel slot 6 of
+  24, so it does not consume the queue's top pointer.) Nothing measured, no kill line
+  moved, nothing armed, nothing trades live.
