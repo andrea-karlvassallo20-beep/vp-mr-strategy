@@ -3210,3 +3210,34 @@ this session, no kill line moved, nothing armed, nothing trades live.
 - **Boundaries:** no kill line moved; nothing armed; ratification
   queue FIFTEEN candidates zero armed; nothing trades live.
   Deep-read queue parallel: next x947263 (score 32).
+
+## 64. OWNER-DIRECTED MEASURED SESSION (2026-11-18), twentieth of the parallel regime: "we will still do l2, but till then let us look at what I have found to be the best before orderflow" - the pre-flow sequence
+
+- **Built:** `src/pre_flow_sequence.py` - the bottom-seat episode
+  study (range_pos<=0.25 + fresh 20d low; episode-suppressed 30d)
+  across the top-250 universe: which PRE-FLOW markers (coil,
+  absorption, climax volume) and which FLOW markers (washout
+  decile, XB zone) are already on at the seat, P(first big move
+  within 60d is UP), plus the TIMING CLOCK. Artifacts:
+  `clue_scan/pre_flow_sequence.{csv,md}`. Baseline 0.618.
+- **Findings:** (1) the PRICE read alone is a WEAK seat: 0.638-0.643
+  (n=757/661), ~+2.5pts over baseline - the obvious bottom the eye
+  sees is barely better than this universe's own coin; (2) EFFORT
+  reads beat price reads before the flow confirms: absorption 0.662
+  (n=71), coil alone 0.620 (adds nothing), climax volume 0.615
+  (nothing), coil+absorb 0.727 (n=22, thin, unclaimed); (3) the
+  TIMING CLOCK: from the seat, washout flow turns on a median +17
+  days later, the XB deep zone +20.5 days, the first big move +29
+  days - THE PRE-FLOW WINDOW IS REAL AND ~2-3 WEEKS WIDE, and
+  absorption is the best measurable read inside it.
+- **The framed trade-off (the owner's answer):** seat (weak alone)
+  read TOGETHER with effort (absorption) is the best BEFORE
+  orderflow at the daily grain; the flow's own confirmation follows
+  ~2.5 weeks behind the seat carrying the bigger chips (0.75 vs
+  0.66-0.64) - entering at the pre-flow absorption read vs waiting
+  for the washout confirm is now a measured trade-off (2.5 weeks of
+  exposure buys ~+7pts of reliability), not a guess.
+- **Honesty:** the wash-out/XB-at-seat cells are thin (n=26-59) and
+  unsplit; W2 owed on everything; no kill line moved; nothing
+  armed; ratification queue FIFTEEN candidates zero armed; nothing
+  trades live. Deep-read queue parallel: next x947263 (score 32).
