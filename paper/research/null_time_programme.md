@@ -2584,3 +2584,57 @@ highest-value remaining entry in its tier.
   self-excited point process model" (xd18d70, score 30, on the
   shelf) - the origin paper's reckoning, flagged by sessions 44
   and 45.
+
+## 48. Deep-read session 36 (null time, nothing measured; the parallel regime continues): the origin's reckoning - apparent criticality, and the minefield map
+
+Paper: Filimonov & Sornette, "Apparent criticality and calibration issues in
+the Hawkes self-excited point process model: application to high-frequency
+financial data" (arXiv:1308.6756v3, ETH Zurich) - the twice-named next-read of
+sessions 44 and 45, the origin authors' own audit of every way a fitted
+branching ratio n-hat drifts to spurious criticality. Note:
+`paper/research/library/2026-11-18_apparent_criticality_calibration_deep_read.md`.
+Grade: NO kill line changed; NO new candidate sharpening. Findings:
+(a) [reinforcing] the critique IS the (construction x vintage)-conditional
+rule - with power-law kernels 0.17% of outliers (5x) or 1% (2x) push a true
+n=0.7 to spurious criticality while the exponential kernel stays robust (PDF
+p. 8); exchange timestamp bundling plus too-fine randomization calibrates a
+pure Poisson (n=0) at n-hat about 0.856 (p. 25); and the headline:
+concatenating subcritical segments never yields an intermediate n-hat - n1=0.5
+with n2=0.2 calibrates at n-hat=1 (pp. 30-32) - while a regime-switching Poisson
+series with TRUE n=0 is diagnosed at criticality across 1998-2012 (pp. 32-33),
+and residual analysis cannot distinguish it from genuine critical Hawkes
+(p. 33). Their closing metaphor - calibrating Hawkes is an excursion in a
+minefield (p. 34) - is the queue's negative-knowledge content stated by the
+origin authors themselves; sessions 44/45's conditional on the post-2007
+near-critical readings resolves exactly as the estimator-mode rule demanded;
+(b) [interpretation caution] a fitted clustering parameter is a clustering
+measure, not a mechanism - regime-mixing inflation first, mechanism second,
+for any future branching-adjacent reading on the program's instruments;
+(c) [interpretation caution] goodness-of-fit is not identification - a
+calibration that passes its own residual diagnostics can still be the wrong
+generating model; no dossier statistic licenses mechanism claims;
+(d) [reinforcing] the concatenation result (n-hat >= the higher segment) is
+the session-47 episode-contamination caution in another domain - episode lumps
+inflate clustering statistics computed across them, why the direction chips
+not the arrival cells are the stable content;
+(e) [source-quality note] an adversarial defense of the authors' own results -
+Hardiman-Bercot-Bouchaud's continuous-criticality "cannot be supported" while
+their own n~0.7-0.8 is "upheld" with the same short-window conditionality
+session 44 flagged; single venue and contract, TRTH-timestamp dependence,
+arXiv v3 - check the published version before formal citation; zero
+portability to the program's venue, grain, or vintage.
+Would-have-killed: a spec reading fitted branching ratios as free-standing
+market facts (or a regime gauge built on n-hat without declaring its
+regime-mixing content), with residual diagnostics green all the way down -
+the exact minefield; the house arsenal (estimator-mode, never-read-branching-
+alone, label placebo, calendar discipline) is the paper's recommendation list
+restated as rules, already armed.
+Rank-order honesty recorded in the note: this session honored the deliberate
+thematic pointer over pure rank order; three shelf entries score above it
+UNREAD (x947263 state-dependent Hawkes LOB at 32, xce0ba3 queue Hawkes-
+Markovian at 31). Ratification queue after this session: FOURTEEN candidate
+sharpenings, zero armed. T1 remains armed awaiting the owner's word; the
+blocked list stays blocked. Next queue pointer (returning to pure rank
+order): "State-dependent Hawkes processes and their application to limit
+order book modelling" (x947263, score 32, on the shelf). Nothing measured in
+this session, no kill line moved, nothing armed, nothing trades live.
