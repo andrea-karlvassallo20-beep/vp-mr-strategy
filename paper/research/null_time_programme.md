@@ -2426,3 +2426,115 @@ blocked. Deep-read queue pointer: the next UNREAD triage entry is
 "Hybrid Vector Auto Regression and Neural Network Model for Order
 Flow Imbalance" (score 32, x98e019). Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
+
+## 38. Null-time session 34 (2026-11-18): deep-read session 30 — the hybrid VAR-FNN OFI paper read; default grade, nothing queued; the results recorded as a leakage specimen
+
+- **Library deep-read session 30** (the standing queue's next UNREAD
+  pointer, score 32, x98e019, consumed here):
+  `paper/research/library/2026-11-18_hybrid_var_fnn_ofi_deep_read.md`
+  on Abdul Rahman and Neelesh Upadhye (Department of Mathematics,
+  Indian Institute of Technology Madras), "Hybrid Vector Auto
+  Regression and Neural Network Model for Order Flow Imbalance
+  Prediction in High-Frequency Trading" (arXiv:2411.08382v1,
+  13 November 2024): a hybrid forecaster for the same trade-count
+  OFI read through deep-read session 29 (eq. (1), PDF pp. 2-3,
+  explicitly building on Anantha and Jain [13], PDF p. 3), VAR on
+  buy and sell order counts with a feedforward network on the
+  residuals, a three-way BUY/SELL/HOLD intensity signal behind a
+  threshold T close to zero (PDF pp. 3, 5-8), 10,000 seconds of one
+  Binance cryptocurrency, three validation slices of about 3,000
+  points (PDF p. 9), 120 hand-evaluated parameter combinations
+  (PDF p. 9), headline R2 0.997 and 98.18 percent intensity accuracy
+  on BTCUSD against 46.61 percent for VAR-only (Table 4, PDF
+  p. 11). Read against the ONE question. **Grade: NO kill line
+  changed. NO new candidate sharpening queued. This is the default
+  grade: nothing here earns a rule.** The read went further: the
+  results section carries the page-cited signature of target
+  leakage, recorded so the paper can never be laundered into the
+  record.
+
+  Findings, page-cited: interpretation caution — the results are
+  inadmissible as evidence, three page-cited signs jointly
+  decisive: (a) identity-level predictions: the sample rows of
+  Table 5 track the actual OFI to within 0.001 to 0.023 on all six
+  displayed rows (hybrid -0.3315 vs actual -0.3454, -0.9203 vs
+  -0.9430, 0.2256 vs 0.2269, -0.1203 vs -0.1221, 0.8431 vs 0.8429,
+  -0.5581 vs -0.5616; PDF p. 12), second-scale OFI values
+  reconstructed to three decimals are the label, not a forecast;
+  (b) the linear backbone carries nothing: every appendix VAR lag
+  coefficient is statistically zero (L1.buy_orders p 0.706,
+  L1.sell_orders p 0.268, L2.buy_orders p 0.957, L2.sell_orders
+  p 0.095; Appendix A.1, PDF p. 15) and VAR-only validation R2 is
+  -0.002 on BTCUSD (Table 4, PDF p. 11), so the near-perfect hybrid
+  metrics cannot come from lag structure that does not exist and
+  the network output must overlap the target window; (c) no
+  chronological split is ever declared: training and validation
+  loss curves are offered as generalization evidence (Appendix A.4,
+  PDF p. 17) without the validation data ever being shown later in
+  time than training, the three validation datasets being separate
+  slices, not declared holdouts (PDF p. 9); every headline number
+  is therefore never cited by the record, for any purpose, ever.
+  Reinforcing, no new item — ammunition for the leakage-hunting
+  culture: the paper is a worked specimen of precisely what the
+  record's discipline exists to catch, unlabelled train-test mixing,
+  predictions indistinguishable from labels, a missing persistence
+  baseline, 120 hand-evaluated parameter combinations with no
+  multiple-testing discussion (PDF p. 9), and prose upgrading
+  "slightly better performance metrics" (PDF p. 5) into
+  "significant improvements" (abstract, PDF p. 1); corroborates by
+  counterexample why the deliberately-flawed examples of the
+  leakage-resistant backtester and the K1 costume guard exist, and
+  no rule is extended because the programme's discipline already
+  covers this failure class. Reinforcing, no new item — the OFI
+  name collision repeats and closes the count-family bracket opened
+  at deep-read session 29: same trade-count asymmetry (eq. (1),
+  PDF pp. 2-3, predecessor [13] cited, PDF pp. 3-4), not the
+  Cont-Kukanov-Stoikov depth-change OFI of the record's line, and
+  nothing in either session transfers onto the CKS-family
+  measurements; the VAR-only R2 of -0.002 squares with session
+  29's finding that nothing strong was demonstrated at this grain
+  but rides on the same undocumented evaluation, corroboration of
+  nothing. Source-quality note — two authors, IIT Madras
+  mathematics department; arXiv v1 only, 13 November 2024, no
+  journal record checked; zero indexed citations; internal naming
+  inconsistency: datasets declared BTCUSD and ETCUSDT (PDF p. 9,
+  Table 4, PDF p. 11) but the narrative from PDF p. 12 onward and
+  the limitations (PDF p. 13) call them ETHUSDT, so the pair used
+  is undetermined; the appendix GitHub link is a placeholder (PDF
+  p. 17); threshold T never given a value, a reproduction blocker
+  (PDF p. 3); the claim that trade classification is "deterministically
+  inferred by tracing the origin of the passive order" (PDF p. 2)
+  mirrors the NSE order-number mechanism and does not describe
+  Binance, where the taker side is native on the aggTrades stream;
+  extract page-marked and clean, 17 pp. The killed-if-wrong section
+  on record: nothing rests on this paper; if a genuinely
+  chronological holdout later surfaced and R2 0.997 survived, any
+  result would still have to be re-measured on the programme's own
+  tape under the programme's own protocols before anything could
+  move, and until then the inadmissibility judgment stands;
+  conversely if the leakage reading is right, the paper stands as a
+  named specimen of publishable leakage, reinforcing the record's
+  refusal to accept headline metrics from any source that does not
+  declare its holdout, which is already the rule. Standing caveat
+  recorded: 10,000 seconds, roughly 2.8 hours, one Binance
+  cryptocurrency, single regime, about 3,000-point slices, data
+  stream never specified, threshold undeclared, no costs, no
+  execution, no P&L, no L2 depth of any kind. Laundering directions
+  named: INTO — no architecture, hyperparameter, lag order,
+  threshold, metric, R2, or accuracy figure from this paper enters
+  any spec, default, or calibration, and the hybrid VAR-FNN
+  construction is not adopted anywhere without its own
+  pre-registration under the programme's holdout rules; OUT — the
+  R2 values and intensity accuracies are never cited as evidence
+  that OFI of any definition is predictable at high frequency,
+  never as evidence that hybrid models beat standalone models,
+  never as expected BTCUSDT behavior, and never as evidence about
+  any market the programme measures.
+
+Ratification queue after this session: TWENTY-FOUR candidate
+sharpenings, unchanged (deep-read session 30 added none), zero armed.
+T1 remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue pointer: the next UNREAD triage entry is
+"Trading in the Sunshine or in the Shade: Market Impact and Adverse
+Selection on Hyperliquid" (score 32, xa74970). Nothing measured, no
+kill line moved, nothing armed, nothing trades live.
