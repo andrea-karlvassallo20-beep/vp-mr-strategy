@@ -906,12 +906,76 @@ and the owner's library policy governs when they diverge.
   owner's library policy governs when they diverge. (This session was a pre-assigned
   parallel slot 19 of 24, so it does not consume the queue's top pointer.)
   Nothing measured, no kill line moved, nothing armed, nothing trades live.
-## 19. Null-time session 15 (2026-11-18): library deep-read session 13 — the size-state persistence comparator proposed as the third admission null; the fixed-tick structural-bias caution; Swishchuk–Huffman graded theory-heavy, evidence-light
+## 19. Null-time session 15 (2026-11-18): deep-read session 13 — the distance-grid sign-invariance rule; spoofers found to avoid the very queue the two-null comparator watches
 
-- **Library deep-read session 13** (a PRE-ASSIGNED parallel slot, declared as such — slot 6
-  of 24, triage score 36, so it does not consume the queue's top pointer; verified at
-  session start that no deep-read note for the slug existed and no open or unmerged closed
-  PR covered it):
+- **Library deep-read session 13** (pre-assigned parallel-fire slot, verified
+  UNREAD before reading: no note for slug x2aee07 existed in `paper/research/library/`
+  and no PR, open or merged, covered it at session start):
+  `paper/research/library/2026-11-18_spoofability_lob_deep_read.md`
+  on Fabre & Challet, "Learning the Spoofability of Limit Order Books With
+  Interpretable Probabilistic Neural Networks" (arXiv:2504.15908v1, 23 Apr 2025;
+  Coinbase Level-3 BTC-USD/ETH-USD via SUN ZU Lab; multi-scale Hawkes-inspired
+  limit-order-flow features with explicit posting-distance kernels, a probabilistic
+  NN predicting the skewed-Gaussian law of the one-second mid move, counterfactual
+  order-insertion response experiments, and an expected-cost spoofing detector).
+  NB: the slot assignment mislabelled the title as "Probabilistic Logic Programming";
+  the actual paper and extract are Neural Networks (recorded in the note).
+  Triage-rank: score 34, read as a pre-assigned parallel slot (the queue's next UNREAD
+  pointer is not consumed).
+- Grade: NO kill line changed. ONE candidate sharpening queued, PENDING OWNER
+  RATIFICATION: **the distance-grid sign-invariance rule** — any C1-L2/C8 feature built
+  from limit-order flow aggregated over book depth must pre-declare its distance
+  weighting (or hard depth cutoff) and show its registered sign stable across a
+  pre-registered distance grid before admission (mechanism: impact is monotone in
+  posting distance and remains significant several bps from touch, Figs. 6–7,
+  PDF pp. 10–11; flagged-manipulative depth averages ~6.9 bps from touch vs ~1.0 bp
+  for normal flow, Table 1, PDF p. 19; the paper's own verdict that distance-blind
+  models are "not suitable to describe the data", PDF p. 10). Tightens the
+  sign-register and flow-clock scale-constant rules: a depth-aggregated flow feature
+  can no longer inherit significance from one arbitrary aggregation radius, and
+  manipulable-depth contamination gains a named, pre-registered test it must fail.
+  Harder to pass; reading-side only; the owner's word alone ratifies.
+- Reinforcing (no new item): the paper's detection output shows spoofers almost never
+  post at the best queue (0% of large suspicious orders at top-of-book vs 4.20% of
+  large normal, Table 1, PDF p. 19), giving mechanistic support that the Gould–Bonart
+  Eq. 7 top-of-book comparator of the two-null admission rule (null-time session 13)
+  is comparatively robust to spoofing: the manipulable pressure is the pressure spoofers
+  do not put there. Interpretation caution (extends the sign-register rule to this
+  feature family): the paper's market order flow counts sell marketable orders hitting
+  the bid, so its "market imbalance predicts a lower expected move" partial dependence
+  (Figs. 4–5, PDF pp. 8–10) is a sign-convention statement about aggressive selling,
+  not "buy flow predicts down"; any C1-L2 port must fix the initiator-side sign map
+  in the pre-registration before estimation. Cost-survival ammunition (relevant only
+  if a K7-style layer ever exists): flagged-spoofable depth is followed by
+  significantly larger realized one-second moves than normal orders (avg 0.11 bp,
+  skew 0.45 vs 0.02/0.02, Table 1, PDF p. 19); a cost model treating all displayed
+  depth as real liquidity understates adverse execution on unregulated venues.
+  Source quality: N = 10 sampled points per (Q, distance) response cell (PDF p. 10);
+  trained on one week of Dec 2022, applied to Dec 2024 with no drift test (PDF pp. 7,
+  15); the 31% headline is an expected-gain-conditioned label, not observed
+  manipulation (PDF pp. 14–15); no trader IDs, no ground truth (PDF p. 14);
+  Assumption 1 (no partial fills) acknowledged false (PDF pp. 11–12); arXiv v1,
+  check published version before formal citation.
+- Inaccessible/blocked status: none this session. The extract was present, page-marked
+  and complete (22 pp.).
+
+Ratification queue after this session: FIFTEEN candidate sharpenings (the fourteen
+standing plus the distance-grid sign-invariance rule joined 2026-11-18), zero armed.
+T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read
+queue: the next UNREAD triage entry is unchanged — "Price-Aware Automated Market
+Makers: Models Beyond Brownian Prices and Static Liquidity" (score 39, already on the
+library text shelf); with the session-9 triage-audit flag on record, rank is a candidate
+reading, and the owner's library policy governs when they diverge. (This session was a
+pre-assigned parallel slot, so it does not consume the queue's top pointer.) Nothing
+measured, no kill line moved, nothing armed, nothing trades live.
+## 20. Null-time session 16 (2026-11-18): library deep-read session 14 — the size-state persistence comparator proposed as the third admission null; the fixed-tick structural-bias caution; Swishchuk–Huffman graded theory-heavy, evidence-light
+
+- **Library deep-read session 14** (a PRE-ASSIGNED parallel slot, declared as such — slot 6
+  of 24, triage score 36, slug xfeb371, so it does not consume the queue's top pointer;
+  verified at session start that no deep-read note for the slug existed and no open or
+  unmerged closed PR covered it — the CARMA-Hawkes (session 15 deep-read 12) and
+  spoofability (session 15's deep-read 13) slots had not yet landed when this read began;
+  this entry's number was taken fresh from the log tail at append time):
   `paper/research/library/2026-11-18_general_compound_hawkes_lob_deep_read.md`
   on Swishchuk & Huffman, "General Compound Hawkes Processes in Limit Order Books"
   (arXiv:1812.02298v1, 6 Nov 2018; compound Hawkes mid-price models with n-state Markov
@@ -942,7 +1006,7 @@ and the owner's library policy governs when they diverge.
   pagination, N(t) counts mid-price changes not order arrivals — cite the structure,
   never the magnitudes.
 
-  Ratification queue after this session: FIFTEEN candidate sharpenings (the fourteen
+  Ratification queue after this session: SIXTEEN candidate sharpenings (the fifteen
   standing plus the size-state persistence comparator joined 2026-11-18), zero armed.
   T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read
   queue: the standing next UNREAD pointer set at null-time session 13 stands —

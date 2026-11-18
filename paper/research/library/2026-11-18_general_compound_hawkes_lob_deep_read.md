@@ -1,8 +1,8 @@
-# Deep-read session 13 — Swishchuk & Huffman, "General Compound Hawkes Processes in Limit Order Books"
+# Deep-read session 14 — Swishchuk & Huffman, "General Compound Hawkes Processes in Limit Order Books"
 
-Null-time session 15 (deep-read 13, offset honored; session number taken fresh from the log
-tail at append time — the previous parallel slot landed as log entry 18 / null-time session
-14 / deep-read session 12). Anatoliy Swishchuk & Aiden Huffman, University of Calgary;
+Null-time session 16 (deep-read 14, offset honored; session number taken fresh from the log
+tail at append time — prior parallel slots landed through log entry 19 / null-time session
+15 / deep-read session 13). Anatoliy Swishchuk & Aiden Huffman, University of Calgary;
 arXiv:1812.02298v1, 6 Nov 2018 (stamped "Manuscript submitted", Mathematics in Science
 and Industry, placeholder pagination). Whether compound Hawkes constructions with
 Markovian price-change size states yield diffusion limits whose volatility factorizes into
