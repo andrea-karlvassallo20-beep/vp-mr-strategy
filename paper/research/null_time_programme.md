@@ -3173,3 +3173,40 @@ this session, no kill line moved, nothing armed, nothing trades live.
 - **Boundaries:** observation display only; no kill line moved;
   ratification queue FIFTEEN candidates zero armed; nothing trades
   live. Deep-read queue parallel: next x947263 (score 32).
+
+## 63. OWNER-DIRECTED MEASURED SESSION (2026-11-18), nineteenth of the parallel regime: "spend as much time as possible deriving inferences and you will understand why flow is the closest to a useful indicator system" - the flow inference matrix
+
+- **Built:** `src/flow_zone_matrix.py` - the full flow-zone geometry
+  across every valid night of the top-250 universe: zones XB/B/A/XA
+  (VFI z bands -1.5/0/+1.5, prior-bar), DAYS-IN-ZONE (young <=10d vs
+  old; the session-60 flow-age law applied within zones), price
+  thirds; P_first_up(60d) and mean fwd-20d per cell; plus the
+  measured ZONE CHAIN (transition counts). Artifacts:
+  `clue_scan/flow_zone_matrix.{csv,md}`. Baseline 0.658.
+- **The derived inferences:** (1) **XB_old_low = 0.753 (n=1,592)** -
+  deep washout, AGED, at price lows: the strongest direction cell in
+  the flow geometry, and aging HELPS within the washout (old 0.741 >
+  young 0.691) - the coiled-effort seat, cross-confirmed against the
+  shape-qualified flagship (0.731) by a different construction
+  family; (2) **young euphoria is momentum not fade: XA_young 0.711;
+  at highs 0.743 with fwd-20d +12.6% (n=770)** - the largest DRIFT
+  cell measured, exactly where the flow-age law says the segment is
+  unspent; (3) secondary, unclaimed: B_high 0.788 / B_old_high 0.837
+  (thin; the pause-in-uptrend signature); (4) the TWO-CLOCK
+  structure: positive zones age BADLY (spent effort), the washout
+  ages WELL (accumulation) - the duality that lets flow disambiguate
+  what price position cannot, the structural reason flow outruns
+  price-only reads at the same extremes; (5) the chain: A<->XA is
+  72% of all transitions (the universe's up-tilt made mechanical);
+  the information lives at the Edges - deep XB entries and XA exits.
+- **The honest verdict on the owner's claim:** YES at the program's
+  honest bar - the flow axis supplies the strongest direction-cell
+  family, the only recurring drift cells, the two-clock age
+  geometry, and the chain structure - in ONE registered
+  construction family, cross-confirmed by two derivations. NOT
+  tradeable yet: all in-sample, halves largely unsplit at this
+  grain, W2 owed on every number, and the misses stay on the record
+  (nuke_down dead, V-crash shorts dead, the Katsanos sign dead).
+- **Boundaries:** no kill line moved; nothing armed; ratification
+  queue FIFTEEN candidates zero armed; nothing trades live.
+  Deep-read queue parallel: next x947263 (score 32).
