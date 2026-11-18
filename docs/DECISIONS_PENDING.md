@@ -40,11 +40,11 @@ each case. Items are ordered by how much they gate.
   **C8 is NOT ARMED until you accept.**
   `paper/research/c8_macro_l2_synthesis_spec.md` (AMENDMENT LOG).
 - **The ratification queue** (candidate spec sharpenings from the
-  library deep-reads — fourteen candidates (the branching per-branch
+  library deep-reads — fifteen candidates (the branching per-branch
   rule, the flow-clock scale-constant rule, and the sign-register
   rule for excitation features joined on 2026-11-16; the two-null
   admission rule for the C1-L2 benchmark family and, joined 2026-11-18,
-  the ACF-shape kernel-validity gate for the branching-ratio trigger),
+  the ACF-shape kernel-validity gate for the branching-ratio trigger and, joined 2026-11-18, the distance-grid sign-invariance rule for depth-aggregated limit-order-flow features),
   zero armed;
   the owner's word is
   the only trigger): enumerated with sources in
