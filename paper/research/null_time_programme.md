@@ -1417,3 +1417,58 @@ highest-value remaining entry in its tier.
   is the next score-34/33 entry in `edge_triage_scores.json`
   order — check the shelf before reading; the session-9
   triage-audit flag still applies.
+
+## 28. Null-time session 24 (2026-11-18): deep-read session 22 — measured crypto seasonality at the 5-minute grain: the drift item's second seasonality citation, and agent composition is a regime variable
+
+- **Library deep-read session 22** (next UNREAD triage-rank entry,
+  per session 27's pointer — verified unread against the note shelf
+  by the read-slug mapping, not by title):
+  `paper/research/library/2026-11-18_rise_of_machines_crypto_hft_deep_read.md`
+  on Petukhina, Reule & Härdle, "Rise of the Machines? Intraday
+  High-Frequency Trading Patterns of Cryptocurrencies"
+  (arXiv:2009.04200v1, 2020; Humboldt zu Berlin/SMU; post-peer-
+  review version of a European Journal of Finance article). GAM
+  seasonality on 5-minute CRIX/dyos European-feed data, eleven
+  coins, July-August 2018. Grade: NO kill line changed; NO new
+  candidate sharpening. Findings: (a) **[reinforcing]** clear daily
+  and weekly seasonal structure in volatility AND volume — European
+  sleep-hour troughs, 17:00-20:00 peaks, weekend declines (PDF
+  pp. 16-17, Figures 7-10) — the queued drift-reporting item's
+  second seasonality citation after session 15's Barzykin read, with
+  the paper's own caveat that the seasonality is high-significance
+  and R^2-around-1% SMALL: a measurement-contamination concern
+  (calendar composition folds into naive per-window drift numbers),
+  never an exploitable-effect claim; no change to the item's legal
+  content; (b) **[interpretation caution]** agent composition is a
+  REGIME VARIABLE and its measurement is vintage- and venue-local —
+  the "Proof-Of-Human" conclusion (2018 crypto activity shaped
+  predominantly by human agents, algorithmic impact "negligible")
+  is built on one European vacation-period vintage and explicitly
+  against media hype; composition is not portable across vintages or
+  venues (this same asset class shows CME engine-transaction races
+  in session 19's 2025 study), any future market-structure
+  narrative in the record cites its vintage and venue before its
+  conclusion — extends the venue-freeze warrant (session 14) and
+  the regressed-process caution (session 21) into composition
+  drift; (c) **[reinforcing]** the stylized facts (near-zero return
+  autocorrelation, positive absolute/squared-return
+  autocorrelation, extreme leptokurtosis — BTC excess kurtosis
+  49.4, PDF pp. 12-13, Table 1) are the grain's own moments: one
+  more citation in the grain-specific-objects family; nothing
+  licenses any other grain or venue. Would-have-killed: drift
+  reported as a single per-window number would have been a silent
+  mixture of calendar composition and drift; and any "crypto is
+  algorithm-dominated, calendar effects are dead" narrative in the
+  record would have been resting on an unmeasured assumption the
+  paper debunks for its vintage. Cautions: 5-minute European-sourced
+  index/spot data, one two-month 2018 window — not a perpetual-
+  futures order book; R^2 ~ 1% means significance is partly a
+  sample-size artifact of the frequency; PoH assumes no algorithms
+  mimic human calendars; published EJF version exists, the shelf
+  copy is the pre-copyedit arXiv v1, check before formal citation.
+  Ratification queue after this session: FOURTEEN candidate
+  sharpenings, zero armed (unchanged). T1 remains armed awaiting
+  the owner's word; the blocked list stays blocked. Deep-read
+  queue: next unread by rank per the read-slug mapping is "The
+  Price Impact of Generalized Order Flow Imbalance" (score 33,
+  on the shelf).
