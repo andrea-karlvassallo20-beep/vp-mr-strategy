@@ -1951,3 +1951,58 @@ highest-value remaining entry in its tier.
   Shade: Market Impact and Adverse Selection on Hyperliquid"
   (score 32, on the shelf) - a perp-venue read, adjacent to the
   program's own venue.
+
+## 37. MEASURED SESSION (2026-11-18), owner-authorized, second of the parallel regime: the coin-chip dossier — which way the coin is chipped, measured
+
+- **Owner directive:** "everyone gets to flip a coin, but you wanna
+  make sure you know which way it has been chipped... after nukes
+  highest likelihood to go up, or after a base is built... volume
+  flow, chart patterns, my own derived system of inferences at
+  extremities." Measured descriptive work in the parallel regime,
+  pre-declared protocol in src/coin_chip_dossier.py BEFORE the run;
+  two data-quality corrections declared and dated inside the file
+  preamble (dead-coin sub-cent closes invalidated; delisting-range
+  forward returns dropped; up-share denominator fixed from
+  per-day share to up-days/move-days after the first pass measured
+  the wrong object) — all numbers below are the corrected third
+  run. No kill line moved; nothing armed; nothing trades live.
+- **What was measured:** paper/research/clue_scan/coin_chip_dossier.csv
+  + .md. States causal at the evaluation night (post_nuke_down =
+  >=4-sigma NEGATIVE day within 2 days; post_nuke_up = symmetric
+  positive; primed = the frozen rule; base = quiet AND range_pos
+  <= 0.15, no compression requirement - the owner's "base is
+  built"; all = baseline) against direction of the FIRST >=4-sigma
+  move within 60 days, up-share of moves (up-days/move-days), and
+  5/20/60-day forward drift; 199-series archive, nights n =
+  1,705-289,262 per state.
+- **The chips, quantified:** (1) the panel's coin is ALREADY
+  up-chipped at baseline - P(first big move UP) = 0.576, every
+  conditional reads against 0.576 not 0.500; (2) the owner's
+  after-nuke chip is REAL and the largest measured: P(first big
+  move UP | >=4-sigma crash within 2 days) = 0.748 (n = 1,705) -
+  a 17-point chip over baseline, the owner's instinct quantified
+  by the archive; (3) the momentum chip is even stronger: 0.767
+  after big UP days, and post-nuke-up nights carry the largest
+  clean 20-day mean drift (+2.3% vs -0.1% baseline) - the trend
+  side; (4) the base-built chips: primed 0.635 / base 0.645
+  first-move UP, up-shares 0.654 / 0.668, and the largest 60-day
+  mean drifts (+4.0% / +1.8% vs +0.0%) - consistent with the
+  already-owned 6.2x detection asymmetry, now stated as a
+  direction probability; (5) the honest boundary: medians stay
+  NEGATIVE almost everywhere (decaying crypto-bear panel) - the
+  chips live in first-move direction and up-share, NOT in median
+  K-day drift: which-way-the-first-big-move-goes is chipped,
+  is-the-next-K-day-return-positive is not. Descriptive
+  discovery-panel numbers: crypto-heavy, bear-biased years,
+  >=4-sigma construction is absolute-return-based; the W2 confirm
+  split remains mandatory before any conditional becomes
+  evidence.
+- **Duplication with existing sealed measurements:** none
+  contested - sealed C7's 0.505 daily-direction coin flip is the
+  day-grain direction object; this dossier's 0.576/0.748/0.767
+  are FIRST-BIG-MOVE direction objects at the event grain, a
+  different construction whose registration here is explicit.
+- **Deep-read queue:** unchanged, parallel - next unread by rank
+  per the read-slug mapping remains "Trading in the Sunshine or in
+  the Shade: Market Impact and Adverse Selection on Hyperliquid"
+  (score 32, on the shelf).
