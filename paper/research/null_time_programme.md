@@ -1793,3 +1793,52 @@ highest-value remaining entry in its tier.
   queue: next unread by rank per the read-slug mapping is "A
   Hawkes model with CARMA(p,q) intensity" (score 32, on the
   shelf).
+
+## 34. MEASURED SESSION (2026-11-18), owner-authorized, in parallel with null time: the closeness dossier — the criteria list by distance-to-event the owner asked for
+
+- **Regime note, recorded honestly:** the owner asked what all the
+  work is for if it cannot deduce direction and anticipate moves,
+  directed "look historically all we saw and start building
+  criteria list by closeness to actual event starting from price
+  and then volume and then time," and chose "both in parallel"
+  (measured work + continuing the deep-read queue). This entry is
+  therefore NOT a null-time entry: it is measured DESCRIPTIVE
+  work, the first of the parallel regime, pre-declared protocol in
+  `src/closeness_dossier.py` before the run. No kill line moved
+  (the five C1-L2, C8's eleven, C5's four all stand); nothing is
+  armed; the ratification queue is untouched; nothing trades live.
+- **What was measured:** `paper/research/clue_scan/closeness_dossier.csv`
+  + `closeness_dossier.md`. Universe: the cached 199-series
+  discovery archive (the census's own archive; the misses
+  curriculum's 873-series mega-board cache is not present in this
+  clone, subset declared openly). Event as in the misses
+  curriculum (>=4-sigma daily move, causal trailing 20d sigma);
+  closeness = move within K days of the evaluation night, K in
+  {5, 10, 20, 60}. Statistic: pooled rank AUC per criterion
+  (higher > 0.5; lower < 0.5; 0.5 = no separation), all criteria
+  computed causally the night before, in the owner's triad order.
+- **The ranked list (pooled, K=5 to K=60):** PRICE-side quietness
+  DOMINATES in the low direction - rvol_pct AUC 0.323 at K=5
+  (0.411 at K=60): a night close to a >=4-sigma move ranks BELOW
+  ~68% of ordinary nights on volatility percentile, and the
+  separation DECAYS with lead time like a real spark. range_pos is
+  second, also low-direction (~0.44-0.45). TIME: comp_days mild
+  positive (~0.54), days_since_move weak. VOLUME AT THE DAILY
+  GRAIN CARRIES ALMOST NOTHING: vol_ratio 0.49-0.52 at every
+  horizon - the owner's triad is empirically price-first at this
+  grain, and volume's information, if it exists, lives in the
+  depth structure at finer grains (sessions 21/24/25), not daily
+  volume ratios. Together with the misses curriculum (lift 2.07,
+  coverage 3.9%) and sealed C7 (p(up) = 0.505 coin flip;
+  P(move<=60td | primed) = 0.940 vs 0.862), the historical clue
+  dossier reads: quiet + low-in-range + compressed = close to
+  the event; loud and stretched = not close; daily volume tells
+  you almost nothing; NOTHING here says which way.
+- **What it does not license, restated in the log:** rankings,
+  not thresholds; descriptive of the sealed discovery archive;
+  confirmation (W2 split) does not exist yet; direction
+  explicitly out of scope; the 873-series rerun is a named
+  follow-up; nothing trades live.
+- **Deep-read queue:** unchanged, parallel - next unread by rank
+  per the read-slug mapping remains "A Hawkes model with
+  CARMA(p,q) intensity" (score 32, on the shelf).
