@@ -2889,3 +2889,47 @@ this session, no kill line moved, nothing armed, nothing trades live.
   session-40 gate is still ahead. Nothing armed; nothing trades live.
   Ratification queue stands at FIFTEEN candidates zero armed; no kill
   line moved. Deep-read queue parallel: next x947263 (score 32).
+
+## 55. OWNER-DIRECTED MEASURED SESSION (2026-11-18), thirteenth of the parallel regime: Chart Grammar v0.1 - the human chart-read, discretized
+
+- **Owner directive:** "you are missing the chart reading aspect...
+  tops and bottoms or reversions, U at extremities or V tops that
+  must come down... nor the sequentiality and relative price to flow
+  position in space and their relation in time at that point - why not
+  try discretinize these. It is a human who uses charts not robots."
+  Response: the grammar - fractal pivots (W=3, confirmed when known)
+  -> legs -> registered symbol alphabet (direction, z-scaled size,
+  duration bucket, WAKE shape: front-loaded V-spike vs back-loaded
+  U-base), read at range-extreme nights WITH the flow axis, measured
+  against the program's first-move criteria. Protocol pre-declared in
+  `src/chart_grammar_dossier.py`; artifacts
+  `clue_scan/chart_grammar.{csv,md}`. One in-flight symbol-format
+  bug (duration integer interpolated into keys) found and fixed
+  before reading results; reported re-run on the corrected alphabet.
+- **Results (the human read measured):** (1) at range BOTTOMS the
+  U-base x washout cell reads **0.731 P(first big move UP)** (n=806)
+  - the strongest bottom formation the program has measured, above
+  the bare fresh-low (0.578) and the flow alone (0.686); U-base
+  beats even/V at bottoms (0.654/0.634/0.634); (2) at range TOPS the
+  washed U-dome rollover reads **0.331** (n=987) - first big move
+  DOWN two times in three, the chart-reader's most actionable
+  asymmetry - while the V-spike crash at highs reads 0.542 (n=1,238),
+  NO edge: "V tops that must come down" often bounce first;
+  blind-shorting spikes is the natural human error the numbers refuse
+  to license (echoing the session-50 niche result for shorts);
+  (3) SEQUENTIALITY honest negative: the up-then-down 2-gram at tops
+  adds nothing beyond the completed down-leg 1-gram at this grain
+  (identical n and reading); deeper sequence tests are NEW
+  declarations, unmeasured; (4) washout flow lifts EVERY bottom shape
+  (0.689-0.731 vs flowmid 0.656-0.664); the euphoric top cells are
+  too thin (n=17-76) to claim - left unclaimed.
+- **The reading for the owner:** the chart-reading aspect is now
+  inside the program, and it agrees with the human where the human
+  is right (U-formations at extremes, read with flow) and disagrees
+  where the human is tempted (V-crash shorts at highs). It is a
+  human who uses charts; the grammar is the human's read made
+  measurable - now the chips can be W2-confirmed instead of argued.
+- **Boundaries:** in-sample descriptive; no kill line moved; nothing
+  armed; ratification queue stands at FIFTEEN candidates zero armed;
+  nothing trades live. Deep-read queue parallel: next x947263
+  (score 32).
