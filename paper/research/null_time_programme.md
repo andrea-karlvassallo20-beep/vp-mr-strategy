@@ -3393,3 +3393,27 @@ the shelf) - the paper's natural sibling.
   extremity states). Nothing armed; nothing trades live.
 - **Deep-read queue:** parallel - next xce0ba3 (score 31).
   Ratification queue: FIFTEEN candidates, zero armed.
+
+## 69. OWNER DECISION RECORD (2026-11-18): the canonical 7-state zone system IS the system of record until L2
+
+- **Owner directive (recorded verbatim in substance):** "I'm gonna
+  stick with this for now till l2, we will have time with l2 I
+  promise." DECISION: the canonical 7-state zone system
+  (`clue_scan/flow_zone_system_owner.{csv,md}`, session 68 - EXT_BOT
+  / BELOW / CROSS_UP / ABOVE / EXT_TOP / CROSS_DN / MOVE_EXT) is
+  THE FLOW SYSTEM OF RECORD for all daily-grain work until the L2
+  phase begins. The 12-state price-third variant stands as an
+  appendix; per-pair transition matrices and further geometry
+  work are QUEUED, not scheduled - L2 gets its proper time when
+  the owner opens it.
+- **What continues in parallel, unchanged:** (a) the deep-read
+  queue - next xce0ba3 "Order Book Queue Hawkes-Markovian Modeling"
+  (score 31), loading the L2 rules before L2 begins; (b) the W2
+  battery's weekly fresh-window accumulation
+  (`fetch_top250.py` cadence; pass/kill lines frozen in
+  `when_instrument/w2_fresh_window_battery.md`); (c) the ratification
+  queue - FIFTEEN candidates, ZERO armed, awaiting the owner's word.
+- **Standing state:** T1 armed awaiting the owner's word; the
+  blocked list stays blocked; nothing trades live; no kill line
+  moved. The seats board (session 59) refreshes on the same weekly
+  cadence as the W2 windows - observation display only.
