@@ -1711,3 +1711,88 @@ next UNREAD triage entry is "Returns and Order Flow Imbalances:
 Intraday Dynamics and Macroeconomic News Effects" (score 34, x5459dc).
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live.
+
+## 30. Null-time session 26 (2026-11-18): deep-read session 22 — the Takahashi returns-OFI intraday paper read; the release-calendar lead component queued for the deterministic-clock null arm
+
+- **Library deep-read session 22** (the standing queue's next UNREAD
+  pointer, score 34, x5459dc, consumed here):
+  `paper/research/library/2026-11-18_returns_ofi_macro_news_deep_read.md`
+  on Takahashi, "Returns and Order Flow Imbalances: Intraday Dynamics
+  and Macroeconomic News Effects" (arXiv:2508.06788v4, 8 Oct 2025; a
+  Hosei University / Northwestern dissertation chapter): a bivariate
+  structural VAR of one-second S&P 500 E-mini returns and Cont-
+  Kukanov-Stoikov OFI, identified through heteroskedasticity
+  (SVAR-ITH), 1,490 days 2008-2013, fit per 15-minute interval, with
+  the structural parameters regressed on macro-announcement dummies.
+  Read against the ONE question. **Grade: NO kill line changed. ONE
+  new candidate sharpening queued, PENDING OWNER RATIFICATION:** the
+  release-calendar component, with a declared pre-release lead, for
+  the deterministic-clock null arm of the branching-ratio trigger.
+  The queued arm (deep-read 19, log ## 26) enumerates the
+  deterministic intensity as hour-of-day and session segments; the
+  paper supplies the missing third component with regression
+  evidence: the parameter shifts begin BEFORE the release stamp —
+  price impact rises on ANN_t-1 (0.129***, PDF p. 11, Table 2), flow
+  innovation volatility declines on and before the release
+  (-0.039**/-0.057***), so a null whose release handling begins at
+  the stamp misses the withdrawal interval itself.
+  Pre-declaration: no branching-ratio window reading is admissible
+  under the deterministic-clock null unless the null's deterministic
+  intensity also carries the scheduled-release calendar (the
+  owner-curated macro timeline), each release with a lead window
+  frozen from calibration windows disjoint from evaluation;
+  release-explained windows contribute no firing and are reported
+  separately. Harder to pass: release windows are precisely where
+  return innovations spike, price impact jumps and flow
+  responsiveness collapses — the extreme-impact, extreme-intensity
+  configuration a branching estimator reads as its most excited
+  windows; a bar that survives the hour-of-day null can still be the
+  release calendar wearing excitation's costume. It tightens only
+  the queued deterministic-clock null arm (and through it the T-H
+  and T-O families); no C1-L2 text moves.
+
+  Findings, page-cited: reinforcing, no new item — OFI is
+  constructible from BBO events alone, with the order-type
+  decomposition explicitly reserved for order-typed data (PDF p. 3,
+  footnote 6): a worked exhibit for probe E1's reconstruction-
+  admissibility rule, BBO-derived OFI admissible as a feature but
+  any decomposition-flavoured reading on it inadmissible.
+  Reinforcing, no new item — aggregation manufactures simultaneity,
+  the coefficient a function of the clock (b_f 0.301 at one second
+  toward 0.55 at one minute, b_r the reverse, PDF p. 12;
+  Deuskar-Johnson's stale-limit and price-contingent mechanism): a
+  worked exhibit for the record's clock discipline, no fitted
+  contemporaneous coefficient from one sampling clock pooled with or
+  narrated alongside another. Reinforcing, no new item — fitted
+  structural point estimates are unstable across windows and mostly
+  not significant (b_r significant in only 64 percent of 15-minute
+  intervals, Table 3, PDF p. 12): an independent equity-futures
+  exhibit for the uncertainty-band-not-point-estimate rule already
+  queued from Hardiman-Bouchaud. Interpretation caution — the
+  announcement dummies are significant but add little adjusted
+  R-squared beyond market activity variables (PDF p. 9): the release
+  calendar acts mostly through observable activity, and the null arm
+  must declare which carries the release windows, not stack both
+  silently. The killed-if-wrong section stands. Standing caveat
+  recorded: single instrument (S&P 500 E-mini), 2008-2013, Chicago
+  regular hours only, eight US release types; transfer to a 24/7
+  BTCUSDT tape mechanism-level only, never numerical. Source-quality
+  note: solo-author dissertation chapter, arXiv v4, published version
+  to be checked before formal citation. Laundering directions
+  named: INTO — the fitted coefficients never imported as
+  calibration, priors, or tolerances; OUT — the one-second
+  dissipation and simultaneity findings never read backwards as "L2
+  flow has no content at the programme's horizons": dissipation is a
+  second-scale statement, the programme's compression question is
+  multi-hour, and the simultaneity bias binds fitted contemporaneous
+  coefficients, not state-definition triggers.
+
+Ratification queue after this session: TWENTY-ONE candidate
+sharpenings (the twenty standing plus the release-calendar lead
+component joined here through deep-read session 22), zero armed.
+T1 remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue pointer: the next UNREAD triage entry is
+"Packets, Transactions and Queues: Design Principles for HFT Systems
+from a Measurement Study of CME Market Data" (score 34, xc5ba34).
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live.
