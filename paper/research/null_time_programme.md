@@ -2351,3 +2351,70 @@ highest-value remaining entry in its tier.
   financial markets: towards a prediction of flash crashes"
   (score 30, on the shelf) - squarely in the program's own
   hypothesis family.
+
+## 44. Null-time session 36 (2026-11-18): deep-read session 34 — the origin paper, read after its descendants: Filimonov-Sornette's own printed limitations are the seed of every protective rule
+
+- **Null-time deep-read session 34** (the parallel regime
+  continues; next UNREAD triage-rank entry per session 43's
+  pointer, verified unread by the read-slug mapping):
+  `paper/research/library/2026-11-18_reflexivity_flash_crashes_deep_read.md`
+  on Filimonov & Sornette, "Quantifying reflexivity in financial
+  markets: towards a prediction of flash crashes"
+  (arXiv:1201.3572v2, 2012 with a 2024 restamp; ETH Zurich/Swiss
+  Finance Institute). The ORIGIN of the branching-ratio-as-
+  endogeneity literature the entire queue descends from: Hawkes
+  calibration on E-mini S&P 500 mid-price changes 1998-2010
+  finds endogeneity rising from ~70 percent exogenous in 1998
+  (n ~ 0.3) to <30 percent exogenous post-2007 (n near
+  criticality), in four narrative-coincident regimes, growth
+  coincident with the rise of HFT; Poisson-reshuffling placebo
+  rejects n-as-activity; seasonality split: mu and volume U-
+  shaped intraday, n NOT; proposal: n as distance-to-criticality
+  fragility metric. Lineage flag recorded: session 2 (Hardiman-
+  Bouchaud) re-examined this paper, and the queued "Apparent
+  criticality and calibration issues" (score 30, unread) is its
+  critique - the queue read the descendants BEFORE the origin.
+  Grade: NO kill line changed; NO new candidate sharpening.
+  Findings: (a) **[reinforcing]** the founders' own printed
+  limitations ARE the caution architecture: short intraday
+  windows plus a short-memory exponential kernel mean the
+  calibrated n values "are most likely UNDERESTIMATIONS" (their
+  words) - the kernel-geometry constraint (session 28) and
+  exogenous-absorption caution (session 17), admitted in 2012;
+  never-read-branching-alone descends from this paper's measured
+  instabilities, nothing queued, origin citation added; (b)
+  **[interpretation caution]** "towards a prediction" measured
+  REGIME COINCIDENCE, not validated prediction; until the
+  apparent-criticality critique paper is read, the post-2007
+  near-critical levels are (construction x vintage)-conditional
+  readings, not market facts, per the estimator-mode rule;
+  time-varying n is composition drift's ancestor (session 22);
+  (c) **[reinforcing]** the Poisson-reshuffling placebo (same
+  daily event count, within-day Poisson, n collapses) is an early
+  instance of the house label-placebo battery and reinforces the
+  null-structure requirement on every fitted reading; (d)
+  **[reinforcing]** the seasonality split is the calendar
+  discipline's ancestor: effects (mu, volume, volatility) ride
+  the intraday U-shape while structure (n) does not - each
+  statistic declares which calendar channel contaminates it
+  (sessions 15/22); (e) **[source-quality note]** single venue
+  and contract, one 13-year vintage, HFT attribution narrative-
+  contingent (SEC 1998 dating), arXiv v2 restamp of the 2012
+  work, check the published descendant before formal citation,
+  zero portability to the program's venue/grain/vintage.
+  Would-have-killed: a spec reading fitted branching ratios as
+  free-standing market facts would be the exact vulnerability the
+  founders' own caveats flag, and a fragility claim built on
+  near-critical n before the critique paper would rest on a
+  possibly-artifactual level - the queue order (descendants
+  first, origin now) is recorded as irony and lesson. Cautions:
+  exponential kernel in 10/20/30-minute windows, the critique
+  paper unread and flagged as the imminent follow-up, nothing
+  here touches the program's venue, the dossiers' grain, or T1's
+  spell scale. Ratification queue after this session: FOURTEEN
+  candidate sharpenings, zero armed (unchanged). T1 remains armed
+  awaiting the owner's word; the blocked list stays blocked.
+  Deep-read queue: next unread by rank per the read-slug mapping
+  is "Microstructural Foundation for the Rough Hawkes-Heston
+  Model" (score 30, on the shelf) - and the apparent-criticality
+  critique (score 30) is named the imminent follow-up after it.
