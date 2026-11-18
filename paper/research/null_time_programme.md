@@ -2733,3 +2733,174 @@ blocked list stays blocked. Deep-read queue pointer: the next UNREAD
 triage entry is "Order Book Queue Hawkes-Markovian Modeling"
 (score 31, xce0ba3). Nothing measured, no kill line moved, nothing
 armed, nothing trades live.
+
+## 40. Null-time session 36 (2026-11-18): deep-read session 32 — the Hawkes-Markovian queue paper read; the queue-label convention declaration queued for the queue-state conditioning rule
+
+- **Library deep-read session 32** (the standing queue's next UNREAD
+  pointer, score 31, xce0ba3, consumed here):
+  `paper/research/library/2026-11-18_order_book_queue_hawkes_markovian_deep_read.md`
+  on Philip Protter (Department of Statistics, Columbia
+  University), Qianfan Wu (Kelley School of Business, Indiana
+  University Bloomington) and Shihao Yang (Georgia Institute of
+  Technology), "Order Book Queue Hawkes-Markovian Modeling"
+  (arXiv:2107.09629v3, v3 stamped 5 January 2022): a Queue-Reactive
+  event taxonomy — trades, insertions and cancellations at each of
+  K level-3 queues per side plus six reference-price-change events,
+  24 event types in all (PDF pp. 7-10) — modeled as a multivariate
+  Hawkes whose baseline intensities are made Markovian through the
+  current liquidity state (queue size, or the spread for the two
+  spread-crossing events, ten buckets) and a 126-category intraday
+  time factor (PDF pp. 10-13); Kirchner's non-parametric binned
+  autoregression estimator extended to a varying baseline, LASSO on
+  the excitement coefficients only, AIC selection across seven
+  nested specifications (PDF pp. 13-22); implemented on 20 trading
+  days of LOBSTER-reconstructed NASDAQ ITCH data for Apple, January
+  2019, bin-size 0.25 seconds, support 20 seconds, LASSO parameter
+  0.0005 (PDF pp. 22-23). Reported: most excitement functions decay
+  exponentially with trailing zeros, but non-exponential shapes
+  recur for higher-level trade events arriving in wide-spread
+  states (PDF pp. 25-27); first-level insertion and cancellation
+  kernels similar in shape, the similarity fading at levels 2-3
+  (PDF pp. 25-26, 44-45); arrival intensity rising with the
+  liquidity state for first-level trades, cancellations and
+  insertions but falling for level-2/3 insertions (PDF pp. 27-28);
+  a U-shaped intraday intensity with a sharp 15:55-16:00 elevation
+  (PDF pp. 28-29); qualitative conclusions robust to ignoring
+  order sizes, dropping LASSO and doubling the bin size (PDF
+  pp. 30, 48-69); and in-sample AIC ranking the Hawkes part above
+  the state parts with the liquidity-state and time-factor
+  additions improving on top of the Hawkes part all 20 days
+  (Table 1, PDF pp. 31-32). Read against the ONE question.
+  **Grade: NO kill line changed. ONE new candidate sharpening
+  queued, PENDING OWNER RATIFICATION:** the queue-label convention
+  (reference-price tie-break) declaration component for the
+  queue-state conditioning rule (deep-read session 26, corroborated
+  session 27, extended by the anticipation disclosure at
+  deep-read 31), covering passive-flow features in the C1-L2 L2
+  arm. Mechanism, page-cited: every queue index in the taxonomy is
+  a count of ticks from a reference price that must lie strictly
+  between best bid and best ask (PDF pp. 5-7, 12-13), and when the
+  spread is an even number of ticks the midpoint lands exactly on
+  a valid price position, so the reference is displaced plus or
+  minus half a tick toward the side closer to the previous
+  reference value (Supplementary A, PDF pp. 38-39); the displaced
+  convention silently reassigns which price level counts as the
+  first ask, the first bid and every deeper label, so two
+  implementations of the same declared conditioning functional read
+  different conditioning states from the same book, with the
+  divergence concentrated in the wide-spread states where
+  conditioning carries its information: the fitted state effects
+  differentiate there (PDF pp. 27-28) and the non-exponential
+  kernel shapes concentrate there (PDF pp. 26-27). On the
+  programme's venue and fields the tie-break is routine, not
+  exotic: with BTCUSDT tick sizes and a five-to-six-figure price,
+  any even-tick spread puts the quoted mid on the valid price
+  grid. Consequence for the queued rule, harder to pass: a
+  queue-state-conditioned passive feature can satisfy the
+  conditioning declaration — "the pre-event volume at the touched
+  level, or the declared alternative" — while its conditioning
+  state still depends on an undeclared labeling convention, an
+  undisclosed degree of freedom that survives every admissibility
+  gate and invites post-hoc selection among equally "declared"
+  implementations. One pre-declaration. Queue-label convention
+  declaration: whenever a conditioning functional is defined
+  relative to a reference price or mid rather than to the event's
+  own touch, the pre-registration must declare, recorded on TRAIN
+  before L2 data arrives, the reference construction, the
+  even-grid tie-break rule (previous-reference anchoring or the
+  declared alternative), the level-indexing origin and the
+  touched-level identification rule; readings with undeclared
+  conventions are inadmissible. Functionals anchored entirely to
+  the event's own touch on a feed-native price field satisfy the
+  declaration trivially, and if every admissible functional on the
+  programme's venue and fields is event-touch-anchored, the
+  component guards nothing there and stays dormant on that route.
+  Scope: the pending queue-state conditioning rule's declaration
+  block only, a disclosure requirement; the C1-L2 and C8 spec
+  texts, every kill line, T-H and T-O remain untouched; no
+  threshold moves; nothing is armed.
+
+  Findings, page-cited: reinforcing, no new item — queue-state
+  conditioning is not redundant with flow excitation, and the
+  state effects are event-type-specific: the liquidity state and
+  time factor improve the Hawkes-only fit on all 20 days (Model 6
+  minus Model 4, median per-sample AIC difference -0.23, 20 of 20
+  days, Table 1, PDF pp. 31-32) and the fitted directions run
+  opposite by event type, first-level trade, cancel and insertion
+  intensities rising with queue state, second- and third-level
+  insertion intensities falling (PDF pp. 27-28), a second corpus
+  for the conditioning rule's premise that state-blind passive
+  aggregates are inadmissible; no parameter transfers.
+  Reinforcing, no new item — the accumulation dichotomy is a named
+  sibling of the event-grain rule (deep-read session 25): regular
+  events additive with sizes summed into the binned counts, the
+  six reference-price-changing events pure points because they
+  shift the queue distribution (PDF p. 16), with the order-size
+  sensitivity run and disclosed afterward, qualitative
+  conclusions surviving (PDF pp. 48-49, 55; Table S1, PDF p. 69);
+  no threshold transfers. Interpretation caution — exponential
+  kernel assumptions are visibly wrong for a class of events:
+  non-exponential shapes recur for higher-level trade events in
+  wide-spread states and the authors state it may be problematic
+  to adopt the exponential shape across all events (PDF
+  pp. 26-27, Figure 7; Figure S2, PDF p. 46), so any
+  excitation-decay or Hawkes-family reading in a C1-L2 or C8 arm
+  carries its kernel-form declaration as convention, and the
+  fitted shapes are never cited as expected behavior of any
+  market the programme measures. Interpretation caution — every
+  "explanatory power" claim is in-sample AIC selection on one
+  stock in one month: the decisive differences are minuscule
+  per-sample numbers (median -0.58, -0.23, -0.08, Table 1, PDF
+  p. 32), no out-of-sample or forecasting test appears anywhere,
+  and stationarity and ergodicity are explicitly deferred to
+  future research (PDF p. 34); a fitted AIC improvement is
+  bookkeeping, not an edge, and the paper is never citable as
+  evidence that any programme feature carries information.
+  Reinforcing, no new item — intraday time clustering elevating
+  the first and last 30 minutes with a sharp 15:55-16:00 increase
+  (PDF pp. 11-12, 28-29) corroborates the C1-L2 spec's declared
+  hour-of-day strata; the paper's 126-category bucketing never
+  transfers. Source-quality note — three authors with Philip
+  Protter a leading stochastic-process authority; squarely in the
+  Queue-Reactive lineage, the sibling of the state-dependent
+  Hawkes LOB paper deep-read at session 28; arXiv v3 from January
+  2022, no journal record checked at reading; deliberately modest
+  scope, one stock, one month, 20 days, level-3 book, all choices
+  honestly disclosed; a solid, narrow, descriptive modelling
+  paper graded exactly at that level; published version to be
+  checked before formal citation. Killed-if-wrong: if queue
+  labels on the programme's venue and fields are later shown to
+  be convention-independent on every admissible functional (all
+  event-touch-anchored on feed-native prices), the queued
+  convention declaration guards nothing and should die back to
+  the conditioning rule as it stands; if a conditioning state is
+  ever published whose labels rest on an undeclared mid-relative
+  convention, the same declared functional could be implemented
+  differently post hoc, exactly the undisclosed-degree-of-freedom
+  failure the component forecloses. Standing caveat: one stock,
+  Apple; one month, January 2019; NASDAQ through LOBSTER ITCH
+  reconstruction; level-3 book, regular hours, penny-tick US
+  equities microstructure; no crypto, no BTCUSDT, no futures, no
+  anonymous flow; all fitted shapes, bucket boundaries, time
+  categories, bin size, support and LASSO parameter are dataset-
+  and venue-specific. Laundering directions named: INTO — the
+  queue-label convention mechanism, the event-type-specific state
+  contrasts, the accumulation dichotomy and the time-clustering
+  corroboration enter only as feature-design discipline, and no
+  kernel shape, bucket boundary, bin size, support length,
+  regularization parameter, intensity level, AIC figure or
+  end-of-day spike enters any spec, default or calibration; OUT —
+  the fitted kernel shapes, the liquidity-state curves, the
+  time-factor profile and the AIC rankings are never cited as
+  expected behavior of any market the programme measures, never
+  as expected BTCUSDT book behavior, and never as evidence that
+  any programme feature carries information.
+
+Ratification queue after this session: TWENTY-SIX candidate
+sharpenings (the twenty-five standing plus the queue-label
+convention declaration rule joined here through deep-read session
+32), zero armed. T1 remains armed awaiting the owner's word; the
+blocked list stays blocked. Deep-read queue pointer: the next UNREAD
+triage entry is "TradeFM: A Generative Foundation Model for
+Trade-flow and Market Microstructure" (score 31, xe7dc7f). Nothing
+measured, no kill line moved, nothing armed, nothing trades live.
