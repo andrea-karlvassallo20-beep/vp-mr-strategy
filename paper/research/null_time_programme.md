@@ -2116,3 +2116,99 @@ stays blocked. Deep-read queue pointer: the next UNREAD triage entry
 is "Optimal Execution with Passive Market Impact" (score 33,
 x28ad86). Nothing measured, no kill line moved, nothing armed,
 nothing trades live.
+
+## 35. Null-time session 31 (2026-11-18): deep-read session 27 — the passive optimal-execution paper read; default grade, nothing queued
+
+- **Library deep-read session 27** (the standing queue's next UNREAD
+  pointer, score 33, x28ad86, consumed here):
+  `paper/research/library/2026-11-18_optimal_execution_passive_impact_deep_read.md`
+  on Barzykin (HSBC), Boyce, Neuman and Tuschmann (Imperial College
+  London), "Optimal Execution with Passive Market Impact"
+  (arXiv:2607.28323v1, 30 Jul 2026): a mesoscopic optimal-execution
+  model where a liquidating trader posts unit sell limit orders at a
+  controlled distance from the midprice, fills arrive with an
+  Avellaneda-Stoikov intensity lambda·e^(−k·delta), and each passive
+  fill carries permanent impact at rate eta·e^(−m·delta), derived by
+  combining the fill intensity with the Cont-Kukanov-Stoikov /
+  Xu-Gould-Howison linear response of mid-price changes to
+  (multi-level) order flow imbalance; explicit optimal quote for
+  m = k, Lambert-W semi-explicit solution for m ≠ k, plus transient
+  impact and TWAP-target extensions; calibration on LOBSTER NASDAQ
+  2016 (six stocks) and LSEG FX 2026 (five pairs), headline finding
+  the impact decay l is much smaller than the fill decay k, so
+  m ≈ k in equities, with a visible gap in FX. Read against the ONE
+  question. **Grade: NO kill line changed. NO new candidate
+  sharpening queued. This is the default grade: nothing here earns a
+  rule.**
+
+  Findings, page-cited: reinforcing, no new item — an independent,
+  page-cited second mechanism for the queue-state conditioning rule
+  queued through deep-read session 26 (still PENDING OWNER
+  RATIFICATION, unchanged): for the large-tick NASDAQ stocks the
+  exponential distance-decay fit of MLOFI impact coefficients fails
+  (slightly negative l) and the authors state their own preferred
+  interpretation, that "MLOFI price impact may depend more directly
+  on the volume queued ahead of an order than on its distance from
+  the midprice" (PDF p. 15); corroboration only, the rule's text,
+  scope and status untouched. Interpretation caution — the paper
+  sidesteps, and does not test, the passive-impact sign paradox from
+  deep-read session 26: the adverse direction of the passive term
+  (PDF p. 6, eq. (3.4)) is inherited from the OFI regression identity
+  (PDF pp. 4-5), not derived from book state, and the authors'
+  limitations section concedes the estimates measure contemporaneous
+  aggregate responses, with a stronger test needing trader-tagged or
+  order-level data (PDF p. 24); this paper is never cited as evidence
+  about passive-impact sign, nor as counter-evidence to the paradox.
+  Reinforcing, no new item — depth carries information without fills:
+  fill probabilities decay exponentially with distance (k 0.48-3.72
+  across the six stocks) while the MLOFI impact coefficients persist
+  across book levels, because "limit orders deeper in the book still
+  reveal information, thereby moving the price without being filled"
+  (PDF p. 14, Table 4): mechanism-level corroboration of C1-L2's
+  standing premise that full-depth L2 carries what taker prints
+  cannot see, consistent with the standing "aggTrades is taker
+  prints only" constraint; no number, level count, or decay rate
+  transfers. Interpretation caution — empirical provenance is thin in
+  both samples: the equity evidence reuses the ridge coefficients
+  published in Table 8 of Xu, Gould and Howison (PDF p. 13) rather
+  than re-estimating impact, six NASDAQ names, 2016; the FX evidence
+  is conflated L2 snapshots of at least 5 ms with fills proxied
+  synthetically by next-bucket aggressor trades reaching a
+  hypothetical passive quote (PDF p. 15); no magnitude from either
+  sample transfers, ever. Source-quality note — four authors, one
+  HSBC practitioner and three Imperial College mathematicians; arXiv
+  v1 stamped 30 Jul 2026, roughly four months old at reading; zero
+  indexed citations; published version to be checked before formal
+  citation; the paper cites deep-read session 26's paper as
+  contemporaneous complementary work, the queue-based microscopic
+  foundation beside this mesoscopic form (PDF pp. 23-24); extract
+  lightly degraded in the HJB and proof regions, load-bearing pages
+  4-17 clean. The killed-if-wrong section on record: if the
+  large-tick negative-l fit is later shown to be an estimation
+  artifact — the authors themselves warn it may partly reflect model
+  misspecification rather than genuine amplification (PDF p. 15) —
+  the corroboration weakens to nothing and the queued rule stands
+  alone on deep-read session 26's mechanism, which is where it
+  already stands. Standing caveat recorded: NASDAQ 2016 via LOBSTER
+  and borrowed 2018 ridge coefficients; LSEG FX 2026 conflated L2
+  with synthetic fill proxies; no crypto, no BTCUSDT, no
+  futures; measuring-window conventions unlike the programme's.
+  Laundering directions named: INTO — no decay rate (k, l, m), impact
+  coefficient (eta, xi, beta), fill intensity (lambda), or
+  quote-distance form enters any spec, default, or calibration, and
+  the passive-impact direction in the L2 arm stays governed by the
+  pending rules and the pre-registered sign guard, never by this
+  paper's assumed sign; the model is not adopted anywhere without its
+  own pre-registration; OUT — the m ≈ k equity headline, the
+  fill-versus-impact decay gap, and the FX estimates are never cited
+  as evidence about any real market the programme measures, and the
+  deep-level MLOFI persistence is never cited as expected BTCUSDT
+  depth behavior.
+
+Ratification queue after this session: TWENTY-THREE candidate
+sharpenings, unchanged (deep-read session 27 added none), zero armed.
+T1 remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue pointer: the next UNREAD triage entry is
+"State-dependent Hawkes processes and their application to limit
+order book modelling" (score 32, x947263). Nothing measured, no
+kill line moved, nothing armed, nothing trades live.
