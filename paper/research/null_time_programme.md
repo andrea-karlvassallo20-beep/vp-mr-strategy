@@ -988,3 +988,54 @@ T1 remains armed awaiting the owner's word; the blocked list stays
 blocked. Deep-read queue: next unread by rank is "Simulating and
 analyzing a sparse order book: an application to intraday
 electricity markets" (score 37, on the shelf).
+
+## 20. Null-time session 16 (2026-11-16): deep-read session 14 — the queue machinery is book-shape-specific; the venue freeze gains its warrant
+
+- **Library deep-read session 14** (next UNREAD triage-rank entry,
+  per session 15's pointer):
+  `paper/research/library/2026-11-16_sparse_lob_electricity_deep_read.md`
+  on Bergault & Cognéville, "Simulating and analyzing a sparse
+  order book: an application to intraday electricity markets"
+  (arXiv:2410.06839v1, 2024; Dauphine/EDF R&D; inhomogeneous-
+  Poisson sparse LOB model on EPEX Spot 2021 data). Grade: NO
+  kill line changed; NO new candidate sharpening. The paper's
+  contribution to the program is a boundary statement — where the
+  armed machinery does NOT transfer: (a) **the queue machinery is
+  book-SHAPE-specific** — C5's front-vs-rear cancel separation and
+  queue-conditioned intensities presuppose a DENSE book (many
+  orders per price level, queue priority worth defending); in a
+  sparse book there is ONE order per limit (the authors: no
+  reason to stack when you can place a tick closer, PDF p. 9) and
+  their cancellation intensity showed NO significant state
+  dependence — the OPPOSITE of the dense-book queue-conditioning.
+  Had the queue features been assumed venue-portable and read as
+  a failed mechanism on a sparse venue, the failure would have
+  been the spec's, not the market's; the program's BTCUSDT-only
+  freeze with all expansion as a new pre-registered family
+  (roadmap Q3-4 rules) was already correct, and this is its
+  independent warrant; (b) **the maturity clock is a confound the
+  program's venue does not have** — in hourly electricity products
+  ALL activity intensities grow exponentially toward delivery
+  (the Samuelson effect, verified), so any priming/compression
+  reading on a finite-maturity contract is entangled with
+  time-to-maturity; BTCUSDT perps have no maturity and the
+  confound is structurally absent — one more reason the
+  expansion-is-a-new-family rule exists before any futures/
+  term-structure expansion is priced; (c) interpretation
+  language: market-order intensity falls EXPONENTIALLY with the
+  spread (beta_M = 0.5 per euro, PDF p. 15) — takers pay for
+  width, session 15's cost-gated logic in a second venue family
+  and a second mechanism (arrival gating, not horizon choice).
+  Cautions: the model is deliberately parsimonious (full cancels
+  only, independent marks, no state-dependent cancel intensity),
+  the venue has XBID coupling quirks, calibration is
+  least-squares against marginal statistics with no CIs; the
+  sparse-book claims transfer as STRUCTURE, never as magnitudes.
+
+Ratification queue after this session: FOURTEEN candidate
+sharpenings, zero armed (unchanged — no sharpening was warranted;
+the venue freeze it would have supported was already on the books).
+T1 remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue: next unread by rank is "Hawkes-Driven OTC
+Market Making: Volterra-Riccati Approximation" (score 37, on the
+shelf).
