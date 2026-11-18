@@ -1842,3 +1842,57 @@ highest-value remaining entry in its tier.
 - **Deep-read queue:** unchanged, parallel - next unread by rank
   per the read-slug mapping remains "A Hawkes model with
   CARMA(p,q) intensity" (score 32, on the shelf).
+
+## 35. Null-time session 30 (2026-11-18): deep-read session 28 — the kernel choice constrains the observable dependence shapes: an exponential-kernel Hawkes cannot see non-monotone autocorrelation under any parameters
+
+- **Null-time deep-read session 28** (the parallel regime continues;
+  next UNREAD triage-rank entry per session 33's pointer, verified
+  unread by the read-slug mapping):
+  `paper/research/library/2026-11-18_carma_hawkes_intensity_deep_read.md`
+  on Mercuri, Perchiazzo & Rroji, "A Hawkes model with CARMA(p,q)
+  intensity" (arXiv:2208.02659v3, 2022; Milan/VUB/Milano-Bicocca).
+  A Hawkes process whose intensity follows a CARMA(p,q) process
+  (the exponential-kernel Hawkes is the CAR(1) special case),
+  freeing the counting-increment autocorrelation from the
+  monotone-decay constraint; stationarity/positivity conditions,
+  strong mixing of increments, likelihood, simulation, and an
+  ACF-matching estimation route. Grade: NO kill line changed; NO
+  new candidate sharpening. Findings: (a) **[reinforcing]** the
+  kernel-geometry face of the estimator-mode rule (session 11),
+  stated by construction: the exponential-kernel Hawkes - the
+  workhorse of the entire endogeneity literature the program
+  reads - CANNOT produce a non-monotone ACF under any parameter
+  values, and fitted to oscillating data it is silently wrong in
+  a known direction (overshoots small lags, undershoots large
+  lags, PDF pp. 1-2): any future arrival-timing diagnostic that
+  fits an exponential-kernel Hawkes has assumed monotone decay
+  before seeing the data - the existing kernel-declaration
+  discipline already forces the assumption to be stated; (b)
+  **[reinforcing]** the ACF-matching estimator's target is a
+  grain- and window-dependent object (increment length tau, lag
+  delta), one more instance of the aggregation-endogeneity line
+  (sessions 18/23): ACFs at different increment sizes are
+  different objects; (c) **[source-quality note]** simulated-only
+  application (parameter recovery on two simulated paths; MLE and
+  ACF-matching agree), motivating data are wind speed, mortality,
+  and insurance claims - NO market data anywhere; correct citation
+  use is the structure (Markov/car relation, strong-mixing
+  asymptotics, positivity conditions), never a market fact;
+  arXiv v3, check for a published version before formal citation.
+  Would-have-killed: a trigger-layer arrival-timing diagnostic
+  specified by default with the exponential-kernel Hawkes would
+  have its decay shape decided by the kernel before the data
+  arrive, hump-shaped dependence flattened into the nearest
+  monotone with NO diagnostic flagging it (the fit "succeeds") -
+  the kernel-declaration discipline predates this read; the paper
+  is its kernel-geometry face in print. Cautions: no financial
+  data, load-bearing positivity assumptions, strong mixing is a
+  model property not a data property; nothing here touches the
+  daily-grain closeness dossier of measured session 34 (different
+  grain entirely). Ratification queue after this session:
+  FOURTEEN candidate sharpenings, zero armed (unchanged). T1
+  remains armed awaiting the owner's word; the blocked list stays
+  blocked. Deep-read queue: next unread by rank per the read-slug
+  mapping is "Hybrid Vector Auto Regression and Neural Network
+  Model for Order Flow Imbalance Prediction in High Frequency
+  Trading" (score 32, on the shelf).
