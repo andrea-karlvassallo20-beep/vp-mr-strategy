@@ -1505,3 +1505,121 @@ Book Dynamics and Order Size Modelling Using Compound Hawkes Processes"
 is a candidate reading, and the owner's library policy governs when they
 diverge. Nothing measured, no kill line moved, nothing armed, nothing
 trades live.
+## 28. Null-time session 24 (2026-11-18): deep-read session 21 — the compound Hawkes order-book size-modelling paper graded default, no sharpening; PR #173's dashboard audit landed by supersession
+
+- **Protocol/maintenance event** — PR #173 ("dashboard audited and
+  refreshed", branch vibe/dashboard-refresh-984be8) resolved this
+  session. Its audit was verified row by row against
+  docs/ledger.html and the record, not taken on faith: the L0
+  snapshot-coverage decision was MADE 2026-11-16 by the owner
+  (amendment on file at
+  paper/research/l0_gate/amendment_2026-11-16.md), T2 tested-fail with
+  its kill line FIRED under the owner-authorized 2026-11-16 run, T1
+  booked sign-inverted; the old pending list carried stale rot. The
+  branch's base had diverged from main (both sides rewrote
+  docs/DECISIONS_PENDING.md across sessions 21-23), GitHub's
+  update-branch refused with a merge conflict, this connector has no
+  force-rebase or branch-replace capability, and adding commits
+  cannot clear a three-way conflict — so supersession per the
+  standing PR pattern was applied. The audit's content landed via PR
+  #177 as a single clean diff on current main (squash 623eeefd),
+  with ONE correction: the audit's stale approximate queue line
+  ("~17+ across 18 deep-reads") restored to the exact count, twenty
+  candidates through 20 deep-reads plus probe E1, zero armed — the
+  queue line is the owner's ratification interface and may never be
+  approximate. Integrity guard clean on the substituted tree; PR
+  #177's CI green (test, engine); post-merge blob verified
+  byte-identical to the intended resolution (sha256
+  6345fabee0ff1dfab014f7dea43dfc95f7c9dba247976ec87c7d50c98ffe0907,
+  3,354 bytes); PR #173 closed with the supersession recorded in
+  line. docs/DECISIONS_PENDING.md on main is now the audited
+  thirty-second dashboard. Nothing measured, no kill line touched,
+  nothing armed in any of this.
+
+- **Library deep-read session 21** (the standing queue's next UNREAD
+  pointer, score 34, x798515, consumed here):
+  `paper/research/library/2026-11-18_compound_hawkes_lob_sizes_deep_read.md`
+  on Jain, Firoozye, Kochems, Treleaven, "Limit Order Book Dynamics
+  and Order Size Modelling Using Compound Hawkes Process"
+  (arXiv:2312.08927v5, 2023, revised 2024; UCL and J.P. Morgan Chase
+  & Co., funded by JPMC with a dealer disclaimer; a 12-dimensional
+  compound Hawkes simulator for the top of a NASDAQ equity order
+  book with calibrated order-size distributions). Read against the
+  ONE question. **Grade: NO kill line changed. NO new candidate
+  sharpening.** Default grade. The paper's mechanisms are worked
+  exhibits of rules already standing in the queue, and the burden of
+  proof for a sharpening was not met. Findings, page-cited:
+  reinforcing, no new item — the d-dimensional worked example of the
+  boundary-solution pathology, queued at deep-read session 5: their
+  fitted kernels "occasionally violate" the stationarity constraint
+  and are silently rescaled by "multiplying all the kernels by a
+  regularizing term to cap the eigenvalue at 1" (PDF p. 6), landing
+  the fit exactly on the constraint boundary; under the queued rule
+  such a reading is MISSING, not high, not near-critical.
+  Reinforcing, no new item — the exogenous share of fitted excitation
+  is an estimator-pipeline PRODUCT (cut-off grid, sign-uniformity
+  constraint, a 0.01-norm threshold zeroing 79 of 144 kernels, PDF
+  p. 7, inhibitory flooring, and the post-hoc rebuild of exogenous
+  intensity because the raw estimate is "massively overestimated",
+  PDF p. 6), a second named exhibit for the near-critical
+  regime-disclosure rule: only the disclosed estimate chain is a
+  regime. Reinforcing, no new item — a seasonality-naive null is a
+  broken null: their Poisson baseline, carrying no U-shape, produces
+  a flat signature plot and wholesale shape failures (PDF pp. 8-9),
+  so the queued deterministic-clock null arm and the hour-of-day
+  stratification rule are corroborated, not amended; any null must
+  carry the declared deterministic seasonality or fires for the
+  wrong reason. Reinforcing, no new item — time-only excitation is
+  formally silent about size/marks: their size-independence
+  postulate rests on weak evidence they concede ("albeit with weak
+  evidence", Hoeffding 0.00068, one stock, PDF p. 11), their own
+  market-impact study then exposes the artifact, impact driven by
+  trade COUNT rather than volume, "counter-intuitive to the real
+  world phenomenon of adverse selection" and named "a potential
+  missing piece" (PDF p. 10), and constant-order-size simulation
+  overestimates volatility by ~100x (PDF pp. 8-9) — a worked exhibit
+  for the queued size-state persistence comparator: a memory
+  measured on event counts alone may not be narrated as volume-flow
+  or impact fact. Interpretation caution — in-spread limit-order
+  intensity scales empirically as (s-1)^beta, beta around 0.75 for
+  their stock (R-squared 0.85, PDF p. 11, Appendix B), so any future
+  near-touch reconstruction feature must declare its spread-state
+  normalization before the first L2 run or drift with the spread
+  distribution, not information flow; reading discipline only, no
+  queue change. Source-quality note — practitioner preprint, arXiv
+  v5, primary calibration one medium-tick stock (AAPL 2019,
+  NASDAQ), the authors themselves report their own model unsuitable
+  or misfitted for small-tick names (severely underestimated
+  spreads and volatility for TSLA and AMZN, left-tail misfit for
+  INTC, PDF pp. 10-11); published version to be checked before
+  formal citation. The killed-if-wrong section stands: had a
+  simulator's fitted matrices or a homogeneous null ever stood in
+  for a registered test, these artifacts (100x volatility
+  overestimate, silently rescaled kernels, seasonality-free null
+  failures) would have fired or killed on machinery, not markets —
+  the library-is-ammunition rule and nothing-measured are what
+  prevented it. Standing caveat recorded: six top-of-book queues
+  only, order sizes assumed stationary and condition-independent
+  ("quite strong", PDF p. 4), the impact study is simulator output,
+  and its TWAP/child-order machinery is execution-strategy
+  engineering outside programme scope, never programme input.
+  Laundering directions named: INTO — the paper's calibrated kernel
+  norms, beta exponents, U-shape bins, and impact concavity
+  constants may never be imported as calibration or priors for the
+  C8 trigger bar or any reconstruction tolerance; OUT — the
+  artifact confessions may not be read backwards as "Hawkes
+  memory is fake": the failures are about marks and applicability
+  (size-silence, small-tick names), not about the existence of
+  time-excited clustering; the limits bind what a fitted number may
+  CLAIM, not whether the memory content exists.
+
+Ratification queue after this session: TWENTY candidate sharpenings,
+unchanged (deep-read session 21 earned none; the twenty standing are
+those enumerated through deep-read session 20 plus probe E1), zero
+armed. T1 remains armed awaiting the owner's word; the blocked list
+stays blocked. Deep-read queue: the next UNREAD triage entry is
+"Returns and Order Flow Imbalances: Intraday Dynamics and
+Macroeconomic News Effects" (score 34, x5459dc); with the session-9
+triage-audit flag on record, rank is a candidate reading, and the
+owner's library policy governs when they diverge. Nothing measured,
+no kill line moved, nothing armed, nothing trades live.
