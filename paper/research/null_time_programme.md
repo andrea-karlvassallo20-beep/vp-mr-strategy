@@ -3112,3 +3112,25 @@ this session, no kill line moved, nothing armed, nothing trades live.
   no kill line moved; nothing armed; ratification queue FIFTEEN
   candidates zero armed; nothing trades live. Deep-read queue
   parallel: next x947263 (score 32).
+
+## 61. OWNER-DIRECTED BUILD SESSION (2026-11-18): "I want to see marked charts with their vfi, also if 1356 is too long go for 144" - the marked-chart render
+
+- **Built:** `src/marked_charts.py` -> 8 marked charts
+  (`clue_scan/charts/*.png`, 144 daily bars each per the owner's
+  length): BTC, ETH, WBTC, BONK, JTO, ATM, APE, CRV. Each chart:
+  top panel = close line with the grammar legs shaded (green span =
+  U-base back-loaded leg, red = V-spike, gray = even), fresh-20d-
+  low-at-lows markers (green ^), absorption markers (purple o,
+  effort>result at lows), fresh-20d-high-at-highs markers (red v);
+  bottom panel = the VFI z bar panel with the zero line, +/-1.5
+  guide lines, and blue zero-cross-up markers mirrored on the price
+  panel. One chart visually verified for legibility before
+  commit; markers correspond exactly to the measured constructions
+  (no new thresholds; observation display only).
+- **Pairs chosen:** the owner's mains (BTC, ETH, WBTC) plus today's
+  board seats: BONK + JTO (FLAGSHIP_BOTTOM), ATM (deepest washout),
+  APE, CRV (ABSORBED_LOW).
+- **Boundaries:** the charts are an observation display of the
+  measured states - no new measurement, no kill line moved, nothing
+  armed; ratification queue FIFTEEN candidates zero armed; nothing
+  trades live. Deep-read queue parallel: next x947263 (score 32).
