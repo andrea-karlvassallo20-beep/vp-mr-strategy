@@ -1,6 +1,8 @@
 # Pending owner decisions — the thirty-second dashboard
 
-**Maintained by the null-time sessions. Last updated: 2026-11-18.**
+**Maintained by the null-time sessions. Last updated: 2026-11-18 (audited
+against the claims ledger and the record — stale items resolved by your
+decisions are removed, not left to rot).**
 Every item below is BLOCKED ON YOUR WORD — nothing runs, arms, or merges
 into a claim without it. Pointers are to the exact document that makes
 each case. Items are ordered by how much they gate.
@@ -10,67 +12,55 @@ each case. Items are ordered by how much they gate.
 ## 1. The L2 phase itself (gates everything)
 
 - **L2 environment deployment** — in progress (your side). When the
-  codespace is up: `make env` → `make gate-day` (the verified free day)
-  → the paid-data decision below. The full one-command path is
-  `CLOUD_DEPLOY.md` §0.
-- **L0 snapshot-coverage decision** (gates C1-L2): 2026-10-01 passed the
-  gate fully; 2026-10-02..04 are PARTIAL (sequence-only, 2–4 snapshot
-  comparisons — API quota exhausted). Either buy paid
-  `book_snapshot_25` for those days, or record a spec amendment that
-  accepts sequence-only verification for them. Without one of these,
-  C1-L2 cannot legally run on all four days.
+  codespace is up with the gated Tardis data: `make env` →
+  `make gate-day` → the C1-L2 dry run. **The dry run is UNBLOCKED** by
+  your recorded L0 amendment (`paper/research/l0_gate/amendment_2026-11-16.md`):
+  validated on Oct 01 + Oct 10, Oct 02–09 a declared known gap.
+- **Finalization stays gated**: no claim closes as evidence until the
+  full continuous window is acquired (paid `book_snapshot_25` backfill
+  for the gap days, or a self-recorded forward window covering them).
 
-## 2. Claim bookings and rules
+## 2. Rules awaiting your accept/reject
 
-- **T1 ledger booking** (first surviving claim in the record — the
-  booking matters more than the verdict): tested-pass as registered;
-  **mechanism direction refuted** (every HR below 1.0, sign inverted);
-  not usable for the WHEN story until the sign is resolved on L2
-  passive data. Full case:
-  `paper/research/phase2_l2/t1_second_window_review_2026-11-16.md`.
-- **The sign-kill-line rule** (template-level, prospective only): any
-  claim whose registered mechanism states a direction must carry a sign
-  kill line. C1-L2 already has its sign guard (kill line 6); the rule
-  should generalize to every future pre-registration, T2 included
-  (see `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`).
-- **C8 amendments A1–A5** (merged into the authoritative spec, marked
-  PROPOSED): pure-interaction restatement, difference-of-differences
-  with the mandatory Micro-within-Control arm, Hawkes shuffled-arrival
-  placebo, VPIN clock pre-commitment, market-book first-PC factor.
-  **C8 is NOT ARMED until you accept.**
+- **C8 amendments A1–A5** (in the authoritative spec, marked PROPOSED):
+  pure-interaction restatement, difference-of-differences with the
+  mandatory Micro-within-Control arm, Hawkes shuffled-arrival placebo,
+  VPIN clock pre-commitment, market-book first-PC factor. **C8 is NOT
+  ARMED until you accept.**
   `paper/research/c8_macro_l2_synthesis_spec.md` (AMENDMENT LOG).
-- **The ratification queue** (candidate spec sharpenings from the
-  library deep-reads — seventeen candidates (the branching per-branch
-  rule, the flow-clock scale-constant rule, and the sign-register
-  rule for excitation features joined on 2026-11-16; the two-null
-  admission rule for the C1-L2 benchmark family and, joined 2026-11-18,
-  the ACF-shape kernel-validity gate for the branching-ratio trigger and, joined 2026-11-18, the distance-grid sign-invariance rule for depth-aggregated limit-order-flow features and, joined 2026-11-18, the size-state persistence comparator and, joined 2026-11-18, the near-critical regime-disclosure rule for the branching-ratio trigger),
-  zero armed;
-  the owner's word is
-  the only trigger): enumerated with sources in
+- **The sign-kill-line template rule** (prospective only): C1-L2 already
+  carries its sign guard (kill line 6, from T1's lesson); the rule should
+  generalize to every future pre-registration.
+  `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
+- **The ratification queue** — spec-sharpening candidates from the
+  library deep-reads (grown to ~17+ across 18 deep-reads). Zero armed;
+  your word is the only trigger. Enumerated with sources in
   `paper/research/null_time_programme.md` (latest section).
 
-## 3. Claims on deck, not yet run
-
-- **T2** — recommendation: **HOLD until full L2** (strengthened by T1's
-  inversion; the passive side is where T2's channels exist). If ever
-  run on aggTrades anyway, the sign guard must be added first, while it
-  is still legal. `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
-- **C1-L2** — harness frozen, kill lines sharpened (sign guard, CKS
-  tautology control, AD unit test); blocked only on the L0 gate.
-
-## 4. Library and supplies
+## 3. Library and supplies
 
 - **39 paywalled PDFs** — your supply list with DOIs:
-  `docs/library/manifest.md`. 29 were acquired legally (Unpaywall/
-  arXiv/OA); the paywalled remainder needs your access.
+  `docs/library/manifest.md`. (29 acquired legally; the paywalled
+  remainder needs your access.)
 - **8 OA-but-bot-blocked PDFs** (HTTP 403) — flagged in the manifest for
   a manual codespace fetch when convenient.
 
-## 5. Standing windows (no action needed, do not close early)
+## 4. Standing windows (no action needed — do not close early)
 
-- **Watchlist forward test** — open until 2027-01-11; all four coils
-  broke downward (interim recorded 2026-11-16).
+- **Watchlist forward test** — open until 2027-01-11; the interim is
+  recorded (coils broke downward; direction unclaimed).
 - **Board surprise ledger** — sealed snapshots accumulating nightly;
-  the second-generation rule (quiet-not-coiled) stays frozen until a
-  2027 forward window exists.
+  the second-generation rule stays frozen until a 2027 forward window.
+
+---
+
+## Resolved since the last dashboard (kept for a heartbeat, then to be
+deleted next update)
+
+- ~~L0 snapshot-coverage decision~~ — **MADE 2026-11-16**: recorded spec
+  amendment; see §1.
+- ~~T1/T2 run-or-hold~~ — **BOTH EXECUTED** (owner-authorized, second
+  aggTrades window): T1 survives all five kill lines with its sign
+  inverted (booked in the ledger); T2 **tested-fail** at its kill line.
+- ~~T1 ledger booking~~ — **DONE**: "survives all five kill lines, SIGN
+  INVERTED" travels with the row.
