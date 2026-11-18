@@ -2212,3 +2212,121 @@ blocked. Deep-read queue pointer: the next UNREAD triage entry is
 "State-dependent Hawkes processes and their application to limit
 order book modelling" (score 32, x947263). Nothing measured, no
 kill line moved, nothing armed, nothing trades live.
+
+## 36. Null-time session 32 (2026-11-18): deep-read session 28 — the state-dependent Hawkes paper read; the book-state mix disclosure rule queued for the C8 A3 family
+
+- **Library deep-read session 28** (the standing queue's next UNREAD
+  pointer, score 32, x947263, consumed here):
+  `paper/research/library/2026-11-18_state_dependent_hawkes_lob_deep_read.md`
+  on Morariu-Patrichi and Pakkanen (Imperial College London),
+  "State-dependent Hawkes processes and their application to limit
+  order book modelling" (arXiv:1809.08060v3, 17 September 2021): a
+  self- and cross-exciting event process fully coupled with a
+  finite-state process that switches at event times, so the
+  excitation kernel depends on the book state and the state
+  transition depends on the event type; separable likelihood making
+  estimation no harder than an ordinary multivariate Hawkes fit;
+  estimated on one year of LOBSTER level-I INTC data (two models:
+  bid-ask-spread state and queue-imbalance-bin state), finding
+  excitation magnitudes and timescales strongly state-dependent
+  (0.1-100 milliseconds) and measured endogeneity itself
+  state-dependent, systematically at or above the critical spectral
+  radius in disequilibrium states. Read against the ONE question.
+  **Grade: NO kill line changed. ONE new candidate sharpening queued,
+  PENDING OWNER RATIFICATION:** the bar-level book-state mix
+  disclosure component for the C8 A3 micro-threshold rule, extending
+  the PROPOSED shuffled-arrival placebo amendment. Mechanism,
+  page-cited: per-state spectral radii are systematically above the
+  critical value in disequilibrium states and below it in equilibrium
+  states (ModelS rho(2+) systematically above 1; ModelQI
+  sell++/buy++ above 0.9 half the time), so "critical reflexivity"
+  is "a largely state-dependent phenomenon, observed only in
+  particular circumstances" (PDF pp. 19-21, Figure 10, PDF p. 22).
+  Two pre-declarations, both harder to pass. (a) A bar-level,
+  book-state-blind n_c conflates the bar's state composition with the
+  strength of the excitation mechanism: a bar can clear n_c > 0.8
+  because it spent time in disequilibrium states, and the micro
+  indicator would then partly encode the bar's book-state mix —
+  dangerously close to conditioning on what the macro cell already
+  selects; every per-bar n_c reading in the A3 family must be
+  accompanied, recorded on TRAIN, by the bar's occupancy distribution
+  over a pre-declared state variable computable from the same tape
+  (spread regime, queue-imbalance-bin occupancy, or the declared
+  alternative), with the state-blind n_c never reported alone.
+  (b) The shuffled-arrival placebo severs more than temporal
+  excitation: in a state-dependent world the state process jumps at
+  event times, so time-shuffling arrivals also destroys the
+  event-state sequence and the state-flow feedback that drives the
+  endogeneity readings; any production-minus-placebo gap must be
+  reported with a declaration of what couplings the shuffle severs,
+  and a gap is inadmissible as evidence of "genuine endogeneity"
+  without that declaration. Scope: a disclosure requirement on the A3
+  family only; A3 and every C8 amendment remain PROPOSED and not
+  armed; no kill line touched, no threshold moved, T-H and T-O
+  untouched; nothing is armed.
+
+  Findings, page-cited: reinforcing, no new item — timestamp
+  discipline corroborated at the source: LOBSTER nanosecond
+  timestamps give more than 99 percent unique level-I timestamps,
+  accurate event ordering at the shortest timescales is essential
+  for Hawkes estimation, and the authors flag and repair the
+  tied-timestamp artifact (a market order matched with n limit
+  orders recorded as n tied prints, aggregated into one event)
+  (PDF p. 13): mechanism-level corroboration of the L0 gate's
+  timestamp audit, of A3's pre-declared µs exchange timestamps, and
+  a named sibling of the record's multi-print event-grain
+  discipline; no parameter transfers. Reinforcing, no new item —
+  regime instability of excitation estimates: day-to-day base rates
+  mirror day-to-day order counts, suggesting mainly exogenous
+  day-to-day variation (PDF p. 15), and the kernel norms break
+  structurally at the 5 February 2018 return of volatility, with
+  distinct pre- and post-break levels (PDF pp. 16-17, Figure 7,
+  PDF p. 19): corroborates the standing MIHM caution against
+  endpoint-level readings of a single branching estimate — measured
+  excitation moves across regimes and across states within a day;
+  never carried across regimes, never read as an equilibrium
+  classification. Interpretation caution — a per-state spectral
+  radius above 1 is not market instability: the process is
+  stationary as a state-dependent whole (PDF p. 6), rho above 1 in a
+  disequilibrium state is a within-model excursion, and reading it
+  as flash-crash-prone or near-critical would launder a
+  model-internal quantity; the state definitions themselves
+  (two-state spread, five queue-imbalance bins, PDF pp. 13-14) are
+  the authors' constructions on one large-tick stock and none
+  transfers; the programme's L2 arm would have to declare its own
+  state variable if the queued rule is ratified. Source-quality
+  note — two authors (Imperial College; Pakkanen also
+  Aarhus/CREATES); arXiv v3, first posted 2018, stamped 17 September
+  2021; companion mpoints library published; headline results INTC
+  only, with AMD, MU, SNAP and TWTR relegated to results available
+  upon request (PDF p. 11); published version to be checked before
+  any formal citation; extract clean in the load-bearing sections,
+  some figure labels glyph-mangled. The killed-if-wrong section on
+  record: if the state-dependence of endogeneity is later shown to
+  be an artifact of the state-bin construction, the queued
+  component loses its mechanism and should die back to A3 as it
+  stands; conversely, A3-family n_c readings published without the
+  state-mix disclosure would risk partially embedding the macro
+  conditioning, exactly the costume failure K1 exists to catch.
+  Standing caveat recorded: one large-tick US stock, level-I
+  LOBSTER, June 2017 to May 2018, 12:00-14:30 windows chosen for
+  flat intensity, exponential kernels with the authors' own
+  power-law caveat, no crypto, no BTCUSDT. Laundering directions
+  named: INTO — no spectral radius, kernel norm, state definition,
+  bin edge, timescale range, or transition matrix from this paper
+  enters any spec, default, or calibration, and the state-dependent
+  Hawkes model is not adopted anywhere without its own
+  pre-registration; OUT — the per-state critical reflexivity
+  readings are never cited as evidence that any market the
+  programme measures is near-critical or unstable, and the
+  0.1-100 millisecond timescales are never cited as expected
+  reaction scales outside this paper's own sample.
+
+Ratification queue after this session: TWENTY-FOUR candidate
+sharpenings (the twenty-three standing plus the book-state mix
+disclosure rule joined here through deep-read session 28), zero
+armed. T1 remains armed awaiting the owner's word; the blocked list
+stays blocked. Deep-read queue pointer: the next UNREAD triage entry
+is "Forecasting High Frequency Order Flow Imbalance" (score 32,
+x78a2e8). Nothing measured, no kill line moved, nothing armed,
+nothing trades live.
