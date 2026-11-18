@@ -2830,3 +2830,62 @@ this session, no kill line moved, nothing armed, nothing trades live.
 - **Deep-read queue:** parallel, unchanged - next unread by rank:
   "State-dependent Hawkes processes and their application to limit
   order book modelling" (x947263, score 32).
+
+## 53. OWNER-DIRECTED MEASURED SESSION (2026-11-18), eleventh of the parallel regime: "start from the original Katsanos formula and build your own version using all the articles you have read" - the rebuild, and the negative result
+
+- **Built:** `src/katsanos_vfi_variant.py` - Katsanos's original VFI
+  (S&C June/July 2004, AmiBroker form: median-price log change vs a
+  0.2 x StDev(30) x price cutoff, volume capped 2.5x its 130d MA,
+  130d windowed sum / volume MA, EMA(3)) AND the library-rebuilt
+  variant (every lesson applied: robust MAD scale per session-48/
+  candidate-15, prior-bar windows, sigma>0-type degenerate-data
+  guards, and the session-40/50 lesson that LEVELS are not timing
+  ranks -> z(252)->percentile(756)->decile STATES). Head-to-head on
+  the program's own criteria: the A2 washout episodes and first-move
+  chips, identical constructions both sides.
+- **NEGATIVE RESULT:** the Katsanos-family flow does NOT reproduce
+  the washout edge on this archive - original: A2 win 31.4%, mean
+  -7.9% (h1 -8.8% / h2 +3.8%); library-rebuilt variant: win 34.2%,
+  mean -6.1%; washout chip cells 0.515/0.510 vs baseline -0.553, NO
+  edge under either scale. For reference the session-40 flow of
+  record measured win 59.7%, mean +9.8% (h1/h2 +10.8%/+7.0%) on the
+  same criterion.
+- **The reading (recorded as would-have-killed material):** the flow
+  chip is CONSTRUCTION-CONDITIONAL, exactly as the estimator-mode rule
+  demands - and the failure survives a faithful application of every
+  library lesson, which is the strongest demonstration yet that
+  CONSTRUCTION, not concept, carries the chips. The differences that
+  matter, measured at the same grain: the sign gate (fixed 1%
+  close-change gates vs an ADAPTIVE 0.2 x scale x price cutoff - the
+  scale estimator re-enters the signal path and drags its fragility
+  with it; the MAD swap softened but did not remove the failure) and
+  the volume treatment (bounded relative ratio vs absolute capped
+  volume). Adopting the original on pedigree alone would have
+  REVERSED the program's best edge. Artifacts:
+  `clue_scan/katsanos_vfi_variant.{csv,md}`. No change to any
+  registered construction; nothing armed; nothing trades live.
+
+## 54. OWNER-DIRECTED MEASURED SESSION (2026-11-18), twelfth of the parallel regime: the Andrea-gate hybrid - "taking midpoint close prior relative price like the 'Andrea' formula"
+
+- **Owner directive:** use the Andrea VPVI script's sign - volume
+  weighed by whether the bar acted ABOVE or BELOW the PRIOR CLOSE
+  (|high-prevClose| vs |prevClose-low| over the zone), not
+  close-to-close. Built as a third arm in the same head-to-head: the
+  session-40 bounded-ratio flow pipeline with ONLY the sign gate
+  swapped (v_ratio x w, cumsum, same z(252)->pct(756) states) - the
+  comparison isolates the sign gate.
+- **POSITIVE RESULT:** the Andrea gate FAR outperforms the Katsanos
+  close-change gate at lows: A2 win 47.4%, mean +7.6%, positive in
+  BOTH halves (h1 +6.3% / h2 +15.0%); chip flow_ext_low_h2 = 0.662
+  and washout_h2 = 0.5997 vs h2 baseline 0.553 (Katsanos-flow cells
+  carried no edge). The flow of record (session-40 Fedenko-style)
+  still wins the A2 criterion (+9.8% / 59.7% vs +7.6% / 47.4%) -
+  the owner's gate closes most of the gap the published original
+  lost, from -8% to +8% episode returns on the sign gate alone.
+- **Status:** recorded as a measured positive for the Andrea lineage
+  (the owner's own script out-measured the published original on the
+  program's criteria). The flow of record does NOT change - swapping
+  gates is a construction change needing the owner's word, and the
+  session-40 gate is still ahead. Nothing armed; nothing trades live.
+  Ratification queue stands at FIFTEEN candidates zero armed; no kill
+  line moved. Deep-read queue parallel: next x947263 (score 32).
