@@ -757,3 +757,51 @@ Liquidation Problem Associated with the Poisson Cluster Process"
 with the triage-audit caveat now on record: the scorer's rank is a
 candidate reading, and the owner's library policy (peer-reviewed
 first) governs when they diverge.
+
+## 16. Null-time session 12 (2026-11-16): deep-read session 10 — the sign-register rule; T1's honest inversion made prospective
+
+- **Library deep-read session 10** (next by triage rank, per session
+  11's pointer, under the triage-audit caveat):
+  `paper/research/library/2026-11-16_poisson_cluster_liquidation_deep_read.md`
+  on Sadoghi & Vecer, "Optimum Liquidation Problem Associated with the
+  Poisson Cluster Process" (arXiv:1507.06514v2, 2015; discrete-time
+  MDP/PDMP liquidation, Hawkes order arrivals, simulation study).
+  Grade: NO kill line changed. One candidate sharpening, PENDING
+  OWNER RATIFICATION: **the sign-register rule for excitation
+  features** — the paper's core simulation result is that DAMPING
+  (sigma < 0: your selling suppresses subsequent arrivals) and
+  EXCITATION (sigma > 0) are materially different regimes of the
+  same mechanism, with different optimal behavior and revenue
+  (Table 1: $50,000-ish damping panels vs $62,539-$94,691 exciting
+  panels). Pre-declaration text: every L2 excitation/damping feature
+  is estimated and reported TWO-SIDED with sign and CI; a negative
+  reading is recorded in its own register cell as damping, never
+  flipped, floored at zero, or discarded as a failed positive. The
+  program's precedent is T1 (the registered mechanism measured with
+  its SIGN INVERTED — every compression HR below 1.0 — and the honest
+  response was to book the inversion, not clip it); this rule makes
+  that discipline prospective and binding on the FEATURES, in the
+  only legal direction. Reinforcing evidence recorded: (a) their
+  negative-self-excitation case is explicitly strategic
+  submit/cancel behavior, "known as a 'market manipulation'" (PDF
+  pp. 29-30) — the same mechanism family as the queued spoofing
+  cautions and the C5 passive-withdrawal claim, so a damping reading
+  on a gated window must be audited (ordinary queuing suppression or
+  an actor?) before it enters any feature; (b) their
+  wait-versus-inventory-penalty balance, set by pre-declared
+  microstructure parameters, is the shape of a K7-style
+  cost-survival amendment — ammunition if the owner ever ratifies
+  cost modeling, and NOT a strategy candidate (the program never
+  trades live). Caution on the source: simulation-only, no
+  empirical calibration, arXiv preprint with a 2018 journal-
+  submission stamp and no published version found — cite the
+  structure, never the magnitudes.
+
+Ratification queue after this session: TWELVE candidate sharpenings
+(sessions 3, 4/4b, 5, 6, 7, 9, 10, 12), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked. Deep-read
+queue: next by triage rank after the liquidation paper is "Price-Aware
+Automated Market Makers: Models Beyond Brownian Prices and Static
+Liquidity" (score 39, already on the library text shelf); with the
+session-9 triage-audit flag on record, rank is a candidate reading,
+and the owner's library policy governs when they diverge.
