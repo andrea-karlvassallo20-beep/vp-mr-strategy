@@ -1306,3 +1306,58 @@ queue: next unread by rank is "Dynamic optimal execution in a
 mixed-market-impact Hawkes price model" (score 34, on the shelf),
 with several more score-34/33 entries after it (the triage-audit
 flag stands: rank is a candidate reading, not a promise).
+
+## 26. Null-time session 22 (2026-11-16): deep-read session 20 — the MIHM identity: branching and the impact decomposition are locked together in a martingale price
+
+- **Library deep-read session 20** (next UNREAD triage-rank entry,
+  per session 21's pointer):
+  `paper/research/library/2026-11-16_mixed_impact_hawkes_execution_deep_read.md`
+  on Alfonsi & Blanc, "Dynamic optimal execution in a
+  mixed-market-impact Hawkes price model" (arXiv:1404.0648v2,
+  2014/2015; CERMICS/ENPC; cited within both session 10's and 12's
+  reads). Grade: NO kill line changed; NO new candidate sharpening.
+  Three reinforcements: (a) **THE MIHM IDENTITY** — in their
+  mixed-market-impact Hawkes martingale equilibrium, the endogeneity
+  ratio (Hawkes kernel norm) EQUALS the transient-impact fraction
+  (iota_s/beta = 1 - nu in the zero-cross-excitation case): the
+  price is a martingale even at high frequency when and only when
+  self-excitation exactly compensates price resilience. The
+  theoretical consequence for the trigger layer: on a venue whose
+  high-frequency price is (close to) a martingale — the efficient-
+  markets default — a fitted branching ratio is NOT free-standing
+  information about endogeneity; it is entangled, by a no-arbitrage
+  balance, with the transient/permanent decomposition of impact.
+  This joins the exogenous-absorption caution (session 17), the
+  per-branch rule (session 9), and the dispersion register (session
+  14) as a fourth face of the same discipline: the branching
+  reading is never read alone — and this face is theoretical, not
+  empirical; no new rule needed, the multi-reading recording
+  requirements already force the format. (b) **Poisson flow
+  MISPRICES resilience, robustly** — under Poisson order flow the
+  model necessarily admits parameter-free price manipulation
+  strategies (react with a small opposite-side proportion of each
+  incoming order, profitable on average): a flow model that omits
+  self-excitation manufactures round-trip "opportunity" out of its
+  own omission, so any future K7-style cost-survival layer declares
+  its flow model in the spec — Poisson-based cost arithmetic is
+  wrong in a known direction; nothing armed (the program never
+  trades live). (c) Instant reaction to others' trades is
+  equivalent (in their conditions) to manipulation existence —
+  chain reactions and instability: the race/feedback family again
+  (sessions 21/19), interpretation language only. Cautions: the MIH
+  model is deliberately simplified (linear impact, exponential
+  decay — their own "not in accordance with empirical facts";
+  block-shaped book; the strategic trader does not excite the flow);
+  the MIHM identity is a model-internal equilibrium identity, NOT an
+  empirical claim about any real venue — it licenses a caution
+  about how readings are read, not a prediction; arXiv v2 with a
+  2018 stamp, check published version before formal citation.
+
+Ratification queue after this session: FOURTEEN candidate
+sharpenings, zero armed (unchanged). T1 remains armed awaiting
+the owner's word; the blocked list stays blocked. Deep-read
+queue: next unread by rank is "Learning the Spoofability of Limit
+Order Books With Interpretable Probabilistic Neural Networks"
+(score 34, on the shelf) — directly aimed at C5's
+passive-withdrawal family and C8's spoofing cautions, likely the
+highest-value remaining entry in its tier.
