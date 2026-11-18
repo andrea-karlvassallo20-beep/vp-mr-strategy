@@ -1593,3 +1593,43 @@ highest-value remaining entry in its tier.
   Deep-read queue: next unread by rank per the read-slug mapping
   is "Optimal Execution with Passive Market Impact" (score 33,
   on the shelf) - the sibling of this paper's framework.
+
+## 31. Null-time session 27 (2026-11-18): SYNTHESIS at the owner's request — the negative-knowledge map (deep-read sessions 1-24)
+
+- **Owner request, executed as null-time writing work (nothing
+  measured):** the owner asked to "change shit up," chose synthesis
+  from the offered directions, and the result is
+  `paper/research/library/null_time_synthesis_for_owner_review.md`
+  — the convergent findings of the twenty-four deep-read sessions
+  rearranged into four families for owner review speed, explicitly
+  a SYNTHESIS NOTE: no new claim, no moved kill line, no fifteenth
+  queued candidate, nothing measured. **Family A — no free-standing
+  readings** (per-branch rule, flow-clock, estimator-mode,
+  dispersion register [all queued, PENDING OWNER RATIFICATION];
+  kappa-as-state-moment, pipeline-transport, GOFI's quantified
+  aggregation demonstration [cautions, recorded]). **Family B — the
+  book is not all intention** (C5 routing and the
+  depth-describes-never-ground-truths discipline, reinforced
+  quantitatively by session 21 and theoretically by session 24;
+  round-number same-agent fingerprints; cost templates).
+  **Family C — omissions manufacture signals** (Poisson flow forges
+  manipulation profits - session 20; constant-kappa forges wrong
+  signs - session 24; pipeline queueing launders into clustering -
+  session 19; calendar folds into drift - sessions 15/22).
+  **Family D — regime is a variable, including who trades**
+  (composition drift; venue-freeze warrant; macro censor; the CKS
+  horizon-gap; C8's unexplored cell). The map also records open
+  territory: no library paper licenses anything about the
+  perpetual-futures funding channel; spoofing proportions on
+  Binance perps in the program's vintage are UNKNOWN and stay
+  unknown until the owner authorizes measurement; agent-level
+  structure is absent because the data has no ids. Purpose
+  stated plainly: if any future feature spec cannot answer
+  Families A-D in one paragraph each, the library says kill it in
+  writing, in advance, before it is ever measured. Ratification
+  queue after this session: FOURTEEN candidate sharpenings, zero
+  armed (the map summarizes the queue, ratifies nothing). T1
+  remains armed awaiting the owner's word; the blocked list stays
+  blocked. Deep-read queue unchanged: next unread by rank is
+  "Optimal Execution with Passive Market Impact" (score 33, on the
+  shelf) - awaiting the owner's direction before the queue resumes.
