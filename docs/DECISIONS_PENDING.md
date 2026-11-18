@@ -47,6 +47,18 @@ each case. Items are ordered by how much they gate.
   2026-11-16), zero armed; the owner's word is
   the only trigger): enumerated with sources in
   `paper/research/null_time_programme.md` (latest section).
+- **Robust-scale register** (queued 2026-11-18, measured session 51,
+  PENDING OWNER RATIFICATION): replace the dossier move-construction
+  sigma (trailing-20d moment stdev) with a robust MAD/IQR scale
+  (1.4826 x median absolute deviation, trailing 20d, prior-night) -
+  the session-48 library lesson (moment scales are outlier-fragile on
+  fat-tailed returns, Filimonov-Sornette PDF pp. 8, 34) and the same
+  family as the owner's own AVFI v3.2 robust-z layer. Measured side by
+  side in `paper/research/clue_scan/robust_sigma_comparison.{csv,md}`:
+  the A2 washout bottom and the nuke_up chip SURVIVE the scale change
+  (stable edges); the robust scale doubles the big-move density, so
+  ratification re-registers every dependent threshold. ZERO armed
+  until the owner's word.
 
 ## 3. Claims on deck, not yet run
 

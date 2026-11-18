@@ -2746,3 +2746,47 @@ this session, no kill line moved, nothing armed, nothing trades live.
   order book modelling" (x947263, score 32). Flag from session 49
   stands: the coin-chip 37 / VFI 40 / fade 42 / smh_presence
   dossiers must be re-run under the sigma>0 guard.
+
+## 51. OWNER-DIRECTED MEASURED SESSION (2026-11-18), ninth of the parallel regime: "the articles have taught you nothing to modify the formula?" - the robust-sigma amendment comparison
+
+- **Owner challenge:** "all those articles have taught you nothing to
+  modify the formula or anything?" Response: the library-to-formula
+  ledger, and the ONE construction amendment the session-48 read
+  licenses, run as a measured side-by-side. Protocol pre-declared in
+  `src/robust_sigma_amendment_dossier.py`; artifacts
+  `clue_scan/robust_sigma_comparison.{csv,md}`.
+- **The amendment (QUEUED PENDING OWNER RATIFICATION, zero armed):**
+  replace the dossier move-construction sigma (trailing-20d moment
+  stdev - outlier-fragile on fat-tailed returns, Filimonov-Sornette
+  PDF pp. 8, 34, the rebound of the exact lesson behind the owner's
+  own AVFI v3.2 robust-z IQR layer) with a robust MAD scale (1.4826 x
+  median absolute deviation, same window, prior-night), sigma>0 guard
+  on both. NOTHING swapped: the moment construction remains the
+  record until the owner's word.
+- **Headline results:** (1) the program's two edge candidates SURVIVE
+  the scale change - the A2 washout bottom (moment win 59.7% / mean
+  +9.8%; robust win 61.1% / mean +9.1%; positive in both halves under
+  BOTH scales: h1 +10.8%/+10.2%, h2 +7.0%/+6.3%) and the nuke_up
+  chip (moment 0.628/0.673 vs baseline 0.560/0.590; robust
+  0.603/0.630 vs baseline 0.538/0.553 - above baseline in both halves
+  under both scales); the nuke_down chip shows no edge under EITHER
+  scale (session 49's deflation confirmed by an independent route);
+  (2) the robust scale DOUBLES the big-move density (1.03%/0.97% ->
+  2.31%/2.23% next-day) - the event set changes materially, so a
+  ratified amendment re-registers every dependent threshold, which is
+  exactly why it is queued rather than swapped.
+- **The ledger the owner asked for** (library lessons already in the
+  formulas): Poisson-reshuffling placebo (44) -> the label-placebo
+  battery; seasonality splits -> the calendar discipline;
+  construction-conditionality (48) -> the estimator-mode rule;
+  Fedenko VFI form (40) -> the owner's flow axis; the owner's own
+  AVFI H8/H9 draft (42) -> the fade layer; and now moment-scale
+  fragility (48) -> the queued robust-scale amendment. The queue's
+  long-form rules (per-branch, flow-clock, sign-register,
+  estimator-mode, dispersion register) ARE library output.
+- **Ratification queue after this session: FIFTEEN candidate
+  sharpenings (the robust-scale register joined), ZERO armed.**
+  Nothing measured beyond the declared comparison; no kill line moved;
+  nothing trades live. Deep-read queue parallel: next x947263
+  (score 32). Session-49 flag stands: dossiers 37/40/42 +
+  smh_presence re-run under the sigma>0 guard.
