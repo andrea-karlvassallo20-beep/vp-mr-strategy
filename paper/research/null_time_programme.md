@@ -805,3 +805,70 @@ Automated Market Makers: Models Beyond Brownian Prices and Static
 Liquidity" (score 39, already on the library text shelf); with the
 session-9 triage-audit flag on record, rank is a candidate reading,
 and the owner's library policy governs when they diverge.
+
+## 17. Null-time session 13 (2026-11-16): deep-read session 11 — the estimator-mode rule; the dimensionality verdict on Hawkes state models
+
+- **Library deep-read session 11** (next by triage rank, per session
+  12's pointer, under the triage-audit caveat):
+  `paper/research/library/2026-11-16_price_aware_amm_deep_read.md`
+  on Bergault, Bertucci, Bouba, Guéant & Guilbert, "Price-Aware
+  Automated Market Makers: Models Beyond Brownian Prices and Static
+  Liquidity" (arXiv:2405.03496v3, 2024; Dauphine/ILB/Swaap Labs).
+  Grade: NO kill line changed. One candidate sharpening, PENDING
+  OWNER RATIFICATION: **the estimator-mode rule for state
+  variables** — their Hawkes price model needs the current
+  intensity to compute quotes, and they NAME the two ways to get
+  it: treat it as an observable evolving from a declared initial
+  value, or estimate it statistically from recent history
+  "similarly to how instantaneous volatility was treated" (PDF
+  p. 12). These are different estimators of the SAME window.
+  Pre-declaration text: every hidden state variable in a spec
+  (intensity, volatility, any flow state) carries, IN THE SPEC,
+  its estimator mode — filter-evolution from a declared init, or
+  window estimation with a declared window — fixed before data,
+  never mixed or switched mid-analysis. It moves a silent analyst
+  degree of freedom from the data to the specification, where it
+  is cheap and binding — the same police work as the per-branch
+  CIs, the boundary-solution rule, and the sign register, from
+  another direction. Reinforcing evidence recorded: (a) their
+  Markovian Hawkes price carries n in (0,1) as "the percentage of
+  price moves that are purely endogenous" (PDF p. 11) — the
+  branching ratio AS A NAMED MODEL PARAMETER, an independent
+  parametrization of session 4/4b's scale problem (the library
+  treats endogeneity as a venue constant; the trigger measures
+  it — hence the estimation machinery already queued); (b) their
+  explicit dimensionality verdict: Hawkes liquidity states are a
+  good statistical fit but CONTROL-TRACTABLE-BROKEN (the value
+  function needs 3-5 state variables and the quadratic
+  approximation breaks because y and the intensities jump
+  simultaneously, PDF p. 17), and a small discrete Markov chain
+  (2-3 liquidity states, MMPP) is the tractable alternative (PDF
+  pp. 17-19) — the venue citation for preferring a low-state
+  regime variable (the MMHP family, triage rank 1) over a
+  continuous multi-intensity Hawkes state wherever the two are
+  observationally close: fewer hidden states, fewer estimator
+  degrees of freedom; (c) an interpretation caution, explicitly
+  NOT a rule change: their Z-Hawkes price has a SIGN-DEPENDENT
+  quadratic driver (the Zumbach effect, PDF p. 13), so on a
+  Zumbach-active window a sign-permuting placebo destroys real
+  structure by construction — noted for the interpretation table
+  beside any placebo result; it does NOT weaken any queued
+  placebo (the legal direction is harder-to-pass, and this points
+  the other way). Source cautions: no empirical calibration
+  ("No data involved in this study," PDF p. 20); two authors are
+  Swaap Labs with disclosed industry funding (read the
+  tractability verdicts as engineering, not as claims against
+  Hawkes models as such); the AMM market-making content does not
+  touch a program that never trades live.
+
+Ratification queue after this session: THIRTEEN candidate
+sharpenings (sessions 3, 4/4b, 5, 6, 7, 9, 10, 12, 13), zero
+armed. T1 remains armed awaiting the owner's word; the blocked
+list stays blocked. Deep-read queue: next by triage rank is
+"Functional Limit Theorems for Hawkes Processes" (score 38) — a
+theory paper; with the session-9 triage-audit flag on record, note
+for the owner: the top-ranked UNREAD triage entry remains
+"High-Frequency Market Manipulation Detection with a Markov-
+modulated Hawkes Process" (rank 1, score 54, on the shelf), which
+may be the higher-value next read given C5/C8's manipulation
+line.
