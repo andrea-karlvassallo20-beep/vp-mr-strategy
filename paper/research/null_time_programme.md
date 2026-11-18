@@ -2278,3 +2278,76 @@ highest-value remaining entry in its tier.
   per the read-slug mapping remains "TradeFM: A Generative
   Foundation Model for Trade-flow and Market Microstructure"
   (score 31, on the shelf).
+
+## 43. Null-time session 35 (2026-11-18): deep-read session 33 — industry has independently arrived at the construction-triple discipline: TradeFM's 524M parameters spent BECAUSE normalizing constructions are load-bearing
+
+- **Null-time deep-read session 33** (the parallel regime continues;
+  next UNREAD triage-rank entry per session 41's pointer, verified
+  unread by the read-slug mapping):
+  `paper/research/library/2026-11-18_tradefm_generative_microstructure_deep_read.md`
+  on Kawawa-Beaudan, Sood, Papasotiriou, Borrajo & Veloso,
+  "TradeFM: A Generative Foundation Model for Trade-flow and Market
+  Microstructure" (arXiv:2602.23784v1, 2026; J.P. Morgan AI
+  Research; cs.LG). A 524M decoder-only Transformer pre-trained on
+  19B tokens of raw US-equities trade events (>9K equities, Feb
+  2024-Sep 2025, temporal + APAC OOD hold-outs), with SCALE-
+  INVARIANT features (EW-VWAP mid estimator under partial
+  observability, log-volume, mid-relative price depth in bps NOT
+  ticks, relative-to-open moves), universal tokenization, and
+  closed-loop rollouts through a deterministic simulator
+  reproducing stylized facts (heavy tails, volatility clustering,
+  ABSENCE of return autocorrelation); 2-3x lower distributional
+  error than Compound Hawkes baselines; endpoints: synthetic data,
+  stress testing, learning-based trading agents. Grade: NO kill
+  line changed; NO new candidate sharpening. Findings: (a)
+  **[reinforcing]** the program's construction-triple discipline
+  is now the INDUSTRIAL face: J.P. Morgan spent a 524M-parameter
+  budget on a model whose core is the declarations - mid-relative
+  depth instead of ticks is the sessions-21/25 lesson, EW-VWAP is
+  a declared estimator-mode for an unobserved quantity, log-volume
+  declares the heavy-tail construction - institutional
+  confirmation that normalizing constructions across venues and
+  tick geometries is load-bearing; nothing queued, the house rules
+  already force the declarations; (b) **[reinforcing]** the
+  Compound-Hawkes baseline losing 2-3x on distributional error is
+  session 28's kernel-geometry finding at industrial scale: model
+  geometry decides what can be captured before any data arrives -
+  NOT an endorsement of foundation models as market knowledge;
+  (c) **[interpretation caution]** stylized-fact reproduction is a
+  necessary-but-weak bar, and the paper's own headline includes
+  ABSENCE of return autocorrelation: rollouts pass every listed
+  fact with no directional predictability claimed - if a synthetic
+  market environment is ever specified, the house bar is stylized
+  facts PLUS the label-placebo battery PLUS the
+  branching/multi-reading requirements (sessions 16/17/28);
+  distributional error alone cannot certify realism (the
+  session-29 lesson generalizes to model-internal scores at ANY
+  scale); (d) **[cost-survival ammunition]** the declared endpoints
+  (synthetic data, stress tests, RL agent training) are the
+  template a K7-style layer would face: agents trained on
+  generative microstructure declare the simulator's construction -
+  a synthetic-venue statement is a construction statement;
+  (e) **[source-quality note]** proprietary data, the 2-3x claim is
+  against a geometry-constrained class only (flattering direction),
+  evaluation-split hygiene looks serious but incentives are
+  structural, arXiv v1 cs.LG unpublished at read time, check before
+  formal citation; zero market facts licensed, the citable
+  content is the methodology. Would-have-killed: a simulator
+  certified on stylized facts alone could lauder a synthetic
+  artifact into a "working" agent (the paper demonstrates the
+  bar's weakness by passing it with a no-autocorrelation,
+  no-predictability headline), and any spec treating tick-based
+  depth as a neutral default contradicts the industrial
+  counter-argument that the units decide the model. The
+  label-placebo battery, construction declarations, and simulator
+  cautions predate the read. Cautions: partial observability by
+  design (no LOB input), deterministic simulator of the authors'
+  own construction, one 19-month US vintage, zero coverage of the
+  program's venue or grain. Ratification queue after this
+  session: FOURTEEN candidate sharpenings, zero armed
+  (unchanged). T1 remains armed awaiting the owner's word; the
+  blocked list stays blocked. Deep-read queue: next unread by
+  rank per the read-slug mapping is "Quantifying reflexivity in
+  financial markets: towards a prediction of flash crashes"
+  (score 30, on the shelf) - squarely in the program's own
+  hypothesis family.
