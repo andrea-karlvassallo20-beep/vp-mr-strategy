@@ -1292,3 +1292,62 @@ Nothing measured, no kill line moved, nothing armed, nothing trades live.
   PR #171 description and its squash-commit message carried the same wrong clause;
   git history is immutable, so this corrigendum is the correction of record.
 - Nothing measured, no kill line moved, nothing armed, nothing trades live.
+
+## 25. Null-time session 21 (2026-11-18): the exploratory channel RATIFIED by the owner; probe E1 queues the volume-conservation reconstruction-admissibility rule
+
+- **Protocol event (owner's word, the only trigger, received in chat
+  2026-11-18)**: the exploratory channel is RATIFIED. The owner's directive
+  "Go for it while we wait for l2" adopts the proposal as stated: give
+  serendipity a declared channel instead of making it smuggle. Channel
+  protocol: `docs/exploratory_channel.md`. In force: one exploratory block
+  may accompany a session, announced and tagged [exploratory]; probes may
+  read and derive anything but may not measure, arm, touch any kill line, or
+  carry evidentiary weight; every probe gets a numbered note under
+  `paper/research/exploratory/` and every probe counts in the
+  multiple-testing discipline; nothing glimpsed exploratorily may ever be
+  cited as confirmatory until it survives a test registered AFTER the
+  exploration; output goes through the normal PENDING OWNER RATIFICATION
+  gate; the owner may revoke the channel at any time.
+- **[exploratory] Probe E1**: "volume conservation as a depth-reconstruction
+  admissibility rule", `paper/research/exploratory/2026-11-18_E1_volume_conservation.md`.
+  Anchors: the owner's question about volume-flow physics and conservation
+  mathematics (chat, 2026-11-18), the Huang-Rosenbaum moving-frame
+  representation (deep-read 18), own derivation of the event-to-flux map.
+  The honest import from the finite-volume method is bookkeeping, not
+  metaphor: on a fixed absolute price grid the tape IS q-dot and the balance
+  law IS the exact discrete integral form — cell storage change equals
+  summed signed event fluxes plus DECLARED boundary terms (beyond the
+  K-level window) plus DECLARED source terms (hidden liquidity,
+  administrative changes, per-venue map registered before any run). NO
+  library paper was consumed by this session: it is a protocol + exploration
+  session; the standing next-UNREAD pointer is unchanged.
+- **Grade: NO kill line changed. ONE candidate sharpening queued, PENDING
+  OWNER RATIFICATION: the volume-conservation reconstruction-admissibility
+  rule** — any depth reconstruction used in a C1-L2 (or C8 L2-arm)
+  measurement must pass the flux-differencing identity per level per window,
+  within a tolerance and source-term budget BOTH pre-registered before the
+  first L2 run and calibrated on a calibration window DISJOINT from every
+  feature-evaluation window; failing windows are inadmissible and their
+  failure log travels with the measurement. Harder to pass: windows that
+  would today silently enter a measurement with corrupted depth (double-
+  counted executions, feed gaps, timestamp misalignment, wrong-side
+  assignment) are excluded before any statistic is computed. It defines no
+  signal, changes no kill line, and is validation machinery only
+  ([exploratory] provenance, channel E1).
+- **Both laundering directions named**: (1) INTO — the physics-flavored
+  vocabulary of conservation laws may never be cited as support for any
+  flow feature; the rule is bookkeeping, and bookkeeping earns nothing
+  predictive; (2) OUT — a passing identity may never be read as evidence of
+  data quality beyond the window checked or as validation of the C1-L2
+  signal itself; it licenses admissibility of a window, nothing more.
+
+Ratification queue after this session: EIGHTEEN candidate sharpenings (the
+seventeen standing plus the volume-conservation reconstruction-admissibility
+rule joined 2026-11-18 via exploratory probe E1), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked. Deep-read queue:
+the next UNREAD triage entry is unchanged, "Simulating and analyzing a sparse
+order book: an application to intraday electricity markets" (score 37,
+x3ff3a4, burst slot 04's assignment); with the session-9 triage-audit flag on
+record, rank is a candidate reading, and the owner's library policy governs
+when they diverge. Nothing measured (no data touched; L2 still awaited), no
+kill line moved, nothing armed, nothing trades live.
