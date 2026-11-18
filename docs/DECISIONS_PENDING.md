@@ -40,7 +40,7 @@ each case. Items are ordered by how much they gate.
   **C8 is NOT ARMED until you accept.**
   `paper/research/c8_macro_l2_synthesis_spec.md` (AMENDMENT LOG).
 - **The ratification queue** (candidate spec sharpenings from the
-  library deep-reads and the ratified exploratory channel — nineteen
+  library deep-reads and the ratified exploratory channel — twenty
   candidates (the branching per-branch
   rule, the flow-clock scale-constant rule, and the sign-register
   rule for excitation features joined on 2026-11-16; the two-null
@@ -48,7 +48,8 @@ each case. Items are ordered by how much they gate.
   the ACF-shape kernel-validity gate for the branching-ratio trigger and, joined 2026-11-18, the distance-grid sign-invariance rule for depth-aggregated limit-order-flow features and, joined 2026-11-18, the size-state persistence comparator and, joined 2026-11-18, the near-critical regime-disclosure rule for the branching-ratio trigger and,
   joined 2026-11-18 via exploratory probe E1, the volume-conservation
   reconstruction-admissibility rule and, joined 2026-11-18 via deep-read 19,
-  the deterministic-clock null arm for the branching-ratio trigger),
+  the deterministic-clock null arm for the branching-ratio trigger and, joined 2026-11-18 via deep-read 20,
+  the latent-common-cause robustness arm for the branching-ratio trigger),
   zero armed;
   the owner's word is
   the only trigger): enumerated with sources in

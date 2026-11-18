@@ -1426,3 +1426,82 @@ Making: Volterra-Riccati Approximation" (score 37, xa868e3, the burst slot
 05 assignment); with the session-9 triage-audit flag on record, rank is a
 candidate reading, and the owner's library policy governs when they diverge.
 Nothing measured, no kill line moved, nothing armed, nothing trades live.
+
+## 27. Null-time session 23 (2026-11-18): deep-read session 20 — the Hawkes-driven OTC market making paper; the latent-common-cause robustness arm queued for the branching-ratio trigger
+
+- **Library deep-read session 20** (the standing queue's next UNREAD
+  pointer, score 37, xa868e3, consumed here; also the burst slot 05
+  assignment, consumed consistently by this same read):
+  `paper/research/library/2026-11-18_hawkes_otc_market_making_deep_read.md`
+  on Barzykin, "Hawkes-Driven OTC Market Making: Volterra-Riccati
+  Approximation" (arXiv:2608.02002v2, q-fin.RM, 2026; sole author HSBC
+  practitioner, views his own; HSBC proprietary spot-FX RFQ data, three
+  pairs, three years; an OTC control paper about a market the programme
+  does not trade). Read against the ONE question. **Grade: NO kill line
+  changed. ONE candidate sharpening, PENDING OWNER RATIFICATION: the
+  latent-common-cause (Markov-modulated-baseline) robustness arm for the
+  branching-ratio trigger** — the paper states the confound precisely:
+  correlated requests "may be reactions to a common unobserved cause ...
+  If such exogenous variation is omitted from the baseline intensity, a
+  fitted Hawkes model may absorb part of it into the excitation kernel
+  and thereby produce a large branching ratio" (PDF p. 2), and its
+  conclusion names the discriminating test, "compare pure Hawkes dynamics
+  with latent-factor or Cox specifications" (PDF pp. 21-22); its own
+  Table 1 shows fitted branching 0.86-0.90 in major FX pairs on three
+  years and over 5*10^5 filtered events AFTER deterministic seasonality
+  is designed out (PDF pp. 3-5) — exactly the magnitude a naive reading
+  would celebrate as near-critical reflexivity, from an author who
+  explicitly refuses that reading. This confound is NOT the
+  deterministic-clock one queued at deep-read 19 (an observed calendar
+  profile is not a stochastic latent driver) and none of the standing
+  gates addresses it. Pre-declaration text: every window whose fitted
+  branching fires the trigger bar must be re-estimated under a
+  registered latent-baseline enrichment — the two-state Markov-modulated
+  background already built into C8's MMHP structure — with the baseline
+  form pre-registered before the first L2 run; if the excitation mass
+  attributed to endogenous branching drops below the bar once the latent
+  state is modelled, the window contributes no firing (neither positive
+  nor negative); both readings are reported in the register and replace
+  any single-number narration. Harder to pass: a window that survives
+  every standing gate can still die here, because apparent
+  self-excitation absorbed from an omitted common driver is not
+  reflexivity. Tightens only the branching-ratio trigger family; no
+  C1-L2 text moves. Findings, page-cited: reinforcing, no new item —
+  independent practitioner corroboration of the deep-read-19 clock null
+  (kernel estimated only in seasonality-adjusted activity time because
+  calendar time "would ... confound deterministic seasonality with
+  residual serial dependence", PDF pp. 3-4; all rates in one declared
+  clock, variance rates included, PDF pp. 4-5), reinforcing the flow-clock
+  scale-constant rule; reinforcing — high branching fits are commonplace
+  and specification-sensitive (fitted 0.86-0.90 in data, PDF p. 4; 0.92 as
+  a synthetic stress regime, PDF p. 14), supporting the near-critical
+  regime-disclosure rule's disclosed-regime requirement over
+  number-alone narration; interpretation caution — fitted excitation is
+  event-set-relative (aggressive pre-fit filters and the
+  request-vs-conversion event convention, PDF pp. 3-6), so the trigger's
+  event-stream definition and filters must be pre-registered before the
+  first L2 run and later changes are new tests, not re-estimates;
+  source-quality note — single-author HSBC practitioner paper, arXiv v2,
+  proprietary data, no well-posedness theorem (numerical validation only,
+  PDF pp. 14-15), market-making results are execution-strategy
+  engineering outside programme scope, published version to be checked
+  before formal citation. Laundering directions named: INTO — Table 1's
+  0.86-0.90 may never be imported as calibration for the C8 trigger bar
+  or as evidence that real markets sit near criticality, and the paper's
+  regret tables and quote-skew formulas are a dealer's control problem,
+  never programme input; OUT — the confound disclaimer may never be read
+  backwards as "fitted branching is meaningless": the paper's own
+  validation hierarchy shows the fitted memory to be the economically
+  relevant state, and the confound limits what a fired bar may CLAIM, not
+  whether the forecast content exists.
+
+Ratification queue after this session: TWENTY candidate sharpenings (the
+nineteen standing plus the latent-common-cause robustness arm for the
+branching-ratio trigger joined 2026-11-18 via deep-read 20), zero armed.
+T1 remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue: the next UNREAD triage entry is "Limit Order
+Book Dynamics and Order Size Modelling Using Compound Hawkes Processes"
+(score 34, x798515); with the session-9 triage-audit flag on record, rank
+is a candidate reading, and the owner's library policy governs when they
+diverge. Nothing measured, no kill line moved, nothing armed, nothing
+trades live.
