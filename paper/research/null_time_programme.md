@@ -3049,3 +3049,33 @@ this session, no kill line moved, nothing armed, nothing trades live.
 - **Standing state:** ratification queue FIFTEEN candidates zero
   armed; T1 armed awaiting the owner's word; no kill line moved.
   Deep-read queue parallel: next x947263 (score 32).
+
+## 59. OWNER-DIRECTED MEASURED SESSION (2026-11-18), seventeenth of the parallel regime: the universe redefined - "stick to main 250 crypto" - the board on the main-crypto universe
+
+- **Owner directive:** "stick to main 250 crypto." Universe rebuilt:
+  Binance USDT pairs ranked by 24h quote volume, top 250, with
+  leveraged-token and stable/non-crypto filters; 235 fetched clean
+  (the 15 failures are tokenized-stock and off-market listings -
+  correctly excluded from 'main 250 crypto'; recorded in the script
+  output: src/fetch_top250.py). `paper/research/data_fresh/` REPLACED
+  as THE universe cache (1356 dailies each); the board rebuilt on it.
+- **The board (clue_scan/fresh_seats_board.csv, 2026-11-18):** 115
+  pairs have full burn-in (many top-250 listings are younger than
+  the 756d percentile window - structural, declared); 46 sit in a
+  seat.
+- **Today's live seats:** FLAGSHIP_BOTTOM (the A2 washout seat):
+  **bonk (flow 9.3, fresh 20d low, range_pos 0.02, quiet) and jto
+  (flow 8.3, fresh 20d low, range_pos 0.02)**; ABSORBED_LOW (effort-
+  vs-result at lows, the 0.661 cell): atm (flow 1.2 - the deepest
+  washout on the board), ape, crv, fil, gala, glmr, juv, kava, op,
+  pha, tlm, zen, zk - and **btc/wbtc AT THE SEAT BOUNDARY (fresh 20d
+  lows at range_pos 0.17-0.18 with recent absorption, but flow at
+  39-49th percentile - present, NOT washed out; m144w still UP,
+  m89w DOWN)**. Stale-vintage seats (bake, hifi - pairs that stopped
+  trading) are flagged and not claimed as live.
+- **Honest boundaries unchanged:** the fresh cache overlaps the
+  archive vintage; the board is an observation display (like the
+  owner's AVFI panel), NOT the W2 confirmation; every chip stays
+  in-sample descriptive pending W2. Nothing armed; nothing trades
+  live. Ratification queue FIFTEEN candidates zero armed. Deep-read
+  queue parallel: next x947263 (score 32).
