@@ -2071,3 +2071,54 @@ highest-value remaining entry in its tier.
   blocked list stays blocked. Deep-read queue: next unread by rank
   per the read-slug mapping is "Mean-Field Limits for Nearly
   Unstable Hawkes Processes" (score 30, on the shelf).
+
+## 39. Null-time session 33 (2026-11-18): deep-read session 31 — the near-critical limit is where endogenous micro-arrivals BECOME a volatility process (and interactions wash out into the common field)
+
+- **Null-time deep-read session 31** (the parallel regime continues;
+  next UNREAD triage-rank entry per session 38's pointer, verified
+  unread by the read-slug mapping; shelf slug ends "_proce", the
+  prior pointer truncated it - recorded here):
+  `paper/research/library/2026-11-18_mean_field_nearly_unstable_hawkes_deep_read.md`
+  on Szymanski & Xu, "Mean-Field Limits for Nearly Unstable Hawkes
+  Processes" (arXiv:2501.11648v1, 2025, math.PR; Luxembourg/Beijing
+  Institute of Technology; the same Szymanski as sessions 20/24).
+  Two generalizations of the Jaisson-Rosenbaum nearly-unstable
+  machinery: general-kernel scaling limits under only
+  ||phi_n||_L1 -> 1 (limits are necessarily affine stochastic
+  Volterra diffusions - CIR/Heston for finite-first-moment kernels,
+  rough fractionals for power-law tails), and propagation of chaos
+  for mean-field Hawkes particle systems (particles asymptotically
+  independent given the common Volterra intensity field, three
+  regimes in n(1-||phi_n||)^2). Grade: NO kill line changed; NO
+  new candidate sharpening. Findings: (a) **[reinforcing]** the
+  limit-theory side of the 1/(1-mu-hat) inflation family (sessions
+  16/26): near-criticality is NOT a pathology but the regime where
+  endogenous micro-arrivals become a macro volatility object
+  (CIR/Heston/rough) - the never-read-branching-alone family's
+  theoretical warrant; nothing queued, the existing multi-reading
+  requirements force the format; (b) **[reinforcing]** propagation
+  of chaos is a formal independence-under-a-common-field statement:
+  micro interaction structure washes OUT of the particle picture
+  and INTO the common intensity - the theoretical counterpart and
+  boundary of session 30's address-level observability (identity
+  lives at the particle grain, the field at the aggregate grain;
+  the grain-specific-objects rule stated as a theorem); (c)
+  **[source-quality note]** pure math.PR, no data, no empirics,
+  market applicability by lineage not demonstration; neuroscience-
+  motivated mean-field geometry, not LOB heterogeneity; arXiv v1
+  January 2025, check for a published version before formal
+  citation. Would-have-killed: treating near-critical fitted
+  branching ratios as a defective-model flag would discard exactly
+  the regime the inflation family lives in (the paper proves the
+  bridge exists there), and reading aggregate features as carrying
+  particle-level interaction information contradicts propagation
+  of chaos (interactions conditional on the common field vanish).
+  The near-critical recording discipline (sessions 13/16/26) and
+  grain rules predate the read. Ratification queue after this
+  session: FOURTEEN candidate sharpenings, zero armed (unchanged).
+  T1 remains armed awaiting the owner's word; the blocked list
+  stays blocked. Deep-read queue: next unread by rank per the
+  read-slug mapping is "Diffusive Limit of Hawkes Driven Order
+  Book Dynamics With Liquidity Migration" (score 31, on the shelf)
+  - note the queue passes a score-31 entry before the remaining
+  score-30 cluster (the mapping is by rank order, not by tier).
