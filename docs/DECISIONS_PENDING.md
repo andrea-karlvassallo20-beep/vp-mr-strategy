@@ -33,10 +33,10 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: twenty-five
-  candidates through deep-read 31 plus probe E1; most recently joined
-  2026-11-18, the queue-state anticipation (pre-window lead
-  disclosure) component for the C1-L2 L2-arm queue-state
+  library deep-reads and the ratified exploratory channel: twenty-six
+  candidates through deep-read 32 plus probe E1; most recently joined
+  2026-11-18, the queue-label convention (reference-price tie-break)
+  declaration component for the C1-L2 L2-arm queue-state
   conditioning rule. Zero armed; your word is the only
   trigger. Enumerated with sources in
   `paper/research/null_time_programme.md` (latest section).
