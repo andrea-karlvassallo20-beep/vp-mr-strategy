@@ -1732,3 +1732,64 @@ highest-value remaining entry in its tier.
   stays blocked. Deep-read queue: next unread by rank per the
   read-slug mapping is "Forecasting High Frequency Order Flow
   Imbalance" (score 32, on the shelf).
+
+## 33. Null-time session 29 (2026-11-18): deep-read session 27 — Poisson OFI forecasting is rejected outright on one day of data, and trade-sign classification is a construction
+
+- **Library deep-read session 27** (next UNREAD triage-rank entry,
+  per session 32's pointer — verified unread by the read-slug
+  mapping):
+  `paper/research/library/2026-11-18_forecasting_hf_ofi_deep_read.md`
+  on Nittur Anantha & Jain, "Forecasting high frequency order flow
+  imbalance using Hawkes processes" (arXiv:2408.03594v1, 2024;
+  SigmaQuant/IISc; NSE NIFTY futures tick data, one trading day).
+  Bivariate Hawkes (self- and cross-excitation of BUY/SELL market
+  orders), distributional OFI forecasts via forward simulation,
+  seven models ranked under Hansen's test for superior predictive
+  ability: sum-of-exponentials kernel best (p = 0.743),
+  conditional-law and minute-count VAR unrejectable at 95
+  percent, POISSON rejected outright (p = 0.0); the authors admit
+  the Markovian-kernel preference "may exhibit a bias" on
+  full-day data. Intraday kernel norms: BUY-BUY/SELL-SELL self-
+  excitation dominating, transient cross-excitation episodes.
+  Grade: NO kill line changed; NO new candidate sharpening.
+  Findings: (a) **[reinforcing]** the Poisson rejection is the
+  omissions-manufacture-signals family's cleanest head-to-head yet
+  — session 20 recorded Poisson flow MISPRICING resilience
+  robustly (fictitious manipulation profits); this adds the
+  forecasting face: omitting self-excitation destroys predictive
+  adequacy outright, and the flow-model-declaration discipline
+  already forces the declaration (PDF p. 16, Table 4);
+  (b) **[reinforcing]** trade classification is a construction —
+  NSE publishes aggressive/passive order ids so signs are exact;
+  where ids are absent, Lee-Ready/bulk classification "may struggle
+  in highly volatile markets," placing sign-inference noise exactly
+  in the high-activity windows imbalance features weight most
+  (PDF pp. 2-4): the estimator-mode rule and the sign-register
+  family, reinforcement only; (c) **[interpretation caution]**
+  cross-excitation between sides is regime-EPISODIC, not a
+  constant — fitted kernel norms are window mixtures over
+  time-varying interaction structure within even a single day
+  (PDF pp. 17-18, Figure 6), joining the per-branch rule, the
+  dispersion register, kappa-as-state-moment, and the session-26
+  RSCHP mixture point in the never-read-alone family; (d)
+  **[source-quality note]** one day, one instrument, admitted
+  ranking bias, large-tick 2018 venue with custom feed — the
+  useful content is the methodology (distributional forecasting +
+  SPA ranking with named loss) and the Poisson rejection, not the
+  ranking; arXiv v1 August 2024, no published version located,
+  check before formal citation. Would-have-killed: an OFI-family
+  feature built on inferred trade signs would carry classification
+  noise concentrated exactly where imbalance features weight most;
+  and a Poisson/constant-intensity baseline pre-registered as a
+  SERVING null would be a placebo, not a test — dying by omission
+  everywhere, inflating whatever beats it. Cautions: count-based
+  minute-window OFI (a different construction from the CKS
+  depth-weighted OFI of sessions 3/18/23 — construction
+  distinction respected in any comparison), no book modeling,
+  single-day kernel estimates support no venue claims.
+  Ratification queue after this session: FOURTEEN candidate
+  sharpenings, zero armed (unchanged). T1 remains armed awaiting
+  the owner's word; the blocked list stays blocked. Deep-read
+  queue: next unread by rank per the read-slug mapping is "A
+  Hawkes model with CARMA(p,q) intensity" (score 32, on the
+  shelf).
