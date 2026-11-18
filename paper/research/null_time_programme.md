@@ -633,3 +633,88 @@ Imbalance".
   queue-reactive -> C5 feature pre-conditions. Every spec the L2 data will
   be tested against has been sharpened BEFORE the data exists. Queue next:
   the remaining prose pages against the ledger.
+
+## 13. Null-time session 9 (2026-11-16): deep-read session 7 — the branching matrix, per branch, never by its radius
+
+- **Library deep-read session 7** (next by triage rank, per
+  session 8's pointer):
+  `paper/research/library/2026-11-16_symmetric_hawkes_diffusion_deep_read.md`
+  on Lee & Seo, "Modeling microstructure price dynamics with
+  symmetric Hawkes and diffusion model using ultra-high-frequency
+  stock data" (arXiv:1908.05089v1, symmetric tick Hawkes on 10
+  NYSE S&P 500 names, 2007-2011). Grade: NO kill line changed. One
+  candidate sharpening, PENDING OWNER RATIFICATION: the per-branch
+  rule — the branching matrix Q = [[q_s, q_c], [q_c, q_s]] is read
+  PER BRANCH (self q_s vs cross q_c) with bootstrap CIs, and ONLY
+  q_s can carry the cascade interpretation; q_c is the mechanical
+  mean-reversion branch. The trigger's justification: their own
+  S&P 500 estimates show q_c DOMINATING on ordinary days (GE Jan
+  2011: alpha_c 1.3576 vs alpha_s 0.4661 on 0103; the monthly GE
+  average has alpha_c > alpha_s), so a pooled branching ratio or
+  spectral-radius reading would scream "near-critical cascade" on
+  quiet days that were merely fast mean reversion — a false
+  trigger in the FEATURE, uncatchable by label placebos. This
+  extends (does not replace) the queued CI rule (session 5) and
+  boundary-solution rule (session 7): all three live in the
+  branching reading, all three make the trigger harder to fire.
+  Reinforcing evidence recorded: (a) the moving parameter at
+  daily grain is the BASELINE RATE mu, not the excitation
+  structure (mu tracks the volatility state with GARCH-like
+  persistence; alpha_c "rather stable" through 2008) — the
+  drift-reporting item (sessions 4/4b) gains its field
+  citation; (b) the SIGN of the tick-grain realized-variance bias
+  is itself an excitation fingerprint (their signature plot rises
+  toward small tau under mutual dominance, falls under self
+  dominance) — any fixed-bias-sign variance check imports their
+  Fig. 5 as a counterexample; (c) the Hawkes volatility runs
+  15-25% ABOVE TSRV with the gap unexplained, so Hawkes-derived
+  volatilities carry a caveat, not a correction.
+
+Ratification queue after this session: TEN candidate sharpenings
+(sessions 3, 4/4b, 5, 6, 7, 9), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked. Deep-read
+queue: sessions 3-8 of the triage ranks done; next by rank: Bechler
+& Ludkovski, "Optimal Execution with Dynamic Order Flow Imbalance"
+(the flow-clock session — already acquired, text in the library).
+
+## 14. Null-time session 10 (2026-11-16): deep-read session 8 — the flow clock gains its sourced scale constant; W1's deferred horizon gains its citation
+
+- **Library deep-read session 8** (next by triage rank, per the
+  pointer above):
+  `paper/research/library/2026-11-16_dynamic_ofi_execution_deep_read.md`
+  on Bechler & Ludkovski, "Optimal Execution with Dynamic Order Flow
+  Imbalance" (arXiv:1409.2618v2; execution control with an OU
+  order-flow imbalance state the trader drifts, endogenous horizon,
+  NASDAQ ITCH flow calibration). Grade: NO kill line changed; C8's
+  A4 conditional pre-commitments stay frozen as written. One
+  candidate sharpening, PENDING OWNER RATIFICATION: the flow-clock
+  scale-constant rule — the memory scale of any future flow-state
+  estimator is declared BEFORE data as a fraction of daily volume
+  (their EWMA flow imbalance: beta = a/V_daily with the cited
+  intra-day mesoscopic range a in [10, 100], PDF p. 23), never
+  tuned after seeing the gated windows. Reinforcing evidence
+  recorded: (a) W1's deferred horizon H is the literature's
+  ENDOGENOUS CONTROL, worked: their realized horizon moves up to
+  ~50% around the static optimum with the state, and adaptive-
+  horizon gains dominate model-form gains (Table 1) — freezing a
+  single constant would have pre-registered a guess of a variable
+  the field endogenizes, so the deferral already in the W1 spec is
+  the only discipline consistent with the citation; (b) market
+  orders are <5% of total order flow (Remark 5) — a flow state from
+  prints alone reads the taker tip, not the flow, matching the C5
+  queue-reactive sharpening from the library ritual's paper 4; (c)
+  the model's own drift term (the trader's program enters the flow
+  state as dY-drift) is the control-theory form of the wash-trading
+  confound: a contaminated window's flow reading measures the
+  manipulator's drift, hence "contaminated windows are missing, not
+  zero" (session 6) keeps its footing.
+
+Ratification queue after this session: ELEVEN candidate sharpenings
+(sessions 3, 4/4b, 5, 6, 7, 9, 10), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked. Deep-read
+queue: the top triage ranks stand done through the OFI-execution
+paper; next by rank: "Modelling High-Frequency Data with Bivariate
+Hawkes Processes: Power-Law vs. Exponential Kernels" (score 41,
+below the symmetric-Hawkes/OFI pair, already in the library text
+shelf).
+
