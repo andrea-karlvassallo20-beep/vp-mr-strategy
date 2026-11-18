@@ -111,11 +111,14 @@ def pivots_legs(high, low, close, sigma):
         d = "s" if dur <= 4 else ("m" if dur <= 12 else "l")
         mid = (i1 + i2) // 2
         seg = close[i1:mid + 1]
+        span = abs(p2 - p1)
+        if span <= 0:
+            continue
         if p2 > p1:
-            prog = (seg.max() - p1) / (p2 - p1)
+            prog = (seg.max() - p1) / span
             direction = "U"
         else:
-            prog = (p1 - seg.min()) / (p1 - p2)
+            prog = (p1 - seg.min()) / span
             direction = "D"
         wake = "f" if prog >= 0.65 else ("b" if prog <= 0.35 else "e")
         symbol = f"{direction}{mag}{d}{wake}"

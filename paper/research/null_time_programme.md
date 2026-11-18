@@ -2933,3 +2933,48 @@ this session, no kill line moved, nothing armed, nothing trades live.
   armed; ratification queue stands at FIFTEEN candidates zero armed;
   nothing trades live. Deep-read queue parallel: next x947263
   (score 32).
+
+## 56. OWNER-DIRECTED MEASURED SESSION (2026-11-18), fourteenth of the parallel regime: the event-flow framework - "when X happens, what happens next", pair by pair, all the data
+
+- **Owner directive:** "look one by one at the flow charts of no
+  volume usd tvc crypto pairs and you must go through all the data
+  and make inferences from your data of events that happen when x
+  happens, and build the framework like that" - then the governing
+  question: "how can you from flow charts know one by one across
+  markets significant price change before it occurs?"
+- **Built:** `src/event_flow_framework.py` - the leg-to-leg
+  TRANSITION TABLE over all 199 series (session-55 grammar legs,
+  classes = direction x size x wake): counts per pair (per-pair
+  artifact `clue_scan/event_flow_per_pair.csv` - every series'
+  individual dominant transition walked one by one), aggregate matrix
+  (`event_flow_matrix.csv`), and the INFERENCE LAYER: P(next class |
+  prev) deviating from marginal by >=8 points AND stable in both
+  halves.
+- **Honest in-flight correction (label-placebo discipline applied to
+  our own tool):** the first inference table printed
+  P(opposite-direction next) ~ 0.9-1.0 - a GRAMMAR TAUTOLOGY (legs
+  alternate by construction), not signal. Rebuilt as class-level
+  deviation; tautology recorded and excluded from claims.
+- **The chain's real content (28 half-stable cells, top dev
+  +13.8pts):** after a completed front-loaded SPIKE leg in either
+  direction, the next leg is systematically MID-SIZED and EVEN - a
+  grind (Dmf->Ume 0.27 vs 0.13 marginal; Usf->Dse 0.18 vs 0.07;
+  Ule->Dme 0.28 vs 0.14) - spikes beget grinds, not spikes. The
+  chart-reader corollary: after the V, wait for the grind; the seats
+  where grinds turn into significant moves are the U-bases and
+  washouts.
+- **The governing question answered at today's honest frontier:**
+  (1) the move cannot be known; (2) the SEAT can - range extreme +
+  fresh 20d low + U-base shape + washout flow = 0.731 first-move-up
+  (mirror at tops 0.331); (3) the ARRIVAL zone (60d concentration);
+  (4) the CHAIN (grind after spike); (5) the REFUSALS (drift,
+  V-crash shorts 0.542 no edge, nuke entries without washout).
+  SEAT x SHAPE x FLOW x CHAIN, per pair, W2-owing. Universe honesty:
+  all 199 archive series carry volume (TVC no-volume pairs not in
+  this clone - the owner's AVFI true-range proxy fallback is
+  implemented and declared for when they are supplied); washout chip
+  at the P_first_up grain: 0.6705 vs 0.6552 other fresh-low nights.
+- **Boundaries:** in-sample descriptive; no kill line moved;
+  nothing armed; ratification queue FIFTEEN candidates zero armed;
+  nothing trades live. Deep-read queue parallel: next x947263
+  (score 32).
