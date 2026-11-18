@@ -1152,7 +1152,7 @@ on the shelf).
 
 - **Library deep-read session 17** (next UNREAD triage-rank entry,
   per session 18's pointer):
-  `paper/research/library/2026-11-17_compound_hawkes_order_size_deep_read.md`
+  `paper/research/library/2026-11-16_compound_hawkes_order_size_deep_read.md`
   on Jain, Firoozye, Kochems & Treleaven, "Limit Order Book
   Dynamics and Order Size Modelling Using Compound Hawkes Process"
   (arXiv:2312.08927v5, 2023-24; UCL & JPMorgan; 12D compound Hawkes
