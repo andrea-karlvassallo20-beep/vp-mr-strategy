@@ -1094,3 +1094,56 @@ armed awaiting the owner's word; the blocked list stays blocked.
 Deep-read queue: next unread by rank after the OTC market-making
 entry is "General Compound Hawkes Processes in Limit Order Books"
 (score 36, on the shelf).
+
+## 22. Null-time session 18 (2026-11-16): deep-read session 16 — the 1/(1-m) volatility amplification; the two-channel volatility decomposition
+
+- **Library deep-read session 16** (next UNREAD triage-rank entry,
+  per session 17's pointer):
+  `paper/research/library/2026-11-16_compound_hawkes_lob_deep_read.md`
+  on Swishchuk & Huffman, "General Compound Hawkes Processes in
+  Limit Order Books" (arXiv:1812.02298v1, 2018; Calgary; compound
+  Hawkes mid-price models with Markov-chain order marks, diffusion
+  limits, one day of level-1 LOBSTER data). Grade: NO kill line
+  changed; NO new candidate sharpening. Two reinforcing identities:
+  (a) **the 1/(1-mu-hat) amplification** — in every diffusion limit
+  proved, the branching ratio enters the price volatility through
+  sqrt(lambda/(1-mu-hat)): a fitted branching reading approaching
+  one makes the DERIVED long-run volatility unbounded, the same
+  instability the queued boundary-solution rule polices at the
+  estimator, now visible on the volatility face. A window whose
+  branching CI is near unity carries an inflated, unstable
+  derived-volatility reading with it; the two readings must be
+  reported together, and a near-critical window can never cite its
+  derived volatility as independent evidence of anything. Had a
+  future instrument spec used a Hawkes-derived long-run volatility
+  WITHOUT the branching CI beside it, a single near-critical fit
+  would have inflated the estimate without bound and propagated
+  downstream as if measured — the boundary pathology wearing a
+  volatility costume; the queued rules already require the CI, and
+  this read supplies the explicit identity explaining why the
+  requirement is not pedantry. (b) **the two-channel volatility
+  decomposition, explicit** — the diffusion coefficient factors
+  into the arrival channel lambda/(1-mu-hat) (pure clustering/
+  endogeneity) times the order-state channel sigma*(ergodic and
+  transition probabilities) (pure sign/size persistence): two
+  mechanically different sources of volatility multiplied into
+  one coefficient — a clean structural citation for the deployed
+  vol-tautology family, where a variance-surrogate feature
+  conflates the channels and only the tautology checks can say
+  which one a reading rode in on; recorded as interpretation
+  language, no rule change. Source-quality note: one day, five
+  names, level-1, 2012 — the model structure transfers, the
+  magnitudes carry nothing; the kernel integrability conditions
+  mean the near-critical amplification is an extrapolation
+  warning valid in the subcritical regime only (where Horst-Xu's
+  critical limits, session 14, govern instead); and the compound
+  model assumes the mark chain independent of the arrival process
+  — an assumption market data routinely violates (cf. session
+  13's Zumbach structure).
+
+Ratification queue after this session: FOURTEEN candidate
+sharpenings, zero armed (unchanged). T1 remains armed awaiting
+the owner's word; the blocked list stays blocked. Deep-read
+queue: next unread by rank is "Limit Order Book Dynamics and
+Order Size Modelling Using Compound Hawkes Process" (score 34,
+on the shelf).
