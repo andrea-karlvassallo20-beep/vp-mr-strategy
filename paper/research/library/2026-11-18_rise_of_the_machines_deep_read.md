@@ -1,6 +1,6 @@
-# Deep-read session 13 — Petukhina, Reule & Härdle, "Rise of the Machines? Intraday High-Frequency Trading Patterns of Cryptocurrencies"
+# Deep-read session 14 — Petukhina, Reule & Härdle, "Rise of the Machines? Intraday High-Frequency Trading Patterns of Cryptocurrencies"
 
-Null-time session 19 (deep-read 13, offset honored). Alla A. Petukhina, Raphael C. G. Reule,
+Null-time session 16 (deep-read 14, offset honored). Alla A. Petukhina, Raphael C. G. Reule,
 Wolfgang Karl Härdle, Humboldt-Universität zu Berlin; arXiv:2009.04200v1, 9 Sep 2020
 (post-peer-review, pre-copyedit version of an article published in The European Journal of
 Finance, DOI 10.1080/1351847X.2020.1789684, PDF p. 2). A descriptive stylized-facts study of
