@@ -935,3 +935,56 @@ list stays blocked. Deep-read queue: with ranks 1-8 and the
 Functional Limit Theorems entry (score 38) now read, the next
 unread by rank is "Ergodicity and diffusivity of Markovian order
 book models: a general framework" (score 37, on the shelf).
+
+## 19. Null-time session 15 (2026-11-16): deep-read session 13 — the queue-reactive null's ergodicity warrant, cited
+
+- **Library deep-read session 13** (next UNREAD triage-rank entry,
+  per session 14's pointer):
+  `paper/research/library/2026-11-16_ergodicity_lob_deep_read.md`
+  on Huang & Rosenbaum, "Ergodicity and diffusivity of Markovian
+  order book models: a general framework" (arXiv:1505.04936v1,
+  2015; the theoretical companion of the Queue-reactive model
+  that produced C5's four feature pre-conditions at the library
+  ritual's paper 4). Grade: NO kill line changed, and — said
+  plainly — NO new candidate sharpening. This read is the formal
+  completion of a warrant the queue already leans on. Recorded:
+  (a) **the ergodicity warrant for C5's queue-reactive null** —
+  the null ("state-conditioned intensities estimated on the gated
+  data define what ordinary ergodic queuing produces; any
+  abnormal-withdrawal reading must EXCEED it") needs two facts:
+  the invariant distribution exists, and a finite window
+  estimates it. Theorem 3.1's V-uniform ergodicity supplies both
+  (finite-window estimation of state-conditioned intensities is
+  licensed by the mixing; the book's stylized shape is the
+  invariant distribution's trace), and the Queue-reactive model
+  is verified inside this framework as a special case — the null
+  was queued before its warrant was on file; the warrant is now
+  cited; (b) volatility is a DERIVED functional of the
+  state-conditional flow rates incl. tick-increment
+  autocovariances (eq. 7, Theorems 4.1-4.2) — the structural form
+  of the deployed vol-tautology check: variance surrogates are
+  downstream of the queue's flow rates, never a parallel object;
+  (c) event-time vs calendar-time clocks differ by the
+  sqrt(expected waiting time) factor (Theorem 4.1 vs 4.2) —
+  independent support for A4's frozen volume clock and the
+  estimator-mode rule's declared-window requirement; recorded as
+  interpretation language, nothing added to A4; (d) the
+  framework's delayed (non-instantaneous) reference-price impact
+  is the formal shape of the Tesla-day anatomy C5 carries: the
+  period break is a competing risk with state-conditioned hazard,
+  which is how the C5 harness (d) risk set already treats it.
+  Caution recorded: the ergodicity assumptions (bounded
+  intensities, downward drift on oversized queues) are sufficient
+  conditions on the MODEL, not properties of any real venue — a
+  gated window violating them (runaway queues, one actor
+  dominating the flow) is outside the warrant, and there the
+  manipulation/wash-trading audit items govern, not this
+  theorem; and p_ref is a model construct, never a program
+  "efficient price" claim.
+
+Ratification queue after this session: FOURTEEN candidate
+sharpenings, zero armed (unchanged — no sharpening was warranted).
+T1 remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue: next unread by rank is "Simulating and
+analyzing a sparse order book: an application to intraday
+electricity markets" (score 37, on the shelf).
