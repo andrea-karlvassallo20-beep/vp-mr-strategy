@@ -2016,3 +2016,103 @@ awaiting the owner's word; the blocked list stays blocked. Deep-read
 queue pointer: the next UNREAD triage entry is "Passive Market Impact:
 A Point Process Approach" (score 33, x43a538). Nothing measured, no
 kill line moved, nothing armed, nothing trades live.
+
+## 34. Null-time session 30 (2026-11-18): deep-read session 26 — the passive market impact paper read; the queue-state conditioning rule queued for the sign-kill-line template
+
+- **Library deep-read session 26** (the standing queue's next UNREAD
+  pointer, score 33, x43a538, consumed here):
+  `paper/research/library/2026-11-18_passive_market_impact_point_process_deep_read.md`
+  on Ouazzani Chahdi, Rosenbaum and Szymanski, "Passive Market
+  Impact: A Point Process Approach" (arXiv:2412.07461v2,
+  v2 stamped 4 Jul 2026, CentraleSupélec / École Polytechnique /
+  Université du Luxembourg): a Queue-Reactive limit order book whose
+  per-trade information content kappa(q) depends on the volume
+  available at the touched side (the "price resistance coefficient",
+  decreasing in available volume), market orders Hawkes-driven,
+  price defined as the conditional expectation of future
+  state-weighted trade flow, with scaling limits and closed-form
+  passive-metaorder impact approximations. Read against the ONE
+  question. **Grade: NO kill line changed. ONE new candidate
+  sharpening queued, PENDING OWNER RATIFICATION:** the queue-state
+  conditioning disclosure rule for passive-flow features in the
+  C1-L2 L2 arm, extending the pending sign-kill-line template rule.
+  Mechanism, page-cited: a classical constant-kappa propagator gives
+  the opposite sign for the impact of a passive metaorder (PDF p. 3)
+  — a passive buy would push the price down — and the sign is
+  repaired only by letting the information content depend on the
+  book state, with near-stationary unit passive impact proportional
+  to c_kappa / (c_lambda · mu/(1 - ||phi||_L1)) (PDF p. 4, eq. (4)).
+  Pre-declaration: any passive-execution or passive-cancel feature
+  pre-registered in the C1-L2 L2 arm (or any future pre-registration
+  under the sign template) must declare its queue-state conditioning
+  functional — the pre-event volume at the touched level, or the
+  declared alternative — and state-blind passive aggregates are
+  inadmissible. Harder to pass: a state-blind passive count could
+  correlate with price either way and pass a naive association
+  check while the mechanism makes its sign unpredictable, exactly
+  the failure the rule forecloses. Scope: the sign-kill-line
+  template as it applies to passive features in the C1-L2 L2 arm
+  and future pre-registrations; T-H, T-O, the C1-L2 and C8 spec
+  texts and every standing kill line are untouched; nothing is
+  armed.
+
+  Findings, page-cited: reinforcing, no new item — the propagator
+  sign paradox is a worked exhibit for the standing sign-guard
+  discipline (the T1 lesson): a mechanically plausible model yields
+  a clean, confident, wrong-signed answer for passive flow, and the
+  error is a specification error invisible to any within-model
+  check (PDF p. 3); no number or formula transfers. Reinforcing, no
+  new item — taker prints cannot recover passive impact: the
+  constant-kappa trade model "only accounts for active trading
+  using market orders" (PDF pp. 19-20) and the state-dependent price
+  requires the queue volumes at the touched side at each trade
+  (PDF pp. 20-21, eq. (15)); mechanism-level corroboration of the
+  standing "aggTrades is taker prints only, no taker proxy"
+  constraint and of C1-L2's premise that full-depth L2 carries what
+  taker prints cannot see; theory corroboration, never evidence.
+  Interpretation caution — the shape results (passive impact
+  vanishes when kappa is constant; V-shaped liquidity gives
+  sqrt(c·gamma) growth; a simulated power-law fit at exponent 0.54,
+  PDF pp. 14-15, Figure 1) sit on the square-root law line of the
+  record, but the no-relaxation result (impact stops at the
+  metaorder's end because queues revert to the stationary state
+  immediately in the scaling limit, PDF pp. 18-19) is a consequence
+  of the assumed queue mean-reversion, not an empirical claim, and
+  the market/limit impact decomposition holds only under the
+  declared approximation that market-order volumes are negligible
+  against limit and cancel volumes (PDF p. 18); read as shape
+  intuition, never read backwards as an expected BTCUSDT property.
+  Source-quality note — three authors; pure theory paper: the
+  calibration sections propose estimators (constant kappa from
+  realised variance with the Hawkes-derived xi(0), PDF pp. 19-20;
+  state dependence from a kappa-squared linear-in-q regression,
+  PDF pp. 20-21) but no dataset, fit, or empirical confrontation
+  appears in this version, and Figures 1-2 are simulations of the
+  model itself; zero indexed citations; published version to be
+  checked before formal citation; kept at triage score 33; the
+  extract is mathematically degraded in formula regions, so
+  equation numbering follows prose anchors and no symbol-by-symbol
+  verification of Theorem 2.6 was possible. The killed-if-wrong
+  section stands: if constant-kappa propagators were later found to
+  match passive metaorder impact empirically, the queued rule would
+  lose its mechanism and should die back. Standing caveat: no
+  market, no sample, no period, no costs; transferable content is
+  mechanism only. Laundering directions named: INTO — the sign-flip
+  mechanism and the queue-state dependence enter only as
+  feature-design discipline (the rule above), and no constant,
+  exponent, scaling-limit object, kappa functional, or
+  stationary-state formula enters any spec, default, or
+  calibration; OUT — the no-relaxation result, the 0.54 exponent,
+  and the section-4 calibration methodology are never cited as
+  evidence about any real market, never as expected impact shapes
+  for BTCUSDT, and never imported as a validated estimation
+  procedure.
+
+Ratification queue after this session: TWENTY-THREE candidate
+sharpenings (the twenty-two standing plus the queue-state
+conditioning rule joined here through deep-read session 26), zero
+armed. T1 remains armed awaiting the owner's word; the blocked list
+stays blocked. Deep-read queue pointer: the next UNREAD triage entry
+is "Optimal Execution with Passive Market Impact" (score 33,
+x28ad86). Nothing measured, no kill line moved, nothing armed,
+nothing trades live.
