@@ -1256,3 +1256,53 @@ the owner's word; the blocked list stays blocked. Deep-read
 queue: next unread by rank is "Packets, Transactions and Queues:
 Design Principles for HFT Systems from a Measurement Study of CME
 Market Data" (score 34, on the shelf).
+
+## 25. Null-time session 21 (2026-11-16): deep-read session 19 — the delivery pipeline lives in the timestamps; the transport has measured structure
+
+- **Library deep-read session 19** (next UNREAD triage-rank entry,
+  per session 20's pointer):
+  `paper/research/library/2026-11-16_cme_feed_measurement_deep_read.md`
+  on Maciejewski, "Packets, Transactions and Queues: Design
+  Principles for HFT Systems from a Measurement Study of CME Market
+  Data" (arXiv:2609.32848v2, 2026; M2 Tech; a year of CME NQ
+  feed data, ~110 pp.). Grade: NO kill line changed; NO new
+  candidate sharpening — the program never trades live, so the
+  paper's HFT-engineering content does not touch it; the read is
+  for what it implies about RECORDED data's timestamps. Recorded:
+  (a) **AN INTERPRETATION CAUTION FOR THE L2 FEATURES: THE DELIVERY
+  PIPELINE LIVES IN THE TIMESTAMPS** — the feed between a venue's
+  matching engine and any recorded dataset is a QUEUE with its own
+  pacing (one packet per ~7.5-microsecond publisher period on CME)
+  and its own backlog behavior (more packets, not bigger ones,
+  under burst, ~tenfold delay growth), so recorded interarrival
+  structure at fine grains is a SUM of market structure and
+  delivery-pipeline structure, and any feature reading fine-grain
+  arrival timing on the gated BTCUSDT windows measures the PIPE
+  until proven otherwise — with the Layer 0 gate's independent
+  book_snapshot_25 ground-truth comparison being exactly the
+  control that separates the two; CME's ~7.5-microsecond number is
+  CME's, and Binance's pipeline geometry must be measured, not
+  assumed. (b) Engine-layer near-critical clustering is an
+  INFRASTRUCTURE observation, not market evidence — the author is
+  explicit that the origin is transactions racing at the engine and
+  that market interpretation is out of scope; an arrival-timestamp
+  branching reading could carry pipeline/engine structure rather
+  than market endogeneity — one more instance of the
+  exogenous-absorption caution (session 17), with the absorbing
+  layer being hardware. (c) The measured "signature of a race after
+  trades" joins the quote-race/front-of-book interpretation family
+  carried by C5; interpretation language, nothing armed. Had a
+  trigger-layer feature been built on fine-grain arrival timing
+  WITHOUT the Layer 0 ground-truth check, the pipeline's queueing
+  structure would have been laundered into "market clustering"
+  readings — an artifact no label placebo could catch, because it
+  lives in the TRANSPORT; the gate and the feature discipline
+  already stand between that error and the record.
+
+Ratification queue after this session: FOURTEEN candidate
+sharpenings, zero armed (unchanged). T1 remains armed awaiting
+the owner's word; the blocked list stays blocked. Deep-read
+queue: next unread by rank is "Dynamic optimal execution in a
+mixed-market-impact Hawkes price model" (score 34, on the shelf),
+with several more score-34/33 entries after it (the triage-audit
+flag stands: rank is a candidate reading, not a promise).
