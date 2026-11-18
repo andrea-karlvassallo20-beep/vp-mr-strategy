@@ -1796,3 +1796,70 @@ blocked. Deep-read queue pointer: the next UNREAD triage entry is
 from a Measurement Study of CME Market Data" (score 34, xc5ba34).
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live.
+
+## 31. Null-time session 27 (2026-11-18): deep-read session 23 — the CME feed measurement study read; graded default, no sharpening
+
+- **Library deep-read session 23** (the standing queue's next UNREAD
+  pointer, score 34, xc5ba34, consumed here):
+  `paper/research/library/2026-11-18_packets_transactions_queues_deep_read.md`
+  on Maciejewski, "Packets, Transactions and Queues: Design Principles for
+  HFT Systems from a Measurement Study of CME Market Data"
+  (arXiv:2609.32848v2, September 2026): a solo-author measurement study of
+  the CME MDP3 NQ front-month feed, 281 sessions 2025-01 to 2026-02, every
+  packet and matching-engine transaction followed through engine clock and
+  publisher clock to the receiver, with a 53-minute live cross-validation on
+  ES/NQ/ZN. Read against the ONE question. **Grade: NO kill line changed. NO
+  new candidate sharpening.** Default grade; the queue is unchanged at
+  twenty-one through deep-read 22 plus probe E1. Findings, page-cited:
+  reinforcing, no new item — the paper's own fitted branching ratio is
+  declared not load-bearing (constant-background exponential-kernel fits
+  overstate n when the background varies within the window, per the
+  Filimonov-Sornette result it cites; "none of the paper's conclusions
+  rests on its value", PDF pp. 25-26), resting its claims on model-free
+  diagnostics instead: a worked exhibit for the queued estimator-mode
+  register and near-critical regime-disclosure rule, which the T-H
+  benchmark's Hardiman-Bouchaud pre-conditions already encode.
+  Reinforcing, no new item — the branching ratio is a function of event
+  definition and clock: packets and transaction starts give the same n
+  (0.798 vs 0.795, PDF p. 38) only because 98.3 percent of transactions
+  are one packet (PDF p. 36), while the same engine events read on the
+  engine clock against the publisher clock are different gap objects
+  entirely (17.1 percent within one publisher period versus 1.04 percent,
+  tightest percentile 0.18 microseconds, PDF p. 57): a worked exhibit for
+  the record's clock discipline. Reinforcing, no new item — a hard
+  deterministic infrastructure clock (the publisher's 7.5 microsecond
+  period; bursts surface as evenly spaced trains, tail onset independent
+  of rate and branching quintiles at short service times, PDF pp. 51-52,
+  59, 62) must live in the null, not the signal: the same class of rule as
+  the queued deterministic-clock null arm, corroborating it and adding no
+  component that exists at the programme's multi-hour horizons; the
+  paper's speed-limit conjecture carries its own qualification verbatim -
+  "delaying feedback does not reduce the branching ratio" (PDF p. 65) -
+  so it may never be cited as a mechanism that tames criticality.
+  Interpretation caution — after a trade, microsecond follow-ups are five
+  times as often another trade and half again as often a delete (PDF
+  pp. 63-64), the signature of a race, whose losers never appear on the
+  public feed: fine-scale post-trade clusters may never be narrated as
+  informed directional flow; no feature, threshold, or kill line moves.
+  Source-quality note: solo author, arXiv v2, zero indexed citations,
+  disclosed AI assistance with the author taking sole responsibility (PDF
+  p. 11); single instrument, 14 months, RTH; transaction-level
+  identification is corpus-only; published version to be checked before
+  formal citation. The killed-if-wrong section on record names the import
+  error (a feed-granularity n read as corroboration of T-H's threshold),
+  the estimator blindness, and the speed-limit misreading, all three
+  blocked by standing discipline. Standing caveat recorded: nothing here
+  measures anything at the programme's horizons or on its feature
+  definitions; transfer to BTCUSDT multi-hour windows is mechanism-level
+  only. Laundering directions named: INTO — no coefficient, period, decay
+  time, or quantile enters any spec or calibration; OUT — no race-reading
+  of post-trade clusters as informed flow, no feed-granularity
+  near-criticality read forward into the programme's aggregation, no
+  publisher-pacing-tames-cascades citation.
+
+Ratification queue after this session: TWENTY-ONE candidate sharpenings,
+unchanged (deep-read session 23 added none), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked. Deep-read queue
+pointer: the next UNREAD triage entry is "Dynamic optimal execution in a
+mixed-market-impact Hawkes price model" (score 34, x7c5b08). Nothing
+measured, no kill line moved, nothing armed, nothing trades live.
