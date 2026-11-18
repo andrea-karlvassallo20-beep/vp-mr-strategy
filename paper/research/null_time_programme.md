@@ -865,3 +865,44 @@ next UNREAD triage entry is unchanged — "Price-Aware Automated Market Makers: 
 Beyond Brownian Prices and Static Liquidity" (score 39, already on the library text
 shelf); with the session-9 triage-audit flag on record, rank is a candidate reading,
 and the owner's library policy governs when they diverge.
+## 18. Null-time session 14 (2026-11-18): library deep-read session 12 - the ACF-shape gate proposed for the branching-ratio trigger; the CARMA(p,q)-Hawkes shelf entry read and graded theory-only
+
+- **Library deep-read session 12** (parallel slot 19; assigned entry, score 32, x8627c5;
+  verified before reading that no note for the slug existed and no other PR covered it):
+  `paper/research/library/2026-11-18_carma_hawkes_intensity_deep_read.md`
+  on Mercuri, Perchiazzo & Rroji, "A Hawkes model with CARMA(p,q) intensity"
+  (arXiv:2208.02659v3, 2022). Grade: NO kill line changed. ONE candidate sharpening,
+  PENDING OWNER RATIFICATION: **the ACF-shape (kernel-validity) gate** - the
+  exponential-kernel Hawkes fit behind C8's trigger provably implies a strictly
+  monotonically decaying count-increment ACF (Eq. 9, PDF pp. 5-6; stated as the
+  model's central limitation, PDF p. 2), so a day whose empirical increment ACF
+  is significantly non-monotone rejects its own fit and its ML branching ratio is
+  a misspecified quantity. Pre-declaration text: no day's branching-ratio trigger
+  reading is admissible unless the underlying fit passes a pre-registered
+  ACF-shape check at a pre-declared lag ladder; shape-failing days contribute no
+  firing (neither positive nor negative) and the failure rate is reported. Harder
+  to pass than the standing estimator-at-scale-W item (deep-read session 2): it
+  extends estimator discipline from scale to kernel shape, withholding trigger
+  bars the old protocol would have fired on. Interpretation cautions recorded
+  with page cites: the model is counting-process only, never prices/signs (Def. 2,
+  PDF p. 8); the closed-form ACF and inference machinery hold only in the
+  stationary regime under negative-real-part eigenvalue conditions (Assumption 1,
+  Props. 6-7, PDF pp. 10, 20-21), so stationarity is a precondition, not a
+  diagnostic. Reinforcing, no new item: strong mixing at exponential rate and ACF
+  asymptotic normality (Props. 8-9, PDF pp. 21-23) support the existing day-block
+  inference discipline, provided the stationarity condition holds on the estimated
+  segment. Source quality: arXiv v3; Section 6 is simulation-only (PDF pp. 24-27),
+  no financial data anywhere; the non-monotone-ACF-for-real-data claim rests on
+  citation, not measurement; published version to be checked before formal
+  citation.
+
+  Ratification queue after this session: FOURTEEN candidate sharpenings (the
+  thirteen standing plus the ACF-shape kernel-validity gate joined 2026-11-18),
+  zero armed. T1 remains armed awaiting the owner's word; the blocked list stays
+  blocked. Deep-read queue: the standing next UNREAD pointer set at null-time
+  session 13 stands - "Price-Aware Automated Market Makers: Models Beyond Brownian
+  Prices and Static Liquidity" (score 39, already on the library text shelf); with
+  the session-9 triage-audit flag on record, rank is a candidate reading, and the
+  owner's library policy governs when they diverge. (This session was a pre-assigned
+  parallel slot 19 of 24, so it does not consume the queue's top pointer.)
+  Nothing measured, no kill line moved, nothing armed, nothing trades live.
