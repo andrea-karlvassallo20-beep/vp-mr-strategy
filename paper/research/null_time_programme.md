@@ -2538,3 +2538,198 @@ blocked. Deep-read queue pointer: the next UNREAD triage entry is
 "Trading in the Sunshine or in the Shade: Market Impact and Adverse
 Selection on Hyperliquid" (score 32, xa74970). Nothing measured, no
 kill line moved, nothing armed, nothing trades live.
+
+## 39. Null-time session 35 (2026-11-18): deep-read session 31 — the Hyperliquid sunshine-trading paper read; the queue-state anticipation disclosure component queued for the C1-L2 L2 arm
+
+- **Library deep-read session 31** (the standing queue's next UNREAD
+  pointer, score 32, xa74970, consumed here):
+  `paper/research/library/2026-11-18_hyperliquid_sunshine_trading_deep_read.md`
+  on Davide Barone and Fabrizio Lillo (Scuola Normale Superiore,
+  Pisa), "Trading in the Sunshine or in the Shade: Market Impact
+  and Adverse Selection on Hyperliquid" (arXiv:2606.15715v1,
+  14 June 2026): Hyperliquid, a fully on-chain CLOB for
+  cryptocurrency perpetual futures with a protocol-native TWAP
+  whose parent order is publicly visible from inception, used as
+  a natural sunshine-trading laboratory; about 4.3 million hidden
+  statistical metaorders reconstructed from same-address same-sign
+  trades (30-minute splitting rule, at least 10 children) versus
+  about 465,000 visible native TWAPs, on 641 million fills and
+  about USD 1.93 trillion notional across 201 markets, 28 July
+  2025 to 23 March 2026 (PDF pp. 4-6); hidden metaorders execute
+  U-shaped front-loaded schedules with double-inflection
+  trajectories and post-completion decay, TWAPs nearly uniform
+  with smooth concave paths (PDF pp. 10-12); visible TWAPs face
+  about 9 basis points lower temporary impact, leave about
+  5 basis points less permanent displacement, and hidden
+  metaorders executed in the direction of already-visible
+  same-side TWAP flow pay about 0.84-0.92 basis points more per
+  10 percentage points of visible dominance, about 6 basis points
+  surviving control for the overlapping flow's own price pressure
+  (PDF pp. 13-20); during active TWAP windows the displayed book
+  tilts toward the absorbing side, depth within five spreads
+  rises, sweep costs fall, the touch widens, with negligible
+  pre-window leads and size scaling (Figure 7, PDF pp. 22-23;
+  Table 4, PDF pp. 24-25); the market-wide adverse-selection
+  comparative static tested and honestly reported as a null,
+  reframed as conditional and event-level (PDF p. 21). Read
+  against the ONE question. **Grade: NO kill line changed. ONE
+  new candidate sharpening queued, PENDING OWNER RATIFICATION:**
+  the queue-state anticipation disclosure component for the
+  queue-state conditioning rule (deep-read session 26, corroborated
+  session 27), covering passive-flow features in the C1-L2 L2 arm.
+  Mechanism, page-cited: the displayed book state is not exogenous
+  scaffold, it is an elastic response to flow information,
+  including anticipated flow — the oriented imbalance within five
+  spreads jumps at program start and persists to completion, depth
+  rises about 4,182 USD, the 10,000 USD sweep cost falls, while
+  the touch widens as suppliers rest size behind it at prices
+  compensating inventory risk, with negligible pre-window leads
+  and imbalance and depth responses scaling with announced size
+  (Figure 7, PDF pp. 22-23; Table 4, PDF p. 25); the same tilt
+  appears gradually around hidden programs as they become
+  inferable from same-address same-direction flow, rising more
+  persistently for longer programs, read as market makers learning
+  a directional program is underway, with the limitations section
+  naming learnability explicitly (PDF pp. 22-23, 26). Consequence
+  for the queued rule, harder to pass: a passive-flow feature
+  conditioned on queue state may partially encode anticipated or
+  in-progress flow programs, so contemporaneous book-state
+  conditioning can quietly embed forward-looking flow information,
+  the costume failure K1 exists to catch. Two pre-declarations.
+  (a) Anticipation-content declaration: every queue-state-
+  conditioned passive feature reading in the C1-L2 L2 arm must be
+  accompanied, recorded on TRAIN, by a declaration of which flow
+  programs the declared state variable can respond to on the
+  programme's actual venue and fields (protocol-announced flow,
+  and statistically learnable from public flow either way), made
+  before the L2 data arrives. (b) Pre-window lead bound: the
+  conditioning state's measured lead against placebo windows must
+  be reported with the feature reading on TRAIN, so
+  anticipation-encoding is bounded rather than assumed away; a
+  state indistinguishable from placebo on lead carries no
+  anticipation content and the disclosure closes, a state with
+  positive lead must be declared partially anticipatory or
+  replaced. Scope: the C1-L2 L2 arm's queue-state-conditioned
+  passive features only, a disclosure requirement on top of the
+  queued conditioning rule; no spec text, kill line, threshold,
+  T-H or T-O moves; nothing is armed.
+
+  Findings, page-cited: reinforcing, no new item — pre-trend and
+  placebo discipline at the source: the book-response claims ride
+  an event-time placebo design with event and relative-minute
+  fixed effects and an active-window treatment indicator, probed
+  with a pre-window lead and a size interaction (Eqs. (10)-(12),
+  PDF p. 24; Table 4, PDF p. 25), and the decisive honesty move is
+  the relative spread's lead (+0.21 basis points, against a
+  +0.28 active window) read as selection into wider-spread states
+  rather than a visibility response, cross-checked against
+  statistical metaorders (+0.16 lead, +0.05 start) (PDF p. 25):
+  mechanism-level corroboration of the A3-family placebo
+  discipline queued through deep-read session 28, without the
+  lead test the spread result would have been misattributed.
+  Reinforcing, no new item — metaorder reconstruction with
+  declared thresholds and quantified removal: 30-minute
+  inter-arrival splitting, at least 10 children explicitly to
+  reduce false positives from coincidental clustering, native
+  TWAPs at least 5 children, a 24-hour completion cap removing
+  28,904 orders quantified immaterial (0.7 percent count, 1.5
+  percent notional) (PDF pp. 5-6), a named sibling of the record's
+  event-grain discipline; no threshold transfers. Interpretation
+  caution — taker-print reconstruction misclassifies aggressive
+  liquidity providers as metaorder executioners, and the
+  programme's aggTrades-is-taker-prints-only constraint makes
+  this failure mode live on its own tape: 46.2 percent of
+  reconstructed metaorders have a same-address maker fill during
+  the window, 40.3 percent a same-direction maker fill,
+  concentrated in the top 40 passive addresses holding 68 and 65
+  percent of that passive volume with both-side fills consistent
+  with market-making, 31 percent same-direction after their
+  exclusion (PDF p. 26, limitation 1); aggressive market makers
+  crossing the spread repeatedly in one direction are
+  statistically indistinguishable from execution programs using
+  taker data alone, a bound on what taker-only aggregation can
+  classify, never a solved problem. Interpretation caution — the
+  comparison is an observational equilibrium comparison between
+  execution regimes, not a randomized treatment of visibility,
+  and the authors say so: a taker-identity prior predicts the
+  mechanism choice almost perfectly (AUC 0.998, against 0.685
+  adding pre-start book state to a pair-only model at 0.674),
+  between-taker variation share about 0.93, 86.6 percent of
+  orders from single-mechanism addresses, sub-account aggregation
+  to masters (99.7 percent of volume) changing essentially
+  nothing (PDF pp. 13, 26); the 9-basis-point discount is a
+  property of who chooses TWAP as much as of visibility, and the
+  paper is never cited as a causal estimate of transparency;
+  adjacent honest null, market state barely predicts native TWAP
+  starts (PR-AUC 0.0053 against climatology 0.0033, versus 0.094
+  to 0.142 for statistical metaorders), so the paper does not
+  show the book forecasting program arrivals (PDF p. 26).
+  Cost-survival ammunition — no impact exponent is a stable venue
+  constant: TWAP temporary impact is a power law with exponent
+  0.303, statistical metaorders a saturating arctangent in
+  log-log space, three curve crossings between regimes (PDF
+  pp. 8-9); the pooled surface tilts to volume-time duration
+  (about 0.31) over participation (about 0.12), against
+  Zarinelli et al. both near one-half (PDF p. 9), and the
+  participation slope is significant for latent orders and zero
+  for TWAPs (Table 1, PDF p. 16); any cost model assuming one
+  universal impact law or one exponent per venue inherits
+  regime-dependence it cannot see from prints alone. Source-
+  quality note — two authors, Scuola Normale Superiore Pisa,
+  Fabrizio Lillo a leading microstructure researcher; arXiv v1
+  14 June 2026, no journal record checked; 641 million fills,
+  USD 1.93 trillion notional, 201 markets, with companion
+  Albers-Cucuringu-Howison-Shestopaloff work cited and public
+  data via Hydromancer's Reservoir (PDF pp. 4-5, 29); the book
+  analysis rests on one-minute snapshots, 20 levels, 15 December
+  2025 onward only, so the book results cover about three months
+  (PDF p. 5); the limitations section is exemplary, stating the
+  misclassification diagnostic, the randomization caveat, the
+  learnability of hidden programs, and the arrival-predictability
+  null (PDF pp. 26-27); extract page-marked and clean, 31 pp.
+  The killed-if-wrong section on record: if the anticipation
+  mechanism is later shown to be announcement-specific, a
+  Hyperliquid protocol artifact with no analog where flow is not
+  protocol-visible, the queued component loses its mechanism and
+  should die back to the conditioning rule as it stands; the
+  transferable core is the learnable-flow part, the book state
+  responding to flow programs as they become inferable from
+  public tape, which is venue-independent, and if that also fails
+  on the programme's venue and fields the disclosure guards a
+  problem that does not exist and should die back; conversely,
+  queue-state-conditioned passive readings published without the
+  anticipation declaration and the lead bound would risk embedding
+  forward-looking flow information into what is presented as
+  contemporaneous conditioning, exactly the costume failure K1
+  exists to catch, and the queued component is what forecloses
+  it. Standing caveat recorded: one venue, Hyperliquid, fully
+  on-chain CLOB for perpetual futures, visible addresses,
+  protocol-native TWAP, USDC margin, 0.2-second median end-to-end
+  latency, an order of magnitude or more slower than any
+  centralized exchange, no Binance, no BTCUSDT, no spot equities,
+  no anonymous flow; book snapshots one-minute, 20 levels, 15
+  December 2025 onward; all magnitudes venue- and period-specific.
+  Laundering directions named: INTO — no coefficient, elasticity,
+  exponent, basis-point figure, threshold, dominance share, or
+  normalization choice (order-anchored 24-hour windows, Parkinson
+  volatility, the five-spread depth band) from this paper enters
+  any spec, default, or calibration, and the sunshine-trading
+  framework is not adopted anywhere without its own
+  pre-registration; OUT — the 9-basis-point announcer discount,
+  the 5-basis-point permanent gap, the 0.84-0.92-basis-point
+  mirror cost, the book-response magnitudes, and the impact
+  exponents are never cited as expected behavior of any market
+  the programme measures, never as expected BTCUSDT book
+  behavior, never as expected impact on any execution the
+  programme simulates, and the venue's latency and transparency
+  properties are never cited as comparable to the programme's
+  venue.
+
+Ratification queue after this session: TWENTY-FIVE candidate
+sharpenings (the twenty-four standing plus the queue-state
+anticipation disclosure rule joined here through deep-read session
+31), zero armed. T1 remains armed awaiting the owner's word; the
+blocked list stays blocked. Deep-read queue pointer: the next UNREAD
+triage entry is "Order Book Queue Hawkes-Markovian Modeling"
+(score 31, xce0ba3). Nothing measured, no kill line moved, nothing
+armed, nothing trades live.
