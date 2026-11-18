@@ -2527,3 +2527,60 @@ highest-value remaining entry in its tier.
   calibration issues in the Hawkes self-excited point process
   model" (xd18d70, score 30, on the shelf) - the origin paper's
   reckoning.
+
+## 47. MEASURED SESSION (2026-11-18), sixth of the parallel regime: the chip stability split - the nuke chip is the first conditional to work in two independent halves of the archive
+
+- **Owner directive:** "keep experimenting you gotta find something
+  that works only once." Response: the stability experiment -
+  "works only once" is refuted best by splitting the archive into
+  two independent halves and recomputing every measured chip in
+  each; a chip that survives both halves has worked twice in the
+  only two disjoint samples this archive contains.
+- **Protocol (pre-declared in `src/chip_stability_split.py`
+  before the run):** per-series midpoint temporal split; each
+  series' valid nights divided at its own midpoint into half 1 /
+  half 2; the session-37/40/42 chips (P(first big move within 60d
+  is UP) per state) recomputed in each half independently.
+- **Headline result - the NUKE chips SURVIVE the split, and are
+  STRONGER in the more recent half:** nuke_down 0.703 (h1, n=925)
+  -> 0.801 (h2, n=780); nuke_up 0.738 (h1, n=1,098) -> 0.802
+  (h2, n=1,002); against an all-nights baseline that itself rose
+  0.556 (h1, n=67,917) -> 0.599 (h2, n=60,733). Both chips exceed
+  the baseline by double digits in BOTH halves. This is the
+  program's first conditional to pass an intra-archive temporal
+  robustness test, and it is the owner's own instinct from the
+  coin-chip session: "after nukes highest likelihood to go up."
+- **Structural honesty - the base / vfi_ext_low / NEAR states are
+  structurally unsplittable within this archive:** their
+  constructions burn in (the VFI's trailing-756d percentile
+  needs its own 252d z-history first), so valid nights exist
+  only in later portions of most series (h1 n = 0-75 vs h2 n =
+  2,752-14,974; base h1 n=75 only). This is a structural
+  statement, NOT a stability failure - and its consequence is
+  that presence/NEAR confirmation cannot come from this archive
+  at all; it must come from fresh windows (W2), which is already
+  the registered requirement.
+- **Declared caution:** the nuke-state P_move5 cells (0.26-0.33)
+  include continuation moves of the SAME post-crash episode -
+  the direction chips are the stable content; the arrival cells
+  carry episode contamination and are not treated as
+  independent-event evidence.
+- **Owner-directed consolidation:** the SMH presence thesis
+  consolidated into a one-page section appended to
+  `paper/research/when_instrument/smh_presence_pine.md`
+  (thesis, the four dossier numbers, the verdict ladder table,
+  one-sentence summary) at the owner's request.
+- **Artifacts:** `src/chip_stability_split.py` (pre-declared
+  protocol in the docstring), `clue_scan/chip_stability_split.csv`
+  (all cells), `clue_scan/chip_stability_split.md` (the honest
+  reading: the nuke chip is the program's best candidate for
+  "something that works").
+- **Boundaries:** intra-archive robustness pass is NOT W2; all
+  numbers remain descriptive discovery-panel conditionals; no
+  kill line moved; nothing armed; the ratification queue stands
+  at FOURTEEN candidates, zero armed; nothing trades live.
+- **Deep-read queue:** unchanged, parallel - next unread by rank
+  is "Apparent criticality and calibration issues in the Hawkes
+  self-excited point process model" (xd18d70, score 30, on the
+  shelf) - the origin paper's reckoning, flagged by sessions 44
+  and 45.

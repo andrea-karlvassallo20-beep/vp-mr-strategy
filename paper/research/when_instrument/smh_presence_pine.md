@@ -136,3 +136,62 @@ if barstate.islast
   never a drift (medians are negative on the panel).
 - Indicator, not strategy: no equity curve, no win rate; nothing
   armed; nothing trades live; no live advice.
+
+---
+
+# SECTION: The SMH presence thesis — one page
+
+## What the Salient Market Hypothesis says, operationally
+
+Big moves are not uniformly distributed in time. They arrive out
+of identifiable PRE-STATES — measurable nightly conditions that
+concentrate their arrival and tilt their direction — and the
+honest instrument refuses direction certainty while timing the
+move and riding its measured lean. The thesis is encoded in the
+program's own vocabulary: inevitabilities. Be there when the
+inevitable arrives; the coin is up-chipped, and the chips are
+measurable.
+
+## The four measured dossiers this instrument is made of
+
+1. **Closeness (measured session 34):** quietness ranks distance-
+   to-event (AUC 0.323 at 5 days — the dominant criterion);
+   position-in-range second (~0.45); compression mild (~0.54);
+   daily volume ratios carry ~nothing. LOWER quietness = closer.
+2. **The coin's chips (session 37):** P(first big move within 60d
+   is UP): baseline .576; after a >=4-sigma DOWN day **.748**;
+   after a big UP day **.767**; "a base is built" (quiet + bottom
+   of range) **.645** with the largest 60d mean drifts; medians
+   NEGATIVE — the chips live in first-move direction, not drift.
+3. **The owner's flow extremities (session 40):** VFI bottom-
+   decile nights carry a **+10-point** chip (.686) and see moves
+   ~34% sooner; the VFI LEVEL is a state marker, NOT a timing
+   rank (AUC ~.50). The owner's instinct, quantified.
+4. **The fade layer (session 42):** fresh 20-bar lows/highs are
+   the arrival accelerators (1.6-1.8x); the median flow gate of
+   the owner's H8 subtracts; the bottom-decile gate is the
+   registered amendment; their divTop is a measured EXHAUSTION
+   (exit) state at .481.
+
+## The verdict ladder (the instrument's whole logic)
+
+| State | What it means | Registered numbers |
+|---|---|---|
+| **PRESENCE** | quiet + base of range — the timing seat | chip .645, arrival 1.6x |
+| **NEAR** | presence x VFI bottom-decile | chip .601, **arrival 1.9x (.094/5d)** |
+| **post-nuke** | 4-sigma day within 2 days | chips .748 (down) / .767 (up) |
+| no state | flat | baseline .576 / .0497 |
+
+## The one sentence
+
+> Be present in the quiet base; when the flow marks its bottom-
+> decile extremity there, the move is roughly twice as near; the
+> first big move leans UP 60-65% (74-77% from nukes); the divTop
+> fade marks the other end; and the entire structure is a
+> discovery-panel conditional awaiting its W2 confirmation — a
+> lean, not a promise, timed at the first big move, never a drift.
+
+For the LLM-assessment form of this thesis, see
+`smh_longs_prompt.md` (v1) in this directory; for the exact
+computation, `src/smh_presence.py`; the live board,
+`paper/research/clue_scan/smh_presence_scan.csv`.
