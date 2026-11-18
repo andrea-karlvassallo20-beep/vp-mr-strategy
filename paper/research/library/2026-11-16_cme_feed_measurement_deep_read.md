@@ -101,7 +101,7 @@ the ratification queue stands at FOURTEEN candidates, zero armed.**
 ## Standing caveat
 
 A library is ammunition, not evidence. This note cites; it never
-launderers. The paper is single-vendor (CME MDP3), single-contract
+launders. The paper is single-vendor (CME MDP3), single-contract
 (NQ front month), with packet captures that are explicitly
 non-redistributable and a live check on the author's own production
 receiver; the ~7.5-microsecond publisher period and the
