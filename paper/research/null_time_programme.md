@@ -718,3 +718,42 @@ Hawkes Processes: Power-Law vs. Exponential Kernels" (score 41,
 below the symmetric-Hawkes/OFI pair, already in the library text
 shelf).
 
+
+## 15. Null-time session 11 (2026-11-16): deep-read session 9 — the triage scorer audited by its own queue; a weak witness recorded honestly
+
+- **Library deep-read session 9** (next by triage rank, per session
+  10's pointer):
+  `paper/research/library/2026-11-16_bivariate_hawkes_kernels_deep_read.md`
+  on Batra, "Modeling High-Frequency Data with Bivariate Hawkes
+  Processes: Power-Law vs. Exponential Kernels"
+  (arXiv:2503.14814v1, Warwick Finance Societies, 2025). Grade: NO
+  kill line changed; NO new candidate sharpening — the honest
+  finding is about the QUEUE, not the paper: this was triage rank
+  5 of 500 (score 41) and it is an 11-page student-society term
+  report (one manually-processed 2-second LOBSTER window of
+  AMD/TSLA, "over 200 events", visual comparison of intensity
+  plots, no likelihoods, no parameter tables, no out-of-sample,
+  no backtest). The triage rubric cannot see quality this deep,
+  so: (a) **TRIAGE AUDIT FLAG, recorded for the owner** — future
+  triage ranks are candidates, not promises, and the deep-read
+  queue falls back to the peer-reviewed entries after this one;
+  (b) reinforcing only, no new item: the paper's headline (the
+  power-law kernel keeps peaks the exponential kernel's rapid
+  decay smooths away) is the SAME mechanism sessions 4/4b recorded
+  against peer-reviewed ground (Hardiman-Bouchaud, the branching
+  ratio's scale problem), and its method (choosing the kernel
+  family by which fits LOOK better on one window) is the
+  cautionary exhibit for why the trigger layer's kernel form is
+  declared with the spec, BEFORE data. Nothing in the queued
+  rules changes; their assumption of a pre-declared kernel form
+  gains its negative example.
+
+Ratification queue after this session: ELEVEN candidate sharpenings,
+zero armed (unchanged — no sharpening was warranted by this source).
+T1 remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue: next by triage rank is "Optimum
+Liquidation Problem Associated with the Poisson Cluster Process"
+(score 39, peer-reviewed line, already on the library text shelf) —
+with the triage-audit caveat now on record: the scorer's rank is a
+candidate reading, and the owner's library policy (peer-reviewed
+first) governs when they diverge.
