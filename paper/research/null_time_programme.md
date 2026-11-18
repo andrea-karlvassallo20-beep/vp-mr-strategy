@@ -1361,3 +1361,59 @@ Order Books With Interpretable Probabilistic Neural Networks"
 (score 34, on the shelf) — directly aimed at C5's
 passive-withdrawal family and C8's spoofing cautions, likely the
 highest-value remaining entry in its tier.
+
+## 27. Null-time session 23 (2026-11-16): deep-read session 21 — the book is not all intention: spoofable depth measurably moves the conditional price distribution
+
+- **Library deep-read session 21** (next UNREAD triage-rank entry,
+  per session 26's pointer):
+  `paper/research/library/2026-11-16_spoofability_lob_deep_read.md`
+  on Fabre & Challet, "Learning the Spoofability of Limit Order
+  Books With Interpretable Probabilistic Neural Networks"
+  (arXiv:2504.15908v1, 2025; CentraleSupélec/Paris-Saclay and
+  SUN ZU Lab; Level-3 Coinbase BTC-USD/ETH-USD — the triage queue's
+  most direct hit yet on C5's passive-withdrawal family). Grade:
+  NO kill line changed; NO new candidate sharpening. Findings:
+  (a) **[reinforcing]** the round-number baseline caution (session
+  17) lands again from the manipulator's side — burst-clusters of
+  suspicious orders carry similar ROUND-NUMBER sizes, which the
+  authors read as a same-agent fingerprint (PDF pp. 15-17): the
+  queued wash-audit gains a citation on exactly the mechanism it
+  must control for, with no change to the item's legal content;
+  (b) **[interpretation caution]** deep, never-at-the-touch
+  passive orders shift the predicted T=1s conditional mid-price
+  distribution, and 31% of large orders meet the paper's
+  spoofability criterion on a single Coinbase December week —
+  depth/imbalance features read a BONA FIDE/manipulation-capable
+  mixture whose proportions are venue- and regime-dependent, the
+  strongest ammunition yet for the existing depth-describes-
+  never-ground-truths discipline, with top-of-book imbalance the
+  worst-positioned to see it; (c) **[interpretation caution,
+  extending the estimator-mode line]** "suspicious" is a
+  model-computed counterfactual against their own network, no ids,
+  no labels, and 31% is a threshold artifact of their spec
+  (Q >= 4,500 USD, q = 100 USD at touch, their week) — quoted
+  nowhere as any venue's spoofing base rate; (d) **[cost-survival
+  ammunition]** the probabilistic expected-cost template
+  (fees + first-passage fills + liquidation legs of BOTH orders,
+  eqs. 27-30, PDF pp. 12-14) any K7-style layer would have to
+  carry; (e) **[source-quality note]** trained on 2022-12-01..07,
+  applied to 2024-12-04..07, no drift discussion — one more
+  instance of the regressed-process caution; arXiv v1, check
+  published version before formal citation. Would-have-killed: a
+  trigger layer specifying depth/imbalance as BONA FIDE signals
+  would have been partially reading manipulative placement on
+  exactly the windows that matter, entangled in a way no label
+  placebo could catch; any "manipulation is rare" prior written
+  into C8 would have been falsified before it armed. Cautions:
+  Coinbase SPOT, not Binance perps; T = 1 second only — nothing
+  licenses 30m-4h, C8's unexplored cell remains exactly that;
+  detection assumes the spoofer optimizes against the paper's own
+  impact model (arms-race fragility, their own "first layer"
+  admission); round-number and layering observations are eight
+  illustrative frames, not a census. Ratification queue after
+  this session: FOURTEEN candidate sharpenings, zero armed
+  (unchanged). T1 remains armed awaiting the owner's word; the
+  blocked list stays blocked. Deep-read queue: next unread by rank
+  is the next score-34/33 entry in `edge_triage_scores.json`
+  order — check the shelf before reading; the session-9
+  triage-audit flag still applies.
