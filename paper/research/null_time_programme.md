@@ -1933,3 +1933,86 @@ awaiting the owner's word; the blocked list stays blocked. Deep-read queue
 pointer: the next UNREAD triage entry is "The Price Impact of Generalized
 Order Flow Imbalance" (score 33, xdb066c). Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
+
+## 33. Null-time session 29 (2026-11-18): deep-read session 25 — the generalized-OFI paper read; the event-grain OFI accumulation rule queued for the E1 admissibility family
+
+- **Library deep-read session 25** (the standing queue's next UNREAD
+  pointer, score 33, xdb066c, consumed here):
+  `paper/research/library/2026-11-18_generalized_ofi_price_impact_deep_read.md`
+  on Su, Sun, Li and Yuan, "The Price Impact of Generalized Order Flow
+  Imbalance" (arXiv:2112.02947v1, December 2021, Xi'an Jiaotong
+  University): the Cont-Kukanov-Stoikov OFI generalized to Chinese
+  3-second order-book snapshots, where the best quote crosses multiple
+  ticks inside one observation window, breaking the one-tick assumption
+  of the CKS linear identity; reported out-of-sample R-squared rising
+  from about 33-43 percent (OFI) to about 84-86 percent (log-GOFI) on 10
+  CSI 500 constituents. Read against the ONE question. **Grade: NO kill
+  line changed. ONE new candidate sharpening queued, PENDING OWNER
+  RATIFICATION:** the event-grain OFI accumulation rule, extending the
+  E1 volume-conservation reconstruction-admissibility family. The
+  ratified E1 rule admissibility-checks the depth reconstruction
+  (conservation identity per level per window) but is silent on the
+  granularity at which accumulated flow features are computed from that
+  depth; this paper supplies the page-cited mechanism for why that gap
+  matters: the one-tick assumption is load-bearing in the CKS identity,
+  and under coarse windows the swept levels' depth changes are
+  misattributed with first-order truncation error (PDF pp. 3-4,
+  Figure 2). Pre-declaration: any OFI-type flow feature used in a C1-L2
+  (or C8 L2-arm) measurement must be accumulated at event grain, each
+  event contributing at the book state it acts on; any window-aggregated
+  fallback must disclose the per-window best-quote crossing count and
+  the declared sweeping convention, and windows with undisclosed
+  multi-tick crossings are inadmissible. Harder to pass: it closes the
+  one route by which a measurement could pass the conservation gate and
+  still rest on a mispriced flow object, and the mispricing is not
+  neutral - coarse-grain OFI can inflate apparent flow-price correlation
+  and make a compression signal easier to "find". It tightens only the
+  E1 admissibility family (and through it the future C1-L2 pipeline and
+  C8's L2 arm); T-O's taker-print trigger, no C1-L2 spec text, and no
+  kill line are touched; nothing is armed.
+
+  Findings, page-cited: interpretation caution — the reported R-squared
+  magnitudes are never importable: the generalized construction weights
+  depth changes by the number of ticks the best quote moved, a quantity
+  mechanically tied to the regressed mid-price change, so part of the
+  gain may be definitional coupling between feature and target, and the
+  paper presents no control for it; the train/test protocol is not
+  recoverable from the extract and the stock set is a disclosed
+  convenience sample ("to facilitate presentation", PDF pp. 1, 5-6).
+  Reinforcing, no new item — the construction exists only because
+  depth changes at swept levels are informative, citing the multi-level
+  OFI line (Xu, Gould and Howison 2018, PDF pp. 1-2): a library-level
+  corroboration that BBO-only features coarsen the depth information
+  available in full L2, the standing motivation language of C1-L2; no
+  number, weight, or level count transfers. Source-quality note — arXiv
+  v1 only, zero indexed citations, no published version on the shelf,
+  four authors, 10 of the CSI 500 constituents selected for
+  presentation, no costs, no strategy layer; the text extract is heavily
+  degraded (formula symbols lost), so the construction was reconstructed
+  from prose and figure descriptions, not verified symbol-by-symbol;
+  published version to be checked before formal citation. The
+  killed-if-wrong section on record names both laundering routes:
+  importing the 86-percent headline as C1-L2 motivation (a later honest
+  event-grain result would then read as programme failure rather than
+  definitional difference), and the reverse leak - an undeclared
+  tick-move weighting inside the programme would partially embed the
+  outcome's own units in the feature and inflate correlations, which is
+  what the queued rule makes inadmissible. Standing caveat recorded:
+  Chinese CSI 500, 3-second snapshots, 30-second to 5-minute horizons,
+  no crypto, no costs; transferable content is the mechanism (window
+  grain versus event grain), never any magnitude. Laundering directions
+  named: INTO — no coefficient, weight, R-squared, tick-count
+  convention, or construction detail enters any spec, default, or
+  calibration, and the generalized construction is not adopted anywhere
+  without its own pre-registration; OUT — the R-squared claims are never
+  cited as evidence that OFI-family features explain price changes in
+  any market other than the paper's own sample, and the headline is
+  never repeated as C1-L2 motivation.
+
+Ratification queue after this session: TWENTY-TWO candidate sharpenings
+(the twenty-one standing plus the event-grain OFI accumulation rule
+joined here through deep-read session 25), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked. Deep-read
+queue pointer: the next UNREAD triage entry is "Passive Market Impact:
+A Point Process Approach" (score 33, x43a538). Nothing measured, no
+kill line moved, nothing armed, nothing trades live.
