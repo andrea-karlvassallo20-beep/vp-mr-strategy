@@ -28,6 +28,7 @@ GROUPS = [
         ("v4_charts.html", "The board, colored"),
         ("heatmap.html", "The heat map"),
         ("dormancy.html", "The dormancy map"),
+        ("compound_hawkes.html", "The synthetic order flow"),
     ]),
     ("The Record", [
         ("ledger.html", "The claims ledger"),
