@@ -33,8 +33,11 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads (grown to ~17+ across 18 deep-reads). Zero armed;
-  your word is the only trigger. Enumerated with sources in
+  library deep-reads and the ratified exploratory channel: twenty
+  candidates through 20 deep-reads plus probe E1; most recently joined
+  2026-11-18, the deterministic-clock null arm and the
+  latent-common-cause robustness arm for the branching-ratio trigger.
+  Zero armed; your word is the only trigger. Enumerated with sources in
   `paper/research/null_time_programme.md` (latest section).
 
 ## 3. Library and supplies
