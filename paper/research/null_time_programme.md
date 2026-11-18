@@ -1039,3 +1039,58 @@ T1 remains armed awaiting the owner's word; the blocked list stays
 blocked. Deep-read queue: next unread by rank is "Hawkes-Driven OTC
 Market Making: Volterra-Riccati Approximation" (score 37, on the
 shelf).
+
+## 21. Null-time session 17 (2026-11-16): deep-read session 15 — the industry's own exogenous-absorption warning; the seasonality treatment extends the drift item
+
+- **Library deep-read session 15** (next UNREAD triage-rank entry,
+  per session 16's pointer):
+  `paper/research/library/2026-11-16_hawkes_otc_mm_deep_read.md`
+  on Barzykin, "Hawkes-Driven OTC Market Making: Volterra-Riccati
+  Approximation" (arXiv:2608.02002v2, 2026; HSBC; Hawkes-driven OTC
+  RFQ market making on spot-FX data). Grade: NO kill line changed;
+  NO new candidate sharpening. Two strong reinforcing citations:
+  (a) **the industry's own exogenous-absorption warning** — the
+  author, who fitted branching ratios of 0.86-0.90 on EURUSD/
+  GBPUSD/USDJPY RFQ flow (> 5*10^5 events per pair, three years),
+  states as a first-class caveat that correlated requests "may be
+  reactions to a common unobserved cause ... rather than
+  consequences of earlier RFQs. If such exogenous variation is
+  omitted from the baseline intensity, a fitted Hawkes model may
+  absorb part of it into the excitation kernel and thereby
+  produce a large branching ratio" (PDF p. 2), and again that the
+  ratio "should not be interpreted as direct evidence that one
+  client's RFQ causes another client's RFQ" (PDF p. 4). This is
+  the false-critical concern behind the queued per-branch rule,
+  boundary-solution rule, and drift-reporting item — now stated
+  independently by an industry author on his own near-unity
+  fitted readings. The queued rules gain their practitioner
+  anchor; no new rule was needed. (b) **the seasonality/activity-
+  time caution EXTENDS the queued drift-reporting item** — the
+  kernel is fitted only after a deterministic time change
+  removing the intraday seasonality profile, because fitting in
+  calendar time "would confound deterministic seasonality with
+  residual serial dependence," and "all rates entering a control
+  problem must be expressed in the same clock" (PDF pp. 3-4).
+  Recorded as an EXTENSION of sessions 4/4b's drift-reporting
+  candidate (from stochastic mu-drift to also cover DETERMINISTIC
+  intraday seasonality), not a new queue entry; it independently
+  supports session 13's estimator-mode rule and session 16's
+  clock statement. (c) Cost-survival ammunition, nothing armed:
+  the information value of observing a request priced separately
+  from winning it, and the post-request forecast update as a
+  first-class state input (PDF pp. 11-12), for IF the owner ever
+  ratifies cost modeling. Cautions: private filtered dataset,
+  magnitudes never transfer; Volterra-Riccati validated only in
+  the exponential benchmark; the two-way RFQ side is a LATENT
+  mark (PDF p. 5) — a further warning against treating
+  side-signed flow readings as directly observed; single-author
+  industry preprint, check for peer review before formal
+  citation.
+
+Ratification queue after this session: FOURTEEN candidate
+sharpenings, zero armed (the drift-reporting candidate is now
+recorded as extended to seasonality; no new entry). T1 remains
+armed awaiting the owner's word; the blocked list stays blocked.
+Deep-read queue: next unread by rank after the OTC market-making
+entry is "General Compound Hawkes Processes in Limit Order Books"
+(score 36, on the shelf).
