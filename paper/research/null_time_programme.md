@@ -1863,3 +1863,73 @@ awaiting the owner's word; the blocked list stays blocked. Deep-read queue
 pointer: the next UNREAD triage entry is "Dynamic optimal execution in a
 mixed-market-impact Hawkes price model" (score 34, x7c5b08). Nothing
 measured, no kill line moved, nothing armed, nothing trades live.
+
+## 32. Null-time session 28 (2026-11-18): deep-read session 24 — the mixed-market-impact Hawkes execution paper read; graded default, no sharpening
+
+- **Library deep-read session 24** (the standing queue's next UNREAD
+  pointer, score 34, x7c5b08, consumed here):
+  `paper/research/library/2026-11-18_mixed_impact_hawkes_execution_deep_read.md`
+  on Alfonsi and Blanc, "Dynamic optimal execution in a
+  mixed-market-impact Hawkes price model" (arXiv:1404.0648v2, CERMICS
+  ENPC): closed-form optimal execution in an Obizhaeva-Wang mixed-impact
+  price model whose other-trader flow is a bivariate marked Hawkes
+  process, with the no-Price-Manipulation-Strategy conditions solved
+  exactly. Read against the ONE question. **Grade: NO kill line changed.
+  NO new candidate sharpening.** Default grade; the queue stands at
+  twenty-one through deep-read 22 plus probe E1. Findings, page-cited:
+  reinforcing, no new item — the model's no-arbitrage equilibrium pins
+  the flow's endogeneity ratio to the price model's transient-impact
+  share (iota_s/beta = 1-nu when cross-excitation is zero, and
+  2*iota_c < nu*rho for stationarity, PDF p. 14): a worked exhibit that
+  a branching or endogeneity reading is model-relative, a function of
+  the declared kernel family and impact decomposition, with no
+  universal near-critical level implied by stability or efficiency —
+  reinforcing the estimator-mode register and the uncertainty-band rule
+  already standing. Reinforcing, no new item — no PMS iff the price is
+  a martingale with the strategic trader absent (Theorem 2.1, PDF p. 5)
+  and no weak PMS iff the same parameter identities hold (Proposition
+  5.1, Corollary 5.1, PDF pp. 13-15), and the authors themselves call
+  exact MIHM calibration "miraculous" with three reasons fitted
+  parameters should not be expected to satisfy it, including that
+  fitting a PMS-free market has no guarantee of yielding a PMS-free
+  model (PDF p. 14): knife-edge equilibria are model objects, never
+  market facts, and "stable versus manipulable" statements are
+  model-coupled — the mechanism-level-transfer-only rule reinforced.
+  Reinforcing, no new item — under purely Poisson flow a robust
+  round-trip manipulation is implementable without knowing any model
+  parameter (Proposition 5.2, PDF pp. 15-16): what a misspecified null
+  returns is structure, not neutrality — the same class of lesson as the
+  U-shape seasonality and publisher-clock exhibits; the null arm's
+  enumeration is untouched. Cost-survival ammunition — if a K7-style
+  execution-assumption layer is ever built, it must not inherit the
+  block-book/linear-impact/exponential-decay/exponential-kernel family
+  the authors themselves flag against the empirical facts (PDF
+  pp. 2, 7, 9); the layer must declare its impact form and decay family
+  and carry this falsification record; nothing is operationalized now.
+  Source-quality note — two authors, Natixis-linked funding, arXiv v2
+  (June 2015 stamp) with a later internal date line, zero indexed
+  citations, no published version on the shelf; no data confrontation
+  anywhere, estimation "left for future research" (PDF p. 7), the
+  no-excitation-from-the-strategic-trader approximation justified by
+  the splitting-dominance argument (PDF p. 8) but untested; published
+  version to be checked before formal citation. The killed-if-wrong
+  section on record names the laundering route: measuring Hawkes decay
+  against price decay and declaring the market in or out of the MIHM
+  equilibrium, or reading a measured branching value as "the"
+  endogenous share because one model class pins it — every
+  load-bearing assumption flagged by the authors themselves, blocked in
+  advance by the standing discipline. Standing caveat recorded:
+  single-asset closed-form theory, no calibration, mechanism-level
+  transfer only; laundering directions named INTO (no MIHM condition,
+  cost parameter, or strategy formula enters any spec; equilibrium
+  identities never become hypotheses without fresh pre-registration
+  through the owner) and OUT (no equilibrium-level readings of
+  measured branching, no stable-manipulable transfer to any real tape,
+  no operationalization of the reaction strategies).
+
+Ratification queue after this session: TWENTY-ONE candidate sharpenings,
+unchanged (deep-read session 24 added none), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked. Deep-read queue
+pointer: the next UNREAD triage entry is "The Price Impact of Generalized
+Order Flow Imbalance" (score 33, xdb066c). Nothing measured, no kill line
+moved, nothing armed, nothing trades live.
