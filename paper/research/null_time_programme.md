@@ -1665,3 +1665,70 @@ highest-value remaining entry in its tier.
   Deep-read queue: next unread by rank per the read-slug mapping
   is "Compound Hawkes Processes in Limit Order Books" (score 33,
   on the shelf).
+
+## 32. Null-time session 28 (2026-11-18): deep-read session 26 — the 1/(1-mu-hat) amplification is older than the program thought, and regime-weighted background intensities are mixtures
+
+- **Library deep-read session 26** (next UNREAD triage-rank entry,
+  per session 31's pointer — verified unread by the read-slug
+  mapping; note: the pointer in log session 31 truncated the
+  slug, the shelf filename is xbf2516_compound_hawkes_processes_
+  in_limit_order_books, exact slug used in this entry):
+  `paper/research/library/2026-11-18_compound_hawkes_lob_regime_deep_read.md`
+  on Swishchuk, Remillard, Elliott & Chavez-Casillas, "Compound
+  Hawkes Processes in Limit Order Books" (arXiv:1712.03106v1,
+  2017; Calgary/HEC/Adelaide) — the 2017 foundational paper of the
+  line the program carries from session 16's Swishchuk-Huffman
+  read and session 17's 12D simulator read. Compound Hawkes
+  Process (marks from a two-state Markov chain on the fixed
+  tick — dependent, not i.i.d. price changes) and its
+  regime-switching compound extension (background intensity
+  switching with an N-state chain read as high/normal/low book
+  imbalance); LLNs and FCLTs with the diffusion limit
+  sigma * sqrt(lambda/(1 - mu-hat)) W(t). Grade: NO kill line
+  changed; NO new candidate sharpening. Findings: (a)
+  **[reinforcing]** the 1/(1 - mu-hat) long-grain volatility
+  inflation is stated here, in its cleanest form, a year before
+  the session-16 citation — same two-channel (arrival x mark)
+  decomposition, same near-critical structure the session-13
+  ergodicity warrant bounds; the origin citation moves back to
+  2017 (PDF pp. 8-9, eq. 16, Remark 6: exponential kernel
+  mu-hat = alpha/beta); (b) **[reinforcing]** the regime-
+  switching half formalizes the latent-regime discipline's
+  Hawkes-side point: a fitted stationary background intensity is
+  an ergodic-probability-weighted average over UNOBSERVED
+  regimes (lambda-hat = sum p*_i lambda_i, PDF p. 11) — a mixture
+  object whose window meaning changes with regime composition;
+  the diffusion limit collapses the mixture to one number ONLY
+  under stationarity of the regime chain; (c) **[interpretation
+  caution]** the mark chain's dependence is PRICED into the
+  long-grain volatility through the transition probabilities
+  (sigma^2, eq. 18, PDF pp. 8-9): price-change marks dependent
+  through an order-flow mechanism (runs of same-side changes)
+  change the effective variance per event in a computable
+  direction — any future variance-per-event or tick-scaling
+  arithmetic on gated windows that assumes independent marks is
+  a specification whose bias direction this formula makes
+  computable in principle; recorded as caution, nothing measured;
+  (d) **[source-quality note]** foundational-but-early —
+  definitions and limits with thin numerics, LOB connection by
+  interpretation (large-tick fixed-tick world, the mirror image
+  of the program's small-tick venue), marks assumed independent
+  of the Hawkes process by construction; arXiv v1 December 2017,
+  check for a published version before formal citation; quote for
+  the diffusion-limit structure, not as venue facts.
+  Would-have-killed: variance-rescaling or tick-scaling
+  arithmetic that treats per-event marks as independent AND the
+  arrival process as a free-standing intensity misprices the
+  scaling in a computable direction — this paper's two-channel
+  variance formula is the closed-form demonstration; and a fitted
+  background intensity read as a venue constant is exactly the
+  mixture-over-hidden-regimes object the RSCHP half formalizes.
+  Cautions: large-tick two-state idealization, marks independent
+  of N(t) by construction, regime-chain stationarity is
+  load-bearing, strictly subcritical (mu-hat < 1), numerics
+  illustrative only. Ratification queue after this session:
+  FOURTEEN candidate sharpenings, zero armed (unchanged). T1
+  remains armed awaiting the owner's word; the blocked list
+  stays blocked. Deep-read queue: next unread by rank per the
+  read-slug mapping is "Forecasting High Frequency Order Flow
+  Imbalance" (score 32, on the shelf).
