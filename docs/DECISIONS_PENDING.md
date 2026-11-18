@@ -33,11 +33,11 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: twenty-three
-  candidates through deep-read 26 plus probe E1; most recently joined
-  2026-11-18, the queue-state conditioning (passive-feature
-  sign-disclosure) component for the sign-kill-line template rule.
-  Zero armed; your word is the only
+  library deep-reads and the ratified exploratory channel: twenty-four
+  candidates through deep-read 28 plus probe E1; most recently joined
+  2026-11-18, the bar-level book-state mix (placebo-gap
+  severed-coupling disclosure) component for the C8 A3
+  micro-threshold rule. Zero armed; your word is the only
   trigger. Enumerated with sources in
   `paper/research/null_time_programme.md` (latest section).
 
