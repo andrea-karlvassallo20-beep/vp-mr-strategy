@@ -1202,3 +1202,57 @@ audit). T1 remains armed awaiting the owner's word; the blocked
 list stays blocked. Deep-read queue: next unread by rank is
 "Returns and Order Flow Imbalances: Intraday Dynamics and
 Macroeconomic News Effects" (score 34, on the shelf).
+
+## 24. Null-time session 20 (2026-11-16): deep-read session 18 — the macro censor's existence quantified; aggregation endogeneity is grain-dependent
+
+- **Library deep-read session 18** (next UNREAD triage-rank entry,
+  per session 19's pointer):
+  `paper/research/library/2026-11-16_ofi_macro_news_deep_read.md`
+  on Takahashi, "Returns and Order Flow Imbalances: Intraday
+  Dynamics and Macroeconomic News Effects" (arXiv:2508.06788v4,
+  2025; Hosei/Kellogg dissertation; SVAR-ITH on S&P 500 E-mini
+  futures, one-second BBO data, 2008-2013, 34.5 million
+  second-observations). Grade: NO kill line changed; NO new
+  candidate sharpening. Three reinforcing citations: (a) **THE
+  MACRO CENSOR'S EXISTENCE QUANTIFIED** — scheduled macro
+  announcements do not merely add noise, they RESHAPE the
+  price-flow system: price impact rises, flow impact declines,
+  return innovation volatility spikes, flow innovation volatility
+  falls (order submission slows — liquidity withdrawal, PDF
+  pp. 8-11). The program's deployed ex-ante macro censor excludes
+  such windows on principle; this is the measured proof that
+  announcement boundaries are REGIME boundaries, not noise
+  boundaries — parameters estimated across them are mixtures of
+  two systems, and any downstream feature would inherit a
+  window-selection artifact no label placebo could catch. The
+  censor predates the citation; nothing to change. (b)
+  **AGGREGATION ENDOGENEITY IS GRAIN-DEPENDENT** — the feedback
+  term that makes OLS inconsistent (their b_f) SHRINKS as the
+  sampling interval approaches the event level (mean 0.301 at one
+  second vs 0.55 at one minute in Deuskar-Johnson), while price
+  impact GROWS at finer grains: both directions of the
+  simultaneity are functions of the aggregation, so readings from
+  different grains are different objects — never compared, never
+  mixed; interpretation language extending the estimator-mode and
+  clock statements by one more dimension (grain), already covered
+  in spirit by the specs' fixed grains. (c) **SUB-SECOND
+  DISSIPATION, measured** — impulse responses die within a second
+  (PDF pp. 12-13): the horizon-gap caution flagged in the CKS OFI
+  read (1-second OFI results license nothing about 30m-4h
+  persistence) is now doubly sourced; C8's unexplored cell remains
+  exactly that. Cautions recorded: the venue is a near-constant
+  one-tick-spread equity-index future (the depth channel dominates
+  the impact channel — a property BTCUSDT perps do not share);
+  ITH assumes impact parameters constant WITHIN each 15-minute
+  window (the kind of within-window constancy the drift-reporting
+  item exists to question); and 37,029 of 38,740 intervals passed
+  the rank condition — ~4% of windows silently dropped, a
+  window-selection step the program's pre-registered windows would
+  have to declare.
+
+Ratification queue after this session: FOURTEEN candidate
+sharpenings, zero armed (unchanged). T1 remains armed awaiting
+the owner's word; the blocked list stays blocked. Deep-read
+queue: next unread by rank is "Packets, Transactions and Queues:
+Design Principles for HFT Systems from a Measurement Study of CME
+Market Data" (score 34, on the shelf).
