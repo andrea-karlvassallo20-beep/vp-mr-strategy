@@ -1472,3 +1472,58 @@ highest-value remaining entry in its tier.
   queue: next unread by rank per the read-slug mapping is "The
   Price Impact of Generalized Order Flow Imbalance" (score 33,
   on the shelf).
+
+## 29. Null-time session 25 (2026-11-18): deep-read session 23 — a flow indicator is a (feed x grain x construction) property, quantified: GOFI doubles OFI's apparent power by fixing one aggregation assumption
+
+- **Library deep-read session 23** (next UNREAD triage-rank entry,
+  per session 28's pointer — verified unread by the read-slug
+  mapping):
+  `paper/research/library/2026-11-18_generalized_ofi_deep_read.md`
+  on Su, Sun, Li & Yuan, "The Price Impact of Generalized Order
+  Flow Imbalance" (arXiv:2112.02947v1, 2021; Xi'an Jiaotong
+  University; the CKS-OFI family the program already carries from
+  the session-3 CKS review and session 18's Takahashi read).
+  Grade: NO kill line changed; NO new candidate sharpening.
+  Findings: (a) **[reinforcing]** the entire gain of their
+  Generalized OFI over classic Cont-Kukanov-Stoikov OFI on
+  China's 3-second snapshot feed (out-of-sample R^2 32.89 ->
+  83.57 percent at 30s, 42.57 -> 86.01 percent at 5m, PDF
+  pp. 5-6, Tables 1-3) comes from fixing ONE aggregation
+  assumption — that the best price moves at most one tick per
+  interval: the SAME market and events produce materially
+  different OFI series under a different feed grain and
+  construction, the cleanest quantified illustration the library
+  holds of the aggregation-endogeneity line (session 18) and the
+  estimator-mode rule (session 11) — a flow statistic is a
+  (feed x grain x construction) property, never a market
+  property; the existing grain-declaration and estimator-mode
+  rules already force this, nothing new queued; (b)
+  **[interpretation caution]** OFI-family R^2 numbers are NOT
+  transportable across venues: the 86-percent figure belongs to
+  large-tick, price-limit, 3-second-snapshot CSI 500 stocks — BTC
+  USDT is small-tick with sub-second depth-diff snapshots and no
+  price limits, and a GOFI-style feature on gated windows would
+  inherit both the aggregation artifact AND session 21's bona
+  fide/manipulation depth mixture; (c) **[source-quality note]**
+  thin provenance — arXiv v1 preprint, ten stocks hand-picked "to
+  facilitate the presentation", no standard errors, the OA text
+  layer garbled (equations and conclusion unreadable), the
+  mechanism narrative built from the construction discussion and
+  the tables; quote it only for the aggregation mechanism, never
+  as evidence of any market fact. Would-have-killed: citing any
+  OFI-standard R^2 as a property of "the market" would collapse
+  the moment the aggregation assumption breaks (this paper is the
+  demonstration), and a trigger layer copying the CKS one-tick
+  aggregation verbatim would have mismeasured sub-second
+  multi-tick moves by construction, invisibly in backtests because
+  the feature and the label share the same cheap construction.
+  Cautions: Chinese large-tick equity venue, price limits, linear
+  regressions, log-only stationarity treatment, no peer-reviewed
+  version located at read time — check before formal citation.
+  Ratification queue after this session: FOURTEEN candidate
+  sharpenings, zero armed (unchanged). T1 remains armed awaiting
+  the owner's word; the blocked list stays blocked. Deep-read
+  queue: next unread by rank per the read-slug mapping is
+  "Passive Market Impact: A Point Process Approach" (score 33,
+  on the shelf) — squarely in C5's passive-withdrawal family
+  after session 21's spoofability read.
