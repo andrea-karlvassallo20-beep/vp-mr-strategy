@@ -805,3 +805,63 @@ Automated Market Makers: Models Beyond Brownian Prices and Static
 Liquidity" (score 39, already on the library text shelf); with the
 session-9 triage-audit flag on record, rank is a candidate reading,
 and the owner's library policy governs when they diverge.
+
+
+## 17. Null-time session 13 (2026-11-18): deep-read session 11 — the queue-imbalance two-null admission rule, re-earned from the shelf; the reset-loss corrigendum and the numbering reconciliation
+
+- **Corrigendum and record recovery first** (append-only; no earlier entry is edited).
+  The state audit this session: main stands at eef409ee with deep-reads 1-10 adopted
+  (PR #160 merged 2026-11-18T10:26Z; CI verified green this session: both "test" and
+  "engine" check runs success — the CI verification deferred at the last adoption is
+  closed). Separately, a parallel conversation lineage reported deep-reads of this same
+  queue-imbalance paper, of a CKS-OFI full re-read, of the VPIN/BVC construction, of
+  MLOFI, and a blocked Chakrabarty trade-classification attempt, numbering them as
+  null-time sessions 23-27. NONE of those readings ever landed in this log, and their
+  staged notes were held in a sandbox working tree that an environment reset wiped;
+  this session verified the machine library holds only the eleven 2026-11-16 notes.
+  Per the honest-error protocol: the lost readings carry ZERO status here, and this
+  log's numbering governs (last entry was session 12; this is 13; nothing renumbered).
+  The one read re-earned legally from the page-marked shelf this session is the queue
+  imbalance paper (below). The lineage's two other claimed sharpenings (an OFI-null
+  admission rule from the CKS re-read; proxy-validation baselines from the VPIN/BVC
+  read) are NOT queued: this repo already holds the CKS OFI deep-read (session 3) and
+  the VPIN review (library ritual paper 3) covering that ground; anything beyond them
+  must be earned by fresh page-cited reads. MLOFI (x09d0b5, score 29) and the
+  trade-classification dispute papers remain UNREAD queue candidates.
+- **Library deep-read session 11** (a RECOVERY READ, declared as such; triage trace 15,
+  rank 47 of 500; the queue's next UNREAD pointer is unchanged):
+  `paper/research/library/2026-11-18_queue_imbalance_deep_read.md`
+  on Gould & Bonart, "Queue Imbalance as a One-Tick-Ahead Price Predictor in a Limit
+  Order Book" (arXiv:1512.03492v1, 11 Dec 2015; LOBSTER Nasdaq 2014, 10 liquid stocks,
+  logistic and local logistic regression of next-mid-move direction on the normalized
+  best-quote imbalance I). Grade: NO kill line changed. ONE candidate sharpening,
+  PENDING OWNER RATIFICATION: **the two-null admission rule** — the paper's null is a
+  constant 1/2 probability (Eq. 18, PDF p. 14) and every headline improvement is
+  measured against it alone, while the paper's own two-line state variable (Eq. 7,
+  PDF p. 7; a pure depth snapshot, no events, no signing) achieves out-of-sample AUC
+  0.75-0.81 large-tick and 0.58-0.64 small-tick one mid-change ahead (Table 4, PDF
+  p. 20) with in-sample ≈ out-of-sample (no overfit, PDF pp. 19-21). Pre-declaration
+  text: any C1-L2/C8 short-horizon flow feature is admitted only if it adds value
+  beyond BOTH the tautology-controlled top-of-book OFI benchmark AND a pre-registered
+  Eq.-7 queue-imbalance comparator; a flow feature that loses to a two-line state
+  variable carries no incremental claim. Harder to pass because the feature must now
+  survive two structurally different nulls, the second immune to event-flow laundering.
+  Interpretation cautions recorded with page cites: the venue expectation band is the
+  paper's small-tick band on a maximal-small-tick perp (AUC 0.58-0.64, probabilistic
+  improvement 2-6%, Table 5, PDF p. 21; mechanism: spread-pinning, PDF pp. 25-26), not
+  the large-tick ceiling; the horizon is a mid-change-count horizon, NOT fixed time
+  (Sec. 5.1, PDF pp. 11-12), so any fixed-horizon port must pre-declare its sampling
+  convention (the paper names alternatives it never tested, PDF pp. 27-28).
+  Reinforcing: percent-of-null improvements are never reported without absolutes (the
+  50-60% headline is a percentage of a deliberately dumb null; Tables 4-5, PDF
+  pp. 20-21). Source quality: arXiv v1, CFM affiliation acknowledged (PDF p. 28), one
+  sign-definition misprint flagged (PDF p. 8), published version to be checked before
+  formal citation.
+
+Ratification queue after this session: THIRTEEN candidate sharpenings (the twelve
+standing plus the two-null admission rule joined 2026-11-18), zero armed. T1 remains
+armed awaiting the owner's word; the blocked list stays blocked. Deep-read queue: the
+next UNREAD triage entry is unchanged — "Price-Aware Automated Market Makers: Models
+Beyond Brownian Prices and Static Liquidity" (score 39, already on the library text
+shelf); with the session-9 triage-audit flag on record, rank is a candidate reading,
+and the owner's library policy governs when they diverge.

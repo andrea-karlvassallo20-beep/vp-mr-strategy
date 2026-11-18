@@ -1,6 +1,6 @@
 # Pending owner decisions — the thirty-second dashboard
 
-**Maintained by the null-time sessions. Last updated: 2026-11-16.**
+**Maintained by the null-time sessions. Last updated: 2026-11-18.**
 Every item below is BLOCKED ON YOUR WORD — nothing runs, arms, or merges
 into a claim without it. Pointers are to the exact document that makes
 each case. Items are ordered by how much they gate.
@@ -40,9 +40,11 @@ each case. Items are ordered by how much they gate.
   **C8 is NOT ARMED until you accept.**
   `paper/research/c8_macro_l2_synthesis_spec.md` (AMENDMENT LOG).
 - **The ratification queue** (candidate spec sharpenings from the
-  library deep-reads — twelve candidates (the branching per-branch
+  library deep-reads — thirteen candidates (the branching per-branch
   rule, the flow-clock scale-constant rule, and the sign-register
-  rule for excitation features joined on 2026-11-16), zero armed;
+  rule for excitation features joined on 2026-11-16; the two-null
+  admission rule for the C1-L2 benchmark family joined 2026-11-18),
+  zero armed;
   the owner's word is
   the only trigger): enumerated with sources in
   `paper/research/null_time_programme.md` (latest section).
