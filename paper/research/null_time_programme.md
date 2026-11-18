@@ -2122,3 +2122,51 @@ highest-value remaining entry in its tier.
   Book Dynamics With Liquidity Migration" (score 31, on the shelf)
   - note the queue passes a score-31 entry before the remaining
   score-30 cluster (the mapping is by rank order, not by tier).
+
+## 40. MEASURED SESSION (2026-11-18), owner-authorized, third of the parallel regime: the VFI-extremity dossier — the owner's own method, encoded and measured
+
+- **Owner directive:** "me marking extremities on VFI is the best
+  I could do, you are here to find even better and the right way
+  to do it, but you gotta find it." The owner's method was
+  ENCODED and measured on the archive: Fedenko-style VFI (gated
+  23d-volume-ratio flow, cumulated, z-scored vs prior 252d,
+  extremities = bottom/top decile of trailing-756d percentile),
+  protocol pre-declared in src/vfi_extremity_dossier.py before
+  the run. Descriptive; W2 confirmation mandatory; no kill line
+  moved; nothing armed; nothing trades live.
+- **Q1 (closeness): NO** - AUC of vfi_z against move-within-K is
+  0.499/0.494/0.510 at K=5/20/60, coin flip at every horizon
+  (quietness reads 0.323), and no additivity on base nights
+  (0.48-0.49): VFI's LEVEL does not rank nights by distance to
+  the event.
+- **Q2 (chip): YES, and specific to the LOW tail** - the low
+  extremity state carries a +10-point direction chip (P(first big
+  move UP) = 0.686 vs 0.585 baseline, n = 7,304) that the high
+  extremity does not carry (0.558), and arrives ~34 percent sooner
+  (P(move within 5d) = 0.067 vs 0.050). Both facts are true:
+  the extremity TAIL is informative as a state; the VFI LEVEL is
+  not a timing signal - state and ranking are different objects,
+  and the owner's read is a state marker.
+- **Q3 (the better way the owner asked for): the owner's read IN
+  THE RIGHT SEAT** - the single best NEAR-TERM arrival state
+  measured on this archive is the composed rule: VFI low
+  extremity x quiet-base = P(move within 5d) = 0.0943, 1.9x the
+  0.0497 baseline, the highest of any state measured to date
+  (base alone 0.0817), with its direction chip diluted to 0.601
+  (base alone 0.644): the composition trades a little direction
+  for a lot of timeliness. The high-extremity-x-base cell reads
+  0.737 on n = 510 - recorded, flagged small-sample, not trusted
+  until confirmation. The instrument skeleton so far: be in the
+  base when quiet; when VFI marks a low extremity there the move
+  is ~2x nearer; the first big move leans UP at 60-65 percent
+  depending on which legs fired.
+- **Honest boundaries:** one declared VFI instantiation (a
+  different instantiation is a different construction, per the
+  estimator-mode rule); crypto-heavy discovery archive; W2
+  confirmation on fresh windows mandatory before any of this
+  becomes evidence; no threshold chosen; nothing armed; nothing
+  trades live.
+- **Deep-read queue:** unchanged, parallel - next unread by rank
+  per the read-slug mapping remains "Diffusive Limit of Hawkes
+  Driven Order Book Dynamics With Liquidity Migration" (score
+  31, on the shelf).
