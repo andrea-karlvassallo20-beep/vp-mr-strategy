@@ -61,9 +61,9 @@ def series_panel(close, volume):
         return None
     ret = close.pct_change()
     sigma = ret.rolling(SIGMA_WIN).std().shift(1)
-    move = (ret.abs() >= MOVE_SIGMA * sigma) & sigma.notna()
-    move_up = (ret >= MOVE_SIGMA * sigma) & sigma.notna()
-    move_dn = (ret <= -MOVE_SIGMA * sigma) & sigma.notna()
+    move = (ret.abs() >= MOVE_SIGMA * sigma) & (sigma > 0)
+    move_up = (ret >= MOVE_SIGMA * sigma) & (sigma > 0)
+    move_dn = (ret <= -MOVE_SIGMA * sigma) & (sigma > 0)
 
     rvol = ret.rolling(SIGMA_WIN).std()
     rvol_pct = rvol.rolling(PCT_WIN).rank(pct=True) * 100.0

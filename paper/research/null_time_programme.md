@@ -2638,3 +2638,60 @@ blocked list stays blocked. Next queue pointer (returning to pure rank
 order): "State-dependent Hawkes processes and their application to limit
 order book modelling" (x947263, score 32, on the shelf). Nothing measured in
 this session, no kill line moved, nothing armed, nothing trades live.
+
+## 49. OWNER-DIRECTED MEASURED SESSION (2026-11-18), seventh of the parallel regime: the first paper strategy build - and the data-quality hole it exposed, deflating the nuke chip's headline
+
+- **Owner directive:** "how many more articles are you gonna read why
+  don't you try build some strategy." Queue math first: 500 triage
+  entries, 465 unread by slug, but only 36 unread score >=25 - the
+  high-value shelf tail is nearly exhausted; reading a dozen more covers
+  it. Response: BUILD, from the program's only stability-passed
+  conditional.
+- **Built:** `src/nuke_presence_paper_strategy.py` - "Nuke Presence
+  Long, PAPER STRATEGY v0.1", ONE pre-registered rule, zero variants:
+  signal = causal nuke_down night (>=4-sigma down day within 2 days,
+  dossier construction); entry = next open (the "press one button to be
+  present" seat); ONE trade per episode (the session-47
+  episode-contamination answer); take-profit at the first >=4-sigma UP
+  day (the event the chip measures itself); time-stop 60 trading days;
+  no stop-loss (the down tail measured, not insured); zero costs,
+  declared; all numbers flagged in-sample.
+- **v0.1 RESULT: REJECTED as specified.** 947 episodes, win rate
+  43.7%, mean -1.17%, median -3.35%, p5 episode -42.6%, mean MAE
+  -22.1%, halves diverging (+0.87% earlier / -4.79% later). The
+  mechanism is now understood: a direction conditional is NOT a return -
+  post-crash sigma is inflated, so take-profit fires early on modest
+  absolute bounces while the time-stop accumulates the adverse path
+  (median hold 60 = time-stop dominated), and entering crashes without
+  a stop is a fat-left-tail bet. No variant will be tuned against these
+  numbers (multiplicity discipline); a v0.2 requires a new dated
+  amendment with rules registered BEFORE evaluation.
+- **THE DISCOVERY (the session's real product): a shared data-quality
+  hole.** Run 1 printed 391/1335 episodes with returns of EXACTLY
+  0.0; investigation found flatlined low-priced series (e.g. 'ehf',
+  constant open==close bars) drive trailing-20d sigma to EXACTLY 0,
+  making |ret| >= 4*sigma trivially true on ZERO-return days - fake
+  "big moves" counted as up-moves, contaminating EVERY construction
+  built on the dossier move definitions. DECLARED CORRECTION (guard,
+  not a threshold change): all move flags now require sigma > 0, in
+  the strategy AND the chip stability split; both re-run, both runs
+  reported (chip_stability_split.md section 5,
+  nuke_presence_strategy.md verdict).
+- **HONEST REVISION (honest-error protocol; session 47's entry stands
+  unedited):** under the corrected guard the NUKE CHIPS DEFLATE:
+  nuke_down 0.703/0.801 -> **0.523/0.627** (below baseline in the
+  earlier half; survives only as a weaker recent-half cell);
+  nuke_up 0.738/0.802 -> **0.615/0.689** (still above baseline in both
+  halves, a MODEST +5-9 point chip, not the 20-point headline); the
+  base / vfi_ext_low / near cells stand unchanged. The program's best
+  candidate is therefore now the nuke_UP chip at a modest edge plus
+  the base-state skeleton - and the session-47 "worked twice" claim is
+  downgraded to "worked twice under a construction later found
+  contaminated; corrected inheritance below baseline for nuke_down."
+- **Boundaries:** descriptive, in-sample, episode-clean; no kill line
+  moved; nothing armed; the ratification queue stands at FOURTEEN
+  candidates zero armed; nothing trades live. W2 fresh-window
+  confirmation remains mandatory for every chip and any future strategy.
+- **Deep-read queue:** unchanged, parallel - next unread by rank
+  remains "State-dependent Hawkes processes and their application to
+  limit order book modelling" (x947263, score 32, on the shelf).

@@ -70,3 +70,36 @@ mandatory for everything. Nothing trades live.
 
 `python3 src/chip_stability_split.py` →
 `chip_stability_split.csv` (this document).
+
+## 5. CORRECTED RE-RUN (2026-11-18, same date, owner-directed strategy
+
+session): the sigma>0 data-quality guard DEFLATES the nuke chips
+
+The owner asked for a strategy; the strategy build exposed a shared
+data-quality hole: flatlined low-priced series drive trailing-20d sigma
+to EXACTLY 0, making |ret| >= 4*sigma trivially true on ZERO-return days
+— fake "big moves" that count as up-moves and inflate the up-share of
+every state built on the move definitions. All move flags now
+additionally require sigma > 0 (a data-quality guard, not a threshold
+change) and the split was re-run under the guard.
+
+| state | half 1 (corrected) | n | half 2 (corrected) | n | vs session-47 cells |
+|---|---|---|---|---|---|
+| all nights | 0.553 | 67,492 | 0.596 | 60,368 | ~unchanged |
+| nuke_down | **0.523** | 577 | **0.627** | 415 | was 0.703/0.801 — DEFLATED |
+| nuke_up | **0.615** | 748 | **0.689** | 637 | was 0.738/0.802 — deflated |
+| base | 0.707 | 75 | 0.645 | 14,974 | unchanged |
+| vfi_ext_low | — | 0 | 0.686 | 7,304 | unchanged |
+| near | — | 0 | 0.601 | 2,752 | unchanged |
+
+**The honest revision (honest-error protocol; session 47's entry stands
+unedited):** the headline "nuke chip 70-80% both halves, strengthening"
+was contaminated by flat-series fake up-moves and does not survive the
+corrected construction. What survives: (1) the nuke_UP chip remains
+above the baseline in BOTH halves (0.615/0.689 vs 0.553/0.596) but as a
+MODEST +5-9 point chip, not the 20-point headline; (2) the nuke_down
+chip does NOT clear the baseline in the earlier half (0.523 vs 0.553)
+and survives only as a weaker recent-half cell (0.627 vs 0.596); (3)
+the base / vfi_ext_low / near cells stand unchanged (their burn-in
+structure is untouched by the guard). W2 fresh-window confirmation
+remains mandatory for everything; nothing armed; nothing trades live.
