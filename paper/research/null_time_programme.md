@@ -1623,3 +1623,91 @@ Macroeconomic News Effects" (score 34, x5459dc); with the session-9
 triage-audit flag on record, rank is a candidate reading, and the
 owner's library policy governs when they diverge. Nothing measured,
 no kill line moved, nothing armed, nothing trades live.
+
+## 29. Null-time session 25 (2026-11-18): the three deferred engineering events booked — the compound Hawkes engine (PR #179), its site dashboard (PR #180), the nav link (PR #181)
+
+Each of the three commits disclosed "log entry deferred to the next
+null-time session per append-only protocol"; this is that session. All
+three were owner-ordered engineering builds following deep-read
+session 21 (the compound Hawkes order-book size-modelling paper,
+arXiv:2312.08927v5, graded default NO sharpening there). They are
+demonstration infrastructure. Nothing in them measures anything, and
+the synthetic data is the only data any of them ever touched.
+
+- **Protocol/maintenance event — PR #179, the compound Hawkes
+  order-flow engine.** From-scratch build, all synthetic, no programme
+  dataset touched at any step: `src/ofhawkes.py`, a 12-dimensional
+  compound Hawkes point process driving a six-queue top-of-book
+  simulator, in the paper's own dimension order (limit, cancel and
+  market orders at the touch, one tick deep, and in-spread, both
+  sides); signed exponential kernels with heterogeneous decays (144)
+  and live inhibition floored at zero intensity; spread gating
+  (s-1)^0.75 for in-spread dimensions, zero at s=1; 13-bin U-shape
+  time-of-day factors, mean 1 per dimension; order sizes as compound
+  marks, geometric body with Dirac masses at the round sizes
+  1/10/50/100/200/500; mechanical book transitions (walk-ups on any
+  queue depletion including exact consumption, replenishment sampling
+  on widening); a discrete-grid simulator with an exact excitation
+  bank and a hard hazard guard (peak intensity times dt must stay
+  under the grid resolution bound or the run raises); a Poisson
+  control day with identical seeds, book and size conditioning and
+  zero memory, so the proportional endogenous-share attribution gives
+  the control exactly 0.0. The no-silent-capping lesson from
+  deep-read session 5 (the boundary-solution pathology the paper
+  itself exhibits with its silently rescaled kernels) is implemented
+  as `stabilize_norm_matrix`: an unstable kernel-norm matrix is
+  either refused or rescaled to a declared target with a
+  StabilityDisclosure record — raw eigenvalue, scaled eigenvalue,
+  applied factor, action — never quietly repaired. 20/20 tests in
+  `tests/test_ofhawkes.py` (kernel-norm analytic vs numeric,
+  scripted-event book invariants, exact-consumption walk, in-spread
+  guard, seed reproducibility, Hawkes-vs-Poisson clustering, grid
+  validity, U-shape). The demo run: five synthetic days plus the
+  Poisson control, seed 20261118, ~816,000 events, endogenous share
+  13.1 percent with the control exactly 0.0, eigenvalue chain
+  0.6349 (raw, above the stationary bound 0.5261) rescaled with
+  disclosed factor 0.4143 to 0.2630, excitation halved once more for
+  headroom, landing at a simulated eigenvalue 0.1315 — every step in
+  the emitted metadata. `docs/compound_hawkes_engine.md` states it on
+  its face: demonstration infrastructure, not evidence; the engine
+  simulates, it does not estimate, test, or claim. The demo dataset is
+  gitignored. Merged by the owner before CI completed; the files were
+  verified present and byte-complete on main afterwards, and again in
+  this session's fresh re-fetch of the tree.
+
+- **Protocol/maintenance event — PR #180, the site dashboard page.**
+  `docs/compound_hawkes.html` (~421 KB), a self-contained dark-theme
+  dashboard of the synthetic demo run: embedded dataset (the same
+  gitignored JSON the demo emits, in a JSON.parse-chunked embed),
+  hand-rolled SVG charts, zero external dependencies, CSP-clean by
+  construction. Live at the Salient site alongside the four existing
+  standalone pages and following their exact convention: no nav block
+  by design, a "back to the Salient site" link instead. Full
+  disclosure on the page itself: all data synthetic, nothing measured,
+  no claim, no kill line. Integrity disclosure on record: the branch's
+  first push arrived truncated by the transport size limit, was caught
+  by the pre-push size checks before any merge, and was corrected; the
+  PR body disclosed the event rather than letting a corrupted page
+  ship silently.
+
+- **Protocol/maintenance event — PR #181, the nav link.**
+  `src/site_nav.py` gained the entry ("compound_hawkes.html", "The
+  synthetic order flow") in The Board group; all 15 nav-bearing docs
+  pages were regenerated from the canonical renderer (heatmap.html via
+  fetch-plus-nav-splice, its long single lines being unreadable
+  through the file transport); `tests/test_site_nav.py` expected nav
+  count 15 → 16. Four commits instead of one, forced by the sandbox
+  16 MiB push ceiling, all verified; every blob byte-identical
+  pre- and post-merge; CI green (test, engine); squash-merged
+  b8913eea; the 15 live pages re-verified in this session's fresh
+  re-fetch, each carrying the link exactly once.
+
+Ratification queue after this session: TWENTY candidate sharpenings,
+unchanged (these were engineering builds, not deep-reads; the twenty
+standing are those enumerated through deep-read session 20 plus probe
+E1), zero armed. T1 remains armed awaiting the owner's word; the
+blocked list stays blocked. Deep-read queue pointer unchanged: the
+next UNREAD triage entry is "Returns and Order Flow Imbalances:
+Intraday Dynamics and Macroeconomic News Effects" (score 34, x5459dc).
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live.
