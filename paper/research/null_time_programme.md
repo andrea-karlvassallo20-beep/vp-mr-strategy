@@ -2220,3 +2220,61 @@ highest-value remaining entry in its tier.
   rank per the read-slug mapping is "TradeFM: A Generative
   Foundation Model for Trade-flow and Market Microstructure"
   (score 31, on the shelf).
+
+## 42. MEASURED SESSION (2026-11-18), owner-authorized, fourth of the parallel regime: the AVFI fade-layer dossier — the owner's H8 tops/bottoms construction, encoded and mined
+
+- **Owner directive:** the owner supplied the AVFI v3.2 research
+  indicator (registered draft H8/H9 amendment, weekly NQ, spread
+  axis + tops/bottoms layer, CUSUM guard, indicator-not-strategy
+  discipline) and the "Andrea" VPVI candles script, saying: "these
+  2 are the best I could find, nothing else works, you can either
+  find what does, or help mine which seems to me on the right
+  track... even the 99% get to ride trends if they are just
+  present to press one button." The H8 construction was encoded
+  and measured: fresh 20-bar closing extremes + flow-fade gate at
+  the median, with the session-40 VFI z as the DECLARED stand-in
+  for the AVFI spread robust z, DAILY re-instantiation of the
+  weekly rule (grain difference declared); protocol pre-declared
+  in src/avfi_fade_layer_dossier.py. Descriptive; W2 confirmation
+  mandatory; no kill line moved; nothing armed; nothing trades
+  live.
+- **The cells (baseline 57.6% / 4.97%):** fresh 20d LOW alone -
+  0.596 first-move-up, 0.081 five-day arrival (n = 17,660); fresh
+  20d HIGH alone - 0.610, 0.090 (n = 13,230, the strongest arrival
+  concentration measured besides compositions - being present at a
+  continuing move); bottom fade (fresh low + flow z >= 0) - 0.588,
+  0.058 (n = 11,870): the H8 median flow gate SUBTRACTS at this
+  grain - flow holding up at a low is the COMMON case (2/3 of
+  fresh lows) so the gate removes the sharper tail; top fade
+  (fresh high + flow z <= 0) - 0.481, 0.038 (n = 1,673): BELOW
+  baseline, arrival collapsed - the owner's divTop is measurably
+  an EXHAUSTION state, an exit marker complementary to longs.
+- **The mining verdict:** (1) the price-extreme triggers do the
+  real work (arrival 1.6-1.8x baseline each); (2) the H8 median
+  flow gate dilutes instead of sharpening - the measured better
+  flow read is the flow EXTREMITY (session 40's bottom-decile
+  0.686 chip), not the flow SIGN, so the suggested v3.2 amendment,
+  to be pre-registered before any weekly evaluation: swap the
+  divBot gate from "flow z >= -fadeZ" to "flow z in the bottom
+  decile of its trailing distribution", trigger unchanged; (3) the
+  presence philosophy, quantified: the instrument skeleton remains
+  session 40's composition (quiet + base + flow low extremity,
+  9.4% five-day arrival) PLUS this session's reading that fresh
+  price extremes are themselves strong arrival states and
+  fresh-high-with-flow-fade marks the other end; (4) honest
+  boundaries: daily re-instantiation of a weekly rule, a proxy
+  substitution for the flow axis, discovery-panel conditionals,
+  W2 confirmation on the weekly grain is a named follow-up before
+  the H8 layer counts as evidence.
+- **Cross-references:** the AVFI v3.2 discipline (registered
+  defaults before evaluation, sealed holdout spent only by the
+  registered one-shot battery, no strategy-tester backtests) is
+  ALREADY the program's discipline - the owner's rig speaks the
+  house language; the H9 climax layer (volume surprise at dead
+  price result) is the absorption/VSA family adjacent to session
+  30's depth-elicitation and remains untested here (named
+  follow-up - it needs intraweek volume surprise construction).
+- **Deep-read queue:** unchanged, parallel - next unread by rank
+  per the read-slug mapping remains "TradeFM: A Generative
+  Foundation Model for Trade-flow and Market Microstructure"
+  (score 31, on the shelf).
