@@ -1215,3 +1215,60 @@ book models: a general framework" (score 37, xfccac8, already on the library tex
 shelf); with the session-9 triage-audit flag on record, rank is a candidate reading,
 and the owner's library policy governs when they diverge. Nothing measured, no kill
 line moved, nothing armed, nothing trades live.
+
+## 24. Null-time session 20 (2026-11-18): deep-read session 18 — the Markovian order-book ergodicity paper graded pure theory, default grade held
+
+- **Library deep-read session 18** (the standing queue's next UNREAD pointer, score 37,
+  xfccac8, consumed here; the paper was also the pre-assigned burst slot 04 paper, that
+  slot produced no repo trace, the consumption is declared here, and a late slot-04
+  landing of the same slug would be superseded per the PR #164/#165 pattern):
+  `paper/research/library/2026-11-18_markovian_orderbook_ergodicity_deep_read.md`
+  on Huang & Rosenbaum, "Ergodicity and diffusivity of Markovian order book models:
+  a general framework" (arXiv:1505.04936, q-fin.TR; theory-only, no data). Read:
+  Sections 1-5 in full detail (PDF pp. 1-18); proofs Section 7 skimmed for structure
+  (PDF pp. 18-25, Lyapunov/Meyn-Tweedie machinery, no interpretive content). Grade:
+  NO kill line changed. NO new candidate sharpening. Findings, page-cited:
+  (1) [reinforcing] the macroscopic limit of the entire class is Brownian motion via
+  strong mixing of stationary price increments (Theorems 4.1/4.2, Equation 7, PDF
+  p. 13) — inside the class there is no long-memory macro price, and any claim that
+  a microscopic LOB feature survives to macro scale is a finite-window pre-limit
+  claim, exactly what C1-L2's short-horizon benchmarking already tests; nothing here
+  licenses relaxing the OFI-benchmark family. (2) [reinforcing] ergodicity is earned,
+  not assumed: it is bought with a uniform negative-drift condition on every queue
+  above a threshold (Assumption 3.3, Example 2's simple form f - g < -r, PDF
+  pp. 10-11), and the stylized LOB shape is an invariant-distribution phenomenon
+  (PDF p. 3) — depth-shape readings are licensed only under a drift condition of this
+  kind. (3) [reinforcing] the paper's own boundary: a non-Markovian (self-exciting)
+  market-order component would force a complete revision of the approach except for
+  very specific cases, exponential Hawkes named (Conclusion, PDF p. 18) — the same
+  boundary met in deep-read 17, two independent frameworks placing the exponential
+  kernel exactly at the edge of tractability, which supports the declared kernel
+  family staying declared and reinforces the queued near-critical
+  regime-disclosure item's scope. (4) [interpretation caution] the reference price is
+  latent (explicitly not necessarily the mid, PDF pp. 3-4) and book updates carry the
+  price with a delay at state-dependent rates u/d (PDF pp. 6-9): instantaneous
+  event-to-price attribution is barred in this class; C1-L2's existing point-in-time
+  lag discipline is consistent cover, not new permission. (5) [source-quality note]
+  internal date discrepancy: title page "September 17, 2018" vs arXiv v1 stamp
+  "19 May 2015" (PDF p. 1), acquisition index records v1/2015; flagged, not resolved;
+  published version to be checked before formal citation. Laundering directions
+  named: (1) INTO — quoting the diffusive limit as proof that microstructure always
+  washes out, so short-horizon flow edges "cannot exist", is an asymptotic statement
+  about a model class under fitted drift conditions, not about finite-window
+  real-tape predictability; barred as a kill argument against C1-L2's own tests.
+  (2) OUT — reading the ergodicity theorems as "the LOB state is stationary in data,
+  so depth-regime features are always admissible": ergodicity is conditional on
+  Assumption 3.3's drift, which the tape never checks for free; without it, an
+  "equilibrium depth regime" reading is unlicensed. Standing caveat: theory-only,
+  large-tick design (K of order 10, PDF pp. 2-3), boundary distributions free
+  parameters (PDF p. 7) so the theorems narrow nothing about which specific model
+  generated any observed tape; no falsification content for C1-L2 or C8.
+
+Ratification queue after this session: SEVENTEEN candidate sharpenings (unchanged),
+zero armed. T1 remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue: the next UNREAD triage entry is "Simulating and analyzing a
+sparse order book: an application to intraday electricity markets" (score 37,
+x3ff3a4, on the library text shelf; also the pre-assigned burst slot 04 paper, no
+slot-04 trace exists); with the session-9 triage-audit flag on record, rank is a
+candidate reading, and the owner's library policy governs when they diverge.
+Nothing measured, no kill line moved, nothing armed, nothing trades live.
