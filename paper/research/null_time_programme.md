@@ -3322,3 +3322,41 @@ FIFTEEN candidates, zero armed. T1 remains armed awaiting the
 owner's word; the blocked list stays blocked. Next queue pointer:
 "Order Book Queue Hawkes-Markovian Modeling" (xce0ba3, score 31, on
 the shelf) - the paper's natural sibling.
+
+## 67. OWNER-DIRECTED MEASURED SESSION (2026-11-18), twenty-second of the parallel regime: "why not develop a state matrix flow theory system of flow with attractors and all? whilst waiting for l2" - the system is built and it is SLOW
+
+- **Built:** `src/flow_state_matrix_theory.py` - the 12-state Markov
+  system (flow zone {XB,B,A,XA} x price third {low,mid,high}),
+  pooled night-to-night transitions across the top-250 universe;
+  artifacts `clue_scan/flow_state_matrix_theory.{csv,md}`.
+- **The system's structure (the theory):** lambda2 = 0.9775,
+  relaxation ~44 NIGHTS - the system DWELLS, it does not flicker
+  (residence 16-19 nights in the cores; the dynamical statement of
+  the flow-age law and the 60-day horizon). FOUR ATTRACTORS, all at
+  the price lows: A_low (pi 31.6%), XA_low (pi 21.2%), B_low
+  (pi 12.7%), and the deep-washout core XB_low (pi 4.1%) - ~70% of
+  stationary mass in low-third states (the present market's
+  fingerprint, honestly noted, not a law). THE DRAINAGE FIELD:
+  every state's P^30 drains toward the low cores; XB_low drains to
+  B_low (washout heals by easing out of extremity - recovery passes
+  through B, matching session 63's zone-chain adjacency); XA_high
+  is the one top-side self-sustaining attractor (residence 10
+  nights) and carries the system's only large DRIFT reward
+  (fwd20 +6.1%) - the momentum attractor. THE REWARD FIELD: the
+  profitable edge is the BOUNDARY attractor XB_low - first-move-up
+  0.716 with persistent residence (17.9 nights: the entrant gets
+  TIME); the cores A_low/XA_low 0.696/0.688; mid-space flat.
+- **Dynamical summary for the owner:** the system is a slow
+  two-month machine whose attractors live at the lows; the washout
+  edge (XB_low) is where the deepest relief persists longest and
+  the drainage paths lead up-and-out through B to the positive
+  cores; the momentum top attractor (XA_high) is the only drift
+  seat.
+- **Model honesty:** first-order time-homogeneous Markov is a
+  MODEL (regime drift breaks it - session 48's law applied to our
+  own system); pi pools pairs and vintages; all in-sample; W2 owed
+  through the pre-registered battery (C2/C3 cover this system's
+  core cells). Nothing armed; nothing trades live.
+- **Deep-read queue:** parallel - next xce0ba3 "Order Book Queue
+  Hawkes-Markovian Modeling" (score 31). Ratification queue:
+  FIFTEEN candidates, zero armed.
