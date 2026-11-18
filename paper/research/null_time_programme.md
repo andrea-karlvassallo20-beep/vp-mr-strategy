@@ -1153,3 +1153,65 @@ moved, nothing armed, nothing trades live.
   corrigendum: SIXTEEN candidate sharpenings (unchanged), zero armed. T1 remains armed
   awaiting the owner's word; the blocked list stays blocked. Nothing measured, no kill
   line moved, nothing armed, nothing trades live.
+
+## 23. Null-time session 19 (2026-11-18): deep-read session 17 — the near-critical regime-disclosure rule for the branching-ratio trigger; the log-restoration corrigendum landed first
+
+- **Restoration first (machine-side, this session)**: the ## 22b corrigendum above was
+  composed and landed by this session as PR #169 (squash-merged as df5c852c, CI both
+  green): main's log restored byte-exact to 77,253 bytes, sha256-verified at the pushed
+  branch's raw SHA BEFORE the merge and re-verified at the merge SHA after; the new
+  standing rule (every log push verified at the pushed branch's raw SHA BEFORE its PR
+  merges, never merged on trust) held on its first live use. No claim, kill line, test,
+  data, or queue count was affected by the incident or the restoration.
+- **Library deep-read session 17** (the standing queue's next UNREAD pointer, score 38,
+  x47738d, consumed here after session 18 took the score-39 top; NB: this paper was also
+  the pre-assigned burst slot 02 paper, that slot produced no repo trace, the consumption
+  is declared here, and a late slot-02 landing of the same slug would be superseded per
+  the PR #164/#165 pattern):
+  `paper/research/library/2026-11-18_functional_limit_theorems_deep_read.md`
+  on Horst & Xu, "Functional Limit Theorems for Hawkes Processes"
+  (arXiv:2401.11495v3, math.PR, 2024; DFG CRC/TRR 388 B02; theory-only, no data).
+  Read: main results Sections 1-2 (PDF pp. 1-21) in full detail; proofs Sections 3-6
+  (PDF pp. 21-61) skimmed, Remarks 2.15/2.17 noted; the paper contains no empirical
+  content. Grade: NO kill line changed. ONE candidate sharpening queued, PENDING OWNER
+  RATIFICATION: **the near-critical regime-disclosure rule** — the long-run behavior is
+  fully determined by the offspring mean m AND the child-event dispersion
+  sigma = integral s*phi(s) ds (Abstract, PDF p. 1); every exponential kernel (and
+  mixture) has finite sigma, so exponential-family criticality is ALWAYS weak
+  criticality, where functional limit theorems do NOT hold and the rescaled intensity
+  converges to a CIR process WITHOUT mean reversion (Theorem 2.10, PDF p. 14; the
+  Jaisson-Rosenbaum near-unstable contrast, PDF pp. 2, 4), while the long-range-dependence
+  limits belong exclusively to the strongly critical heavy-tailed regime the declared
+  family cannot reach (Theorems 2.14/2.16, PDF pp. 15-16; Remark 2.15, PDF p. 16;
+  Sec. 1.2.4, PDF p. 5). Pre-declaration text: a branching-ratio trigger bar fired from
+  n-hat inside the pre-declared near-critical band must disclose the limit regime of
+  its declared fitted class (exponential => weakly critical => mean-reverting-CIR
+  asymptotics, NOT the strongly-critical long-memory story); reading language importing
+  criticality-with-long-memory from outside the declared kernel family is inadmissible;
+  non-disclosure makes the bar inadmissible. Harder to pass: the near-critical band
+  gains a mandatory stated-regime clause the old protocol did not have. Reinforcing,
+  no new item: the classical FCLT's sharp boundary Psi_1(t)/sqrt(t) -> 0
+  (Theorem 2.9, PDF pp. 12-13) holds trivially for exponentials and the convergence-rate
+  constant is exactly zero for the exponential kernel (Theorem 2.12 + Example 2.1,
+  PDF p. 15), so the declared family stays in the classical regime and the existing
+  day-block inference discipline stands; subcritical increments are always
+  asymptotically independent, long-range dependence impossible in the subcritical
+  regime regardless of kernel tail (Theorem 2.8, PDF p. 12); any kernel-family widening
+  must re-run the regime check; increment correlations at weak criticality decay
+  ~C/T (PDF p. 5). Laundering directions named: (1) importing the strongly-critical
+  LRD Gaussian limit as the "critical market" narrative smuggles in heavy-tailed-kernel
+  theory the declared family structurally cannot reach; (2) reading "no FCLT at weak
+  criticality" as "the trigger cannot work near n = 1" applies a long-run asymptotic
+  statement about the PROCESS to the finite-window ESTIMATOR distribution the trigger
+  actually reads; the two are not the same object. Source quality: arXiv v3,
+  theory-only, DFG-funded; typos noted ("Strongly critical Hakes processes", PDF p. 5;
+  "bee seen", PDF p. 13); published version to be checked before formal citation.
+
+Ratification queue after this session: SEVENTEEN candidate sharpenings (the sixteen
+standing plus the near-critical regime-disclosure rule joined 2026-11-18), zero armed.
+T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read
+queue: the next UNREAD triage entry is "Ergodicity and diffusivity of Markovian order
+book models: a general framework" (score 37, xfccac8, already on the library text
+shelf); with the session-9 triage-audit flag on record, rank is a candidate reading,
+and the owner's library policy governs when they diverge. Nothing measured, no kill
+line moved, nothing armed, nothing trades live.
