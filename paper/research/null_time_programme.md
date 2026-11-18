@@ -1593,3 +1593,75 @@ highest-value remaining entry in its tier.
   Deep-read queue: next unread by rank per the read-slug mapping
   is "Optimal Execution with Passive Market Impact" (score 33,
   on the shelf) - the sibling of this paper's framework.
+
+## 31. Null-time session 27 (2026-11-18): deep-read session 25 — a passive fill is the endpoint of an unseen tactical chain, and impact feeds back into one's own quoting
+
+- **Housekeeping first:** at the owner's request the synthesis
+  excursion was REVERTED (commit d77d578, git revert of the
+  synthesis commit) — the owner asked to go back to the queue
+  routine exactly as it stood; the synthesis file is gone, the log
+  ends at session 30 for that purpose, and the queue resumes where
+  session 30's pointer left it.
+- **Library deep-read session 25** (next UNREAD triage-rank entry,
+  per session 30's pointer — verified unread by the read-slug
+  mapping):
+  `paper/research/library/2026-11-18_passive_execution_optimal_deep_read.md`
+  on Barzykin, Boyce, Neuman & Tuschmann, "Optimal Execution with
+  Passive Market Impact" (arXiv:2607.28323v1, 2026; HSBC and
+  Imperial College London; the sibling of session 24's framework -
+  the authors call Ouazzani Chahdi et al. "the closest theoretical
+  antecedent"; first author is the same Barzykin as session 15's
+  HSBC industry read). A mesoscopic model: exponential fill
+  intensity lambda*e^{-k*delta}, per-level MLOFI impact decay
+  l, combined into a permanent passive impact rate eta*e^{-m*delta},
+  m = k + l; explicit optimal quotes when m = k (NASDAQ: l << k),
+  Lambert-W semi-explicit for m != k (LSEG FX: visible gap, Table 5).
+  Grade: NO kill line changed; NO new candidate sharpening.
+  Findings: (a) **[interpretation caution]** a passive fill in
+  recorded data is the ENDPOINT of an unseen tactical chain —
+  Remark 2.1: maintaining a quote at distance delta is repeated
+  cancel-and-repost, geometrically many more submissions the
+  deeper the quote, whose continuous limit IS the fill intensity
+  (PDF p. 5) — a fill event underdetermines the strategy that
+  produced it, and any feature treating fills as samples from a
+  single resting order's lifetime mismeasures its own input; a
+  new (tactical-chain) face of the existing C5 depth-measurement
+  discipline, nothing queued; (b) **[reinforcing]** distance is
+  an informative proxy only in the right tick geometry — the
+  authors themselves flag their large-tick MLOFI decay estimates
+  as "particular caution" cases where impact depends on volume
+  queued ahead and the coarse grid prevents distance from
+  substituting (PDF p. 15) — the mirror image of session 21 and
+  one more instance of the estimator-mode rule (session 11): the
+  same covariate changes information content with tick geometry;
+  (c) **[reinforcing]** the m ~ k coincidence is an empirical,
+  asset-class-, and construction-specific finding, NOT a law —
+  FX breaks it, and the FX estimates are conflated-snapshot,
+  synthetic-fill, public-data constructions that "capture only
+  part of the total FX liquidity" (PDF pp. 16-17): the
+  venue-freeze warrant (session 14) and the construction triple
+  (session 23) again; (d) **[cost-survival ammunition]** impact
+  feeds back into the agent's own quoting — stronger passive
+  impact makes the optimal quote DEEPER, fewer and slower fills,
+  implementation shortfall roughly unchanged (PDF pp. 9-11) — so
+  any K7-style cost layer must model the feedback of impact onto
+  one's own subsequent quoting or price a strategy the optimal
+  policy would not trade; (e) **[source-quality note]**
+  illustrative hand-set simulation parameters (Table 1) and
+  exposure-style synthetic FX fills — a method demonstration, not
+  venue facts; arXiv v1, unpublished at read time, check before
+  formal citation. Would-have-killed: passive fills treated as
+  samples from one order's resting lifetime would have made the
+  fill statistics of different distance cohorts incomparable with
+  no visible distortion (the chain lives upstream of every
+  observable), and static execution schedules under passive impact
+  would have missed the feedback the optimal policy exploits.
+  Cautions: mesoscopic by construction (no book state, no queue
+  priority, adverse selection absorbed into noise), permanent-only
+  impact in the core model, mixed tick geometries in the equity
+  sample. Ratification queue after this session: FOURTEEN
+  candidate sharpenings, zero armed (unchanged). T1 remains armed
+  awaiting the owner's word; the blocked list stays blocked.
+  Deep-read queue: next unread by rank per the read-slug mapping
+  is "Compound Hawkes Processes in Limit Order Books" (score 33,
+  on the shelf).
