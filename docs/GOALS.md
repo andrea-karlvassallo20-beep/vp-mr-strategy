@@ -69,21 +69,23 @@ construction.
   `paper/research/l2_data_acquisition_spec.md`); the L0 dry run is
   unblocked by the recorded L0 amendment; never claimable by a session.
 - Front 2 — the library deep-read queue. STATUS: ACTIVE. Next UNREAD
-  after the ## 61, ## 63, ## 66 and ## 67 landings (2026-11-19; x0d8b2a,
-  xf77014, xb710f4 and x77c554 consumed): "Hawkes processes for credit
-  indices time series analysis: How random are trades arrival times?"
-  (score 28, xdb216a); behind it "Forecasting duration in
-  high-frequency financial data using a self-exciting flexible residual
-  point process" (score 28, x72c407); re-read
+  after the ## 61, ## 63, ## 66, ## 67 and ## 68 landings (2026-11-19;
+  x0d8b2a, xf77014, xb710f4, x77c554 and xdb216a consumed):
+  "Forecasting duration in high-frequency financial data using a
+  self-exciting flexible residual point process" (score 28, x72c407);
+  behind it "Optimal trade execution and price manipulation in order
+  books with time-dependent liquidity" (score 28, x95643a); re-read
   the live tail before consuming; the ritual's slug-keyed unread rule
-  applies.
+  applies. NOTE ## 68: the deep-read counter since goal-state edition
+  2 is now FIVE (deep-reads 50-54) — see front 4.
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
   without real klines, and no invented data is substituted.
-- Front 4 — the synthesis pass. STATUS: next due when five or more
-  deep-read sessions have landed since goal-state edition 2 (deep-read
-  #50 onward; edition 2 was recorded with the deep-read counter at
-  49).
+- Front 4 — the synthesis pass. STATUS: DUE NOW (## 68 landing,
+  2026-11-19): five deep-read sessions (50-54) have landed since
+  goal-state edition 2; the next work-selecting session MUST run the
+  synthesis pass per the conductor protocol section 4 BEFORE any new
+  read.
 - Front 5 — gap-driven probes. STATUS: standing, per
   `docs/exploratory_channel.md`; up to one block per session at the
   session's discretion.
