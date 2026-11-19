@@ -5964,3 +5964,107 @@ branch/PR set, consult docs/goal_autonomy_protocol.md (v2, edition 2,
 rotation guidance applies to selection), and record its work choice and
 reason in its session-state note. Nothing measured, no kill line moved,
 nothing armed, nothing trades live.
+## 66. Null-time session 62 (2026-11-19): deep-read session 52 — Hawkes volatility on filtered tick structures (Lee) read; the aggregation-grid lesson absorbed as reinforcement, not sharpening; NO kill line changes, NO new sharpening, nothing armed
+
+Session-state note (work choice and its reason, recorded under the
+goal-autonomy conductor protocol v2, edition 2, section 3, item 3, the
+rotation guidance, via the GOALS.md operational rule): front 2, the
+library deep-read queue, selected as the lowest-numbered READY front.
+The choice chain, verified against the live tail at session start (main
+at 4420f36, tail ## 65, GOALS.md edition 1 read in full): the
+synthesis pass (front 4, the first-outranked item) is NOT due — two
+deep-read sessions had landed since goal-state edition 2 at choice
+time (#50 at ## 61, #51 at ## 63) against the rule's five, and this
+session's read makes three, still short of the cadence; front 1 is
+blocked on the owner (L2 environment + data) and never claimable; front
+3 is blocked on codespace/data presence, and its completion leg landed
+as ## 65; front 2 was last advanced three landings ago (## 63), so
+repeating it is lawful under the rotation rule's no-consecutive-repeats
+condition. The pointer was verified live, not from memory: the triage
+file (500 entries) and the library notes (52 dated notes) were read
+directly; the next UNREAD in score order per the landed ## 63/## 65
+records is the target consumed below; the xf77014 line remains consumed
+by ## 63 (its note cites the paper by content though its slug path
+differs from the kb-search convention — recorded here as an observed
+bookkeeping fact, no action taken, nothing renumbered).
+
+The paper: Kyungsub Lee, "Application of Hawkes volatility in the
+observation of filtered high-frequency price process in tick structures"
+(arXiv:2207.05939v2, single author, zero citations recorded in our
+index). Read against the ONE question. Verdict: NO kill line changes. NO
+new candidate sharpening. The grade and its reason, in four findings,
+page-cited in the note files
+(paper/research/library/2026-11-19_hawkes_volatility_filtered_ticks_deep_read.md):
+
+1. [reinforcing, no new item] The paper's own preprocessing confession is
+the session's main harvest: raw tick data (up to 60 events/second,
+AMZN 2018) does not fit a single-kernel exponential Hawkes, and the
+author's remedy is a 0.1-second filter "validated" by stability with "no
+clear standard" for the interval (PDF pp. 4, 16-17) — the aggregation
+grid as an unstated researcher degree of freedom, demonstrated live. The
+C1-L2 spec already closes this channel before the data: labels on
+wall-clock economic barriers with the TRADE-through touch rule,
+covariates on the event clock, frozen barrier widths with the noise floor
+(c1_l2_test_spec.md sections 1-2). Reinforcement, not tightening.
+
+2. [interpretation caution] The semi-parametric dependent-mark variance
+can return NEGATIVE variance estimates; the paper says so and prefers
+the restricted linear-in-t corollary (Theorem 13, Corollary 14, PDF
+p. 14). Estimator-discipline family (the queued estimator-mode
+sharpening's neighborhood): any future marked-Hawkes variance machinery
+must pre-declare the restricted estimator and name a negative-variance
+output an abort signal, never a license to switch estimators after
+results. Reading rule only.
+
+3. [reinforcing, no new item] At daily grain, daily Hawkes volatility,
+5-minute realized volatility, and absolute daily changes track the same
+dynamics and are treated as interchangeable (PDF pp. 19-21, Figures
+8-10) — a direct instance of the premise the THIRTY-FIRST queued
+sharpening (the C1-L2 base-rate confrontation, ## 65) forces into the
+spec: fine-grain measurements summarized at daily grain add nothing
+over the daily measure, so the L2 positive must be pre-declared as
+incremental. The queue item stands pending owner ratification; this
+reading strengthens its motivation and queues nothing.
+
+4. [interpretation caution] The intraday predictability headline (the
+Hawkes-GARCH blend weight crossing at ~30 minutes after open, PDF
+pp. 24-25) and the futures-stock result (pre-market E-mini Hawkes
+volatility explaining post-open AAPL volatility at adjusted R-squared
+0.52 vs two-scale realized variance 0.27, PDF pp. 25-27) carry no
+multiplicity control across T, one name, one year, no costs, no overlap
+control. R-squared against a same-day target is not edge and not a C8
+input; the shape (early-session fine-grain information carrying what
+the previous day's daily summary cannot) is the standing C1-L2/C8
+motivation, ammunition only. Also recorded: residual Q-Q rejections
+dismissed without test on some days (PDF pp. 19-20), a named example of
+fit-complacency to refuse.
+
+What this paper would have killed if the programme had done it wrong:
+the aggregation-grid death (a "signal" manufactured at one hand-chosen
+grid and absent at another), the post-hoc daily-grain collapse (finding
+3 discovered only after the L2 phase, as an excuse), and the
+post-null estimator-switching channel (finding 2). All three are already
+closed by frozen clocks, the queued confrontation, and the
+pre-registration discipline respectively.
+
+Not changed: nothing measured, no kill line moved, nothing armed,
+nothing trades live. docs/DECISIONS_PENDING.md is NOT touched this
+session per the rule (no sharpening was queued): the ratification queue
+stands at THIRTY-ONE candidate sharpenings plus probe E1, zero armed,
+composition unchanged from the ## 65 landing. The GOALS.md front-2
+status line is refreshed (the one operative bookkeeping edit allowed to
+this session): xb710f4 consumed; the next UNREAD is "Self-exciting
+price impact via negative resilience in stochastic order books" (score
+28, x77c554), behind it "Hawkes processes for credit indices time series
+analysis: How random are trades arrival times?" (score 28, xdb216a);
+the successor recomputes the head from the live triage file and the
+live tail before reading. Deep-read counter since edition 2: three
+(50, 51, 52); the synthesis pass (front 4) is not yet due at five. T1
+remains armed awaiting the owner's word in its booked state (survived
+all five kill lines with sign inverted; T2 tested-fail); the blocked
+list stays blocked. A successor session must re-read the live main tail
+and the branch/PR set, consult the conductor protocol (sections 2, 3,
+6, 7, 8) and docs/GOALS.md, choose a front per the rotation rule under
+the standing order, and record the choice and the reason in its
+session-state note. Nothing measured, no kill line moved, nothing armed,
+nothing trades live.

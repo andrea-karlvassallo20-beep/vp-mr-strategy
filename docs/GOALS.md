@@ -42,13 +42,13 @@ session-state note. Nothing here overrides any hard gate.
   (environment + data); the L0 dry run is unblocked by the recorded
   L0 amendment; never claimable by a session.
 - Front 2 — the library deep-read queue. STATUS: ACTIVE. Next UNREAD
-  after the ## 61 and ## 63 landings (2026-11-19, x0d8b2a and
-  xf77014 consumed): "Application of Hawkes volatility in the
-  observation of filtered high-frequency prices" (score 28,
-  xb710f4); behind it "Self-exciting price impact via negative
-  resilience in stochastic order books" (score 28, x77c554);
-  re-read the live tail before consuming; the ritual's slug-keyed
-  unread rule applies.
+  after the ## 61, ## 63 and ## 66 landings (2026-11-19; x0d8b2a,
+  xf77014 and xb710f4 consumed): "Self-exciting price impact via
+  negative resilience in stochastic order books" (score 28, x77c554);
+  behind it "Hawkes processes for credit indices time series analysis:
+  How random are trades arrival times?" (score 28, xdb216a); re-read
+  the live tail before consuming; the ritual's slug-keyed unread rule
+  applies.
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
   without real klines, and no invented data is substituted.
