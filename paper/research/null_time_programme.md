@@ -517,7 +517,8 @@ awaiting the owner's word; the blocked list stays blocked.
   with an immediate large prediction - OFI-shaped triggers are
   spoofable by construction on this venue. Gifts recorded: GMADL
   (direction-aware, magnitude-weighted) as a candidate responder
-  metric for C1-L2's short-horizon label; their purged  walk-forward with explicit temporal gap as an independent
+  metric for C1-L2's short-horizon label; their purged
+  walk-forward with explicit temporal gap as an independent
   same-venue citation for the programme's purge/embargo
   discipline; and the horizon framing - stable cross-asset OFI
   predictability on Binance perps at 1-SECOND horizons motivates
@@ -1036,7 +1037,8 @@ measured, no kill line moved, nothing armed, nothing trades live.
   corroboration for the already-recorded hour-of-day stratification and seasonality
   items, nothing added; (2) interpretation caution: the "24/7 algorithmic trading
   impact is rather negligible" headline (PDF pp. 19–20) is a SHAPE inference from
-  ~1%-R² smooths, in one two-month vacation window, at 5-minute grain, with no direct  algorithm-share measurement — agent-mix statements may never be imported from
+  ~1%-R² smooths, in one two-month vacation window, at 5-minute grain, with no direct
+  algorithm-share measurement — agent-mix statements may never be imported from
   seasonality shape alone, and the 2018-spot reading does not date 2024–25 perps in
   either direction (regime-dating the session-6 fragility premise honestly);
   (3) the on-chain/off-chain passage (PDF p. 19) reinforces the proxy-refusal layer:
@@ -1555,7 +1557,8 @@ trades live.
   the fit exactly on the constraint boundary; under the queued rule
   such a reading is MISSING, not high, not near-critical.
   Reinforcing, no new item — the exogenous share of fitted excitation
-  is an estimator-pipeline PRODUCT (cut-off grid, sign-uniformity  constraint, a 0.01-norm threshold zeroing 79 of 144 kernels, PDF
+  is an estimator-pipeline PRODUCT (cut-off grid, sign-uniformity
+  constraint, a 0.01-norm threshold zeroing 79 of 144 kernels, PDF
   p. 7, inhibitory flooring, and the post-hoc rebuild of exogenous
   intensity because the raw estimate is "massively overestimated",
   PDF p. 6), a second named exhibit for the near-critical
@@ -2074,7 +2077,8 @@ kill line moved, nothing armed, nothing trades live.
   record, but the no-relaxation result (impact stops at the
   metaorder's end because queues revert to the stationary state
   immediately in the scaling limit, PDF pp. 18-19) is a consequence
-  of the assumed queue mean-reversion, not an empirical claim, and  the market/limit impact decomposition holds only under the
+  of the assumed queue mean-reversion, not an empirical claim, and
+  the market/limit impact decomposition holds only under the
   declared approximation that market-order volumes are negligible
   against limit and cancel volumes (PDF p. 18); read as shape
   intuition, never read backwards as an expected BTCUSDT property.
@@ -2593,7 +2597,8 @@ kill line moved, nothing armed, nothing trades live.
   conditioning can quietly embed forward-looking flow information,
   the costume failure K1 exists to catch. Two pre-declarations.
   (a) Anticipation-content declaration: every queue-state-
-  conditioned passive feature reading in the C1-L2 L2 arm must be  accompanied, recorded on TRAIN, by a declaration of which flow
+  conditioned passive feature reading in the C1-L2 L2 arm must be
+  accompanied, recorded on TRAIN, by a declaration of which flow
   programs the declared state variable can respond to on the
   programme's actual venue and fields (protocol-announced flow,
   and statistically learnable from public flow either way), made
