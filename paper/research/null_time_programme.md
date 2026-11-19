@@ -5092,4 +5092,86 @@ nothing trades live.
   docs/goal_autonomy_protocol.md, and record its work choice and reason
   in its session-state note.
 
-__ENTRY__
+## 59. Null-time session 55 (2026-11-19): corrigendum — the goal-autonomy conductor file found corrupted in its landing commit; tail repaired in place with reconstruction markers; ONE candidate sharpening queued (the corrupt-landing sweep for the integrity guard); no deep-read consumed, queue pointer unchanged
+
+Session-state note (work choice recorded under the conductor protocol's
+grant, docs/goal_autonomy_protocol.md): this session began from the
+landed ## 58 closing instruction — re-read the live main tail and the
+branch/PR set, consult the protocol, record the work choice and reason.
+The live tail re-read: ## 57 (deep-read 49, the queue-reactive paper)
+and ## 58 (the protocol installation) had landed; open-PR set empty;
+no in-flight branch. On consulting docs/goal_autonomy_protocol.md this
+session found the file itself corrupted (facts below), i.e. the
+operative conductor document was partially unreadable — the exact
+condition the protocol's own fail-safe names. Work choice therefore:
+instrument-defect repair (the 2026-11-16 corrigendum/typo precedent, in
+place, commit message stating exactly what moved) rather than the
+default deep-read; reason: a conductor protocol that cannot be read
+cannot be consulted, and every future session would otherwise hit the
+same wall. The deep-read head remains readable and is left to the next
+session; the fail-safe default is preserved. Composition defect
+disclosed in the same breath: this session's first push to the working
+branch carried placeholder text where the log entry belonged and an
+incomplete commit message — caught at byte-verification before any
+PR was opened, corrected by a follow-up commit on the same branch,
+nothing of it reached main.
+
+The defect, with evidence (nothing asserted without the command output
+that showed it): the file on main decodes as VALID UTF-8 (python:
+decode succeeds, 5,663 bytes), so the standing integrity guard —
+marker sweep plus library honesty audit — had no way to see the
+damage, and the landing push (commit 17c4035, the protocol's single
+commit) was clean by construction. Within that valid-UTF-8 file, the
+first 4,399 bytes are intact original text through section 3, item 2,
+which stops mid-sentence at "(as its own "; the remaining ~712 bytes
+are binary mojibake (valid codepoints, garbage semantics: ancient
+scripts, combining marks, C0/C1 controls), and the rest of section 3
+and section 4 are absent. The installing session's log entry ## 58
+describes the missing content (director overrides; the fail-safe; the
+synthesis pass and its sanctioned channels), so the loss is bounded
+and recoverable from the record. A repo-wide scan (every tracked text
+suffix, printable-ratio screen) found this class of corruption in
+exactly one file; the docs/library/text/ extracts legitimately show
+math-heavy lines from PDF extraction and are not corruption.
+
+The repair: docs/goal_autonomy_protocol.md reconstructed from a
+REPAIR NOTE marker at the cut point — intact original text above the
+marker preserved verbatim, the reconstruction below built strictly
+from log entry ## 58's own record of the design (cadence-rule
+completion, overrides clause, fail-safe clause, section 4 synthesis
+pass with its sanctioned channels), each clause tied to the log; no
+clause that ## 58 does not support was invented. The owner's
+ratification (chat directive, 2026-11-19) is untouched; no grant was
+widened, no carve-out weakened — this is a mechanical transmission
+repair of a ratified document, logged as this corrigendum.
+
+One candidate sharpening queued, PENDING OWNER RATIFICATION: the
+corrupt-landing sweep — a third integrity-guard check that fails any
+tracked text file whose content shows a printable-ratio collapse or
+C0-C1 control bytes beyond tab/newline/CR in any contiguous region,
+with the legally acquired PDF extracts under docs/library/text/
+explicitly scoped out (expected extraction artifacts, demonstrated by
+the repo-wide scan); harder-to-pass, tightening the marker-sweep
+precedent born from the 2026-11-16 incident, because every future
+landing must prove its text is text. Honest scope note: the file
+decoded as valid UTF-8, so a decodability check alone would NOT have
+caught it; the sweep must be ratio-based, and the exact thresholds
+are proposals to be fixed in the ratification. Not implemented this
+session: sharpenings queue and wait for the owner's word, exactly as
+before.
+
+Not changed: no deep-read consumed this session; the deep-read queue
+pointer is unchanged (next UNREAD: "From Glosten-Milgrom to the whole
+limit order book and applications to financial regulation", score 29,
+x0d8b2a, then "A Hawkes Microfoundation for Multitype Inverse Gaussian
+Subordinators", score 29, xf77014). Nothing measured, no kill line
+moved, nothing armed, nothing trades live. Ratification queue after
+this session: THIRTY candidate sharpenings plus probe E1 (twenty-nine
+through deep-read 49 plus the corrupt-landing sweep queued here), zero
+armed; docs/DECISIONS_PENDING.md updated this session BECAUSE a
+sharpening was queued, per the rule; T1 remains armed awaiting the
+owner's word in its booked state (survived all five kill lines with
+sign inverted; T2 tested-fail); the blocked list stays blocked. A
+successor session must re-read the live main tail and the branch/PR
+set before consuming anything. Guard clean. Nothing measured, no kill
+line moved, nothing armed, nothing trades live.
