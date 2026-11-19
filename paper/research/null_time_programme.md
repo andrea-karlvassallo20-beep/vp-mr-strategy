@@ -517,8 +517,7 @@ awaiting the owner's word; the blocked list stays blocked.
   with an immediate large prediction - OFI-shaped triggers are
   spoofable by construction on this venue. Gifts recorded: GMADL
   (direction-aware, magnitude-weighted) as a candidate responder
-  metric for C1-L2's short-horizon label; their purged
-  walk-forward with explicit temporal gap as an independent
+  metric for C1-L2's short-horizon label; their purged  walk-forward with explicit temporal gap as an independent
   same-venue citation for the programme's purge/embargo
   discipline; and the horizon framing - stable cross-asset OFI
   predictability on Binance perps at 1-SECOND horizons motivates
@@ -1037,8 +1036,7 @@ measured, no kill line moved, nothing armed, nothing trades live.
   corroboration for the already-recorded hour-of-day stratification and seasonality
   items, nothing added; (2) interpretation caution: the "24/7 algorithmic trading
   impact is rather negligible" headline (PDF pp. 19–20) is a SHAPE inference from
-  ~1%-R² smooths, in one two-month vacation window, at 5-minute grain, with no direct
-  algorithm-share measurement — agent-mix statements may never be imported from
+  ~1%-R² smooths, in one two-month vacation window, at 5-minute grain, with no direct  algorithm-share measurement — agent-mix statements may never be imported from
   seasonality shape alone, and the 2018-spot reading does not date 2024–25 perps in
   either direction (regime-dating the session-6 fragility premise honestly);
   (3) the on-chain/off-chain passage (PDF p. 19) reinforces the proxy-refusal layer:
@@ -1557,8 +1555,7 @@ trades live.
   the fit exactly on the constraint boundary; under the queued rule
   such a reading is MISSING, not high, not near-critical.
   Reinforcing, no new item — the exogenous share of fitted excitation
-  is an estimator-pipeline PRODUCT (cut-off grid, sign-uniformity
-  constraint, a 0.01-norm threshold zeroing 79 of 144 kernels, PDF
+  is an estimator-pipeline PRODUCT (cut-off grid, sign-uniformity  constraint, a 0.01-norm threshold zeroing 79 of 144 kernels, PDF
   p. 7, inhibitory flooring, and the post-hoc rebuild of exogenous
   intensity because the raw estimate is "massively overestimated",
   PDF p. 6), a second named exhibit for the near-critical
@@ -2077,8 +2074,7 @@ kill line moved, nothing armed, nothing trades live.
   record, but the no-relaxation result (impact stops at the
   metaorder's end because queues revert to the stationary state
   immediately in the scaling limit, PDF pp. 18-19) is a consequence
-  of the assumed queue mean-reversion, not an empirical claim, and
-  the market/limit impact decomposition holds only under the
+  of the assumed queue mean-reversion, not an empirical claim, and  the market/limit impact decomposition holds only under the
   declared approximation that market-order volumes are negligible
   against limit and cancel volumes (PDF p. 18); read as shape
   intuition, never read backwards as an expected BTCUSDT property.
@@ -2597,8 +2593,7 @@ kill line moved, nothing armed, nothing trades live.
   conditioning can quietly embed forward-looking flow information,
   the costume failure K1 exists to catch. Two pre-declarations.
   (a) Anticipation-content declaration: every queue-state-
-  conditioned passive feature reading in the C1-L2 L2 arm must be
-  accompanied, recorded on TRAIN, by a declaration of which flow
+  conditioned passive feature reading in the C1-L2 L2 arm must be  accompanied, recorded on TRAIN, by a declaration of which flow
   programs the declared state variable can respond to on the
   programme's actual venue and fields (protocol-announced flow,
   and statistically learnable from public flow either way), made
@@ -2904,3 +2899,85 @@ blocked list stays blocked. Deep-read queue pointer: the next UNREAD
 triage entry is "TradeFM: A Generative Foundation Model for
 Trade-flow and Market Microstructure" (score 31, xe7dc7f). Nothing
 measured, no kill line moved, nothing armed, nothing trades live.
+
+## 41. Null-time session 37 (2026-11-19): deep-read session 33 — the TradeFM generative foundation model read; default grade, nothing queued
+
+- **Library deep-read session 33** (the standing queue's next UNREAD
+  pointer, score 31, xe7dc7f, consumed here):
+  `paper/research/library/2026-11-19_tradefm_generative_foundation_deep_read.md`
+  on Maxime Kawawa-Beaudan, Srijan Sood, Kassiani Papasotiriou,
+  Daniel Borrajo and Manuela Veloso (J.P. Morgan AI Research, New
+  York), "TradeFM: A Generative Foundation Model for Trade-flow and
+  Market Microstructure" (arXiv:2602.23784v1, stamped 27 February
+  2026): a 524M-parameter decoder-only Transformer trained on 10.7B
+  tokens of raw US-equity trade events across more than 9,000
+  tickers, with scale-invariant bps-relative features, an
+  EW-VWAP-estimated mid in the deliberately partial trade-only view
+  (PDF pp. 4-5, 15-16), mixed-base composite tokenization with bin
+  edges calibrated on the first 30 days and 1st/99th-percentile
+  outlier bins (PDF pp. 5-7, 20), and a closed-loop deterministic
+  simulator; validated only on stylized facts and distributional
+  fidelity — 2-3x lower K-S distance than a Compound Hawkes
+  baseline on return distributions (Table 2, PDF p. 9), lowest
+  distances on most order-flow marginals but losing to Hawkes on
+  spreads (Table 3, PDF p. 10), moderate zero-shot perplexity
+  degradation on held-out China and Japan (PDF pp. 10-11, 24) —
+  with no predictive or edge experiment anywhere in the paper.
+  Read against the one question, the verdict is the default grade:
+  NO kill line changes, NO new candidate sharpening. Graded
+  findings. Reinforcing, no new item — bps-relative feature
+  construction shown distributionally stationary across more than
+  9,000 assets and a full year of regime change where tick-based
+  construction is not (Figures 7, 12, PDF pp. 15, 24-25), a
+  corporate-scale second corpus for the already-queued
+  scale-constant declaration; no bin edges, halflife or
+  liquidity-tier cuts transfer. Reinforcing, no new item — the
+  mid-price in a trade-only view is an estimator with a declared
+  convention (two coupled EMAs, time-based halflife, PDF pp. 4-5,
+  15-16), corroborating the queued estimator-mode component's
+  premise; the C1-L2 L2 arm observes the book directly, so nothing
+  extends. Interpretation caution — stylized-fact reproduction is a
+  marginal-distribution test compatible with zero predictive
+  information (the calibrated ZI null both passes and fails parts
+  of it, PDF pp. 9, 23); it is the same logic as the C8 shuffled-
+  arrival placebo and can never be cited as evidence that a
+  programme feature carries information. Interpretation caution —
+  perplexity and distributional-fidelity rankings (2-3x over
+  Hawkes, zero-shot APAC transfer) are generative smoothness, not
+  information content, and the authors themselves flag closed-loop
+  model-simulator confounding as unresolved (PDF p. 10); treating
+  either as an information ranking is a laundering move.
+  Cost-survival ammunition — the paper's synthetic-rollout
+  backtesting, stress-injection and RL-training agenda (PDF
+  pp. 26, 29) names the failure a future K7-style layer must
+  forbid: validating on generated data substitutes the
+  generator's smoothed tails for the market's, and the
+  simulator's spread behavior is the paper's own acknowledged
+  weak point (Table 3, PDF p. 10); declared as assumptions any
+  such layer must carry, the layer does not exist, nothing
+  operational is touched. Source-quality note — an industry
+  research report, arXiv v1 February 2026, unreviewed at reading,
+  zero citations at acquisition, JPM disclaimer carried (PDF
+  p. 12), proprietary unreproducible training data; a solid,
+  well-disclosed generative-engineering paper with no
+  claim-bearing material for C1-L2 or C8, graded exactly at that
+  level; published version to be checked before formal citation.
+  Killed-if-wrong: if the programme had allowed "a large model
+  learned universal market structure" to support any claim, this
+  paper is exactly the artifact that would have done the
+  laundering — a 524M model with a 2-3x fidelity win and zero
+  predictive claims; and any future cost-survival layer that
+  adopted synthetic-rollout evaluation at face value would rest
+  its cost estimates on the simulator's weakest fidelity point.
+  The library-is-ammunition rule, the placebo discipline, and the
+  declaration above are the inoculation.
+
+Ratification queue after this session: TWENTY-SIX candidate
+sharpenings (unchanged from session 36: the twenty-five standing
+plus the queue-label convention declaration rule joined through
+deep-read session 32), zero armed. T1 remains armed awaiting the
+owner's word; the blocked list stays blocked. Deep-read queue
+pointer: the next UNREAD triage entry is "Diffusive Limit of
+Hawkes Driven Order Book Dynamics With Liquidity Migration"
+(score 31, x5db64b). Nothing measured, no kill line moved, nothing
+armed, nothing trades live.
