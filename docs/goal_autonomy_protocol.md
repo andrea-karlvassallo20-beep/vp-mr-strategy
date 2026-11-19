@@ -82,4 +82,57 @@ with the log entry recording the change). Nothing else edits it.
 At session start, after re-reading the live main tail and the branch/PR set (the main-wins race protocol is unchanged):
 
 1. Default: if the standing deep-read ritual has a readable UNREAD head, the session may run it, exactly as codified. Nothing is revoked.
-2. Cadence rule: if five or more deep-read sessions have landed since the current goal-state edition, the session runs the synthesis pass FIRST (as its own session, or before its read ⅒ьݸщ䁕ѡȁ݅䤰ѡɕɕ́͡ѡ͑єѡѥՕ̸(̸=ٕɉɕ聄͕͍䁍Չ͑ѕєɕЁɅѥ(5ɥٕIյхѥаѽɕEȤ=91dݥѠ(ɕɑɕͽѥѼѡٔ$ЁЈ́Ё(ɕͽ쀉ѡͥѡͥ́E͌ၽ͕͌`ȀѡŕՔ(́еѡɕ́ݕɔ̸͕(иQьɕͽɔɕЁѡѽѡ͕͍́(щ䰁ѡ͕͍͑єє́ɔՑх쁄̨ɉȁɕɑ́܁щ䰁ٕȁѕ(Ըͅ聥ѡ́Iѽ́չɕչEɍȨѕɹ䁥ͥ͑аѡ͕͍ɕ́ѡᕐ͑ɥѕ(ɕɑ́ѡՉMɕѕ٥ȁ́Ёѽ(ѡձаٕȁɕqЁȁи((иQͥѡͥ́E͌()]ЁЁ̰ɑȨ((ĸÍѡ͐ٔɅɤѕ́͐ѡIɅ́ɕ͑ɕ(́̀EUȽɕ͕ɍŽɽѕ͑}́(ݽɽѕɅѥ}́ήɽ}ɽͥѡͥͽ́ѡ(ɕ͑̀̽ɕ}͐(̽Ʌɤ}щ|Ԁ9}щ}͍ɕ̹ͽ(ȸ9́L聙ɽьѡŕՔ́ЁٕȀQ́ѕɴ(͑ɕѕɔŕѥ͍̰ɽ͌ɭЁ0Ȥщѥ́Ш啐ѡɕɐ(̸5䁁ɽՍѡɽ՝ѡ᥍ѥͅѥ̨єщ(ѥ̀EUɌ1Idͥѡɕ}ͥѽɤ́ɕ͑́ȨхՕ́䃊P܁ŕͥѥ́ɕݹȵѕє(͡Ɂ̀ŕՕѼ̽%M%=9M}A9%9Uȁѡ͑(ɕ̃Pѡ=91dЁѡЁٕȁɕٕ́ɽ͕͍I(I}́ͅȁѡၱɅѽɤѡᐁ͑єѥ(и1́э́ьݸձѥщ䰁ѥѱ́ͥѡͥ́E͌(ݥѠьIՍьյɅѕ()!ɐьչ聄ͥѡͥ́E͕͌ɕ́ѡɵ́ѡ)ѕ́Ʌɤ%9Q<䁍Uѡ%9Q<=UPչɥɕ́)ѡٕ͑́%Ё́ɔq͑0ЁمՅѥ͑8((ԸMхمɥьɕ͑ѕٕɤ((U1PMMU5AQ%=8聑ɔ́쁑ՉIٕȁ̸ٕ(9ѡ͕ɕՑͥѡɽ镸ѕ̬ٕ쁹ѡ(ɵ쁹ѡщ́ٔ쁹Ր́Ёչȁ䁙Ʌ(A䁱쁕ɉɌɕɑ́܁щ̬ݥ́Ʌ̸(Q͐ɕ}ɑ͍q̨͑ѥٔɕ͕ьɔ̨̬ѡ́ͥѱ䁑ɽA(
+2. Cadence rule: if five or more deep-read sessions have landed since the current goal-state edition, the session runs the synthesis pass FIRST (as its own session, or before its read).
+
+3. Overrides: a session may run other work instead of the deep-read
+ritual — a corrigendum, an instrument or infrastructure repair, an
+exploratory probe, a synthesis product — only with a recorded reason
+in its session-state note, tying the choice to the written backlog in
+section 2.
+
+4. Fail-safe: if this protocol file is unreachable, truncated, or
+internally inconsistent, the session falls back to the fixed deep-read
+ritual and logs the fallback with the reason. The ritual is never
+blocked by this protocol's condition.
+
+## 4. The synthesis pass
+
+The synthesis pass re-reads the live record and names gaps: against
+the registered specs and the reading lists, it asks what the record
+now lacks and what the next unit of work should be. Its products
+travel ONLY through the sanctioned channels:
+
+- Catalogued-paper triage candidates for the library queue.
+- Sharpening candidates to the pending ratification queue, exactly as
+  deep-read notes queue them (PENDING OWNER RATIFICATION, never
+  self-armed).
+- Probe proposals for the exploratory channel, at zero status until
+  the owner fires them.
+- The next dated edition of the goal state (section 2), which only
+  this pass may rewrite.
+
+The synthesis pass measures nothing, arms nothing, and launders
+nothing INTO any spec.
+
+## 5. Corrigendum note (2026-11-19, log entry ## 59)
+
+This file landed corrupted in PR #224 (log entry ## 58): from the
+middle of section 3, item 2, the byte stream degenerated into
+encoding garbage and the file ended mid-garbage, with the remainder of
+section 3, section 4, and the fail-safe text lost or unreadable on
+main. Log entry ## 58 itself landed clean and records the protocol's
+intent in its own words; this corrigendum is reconstructed from that
+record. What is verbatim below the cut line: nothing. What is
+verbatim above it: sections 1 and 2 and section 3's items 1 and 2
+through the phrase "(as its own session, or before its read". The
+terminal period of item 2, items 3 and 4, section 4, and
+this section are reconstructions, faithful to the
+landing entry's recorded summary, not restorations of lost wording; the
+original wording cannot be recovered and is not guessed at beyond the
+recorded phrases. The integrity guard passed the corrupted file
+because it sweeps conflict markers and library provenance labels,
+not byte-level encoding sanity; a proposed guard extension (reject
+replacement characters and non-printable garbage in docs/*.md) is
+recorded in log entry ## 59 as a named gap for the next infrastructure
+session, not implemented by this corrigendum. The goal state
+(section 2, edition 1) was untouched by the corruption and stands.
