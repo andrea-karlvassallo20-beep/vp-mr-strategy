@@ -4604,3 +4604,100 @@ session-13 candidate listing); a successor session must re-verify it
 unread against main's notes and the open PR set before consuming
 anything. Nothing measured, no kill line moved, nothing armed, nothing
 trades live.
+## 55. Null-time session 51 (2026-11-19): deep-read session 47 — the MLOFI multi-level order-flow imbalance paper read; the PR-219 supersession closed out; NO kill line changes, NO sharpening, nothing armed
+
+- **Session-state note (declared before the read)**: this successor session
+  replaced an abandoned session that had consumed the x618573 variance-Hawkes
+  pointer while the parallel slot-24 session (log entry ## 54) merged the
+  same target onto main independently. Per the standing rule the duplicate
+  session was abandoned before merge: PR 219 was closed unmerged with a
+  supersession comment; the branches deep-read-46-variance-hawkes-energy and
+  deep-read-21-compound-hawkes-lob-order-size are dormant and must never be
+  merged. This session then consumed the queue's next UNREAD entry. No paper
+  was double-read: the abandoned session's note never landed on main.
+- **Library deep-read session 47** (the standing queue's next UNREAD
+  pointer, score 29, x09d0b5, consumed here):
+  `paper/research/library/2026-11-19_mlofi_deep_read.md`
+  on Ke Xu, Martin D. Gould and Sam D. Howison, "Multi-Level Order-Flow
+  Imbalance in a Limit Order Book" (arXiv:1907.06230v2, Oxford Mathematical
+  Institute, dated 29 October 2019). Extract complete and page-marked
+  (32 pp.); read in full; no inaccessibility, no shelf gap; unreadness
+  verified against all 47 library notes on main and the open PR set before
+  the read. The paper defines MLOFI as the depth-indexed generalization of
+  Cont-Kukanov-Stoikov OFI over the first M populated price levels per side
+  (Eqs. 9-12, PDF pp. 8-9), computes it EXACTLY on Nasdaq LOBSTER event
+  data for 6 stocks spanning relative tick sizes (AMZN, TSLA, NFLX
+  small-tick; ORCL, CSCO, MU large-tick), all of trading year 2016,
+  hidden liquidity excluded, first/last 30 minutes excluded, and fits the
+  CONTEMPORANEOUS linear model deltaP = alpha + sum beta_m MLOFI_m (Eq. 16,
+  PDF p. 14) on 10-second windows inside 30-minute windows (2772
+  regressions per stock), first by OLS then by Ridge with lambda chosen by
+  5-fold cross-validation (50 log-spaced candidates, PDF p. 19). Under OLS
+  the beta_m are unstable and weakly significant — the MLOFI components are
+  strongly multicollinear (correlations above 0.5-0.7, eigenvalue ratios
+  near 0, Figs. 1-2, PDF pp. 16-18) — while Ridge gives strongly significant
+  beta_m (Tables 8-9, PDF pp. 20-21), and out-of-sample RMSE improves with
+  every added level (59-74 percent for large-tick, 15-31 percent for
+  small-tick stocks at M = 10 vs OFI alone, Table 10, PDF p. 26), with the
+  authors themselves exhibiting OLS overfitting for AMZN/TSLA (PDF p. 24)
+  and reversing Cont et al.'s appendix conclusion partly by switching from
+  in-sample adjusted R2 to out-of-sample RMSE. Read against the ONE
+  question. **Grade: NO kill line changed. NO candidate sharpening.**
+  Findings, page-cited, in the note.
+- Findings: all reinforcing, no new item — (1) the headline relationship is
+  SAME-WINDOW contemporaneous, not predictive: near-R2-of-1 for large-tick
+  stocks at M = 10 (PDF p. 23) is close to mechanical bookkeeping, so any
+  future citation of this paper as "deep-book flow predicts price" launders
+  contemporaneity into prediction, exactly what C1-L2 kill lines 2/5 and
+  C8's K8 identity battery guard; (2) the paper is a worked specimen of the
+  queued estimator-discipline family — the SAME data and functional yield
+  opposite-looking beta tables under OLS vs Ridge (Tables 5-9), so any
+  collinear-flow multi-feature regression must disclose estimator,
+  regularization hyperparameter and its selection protocol, and in-sample
+  goodness-of-fit may never be the reported success metric; (3) every
+  fitted quantity (beta shapes, lambda 139.0 down to 1.3, R2, RMSE
+  improvements) is tick-regime-, grid- and estimator-specific — the
+  authors' own degenerate-mapping explanations for spread > 1 tick (PDF pp.
+  27-28) show the same input vector maps to different outputs across
+  regimes — so no parameter transfers to the programme venue (cross-venue
+  import ban); (4) their own sensitivity pass (adjusted R2 moving about
+  10 percent with window lengths for AMZN, beta_1 intraday drift, PDF pp.
+  12-13, 29-30) reinforces the parameter-sensitivity and
+  discretized-conditioning/queue-label declaration candidates (queued at
+  deep-reads 32/33, still PENDING OWNER RATIFICATION); (5) the paper's own
+  economic-significance discussion (PDF p. 28) concedes the improvements
+  matter only for HFT execution contexts, which the programme never
+  operationalizes. Source-quality note: 6 stocks, one venue, one year,
+  single-venue flow, hidden liquidity excluded, M = 10 without an explicit
+  selection rule, refereed version (possibly Quantitative Finance) NOT
+  verified at reading (uncertain, flagged for verification).
+- Killed-if-wrong stands in the note: had "RMSE improves with every added
+  depth level" been cited as anticipatory information, a contemporaneous
+  10-second accounting fit would have entered the record as a
+  compression-clock claim it never makes; had the Ridge beta tables or
+  lambda values entered any spec table, a multicollinearity-conditioned
+  estimator artifact and a CV-tuned stock-specific hyperparameter would
+  have traveled as venue constants; the identity battery, the cross-venue
+  import ban and the estimator-discipline declarations kill all three
+  before they start.
+- Standing caveat: one venue, six 2016 Nasdaq equities, 10-second
+  same-window fits, tick-regime-conditional results, estimator- and
+  grid-dependent numbers, no crypto, no perps, no L2 replay observables in
+  the programme's sense. The library is ammunition, not evidence: nothing
+  enters any spec, default, kill line, threshold, or calibration; it
+  charges warnings only.
+
+No inaccessible or blocked sources this session; the extract was complete
+and page-marked. Ratification queue after this session: TWENTY-EIGHT
+candidate sharpenings (unchanged; this session queued NOTHING), zero armed;
+docs/DECISIONS_PENDING.md NOT touched this session, per the rule (touched
+only when a candidate sharpening is queued). T1 remains armed awaiting the
+owner's word in its booked state (survived all five kill lines with sign
+inverted; T2 tested-fail); the blocked list stays blocked. Deep-read queue
+pointer: the next UNREAD triage entry is "Optimal incentives in a limit
+order book: a SPDE control approach" (score 29, xc937ca), the next entry in
+the live edge_triage_scores.json ordering, verified unread against main's
+library notes and the full programme log at this entry's writing (zero
+mentions); a successor session must re-verify it unread against main's
+notes and the open PR set before consuming anything. Nothing measured, no
+kill line moved, nothing armed, nothing trades live.
