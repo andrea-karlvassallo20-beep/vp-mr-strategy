@@ -5169,3 +5169,358 @@ must re-read the live main tail and the branch/PR set, consult
 docs/goal_autonomy_protocol.md (v2, corrigendum-noted), and record its
 work choice and reason in its session-state note. Nothing measured, no
 kill line moved, nothing armed, nothing trades live.
+
+## 60. Null-time session 56 (2026-11-19): the same corruption independently found mid-repair, the parallel corrigendum superseded my duplicate repair (PR #226 closed); the owner's four-point configuration THEN completed on the repaired protocol — goal state edition 2, rotation guidance, the weekly directorate, the standing order recorded as MADE; NO kill line changes, nothing queued, nothing armed
+
+- Session-state note (declared before anything else): work selected under
+  docs/goal_autonomy_protocol.md section 3, reason recorded. This session
+  independently found the protocol file corrupted on main (verified by
+  byte-level reads: sections 1-2 intact, then encoding garbage through
+  the tail; 5,663 bytes) and staged a full repair plus integration of the
+  owner's same-day four-point configuration on a branch
+  (vibe/goal-autonomy-repair; PR #226, CI green, byte-verified). The
+  staged log entry was numbered ## 59 from a fresh main tail. MID-FLIGHT,
+  the merge returned 405: a parallel slot had landed its own corrigendum
+  (PR #225, commit 1c4274b, log entry ## 59, protocol repaired as v2 with
+  a verbatim-vs-reconstruction boundary note, goal state edition 1
+  untouched). Racing-slot division of labour per the main-wins protocol:
+  first-landed governs; PR #226 was closed as superseded, its repair is
+  discarded, and THIS session re-based on the landed v2 protocol. What
+  remains of this session's original selection, and what it lands here:
+  the corrigendum did NOT integrate the owner's four-point configuration,
+  which is the remainder of the directive this session had taken as a
+  front; it is landed cleanly on top of the repaired file below.
+- The parallel corrigendum is CONFIRMED, not merely accepted: this
+  session's independent byte evidence agrees with entry ## 59's
+  diagnosis (corrupt region from mid-section 3, garbage to EOF, section
+  4 absent). The integrity-guard scope gap (sweeps conflict markers and
+  library provenance; does not check encoding health) was named
+  independently by both slots; it stands as a candidate improvement for
+  the next infrastructure session, zero status, NOT implemented. The
+  read-side file truncation this session hit while staging the first
+  push (the file-read used to stage the log truncated at ~64K chars;
+  caught by post-push verification, re-pushed whole and byte-verified
+  via the blob API) is recorded as a second, distinct tooling failure
+  mode the guard also does not cover; same named-gap status, nothing
+  implemented.
+- The owner's four-point configuration, installed on the repaired
+  protocol (docs/goal_autonomy_protocol.md, amendment note section 7,
+  all edits traceable to the 2026-11-19 chat directive): (1) goal state
+  EDITION 2 (section 2 replaced whole; the facts block
+  verbatim-unchanged): the ranked open fronts now numbered 1-8 — the
+  gated L2 window, the deep-read queue, the misses curriculum (the
+  honest 2x2), the synthesis pass, exploratory-channel probes, the
+  website honesty pass, the macro-timeline backfill, instrument upkeep —
+  each carrying ENTRY CRITERIA, what it FEEDS, and its own decision
+  GATE, per the owner's explicit configuration; the edition rule amended
+  to admit the owner's direct dated instruction (edition 2's authority
+  is the owner's same-day message; edition 1 preserved in entry ## 58);
+  (2) ROTATION GUIDANCE (director policy item 3; former items
+  renumbered): the deep-read default is the floor, not the target; work
+  type rotates across the fronts; choice and reason recorded in the
+  session-state note (this session and entry ## 59 are the first two
+  instances); (3) THE WEEKLY DIRECTORATE (new section 6, a convention,
+  not a session power): one short owner sitting batch-ratifies or kills
+  proposals; sessions keep the ranking ready and change nothing outside
+  it; (4) THE STANDING ORDER RECORDED AS MADE in
+  docs/DECISIONS_PENDING.md, per the owner's explicit instruction
+  ("recorded in DECISIONS_PENDING as made"): the resolved-heartbeat
+  entry records the granted scope (free selection among goal-state
+  fronts, notes, descriptive-only analysis on cached data, goal-state
+  proposals through dated editions) and the unchanged owner-only
+  carve-outs (arming, amendment signatures, data/budget/holdout spend,
+  kill lines, frozen constants, the sealed C7 panel, sharpening
+  approvals, anything that trades). The queue count and every BLOCKED
+  item in the dashboard are byte-identical otherwise.
+- Verified BEFORE the push: the integrity guard run on the assembled
+  tree — "Integrity guard: clean — no conflict markers, all library
+  provenance labels honest.", exit 0; the amended protocol checked
+  byte-level (non-ASCII characters are only the record's em/en dashes
+  and the ≥ sign; all seven sections present; sections 1, 4, 5 untouched
+  from the landed v2); the goal-state facts block cross-checked against
+  the live main tail this session (TWENTY-NINE sharpenings plus probe E1
+  in ## 58's tail and ## 59's closing block; T1 armed awaiting the
+  owner's word, sign inverted; T2 tested-fail; the watchlist open until
+  2027-01-11; next-UNREAD pointer unchanged); this log entry appended to
+  the fresh main copy carrying the corrigendum (59 sections read back
+  from the landed merge before writing).
+- Not changed: nothing measured, no kill line moved, nothing armed,
+  nothing trades live. The ratification queue after this session:
+  TWENTY-NINE candidate sharpenings plus probe E1 (unchanged — this
+  session queued NOTHING); zero armed; T1's booked state untouched; the
+  blocked list stays blocked. No deep-read consumed; the deep-read queue
+  pointer is unchanged: the next UNREAD entry remains "From
+  Glosten-Milgrom to the whole limit order book and applications to
+  financial regulation" (score 29, x0d8b2a); behind it "A Hawkes
+  Microfoundation for Multitype Inverse Gaussian Subordinators" (score
+  29, xf77014). A successor session must re-read the live main tail and
+  the branch/PR set, consult docs/goal_autonomy_protocol.md (edition 2,
+  corrigendum-noted), and record its work choice and reason in its
+  session-state note.
+
+## 61. Null-time session 57 (2026-11-19): deep-read session 50 — the Glosten-Milgrom whole-book equilibrium read; NO kill line changes, nothing queued, nothing armed
+
+Session-state note (work choice and reason per
+docs/goal_autonomy_protocol.md section 3, v2): the DEFAULT ritual
+was run. Recorded reason: a readable UNREAD head exists (x0d8b2a,
+score 29, next in triage file order per the ## 59 pointer; the ##
+60 landing consumed NO deep-read and left the pointer unchanged)
+and ZERO deep-read sessions have landed since goal-state edition 1
+(2026-11-19, log ## 58) or since edition 2 (2026-11-19, log ## 60,
+landed mid-flight after this session's read), so the cadence rule
+(synthesis pass at five or more) does not fire. No override. The
+edition-2 rotation guidance (work type rotates across the fronts)
+binds successor sessions' selection; this session's selection was
+made at read time against edition 1.
+Operational state before the read: fresh main tarball fetched,
+integrity guard clean, main tail at ## 59, the conductor protocol
+read in full (v2, corrigendum-noted, zero mojibake), the slug
+re-verified unread against all 50 library notes on main; no branch
+claimed the slug at read time. Race resolution, mid-flight: while
+this session's first staging (PR #229, numbered ## 60 from a
+main-at-## 59 tail) was polling CI, a parallel session landed log
+## 60 on main (that session's duplicate corrigendum repair PRs
+#226/#227 are closed unmerged, supersession recorded; the landed
+remainder carries the owner's four-point configuration — goal state
+edition 2, rotation guidance, the weekly directorate, and the
+standing order recorded as MADE in docs/DECISIONS_PENDING.md; the
+queue count TWENTY-NINE, the deep-read pointer, and the T1/T2
+status are unchanged by that landing). Per the main-wins protocol
+the landed ## 60 governs: PR #229 was closed as superseded
+(supersession recorded on the PR) and this entry is RENUMBERED
+deep-read 50 = null-time session 57 = log ## 61 against the
+advanced main. The read itself predates the advance and is
+unaffected by it; nothing else in this entry changes.
+
+The paper: Weibing Huang, Sergio Pulido, Mathieu Rosenbaum, Pamela
+Saliba, and Emmanouil Sfendourakis, "From Glosten-Milgrom to the whole
+limit order book and applications to financial regulation"
+(arXiv:1902.10743v2, 2025 revision of a 2019 preprint; published
+version NOT checked, flagged). Note:
+paper/research/library/2026-11-19_glosten_milgrom_whole_lob_deep_read.md
+(51st note). The paper generalizes the Glosten-Milgrom
+adverse-selection equilibrium to the entire limit order book: a
+compound-Poisson efficient price, an informed trader who greedily
+consumes liquidity up to the post-jump efficient price, a noise
+trader, and competitive market makers posting under a zero-profit
+condition at the REAR of every queue; the zero-tick spread is 2mu with
+E[max(B/mu,1)] = (1+r)/2r (Theorem 2.1, PDF p. 10), the average
+tick-constrained spread is 2mu + alpha (Corollary 3.1, PDF p. 14);
+estimated on 103 NYSE/Euronext stocks (10am-3pm, two 2022-2023
+windows, constant-tick days) by characteristic-function MLE on
+one-minute reference-price increments, with Levy-stable jump laws
+(Propositions 4.1-4.2, PDF pp. 15-17); four applications: MiFID II
+spread forecasting (9/11 stocks, 14% vs 39% error, Table 4, PDF p.
+23), imbalance/next-move probabilities at 5s for large-tick stocks
+(PDF pp. 23-25), queue-position valuation (Theorem 5.1, Corollary
+5.1, Table 5, PDF p. 26), and waiting-time asymptotics (Appendix A).
+
+Verdict: NO kill line changes. NO new candidate sharpening. The
+ratification queue after this session is unchanged at TWENTY-NINE
+candidate sharpenings (deep-read sessions 0 through 49) plus probe E1,
+zero armed; docs/DECISIONS_PENDING.md NOT touched this session, per
+the rule.
+
+Findings, graded (page cites in the note): TWO [reinforcing, no
+new item] — (1) a static, zero-memory equilibrium reproduces the
+volume-imbalance/next-move relation for large-tick stocks, the
+imbalance being a strictly increasing bijection of the latent
+position of the efficient price inside the tick (PDF p. 23, Fig. 4,
+PDF pp. 23-25): the strongest known high-frequency "book predicts
+price" stylized fact is generated by a discreteness artifact of a
+static state, not by flow memory — a second worked exhibit for the
+dynamics-identification rule queued at ## 57 plus its placebo
+precedents; (2) average-shape match is non-identifying by
+construction, Proposition 2.2 (PDF p. 11) makes essentially any LOB
+shape attainable by a free noise-size density fitted to it, while
+the Gaussian alternative fails beyond the best pile (Figs. 2-3,
+PDF pp. 17-21) and the piecewise fit fails on all small-tick stocks
+(spread > 4 ticks, Table 3, PDF p. 20). TWO [interpretation caution]
+— (3) equilibrium determinism: the whole book (spread, depth
+profile, imbalance, queue values) is a deterministic function of a
+few structural objects (r, the law of B, the law of Q_u, the tick,
+and the latent state d; Theorem 2.1 PDF pp. 10-11, Theorem 3.1
+PDF p. 14), so L2 book-shape features are not independent
+measurements and co-movement among them is not evidence of a
+separate mechanism; (4) the model's macroscopic volatility
+lambda_i E[B^2] (PDF p. 5) is invalid under its own Levy-stable
+calibration (a in (1,2), PDF pp. 17, 20) — no volatility
+decomposition citing this model may enter C8's
+mechanical-versus-exogenous work, the ## 51/## 57 signed-bias
+conjunction family. ONE [cost-survival ammunition] — queue
+position is a spread-sized priced quantity: zero-profit only at
+the rear, maximal at the top (Assumption 4, PDF p. 14; Theorem
+5.1, Corollary 5.1, PDF p. 26); any K7-style cost layer must carry
+queue position as an explicit pre-declared input, uniform or random
+fill-position assumptions misprice passive fills by a spread-sized
+quantity. ONE [source-quality note] — arXiv v2 read as-is,
+published version NOT checked; estimated jump intensity is
+horizon-dependent (the 5s application required re-estimation
+because one-minute lambda_i "failed to capture many short-term
+efficient price jumps", PDF p. 23) and at extreme imbalance the
+empirical move probability exceeds the model bound (PDF p. 24),
+the authors' own flag of underestimated short-term jumps; the MiFID
+II spread-forecast skill (Table 4, PDF p. 23) is in-venue
+regulatory evidence, not a cross-venue law.
+
+Killed-if-wrong stands in the note: had the imbalance result been
+read as "book shape predicts price" support for any L2 premise, a
+discreteness artifact of a memoryless static equity equilibrium
+would have been laundered INTO the record as a flow mechanism; had
+the exact average-shape fit been read as model validation,
+Proposition 2.2's universality would have made the validation a
+tautology (the ## 45 synthetic-rebuttal precedent); had "spread =
+intrinsic + tick" been imported as a market law, a
+zero-inventory-cost competitive-market-making equity equilibrium
+would have become a constraint on a crypto venue that the model's
+institutional assumptions do not cover; had the volatility formula
+or a cross-horizon lambda_i transfer been imported, an
+infinite-variance jump law or an author-caught undercount bias
+would have entered C8 or a C1-L2 clock silently. All five prevented;
+laundry directions named in the note: INTO — nothing, no spread law,
+no intensity, no jump-law parameter, no volatility decomposition, no
+queue-value formula from this paper enters any spec, default,
+calibration, tolerance, cost assumption, or generative null; OUT —
+never read backwards as "imbalance is meaningless" (the model
+REPRODUCES the relation; it explains it statically on this venue
+class, it does not refute anything), "spreads are mechanical," or
+"queue models need no memory."
+
+No inaccessible or blocked sources this session; the extract was
+complete, page-marked, and read in full (61 pp.). Ratification queue
+after this session: TWENTY-NINE candidate sharpenings plus probe E1,
+unchanged (this session queued NOTHING); docs/DECISIONS_PENDING.md
+NOT touched. T1 remains armed awaiting the owner's word in its
+booked state (survived all five kill lines with sign inverted; T2
+tested-fail); the blocked list stays blocked. Deep-read queue
+pointer: the next UNREAD entry is "A Hawkes Microfoundation for
+Multitype Inverse Gaussian Subordinators" (score 29, xf77014),
+verified unread at this session's pointer-check (the
+2026-11-19_rough_hawkes_heston_microfoundation_deep_read.md note is
+a different paper); behind it the next score-29 entry in triage file
+order must be recomputed by the successor against the live triage
+file. A successor session must re-read the live main tail and the
+branch/PR set, consult docs/goal_autonomy_protocol.md (edition 2;
+the rotation guidance applies to selection), and record its work
+choice and reason in its session-state note. Nothing measured, no
+kill line moved, nothing armed, nothing trades live.
+
+## 62. Null-time session 58 (2026-11-19): GOALS.md installed as the goal-state status board with three zero-authority work-fronts; the encoding-sanity gap in the integrity guard closed with tests; NO kill line changes, nothing queued by this session, nothing armed
+
+Session-state note (the work choice and its reason, per the
+conductor protocol section 3, landed edition — the rotation
+guidance's first exercise): owner directive, in chat, 2026-11-19,
+refining the goal-autonomy grant into its concrete configuration.
+Race chain, declared honestly and completely: (1) this session first
+drafted the configuration as a ## 59 of its own and lost the race to
+the parallel corrigendum ## 59 (abandoned, never pushed). (2) It
+rebuilt the configuration on the repaired v2 protocol as a ## 60 of
+its own; at push-time re-reads it watched the paired artifacts land
+one at a time around it — first the protocol's goal state edition 2
+with sections 6 and 7, then the dashboard's MADE entry — and finally
+the parallel session's own log ## 60 (session 56), which completed
+the pairing and explicitly held the guard's encoding-sanity gap at
+candidate status for the next infrastructure session. Per main-wins,
+all of it stands; this session's drafted ## 60 is discarded (never
+pushed beyond its own working branch). (3) With the configuration
+artifacts staged and the protocol/guard/tests legs pushed, the
+log-leg re-read of the live tail found the parallel session's landed
+## 61 (null-time session 57, deep-read session 50, the
+Glosten-Milgrom whole-book read), which consumed both the ## 61
+number and the x0d8b2a deep-read pointer. Per main-wins, that
+landing stands; this entry renumbers a second time, to ## 62 /
+null-time session 58, content otherwise unchanged, and adopts the
+live advance: the deep-read queue pointer is now xf77014. One open
+rival numbering existed at this writing (PR #230, a ## 61 disposition
+leg of the session-55 repair race); if it renumbers past this entry,
+the successor inherits the recomputation. Precedents: the
+exploratory channel (## 25), the conductor installation (## 58),
+the corrigendum (## 59), the configuration landing (## 60), the
+mid-flight renumber landing (## 61).
+
+Installed, one push, four changes. (1) docs/GOALS.md, edition 1 —
+the status board. The conductor protocol's section 2 (goal state
+edition 2) is the ranking authority: numbered fronts 1–8, each with
+entry criteria, what it feeds, and its own gate. GOALS.md does not
+re-rank or reinterpret any front; it carries a STATUS line per front
+(the operative bookkeeping the rotation guidance needs: what is
+blocked, what is ready, when the synthesis pass is due), the rotation
+rule in operational form (a due synthesis — front 4 — first; then the
+lowest-numbered ready front least recently advanced; deep-read is one
+front among the others, not the automatic default; fail-safe to the
+fixed ritual), and three G-fronts, added this session with ZERO claim
+authority: G1 sealed-prediction record readouts (the named, dated
+readout due at ~100 resolutions; descriptive bookkeeping of an
+already-running instrument), G2 ratification-readiness briefs
+(one-page accept/reject briefs for the queued TWENTY-NINE sharpenings
+plus probe E1 for the weekly directorate; a brief invents nothing,
+queues nothing, arms nothing), G3 C8 skeleton coherence (preparation
+records only; A1–A5 stay PROPOSED and owner-gated). The front-2
+status line is written against the post-## 61 pointer state.
+(2) The protocol gained a section 8 cross-reference amendment
+recording the GOALS.md install and the guard closure; sections 1–7
+stand verbatim on main, byte-verified against the live file before
+the push. (3) src/integrity_guard.py: the encoding-sanity check named
+in ## 59 and held at candidate status by ## 60 is implemented —
+guard check 3 rejects U+FFFD replacement characters, non-UTF-8 byte
+sequences, and non-printable control characters in docs/*.md and
+paper/research/*.md (the ## 59 scope), with strict UTF-8 decode, so
+the failure class that produced the corrupted protocol is a red build
+now; tests planted in tests/test_integrity_guard.py (replacement
+character, control bytes, invalid UTF-8, legitimate unicode allowed,
+the clean-tree case); the guard's usage text and clean line updated.
+(4) This log entry.
+
+What the standing order does NOT grant, restated because it is the
+load-bearing line: no arming, no ratifying, no kill-line movement, no
+sealed-panel touch, no trading, and no citation of descriptive outputs
+as evidence. The grant expands the task list; it does not move a
+single gate. The ratification queue stands untouched.
+
+Branch-processing note, by the honest-error protocol: this session's
+working branch (conductor/fronts-manifest-2026-11-19) carries a
+truncated intermediate push — the first GOALS.md commit's payload was
+cut mid-file (an earlier draft's front F5), caught by the post-push
+verification, confined to the branch, never on main, and corrected in
+the next branch commit; the squash-merge carries only the final
+verified content. Also recorded: two run-time failures in the first
+staging leg (an inverted race-check assertion and an invalid
+create_branch argument) aborted before any mutation — the assertion
+failed on a condition that was true (main was at ## 59) and took the
+branch creation with it, which is fail-stop working as intended. And
+two fail-stops in the guard-push leg this turn: a hand-carried base64
+payload failed its in-run decode verification (decoded 6970
+characters against an expected 7579 — the fail-stop held, nothing was
+pushed, no repo trace); the fix was to stop hand-carrying payloads
+entirely and read the staged files from the working tree inside the
+run, with the verify-then-push order kept. The pushed guard and test
+files are the disk-verified bytes, not the failed hand-carries.
+
+Verified BEFORE the push: the integrity guard (now three checks) run
+on the assembled tree — clean, exit 0 (conflict-marker sweep, library
+provenance audit, encoding sanity); all fourteen test functions in
+tests/test_integrity_guard.py executed and passed (pytest is not
+installable in this sandbox; the functions were driven directly in a
+temporary-tree harness, the same assertions CI will run); the fronts'
+statuses cross-checked against the live tail and dashboard this
+session (queue count, T1/T2 statuses, watchlist window, post-## 61
+next-UNREAD pointer, the C1-L2/C8 gates); the landed protocol and
+dashboard entries read in full from main before this session's
+artifacts were re-based on them.
+
+Not changed: nothing measured, no kill line moved, nothing armed,
+nothing trades live. The ratification queue after this session:
+TWENTY-NINE candidate sharpenings plus probe E1 (unchanged — this
+session queues NOTHING; the pending queue's line stands untouched).
+T1 remains armed awaiting the owner's word in its booked state; T2
+tested-fail; the blocked list stays blocked. The deep-read queue
+pointer: the next UNREAD entry is "A Hawkes Microfoundation for
+Multitype Inverse Gaussian Subordinators" (score 29, xf77014), the
+## 61 landing having consumed x0d8b2a; behind it the next score-29
+entry in triage file order must be recomputed by the successor
+against the live triage file. A successor session must re-read the
+live main tail and the branch/PR set, consult the conductor protocol
+(sections 2, 3, 6, 7, 8) and docs/GOALS.md, choose a front per the
+rotation rule under the standing order, and record the choice and the
+reason in its session-state note. Nothing measured, no kill line
+moved, nothing armed, nothing trades live.
