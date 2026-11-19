@@ -3462,3 +3462,132 @@ steady-state solutions" (score 30, x20bdef); a successor session
 must re-read the live main tail and the branch/PR set before
 consuming either. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
+
+## 47. Null-time session 43 (2026-11-19): deep-read session 39 — the nonlinear-Hawkes steady-state classification paper read; stale pointer resolved under the honest-skip protocol; default grade, nothing queued
+
+- **Session-state note (declared before the read)**: this session
+  began from log entry ## 46's closing pointer, which names
+  x36082b "Branching ratio approximation for the self-exciting
+  Hawkes process" (score 30) as the queue's mechanical next
+  UNREAD, subject to collision checks. Before consuming, the live
+  main tail, docs/DECISIONS_PENDING.md and the branch/PR set were
+  re-read: no open pull requests, no branch claims the queue head.
+  The pointer is stale: x36082b is already READ, deep-read session
+  2
+  (`paper/research/library/2026-11-16_hawkes_branching_deep_read.md`,
+  the Hardiman-Bouchaud branching-ratio note, also logged at line
+  240 of this file), so the entry named by pointer cannot be
+  consumed again. Per the skill's honest-skip rule the stale
+  pointer state is recorded here and the next unclaimed UNREAD
+  entry was taken: x20bdef. The landed ## 45's naming of x36082b
+  as next UNREAD was a stale pointer-chain reading (deep-read session 2
+  consumed x36082b on 2026-11-16, before either landing); the
+  likely origin is the parallel fan-out's pointer text being
+  copied forward without the collision check it was explicitly
+  made subject to. No corrigendum
+  to any past entry is claimed by this session, the wrong pointer
+  text is left unedited per the honest-error protocol, and the
+  next-queue pointer below corrects the chain going forward.
+
+- **Library deep-read session 39** (next unclaimed UNREAD entry,
+  score 30, x20bdef, consumed here):
+  `paper/research/library/2026-11-19_exact_asymptotic_nonlinear_hawkes_deep_read.md`
+  on Kiyoshi Kanazawa (University of Tsukuba / JST PRESTO) and
+  Didier Sornette (ETH Zurich / SUT Shenzhen), "Exact asymptotic
+  solutions to nonlinear Hawkes processes: a systematic
+  classification of the steady-state solutions" (arXiv:2110.01523v2
+  [cond-mat.stat-mech], v2 dated 9 May 2022):
+  field-master-equation classification of marked nonlinear Hawkes
+  processes by their steady-state intensity distributions, three
+  regimes — any-exponent power laws for one-sided marks with a
+  ramp map at criticality (a = 2ν1⟨τ⟩/α2, general kernels, Eq.
+  (193)/(227), PDF pp. 31-36), universal Zipf's law Pss(λ) ∝ λ−2
+  for zero-mean two-sided marks with fast-accelerating maps (Eqs.
+  (100), (254), PDF pp. 20-41), thinned tails for negative-mean
+  marks (Eq. (166)/(171), PDF pp. 28-31) — plus the ZHawkes
+  quadratic exponent recovered exactly (a = 1/2 + 1/(2kDτ), Eqs.
+  (94)/(108), PDF pp. 20-22), always-non-stationary super-ramp
+  one-sided maps (Eq. (69), PDF p. 16), no-critical-point
+  symmetric-mark ramp (Eq. (88), PDF p. 19), λmax-capped Zipf
+  simulations (Eqs. (70), (252), PDF pp. 16, 40, 60-61), and two
+  general-kernel Table I cells left open by the authors (PDF
+  p. 46). Pure theory; extract complete, page-marked, 63 pp.,
+  read in full; no inaccessibility, no shelf gap. Read against the
+  ONE question. **Grade: NO kill line changed. NO new candidate
+  sharpening.** Default grade; the paper is a
+  specification-classification worked exhibit of rules already
+  standing and the burden of proof for a sharpening was not met.
+  Findings, page-cited:
+
+  Reinforcing, no new item — power-law intensity tails are a
+  model-class output: Table I (PDF p. 63) manufactures the same
+  qualitative object with any exponent (ramp, one-sided marks),
+  universal Zipf (any FAI map, balanced marks) or thinned tails
+  (negative-mean marks), and the authors themselves say many
+  Hawkes models fit the empirical power law and model selection
+  is beyond scope (Sec. IX B, PDF pp. 43-44); sixth worked
+  exhibit for the near-critical regime-disclosure family
+  (deep-read 17, boundary rule deep-read 5, universality
+  deep-read 38); an observed heavy-tailed intensity distribution
+  identifies nothing, the standing rules govern, nothing added.
+  Interpretation caution — stationarity and criticality are
+  artifacts of the assumed mark geometry: super-ramp one-sided
+  maps are always non-stationary with simulation results
+  sensitive to the artificial λmax cap (PDF pp. 16, 40, 60-61),
+  while the symmetric-mark ramp has no critical point and is
+  stationary for all η (Eq. (88), PDF p. 19); binds as read
+  discipline on any future excitation fit, absence of criticality
+  in a fitted inhibitory-symmetric class is a specification
+  statement and simulated exponents carry their cutoff, nothing
+  in C1-L2 or C8 currently specifies such a fit so nothing moves.
+  Reinforcing, no new item — the ZHawkes exponent solution (Eqs.
+  (94)/(108)) and its Kesten rederivation (Eq. (256), PDF p. 41)
+  corroborate sideways the Blanc-Donier-Bouchaud line already in
+  the record (reference [28], PDF p. 62), ammunition not
+  evidence, licenses nothing new. Source-quality note —
+  cond-mat preprint, no data, no calibration, no out-of-sample
+  content, finance confined to literature review and a deferred
+  implications section; finite-moment and
+  moment-generating-function conditions exclude heavy-tailed
+  marks; general-kernel results cover only ramp and FAI classes;
+  arXiv v2 May 2022, published version to be checked before any
+  formal citation.
+
+  Killed-if-wrong stands in the note: had the Zipf universality
+  been read forward as market truth, a within-model classification
+  theorem would have been laundered into an identification claim
+  the authors themselves disclaim; had the no-critical-point
+  property been ignored, absence of criticality in a future
+  fitted inhibitory class could have been booked as venue
+  discovery rather than assumed symmetry; had the λmax dependence
+  been ignored, a simulated tail exponent would have entered a
+  future argument as cutoff-free. Library-is-ammunition and
+  nothing-measured prevented all three. Standing caveat: no
+  market, no sample, no costs; exact solutions mostly exponential
+  memory; simulators rest on the λmax cap and adaptive
+  discretization; mark conditions fence off heavy-tailed marks.
+  Laundering directions named: INTO — nothing, no
+  tension-intensity map, mark geometry or exponent formula enters
+  any spec, default, calibration, tolerance or generative null,
+  and the NLHawkes family may not serve as a null or simulator
+  for any C1-L2 or C8 arm without an owner-ratified pre-declared
+  derivation of its assumptions on the programme's venue and
+  fields; OUT — never read backwards as "markets are
+  nonlinear-balanced Hawkes", "Zipf tails prove inhibitory
+  feedback", or "no criticality found", and no simulation
+  exponent from this family is quoted without naming its λmax.
+
+Ratification queue after this session: TWENTY-SEVEN candidate
+sharpenings, unchanged (deep-read session 39 earned none;
+docs/DECISIONS_PENDING.md untouched this session), zero armed. T1
+remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue pointer: the previous pointer's named
+entry x36082b was found already READ (deep-read session 2); the
+next unclaimed UNREAD entry is "Effective Measure of Endogeneity
+for the Autoregressive Conditional Duration Point Processes via
+Mapping to the Self-Excited Hawkes Process" (score 30, xa4ac36),
+and behind it "Stochastic Optimal Control of Hawkes Jump-Diffusion
+Systems" (score 30, xd02283); a successor session must re-read
+the live main tail and the branch/PR set before consuming either.
+Nothing measured, no kill line moved, nothing armed, nothing
+trades live.
