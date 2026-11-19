@@ -2912,3 +2912,99 @@ measured, no kill line moved, nothing armed, nothing trades live.
   Findings, page-cited: reinforcing, no new item — the paper makes no predictive claim and its own success criterion is a null in disguise: fidelity evaluation only (PDF pp. 8-10, Tables 2-3), rollouts reproducing near-zero return autocorrelation (PDF pp. 1-2, 8-9, Figure 4), so generative plausibility and predictivity are disjoint and no fidelity metric is ever citable as support for any programme feature, with the generative-null family the same placebo territory C8 A3's shuffled-arrival amendment already occupies; nothing new queued. Interpretation caution — the zero-shot geographic result (US-trained perplexity overlapping China and Japan, PDF pp. 10-11, Figure 5; Table 6, PDF p. 24) is a token-perplexity claim, never out-of-sample economic predictive value, and is never citable in any SMH universality or cross-market argument. Cost-survival ammunition — the counterfactual 10x-flow injection stress tests and replay-validated simulator (PDF pp. 21-24, 26, 29, Figures 11, 17) matter only if a K7-style cost-survival layer ever exists, and that layer must carry the paper's own admitted generator-simulator entanglement (PDF p. 10) plus spread honesty: the spread is the one quantity where the explicit-interarrival baseline beats the learned generator (PDF p. 10, Table 3). Reinforcing, no new item — rollout scale is 1,024 events, about 2-5 minutes for high-liquidity assets (PDF p. 8), so nothing in the paper speaks to daily-grain boards or multi-week forward windows. Source-quality note — industrial-lab capability report, J.P. Morgan AI Research, arXiv v1 stamped 27 February 2026, no journal record checked at reading, proprietary data so no external replication, internal baselines, limitations honestly stated in-text (PDF p. 10); graded as a well-executed generative-simulation report with no market-truth claim metabolized. Killed-if-wrong: if the programme had read "a deep model learns order flow across 9K stocks and whole geographies" as support for universality or for extractable predictive structure, it would have laundered a simulation-quality metric into a market-truth claim; the guard is the standing library-is-ammunition rule plus the sealed-prediction ledger, and the only addition this read earns is the narrowly mechanistic discretization disclosure component above. Standing caveat: proprietary US equities data, penny-tick USD microstructure, no crypto, no BTCUSDT; all bin edges, perplexity figures, distances, scaling exponents and architecture choices are dataset- and venue-specific; the RL execution and multi-agent sections are execution-strategy content and are never operationalized. Laundering directions named: INTO — the discretization mechanism, the fidelity-versus-predictivity distinction and the perplexity-is-not-evidence caution enter only as preregistration discipline; OUT — TradeFM's fidelity tables, geographic-transfer perplexity and stylized-fact figures are never cited as expected behavior of any market the programme measures and never as evidence that any programme feature carries information.
 
 Ratification queue after this session: TWENTY-SEVEN candidate sharpenings (the twenty-six standing plus the discretized-conditioning declaration rule joined here through deep-read session 33), zero armed. T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read queue pointer: the next UNREAD triage entry is "Diffusive Limit of Hawkes Driven Order Book Dynamics With Liquidity Migration" (score 31, x5db64b). Nothing measured, no kill line moved, nothing armed, nothing trades live.
+
+## 42. Null-time session 38 (2026-11-19): deep-read session 34 — the Hawkes liquidity-migration diffusive-limit paper graded pure theory, default, nothing queued; the session's concurrency state declared
+
+- **Session-state note (declared before the read)**: this session was
+  started against a stale log tail; the tail and
+  docs/DECISIONS_PENDING.md were re-read from live main before the
+  queue pointer was consumed. In flight at re-read: open PRs on the
+  TradeFM entry (#194, #196, #197, #198) and on the compound and
+  regime-switching Hawkes entry (#195); deep-read session 33 (TradeFM,
+  the discretized-conditioning declaration, log entry ## 41) landed
+  from that parallel set while this session was reading, moving the
+  ratification queue to twenty-seven. The dormant branch
+  slot24-liquidity-migration-deep-read carried the burst-slot claim on
+  this session's paper and produced no repo trace at read time; per
+  the burst-slot precedent (sessions 18/20), the consumption is
+  declared by this landing entry, and a late slot-24 landing would be
+  superseded with the supersession recorded in line. No duplicate note
+  existed for the slug at read time; none exists now.
+
+- **Library deep-read session 34** (the standing queue's next UNREAD
+  pointer, score 31, x5db64b, consumed here):
+  `paper/research/library/2026-11-19_liquidity_migration_diffusive_limit_deep_read.md`
+  on Levon Sarkis Mahseredjian, "Diffusive Limit of Hawkes Driven
+  Order Book Dynamics With Liquidity Migration" (arXiv:2511.18117v1,
+  22 Nov 2025, single author). An entirely theoretical mesoscopic
+  model: a multivariate Hawkes-driven limit order book with unit
+  liquidity migration between adjacent tick levels, shown under
+  diffusive rescaling to converge to a reflected SDE with a discrete
+  Laplacian coupling across levels, with the mesoscopic covariance
+  expressed in closed form through the Hawkes kernel matrix by the
+  multivariate Hawkes FCLT. Extract complete and page-marked (18 pp.);
+  read in full; no inaccessibility, no shelf gap. Read against the ONE
+  question. **Grade: NO kill line changed. NO new candidate
+  sharpening.** Default grade; the paper is a clean-theory worked
+  exhibit of rules already standing, and the burden of proof for a
+  sharpening was not met. Findings, page-cited:
+
+  Reinforcing, no new item -- queue-volume dispersion is a
+  deterministic functional of the fitted branching structure: the
+  closed form Sigma_X = C(I-K)^{-1} diag(Lambda-bar)(I-K)^{-T}C^T
+  (eqs. 19-20, PDF pp. 14-15) moves with every choice in the
+  kernel-fitting pipeline the same way the branching share does, a
+  worked exhibit for the dispersion register and the estimator-mode
+  and per-branch rules; the register as drafted governs, no fitted
+  covariance may be imported as any C1-L2 or C8 tolerance.
+  Reinforcing, no new item -- stationarity is load-bearing twice and
+  every covariance term carries (I-K)^{-1} under the assumed stability
+  rho(K) < 1 (PDF pp. 7, 10): toward the critical boundary the limit
+  inflates by construction, a third worked exhibit for the
+  boundary-solution rule (deep-read 5) and the near-critical
+  regime-disclosure rule (deep-read 17). Interpretation caution --
+  the model's coordinate system exists only under a pinned two-tick
+  spread and fixed mid (the author states the scaling limit fails
+  otherwise, PDF pp. 7-8), a second exhibit for the queued
+  queue-label convention declaration (deep-read 32): theory derived
+  in pinned coordinates may never serve as the specification of a
+  floating-spread feature on the programme's venue. Interpretation
+  caution -- migration symmetry is an assumption (inward = outward
+  per-unit rate, PDF p. 9), the Laplacian is pure smoothing, and the
+  pre-touch withdrawal asymmetry the C5 neighborhood cares about is
+  outside the model by construction; all order sizes are units
+  (PDF p. 8), so a migration measured on event counts may never be
+  narrated as volume flow (size-state persistence comparator
+  governs). Source-quality note -- single-author arXiv v1 preprint,
+  explicitly entirely theoretical with no empirical calibration
+  (PDF p. 1); ask side "defined analogously" and uncoupled (PDF p. 9);
+  citation lapses (refs [4] and [9] both arXiv:1104.4596, Hambly et al
+  cited "arXiv:2018", PDF pp. 17-18); grade at exactly that level;
+  check for later versions before formal citation.
+
+  Killed-if-wrong stands in the note: had the derivation been quoted
+  as support that liquidity migration smooths the book on the C1-L2
+  venue, a no-calibration, unit-size, pinned-spread abstraction would
+  have been laundered into a market mechanism; had the closed-form
+  covariance been imported as a null or tolerance for the C8 trigger
+  bar, the derivation's machine assumptions (stationarity, pinned
+  spread, symmetric unit migration) would have been baked into a kill
+  line before data. Library-is-ammunition and nothing-measured
+  prevented both. Laundering directions named: INTO -- nothing; no
+  coefficient, Laplacian form, covariance expression, or scaling
+  regime enters any spec, default, calibration, or tolerance, and the
+  model may not be used as a generative null for any C1-L2 or C8 arm
+  without an owner-ratified pre-declared derivation of its assumptions
+  on the programme's venue and fields; OUT -- the paper may not be
+  read backwards as "migration is symmetric" (assumed, not found) or
+  "dispersion reveals the kernel" (an identification statement valid
+  only under the full assumption set, not a measurement claim).
+
+Ratification queue after this session: TWENTY-SEVEN candidate
+sharpenings, unchanged (deep-read session 34 earned none;
+docs/DECISIONS_PENDING.md untouched this session), zero armed. T1
+remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue pointer: the next UNREAD triage entry is
+"A Microstructural Foundation for the Rough Hawkes Heat Kernel"
+(score 30, xd08813). Nothing measured, no kill line moved, nothing
+armed, nothing trades live.
