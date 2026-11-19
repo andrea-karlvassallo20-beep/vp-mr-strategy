@@ -1,31 +1,190 @@
-# Deep-read session 33 — Kawawa-Beaudan, Sood, Papasotiriou, Borrajo and Veloso, "TradeFM: A Generative Foundation Model for Trade-flow and Market Microstructure"
+# Deep-read session 33 — TradeFM: A Generative Foundation Model for Trade-flow and Market Microstructure
 
-Library deep-read session 33 (null-time session 37, log entry ## 41). Maxime Kawawa-Beaudan and Srijan Sood (equal contribution), with Kassiani Papasotiriou, Daniel Borrajo and Manuela Veloso, J.P. Morgan AI Research, New York; arXiv:2602.23784v1 [cs.LG], v1 stamped 27 February 2026, 29 pp. text extract, page-marked. Read 2026-11-19, against ONE question: what here would kill C1-L2 or C8 faster, or change their kill lines? Source: legally acquired OA copy (docs/library/text/xe7dc7f_tradefm_a_generative_foundation_model_for_trade_fl.txt). Next UNREAD triage-rank entry (score 31, xe7dc7f).
+- **Authors:** Maxime Kawawa-Beaudan, Srijan Sood, Kassiani Papasotiriou, Daniel Borrajo, Manuela Veloso (J.P. Morgan AI Research)
+- **Full title:** TradeFM: A Generative Foundation Model for Trade-flow and Market Microstructure
+- **Venue:** arXiv:2602.23784v1 [cs.LG], 27 Feb 2026
+- **What it is:** a 524M-parameter decoder-only Transformer pre-trained on
+  >10B tokens of raw US-equity trade events (>9K names, Feb 2024–Sep 2025),
+  with scale-invariant features and a custom tokenizer, rolled out through a
+  deterministic price-time-priority simulator and graded on stylized-fact
+  reproduction and distributional fidelity against Zero-Intelligence and
+  Compound Hawkes baselines, plus zero-shot APAC transfer.
+
+Read 2026-11-19, against ONE question: what here would kill C1-L2 or C8
+faster, or change their kill lines? Source: legally acquired OA copy
+(docs/library/text/xe7dc7f_tradefm_a_generative_foundation_model_for_trade_fl.txt,
+~29 pp., page-marked). Next UNREAD triage-rank entry (score 31).
 
 ## The paper in one paragraph
 
-A generative foundation model for order flow: a 524M-parameter decoder-only Transformer (Llama-style, GQA, RoPE), trained from scratch on over 10 billion tokens of discretized trade events from more than 9K US equities over 368 trading days, February 2024 to September 2025, with a temporal hold-out (January 2025 onward) and no asset-specific calibration (PDF pp. 1, 4, 7, 18-19). Events are tuples of interarrival time, price depth, volume, action and side (PDF p. 4); continuous fields are turned scale-invariant (log volume, depth and price level normalized by an EW-VWAP mid-price estimate, PDF pp. 4-5, 15-16), then tokenized through hybrid binning — quantile bins for price features, logarithmic equal-width bins for volume and interarrival time — with outliers truncated at the 99th (and 1st) percentile into reserved outlier bins, bin edges calibrated on the first 30 days only, and NaNs imputed with a random valid bin index (PDF pp. 5-7, 20, Algorithm 1). The pre-trained model is evaluated inside a closed loop with a deterministic price-time-priority matching simulator the authors validate by replay (fill-volume and lot-count CDF correlations 0.91 and 0.98, PDF pp. 7-8, 21-22, 24): generated rollouts reproduce the canonical stylized facts (heavy tails, volatility clustering, near-zero return autocorrelation, aggregational Gaussianity) and 2-3x lower K-S/Wasserstein distances to real log-return distributions than a Compound Hawkes baseline and a zero-intelligence control (PDF pp. 8-10, Table 2), order-level fidelity is best on most quantities with the bid-ask spread the one exception where the Hawkes baseline wins (PDF p. 10, Table 3), and the model transfers zero-shot to China and Japan in perplexity overlap terms (PDF pp. 10-11, Figure 5; Table 6, PDF p. 24). No return-predictive claim is made anywhere in the paper.
+TradeFM treats the raw trade event stream (interarrival time, normalized
+price depth, log volume, action, side) as a "language": each feature is
+binned (quantile bins for price features, log-width bins for volume and
+time), the bins are composed into a single 16,384-word composite trade
+token, and the model — conditioned on liquidity tier, a market-vs-participant
+indicator, and the intraday price level relative to the open — is trained
+next-token on a proprietary tick dataset, with tokenizer bin edges calibrated
+on the first 30 days only (Feb 2024) and a temporal hold-out from Jan 2025
+onward (PDF pp. 4, 6-7, 18). All price normalization routes through a
+proposed EW-VWAP mid-price estimate — a ratio of two exponential moving
+averages whose halflife is described as "time-based" but never numerically
+disclosed (PDF pp. 4-5, 15-16). Evaluation is closed-loop: generated events
+are executed by a deterministic matching simulator, and the emergent returns
+are graded on absence of autocorrelation, volatility clustering, heavy tails
+and aggregational Gaussianity (PDF pp. 8-9, 21-22); distributional fidelity
+K-S/Wasserstein beats a calibrated Zero-Intelligence agent and a Compound
+Hawkes baseline on most order-flow quantities, with Compound Hawkes winning
+bid-ask spreads (Table 3, PDF p. 10), plus zero-shot China/Japan perplexity
+with "moderate degradation" (PDF pp. 10-11). No return-forecasting test
+appears anywhere in the paper: the headline results are distributional
+similarity metrics, not out-of-sample predictive performance.
 
-## Findings, graded
+## Findings, graded (does any kill line move?)
 
-NO kill line changed. ONE new candidate sharpening queued, PENDING OWNER RATIFICATION.
+NO kill line changed; ONE new candidate sharpening queued, PENDING OWNER
+RATIFICATION.
 
-1. **[candidate sharpening, PENDING OWNER RATIFICATION]** The discretized-conditioning declaration component for the pre-registration declaration-discipline family — the sibling of the queue-label convention declaration queued through deep-read session 32, the anticipation disclosure joined at deep-read session 31 and the conditioning rule queued at deep-read session 26 (all still PENDING OWNER RATIFICATION), generalizing that family's mechanism from queue-label conventions to every discretized conditioning state. Mechanism, page-cited: this paper's tokenizer is a worked specimen of the degrees of freedom a discretization step introduces before any model or test ever sees the data: the binning scheme itself differs per feature (equal-frequency quantile bins for price features, equal-width bins on log-transformed volume and interarrival time), outlier handling truncates at the 99th percentile, plus the 1st for depth and price level, into reserved outlier bins, and bin edges are calibrated on exactly the first 30 days of the dataset, February 2024, never refitted (PDF pp. 5-6); the pseudocode additionally imputes NaN feature values with a random valid bin index (PDF p. 20, Algorithm 1, line 24). Two implementations of the same declared functional with different undisclosed bin edges, calibration windows, outlier rules or imputation rules read different conditioning states from the same raw stream — exactly the undisclosed-degree-of-freedom failure the queue-label component forecloses, one level more general — and the "random valid bin index" imputation is worse than undisclosed: unseeded, it is nondeterministic, so the same declared pipeline cannot reproduce its own reading, which no admissibility gate that requires reproducibility can inspect or excuse. One pre-declaration. Discretized-conditioning declaration: when any pre-registered conditioning state, stratum or feature is itself a discretization of a continuous raw field, the pre-registration must declare, recorded on TRAIN before the L2 data arrives, the binning scheme and bin count, the calibration window and calibration population, the outlier truncation rule, and the missing-value imputation rule; unseeded nondeterministic imputation is inadmissible outright, and readings with undeclared discretizations are inadmissible. Functionals that never discretize a continuous field satisfy the declaration trivially, and if no admissible spec functional on the C1-L2 or C8 routes ever discretizes, the component guards nothing there and stays dormant. Scope: declaration blocks only, a disclosure requirement; the C1-L2 and C8 spec texts, every kill line, T-H and T-O remain untouched; no threshold moves; nothing is armed.
+1. [candidate sharpening, PENDING OWNER RATIFICATION] the
+   reference-estimator declaration component: wherever any programme
+   feature, conditioning state, or admissibility gate is computed
+   relative to an *estimated* reference price (mid-price estimate,
+   VWAP/EW-VWAP family, EMA-smoothed price) rather than to a feed-native
+   observable or the event's own touch, the pre-registration must declare,
+   recorded on TRAIN before L2 data arrives, the estimator functional
+   (the exact EMA/recurrence form) and every smoothing constant (halflife
+   or window), plus the estimator's initialization/warm-up handling;
+   reference-normalized readings computed under an undeclared estimator
+   or undeclared smoothing constants are inadmissible. Mechanism,
+   page-cited: TradeFM's entire price-feature space — depth dt and
+   intraday level Δpt — is a deterministic function of the EW-VWAP
+   estimate ˆp = Nt/Dt defined by the pair of EMA recursions
+   Nt = α·(p·vt) + (1−α)·Nt−1, Dt = α·vt + (1−α)·Dt−1 (PDF pp. 4-5,
+   16), and the halflife that sets α is never stated (PDF pp. 5, 16);
+   the same raw trade therefore maps to different normalized features
+   — one bin index up or down — under different halflife choices, and
+   the tokenizer bin edges are calibrated on those halflife-dependent
+   normalized values (PDF pp. 4, 6). This is a single, silent,
+   analyst-tunable knob upstream of every price-relative feature,
+   exactly the undisclosed-degree-of-freedom family the programme has
+   been closing one component at a time (session 3's normalized-units
+   pre-declaration for extreme-OFI thresholds; session 36's queue-label
+   convention covering *reference construction* for queue-state
+   conditioning labels). This component extends that disclosure duty
+   from labeling conventions and threshold units to the *estimator
+   constants themselves*, across every reference-normalized feature in
+   the C1-L2 L2 arm and any future C8 arm. Harder to pass: a
+   reference-normalized feature can no longer satisfy an otherwise
+   complete pre-registration while its halflife remains a free parameter
+   selectable post hoc against TEST; the disclosure costs nothing when
+   the constant was already frozen, and it makes every future
+   reference-relative reading testable for implementation identity.
+   Scope: a disclosure requirement on pre-registration declaration
+   blocks only; the C1-L2 and C8 spec texts, every kill line, T-H and
+   T-O remain untouched; no threshold moves; nothing is armed. If every
+   admissible programme feature is computed against feed-native
+   observables (best bid/ask, the event's own touch), the component
+   guards nothing on that route and stays dormant.
+   Killed-if-wrong: if reference-relative readings on the programme's
+   venue and fields are later shown to be invariant to the estimation
+   halflife over its plausible range, the declaration guards nothing
+   and should die back to the standing declaration rules as they are.
 
-2. **[reinforcing, no new item]** The paper makes no predictive claim, and its own headline result is a null result in disguise: evaluation is distributional fidelity against stylized facts and feature marginals (PDF pp. 8-10, Tables 2-3), and the model's rollouts reproduce near-zero return autocorrelation (PDF pp. 1-2, 8-9, Figure 4). A market simulator that everyone agrees is merely plausible (the zero-intelligence control fails, the Compound Hawkes partially succeeds, PDF pp. 8-10) can be brought through exactly these fidelity metrics while embedding zero return predictability; generative plausibility and predictivity are disjoint claims. Corroborates, as a second corpus, the standing discipline that a fitted or distributional improvement is bookkeeping, not an edge: no fidelity metric from this paper's tables is ever citable as support for any programme feature, and any future evidence framed as "the feature reproduces a stylized fact" is inadmissible as support for a claim. The generative-null family — a well-calibrated simulator reproducing a feature's behavior — is precisely the placebo territory the C8 A3 shuffled-arrival placebo amendment already occupies; nothing new is needed or queued.
+2. [reinforcing, no new item] — generative fidelity is not prediction,
+   and the paper's own headline metric reproduces the null: the primary
+   stylized fact "reproduced" in Experiment 1 is the *absence* of return
+   autocorrelation (PDF pp. 2, 8-9), i.e. the model's success criterion
+   is similarity to the efficient-market null, and every quantitative
+   claim is a K-S/Wasserstein distance between distributions (Tables 2-3,
+   PDF pp. 9-10) with no out-of-sample return-forecasting test anywhere.
+   This corroborates the house rule that a library is ammunition, not
+   evidence: no fidelity figure from a generative microstructure model is
+   ever citable as evidence that any programme feature carries
+   information, and "the model reproduces heavy tails and volatility
+   clustering" is a realism claim about marginals, not an edge.
 
-3. **[interpretation caution]** Zero-shot geographic generalization (US-trained perplexity on held-out China and Japan, January 2025, with substantial overlap, PDF pp. 10-11, Figure 5; Table 6, PDF p. 24) is a token-perplexity claim about compressing event statistics, not out-of-sample economic predictive value, and the paper never claims more. Read as a caution for the programme's universality language: "universal price formation" evidence of this kind must never be cited in any SMH macro-synthesis or cross-market argument; if a transfer claim is ever made in a C1-L2 or C8 arm it will be made on the programme's own sealed predictions, never on a foundation model's perplexity overlap.
+3. [reinforcing, no new item] — the partial-observability result cuts
+   toward the programme's endpoint, not away from it: TradeFM learns
+   from trade events without the book (PDF pp. 1-3), and its weakest
+   fidelities are precisely the book-state quantities — bid-ask spreads,
+   where Compound Hawkes wins the K-S statistic (0.218 vs 0.238,
+   Table 3, PDF p. 10), and order-book imbalance, where its margin over
+   Hawkes is thin (0.142 vs 0.155) while the simulator's spread emerges
+   indirectly from deterministic matching rather than from the model
+   (PDF p. 10). Trade prints underspecify book state; this is the
+   session-1 caveat (OFI is cancel-blind) and the T1 standing
+   constraint (passive withdrawal is invisible in aggTrades) appearing
+   in a third corpus. Nothing here licenses relaxing the Tardis L2
+   requirement or substituting a taker proxy on any C1-L2 arm.
 
-4. **[cost-survival ammunition]** The closed-loop deterministic simulator with counterfactual order injection (buy or sell orders at 10x normal frequency, averaged mid-price forecasts, PDF pp. 26, 29, Figure 17), whose simulator is validated by replay against real fills (CDF correlations 0.91 for volumes, 0.98 for lot counts, PDF p. 24, Figure 11): relevance is conditional on a future K7-style cost-survival layer existing, and that layer must carry the entanglement disclosure the paper itself admits — closed-loop evaluation couples generator quality with simulator fidelity and full disentanglement is left to future work (PDF p. 10) — plus its own spread honesty: the spread is the one quantity where the explicit-interarrival baseline beats the learned generator (PDF p. 10, Table 3), so a synthetic-spread cost assumption is the weakest possible place to build a cost model.
+4. [interpretation caution] — scale-invariance is a modeling
+   convenience demonstrated on one venue and one year: relative
+   (bps/ration) features are shown more stationary across assets and
+   months than tick-based features (Fig 7, PDF pp. 5, 15; Figs 12-13,
+   PDF pp. 24-25), but the stationarity is measured on US equities
+   Feb 2024–Sep 2025 under the one undisclosed EW-VWAP halflife, and
+   the zero-shot China/Japan "moderate perplexity degradation"
+   (Fig 5, PDF p. 11) is perplexity on the paper's own tokenization,
+   not demonstrated feature equivalence across venues. No bin edge,
+   halflife, liquidity-tier definition, or universality claim transfers
+   to BTCUSDT or to any market the programme measures; a future
+   cross-market reading of programme features may invoke
+   scale-invariant *design discipline*, never the paper's fitted
+   evidence of transfer.
 
-5. **[reinforcing, no new item]** The paper's own rollout scale bounds its reach: 1,024 events correspond to roughly 2-5 minutes of market time for high-liquidity assets, 15-60 for medium, 1-4 hours for low-liquidity (PDF p. 8), and all fidelity comparisons live at this event-window grain. Nothing in the paper operates at, or speaks to, the daily-grain boards or the multi-week forward windows of the sealed-prediction ledger; the paper cannot be cited for or against anything the programme measures daily, and its minute-scale event rollouts never transfer as calibration for any programme horizon.
-
-6. **[source-quality note]** Industrial-lab capability report: J.P. Morgan AI Research, arXiv v1 [cs.LG] stamped 27 February 2026, weeks old at reading; no peer-review or journal record checked; the dataset is proprietary (billions of internal tick-level trades, PDF p. 4), so no external replication is possible, and all baselines (ZI, Compound Hawkes) are the authors' own implementations (PDF pp. 8, 23). The scale disclosure (524M parameters, 10.7B training tokens, Chinchilla sizing, 4-epoch schedule, PDF pp. 18-19, 23) is unusually transparent for an industry paper, and the limitations that matter are honestly stated in-text (spread exception, PDF p. 10; simulator entanglement, PDF p. 10). Graded as a well-executed generative-simulation report, at the top of its engineering class and with no market-truth claim metabolized; the published venue, if any, is to be checked before formal citation. Triage score 31 is an access-value rank, not a promise; the ranking was accurate — this is a genuine capability paper, not a low-grade item punched above its weight.
+5. [source-quality note] — arXiv v1 (27 Feb 2026), J.P. Morgan AI
+   Research, with the bank's informational-only disclaimer (PDF
+   pp. 1, 12); the dataset is proprietary and undisclosed (beyond "raw,
+   tick-level US equities transactions," 368 trading days, PDF p. 4),
+   no code or data is released, so nothing quantitative is checkable;
+   the comparison baselines are the paper's own choice (ZI and Compound
+   Hawkes; LOB-Bench neural baselines excluded on input-grounds, PDF
+   p. 8), and the closed-loop evaluation partially entangles model and
+   simulator fidelity — the authors state full disentanglement remains
+   future work (PDF p. 10). Graded as an industrial research
+   demonstration, strong on scale and engineering, unverified and
+   unverifiable on evidence; published version to be checked before
+   formal citation.
 
 ## What this paper would have killed if we had done it wrong
 
-If the programme had read "a deep model learns order flow across 9K stocks and whole geographies well enough to simulate markets" as support for anything — universality claims, cross-market transfer, or the idea that order flow carries extractable predictive structure — it would have laundered a simulation-quality metric into a market-truth claim, the exact laundering the library-is-ammunition rule forbids. The trap is sharpened by the paper's own framing: a foundation model that "brings the foundation-model paradigm to market microstructure" plausibly sounds like evidence that microstructure is predictable, when the paper itself never makes a predictive claim and its rollouts reproduce near-zero return autocorrelation as a success criterion. The existing discipline that forecloses this without any new rule: empirical claims from papers never enter the record as support, fidelity numbers are bookkeeping, and the only running falsification the programme trusts is its own sealed-prediction ledger. The one thing this read adds is the discretization disclosure component — the narrow, mechanically demonstrated degree-of-freedom failure (undeclared bin edges and calibration windows, nondeterministic imputation) that no previously queued rule covered, queued here as a candidate for the owner's word.
+The synthetic-data siren. Had the programme accepted generative realism
+as validation, a future cost-survival or robustness layer could have been
+"tested" against TradeFM-style synthetic order flow — path-plausible,
+stylized-fact-conformant, and generated through a deterministic
+toy-matching simulator whose spread is an artifact of the matching logic
+(PDF pp. 8, 21-22) — and a strategy surviving there would have been
+recorded as surviving realistic conditions, when it had merely survived a
+smooth surrogate of the single historical path. The guard against it was
+already standing: default assumption no edge, library is ammunition not
+evidence, nothing operationalized from a paper, and every cost-survival
+claim must carry its assumptions rather than borrow a simulator's
+plausibility. The second near-miss is subtler: had session 36's
+convention-queue stopped at labeling conventions, the EW-VWAP halflife
+would have remained exactly the kind of silent upstream knob — present in
+a leading industrial model without even a stated value (PDF pp. 5, 16) —
+that survives every admissibility gate and is tunable after the data
+arrives; the queued declaration component closes that door before any L2
+feature is ever computed.
 
 ## Standing caveat
 
-Proprietary US equities trade data, February 2024 to September 2025, over 9K tickers on US microstructure with penny ticks and USD prices; no crypto, no BTCUSDT, no futures, no anonymous flow. All bin edges, calibration windows, perplexity figures, K-S and Wasserstein distances, scaling exponents (C about -0.18, D about -0.19, PDF p. 23), architecture and hyperparameters, and the deterministic simulator's matching logic are dataset-, venue- and setup-specific; every fidelity claim is an internal benchmark against the authors' own baselines; closed-loop results couple the generator with their specific simulator (PDF p. 10); the RL execution and multi-agent sections (PDF p. 29) are execution-strategy content and are never operationalized. Rollouts are tens of minutes of event time at most (PDF p. 8). Laundering directions named. INTO — the discretization disclosure mechanism, the fidelity-versus-predictivity distinction and the perplexity-is-not-evidence caution enter only as feature/preregistration discipline (the sharpening and cautions above); no bin edge, perplexity figure, distance metric, scaling exponent, parameter count or stylized-fact plot enters any spec, default or calibration. OUT — TradeFM's fidelity tables, its geographic-transfer perplexity and its stylized-fact figures are never cited as expected behavior of any market the programme measures, never as expected BTCUSDT book behavior, and never as evidence that any programme feature carries information.
+TradeFM is a US-equities, trades-only, one-venue, one-year industrial
+model on proprietary data: no book input (deliberately), no crypto, no
+BTCUSDT, no futures, no survivorship or delisting discussion, no
+transaction costs or market impact in evaluation, and a deterministic
+simulator validated only on fill-volume and lot-count CDF correlations
+(0.91 and 0.98, PDF p. 24). All bin edges are calibrated on Feb 2024
+only (PDF p. 4) and frozen thereafter, an engineering choice whose
+robustness is argued, not proven. Perplexity, K-S and Wasserstein figures
+are incomparable across tokenizations and never comparable to the
+programme's statistics. Nothing in this paper bears on any kill line, and
+its empirical claims enter the record only as the standing caveats above.
+Laundering directions named: INTO — the reference-estimator declaration
+mechanism, the partial-observability corroboration, and the
+fidelity-is-not-prediction caution enter only as feature-design and
+interpretation discipline. OUT — no perplexity value, bin edge,
+halflife, liquidity-tier definition, stylized-fact figure, "2–3×"
+fidelity claim, zero-shot transfer claim, or APAC degradation figure is
+ever cited as expected behavior of any market the programme measures, or
+as evidence that any programme feature carries information, and no
+synthetic-data route replaces any sealed, forward, or holdout window.
