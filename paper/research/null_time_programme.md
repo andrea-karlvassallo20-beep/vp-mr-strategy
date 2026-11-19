@@ -4604,3 +4604,139 @@ session-13 candidate listing); a successor session must re-verify it
 unread against main's notes and the open PR set before consuming
 anything. Nothing measured, no kill line moved, nothing armed, nothing
 trades live.
+
+## 55. Null-time session 51 (2026-11-19): deep-read session 47 -- the Xu-Gould-Howison multi-level order-flow imbalance paper read; the Ridge-versus-OLS estimator lesson graded, default, nothing queued
+
+Session-state note (declared before the read): this session began as
+null-time session 50 on the McGillivray-Swishchuk variance-Hawkes paper
+(x618573), the named next-UNREAD pointer at its start. Its verification
+step re-read live main and found entry ## 54 already landed by a parallel
+session on the SAME paper (same verdict, same queue count, same next
+pointer); this session's duplicate draft entry and note were discarded
+BEFORE any branch, commit, PR, or push, per land-first-carries-consumption
+(log entry ## 54 stands; nothing of this session's discarded draft landed
+anywhere). The session then consumed the fresh next-UNREAD pointer x09d0b5.
+
+Paper: Ke Xu, Martin D. Gould, and Sam D. Howison (Mathematical Institute,
+University of Oxford), "Multi-Level Order-Flow Imbalance in a Limit Order
+Book", arXiv:1907.06230v2 [q-fin.TR] (26 October 2019), legally acquired
+OA copy (docs/library/text/x09d0b5_multi_level_order_flow_imbalance_in_a_
+limit_order_.txt, 32 pp., page-marked, read in full; no shelf gap, no
+inaccessibility). The entry was the previous session's named next-UNREAD
+pointer (score 29, x09d0b5), re-verified unread against all 47 library
+notes on main; live tail and branch/PR set re-read before consuming. Read
+against ONE question: what here would kill C1-L2 or C8 faster, or change
+their kill lines?
+
+The paper in one paragraph: the authors extend the Cont-Kukanov-Stoikov
+order-flow imbalance (OFI) to a vector MLOFI of the net order flow at the
+first M populated price levels on each side of the book (Eqs. 9-12, PDF
+pp. 7-9; level-1 MLOFI is exactly OFI), and fit the contemporaneous linear
+model dP = alpha + sum_m beta_m MLOFI_m on LOBSTER data for 6 Nasdaq
+stocks over all of 2016 (10:00-15:30, hidden liquidity excluded, Nasdaq
+as primary venue; PDF pp. 10-13), 2772 fits per stock with mean
+coefficients reported; univariate OFI is strongly significant (beta
+significant in 100 per cent of samples, Table 4, PDF p. 14), but
+multivariate OLS on M = 10 levels is unstable: MLOFI components are
+strongly multicollinear (sample correlations above 0.5-0.7 even between
+the first and tenth levels, eigenvalue ratios near zero, Figs. 1-2, PDF
+pp. 17-18), the same beta_1 that was 100 per cent significant alone
+collapses to weak significance in the joint OLS fit (Tables 5-6, PDF
+pp. 15-16), and OLS overfits -- out-of-sample RMSE RISES for M beyond
+about 5 on AMZN and TSLA while in-sample RMSE falls, "a classic hallmark
+of overfitting" (Fig. 5, PDF pp. 23-24); with Ridge regression (lambda by
+5-fold cross-validation per 30-minute window, Table 7, PDF p. 19) almost
+all beta_m become significant and stable (Tables 8-9, PDF pp. 20-21), and
+out-of-sample RMSE falls monotonically in M for every stock at every
+level; relative to OFI alone, the M = 10 Ridge fit improves out-of-sample
+RMSE by about 17/15/31/68/74/64 per cent on AMZN/TSLA/NFLX/ORCL/CSCO/MU
+(Table 10, PDF p. 26), i.e. 15-30 per cent for small-tick and 65-75 per
+cent for large-tick stocks; the authors attribute the Cont et al. (2014)
+contrary conclusion (deep levels do not matter) to OLS instability plus an
+in-sample-only adjusted-R2 metric (Section 6.1, PDF pp. 25-26), explain
+the large-tick/small-tick split by spread geometry -- at a 1-tick spread no
+in-spread arrivals are possible, and for wider spreads the same MLOFI
+vector maps to different mid-price outcomes (Section 6.4, PDF pp. 27-28)
+-- and frame the RMSE improvements as economically meaningful for
+high-frequency prediction algorithms, un-costed (PDF p. 28).
+
+Grade: NO kill line changes. NO new candidate sharpening. Findings,
+graded and page-cited, in the note
+(2026-11-19_multi_level_ofi_deep_read.md):
+
+Reinforcing, no new item -- the paper is a worked exhibit that the
+estimator and the goodness-of-fit metric ARE the verdict: the identical
+feature set, data, and target yield "deep levels do not matter" under
+multivariate OLS with adjusted R2 (Cont et al.'s reading, Appendix B3
+reading confirmed here, PDF pp. 25-26) and "deep levels strongly matter"
+under Ridge with out-of-sample RMSE (Tables 9-10, PDF pp. 21, 26). The
+programme's estimator-mode and GoF-metric pre-declarations already force
+this disclosure before any test; no rule moves. Reinforcing, no new item
+-- the overfitting exhibit is textbook: in-sample RMSE decreasing in M
+while out-of-sample RMSE increases past M ~ 5 (AMZN, TSLA; Fig. 5, PDF
+pp. 23-24), and adjusted R2 underestimating out-of-sample variance under
+multicollinearity (PDF p. 23), are exactly what the leakage-resistant
+holdout and pre-declared-metric disciplines already mandate; leakage and
+selection screens need no amendment. Interpretation caution --
+contemporaneous is not predictive: every regression in the paper explains
+the mid-price change IN THE SAME 10-second window as the flow (Eqs. 7,
+16, PDF pp. 7, 14); there is no forecast anywhere, no execution, no cost,
+and the "economically meaningful" claim is an un-costed HFT-precision
+argument (PDF p. 28); an RMSE improvement in contemporaneous explanation
+licenses nothing about any horizon-explicit compression-clock claim, and
+the marginal magnitudes (fractions of a tick against spread-crossing
+costs on a venue where the spread is 1 tick for the largest improvements)
+would not survive the economic gate as stated. Interpretation caution --
+the large-tick/small-tick split is venue structure, not a universal: the
+65-75 per cent improvements live where the spread is pinned at 1 tick
+(ORCL, CSCO, MU; Table 1, PDF p. 11, Section 6.4, PDF pp. 27-28), the
+mechanism being deep cancellations enabling multi-tick moves that in-spread
+arrivals would otherwise cap; nothing transfers to any venue the
+programme measures without its own venue-explicit, horizon-explicit
+test, and the small-tick degeneracies the authors themselves name (same
+MLOFI vector, different mid-price outcome, PDF pp. 27-28) are the reason
+MLOFI is a coarser statistic than book state. Source-quality note --
+arXiv v2 with an anonymous reviewer thanked, published version not
+checked at reading (uncertain, flagged for verification); 6 stocks, one
+year, single venue, hidden orders excluded; Table 6's caption says OLS
+while its first column header says "Ridge" (PDF p. 15 -- a copyediting
+slip, the values match the OLS fits of Table 5), flagged so no citation
+borrows the wrong label; Ridge standard errors via van Wieringen's
+formula (PDF p. 20); read, graded plainly, not promoted.
+
+Killed-if-wrong stands in the note: had the 65-75 per cent out-of-sample
+RMSE improvements been read as "deep-book flow carries an edge", a
+costless contemporaneous mid-price-explanation regression on tick-
+constrained Nasdaq equities would have been laundered into a predictive
+claim the paper never makes; had the beta_1 collapse in the joint OLS fit
+been read as "deep levels do not matter" (the Cont et al. reading) or the
+Ridge significances as "every level matters causally", the estimator would
+have decided the science twice, and the paper's own Section 6.1 exhibits
+both errors at once; had adjusted R2 been imported as a goodness-of-fit
+metric for any multivariate book feature, the paper's own Figure 5 (RMSE
+rising out of sample while R2 and in-sample RMSE improve) is the
+counterexample already on file. Multicollinearity screening, estimator-
+mode pre-declaration, GoF pre-declaration, holdout discipline, and
+nothing-measured prevented all of it. Laundering directions named: INTO
+-- the Ridge-versus-OLS estimator lesson, the overfitting exhibit, and
+the metric-dependence of the CKS contradiction enter as read discipline
+reinforcing standing rules; OUT -- no beta_m, no lambda, no RMSE figure,
+no 65-75 per cent range, no MLOFI definition change, and no "deep levels
+matter" sentence is ever cited as expected behavior of any venue the
+programme measures, or as evidence that any programme feature carries
+information.
+
+No inaccessible or blocked sources this session; the extract was complete
+and page-marked. Ratification queue after this session: TWENTY-EIGHT
+candidate sharpenings, unchanged (deep-read session 47 earned none;
+docs/DECISIONS_PENDING.md NOT touched this session, per the rule), zero
+armed; T1 remains armed awaiting the owner's word in its booked state
+(survived all five kill lines with sign inverted; T2 tested-fail); the
+blocked list stays blocked. Deep-read queue pointer: the next UNREAD
+entry is "Optimal incentives in a limit order book: a SPDE control
+approach" (score 29, xc937ca), the next score-29 entry in triage file
+order after this session's paper, verified unread against all library
+notes and the log on main; its page-marked extract exists in
+docs/library/text/; a successor session must re-read the live main tail
+and the branch/PR set before consuming anything. Nothing measured, no
+kill line moved, nothing armed, nothing trades live.
