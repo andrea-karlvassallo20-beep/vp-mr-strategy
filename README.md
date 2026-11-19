@@ -1,5 +1,21 @@
 # Salient / Salient Market Hypothesis — A Falsification-First Market Research  Project
 
+> ## SMH v1.0 Published. Falsification Record Active. L2 Phase Engaged.
+>
+> The Board's freeze directive of 2026-11-19 is executed in this commit. The
+> thesis is frozen as
+> [The-Salient-Market-Hypothesis-thesis-v1.0.pdf](The-Salient-Market-Hypothesis-thesis-v1.0.pdf)
+> at the repo root (19 pages; the markdown source and a deterministic,
+> dependency-free PDF generator live in `paper/thesis/`). By the same
+> directive the NQ Weekly OHLCV track is **ARCHIVED** — the thesis's own
+> honest timeline is 5-29 years of forward record to prove the weekly claim,
+> and the programme does not have that time. Archived is not falsified: the
+> thesis stands published, unfalsified, and unproved; its kill lines are
+> frozen; its forward log is empty by directive. **The only active research
+> front is the L2 order-book chain: C1-L2 → C8 → Convexity Sizing.**
+> Everything below — the falsification record, the sealed windows, the kill
+> lines, the epistemic contract — is unchanged and binding on the L2 phase.
+
 **The one-line summary:** a research knowledge base and falsification lab for
 one primary question — *out of the whole universe of markets, WHAT has become
 structurally primed to make the next significant move?* — with WHEN as the
@@ -276,8 +292,6 @@ input.
 
 | Path | What it is |
 |---|---|
-| Path | What it is |
-|---|---|
 | `paper/research/orderflow_program.md` | The constitution: data inventory, claims ledger, kill lines, blocked-on-data record |
 | `paper/research/phase1_daily/c1_hazard_report.md` | The C1 experiment and its verdict (FAILED, all kill lines) |
 | `paper/research/c1_l2_test_spec.md` | The L2 experiment, fully specified, not run |
@@ -288,9 +302,11 @@ input.
 | `paper/research/phase1_daily/smh_methodology_review_2026-11-15.md` | The methodology review: endpoint re-framed, five weaknesses, the unblocked queue |
 | `paper/research/phase1_daily/LEARNING_NOTES.md` | Plain-language guide: the book knowledge base and the lab |
 | `KNOWLEDGE.md`, `KNOWLEDGE_SMH.md` | The Market Studies knowledge base (13 books studied; the source of the ideas) |
+| `The-Salient-Market-Hypothesis-thesis-v1.0.pdf` | The frozen thesis v1.0 (Board's word, 2026-11-19): the falsifiable statement of SMH, zero status, published unfalsified and unproved |
+| `paper/thesis/` | The thesis markdown source and the deterministic, dependency-free PDF generator (rebuildable byte-identical) |
 | `src/` | Ingestion, verification gate, event clock, CPCV, feature calculators, C1-L2 harness, the taker falsification runner, the mega-universe scanner, board refresh |
 | `tests/` | 123 tests, all green on a complete environment (incl. scikit-learn), including failure-path tests (gap, leakage, kill lines) |
-| `docs/` | The site: thesis, working manual, causal chains, books, clues, night-before sauce move, board, dormancy map (1,299 series), library (100 resources + articles catalogue), claims ledger, instrument |
+| `docs/` | The site: thesis, working manual, causal chains, books, clues, night-before sauce move, board, dormancy map (1,299 series), library (100 resources + articles catalogue), claims ledger, instrument, GOALS, directorate reports |
 | `strategy/`, `paper/` | The earlier Salient system: gated strategy core, nightly paper-trading loop, research batteries |
 | `Makefile`, `.devcontainer/` | One-click codespace deployment: `make gate-day` / `make gate DAY=...` runs the whole L2 gate process (see CLOUD_DEPLOY.md section 0) |
 | `paper/research/phase1_daily/`, `paper/research/phase2_l2/` | The research record, filed by phase (see `paper/research/README.md`) |
