@@ -4494,3 +4494,105 @@ Swishchuk, 2024), verified unread against all library notes on main after
 this session; a successor session must re-read the live main tail and the
 branch/PR set before consuming anything. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
+## 54. Null-time session 50 (2026-11-19): deep-read session 46 — the McGillivray-Swishchuk variance-Hawkes energy paper read; NO kill line changes, NO sharpening, nothing armed
+
+Paper: Joshua McGillivray and Anatoliy Swishchuk, "Variance-Hawkes
+Process and its Application to Energy Markets", arXiv:2410.08420v1
+[q-fin.MF] (10 Oct 2024), legally acquired OA copy
+(docs/library/text/x618573_variance_hawkes_process_and_its_application_to_ene.txt,
+24 pp., page-marked, read in full). Next UNREAD triage-rank entry
+(score 29), selected per the session-49 pointer and re-verified unread
+against all library notes on main at session start; no shelf gap, no
+inaccessibility. Read against ONE question: what here would kill C1-L2
+or C8 faster, or change their kill lines?
+
+The paper in one paragraph: the authors subordinate a standard Brownian
+motion by a simple exponential-kernel Hawkes process, Vt = B(Nt),
+arguing that price progresses in trade-arrival time so a discontinuous
+counting subordinator is a more faithful business time than the usual
+continuous subordinators (PDF pp. 5-7); a clustered-Gaussian overlay is
+hand-fitted ("trial and error", parameters v ≈ 400, β = 800, α = 700,
+coefficient b fixed at 1/e) to the log returns of one year each of
+2018/2019 WTI crude oil and NYMEX natural gas front-month futures, with
+distributional overlap judged visually (PDF pp. 7-9, Figs. 2-5);
+per-minute 2024 trade-volume quantiles and intraday volume profiles of
+the same markets are shown to depart from Poisson/exponential
+expectations (PDF pp. 10-11, Figs. 6-9); the generator of
+(lambda_t, Nt, B(Nt)) is derived from the Cui-Hawkes-Yi moment
+recurrences with closed second/cross moments (PDF pp. 12-14, 24); the
+Ito identity dB^2(Nt) = 2B(Nt)dB(Nt) + dNt is checked against
+Euler-Maruyama simulation (PDF pp. 14-15); and Conjecture 1,
+B(Nt)/d ~ sqrt(Nt)N(0,1), is supported by Monte Carlo distribution
+matching alone (PDF pp. 15, 19-20).
+
+Grade: NO kill line changes. NO new candidate sharpening. Findings,
+graded and page-cited, in the note
+(2026-11-19_variance_hawkes_energy_deep_read.md):
+
+Reinforcing, no new item — the hand-picked fits carry α/β = 0.875 on
+daily energy futures (PDF pp. 8-9), adding a daily-grain,
+energy-markets instance to the running exhibit that near-critical
+fitted branching is commonplace and specification-sensitive (deep-reads
+20-21); supports the near-critical regime-disclosure rule, and the
+0.875, being hand-chosen, may never be read as a measured market
+quantity. Reinforcing, no new item — the calibration is explicitly
+non-statistical ("by hand using trial and error", PDF p. 7; "not as
+precise as they could be had they have been chosen mathematically",
+PDF p. 8), a worked exhibit for the estimator-discipline family and the
+optimizer-path multi-start disclosure component queued through
+deep-read 43: hand-tuned distributional overlap is dead on arrival
+under those declarations, which is why no new arm is needed.
+Reinforcing, no new item — the subordination argument independently
+states the programme's flow-clock position (prices progress in
+trade-arrival time; continuous subordinators approximate a discontinuous
+arrival count, PDF pp. 5-6) and the exponential kernel is the only
+Hawkes kernel with a Levy-process reading (PDF p. 7), supporting the
+flow-clock scale-constant rule and the ACF-shape kernel-validity gate's
+pre-registration requirement. Interpretation caution — Conjecture 1
+(conditional Gaussianity of the subordinated process) is unproven,
+evidenced only by Monte Carlo matching (PDF pp. 15, 19-20, Fig. 14); if
+any future generative null uses subordinated-normal forms, the
+conditional normality assumption must be tested on programme data, never
+imported from this conjecture. Interpretation caution — the clustering
+exhibits are per-minute trade volume of 2024 WTI/Henry Hub futures,
+daily Marketwatch closes, front-month roll effects unaddressed (PDF
+pp. 10-11, 17): off-venue, coarse-grain, and not evidence that BTCUSDT
+arrivals cluster. Source-quality note — arXiv v1, no peer-reviewed
+venue verified at reading (uncertain, flagged); NSERC-funded
+university preprint declaring calibration, the distributional proof,
+and risk-neutral valuation as future work (PDF p. 16); no
+goodness-of-fit statistics anywhere; check the published version before
+formal citation.
+
+Killed-if-wrong stands in the note: had the 0.875 fits been read as
+measured near-criticality, trial-and-error distributional overlap would
+have been laundered into a criticality claim on a market the programme
+does not trade; had Conjecture 1's Monte Carlo agreement been accepted
+as proof, a future generative null could have embedded an unproven
+conditional-Gaussian identity; had the per-minute energy-volume
+quantile exhibits been cited for BTCUSDT, an off-venue coarse-grain
+exhibit would have charged a crypto claim.
+
+Standing caveat: arXiv v1, hand calibration only; daily Marketwatch
+closes on front-month futures (roll effects unaddressed); energy
+markets only, never crypto; distributional claim conjectural; moments
+exponential-kernel specific; Euler-Maruyama check with visible
+discretization error spikes. The library is ammunition, not evidence:
+nothing in this paper enters any spec, default, kill line, threshold,
+or generative null; it charges warnings only.
+
+No inaccessible or blocked sources this session; the extract was
+complete and page-marked. Ratification queue after this session:
+TWENTY-EIGHT candidate sharpenings (twenty-seven standing plus the
+optimizer-path (multi-start) disclosure rule joined through deep-read
+session 43; this session queued NOTHING), zero armed;
+docs/DECISIONS_PENDING.md NOT touched this session, per the rule
+(touched only when a candidate sharpening is queued). T1 remains armed
+awaiting the owner's word in its booked state (survived all five kill
+lines with sign inverted; T2 tested-fail); the blocked list stays
+blocked. Deep-read queue pointer: the next UNREAD entry is
+"Multi-Level Order-Flow Imbalance in a Limit Order Book" (score 29,
+x09d0b5), verified unread against all library notes on main after this
+session; a successor session must re-read the live main tail and the
+branch/PR set before consuming anything. Nothing measured, no kill line
+moved, nothing armed, nothing trades live.
