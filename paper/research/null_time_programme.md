@@ -3179,3 +3179,155 @@ UNREAD triage entry is "Quantifying reflexivity in financial markets:
 towards a prediction of flash crashes" (score 30, xf29859), taking score
 order among the remaining unclaimed entries. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
+
+## 45. Null-time session 41 (2026-11-19): deep-read session 37 — the mean-field nearly-unstable Hawkes paper graded pure theory, default, nothing queued; xf29859 honored as claimed in flight, two superseded open PRs closed, concurrency state declared
+
+- **Session-state note (declared before the read)**: this session
+  began from log entry ## 44's closing pointer, which names xf29859
+  "Quantifying reflexivity in financial markets: towards a
+  prediction of flash crashes" (score 30) as the next UNREAD. Before
+  consuming, the live main tail, DECISIONS_PENDING.md and the
+  branch/PR set were re-read. The pointer entry is claimed in
+  flight: the branch null-read/2026-11-19-reflexivity-slot9 carries
+  one commit ahead of main containing a committed deep-read note
+  (2026-11-19_reflexivity_flash_crashes_branching_deep_read.md)
+  plus a log append, and pruned to a live pull request (#206,
+  opened while this session was appending, title claiming null-time
+  session 41 / deep-read session 37 for that read, its numbering
+  renumbered 44 -> 45 at its own open time). Unlike the session-34
+  dormant-branch case (no repo trace), a committed trace exists,
+  so per the burst-slot precedent the in-flight claim is honored
+  and this session consumed the next UNREAD triage entry unclaimed
+  by any live work: x65dac0 (score 30), the mean-field nearly-
+  unstable Hawkes paper. No duplicate note for x65dac0 existed at
+  read time; none exists now. Two stale superseded pull requests
+  were found open at read time and closed unmerged with
+  supersession comments recorded on them: #197 (a TradeFM draft
+  whose default-grade body is stale against the landed log entry
+  ## 41, which queued the discretized-conditioning declaration)
+  and #204 (the rough Hawkes-Heston draft whose supersession is
+  recorded in log entry ## 44 as "conflicted and closed unmerged";
+  it was in fact still open, and the discrepancy is declared here
+  under the honest-error protocol rather than left to rot). The
+  dormant null-read/2026-11-19-diffusive-hawkes-slot9 branch (a
+  duplicate of the landed deep-read 34, no open PR) is left for
+  the honesty pass. #206 is dirty against main and cannot merge
+  as-is; per the #204/#44 precedent, whichever of the two
+  colliding landings reaches main first holds the append-time
+  numbering, and the loser rebases and renumbers with the
+  supersession recorded in line. This session lands under the
+  numbering main actually holds at its append time. Landing-time
+  recheck, declared before push: #206 has since been closed
+  unmerged and superseded by its own reland PR #207 from branch
+  null-read/2026-11-19-reflexivity-slot9-v2 (clean against main,
+  mergeable, still claiming the reflexivity paper xf29859 under
+  this same renumbered numbering); main itself is unmoved, still
+  ending at merged entry ## 44 / PR #205 at commit bf06a94, so
+  the in-flight claim on xf29859 stands honored and this session
+  lands as ## 45 with the race against #207 declared.
+
+- **Library deep-read session 37** (the next UNREAD entry unclaimed
+  by in-flight work, score 30, x65dac0, consumed here):
+  `paper/research/library/2026-11-19_mean_field_nearly_unstable_hawkes_deep_read.md`
+  on Grégoire Szymanski (DMATH, Université du Luxembourg) and Wei
+  Xu (Beijing Institute of Technology), "Mean-Field Limits for
+  Nearly Unstable Hawkes Processes" (arXiv:2501.11648v1
+  [math.PR], v1 stamped 20 January 2025): scaling limits for
+  multivariate Hawkes processes with general kernels whose L1
+  norms approach one, extending Jaisson-Rosenbaum's nearly-unstable
+  construction to arbitrary kernel shapes, every limit an affine
+  stochastic Volterra equation with kernel determined by a single
+  Bernstein exponent, the attainable limit class universal
+  (Lemma 2.4, PDF p. 8); plus mean-field propagation of chaos for
+  n exchangeable particles sharing one intensity, with three
+  aggregate regimes by ζ = n·βn²: synchronization, conditional
+  independence, extinction (Theorems 3.1-3.2, PDF pp. 11-13).
+  Pure theory; extract complete, page-marked, 31 pp., read in
+  full; no inaccessibility, no shelf gap. Read against the ONE
+  question. **Grade: NO kill line changed. NO new candidate
+  sharpening.** Default grade; the paper is a clean-theory worked
+  exhibit of rules already standing and the burden of proof for a
+  sharpening was not met. Findings, page-cited:
+
+  Reinforcing, no new item — the limit map is universal and
+  non-injective, the fifth worked exhibit for the near-critical
+  regime-disclosure rule (deep-read 17, boundary-solution rule
+  deep-read 5): the kernel survives the limit only through the
+  single Bernstein exponent Φ (Eq. (2.4), PDF p. 7) and every
+  Bernstein function is attainable by some kernel sequence
+  (Lemma 2.4(2), PDF p. 8), so no macroscopic shape, rough,
+  CIR-type or otherwise, identifies the microscopic kernel; the
+  construction manufactures any member of the affine Volterra
+  class from near-critical sequences by design (PDF pp. 2-4,
+  7-9), a fitted near-critical reading is a specification
+  statement, never a discovery, the queued disclosure rule
+  governs. Reinforcing, no new item — deterministic when stable,
+  stochastic only near the boundary: the stable-case macroscopic
+  limit is the deterministic Volterra intensity of Bacry et al.,
+  and macroscopic stochasticity enters exactly through the
+  asymptotically violated stability condition (PDF p. 2; Remark
+  3.4, PDF p. 13), so observed stochastic macro structure in a
+  fitted excitation class is a symptom of assumed near-criticality,
+  not an independent finding. Interpretation caution — the three
+  mean-field regimes are a joint function of particle count and
+  distance to criticality, ζ = n·βn² deciding synchronization
+  versus conditional independence versus extinction (Theorems
+  3.1-3.2, PDF pp. 11-12; Remark 3.3, PDF pp. 12-13): two
+  implementations with the same fitted kernel but different
+  component counts land in different aggregate regimes, and
+  cross-sectional dispersion in a multi-component excitation
+  system is a regime property, not a free-standing quantity;
+  binds as read discipline on any hypothetical future
+  multi-component excitation fit or cross-sectional dispersion
+  reading, C8's proposed first-PC factor is an aggregation of
+  observed features rather than a fitted excitation system, so
+  nothing in C8 moves and no declaration is queued, the
+  near-critical disclosure rule already governs were such a fit
+  ever pre-registered. Source-quality note — pure math.PR
+  preprint, no data, no calibration, no out-of-sample content,
+  finance motivation only; Szymanski is the co-author of the
+  two-square-root-laws market-impact paper in the record's
+  cost-survival line (reference [20], PDF p. 26); arXiv v1
+  January 2025, no journal record checked at reading; extract
+  complete and clean to its end (Appendix B, PDF p. 31); a later
+  version is to be checked before any formal citation.
+
+  Killed-if-wrong stands in the note: had the universality result
+  been read forward as market-truth ("rough or affine macro
+  structure is microstructure-founded"), a construction theorem
+  would have been laundered into an identification claim;
+  universality is the opposite of identification. Had the
+  deterministic-versus-stochastic contrast been ignored, macro
+  stochasticity would have been booked as discovery rather than
+  scaling artifact; had the three-regime split been read as a
+  kernel property alone, a dispersion reading could have been
+  booked stable under one component count and silently wrong
+  under another. Library-is-ammunition and nothing-measured
+  prevented all three. Standing caveat: no market, no sample, no
+  period, no costs; all-to-all unit coupling, a neuroscience-style
+  idealization, the extinction regime a rescaling artifact.
+  Laundering directions named: INTO — nothing, no Bernstein
+  triplet, kernel sequence, regime constant ζ, tightness argument
+  or regularity exponent enters any spec, default, calibration,
+  tolerance or generative null, and the model may not serve as a
+  null or simulator for any C1-L2 or C8 arm without an
+  owner-ratified pre-declared derivation of its assumptions on
+  the programme's venue and fields; OUT — never read backwards as
+  "markets are nearly unstable" (assumed), "cross-sectional flow
+  synchronizes" (a regime of an all-to-all toy model), or "macro
+  shape identifies the kernel" (non-injective by Lemma 2.4).
+
+Ratification queue after this session: TWENTY-SEVEN candidate
+sharpenings, unchanged (deep-read session 37 earned none;
+docs/DECISIONS_PENDING.md untouched this session), zero armed. T1
+remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue pointer: by the mechanical rule the next
+UNREAD triage entry is xf29859 "Quantifying reflexivity in
+financial markets: towards a prediction of flash crashes" (score
+30), which is claimed in flight through open PR #206 and is not
+consumed here; the next unclaimed UNREAD entry behind it is
+"Exact asymptotic solutions to nonlinear Hawkes processes: a
+systematic classification of the steady-state solutions" (score
+30, x20bdef), and a successor session must re-read the live main
+tail before consuming either. Nothing measured, no kill line
+moved, nothing armed, nothing trades live.
