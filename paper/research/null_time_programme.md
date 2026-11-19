@@ -3756,3 +3756,151 @@ defect are declared above for the honesty pass. A successor session
 must re-read the live main tail and the branch/PR set before
 consuming anything. Nothing measured, no kill line moved, nothing
 armed, nothing trades live.
+
+## 49. Null-time session 45 (2026-11-19): deep-read session 41 — the Hawkes jump-diffusion stochastic-control paper read; no skips, default grade, nothing queued
+
+- **Session-state note (declared before the read)**: this session
+  began from log entry ## 48's closing pointer, which names
+  xd02283 "Stochastic Optimal Control of Hawkes Jump-Diffusion
+  Systems" (score 30) as the next unclaimed UNREAD, subject to
+  collision checks. Before consuming, the live main tail,
+  docs/DECISIONS_PENDING.md and the branch/PR set were re-read: zero
+  open pull requests, no deep-read note for the slug on main, no
+  branch claims the entry, so the pointer checked out and the entry
+  was consumed with no skips. DECISIONS_PENDING re-read confirms: T1
+  executed under the owner's authorization, survived all five kill
+  lines with its sign inverted, booked in the ledger; T2
+  tested-fail; ratification queue twenty-seven, zero armed.
+  Operational notes: the first fresh-main codeload fetch returned a
+  404 stub (14 bytes); a retry landed the full tarball
+  (335,940,485 bytes) whose log file matches the API-read main
+  state (## 48 count 1, no ## 49), and the integrity guard ran
+  clean before the read. Two stale branches
+  (deep-read/session-39-rough-hawkes-heston,
+  deep-read/session-40-rough-hawkes-heston) exist while the
+  rough-Hawkes-Heston note is already on main; they claim nothing
+  on the queue head and branch-name session numbers do not bind
+  the log's deep-read numbering (deep-read 40 was consumed by
+  ## 48).
+
+- **Library deep-read session 41** (next unclaimed UNREAD entry,
+  score 30, xd02283, consumed here):
+  `paper/research/library/2026-11-19_hawkes_jump_diffusion_stochastic_control_deep_read.md`
+  on Daria Sakhanda and Joshue Heli Ricalde-Guerrero (both
+  Department of Mathematics, ETH Zurich), "Stochastic Optimal
+  Control of Hawkes Jump-Diffusion Systems" (arXiv:2608.29473v1
+  [math.OC], stamped 30 Aug 2026): a growth-environment economy
+  (capital, controlled pollution stock) with disasters driven by a
+  marked subcritical Hawkes process (intensity mu(P-) + Y-,
+  exponential decay b, mark excitation a(zeta)); global strong
+  well-posedness and nonexplosion by Poisson embedding,
+  localization and moment bounds (Prop. 5.1, PDF pp. 8-14);
+  asymptotic L1 decay of the excess intensity under the baseline-
+  integrability hypothesis (5.34) (Thm. 5.3, Cors. 5.4-5.5, Prop.
+  5.6, Cor. 5.7, PDF pp. 14-19); and an O(eta) convergence of the
+  Hawkes value function to the Poisson one under the joint scaling
+  a_eta = eta*a with y_eta = O(eta) and assumed uniform-over-
+  controls moment bounds (Prop. 5.8, Thm. 5.10, PDF pp. 20-29,
+  bound 5.83), the verification running through the explicitly
+  solved CRRA-type Poisson value function of the companion [12]
+  (arXiv:2511.13568). Pure theory; extract complete, page-marked,
+  30 pp., read in full; no inaccessibility, no shelf gap. Read
+  against the ONE question. **Grade: NO kill line changed. NO new
+  candidate sharpening.** Default grade; the paper licenses
+  nothing the programme does not already govern, and the burden of
+  proof for a sharpening was not met. Findings, page-cited:
+
+  Reinforcing, no new item — subcriticality is load-bearing
+  everywhere: the branching-ratio condition (Def. 3.1, PDF
+  pp. 5-6), the standing a_bar_1 < b (Eq. (4.7), PDF p. 6) and its
+  scaled uniform version eta_0*a_bar_1 < b (Eq. (5.46), PDF p. 20)
+  whose positivity (Eq. (5.56), PDF p. 21) drives the excitation
+  bound; every approximation theorem is proven strictly inside the
+  stable regime with the branching ratio bounded away from 1;
+  eighth worked exhibit for the near-critical regime-disclosure
+  family (deep-read 17, boundary rule deep-read 5, universality
+  deep-read 38, ## 46 fifth, ## 47 sixth, ## 48 seventh): any
+  future "excitation is a small correction" import must disclose
+  the subcriticality its bound consumes; nothing added.
+  Interpretation caution — the asymptotic Hawkes-to-Poisson decay
+  holds only under the baseline-integrability hypothesis
+  integral E[mu(P_t)]dt < infinity (Eq. (5.34), PDF p. 15): the
+  decay works because the Poisson baseline itself is transient,
+  the paper proves nothing about stationary baselines, and the
+  headline "self-excitation vanishes asymptotically" (PDF pp. 8,
+  19) is inadmissible without the hypothesis; sits beside the ##
+  48 fit-test-conditioned caution, model-relative conditions
+  carry, no queue change. Interpretation caution — the O(eta)
+  value-function convergence is jointly scaled (a_eta = eta*a AND
+  y_eta <= c_y*eta, Eq. (5.45), PDF p. 20), rests on assumed — not
+  derived — uniform-over-controls moment bounds (Eqs. (5.47)-(5.48),
+  PDF p. 20) plus Poisson-feedback admissibility and the
+  integrability/transversality conditions (5.80)-(5.82), and its
+  metric is expected discounted utility: expectation-level
+  closeness licenses nothing about sample-path or finite-window
+  distinguishability; the bound must never be imported as
+  "Hawkes = Poisson" in any generative-null or placebo argument,
+  or it would weaken the very test it was cited to support;
+  assumption-honesty discipline, nothing moves. Reinforcing, no
+  new item — the entire comparison runs through one explicitly
+  solved Poisson problem (closed-form v, jump-increment growth,
+  Lemma 5.9, Eqs. (5.73)-(5.76), PDF pp. 23-24): no general
+  Hawkes-control-equals-Poisson-control theorem exists, only a
+  verification template for one CRRA-type companion model; seventh
+  worked exhibit for the specification-classification family
+  (## 47 sixth): mathematics carried by one model's closed form
+  licenses nothing outside it. Source-quality note — math.OC
+  preprint, two ETH Zurich mathematicians, zero finance, zero
+  market, zero data, zero calibration, zero empirical content
+  (climate-growth economy, the finance connection is the word
+  "Hawkes" in the title), one raw Google-Books-ID citation string
+  (PDF p. 29); arXiv v1 dated 30 Aug 2026, journal record NOT
+  checked at reading, published version to be checked before
+  formal citation.
+
+  Killed-if-wrong stands in the note: had the value-function
+  convergence been imported as a license for a Poisson generative
+  null standing in for a small-excitation Hawkes alternative, an
+  expectation-level, jointly-scaled, assumption-conditioned
+  verification result from a growth-economy model would have been
+  laundered into a distributional-indistinguishability claim the
+  paper never makes, weakening every placebo that depends on
+  telling the two apart; had the decay theorem been quoted without
+  (5.34), "self-excitation washes out" would have entered the
+  record as unconditional in exactly the stationary-baseline
+  regime a market null would occupy; had the O(eta) constant been
+  treated as a result rather than conditional on the standing
+  moment hypotheses, assumptions would have silently become
+  theorems. The model-relative register, the assumption-honesty
+  discipline, the regime-disclosure rule and nothing-measured
+  prevented all three. Standing caveat: no market, no sample, no
+  period, no costs; exponential-kernel Markovian Hawkes only,
+  finite-second-moment marks, linear-growth baseline, strictly
+  positive survival (positive capital preserved at jumps),
+  local-in-time square-integrability (Remark 5.2, PDF p. 14).
+  Laundering directions named: INTO — nothing, no eta-scaling, no
+  decay theorem, no O(eta) bound, no generator-comparison template
+  enters any spec, default, calibration, tolerance or generative
+  null, and the convergence may not serve as a license for any
+  Poisson-versus-Hawkes substitution in any C1-L2 or C8 arm
+  without an owner-ratified pre-declared derivation of its
+  assumptions on the programme's venue and fields; OUT — never
+  read backwards as "Hawkes = Poisson" (expectation-level, jointly
+  scaled, assumption-conditioned), "self-excitation washes out
+  asymptotically" (requires (5.34); stationary case out of scope),
+  or "optimal control is robust to excitation" (a value-function
+  metric is not a pathwise or distributional metric).
+
+Ratification queue after this session: TWENTY-SEVEN candidate
+sharpenings, unchanged (deep-read session 41 earned none;
+docs/DECISIONS_PENDING.md untouched this session), zero armed. T1
+was executed under the owner's authorization on the second aggTrades
+window and survived all five kill lines with its sign inverted,
+booked in the ledger; T2 tested-fail at its kill line; the blocked
+list stays blocked. Deep-read queue pointer: this session consumed
+the slot the landed ## 48's closing pointer names, xd02283, as log
+entry ## 49; the next unclaimed UNREAD entry is "Critical
+reflexivity in financial markets: a Hawkes process analysis"
+(score 30, xdc14f4); a successor session must re-read the live main
+tail and the branch/PR set before consuming anything. Nothing
+measured, no kill line moved, nothing armed, nothing trades live.
