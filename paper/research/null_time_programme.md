@@ -4859,3 +4859,187 @@ all 48 library notes and the log on main; its page-marked extract
 exists in docs/library/text/; a successor session must re-read the
 live main tail and the branch/PR set before consuming anything. Nothing
 measured, no kill line moved, nothing armed, nothing trades live.
+
+## 57. Null-time session 53 (2026-11-19): deep-read session 49 — the Huang-Lehalle-Rosenbaum queue-reactive model read; ONE candidate sharpening queued (the dynamics-identification rule for generative nulls), nothing armed
+
+Session-state note (declared before the read): this session began as
+the landed ## 56's named next-UNREAD pointer (x8afb03, score 29). Its
+verification step re-read the live main tail, the branch set, and the
+open-PR set before consuming: entry ## 56 still stood as the last
+landed entry (five successor sessions, deep-reads 44 through 48, had landed
+## 52 through ## 56 since this line landed entry ## 51 at session 43), all 48
+library notes on main re-checked with no note for the slug, zero open
+PRs, no in-flight branch for this paper (30 branches enumerated), the
+read-set recomputed by the established slug-and-normalized-title
+method confirming x8afb03 the next unclaimed UNREAD, and the
+page-marked extract present on the shelf; the pointer was consumed
+clean. Numbering: deep-read 49 = null-time 53 = log ## 57, offset
+honored, no renumber.
+
+Paper: Weibing Huang (LPMA, UPMC Paris 6, and Kepler-Cheuvreux),
+Charles-Albert Lehalle (Capital Fund Management), and Mathieu
+Rosenbaum (LPMA, UPMC Paris 6), "Simulating and analyzing order book
+data: The queue-reactive model", arXiv:1312.0563v2 [q-fin.TR] (indexed
+2013, v2 stamp 3 Sep 2014), legally acquired OA copy
+(docs/library/text/x8afb03_simulating_and_analyzing_order_book_data_
+the_queue.txt, 29 pp., page-marked, read in full; no shelf gap, no
+inaccessibility). Read against ONE question: what here would kill
+C1-L2 or C8 faster, or change their kill lines?
+
+The paper in one paragraph: the limit order book around a fixed
+reference price is modeled as a continuous-time Markov jump process in
+2K queue sizes with all event intensities functions of the book state
+only (PDF pp. 4-7), ergodicity proved under negative individual drift
+and bounded incoming flow (Theorem 2.1, PDF pp. 4-5), and the
+intensities estimated by maximum likelihood on Cheuvreux 5-limit
+Euronext data (January 2010 to March 2012, two large-tick stocks,
+auction hours removed, PDF pp. 5-6) across three nested conditioning
+sets: independent queues (Model I), second-limit intensities
+conditional on first-limit emptiness (Model IIa), first-limit
+intensities conditional on the opposite queue's size band (Model IIb),
+with invariant distributions computed in product form, by
+matrix-geometric QBD methods, or by Monte-Carlo, all closely matching
+empirical book distributions (Figs. 3, 5, 7-8, PDF pp. 10-15). Adding a
+reference-price jump mechanism with move probability theta and
+reinitialization probability theta_reinit (the queue-reactive model,
+PDF pp. 17-18) yields a market simulator; with theta_reinit = 0 the
+"maximal mechanical volatility" of purely book-driven dynamics is
+5 bps against 14 bps empirical, mean-reversion ratio 0.08 against
+0.39 (PDF p. 18), the gap attributed to exogenous information;
+calibrated values theta = 0.7 and theta_reinit = 0.85 (PDF p. 20).
+Applications compute execution probabilities (Poisson flows
+overestimate them, Fig. 9, PDF p. 16) and simulate placement-tactic
+slippage and market impact profiles, concave in time and volume,
+square-root-law compatible, with no price relaxation emerging
+(Figs. 11-12, PDF pp. 21-22).
+
+Grade: NO kill line changed. ONE new candidate sharpening queued,
+PENDING OWNER RATIFICATION: the dynamics-identification rule for
+generative nulls. The invariant distribution of this model class is
+determined by arrival/departure ratios alone, in explicit product
+form, and "two assets can have very different flow dynamics, but still
+the same invariant distribution" (PDF p. 10): static book marginals do
+not identify the generating dynamics. Proposed amendment, tightening
+the placebo and generative-null design precedents (the ## 45
+synthetic-rebuttal precedent and the C8 A3 shuffled-arrival placebo):
+any generative null, placebo, or simulator accepted as a refutation
+instrument in C1-L2 or C8 estimation must pre-declare, next to the
+static marginals it is constructed to match, at least one
+flow-dynamics statistic (event-order, conditional waiting-time, or
+transition-rate statistic) that it must also reproduce; a null
+validated only on invariant or static distributions is inadmissible.
+Harder to pass: a null can no longer be certified faithful by
+distributional match alone, refutations surviving it carry more
+force, and a future C1-L2 claim cannot be bolstered by a straw null
+that matches the board's shape while carrying arbitrary dynamics.
+docs/DECISIONS_PENDING.md updated with the new count and the new
+component's parenthetical, the only edit this session.
+
+Findings, page-cited, one line each: [reinforcing, no new item] the
+maximal mechanical volatility bound — endogenous queue dynamics alone
+generate 5 bps against 14 bps empirical 10-minute volatility with
+mean-reversion ratio 0.08 against 0.39 (PDF p. 18), the OPPOSITE
+signed direction from the Hawkes-line artifacts that inflate
+endogeneity, a worked exhibit for the ## 51 signed-bias conjunction
+caution; whatever the C1-L2 compression layer reads lives inside a
+mechanical ceiling this model class bounds from above on this venue
+by a factor near three, but the bound is venue- and model-relative and
+enters no spec. [reinforcing, no new item] state-dependence of all
+three flow intensities measured, shaped, and economically mechanized
+(insertion dip at the empty first queue, decreasing insertion at
+outer limits, increasing-concave cancellation against the classical
+linear assumption, market-order intensity exponentially decreasing in
+available volume, second- and first-limit intensities conditional on
+first-limit emptiness and opposite-queue size, PDF pp. 8-9, 11-14) —
+economic-mechanism exhibits behind C1-L2's state-conditioned premise
+family; the paper predicts FLOW intensities, never price direction.
+[interpretation caution] parameters estimated ONLY during
+constant-reference-price periods with recording restarted at every
+pref change (PDF pp. 4, 7), the consequence visible in Model IIb where
+the best-queue joint distribution mismatches at transition-adjacent
+states and is repaired only by adding the price-move mechanism (PDF
+p. 15); an instance of the ## 51 selection-of-windows mode in its
+sharpest form: inter-move conditioning censors the transitions by
+construction, and the estimates are not licensed at the firing
+moments. [interpretation caution] theta_reinit = 0.85 and the
+mechanical-volatility gap express one venue-and-model-relative
+mechanical-versus-exogenous decomposition; neither number may be
+cited as a market property; any future C8 decomposition must treat
+the boundary as estimated, venue-specific, model-relative,
+pre-declared. [interpretation caution] the estimation conventions
+carry consequences if imitated: bid-ask symmetry erases side
+asymmetry by construction (PDF p. 7), the closed-form QBD route needs
+a constant-Poisson-rates level-independence assumption (Assumption 5,
+PDF p. 25), queue values are rescaled by average-event-size ratios
+when pref moves (PDF p. 17; AES versus ATS, PDF p. 28); none enters
+any spec. [cost-survival ammunition] author-signed bias axes for any
+future execution-cost layer: Poisson flows overestimate execution
+probabilities, Assumptions 3-4 (uniform within-queue cancellation,
+tracked order never canceled) are declared contrary to evidence and
+bias them upward (Fig. 9 and Assumptions 3-4, PDF p. 16), tactic
+rankings invert with the scheduling-benchmark pairing (Fig. 11, PDF
+p. 21), and "no price relaxation" is a property of the Markovian
+simulator class, not a market verdict (PDF p. 22); impact-relaxation
+stance must be an explicit pre-declared input and may never be cited
+from this class. [source-quality note] two Euronext large-tick stocks,
+one brokerage 5-limit feed, 27 months, auction hours trimmed, claimed
+applicable where average spread is under roughly 2.5 ticks (PDF
+pp. 2, 6); the model is formally memoryless — historical order flow
+NOT considered (PDF p. 22), so state-versus-memory comparisons across
+this class and the flow-memory line are confounded across different
+conditioning sets; arXiv v2 read as-is, published version NOT checked
+at reading, flagged for verification.
+
+Killed-if-wrong stands in the note: had the mechanical-volatility bound
+been laundered INTO the record as "a third of realized volatility is
+exogenous news," a single-venue, two-stock, model-relative ceiling
+calibrated on auction-trimmed Euronext session data would have
+hardened into a market law constraining every future C8 decomposition.
+Had the close match between modeled and empirical invariant
+distributions been read as model validation, the paper's own
+identification statement (PDF p. 10) would have been contradicted by
+the citation itself, and a future C1-L2 placebo certified on shape
+match alone would have been a refutation instrument that cannot
+refute. Had the state-dependence exhibits been imported as "the book
+predicts price," a paper that predicts flow intensities and bounds its
+own mechanical volatility well below empirical would have become
+return-predictive support for a compression signal it never tested.
+Had the constant-pref estimation windows been imitated without
+disclosure, the authors' own Model IIb mismatch would have biased
+trigger readings at exactly the firing moments. Had the
+execution-probability and no-relaxation results been imported into a
+cost layer as market facts, author-declared upward-bias assumptions
+and a Markovian model property would have become backtest parameters.
+Library-is-ammunition, the INTO/OUT laundering rules, and the
+placebo-precedent family prevented all five. Laundering directions
+named: INTO — nothing; no intensity function or its shape, no rho
+ratio, no theta or theta_reinit value, no mechanical volatility
+ceiling, no execution probability, no impact profile, no AES
+normalization, no symmetric-intensity convention, and no
+invariant-distribution exhibit from this paper enters any spec,
+default, calibration, tolerance, cost assumption, or generative
+null; the one thing this paper licenses into the pending state is the
+dynamics-identification rule, queued as PENDING OWNER RATIFICATION
+and inert until ratified. OUT — never read backwards as "order flow is
+state-driven, memory is irrelevant" (the conditioning set excludes
+flow history by construction), "only a third of volatility is
+mechanical," "the book's shape validates queue models," or "impact
+has no relaxation" (model property of the Markovian class).
+
+No inaccessible or blocked sources this session; the extract was
+complete and page-marked. Ratification queue after this session:
+TWENTY-NINE candidate sharpenings (deep-read sessions 0 through 49
+plus probe E1), zero armed; docs/DECISIONS_PENDING.md updated with
+the new count and the new component's parenthetical, the only edit
+this session. T1 remains armed awaiting the owner's word in its
+booked state (survived all five kill lines with sign inverted; T2
+tested-fail); the blocked list stays blocked. Deep-read queue
+pointer: the next UNREAD entry is "From Glosten-Milgrom to the whole
+limit order book and applications to financial regulation" (score 29,
+x0d8b2a), the next score-29 entry in triage file order after this
+session's paper, verified unread against all 49 library notes and the
+log on main; behind it "A Hawkes Microfoundation for Multitype Inverse
+Gaussian Subordinators" (score 29, xf77014); a successor session must
+re-read the live main tail and the branch/PR set before consuming
+anything. Nothing measured, no kill line moved, nothing armed,
+nothing trades live.
