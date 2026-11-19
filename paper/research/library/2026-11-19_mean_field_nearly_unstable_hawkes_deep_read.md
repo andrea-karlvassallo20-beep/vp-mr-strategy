@@ -1,7 +1,11 @@
-# Deep-read session 37 — Szymanski and Xu, "Mean-Field Limits for Nearly Unstable Hawkes Processes"
+# Deep-read session 38 — Szymanski and Xu, "Mean-Field Limits for Nearly Unstable Hawkes Processes"
 
-Library deep-read session 37 (null-time session 41, log entry
-## 45). Grégoire Szymanski (DMATH, Université du Luxembourg) and
+Library deep-read session 38 (null-time session 42, log entry
+## 46; drafted as session 37 / null-time session 41 / log entry
+## 45 and renumbered at landing time after PR #207, the
+reflexivity landing for xf29859, merged first and claimed the
+## 45 numbering; the renumber is declared in log entry ## 46's
+session-state note). Grégoire Szymanski (DMATH, Université du Luxembourg) and
 Wei Xu (School of Mathematics and Statistics, Beijing Institute of
 Technology), arXiv:2501.11648v1 [math.PR], v1 stamped 20 January
 2025, 31 pp. text extract, page-marked. Read 2026-11-19, against
@@ -9,10 +13,16 @@ ONE question: what here would kill C1-L2 or C8 faster, or change
 their kill lines? Source: legally acquired OA copy
 (docs/library/text/x65dac0_mean_field_limits_for_nearly_unstable_hawkes_proce.txt).
 Assigned triage-rank entry (score 30, x65dac0; the entry ahead of
-it, xf29859, is claimed in flight and is not consumed here). Next
-UNREAD triage-rank entry (score 30, x20bdef, "Exact asymptotic
+it, xf29859, claimed in flight at read time, has since landed on
+main as log entry ## 45 through PR #207 and was not consumed
+here). Next UNREAD triage-rank entries: the landed ## 45's
+closing pointer names "Branching ratio approximation for the
+self-exciting Hawkes process" (score 30, x36082b), subject to the
+parallel fan-out's collision checks; behind it, "Exact asymptotic
 solutions to nonlinear Hawkes processes: a systematic
-classification of the steady-state solutions").
+classification of the steady-state solutions" (score 30, x20bdef).
+A successor session must re-read the live main tail and the
+branch/PR set first.
 
 ## The paper in one paragraph
 

@@ -3180,7 +3180,124 @@ towards a prediction of flash crashes" (score 30, xf29859), taking score
 order among the remaining unclaimed entries. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
 
-## 45. Null-time session 41 (2026-11-19): deep-read session 37 — the mean-field nearly-unstable Hawkes paper graded pure theory, default, nothing queued; xf29859 honored as claimed in flight, two superseded open PRs closed, concurrency state declared
+## 45. Null-time session 41 (2026-11-19): deep-read session 37 — the Filimonov-Sornette branching-ratio reflexivity paper read after three selection collisions; default grade, nothing queued; renumbered once at append time
+
+- **Renumber declaration (honest-error protocol, offset honored):** this session was
+  drafted as log entry ## 44 / null-time session 40 / deep-read session 36, but the
+  parallel rough Hawkes–Heston slot merged its supersession PR first (now log entry
+  ## 44, null-time session 40, deep-read session 36), so this session renumbered to
+  ## 45 / null-time session 41 / deep-read session 37 at append time. No numbering of
+  any other session was overwritten.
+- **Selection trail, declared (no duplicate work, supersessions recorded):** this
+  slot was pre-assigned Maciejewski, "Packets, Transactions and Queues" (score 34,
+  xc5ba34), verified already covered on main (null-time session 31, deep-read
+  session 23, default grade) and NOT re-read. The standing queue's next UNREAD
+  pointer, TradeFM (score 31, xe7dc7f), was verified claimed by other slots and
+  landed as deep-read session 33. This slot then read Mahseredjian, "Diffusive
+  Limit of Hawkes Driven Order Book Dynamics With Liquidity Migration" (score 31,
+  x5db64b), verified uncovered at read time, and pushed a complete note plus one
+  candidate sharpening as PR #199 — but a parallel slot landed THE SAME PAPER as
+  deep-read session 34 (log entry ## 42, default grade, nothing queued) with a
+  landing entry that pre-declares late duplicate landings superseded, so PR #199
+  was closed unmerged (supersession comment recorded on the PR; nothing from that
+  branch landed). This session then read the next UNREAD entry, Wang, Wu and Zhu,
+  "Microstructural Foundation for the Rough Hawkes–Heston Model" (score 30,
+  xd08813, rank 32), verified uncovered at read time — but before this session
+  pushed anything, another slot was verified holding an OPEN PR covering the same
+  slug, which has since landed as log entry ## 44, deep-read session 36,
+  superseding this slot's read copy by the same declared rule; per the
+  no-duplicate rule this session DID NOT push its xd08813 note and took the next
+  UNREAD entry at re-read time: Filimonov and Sornette, "Quantifying reflexivity
+  in financial markets: towards a prediction of flash crashes" (score 30,
+  xf29859, rank 33 of the triage queue, the entry the landed ## 44 also names as
+  its next pointer), verified uncovered before the read — no note among the 37
+  notes on main in paper/research/library/, no open PR covers the slug.
+  Note: `paper/research/library/2026-11-19_reflexivity_flash_crashes_branching_deep_read.md`.
+- **Grade:** NO kill line changed. NO candidate sharpening queued — default grade.
+  The paper is empirical, but everything that matters in it is a worked exhibit for
+  rules already standing (the near-critical regime-disclosure rule, the
+  boundary-solution rule, the estimator-mode and W-ladder registers, the per-branch
+  rule, the conditioning-window discipline, the sealed-prediction standard for
+  precursor claims, and the L0 gate's timestamp discipline), and its strongest
+  content is the external design precedent for the C8 A3 shuffled-arrival placebo.
+  docs/DECISIONS_PENDING.md is untouched this session.
+- **Findings, page-cited, all reinforcing existing rules:** (1) the branching
+  ratio is a kernel- and window-bound estimator output: exponential kernel,
+  constant background, MLE in 10/20/30-minute windows, with KS goodness-of-fit
+  rejections rising steeply in the window ladder — 0.12% at 10 minutes, 1.64% at
+  20, 12.64% at 30, and more than 50% at one hour (PDF pp. 10-11), the
+  rejections attributed to intraday non-stationarity breaking the constant-
+  parameter assumption; and the authors' own concession that short-window
+  truncation biases n downward and misattributes endogenous events to the
+  background µ (PDF p. 14, citing the truncation effect) — the n ≈ 0.3 (1998) to
+  0.7-0.8 (post-2007) regime history is a function of the estimator mode and the
+  kernel family (the Hardiman-Bouchaud power-law-kernel critique of this very
+  estimator is already on the programme's shelf), so no fitted n from any single
+  mode may serve as calibration, tolerance, or expected value on the programme's
+  venue, and any near-critical reading must disclose kernel family and window
+  ladder before interpretation. (2) the paper's own placebo — Poissonize intra-day
+  event times while preserving the price trajectory, daily volume and daily event
+  counts, then re-run the identical estimator and watch n collapse (PDF pp. 13-14,
+  Fig. 4D inset) — is an external worked precedent for the exact shape of the C8
+  A3 shuffled-arrival amendment: destroy temporal-excitation structure, keep
+  everything else, the reading must die; cited as design precedent only, never as
+  evidence about any market the programme measures. (3) the "precursor" claim is
+  two anecdotes, not a forecast: the April 27 vs May 6, 2010 contrast (matched
+  4.7x vs 5.3x volume multiples; n flat vs n spiking to 0.95 at 14:45 EST, PDF
+  pp. 15-16, Fig. 5) has no base rate, no coverage analysis, no false-alarm
+  accounting and no out-of-sample test — the title's "towards a prediction" is
+  honest, and under the programme's standard a precursor claim is admissible only
+  from the sealed-prediction record; this paper may never be cited as evidence
+  that a branching rise precedes anything on the programme's venue. (4) timestamp
+  handling is a one-way disclosure exhibit: CME data rounded to the nearest
+  second, up to 194 simultaneous mid-price changes per second on the flash-crash
+  day, "solved" by randomly redistributing simultaneous events within each second
+  under an assumed within-second independence (PDF pp. 9-10), validated only by
+  simulation of the fitted model itself — a placebo that tests the estimator under
+  its own null, not the market's within-second structure; the programme's L0
+  100-timestamp audit is the stricter standing discipline and this paper's
+  assumption may never be cited as precedent for relaxing it. (5) venue and
+  instrument specificity: E-mini S&P 500 CME futures, 1998-2010, the single
+  most-active quarterly contract (96.7% of volume), second-grain data, human-plus-
+  early-algorithmic era; the mid-price-change event definition differs from any
+  programme event definition a spec may declare (the label-conditioning family
+  governs the declaration), and the C5 frozen-book regime is invisible to this
+  model by construction — a queue-frozen book stops generating mid-price changes
+  and mechanically distorts any event-count estimator, and the authors never
+  address it.
+- **Killed-if-wrong stands in the note:** read as "more than 70% of price moves are
+  endogenous since 2007" imported as background truth, a single-venue, kernel- and
+  window-conditional estimate would have become a market law; read as "markets are
+  approaching criticality, so trade the approach," a descriptive regime history
+  would have become a predictive claim the paper never tested; read as "branching
+  readings can anticipate crashes," a two-event contrast with no base rate would
+  have bypassed the sealed-prediction record — the only instrument through which
+  a precursor claim is admissible. The standing rules prevented all three.
+- **Source-quality note:** two authors (ETH Zürich), arXiv v2 stamped April 2012
+  (dated November 27, 2011), the published Quantitative Finance record NOT checked
+  at reading — verify before formal citation; 2.43 billion CME records, 298.6
+  million transactions, 24.4 million mid-price change events inside Regular
+  Trading Hours, second-rounded timestamps (PDF p. 4); estimation-error discipline
+  honest and in-text (bootstrap standard deviations for n declining from
+  0.13-0.18 in 1998 to 0.05-0.15 by 2010, PDF p. 10); the reference list reads
+  internally consistent at reading. Built on Hawkes 1971 and Bowsher 2007;
+  the known critiques of this estimator line (Power-law kernels, timestamp
+  discretization, queueing interpretation) live in the programme's existing
+  shelf lineages and the register already governs their lesson.
+- Sovereignty: the paper licenses nothing; nothing measured, nothing armed,
+  nothing trades live.
+
+Ratification queue after this session: TWENTY-SEVEN candidate sharpenings,
+unchanged (deep-read session 37 earned none; docs/DECISIONS_PENDING.md untouched
+this session), zero armed. T1 remains armed awaiting the owner's word; the
+blocked list stays blocked. Deep-read queue pointer: the next UNREAD triage
+entry is "Branching ratio approximation for the self-exciting Hawkes process"
+(score 30, x36082b), subject to the parallel fan-out's collision checks; with the
+session-9 triage-audit flag on record, rank is a candidate reading, and the
+owner's library policy governs when they diverge. Nothing measured, no kill line
+moved, nothing armed, nothing trades live.
+
+## 46. Null-time session 42 (2026-11-19): deep-read session 38 — the mean-field nearly-unstable Hawkes paper graded pure theory, default, nothing queued; xf29859 honored as claimed in flight, two superseded open PRs closed, race lost to #207 and renumbered, concurrency state declared
 
 - **Session-state note (declared before the read)**: this session
   began from log entry ## 44's closing pointer, which names xf29859
@@ -3224,9 +3341,21 @@ moved, nothing armed, nothing trades live.
   this same renumbered numbering); main itself is unmoved, still
   ending at merged entry ## 44 / PR #205 at commit bf06a94, so
   the in-flight claim on xf29859 stands honored and this session
-  lands as ## 45 with the race against #207 declared.
+  lands with the race against #207 declared. Race outcome,
+  recorded at renumber time: PR #207 merged to main first (merge
+  commit 96ad5c6) as log entry ## 45 / null-time session 41 /
+  deep-read session 37, the reflexivity landing, so per the
+  declared append-time rule this session renumbered from ## 45 /
+  null-time 41 / deep-read 37 to ## 46 / null-time session 42 /
+  deep-read session 38 before this landing, the supersession of
+  PR #208's original ## 45 claim recorded here in line per the
+  #204/#44 precedent; no numbering of any other session was
+  overwritten, and the landed ## 45's closing pointer (x36082b,
+  subject to the parallel fan-out's collision checks) now stands
+  as the queue's mechanical next UNREAD ahead of this entry's
+  original pointer reading.
 
-- **Library deep-read session 37** (the next UNREAD entry unclaimed
+- **Library deep-read session 38** (the next UNREAD entry unclaimed
   by in-flight work, score 30, x65dac0, consumed here):
   `paper/research/library/2026-11-19_mean_field_nearly_unstable_hawkes_deep_read.md`
   on Grégoire Szymanski (DMATH, Université du Luxembourg) and Wei
@@ -3318,16 +3447,18 @@ moved, nothing armed, nothing trades live.
   shape identifies the kernel" (non-injective by Lemma 2.4).
 
 Ratification queue after this session: TWENTY-SEVEN candidate
-sharpenings, unchanged (deep-read session 37 earned none;
+sharpenings, unchanged (deep-read session 38 earned none;
 docs/DECISIONS_PENDING.md untouched this session), zero armed. T1
 remains armed awaiting the owner's word; the blocked list stays
-blocked. Deep-read queue pointer: by the mechanical rule the next
-UNREAD triage entry is xf29859 "Quantifying reflexivity in
-financial markets: towards a prediction of flash crashes" (score
-30), which is claimed in flight through open PR #206 and is not
-consumed here; the next unclaimed UNREAD entry behind it is
-"Exact asymptotic solutions to nonlinear Hawkes processes: a
-systematic classification of the steady-state solutions" (score
-30, x20bdef), and a successor session must re-read the live main
-tail before consuming either. Nothing measured, no kill line
+blocked. Deep-read queue pointer: xf29859 has landed on main as
+log entry ## 45 (PR #207, the reflexivity landing, honored as
+claimed in flight and not consumed here); the landed ## 45's own
+closing pointer names "Branching ratio approximation for the
+self-exciting Hawkes process" (score 30, x36082b), subject to the
+parallel fan-out's collision checks, and the next unclaimed
+UNREAD entry behind it is "Exact asymptotic solutions to
+nonlinear Hawkes processes: a systematic classification of the
+steady-state solutions" (score 30, x20bdef); a successor session
+must re-read the live main tail and the branch/PR set before
+consuming either. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
