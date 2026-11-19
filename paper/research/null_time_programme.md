@@ -3591,3 +3591,168 @@ Systems" (score 30, xd02283); a successor session must re-read
 the live main tail and the branch/PR set before consuming either.
 Nothing measured, no kill line moved, nothing armed, nothing
 trades live.
+
+## 48. Null-time session 44 (2026-11-19): deep-read session 40 — the ACD-to-Hawkes effective-endogeneity mapping paper graded simulation-only worked exhibit, default, nothing queued; stale x36082b pointer defect declared, x20bdef honored as claimed in flight and landed mid-read as ## 47, race lost and renumbered with supersession recorded in line
+
+- **Session-state note (declared before the read)**: this session began
+  from the landed closing pointer chain. Entry ## 46's closing pointer
+  restates the landed ## 45's own pointer naming "Branching ratio
+  approximation for the self-exciting Hawkes process" (score 30,
+  x36082b) as the next UNREAD, subject to the parallel fan-out's
+  collision checks. The re-read of live main found a pointer defect:
+  x36082b is NOT unread — it is deep-read session 2's paper (Hardiman
+  and Bouchaud, note
+  paper/research/library/2026-11-16_hawkes_branching_deep_read.md, read
+  from the same extract docs/library/text/x36082b_branching_ratio_approx
+  imation_for_the_self_excitin.txt). The wrong pointer text stays
+  unedited in ## 45 per the honest-error protocol; the defect is
+  declared here and left for the honesty pass. The next entry behind
+  it, "Exact asymptotic solutions to nonlinear Hawkes processes" (score
+  30, x20bdef), is claimed in flight: branch
+  deep-read/session-39-nlhawkes-classification carries the committed
+  note 2026-11-19_exact_asymptotic_nonlinear_hawkes_deep_read.md with no
+  open PR at read time; the committed trace is honored per the
+  burst-slot precedent and the entry was not consumed here. The unread
+  set was then recomputed by the established read-set method (triage
+  order, coverage by slug and normalized-title match against all notes
+  on main), giving the next unclaimed UNREAD: "Effective Measure of
+  Endogeneity for the Autoregressive Conditional Duration Point
+  Process via Mapping to the Self-Excited Hawkes Process" (score 30,
+  xa4ac36), verified uncovered on main and unclaimed by any live branch
+  at read time; there were zero open PRs at read time (verified via the
+  authenticated API after the unauthenticated call hit its rate limit).
+  Numbering race declared, then lost: this session drafted as
+  log entry ## 47 / null-time session 43 / deep-read session 39
+  while the in-flight x20bdef branch claimed the same numbering;
+  per the append-time rule cut in the #204/#44 and #208/#209
+  precedents the race is settled by merge order. Race outcome,
+  recorded at renumber time: the x20bdef branch landed on main as
+  log entry ## 47 (null-time session 43, deep-read session 39, the
+  nonlinear-Hawkes steady-state classification paper) while this
+  session was still reading, so this session renumbered to ## 48 /
+  null-time session 44 / deep-read session 40 before this landing,
+  the supersession of this session's original ## 47 claim recorded
+  here in line; no numbering of any other session was overwritten.
+  The landed ## 47's session-state note independently declared the
+  same stale x36082b pointer defect (corroboration, no conflict),
+  and its closing pointer already names xa4ac36 — the paper
+  consumed here — as the next unclaimed UNREAD, so the consumed
+  slot is consistent with the landed chain and no duplicate
+  consumption occurred. One further discrepancy is declared
+  against the landed ## 47: its closing block reads "T1 remains
+  armed awaiting the owner's word", which contradicts
+  docs/DECISIONS_PENDING.md (T1 was executed under the owner's
+  authorization on the second aggTrades window and survived all
+  five kill lines with its sign inverted, booked in the ledger; T2
+  tested-fail at its kill line) — wrong text left unedited per the
+  honest-error protocol, defect declared here for the honesty pass.
+  No duplicate note for xa4ac36 was pushed by any other session.
+
+- **Library deep-read session 40** (the next unclaimed UNREAD triage
+  entry, score 30, xa4ac36, consumed here):
+  `paper/research/library/2026-11-19_acd_endogeneity_hawkes_mapping_deep_read.md`
+  on Vladimir Filimonov, Spencer Wheatley and Didier Sornette,
+  "Effective measure of endogeneity for the Autoregressive Conditional
+  Duration point processes via mapping to the self-excited Hawkes
+  process" (arXiv:1306.2245v2 [q-fin.ST], v2 stamped 19 Jun 2014, ETH
+  Zürich). A simulation-only methods paper: the composite ACD parameter
+  ζ = Σαj + Σβk is proposed as an effective degree of endogeneity and
+  mapped onto the Hawkes branching ratio η by numerically calibrating
+  Hawkes MLE fits to synthetic ACD(1,1) realizations (40 ζ-grid points,
+  100 realizations of 3500 events each, KS goodness-of-fit on the
+  residual process). Extract complete and page-marked (37 pp.); read in
+  full; no inaccessibility, no shelf gap. Read against the ONE question.
+  **Grade: NO kill line changed. NO new candidate sharpening.** Default
+  grade; the paper is a worked exhibit for rules already standing (the
+  estimator-mode register and ## 45's no-single-mode rule, the
+  session-32 aggregation cautions, the near-critical regime-disclosure
+  rule, the kernel-family register, the featureless-process placebo
+  family) and the burden of proof for a sharpening was not met.
+  Findings, page-cited:
+
+  Reinforcing, no new item — ζ is a model-family statistic, not an
+  identity with the branching ratio: the mapping η(ζ) is monotone but
+  not one-to-one in the decomposition, the paper's own cases
+  (α = 0.38, β = 0.13) and (α = 0.13, β = 0.38) share ζ = 0.51 yet give
+  η̂ = 0.52 versus η̂ = 0.22 (PDF p. 14), and the α = 0 branch yields
+  η̂ = 0 for every ζ because the conditional-duration recursion is then
+  purely deterministic and realized durations are carried by the iid
+  noise (PDF pp. 14-15), a second-model-family worked exhibit for the
+  estimator-mode register: no ACD-fitted ζ from the econometrics record
+  may enter any spec, default, tolerance or expected value.
+  Interpretation caution — the mapping is goodness-of-fit-conditioned
+  and the KS rejection band sits exactly on the region the conclusion
+  relies on: for most combinations 0.6 ≲ α+β ≲ 0.95 the calibrating
+  Hawkes model is rejected at the 5% level (PDF p. 15; Fig. 5, PDF
+  p. 35), yet the conclusion reads empirical ζ values up to 0.95 as
+  strong support for dominant endogeneity (PDF p. 18); any future
+  imported endogeneity reading of duration-model lineage is admissible
+  only with the calibrating model's fit test disclosed and passing in
+  the claimed region, and where the fit is rejected both ζ and the
+  mapped η̂ are model-relative artifacts, not measurements; read
+  discipline only, no queue change. Reinforcing, no new item — the
+  paper's own Appendix B gives the Hawkes MLE of η a positive bias
+  near 0 and a large sample-length-dependent negative bias for
+  η > 0.9, 90% quantile error at most 0.1 for η ≤ 0.9 on 3000-event
+  realizations (PDF pp. 21-22, Fig. 7, PDF p. 37), a worked exhibit
+  for the near-critical disclosure rule: an η̂ close to 1 on a limited
+  sample is a downward-biased, length-dependent statistic, not a
+  measured criticality. Reinforcing, no new item — Appendix A states
+  the authors' own placebo discipline: apply any new event-defining
+  method first to well-known featureless processes such as the
+  uncorrelated random walk to check for spurious endogeneity, and warns
+  that trend/turning-point definitions are mostly non-causal and
+  conditional-statistics definitions can create spurious phenomena
+  even in featureless processes (PDF pp. 20-21), an external worked
+  precedent for the featureless-process placebo and label-conditioning
+  families, cited as design precedent only. Reinforcing, no new item —
+  the kernel-robustness result (exponential vs power law agreement,
+  Table 1, PDF pp. 16-17) is a short-memory statement: the fitted power
+  law collapses to an exponential-like shape (φ̂ ≈ 105, ĉ ≈ 816, PDF
+  p. 17) on short-memory ACD(1,1) data (PDF p. 16), a worked exhibit
+  for the kernel-family register, no kernel shape from any single fit
+  is ever citable. Source-quality note — simulation-only, no market
+  data anywhere; same ETH line as the landed ## 45 reflexivity paper;
+  arXiv v2 with an odd "(Dated: October 31, 2018)" header line (PDF
+  p. 1), journal record NOT checked at reading, published version to be
+  checked before formal citation.
+
+  Killed-if-wrong stands in the note: had the conclusion been imported
+  as "duration-based econometrics proves markets are up to 95%
+  endogenous", a simulation-only, fit-test-conditioned, model-family
+  mapping would have been laundered into a market-truth claim whose own
+  Fig. 5 rejection band covers exactly the ζ range the headline relies
+  on; had ζ been treated as interchangeable with η, the α = 0
+  counterexample (ζ anything, η̂ = 0) would have smuggled a meaningless
+  endogeneity number into a spec under a familiar name; had the
+  finite-sample bias been ignored, an η̂ near 1 would have been booked
+  as measured criticality rather than a downward-biased,
+  length-dependent statistic. Library-is-ammunition and nothing-measured
+  prevented all three. Laundering directions named: INTO — nothing, no
+  ζ, no η(ζ) curve, no α/β decomposition, no kernel, no bias numbers
+  enter any spec, default, calibration, tolerance or generative null.
+  OUT — never read backwards as "duration-based econometrics proves
+  dominant endogeneity" (model-relative and fit-test-conditioned),
+  "ζ is the branching ratio" (non-injective and void at α = 0), or
+  "kernel choice does not matter" (a short-memory artifact).
+
+Ratification queue after this session: TWENTY-SEVEN candidate
+sharpenings, unchanged (deep-read session 40 earned none;
+docs/DECISIONS_PENDING.md untouched this session), zero armed. T1 was
+executed under the owner's authorization on the second aggTrades
+window and survived all five kill lines with its sign inverted,
+booked in the ledger; T2 tested-fail at its kill line; the blocked
+list stays blocked. Deep-read queue pointer: x20bdef has landed on
+main as log entry ## 47 (the parallel nonlinear-Hawkes steady-state
+classification landing, per the race outcome declared above); this
+session consumed the slot that landing's own closing pointer names,
+xa4ac36, as log entry ## 48; the next unclaimed UNREAD entry is
+"Stochastic Optimal Control of Hawkes Jump-Diffusion Systems"
+(score 30, xd02283), and behind it "Critical reflexivity in
+financial markets: a Hawkes process analysis" (score 30, xdc14f4);
+the landed ## 45 pointer defect (x36082b named as UNREAD while
+already read as deep-read session 2) and the landed ## 47 T1-status
+defect are declared above for the honesty pass. A successor session
+must re-read the live main tail and the branch/PR set before
+consuming anything. Nothing measured, no kill line moved, nothing
+armed, nothing trades live.
