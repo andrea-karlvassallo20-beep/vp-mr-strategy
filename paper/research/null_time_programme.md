@@ -4494,3 +4494,113 @@ Swishchuk, 2024), verified unread against all library notes on main after
 this session; a successor session must re-read the live main tail and the
 branch/PR set before consuming anything. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
+
+
+## 54. Null-time session 50 (2026-11-19): deep-read session 46 — the Variance-Hawkes energy-markets paper read; the slot-24 supersession declared, the next UNREAD pointer consumed; NO kill line changes, NO sharpening, nothing armed
+
+- **Session-state note (declared before the read)**: this session is
+  parallel-fire slot 24 of 24, assigned the Hawkes liquidity-migration
+  diffusive-limit paper (x5db64b, triage score 31). At write time the
+  assigned paper was already covered on main by deep-read session 34
+  (log entry ## 42, note
+  2026-11-19_liquidity_migration_diffusive_limit_deep_read.md), whose
+  landing entry declared a late slot-24 landing superseded per the
+  burst-slot precedent (sessions 18/20). Per the standing rule (if
+  already covered, take the next UNREAD triage entry instead and say
+  so), this session verified x618573 unread against all 46 library
+  notes on main and against the open PR set (none open), then consumed
+  the previous session's pointer. The dormant branch
+  slot24-liquidity-migration-deep-read carries one superseded note
+  commit for x5db64b and must never be merged; the supersession is
+  recorded here in line.
+- **Library deep-read session 46** (the standing queue's next UNREAD
+  pointer, score 29, x618573, consumed here):
+  `paper/research/library/2026-11-19_variance_hawkes_energy_deep_read.md`
+  on Joshua McGillivray and Anatoliy Swishchuk, "Variance-Hawkes
+  Process and its Application to Energy Markets" (arXiv:2410.08420v1,
+  dated 14 October 2024; University of Calgary; zero citations).
+  Extract complete and page-marked (24 pp.); read in full; no
+  inaccessibility, no shelf gap; the log tail and the branch/PR set
+  were re-read from live main before this entry. The paper defines the
+  variance-Hawkes process B(N_t), a Brownian motion subordinated to a
+  simple exponential-kernel Hawkes count (Def. 1, PDF p. 6), argues
+  discontinuous subordinators are natural when prices update at trade
+  arrivals (PDF pp. 5-6), hand-fits log returns of 2018 and 2019 WTI
+  crude and NYMEX natural gas front-month futures "by hand using
+  trial and error" because no calibration technique "has yet been
+  vetted" (the authors' own words, PDF pp. 7-9; fitted branching
+  alpha/beta = 700/800 = 0.875), supports the arrival story with two
+  exhibits — per-minute trade-volume quantiles against simulated
+  exponential quantiles (Figs. 6-7, PDF p. 10) and intraday volume
+  clustering (Figs. 8-9, PDF p. 11) — derives the generator of
+  (lambda_t, N_t, B(N_t)) termwise (Eqs. 11-22, PDF pp. 12-14),
+  obtains Var(B(N_t)) = E(N_t) (PDF p. 13) and the Ito formula
+  dB^2 = 2B dB + dN (Thm 1, PDF p. 14), and states the distribution
+  B(N_t) =d sqrt(N_t) N(0,1) as an unproven Conjecture 1 verified only
+  by Monte-Carlo overlay (PDF p. 15). Read against the ONE question.
+  **Grade: NO kill line changed. NO candidate sharpening.** Findings,
+  page-cited, in the note.
+- Findings: reinforcing, no new item — the paper's OWN algebra is the
+  cleanest statement of the vol-tautology family: under event-clock
+  subordination, price variance IS the event count (Var(B(N)) = E(N),
+  PDF p. 13, and the dN_t quadratic-variation term, Thm 1, PDF p. 14),
+  so a flow-clock feature and a volatility target can be one variable
+  in two costumes, exactly what C1-L2 kill lines 2/5 and C8's K8
+  guard. Interpretation caution — overdispersion does not identify
+  Hawkes: the paper's whole empirical case is QQ-type deviation from
+  exponential quantiles plus diurnal volume clustering (Figs. 6-9,
+  PDF pp. 10-11), which mixed-Poisson, renewal and
+  diurnally-inhomogeneous arrivals all reproduce; no program document
+  may ever cite such exhibits as evidence of self-excitation or
+  endogeneity, and this paper is never citable as support for any
+  branching claim on the programme's venue. Interpretation caution —
+  the hand-fitted regime sits near the boundary (alpha/beta = 0.875,
+  trial-and-error, no test statistic, no held-out data; the authors'
+  own disclosure, PDF pp. 7-8): near-critical branching reproduces
+  clustering shapes trivially, reinforcing K7 and the queued
+  boundary/estimator rules; no parameter or figure transfers.
+  Reinforcing — the model is machinery with no directional content (a
+  volatility-shape model, no mean reversion, "not intended to model
+  prices outright", PDF p. 8) and the arrival-to-spikes inference
+  chain is speculative (PDF p. 5, from one European electricity
+  Q-Q study): licenses nothing about WHEN or WHICH WAY.
+  Source-quality note — arXiv v1, zero citations, the headline
+  distribution is a CONJECTURE verified only by simulation, the
+  appendix moments are symbolic-algebra dumps with extract typos
+  (E_t/F_t identical to C_t/D_t, PDF p. 24), daily Marketwatch closes
+  for the fits (PDF p. 17); published version NOT checked at reading
+  (uncertain, flagged for verification).
+- Killed-if-wrong stands in the note: had the quantile exhibits been
+  cited as "arrivals are Hawkes, therefore the compression clock
+  measures endogeneity", Poisson overdispersion plus diurnal
+  seasonality would have laundered into a self-excitation claim; had
+  a B(N_t)-style flow-clock feature been evaluated against a variance
+  target, the fit would have been guaranteed and meaningless (the
+  feature IS the target under this construction); had the 0.875
+  near-critical fit been imported as an analogy constant, a
+  trial-and-error artifact would have anchored a regime claim.
+- Standing caveat: one front-month futures pair (WTI, HH), daily
+  closing prices, 2018-2019 fits plus 2024 exhibits, hand calibration,
+  exponential kernel only, simulation artifacts acknowledged by the
+  authors, no crypto, no perps, no L2 observables. The library is
+  ammunition, not evidence: nothing enters any spec, default, kill
+  line, threshold, or calibration; it charges warnings only.
+
+No inaccessible or blocked sources this session; the extract was
+complete and page-marked. Ratification queue after this session:
+TWENTY-EIGHT candidate sharpenings (unchanged — twenty-seven standing
+plus the optimizer-path (multi-start) disclosure rule joined through
+deep-read session 43, plus probe E1 per docs/DECISIONS_PENDING.md;
+this session queued NOTHING), zero armed; docs/DECISIONS_PENDING.md
+NOT touched this session, per the rule (touched only when a candidate
+sharpening is queued). T1 remains armed awaiting the owner's word in
+its booked state (survived all five kill lines with sign inverted; T2
+tested-fail); the blocked list stays blocked. Deep-read queue pointer:
+the next UNREAD triage entry is "Multi-Level Order-Flow Imbalance in
+a Limit Order Book" (score 29, x09d0b5, MLOFI), the next entry in the
+live edge_triage_scores.json ordering, verified unread against main's
+library notes at this entry's writing (its only log mention is the
+session-13 candidate listing); a successor session must re-verify it
+unread against main's notes and the open PR set before consuming
+anything. Nothing measured, no kill line moved, nothing armed, nothing
+trades live.
