@@ -2912,3 +2912,68 @@ measured, no kill line moved, nothing armed, nothing trades live.
   Findings, page-cited: reinforcing, no new item — the paper makes no predictive claim and its own success criterion is a null in disguise: fidelity evaluation only (PDF pp. 8-10, Tables 2-3), rollouts reproducing near-zero return autocorrelation (PDF pp. 1-2, 8-9, Figure 4), so generative plausibility and predictivity are disjoint and no fidelity metric is ever citable as support for any programme feature, with the generative-null family the same placebo territory C8 A3's shuffled-arrival amendment already occupies; nothing new queued. Interpretation caution — the zero-shot geographic result (US-trained perplexity overlapping China and Japan, PDF pp. 10-11, Figure 5; Table 6, PDF p. 24) is a token-perplexity claim, never out-of-sample economic predictive value, and is never citable in any SMH universality or cross-market argument. Cost-survival ammunition — the counterfactual 10x-flow injection stress tests and replay-validated simulator (PDF pp. 21-24, 26, 29, Figures 11, 17) matter only if a K7-style cost-survival layer ever exists, and that layer must carry the paper's own admitted generator-simulator entanglement (PDF p. 10) plus spread honesty: the spread is the one quantity where the explicit-interarrival baseline beats the learned generator (PDF p. 10, Table 3). Reinforcing, no new item — rollout scale is 1,024 events, about 2-5 minutes for high-liquidity assets (PDF p. 8), so nothing in the paper speaks to daily-grain boards or multi-week forward windows. Source-quality note — industrial-lab capability report, J.P. Morgan AI Research, arXiv v1 stamped 27 February 2026, no journal record checked at reading, proprietary data so no external replication, internal baselines, limitations honestly stated in-text (PDF p. 10); graded as a well-executed generative-simulation report with no market-truth claim metabolized. Killed-if-wrong: if the programme had read "a deep model learns order flow across 9K stocks and whole geographies" as support for universality or for extractable predictive structure, it would have laundered a simulation-quality metric into a market-truth claim; the guard is the standing library-is-ammunition rule plus the sealed-prediction ledger, and the only addition this read earns is the narrowly mechanistic discretization disclosure component above. Standing caveat: proprietary US equities data, penny-tick USD microstructure, no crypto, no BTCUSDT; all bin edges, perplexity figures, distances, scaling exponents and architecture choices are dataset- and venue-specific; the RL execution and multi-agent sections are execution-strategy content and are never operationalized. Laundering directions named: INTO — the discretization mechanism, the fidelity-versus-predictivity distinction and the perplexity-is-not-evidence caution enter only as preregistration discipline; OUT — TradeFM's fidelity tables, geographic-transfer perplexity and stylized-fact figures are never cited as expected behavior of any market the programme measures and never as evidence that any programme feature carries information.
 
 Ratification queue after this session: TWENTY-SEVEN candidate sharpenings (the twenty-six standing plus the discretized-conditioning declaration rule joined here through deep-read session 33), zero armed. T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read queue pointer: the next UNREAD triage entry is "Diffusive Limit of Hawkes Driven Order Book Dynamics With Liquidity Migration" (score 31, x5db64b). Nothing measured, no kill line moved, nothing armed, nothing trades live.
+
+## 42. Null-time session 38 (2026-11-19): deep-read session 34 — the Hawkes-LOB diffusive-limit-with-migration paper read; default grade, nothing queued
+
+- **Library deep-read session 34** (the standing queue's next UNREAD
+  pointer, score 31, x5db64b, consumed here):
+  `paper/research/library/2026-11-19_hawkes_lob_migration_diffusive_limit_deep_read.md`
+  on Levon Sarkis Mahseredjian, "Diffusive Limit of Hawkes Driven Order
+  Book Dynamics With Liquidity Migration" (arXiv:2511.18117v1 [q-fin.MF],
+  stamped 22 November 2025, dated October 2025): an entirely theoretical
+  mesoscopic LOB model — FIFO queues pinned to a fixed mid with a constant
+  two-tick spread, adopted explicitly because a floating spread would
+  change the state-space dimension and break the tightness conditions for
+  the scaling limit (PDF pp. 7-8); unit-size orders; multivariate
+  Hawkes arrivals, cancellations and market removals (PDF pp. 8-9);
+  symmetric Hawkes-modulated per-unit liquidity migration one tick toward
+  and away from the mid at identical rates (PDF p. 9); diffusive rescaling
+  (time accelerated by n, queues normalized by sqrt(n)) with stability
+  spectral radius strictly below one uniformly (PDF pp. 10-11); the
+  rescaled generator Taylor expands into a normally reflected diffusion
+  whose drift carries a discrete Laplacian coupling scaled by the
+  limiting migration intensity (PDF pp. 12-14, Theorems 4.1 and 5.1); the
+  multivariate Hawkes FCLT gives the event-count covariance
+  (I - K)^{-1} diag(Lambda-bar) (I - K)^{-T}, carried to queue volumes
+  through an incidence matrix (PDF pp. 14-15); future work names
+  calibration to data, a continuum SPDE limit and nonlinear extensions
+  (PDF pp. 16-17). Self-described as entirely theoretical "without
+  relying on empirical calibration" (PDF p. 1) — no data, no estimation,
+  no predictive claim anywhere. Read against the ONE question. **Grade:
+  NO kill line changed. NO new candidate sharpening.** Findings
+  (page-cited in the note): the stability condition with the (I - K)^{-1}
+  covariance diverging as the spectral radius approaches one reinforces
+  the standing near-critical regime-disclosure rule (PDF pp. 10-11,
+  14-15); the fixed-mid, constant-spread coordinate choice — bought by
+  assumption because floating quotes break the proof — reinforces the
+  already-queued queue-label convention declaration component
+  (deep-read session 32): a real venue has no fixed spread, so any
+  conditioning state labelling queues by distance from a reference price
+  must declare its anchoring or read different states from the same raw
+  stream (PDF pp. 7-8); an interpretation caution records that the
+  Laplacian coupling is an artifact of symmetric migration, unit sizes,
+  FIFO and a fixed two-tick spread, and must never be read as expected
+  book behaviour of any venue the programme measures nor as a benchmark
+  for a future C1-L2 feature (PDF pp. 3, 8-9, 12-14); a reinforcing
+  finding notes the paper makes no predictive claim at all, so fidelity-
+  versus-predictivity cautions apply a fortiori (PDF pp. 1, 3, 16-17);
+  and a source-quality note grades it a single-author preprint, arXiv v1,
+  no journal record checked at reading, proofs standard-and-sketched and
+  not verified by the programme (nothing measured during null time), one
+  reference cited as "arXiv:2018" without a number (PDF pp. 17-18).
+- **Counterfactual logged in the note**: the seductive failure is
+  benchmark-by-theorem — grading a future C1-L2 conditioning state against
+  the "Laplacian smoothing" property of a model whose every operative
+  assumption (fixed spread, unit sizes, symmetric migration, FIFO) fails
+  on the programme's venue; the ammunition-not-evidence rule plus the
+  queued convention and near-critical disclosure components block both
+  that laundering and the silent neglect of the near-critical covariance
+  explosion.
+
+Ratification queue after this session: TWENTY-SEVEN candidate sharpenings
+(unchanged; nothing joined and nothing armed through deep-read session
+34), zero armed. T1 remains armed awaiting the owner's word; the blocked
+list stays blocked. Deep-read queue pointer: the next UNREAD triage entry
+is "Microstructural Foundation for the Rough Hawkes-Heston Model" (score
+30, xd08813). Nothing measured, no kill line moved, nothing armed,
+nothing trades live.
