@@ -33,10 +33,27 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: thirty
-  candidates (twenty-nine through deep-read 49 plus probe E1, plus the
-  corrupt-landing sweep queued 2026-11-19 by null-time session 58);
-  most recently joined 2026-11-19, the corrupt-landing sweep (a third
+  library deep-reads and the ratified exploratory channel: thirty-one
+  candidates (the twenty-nine sharpenings through deep-read session 51,
+  plus the corrupt-landing sweep queued 2026-11-19 by null-time session
+  58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
+  null-time session 61; probe E1 stands separately and is not counted
+  among the thirty-one); most recently joined 2026-11-19,
+  the C1-L2 base-rate confrontation (before the L0 gate passes, the
+  C1-L2 test spec must carry a pre-declared base-rate confrontation
+  section: the frozen 2026-11-16 daily-grain priming table quoted whole
+  as the standing reference — 873 series, 1,765,316 series-days,
+  coverage 0.039, P(move|primed) 0.01668, P(move|not primed) 0.00807,
+  lift 2.07 — a pre-declared novelty statement of what an L2 positive
+  must add beyond the daily grain (finer-than-daily timing and/or
+  coverage beyond 3.9%), a pre-declared horizon bridge between the
+  spec's wall-clock barriers and the daily 10-bar horizon, frozen
+  before the data, and the daily lift printed beside any reported L2
+  effect size; hardening rule 1 of the pre-registration discipline, the
+  sign-kill-line template's family; full draft with the killed-if-wrong
+  counterfactual in
+  `paper/research/misses_curriculum_c1l2_confrontation_2026-11-19.md`),
+  and earlier the same day, the corrupt-landing sweep (a third
   integrity-guard check failing any tracked text file whose content
   shows a printable-ratio collapse or C0-C1 control bytes beyond
   tab/newline/CR in any contiguous region, docs/library/text/ scoped
