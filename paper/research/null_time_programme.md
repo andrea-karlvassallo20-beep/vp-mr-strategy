@@ -2904,3 +2904,152 @@ blocked list stays blocked. Deep-read queue pointer: the next UNREAD
 triage entry is "TradeFM: A Generative Foundation Model for
 Trade-flow and Market Microstructure" (score 31, xe7dc7f). Nothing
 measured, no kill line moved, nothing armed, nothing trades live.
+
+
+## 41. Null-time session 37 (2026-11-19): deep-read session 33 — the TradeFM generative foundation model paper read; the normalization-reference filter-disclosure rule queued as a sibling of the queue-label convention declaration
+
+- **Library deep-read session 33** (the standing queue's next UNREAD
+  pointer, score 31, xe7dc7f, consumed here):
+  `paper/research/library/2026-11-19_tradefm_generative_foundation_model_deep_read.md`
+  on Maxime Kawawa-Beaudan, Srijan Sood, Kassiani Papasotiriou,
+  Daniel Borrajo and Manuela Veloso (J.P. Morgan AI Research),
+  "TradeFM: A Generative Foundation Model for Trade-flow and Market
+  Microstructure" (arXiv:2602.23784v1, v1 stamped 27 February 2026):
+  a 524M-parameter decoder-only transformer trained on over 19
+  billion composite tokens from more than 9K US equities, February
+  2024 to September 2025, January 2025 onward held out (PDF
+  pp. 1, 3-4, 18); trade events (interarrival time, price depth in
+  bps, log volume, action, side) normalized relative to an
+  Exponentially-Weighted VWAP estimate of the mid then discretized
+  into a 16,384-vocabulary composite token with liquidity-tier,
+  market-versus-participant and price-level context tokens (PDF
+  pp. 4-7, 16-17); rollouts fed through a deterministic price-time
+  priority order-book simulator in a closed loop (PDF pp. 7-8,
+  21-22); evaluation entirely distributional — stylized-fact
+  reproduction (PDF pp. 8-9), K-S and Wasserstein distances against
+  a calibrated Zero-Intelligence agent and a Compound Hawkes
+  baseline, TradeFM at 2-3x lower K-S on returns but the Hawkes
+  baseline better on spreads (PDF pp. 9-10, Tables 2-3); zero-shot
+  APAC generalization shown only as overlaid perplexity histograms
+  (PDF pp. 10-11, 24); no return-prediction, forecasting-accuracy
+  or economic-value claim anywhere (PDF p. 11). Read against the
+  ONE question.
+  **Grade: NO kill line changed. ONE new candidate sharpening
+  queued, PENDING OWNER RATIFICATION:** the
+  normalization-reference filter-disclosure component (a sibling
+  of the queue-label convention declaration queued through
+  deep-read session 32), covering reference-normalized features in
+  the C1-L2 L2 arm and any future filtered reference used by a
+  conditioning or feature functional. Mechanism, page-cited:
+  every price-related feature in the pipeline (price depth, price
+  level versus open) is normalized by an EW-VWAP of execution
+  prices, the ratio of two EMAs of volume-weighted price and
+  volume (PDF pp. 4-5), whose recency-volume weighting is governed
+  by a smoothing factor "determined by a time-based halflife"
+  whose value is never stated anywhere in the paper (PDF
+  pp. 5, 15-16, 17, Figure 8); every tokenized depth bin depends
+  on it (PDF pp. 16-18, A.4). The undisclosed halflife is a free
+  smoothing clock upstream of every normalized feature: two
+  implementations of the same declared feature with different
+  halflives read different depths, different bins and different
+  conditioning states from the same tape, with the divergence
+  concentrated in thin-liquidity stretches where few prints
+  inform the estimate; the paper itself devotes Appendix A.3 to
+  arguing the reference construction is not innocuous across
+  liquidity regimes (PDF pp. 15-16). Consequence, harder to pass:
+  a feature can satisfy a reference-construction declaration
+  ("the EW-VWAP of prints", "an EMA of mids") while hiding a
+  smoothing clock that survives every admissibility gate and
+  invites post-hoc selection among equally "declared"
+  implementations. One pre-declaration. Normalization-reference
+  filter disclosure: whenever an admissible feature or
+  conditioning state normalizes prices through a filtered
+  reference (EWMA, EW-VWAP or the declared family), the
+  pre-registration must declare, recorded on TRAIN before L2 data
+  arrives, the filter family and its smoothing parameter (halflife
+  or decay constant); no post-hoc halflife selection, and
+  normalized readings with undeclared smoothing parameters are
+  inadmissible. Features anchored entirely to unfiltered
+  feed-native prices satisfy the declaration trivially, and if
+  every admissible feature on the programme's venue and fields is
+  price-raw the component guards nothing on that route and stays
+  dormant there. Scope: the pending declaration family only, a
+  disclosure requirement; the C1-L2 and C8 spec texts, every kill
+  line, T-H and T-O remain untouched; no threshold moves; nothing
+  is armed.
+
+  Findings, page-cited: reinforcing, no new item — relative
+  (bps) depth features homogenize across liquidity regimes where
+  tick-denominated depths fragment (PDF pp. 5, 15), and the
+  relative features hold their distributions a year out while raw
+  mid-price drifts (PDF pp. 24-26, Figures 12-13), a second
+  corpus-level corroboration of the flow-clock scale-constant and
+  normalization-declaration family already standing in the queue;
+  no parameter transfers. Interpretation caution — distributional
+  realism is not predictive content and the paper never claims it
+  is: every headline number is a distance between marginals of
+  generated versus real data with no forecasting test,
+  information coefficient or economic value anywhere (PDF
+  pp. 8-10); a realism metric is bookkeeping, not an edge, and
+  TradeFM is never citable as evidence for any programme claim.
+  Interpretation caution — the closed-loop results are
+  simulator-entangled and the authors say so: the ZI control
+  passes through the identical simulator and fails the stylized
+  facts, but the authors state full disentanglement of model
+  quality from simulator fidelity remains future work (PDF
+  p. 10), the simulator itself validated only as fill-volume and
+  lot-count CDF correlations 0.91 and 0.98 (PDF p. 24); any future
+  synthetic-data appendix must carry its simulator-fidelity
+  provenance as a declared assumption. Reinforcing, no new item —
+  market-level and participant-level flow differ in dispersion by
+  construction and the model reproduces this only because it is
+  told its context via the IMP token (PDF pp. 6, 10-11, Figure 6),
+  corroborating the declared-aggregation-level discipline; no
+  conditioned dispersion transfers. Cost-survival ammunition —
+  the stress-test and RL-execution sections (10x injected order
+  flow, PDF pp. 26, 29) are execution-strategy engineering
+  recorded as standing context only, never operationalized, and
+  the toy simulator's mid-price response to injected flow (PDF
+  pp. 21-22) is not a venue-calibrated impact model under any
+  future cost assumption. Source-quality note — corporate research
+  (J.P. Morgan AI Research) on entirely proprietary tick data no
+  outside reader can access; arXiv v1 under three months old at
+  reading; no journal record or peer review checked; the headline
+  generalization result presented as overlapped perplexity
+  histograms with no numeric summary (PDF pp. 10-11); the
+  spread-fidelity loss to the Hawkes baseline honestly disclosed
+  (PDF p. 10); graded exactly at that level, published version to
+  be checked before formal citation. Killed-if-wrong: if filtered
+  references are later shown to be inadmissible on every route the
+  C1-L2 arm actually uses (all features price-raw on feed-native
+  fields), the component guards nothing and should die back to the
+  queue-label convention declaration as it stands; if a
+  reference-normalized feature ever enters a spec without its
+  halflife on TRAIN, two honest implementations would report two
+  different results from the same tape and the louder one would
+  win, exactly the undisclosed-degree-of-freedom failure the
+  component forecloses. Standing caveat: proprietary US equities
+  trade prints from one institutional feed, February 2024 to
+  September 2025, plus one month of China and Japan prints; no
+  crypto, no BTCUSDT, no futures, no anonymous flow; book state
+  never observed, only EW-VWAP-estimated; every fidelity number
+  entangled with one proprietary simulator. Laundering directions
+  named: INTO — the normalization-reference filter-disclosure
+  mechanism and the scale-invariant-over-tick-denominated
+  corroboration enter only as feature-design discipline; OUT —
+  every K-S and Wasserstein figure, perplexity, scaling-law
+  exponent, tokenization constant and any implication that
+  generative realism licenses a predictive claim are never cited
+  as expected behavior of any market the programme measures, never
+  as expected BTCUSDT behavior, and never as evidence that any
+  programme feature carries information.
+
+Ratification queue after this session: TWENTY-SEVEN candidate
+sharpenings (the twenty-six standing plus the
+normalization-reference filter-disclosure component joined here
+through deep-read session 33), zero armed. T1 remains armed
+awaiting the owner's word; the blocked list stays blocked.
+Deep-read queue pointer: the next UNREAD triage entry is the
+"Diffusive Limit of Hawkes Driven Order Book Dynamics With
+Liquidity Migration" paper (score 31, x5db64b). Nothing measured,
+no kill line moved, nothing armed, nothing trades live.
