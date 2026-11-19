@@ -77,15 +77,20 @@ construction.
   books with time-dependent liquidity" (score 28, x95643a); re-read
   the live tail before consuming; the ritual's slug-keyed unread rule
   applies. NOTE ## 68: the deep-read counter since goal-state edition
-  2 is now FIVE (deep-reads 50-54) — see front 4.
+  2 reached FIVE (deep-reads 50-54). NOTE ## 69 (null-time session
+  65): the due synthesis pass RUN — goal-state EDITION 3 recorded by
+  the first synthesis pass (statuses recomputed; four named gaps;
+  cadence reset); the pass's work-selection guidance names G2 below as
+  the strongest next non-deep-read choice.
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
   without real klines, and no invented data is substituted.
-- Front 4 — the synthesis pass. STATUS: DUE NOW (## 68 landing,
-  2026-11-19): five deep-read sessions (50-54) have landed since
-  goal-state edition 2; the next work-selecting session MUST run the
-  synthesis pass per the conductor protocol section 4 BEFORE any new
-  read.
+- Front 4 — the synthesis pass. STATUS: RUN as ## 69 (2026-11-19):
+  goal-state EDITION 3 recorded (protocol section 2 rewritten whole by
+  the first synthesis pass; fronts unchanged in order, statuses
+  recomputed; four named gaps at zero status; cadence reset). Next due
+  when five or more deep-read sessions have landed since edition 3
+  (deep-read #55 onward).
 - Front 5 — gap-driven probes. STATUS: standing, per
   `docs/exploratory_channel.md`; up to one block per session at the
   session's discretion.
@@ -117,11 +122,14 @@ its verdicts stay frozen, and nothing here re-opens the archive.
 
 G2. Ratification-readiness briefs. ENTRY: any session; strongest
 claim when front 2 is between reads. FEEDS: the weekly directorate —
-one-page accept/reject briefs for the queued THIRTY sharpenings
+one-page accept/reject briefs for the queued THIRTY-TWO sharpenings
 plus probe E1, grouped by the precedent they tighten. BOUNDARY:
 briefs summarize already-recorded proposals with their sources; a
 brief invents nothing, queues nothing new, and arms nothing. STATUS:
 not started; the queue is enumerated in the log's latest section.
+NOTE ## 69 (the edition 3 work-selection guidance): this G-front is
+the strongest non-deep-read choice for the next work-selecting
+session — the directorate has not yet sat and no brief exists.
 
 G3. C8 skeleton coherence. ENTRY: after a synthesis pass with
 C8-relevant output, or on finding a gap in the skeleton's
