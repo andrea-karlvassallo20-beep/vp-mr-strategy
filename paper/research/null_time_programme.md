@@ -5091,3 +5091,81 @@ nothing trades live.
   re-read the live main tail and the branch/PR set, consult
   docs/goal_autonomy_protocol.md, and record its work choice and reason
   in its session-state note.
+
+## 59. Null-time session 55 (2026-11-19): corrigendum — the conductor protocol file landed corrupted and was repaired; the goal state untouched; the deep-read pointer unchanged; NO kill line changes, nothing queued, nothing armed
+
+Session-state note (the work choice and its reason, per
+docs/goal_autonomy_protocol.md section 3): this session consulted the
+newly ratified goal-autonomy conductor protocol before selecting work.
+The default (deep-read of the x0d8b2a pointer) was NOT run. The
+protocol file itself was found CORRUPTED on main: from the middle of
+its section 3 (the cadence rule, after the phrase "or before its
+read") the byte stream degenerates into encoding garbage, and the file
+ends mid-garbage; the remainder of the director policy, the whole
+synthesis-pass section, and the fail-safe are unreadable on main. The
+protocol is the governing document every future session must consult;
+its own fail-safe would silently collapse every successor back to the
+fixed ritual, revoking the owner's new direction by defect rather than
+by decision. Recorded reason for this work choice: repair precedes all
+other selection — a corrupt governing document outranks every backlog
+item, including the deep-read queue, until it reads true. The repair
+is sanctioned by the honest-error protocol (corrigendum precedent:
+sessions 18 and 20) and follows the goal-autonomy carve-outs: nothing
+armed, nothing ratified, nothing measured.
+
+Evidence and diagnosis (verified against three independent reads of
+main: a fresh tarball fetch, an authenticated contents read, and the
+merge lineage): docs/goal_autonomy_protocol.md on main is 5,663 bytes /
+5,111 chars; the corrupt region begins mid-sentence in section 3,
+item 2, at byte position after the phrase "(as its own session, or
+before its read", and runs to end of file; valid-UTF-8 but nonsense
+codepoints (mojibake), with stray diff-like fragment markers embedded
+("+2. Cadence rule" ghosting visible in the byte stream); the file
+ends mid-garbage with no section 4 present at all. Log entry ## 58
+landed CLEAN — the corruption is confined to the protocol file pushed
+in the same PR (#224, branch commit 17c4035, merge 169bb94). The
+landing session's guard statement stands uncontradicted: the integrity
+guard sweeps conflict markers and library provenance labels and does
+NOT check byte-level encoding sanity; the corrupted file passed it
+legitimately under the guard's written scope. Named gap (recorded for
+the next infrastructure session, NOT implemented here): extend the
+integrity guard to reject replacement characters and non-printable
+garbage in docs/*.md and paper/research/*.md.
+
+The repair (in place, declared): docs/goal_autonomy_protocol.md
+rewritten as v2 (7,088 chars / 7,108 bytes). Sections 1 and 2 and
+section 3's items 1 and 2 are preserved VERBATIM through the corrupt
+cut phrase "(as its own session, or before its read" — byte-identical
+to the landed text up to the last clean character. The terminal period
+of item 2, items 3 (overrides: a recorded reason tied to the written
+backlog) and 4 (fail-safe: fallback to the fixed ritual if the
+protocol file is unreachable or inconsistent), section 4 (the
+synthesis pass: gap-naming against the registered specs and reading
+lists; products only through the sanctioned channels — catalogued-paper
+triage candidates, sharpening candidates to the pending queue, probe
+proposals, the next goal-state edition; measures nothing, arms
+nothing, launders nothing INTO any spec), and a dated corrigendum note
+(section 5 in v2, a NEW editorial section, not claimed to be original)
+are RECONSTRUCTIONS from log entry ## 58's recorded summary of the
+protocol it installed; the original wording past the cut is lost and
+was not guessed at beyond the landing entry's own phrases. The
+corrigendum note inside the file states this boundary verbatim-vs-
+reconstruction explicitly, so no future citation mistakes a
+reconstruction for the ratified original. The goal state (section 2,
+edition 1) was untouched by the corruption and stands without edit.
+
+Not changed: nothing measured, no kill line moved, nothing armed,
+nothing trades live. The deep-read queue pointer is unchanged: the next
+UNREAD entry remains "From Glosten-Milgrom to the whole limit order
+book and applications to financial regulation" (score 29, x0d8b2a);
+behind it "A Hawkes Microfoundation for Multitype Inverse Gaussian
+Subordinators" (score 29, xf77014). The ratification queue after this
+session: TWENTY-NINE candidate sharpenings plus probe E1, unchanged
+(this corrigendum queued NOTHING); docs/DECISIONS_PENDING.md NOT
+touched. T1 remains armed awaiting the owner's word in its booked
+state (survived all five kill lines with sign inverted; T2
+tested-fail); the blocked list stays blocked. A successor session
+must re-read the live main tail and the branch/PR set, consult
+docs/goal_autonomy_protocol.md (v2, corrigendum-noted), and record its
+work choice and reason in its session-state note. Nothing measured, no
+kill line moved, nothing armed, nothing trades live.
