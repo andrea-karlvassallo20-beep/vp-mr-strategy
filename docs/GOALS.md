@@ -93,4 +93,55 @@ nothing.
 STATUS: not started; the queue is enumerated in the log's latest
 section.
 
-## F5. C8 skeleton coherence — rank
+## F5. C8 skeleton coherence — rank 5
+
+ENTRY: after a synthesis pass with C8-relevant output, or on finding
+a gap in the skeleton's pre-registration bookkeeping.
+FEEDS: the C8 spec's readiness, so the moment the gate opens nothing
+is improvised.
+BOUNDARY: A1–A5 styy PROPOSED and owner-gated; sessions maintain
+coherence records only, and the spec is edited only through the
+standing amendment-log rules.
+STATUS: waiting on the L2 gate; pre-registration bookeeping only.
+
+## F6. Website honesty pass — rank 6
+
+ENTRY: any prose page states a claim status that has moved (prose
+rot.).
+FEEDS: the public instrument's honesty (the standing
+claims-ledger citation rule).
+BOUNDARY: edits cite the claims ledger; claim statuses are never
+invented or softened.
+STATUS: standing risk; periodic.
+
+## F7. Macro timeline backfill — rank 7
+
+ENTRY: verifiable public macro events with citable sources.
+FEEDS: censoring windows for later hazard work.
+BOUNDARY: the timeline is owner-curated; sessions may only append
+PROPOSED draft rows with sources, for the owner's hand-check.
+STATUS: standing, low priority per the queue's own note.
+
+## F8. Exploratory-channel probe — rank 8
+
+ENTRY: up to one block per session at the session's discretion,
+announced per the channel document.
+FEEDS: cross-domain imports with constraints attached; new triage
+candidates.
+BOUNDARY: exactly as ratified 2026-11-18 (`docs/exploratory_channel.md`);
+a probe measures nothing and arms nothing.
+STATUS: standing.
+
+## F9. The synthesis pass — supreme, not a rotation slot
+
+ENTRY: five or more deep-read sessions landed since the current
+goal-state edition (conductor protocol section 4 cadence).
+FEEDS: this file's refresh, the gap register, triage additions,
+sharpening candidates, probe proposals, and the next goal-state
+edition.
+BOUNDARY: re-planning, not evaluation — it measures nothing, arms
+nothing, and launders nothing INTO any spec.
+STATUS: next due once five deep-reads land after session 54's
+edition (deep-read #50 onward).
+
+Edition 1, recorded 2026-11-19 (null-time session 56, log entry ## 60).
