@@ -208,9 +208,9 @@ and remains the authority on the verbatim-vs-reconstruction boundary of
 this file. The integrity guard's encoding-scope gap named in section 5
 remains a candidate improvement, zero status, not implemented here.
 
-## 8. Cross-reference amendment (2026-11-19, log entry ## 63)
+## 8. Cross-reference amendment (2026-11-19, log entry ## 64)
 
-Two facts, dated this session (null-time session 59). (1)
+Two facts, dated this session (null-time session 60). (1)
 `docs/GOALS.md` installed as the session-facing status board: the
 protocol's section 2 edition 2 remains the ranking authority (numbered
 fronts 1–8 with entry criteria, feeds, and gates); GOALS.md carries

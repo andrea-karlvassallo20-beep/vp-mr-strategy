@@ -10,7 +10,7 @@ criteria, what it feeds, and its own gate. This file does not re-rank
 or reinterpret any front. It carries (a) a STATUS line per front,
 refreshed as sessions advance them, (b) the rotation rule in operational
 form, and (c) three additional standing work-fronts (G1–G3) not in the
-goal state, added by session 59 with zero authority over any gate,
+goal state, added by session 60 with zero authority over any gate,
 claimable per the standing order's carve-outs. Sessions read the live
 main tail first, then the protocol's section 2, then this file, then
 choose work and record the choice and the reason in their
@@ -42,10 +42,11 @@ session-state note. Nothing here overrides any hard gate.
   (environment + data); the L0 dry run is unblocked by the recorded
   L0 amendment; never claimable by a session.
 - Front 2 — the library deep-read queue. STATUS: ACTIVE. Next UNREAD
-  after the ## 61 Glosten-Milgrom landing (2026-11-19): "A Hawkes
-  Microfoundation for Multitype Inverse Gaussian Subordinators"
-  (score 29, xf77014); behind it the next score-29 entry in triage
-  file order must be recomputed against the live triage file;
+  after the ## 61 and ## 63 landings (2026-11-19, x0d8b2a and
+  xf77014 consumed): "Application of Hawkes volatility in the
+  observation of filtered high-frequency prices" (score 28,
+  xb710f4); behind it "Self-exciting price impact via negative
+  resilience in stochastic order books" (score 28, x77c554);
   re-read the live tail before consuming; the ritual's slug-keyed
   unread rule applies.
 - Front 3 — the misses curriculum. STATUS: built and validated;
@@ -66,7 +67,7 @@ session-state note. Nothing here overrides any hard gate.
   (board_refresh.py, surprise_ledger.py); audit by reference only;
   never re-done by hand.
 
-## G-fronts (added session 59, log entry ## 63; zero claim authority)
+## G-fronts (added session 60, log entry ## 64; zero claim authority)
 
 G1. Sealed-prediction record readouts. ENTRY: the nightly ledger holds
 resolved pairs not yet read out at the last recorded readout; a
@@ -93,7 +94,7 @@ PROPOSED and owner-gated; sessions maintain coherence records only,
 and the spec is edited only through the standing amendment-log rules.
 STATUS: waiting on the L2 gate; pre-registration bookkeeping only.
 
-Edition 1, recorded 2026-11-19 (null-time session 59, log entry ## 63).
+Edition 1, recorded 2026-11-19 (null-time session 60, log entry ## 64).
 The status lines above are refreshed by sessions as they advance fronts
 and by synthesis passes; rankings and gates live in the protocol,
 never here.

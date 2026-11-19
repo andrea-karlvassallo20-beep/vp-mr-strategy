@@ -5526,13 +5526,157 @@ session must re-read the live main tail AND the open branch/PR set,
 consult docs/goal_autonomy_protocol.md (v2, edition 2, corrigendum-
 noted), and record its work choice and reason in its session-state note.
 
-## 63. Null-time session 59 (2026-11-19): GOALS.md installed as the goal-state status board with three zero-authority work-fronts; the encoding-sanity gap in the integrity guard closed with tests; NO kill line changes, nothing queued by this session, nothing armed
+## 63. Null-time session 59 (2026-11-19): deep-read session 51 — the Wang-Xu-Zhu Hawkes microfoundation for multitype inverse-Gaussian subordinators read; the Glosten-Milgrom slot left to the live claim (landed mid-flight as ## 61); NO kill line changes, NO sharpening, nothing armed
+
+- Session-state note (declared before anything else): work selected
+  under docs/goal_autonomy_protocol.md (edition 2) — the standing owner
+  directive in chat this same day orders the deep-read default
+  explicitly, and the director policy's rotation item makes the
+  default the floor, so the choice needs no further justification; the
+  protocol file was read whole and is consistent (edition 2, sections
+  1-7 present, corrigendum note intact); the synthesis cadence is NOT
+  due (zero deep-reads have landed since goal-state edition 2 was
+  installed at ## 60).
+- Numbering race declared up front, then settled by the main-wins
+  protocol: TWO live branches claimed log entry ## 61 / null-time
+  session 57 at this session's read time — PR #230 (disposition leg
+  of the session-55 repair race) and PR #231 (deep-read 50, the
+  Glosten-Milgrom whole-book paper). This session drafted as log
+  entry ## 62 / null-time session 58 / deep-read session 51 with the
+  race declared (branch deep-read-51-hawkes-ig-subordinator-xf77014,
+  PR #234, CI green on both jobs — test and engine). MID-FLIGHT,
+  main advanced (sha 51eb9453) with the Glosten-Milgrom deep-read
+  landed as entry ## 61 (deep-read 50, 51st library note), resolving
+  the race for ## 61 in that claimant's favor. The merge of PR #234
+  was then REFUSED with conflicts (a second mid-flight advance: the
+  disposition slot of the session-55 repair race landed its own
+  entry as ## 62 on its third rebase, queuing the corrupt-landing
+  sweep as the THIRTIETH candidate sharpening), so per the
+  first-landed-governs protocol this session renumbers to entry
+  ## 63 / null-time session 59 / deep-read session 51 — the
+  deep-read number is unaffected, no deep-read was consumed by
+  landed ## 62 — and re-lands on a fresh branch; PR #234 is closed
+  as superseded with the supersession recorded. Two numbered
+  attempts, one 405, disclosed: drafted ## 62 / null-time 58
+  (PR #234, refused at merge), now this entry. This session's 405
+  joins the slot-race pattern named in landed ## 62; the
+  observation stands, no governance change is made here, and the
+  deep-read slot trade between landed ## 61 and this session is
+  recorded in the slot-conservation bullet below.
+- Slot conservation: at this session's read time the ## 59/## 60 tail
+  pointer named "From Glosten-Milgrom to the whole limit order book
+  and applications to financial regulation" (score 29, x0d8b2a) as
+  the next UNREAD, but that slot was claimed by a live branch
+  (PR #231) with its read already drafted, so this session did NOT
+  consume it (no duplicate consumption, ## 48 precedent) and took
+  the entry behind it: "A Hawkes Microfoundation for Multitype
+  Inverse Gaussian Subordinators" (score 29, xf77014), verified
+  unread against all 49 library notes on main at read time plus the
+  PR #231 claim, and unclaimed by any other open PR or branch. The
+  landed ## 61's closing pointer independently names xf77014 as the
+  next UNREAD, so the consumed slot is consistent with the landed
+  chain and no duplicate consumption occurred. The extract exists,
+  is complete, and is page-marked (35 pp.); metadata taken from
+  expanded_index.json via the slug (arXiv:2610.10525v1, Wang, Xu,
+  Zhu, 2026).
+- The paper: a nearly critical multivariate linear Hawkes system
+  (kernel-mass defect B_T → nonsingular M-matrix B, immigration
+  balanced T·r_T·µ_T → η) has rescaled counts and integrated
+  intensities converge jointly in product-M1 to a pure-jump
+  multitype inverse-Gaussian subordinator with exponent fixed by
+  B^T z + z∘2/2 = u (Theorem 2.2, PDF pp. 6-7; cluster proof Lemmas
+  4.1-4.3, PDF pp. 23-25); the mechanism is rare finite-variance
+  near-critical families of order r_T^-2 whose internal timing
+  collapses to a single jump exactly when T·r_T → ∞ (Lemma 5.1, an
+  iff, PDF p. 27); diagonal B gives independent IG clocks, the
+  square-root specialization reproduces the Abi Jaber-Attal-Rosenbaum
+  hyper-rough boundary law (PDF pp. 7-9), Section 3 weakens the prior
+  scaling theory's high-intensity assumption to accumulated activity
+  and upgrades to product-M1 for monotone paths (PDF pp. 9-22), and
+  Proposition 6.2 extends the scalar limit to finite-variance
+  branching with offspring variance rescaling dispersion but not mean
+  rate (PDF pp. 30-32). Zero empirical content, by design.
+- Grade, default: NO kill line changes. NO new candidate sharpening.
+  Five findings, one tag each, full statement in the note (paper/
+  research/library/2026-11-19_hawkes_ig_subordinator_deep_read.md):
+  (1) [reinforcing, no new item] the phase-diagram lesson — the
+  branching-ratio exponent alone does not determine the macro path
+  type; criticality speed, immigration balance, and the kernel's
+  temporal tail decide between IG-collapse, CIR, and rough regimes
+  (PDF pp. 3-4), reinforcing the existing estimator-discipline and
+  near-criticality register cautions exactly as they stand; (2)
+  [interpretation caution] calendar collapse is observation-grain
+  relative (the iff of Lemma 5.1, PDF p. 27; M1-not-J1, PDF pp. 4, 8,
+  25) — coarse-grain "jump moments" are grain-relative descriptions of
+  cascades the fine grain resolves, a reading mode for future C1-L2
+  compression interpretations, no queue change; (3) [interpretation
+  caution] a triangular-array theorem is not a finite-sample market
+  fact, and Corollary 2.7's NIG is a clock law the authors themselves
+  fence — a return model "would additionally need signs, imbalance,
+  leverage, and a rule for composition at clock jumps" (PDF pp. 9, 33);
+  never read backwards as "returns are NIG"; (4) [reinforcing, no new
+  item] the x^-3/2 Lévy singularity is the mechanism output of ANY
+  finite-variance near-critical branching with an r_T^-2 cutoff
+  (PDF pp. 28, 32), so heavy cascade tails license no criticality
+  claim — the apparent-criticality caution stands reinforced;
+  (5) [source-quality note] arXiv:2610.10525v1, pure math.PR, no data
+  anywhere, one closing finance paragraph; v1, published version NOT
+  checked, flagged for verification.
+- Laundering directions, as in the note: INTO — nothing; no exponent
+  parameter, no density, no clock law, no collapse condition, no
+  topology convention enters any spec, default, calibration, or
+  generative null. OUT — never read backwards as "returns are NIG,"
+  "near-critical flow implies jump-like macro clocks in finite data,"
+  "branching ratio near one identifies the regime," "critical families
+  are macroscopic" (a single family vanishes, PDF p. 28), or "heavy
+  cascade tails certify criticality."
+- Operational disclosure: no functional git/gh CLI existed in this
+  session's execution environment; the repo was read and written
+  through the authenticated GitHub API. The integrity guard could not
+  be run over a full assembled tree locally (no tarball possible); the
+  guard's exact marker-sweep logic was executed over this session's
+  changed files (zero offenders — clean), the library-provenance audit
+  is untouched (no docs/library/summaries/ file changed), and the real
+  guard runs in branch CI over the full tree: both ci.yml checks green
+  on the branch before merge, recorded below in this entry's landing
+  verification. Push verified by read-back of the landed blob, per the
+  ## 60 read-side-truncation lesson.
+- Verified at landing (second attempt): fresh branch cut from the
+  advanced main (post-## 62); the note and this entry pushed; new PR
+  opened; CI green on both jobs (test and engine); squash-merged;
+  post-merge read-back of the log tail and the note confirms both
+  landed whole (sizes and section counts checked).
+- No inaccessible or blocked sources this session; the extract was
+  complete and page-marked; the skipped-ahead consumption is recorded
+  above and is not a blocked source. Ratification queue after this
+  session: THIRTY candidate sharpenings plus probe E1 (twenty-nine
+  standing at this session's read, plus the corrupt-landing sweep
+  queued as the thirtieth by landed ## 62, read back from the
+  advanced main tail; unchanged — this session queued NOTHING);
+  zero armed; docs/DECISIONS_PENDING.md
+  NOT touched. T1 remains armed awaiting the owner's word in its booked
+  state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked.
+- Deep-read queue pointer: with x0d8b2a (Glosten-Milgrom, score 29)
+  claimed by PR #231 and xf77014 (this session's paper, score 29)
+  consumed, the next UNREAD entry in triage order is "Application of
+  Hawkes volatility in the observation of filtered high-frequency
+  prices" (score 28, xb710f4), verified unread against all notes on
+  main and unclaimed by any open PR or branch at read time; behind it
+  "Self-exciting price impact via negative resilience in stochastic
+  order books" (score 28, x77c554). A successor session must re-read
+  the live main tail and the branch/PR set before consuming anything,
+  and must record its work choice and reason in its session-state
+  note. Nothing measured, no kill line moved, nothing armed, nothing
+  trades live.
+
+## 64. Null-time session 60 (2026-11-19): GOALS.md installed as the goal-state status board with three zero-authority work-fronts; the encoding-sanity gap in the integrity guard closed with tests; NO kill line changes, nothing queued by this session, nothing armed
 
 Session-state note (the work choice and its reason, per the
 conductor protocol section 3, landed edition — the rotation
 guidance's first exercise): owner directive, in chat, 2026-11-19,
 refining the goal-autonomy grant into its concrete configuration.
-Race chain, declared honestly and completely, all four collisions:
+Race chain, declared honestly and completely, all five collisions:
 (1) this session first drafted the configuration as a ## 59 of its
 own and lost the race to the parallel corrigendum ## 59 (PR #225;
 abandoned, never pushed). (2) It rebuilt the configuration on the
@@ -5544,25 +5688,31 @@ explicitly held the guard's encoding-sanity gap at candidate status
 for the next infrastructure session). (3) With the staging legs
 pushed, the log-leg re-read found the parallel deep-read 50 landed as
 ## 61 (PR #231, Glosten-Milgrom), consuming the ## 61 number and the
-x0d8b2a pointer; this session renumbered and adopted the live pointer.
-(4) With the log staged and CI green, the merge refused on a moved
-main: the parallel disposition leg of the session-55 repair race had
-landed as ## 62 on its own third rebase (PR #227 and PR #230 closed
-unmerged, supersessions recorded), taking the ## 62 number and
-session 58, and queueing the corrupt-landing sweep as the THIRTIETH
-candidate sharpening. Per main-wins, every landed leg stands; this
-entry is the third renumber: ## 63 / null-time session 59, content
-otherwise unchanged, with the queue count and cross-references
-adopted from the live tail. This session is itself an instance of
-the slot-race pattern the disposition named, and adds one datum to
-it: the shared tooling failure mode family also grows (## 60 recorded
-the read-truncation mode; the disposition recorded the placeholder
-mode; this session records the base64 hand-carry truncation mode,
-caught by an in-run length assertion before any push, below).
-Precedents: the exploratory channel (## 25), the conductor
-installation (## 58), the corrigendum (## 59), the configuration
-landing (## 60), the mid-flight renumber landing (## 61), the
-disposition landing (## 62).
+x0d8b2a pointer; this session renumbered. (4) With the log staged
+and CI green, the merge refused on a moved main: the parallel
+disposition leg of the session-55 repair race had landed as ## 62 on
+its own third rebase (PRs #227 and #230 closed unmerged,
+supersessions recorded), taking the ## 62 number and session 58 and
+queueing the corrupt-landing sweep as the THIRTIETH candidate
+sharpening; this session renumbered a third time, rebuilt the log on
+the ## 62 tail, and pushed. (5) While that head's CI ran, main
+advanced a fifth time: the parallel deep-read 51 landed as ## 63 (PR
+#234, the Wang-Xu-Zhu Hawkes microfoundation for multitype
+inverse-Gaussian subordinators), taking the ## 63 number, session 59,
+and the xf77014 pointer, and this session's sandbox working tree was
+wiped by an environment reset in the same window (recovered from the
+pushed branch, nothing lost — all pushes predate the reset and match
+byte-verified content). Per main-wins, every landed leg stands; this
+entry is the FOURTH renumber: ## 64 / null-time session 60, queue
+count and cross-references adopted from the live tail, deep-read
+pointer adopted as xb710f4 per the landed ## 63's record. This
+session is itself an instance of the slot-race pattern the
+disposition named; its contribution to the shared tooling
+failure-mode census is recorded below. Precedents: the exploratory
+channel (## 25), the conductor installation (## 58), the corrigendum
+(## 59), the configuration landing (## 60), the mid-flight renumber
+landing (## 61), the disposition landing (## 62), the second
+deep-read landing (## 63).
 
 Installed, one landing, four changes. (1) docs/GOALS.md, edition 1 —
 the status board. The conductor protocol's section 2 (goal state
@@ -5582,11 +5732,11 @@ already-running instrument), G2 ratification-readiness briefs
 probe E1 for the weekly directorate; a brief invents nothing, queues
 nothing, arms nothing), G3 C8 skeleton coherence (preparation records
 only; A1–A5 stay PROPOSED and owner-gated). The front-2 status line
-is written against the post-## 61 pointer state.
+is written against the post-## 63 pointer state.
 (2) The protocol gained a section 8 cross-reference amendment
 recording the GOALS.md install and the guard closure; sections 1–7
 stand verbatim on main, byte-verified against the live file before
-the push. (3) src/integrity_guard.py: the encoding-sanity check named
+each push. (3) src/integrity_guard.py: the encoding-sanity check named
 in ## 59 and held at candidate status by ## 60 is implemented —
 guard check 3 rejects U+FFFD replacement characters, non-UTF-8 byte
 sequences, and non-printable control characters in docs/*.md and
@@ -5613,25 +5763,28 @@ single gate. The ratification queue stands untouched by this session.
 
 Branch-processing note, by the honest-error protocol: this session's
 working branch (conductor/fronts-manifest-2026-11-19) carries a
-truncated intermediate push — the first GOALS.md commit's payload was
-cut mid-file (an earlier draft's front F5), caught by the post-push
-verification, confined to the branch, never on main, and corrected in
-the next branch commit; the squash-merge carries only the final
-verified content. Also recorded: two run-time failures in the first
-staging leg (an inverted race-check assertion and an invalid
-create_branch argument) aborted before any mutation. And three
-fail-stops in the push legs, none reaching the repo: (a) a
-hand-carried base64 payload failed its in-run decode verification
-(twice: a mangled carry and a truncated carry, decoded lengths 6970
-and 6970 against an expected 7579; the assertion held both times and
-nothing was pushed — the fix was to stop hand-carrying payloads
-entirely and read the staged files from the working tree inside the
-run, keeping the verify-then-push order); (b) a wrong endswith
-assertion on GOALS.md checked a footer that was not the file's last
-line (the abort was the assertion's error, not the file's; corrected
-against the actual tail); (c) the merge refusal on the moved main,
-resolved by this third renumber. The pushed files are the
-disk-verified bytes.
+truncated intermediate push from its first staging — the initial
+GOALS.md commit's payload was cut mid-file (an earlier draft's front
+F5), caught by the post-push verification, confined to the branch,
+never on main, and corrected in the next branch commit; the
+squash-merge carries only the final verified content. Also recorded:
+two run-time failures in the first staging leg (an inverted
+race-check assertion and an invalid create_branch argument) aborted
+before any mutation. Three further fail-stops, none reaching the
+repo: (a) a hand-carried base64 payload failed its in-run decode
+verification twice (decoded length 6970 against an expected 7579;
+the assertion held both times, nothing was pushed — the fix was to
+stop hand-carrying payloads entirely and read the staged files from
+the working tree inside the run, keeping the verify-then-push order);
+(b) a wrong endswith assertion on GOALS.md checked a footer that was
+not the file's last line (the abort was the assertion's error, not
+the file's; corrected against the actual tail); (c) the first
+merge-attempt window closed on the moved main twice, resolved by
+rebasing this note's numbering each time. The sandbox environment
+reset between CI polls mid-leg was survived by re-fetching every
+artifact from the pushed branch and live main rather than from local
+state; all pushed content predates the reset and was verified before
+it. The pushed files are the disk-verified bytes.
 
 Verified BEFORE every push: the integrity guard (now three checks)
 run on the assembled tree — clean, exit 0 (conflict-marker sweep,
@@ -5640,11 +5793,11 @@ functions in tests/test_integrity_guard.py executed and passed
 (pytest is not installable in this sandbox; the functions were driven
 directly in a temporary-tree harness, the same assertions CI will
 run); the fronts' statuses cross-checked against the live tail and
-dashboard this session (post-## 62 queue count THIRTY, T1/T2
-statuses, watchlist window, post-## 61 next-UNREAD pointer, the
-C1-L2/C8 gates); the landed protocol, dashboard, and disposition
-entries read in full from main before this session's artifacts were
-re-based on them.
+dashboard this session (post-## 62 queue count THIRTY, confirmed
+unchanged by the landed ## 63; T1/T2 statuses; watchlist window;
+post-## 63 next-UNREAD pointer xb710f4; the C1-L2/C8 gates); the
+landed protocol, dashboard, disposition, and deep-read entries read
+from main before this session's artifacts were re-based on them.
 
 Not changed: nothing measured, no kill line moved, nothing armed,
 nothing trades live. The ratification queue after this session:
@@ -5654,14 +5807,18 @@ thirtieth), NOT by this session, which queues NOTHING;
 docs/DECISIONS_PENDING.md untouched by this session per the rule.
 T1 remains armed awaiting the owner's word in its booked state; T2
 tested-fail; the blocked list stays blocked. The deep-read queue
-pointer: the next UNREAD entry is "A Hawkes Microfoundation for
-Multitype Inverse Gaussian Subordinators" (score 29, xf77014), the
-## 61 landing having consumed x0d8b2a and the ## 62 disposition
-having touched no deep-read; behind it the next score-29 entry in
-triage file order must be recomputed by the successor against the
-live triage file. A successor session must re-read the live main tail
-and the branch/PR set, consult the conductor protocol (sections 2,
-3, 6, 7, 8) and docs/GOALS.md, choose a front per the rotation rule
+pointer: the next UNREAD entry in triage order is "Application of
+Hawkes volatility in the observation of filtered high-frequency
+prices" (score 28, xb710f4), with x0d8b2a consumed by the landed
+## 61 and xf77014 consumed by the landed ## 63; behind it
+"Self-exciting price impact via negative resilience in stochastic
+order books" (score 28, x77c554), both per the landed ## 63's
+pointer record; the successor recomputes the tail against the live
+triage file. Two deep-read sessions (50, 51) have landed since
+goal-state edition 2; the synthesis pass (front 4) is not yet due
+at five. A successor session must re-read the live main tail and
+the branch/PR set, consult the conductor protocol (sections 2, 3,
+6, 7, 8) and docs/GOALS.md, choose a front per the rotation rule
 under the standing order, and record the choice and the reason in
 its session-state note. Nothing measured, no kill line moved,
 nothing armed, nothing trades live.
