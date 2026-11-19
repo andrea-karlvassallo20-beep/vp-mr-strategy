@@ -6422,4 +6422,131 @@ live tail before reading. The next work-selecting session's non-deep-
 read choice, per edition 3's guidance: GOALS.md G2, the
 ratification-readiness briefs, in service of the directorate's first
 sitting.
-__ENTRY__
+## 70. Null-time session 66 (2026-11-19): deep-read session 55 — the Lee self-exciting flexible residual duration-forecasting paper read; the parameter-soak and metric-selection lessons absorbed as reinforcement, NO candidate sharpening, NO kill line changes, nothing measured, nothing armed
+
+Session-state note (work choice and its reason, recorded under the
+goal-autonomy conductor protocol v2, edition 3, and the GOALS.md
+rotation rule): front 2, the library deep-read queue, chosen by the
+owner's dated standing directive for this cycle ("run the next
+null-time deep-read session... follow the research-intake skill ritual
+exactly"), the direct-instruction path the conductor protocol and the
+standing order both recognize and which satisfies GOALS.md rule 3's
+no-consecutive-repeats condition (the repetition reason: the owner's
+dated instruction names the deep-read). Independent of that
+instruction, the chain checked against the live tail (main at the
+## 69 landing) and docs/GOALS.md: the synthesis pass is NOT due —
+edition 3 was recorded at ## 69 and reset the cadence; this read is
+deep-read #55, the FIRST since edition 3, so four more must land
+before the pass fires again. Front 1 is blocked on the owner, front 3
+is blocked on codespace/data presence; front 2 held the only readable
+UNREAD head. The head was recomputed live, not from memory: the raw
+triage JSON ordering places x72c407 (score 28) behind the consumed
+x77c554 and xdb216a and ahead of x95643a (score 28); the 56-note
+shelf (55 dated notes before this session) has no note for x72c407;
+the ## 69 landing's own next-pointer named the same slug, giving a
+two-source confirmation; the page-marked extract exists in
+docs/library/text/ and its metadata (author, venue arXiv:2604.00346v2,
+year 2026) was taken from docs/library/expanded_index.json via the
+slug. No open PR or working branch existed at session start.
+
+Process corrigendum (branch-side, pre-merge, honest-error protocol):
+the first push to the working branch briefly carried placeholder
+text in the note file and the log entry (a templating slip in the
+push step); the branch was verified byte-by-byte before merge, the
+defect was caught by the read-back verification, and this commit
+restores the true content. Nothing reached main; the guard had
+verified the true content on the assembled tree before any push. The
+read-back verification loop is now part of this session's record.
+
+The paper: Kyungsub Lee, "Forecasting duration in high-frequency
+financial data using a self-exciting flexible residual point process"
+(single-author statistics paper, arXiv:2604.00346v2, zero citations
+recorded in our index). Read against the ONE question (full note:
+paper/research/library/2026-11-19_self_exciting_flexible_residual_durations_deep_read.md).
+Verdict: NO kill line changes. NO new candidate sharpening. The grade
+and its reason, page-cited:
+
+1. [reinforcing, no new item] Residual misspecification soaks into
+   absurd parameter magnitudes: fitting the plain exponential-Hawkes
+   SE-Exp to the same one-tick mid-price durations that SE-Gamma fits
+   with (mu, alpha, beta) = (0.27, 0.09, 0.11) yields (1.48, 90.96,
+   285.90) — the author's own reading is that the exponential residual
+   "compensates by inflating the baseline intensity and excitation
+   parameters" (Table 2, PDF pp. 14-15). A future L2/C8 fit whose
+   scale parameters blow up is a residual-distribution red flag
+   first and a market fact never; reinforces the queued
+   estimator-mode candidate and the frozen-constants discipline,
+   nothing added.
+
+2. [interpretation caution] The same model is significantly best AND
+   significantly worst by the declared loss: SE-Burr rejects equal
+   predictability against every competitor in its favor under
+   squared-relative-error loss and against every competitor under
+   log-ratio error, at 1% in both panels (Table 4, PDF p. 19; loss
+   reading, PDF p. 18). Any future model-comparison verdict,
+   including a C1-L2 baseline comparison, must carry its loss
+   function pre-declared; a ranking that flips sign with the metric
+   choice is manufactured by metric selection. Reading discipline
+   only.
+
+3. [reinforcing, no new item] Dependence fit does not buy forecast
+   gain (the fractionally integrated log-ACD removes residual
+   autocorrelation without out-of-sample improvement, PDF p. 22) and
+   even the best flexible models fail the residual KS at 1% (every
+   specification in Table 3, PDF p. 17), with P-P misfit
+   acknowledged to remain (PDF pp. 19-20). Reinforces the refusal of
+   fit-complacency and the burden-of-proof orientation. Nothing
+   added.
+
+4. [interpretation caution] The stability condition alpha <
+   beta*mu-epsilon is residual-distribution-relative: non-explosion
+   checks and any branching-analog ratio computed under one fitted
+   residual law do not transfer to another. A future stability check
+   on a fitted Hawkes arm must state which residual distribution the
+   mean is taken under or it is not a check. Reading discipline on
+   the existing kill-line apparatus; no queue change.
+
+5. [source-quality note] Single author, arXiv-only (v2 Aug 2026),
+   zero citations, the model introduced in the author's own Lee
+   (2025), one asset (AAPL) one month (Dec 2022), no code/data
+   statement, and near-boundary Burr shape identifications (s1 =
+   273.95 plus-minus 0.14, Table 2, PDF p. 15) unexplored by the
+   author. Solid statistics-paper methodology, one-month one-equity
+   evidence scope; ammunition under the library invariant, never
+   evidence. Check for a published version before any formal
+   citation outside the note.
+
+What this paper would have killed if we had done it wrong: the
+parameter-soak death (reading an inflated beta = 285.90 as
+"ultra-fast decay discovered" instead of as residual misfit — the
+same data yields beta = 0.107 under Gamma residuals, Table 2, PDF
+p. 15) and the metric-shopping death (declaring a benchmark beaten
+off Table 3 while Table 4 inverts the verdict at 1% under the other
+loss, PDF p. 19). Both are pre-empted by frozen constants,
+pre-declared metric sets, and the queued estimator-mode and
+residual-diagnostic candidates; neither moves any kill line.
+
+docs/DECISIONS_PENDING.md is NOT touched this session (no sharpening
+was queued; no decision item changed state): the ratification queue
+stands at THIRTY-TWO candidate sharpenings plus probe E1, zero armed.
+The GOALS.md front-2 status line is refreshed (the one operative
+bookkeeping edit): x72c407 consumed; the next UNREAD is "Optimal trade
+execution and price manipulation in order books with time-dependent
+liquidity" (score 28, x95643a); the successor recomputes the head from
+the live triage file and the live tail before reading. Deep-read
+counter since goal-state edition 3: ONE (deep-read 55).
+
+Not changed: nothing measured, no kill line moved, nothing armed,
+nothing trades live. Guard clean (default, --sweep, --library,
+--encoding) on the assembled tree carrying this session's edits.
+T1 remains armed awaiting the owner's word in its booked state
+(survived all five kill lines with sign inverted; T2 tested-fail);
+the blocked list stays blocked. Ratification queue after this
+session: THIRTY-TWO candidate sharpenings plus probe E1, zero armed.
+Next-queue pointer: "Optimal trade execution and price manipulation in
+order books with time-dependent liquidity" (score 28, x95643a); the
+successor recomputes the head from the live triage file and the live
+tail before reading. The next work-selecting session's non-deep-read
+choice, per edition 3's guidance: GOALS.md G2, the
+ratification-readiness briefs, in service of the directorate's first
+sitting.
