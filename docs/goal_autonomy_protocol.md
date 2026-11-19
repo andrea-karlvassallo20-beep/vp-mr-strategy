@@ -207,3 +207,21 @@ section 5 corrigendum note is untouched from log entry ## 59's repair
 and remains the authority on the verbatim-vs-reconstruction boundary of
 this file. The integrity guard's encoding-scope gap named in section 5
 remains a candidate improvement, zero status, not implemented here.
+
+## 8. Cross-reference amendment (2026-11-19, log entry ## 64)
+
+Two facts, dated this session (null-time session 60). (1)
+`docs/GOALS.md` installed as the session-facing status board: the
+protocol's section 2 edition 2 remains the ranking authority (numbered
+fronts 1–8 with entry criteria, feeds, and gates); GOALS.md carries
+per-front STATUS lines, the rotation rule in operational form, and
+three additional standing work-fronts (sealed-prediction record
+readouts, ratification-readiness briefs, C8 skeleton coherence) —
+zero authority over any gate, claimable only per the standing order's
+carve-outs. (2) The integrity guard's encoding-scope gap named in
+section 5 and held at candidate status by log entry ## 60 is now
+closed: implemented as guard check 3 (reject replacement characters,
+non-UTF-8 sequences, and non-printable control characters in
+docs/*.md and paper/research/*.md, the section 5 scope, with strict
+UTF-8 decode), plus planted-offender and clean-tree tests in
+tests/test_integrity_guard.py. Sections 1–7 above stand verbatim.
