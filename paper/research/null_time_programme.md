@@ -3090,4 +3090,209 @@ armed, nothing trades live.
   session.
   Nothing measured, no kill line moved, nothing armed, nothing
   trades live.
-<CSE
+
+## 44. Null-time session 40 (2026-11-19): deep-read session 36 — the rough Hawkes–Heston microfoundation paper graded pure-theory exhibit, default, nothing queued; PR #204 superseded by rebase, concurrency state declared
+
+- **Session-state note (declared before the read)**: this session began on a
+  stale pointer chain. It first drafted, and discarded, a deep-read of the
+  sparse order book paper (x3ff3a4) already landed on main as a concurrent
+  session's deep-read session 19; it then read the liquidity-migration
+  diffusive-limit paper (x5db64b) from entry ## 41's closing pointer, and a
+  concurrent session landed that consumption first (deep-read session 34, log
+  entry ## 42). Nothing duplicate was pushed at any point; one dormant branch
+  from the sterile start (deep-read/session-21-sparse-order-book) carries no
+  commits beyond main. The tail and docs/DECISIONS_PENDING.md were re-read
+  from live main before the slot was consumed, per the honest-error protocol.
+  The contested xbf2516 (score 33) was reserved to the then-open PR #195 and
+  skipped; the slot consumed the landed xd08813 pointer, which entries ## 42
+  and ## 43 both carried. This session's first landing attempt, PR #204, was
+  opened against the pre-#195 main as log entry ## 43 / deep-read 35; PR #195
+  merged first and claimed that numbering, so PR #204 conflicted and closed
+  unmerged; this rebased landing (log entry ## 44, null-time session 40,
+  deep-read session 36) is the supersession of #204, recorded per the
+  honest-error and supersession precedent (#164/#165).
+
+- **Library deep-read session 36** (the standing queue's next unclaimed
+  UNREAD pointer, score 30, xd08813, consumed here):
+  `paper/research/library/2026-11-19_rough_hawkes_heston_microfoundation_deep_read.md`
+  on Yingli Wang, Yinhao Wu and Lingjiong Zhu, "Microstructural Foundation for
+  the Rough Hawkes–Heston Model" (arXiv:2608.07709v1, 7 Aug 2026). A pure-theory
+  construction: a Poisson-embedded marked Hawkes order-flow model converging,
+  along the full sequence, to the unique complete canonical weak solution of
+  the rough Hawkes–Heston common-jump stochastic-volatility model of Bondi,
+  Pulido and Scotti (2024), with an explicit microscopic-to-macroscopic
+  coefficient map. Extract complete and page-marked (67 pp.); read in full; no
+  inaccessibility, no shelf gap. Read against the ONE question. **Grade: NO
+  kill line changed. NO new candidate sharpening.** Default grade; the paper
+  is a worked exhibit of rules already standing and the burden of proof for a
+  sharpening was not met. Findings, page-cited:
+
+  Reinforcing, no new item — the rough fractional memory exists only because
+  the branching ratio approaches one at rate 1-aT ~ mu0 T^{-alpha} against a
+  pinned heavy-tailed kernel (Assumption 3.3, PDF p. 11; Proposition 4.1, PDF
+  pp. 13-14), and subcriticality of the marked branching is exactly what
+  forces the Volterra drift b < 0 (Assumption 3.4, PDF p. 12; Remark 2.6, PDF
+  p. 8), a fourth worked exhibit for the queued near-critical
+  regime-disclosure rule: a Hawkes fit near the boundary manufactures
+  long-memory structure by scaling assumption, and that structure is not a
+  measured property of the data. Reinforcing, no new item — the leverage
+  correlation rho = -(beta-1)sqrt(q)/((1+q)(1+beta^2 q)) is a deterministic
+  function of two free asymmetry parameters, attains all of (-1, 0) by
+  construction, and the paper itself declares the microscopic parameters
+  non-identifiable (PDF pp. 19, 24-25), the aggregation face of the standing
+  single-fitted-kernel and estimator-mode cautions: a fitted negative leverage
+  on any venue is never evidence the asymmetry mechanism produced it.
+  Interpretation caution — the common-shock clustering is
+  variance-proportional thinning, not independent self-excitation of the jump
+  measure: every compensator is proportional to the same scalar intensity
+  (Eqs. 12-13, PDF pp. 9-10), so on the programme's venue any claimed
+  self-excitation of extreme events must be tested against the cheaper
+  intensity-proportional-thinning alternative; the C8 shuffled-arrival placebo
+  family already occupies this ground, nothing new queued. Interpretation
+  caution — nothing transfers: single instrument, fixed tick sizes, pricing
+  measure taken as given, rescaled horizon [0,1] (PDF pp. 8-11); the numerical
+  sections are convergence verification and Bondi-calibration reproduction,
+  not empirical or out-of-sample evidence (PDF pp. 39-41). Source-quality note
+  — rigorous v1 theory preprint, proofs complete in text (Appendix A, PDF
+  pp. 42-64), journal-complete references; citable as a construction, later
+  version to be checked before formal citation.
+
+  Killed-if-wrong stands in the note: had the coefficient map (Eq. 55, PDF
+  pp. 24-25) been imported into any programme spec or tolerance, the
+  construction's machine assumptions would have been baked into a kill line
+  before data; had the convergence been read as evidence that the venue is
+  near-critical or that leverage arises from asymmetric tick sizes, a pure
+  construction would have been laundered into a market-truth claim.
+  Library-is-ammunition and nothing-measured prevented both. Laundering
+  directions named: INTO — nothing, no coefficient enters any spec, default,
+  calibration, tolerance, or generative null; OUT — never read backwards as
+  "markets are nearly unstable" (assumed), "leverage comes from asymmetric
+  arrival rates and tick sizes" (a non-identifiable attainability
+  construction), or "the numerical figures show market behavior" (simulation
+  quality).
+
+Ratification queue after this session: TWENTY-SEVEN candidate sharpenings,
+unchanged (deep-read session 36 earned none; docs/DECISIONS_PENDING.md
+untouched this session), zero armed. T1 remains armed awaiting the owner's
+word; the blocked list stays blocked. Deep-read queue pointer: the next
+UNREAD triage entry is "Quantifying reflexivity in financial markets:
+towards a prediction of flash crashes" (score 30, xf29859), taking score
+order among the remaining unclaimed entries. Nothing measured, no kill line
+moved, nothing armed, nothing trades live.
+
+## 45. Null-time session 41 (2026-11-19): deep-read session 37 — the Filimonov-Sornette branching-ratio reflexivity paper read after three selection collisions; default grade, nothing queued; renumbered once at append time
+
+- **Renumber declaration (honest-error protocol, offset honored):** this session was
+  drafted as log entry ## 44 / null-time session 40 / deep-read session 36, but the
+  parallel rough Hawkes–Heston slot merged its supersession PR first (now log entry
+  ## 44, null-time session 40, deep-read session 36), so this session renumbered to
+  ## 45 / null-time session 41 / deep-read session 37 at append time. No numbering of
+  any other session was overwritten.
+- **Selection trail, declared (no duplicate work, supersessions recorded):** this
+  slot was pre-assigned Maciejewski, "Packets, Transactions and Queues" (score 34,
+  xc5ba34), verified already covered on main (null-time session 31, deep-read
+  session 23, default grade) and NOT re-read. The standing queue's next UNREAD
+  pointer, TradeFM (score 31, xe7dc7f), was verified claimed by other slots and
+  landed as deep-read session 33. This slot then read Mahseredjian, "Diffusive
+  Limit of Hawkes Driven Order Book Dynamics With Liquidity Migration" (score 31,
+  x5db64b), verified uncovered at read time, and pushed a complete note plus one
+  candidate sharpening as PR #199 — but a parallel slot landed THE SAME PAPER as
+  deep-read session 34 (log entry ## 42, default grade, nothing queued) with a
+  landing entry that pre-declares late duplicate landings superseded, so PR #199
+  was closed unmerged (supersession comment recorded on the PR; nothing from that
+  branch landed). This session then read the next UNREAD entry, Wang, Wu and Zhu,
+  "Microstructural Foundation for the Rough Hawkes–Heston Model" (score 30,
+  xd08813, rank 32), verified uncovered at read time — but before this session
+  pushed anything, another slot was verified holding an OPEN PR covering the same
+  slug, which has since landed as log entry ## 44, deep-read session 36,
+  superseding this slot's read copy by the same declared rule; per the
+  no-duplicate rule this session DID NOT push its xd08813 note and took the next
+  UNREAD entry at re-read time: Filimonov and Sornette, "Quantifying reflexivity
+  in financial markets: towards a prediction of flash crashes" (score 30,
+  xf29859, rank 33 of the triage queue, the entry the landed ## 44 also names as
+  its next pointer), verified uncovered before the read — no note among the 37
+  notes on main in paper/research/library/, no open PR covers the slug.
+  Note: `paper/research/library/2026-11-19_reflexivity_flash_crashes_branching_deep_read.md`.
+- **Grade:** NO kill line changed. NO candidate sharpening queued — default grade.
+  The paper is empirical, but everything that matters in it is a worked exhibit for
+  rules already standing (the near-critical regime-disclosure rule, the
+  boundary-solution rule, the estimator-mode and W-ladder registers, the per-branch
+  rule, the conditioning-window discipline, the sealed-prediction standard for
+  precursor claims, and the L0 gate's timestamp discipline), and its strongest
+  content is the external design precedent for the C8 A3 shuffled-arrival placebo.
+  docs/DECISIONS_PENDING.md is untouched this session.
+- **Findings, page-cited, all reinforcing existing rules:** (1) the branching
+  ratio is a kernel- and window-bound estimator output: exponential kernel,
+  constant background, MLE in 10/20/30-minute windows, with KS goodness-of-fit
+  rejections rising steeply in the window ladder — 0.12% at 10 minutes, 1.64% at
+  20, 12.64% at 30, and more than 50% at one hour (PDF pp. 10-11), the
+  rejections attributed to intraday non-stationarity breaking the constant-
+  parameter assumption; and the authors' own concession that short-window
+  truncation biases n downward and misattributes endogenous events to the
+  background µ (PDF p. 14, citing the truncation effect) — the n ≈ 0.3 (1998) to
+  0.7-0.8 (post-2007) regime history is a function of the estimator mode and the
+  kernel family (the Hardiman-Bouchaud power-law-kernel critique of this very
+  estimator is already on the programme's shelf), so no fitted n from any single
+  mode may serve as calibration, tolerance, or expected value on the programme's
+  venue, and any near-critical reading must disclose kernel family and window
+  ladder before interpretation. (2) the paper's own placebo — Poissonize intra-day
+  event times while preserving the price trajectory, daily volume and daily event
+  counts, then re-run the identical estimator and watch n collapse (PDF pp. 13-14,
+  Fig. 4D inset) — is an external worked precedent for the exact shape of the C8
+  A3 shuffled-arrival amendment: destroy temporal-excitation structure, keep
+  everything else, the reading must die; cited as design precedent only, never as
+  evidence about any market the programme measures. (3) the "precursor" claim is
+  two anecdotes, not a forecast: the April 27 vs May 6, 2010 contrast (matched
+  4.7x vs 5.3x volume multiples; n flat vs n spiking to 0.95 at 14:45 EST, PDF
+  pp. 15-16, Fig. 5) has no base rate, no coverage analysis, no false-alarm
+  accounting and no out-of-sample test — the title's "towards a prediction" is
+  honest, and under the programme's standard a precursor claim is admissible only
+  from the sealed-prediction record; this paper may never be cited as evidence
+  that a branching rise precedes anything on the programme's venue. (4) timestamp
+  handling is a one-way disclosure exhibit: CME data rounded to the nearest
+  second, up to 194 simultaneous mid-price changes per second on the flash-crash
+  day, "solved" by randomly redistributing simultaneous events within each second
+  under an assumed within-second independence (PDF pp. 9-10), validated only by
+  simulation of the fitted model itself — a placebo that tests the estimator under
+  its own null, not the market's within-second structure; the programme's L0
+  100-timestamp audit is the stricter standing discipline and this paper's
+  assumption may never be cited as precedent for relaxing it. (5) venue and
+  instrument specificity: E-mini S&P 500 CME futures, 1998-2010, the single
+  most-active quarterly contract (96.7% of volume), second-grain data, human-plus-
+  early-algorithmic era; the mid-price-change event definition differs from any
+  programme event definition a spec may declare (the label-conditioning family
+  governs the declaration), and the C5 frozen-book regime is invisible to this
+  model by construction — a queue-frozen book stops generating mid-price changes
+  and mechanically distorts any event-count estimator, and the authors never
+  address it.
+- **Killed-if-wrong stands in the note:** read as "more than 70% of price moves are
+  endogenous since 2007" imported as background truth, a single-venue, kernel- and
+  window-conditional estimate would have become a market law; read as "markets are
+  approaching criticality, so trade the approach," a descriptive regime history
+  would have become a predictive claim the paper never tested; read as "branching
+  readings can anticipate crashes," a two-event contrast with no base rate would
+  have bypassed the sealed-prediction record — the only instrument through which
+  a precursor claim is admissible. The standing rules prevented all three.
+- **Source-quality note:** two authors (ETH Zürich), arXiv v2 stamped April 2012
+  (dated November 27, 2011), the published Quantitative Finance record NOT checked
+  at reading — verify before formal citation; 2.43 billion CME records, 298.6
+  million transactions, 24.4 million mid-price change events inside Regular
+  Trading Hours, second-rounded timestamps (PDF p. 4); estimation-error discipline
+  honest and in-text (bootstrap standard deviations for n declining from
+  0.13-0.18 in 1998 to 0.05-0.15 by 2010, PDF p. 10); the reference list reads
+  internally consistent at reading. Built on Hawkes 1971 and Bowsher 2007;
+  the known critiques of this estimator line (Power-law kernels, timestamp
+  discretization, queueing interpretation) live in the programme's existing
+  shelf lineages and the register already governs their lesson.
+- Sovereignty: the paper licenses nothing; nothing measured, nothing armed,
+  nothing trades live.
+
+Ratification queue after this session: TWENTY-SEVEN candidate sharpenings,
+unchanged (deep-read session 37 earned none; docs/DECISIONS_PENDING.md untouched
+this session), zero armed. T1 remains armed awaiting the owner's word; the
+blocked list stays blocked. Deep-read queue pointer: the next UNREAD triage
+entry is "Branching ratio approximation for the self-exciting Hawkes process"
+(score 30, x36082b), subject to the parallel fan-out's collision checks; with the
+session-9 triage-audit flag on record, rank is a candidate reading, and the
+owner's library policy governs when they diverge. Nothing measured, no kill line
+moved, nothing armed, nothing trades live.
