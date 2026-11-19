@@ -6422,3 +6422,4 @@ live tail before reading. The next work-selecting session's non-deep-
 read choice, per edition 3's guidance: GOALS.md G2, the
 ratification-readiness briefs, in service of the directorate's first
 sitting.
+__ENTRY__
