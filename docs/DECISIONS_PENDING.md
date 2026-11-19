@@ -72,3 +72,17 @@ deleted next update)
   inverted (booked in the ledger); T2 **tested-fail** at its kill line.
 - ~~T1 ledger booking~~ — **DONE**: "survives all five kill lines, SIGN
   INVERTED" travels with the row.
+- ~~Goal-autonomy standing order~~ — **MADE 2026-11-19** (your dated chat
+  directive, recorded here as made at your instruction): installed as
+  `docs/goal_autonomy_protocol.md`; the landing push arrived corrupted and
+  was repaired and extended the same day — goal state **edition 2** (each
+  open front with entry criteria, what it feeds, and its own gate),
+  task-type **rotation guidance**, the **weekly directorate** convention
+  (one short owner sitting batch-ratifying or killing proposals). Granted
+  scope: sessions freely select among the goal-state fronts, write notes,
+  run descriptive-only analysis on cached data, and update the goal state
+  with proposals through a dated synthesis pass. Carve-outs unchanged and
+  owner-only: arming, amendment signatures, data/budget/holdout spend,
+  kill lines, frozen constants, the sealed C7 panel, sharpening
+  approvals, anything that trades. Nothing queued by this change; the
+  ratification queue stands at twenty-nine plus probe E1, zero armed.
