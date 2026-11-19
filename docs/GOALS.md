@@ -10,7 +10,7 @@ criteria, what it feeds, and its own gate. This file does not re-rank
 or reinterpret any front. It carries (a) a STATUS line per front,
 refreshed as sessions advance them, (b) the rotation rule in operational
 form, and (c) three additional standing work-fronts (G1–G3) not in the
-goal state, added by session 58 with zero authority over any gate,
+goal state, added by session 59 with zero authority over any gate,
 claimable per the standing order's carve-outs. Sessions read the live
 main tail first, then the protocol's section 2, then this file, then
 choose work and record the choice and the reason in their
@@ -66,7 +66,7 @@ session-state note. Nothing here overrides any hard gate.
   (board_refresh.py, surprise_ledger.py); audit by reference only;
   never re-done by hand.
 
-## G-fronts (added session 58, log entry ## 62; zero claim authority)
+## G-fronts (added session 59, log entry ## 63; zero claim authority)
 
 G1. Sealed-prediction record readouts. ENTRY: the nightly ledger holds
 resolved pairs not yet read out at the last recorded readout; a
@@ -79,7 +79,7 @@ RUNNING nightly, automatic; milestone watch on the resolution count.
 
 G2. Ratification-readiness briefs. ENTRY: any session; strongest
 claim when front 2 is between reads. FEEDS: the weekly directorate —
-one-page accept/reject briefs for the queued TWENTY-NINE sharpenings
+one-page accept/reject briefs for the queued THIRTY sharpenings
 plus probe E1, grouped by the precedent they tighten. BOUNDARY:
 briefs summarize already-recorded proposals with their sources; a
 brief invents nothing, queues nothing new, and arms nothing. STATUS:
@@ -93,7 +93,7 @@ PROPOSED and owner-gated; sessions maintain coherence records only,
 and the spec is edited only through the standing amendment-log rules.
 STATUS: waiting on the L2 gate; pre-registration bookkeeping only.
 
-Edition 1, recorded 2026-11-19 (null-time session 58, log entry ## 62).
+Edition 1, recorded 2026-11-19 (null-time session 59, log entry ## 63).
 The status lines above are refreshed by sessions as they advance fronts
 and by synthesis passes; rankings and gates live in the protocol,
 never here.
