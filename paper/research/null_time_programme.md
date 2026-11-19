@@ -2904,3 +2904,70 @@ blocked list stays blocked. Deep-read queue pointer: the next UNREAD
 triage entry is "TradeFM: A Generative Foundation Model for
 Trade-flow and Market Microstructure" (score 31, xe7dc7f). Nothing
 measured, no kill line moved, nothing armed, nothing trades live.
+
+## 41. Null-time session 37 (2026-11-19): deep-read session 33 — the TradeFM foundation-model paper read; default grade, nothing queued
+
+- **Library deep-read session 33** (the standing queue's next UNREAD
+  pointer, score 31, xe7dc7f, consumed here):
+  `paper/research/library/2026-11-19_tradefm_deep_read.md` on Maxime
+  Kawawa-Beaudan, Srijan Sood, Kassiani Papasotiriou, Daniel Borrajo and
+  Manuela Veloso (J.P. Morgan AI Research), "TradeFM: A Generative
+  Foundation Model for Trade-flow and Market Microstructure"
+  (arXiv:2602.23784v1, 27 February 2026): a 524M-parameter decoder-only
+  Transformer trained on 10.7B trade-event tokens from >9K US equities,
+  February 2024 through September 2025, with scale-invariant features —
+  interarrival time, log volume, price depth relative to an
+  Exponentially-Weighted VWAP estimate of the unobserved mid-price, price
+  level relative to the day's open (PDF pp. 4-6), a mixed-radix composite
+  trade token, vocabulary 16,384, bin edges calibrated on the first 30 days
+  only and then frozen (PDF pp. 5-6, 20), executed in a closed-loop
+  deterministic price-time-priority simulator (PDF pp. 7-8), and evaluated
+  by stylized-fact reproduction and distributional fidelity against
+  Zero-Intelligence and Compound Hawkes baselines, with claimed 2-3x lower
+  distributional error and moderate zero-shot APAC perplexity degradation
+  (PDF pp. 8-11, 24). Read against the ONE question. **Grade: NO kill line
+  changed. NO new candidate sharpening.** Findings (page-cited in the
+  note): the frozen-calibration discipline — bin edges calibrated once in
+  the first 30 days and never re-fit across the nine held-out months, with
+  drift openly reported — reinforces the programme's own pre-fixed-
+  conditioning rule (PDF pp. 4-6, 20, 24-27); the EW-VWAP mid estimator,
+  introduced because the mid is unobserved and argued to beat rolling VWAP
+  and plain EMA, reinforces the already-queued estimator-mode register
+  candidate, a worked example that a headline corporate result is itself
+  conditional on a disclosed-never estimator choice (PDF pp. 4-5, 15-17);
+  the paper's own admission that its bid-ask-spread fidelity is worse than
+  the Hawkes baseline because the spread emerges from the simulator's
+  deterministic matching logic, with full model-versus-simulator
+  disentanglement named as future work, is recorded as an interpretation
+  caution: simulator-emergent book and spread quantities are partially
+  artifacts of matching rules, and nothing in the paper tests the
+  incrementality of Layer-2 book information over trade-flow information,
+  so it can never be cited either way against C1-L2 (PDF p. 10); the
+  engineered scale-invariance (bps features, log volume, log interarrival,
+  three-bin ADV liquidity conditioning) reinforces the programme's
+  normalization rules while the zero-shot APAC transfer remains a corporate
+  empirical claim, ammunition at most (PDF pp. 5-6, 10-11); and a
+  source-quality note: an industry paper, arXiv v1, no journal record
+  checked at reading, proprietary data, model and simulator, no code or
+  data release, JP Morgan disclaimer denying investment-research status —
+  graded exactly as method discipline and caution, never evidence (PDF
+  pp. 1, 9-10, 12, 24).
+- **Counterfactual logged in the note**: without the one-question and
+  ammunition-not-evidence rules this is the paper most likely to have
+  demotivated C1-L2 itself — a 524M-parameter trade-flow model "capturing
+  microstructure" could have been cited to relax the L2 claim de facto;
+  and the simulator-artifact admission shows how simulator-conditioned
+  stylized facts launder into market evidence when discipline is absent.
+- **Cautions**: all quantitative results conditional on proprietary
+  J.P. Morgan data and an in-house simulator, not independently
+  verifiable as published; arXiv v1, published version to be checked
+  before formal citation; INTO/OUT laundering directions named in the
+  note, full scope boundaries there.
+
+Ratification queue after this session: TWENTY-SIX candidate sharpenings
+(unchanged; nothing joined and nothing armed through deep-read session
+33), zero armed. T1 remains armed awaiting the owner's word; the blocked
+list stays blocked. Deep-read queue pointer: the next UNREAD triage entry
+is "Diffusive Limit of Hawkes Driven Order Book Dynamics With Liquidity
+Migration" (score 31, x5db64b). Nothing measured, no kill line moved,
+nothing armed, nothing trades live.
