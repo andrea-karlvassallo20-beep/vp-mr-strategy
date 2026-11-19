@@ -82,4 +82,47 @@ with the log entry recording the change). Nothing else edits it.
 At session start, after re-reading the live main tail and the branch/PR set (the main-wins race protocol is unchanged):
 
 1. Default: if the standing deep-read ritual has a readable UNREAD head, the session may run it, exactly as codified. Nothing is revoked.
-2. Cadence rule: if five or more deep-read sessions have landed since the current goal-state edition, the session runs the synthesis pass FIRST (as its own session, or before its read ⅒ьݸщ䁕ѡȁ݅䤰ѡɕɕ́͡ѡ͑єѡѥՕ̸(̸=ٕɉɕ聄͕͍䁍Չ͑ѕєɕЁɅѥ(5ɥٕIյхѥаѽɕEȤ=91dݥѠ(ɕɑɕͽѥѼѡٔ$ЁЈ́Ё(ɕͽ쀉ѡͥѡͥ́E͌ၽ͕͌`ȀѡŕՔ(́еѡɕ́ݕɔ̸͕(иQьɕͽɔɕЁѡѽѡ͕͍́(щ䰁ѡ͕͍͑єє́ɔՑх쁄̨ɉȁɕɑ́܁щ䰁ٕȁѕ(Ըͅ聥ѡ́Iѽ́չɕչEɍȨѕɹ䁥ͥ͑аѡ͕͍ɕ́ѡᕐ͑ɥѕ(ɕɑ́ѡՉMɕѕ٥ȁ́Ёѽ(ѡձаٕȁɕqЁȁи((иQͥѡͥ́E͌()]ЁЁ̰ɑȨ((ĸÍѡ͐ٔɅɤѕ́͐ѡIɅ́ɕ͑ɕ(́̀EUȽɕ͕ɍŽɽѕ͑}́(ݽɽѕɅѥ}́ήɽ}ɽͥѡͥͽ́ѡ(ɕ͑̀̽ɕ}͐(̽Ʌɤ}щ|Ԁ9}щ}͍ɕ̹ͽ(ȸ9́L聙ɽьѡŕՔ́ЁٕȀQ́ѕɴ(͑ɕѕɔŕѥ͍̰ɽ͌ɭЁ0Ȥщѥ́Ш啐ѡɕɐ(̸5䁁ɽՍѡɽ՝ѡ᥍ѥͅѥ̨єщ(ѥ̀EUɌ1Idͥѡɕ}ͥѽɤ́ɕ͑́ȨхՕ́䃊P܁ŕͥѥ́ɕݹȵѕє(͡Ɂ̀ŕՕѼ̽%M%=9M}A9%9Uȁѡ͑(ɕ̃Pѡ=91dЁѡЁٕȁɕٕ́ɽ͕͍I(I}́ͅȁѡၱɅѽɤѡᐁ͑єѥ(и1́э́ьݸձѥщ䰁ѥѱ́ͥѡͥ́E͌(ݥѠьIՍьյɅѕ()!ɐьչ聄ͥѡͥ́E͕͌ɕ́ѡɵ́ѡ)ѕ́Ʌɤ%9Q<䁍Uѡ%9Q<=UPչɥɕ́)ѡٕ͑́%Ё́ɔq͑0ЁمՅѥ͑8((ԸMхمɥьɕ͑ѕٕɤ((U1PMMU5AQ%=8聑ɔ́쁑ՉIٕȁ̸ٕ(9ѡ͕ɕՑͥѡɽ镸ѕ̬ٕ쁹ѡ(ɵ쁹ѡщ́ٔ쁹Ր́Ёչȁ䁙Ʌ(A䁱쁕ɉɌɕɑ́܁щ̬ݥ́Ʌ̸(Q͐ɕ}ɑ͍q̨͑ѥٔɕ͕ьɔ̨̬ѡ́ͥѱ䁑ɽA(
+2. Cadence rule: if five or more deep-read sessions have landed since the current goal-state edition, the session runs the synthesis pass FIRST session, before any deep-read that sitting.)
+
+<!-- REPAIR NOTE 2026-11-19: the text from this point down is a
+     reconstruction, not the original landing. The landing commit
+     17c4035 truncated this file: the original cut off mid-sentence
+     (section 3, item 2, stopped at "(as its own ") and was followed by
+     roughly 712 bytes of binary mojibake; the rest of section 3 and
+     section 4 were lost. The reconstruction is built strictly from the
+     installing session's own record of this protocol's design (log
+     entry ## 58 in paper/research/null_time_programme.md) and the
+     repair is logged as a corrigendum (log entry ## 59). The owner's
+     ratification (chat directive, 2026-11-19) is unaffected and
+     unabridged. Intact original text above this marker is preserved
+     verbatim. -->
+
+3. Overrides: a session departs from the default mode (the deep-read
+   ritual) or the cadence rule only with a reason recorded in its
+   session-state note, tied to the written backlog above.
+4. Fail-safe: if this protocol file is unreachable, unreadable, or
+   internally inconsistent, the session falls back to the fixed
+   deep-read ritual and logs the defect. Nothing in this file licenses
+   any departure from the hard gates: every hard gate in the log binds
+   every mode.
+
+## 4. The synthesis pass
+
+The synthesis pass names gaps: it reviews the programme's recorded
+state against the registered specs and the reading lists, and states
+what evidence the programme still lacks, which catalogued papers carry
+it, which sharpenings the reading has earned, and what the next
+edition of the goal state (section 2) must say. It measures nothing,
+arms nothing, and launders nothing INTO any spec. Its products move
+ONLY through the sanctioned channels:
+
+- new catalogued-paper triage candidates for the deep-read queue;
+- sharpening candidates to the ratification queue
+  (docs/DECISIONS_PENDING.md), PENDING OWNER RATIFICATION as always;
+- probe proposals inside the exploratory channel
+  (docs/exploratory_channel.md);
+- the next dated edition of the goal state (section 2), per the
+  edition rule above.
+
+A synthesis pass is logged like any other session: which gaps it
+named, where each proposal landed, and the queue count after it.

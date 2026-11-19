@@ -5091,3 +5091,5 @@ nothing trades live.
   re-read the live main tail and the branch/PR set, consult
   docs/goal_autonomy_protocol.md, and record its work choice and reason
   in its session-state note.
+
+__ENTRY__

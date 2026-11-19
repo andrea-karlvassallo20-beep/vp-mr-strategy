@@ -33,9 +33,21 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: twenty-nine
+  library deep-reads and the ratified exploratory channel: thirty
   candidates through deep-read 49 plus probe E1; most recently joined
-  2026-11-19, the dynamics-identification rule for generative nulls
+  2026-11-19, the corrupt-landing sweep for the integrity guard (a
+  third check beside the marker sweep and the library honesty audit:
+  any tracked text file whose content shows a printable-ratio collapse
+  or C0-C1 control bytes beyond tab/newline/CR in any contiguous region
+  fails the sweep, with the legally acquired PDF extracts under
+  docs/library/text/ explicitly scoped out as expected extraction
+  artifacts; harder-to-pass because every future landing must prove
+  its text is text — the motivating incident, caught only by hand,
+  is the goal-autonomy protocol file landing truncated with a binary
+  mojibake tail on 2026-11-19, which the marker sweep could not see
+  and which decodes as valid UTF-8, so the sweep must be ratio-based,
+  not decodability-based; see the corrigendum, log entry ## 59).
+  Before that, the dynamics-identification rule for generative nulls
   (pre-declared flow-dynamics statistics beside the static marginals;
   static- or invariant-distribution match alone inadmissible for any
   null, placebo, or simulator used as a refutation instrument),
