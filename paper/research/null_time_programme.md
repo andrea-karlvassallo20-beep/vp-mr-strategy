@@ -5669,3 +5669,156 @@ noted), and record its work choice and reason in its session-state note.
   and must record its work choice and reason in its session-state
   note. Nothing measured, no kill line moved, nothing armed, nothing
   trades live.
+
+## 64. Null-time session 60 (2026-11-19): GOALS.md installed as the goal-state status board with three zero-authority work-fronts; the encoding-sanity gap in the integrity guard closed with tests; NO kill line changes, nothing queued by this session, nothing armed
+
+Session-state note (the work choice and its reason, per the
+conductor protocol section 3, landed edition — the rotation
+guidance's first exercise): owner directive, in chat, 2026-11-19,
+refining the goal-autonomy grant into its concrete configuration.
+Race chain, declared honestly and completely, all five collisions:
+(1) this session first drafted the configuration as a ## 59 of its
+own and lost the race to the parallel corrigendum ## 59 (PR #225;
+abandoned, never pushed). (2) It rebuilt the configuration on the
+repaired v2 protocol as a ## 60 of its own and lost the race to the
+parallel configuration landing ## 60 (PR #228; the owner's four-point
+configuration, goal state edition 2, rotation guidance, the weekly
+directorate, the standing order recorded MADE; that session also
+explicitly held the guard's encoding-sanity gap at candidate status
+for the next infrastructure session). (3) With the staging legs
+pushed, the log-leg re-read found the parallel deep-read 50 landed as
+## 61 (PR #231, Glosten-Milgrom), consuming the ## 61 number and the
+x0d8b2a pointer; this session renumbered. (4) With the log staged
+and CI green, the merge refused on a moved main: the parallel
+disposition leg of the session-55 repair race had landed as ## 62 on
+its own third rebase (PRs #227 and #230 closed unmerged,
+supersessions recorded), taking the ## 62 number and session 58 and
+queueing the corrupt-landing sweep as the THIRTIETH candidate
+sharpening; this session renumbered a third time, rebuilt the log on
+the ## 62 tail, and pushed. (5) While that head's CI ran, main
+advanced a fifth time: the parallel deep-read 51 landed as ## 63 (PR
+#234, the Wang-Xu-Zhu Hawkes microfoundation for multitype
+inverse-Gaussian subordinators), taking the ## 63 number, session 59,
+and the xf77014 pointer, and this session's sandbox working tree was
+wiped by an environment reset in the same window (recovered from the
+pushed branch, nothing lost — all pushes predate the reset and match
+byte-verified content). Per main-wins, every landed leg stands; this
+entry is the FOURTH renumber: ## 64 / null-time session 60, queue
+count and cross-references adopted from the live tail, deep-read
+pointer adopted as xb710f4 per the landed ## 63's record. This
+session is itself an instance of the slot-race pattern the
+disposition named; its contribution to the shared tooling
+failure-mode census is recorded below. Precedents: the exploratory
+channel (## 25), the conductor installation (## 58), the corrigendum
+(## 59), the configuration landing (## 60), the mid-flight renumber
+landing (## 61), the disposition landing (## 62), the second
+deep-read landing (## 63).
+
+Installed, one landing, four changes. (1) docs/GOALS.md, edition 1 —
+the status board. The conductor protocol's section 2 (goal state
+edition 2) is the ranking authority: numbered fronts 1–8, each with
+entry criteria, what it feeds, and its own gate. GOALS.md does not
+re-rank or reinterpret any front; it carries a STATUS line per front
+(the operative bookkeeping the rotation guidance needs: what is
+blocked, what is ready, when the synthesis pass is due), the rotation
+rule in operational form (a due synthesis — front 4 — first; then the
+lowest-numbered ready front least recently advanced; deep-read is one
+front among the others, not the automatic default; fail-safe to the
+fixed ritual), and three G-fronts, added this session with ZERO claim
+authority: G1 sealed-prediction record readouts (the named, dated
+readout due at ~100 resolutions; descriptive bookkeeping of an
+already-running instrument), G2 ratification-readiness briefs
+(one-page accept/reject briefs for the queued THIRTY sharpenings plus
+probe E1 for the weekly directorate; a brief invents nothing, queues
+nothing, arms nothing), G3 C8 skeleton coherence (preparation records
+only; A1–A5 stay PROPOSED and owner-gated). The front-2 status line
+is written against the post-## 63 pointer state.
+(2) The protocol gained a section 8 cross-reference amendment
+recording the GOALS.md install and the guard closure; sections 1–7
+stand verbatim on main, byte-verified against the live file before
+each push. (3) src/integrity_guard.py: the encoding-sanity check named
+in ## 59 and held at candidate status by ## 60 is implemented —
+guard check 3 rejects U+FFFD replacement characters, non-UTF-8 byte
+sequences, and non-printable control characters in docs/*.md and
+paper/research/*.md (the ## 59 scope), with strict UTF-8 decode.
+Honest scope, stated plainly: this closes the replacement-character
+and control-byte half of the named gap; it does NOT implement the
+corrupt-landing sweep the disposition leg queued as the thirtieth
+candidate (printable-ratio collapse detection) — that sharpening
+stands PENDING OWNER RATIFICATION and is not built here, because a
+queued tightening waits for the owner's word and its exact thresholds
+are fixed in ratification; check 3 additionally does not certify
+decodability as semantic validity (the disposition's own datum). The
+failure class that produced the corrupted protocol is a red build
+now; tests planted in tests/test_integrity_guard.py (replacement
+character, control bytes, invalid UTF-8, legitimate unicode allowed,
+the clean-tree case); the guard's usage text and clean line updated.
+(4) This log entry.
+
+What the standing order does NOT grant, restated because it is the
+load-bearing line: no arming, no ratifying, no kill-line movement, no
+sealed-panel touch, no trading, and no citation of descriptive outputs
+as evidence. The grant expands the task list; it does not move a
+single gate. The ratification queue stands untouched by this session.
+
+Branch-processing note, by the honest-error protocol: this session's
+working branch (conductor/fronts-manifest-2026-11-19) carries a
+truncated intermediate push from its first staging — the initial
+GOALS.md commit's payload was cut mid-file (an earlier draft's front
+F5), caught by the post-push verification, confined to the branch,
+never on main, and corrected in the next branch commit; the
+squash-merge carries only the final verified content. Also recorded:
+two run-time failures in the first staging leg (an inverted
+race-check assertion and an invalid create_branch argument) aborted
+before any mutation. Three further fail-stops, none reaching the
+repo: (a) a hand-carried base64 payload failed its in-run decode
+verification twice (decoded length 6970 against an expected 7579;
+the assertion held both times, nothing was pushed — the fix was to
+stop hand-carrying payloads entirely and read the staged files from
+the working tree inside the run, keeping the verify-then-push order);
+(b) a wrong endswith assertion on GOALS.md checked a footer that was
+not the file's last line (the abort was the assertion's error, not
+the file's; corrected against the actual tail); (c) the first
+merge-attempt window closed on the moved main twice, resolved by
+rebasing this note's numbering each time. The sandbox environment
+reset between CI polls mid-leg was survived by re-fetching every
+artifact from the pushed branch and live main rather than from local
+state; all pushed content predates the reset and was verified before
+it. The pushed files are the disk-verified bytes.
+
+Verified BEFORE every push: the integrity guard (now three checks)
+run on the assembled tree — clean, exit 0 (conflict-marker sweep,
+library provenance audit, encoding sanity); all fourteen test
+functions in tests/test_integrity_guard.py executed and passed
+(pytest is not installable in this sandbox; the functions were driven
+directly in a temporary-tree harness, the same assertions CI will
+run); the fronts' statuses cross-checked against the live tail and
+dashboard this session (post-## 62 queue count THIRTY, confirmed
+unchanged by the landed ## 63; T1/T2 statuses; watchlist window;
+post-## 63 next-UNREAD pointer xb710f4; the C1-L2/C8 gates); the
+landed protocol, dashboard, disposition, and deep-read entries read
+from main before this session's artifacts were re-based on them.
+
+Not changed: nothing measured, no kill line moved, nothing armed,
+nothing trades live. The ratification queue after this session:
+THIRTY candidate sharpenings plus probe E1 — advanced by the
+parallel ## 62 disposition (the corrupt-landing sweep, the
+thirtieth), NOT by this session, which queues NOTHING;
+docs/DECISIONS_PENDING.md untouched by this session per the rule.
+T1 remains armed awaiting the owner's word in its booked state; T2
+tested-fail; the blocked list stays blocked. The deep-read queue
+pointer: the next UNREAD entry in triage order is "Application of
+Hawkes volatility in the observation of filtered high-frequency
+prices" (score 28, xb710f4), with x0d8b2a consumed by the landed
+## 61 and xf77014 consumed by the landed ## 63; behind it
+"Self-exciting price impact via negative resilience in stochastic
+order books" (score 28, x77c554), both per the landed ## 63's
+pointer record; the successor recomputes the tail against the live
+triage file. Two deep-read sessions (50, 51) have landed since
+goal-state edition 2; the synthesis pass (front 4) is not yet due
+at five. A successor session must re-read the live main tail and
+the branch/PR set, consult the conductor protocol (sections 2, 3,
+6, 7, 8) and docs/GOALS.md, choose a front per the rotation rule
+under the standing order, and record the choice and the reason in
+its session-state note. Nothing measured, no kill line moved,
+nothing armed, nothing trades live.

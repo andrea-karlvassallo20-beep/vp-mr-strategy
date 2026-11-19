@@ -83,3 +83,37 @@ def test_audit_accepts_honest_synthesized_label(tmp_path):
         "paper). Verify against library source before production.\n"
     )
     assert integrity_guard.audit_library(tmp_path) == []
+
+
+def test_encoding_clean_on_curated_trees():
+    problems = integrity_guard.check_encoding_sanity(REPO_ROOT)
+    assert problems == [], f"Encoding corruption in curated trees: {problems}"
+
+
+def test_encoding_flags_replacement_character(tmp_path):
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "bad.md").write_text(
+        "fine\n\ufffd fine\n", encoding="utf-8"
+    )
+    problems = integrity_guard.check_encoding_sanity(tmp_path)
+    assert len(problems) == 1 and "U+FFFD" in problems[0]
+
+
+def test_encoding_flags_control_bytes(tmp_path):
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "ctl.md").write_bytes(b"fine\x00\x01fine\n")
+    problems = integrity_guard.check_encoding_sanity(tmp_path)
+    assert len(problems) == 1 and "U+0000" in problems[0]
+
+
+def test_encoding_flags_invalid_utf8(tmp_path):
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "raw.md").write_bytes(b"trailing \xc3\n")
+    problems = integrity_guard.check_encoding_sanity(tmp_path)
+    assert problems == ["docs/raw.md: not valid UTF-8"]
+
+
+def test_encoding_allows_em_dash_and_unicode(tmp_path):
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "ok.md").write_text("fine — éΦ好 ok\n", "utf-8")
+    assert integrity_guard.check_encoding_sanity(tmp_path) == []
