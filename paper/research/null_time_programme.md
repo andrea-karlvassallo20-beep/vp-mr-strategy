@@ -2912,3 +2912,84 @@ measured, no kill line moved, nothing armed, nothing trades live.
   Findings, page-cited: reinforcing, no new item — the paper makes no predictive claim and its own success criterion is a null in disguise: fidelity evaluation only (PDF pp. 8-10, Tables 2-3), rollouts reproducing near-zero return autocorrelation (PDF pp. 1-2, 8-9, Figure 4), so generative plausibility and predictivity are disjoint and no fidelity metric is ever citable as support for any programme feature, with the generative-null family the same placebo territory C8 A3's shuffled-arrival amendment already occupies; nothing new queued. Interpretation caution — the zero-shot geographic result (US-trained perplexity overlapping China and Japan, PDF pp. 10-11, Figure 5; Table 6, PDF p. 24) is a token-perplexity claim, never out-of-sample economic predictive value, and is never citable in any SMH universality or cross-market argument. Cost-survival ammunition — the counterfactual 10x-flow injection stress tests and replay-validated simulator (PDF pp. 21-24, 26, 29, Figures 11, 17) matter only if a K7-style cost-survival layer ever exists, and that layer must carry the paper's own admitted generator-simulator entanglement (PDF p. 10) plus spread honesty: the spread is the one quantity where the explicit-interarrival baseline beats the learned generator (PDF p. 10, Table 3). Reinforcing, no new item — rollout scale is 1,024 events, about 2-5 minutes for high-liquidity assets (PDF p. 8), so nothing in the paper speaks to daily-grain boards or multi-week forward windows. Source-quality note — industrial-lab capability report, J.P. Morgan AI Research, arXiv v1 stamped 27 February 2026, no journal record checked at reading, proprietary data so no external replication, internal baselines, limitations honestly stated in-text (PDF p. 10); graded as a well-executed generative-simulation report with no market-truth claim metabolized. Killed-if-wrong: if the programme had read "a deep model learns order flow across 9K stocks and whole geographies" as support for universality or for extractable predictive structure, it would have laundered a simulation-quality metric into a market-truth claim; the guard is the standing library-is-ammunition rule plus the sealed-prediction ledger, and the only addition this read earns is the narrowly mechanistic discretization disclosure component above. Standing caveat: proprietary US equities data, penny-tick USD microstructure, no crypto, no BTCUSDT; all bin edges, perplexity figures, distances, scaling exponents and architecture choices are dataset- and venue-specific; the RL execution and multi-agent sections are execution-strategy content and are never operationalized. Laundering directions named: INTO — the discretization mechanism, the fidelity-versus-predictivity distinction and the perplexity-is-not-evidence caution enter only as preregistration discipline; OUT — TradeFM's fidelity tables, geographic-transfer perplexity and stylized-fact figures are never cited as expected behavior of any market the programme measures and never as evidence that any programme feature carries information.
 
 Ratification queue after this session: TWENTY-SEVEN candidate sharpenings (the twenty-six standing plus the discretized-conditioning declaration rule joined here through deep-read session 33), zero armed. T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read queue pointer: the next UNREAD triage entry is "Diffusive Limit of Hawkes Driven Order Book Dynamics With Liquidity Migration" (score 31, x5db64b). Nothing measured, no kill line moved, nothing armed, nothing trades live.
+## 42. Null-time session 38 (2026-11-19): deep-read session 34 — the pre-assigned paper found already covered; TradeFM found claimed; the diffusive-limit Hawkes-migration paper read; the covariance-projection control queued
+
+- **Substitution, declared (no duplicate work):** this slot was pre-assigned
+  Maciejewski, "Packets, Transactions and Queues: Design Principles for HFT
+  Systems from a Measurement Study of CME Market Data" (score 34, xc5ba34).
+  Verified at session start: a deep-read note and a log entry for that slug
+  already exist on main (null-time session 31, deep-read session 23, default
+  grade, note `2026-11-18_packets_transactions_queues_deep_read.md`), so the
+  pre-assigned paper was NOT re-read. This slot's verification found the
+  standing queue's next UNREAD pointer, TradeFM (score 31, xe7dc7f), claimed
+  by two other slots' open PRs (both readings have since landed on main as
+  deep-read session 33); per the no-duplicate rule this session took the next
+  UNREAD entry after it — "Diffusive Limit of Hawkes Driven Order Book
+  Dynamics With Liquidity Migration" (Levon Sarkis Mahseredjian,
+  arXiv:2511.18117v1, triage score 31, slug x5db64b, rank 31 of the triage
+  queue). Verified before the read: no note for the slug among the 34
+  existing notes in paper/research/library/ and no open PR covers it.
+  Note: `paper/research/library/2026-11-19_diffusive_hawkes_migration_deep_read.md`.
+- **Grade:** NO kill line changed. ONE candidate sharpening queued, PENDING
+  OWNER RATIFICATION: **the covariance-projection control for
+  spatial-propagation readings** — the paper proves that under stable
+  multivariate Hawkes flow the entire mesoscopic cross-level queue
+  covariance is a projection of the event-count covariance (ΣX = C ΣN C^T,
+  Eq. 20, PDF p. 15; ΣN = (I − K)−1 diag(Λ̄) (I − K)−⊤ from the branch
+  kernel, Eq. 19, PDF pp. 14-15), while spatial migration enters only the
+  DRIFT (the Laplacian coupling term, Thm 4.1 and the limiting reflected
+  SDE, PDF pp. 10-14): cross-level depth co-movement in covariance carries
+  zero spatial information — a common branching structure manufactures
+  level-correlated queue fluctuations through the incidence matrix with no
+  migration mechanism at all. Pre-declaration text: any C1-L2 L2-arm or C8
+  arm that cites cross-level depth covariance as liquidity migration, depth
+  reinforcement, or spatial propagation must first declare and control the
+  temporal-excitation projection channel: an excitation-only null (per the
+  already-queued per-branch rule, bootstrap CIs) must fail to reproduce the
+  cited cross-level structure before a spatial reading is admissible; a
+  spatial reading that does not survive the projection null is recorded as
+  projection, never as migration. Harder to pass: a depth-coupling feature
+  must now survive an excitation-projection null, not only the
+  shuffled-arrival and sign placebos; it hardens the queued market-book
+  first-PC factor (C8 A5) and the queue-state conditioning rule by naming
+  the exact mathematical channel through which common-factor laundering
+  enters the second moments.
+- **Findings with page cites in the note:** (1) the scaling limit exists
+  only under a fixed two-tick spread (Section 3.1, PDF p. 7) — a moving
+  spread changes the queue-vector dimension and breaks the limit's
+  tightness conditions, a venue-model exhibit reinforcing the queued
+  queue-label convention declaration rule and the const-queuing-period
+  risk-set rule: fixed tick indices are an existence condition for
+  cross-level statements, not bookkeeping; (2) migration is built symmetric
+  toward and away from the mid (PDF p. 9) while the queue-reactive
+  literature's front-vs-rear priority asymmetry says real relocation is
+  asymmetric — the Laplacian is a model choice, never a market law, and no
+  coefficient transfers; (3) the branch kernel determines both the
+  stationary mean rates (Eq. 7, PDF p. 7) and the fluctuation covariance
+  (Eq. 19, PDF pp. 14-15) — a worked exhibit for the per-branch rule: an
+  estimator-mode change moves every downstream moment together; (4) source
+  quality: entirely theoretical, no data, no calibration (abstract, PDF
+  p. 1; future research, PDF pp. 16-17), single author, arXiv v1, and two
+  internal citation inconsistencies flagged in the note ([4] vs [9] share
+  one arXiv number; [5] vs [12] share another under different titles) so
+  none of the record's citations to that lineage may trust this paper's
+  reference list.
+- **Killed-if-wrong:** if a C1-L2 depth feature ever cited cross-level
+  covariance as spatial migration without the projection null, pure
+  endogenous event flow would have been booked as a spatial market
+  mechanism — a theorem-backed artefact, regime-stable-looking, untouched by
+  label placebos because it lives entirely in the features. The full
+  counterfactual and laundering directions are in the note.
+- Sovereignty: a theory paper licenses nothing; nothing measured, nothing
+  armed, nothing trades live.
+
+Ratification queue after this session: TWENTY-EIGHT candidate sharpenings
+(the twenty-seven standing plus the covariance-projection control joined here
+through deep-read session 34), zero armed. T1 remains armed awaiting the
+owner's word; the blocked list stays blocked. Deep-read queue pointer: the
+next UNREAD triage entry after this session's read is "Microstructural
+Foundation for the Rough Hawkes-Heston Model" (score 30, xd08813), subject
+to the parallel fan-out's collision checks; with the session-9
+triage-audit flag on record, rank is a candidate reading, and the owner's
+library policy governs when they diverge. Nothing measured, no kill line
+moved, nothing armed, nothing trades live.

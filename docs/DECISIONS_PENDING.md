@@ -33,12 +33,15 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: twenty-seven
-  candidates through deep-read 33 plus probe E1; most recently joined
+  library deep-reads and the ratified exploratory channel: twenty-eight
+  candidates through deep-read 34 plus probe E1; most recently joined
   2026-11-19, the discretized-conditioning declaration component (bin
   scheme and count, calibration window, outlier rule, imputation rule)
   for the pre-registration declaration family, one level more general
-  than the queue-label convention component joined 2026-11-18.
+  than the queue-label convention component joined 2026-11-18, and joined here through deep-read 34, the
+  covariance-projection control for spatial-propagation readings
+  (cross-level depth covariance is excitation projection by default; a
+  spatial mechanism is citable only past an excitation-only null).
   Zero armed; your word is the only trigger. Enumerated with sources in
   `paper/research/null_time_programme.md` (latest section).
 
