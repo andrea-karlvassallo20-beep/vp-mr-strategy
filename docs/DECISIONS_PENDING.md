@@ -33,14 +33,16 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: twenty-seven
-  candidates through deep-read 33 plus probe E1; most recently joined
-  2026-11-19, the reference-estimator declaration (estimator functional
-  and smoothing-constant disclosure for reference-normalized features,
-  from the TradeFM deep-read); previously the queue-label convention
-  (reference-price tie-break) declaration component for the C1-L2
-  L2-arm queue-state conditioning rule. Zero armed; your word is the
-  only trigger. Enumerated with sources in
+  library deep-reads and the ratified exploratory channel: twenty-nine
+  candidates through deep-read 49 plus probe E1; most recently joined
+  2026-11-19, the dynamics-identification rule for generative nulls
+  (pre-declared flow-dynamics statistics beside the static marginals;
+  static- or invariant-distribution match alone inadmissible for any
+  null, placebo, or simulator used as a refutation instrument),
+  tightening the placebo and generative-null design precedents (the
+  ## 45 synthetic-rebuttal precedent and the C8 A3 shuffled-arrival
+  placebo).
+  Zero armed; your word is the only trigger. Enumerated with sources in
   `paper/research/null_time_programme.md` (latest section).
 
 ## 3. Library and supplies
