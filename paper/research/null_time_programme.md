@@ -5169,3 +5169,91 @@ must re-read the live main tail and the branch/PR set, consult
 docs/goal_autonomy_protocol.md (v2, corrigendum-noted), and record its
 work choice and reason in its session-state note. Nothing measured, no
 kill line moved, nothing armed, nothing trades live.
+
+## 60. Null-time session 56 (2026-11-19): the same corruption independently found mid-repair, the parallel corrigendum superseded my duplicate repair (PR #226 closed); the owner's four-point configuration THEN completed on the repaired protocol — goal state edition 2, rotation guidance, the weekly directorate, the standing order recorded as MADE; NO kill line changes, nothing queued, nothing armed
+
+- Session-state note (declared before anything else): work selected under
+  docs/goal_autonomy_protocol.md section 3, reason recorded. This session
+  independently found the protocol file corrupted on main (verified by
+  byte-level reads: sections 1-2 intact, then encoding garbage through
+  the tail; 5,663 bytes) and staged a full repair plus integration of the
+  owner's same-day four-point configuration on a branch
+  (vibe/goal-autonomy-repair; PR #226, CI green, byte-verified). The
+  staged log entry was numbered ## 59 from a fresh main tail. MID-FLIGHT,
+  the merge returned 405: a parallel slot had landed its own corrigendum
+  (PR #225, commit 1c4274b, log entry ## 59, protocol repaired as v2 with
+  a verbatim-vs-reconstruction boundary note, goal state edition 1
+  untouched). Racing-slot division of labour per the main-wins protocol:
+  first-landed governs; PR #226 was closed as superseded, its repair is
+  discarded, and THIS session re-based on the landed v2 protocol. What
+  remains of this session's original selection, and what it lands here:
+  the corrigendum did NOT integrate the owner's four-point configuration,
+  which is the remainder of the directive this session had taken as a
+  front; it is landed cleanly on top of the repaired file below.
+- The parallel corrigendum is CONFIRMED, not merely accepted: this
+  session's independent byte evidence agrees with entry ## 59's
+  diagnosis (corrupt region from mid-section 3, garbage to EOF, section
+  4 absent). The integrity-guard scope gap (sweeps conflict markers and
+  library provenance; does not check encoding health) was named
+  independently by both slots; it stands as a candidate improvement for
+  the next infrastructure session, zero status, NOT implemented. The
+  read-side file truncation this session hit while staging the first
+  push (the file-read used to stage the log truncated at ~64K chars;
+  caught by post-push verification, re-pushed whole and byte-verified
+  via the blob API) is recorded as a second, distinct tooling failure
+  mode the guard also does not cover; same named-gap status, nothing
+  implemented.
+- The owner's four-point configuration, installed on the repaired
+  protocol (docs/goal_autonomy_protocol.md, amendment note section 7,
+  all edits traceable to the 2026-11-19 chat directive): (1) goal state
+  EDITION 2 (section 2 replaced whole; the facts block
+  verbatim-unchanged): the ranked open fronts now numbered 1-8 — the
+  gated L2 window, the deep-read queue, the misses curriculum (the
+  honest 2x2), the synthesis pass, exploratory-channel probes, the
+  website honesty pass, the macro-timeline backfill, instrument upkeep —
+  each carrying ENTRY CRITERIA, what it FEEDS, and its own decision
+  GATE, per the owner's explicit configuration; the edition rule amended
+  to admit the owner's direct dated instruction (edition 2's authority
+  is the owner's same-day message; edition 1 preserved in entry ## 58);
+  (2) ROTATION GUIDANCE (director policy item 3; former items
+  renumbered): the deep-read default is the floor, not the target; work
+  type rotates across the fronts; choice and reason recorded in the
+  session-state note (this session and entry ## 59 are the first two
+  instances); (3) THE WEEKLY DIRECTORATE (new section 6, a convention,
+  not a session power): one short owner sitting batch-ratifies or kills
+  proposals; sessions keep the ranking ready and change nothing outside
+  it; (4) THE STANDING ORDER RECORDED AS MADE in
+  docs/DECISIONS_PENDING.md, per the owner's explicit instruction
+  ("recorded in DECISIONS_PENDING as made"): the resolved-heartbeat
+  entry records the granted scope (free selection among goal-state
+  fronts, notes, descriptive-only analysis on cached data, goal-state
+  proposals through dated editions) and the unchanged owner-only
+  carve-outs (arming, amendment signatures, data/budget/holdout spend,
+  kill lines, frozen constants, the sealed C7 panel, sharpening
+  approvals, anything that trades). The queue count and every BLOCKED
+  item in the dashboard are byte-identical otherwise.
+- Verified BEFORE the push: the integrity guard run on the assembled
+  tree — "Integrity guard: clean — no conflict markers, all library
+  provenance labels honest.", exit 0; the amended protocol checked
+  byte-level (non-ASCII characters are only the record's em/en dashes
+  and the ≥ sign; all seven sections present; sections 1, 4, 5 untouched
+  from the landed v2); the goal-state facts block cross-checked against
+  the live main tail this session (TWENTY-NINE sharpenings plus probe E1
+  in ## 58's tail and ## 59's closing block; T1 armed awaiting the
+  owner's word, sign inverted; T2 tested-fail; the watchlist open until
+  2027-01-11; next-UNREAD pointer unchanged); this log entry appended to
+  the fresh main copy carrying the corrigendum (59 sections read back
+  from the landed merge before writing).
+- Not changed: nothing measured, no kill line moved, nothing armed,
+  nothing trades live. The ratification queue after this session:
+  TWENTY-NINE candidate sharpenings plus probe E1 (unchanged — this
+  session queued NOTHING); zero armed; T1's booked state untouched; the
+  blocked list stays blocked. No deep-read consumed; the deep-read queue
+  pointer is unchanged: the next UNREAD entry remains "From
+  Glosten-Milgrom to the whole limit order book and applications to
+  financial regulation" (score 29, x0d8b2a); behind it "A Hawkes
+  Microfoundation for Multitype Inverse Gaussian Subordinators" (score
+  29, xf77014). A successor session must re-read the live main tail and
+  the branch/PR set, consult docs/goal_autonomy_protocol.md (edition 2,
+  corrigendum-noted), and record its work choice and reason in its
+  session-state note.
