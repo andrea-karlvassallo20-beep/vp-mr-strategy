@@ -1,6 +1,6 @@
 # Pending owner decisions — the thirty-second dashboard
 
-**Maintained by the null-time sessions. Last updated: 2026-11-18 (audited
+**Maintained by the null-time sessions. Last updated: 2026-11-19 (audited
 against the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
 Every item below is BLOCKED ON YOUR WORD — nothing runs, arms, or merges
@@ -33,12 +33,13 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: twenty-six
-  candidates through deep-read 32 plus probe E1; most recently joined
-  2026-11-18, the queue-label convention (reference-price tie-break)
-  declaration component for the C1-L2 L2-arm queue-state
-  conditioning rule. Zero armed; your word is the only
-  trigger. Enumerated with sources in
+  library deep-reads and the ratified exploratory channel: twenty-seven
+  candidates through deep-read 33 plus probe E1; most recently joined
+  2026-11-19, the discretized-conditioning declaration component (bin
+  scheme and count, calibration window, outlier rule, imputation rule)
+  for the pre-registration declaration family, one level more general
+  than the queue-label convention component joined 2026-11-18.
+  Zero armed; your word is the only trigger. Enumerated with sources in
   `paper/research/null_time_programme.md` (latest section).
 
 ## 3. Library and supplies
