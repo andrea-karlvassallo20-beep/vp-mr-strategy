@@ -2912,3 +2912,116 @@ measured, no kill line moved, nothing armed, nothing trades live.
   Findings, page-cited: reinforcing, no new item — the paper makes no predictive claim and its own success criterion is a null in disguise: fidelity evaluation only (PDF pp. 8-10, Tables 2-3), rollouts reproducing near-zero return autocorrelation (PDF pp. 1-2, 8-9, Figure 4), so generative plausibility and predictivity are disjoint and no fidelity metric is ever citable as support for any programme feature, with the generative-null family the same placebo territory C8 A3's shuffled-arrival amendment already occupies; nothing new queued. Interpretation caution — the zero-shot geographic result (US-trained perplexity overlapping China and Japan, PDF pp. 10-11, Figure 5; Table 6, PDF p. 24) is a token-perplexity claim, never out-of-sample economic predictive value, and is never citable in any SMH universality or cross-market argument. Cost-survival ammunition — the counterfactual 10x-flow injection stress tests and replay-validated simulator (PDF pp. 21-24, 26, 29, Figures 11, 17) matter only if a K7-style cost-survival layer ever exists, and that layer must carry the paper's own admitted generator-simulator entanglement (PDF p. 10) plus spread honesty: the spread is the one quantity where the explicit-interarrival baseline beats the learned generator (PDF p. 10, Table 3). Reinforcing, no new item — rollout scale is 1,024 events, about 2-5 minutes for high-liquidity assets (PDF p. 8), so nothing in the paper speaks to daily-grain boards or multi-week forward windows. Source-quality note — industrial-lab capability report, J.P. Morgan AI Research, arXiv v1 stamped 27 February 2026, no journal record checked at reading, proprietary data so no external replication, internal baselines, limitations honestly stated in-text (PDF p. 10); graded as a well-executed generative-simulation report with no market-truth claim metabolized. Killed-if-wrong: if the programme had read "a deep model learns order flow across 9K stocks and whole geographies" as support for universality or for extractable predictive structure, it would have laundered a simulation-quality metric into a market-truth claim; the guard is the standing library-is-ammunition rule plus the sealed-prediction ledger, and the only addition this read earns is the narrowly mechanistic discretization disclosure component above. Standing caveat: proprietary US equities data, penny-tick USD microstructure, no crypto, no BTCUSDT; all bin edges, perplexity figures, distances, scaling exponents and architecture choices are dataset- and venue-specific; the RL execution and multi-agent sections are execution-strategy content and are never operationalized. Laundering directions named: INTO — the discretization mechanism, the fidelity-versus-predictivity distinction and the perplexity-is-not-evidence caution enter only as preregistration discipline; OUT — TradeFM's fidelity tables, geographic-transfer perplexity and stylized-fact figures are never cited as expected behavior of any market the programme measures and never as evidence that any programme feature carries information.
 
 Ratification queue after this session: TWENTY-SEVEN candidate sharpenings (the twenty-six standing plus the discretized-conditioning declaration rule joined here through deep-read session 33), zero armed. T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read queue pointer: the next UNREAD triage entry is "Diffusive Limit of Hawkes Driven Order Book Dynamics With Liquidity Migration" (score 31, x5db64b). Nothing measured, no kill line moved, nothing armed, nothing trades live.
+
+
+## 42. Null-time session 38 (2026-11-19): deep-read session 34 — the diffusive-limit liquidity-migration paper read; default grade, nothing queued
+
+- **Library deep-read session 34** (the standing queue's next UNREAD
+  pointer, score 31, x5db64b, consumed here):
+  `paper/research/library/2026-11-19_diffusive_limit_hawkes_migration_deep_read.md`
+  on Levon Sarkis Mahseredjian (solo author), "Diffusive Limit of
+  Hawkes Driven Order Book Dynamics With Liquidity Migration"
+  (arXiv:2511.18117v1 [q-fin.MF], v1 stamped 22 November 2025,
+  title page October 2025): an entirely theoretical mesoscopic LOB
+  model — each side a vector of integer queues indexed by tick
+  distance from a fixed mid under a constant two-tick spread
+  (PDF pp. 7-8), limit arrivals, cancellations-plus-market-removals
+  and a new event class, unit-volume migration between neighbouring
+  price levels, all with multivariate Hawkes exponential-kernel
+  intensities (PDF pp. 8-9); under diffusive rescaling (time by n,
+  queues by root n, PDF pp. 10-11) the rescaled generator is
+  Taylor-expanded (PDF pp. 11-13) and converges to a reflected
+  diffusion with normal reflection at zero (Theorems 4.1 and 5.1,
+  PDF pp. 11, 13-14), per-level drift and state-dependent diffusion
+  coupled across levels by a discrete Laplacian term with
+  Hawkes-modulated strength, the footprint of the migration events
+  (PDF pp. 5, 9, 14); the mesoscopic covariance then follows from
+  the multivariate Hawkes FCLT, (I-K)^-1 diag(Lambda-bar)
+  (I-K)^-transpose mapped through an incidence matrix C (PDF
+  pp. 14-15, eqs. 19-20), under the stability condition
+  spectral radius(K) < 1 stated twice (PDF pp. 7, 15); no
+  empirical calibration anywhere, deferred to future research (PDF
+  pp. 1, 16-17). Read against the ONE question.
+  **Grade: NO kill line changed. NO new candidate sharpening.**
+  The paper carries no empirical claim at all, so nothing in it
+  can kill C1-L2 or C8 faster or change a kill line, and nothing
+  earns a harder-to-pass amendment beyond the declaration family
+  already standing in the queue.
+
+  Findings, page-cited: reinforcing, no new item — the Laplacian
+  coupling is a second corpus, at one remove, for the queue-state
+  conditioning family's premise: even in a zero-intelligence
+  Hawkes world a per-level reading is structurally incomplete
+  without the adjacent levels, the migration mechanism existing
+  precisely because liquidity state propagates across levels (PDF
+  pp. 11, 14, eq. 18); the Laplacian never enters any spec and no
+  parameter transfers. Reinforcing, no new item — the fixed-spread
+  mid-anchored coordinate grid is assumed exactly because moving
+  labels break the machinery: the author states plainly that
+  without the constant spread the queue vectors change dimension
+  and the scaling-limit regularity and tightness conditions fail
+  (PDF pp. 7-8), the queue-label convention lesson (deep-read 32)
+  restated from the modelling side; the already-queued declaration
+  components cover it and nothing here tightens them. Reinforcing,
+  no new item — the covariance derivation is a sibling of the
+  branching-ratio lesson sealed into the math layer: the
+  (I-K)^-1 amplification is the same near-criticality
+  magnification the Hawkes branching family uses (PDF pp. 14-15),
+  and a misread beta-family kernel would inflate the estimated
+  covariance exactly as the deep-OFI beta factor was caught;
+  the standing guard covers it. Interpretation caution — the
+  paper's derivation is asserted at joints and licenses no
+  numerical or structural expectation on any market: the
+  equilibrium intensity expansions (eqs. 12-14, PDF p. 11) are
+  assumed with the effective coefficients declared "determined by
+  the Hawkes kernels (see Section 6)" while Section 6 derives only
+  the FCLT covariance, not sigma-squared, f, g or the migration
+  baseline; Theorem 4.1 is stated before the Section-5 machinery
+  it rests on, with the theorem's tightness and uniqueness claims
+  delegated to a section that derives the limit generator; key
+  algebraic steps are asserted as "one checks" (PDF p. 12); any
+  future citation of this lineage must cite the assumption stack,
+  never the theorems as facts about books. Source-quality note —
+  solo-author arXiv v1 under a month old at reading, no journal
+  record or peer review checked; an acknowledged assembly of
+  Hambly-Kalsi-Newbury, Hambly-Ledger, Horst-Paul, Ethier-Kurtz and
+  Bacry-Gaiffas-Muzy, with the novel element the symmetric
+  Hawkes-modulated migration events and their Laplacian footprint
+  (PDF pp. 4-5, 12-13); graded as a young-theorist theoretical
+  draft, coherent in intent, incompletely verified at joints, zero
+  empirical content, honest about the calibration debt (PDF
+  pp. 16-17); published version to be checked before formal
+  citation. Killed-if-wrong: if the programme had read a
+  diffusion-limit theorem as a statement about markets, it would
+  have imported two silent assumptions as properties of BTCUSDT —
+  that mid-anchored queue labels form a stable grid (an assumption
+  the author freezes the spread to guarantee, failing by
+  construction wherever the spread moves), and that liquidity
+  migration is a symmetric neighbour-coupling with Hawkes-decaying
+  strength (a mechanism invented for tractability with no
+  empirical corpus anywhere); a future C1-L2 or C8 arm citing
+  either as motivation would have laundered a modelling
+  convenience into a market-truth claim, foreclosed by the standing
+  queue-label convention declaration and the
+  library-is-ammunition caveat without any new rule. Standing
+  caveat: entirely theoretical, zero calibration, zero data, zero
+  forecasting content; constant two-tick spread, fixed mid, unit
+  order and cancellation sizes, FIFO queues, exponential kernels,
+  symmetric migration, large-tick asset framing (PDF pp. 7-9); no
+  crypto, no BTCUSDT, no futures, no anonymous flow. Laundering
+  directions named: INTO — nothing enters any spec, default or
+  calibration; the only residue is corroboration already covered.
+  OUT — the Laplacian term, the migration mechanism, the theorems,
+  the covariance expressions and any implication that queue
+  dynamics are diffusive at any horizon are never cited as
+  expected behavior of any market the programme measures, never as
+  expected BTCUSDT book behavior, and never as evidence that any
+  programme feature carries information.
+
+Ratification queue after this session: TWENTY-SEVEN candidate
+sharpenings (unchanged; nothing queued here), zero armed. T1
+remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue pointer: the next UNREAD triage entry is
+"Quantifying Reflexivity in Financial Markets" (score 30,
+xf29859). Nothing measured, no kill line moved, nothing armed,
+nothing trades live.
