@@ -3904,3 +3904,189 @@ reflexivity in financial markets: a Hawkes process analysis"
 (score 30, xdc14f4); a successor session must re-read the live main
 tail and the branch/PR set before consuming anything. Nothing
 measured, no kill line moved, nothing armed, nothing trades live.
+
+## 50. Null-time session 46 (2026-11-19): deep-read session 42 — the Hardiman-Bercot-Bouchaud critical-reflexivity power-law rebuttal read; FS-HBB disagreement logged in both directions; default grade, nothing queued
+
+- **Session-state note (declared before the read)**: this session
+  began from log entry ## 49's closing pointer, which names xdc14f4
+  "Critical reflexivity in financial markets: a Hawkes process
+  analysis" (score 30) as the next unclaimed UNREAD. Before
+  consuming, the live main tail, docs/DECISIONS_PENDING.md and the
+  branch/PR set were re-read: zero open pull requests, no deep-read
+  note for the slug on main. Two branch names matched a reflexivity
+  pattern (null-read/2026-11-19-reflexivity-slot9 and its -v2); both
+  were inspected via the authenticated contents API and are stale
+  remnants of the landed ## 45 — their logs end at entry ## 45
+  (224,447 chars, pre-## 48 state) with no claim on xdc14f4 — so
+  the pointer checked out and the entry was consumed with no skips.
+  DECISIONS_PENDING re-read confirms: T1 executed under the owner's
+  authorization, survived all five kill lines with its sign
+  inverted, booked in the ledger; T2 tested-fail; ratification
+  queue twenty-seven, zero armed. Integrity guard clean before the
+  read. No numbering race: main was verified unmoved (262,003
+  chars, ## 49 count 1, no ## 50) immediately before the push.
+
+- **Library deep-read session 42** (next unclaimed UNREAD entry,
+  score 30, xdc14f4, consumed here):
+  `paper/research/library/2026-11-19_critical_reflexivity_powerlaw_hawkes_deep_read.md`
+  on Stephen J. Hardiman, Nicolas Bercot and Jean-Philippe Bouchaud
+  (Capital Fund Management, Paris), "Critical reflexivity in
+  financial markets: a Hawkes process analysis" (arXiv:1302.1405v2
+  [q-fin.ST], stamped 5 Jun 2013): the direct rebuttal line to the
+  landed ## 45 Filimonov-Sornette reflexivity finding. Mid-price
+  changes of the E-mini S&P futures 1998-2011 fitted as a Hawkes
+  process with a power-law kernel with exponential short-lag cutoff
+  (sum-of-exponentials approximation, Eq. (12), PDF pp. 3-4), on
+  non-overlapping two-month windows with U-shape detrending
+  (Eq. (15), PDF p. 4) and millisecond timestamps randomised within
+  the millisecond (PDF pp. 4-5): the branching ratio n fluctuates
+  around the critical value 1 for the entire fourteen years (Fig. 1,
+  PDF p. 4) while the high-frequency cutoff tau0 shrinks roughly
+  exponentially (Moore's-law comparison) and mu stays near constant
+  apart from crisis spikes, the residual positive mu attributed to
+  the kernel tail beyond the two-month window (PDF p. 5). The
+  decisive experiment (Fig. 2, PDF p. 5): synthetic power-law
+  Hawkes processes generated critical by construction (mu = 0.02,
+  epsilon = 0.15, n = 1.0, tau0 varying as estimated) and analysed
+  with the Filimonov-Sornette procedure (exponential kernel,
+  30-minute windows, within-second randomisation) reproduce the
+  spurious subcritical rising n exactly. Non-parametric kernel
+  estimation confirms the power-law shape (epsilon of roughly 0.15
+  in 1998, 2006, 2009, Fig. 3, PDF pp. 5-6); residual analysis in
+  transformed time gives KS distances 0.011 (1998) and 0.031 (2009)
+  with the caveat that enormous point counts reject any small
+  misspecification (PDF p. 6); Detrended Fluctuation Analysis finds
+  two regimes, H of roughly 0.63 below about 1000 s and H of
+  roughly 0.95 above (Fig. 5, PDF pp. 6-7), implying a second
+  slower kernel regime epsilon of roughly 0.45 (Fig. 6, PDF p. 7),
+  so the kernel is a two-power-law object, about tau^(-1.15)
+  crossing to tau^(-1.45) around 1000 s (PDF pp. 7-8), with the
+  crossover scale itself dependent on the event definition (10-20
+  minutes for the event-rate DFA versus about one day for
+  five-minute absolute returns). The authors conjecture the
+  critical scenario common to most actively traded markets and
+  state plainly that a mechanism for precise criticality is
+  still lacking (PDF p. 8); the stationary critical reading
+  requires mu = 0 (Bremaud-Massoulie without-ancestors processes,
+  PDF pp. 2-3). Pure empirics, single venue; extract complete,
+  page-marked, 9 pp., read in full; no inaccessibility, no shelf
+  gap. Read against the ONE question. **Grade: NO kill line
+  changed. NO new candidate sharpening.** Default grade; the paper
+  is a worked exhibit for registers already standing and the
+  burden of proof for a sharpening was not met. Findings,
+  page-cited:
+
+  Reinforcing, no new item — the synthetic rebuttal experiment
+  (Fig. 2, PDF p. 5) is the strongest single worked exhibit in the
+  record for the estimator-mode register: a published trend (the
+  ## 45 rising subcritical n) is reproduced exactly from data
+  generated with the opposite truth, the artifact traced to three
+  spec choices — short-memory kernel family, windows shorter than
+  the kernel's reach, timestamp randomisation; also a design
+  precedent for estimator-refutation placebos (generate from a
+  known truth, run the challenger's pipeline, the artifact must
+  reproduce) beside the ## 45 Poissonisation precedent and the C8
+  A3 shuffled-arrival shape, cited as design precedent only;
+  nothing added, the register stands. Interpretation caution —
+  the headline n of roughly 1 is boundary-sitting and its
+  conditions travel with it: two-month windows shorter than the
+  kernel's reach, residual mu positive while the stationary
+  critical reading needs mu = 0 (the gap attributed to window
+  truncation and never resolved, PDF pp. 2-5), and an estimate
+  within a few percent of the boundary sits exactly where the ##
+  48 Appendix-B bias discipline operates (sample-length-dependent
+  downward bias of the branching MLE near 1); any "market is
+  critical" import must disclose window, kernel family, timestamp
+  treatment and the mu artifact, rules already standing, no queue
+  change. Interpretation caution — the criticality argument runs
+  one way: long-range dependence of the event rate forces n = 1
+  (the auto-covariance relation, Eqs. (5)-(7), PDF p. 2), but an
+  estimated n near 1 does not by itself prove long memory; the
+  paper's chain runs through the non-parametric kernel and the DFA
+  two-regime structure (Figs. 3, 5, PDF pp. 5-7), exponent
+  relations binding only inside 0 < epsilon < 1/2 (Eqs. (8)-(11),
+  (18)); no citation may reverse the direction of the inference.
+  Reinforcing, no new item — timestamp handling is the same
+  one-way disclosure exhibit as ## 45's (within-millisecond
+  randomisation, PDF pp. 4, 6), with the 1998 sub-second
+  oscillations in the non-parametric kernel declared a
+  data-collection artifact, not noise (PDF p. 6): sub-grain data
+  artifacts survive into published estimates and must be audited
+  at intake; the L0 100-timestamp audit stays the stricter
+  discipline, this paper's assumption may never be cited as
+  precedent for relaxing it. Reinforcing, no new item — the
+  two-regime kernel (epsilon of roughly 0.15 below about 1000 s,
+  of roughly 0.45 above, crossover scale definition-dependent,
+  PDF pp. 6-7) is a kernel-family register exhibit in both
+  directions at once: on short-memory ACD data the ## 48 session
+  watched a fitted power law collapse to an exponential-like
+  shape, on long-memory data this paper watched the exponential
+  miss a two-regime power law; kernel shape as fitted is a
+  property of the data's memory class, window, event definition
+  and binning, no kernel shape from any single fit is ever
+  citable; the register stands. Source-quality note — three
+  authors from a fund, single venue, single instrument, the same
+  C5 blind spot recorded for ## 45 (a queue-frozen book stops
+  generating mid-price changes, the frozen-book regime invisible
+  to this event definition by construction and unaddressed),
+  universality across markets an explicit conjecture not a result
+  (PDF p. 8); arXiv v2 stamped 5 Jun 2013 against an odd
+  "(Dated: November 27, 2024)" header, journal record NOT checked
+  at reading, published version and the Filimonov-Sornette
+  reply/rejoinder line to be checked before formal citation.
+
+  Killed-if-wrong stands in the note: had "markets are critical
+  and have always been" been imported as background truth, a
+  single-venue, event-definition-conditional, window-conditional
+  estimate sitting on the boundary where its own estimator's bias
+  is largest would have become a market law and every future
+  excitation argument would start from an assumed criticality; had
+  the landed ## 45's rising-n finding stayed on the record without
+  this rebuttal logged next to it, the library would carry the
+  challenged number without the challenge; had the synthetic
+  rebuttal been over-read as a blanket distrust of parametric
+  Hawkes fits, a specific mechanism (short-memory kernel, short
+  windows, timestamp jitter on long-memory data) would have hardened
+  into a universal claim the paper does not support (its own MLE
+  and non-parametric routes agree, Fig. 3). The estimator-mode
+  register, the near-critical disclosure rule and
+  library-is-ammunition prevented all three, in both directions
+  of the disagreement. Standing caveat: single venue, single
+  instrument, mid-price-change event definition, every number
+  conditional on the two-month-window power-law mode and the
+  U-shape detrending; mu positive in every fit while the
+  stationary critical reading needs mu = 0; the mechanism for
+  precise criticality missing by the authors' own statement.
+  Laundering directions named: INTO — nothing, no branching value,
+  kernel exponent, cutoff, Hurst exponent, DFA procedure,
+  power-law family or criticality reading enters any spec,
+  default, calibration, tolerance or generative null, and the
+  critical-versus-subcritical disagreement in the literature may
+  not be settled on the programme's side by preference — both
+  lines are model-relative, venue-specific artifacts until
+  measured on the programme's own venue and fields under
+  owner-ratified pre-declared rules; OUT — never read backwards as
+  "markets are provably critical" (boundary-sitting estimate,
+  window-truncation artifact in mu, no mechanism), "reflexivity is
+  constant, only its timescale shrinks" (single-venue,
+  mode-conditional comparison), or "exponential kernels are wrong"
+  (family-matching artifact, not a universal).
+
+Ratification queue after this session: TWENTY-SEVEN candidate
+sharpenings, unchanged (deep-read session 42 earned none;
+docs/DECISIONS_PENDING.md untouched this session), zero armed. T1
+was executed under the owner's authorization on the second aggTrades
+window and survived all five kill lines with its sign inverted,
+booked in the ledger; T2 tested-fail at its kill line; the blocked
+list stays blocked. Deep-read queue pointer: this session consumed
+the slot the landed ## 49's closing pointer names, xdc14f4, as log
+entry ## 50; the next unclaimed UNREAD entries (read-set recomputed
+by the established slug-and-normalized-title method against all
+notes on main after this session) are "Apparent criticality and
+calibration issues in the Hawkes self-excited point process model:
+application to high-frequency financial data" (score 30, xd18d70)
+and, behind it, "Sequence Classification of the Limit Order Book
+using Recurrent Neural Networks" (score 30, x0fd75a); a successor
+session must re-read the live main tail and the branch/PR set
+before consuming anything. Nothing measured, no kill line moved,
+nothing armed, nothing trades live.
