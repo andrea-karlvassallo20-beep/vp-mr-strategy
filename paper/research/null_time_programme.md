@@ -5043,3 +5043,51 @@ Gaussian Subordinators" (score 29, xf77014); a successor session must
 re-read the live main tail and the branch/PR set before consuming
 anything. Nothing measured, no kill line moved, nothing armed,
 nothing trades live.
+
+## 58. Null-time session 54 (2026-11-19): the goal-autonomy conductor protocol installed under the owner's standing directive; the first goal state recorded; NO kill line changes, nothing queued, nothing armed
+
+- Session-state note (declared before anything else): this is an
+  infrastructure and governance session, not a deep-read; precedent: the
+  null-time infrastructure sessions of 2026-11-16 and the exploratory
+  channel's installation (entry ## 25). The live main tail was re-read
+  before this write and is re-read again at push time (race protocol
+  unchanged); the open branch/PR set was re-read (the superseded duplicate
+  attempt PR #218 is closed and never merged, supersession recorded on
+  the PR). Owner directive, in chat, 2026-11-19: null-time sessions must
+  not merely repeat the standing deep-read task; they must select and
+  invent work that advances the programme toward the terminal goal, SMH.
+  This session translates that directive into a written protocol; the
+  directive is the ratification and is recorded here dated, following the
+  exploratory-channel precedent.
+- Installed: `docs/goal_autonomy_protocol.md`. The grant (selection and
+  invention of the next unit of null-time work, made against a written
+  goal state, reasons logged); the carve-outs, unchanged and owner-only
+  (arming, amendment signatures, data/budget/holdout spend, kill lines,
+  sharpening approvals — PENDING OWNER RATIFICATION stands); the goal
+  state, edition 1 (dated, recomputed from the live record this session;
+  editable only by a synthesis pass); the director policy (the default
+  ritual preserved; the synthesis cadence fires when five or more
+  deep-read sessions have landed since the current goal-state edition;
+  overrides only with a recorded reason tied to the written backlog; a
+  fail-safe falls back to the fixed ritual if the protocol file is
+  unreachable or inconsistent); and the synthesis pass (gap-naming
+  against the registered specs and the reading lists; products ONLY
+  through the sanctioned channels — catalogued-paper triage candidates,
+  sharpening candidates to the pending queue, probe proposals, the next
+  goal-state edition; measures nothing, arms nothing, launders nothing
+  INTO any spec). Autonomy is granted over the task list, not over
+  evidence: every hard gate in this log still binds every mode.
+- Verified BEFORE the push: the integrity guard run on the assembled
+  tree, both checks clean (marker sweep: no offenders; library honesty
+  audit: no problems), exit 0; the protocol's recorded facts
+  cross-checked against the live tail this session (queue count, T1/T2
+  status, watchlist window, ledger paths, next-UNREAD pointer).
+- Not changed: nothing measured, no kill line moved, nothing armed,
+  nothing trades live. The ratification queue after this session:
+  TWENTY-NINE candidate sharpenings plus probe E1 (unchanged ― this session
+  queued NOTHING); docs/DECISIONS_PENDING.md NOT touched this session,
+  per the rule. The deep-read queue pointer is unchanged: the next UNREAD
+  entry is "From Glosten-Milgrom to the whole limit order book and applications to financial regulation" (score 29, x0d8b2a); a successor session must
+  re-read the live main tail and the branch/PR set, consult
+  docs/goal_autonomy_protocol.md, and record its work choice and reason
+  in its session-state note.
