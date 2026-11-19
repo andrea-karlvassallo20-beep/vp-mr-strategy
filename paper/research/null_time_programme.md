@@ -4286,3 +4286,104 @@ in a limit order book" (score 29, x5f04ef); a successor session
 must re-read the live main tail and the branch/PR set before
 consuming anything. Nothing measured, no kill line moved, nothing
 armed, nothing trades live.
+
+## 52. Null-time session 48 (2026-11-19): deep-read session 44 — the Dixon LOB-RNN sequence-classification paper read; NO kill line changes, NO sharpening, nothing armed
+
+Paper: Matthew F. Dixon, "Sequence Classification of the Limit Order Book
+using Recurrent Neural Networks", arXiv:1707.05642v1 [q-fin.TR] (14 Jul 2017),
+legally acquired OA copy
+(docs/library/text/x0fd75a_sequence_classification_of_the_limit_order_book_us.txt,
+20 pp., page-marked, read in full). Next UNREAD triage-rank entry (score 30),
+selected per the previous session's pointer and re-verified unread against all
+library notes on main; no shelf gap, no inaccessibility. Read against ONE
+question: what here would kill C1-L2 faster, or change its kill lines?
+
+The paper in one paragraph: a 20-hidden-unit Elman RNN classifies the direction
+of the NEXT-EVENT mid-price flip on CME ESU6 level II data (August 2016,
+12:00-22:00 UTC) from a spatio-temporal feature set (5 book levels of prices,
+depths and order counts per side plus a heuristic ratio of recent market-buy/
+-sell order counts over the prior 50 observations to the resting best-level
+quantity, P = 32 features, sequence length 10; PDF pp. 7-11); roughly 99.9% of
+book-update observations carry a zero response, training sets are balanced by
+over/undersampling and evaluated on unbalanced daily test sets of order 1.5
+million observations under 3-day-train / 1-day-test cross-validation over 20
+days (PDF pp. 9-12); daily minority-class F1 is about 0.16-0.17 with recall
+about 0.83 but precision only about 0.09 (Table 2, PDF p. 11); recurrence is
+needed (T=1 to T=10 rises from about 0.09 to about 0.165 F1, degrading again
+by T=50-100; Table 3, PDF p. 12); the RNN beats logistic regression, a
+classification-adapted Kalman filter, elastic net and a feed-forward net on
+the same features, with a white-noise control (F1 about 0.007; Table 4, PDF
+pp. 13-14); hourly F1 is stable intra-day (Fig. 7, PDF pp. 15-16), decays
+secularly across the month without daily retraining yet remains "effective"
+(Fig. 8, PDF pp. 16-17), and ROC performance decays from the next-event
+horizon toward 1 s with an estimated 100-microsecond CPU inference time
+(Fig. 9, PDF pp. 16-17). The economic case is market-maker adverse-selection
+avoidance, un-costed (PDF pp. 3, 7, 18).
+
+Grade: NO kill line changes. NO new candidate sharpening. Findings, graded
+and page-cited, in the note
+(2026-11-19_lob_rnn_sequence_classification_deep_read.md):
+
+Reinforcing, no new item — price flips at book-update grain are extreme-rate
+events (about 99.9% zero response, PDF p. 9) with minority-class precision
+only about 0.09 at the paper's best (Table 2, PDF p. 11): another worked
+exhibit for the base-rate discipline; no rule moves. Reinforcing, no new item
+— the paper's own exhibit that liquidity imbalance helps direction but not
+timing, while the order-flow ratio helps next-event but not next-time
+prediction (PDF pp. 12-13), mirrors the programme's direction-versus-clock
+separation at event grain; no new claim licensed. Interpretation caution —
+balanced training with UNBALANCED natural-rate evaluation plus a noise control
+is the only honest pattern (PDF pp. 9, 11-14); any future L2 ML component must
+report the same triple, and headline metrics computed on balanced evaluation
+data are inadmissible. Interpretation caution — the signal is next-event-scale,
+decaying toward 1 s, and month-stable only in the degrade-not-die sense
+(Figs. 8-9, PDF pp. 16-17); a sub-second classified effect may never be
+smuggled into a coarser-grain compression-clock claim. Interpretation caution
+— the "robust relationship" sentence is one empirical regularity of one
+instrument over 31 days, not a mechanism; ammunition, never evidence.
+Cost-survival ammunition — the economic case is adverse-selection avoidance
+with spread capture, queue-position loss, false-positive quote churn and
+100-microsecond compute latency named as unmodelized (PDF pp. 3, 7, 14, 16,
+18): any future cost-survival layer for L2-grain classification claims must
+carry exactly these axes; nothing is armed here. Source-quality note — single
+instrument, single month, restricted 12:00-22:00 UTC session window out of a
+23-hour futures session (the same non-neutral-windowing caveat already queued
+against HBB-style RTH truncation; the 24/7 crypto venue has no comparable
+session structure), heuristic feature engineering (PDF p. 10), Table 4 on a
+single test set of 108,035 observations (PDF pp. 13-14), arXiv v1 read as-is
+with the journal version NOT checked at reading (flagged for verification).
+
+Killed-if-wrong stands in the note: had the headline been laundered into
+"C1-L2 is pre-confirmed because L2 predicts price", a market-making
+adverse-selection result with precision 0.09 and no cost model would have
+been passed off as support for a compression-clock claim it never made; had
+the balanced-training pattern been imported without the unbalanced-test
+discipline, a future L2 classifier would have reported majority-inflated
+accuracy on a 99.9%-zero distribution and died on its first live firing; had
+the month-long degrade-not-die robustness (Fig. 8) been imported as
+"regime-stable, no retraining protocol needed", the same figure's secular
+decay would have killed the first multi-week window; had the 12:00-22:00 UTC
+futures session window been treated as neutral, a session-market artifact
+would have been smuggled into the 24/7 venue.
+
+Standing caveat: one front-month futures instrument, one 2016 month, a
+restricted intraday window, an arXiv v1 text with the journal version
+unchecked at reading (uncertain, flagged), heuristically engineered features,
+and the author's own un-costed execution framing. The library is ammunition,
+not evidence: nothing in this paper enters any spec, default, kill line,
+threshold, or generative null; it charges warnings only.
+
+No inaccessible or blocked sources this session; the extract was complete and
+page-marked. Ratification queue after this session: TWENTY-EIGHT candidate
+sharpenings (twenty-seven standing plus the optimizer-path (multi-start)
+disclosure rule joined through deep-read session 43; this session queued
+NOTHING), zero armed; docs/DECISIONS_PENDING.md NOT touched this session, per
+the rule (touched only when a candidate sharpening is queued). T1 remains
+armed awaiting the owner's word in its booked state (survived all five kill
+lines with sign inverted; T2 tested-fail); the blocked list stays blocked.
+Deep-read queue pointer: the next UNREAD entry is "Trade arrival dynamics and
+quote imbalance in a limit order book" (score 29, x5f04ef, Lipton, Pesavento,
+Sotiropoulos 2013), verified unread against all library notes on main after
+this session; a successor session must re-read the live main tail and the
+branch/PR set before consuming anything. Nothing measured, no kill line
+moved, nothing armed, nothing trades live.
