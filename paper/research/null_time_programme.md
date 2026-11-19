@@ -6069,3 +6069,123 @@ and the branch/PR set, consult the conductor protocol (sections 2, 3,
 the standing order, and record the choice and the reason in its
 session-state note. Nothing measured, no kill line moved, nothing armed,
 nothing trades live.
+## 67. Null-time session 63 (2026-11-19): deep-read session 53 — the Ackermann-Kruse-Urusov negative-resilience paper read; the regime-window as a researcher degree of freedom named and closed by a proposed spec amendment; ONE candidate sharpening queued (the self-excitation regime-window pre-declaration, the thirty-second); NO kill line changes, nothing measured, nothing armed
+
+Session-state note (work choice and its reason, recorded under the
+goal-autonomy conductor protocol v2, edition 2, section 3, and the
+GOALS.md rotation rule): front 2, the library deep-read queue, chosen
+by the owner's dated standing directive for this cycle ("run the next
+null-time deep-read session… follow the research-intake skill ritual
+exactly"), which is the direct-instruction path the conductor protocol
+and the standing order both recognize and which satisfies GOALS.md rule
+3's no-consecutive-repeats condition (the repetition reason: the
+owner's dated instruction names the deep-read). Independent of that
+instruction, the chain checked against the live tail (main at the
+## 66 landing) and docs/GOALS.md edition 1: the synthesis pass (front
+4) is NOT due — this session's read brings the deep-read counter since
+goal-state edition 2 to four (50, 51, 52, 53) against the rule's five;
+front 1 is blocked on the owner, front 3 is blocked on codespace/data
+presence; front 2 held the only readable UNREAD head. The head was
+recomputed live, not from memory: the triage file and the library
+notes (53 dated notes) were read directly, and the ## 66 landing's own
+next-pointer named the same target — x77c554 — giving a two-source
+confirmation; no open PR existed at session start.
+
+The paper: Julia Ackermann, Thomas Kruse, Mikhail Urusov, "Self-exciting
+price impact via negative resilience in stochastic order books"
+(arXiv:2112.03789v2, three authors, zero citations recorded in our
+index). Read against the ONE question (full note:
+paper/research/library/2026-11-19_self_exciting_negative_resilience_deep_read.md).
+Verdict: NO kill line changed; ONE new candidate sharpening queued,
+PENDING OWNER RATIFICATION. The grade and its reason, page-cited:
+
+1. [reinforcing, no new item] With uniformly positive resilience,
+   sign-flips of the optimal program are provably impossible
+   (Proposition 3.3(iii), PDF pp. 13-15); the qualitative effect
+   exists only on the negative side of the resilience sign boundary
+   (Proposition 3.4, PDF pp. 15-17). The same sign-regime discipline
+   the T1 sign-inversion lesson and C1-L2 kill line 6 encode:
+   reinforcement of the armed sign guard, nothing added.
+
+2. [candidate sharpening, PENDING OWNER RATIFICATION] The
+   self-excitation regime-window pre-declaration (the THIRTY-SECOND
+   candidate). The mechanism, earned in the paper's own examples: with
+   everything else fixed, a negative-resilience interval at -0.05
+   produces NO qualitative effect while -0.09 does (Examples 4.2-4.4,
+   PDF pp. 19-22, Figures 1-2), and Proposition 3.4 makes the window's
+   PERSISTENCE IN EVERY NEIGHBOURHOOD OF THE TERMINAL HORIZON a
+   sufficient condition (PDF pp. 15-17, Discussion 3.5) — so both the
+   regime boundaries and their distance to the barrier horizon are
+   researcher degrees of freedom fully capable of manufacturing a
+   "self-exciting regime" find post hoc (place the mined window at the
+   horizon; the effect appears; Example 4.2 is the same shape with the
+   window elsewhere and NO effect). The amendment, in the
+   pre-registration-discipline family (the sign-kill-line template's
+   family, hardening rule 1, the same tightening shape as the
+   thirty-first): before the L0 gate, any C1-L2/C8-adjacent spec that
+   proposes to identify a self-excitation or negative-resilience
+   regime must carry a pre-declared window rule (regime boundaries
+   computed from frozen constants, no post-data adjustment) and a
+   pre-declared proximity treatment (distance from candidate windows
+   to the wall-clock barrier horizon, stated before the data), with
+   the killed-if-wrong counterfactual recorded in the spec. Harder to
+   pass only: a future positive must survive a window rule its report
+   author did not choose after the fact. The specs themselves are
+   untouched by this session; the draft lives in the note.
+
+3. [interpretation caution] The beta-exceedance set is strictly inside
+   the negative-resilience set (PDF p. 20): absence of the overshoot
+   signature in future L2 features licenses NO conclusion that the
+   regime was reverting — genuinely negative-resilience time can pass
+   silently (Example 4.2). Under-reporting is the safe error
+   direction; the burden of proof already sits there.
+
+4. [reinforcing, no new item] The authors state resilience is
+   difficult to estimate from real data and that no empirical study
+   establishes whether it can be negative at all (PDF p. 3) — a second
+   source reinforcing the estimator-discipline family, and a doubled
+   reminder of the library invariant: this paper is ammunition for
+   window-identification discipline, never evidence that negative
+   resilience exists in any market. Its entire execution-strategy
+   content (overshooting zero, premature closure, block trades, the
+   Section 4.3 close-and-reopen construction) is engineering and is
+   never operationalized; nothing trades live.
+
+5. [source-quality note] Zero citations in our index; a focused
+   mathematical paper in the Ackermann-Kruse-Urusov execution line;
+   the acknowledgement (PDF p. 24) suggests a refereed version may
+   exist — check the published form before formal citation outside
+   the note.
+
+What this paper would have killed if we had done it wrong: the
+window-mining death (a "regime" found after choosing its boundaries and
+horizon distance with the data in hand — the exact shape Examples
+4.2-4.4 legitimate inside the model) and the sign-symmetry death
+(letting a future resilience-signed estimate drift across zero
+unchecked, which Proposition 3.3 shows changes the qualitative behavior
+class). Both are pre-empted by the frozen-clock discipline, the armed
+sign guard, and the queued window pre-declaration respectively.
+
+docs/DECISIONS_PENDING.md is updated this session per the rule (a
+sharpening was queued): the ratification queue now holds THIRTY-TWO
+candidate sharpenings plus probe E1, zero armed — the twenty-nine
+through deep-read session 51, the corrupt-landing sweep (session 58),
+the C1-L2 base-rate confrontation (session 61), and this session's
+self-excitation regime-window pre-declaration. The GOALS.md front-2
+status line is refreshed (the one operative bookkeeping edit):
+x77c554 consumed; the next UNREAD is "Hawkes processes for credit
+indices time series analysis: How random are trades arrival times?"
+(score 28, xdb216a), behind it "Forecasting duration in high-frequency
+financial data using a self-exciting flexible residual point process"
+(score 28, x72c407); the successor recomputes the head from the live
+triage file and the live tail before reading. Deep-read counter since
+edition 2: four; the synthesis pass (front 4) becomes due at five and
+MUST run first in the next front-selecting session.
+
+Not changed: nothing measured, no kill line moved, nothing armed,
+nothing trades live. Guard clean. Nothing measured, no kill line
+moved, nothing armed, nothing trades live. T1 remains armed awaiting
+the owner's word in its booked state (survived all five kill lines
+with sign inverted; T2 tested-fail); the blocked list stays blocked.
+Ratification queue after this session: THIRTY-TWO candidate
+sharpenings plus probe E1, zero armed.

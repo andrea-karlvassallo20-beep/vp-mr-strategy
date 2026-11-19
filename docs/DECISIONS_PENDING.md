@@ -33,13 +33,32 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: thirty-one
+  library deep-reads and the ratified exploratory channel: thirty-two
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
-  null-time session 61; probe E1 stands separately and is not counted
-  among the thirty-one); most recently joined 2026-11-19,
-  the C1-L2 base-rate confrontation (before the L0 gate passes, the
+  null-time session 61, plus the self-excitation regime-window
+  pre-declaration queued 2026-11-19 by deep-read session 53 / null-time
+  session 63; probe E1 stands separately and is not counted
+  among the thirty-two); most recently joined 2026-11-19,
+  the self-excitation regime-window pre-declaration (before the L0
+  gate, any C1-L2/C8-adjacent spec that proposes to identify a
+  self-excitation or negative-resilience regime in the book data must
+  carry a pre-declared regime-window rule — regime boundaries computed
+  from frozen constants, no post-data boundary adjustment — and a
+  pre-declared proximity treatment stating, before the data, the
+  distance from candidate windows to the wall-clock barrier horizon,
+  with the killed-if-wrong counterfactual recorded: the
+  Ackermann-Kruse-Urusov paper shows the same negative-resilience
+  magnitude produces a qualitative effect or none depending only on
+  the window's location and its persistence near the terminal horizon,
+  so a window rule chosen after seeing the data could manufacture a
+  "regime" find; hardening rule 1 of the pre-registration discipline,
+  the sign-kill-line template's family, the same tightening shape as
+  the base-rate confrontation; full draft with the mechanism and
+  page citations in
+  `paper/research/library/2026-11-19_self_exciting_negative_resilience_deep_read.md`),
+  and earlier the same day, the C1-L2 base-rate confrontation (before the L0 gate passes, the
   C1-L2 test spec must carry a pre-declared base-rate confrontation
   section: the frozen 2026-11-16 daily-grain priming table quoted whole
   as the standing reference — 873 series, 1,765,316 series-days,
