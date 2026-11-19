@@ -5525,3 +5525,147 @@ inverted; T2 tested-fail); the blocked list stays blocked. A successor
 session must re-read the live main tail AND the open branch/PR set,
 consult docs/goal_autonomy_protocol.md (v2, edition 2, corrigendum-
 noted), and record its work choice and reason in its session-state note.
+
+## 63. Null-time session 59 (2026-11-19): deep-read session 51 — the Wang-Xu-Zhu Hawkes microfoundation for multitype inverse-Gaussian subordinators read; the Glosten-Milgrom slot left to the live claim (landed mid-flight as ## 61); NO kill line changes, NO sharpening, nothing armed
+
+- Session-state note (declared before anything else): work selected
+  under docs/goal_autonomy_protocol.md (edition 2) — the standing owner
+  directive in chat this same day orders the deep-read default
+  explicitly, and the director policy's rotation item makes the
+  default the floor, so the choice needs no further justification; the
+  protocol file was read whole and is consistent (edition 2, sections
+  1-7 present, corrigendum note intact); the synthesis cadence is NOT
+  due (zero deep-reads have landed since goal-state edition 2 was
+  installed at ## 60).
+- Numbering race declared up front, then settled by the main-wins
+  protocol: TWO live branches claimed log entry ## 61 / null-time
+  session 57 at this session's read time — PR #230 (disposition leg
+  of the session-55 repair race) and PR #231 (deep-read 50, the
+  Glosten-Milgrom whole-book paper). This session drafted as log
+  entry ## 62 / null-time session 58 / deep-read session 51 with the
+  race declared (branch deep-read-51-hawkes-ig-subordinator-xf77014,
+  PR #234, CI green on both jobs — test and engine). MID-FLIGHT,
+  main advanced (sha 51eb9453) with the Glosten-Milgrom deep-read
+  landed as entry ## 61 (deep-read 50, 51st library note), resolving
+  the race for ## 61 in that claimant's favor. The merge of PR #234
+  was then REFUSED with conflicts (a second mid-flight advance: the
+  disposition slot of the session-55 repair race landed its own
+  entry as ## 62 on its third rebase, queuing the corrupt-landing
+  sweep as the THIRTIETH candidate sharpening), so per the
+  first-landed-governs protocol this session renumbers to entry
+  ## 63 / null-time session 59 / deep-read session 51 — the
+  deep-read number is unaffected, no deep-read was consumed by
+  landed ## 62 — and re-lands on a fresh branch; PR #234 is closed
+  as superseded with the supersession recorded. Two numbered
+  attempts, one 405, disclosed: drafted ## 62 / null-time 58
+  (PR #234, refused at merge), now this entry. This session's 405
+  joins the slot-race pattern named in landed ## 62; the
+  observation stands, no governance change is made here, and the
+  deep-read slot trade between landed ## 61 and this session is
+  recorded in the slot-conservation bullet below.
+- Slot conservation: at this session's read time the ## 59/## 60 tail
+  pointer named "From Glosten-Milgrom to the whole limit order book
+  and applications to financial regulation" (score 29, x0d8b2a) as
+  the next UNREAD, but that slot was claimed by a live branch
+  (PR #231) with its read already drafted, so this session did NOT
+  consume it (no duplicate consumption, ## 48 precedent) and took
+  the entry behind it: "A Hawkes Microfoundation for Multitype
+  Inverse Gaussian Subordinators" (score 29, xf77014), verified
+  unread against all 49 library notes on main at read time plus the
+  PR #231 claim, and unclaimed by any other open PR or branch. The
+  landed ## 61's closing pointer independently names xf77014 as the
+  next UNREAD, so the consumed slot is consistent with the landed
+  chain and no duplicate consumption occurred. The extract exists,
+  is complete, and is page-marked (35 pp.); metadata taken from
+  expanded_index.json via the slug (arXiv:2610.10525v1, Wang, Xu,
+  Zhu, 2026).
+- The paper: a nearly critical multivariate linear Hawkes system
+  (kernel-mass defect B_T → nonsingular M-matrix B, immigration
+  balanced T·r_T·µ_T → η) has rescaled counts and integrated
+  intensities converge jointly in product-M1 to a pure-jump
+  multitype inverse-Gaussian subordinator with exponent fixed by
+  B^T z + z∘2/2 = u (Theorem 2.2, PDF pp. 6-7; cluster proof Lemmas
+  4.1-4.3, PDF pp. 23-25); the mechanism is rare finite-variance
+  near-critical families of order r_T^-2 whose internal timing
+  collapses to a single jump exactly when T·r_T → ∞ (Lemma 5.1, an
+  iff, PDF p. 27); diagonal B gives independent IG clocks, the
+  square-root specialization reproduces the Abi Jaber-Attal-Rosenbaum
+  hyper-rough boundary law (PDF pp. 7-9), Section 3 weakens the prior
+  scaling theory's high-intensity assumption to accumulated activity
+  and upgrades to product-M1 for monotone paths (PDF pp. 9-22), and
+  Proposition 6.2 extends the scalar limit to finite-variance
+  branching with offspring variance rescaling dispersion but not mean
+  rate (PDF pp. 30-32). Zero empirical content, by design.
+- Grade, default: NO kill line changes. NO new candidate sharpening.
+  Five findings, one tag each, full statement in the note (paper/
+  research/library/2026-11-19_hawkes_ig_subordinator_deep_read.md):
+  (1) [reinforcing, no new item] the phase-diagram lesson — the
+  branching-ratio exponent alone does not determine the macro path
+  type; criticality speed, immigration balance, and the kernel's
+  temporal tail decide between IG-collapse, CIR, and rough regimes
+  (PDF pp. 3-4), reinforcing the existing estimator-discipline and
+  near-criticality register cautions exactly as they stand; (2)
+  [interpretation caution] calendar collapse is observation-grain
+  relative (the iff of Lemma 5.1, PDF p. 27; M1-not-J1, PDF pp. 4, 8,
+  25) — coarse-grain "jump moments" are grain-relative descriptions of
+  cascades the fine grain resolves, a reading mode for future C1-L2
+  compression interpretations, no queue change; (3) [interpretation
+  caution] a triangular-array theorem is not a finite-sample market
+  fact, and Corollary 2.7's NIG is a clock law the authors themselves
+  fence — a return model "would additionally need signs, imbalance,
+  leverage, and a rule for composition at clock jumps" (PDF pp. 9, 33);
+  never read backwards as "returns are NIG"; (4) [reinforcing, no new
+  item] the x^-3/2 Lévy singularity is the mechanism output of ANY
+  finite-variance near-critical branching with an r_T^-2 cutoff
+  (PDF pp. 28, 32), so heavy cascade tails license no criticality
+  claim — the apparent-criticality caution stands reinforced;
+  (5) [source-quality note] arXiv:2610.10525v1, pure math.PR, no data
+  anywhere, one closing finance paragraph; v1, published version NOT
+  checked, flagged for verification.
+- Laundering directions, as in the note: INTO — nothing; no exponent
+  parameter, no density, no clock law, no collapse condition, no
+  topology convention enters any spec, default, calibration, or
+  generative null. OUT — never read backwards as "returns are NIG,"
+  "near-critical flow implies jump-like macro clocks in finite data,"
+  "branching ratio near one identifies the regime," "critical families
+  are macroscopic" (a single family vanishes, PDF p. 28), or "heavy
+  cascade tails certify criticality."
+- Operational disclosure: no functional git/gh CLI existed in this
+  session's execution environment; the repo was read and written
+  through the authenticated GitHub API. The integrity guard could not
+  be run over a full assembled tree locally (no tarball possible); the
+  guard's exact marker-sweep logic was executed over this session's
+  changed files (zero offenders — clean), the library-provenance audit
+  is untouched (no docs/library/summaries/ file changed), and the real
+  guard runs in branch CI over the full tree: both ci.yml checks green
+  on the branch before merge, recorded below in this entry's landing
+  verification. Push verified by read-back of the landed blob, per the
+  ## 60 read-side-truncation lesson.
+- Verified at landing (second attempt): fresh branch cut from the
+  advanced main (post-## 62); the note and this entry pushed; new PR
+  opened; CI green on both jobs (test and engine); squash-merged;
+  post-merge read-back of the log tail and the note confirms both
+  landed whole (sizes and section counts checked).
+- No inaccessible or blocked sources this session; the extract was
+  complete and page-marked; the skipped-ahead consumption is recorded
+  above and is not a blocked source. Ratification queue after this
+  session: THIRTY candidate sharpenings plus probe E1 (twenty-nine
+  standing at this session's read, plus the corrupt-landing sweep
+  queued as the thirtieth by landed ## 62, read back from the
+  advanced main tail; unchanged — this session queued NOTHING);
+  zero armed; docs/DECISIONS_PENDING.md
+  NOT touched. T1 remains armed awaiting the owner's word in its booked
+  state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked.
+- Deep-read queue pointer: with x0d8b2a (Glosten-Milgrom, score 29)
+  claimed by PR #231 and xf77014 (this session's paper, score 29)
+  consumed, the next UNREAD entry in triage order is "Application of
+  Hawkes volatility in the observation of filtered high-frequency
+  prices" (score 28, xb710f4), verified unread against all notes on
+  main and unclaimed by any open PR or branch at read time; behind it
+  "Self-exciting price impact via negative resilience in stochastic
+  order books" (score 28, x77c554). A successor session must re-read
+  the live main tail and the branch/PR set before consuming anything,
+  and must record its work choice and reason in its session-state
+  note. Nothing measured, no kill line moved, nothing armed, nothing
+  trades live.
