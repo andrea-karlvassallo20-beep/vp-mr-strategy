@@ -4090,3 +4090,199 @@ using Recurrent Neural Networks" (score 30, x0fd75a); a successor
 session must re-read the live main tail and the branch/PR set
 before consuming anything. Nothing measured, no kill line moved,
 nothing armed, nothing trades live.
+
+## 51. Null-time session 47 (2026-11-19): deep-read session 43 — the Filimonov-Sornette apparent-criticality calibration reply read; ONE candidate sharpening queued (the optimizer-path disclosure rule), nothing armed
+
+- **Session-state note (declared before the read)**: this session
+  began from log entry ## 50's closing pointer, which names xd18d70
+  "Apparent criticality and calibration issues in the Hawkes
+  self-excited point process model: application to high-frequency
+  financial data" (score 30) as the next unclaimed UNREAD, subject
+  to collision checks. Before consuming, the live main tail,
+  docs/DECISIONS_PENDING.md and the branch/PR set were re-read: zero
+  open pull requests, no deep-read note for the slug on main, no
+  branch claiming the entry, and the read-set recomputed against all
+  notes on main by the established extract-path and normalized-title
+  method confirmed xd18d70 as the next unclaimed UNREAD with x0fd75a
+  the only other score-30 entry not in the read-set, so the pointer
+  checked out and the entry was consumed with no skips.
+  DECISIONS_PENDING re-read confirms: T1 executed under the owner's
+  authorization, survived all five kill lines with its sign inverted,
+  booked in the ledger; T2 tested-fail; ratification queue
+  twenty-seven, zero armed. Operational notes: the execution
+  environment restarted after the read began; a fresh main tarball
+  was re-fetched (335,945,792 bytes) and the state re-verified
+  (log 274,385 bytes, ## 50 count 1, no ## 51, integrity guard
+  clean) before any file was written. The environment restart is a
+  session-infrastructure event, not a state change on main.
+
+- **Library deep-read session 43** (next unclaimed UNREAD entry,
+  score 30, xd18d70, consumed here):
+  `paper/research/library/2026-11-19_apparent_criticality_calibration_hawkes_deep_read.md`
+  on Vladimir Filimonov and Didier Sornette (ETH Zurich / Swiss
+  Finance Institute), "Apparent criticality and calibration issues
+  in the Hawkes self-excited point process model: application to
+  high-frequency financial data" (arXiv:1308.6756v3 [q-fin.ST],
+  stamped 3 Jul 2014, index year 2013): the Filimonov-Sornette reply
+  to the landed ## 50 Hardiman-Bercot-Bouchaud rebuttal, arguing
+  HBB's n of roughly 1 is "apparent" criticality produced by five
+  generally upward estimation biases (outliers endogenized by
+  power-law kernels, Fig. 1, PDF pp. 9-10; power-law regularization
+  choice biasing n by up to roughly 0.2, Fig. 3, PDF pp. 11-13;
+  edge/transient effects with T0.99 about 57,778 trading days at
+  epsilon = 0.15, Table 3, PDF pp. 14-15; timestamp bundling with
+  300-1700 ms effective resolution, Figs. 9-13, PDF pp. 21-26;
+  regime shifts and non-stationarity, Figs. 15-17, PDF pp. 30-33)
+  plus a multi-extrema likelihood whose suboptimal minimum sits in
+  the supercritical regime with the HBB published estimates
+  reported as "very close to" it (Fig. 6, PDF pp. 17-18), and that
+  the authors' own 2012-2013 numbers (the landed ## 45) are upheld.
+  40 pp. extract, page-marked, read in full, against the ONE
+  question. **Grade: NO kill line changed; ONE new candidate
+  sharpening queued, PENDING OWNER RATIFICATION: the optimizer-path
+  (multi-start) disclosure rule for the estimator-discipline
+  family** — the sibling of deep-read 2's estimator-identity,
+  fixed-W and timestamp-bundling pre-declarations, governing the
+  numerical search itself: the cost surface has "one pronounced
+  minimum" only under correct specification (PDF p. 17), which the
+  programme's default assumption of misspecification says real data
+  will not satisfy; the concrete exhibit has the global optimum at
+  n = 0.0751 and the local optimum at n = 1.1054 on the same data
+  and declared model, "in completely different regimes" (PDF
+  pp. 17-18). Pre-declaration: any pre-registered parametric fit
+  must declare on TRAIN the optimization protocol (algorithm,
+  starting-point and multi-start scheme, convergence tolerance,
+  boundary handling), every reported optimum must carry multi-start
+  evidence that it is the best optimum the declared search found,
+  single-start local optima are inadmissible as trigger readings,
+  and near-optima within a pre-declared likelihood-distance band
+  are reported with their parameter values and the gap. Harder to
+  pass: a fit whose headline parameter sits on one side of a
+  decision boundary while a likelier optimum sits on the other is
+  inadmissible under the old protocol only if someone happened to
+  look; the rule makes looking mandatory. Scope: declaration and
+  admissibility on estimation records only; no C1-L2 or C8 text
+  moves, no kill line or threshold moves, dormant if no admissible
+  spec functional fits a parametric likelihood. Findings,
+  page-cited, in the note:
+
+  Reinforcing, no new item — regime-shift spurious criticality:
+  concatenated independent Poisson days with real daily
+  intensities (true n = 0 by construction) calibrate to n hovering
+  around 1 across 1998-2012 with residuals unable to reject the
+  null (Figs. 15-17, PDF pp. 30-33), mixtures of two Hawkes
+  realizations never read intermediate (n of the concatenation
+  always no less than the larger component, Fig. 16, PDF pp.
+  30-31), a 40 per cent background difference reads n = 0.9 from
+  a true 0.5 (PDF p. 31): the strongest worked exhibit yet for the
+  estimator-mode register's non-stationarity half and design
+  ammunition for the queued deterministic-clock null arm and the
+  C8 A3 shuffled-arrival placebo, whose exhibits are ammunition,
+  never substitutes. Reinforcing, no new item — outlier
+  endogenization completes the kernel-family tradeoff in both
+  directions with ## 50: the exponential kernel resists outliers
+  but misses long memory, the power law reads long memory but
+  manufactures endogeneity from outliers (Fig. 1, Table 1, PDF
+  pp. 9-10); no kernel family wins both tests and any future fit
+  discloses outlier exposure beside its kernel family. Reinforcing,
+  no new item — the bundling mechanism (exchange second-scale
+  FAST/FIX stamps under provider millisecond arrival stamps,
+  randomization at intervals smaller than the bundling scale
+  manufacturing clustering, a Poisson asymptote of n about 0.856,
+  Figs. 9-13, PDF pp. 21-26) mechanizes deep-read 2's arming
+  condition 3 and charges ## 50's finding 4 with its mechanism:
+  HBB's within-millisecond randomisation presumed a sub-millisecond
+  bundling scale the paper's own Fig. 10 sample contradicts
+  (300-1700 ms); the L0 100-timestamp audit stays the stricter
+  discipline and this paper may never be cited to relax it.
+  Interpretation caution — the estimation errors are signed and do
+  not self-cancel: finite-window MLE bias and edge effects are
+  DOWNWARD (PDF pp. 5-6, 15-16, the ## 48 Appendix-B sibling),
+  outliers, regularization mismatch, bundling, regime shifts and
+  suboptimal optima are UPWARD (PDF pp. 9-13, 25-26, 30-33); any
+  programme reading quoting a single signed bias for this
+  estimator class is inadmissible, the disclosure list (window
+  scale and reach, kernel family and regularization form, outlier
+  exposure, bundling scale, regime protocol, optimizer path) is
+  mandatory framing for any n a spec table ever shows.
+  Interpretation caution — selection-of-windows is itself a
+  reading mode: HBB's RTH-only concatenation discards 30-67 per
+  cent of daily mid-price changes and attributes exogenous spikes
+  (the September 18, 2007 FOMC surprise) to self-excitation by
+  construction (Figs. 8, 14, PDF pp. 19-20, 27-29), while the
+  authors' own alternative excludes announcement days entirely
+  (PDF p. 30), removing the windows where a null's failure mode is
+  loudest; no windowing or day-selection protocol is neutral between
+  null and trigger. Interpretation caution — the closing sweep
+  against long-memory estimation (PDF p. 34) applies with full
+  force to ## 50's two-regime DFA structure: a Hurst exponent of
+  roughly 0.95 above 1000 s is what day-level intensity drift of
+  factor 2-5 (Fig. 15, PDF p. 30) would produce without any slow
+  kernel regime; both papers' exponents and criticality readings
+  are regime-inhomogeneity-confounded at this venue and grain, and
+  none is citable without a stationarity protocol the venue can
+  support. Source-quality note — an adversarial reply by the
+  challenged party, upholding its own ## 45 numbers; the
+  acknowledgements credit Hardiman and Bouchaud for discussions
+  and Wheatley for the outlier section (PDF p. 35), a further HBB
+  response is expected and NOT on the shelf (gap declared);
+  journal record NOT checked at reading; single venue and single
+  provider database; the C5 frozen-book blind spot repeats (a
+  queue-frozen book generates no mid-price changes); the "most if
+  not all inter-event-time studies should be revisited" claim
+  (PDF p. 34) is an argument, not a measurement.
+
+  Killed-if-wrong stands in the note: had this reply been read as
+  closing the debate, reply-count would have become truth and the
+  disagreement settled by sequence instead of measurement, exactly
+  what the both-directions rule forbids; had the multi-extrema
+  finding been confined to power-law fits with the programme's
+  exponential MLE silently exempted, the exemption would have died
+  the first time a real non-Hawkes day handed the 3-parameter
+  surface a second minimum (the paper's own sections 3.4 and 4.4
+  locate the mechanism in misspecification and non-stationarity,
+  not in the power-law family, PDF pp. 17, 33); had the
+  regime-shift exhibit been kept as ammunition against HBB only,
+  the programme's own pending nulls would have missed that
+  day-level regime mixing is a symmetric failure mode they must
+  enumerate; had the overnight-exclusion finding been imported as
+  a programme prescription, a venue-conditional artifact of
+  23-hour futures sessions would have been laundered into the
+  24/7 crypto venue, which has no comparable session structure.
+  Standing caveat: single venue and instrument, Thompson Reuters
+  Tick History timestamps for the microstructure sections, every
+  synthetic result conditional on the simulated kernel family and
+  burn-in, the authors' own short-window announcement-day-excluding
+  procedure a reading mode subject to its own selection caveat, the
+  HBB-response-to-this-reply and journal versions unchecked on the
+  shelf. Laundering directions named: INTO — nothing enters any
+  spec, default, calibration, tolerance or generative null; the
+  disagreement stays open in both directions; the single licensed
+  pending item is the optimizer-path (multi-start) disclosure rule,
+  queued PENDING OWNER RATIFICATION and inert until ratified; OUT —
+  never read backwards as "Filimonov-Sornette won the debate"
+  (reply-count is not truth), "exponential kernels are vindicated"
+  (their own exhibits show them failing under outliers and
+  non-stationarity), or "long memory does not exist in markets"
+  (an estimation-impossibility argument at this venue and grain,
+  not a market property).
+
+Ratification queue after this session: TWENTY-EIGHT candidate
+sharpenings (the twenty-seven standing plus the optimizer-path
+(multi-start) disclosure rule joined here through deep-read session
+43), zero armed; docs/DECISIONS_PENDING.md updated with the new count
+and the new component's parenthetical, the only edit this session.
+T1 was executed under the owner's authorization on the second aggTrades
+window and survived all five kill lines with its sign inverted,
+booked in the ledger; T2 tested-fail at its kill line; the blocked
+list stays blocked. Deep-read queue pointer: this session consumed
+the slot the landed ## 50's closing pointer names, xd18d70, as log
+entry ## 51; the next unclaimed UNREAD entries (read-set recomputed
+by the established slug-and-normalized-title method against all
+notes on main after this session) are "Sequence Classification of
+the Limit Order Book using Recurrent Neural Networks" (score 30,
+x0fd75a) and, behind it, "Trade arrival dynamics and quote imbalance
+in a limit order book" (score 29, x5f04ef); a successor session
+must re-read the live main tail and the branch/PR set before
+consuming anything. Nothing measured, no kill line moved, nothing
+armed, nothing trades live.
