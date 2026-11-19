@@ -2905,11 +2905,22 @@ triage entry is "TradeFM: A Generative Foundation Model for
 Trade-flow and Market Microstructure" (score 31, xe7dc7f). Nothing
 measured, no kill line moved, nothing armed, nothing trades live.
 
+## 41. Null-time session 37 (2026-11-19): deep-read session 33 — the TradeFM foundation-model paper read; the discretization declaration queued for the pre-registration declaration family
 
-## 41. Null-time session 37 (2026-11-19): deep-read session 33 — the compound and regime-switching Hawkes paper read (pointer-chain error corrected); default grade, nothing queued
+- **Library deep-read session 33** (the standing queue's next UNREAD pointer, score 31, xe7dc7f, consumed here): "paper/research/library/2026-11-19_tradefm_generative_foundation_model_deep_read.md" on Maxime Kawawa-Beaudan and Srijan Sood (equal contribution), with Kassiani Papasotiriou, Daniel Borrajo and Manuela Veloso, all J.P. Morgan AI Research, New York, "TradeFM: A Generative Foundation Model for Trade-flow and Market Microstructure" (arXiv:2602.23784v1 [cs.LG], v1 stamped 27 February 2026): a 524M-parameter decoder-only Transformer trained on 10.7B tokens of discretized trade events from >9K US equities, February 2024 to September 2025, temporal hold-out January 2025 onward, no asset-specific calibration (PDF pp. 1, 4, 18-19); scale-invariant features (log volume, depth and price level normalized by an EW-VWAP mid-price estimate, PDF pp. 4-5, 15-16); hybrid tokenization with quantile bins for price features, log-equal-width bins for volume and interarrival time, outlier truncation at the 1st/99th percentiles into reserved bins, bin edges calibrated on the first 30 days, NaNs imputed with a random valid bin index (PDF pp. 5-7, 20, Algorithm 1); evaluated in a closed loop with a deterministic price-time-priority simulator validated by replay (fill-volume and lot-count CDF correlations 0.91 and 0.98, PDF pp. 7-8, 21-24); rollouts reproduce heavy tails, volatility clustering, near-zero return autocorrelation and aggregational Gaussianity with 2-3x lower K-S/Wasserstein than a Compound Hawkes baseline (PDF pp. 8-10, Table 2); order-level fidelity best on most quantities with the bid-ask spread the one exception where the Hawkes baseline wins (PDF p. 10, Table 3); zero-shot China and Japan transfer in perplexity-overlap terms (PDF pp. 10-11; Table 6, PDF p. 24); no return-predictive claim anywhere. Read against the ONE question. **Grade: NO kill line changed. ONE new candidate sharpening queued, PENDING OWNER RATIFICATION:** the discretized-conditioning declaration component for the pre-registration declaration-discipline family — the sibling of the queue-label convention declaration (deep-read session 32), the anticipation disclosure (deep-read 31) and the queue-state conditioning rule (deep-read 26), all still PENDING OWNER RATIFICATION — generalizing that family's mechanism from queue-label conventions to every discretized conditioning state. Mechanism, page-cited: the tokenizer is a worked specimen of the degrees of freedom a discretization step introduces before any test sees the data — per-feature binning schemes, outlier truncation at the 1st/99th percentiles, bin edges calibrated on exactly the first 30 days and never refitted (PDF pp. 5-6), and NaN imputation with a random valid bin index (PDF p. 20, Algorithm 1, line 24); two implementations of the same declared functional with different undisclosed bin edges, calibration windows, outlier rules or imputation rules read different conditioning states from the same raw stream, and unseeded random imputation is nondeterministic, so the same declared pipeline cannot reproduce its own reading. One pre-declaration. Discretized-conditioning declaration: when any pre-registered conditioning state, stratum or feature is itself a discretization of a continuous raw field, the pre-registration must declare, recorded on TRAIN before the L2 data arrives, the binning scheme and bin count, the calibration window and population, the outlier truncation rule, and the missing-value imputation rule; unseeded nondeterministic imputation is inadmissible outright, and readings with undeclared discretizations are inadmissible; functionals that never discretize satisfy trivially and the component stays dormant if no admissible spec functional discretizes. Scope: declaration blocks only, a disclosure requirement; the C1-L2 and C8 spec texts, every kill line, T-H and T-O remain untouched; no threshold moves; nothing is armed.
 
-- **Library deep-read session 33** (null-time session 37, offset
-  honored): `paper/research/library/2026-11-19_compound_hawkes_regime_switching_deep_read.md`
+  Findings, page-cited: reinforcing, no new item — the paper makes no predictive claim and its own success criterion is a null in disguise: fidelity evaluation only (PDF pp. 8-10, Tables 2-3), rollouts reproducing near-zero return autocorrelation (PDF pp. 1-2, 8-9, Figure 4), so generative plausibility and predictivity are disjoint and no fidelity metric is ever citable as support for any programme feature, with the generative-null family the same placebo territory C8 A3's shuffled-arrival amendment already occupies; nothing new queued. Interpretation caution — the zero-shot geographic result (US-trained perplexity overlapping China and Japan, PDF pp. 10-11, Figure 5; Table 6, PDF p. 24) is a token-perplexity claim, never out-of-sample economic predictive value, and is never citable in any SMH universality or cross-market argument. Cost-survival ammunition — the counterfactual 10x-flow injection stress tests and replay-validated simulator (PDF pp. 21-24, 26, 29, Figures 11, 17) matter only if a K7-style cost-survival layer ever exists, and that layer must carry the paper's own admitted generator-simulator entanglement (PDF p. 10) plus spread honesty: the spread is the one quantity where the explicit-interarrival baseline beats the learned generator (PDF p. 10, Table 3). Reinforcing, no new item — rollout scale is 1,024 events, about 2-5 minutes for high-liquidity assets (PDF p. 8), so nothing in the paper speaks to daily-grain boards or multi-week forward windows. Source-quality note — industrial-lab capability report, J.P. Morgan AI Research, arXiv v1 stamped 27 February 2026, no journal record checked at reading, proprietary data so no external replication, internal baselines, limitations honestly stated in-text (PDF p. 10); graded as a well-executed generative-simulation report with no market-truth claim metabolized. Killed-if-wrong: if the programme had read "a deep model learns order flow across 9K stocks and whole geographies" as support for universality or for extractable predictive structure, it would have laundered a simulation-quality metric into a market-truth claim; the guard is the standing library-is-ammunition rule plus the sealed-prediction ledger, and the only addition this read earns is the narrowly mechanistic discretization disclosure component above. Standing caveat: proprietary US equities data, penny-tick USD microstructure, no crypto, no BTCUSDT; all bin edges, perplexity figures, distances, scaling exponents and architecture choices are dataset- and venue-specific; the RL execution and multi-agent sections are execution-strategy content and are never operationalized. Laundering directions named: INTO — the discretization mechanism, the fidelity-versus-predictivity distinction and the perplexity-is-not-evidence caution enter only as preregistration discipline; OUT — TradeFM's fidelity tables, geographic-transfer perplexity and stylized-fact figures are never cited as expected behavior of any market the programme measures and never as evidence that any programme feature carries information.
+
+Ratification queue after this session: TWENTY-SEVEN candidate sharpenings (the twenty-six standing plus the discretized-conditioning declaration rule joined here through deep-read session 33), zero armed. T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read queue pointer: the next UNREAD triage entry is "Diffusive Limit of Hawkes Driven Order Book Dynamics With Liquidity Migration" (score 31, x5db64b). Nothing measured, no kill line moved, nothing armed, nothing trades live.
+
+
+## 42. Null-time session 38 (2026-11-19): deep-read session 34 — the compound and regime-switching Hawkes paper read (pointer-chain error corrected, session renumbered after the parallel slot landed); default grade, nothing queued
+
+- **Library deep-read session 34** (null-time session 38; drafted
+  as session 33 and renumbered at append time because the parallel
+  slot landed first through log entry ## 41 reading TradeFM, the
+  offset honored):
+  `paper/research/library/2026-11-19_compound_hawkes_regime_switching_deep_read.md`
   on Anatoliy Swishchuk, Bruno Remillard, Robert Elliott and
   Jonathan Chavez-Casillas, "Compound Hawkes Processes in Limit
   Order Books" (arXiv:1712.03106v1, December 2017): the compound
@@ -2929,8 +2940,11 @@ measured, no kill line moved, nothing armed, nothing trades live.
   (score 33, xbf2516), which carries no deep-read note and no
   recorded skip; the pointer chain has jumped over it since the
   deep-read-27 next-pointer named the rank-23 entry (score 32,
-  x947263). This session consumed rank 22 as the next UNREAD entry,
-  and the queue discipline returns to order from rank 29 onward.
+  x947263), and the parallel deep-read session 33 consumed the stale
+  session-32 pointer (TradeFM, now read through log entry ## 41)
+  without recording the skip either. This session consumed rank 22
+  as the next UNREAD entry; the queue discipline returns to order
+  from rank 30 onward.
 - **Grade**: NO kill line changes. NO new candidate sharpening.
   The verdict is recorded per finding, page-cited, in the note:
   reinforcing, no new item — the kernel enters every limit only
@@ -2967,12 +2981,13 @@ measured, no kill line moved, nothing armed, nothing trades live.
 - **Standing caveat recorded** (one stock, five days, fixed-tick
   world, no crypto, laundering directions named, INTO and OUT).
   The zero-figure test battery was untouched, nothing was measured.
-- Ratification queue after this session: TWENTY-SIX candidate
-  sharpenings, zero armed (unchanged from session 36; nothing joined
-  and nothing left here).
+- Ratification queue after this session: TWENTY-SEVEN candidate
+  sharpenings, zero armed (the twenty-seven carried in through log
+  entry ## 41 by the parallel TradeFM session; nothing joined and
+  nothing left here).
   T1 remains armed awaiting the owner's word; the blocked list
   stays blocked. Deep-read queue pointer: the next UNREAD
-  triage entry is "TradeFM: A Generative Foundation Model for
-  Trade-flow and Market Microstructure" (score 31, xe7dc7f).
+  triage entry is "Diffusive Limit of Hawkes Driven Order Book
+  Dynamics With Liquidity Migration" (score 31, x5db64b).
   Nothing measured, no kill line moved, nothing armed, nothing
   trades live.

@@ -1,6 +1,12 @@
-# Deep-read session 33 — Swishchuk, Remillard, Elliott and Chavez-Casillas, "Compound Hawkes Processes in Limit Order Books"
+# Deep-read session 34 — Swishchuk, Remillard, Elliott and Chavez-Casillas, "Compound Hawkes Processes in Limit Order Books"
 
-Library deep-read session 33 (null-time session 37, log entry ## 41).
+Library deep-read session 34 (null-time session 38, log entry ## 42).
+Session numbers taken fresh from the log tail at append time, per the
+founding convention: a parallel slot landed first, after this note was
+drafted, as deep-read session 33 (null-time session 37, log entry
+## 41) reading TradeFM off the stale session-32 pointer, so this
+session renumbered from 33/37/## 41 to 34/38/## 42; the note text
+below otherwise stands as drafted.
 Anatoliy Swishchuk (University of Calgary), Bruno Remillard (HEC
 Montreal), Robert Elliott (University of Calgary and University of
 South Australia) and Jonathan Chavez-Casillas (University of
@@ -22,9 +28,11 @@ next-pointer (score 32, x947263) and every subsequent pointer
 through session 32 (score 31, TradeFM) jumped over it without a
 recorded skip, so this session consumed the mechanical rule's next
 UNREAD entry and left the session-32 pointer text unedited per the
-honest-error protocol. Next UNREAD triage-rank entry (score 31,
-xe7dc7f, "TradeFM: A Generative Foundation Model for Trade-flow and
-Market Microstructure").
+honest-error protocol; the landed parallel deep-read session 33
+consumed the stale session-32 pointer (TradeFM) without recording
+the skip either, so this session's correction covers both. Next
+UNREAD triage-rank entry (score 31, x5db64b, "Diffusive Limit of
+Hawkes Driven Order Book Dynamics With Liquidity Migration").
 
 ## The paper in one paragraph
 
@@ -161,8 +169,9 @@ programme would have booked a five-day, one-stock, in-sample
 descriptive average as evidence; the checklist's own economic and
 statistical validity gates were what kept it out. Nothing was
 measured, so nothing needed killing: the session consumed the
-pointer-chain error (rank 22 skipped by pointers from deep-read 27
-onward) and corrected the next-read discipline without touching any
+pointer-chain error (rank 22, skipped by pointers from deep-read 27
+onward and not recorded by the parallel session either) and
+corrected the next-read discipline without touching any
 past text.
 
 ## Standing caveat
