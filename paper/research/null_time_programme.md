@@ -3008,3 +3008,85 @@ blocked. Deep-read queue pointer: the next UNREAD triage entry is
 "A Microstructural Foundation for the Rough Hawkes Heat Kernel"
 (score 30, xd08813). Nothing measured, no kill line moved, nothing
 armed, nothing trades live.
+
+## 43. Null-time session 39 (2026-11-19): deep-read session 35 — the compound and regime-switching Hawkes paper read (pointer-chain error corrected, session renumbered after two parallel slots landed); default grade, nothing queued
+
+- **Library deep-read session 35** (null-time session 39; drafted
+  as session 33 and renumbered twice at append time because two
+  parallel slots landed first, through log entry ## 41 (TradeFM,
+  deep-read session 33) and log entry ## 42 (the Hawkes
+  liquidity-migration diffusive-limit paper, deep-read session 34),
+  the offset honored each time):
+  `paper/research/library/2026-11-19_compound_hawkes_regime_switching_deep_read.md`
+  on Anatoliy Swishchuk, Bruno Remillard, Robert Elliott and
+  Jonathan Chavez-Casillas, "Compound Hawkes Processes in Limit
+  Order Books" (arXiv:1712.03106v1, December 2017): the compound
+  Hawkes process (mid-price as a Hawkes-counted sum of Markov-chain
+  price changes, Definition 5, Eq. (10), PDF p. 5) and the
+  regime-switching variant with a Markov-chain-modulated background
+  intensity (Eqs. (13), (30), PDF pp. 6, 11), each equipped with a
+  Law of Large Numbers and a diffusion limit (Theorems 1-2, Lemmas
+  1-2, Eqs. (16), (26), (31), (40), PDF pp. 8-13), and a five-day
+  CISCO calibration with a reported estimation error of
+  approximately 0.08 (PDF pp. 14-17).
+- **Selection correction, honest-error protocol (the old text is
+  left unedited)**: the session-32 next-pointer named TradeFM (score
+  31, xe7dc7f) as the next UNREAD, but the mechanical rule applied
+  fresh against the triage file and the note directory selects the
+  rank-22 entry "Compound Hawkes Processes in Limit Order Books"
+  (score 33, xbf2516), which carries no deep-read note and no
+  recorded skip; the pointer chain has jumped over it since the
+  deep-read-27 next-pointer named the rank-23 entry (score 32,
+  x947263), and the parallel deep-read session 33 consumed the stale
+  session-32 pointer (TradeFM, now read through log entry ## 41)
+  without recording the skip either. This session consumed rank 22
+  as the next UNREAD entry; the queue discipline returns to order
+  from rank 30 onward.
+- **Grade**: NO kill line changes. NO new candidate sharpening.
+  The verdict is recorded per finding, page-cited, in the note:
+  reinforcing, no new item — the kernel enters every limit only
+  through its integral mu-hat (Eq. (17), PDF p. 8; exponential
+  special case alpha/beta, PDF pp. 9-10, 12-13), so fitted kernel
+  shapes carry no information that survives averaging, the
+  aggregation face of the session-32 caution, and no kernel shape
+  from any single paper is ever citable as expected coarse-scale
+  behavior; reinforcing, no new item — the regime-switching limit
+  differs from the plain limit by the single stationary-weighting
+  substitution lambda-hat = sum of p-star_i lambda_i (Eq. (32), PDF
+  pp. 11-12), regime transition dynamics vanish at scaling, so any
+  future regime-conditioned reading must declare before estimation
+  whether the conditioning is stationary reweighting (a scale
+  constant, invisible to the scaling limit) or an excitation-form
+  change in the general <mu(t), Y_t> sense (Eq. (13), PDF p. 6),
+  read discipline for the already-queued conditioning rules, nothing
+  else, and the paper's three-state imbalance motivation (PDF
+  p. 11) transfers nothing; interpretation caution — the
+  volatility-without-price claim (PDF pp. 13-14) holds only inside
+  the fixed-tick plus-or-minus-delta world and is never cited as
+  an expected property of the programme's venue or as an estimator
+  candidate; interpretation caution — the numerical section is
+  five days of CISCO with no out-of-sample component and the
+  headline error 0.08 is a descriptive mean of squared
+  standard-deviation gaps (PDF pp. 16-17), the 1000-simulation
+  quantile plots are fitted-model drawings, not forecasts (PDF
+  pp. 19-21), and the RSCHP check bounds only lambda-hat (error at
+  most 0.0055, PDF p. 21); source-quality note — arXiv v1 working
+  manuscript with literal "[?]" and typography defects, proofs
+  delegated to Swishchuk-Vadori 2015, direct precursor of the
+  session-14 paper, no journal record checked at reading, published
+  version to be checked before formal citation.
+- **Standing caveat recorded** (one stock, five days, fixed-tick
+  world, no crypto, laundering directions named, INTO and OUT).
+  The zero-figure test battery was untouched, nothing was measured.
+- Ratification queue after this session: TWENTY-SEVEN candidate
+  sharpenings, zero armed (the twenty-seven carried in through log
+  entry ## 41 by the parallel TradeFM session, unchanged through log
+  entry ## 42; nothing joined and nothing left here).
+  T1 remains armed awaiting the owner's word; the blocked list
+  stays blocked. Deep-read queue pointer: the next UNREAD
+  triage entry is "A Microstructural Foundation for the Rough
+  Hawkes Heat Kernel" (score 30, xd08813), the pointer carried in
+  through log entry ## 42 by the parallel liquidity-migration
+  session.
+  Nothing measured, no kill line moved, nothing armed, nothing
+  trades live.
