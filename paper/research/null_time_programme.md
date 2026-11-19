@@ -6189,3 +6189,110 @@ the owner's word in its booked state (survived all five kill lines
 with sign inverted; T2 tested-fail); the blocked list stays blocked.
 Ratification queue after this session: THIRTY-TWO candidate
 sharpenings plus probe E1, zero armed.
+
+## 68. Null-time session 64 (2026-11-19): deep-read session 54 — the Bahamou-Doumergue-Donnat credit-indices Hawkes paper read; the model-relative-baseline interpretation caution recorded; NO candidate sharpening, NO kill line changes, nothing measured, nothing armed
+
+Session-state note (work choice and its reason, recorded under the
+goal-autonomy conductor protocol v2, edition 2, section 3, and the
+GOALS.md rotation rule): front 2, the library deep-read queue, chosen
+by the owner's dated standing directive for this cycle ("run the next
+null-time deep-read session… follow the research-intake skill ritual
+exactly"), the direct-instruction path the conductor protocol and the
+standing order both recognize and which satisfies GOALS.md rule 3's
+no-consecutive-repeats condition (the repetition reason: the owner's
+dated instruction names the deep-read). Independent of that
+instruction, the chain checked against the live tail (main at the
+## 67 landing) and docs/GOALS.md edition 1: the synthesis pass (front
+4) was NOT due at session start — four deep-reads (50-53) had landed
+against the cadence's five; front 1 is blocked on the owner, front 3
+is blocked on codespace/data presence; front 2 held the only readable
+UNREAD head. THIS read brings the deep-read counter since goal-state
+edition 2 to FIVE, so the synthesis pass (front 4) is now DUE and MUST
+run first in the next session that selects its own work. The head was
+recomputed live, not from memory: the triage file and the library
+shelf (54 dated notes before this session) were read directly, the
+score-28 ordering recomputed from the raw triage JSON, and the ## 67
+landing's own next-pointer named the same target — xdb216a — giving a
+two-source confirmation; no open PR or working branch existed at
+session start.
+
+The paper: Achraf Bahamou, Maud Doumergue, Philippe Donnat, "Hawkes
+processes for credit indices time series analysis: How random are
+trades arrival times?" (arXiv:1902.03714v1, fund-authored, zero
+citations recorded in our index). Read against the ONE question (full
+note: paper/research/library/2026-11-19_credit_indices_hawkes_midfreq_deep_read.md).
+Verdict: NO kill line changes. NO new candidate sharpening. The grade
+and its reason, page-cited:
+
+1. [reinforcing, no new item] The exponential-Hawkes decays beta sit on
+   a flat, valley-ridden non-convex likelihood surface (Fig. 7, PDF
+   p. 17), and every fast fitting approach avoids that surface by
+   FIXING the decays a priori — a model-mismatch risk the authors
+   themselves flag (PDF p. 6). Decay handling is a researcher degree of
+   freedom in both directions (free: multi-mode, init-dependent;
+   fixed: mismatch). Reinforces the already-queued estimator-mode
+   candidate and the frozen constants discipline; nothing added.
+
+2. [interpretation caution] The fitted baseline mu is MODEL-RELATIVE,
+   not intrinsic: all three index baselines rose when the univariate
+   fit was replaced by a multivariate one, because "we decreased the
+   'Poissonian' behaviour of the arrival times by including more
+   information about the influence of other indices" (PDF p. 11). One
+   event stream, different self-excitation shares per model
+   dimensionality: any future L2/C8 self-excitation or endogeneity
+   reading must declare the model's dimensionality and channel set
+   before comparing branching ratios across fits, or the comparison is
+   manufactured by model choice. Reading discipline only; no queue
+   change.
+
+3. [reinforcing, no new item] Out-of-sample compensator time-change QQ
+   validation (fit 2017, tested 2018, PDF pp. 8-10, Figs. 4, 8-9) and
+   the honest overnight-gap treatment (null-intensity gaps adopted
+   only after a Bowsher spillover model estimated its spillover to
+   null, PDF pp. 8-9) reinforce the seeded out-of-sample discipline and
+   the declared-gap discipline already in the L0 amendment. Nothing
+   added.
+
+4. [cost-survival ammunition] Self-excitation is not homogeneous across
+   volume bins — large trades purely self-exciting and triggering
+   small ones (PDF p. 10) — so a future K7-style cost layer must not
+   extrapolate a single market-wide branching ratio across execution
+   sizes. Relevance only if that layer exists.
+
+5. [source-quality note] Fund-authored practitioner paper, arXiv v1
+   only, zero citations, data available "on demand" only (PDF p. 1,
+   not reproducible from the paper), three indices, one train year,
+   half-year test, copyediting-grade errors ("Ogota", PDF p. 2;
+   "fastly", PDF p. 11). Solid practitioner-grade methodology,
+   evidence-light; its branching ratios (0.57-0.62, PDF pp. 9-10) are
+   ammunition under the library invariant, never evidence. Check for a
+   published version before formal citation outside the note.
+
+What this paper would have killed if we had done it wrong: the
+dimension-comparison death (reading the model-choice baseline shift of
+PDF p. 11 as a market-level change in reflexivity) and the
+decay-mismatch death (treating a decays-fixed-for-speed convex fit as
+truth). Both pre-empted by the frozen-constants discipline, the queued
+estimator-mode sharpening, and the burden-of-proof orientation; neither
+moves any kill line.
+
+docs/DECISIONS_PENDING.md is NOT touched this session (no sharpening
+was queued): the ratification queue stands at THIRTY-TWO candidate
+sharpenings plus probe E1, zero armed. The GOALS.md front-2 status line
+is refreshed (the one operative bookkeeping edit): xdb216a consumed;
+the next UNREAD is "Forecasting duration in high-frequency financial
+data using a self-exciting flexible residual point process" (score 28,
+x72c407), behind it "Optimal trade execution and price manipulation in
+order books with time-dependent liquidity" (score 28, x95643a); the
+successor recomputes the head from the live triage file and the live
+tail before reading. Deep-read counter since edition 2: FIVE (50-54);
+the synthesis pass (front 4) is now DUE and MUST run first in the next
+work-selecting session before any new read.
+
+Not changed: nothing measured, no kill line moved, nothing armed,
+nothing trades live. Guard clean. Nothing measured, no kill line
+moved, nothing armed, nothing trades live. T1 remains armed awaiting
+the owner's word in its booked state (survived all five kill lines
+with sign inverted; T2 tested-fail); the blocked list stays blocked.
+Ratification queue after this session: THIRTY-TWO candidate
+sharpenings plus probe E1, zero armed.
