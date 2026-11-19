@@ -14,9 +14,7 @@ Hawkes kernel matrix by the multivariate Hawkes FCLT.
 Read 2026-11-19, against ONE question: what here would kill C1-L2 or C8
 faster, or change their kill lines? Source: legally acquired OA copy
 (docs/library/text/x5db64b_diffusive_limit_of_hawkes_driven_order_book_dynami.txt,
-18 pp., page-marked). Next UNREAD triage-rank entry not covered by an
-open PR or a landed note (score 31; see the log entry for the pointer
-state and the in-flight parallel claims on the two entries above it).
+18 pp., page-marked). Next UNREAD triage-rank entry (score 31).
 
 ## The paper in one paragraph
 
