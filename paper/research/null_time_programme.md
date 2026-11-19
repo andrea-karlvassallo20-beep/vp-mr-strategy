@@ -4387,3 +4387,110 @@ Sotiropoulos 2013), verified unread against all library notes on main after
 this session; a successor session must re-read the live main tail and the
 branch/PR set before consuming anything. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
+
+## 53. Null-time session 49 (2026-11-19): deep-read session 45 -- the Lipton-Pesavento-Sotiropoulos trade-arrival/quote-imbalance paper read; NO kill line changes, NO sharpening, nothing armed
+
+Paper: Alexander Lipton, Umberto Pesavento, Michael G Sotiropoulos, "Trade
+arrival dynamics and quote imbalance in a limit order book",
+arXiv:1312.0514v1 [q-fin.TR] (2 December 2013), legally acquired OA copy
+(docs/library/text/x5f04ef_trade_arrival_dynamics_and_quote_imbalance_in_a_li.txt,
+15 pp., page-marked, read in full). Next UNREAD triage-rank entry (score 29),
+selected per the previous session's pointer and re-verified unread against all
+library notes on main; no shelf gap, no inaccessibility. Read against ONE
+question: what here would kill C1-L2 or C8 faster, or change their kill
+lines?
+
+The paper in one paragraph: on VOD.L over Q1 2012, the top-of-book quote
+imbalance I = (qb - qa)/(qb + qa) orders the average mid-price move until the
+next quote change roughly linearly, up to about a third of the spread at high
+imbalance, with shorter waiting times, and the authors state explicitly that
+this alone offers no straightforward statistical arbitrage (Fig. 1, PDF
+pp. 3-5); conditioning the stopping time on the side of the next trade shifts
+average mid-price moves upward for passive-bid fills relative to next-buy
+stops, read as an aggressive-trader timing advantage (Fig. 2, PDF pp. 5-6),
+and event probabilities of favourable move, adverse move and passive fill are
+bucketed by imbalance (Fig. 3, PDF p. 7). To capture the joint dynamics the
+authors extend the Cont-de Larrard queue diffusion with a third unobservable
+process phi for near-side trade arrival, making the model non-Markovian, and
+solve the hitting-probability PDE semi-analytically through
+correlation-removing and spherical transforms plus a Fourier series (PDF
+pp. 6-11, Eqs. 2-25); joint in-sample calibration yields rho_xz = -rho_yz =
+0.8, rho_xy = -0.1, phi_0 = 3.5 s^(1/2) (Fig. 6, PDF pp. 12-13), reproduces
+the buy/sell shift and the gross event-probability shapes, and attributes
+about 60 per cent of the loss of a passive fill's theoretical spread capture
+to queue-depletion/trade-flow interaction alone, with favourable-move
+probability near 10 per cent at high near-side imbalance (PDF pp. 12-14);
+execution applications are left for future work (PDF pp. 12, 14).
+
+Grade: NO kill line changes. NO new candidate sharpening. Findings, graded
+and page-cited, in the note
+(2026-11-19_trade_arrival_quote_imbalance_deep_read.md):
+
+Reinforcing, no new item -- quote imbalance predicts the direction and rough
+size of the average next mid-price move, up to about a third of the spread,
+while the authors themselves disclaim straightforward statistical arbitrage
+(Fig. 1 and the no-arbitrage sentence, PDF pp. 3-5): a worked exhibit for the
+direction-versus-magnitude discipline and the economic gate; no rule moves.
+Interpretation caution -- every empirical quantity is event-conditional at
+book-update grain, stopped at the next price change or next trade of a side
+(PDF pp. 4-5, Table 1, PDF p. 5), the same next-event category the Dixon
+LOB-RNN session graded; an imbalance statistic licenses nothing about any
+time-horizon clock and may never be read into a coarser-grain
+compression-clock claim without its own horizon-explicit test.
+Interpretation caution -- the calibrated model is a four-parameter joint
+in-sample fit (three correlations plus phi_0, with rho_xz = -rho_yz imposed)
+to the same curves it is evaluated on, on one stock, other-stock similarities
+asserted but not exhibited (Figs. 6-7, PDF pp. 12-14); any future fitted
+microstructure model must disclose parameter count against held-out
+validation, and these numbers may not enter any spec table as venue constants.
+Cost-survival ammunition -- the 60 per cent passive-fill spread-capture loss
+to queue/trade interaction, before adverse selection (PDF pp. 12-13), is an
+LSE-equity, tick-constrained, maker-taker calibration on one stock in one
+quarter; a future K7-style cost-survival layer for passive-fill claims must
+carry queue-depletion/trade-flow slippage as an axis distinct from adverse
+selection and must re-estimate, not import, the figure; nothing is armed here.
+Source-quality note -- single instrument, single quarter, top-of-book
+observables only, daily averages treated as independent for error bars
+(PDF pp. 3, 7), and trade side inferred from price versus prevailing quotes
+(PDF p. 5), which misclassifies executions inside the spread and would
+contaminate any future trade-side register (interacting with the queued
+sign-register family); arXiv v1 read as-is with the journal version NOT
+checked at reading (uncertain, flagged for verification).
+
+Killed-if-wrong stands in the note: had the Fig. 1 imbalance predictability
+been laundered into "C1-L2 is pre-confirmed, the top of the book already
+predicts price", a to-a-third-of-the-spread next-event effect on one LSE
+equity with no cost model and the authors' own no-arbitrage sentence on the
+same page would have been passed off as support for a compression-clock
+claim it never makes; had the 60 per cent passive-slippage loss been
+imported as a transferable constant, an LSE-equity calibration carrying an
+imposed symmetry would have inflated a future cost-survival margin on a
+materially different venue; had the non-Markovian phi model been treated as
+a validated generator rather than a four-parameter in-sample fit,
+semi-analytic elegance would have smuggled venue-inapplicable parameters
+into a spec table; had the price-versus-quote side inference been adopted as
+ground truth, mislabeled mid-book executions would have contaminated any
+future trade-side register from the first row.
+
+Standing caveat: one liquid LSE equity, one quarter, top-of-book
+observables only, an unobservable time-to-fill surrogate process calibrated
+jointly and in sample, side labels inferred rather than published, and an
+agency-broker execution framing that is never operationalized per house
+rules. The library is ammunition, not evidence: nothing in this paper enters
+any spec, default, kill line, threshold, or generative null; it charges
+warnings only.
+
+No inaccessible or blocked sources this session; the extract was complete and
+page-marked. Ratification queue after this session: TWENTY-EIGHT candidate
+sharpenings (twenty-seven standing plus the optimizer-path (multi-start)
+disclosure rule joined through deep-read session 43; this session queued
+NOTHING), zero armed; docs/DECISIONS_PENDING.md NOT touched this session, per
+the rule (touched only when a candidate sharpening is queued). T1 remains
+armed awaiting the owner's word in its booked state (survived all five kill
+lines with sign inverted; T2 tested-fail); the blocked list stays blocked.
+Deep-read queue pointer: the next UNREAD entry is "Variance-Hawkes Process
+and its Application to Energy Markets" (score 29, x618573, McGillivray and
+Swishchuk, 2024), verified unread against all library notes on main after
+this session; a successor session must re-read the live main tail and the
+branch/PR set before consuming anything. Nothing measured, no kill line
+moved, nothing armed, nothing trades live.
