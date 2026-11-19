@@ -4494,3 +4494,120 @@ Swishchuk, 2024), verified unread against all library notes on main after
 this session; a successor session must re-read the live main tail and the
 branch/PR set before consuming anything. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
+
+## 54. Null-time session 50 (2026-11-19): deep-read session 46 — the McGillivray-Swishchuk variance-Hawkes construction paper graded default, nothing queued; this slot's earlier xa4ac36 draft lost the race to the landed ## 48 and was declared abandoned, nothing pushed, nothing superseded
+
+- **Session-state note (declared before the read)**: this slot re-read the live main
+  tail before consuming and found it had advanced past entry ## 47 to entry ## 53
+  (PRs from parallel sessions), among them a landed ## 48 for the SAME paper this
+  slot had drafted a read of (xa4ac36, the Filimonov-Wheatley-Sornette ACD
+  endogeneity mapping, note on main as
+  `2026-11-19_acd_endogeneity_hawkes_mapping_deep_read.md`, logged as deep-read
+  session 40 and null-time session 44, the same session numbers this slot had
+  drafted). Per the burst-slot race rule the landed entry wins: this slot's
+  duplicate note and ## 48 draft were abandoned locally, never pushed, no branch
+  pushed for it, no PR opened for it, no open PR closed, nothing superseded; the
+  landed ## 48 stands unedited. The parallel wave also landed ## 49
+  (xd02283, Hawkes jump-diffusion control), ## 50 (xdc14f4,
+  Hardiman-Bercot-Bouchaud critical reflexivity), ## 51 (the
+  Filimonov-Sornette apparent-criticality reply, which queued ONE candidate
+  sharpening, the optimizer-path (multi-start) disclosure rule, raising the queue
+  to TWENTY-EIGHT), ## 52 (the Dixon LOB-RNN classification paper) and ## 53
+  (x5f04ef, the Lipton-Pesavento-Sotiropoulos trade-arrival/quote-imbalance
+  paper). The landed ## 53's closing pointer names "Variance-Hawkes
+  Process and its Application to Energy Markets" (score 29, x618573) as the next
+  UNREAD; that pointer was re-verified here against the notes directory on live
+  main (no note keyed to x618573 or matched by normalized title), and the entry
+  was consumed here. The earlier history of this slot (x20bdef draft lost to
+  the landed ## 47, stale xd1af5a start abandoned, x36082b pointer re-resolved
+  as already read) is recorded in this slot's prior session notes; nothing was
+  measured during any part of this session, including the abandoned drafts.
+
+- **Library deep-read session 46** (next unclaimed UNREAD entry, score 29,
+  x618573, consumed here):
+  `paper/research/library/2026-11-19_variance_hawkes_energy_deep_read.md`
+  on Joshua McGillivray and Anatoliy Swishchuk (University of Calgary),
+  "Variance-Hawkes Process and its Application to Energy Markets"
+  (arXiv:2410.08420v1 [q-fin.MF], 14 October 2024): a construction paper
+  subordinating a standard Brownian motion by a simple exponential-kernel Hawkes
+  process, Vt := B(Nt) (Definition 1, PDF pp. 6-7), hand-fitted by trial and
+  error to 2018 and 2019 WTI and NYMEX front-month futures log returns with
+  visually overlapping distributions (Figs. 2-5, PDF pp. 7-9), Q-Q evidence
+  that 2024 minute-volume arrivals are not Poisson together with intraday
+  diurnal volume profiles (Figs. 6-9, PDF pp. 10-11), a generator for
+  (λt, Nt, B(Nt)) derived under asserted vanishing cross moments with
+  Var(B(Nt)) = E(Nt) (PDF pp. 12-14), the Itô formula
+  dB²(Nt) = 2B(Nt)dB(Nt) + dNt checked by Euler-Maruyama simulation to
+  mostly-within-±20% agreement with non-accumulating error spikes (Theorem 1,
+  Figs. 15-17, PDF pp. 14-15, 21-23), and the marginal B(Nt) ~d √Nt·N(0,1)
+  left as an unproven conjecture (Conjecture 1, PDF p. 15). Extract complete,
+  page-marked, 24 pp., read in full; no inaccessibility, no shelf gap. Read
+  against the ONE question. **Grade: NO kill line changed. NO new candidate
+  sharpening.** Default grade; a construction-and-conjecture exhibit with
+  nothing validated to programme standard. Findings, page-cited:
+
+  Reinforcing, no new item — the event-clock reading (price depends on trade
+  arrivals; Var(B(Nt)) = E(Nt) makes volatility mechanical in the arrival
+  count; PDF pp. 5-6, 13-14) sits inside the business-time family the queued
+  flow-clock scale-constant sharpening already covers; no new mechanism,
+  nothing licensed into any spec.
+  Interpretation caution — stationarity may not be relaxed: the authors say
+  the α < β condition "may not be necessary" (PDF p. 3), but α ≥ β drives the
+  branching ratio to ≥ 1 and the intensity to a non-stationary or explosive
+  regime in which long-horizon B(Nt) is ill-behaved; any future
+  subordination-style construction must keep the stationarity condition live,
+  never relaxed on the strength of a simulation-year horizon.
+  Interpretation caution — the Q-Q evidence conflates diurnal seasonality with
+  self-excitation: exponential-quantile rejection (Figs. 6-7, PDF pp. 10-11)
+  rejects memorylessness, but the midday/late-afternoon volume concentration
+  (Figs. 8-9) is equally reproduced by a non-homogeneous Poisson process; a
+  future arrival-process test must separate periodic intensity from genuine
+  endogenous feedback or it books seasonality as reflexivity; binds as read
+  discipline only, no programme artifact specifies such a test, nothing
+  moves.
+  Reinforcing, no new item — the fit evidence is eyeball-graded and uncosted:
+  hand calibration on in-sample distributions, no goodness-of-fit statistic,
+  no out-of-sample window, distributional form conjectured, and systematic
+  ±20% simulation discrepancies attributed to discretization (PDF pp. 7-9,
+  14-15); corroborates ammunition-not-evidence, licenses nothing.
+  Source-quality note — arXiv v1 preprint, single-venue energy futures,
+  one-year daily samples hand-fitted, generator cross moments asserted rather
+  than derived, calibration explicitly unvetted by the authors' own statement
+  (PDF p. 7); journal version unchecked at reading (uncertain, flagged).
+
+  Killed-if-wrong stands in the note: had the subordination idea been read
+  forward as a working alternative event clock for the programme, an unvetted
+  hand-calibrated fit with a conjectured distribution and a relaxed
+  stationarity condition would have been laundered into a validated
+  event-time instrument; had the Q-Q plots been booked as proof of
+  self-excitation, diurnal seasonality reproducible by a non-homogeneous
+  Poisson model would have entered the record as reflexivity evidence; and
+  had the ±20% simulation discrepancies been dropped, an Itô identity
+  verified only to eyeball tolerance would have been quoted as exact.
+  Ammunition-not-evidence and the venue-transfer ban prevented all three.
+  Standing caveat: front-month energy futures only, hand fits without
+  goodness-of-fit statistics, the key distributional claim unproven, asserted
+  generator cross moments, and persistent non-accumulating percent errors.
+  Laundering directions named: INTO — nothing; no α, β, v value, generator
+  term, Itô identity or conjectured marginal enters any spec, default,
+  calibration, tolerance or null, and the variance-Hawkes process may not
+  serve as a simulator or null for any C1-L2 or C8 arm without an
+  owner-ratified pre-declared derivation of its assumptions on the
+  programme's venue and fields; OUT — never quote this paper as "energy
+  futures are proved to follow a Hawkes clock", and never cite the Q-Q
+  figures as self-excitation evidence without the diurnal-seasonality
+  caveat.
+
+Ratification queue after this session: TWENTY-EIGHT candidate sharpenings
+(twenty-seven standing plus the optimizer-path (multi-start) disclosure rule
+joined through deep-read session 43; this session queued NOTHING), zero armed;
+docs/DECISIONS_PENDING.md NOT touched this session, per the rule (touched only
+when a candidate sharpening is queued). T1 remains armed awaiting the owner's
+word in its booked state (survived all five kill lines with sign inverted; T2
+tested-fail); the blocked list stays blocked. Deep-read queue pointer: a
+successor session must re-read the live main tail, docs/DECISIONS_PENDING.md
+and the branch/PR set before consuming anything, and must resolve every
+pointer against NOTE CONTENTS, not filenames or slugs; the unread set below
+score 29 must be recomputed from the triage order against all notes on live
+main at consumption time. Nothing measured, no kill line moved, nothing
+armed, nothing trades live.
