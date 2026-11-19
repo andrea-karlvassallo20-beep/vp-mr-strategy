@@ -5669,3 +5669,127 @@ noted), and record its work choice and reason in its session-state note.
   and must record its work choice and reason in its session-state
   note. Nothing measured, no kill line moved, nothing armed, nothing
   trades live.
+
+## 64. Null-time session 60 (2026-11-19): the misses curriculum's missing leg — the C1-L2 spec's base-rate confrontation written; the spec's silence on the daily table verified and named; ONE candidate sharpening queued (the C1-L2 base-rate confrontation, the thirty-first); three instrument observations recorded for the directorate; NO kill line changes, nothing measured, nothing armed
+
+Session-state note (work choice and its reason, recorded under the
+goal-autonomy conductor protocol v2, edition 2, section 3): front 3, the
+misses curriculum, selected under the ROTATION GUIDANCE (item 3) as the
+non-deep-read front this session. The choice chain, verified against the
+live tail as read at session start (main at 56add4c, tail ## 62): the
+last deep-read then landed was ## 61 (session 57); ## 62 (session 58) was
+an infrastructure disposition, not a front-3 item; the synthesis cadence
+did not fire at choice time (one deep-read since goal-state edition 2;
+the rule requires five); a readable UNREAD head existed (xf77014, score
+29), so the deep-read default remained lawfully available, but the
+rotation guidance says the deep-read is the floor, not the target, and
+front 3 is the named next work type in the owner's own rotation sequence.
+Front 3's entry criteria were then examined against
+the tree, not assumed: the descriptive protocol IS written, dated, and
+frozen (2026-11-16, src/misses_curriculum.py and src/misses_2x2.py
+docstrings, parity-pinned); the analysis legs are NOT executable in this
+environment (the cached klines live codespace-side; data/raw here holds
+only the L2 sample placeholders — verified directly), and the queue item's
+own endpoint — "the table itself becomes the reference the C1-L2 spec
+must confront" — had never been executed: direct search of
+paper/research/c1_l2_test_spec.md found ZERO matches for "misses," "base
+rate," "base-rate," "coverage," or "lift" (the C8 spec likewise). So the
+lawfully executable front-3 work this session was its completion leg: the
+confrontation itself, written.
+
+Mid-flight renumbering, disclosed (the main-wins protocol, third
+instance this evening): this entry was drafted as ## 63 / null-time
+session 59 against the 56add4c tail, staged, and byte-verified; the
+push-time race check then found main advanced to c538c9b — a parallel
+session had landed deep-read 51 AS ## 63 (null-time session 59: the
+Wang-Xu-Zhu Hawkes-IG microfoundation paper, xf77014), consuming the
+deep-read pointer this session's first draft named and taking the drafted
+number. The push was refused by the session's own abort rule (staged
+log no longer a prefix of live main) and NOTHING was pushed; both files
+were rebuilt against the advanced main and this entry is renumbered
+## 64 / null-time session 60. The landed ## 63 queued NOTHING (queue
+thirty plus probe E1 at its landing), so the sharpening this session
+queues remains the THIRTY-FIRST; its choice chain is unchanged by the
+landing (a second landed deep-read since edition 2 leaves the cadence
+unfired; the rotation reason was made against the tail at session start
+and the front-3 work reported here is the work that was done). One
+further live claim disclosed as observed state: PR #232 ("Null-time
+session 58 (log ## 62): GOALS.md status board installed, encoding-sanity
+guard closure with tests") stands open and unmerged; its title reuses the
+landed ## 62 slot, so it too owes the main-wins renumber at its landing;
+no claim of this session touches it. The work, and what it is not: a dated note
+(paper/research/misses_curriculum_c1l2_confrontation_2026-11-19.md) now
+(1) quotes the frozen 2026-11-16 base-rate table of record — 873 series,
+1,765,316 series-days, cells A=570 / B=33,595 / C=13,971 / D=1,717,180,
+coverage 0.039, P(move|primed) 0.01668, P(move|not primed) 0.00807, lift
+2.07, base priming rate 0.0194 — QUOTED, not recomputed: no protocol was
+re-run, no number was computed this session, NOTHING was measured; (2)
+states the laundering channel the confrontation closes: the daily grain
+is not silent — daily priming already lifts big moves 2.07x at 3.9%
+coverage, so a future L2 positive reported without the daily table
+beside it could sell as book-resolution discovery what the daily table
+already delivers for free; (3) drafts the proposed confrontation
+paragraph for c1_l2_test_spec.md in full — daily reference quoted whole
+in the spec before the gate, novelty-versus-daily-grain pre-declared
+before the data, horizon bridge between the spec's wall-clock barriers
+(H=24h primary, H=72h secondary) and the daily 10-bar horizon frozen
+before the data or non-comparability declared with reasons, and the
+daily lift 2.07 printed beside every reported L2 effect size; and (4)
+records the killed-if-wrong counterfactual: without it the programme's
+most expensive future test could return a daily-grain re-discovery
+dressed as an L2 discovery — the ## 45 synthetic-rebuttal and ## 61
+equilibrium-determinism laundering shapes, pre-empted at the spec
+instead of caught post-hoc. The draft is NOT installed: the C1-L2 spec
+file is untouched this session, as is every other spec, frozen constant,
+register, and ledger; the claims ledger does not fire (no claim status
+moved).
+
+ONE candidate sharpening queued, PENDING OWNER RATIFICATION: the C1-L2
+base-rate confrontation, the thirty-first. It is a harder-to-pass
+amendment, stated against the pre-registration discipline family (the
+sign-kill-line template rule's family): it forces the spec to state,
+while it is still a DRAFT blocked on data that does not yet exist, what
+its positive must add beyond what the daily grain already knows, and it
+takes that statement out of the future report author's hands — novelty
+claimed after a result is laundering; novelty pre-declared before the
+gate is a kill line the result must survive. docs/DECISIONS_PENDING.md
+is updated this session ONLY because a sharpening was queued, per the
+rule; the update also fixes a counting composition in the queue bullet
+left by ## 62's landing (probe E1 is separate from the sharpening count;
+the thirty-one are the twenty-nine through deep-read 51 plus the
+corrupt-landing sweep plus this queue item).
+
+Three instrument observations recorded by reference (front 8; upkeep is
+automated and never re-done by hand; this session acts on NONE of them,
+and none blocks the writing leg): (a) src/misses_2x2.py — built,
+protocol-frozen, parity-pinned, and wired into the nightly
+board_refresh cycle at founding — has NO outputs anywhere on main: no
+misses_2x2.csv, no per-series file, no dated report; its recorded first
+real run "in the codespace where the klines live" has either never
+happened or has never been committed; (b) board_history.csv holds
+exactly one snapshot row (2026-11-16), three nights stale; (c)
+logs/board_surprise_ledger.jsonl likewise holds only the founding
+nights. Together: there is no in-repo evidence the nightly cycle has
+run since founding. If the codespace cycle runs uncommitted, the
+sealed-prediction record — the programme's cheapest falsification
+instrument — is accumulating off-repo or not at all. Named for the
+owner's codespace check at the next directorate sitting; the
+confrontation paragraph deliberately cites only the frozen board-level
+table, whose outputs ARE on record.
+
+Not changed: nothing measured, no kill line moved, nothing armed,
+nothing trades live. No deep-read was consumed by this session; the live pointer is
+taken from the landed ## 63's record, not from this session's first
+draft: the next UNREAD entry is "Application of Hawkes volatility in the
+observation of filtered high-frequency prices" (score 28, xb710f4),
+then "Self-exciting price impact via negative resilience in stochastic
+order books" (score 28, x77c554); the successor recomputes the queue
+head from the live triage file and the live branch/PR set. T1 remains armed awaiting the owner's word
+in its booked state (survived all five kill lines with sign inverted;
+T2 tested-fail); the blocked list stays blocked. Ratification queue
+after this session: THIRTY-ONE candidate sharpenings plus probe E1, zero
+armed. A successor session must re-read the live main tail and the
+branch/PR set, consult docs/goal_autonomy_protocol.md (v2, edition 2,
+rotation guidance applies to selection), and record its work choice and
+reason in its session-state note. Nothing measured, no kill line moved,
+nothing armed, nothing trades live.
