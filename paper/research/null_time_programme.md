@@ -4740,3 +4740,122 @@ notes and the log on main; its page-marked extract exists in
 docs/library/text/; a successor session must re-read the live main tail
 and the branch/PR set before consuming anything. Nothing measured, no
 kill line moved, nothing armed, nothing trades live.
+
+## 56. Null-time session 52 (2026-11-19): deep-read session 48 — the Baldacci-Bergault SPDE order-book incentives paper read; graded venue-side mechanism design, default, nothing queued
+
+Session-state note (declared before the read): this session began as
+the landed ## 55's named next-UNREAD pointer (xc937ca, score 29). Its
+verification step re-read the live main tail, the branch set, and the
+open-PR set before consuming: entry ## 55 still stands as the last
+landed entry, all 48 library notes on main re-checked with no note for
+the slug, no open PRs, no in-flight branch for this paper, and the
+page-marked extract present on the shelf; the pointer was consumed
+clean.
+
+Paper: Bastien Baldacci (Quantitative Advisory Solutions) and Philippe
+Bergault (CMAP, École Polytechnique), "Optimal incentives in a limit
+order book: a SPDE control approach", arXiv:2112.00375v2 [math.OC]
+(14 October 2022; v1 December 2021), legally acquired OA copy
+(docs/library/text/xc937ca_optimal_incentives_in_a_limit_order_book_a_
+spde_co.txt, 19 pp., page-marked, read in full; no shelf gap, no
+inaccessibility). The entry was the previous session's named next-UNREAD
+pointer (score 29, xc937ca), re-verified unread against all 48 library
+notes on main. Read against ONE question: what here would kill C1-L2 or
+C8 faster, or change their kill lines?
+
+The paper in one paragraph: the authors adopt the Cont-Müller SPDE
+limit order book model (rescaled bid/ask volume density in signed
+distance from the mid-price, with diffusion, convection, proportional
+cancellation, a multiplicative HFT-submission/cancellation noise term,
+and a controllable order-submission source term; Eqs. 1-3, PDF pp. 3-4),
+pose the exchange's problem as maximizing cumulative rescaled book
+volume minus a convex penalty on the incentives (make-take-style
+rebates indexed by distance from the mid-price, paid at execution;
+Eq. 4, PDF pp. 4-5), prove a verification theorem under which the
+associated BSPDE admits a deterministic adjoint reducing to a linear
+parabolic PDE with a Feynman-Kac representation (Theorem 1, Eqs. 7-11,
+PDF pp. 5-7), obtain the stationary adjoint in closed form from a
+second-order ODE (Eqs. 12-15, PDF p. 7), and, for an exponential
+penalty with a concave incentive-response intensity, a closed-form
+stationary optimal incentive schedule declining super-exponentially
+with limit number (Eq. 16, Table 1, PDF pp. 7-10); the numerical
+section simulates a fully fictitious symmetric book (no market data,
+hand-set parameters, 10 limits per side, 30-minute horizon; PDF
+pp. 8-9), shows the incentives lift the first limit from the 5th to
+the 3rd most filled (Fig. 2, PDF p. 10), and exhibits the incentives'
+order-of-magnitude sensitivity to the diffusion, convection, and
+cancellation parameters (Figs. 3-8, Tables 2-4, PDF pp. 11-15).
+
+Grade: NO kill line changes. NO new candidate sharpening. Default
+grade: venue-side mechanism design, context not content under the one
+question. Findings, graded and page-cited, in the note
+(2026-11-19_spde_incentives_deep_read.md):
+
+Reinforcing, no new item -- the paper's premise is that a venue can
+move submission intensity and first-limit volume by paying for it
+(Eqs. 3-4, PDF pp. 4-5; Fig. 2, PDF p. 10; Section 6, PDF p. 16), a
+worked exhibit that observed arrival rates and book shape are partly
+policy variables; the library-is-ammunition and OUT-direction rules
+already fence it, no rule moves. Interpretation caution -- first-limit
+depth is partly fee-induced, not purely informative: the closed-form
+incentives concentrate overwhelmingly on the first limits (order 10^-3
+dollars at limit 1 versus 10^-29 at limit 10, Table 1, PDF p. 9) and the
+standing make-take mechanism on real venues is the same lever
+(PDF pp. 1-2), so any future C1-L2 interpretation of first-limit
+depth, queue-imbalance, or book-shape asymmetry must wear the caveat
+that part of that depth is manufactured by the venue's fee schedule; a
+reading discipline only, no queue change. Reinforcing, no new item --
+the closed-form "optimum" is a calibration hostage: halving the
+diffusion parameter multiplies the first-limit incentive by roughly 18
+(1.90e-3 to 3.51e-2, Tables 1-2, PDF pp. 9, 11-12), doubling the
+cancellation rate by roughly 9 (to 1.64e-2, Table 4, PDF p. 15), and
+the schedule inherits the super-exponential geometry of the assumed
+penalty and intensity forms (Eq. 16, PDF p. 8); a worked exhibit for
+the standing parameter-sensitivity discipline, which needs no
+amendment. Source-quality note -- pure theory on a fictitious book:
+every number simulated from hand-set parameters, no market data
+anywhere (PDF pp. 8-9); the authors themselves state the
+incentive-response parameters can only be calibrated from historical
+data at different incentive levels, "otherwise, some tests and
+heuristics should be used" (Remark 5, PDF p. 9); arXiv v2, published
+version not checked at reading (uncertain, flagged for verification);
+Section 5.3.3's comment sentence says "convection rate" while its
+setting is the cancellation rate (PDF p. 15 -- a copyediting slip),
+flagged so no citation borrows the wrong label; read, graded plainly,
+not promoted.
+
+Killed-if-wrong stands in the note: had the Cont-Müller SPDE plant
+been read as a description of the venue C1-L2 measures, a
+fictitious-book simulation with an order-of-magnitude-sensitive
+"optimum" would have been laundered into a structural prior on the very
+book whose compression signal C1-L2 hunts; had the multiplicative noise
+term (sigma*u*dW, glossed as HFT submission/cancellation noise, PDF
+p. 4) been cited as a modelling warrant for a book-level multiplicative
+"HFT noise," a solvability convenience would have entered the record as
+an empirical claim; had the first-limit incentive concentration been
+read as "first-limit depth is informative," the venue-fee artifact
+would have been inverted into an information statement. Nothing
+measured, library-is-ammunition, and the venue-explicit reading
+discipline prevented all of it. Laundering directions named: INTO --
+the fee-engineered-depth reading caveat and the calibration-hostage
+sensitivity exhibit, as standing-rule reinforcement only; OUT -- no
+eta, beta, alpha, sigma, or incentive value, no closed-form Eq. 16, no
+Table 1-4 figure, no Cont-Müller parameterization, and no
+"exchanges can shape the book" sentence is ever cited as expected
+behavior of any venue the programme measures, or as evidence that any
+programme feature carries information.
+
+No inaccessible or blocked sources this session; the extract was
+complete and page-marked. Ratification queue after this session:
+TWENTY-EIGHT candidate sharpenings, unchanged (deep-read session 48
+earned none; docs/DECISIONS_PENDING.md NOT touched this session, per
+the rule), zero armed; T1 remains armed awaiting the owner's word in
+its booked state (survived all five kill lines with sign inverted; T2
+tested-fail); the blocked list stays blocked. Deep-read queue pointer:
+the next UNREAD entry is "Simulating and analyzing order book data: The
+queue-reactive model" (score 29, x8afb03), the next score-29 entry in
+triage file order after this session's paper, verified unread against
+all 48 library notes and the log on main; its page-marked extract
+exists in docs/library/text/; a successor session must re-read the
+live main tail and the branch/PR set before consuming anything. Nothing
+measured, no kill line moved, nothing armed, nothing trades live.
