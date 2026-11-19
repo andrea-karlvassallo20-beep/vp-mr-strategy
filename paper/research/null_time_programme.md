@@ -6296,130 +6296,121 @@ the owner's word in its booked state (survived all five kill lines
 with sign inverted; T2 tested-fail); the blocked list stays blocked.
 Ratification queue after this session: THIRTY-TWO candidate
 sharpenings plus probe E1, zero armed.
-## 69. Null-time session 65 (2026-11-19): the first synthesis pass under the standing order — goal-state EDITION 3 recorded (protocol section 2 rewritten whole); four named gaps at zero status; the cadence reset; NO sharpening queued (no new mechanism earned), NO kill line changes, nothing measured, nothing armed
+
+## 69. Null-time session 65 (2026-11-19): deep-read session 55 — the Lee flexible-residual self-exciting duration paper read; ONE candidate sharpening queued (the primary-metric pre-commitment), NO kill line changes, nothing measured, nothing armed
 
 Session-state note (work choice and its reason, recorded under the
-goal-autonomy conductor protocol v2, edition 2, section 3, item 1 of
-the GOALS.md rotation rule): front 4, the synthesis pass — the
-first-outranked item, DUE at choice time. The choice chain, verified
-against the live tail at session start (main at 2b5c371, tail ## 68,
-open-PR and working-branch set empty: no open PR, no unmerged working
-branch): five deep-read sessions (50-54) had landed since goal-state
-edition 2 (## 61 Glosten-Milgrom, ## 63 Hawkes-IG-subordinator, ## 66
-filtered ticks, ## 67 negative resilience, ## 68 credit-indices
-Hawkes) against the cadence's five, so the cadence fired. The owner's
-same-day "continue" is the direct-instruction path that opens a
-work-selecting session; the selection itself is the rotation rule's,
-which puts a due synthesis pass first. The protocol file was read whole
-and is consistent (edition 2, sections 1-8, corrigendum and
-cross-reference notes intact); no fail-safe condition.
+goal-autonomy conductor protocol v2, edition 2, section 3, and the
+GOALS.md rotation rule): front 2, the library deep-read queue, chosen by
+the owner's dated standing directive for this cycle ("run the next
+null-time deep-read session … follow the research-intake skill ritual
+exactly"), the direct-instruction path the conductor protocol and the
+standing order both recognize. The chain was checked honestly against the
+live tail (main at the ## 68 landing) and docs/GOALS.md: front 4 (the
+synthesis pass) was ALREADY DUE at session start — five deep-reads (50-54)
+had landed against the cadence's five — and GOALS.md rotation rule 1 says
+front 4 when due runs first. The read below therefore ran on the owner's
+explicit instruction, which is recorded here as the reason it preceded the
+due synthesis pass, and the obligation stands UNDISCHARGED: the deep-read
+counter since goal-state edition 2 is now SIX (50-55), the synthesis pass
+is OVERDUE, and the next work-selecting session MUST run it first before
+any new read, per conductor protocol section 4 and GOALS.md front 4. Front
+1 is blocked on the owner (environment + paid Tardis data); front 3 is
+blocked on codespace/data presence. The head was recomputed live, not from
+memory: docs/library/edge_triage_scores.json was read directly, the
+score-28 ordering recomputed, the library shelf (55 dated notes before
+this session) listed, and the ## 68 landing's next-pointer named the same
+target — x72c407 — giving a two-source confirmation; no open PR or
+working branch existed at session start.
 
-The pass, run per protocol section 4 (the whole record since edition 2
-re-read: log ## 61-## 68, the five deep-read notes, DECISIONS_PENDING in
-full, GOALS.md, the live triage file, the 55-note shelf, and the guard
-run in all four modes on the assembled tree — clean). Products, each
-through its sanctioned channel:
+The paper: Kyungsub Lee, "Forecasting duration in high-frequency
+financial data using a self-exciting flexible residual point process"
+(arXiv:2604.00346v2, 18 Aug 2026, single-author, zero citations recorded
+in our index). Read against the ONE question (full note:
+paper/research/library/2026-11-19_duration_flexresidual_self_exciting_deep_read.md).
+Verdict: NO kill line changed; ONE new candidate sharpening queued,
+PENDING OWNER RATIFICATION. The grade and its reason, page-cited:
 
-1. The next dated edition of the goal state (the only channel that may
-   rewrite protocol section 2): EDITION 3, recorded. The facts block
-   recomputed whole from the live record: Phase 1 CLOSED by three
-   independent deaths AND ARCHIVED by the Board's dated 2026-11-19
-   word (directive block carried by GOALS.md; archived is NOT
-   falsified); Phase 2 ACTIVE, the Board's only active front
-   (C1-L2 → C8 → Convexity Sizing), blocked on the owner's data
-   acquisition; sealed instruments unchanged; 55 notes through
-   deep-read 54; queue THIRTY-TWO sharpenings plus probe E1, zero
-   armed; T1 armed awaiting the owner's word (sign inverted), T2
-   tested-fail; pointer x72c407 (score 28) then x95643a (score 28).
-   The ranked fronts UNCHANGED in order, statuses recomputed; the
-   re-ranking authority is exercised only in the recorded evidence,
-   the status notes, and the work-selection guidance. The synthesis
-   cadence is RESET: next due at five deep-reads since edition 3
-   (deep-read #55 onward). Edition 2's installation record is
-   preserved at ## 60; edition 1 at ## 58; amendment note appended as
-   protocol section 9. Ranking evidence recorded honestly: five
-   deep-reads, ZERO kill-line moves, three sharpenings in the window
-   (## 62 the corrupt-landing sweep, ## 65 the base-rate confrontation,
-   ## 67 the regime-window pre-declaration), reinforcement
-   concentrating in the estimator-discipline and pre-registration
-   families — four of five reads reinforced rather than amended, and
-   the score-28 tier named as the last concentrated microstructure
-   tier before the triage long tail, so the deep-read default's
-   marginal yield is expected to decline. Written INTO the edition so
-   the next pass or the owner's word can act on it; the ranking is NOT
-   re-ranked mid-window.
+1. [candidate sharpening, PENDING OWNER RATIFICATION] The primary-metric
+   pre-commitment: the evaluation-metric choice alone reverses the
+   forecast verdict at 1% significance — under squared-relative-error
+   loss every competitor is significantly worse than the SE-Burr model,
+   and under log-ratio loss every competitor is significantly better
+   (Table 4, PDF pp. 18-19; Table 3, PDF p. 17). Proposed amendment,
+   tightening rule 1 of the pre-registration discipline: any
+   C1-L2/C8-adjacent test spec must pre-declare its single primary
+   evaluation metric or loss, frozen before the data; secondary metrics
+   may be reported but can neither rescue a primary failure nor overturn
+   a primary pass. Harder to pass by construction — it forecloses
+   post-hoc metric shopping, a researcher degree of freedom this paper
+   shows is alone sufficient to flip a conclusion at the 1% level.
+   PENDING OWNER RATIFICATION; nothing armed.
 
-2. Named gaps, four, each at zero status until its channel fires it:
-   (a) the weekly directorate (protocol section 6) has not yet sat —
-   thirty-two candidates plus probe E1 pending, zero armed, and NO
-   ratification-readiness brief exists (GOALS.md G2); the single
-   highest-leverage lawful session work item in the programme; (b)
-   front 3's completion leg is written and queued, its analysis legs
-   remain execution-blocked on codespace/data presence — no session
-   action available; (c) the read-side 64K truncation failure mode
-   (## 60) has its guard-side leg closed (## 64) but no session-side
-   read-back helper — candidate-improvement status only; (d) the
-   integrity guard verified clean in all four modes on the tree
-   carrying edition 3 (recomputation, not assumption). None of the
-   four is fired here: the pass names gaps; the exploratory channel
-   (front 5) remains the sanctioned home if (c) is ever taken, G2 is
-   GOALS.md's own front, and (a) is presided over by the owner alone.
-   Work-selection guidance recorded in edition 3 (binding on sessions
-   until superseded): the next non-deep-read work-selecting session
-   takes G2.
+2. [reinforcing, no new item] Residual-distribution misspecification is
+   absorbed into the dynamics parameters: the exponential-residual fit
+   inflates alpha = 90.96 and beta = 285.90 (tiny SEs, Table 2, PDF p.
+   15; the text calls it out, PDF pp. 14-15) where the flexible-residual
+   fits sit at ~0.1 scales. Dynamic-parameter estimates are not evidence
+   of dynamics until the residual specification fits. Reinforces the
+   frozen-constants discipline and the queued estimator-mode candidate.
 
-3. Sharpening candidates: NONE queued. The pass's own honest bar: a
-   sharpening must be earned by a specific mechanism, and the window's
-   mechanisms (decay-surface flatness, model-relative baselines,
-   volume-bin inhomogeneity, aggregation-grid freedom, regime windows)
-   are each already covered by the queued estimator-mode, per-branch,
-   regime-window and dynamics-identification candidates. Default
-   grade stands: NO new candidate sharpening. The queue remains
-   THIRTY-TWO plus probe E1, zero armed.
+3. [reinforcing, no new item] The stability boundary alpha < beta*E[eps]
+   (Remark 1, PDF p. 7; Eq. 31, PDF p. 33) is a residual-mean boundary:
+   persistence grows as alpha/beta approaches unity (PDF pp. 11-12), so
+   any near-critical reading is fragile to the innovation-mean
+   assumption. Reinforces the estimator-discipline family (with the
+   session-63 window paper).
 
-4. Triage candidates: the live recomputation named in edition 3 —
-   the next UNREAD remains "Forecasting duration in high-frequency
-   financial data using a self-exciting flexible residual point
-   process" (score 28, x72c407), then "Optimal trade execution and
-   price manipulation in order books with time-dependent liquidity"
-   (score 28, x95643a); verified unread against the 55-note shelf and
-   the raw triage ordering. No NEW catalogued entries proposed: the
-   500-entry catalog is triaged; the honest product is the expected
-   marginal-yield decline recorded in edition 3, not an invented
-   re-score.
+4. [interpretation caution] Residual-diagnostic fit is not forecast
+   skill: FI-logACD whitens the residual ACF across all lags (PDF p. 22)
+   with no out-of-sample gain (Table 3, PDF p. 17), and every
+   specification, including the paper's best, rejects its own KS at 1%
+   (PDF p. 17). Future C8 model comparisons rest on the pre-declared
+   primary metric, never residual whitening or P-P-plot closeness.
 
-What this pass would have killed if it had been done wrong: the
-self-laundering death (a synthesis pass that "discovers" in its own
-window the evidence for the re-ranking it wants, or queues a
-sharpening to appear productive — the exact failure mode the standing
-order's carve-out on sharpening approvals exists for); the
-ranking-drift death (a mid-window re-rank of front 2 on one session's
-evidence, which would make the goal state a mood rather than a
-record). Both pre-empted by the default grade, the recorded-reason
-rule, and the edition rule's single-channel constraint.
+5. [reinforcing, no new item] AAPL one-tick mid-price durations are
+   violently heavy-tailed (kurtosis 61.46, over-dispersion 2.07, PDF p.
+   12), and the event definition (one full tick = two half-tick mid
+   moves, PDF p. 12) shapes the target. Second-market evidence for why
+   the queued dynamics-identification rule requires generative nulls to
+   match duration tails as flow-dynamics statistics, not just counts.
 
-docs/DECISIONS_PENDING.md is NOT touched this session (no sharpening
-was queued; no decision item changed state): the ratification queue
-stands at THIRTY-TWO candidate sharpenings plus probe E1, zero armed.
-docs/GOALS.md status lines refreshed (front 4 RUN, front 2 unchanged
-at x72c407, G2 proposed as the next non-deep-read choice, the THIRTY
-brief-count corrected to THIRTY-TWO); docs/goal_autonomy_protocol.md
-section 2 rewritten whole as edition 3 with the section 9 amendment
-note appended.
+6. [source-quality note] Single-author arXiv v2 preprint, one asset, one
+   month, no code, base model from the author's own Lee (2025);
+   practitioner-grade single-asset evidence, ammunition under the
+   library invariant, never programme evidence. Check for a published
+   version before formal citation outside the note.
+
+What this paper would have killed if we had done it wrong: the
+metric-shopping death (verdict read off whichever loss flattered a prior —
+Table 4 shows two standard metrics rejecting in opposite directions on the
+same data at 1%) and the residual-laundering death (reading the inflated
+exponential-residual alpha/beta of Table 2, PDF p. 15, as genuine
+self-excitation). Both pre-empted by the queued sharpening, a finding of
+this session, plus the standing frozen-constants and estimator-mode
+discipline; neither moves any kill line.
+
+docs/DECISIONS_PENDING.md is updated this session per the rule (a
+sharpening was queued): the ratification queue now holds THIRTY-THREE
+candidate sharpenings plus probe E1, zero armed — the twenty-nine through
+deep-read session 51, the corrupt-landing sweep (session 58), the C1-L2
+base-rate confrontation (session 61), the self-excitation regime-window
+pre-declaration (session 63), and this session's primary-metric
+pre-commitment. The GOALS.md front-2 status line is refreshed (the one
+operative bookkeeping edit): x72c407 consumed; the next UNREAD is
+"Optimal trade execution and price manipulation in order books with
+time-dependent liquidity" (score 28, x95643a), behind it "Hawkes model for
+price and trades high-frequency dynamics" (score 27, x2df250); the
+successor recomputes the head from the live triage file and the live tail
+before reading. Deep-read counter since edition 2: SIX (50-55); the
+synthesis pass (front 4) is OVERDUE and MUST run first in the next session
+that selects its own work, before any new read.
 
 Not changed: nothing measured, no kill line moved, nothing armed,
-nothing trades live. Guard clean (default, --sweep, --library,
---encoding) on the assembled tree carrying edition 3. Nothing
-measured, no kill line moved, nothing armed, nothing trades live. T1
-remains armed awaiting the owner's word in its booked state (survived
-all five kill lines with sign inverted; T2 tested-fail); the blocked
-list stays blocked. Ratification queue after this session: THIRTY-TWO
-candidate sharpenings plus probe E1, zero armed. Next-queue pointer:
-"Forecasting duration in high-frequency financial data using a
-self-exciting flexible residual point process" (score 28, x72c407);
-the successor recomputes the head from the live triage file and the
-live tail before reading. The next work-selecting session's non-deep-
-read choice, per edition 3's guidance: GOALS.md G2, the
-ratification-readiness briefs, in service of the directorate's first
-sitting.
-__ENTRY__
+nothing trades live. Guard checks (marker sweep and encoding sanity,
+executed on this session's changed files locally; the repo-wide guard runs
+in CI on the PR): clean. T1 remains armed awaiting the owner's word in
+its booked state (survived all five kill lines with sign inverted; T2
+tested-fail); the blocked list stays blocked. Ratification queue after
+this session: THIRTY-THREE candidate sharpenings plus probe E1, zero
+armed.

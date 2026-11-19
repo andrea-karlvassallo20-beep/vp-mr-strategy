@@ -1,4 +1,4 @@
-# Pending owner decisions — the thirty-second dashboard
+# Pending owner decisions — the thirty-third dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-19 (audited
 against the claims ledger and the record — stale items resolved by your
@@ -33,15 +33,30 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: thirty-two
+  library deep-reads and the ratified exploratory channel: thirty-three
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
   null-time session 61, plus the self-excitation regime-window
   pre-declaration queued 2026-11-19 by deep-read session 53 / null-time
-  session 63; probe E1 stands separately and is not counted
-  among the thirty-two); most recently joined 2026-11-19,
-  the self-excitation regime-window pre-declaration (before the L0
+  session 63, plus the primary-metric pre-commitment queued 2026-11-19 by
+  deep-read session 55 / null-time session 65; probe E1 stands separately
+  and is not counted among the thirty-three); most recently joined
+  2026-11-19, the primary-metric pre-commitment (before the L0 gate, any
+  C1-L2/C8-adjacent test spec must pre-declare its single primary
+  evaluation metric or loss, named and frozen before the data; secondary
+  metrics may be reported but can neither rescue a primary failure nor
+  overturn a primary pass; the Lee flexible-residual duration paper shows
+  the metric choice alone reverses the forecast verdict at 1% significance
+  — every competitor significantly worse than SE-Burr under
+  squared-relative-error loss and significantly better under log-ratio
+  loss on the same data (Table 4, PDF pp. 18-19), a researcher degree of
+  freedom alone sufficient to flip a conclusion; hardening rule 1 of the
+  pre-registration discipline, the same tightening family as the base-rate
+  confrontation and the regime-window pre-declaration; full draft with the
+  killed-if-wrong counterfactual in
+  `paper/research/library/2026-11-19_duration_flexresidual_self_exciting_deep_read.md`),
+  and earlier the same day, the self-excitation regime-window pre-declaration (before the L0
   gate, any C1-L2/C8-adjacent spec that proposes to identify a
   self-excitation or negative-resilience regime in the book data must
   carry a pre-declared regime-window rule — regime boundaries computed

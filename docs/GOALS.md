@@ -69,33 +69,24 @@ construction.
   `paper/research/l2_data_acquisition_spec.md`); the L0 dry run is
   unblocked by the recorded L0 amendment; never claimable by a session.
 - Front 2 — the library deep-read queue. STATUS: ACTIVE. Next UNREAD
-  after the ## 61, ## 63, ## 66, ## 67, ## 68 and ## 70 landings
+  after the ## 61, ## 63, ## 66, ## 67, ## 68 and ## 69 landings
   (2026-11-19; x0d8b2a, xf77014, xb710f4, x77c554, xdb216a and
-  x72c407 consumed):
-  "Forecasting duration in high-frequency financial data using a
-  self-exciting flexible residual point process" (score 28, x72c407);
-  behind it "Optimal trade execution and price manipulation in order
-  books with time-dependent liquidity" (score 28, x95643a); re-read
-  the live tail before consuming; the ritual's slug-keyed unread rule
-  applies. NOTE ## 68: the deep-read counter since goal-state edition
-  2 reached FIVE (deep-reads 50-54). NOTE ## 69 (null-time session
-  65): the due synthesis pass RUN — goal-state EDITION 3 recorded by
-  the first synthesis pass (statuses recomputed; four named gaps;
-  cadence reset); the pass's work-selection guidance names G2 below as
-  the strongest next non-deep-read choice. NOTE ## 70 (null-time
-  session 66): deep-read 55, the FIRST since edition 3 — the
-  self-exciting flexible residual duration-forecasting paper read
-  (x72c407 consumed, NO sharpening, NO kill line change); the counter
-  since edition 3 stands at ONE.
+  x72c407 consumed): "Optimal trade execution and price manipulation in
+  order books with time-dependent liquidity" (score 28, x95643a); behind
+  it "Hawkes model for price and trades high-frequency dynamics" (score
+  27, x2df250); re-read the live tail before consuming; the ritual's
+  slug-keyed unread rule applies. NOTE ## 69: the deep-read counter
+  since goal-state edition 2 is now SIX (deep-reads 50-55) — see
+  front 4.
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
   without real klines, and no invented data is substituted.
-- Front 4 — the synthesis pass. STATUS: RUN as ## 69 (2026-11-19):
-  goal-state EDITION 3 recorded (protocol section 2 rewritten whole by
-  the first synthesis pass; fronts unchanged in order, statuses
-  recomputed; four named gaps at zero status; cadence reset). Next due
-  when five or more deep-read sessions have landed since edition 3
-  (deep-read #55 onward).
+- Front 4 — the synthesis pass. STATUS: OVERDUE (## 69 landing,
+  2026-11-19): six deep-read sessions (50-55) have landed since
+  goal-state edition 2, one past the cadence's five (the ## 69 read ran
+  on the owner's dated direct instruction, recorded in its session-state
+  note); the next work-selecting session MUST run the synthesis pass per
+  the conductor protocol section 4 BEFORE any new read.
 - Front 5 — gap-driven probes. STATUS: standing, per
   `docs/exploratory_channel.md`; up to one block per session at the
   session's discretion.
@@ -127,14 +118,11 @@ its verdicts stay frozen, and nothing here re-opens the archive.
 
 G2. Ratification-readiness briefs. ENTRY: any session; strongest
 claim when front 2 is between reads. FEEDS: the weekly directorate —
-one-page accept/reject briefs for the queued THIRTY-TWO sharpenings
+one-page accept/reject briefs for the queued THIRTY-THREE sharpenings
 plus probe E1, grouped by the precedent they tighten. BOUNDARY:
 briefs summarize already-recorded proposals with their sources; a
 brief invents nothing, queues nothing new, and arms nothing. STATUS:
 not started; the queue is enumerated in the log's latest section.
-NOTE ## 69 (the edition 3 work-selection guidance): this G-front is
-the strongest non-deep-read choice for the next work-selecting
-session — the directorate has not yet sat and no brief exists.
 
 G3. C8 skeleton coherence. ENTRY: after a synthesis pass with
 C8-relevant output, or on finding a gap in the skeleton's
