@@ -1,6 +1,6 @@
 # Pending owner decisions — the thirty-third dashboard
 
-**Maintained by the null-time sessions. Last updated: 2026-11-19 (audited
+**Maintained by the null-time sessions. Last updated: 2026-11-20 (audited
 against the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
 Every item below is BLOCKED ON YOUR WORD — nothing runs, arms, or merges
@@ -33,7 +33,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: thirty-four
+  library deep-reads and the ratified exploratory channel: thirty-five
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -42,9 +42,33 @@ each case. Items are ordered by how much they gate.
   session 63, plus the primary-metric pre-commitment queued 2026-11-19 by
   deep-read session 55 / null-time session 65, plus the
   spread-convention declaration rule queued 2026-11-20 by deep-read
-  session 56 / null-time session 67; probe E1 stands separately
-  and is not counted among the thirty-four); most recently joined
-  2026-11-20, the spread-convention declaration rule (before the L0
+  session 56 / null-time session 67, plus the level-versus-memory
+  disambiguation for self-excitation claims queued 2026-11-20 by
+  deep-read session 59 / null-time session 70; probe E1 stands separately
+  and is not counted among the thirty-five); most recently joined
+  2026-11-20, the level-versus-memory disambiguation for
+  self-excitation claims (before the L0 gate, any C1-L2/C8-adjacent
+  spec interpreting count-based evidence — elevated conditional
+  count rates, clustering, branching-ratio or contagion estimates —
+  as TEMPORAL self-excitation must pre-declare a concurrent
+  book-depth control arm separating the level effect (book size
+  mechanically scaling the rate) from the memory effect, with both
+  directions reported before the data; a structure that survives only
+  without that arm may not enter any spec as support — the Kaj-Caglar
+  buffer-Hawkes paper proves a model whose market-order intensity is
+  a function of the instantaneous book size alone, carrying no
+  temporal kernel on the execution count (eq. 3, PDF p. 5, and the
+  generator, PDF p. 8), still produces Hawkes-identical clustering
+  with Borel-distributed cluster progeny (PDF pp. 11-13) and inflated
+  dispersion (PDF p. 10), while the (intensity, count) marginal is
+  provably non-Markovian with the book size the hidden confounder
+  (PDF p. 8), so counts alone cannot distinguish level from memory —
+  hardening rule 1 of the pre-registration discipline, the same
+  tightening family as the self-excitation regime-window
+  pre-declaration and the primary-metric pre-commitment; full draft
+  with the killed-if-wrong counterfactual in
+  paper/research/library/2026-11-20_buffer_hawkes_process_lob_deep_read.md),
+  and earlier, the spread-convention declaration rule (before the L0
   gate, any book reconstruction, generative null, or flow-measurement
   input used in a C1-L2/C8-adjacent computation must pre-declare its
   spread convention; a zero-spread / single-price / mid-only handling
