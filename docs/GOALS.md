@@ -69,8 +69,8 @@ construction.
   `paper/research/l2_data_acquisition_spec.md`); the L0 dry run is
   unblocked by the recorded L0 amendment; never claimable by a session.
 - Front 2 — the library deep-read queue. STATUS: ACTIVE. Next UNREAD
-  after the ## 61, ## 63, ## 66, ## 67, ## 68, ## 69, ## 71 and ## 72
-  landings (2026-11-19/20; x0d8b2a, xf77014, xb710f4, x77c554, xdb216a,
+  after the ## 61, ## 63, ## 66, ## 67, ## 68, ## 69 and ## 71 landings
+  (2026-11-19/20; x0d8b2a, xf77014, xb710f4, x77c554, xdb216a,
   x72c407, x95643a and x2df250 consumed): "Convergence of Heavy-Tailed
   Hawkes Processes and the Microstructure of Rough Volatility"
   (score 27, x8fc12b); behind it
