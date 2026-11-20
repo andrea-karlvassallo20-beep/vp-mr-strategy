@@ -33,7 +33,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: thirty-six
+  library deep-reads and the ratified exploratory channel: thirty-seven
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -46,9 +46,38 @@ each case. Items are ordered by how much they gate.
   disambiguation for self-excitation claims queued 2026-11-20 by
   deep-read session 59 / null-time session 70, plus the
   sign-persistence admission null queued 2026-11-20 by deep-read
-  session 60 / null-time session 71; probe E1 stands separately
-  and is not counted among the thirty-six); most recently joined
-  2026-11-20, the sign-persistence admission null (any C1-L2/C8
+  session 60 / null-time session 71, plus the
+  estimator-configuration freeze queued 2026-11-20 by deep-read
+  session 63 / null-time session 74; probe E1 stands separately
+  and is not counted among the thirty-seven); most recently joined
+  2026-11-20, the estimator-configuration freeze (any C1-L2/C8-adjacent
+  kernel — or other estimator-dependent — computation must
+  pre-register, BEFORE fitting, its FULL estimator configuration: the
+  second-order-statistics grid (h, nlin, nlog or equivalent rule), the
+  truncation horizon, the sampling scheme, any loss or magnitude
+  weightings, the quadrature counts and the training configuration,
+  chosen from a declared generic default with every deviation a dated
+  amendment BEFORE the data is touched; a kernel-dependent claim
+  surviving only under a post-hoc re-configuration of these
+  auxiliaries may not enter any spec as support — the Fabre–Muni Toke
+  neural Hawkes paper proves the same characterization equation on the
+  same second-order statistics yields kernel shapes that swing with
+  exactly these choices: the Wiener-Hopf benchmark on a poorly chosen
+  grid "can still generate kernels with oscillatory behaviours which
+  could lead to false discoveries in practical cases" (PDF p. 21,
+  Figures 13-14, PDF pp. 21-22), the method's magnitude-balancing
+  weighting ζ (Eqs. 29-30, PDF p. 9) exists because raw kernel
+  magnitudes shadow each other and are analyst-rebalanced, and the
+  paper's own remedy is a FROZEN generic configuration with
+  "no fine tuning" (Table 1, PDF p. 10; PDF p. 24) — harder-to-pass
+  because a kernel-shaped trigger or placebo that only passes under
+  retuned bins, grids or weightings now fails by rule instead of
+  surviving as tuning; tightens the named-estimator-identity rule by
+  extending the pre-commitment from WHICH estimator to WHICH estimator
+  in WHICH exact configuration; full draft with the killed-if-wrong
+  counterfactual in
+  paper/research/library/2026-11-20_neural_hawkes_fabre_muni_toke_deep_read.md),
+  and earlier, the sign-persistence admission null (any C1-L2/C8
   short-horizon sign or aggressive-flow feature is admitted only if
   it adds value beyond a PRE-REGISTERED sign-persistence null (the
   last-sign repeat, zero parameters), with the survival shown in the
