@@ -75,18 +75,23 @@ construction.
   order books with time-dependent liquidity" (score 28, x95643a); behind
   it "Hawkes model for price and trades high-frequency dynamics" (score
   27, x2df250); re-read the live tail before consuming; the ritual's
-  slug-keyed unread rule applies. NOTE ## 69: the deep-read counter
-  since goal-state edition 2 is now SIX (deep-reads 50-55) — see
+  slug-keyed unread rule applies. NOTE (refreshed 2026-11-20,
+  null-time session 66, log ## 70): the deep-read counter since
+  EDITION 3 stands at ONE of five (deep-read 55 counted; the
+  edition-3 recomputation window was deep-reads 50-54 at ## 68) — see
   front 4.
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
   without real klines, and no invented data is substituted.
-- Front 4 — the synthesis pass. STATUS: OVERDUE (## 69 landing,
-  2026-11-19): six deep-read sessions (50-55) have landed since
-  goal-state edition 2, one past the cadence's five (the ## 69 read ran
-  on the owner's dated direct instruction, recorded in its session-state
-  note); the next work-selecting session MUST run the synthesis pass per
-  the conductor protocol section 4 BEFORE any new read.
+- Front 4 — the synthesis pass. STATUS: NOT DUE (refreshed 2026-11-20,
+  null-time session 66, log ## 70): the first pass under the standing
+  order RAN as null-time session 65 and is recorded as goal state
+  EDITION 3 (the protocol section 9 note; log ## 69); the previous
+  OVERDUE sentence on this board was stale against that edition and is
+  corrected here as status bookkeeping only, the obligation having been
+  discharged by the session that ran the pass. Cadence per edition 3:
+  next due when five or more deep-reads have landed since edition 3
+  (deep-read #55 onward); the counter stands at ONE of five.
 - Front 5 — gap-driven probes. STATUS: standing, per
   `docs/exploratory_channel.md`; up to one block per session at the
   session's discretion.
@@ -122,7 +127,12 @@ one-page accept/reject briefs for the queued THIRTY-THREE sharpenings
 plus probe E1, grouped by the precedent they tighten. BOUNDARY:
 briefs summarize already-recorded proposals with their sources; a
 brief invents nothing, queues nothing new, and arms nothing. STATUS:
-not started; the queue is enumerated in the log's latest section.
+PREPARED (2026-11-20, null-time session 66, log ## 70):
+docs/DIRECTORATE_BRIEFS.md holds the batch-ratify reading for all
+thirty-three queued sharpenings plus probe E1, grouped into nine
+families by the precedent each one tightens, with the count
+reconciliation and per-item sources recorded; the briefs summarize
+recorded proposals only, queued nothing, and armed nothing.
 
 G3. C8 skeleton coherence. ENTRY: after a synthesis pass with
 C8-relevant output, or on finding a gap in the skeleton's
