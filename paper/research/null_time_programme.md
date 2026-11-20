@@ -7665,3 +7665,190 @@ the assembled tree.
 Nothing measured, no kill line moved, nothing armed, nothing trades live.
 Guard clean: python3 src/integrity_guard.py run this session exits zero on
 the assembled tree.
+
+
+## 83. Null-time session 76 (2026-11-20), first act: the third synthesis pass — the cadence recomputed honestly from the edition-4 reset (FIVE of five, mis-tallied as three at ## 82 and as two on the stale GOALS line); the edition-4 re-landing debt cleared by supersession; goal state rewritten as EDITION 5; NO sharpening queued by the pass
+
+Session-state note (work choice and its reason, recorded under the
+goal-autonomy conductor, the protocol file read live on main and found
+at EDITION 3 text with the ## 78 debt standing): the live main tail
+(through ## 82) and docs/DECISIONS_PENDING.md were read first; the
+cadence check was recomputed from first principles against the edition-4
+reset at ## 76 — deep-reads 60 (## 77), 61 (## 79), 62 (## 80), 63
+(## 81) and 64 (## 82) have landed since, five of five, so per the
+conductor protocol section 3 point 2 and the ritual's director step the
+synthesis pass runs FIRST. The counter discrepancies in the ## 80-## 82
+session-state notes (which counted two and three) are recorded here
+honestly rather than edited in place; the reset at ## 76 governs and
+the count is five. The pass's session deep-read follows as this
+session's second act (## 84), under the owner's standing dated
+directive of 2026-11-20.
+
+The edition-4 re-landing debt (GOALS front 4, ## 78): the EDITION 4
+section-2 rewrite claimed at ## 76 never survived the session-71 branch
+corruption. No session invents protocol text, so the debt is cleared by
+SUPERSESSION, not re-authoring: this pass rewrites the protocol's
+section 2 whole as EDITION 5 per the edition rule and section 4's
+product list; edition 4's substance stands preserved in full in the ##
+76 log record; the protocol file carries a new section 10 note recording
+both acts; the front order is unchanged from editions 3 and 4 and the
+statuses are recomputed.
+
+Facts recomputed from the live record (main tail through ## 82 at pass
+time):
+
+- Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
+  2026-11-19; archived is NOT falsified; every kill line frozen;
+  unchanged.
+- Phase 2 (Crypto L2): ACTIVE, the Board's only active front (C1-L2 →
+  C8 → Convexity Sizing), blocked on the owner's data acquisition; the
+  L0 dry run unblocked; unchanged.
+- Library: 64 deep-read notes through session 64 on main's tip; the
+  ratification queue holds THIRTY-SEVEN candidates plus probe E1, zero
+  armed; T1 armed awaiting the owner's word (sign inverted); T2
+  tested-fail; the blocked list stays blocked.
+- Queue pointer: next UNREAD "Stochastic Price Dynamics Implied By the
+  Limit Order Book" (score 25, x074d5c), then x8f729f (score 25) —
+  recomputed by title-matching the score-sorted triage file against the
+  live tail; the score-26 tier fully consumed.
+
+What the window taught (ranking evidence, nothing laundered): five
+deep-reads since edition 4 moved ZERO kill lines and queued exactly
+ONE sharpening (#37 estimator-configuration freeze, ## 81); 4 of 5
+reads queued nothing; the queue's new mechanisms concentrate in the
+estimator-identity and estimator-free-null families (#36 ## 77, #37 ##
+81); the declining-yield expectation named at editions 3-4 held, and
+the tier boundary has passed into the score-25 tail.
+
+Named gaps (the pass's product, each at zero status until its channel
+fires it): (1) the append-only log's write-side ~64K truncation class
+(## 75, ## 78) still has NO standing CI byte-size-monotonicity check
+and no large-read/large-write verification helper — named,
+candidate-improvement status only; (2) the weekly directorate has
+still not sat: thirty-seven candidates plus probe E1 pending, and the
+G2 briefs (docs/DIRECTORATE_BRIEFS.md) cover only items 1-33, so a
+brief refresh for 34-37 is the ranked non-deep-read work item of this
+edition; (3) front 3 remains blocked on codespace/data presence.
+
+The pass measures nothing, arms nothing, launders nothing into any
+spec. DECISIONS_PENDING.md is untouched BY THE PASS. GOALS.md front 2,
+front 4 and the edition references are refreshed (operative
+bookkeeping); the cadence is RESET by this edition (next due at five
+deep-reads since edition 5, #65 onward; #65 this session counts).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live.
+
+
+## 84. Null-time session 76 (2026-11-20), second act: library deep-read session 65 — the Çetin–Waelbroeck Glosten-equilibrium paper read; the impact functional form shown to be a derived consequence of two analyst premises (signal-tail class, competitor count) rather than a free parameter; ZERO sharpenings queued; the spread shown to be an adverse-selection object before it is a liquidity object
+
+- **Library deep-read session 65** (front 2, the score-25 tier; the ##
+  82 pointer "Informed trading, limit order book and implementation
+  shortfall: equilibrium..." was the queue's next UNREAD and is
+  consumed here):
+  paper/research/library/2026-11-20_glosten_informed_trading_is_deep_read.md
+  on Umut Çetin (LSE) and Henri Waelbroeck (Baruch College, CUNY /
+  AlgoCortex LLC), "Informed Trading, Limit Order Book and
+  Implementation Shortfall: Equilibrium and Asymptotics"
+  (arXiv:2003.04425v1 [q-fin.TR], 9 Mar 2020). A static Glosten
+  equilibrium: competitive liquidity suppliers post the book, a
+  competitive dealer with normal inventory Z trades the aggregate of N
+  insiders who observe the liquidation value V exactly; equilibrium iff
+  the integral equation (3.11) has a solution, existence proven for
+  bounded V (Thm 3.2, PDF pp. 10-15); Gaussian scaling makes the
+  bid-ask spread independent of the noise variance σ while the book
+  flattens as σ grows (Cor. 3.2-3.3, PDF pp. 11-13) and the spread
+  widens with informational asymmetry; with a monopolist the last slice
+  prices at v (Prop. 2.1(2), PDF p. 9) while N > 1 competitors overshoot
+  and drive aggregate profit to 0 (Prop. 3.2, PDF pp. 12-13); the exact
+  large-trade asymptotics are the headline — M − F regularly varying of
+  index tied to Ψ+x(M) and N, power law iff fat-tailed signals, log laws
+  otherwise (Thms 4.1-4.3, PDF pp. 16-21; Tables 1-2, PDF p. 26), the
+  equilibrium volume tail a power law with exponent ζ+ (Rem. 5, PDF p.
+  20), and for unbounded signals equilibrium conjectured to require
+  N ≥ Ψ+x(∞) — no equilibrium for a monopolist under Student-t(3),
+  parabolic impact at N = 2, linear at N = 3, concave at N ≥ 4 (PDF pp.
+  25, 28, 32-33); implementation shortfall strictly below the marginal
+  cost F on the buy side (Prop. 2.2, PDF p. 9), converging to it as N
+  grows (Cor. 4.3, PDF p. 21); a same-price desk variant behaves
+  similarly with no existence proof (PDF p. 35).
+- Grade: NO kill line changes. NO new candidate sharpening — default
+  grade; every lesson is a page-cited instance of a discipline the
+  queue already carries.
+  1. [reinforcing, no new item] Impact and volume-tail functional forms
+     are DERIVED inside one self-consistent world from the declared
+     signal-tail class plus the competitor count N (PDF pp. 1, 5, 20,
+     26, 38); the common practitioner forms agree at small sizes and
+     diverge exactly where large-trade data is sparse (PDF p. 4), so
+     any fitted form near the large-trade boundary is an extrapolation —
+     supporting the library-is-ammunition rule from the assumption
+     side: no functional form may be assumed either without a
+     pre-declared tail class. No queue change.
+  2. [reinforcing, no new item] The authors' own three practical
+     difficulties — spread-impact collinearity for small orders, weak
+     signal-to-noise for small executions, endogenous order-size bias
+     for large trades (PDF p. 22) — the identification discipline
+     stated by the source literature itself; reinforces the queued
+     base-rate confrontation family. No queue change.
+  3. [interpretation caution] The impact exponent is manufactured by
+     N alone in their Table 1/Student-t(3) worked case (parabolic
+     N = 2, linear N = 3, concave N ≥ 4, PDF pp. 26, 28, 32-33): every
+     magnitude-response reading of imbalance or flow carries an
+     unstated competition premise; no universal concavity or sign of
+     curvature may be read from this shelf or assumed in a spec.
+     No queue change.
+  4. [interpretation caution] The equilibrium spread is invariant to
+     noise-trading volume σ and moves only with informational
+     asymmetry (Cor. 3.2-3.3, PDF pp. 12-13, 38; the book flattens as
+     σ grows, PDF pp. 4, 12): a spread magnitude is never a clean
+     liquidity proxy independent of the adverse-selection level, so
+     any spread-based normalizer in a future L2 window travels with
+     the informational regime. No queue change.
+  5. [cost-survival ammunition, relevant only if a future K7-style
+     cost-survival layer exists] IS sits below the marginal cost F on
+     the buy side (Prop. 2.2, PDF p. 9) and converges to it as N grows
+     (Cor. 4.3, PDF p. 21); the largest trades dominate aggregate
+     shortfall precisely where empirical identification is weakest
+     (PDF p. 4) — any future cost layer must carry the collinear-spread,
+     weak-SNR and endogenous-size caveats (PDF p. 22) as explicit
+     assumptions and may not transplant the paper's √log(1 + ax^δ)
+     fits (PDF pp. 27, 30) cross-venue. No queue change.
+  6. [source-quality note] arXiv v1 preprint; existence proven only
+     for bounded signals, unbounded cases numerical with stated
+     conjectures (PDF pp. 5, 25); the same-price variant has no
+     existence proof and a possibly non-monotone F (PDF p. 35); second
+     author industry-affiliated (PDF p. 56); no real order book is
+     calibrated anywhere in the paper. Check the published version
+     before formal citation.
+- Counterfactual (the immune-system section, never omitted): had the
+  power-law-vs-log dichotomy been read as an empirical claim about
+  crypto limit order books, a "universal impact law" would have
+  entered the record while the paper itself proves the exponent is
+  manufactured by two analyst-chosen premises (signal-tail class, N) —
+  the exact academic-degree-of-freedom failure the pre-declaration
+  family exists to kill at the gate. Had the equilibrium volume-tail
+  power law been cited as measured market structure, a theorem deduced
+  from unverified assumptions (competitive book, one period, risk
+  neutrality; the Back-Baruch caveat acknowledged, PDF p. 3) would have
+  been laundered into the C8 record. And had the spread's
+  σ-invariance been read backwards as "spread is pure adverse
+  selection, safe to normalize on", a single-period bounded-signal
+  result would have been transplanted onto a venue and horizon it never
+  modeled — the magnitudes-never-transfer violation.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked, complete and read in full (58 pp.).
+- Ratification queue after this session: THIRTY-SEVEN candidate
+  sharpenings plus probe E1, zero armed (unchanged by this session). T1
+  remains armed awaiting the owner's word in its booked state (survived
+  all five kill lines with sign inverted; T2 tested-fail); the blocked
+  list stays blocked. Deep-read queue pointer: next UNREAD "Stochastic
+  Price Dynamics Implied By the Limit Order Book" (score 25, x074d5c);
+  re-read the live tail before consuming.
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule:
+  nothing was sharpened here). docs/GOALS.md front-2/front-4 status
+  lines and the edition references are refreshed this session by the ##
+  83 pass (operative bookkeeping, recorded there).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run this session
+exits zero on the assembled tree.

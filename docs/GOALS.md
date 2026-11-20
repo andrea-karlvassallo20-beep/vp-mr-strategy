@@ -1,8 +1,9 @@
 # GOALS.md — the fronts status board (operative work-selection companion)
 
 **Status:** the session-facing status board for the goal-state fronts, per
-the conductor protocol (goal state **edition 2**, protocol section 2;
-rotation guidance, section 3; weekly directorate, section 6; landed
+the conductor protocol (goal state **edition 5**, protocol section 2;
+change recorded log ## 83; rotation guidance, section 3; weekly directorate,
+section 6; landed
 2026-11-19) and the owner's standing order recorded MADE in
 `docs/DECISIONS_PENDING.md` (resolved item, 2026-11-19). The protocol's
 section 2 is the ranking authority: numbered fronts 1–8, each with entry
@@ -61,7 +62,7 @@ construction.
    readiness; L2-chain work takes precedence over all fronts that
    serve it.
 
-## Status board (protocol section 2, edition 2)
+## Status board (protocol section 2, edition 5)
 
 - Front 1 — the gated L2 window. STATUS: THE CRITICAL PATH (Board
   directive, 2026-11-19). Still blocked on the owner (environment + data:
@@ -69,30 +70,37 @@ construction.
   `paper/research/l2_data_acquisition_spec.md`); the L0 dry run is
   unblocked by the recorded L0 amendment; never claimable by a session.
 - Front 2 — the library deep-read queue. STATUS: ACTIVE. Next UNREAD
-  after the ## 74, ## 77 and ## 79 landings (2026-11-20; x6ed313, x0b879c
-  and x973a89 consumed): "On the Hawkes Process with Different Exciting
-  Functions" (score 26, xd0ee69); re-read the live tail before
-  consuming; the ritual's slug-keyed unread rule applies. NOTE
-  (refreshed 2026-11-20, null-time session 72, log ## 79): the deep-read
-  counter since EDITION 4 stands at TWO of five (deep-reads 60-61
-  counted, the edition-4 reset at ## 76); the G2 directorate briefs
-  cover the first thirty-three of the now thirty-six queued
-  sharpenings, so a brief refresh is owed before the next sitting.
+  after the ## 77 through ## 82 landings (2026-11-20; x0b879c, x973a89,
+  xd0ee69, xc1a00b and xd17ea7 consumed, plus xe96c60 consumed at ##
+  84): "Stochastic Price Dynamics Implied By the Limit Order Book"
+  (score 25, x074d5c), recomputed live by title-matching the
+  score-sorted triage file against the log tail; the score-26 tier is
+  fully consumed; re-read the live tail before consuming; the ritual's
+  slug-keyed unread rule applies. NOTE (refreshed 2026-11-20, null-time
+  session 76, log ## 83): the deep-read counter since EDITION 5 stands
+  at ONE of five (deep-read 65, landed this same session, counted from
+  the edition-5 reset at ## 83); the G2 directorate briefs cover the
+  first thirty-three of the now thirty-seven queued sharpenings, so a
+  brief refresh (items 34-37 plus probe E1) is owed before the next
+  sitting and is this edition's ranked non-deep-read choice.
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
   without real klines, and no invented data is substituted.
 - Front 4 — the synthesis pass. STATUS: NOT DUE (refreshed 2026-11-20,
-  null-time session 72, log ## 79): the edition-3 cadence check was
-  discharged by null-time session 71 (the second pass ran as its
-  second act and is recorded as goal state EDITION 4, log ## 76);
-  cadence per edition 4: next due when five or more deep-reads have
-  landed since edition 4 (deep-read #60 onward, reset at ## 76); the
-  counter stands at TWO of five (deep-read 61, log ## 79, 2026-11-20).
-  NOTE: the EDITION 4 section-2 rewrite of
+  null-time session 76, log ## 83): the edition-4 cadence check was
+  discharged by this session's pass (five of five deep-reads since the
+  edition-4 reset at ## 76: sessions 60-64, log ## 77-## 82; the pass
+  ran first and is recorded as goal state EDITION 5, log ## 83);
+  cadence per edition 5: next due when five or more deep-reads have
+  landed since edition 5 (deep-read #65 onward, reset at ## 83; #65
+  landed this same session and counts, so the counter stands at ONE of
+  five). NOTE: the EDITION 4 section-2 rewrite of
   docs/goal_autonomy_protocol.md claimed at ## 76 did not survive the
-  session-71 branch corruption and is repaired only to the edition-3
-  text (null-time session 72, log ## 78); the next synthesis session
-  must re-land the protocol rewrite from the ## 76 record.
+  session-71 branch corruption; the re-landing debt recorded at ## 78
+  is CLEARED by supersession (the same ## 83 pass rewrote section 2
+  whole as EDITION 5, with edition 4's substance preserved in the ##
+  76 log record and the continuity noted in the protocol's section
+  10). No session ever re-authored the edition-4 text.
 - Front 5 — gap-driven probes. STATUS: standing, per
   `docs/exploratory_channel.md`; up to one block per session at the
   session's discretion.
