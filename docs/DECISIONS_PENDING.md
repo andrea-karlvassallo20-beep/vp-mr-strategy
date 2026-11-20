@@ -33,16 +33,37 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: thirty-three
+  library deep-reads and the ratified exploratory channel: thirty-four
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
   null-time session 61, plus the self-excitation regime-window
   pre-declaration queued 2026-11-19 by deep-read session 53 / null-time
   session 63, plus the primary-metric pre-commitment queued 2026-11-19 by
-  deep-read session 55 / null-time session 65; probe E1 stands separately
-  and is not counted among the thirty-three); most recently joined
-  2026-11-19, the primary-metric pre-commitment (before the L0 gate, any
+  deep-read session 55 / null-time session 65, plus the
+  spread-convention declaration rule queued 2026-11-20 by deep-read
+  session 56 / null-time session 67; probe E1 stands separately
+  and is not counted among the thirty-four); most recently joined
+  2026-11-20, the spread-convention declaration rule (before the L0
+  gate, any book reconstruction, generative null, or flow-measurement
+  input used in a C1-L2/C8-adjacent computation must pre-declare its
+  spread convention; a zero-spread / single-price / mid-only handling
+  is a distinct configuration counted in the multiplicity ledger, and
+  any apparent anticipatory, reversal, or round-trip-type structure
+  first observed under it must be shown to survive a dynamic,
+  trading-dependent, two-sided spread handling before it may enter any
+  spec as support — the Fruth-Schöneborn-Urusov time-varying-liquidity
+  paper proves the zero-spread model class mechanically admits
+  profitable round trips whenever the deviation direction is known
+  (Remark 8.2, PDF p. 29) and admits pump-and-dump with cost infimum
+  −∞ at a single K'+2ρK<0 point (Prop 8.3, PDF pp. 29-30), no
+  self-excitation required, the "anticipatory" structure being a
+  property of the convention; hardening the reconstruction-admissibility
+  family already queued, the same tightening shape as the
+  volume-conservation and event-grain OFI rules, adding a fourth
+  declaration axis; full draft with the killed-if-wrong counterfactual
+  in `paper/research/library/2026-11-20_time_varying_liquidity_execution_deep_read.md`),
+  and earlier, the primary-metric pre-commitment (before the L0 gate, any
   C1-L2/C8-adjacent test spec must pre-declare its single primary
   evaluation metric or loss, named and frozen before the data; secondary
   metrics may be reported but can neither rescue a primary failure nor
