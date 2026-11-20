@@ -6414,3 +6414,104 @@ its booked state (survived all five kill lines with sign inverted; T2
 tested-fail); the blocked list stays blocked. Ratification queue after
 this session: THIRTY-THREE candidate sharpenings plus probe E1, zero
 armed.
+
+## 70. Null-time session 66 (2026-11-20): GOALS.md G2 executed — the ratification-readiness briefs written for all thirty-three queued sharpenings plus probe E1; the stale front-4 and front-2 status lines corrected against goal state edition 3
+
+Session-state note (declared before the work): this session chose per
+the GOALS.md rotation rule and the protocol edition-3 work-selection
+guidance. No numbered front is ready: front 1 is the critical path and
+blocked on the owner (environment + the paid Tardis key), front 3 and
+front 7 are blocked on codespace/data presence and owner curation,
+front 8 is automated (audit by reference only), and front 4 is NOT
+DUE: the edition-3 cadence (protocol section 2, front 4) reset the
+synthesis obligation to five or more deep-reads since edition 3
+(deep-read #55 onward; the counter stands at ONE of five). Front 2
+(the deep-read queue) remains the lawful floor, but the edition-3
+guidance is binding and names G2: "the next work-selecting session
+that does not run a deep-read should take GOALS.md G2
+(ratification-readiness briefs) — the queue meets G2's entry
+criterion at its strongest, the directorate convention needs the
+briefs for a ten-minute sitting to be possible at all, and no other
+lawful session work moves the queue." G2 claimed (entry criterion:
+any session; zero authority over any gate). Race checks at the
+choice: live main tail re-fetched and verified (log 423,399 chars,
+tail "## 69", zero "## 70" on main, ## 61-## 69 each exactly once
+and in order, zero mojibake across the key files); the work was built
+against that verified tail.
+
+Work — three products, all inside the standing order's carve-outs
+(notes, bookkeeping, descriptive-only; nothing armed, nothing
+measured, nothing trades live):
+
+- docs/DIRECTORATE_BRIEFS.md (NEW): the G2 deliverable, the
+  directorate's batch-ratify reading material. One brief per queued
+  candidate — all THIRTY-THREE sharpenings plus probe E1 briefed
+  separately — grouped into nine families by the precedent each one
+  tightens: (A) pre-registration hardening (base-rate confrontation,
+  regime-window pre-declaration, primary-metric pre-commitment, the
+  flash-crash named event window); (B) estimator discipline on the
+  branching-ratio read (the K7 cluster, the W-ladder, Amendment-1,
+  the boundary-solution rule, the optimizer-path multi-start
+  disclosure, the ACF-shape kernel-validity gate); (C) the
+  branching-ratio trigger robustness arms (per-branch read,
+  near-critical regime disclosure, the deterministic-clock null arm,
+  the latent-common-cause robustness arm, the release-calendar lead
+  component); (D) admission-null design (the two-null admission rule,
+  the size-state persistence comparator); (E) queue-state
+  conditioning and label discipline (the conditioning disclosure, the
+  anticipation disclosure, the queue-label convention, the
+  discretized-conditioning declaration, the C8-A3 book-state mix
+  disclosure, the sign-register rule); (F) flow measurement,
+  reconstruction and manipulation (the flow-clock scale-constant
+  rule, the volume-conservation admissibility rule, the event-grain
+  OFI accumulation rule, the distance-grid sign-invariance rule, the
+  wash-trading audit pre-declaration, the spoofability reinforcing
+  evidence); (G) the session-3 C8 measurement pre-declarations; (H)
+  the dynamics-identification rule for generative nulls; (I) the
+  corrupt-landing sweep. Each brief carries the join order, the
+  log entry and the note path holding the full draft, and the
+  sitting's accept/reject question per item and per family. The
+  count reconciliation is recorded inside the doc, enumerated from
+  the log's queue-line arithmetic (sessions 3 two, session 4's K7
+  cluster counted as one, session 4b two, session 5 one, session 6
+  two, session 7 one, session 9 one — the founding ten through ##
+  13; then one join at each of the named increments through ## 69)
+  and closing exactly at thirty-three, with probe E1 standing
+  separately. Instrument observation recorded: the queue's
+  composition has never before been enumerated as a single list on
+  main (counts plus recent items' full text only); the briefs doc now
+  carries that enumeration. A second instrument observation: the
+  protocol section 2 facts block says THIRTY-TWO because it was
+  recomputed at ## 68, one landing before the edition-writing
+  session's own read queued the thirty-third; the live tail's
+  THIRTY-THREE governs, and the briefs use it.
+- docs/GOALS.md surgical edits, three, all status bookkeeping with
+  zero ranking action: (1) the front-4 STATUS line refreshed from the
+  stale "OVERDUE ... MUST run the synthesis pass" to NOT DUE — the pass
+  ran as null-time session 65 and is recorded as edition 3 (protocol
+  section 9), the obligation discharged, the cadence reset to five
+  deep-reads since edition 3, counter ONE of five; (2) the front-2
+  NOTE refreshed from the stale edition-2 counter ("SIX, deep-reads
+  50-55") to the edition-3 counter (ONE of five, deep-read 55
+  counted); (3) the G2 STATUS line moved from "not started" to
+  PREPARED, pointing at the briefs doc. All three lines were stale
+  against protocol sections 2 and 9, the ranking authority; GOALS.md
+  itself carries no authority over any gate and nothing gated was
+  touched.
+- docs/DECISIONS_PENDING.md: untouched. The queue is unchanged; briefs
+  queue nothing. The decisions file's own count (THIRTY-THREE plus
+  probe E1) already matches.
+
+Ratification queue after this session: THIRTY-THREE candidate
+sharpenings plus probe E1, zero armed — UNCHANGED from the ## 69
+landing; this session queued nothing. T1 remains armed awaiting the
+owner's word in its booked state (survived all five kill lines with
+sign inverted; T2 tested-fail); the blocked list stays blocked.
+Deep-read queue pointer: unchanged — next UNREAD "Optimal trade
+execution and price manipulation in order books with time-dependent
+liquidity" (score 28, x95643a), behind it "Hawkes model for price and
+trades high-frequency dynamics" (score 27, x2df250); re-read the live
+tail before consuming.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live.
