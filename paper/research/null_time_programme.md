@@ -7977,3 +7977,140 @@ exits zero on the assembled tree.
 Nothing measured, no kill line moved, nothing armed, nothing trades live.
 Guard clean: python3 src/integrity_guard.py run this session exits zero on
 the assembled tree.
+
+
+## 86. Null-time session 78 (2026-11-20), library deep-read session 67 — the Clinet-Potiron doubly stochastic Hawkes-inference paper read; the naive block-MLE's bias shown to sit at the magnitude of its own standard deviation and the Gaussian limit shown to exclude diffusive parameter variation; the recorded queue pointer corrected against the file state (the score-26 entry xbe4d91 was in fact UNREAD; the ## 82 "tier fully consumed" claim was off by this one entry); no kill line moved, nothing sharpened
+
+- Director step (goal-autonomy protocol, ACTIVE, ratified 2026-11-19): the
+  live main tail (through ## 85) and docs/DECISIONS_PENDING.md were read
+  first; the standing work choice is the default — the next UNREAD
+  deep-read, per this ritual, needs no substitute justification. EDITION 5
+  of the goal state was written by the ## 83 synthesis pass; deep-read
+  sessions 65 (## 84) and 66 (## 85) have landed since — two before this
+  one, three including it, fewer than the five the cadence rule requires —
+  so the synthesis pass is NOT due this session. Nothing in this session
+  touches a carve-out.
+- Queue-pointer reconciliation, recorded honestly (honest-error protocol:
+  past text is not edited; this entry is the correction): the ## 85
+  pointer named "Stochastic Price Dynamics in Response to Order Flow
+  Imbalance: Evidence from CSI 300 Index Futures" (score 25, x8f729f) as
+  next UNREAD, and the ## 82 entry closed the score-26 tier as "fully
+  consumed." Recomputing the score-sorted triage queue against the
+  deep-read notes on the file state this session shows the score-26 entry
+  "Statistical inference for the doubly stochastic self-exciting
+  process" (score 26, xbe4d91, Clinet-Potiron) carries no note and no
+  log mention — the tier-close claim was off by this one entry. The
+  ritual's rule is the score order: 26 ranks above 25, so xbe4d91 is
+  consumed this session and x8f729f remains the next UNREAD after it.
+- **Library deep-read session 67** (front 2, the score-26 tier's missed
+  entry; note:
+  paper/research/library/2026-11-20_doubly_stochastic_hawkes_inference_deep_read.md):
+  Simon Clinet (University of Tokyo/CREST) and Yoann Potiron (Keio
+  University), "Statistical inference for the doubly stochastic
+  self-exciting process" (arXiv:1607.05831v3 [q-fin.ST], v3 June 2017,
+  "This version: September 19, 2018"). A statistics paper: the exponential
+  kernel Hawkes process extended to a doubly stochastic version whose
+  three parameters (baseline ν, excitation a, decay b) are stochastic
+  time-varying processes (intensity eq. 4.2, existence Theorem 5.1,
+  PDF pp. 6-7); the target is the integrated parameter Θ = T^-1 ∫θ*ₜdt
+  (eq. 1.1, PDF p. 2); the naive estimator is the average of blockwise
+  local MLEs (eq. 1.2, PDF p. 2); the local CLT forces small blocks
+  (h_n = o(√n), eq. 1.3, PDF p. 2) and absence of asymptotic bias forces
+  large blocks (√n = o(h_n), eq. 1.4, PDF pp. 2-3) with no h_n
+  satisfying both (PDF p. 3), so a first-order bias-corrected local MLE
+  is built (eqs. 1.5, 5.18, 10.14, PDF pp. 3, 10, 21-22) and given a
+  global CLT valid only under parameter smoothness γ ∈ (3/4, 1] —
+  Itô-process parameter paths explicitly excluded (condition [BC],
+  PDF p. 10), higher-order correction reaching only γ > 1/2 and nothing
+  working at γ ≤ 1/2 without parameter-distribution assumptions
+  (PDF p. 11). Simulations: the naive estimator's bias is of the same
+  magnitude as its standard deviation across four models (Table 1,
+  PDF pp. 14-15), the correction removes it (Table 2, PDF p. 17), and
+  both the global constant-parameter MLE and the seasonal-baseline CH are
+  badly biased under time variation, CH failing to beat the local
+  approach even where exactly well specified (Table 3 + text,
+  PDF pp. 14, 18). Empirics on 251 days of 2015 AAPL trade times
+  (NASDAQ, ~15,000 trades/day, PDF pp. 15-17): fitted excitation
+  parameters wander intraday far beyond seasonality, b*ₜ with no
+  pattern (PDF p. 17), daily integrated estimates ≈ (0.56, 11, 40),
+  dispersion (0.24, 2, 8), robust across five block sizes, uncorrected
+  MLE/CH very different from corrected (Table 4 + text, PDF pp. 17-21).
+- Grade: NO kill line changes. NO new candidate sharpening — default
+  grade; every mechanism found is a page-cited instance of a discipline
+  the queue already carries.
+  1. [reinforcing, no new item] The naive block-MLE of Hawkes
+     parameters carries finite-sample bias at the magnitude of its own
+     standard deviation (Table 1, PDF pp. 14-15), and constant-parameter
+     and seasonal competitors are badly biased under time variation
+     (Table 3, PDF p. 18): an uncorrected blockwise Hawkes fit's
+     dispersion is substantially bias, not information — reinforcing
+     the named-estimator-identity rule and the estimator-configuration
+     freeze (#37), now with the bias-correction status of the
+     configuration explicitly part of the estimator identity. No queue
+     change.
+  2. [reinforcing, no new item] The block-size squeeze is a theorem:
+     no admissible default block size exists for the naive estimator
+     (eqs. 1.3-1.4 incompatible, PDF pp. 2-3); the partition is a
+     load-bearing configuration that must be frozen before the data,
+     and reported robustness across block sizes (their Table 4,
+     PDF p. 21) is never a post-hoc license to pick the best partition
+     — reinforcing the freeze and the stability-is-robustness-reporting
+     rule. No queue change.
+  3. [interpretation caution] The Gaussian limit is not available by
+     right: the CLT excludes diffusive (Itô-process) parameter
+     variation, admissibility ends at γ > 1/2 even with higher-order
+     correction, and consistency without CLT is all that survives below
+     that (PDF pp. 10-12). Any future C1-L2/C8-adjacent Hawkes-parameter
+     error band must pre-declare the assumed smoothness class of the
+     time variation before the data. No queue change.
+  4. [interpretation caution] Even inside the admissible class the
+     asymptotic variance is the path-integral T^-2 ∫Γ(θ*ₛ)^-1 ds
+     (Theorem 5.4, PDF p. 11), estimated from inverted local Hessians
+     (PDF p. 12), and the paper's own studentization leaves tail mass
+     underestimated on a*, b* (PDF p. 14): fitted-parameter error bands
+     are estimated path-dependent objects, never evidence. No queue
+     change.
+  5. [interpretation caution] Empirically, fitted excitation parameters
+     wander intraday far beyond any seasonal template (b*ₜ with no
+     pattern, PDF p. 17): constant-parameter or seasonal-only Hawkes
+     fits on intraday data are misspecified by construction, and fitted
+     (a, b) wander is exactly what naive regime readings would launder
+     as signal. Single name, single year, trade prints only; no
+     magnitude transfers, only the mechanism. No queue change.
+  6. [source-quality note] arXiv v3, referee-acknowledged (PDF p. 45)
+     so a journal version likely exists — check before formal citation;
+     zero citations recorded; single instrument (AAPL 2015), trade
+     timestamps only despite the generic "market event" model language
+     (PDF p. 3); the bias function corrected by 100,000-path Monte Carlo
+     on a (θ, Δ) grid (PDF p. 13), inheriting the parametric model's
+     assumptions.
+- Counterfactual (the immune-system section, never omitted): had a future
+  C8-adjacent arm fitted blockwise Hawkes parameters naively and read
+  excitation-level dispersion as regime structure, this paper is the
+  refutation — the bias sits at the estimator's own standard deviation
+  (Table 1, PDF pp. 14-15), so part of the "regime" is manufactured by
+  the estimator, the laundering the estimator-identity rule exists to
+  kill, demonstrated on one estimator axis. Had Gaussian confidence
+  intervals been attached to fitted parameters by right, the paper's own
+  CLT exclusion of diffusive parameter paths (PDF pp. 10-11) would have
+  been laundered around. Had the multi-block-size robustness table been
+  read as license to pick the best block size post hoc, the frozen
+  configuration would have been inverted into a tuning freedom. And had
+  the AAPL wander been transplanted to a crypto L2 spec as support, the
+  library-is-ammunition rule would have been broken.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked, complete and read in full (47 pp.).
+- Ratification queue after this session: THIRTY-EIGHT candidate
+  sharpenings plus probe E1, zero armed (unchanged; nothing sharpened
+  this session). T1 remains armed awaiting the owner's word in its
+  booked state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked. Deep-read queue pointer:
+  next UNREAD "Stochastic Price Dynamics in Response to Order Flow
+  Imbalance: Evidence from CSI 300 Index Futures" (score 25, x8f729f);
+  re-read the live tail before consuming.
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule:
+  nothing was sharpened here).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run this session exits
+zero on the assembled tree.
