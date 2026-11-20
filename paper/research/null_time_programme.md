@@ -6615,3 +6615,118 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard checks (marker sweep and encoding sanity, executed on this
 session's changed files locally; the repo-wide guard runs in CI on the
 PR): clean.
+
+
+## 72. Null-time session 68 (2026-11-20): deep-read session 57 — the Bacry-Muzy 4-kernel price/trades Hawkes model read; the founding paper of the kernel literature shown to add ZERO sharpenings, every mechanism already held by standing and queued discipline; NO kill line changes, nothing measured, nothing armed
+
+Session-state note (work choice and its reason, recorded under the
+goal-autonomy conductor protocol v2, edition 3, section 3, and the
+GOALS.md rotation rule): the deep-read (front 2) is the lawful
+choice — front 4 is NOT DUE (the edition-3 cadence resets at five
+deep-reads since edition 3; after today's read the counter stands at
+THREE of five), front 1 and front 3 remain blocked on the owner (the
+codespace and the paid Tardis key), G2 was executed at ## 70 and is
+discharged, and no other numbered front is ready. The rotation rule's
+point 3 (consecutive deep-reads need a recorded reason) is satisfied
+by the owner's standing dated directive of today, which explicitly
+ordered the next null-time deep-read session against the file state;
+the head was recomputed live from docs/library/edge_triage_scores.json
+and the live main tail (tail "## 71", zero "## 72" on main before this
+append), the slug-keyed unread rule applied against
+paper/research/library/ (68 notes existed before this session's), and
+the page-marked extract for x2df250 confirmed present on the shelf.
+Numbering: deep-read 57 = null-time 68 = log ## 72, the offsets
+honored, no renumber.
+
+Paper: Emmanuel Bacry (CMAP, École Polytechnique) and Jean-François
+Muzy (SPE, Université de Corse), "Hawkes model for price and trades
+high-frequency dynamics", arXiv:1301.1135v1 [q-fin.TR] (arXiv stamp
+7 Jan 2013; the acquired extract's title page carries a "November 27,
+2024" date line — version anomaly recorded in the note's source-quality
+tag). Read against ONE question: what here would kill C1-L2 or C8
+faster, or change their kill lines? The founding 4-dimensional Hawkes
+model coupling anonymous market orders (ask/bid) with mid-price jumps
+(up/down) through bi-symmetric kernel blocks, with an exact stability
+condition coupling the four kernel norms (Prop 1 and eq. 14, PDF
+pp. 8-9), closed-form price and trade auto-covariances (Props 3-4, PDF
+pp. 13-14), an analytic market-impact profile recoverable from
+anonymous data (Prop 5 / Cor 1, PDF pp. 17-18, applied in Sec 7.4, PDF
+pp. 31-32, concave t^{1−ν} then t^{−ν} relaxation with ν ≈ 0.2, not a
+strict square root), a non-parametric Fredholm kernel estimator (Sec 6,
+PDF pp. 21-23), and the two empirical anchors: near-saturated trade
+kernel norm Δφ̂T0 ≃ 0.9 with power-law shape and mean-reverting price
+kernel (Sec 7.1, PDF pp. 23-25), and the demonstration that this
+strictly short-range near-unstable process manufactures trade-sign
+autocorrelation resembling long-range dependence over roughly three
+decades, with exact inequalities (eqs. 62-66, PDF pp. 28-29).
+
+Note (full draft with page citations and the killed-if-wrong
+counterfactual): `paper/research/library/2026-11-20_hawkes_price_trades_dynamics_deep_read.md`
+
+Findings (full grading in the note):
+
+1. [reinforcing, no new item] The apparent-long-memory artifact: a
+   strictly stable power-law Hawkes process with near-saturated trade
+   kernel produces autocorrelation decaying as τ^{2ν−1} (≈ τ^{−0.6})
+   over ~3 decades while remaining integrable (eqs. 62-66, PDF pp.
+   28-29) — so persistent flow-sign autocorrelation across every lag
+   scale the L2 data resolves is exactly what the null produces
+   without genuine long memory. Second-source reinforcement of the
+   already-queued near-instability / apparent-criticality
+   estimator-discipline items; any C1-L2/C8-adjacent persistence claim
+   must first fail this null. No queue change.
+2. [reinforcing, no new item] The U-shaped intraday modulation lives
+   entirely in the exogenous rate µt while the kernel shapes stay
+   stable across 2-hour slices (Sec 7.2, Fig 11, PDF pp. 25-26) —
+   day-varying activity mass is calendar, not endogenous
+   self-excitation. Reinforces the already-queued deterministic-clock
+   null arm; no queue change.
+3. [interpretation caution] The response function is not the
+   market-impact function: R_t is polluted by the impact of all other
+   orders in the same meta-order (Sec 5.3, PDF pp. 20-21), so any
+   "predictiveness" read off a response-shaped flow feature is a
+   herding-plus-impact mixture, not bare anticipation; and
+   trade-to-price causality inside the millisecond resolution is an
+   assignment convention (impulsive φI,s, Sec 2.1.3, PDF pp. 6-7;
+   confirmed on data, Sec 7.1, PDF p. 25) — exactly the convention
+   class the queued spread-convention declaration rule (the
+   thirty-fourth, session 56) makes declarable. Reading discipline
+   only; no queue change.
+4. [cost-survival ammunition] Closed-form meta-order impact from
+   anonymous data (eq. 42 / eqs. 52-53, PDF pp. 17-19; Sec 7.4, PDF
+   pp. 31-32) and the permanent-impact formula with its three
+   reduction routes (eq. 56, PDF pp. 19-20) — declared assumptions a
+   future K7-style cost layer must carry; ammunition only.
+5. [source-quality note] ArXiv v1 with a "November 27, 2024" title-page
+   date-line anomaly in the acquired extract; volumes deliberately
+   dropped (point events only, PDF pp. 3-4, deferred to a forthcoming
+   work, PDF pp. 32-33); two futures contracts from one vendor, 2-hour
+   stationarity slices, and the estimator's statistical study deferred
+   (PDF p. 23). Check the published version before formal citation.
+
+Inaccessible/blocked status: none — the extract was present and fully
+readable; x2df250 consumed clean.
+
+docs/DECISIONS_PENDING.md is untouched this session per the rule
+(nothing sharpened): the ratification queue stands at THIRTY-FOUR
+candidate sharpenings plus probe E1, zero armed, unchanged from ## 71.
+docs/GOALS.md front-2 status line and the front-4 counter line are
+refreshed (the operative bookkeeping edits): x2df250 consumed; the
+next UNREAD is "Convergence of Heavy-Tailed Hawkes Processes and the
+Microstructure of Rough Volatility" (score 27, x8fc12b); deep-read
+counter since edition 3: THREE of five.
+
+Ratification queue after this session: THIRTY-FOUR candidate
+sharpenings plus probe E1, zero armed — UNCHANGED from ## 71; this
+session queued nothing. T1 remains armed awaiting the owner's word in
+its booked state (survived all five kill lines with sign inverted; T2
+tested-fail); the blocked list stays blocked. Deep-read queue pointer:
+next UNREAD "Convergence of Heavy-Tailed Hawkes Processes and the
+Microstructure of Rough Volatility" (score 27, x8fc12b), behind it
+"A buffer Hawkes process for limit order books" (score 27, x6ed313);
+re-read the live tail before consuming.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard checks (marker sweep and encoding sanity, executed on this
+session's changed files locally; the repo-wide guard runs in CI on the
+PR): clean.
