@@ -69,17 +69,17 @@ construction.
   `paper/research/l2_data_acquisition_spec.md`); the L0 dry run is
   unblocked by the recorded L0 amendment; never claimable by a session.
 - Front 2 — the library deep-read queue. STATUS: ACTIVE. Next UNREAD
-  after the ## 61, ## 63, ## 66, ## 67, ## 68, ## 69, ## 71 and ## 73
-  landings (2026-11-19/20; x0d8b2a, xf77014, xb710f4, x77c554, xdb216a,
-  x72c407, x95643a, x2df250 and x8fc12b consumed): "A buffer Hawkes
-  process for limit order books" (score 27, x6ed313); behind it
+  after the ## 61, ## 63, ## 66, ## 67, ## 68, ## 69, ## 71, ## 73 and
+  ## 74 landings (2026-11-19/20; x0d8b2a, xf77014, xb710f4, x77c554,
+  xdb216a, x72c407, x95643a, x2df250, x8fc12b and x6ed313 consumed):
   "Analyzing order flows in limit order books with ratios of Cox-type
   intensities" (score 26, x0b879c); re-read the live tail before
   consuming; the ritual's slug-keyed unread rule applies. NOTE
-  (refreshed 2026-11-20, null-time session 69, log ## 73): the deep-read
-  counter since EDITION 3 stands at FOUR of five (deep-reads 55, 56, 57
-  and 58 counted; the edition-3 recomputation window was deep-reads
-  50-54 at ## 68) — see front 4.
+  (refreshed 2026-11-20, null-time session 70, log ## 74): the deep-read
+  counter since EDITION 3 stands at FIVE of five (deep-reads 55-59
+  counted; the edition-3 recomputation window was deep-reads
+  50-54 at ## 68) — see front 4: the edition-3 synthesis cadence check
+  is due at the next session's start.
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
   without real klines, and no invented data is substituted.
@@ -91,8 +91,9 @@ construction.
   corrected here as status bookkeeping only, the obligation having been
   discharged by the session that ran the pass. Cadence per edition 3:
   next due when five or more deep-reads have landed since edition 3
-  (deep-read #55 onward); the counter stands at FOUR of five (deep-read
-  58, log ## 73, 2026-11-20).
+  (deep-read #55 onward); the counter stands at FIVE of five (deep-read
+  59, log ## 74, 2026-11-20); the edition-3 cadence check is due at
+  the next session's start.
 - Front 5 — gap-driven probes. STATUS: standing, per
   `docs/exploratory_channel.md`; up to one block per session at the
   session's discretion.
