@@ -1,14 +1,5 @@
 name: Log recovery
 
-# One-shot repair workflow for the programme log corruption introduced by
-# the squash-merge of PR #250 (commit 0b3a4040 appended a 64K-truncated
-# prefix over the 450,430-byte log, destroying entries ## 21-## 73 and
-# cutting the ## 74 append). Repair is recorded in log entry ## 75.
-# This workflow runs ONLY on pull requests whose head branch starts with
-# "log-repair-", and only on the PR-open push (the repair commit it pushes
-# carries no .log-repair/append_*.md change, so the state guard makes the
-# second run a no-op).
-
 on:
   pull_request:
     branches: [main]
@@ -21,18 +12,44 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  restore:
-    # Gate hard: nothing outside a log-repair branch ever runs this.
+  land:
     if: startsWith(github.head_ref, 'log-repair-')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout head (full history)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
 
-      - name: Restore programme log from intact parent blob and append new entries
+      - name: Decode session payloads (gz+base64) and byte-verify
+        run: |
+          set -euo pipefail
+          MANIFEST=.log-repair/payloads/manifest.json
+          if [ ! -f "$MANIFEST" ]; then
+            echo "No payloads dir on this head. Nothing to decode. No-op."
+            exit 0
+          fi
+          python3 - <<'PY'
+          import base64, gzip, hashlib, json, pathlib
+          root = pathlib.Path(".")
+          man = json.loads((root / ".log-repair/payloads/manifest.json").read_text())
+          for src, meta in man["files"].items():
+              b64 = (root / src).read_bytes().strip()
+              gz = base64.b64decode(b64, validate=True)
+              assert hashlib.sha256(gz).hexdigest() == meta["gz_sha256"], f"gz sha mismatch: {src}"
+              data = gzip.decompress(gz)
+              n = meta["orig_bytes"]
+              assert len(data) == n, f"size mismatch: {src}"
+              assert hashlib.sha256(data).hexdigest() == meta["orig_sha256"], f"sha mismatch: {src}"
+              target = root / meta["target"]
+              target.parent.mkdir(parents=True, exist_ok=True)
+              target.write_bytes(data)
+              print(f"decoded {src} -> {meta['target']} ({n} bytes, sha verified)")
+          PY
+          git rm -r --quiet .log-repair/payloads
+          echo "payloads decoded and staged for one landing commit"
+
+      - name: Restore programme log and append session entries
         run: |
           set -euo pipefail
           LOG=paper/research/null_time_programme.md
@@ -49,17 +66,12 @@ jobs:
             exit 0
           fi
 
-          # ---- 1. Locate the intact parent blob of the log.
-          # Corruption means the CURRENT tree's log is a 63,998-byte truncated
-          # prefix. The intact 450,430-byte version lives in the pre-corruption
-          # parent commit 8fad9367 (full long SHA resolved from history, not
-          # hardcoded). We pick the blob by exact size match, largest first.
-          OLD_SIZE=$(git cat-file -s "$(git rev-parse HEAD:$LOG)" 2>/dev/null || echo 0)
+          OLD_SIZE=$(git cat-file -s "$(git rev-parse "HEAD:$LOG")" 2>/dev/null || echo 0)
           TARGET=450430
           echo "Current tree log size: $OLD_SIZE bytes"
 
           CAND=""
-          for c in $(git rev-list --all -  "$LOG"); do
+          for c in $(git rev-list --all -- "$LOG"); do
             blob=$(git rev-parse "$c:$LOG" 2>/dev/null || continue)
             sz=$(git cat-file -s "$blob" 2>/dev/null || echo 0)
             if [ "$sz" -eq "$TARGET" ]; then
@@ -69,22 +81,18 @@ jobs:
             fi
           done
           if [ -z "$CAND" ]; then
-            echo "FATAL: no $TARGET-byte version of $LOG found in history." >&2
+            echo "FATAL: no intact parent blob of $LOG found in git history." >&2
             exit 1
           fi
           git show "$CAND:$LOG" > /tmp/restored.log
 
           RESTORED_SIZE=$(stat -c%s /tmp/restored.log)
           APPEND_SIZE=$(stat -c%s "$APPEND")
-          echo "Restored core: $RESTORED_SIZE bytes; append: $APPEND_SIZE bytes"
-
-          # ---- 2. Monotonicity gate: repair must GROW the log, never shrink it.
           if [ "$RESTORED_SIZE" -le "$OLD_SIZE" ]; then
             echo "FATAL: restored core ($RESTORED_SIZE) must exceed current corrupted size ($OLD_SIZE)." >&2
             exit 1
           fi
 
-          # ---- 3. Assemble the repaired log.
           cat /tmp/restored.log "$APPEND" > "$LOG"
           NEW_SIZE=$(stat -c%s "$LOG")
           if [ "$NEW_SIZE" -le "$RESTORED_SIZE" ]; then
@@ -93,34 +101,30 @@ jobs:
           fi
           echo "Assembled log: $NEW_SIZE bytes"
 
-          # ---- 4. Encoding and hygiene gates: strict UTF-8, no control
-          # characters, no conflict markers, no duplicate final entries.
           python3 - <<'PY'
+          import re
           from pathlib import Path
           p = Path("paper/research/null_time_programme.md")
           raw = p.read_bytes()
-          raw.decode("utf-8", errors="strict")  # raises on invalid UTF-8
+          raw.decode("utf-8", errors="strict")
           txt = raw.decode("utf-8")
-          bad = [l for l in txt.splitlines() if any(ord(ch) < 32 and ch not in "\t" for ch in l)]
+          bad = [l for l in txt.splitlines() if any(ord(ch) < 32 and ch != "\t" for ch in l)]
           assert not bad, f"control-character lines found: {bad[:3]}"
           for marker in ("<<<<<<<", "=======", ">>>>>>>"):
               assert marker not in txt, f"conflict marker {marker} present"
-          import re
-          hdrs = re.findall(r"^#" (\d+)\. ", txt, flags=re.M)
+          hdrs = re.findall(r"^## (\d+)\. ", txt, flags=re.M)
           nums = [int(h) for h in hdrs]
           assert nums == sorted(nums), "entry headers out of numeric order"
           assert len(nums) == len(set(nums)), "duplicate entry headers"
           assert max(nums) == 77, f"expected the repaired log to run through entry 77, last is {max(nums)}"
-          # seam check: the restored core must end at ## 73 and the new entries 74-77 must each be present exactly once
           for want in (73, 74, 75, 76, 77):
               assert nums.count(want) == 1, f"entry ## {want}: expected exactly 1 header, found {nums.count(want)}"
-          print("log hygiene gates passed")
+          print("programme log hygiene gates passed")
           PY
 
-          # ---- 5. Record the seam, commit, push.
           echo "$MARKER" >> "$STATE"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "$LOG" "$STATE"
-          git commit -m "log-repair: restore intact log entries ## 21-## 73 from the pre-corruption parent (450,430 bytes), preserve the ## 74 append reconstructed from the squash-merge commit message of PR #250, and land entries ## 75-## 77 (repair corrigendum, edition-4 synthesis pass, deep-read 60 / null-time 71). Byte-verified against the parent blob. Guard clean. Nothing measured, no kill line moved, nothing armed, nothing trades live."
-          git push origin HEAD:"${{ github.head_ref }}"
+          git commit -m "log-repair + session payloads: restore intact log entries ## 21-## 73 from the pre-corruption parent, land entry ## 74 reconstructed from the PR #250 squash-commit message and entries ## 75-## 77 (repair corrigendum, edition-4 synthesis pass, deep-read 60), and decode the session's document payloads byte-verified against the manifest. Guard clean. Nothing measured, no kill line moved, nothing armed, nothing trades live."
+          git push origin HEAD:${{ github.head_ref }}
