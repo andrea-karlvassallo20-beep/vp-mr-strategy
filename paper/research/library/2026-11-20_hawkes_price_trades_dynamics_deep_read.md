@@ -1,0 +1,1 @@
+# Deep-read session 57 — Bacry, Muzy, "Hawkes model for price and trades high-frequency dynamics"NOTE_REST
