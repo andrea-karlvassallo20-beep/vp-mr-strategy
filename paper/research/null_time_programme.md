@@ -6730,3 +6730,102 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard checks (marker sweep and encoding sanity, executed on this
 session's changed files locally; the repo-wide guard runs in CI on the
 PR): clean.
+
+## 73. Null-time session 69 (2026-11-20): deep-read session 58 — the Horst-Xu-Zhang heavy-tailed nearly-unstable Hawkes scaling-limit paper read; the rough fractional limit shown to be the exact null product of the already-armed near-critical regime and the integrated-statistic trap pre-empted by the queued primary-metric pre-commitment; ZERO sharpenings queued, NO kill line changes, nothing measured, nothing armed
+
+Session-state note (work choice and its reason, recorded under the
+goal-autonomy conductor protocol v2, edition 3, section 3, and the
+GOALS.md rotation rule): the deep-read (front 2) is the lawful
+choice — front 4 is NOT DUE (after this read the counter stands at FOUR
+of five since edition 3), front 1 and front 3 remain blocked on the owner
+(the codespace and the paid Tardis key), and no other numbered front is
+ready. The rotation rule's point 3 (consecutive deep-reads need a
+recorded reason) is satisfied by the owner's standing dated directive of
+today, which explicitly ordered the next null-time deep-read session
+against the file state; the head was recomputed live from
+docs/library/edge_triage_scores.json and the live main tail (tail "## 72",
+zero "## 73" on main before this append), the slug-keyed unread rule
+applied against paper/research/library/ (58 notes existed before this
+session's), and the page-marked extract for x8fc12b confirmed present on
+the shelf and read in full (38 pages). Numbering: deep-read 58 =
+null-time 69 = log ## 73, the offsets honored, no renumber.
+
+Paper: Ulrich Horst (Humboldt-Universität zu Berlin), Wei Xu (Beijing
+Institute of Technology) and Rouyi Zhang (Humboldt-Universität zu Berlin),
+"Convergence of Heavy-Tailed Hawkes Processes and the Microstructure of
+Rough Volatility", arXiv:2312.08784v3 [q-fin.MF] (stamp 25 Mar 2026; title
+page dated March 26, 2026; index year 2023, the v1 origin). Read against
+ONE question: what here would kill C1-L2 or C8 faster, or change their
+kill lines? A pure-theory scaling-limit paper: the weak convergence of
+the INTENSITY (not just the integrated version) of a nearly-unstable
+Hawkes process with power-law kernel α ∈ (1/2, 1) under the joint
+trajectory n^α(1 − ζn) → b (Assumption 2.4, PDF pp. 9-10) to the rough
+Heston Volterra equation (Theorems 2.6-2.7, PDF pp. 10-11), via a new
+C-tightness criterion for càdlàg processes built on Kolmogorov-Chentsov
+(Lemma 3.5, PDF pp. 14-16), with the closing counterexample that
+integrated-process convergence cannot identify the rate process
+(Section 3.7, PDF pp. 33-34). No estimation, no data application.
+
+Note (full draft with page citations and the killed-if-wrong
+counterfactual): `paper/research/library/2026-11-20_heavy_tailed_hawkes_rough_volatility_deep_read.md`
+
+Findings (full grading in the note):
+
+1. [reinforcing, no new item] The criticality-scaling law: the rough
+   limit exists only inside the exact joint approach trajectory
+   n^α(1 − ζn) → b with matched rate/initial-condition scalings
+   (Assumption 2.4, eq. 2.10, PDF pp. 9-10) — branch-ratio proximity to
+   one is a rate-at-a-scale statement, not a level, reinforcing the
+   queued near-instability / apparent-criticality calibration items and
+   the branch-norm reporting duties. No queue change.
+2. [reinforcing, no new item] The integrated-statistic trap: Section 3.7
+   proves integrated-process convergence can coexist with a rate process
+   that diverges at the window origin and cannot be differentiated back
+   (PDF pp. 4-5, 33-34) — cumulative/time-averaged readouts of a rate
+   feature are not evidence about the feature, reinforcing the
+   primary-metric pre-commitment queued at deep-read 55 (log ## 69). No
+   queue change.
+3. [interpretation caution] The limit's price and volatility Brownian
+   drivers are independent by construction of the scaling and the
+   conditionally deterministic price changes (Theorem 2.9 discussion,
+   Remark 2.10, PDF pp. 11-12): any flow-volatility correlation in raw
+   data is a marking convention, not a microstructure law; a C8-adjacent
+   signed reading must pre-declare its marking convention.
+4. [interpretation caution] The initial condition is an assumed
+   heavy-tail decay Vn,0·Φ(t) (Assumption 2.4(2), Remark 2.5, PDF
+   pp. 9-10): inference near the start of a finite L2 window sits on the
+   declared window-edge/burn-in convention — the window-edge caution
+   class the programme already carries.
+5. [source-quality note] ArXiv v3 with a stamp/title-page date-line
+   mismatch (25 vs 26 Mar 2026, PDF p. 1) and two Xu bibliography
+   entries with identical page ranges ([59], [60], PDF pp. 37-38), at
+   least one a citation slip; unpublished preprint — check the published
+   version before formal citation.
+
+Inaccessible/blocked status: none — the extract was present and fully
+readable; x8fc12b consumed clean.
+
+docs/DECISIONS_PENDING.md is untouched this session per the rule
+(nothing sharpened): the ratification queue stands at THIRTY-FOUR
+candidate sharpenings plus probe E1, zero armed, unchanged from ## 72.
+docs/GOALS.md front-2 status line and the front-4 counter line are
+refreshed (the operative bookkeeping edits): x8fc12b consumed; the
+next UNREAD is "A buffer Hawkes process for limit order books"
+(score 27, x6ed313), behind it "Analyzing order flows in limit order
+books with ratios of Cox-type intensities" (score 26, x0b879c);
+deep-read counter since edition 3: FOUR of five.
+
+Ratification queue after this session: THIRTY-FOUR candidate
+sharpenings plus probe E1, zero armed — UNCHANGED from ## 72; this
+session queued nothing. T1 remains armed awaiting the owner's word in
+its booked state (survived all five kill lines with sign inverted; T2
+tested-fail); the blocked list stays blocked. Deep-read queue pointer:
+next UNREAD "A buffer Hawkes process for limit order books" (score 27,
+x6ed313), behind it "Analyzing order flows in limit order books with
+ratios of Cox-type intensities" (score 26, x0b879c); re-read the live
+tail before consuming.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard checks (marker sweep and encoding sanity, executed on this
+session's changed files locally; the repo-wide guard runs in CI on the
+PR): clean.
