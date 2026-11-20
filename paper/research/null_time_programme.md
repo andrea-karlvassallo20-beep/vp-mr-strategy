@@ -7166,3 +7166,152 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard checks (marker sweep and encoding sanity, executed on this
 session's changed files locally and on the assembled repaired tree; the
 guard's full run lands in the session's verification pass): clean.
+
+## 78. Null-time session 72 (2026-11-20), first act: the corrupt-landing corrigendum — four curated files on the session-71 branch repaired; the EDITION 4 protocol rewrite recorded as not survived; guard extended nowhere, the record made truthful before the next append
+
+Session-state note (work choice and its reason, recorded under the
+goal-autonomy conductor, edition 4 per log ## 76; the protocol file's
+live branch copy was itself corrupt at this session's start, main's
+edition-3 text restored this act and consulted as the fail-safe
+baseline): this session ran, in order, the repair (the fail-safe
+infrastructure obligation: the record must be truthful before anything
+is appended), then the owner-ordered deep-read (front 2, the standing
+dated directive of 2026-11-20; see ## 79). The cadence check (front 4)
+is NOT due under edition 4 (counter TWO of five after ## 79).
+
+Corrigendum, honestly recorded: the session-71 branch
+(log-repair-71-deepread-60, open PR #251) landed FOUR curated files
+corrupted to a single 0x07 control byte each — docs/GOALS.md,
+docs/DECISIONS_PENDING.md, docs/goal_autonomy_protocol.md, and the
+session's own deep-read note
+paper/research/library/2026-11-20_cox_ratio_order_flows_deep_read.md
+(the .log-repair/append_2026-11-20.md scaffold is the same one byte and
+is left in place, inert and out of every guard scan, as evidence of the
+failure mode). The recovery-note on that branch claims a clean landing;
+the branch tree contradicts it. Merging PR #251 as pushed would destroy
+the ratification queue and fail the encoding guard; this session's
+landing therefore includes the restoration and supersedes that PR.
+Per the honest-error protocol nothing in the restored log was edited;
+what was repaired, with sources:
+
+- docs/DECISIONS_PENDING.md: restored from main (the thirty-five-candidate
+  text) and updated with the ONE item session 71 actually queued per
+  ## 77 — the sign-persistence admission null, the thirty-sixth — with
+  its mechanism and page cites taken verbatim from the ## 77 record.
+- docs/GOALS.md: restored from main; front-2 and front-4 status lines
+  refreshed (x0b879c consumed at deep-read 60, x973a89 consumed this
+  session at deep-read 61; the edition-4 counter after this session
+  stands at TWO of five; next UNREAD "On the Hawkes Process with
+  Different Exciting Functions", score 26, xd0ee69, recomputed by
+  title-matching the score-sorted triage file against this restored log).
+- docs/goal_autonomy_protocol.md: restored byte-identical to main's
+  EDITION 3 text. The EDITION 4 section-2 rewrite claimed at ## 76 did
+  NOT survive the corruption and is not re-authored here: no session
+  invents protocol text. The ## 76 log entry itself carries the pass's
+  substance in full; the next synthesis session must re-land the
+  protocol rewrite from that record. GOALS front 4 records the debt.
+- paper/research/library/2026-11-20_cox_ratio_order_flows_deep_read.md:
+  re-earned from the page-marked shelf extract (38 pp.), every page cite
+  re-verified against the extract this session; the verdict and the
+  sharpening text are those of ## 77, which governs; the file carries a
+  RECONSTRUCTION NOTE header as the only newly-authored portion.
+
+Guard: encoding sanity re-run on the repaired files and the assembled
+tree — clean (the four 0x07-byte files are exactly the failure class
+check 3 of the guard arms against; they failed it, and the failure is
+now swept). Nothing measured, no kill line moved, nothing armed,
+nothing trades live.
+
+## 79. Null-time session 72 (2026-11-20), second act: library deep-read session 61 — the neural marked-Hawkes kernels read; the estimator family shown to pre-decide the excitation sign; ZERO sharpenings queued; the event-collapse preprocessing recorded as the clock rule's page-cited counterexample
+
+- **Library deep-read session 61** (front 2, the score-26 tier; the ## 77
+  pointer was the queue's next UNREAD and is consumed here):
+  `paper/research/library/2026-11-20_nonparametric_marked_hawkes_deep_read.md`
+  on Joseph & Jain (IISc Bangalore), "Non-Parametric Estimation of
+  Multi-dimensional Marked Hawkes Processes" (arXiv:2402.04740v1
+  [stat.ML], 7 Feb 2024, "Preprint. Under review"). Shallow neural
+  estimators of marked Hawkes kernels ϕ(t, m) as a joint function of
+  time and marks: SNH with marks (kernel output wrapped in an
+  exponential — strictly positive, so strictly excitatory, Eq. 11, PDF
+  pp. 8-9) and NNNH with marks (signed kernel, intensity clipped at
+  zero by an outer ReLU, Eqs. 12-13, PDF pp. 9, 23-24); MLE with an
+  analytically integrated compensator (Appendix A, PDF pp. 22-24);
+  GMM mark density under an explicit i.i.d. and cross-dimension
+  independence assumption (PDF p. 10); visual-only synthetic validation
+  (kernel error plots and QQ plots, PDF pp. 13-16); applied to 30
+  minutes of Binance BTC-USD/ETH-USD market orders (16 July 2022,
+  02:00-02:30 UTC, 30,388 orders after collapsing multi-counterparty
+  fills into single events, Table 1, PDF p. 17) with coin-denominated
+  trade volume as the mark.
+- Grade: NO kill line changed. NO new candidate sharpening. The default
+  grade is earned: one 30-minute spot window, visual-only validation,
+  no branching ratio, no dispersion statistic, no criticality reading
+  anywhere — the paper cannot inform the C8 trigger threshold in either
+  direction, and every mechanism it touches is already held by standing
+  or queued rules:
+  1. [interpretation caution] The estimator family pre-decides the
+     excitation SIGN: the SNH-with-marks kernel is exp(...) > 0 by
+     construction (Eq. 11, PDF pp. 8-9) and cannot express a damping
+     kernel at all; the NNNH variant clips the intensity at zero
+     (Eq. 12, PDF p. 9). Their own reading shows mark-gradient sign
+     heterogeneity across branches (buy-BTC self-excitation decreases
+     with volume, sell-BTC flat, both ETH branches increasing, PDF
+     pp. 17-18), so an excitatory-only or pooled estimation launders
+     exactly the damping branches the sign-register rule (deep-read
+     session 10, log ## 16) and the per-branch rule (deep-read session
+     7, log ## 13) require two-sided. Extends those rules' reading to
+     mark-dependence signs; no queue change.
+  2. [reinforcing, no new item] The event-unit is a pre-processing
+     decision with kernel consequences: multi-counterparty fills are
+     collapsed into ONE event with summed volumes before estimation
+     (PDF p. 17) — the opposite of the raw taker-print stream — and
+     coin-denominated marks are incommensurable across dimensions
+     (ETH volume ~10x BTC, Table 1, PDF p. 17). Reinforces the queued
+     clock and event-grain pre-declarations and the unit-declaration
+     sharpening; C1-L2's declared taker-print convention gains its
+     page-cited counterexample.
+  3. [reinforcing, no new item] Non-parametric is not assumption-free:
+     P = 64 neurons, per-layer learning rates, initialization ranges
+     and a 10-iteration validation stop are unregistered analyst
+     degrees of freedom (PDF pp. 12-13), and the cross-excitation
+     headline ("ETH trades influence BTC, not the other way", PDF
+     pp. 17-18) rests on them — same-day-class evidence for why the
+     trigger layer declares kernel family and estimator identity with
+     the spec (deep-read session 2).
+  4. [interpretation caution] No numeric error table exists anywhere in
+     the paper (visual validation only, PDF pp. 13-16, Figs. 3-10);
+     no magnitude from it may enter any spec.
+  5. [source-quality note] arXiv v1 under review, authors citing their
+     own prior line as foundation; one 30-minute single-venue window;
+     marks assumed i.i.d. with buy/sell independence explicitly
+     assumed (PDF p. 10); mark selection admitted unresolved by the
+     authors (PDF p. 20); check the published version before formal
+     citation.
+- Counterfactual (the immune-system section, never omitted): had the
+  programme adopted a flexible marked-Hawkes estimator as the trigger
+  layer because it looks assumption-free, the SNH branch would
+  structurally manufacture positive self-excitation readings (the
+  kernel output is an exponential, PDF pp. 8-9) and the NNNH branch
+  would write sign-clipping into the compensator itself (Eq. 12,
+  PDF p. 9) — an inhibitory regime would have been forced into a
+  cascade-shaped reading, the exact laundering the pre-declared kernel
+  family, the named estimator identity, the sign-register and the
+  boundary-solution rules exist to prevent.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked, complete and read in full (24 pp.).
+- Ratification queue after this session: THIRTY-SIX candidate
+  sharpenings plus probe E1, zero armed (unchanged by this session; the
+  queue was repaired to thirty-six this date per ## 78, carrying
+  session 71's sign-persistence admission null). T1 remains armed
+  awaiting the owner's word in its booked state (survived all five kill
+  lines with sign inverted; T2 tested-fail); the blocked list stays
+  blocked. Deep-read queue pointer: next UNREAD "On the Hawkes Process
+  with Different Exciting Functions" (score 26, xd0ee69); re-read the
+  live tail before consuming.
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule:
+  nothing was sharpened here); its thirty-six-candidate text was
+  repaired in act one (## 78).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean on the assembled tree: python3 src/integrity_guard.py
+run this session exits zero after the repairs.
