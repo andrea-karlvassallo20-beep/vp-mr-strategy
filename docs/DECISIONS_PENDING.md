@@ -1,7 +1,10 @@
 # Pending owner decisions — the thirty-third dashboard
 
-**Maintained by the null-time sessions. Last updated: 2026-11-20, repaired corrupt landing and re-audited (null-time session 72, log ## 78; audited
-against the claims ledger and the record — stale items resolved by your
+**Maintained by the null-time sessions. Last updated: 2026-11-20, the
+price-process-family invariance rule queued as the thirty-eighth candidate
+sharpening (null-time session 77, log ## 85), after the corrupt-landing
+repair and re-audit (null-time session 72, log ## 78); audited against
+the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
 Every item below is BLOCKED ON YOUR WORD — nothing runs, arms, or merges
 into a claim without it. Pointers are to the exact document that makes
@@ -33,7 +36,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: thirty-seven
+  library deep-reads and the ratified exploratory channel: thirty-eight
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -48,9 +51,37 @@ each case. Items are ordered by how much they gate.
   sign-persistence admission null queued 2026-11-20 by deep-read
   session 60 / null-time session 71, plus the
   estimator-configuration freeze queued 2026-11-20 by deep-read
-  session 63 / null-time session 74; probe E1 stands separately
-  and is not counted among the thirty-seven); most recently joined
-  2026-11-20, the estimator-configuration freeze (any C1-L2/C8-adjacent
+  session 63 / null-time session 74, plus the price-process-family
+  invariance rule queued 2026-11-20 by deep-read session 66 /
+  null-time session 77; probe E1 stands separately and is not counted
+  among the thirty-eight); most recently joined 2026-11-20, the
+  price-process-family invariance rule (any C1-L2/C8-adjacent
+  book-defined statistic that prices time through an assumed price
+  process — expected fill, first-passage or hitting-time discounting,
+  impatience or utility weighting of book levels — must pre-declare,
+  BEFORE the data, the price-process family entering its definition
+  from a declared generic default, with the killed-if-wrong
+  counterfactual recorded: a statistic whose level-dependence,
+  stability or sign exists under one family and dissolves under
+  another fails by rule instead of surviving as a modeling choice —
+  the Langnau–Punchev LOB paper proves the same reconstructed book
+  yields a fitted impatience rate that is an explicit function of the
+  distance-to-fill AND the estimated volatility under geometric
+  Brownian motion, with day-level dispersion σr exploding to 43-88
+  (PDF pp. 7-9, 30-31) and an implied-volatility smile rising with
+  distance-to-fill (PDF p. 12), while under Kou’s double-exponential
+  jump-diffusion the same book yields a level-independent r, σr
+  collapsed by an order of magnitude and no smile (PDF pp. 21-22,
+  30-31) — the family alone, an analyst property, sets whether the
+  statistic means anything; harder-to-pass because a family-dependent
+  book statistic that only behaves under the analyst’s preferred
+  family now fails at the gate instead of surviving as tuning;
+  tightens the same axis as the named-estimator-identity rule and the
+  estimator-configuration freeze (WHICH estimator, in WHICH exact
+  configuration, under WHICH assumed price-process family); full
+  draft with the killed-if-wrong counterfactual in
+  paper/research/library/2026-11-20_stochastic_price_dynamics_lob_deep_read.md),
+  and earlier the same day, the estimator-configuration freeze (any C1-L2/C8-adjacent
   kernel — or other estimator-dependent — computation must
   pre-register, BEFORE fitting, its FULL estimator configuration: the
   second-order-statistics grid (h, nlin, nlog or equivalent rule), the

@@ -7852,3 +7852,128 @@ live.
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py run this session
 exits zero on the assembled tree.
+
+
+## 85. Null-time session 77 (2026-11-20), library deep-read session 66 — the Langnau–Punchev LOB-implied price-dynamics paper read; the price-process family alone shown to manufacture or erase the headline book statistic's level structure (the same book that demands a smile under GBM shows none under a jump-diffusion); ONE sharpening queued (the thirty-eighth, the price-process-family invariance rule)
+
+- Director step (goal-autonomy protocol, ACTIVE, ratified 2026-11-19): the
+  live main tail (through ## 84) and docs/DECISIONS_PENDING.md were read
+  first; the standing work choice is the default — the next UNREAD
+  deep-read, per this ritual, needs no substitute justification. EDITION 5
+  of the goal state was written by the ## 83 synthesis pass; deep-read
+  session 65 (## 84) has landed since — one, fewer than the five the
+  cadence rule requires — so the synthesis pass is NOT due this session.
+  Nothing in this session touches a carve-out.
+- **Library deep-read session 66** (front 2, the score-25 tier; the ## 84
+  pointer "Stochastic Price Dynamics Implied By the Limit Order Book"
+  (score 25, x074d5c) was the queue's next UNREAD and is consumed here):
+  paper/research/library/2026-11-20_stochastic_price_dynamics_lob_deep_read.md
+  on Alex Langnau (Allianz Investment Management) and Yanko Punchev (LMU
+  Munich), "Stochastic Price Dynamics Implied By the Limit Order Book"
+  (arXiv:1105.4789v1 [q-fin.TR], 24 May 2011). A 2010 practitioner paper:
+  Rosu's equilibrium impatience rate r is fitted to a reconstructed
+  DAX-futures book (June-August 2010, depth six levels, 30-second grid,
+  30-observation rolling estimates) through a distance-to-fill utility
+  UD(r) = |D| E[exp(-r τ)] built on first-passage Laplace transforms (eq.
+  2, PDF p. 3; Algorithm 1, PDF pp. 6-7); under GBM r is NOT
+  level-independent (power law in the risk-adjusted distance, PDF
+  pp. 7-9) and holding r and U constant forces an implied-volatility
+  smile rising with distance-to-fill (PDF p. 12); under Kou's
+  double-exponential jump-diffusion, with bipower-variation separation of
+  diffusive from jump variance, r becomes approximately level-independent
+  within established regimes (PDF pp. 17-22), and the authors' own
+  regression finds no significant relation between r and future
+  mid-price returns in either setting (PDF pp. 9, 20).
+- Grade: NO kill line changed; ONE new candidate sharpening queued,
+  PENDING OWNER RATIFICATION — the price-process-family invariance rule
+  (the thirty-eighth): the same market, the same book, the same
+  equilibrium assumption, and one analyst choice — the price-process
+  family — converts the headline book statistic from meaningless to
+  meaningful. Under GBM the day-level dispersion of the fitted
+  impatience rate explodes (σr up to 43.3, 50.7, 83.9, 88.3 across
+  days, PDF pp. 30-31) and r is an explicit function of the
+  distance-to-fill AND the estimated volatility (PDF pp. 7-9); under
+  DEJD on the same data σr collapses by an order of magnitude and r is
+  a function of neither (PDF pp. 21-22, 30-31). Pre-declaration text:
+  any C1-L2/C8-adjacent book-defined statistic that prices time through
+  an assumed price process — expected fill, first-passage or
+  hitting-time discounting, impatience or utility weighting of book
+  levels — must pre-declare, BEFORE the data, the price-process family
+  entering its definition from a declared generic default, with the
+  killed-if-wrong counterfactual recorded: a statistic whose
+  level-dependence, stability or sign exists under one family and
+  dissolves under another fails by rule instead of surviving as a
+  modeling choice; harder-to-pass because a family-dependent book
+  statistic that only behaves under the analyst's preferred family now
+  fails at the gate instead of surviving as a modeling choice;
+  tightens the same axis as the
+  named-estimator-identity rule and the estimator-configuration freeze
+  (WHICH estimator, in WHICH exact configuration, under WHICH assumed
+  price-process family), hardening rule 1 of the pre-registration
+  discipline. Full draft with the counterfactual in the session note.
+  2. [reinforcing, no new item] The LOB-implied volatility smile is a
+     derived artifact of the GBM family and dissolves once jumps are
+     added (PDF pp. 10-12 vs 19-22): the tempting anticipatory reading
+     (far-out orders "betting on a sharp price change", the authors' own
+     intuition, PDF p. 11) is a property of the assumed dynamics, not an
+     observation about traders — reinforcing magnitudes-never-transfer
+     and the pre-declaration family. No queue change.
+  3. [reinforcing, no new item] The paper's own regression shows the
+     impatience rate carries no significant relationship to future
+     mid-price returns in either setting, false outbreaks documented
+     (PDF pp. 9, 20) — a headline book statistic honestly reported as
+     failing its own directional null; reinforcing the two-null
+     admission rule. No queue change.
+  4. [interpretation caution] The DEJD calibration is under-identified:
+     five parameters against two moment constraints, drift assumed away
+     by fiat, the symmetry constraint dropped because optimizers would
+     not converge with it, the bipower-variation estimate capped by
+     realized variance to avoid negative jump variance (PDF
+     pp. 17-19). The flat-r regime passes partly under a fitting
+     procedure that discards the constraints it cannot converge under;
+     any future passage-time discounting must treat its fitted
+     parameters as optimizer-conditioned objects. No queue change.
+  5. [source-quality note] arXiv v1 only, zero recorded citations, no
+     published version found, first author industry-affiliated;
+     single instrument (FDAX), three months, five-to-six-level depth,
+     no order flags so cancellations unreconstructible (PDF
+     pp. 33-34), results illustrated on "a representative day" (PDF
+     p. 7), no significance testing anywhere. Check published version
+     before formal citation.
+  6. [cost-survival ammunition, relevant only if a future K7-style
+     cost-survival layer exists] The paper's market-order
+     slippage/"price of impatience" framing (PDF p. 1) is qualitative
+     only and quantifies nothing; may not be cited as cost-model
+     support at any layer. No queue change.
+- Counterfactual (the immune-system section, never omitted): had the
+  book-implied smile been read as evidence that deep-book positioning
+  anticipates sharp moves, a C1-L2 motivation would have carried "far
+  orders imply coming jumps" into the spec while the paper itself
+  proves the smile is exactly what a wrong price family manufactures
+  and the jump-augmented family erases — the academic-degree-of-freedom
+  failure the pre-declaration family exists to kill, demonstrated on a
+  single analyst axis. Had the flat DEJD r been read as directional
+  information, the authors' own null regression (PDF pp. 9, 20) would
+  have been laundered around. And had the DEJD parameterization been
+  treated as identified structure, an under-identified fit whose
+  constraints were dropped for convergence would have entered the
+  record dressed as measurement.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked, complete and read in full (41 pp.).
+- Ratification queue after this session: THIRTY-EIGHT candidate
+  sharpenings plus probe E1, zero armed (the thirty-eighth, the
+  price-process-family invariance rule, queued this session). T1
+  remains armed awaiting the owner's word in its booked state (survived
+  all five kill lines with sign inverted; T2 tested-fail); the blocked
+  list stays blocked. Deep-read queue pointer: next UNREAD "Stochastic
+  Price Dynamics in Response to Order Flow Imbalance: Evidence from
+  CSI 300 Index Futures" (score 25, x8f729f); re-read the live tail
+  before consuming.
+- docs/DECISIONS_PENDING.md IS touched this session (rule: one
+  candidate sharpening queued): the ratification-queue line reads
+  THIRTY-EIGHT. Nothing is armed by the touch; your word is the only
+  trigger.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades live.
+Guard clean: python3 src/integrity_guard.py run this session exits zero on
+the assembled tree.
