@@ -6515,3 +6515,348 @@ tail before consuming.
 
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live.
+
+## 71. Null-time session 67 (2026-11-20): deep-read session 56 — the Fruth-Schöneborn-Urusov time-varying-liquidity price-manipulation paper read; ONE candidate sharpening queued (the initial-state pre-declaration, the thirty-fourth); the 2026-11-19 landing-race corrigendum recorded (the overwritten synthesis-pass log entry restored verbatim below, the session-65 number collision named, the #244 placeholder file deleted); NO kill line changed, nothing measured, nothing armed
+
+Session-state note (work choice and its reason, recorded under the
+goal-autonomy conductor protocol, goal state edition 3, section 3):
+front 2, the library deep-read queue, chosen by the owner's dated
+standing directive for this cycle ("run the next null-time deep-read
+session ... follow the research-intake skill ritual exactly"), the
+direct-instruction path the protocol and the standing order both
+recognize; the ritual's default needs no further justification and
+the head was readable. The state chain was recomputed live, not from
+memory: at session start the live main tail was the ## 69 landing
+(commit 36099aef), with DECISIONS_PENDING.md, the protocol file
+(edition 3 with sections 1-9 intact), docs/GOALS.md, the triage file,
+and the shelf all read whole; the branch/PR set was empty. Front-4
+status required an honest reconciliation before the read: the tail
+text and the then-live GOALS front-4 line described the first
+synthesis pass as OVERDUE/"undischarged", while the protocol's own
+sections 2 and 9 record the pass as RUN — the reconciliation is this
+entry's corrigendum, whose finding is that the "undischarged"
+language was never fact but a landing-race artifact (the pass's own
+log entry was physically overwritten by a later squash merge). While
+this session's work was in flight, the race recurred a second time:
+PR #246 landed (null-time session 66, log ## 70, GOALS.md G2 — the
+ratification-readiness briefs; main moved to commit d1fc559b), a
+lawful, well-formed landing covering the GOALS status bookkeeping and
+the thirty-three-queue briefs. Per the conductor protocol's
+main-wins race protocol this session rebased onto d1fc559b before
+landing: the ## 70/session-66 numbers and all three G2 products are
+THEIRS and stand untouched; this session's entry, drafted first as
+## 70, is renumbered to ## 71 / null-time session 67 (deep-read 56;
+the landed-sequence mapping ## N = null-time session N-4 continues
+unbroken; no renumbering of theirs, and none of this session's
+either). Front 1 is blocked on the owner (environment + paid Tardis
+data); front 3 is blocked on codespace/data presence; front 4 per the
+live edition-3 cadence counted deep-read #55 onward, so after this
+read the counter stands at TWO of five (55, 56) and the pass is NOT
+due. The head was recomputed from docs/library/edge_triage_scores.json
+(score-28 ordering) and the shelf listing: x95643a, two-source
+confirmed against the ## 69 next-pointer; behind it x2df250 (score 27)
+then x8fc12b (score 27). Bibliographic honesty note: the GOALS.md
+front-2 pointer's paraphrase "time-dependent liquidity" names this
+paper; the actual title word is "time-varying" (PDF p. 1; the
+expanded-index title agrees with the paper), recorded here so the
+successor does not treat the pointer as a different work.
+
+Corrigendum (honest-error protocol; the wrong text is left unedited,
+the lost text is restored, nothing is renumbered):
+
+1. The first synthesis pass's log entry (## 69 as appended by PR
+   #243) was lost in the #245 squash merge: within the 2026-11-19
+   23:05-23:58 UTC hour three landings raced — PR #243 (the synthesis
+   pass, its own log entry), PR #244 (a placeholder landing writing
+   literal "__ENTRY__" into the log and a "__NOTE__" placeholder file
+   onto the shelf, wrong session numbers in its commit message), and
+   PR #245 (the Lee deep-read relanding whose branch was cut from a
+   pre-#243 main), whose squash merge OVERWROTE the synthesis pass's
+   log entry, reused ## 69 and "null-time session 65" for the
+   deep-read, cleaned the log-side "__ENTRY__" but left the #244
+   placeholder file on the shelf. The verbatim text of the lost entry
+   survives in git at commit 88ae859c and is reprinted below
+   unchanged, as a restoration block inside this entry, so the live
+   file again contains the pass's own record. Its ## 69 header
+   collides with the landed ## 69 deep-read entry; the collision is
+   real (two 2026-11-19 sessions each recorded themselves as ## 69 /
+   null-time session 65) and is recorded here once: the synthesis pass
+   remains the FIRST session-65 event in time (landed 23:05), the
+   deep-read the second that numbered itself so (landed 23:58), and
+   this session continues the landed sequence as ## 71 without
+   renumbering either.
+
+2. The #244 placeholder file
+   paper/research/library/2026-11-19_self_exciting_flexible_residual_durations_deep_read.md
+   (content: the literal string "__NOTE__", no note, referenced
+   nowhere; created by the aborted #244 landing, git commit 03b216f8)
+   is DELETED by this session's landing; the commit message states
+   exactly what moved. The shelf and the log are now free of #244
+   residue; the shelf holds 57 dated note files after this landing's
+   addition, all real notes, no placeholders.
+
+3. Provenance rule for successors, learned from the race and relearned
+   mid-session when PR #246 landed while this work was in flight: a
+   session's branch must be cut from the live main HEAD as verified at
+   session start; if any PR lands while work is in flight, the session
+   re-fetches the tail, rebases its own session numbering to continue
+   the landed sequence (nothing previously landed is renumbered), and
+   merges its bookkeeping with what landed; "the file state is the
+   truth" includes git history — the overwritten record lives at
+   commit 88ae859c and is now also restored above.
+
+Restoration block — the first synthesis pass's log entry, verbatim
+from commit 88ae859c (PR #243 landing, 2026-11-19 23:05 UTC), printed
+without alteration:
+## 69. Null-time session 65 (2026-11-19): the first synthesis pass under the standing order — goal-state EDITION 3 recorded (protocol section 2 rewritten whole); four named gaps at zero status; the cadence reset; NO sharpening queued (no new mechanism earned), NO kill line changes, nothing measured, nothing armed
+
+Session-state note (work choice and its reason, recorded under the
+goal-autonomy conductor protocol v2, edition 2, section 3, item 1 of
+the GOALS.md rotation rule): front 4, the synthesis pass — the
+first-outranked item, DUE at choice time. The choice chain, verified
+against the live tail at session start (main at 2b5c371, tail ## 68,
+open-PR and working-branch set empty: no open PR, no unmerged working
+branch): five deep-read sessions (50-54) had landed since goal-state
+edition 2 (## 61 Glosten-Milgrom, ## 63 Hawkes-IG-subordinator, ## 66
+filtered ticks, ## 67 negative resilience, ## 68 credit-indices
+Hawkes) against the cadence's five, so the cadence fired. The owner's
+same-day "continue" is the direct-instruction path that opens a
+work-selecting session; the selection itself is the rotation rule's,
+which puts a due synthesis pass first. The protocol file was read whole
+and is consistent (edition 2, sections 1-8, corrigendum and
+cross-reference notes intact); no fail-safe condition.
+
+The pass, run per protocol section 4 (the whole record since edition 2
+re-read: log ## 61-## 68, the five deep-read notes, DECISIONS_PENDING in
+full, GOALS.md, the live triage file, the 55-note shelf, and the guard
+run in all four modes on the assembled tree — clean). Products, each
+through its sanctioned channel:
+
+1. The next dated edition of the goal state (the only channel that may
+   rewrite protocol section 2): EDITION 3, recorded. The facts block
+   recomputed whole from the live record: Phase 1 CLOSED by three
+   independent deaths AND ARCHIVED by the Board's dated 2026-11-19
+   word (directive block carried by GOALS.md; archived is NOT
+   falsified); Phase 2 ACTIVE, the Board's only active front
+   (C1-L2 → C8 → Convexity Sizing), blocked on the owner's data
+   acquisition; sealed instruments unchanged; 55 notes through
+   deep-read 54; queue THIRTY-TWO sharpenings plus probe E1, zero
+   armed; T1 armed awaiting the owner's word (sign inverted), T2
+   tested-fail; pointer x72c407 (score 28) then x95643a (score 28).
+   The ranked fronts UNCHANGED in order, statuses recomputed; the
+   re-ranking authority is exercised only in the recorded evidence,
+   the status notes, and the work-selection guidance. The synthesis
+   cadence is RESET: next due at five deep-reads since edition 3
+   (deep-read #55 onward). Edition 2's installation record is
+   preserved at ## 60; edition 1 at ## 58; amendment note appended as
+   protocol section 9. Ranking evidence recorded honestly: five
+   deep-reads, ZERO kill-line moves, three sharpenings in the window
+   (## 62 the corrupt-landing sweep, ## 65 the base-rate confrontation,
+   ## 67 the regime-window pre-declaration), reinforcement
+   concentrating in the estimator-discipline and pre-registration
+   families — four of five reads reinforced rather than amended, and
+   the score-28 tier named as the last concentrated microstructure
+   tier before the triage long tail, so the deep-read default's
+   marginal yield is expected to decline. Written INTO the edition so
+   the next pass or the owner's word can act on it; the ranking is NOT
+   re-ranked mid-window.
+
+2. Named gaps, four, each at zero status until its channel fires it:
+   (a) the weekly directorate (protocol section 6) has not yet sat —
+   thirty-two candidates plus probe E1 pending, zero armed, and NO
+   ratification-readiness brief exists (GOALS.md G2); the single
+   highest-leverage lawful session work item in the programme; (b)
+   front 3's completion leg is written and queued, its analysis legs
+   remain execution-blocked on codespace/data presence — no session
+   action available; (c) the read-side 64K truncation failure mode
+   (## 60) has its guard-side leg closed (## 64) but no session-side
+   read-back helper — candidate-improvement status only; (d) the
+   integrity guard verified clean in all four modes on the tree
+   carrying edition 3 (recomputation, not assumption). None of the
+   four is fired here: the pass names gaps; the exploratory channel
+   (front 5) remains the sanctioned home if (c) is ever taken, G2 is
+   GOALS.md's own front, and (a) is presided over by the owner alone.
+   Work-selection guidance recorded in edition 3 (binding on sessions
+   until superseded): the next non-deep-read work-selecting session
+   takes G2.
+
+3. Sharpening candidates: NONE queued. The pass's own honest bar: a
+   sharpening must be earned by a specific mechanism, and the window's
+   mechanisms (decay-surface flatness, model-relative baselines,
+   volume-bin inhomogeneity, aggregation-grid freedom, regime windows)
+   are each already covered by the queued estimator-mode, per-branch,
+   regime-window and dynamics-identification candidates. Default
+   grade stands: NO new candidate sharpening. The queue remains
+   THIRTY-TWO plus probe E1, zero armed.
+
+4. Triage candidates: the live recomputation named in edition 3 —
+   the next UNREAD remains "Forecasting duration in high-frequency
+   financial data using a self-exciting flexible residual point
+   process" (score 28, x72c407), then "Optimal trade execution and
+   price manipulation in order books with time-dependent liquidity"
+   (score 28, x95643a); verified unread against the 55-note shelf and
+   the raw triage ordering. No NEW catalogued entries proposed: the
+   500-entry catalog is triaged; the honest product is the expected
+   marginal-yield decline recorded in edition 3, not an invented
+   re-score.
+
+What this pass would have killed if it had been done wrong: the
+self-laundering death (a synthesis pass that "discovers" in its own
+window the evidence for the re-ranking it wants, or queues a
+sharpening to appear productive — the exact failure mode the standing
+order's carve-out on sharpening approvals exists for); the
+ranking-drift death (a mid-window re-rank of front 2 on one session's
+evidence, which would make the goal state a mood rather than a
+record). Both pre-empted by the default grade, the recorded-reason
+rule, and the edition rule's single-channel constraint.
+
+docs/DECISIONS_PENDING.md is NOT touched this session (no sharpening
+was queued; no decision item changed state): the ratification queue
+stands at THIRTY-TWO candidate sharpenings plus probe E1, zero armed.
+docs/GOALS.md status lines refreshed (front 4 RUN, front 2 unchanged
+at x72c407, G2 proposed as the next non-deep-read choice, the THIRTY
+brief-count corrected to THIRTY-TWO); docs/goal_autonomy_protocol.md
+section 2 rewritten whole as edition 3 with the section 9 amendment
+note appended.
+
+Not changed: nothing measured, no kill line moved, nothing armed,
+nothing trades live. Guard clean (default, --sweep, --library,
+--encoding) on the assembled tree carrying edition 3. Nothing
+measured, no kill line moved, nothing armed, nothing trades live. T1
+remains armed awaiting the owner's word in its booked state (survived
+all five kill lines with sign inverted; T2 tested-fail); the blocked
+list stays blocked. Ratification queue after this session: THIRTY-TWO
+candidate sharpenings plus probe E1, zero armed. Next-queue pointer:
+"Forecasting duration in high-frequency financial data using a
+self-exciting flexible residual point process" (score 28, x72c407);
+the successor recomputes the head from the live triage file and the
+live tail before reading. The next work-selecting session's non-deep-
+read choice, per edition 3's guidance: GOALS.md G2, the
+ratification-readiness briefs, in service of the directorate's first
+sitting.
+
+End restoration block — verbatim text ends here; the live sequence
+continues below with this session's own paper record.
+
+The paper: Antje Fruth, Torsten Schöneborn, Mikhail Urusov, "Optimal
+trade execution and price manipulation in order books with
+time-varying liquidity" (arXiv:1109.2631v1, 12 Sep 2011 stamp, an
+October 8, 2018 recompile; zero citations recorded in our index).
+Read against the ONE question (full note:
+paper/research/library/2026-11-20_time_varying_liquidity_price_manipulation_deep_read.md).
+Verdict: NO kill line changed; ONE new candidate sharpening queued,
+PENDING OWNER RATIFICATION. The grade and its reason, page-cited:
+
+1. [candidate sharpening, PENDING OWNER RATIFICATION] The
+   initial-state pre-declaration for refutation instruments: the
+   paper's zero-spread model had to restrict its manipulation
+   definitions to zero initial deviation precisely because any nonzero
+   D^u_0 alone admits a profitable round trip (the explicit
+   −D^u_0/(2κ)·1_(0,ε](s) strategy, Remark 8.2, PDF p. 29). An initial
+   state is wiring, not a market property, and a single-price/zero-
+   spread abstraction is exactly what a future generative null or
+   placebo for the L2 phase would plausibly be built on. Proposed
+   amendment, hardening the dynamics-identification rule for generative
+   nulls and the placebo-design precedent (the queued C8 A3
+   shuffled-arrival placebo): any generative null, placebo, simulator,
+   or other refutation instrument used anywhere in C1-L2/C8 must
+   pre-declare, before the data, its initial-state handling — initial
+   book/impact/queue deviations zero, or drawn from a declared frozen
+   distribution with a stated burn-in — and an instrument whose spec
+   omits this fails pre-registration review. Harder to pass by
+   construction: a refutation can no longer rest on an initial state
+   chosen after seeing the data. Killed-if-wrong counterfactual in the
+   note. PENDING OWNER RATIFICATION; nothing armed.
+
+2. [reinforcing, no new item] Whether "manipulation" exists is a
+   property of the spread abstraction, not the data: identical
+   (K, ρ) paths are manipulation-admitting in the zero-spread model
+   (Prop 8.3, PDF pp. 29-30; Cor 8.5, PDF p. 30) and manipulation-free
+   once the spread widens with trading (Prop 3.4, PDF pp. 9-10). A
+   verdict read off a stylized single-price book is a verdict about
+   the model class. Reinforces the library invariant and the
+   dynamics-identification rule; nothing added.
+
+3. [reinforcing, no new item] The manipulation boundary K' + 2ρK = 0
+   is a derivation boundary, sign-fragile and asymmetric (rising
+   liquidity manipulates, falling does not, PDF p. 30; the buy-region
+   empties at K' + ρK < 0, Prop 9.4, PDF p. 36). Near-boundary
+   readings are one derivative estimate from a sign flip — the same
+   fragility as the Hawkes α < βE[ε] boundary (## 67, ## 69).
+   Reinforces the estimator-discipline family and the queued
+   regime-window pre-declaration.
+
+4. [interpretation caution] The dimension reduction (Lemma 5.1, PDF
+   p. 12): in this model class the value-determining state is one
+   dimensionless ratio y = x/δ, and the scaling "does not generalize
+   easily" beyond block shape plus exponential decay (PDF p. 11). A
+   future book feature should be checked for dimensional collapse onto
+   a ratio-like coordinate before being counted as new information.
+   Reading discipline; no queue change.
+
+5. [reinforcing, no new item] Only the temporary-impact channel
+   differentiates strategies — martingale and permanent-impact costs
+   are strategy-invariant (Prop 3.3, Eq (8), PDF p. 8). Flow
+   information lives in the transient displacement channel, second
+   evidence for C1-L2's flow-dynamics orientation. Reinforces the
+   queued dynamics-identification rule; nothing added.
+
+6. [source-quality note] Purely theoretical, zero empirical content,
+   deterministic depth/resilience only (stochastic liquidity deferred
+   to Fruth 2011, PDF p. 1 fn 1); the OA copy is the 2011 v1 text in a
+   2018-10-08 recompile (PDF p. 1); zero citations in our index.
+   Ammunition under the library invariant, never programme evidence;
+   check for the published version before formal citation outside the
+   note.
+
+What this paper would have killed if we had done it wrong: the
+zero-spread-null death (a refutation instrument built on a single-price
+book abstraction with an un-pre-declared initial state manufactures its
+own round-trip structure, Remark 8.2 and Prop 8.3 — every verdict it
+returned would be wiring, not market) and the boundary-laundering death
+(reading which side of K' + 2ρK = 0 a noisy derivative estimate lands
+on as a discovered "regime" — the manufactured-boundary laundering the
+regime-window pre-declaration, ## 67, already forecloses, from the
+manipulation side of the same Urusov author family). Both pre-empted
+by the queued sharpening, the standing dynamics-identification rule,
+and the library invariant; neither moves any kill line.
+
+docs/DECISIONS_PENDING.md is updated this session per the rule (a
+sharpening was queued): the ratification queue now holds THIRTY-FOUR
+candidate sharpenings plus probe E1, zero armed — the twenty-nine
+through deep-read session 51, the corrupt-landing sweep (session 58),
+the C1-L2 base-rate confrontation (session 61), the self-excitation
+regime-window pre-declaration (session 63), the primary-metric
+pre-commitment (deep-read 55 / session 65), and this session's
+initial-state pre-declaration. docs/GOALS.md is merged against the
+## 70 landing this session rebased onto (its GOALS bookkeeping stands
+untouched where it is not consumed by fact): front 2 consumes
+x95643a (next UNREAD x2df250, behind it x8fc12b; the consumed-paper
+title is cited with the paper's own wording, "time-varying", not the
+pointer's older paraphrase) and advances the deep-read counter ONE→
+TWO of five in the SAME refreshed note the ## 70 session wrote; front
+4 keeps the ## 70 refreshed status line whole and advances only its
+counter sentence, ONE→TWO of five (the pass NOT due); a dated NOTE is
+appended to G2 naming the coverage gap honestly: the briefs doc
+prepared at ## 70 covers the THIRTY-THREE then queued, and the
+thirty-fourth sharpening queued by THIS session postdates it and is
+not yet briefed — the next G2 iteration adds it, and the briefs doc
+itself is not edited by this session. The placeholder file from the
+aborted #244 landing is deleted (stated in the commit message;
+corrigendum item 2). Nothing else in GOALS is touched, and nothing
+that the ## 70 session landed is renumbered or rewritten.
+
+Not changed: nothing measured, no kill line moved, nothing armed,
+nothing trades live. Guard checks (marker sweep, library honesty,
+encoding sanity, executed on the full local tree; the repo-wide guard
+runs in CI on the PR): clean. T1 remains armed awaiting the owner's
+word in its booked state (survived all five kill lines with sign
+inverted; T2 tested-fail); the blocked list stays blocked.
+Inaccessible/blocked status: none — the x95643a extract was present
+and readable. Ratification queue after this session: THIRTY-FOUR
+candidate sharpenings plus probe E1, zero armed. Next-queue pointer:
+"Hawkes model for price and trades high-frequency dynamics" (score 27,
+x2df250); behind it "Convergence of Heavy-Tailed Hawkes Processes and
+the Microstructure of Rough Volatility" (score 27, x8fc12b); the
+successor recomputes the head from the live triage file and the live
+tail before reading.

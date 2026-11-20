@@ -69,15 +69,16 @@ construction.
   `paper/research/l2_data_acquisition_spec.md`); the L0 dry run is
   unblocked by the recorded L0 amendment; never claimable by a session.
 - Front 2 — the library deep-read queue. STATUS: ACTIVE. Next UNREAD
-  after the ## 61, ## 63, ## 66, ## 67, ## 68 and ## 69 landings
-  (2026-11-19; x0d8b2a, xf77014, xb710f4, x77c554, xdb216a and
-  x72c407 consumed): "Optimal trade execution and price manipulation in
-  order books with time-dependent liquidity" (score 28, x95643a); behind
-  it "Hawkes model for price and trades high-frequency dynamics" (score
-  27, x2df250); re-read the live tail before consuming; the ritual's
-  slug-keyed unread rule applies. NOTE (refreshed 2026-11-20,
-  null-time session 66, log ## 70): the deep-read counter since
-  EDITION 3 stands at ONE of five (deep-read 55 counted; the
+  after the ## 61, ## 63, ## 66, ## 67, ## 68, ## 69 and ## 71
+  landings (2026-11-19/20; x0d8b2a, xf77014, xb710f4, x77c554,
+  xdb216a, x72c407 and x95643a consumed): "Hawkes model for price and
+  trades high-frequency dynamics" (score 27, x2df250); behind it
+  "Convergence of Heavy-Tailed Hawkes Processes and the Microstructure
+  of Rough Volatility" (score 27, x8fc12b); re-read the live tail
+  before consuming; the ritual's slug-keyed unread rule applies. NOTE
+  (front-2 consumption of x95643a at null-time session 67, log ## 71;
+  counter refreshed from the ## 70 state): the deep-read counter since
+  EDITION 3 stands at TWO of five (deep-reads 55 and 56 counted; the
   edition-3 recomputation window was deep-reads 50-54 at ## 68) — see
   front 4.
 - Front 3 — the misses curriculum. STATUS: built and validated;
@@ -91,7 +92,8 @@ construction.
   corrected here as status bookkeeping only, the obligation having been
   discharged by the session that ran the pass. Cadence per edition 3:
   next due when five or more deep-reads have landed since edition 3
-  (deep-read #55 onward); the counter stands at ONE of five.
+  (deep-read #55 onward); the counter stands at TWO of five (deep-reads
+  55 and 56; advanced at null-time session 67, log ## 71).
 - Front 5 — gap-driven probes. STATUS: standing, per
   `docs/exploratory_channel.md`; up to one block per session at the
   session's discretion.
@@ -132,7 +134,14 @@ docs/DIRECTORATE_BRIEFS.md holds the batch-ratify reading for all
 thirty-three queued sharpenings plus probe E1, grouped into nine
 families by the precedent each one tightens, with the count
 reconciliation and per-item sources recorded; the briefs summarize
-recorded proposals only, queued nothing, and armed nothing.
+recorded proposals only, queued nothing, and armed nothing. NOTE
+(null-time session 67, log ## 71): the ratification queue now holds
+THIRTY-FOUR candidate sharpenings plus probe E1 — the thirty-fourth
+(the initial-state pre-declaration for refutation instruments, queued
+by this session's deep-read) postdates the ## 70 briefs and is NOT
+yet covered by docs/DIRECTORATE_BRIEFS.md; that coverage gap is
+named here for the next G2 iteration, and the briefs doc itself is
+not edited by a deep-read session.
 
 G3. C8 skeleton coherence. ENTRY: after a synthesis pass with
 C8-relevant output, or on finding a gap in the skeleton's

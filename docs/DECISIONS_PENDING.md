@@ -1,6 +1,6 @@
-# Pending owner decisions — the thirty-third dashboard
+# Pending owner decisions — the thirty-fourth dashboard
 
-**Maintained by the null-time sessions. Last updated: 2026-11-19 (audited
+**Maintained by the null-time sessions. Last updated: 2026-11-20 (audited
 against the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
 Every item below is BLOCKED ON YOUR WORD — nothing runs, arms, or merges
@@ -33,16 +33,37 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: thirty-three
+  library deep-reads and the ratified exploratory channel: thirty-four
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
   null-time session 61, plus the self-excitation regime-window
   pre-declaration queued 2026-11-19 by deep-read session 53 / null-time
   session 63, plus the primary-metric pre-commitment queued 2026-11-19 by
-  deep-read session 55 / null-time session 65; probe E1 stands separately
-  and is not counted among the thirty-three); most recently joined
-  2026-11-19, the primary-metric pre-commitment (before the L0 gate, any
+  deep-read session 55 / null-time session 65, plus the initial-state
+  pre-declaration queued 2026-11-20 by deep-read session 56 / null-time
+  session 67; probe E1 stands separately and is not counted among the
+  thirty-four); most recently joined 2026-11-20, the initial-state
+  pre-declaration for refutation instruments (before the L0 gate, any
+  generative null, placebo, simulator, or other refutation instrument
+  used anywhere in C1-L2/C8 must pre-declare, before the data, its
+  initial-state handling — initial book/impact/queue deviations set to
+  zero, or drawn from a declared frozen distribution with a stated
+  burn-in — and an instrument whose spec omits this fails
+  pre-registration review; the Fruth-Schöneborn-Urusov time-varying-
+  liquidity paper shows a nonzero initial price-impact state alone
+  admits a profitable round trip in a zero-spread book abstraction
+  (the explicit −D^u_0/(2κ)·1_(0,ε](s) strategy of Remark 8.2, PDF p.
+  29), so an un-pre-declared initial state can plant the very structure
+  a null is deployed to refute; hardening the dynamics-identification
+  rule for generative nulls and the placebo-design precedent (the C8
+  A3 shuffled-arrival placebo), the same tightening family as the
+  regime-window pre-declaration and the primary-metric pre-commitment;
+  a refutation can no longer rest on an initial state chosen after
+  seeing the data; full draft with the killed-if-wrong counterfactual
+  in
+  `paper/research/library/2026-11-20_time_varying_liquidity_price_manipulation_deep_read.md`),
+  and earlier, the primary-metric pre-commitment queued 2026-11-19 (before the L0 gate, any
   C1-L2/C8-adjacent test spec must pre-declare its single primary
   evaluation metric or loss, named and frozen before the data; secondary
   metrics may be reported but can neither rescue a primary failure nor
