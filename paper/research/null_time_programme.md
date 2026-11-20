@@ -7315,3 +7315,108 @@ nothing trades live.
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean on the assembled tree: python3 src/integrity_guard.py
 run this session exits zero after the repairs.
+
+## 80. Null-time session 73 (2026-11-20), library deep-read session 62 — the Mehrdad-Zhu generation-varying Hawkes paper read; the generational partition shown to be an unidentifiable analyst degree of freedom and every stability result shown subcritical-only; ZERO sharpenings queued; the director step discharged against EDITION 4 (cadence not due: two deep-reads since the edition)
+
+- Director step (goal-autonomy protocol, ACTIVE, ratified 2026-11-19): the
+  live main tail (through ## 79) and docs/DECISIONS_PENDING.md were read
+  first; the standing work choice is the default — the next UNREAD
+  deep-read, per this ritual, needs no substitute justification. EDITION 4
+  of the goal state was written by the ## 76 synthesis pass; deep-read
+  sessions 60 (## 77) and 61 (## 79) have landed since — two, fewer than
+  the five the cadence rule requires — so the synthesis pass is NOT due
+  this session. Nothing in this session touches a carve-out.
+- **Library deep-read session 62** (front 2, the score-26 tier; the ## 79
+  pointer "On the Hawkes Process with Different Exciting Functions" was
+  the queue's next UNREAD and is consumed here):
+  `paper/research/library/2026-11-20_hawkes_different_exciting_functions_deep_read.md`
+  on Behzad Mehrdad (Courant) and Lingjiong Zhu (FSU), "On the Hawkes
+  Process with Different Exciting Functions" (arXiv:1403.0994v3
+  [math.PR], 3 Sep 2017, v3 of a 2014 preprint). Pure probability theory
+  for the Fierro-Leiva-Møller generalized linear Hawkes model where each
+  birth GENERATION n carries its own exciting function γn: weak and
+  strong asymptotic stationarity under a shifted-process coupling
+  (Theorem 1, PDF pp. 4-6; constant γ0 assumed, Remark 2 flags the
+  weakening as open, PDF p. 6); the multivariate connection — partitioning
+  generations into sets Ai yields mutually exciting aggregates more
+  general than the classical multivariate Hawkes process (Eqs. 3.10,
+  PDF pp. 6-8; the odd/even split already gives a bivariate pair); an LDP
+  for Nt/t with a recursive scaled CGF Γ(θ) (Theorems 3 and 6,
+  PDF pp. 9-11); an MDP with Gaussian rate J(x) = x²/(2σ²) (Theorem 8,
+  PDF pp. 12-21); a marked-event-sum LDP (Theorem 7, PDF pp. 11-12); a
+  heuristic signature-plot / Epps computation (Proposition 16 and the
+  O(τ) orders, PDF pp. 21-23); asymptotic ruin probabilities (Theorems
+  17-19, PDF pp. 25-27). No estimator, no data, no numerics, no number
+  anywhere in the paper.
+- Grade: NO kill line changed. NO new candidate sharpening. The default
+  grade is earned twice over — a theorem paper with zero empirical
+  content cannot inform the C8 trigger threshold in either direction,
+  and every discipline-relevant mechanism it touches is already held by
+  standing or queued rules:
+  1. [interpretation caution] Generation-varying kernels are
+     observationally collapsible: generation membership of a realized
+     event is never identifiable from event times alone, and the
+     paper's own multivariate connection is a partition-of-generations
+     ARBITRATION (Eqs. 3.10, PDF p. 8) — different partitions give
+     different implied branching allocations from the SAME data. A
+     generation-partitioned trigger fit is therefore a fully-registered
+     analyst degree of freedom; the pre-declared kernel family, named
+     estimator identity, per-branch and sign-register rules extend to
+     the latent-branch ASSIGNMENT itself. No queue change.
+  2. [reinforcing, no new item] Every theorem in the paper —
+     stationarity, LLN, CLT, LDP, MDP — lives strictly below
+     criticality: Assumption 1(ii) requires ρ = sup_n ‖γn‖_L1 < 1
+     (PDF p. 3), and none of the limits exist at ρ ≥ 1. A criticality
+     reading estimated by a subcritical-only theory inherits a
+     built-in survival-condition bias — page-cited general-form backing
+     for the queued self-excitation regime-window pre-declaration and
+     the standing boundary-solution caution; no new item.
+  3. [interpretation caution] The stationary version needs CONSTANT
+     immigration γ0 (Theorem 1, Remark 2, PDF p. 6), and every deviation
+     result is asymptotic in t with no finite-horizon constants (PDF
+     pp. 9-21). No magnitude from this paper may enter any spec; no
+     tail bound from it may be applied to a finite window or a
+     time-varying-baseline market stretch. Reinforces the queued clock
+     and regime-window pre-declarations; no queue change.
+  4. [cost-survival ammunition] The ruin application (Theorems 17-19,
+     PDF pp. 25-27) converts the arrival LDP into u → ∞ ruin asymptotics
+     under subcritical ρ, i.i.d. claims independent of arrivals, the
+     net-profit condition p > mE[C1] (Eq. 5.24, PDF p. 25), and light or
+     subexponential tails. Relevant only if a future K7-style
+     cost-survival layer exists (none does today); nothing absorbed now.
+  5. [source-quality note] arXiv-only math.PR preprint, v3 three years
+     after v1, thanks "the editor and referees" but identifies no
+     published version; zero empirical content; indexed citation count
+     zero. Cite theorems only with the arXiv-version caution; check the
+     published version before formal citation. Honest grade: a
+     score-26 access-value read, not an evidence source.
+- Counterfactual (the immune-system section, never omitted): had the
+  programme adopted a generation-varying Hawkes trigger because the
+  theory blesses per-cohort kernels, the latent generational partition
+  would have been arbitrated post hoc — the same realized stream
+  decomposes into (h, g, h, g, ...) or arbitrary Ai-splits with different
+  implied branching allocations (PDF pp. 6-8) — manufacturing whatever
+  cross-excitation or damping structure the analyst's prior wanted, the
+  exact laundering the pre-declared kernel family, estimator identity,
+  per-branch and sign-register rules exist to prevent. Equally, had the
+  paper been read as licensing a criticality-tolerant trigger, the ρ < 1
+  condition holding up every theorem (PDF p. 3) would have been silently
+  imported as a finding about markets rather than a condition of the
+  model — the boundary-solution laundering the regime-window
+  pre-declaration exists to prevent.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked, complete and read in full (28 pp.).
+- Ratification queue after this session: THIRTY-SIX candidate sharpenings
+  plus probe E1, zero armed (unchanged by this session). T1 remains armed
+  awaiting the owner's word in its booked state (survived all five kill
+  lines with sign inverted; T2 tested-fail); the blocked list stays
+  blocked. Deep-read queue pointer: next UNREAD "Neural Hawkes:
+  Non-Parametric Estimation in High Dimension and Causality Analysis in
+  Cryptocurrency Markets" (score 26, xc1a00b); re-read the live tail
+  before consuming.
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule:
+  nothing was sharpened here).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run this session exits
+zero on the assembled tree.
