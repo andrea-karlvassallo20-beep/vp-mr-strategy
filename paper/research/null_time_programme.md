@@ -6515,3 +6515,103 @@ tail before consuming.
 
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live.
+
+## 71. Null-time session 67 (2026-11-20): deep-read session 56 — the Fruth-Schöneborn-Urusov time-varying-liquidity execution paper read; the zero-spread convention shown to mechanically manufacture round-trip profitability; ONE candidate sharpening queued (the spread-convention declaration rule, the thirty-fourth); NO kill line changes, nothing measured, nothing armed
+
+Session-state note (work choice and its reason, recorded under the goal-autonomy
+conductor protocol v2, edition 3, section 3, and the GOALS.md rotation rule):
+the deep-read (front 2) is the lawful choice — front 4 is NOT DUE (the
+edition-3 cadence resets at five deep-reads since edition 3; after today's
+read the counter stands at TWO of five), front 1 and front 3 remain blocked
+on the owner (the codespace and the paid Tardis key), G2 was executed at
+## 70 and is discharged, and no other numbered front is ready; the head was
+recomputed live from docs/library/edge_triage_scores.json and the live main
+tail (tail "## 70", zero "## 71" on main before this append), the
+slug-keyed unread rule applied against paper/research/library/ (67 notes
+existed before this session's), and the page-marked extract for x95643a
+confirmed present on the shelf. Numbering: deep-read 56 = null-time 67 =
+log ## 71, the offsets honored, no renumber.
+
+Paper: Antje Fruth (TU Berlin), Torsten Schöneborn (Deutsche Bank AG,
+London) and Mikhail Urusov (Ulm University), "Optimal trade execution and
+price manipulation in order books with time-varying liquidity",
+arXiv:1109.2631v1 [q-fin.TR] (submitted September 2011; the acquired
+extract's title page carries an "October 8, 2018" date line — version
+anomaly recorded in the note's source-quality tag). Read against ONE
+question: what here would kill C1-L2 or C8 faster, or change their kill
+lines? An Obizhaeva-Wang-type block-shaped limit order book with
+independently time-dependent deterministic depth and resilience; optimal
+risk-neutral liquidation is of wait-region/buy-region type with a
+time-dependent barrier (Thm 6.1 discrete, Thm 7.7 continuous; Props
+5.8-5.9: the barrier can be infinite), the dynamic-spread model is proved
+free of classical and transaction-triggered manipulation (Prop 3.4), and
+the zero-spread variant admits classical manipulation exactly when
+K' + 2ρK < 0 somewhere (Prop 8.3), transaction-triggered manipulation
+under Thm 8.4 / Cor 8.5, and a profitable round trip by construction
+whenever the initial deviation is known nonzero (Remark 8.2).
+
+Note (full draft with page citations and the killed-if-wrong
+counterfactual): `paper/research/library/2026-11-20_time_varying_liquidity_execution_deep_read.md`
+
+Findings (full grading in the note):
+
+1. ONE candidate sharpening queued, PENDING OWNER RATIFICATION: the
+   spread-convention declaration rule. Mechanism: the paper proves that
+   the zero-spread model class — exactly what a single-price or mid-only
+   book reconstruction instantiates — mechanically admits profitable
+   round trips whenever the deviation direction is known (Remark 8.2,
+   PDF p. 29) and admits pump-and-dump with cost infimum −∞ at a single
+   K'+2ρK<0 point (Prop 8.3, PDF pp. 29-30) — no self-excitation, no
+   signal, the "anticipatory" structure is a property of the convention.
+   Proposed rule: any book reconstruction, generative null, or
+   flow-measurement input used in a C1-L2/C8-adjacent computation must
+   pre-declare its spread convention; zero-spread / single-price /
+   mid-only handling is a distinct configuration counted in the
+   multiplicity ledger, and apparent anticipatory/reversal structure
+   first observed under it must survive a dynamic two-sided spread
+   handling before entering any spec as support. Tightens the queued
+   reconstruction-admissibility family (volume-conservation, event-grain
+   OFI) with a fourth declaration axis; harder to pass; owner ratifies.
+2. [reinforcing, no new item] Deterministic liquidity seasonality alone
+   reshapes optimal schedules and can shut trading off entirely
+   (infinite barriers, Props 5.8-5.9, PDF pp. 17-18) — second-market
+   support for the already-queued deterministic-clock null arm and the
+   release-calendar lead component; no queue change.
+3. [interpretation caution] Prop 3.3 (PDF pp. 7-8): the martingale and
+   permanent-impact components are strategy-invariant in this model
+   class, so reconstruct-null validation must match deviation/resilience
+   paths, not prices alone — the same shape as the queued
+   dynamics-identification rule; no queue change.
+4. [cost-survival ammunition] Closed-form costs and strategies under
+   time-varying liquidity (Thm 8.4 / eq. (37), PDF p. 30; Prop 9.1, PDF
+   p. 35; Examples 9.5-9.7, PDF pp. 37-39) with the assumptions a future
+   K7-style cost layer would have to carry; ammunition only.
+5. [source-quality note] ArXiv v1, pure theory, no data, no code, the
+   2011/2018 date-line anomaly flagged; check the published version
+   before formal citation.
+
+Inaccessible/blocked status: none — the extract was present and fully
+readable; x95643a consumed clean.
+
+docs/DECISIONS_PENDING.md is updated this session per the rule (a
+sharpening was queued): the ratification queue now holds THIRTY-FOUR
+candidate sharpenings plus probe E1, zero armed — the twenty-nine
+through deep-read session 51 plus the five named increments since.
+docs/GOALS.md front-2 status line and the front-4 counter line are
+refreshed (the operative bookkeeping edits): x95643a consumed; the next
+UNREAD is "Hawkes model for price and trades high-frequency dynamics"
+(score 27, x2df250); deep-read counter since edition 3: TWO of five.
+
+Ratification queue after this session: THIRTY-FOUR candidate sharpenings
+plus probe E1, zero armed. T1 remains armed awaiting the owner's word in
+its booked state (survived all five kill lines with sign inverted; T2
+tested-fail); the blocked list stays blocked. Deep-read queue pointer:
+next UNREAD "Hawkes model for price and trades high-frequency dynamics"
+(score 27, x2df250), behind it "Convergence of Heavy-Tailed Hawkes
+Processes and the Microstructure of Rough Volatility" (score 27,
+x8fc12b); re-read the live tail before consuming.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard checks (marker sweep and encoding sanity, executed on this
+session's changed files locally; the repo-wide guard runs in CI on the
+PR): clean.
