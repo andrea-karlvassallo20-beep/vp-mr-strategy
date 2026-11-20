@@ -7420,3 +7420,142 @@ run this session exits zero after the repairs.
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py run this session exits
 zero on the assembled tree.
+
+
+## 81. Null-time session 74 (2026-11-20), library deep-read session 63 — the Fabre–Muni Toke neural Hawkes paper read; the estimator-configuration freeze queued as the thirty-seventh candidate (the auxiliary grid/weighting choices shown to manufacture or erase the exact kernel features a trigger or placebo would adjudicate); the near-critical, seasonality-sensitive fit recorded as reinforcing evidence for the standing regime-window cautions
+
+- Director step (goal-autonomy protocol, ACTIVE, ratified 2026-11-19): the
+  live main tail (through ## 80) and docs/DECISIONS_PENDING.md were read
+  first; the standing work choice is the default — the next UNREAD
+  deep-read, per this ritual, needs no substitute justification. EDITION 4
+  of the goal state was written by the ## 76 synthesis pass; deep-read
+  sessions 61 (## 79) and 62 (## 80) have landed since — two, fewer than
+  the five the cadence rule requires — so the synthesis pass is NOT due
+  this session. Nothing in this session touches a carve-out.
+- **Library deep-read session 63** (front 2, the score-26 tier; the ## 80
+  pointer "Neural Hawkes: Non-Parametric Estimation in High Dimension and
+  Causality Analysis in Cryptocurrency Markets" was the queue's next UNREAD
+  and is consumed here):
+  paper/research/library/2026-11-20_neural_hawkes_fabre_muni_toke_deep_read.md
+  on Timothée Fabre (CentraleSupélec / SUN ZU Lab) and Ioane Muni Toke
+  (CentraleSupélec), "Neural Hawkes: Non-Parametric Estimation in High
+  Dimension and Causality Analysis in Cryptocurrency Markets"
+  (arXiv:2401.09361v3 [q-fin.TR], 4 Nov 2024). A methods paper: the
+  Bacry–Muzy second-order characterization equation (Theorem 1, Eqs. 8-10,
+  PDF pp. 4-5) is solved for marked multivariate Hawkes kernels by training
+  D DGM physics-informed networks on the equation residual (Eqs. 19-24,
+  PDF pp. 6-7) with a generic frozen hyperparameter configuration (Table 1,
+  PDF p. 10), causality-respecting temporal loss weights (PDF pp. 6-7) and a
+  magnitude-balancing weighting ζ for kernels of different orders (Eqs. 29-
+  30, PDF p. 9). Validated on six simulated kernel families including
+  inhibitory, delayed, 15-dimensional Gaussian and non-multiplicative
+  kernels (PDF pp. 10-17) with N^-0.5 convergence (PDF p. 18) and
+  hyperparameter robustness (PDF pp. 18-19); against Wiener-Hopf it is far
+  more stable to the statistics-grid choice, and WH oscillations worsen
+  with finer grids — the authors' own words: poorly chosen grids "can still
+  generate kernels with oscillatory behaviours which could lead to false
+  discoveries in practical cases" (PDF p. 21, Figures 11-14, PDF pp. 19-
+  21). Applications on one month of Coinbase trades (Dec 2023, 15 pairs,
+  Table 8, PDF p. 22): a concave volume mark kernel plateauing above
+  ~50,000 USD with volume-dependent latency peaks (PDF p. 23); a 15-pair
+  fit with branching ratio R = 0.80, a near-critical t^-1 diagonal power
+  law above 3 ms and an inhibitory valley between 500 µs and 3 ms
+  (PDF p. 24); leader/receiver ratios (Eqs. 50-52, PDF pp. 24-25) with BTC
+  and ETH leading, XRP both leading and receiving, XRP→XLM strongest, and
+  volume NOT ranking leadership (PDF pp. 25-26); robust by the authors' own
+  restricted-window and daily-fit seasonality checks (PDF p. 26, Figures
+  21-24, PDF pp. 33, 36-37).
+- Grade: NO kill line changed. ONE new candidate sharpening queued, PENDING
+  OWNER RATIFICATION. The empirical layer is ammunition, not evidence, and
+  nothing in it licenses any magnitude or shape:
+  1. [reinforcing, no new item] The headline fit is near-critical AND the
+     authors themselves declare that uncorrected intraday seasonality
+     "could ... inflate the branching ratios" (PDF p. 26), presenting R =
+     0.80 only alongside a restricted-window refit (R = 0.78) and daily
+     medians — page-cited general-form backing for the queued
+     self-excitation regime-window pre-declaration and the standing
+     boundary-solution caution. A criticality-flavored reading on a
+     non-stationary stretch inherits an upward-biased branching ratio
+     before any market structure enters. No queue change.
+  2. [candidate sharpening, PENDING OWNER RATIFICATION — the
+     estimator-configuration freeze] Any C1-L2/C8-adjacent kernel
+     estimation must pre-register, BEFORE fitting, its FULL estimator
+     configuration: the second-order-statistics grid (h, nlin, nlog or
+     equivalent), the truncation horizon, the sampling scheme, any loss or
+     magnitude weightings (ζ, Eqs. 29-30, PDF p. 9; temporal weights,
+     Eqs. 21-24, PDF pp. 6-7), quadrature counts and the training
+     configuration, chosen from a declared generic default, with every
+     deviation a dated amendment BEFORE the data is touched; a
+     kernel-dependent claim surviving only under post-hoc re-configuration
+     may not enter any spec as support. Mechanism, page-cited: the same
+     characterization equation on the same statistics yields kernel shapes
+     that swing with these auxiliaries — WH oscillations and false
+     multimodality under poor grid choice "could lead to false
+     discoveries" (PDF p. 21); the neural method exists because quadrature
+     inversion is unstable there (PDF pp. 2-5, 18-21); ζ exists because
+     raw magnitudes shadow each other and are analyst-rebalanced
+     (PDF p. 9); the paper's own remedy is a FROZEN generic configuration
+     with "no fine tuning" (Table 1, PDF p. 10; PDF p. 24). Tightens the
+     named-estimator-identity rule by extending the pre-commitment from
+     WHICH estimator to WHICH estimator in WHICH exact configuration;
+     harder-to-pass because a future kernel-shaped trigger or placebo that
+     only passes under retuned bins, grids or weightings now fails by
+     rule instead of surviving as tuning. Full draft with the
+     killed-if-wrong counterfactual in the session note.
+  3. [interpretation caution] All extracted structure sits downstream of
+     declared preprocessing conventions — same-timestamp trades aggregated
+     into single events (PDF pp. 21-22), microsecond matching-engine
+     timestamps of ONE centralized exchange, a 15-bin log volume grid
+     (Table 9, PDF p. 23), a 500 µs statistics grid (PDF p. 23) — so the
+     latency peaks, the inhibitory valley and the 50,000 USD mark-kernel
+     plateau are functions of those conventions on that venue and month.
+     No shape or magnitude enters any spec; any comparison against the
+     programme's own Tardis feed must first reconcile aggregation and
+     timing conventions. No queue change.
+  4. [interpretation caution] The leader/receiver layer (BTC/ETH lead,
+     XRP→XLM, volume does not rank leadership, PDF pp. 24-26) is a summary
+     of estimated kernel magnitudes under one method's weighting choices;
+     the authors themselves report the smallest branching ratios moving
+     15-20% under their own robustness refits (PDF p. 26). None of it may
+     enter the cross-market replication front as established structure;
+     reading discipline only. No queue change.
+  5. [source-quality note] arXiv-only preprint (v3, q-fin.TR), no published
+     version identified, zero recorded citations, first author affiliated
+     with the data provider (SUN ZU Lab, PDF p. 1 — disclosed, and the
+     empirical layer is single-source by construction), BUT the numerical
+     validation is real and substantial (six simulated kernel families with
+     ground truth, PDF pp. 10-17): the honest best access-value read of the
+     score-26 tier so far. Cite with the arXiv-version caution; check the
+     published version before formal citation.
+- Counterfactual (the immune-system section, never omitted): had the
+  programme adopted any moment-based kernel estimator (WH or this neural
+  successor) for a C8-adjacent trigger or placebo without freezing its
+  configuration, the exact features the shuffled-arrival placebo would
+  adjudicate — latency peaks, multimodality, the inhibitory valley, relative
+  cross-excitation magnitudes — could have been manufactured or erased post
+  hoc by quadrature counts, grid rules and loss weightings (PDF pp. 9, 18-
+  21), so the placebo would have passed or failed against an estimator
+  artifact rather than the market: the named-estimator-identity discipline
+  laundered through its auxiliary-configuration gap, which is what the
+  queued freeze rule closes. Equally, had the causality layer been read as
+  evidence, a volume-participation surrogate for leadership and an XRP→XLM
+  "fact" would have entered the cross-market front with zero of the
+  programme's own measurements behind them — someone else's single-venue
+  December imported as a finding about markets, the exact ammo-as-evidence
+  collapse the standing rule forbids.
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked, complete and read in full (37 pp.).
+- Ratification queue after this session: THIRTY-SEVEN candidate sharpenings
+  plus probe E1, zero armed (ONE new candidate queued this session: the
+  estimator-configuration freeze). T1 remains armed awaiting the owner's
+  word in its booked state (survived all five kill lines with sign
+  inverted; T2 tested-fail); the blocked list stays blocked. Deep-read
+  queue pointer: next UNREAD "Event-Time Anchor Selection for
+  Multi-Contract Quoting" (score 26, xd17ea7); re-read the live tail before
+  consuming.
+- docs/DECISIONS_PENDING.md updated this session (rule: ONE sharpening was
+  queued here — the ratification-queue line and the new item's entry).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades live.
+Guard clean: python3 src/integrity_guard.py run this session exits zero on
+the assembled tree.
