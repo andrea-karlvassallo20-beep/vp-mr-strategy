@@ -7665,3 +7665,76 @@ the assembled tree.
 Nothing measured, no kill line moved, nothing armed, nothing trades live.
 Guard clean: python3 src/integrity_guard.py run this session exits zero on
 the assembled tree.
+
+
+## 83. Null-time session 76 (2026-11-20), first act: the third synthesis pass — the cadence recomputed honestly from the edition-4 reset (FIVE of five, mis-tallied as three at ## 82 and as two on the stale GOALS line); the edition-4 re-landing debt cleared by supersession; goal state rewritten as EDITION 5; NO sharpening queued by the pass
+
+Session-state note (work choice and its reason, recorded under the
+goal-autonomy conductor, the protocol file read live on main and found
+at EDITION 3 text with the ## 78 debt standing): the live main tail
+(through ## 82) and docs/DECISIONS_PENDING.md were read first; the
+cadence check was recomputed from first principles against the edition-4
+reset at ## 76 — deep-reads 60 (## 77), 61 (## 79), 62 (## 80), 63
+(## 81) and 64 (## 82) have landed since, five of five, so per the
+conductor protocol section 3 point 2 and the ritual's director step the
+synthesis pass runs FIRST. The counter discrepancies in the ## 80-## 82
+session-state notes (which counted two and three) are recorded here
+honestly rather than edited in place; the reset at ## 76 governs and
+the count is five. The pass's session deep-read follows as this
+session's second act (## 84), under the owner's standing dated
+directive of 2026-11-20.
+
+The edition-4 re-landing debt (GOALS front 4, ## 78): the EDITION 4
+section-2 rewrite claimed at ## 76 never survived the session-71 branch
+corruption. No session invents protocol text, so the debt is cleared by
+SUPERSESSION, not re-authoring: this pass rewrites the protocol's
+section 2 whole as EDITION 5 per the edition rule and section 4's
+product list; edition 4's substance stands preserved in full in the ##
+76 log record; the protocol file carries a new section 10 note recording
+both acts; the front order is unchanged from editions 3 and 4 and the
+statuses are recomputed.
+
+Facts recomputed from the live record (main tail through ## 82 at pass
+time):
+
+- Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
+  2026-11-19; archived is NOT falsified; every kill line frozen;
+  unchanged.
+- Phase 2 (Crypto L2): ACTIVE, the Board's only active front (C1-L2 →
+  C8 → Convexity Sizing), blocked on the owner's data acquisition; the
+  L0 dry run unblocked; unchanged.
+- Library: 64 deep-read notes through session 64 on main's tip; the
+  ratification queue holds THIRTY-SEVEN candidates plus probe E1, zero
+  armed; T1 armed awaiting the owner's word (sign inverted); T2
+  tested-fail; the blocked list stays blocked.
+- Queue pointer: next UNREAD "Stochastic Price Dynamics Implied By the
+  Limit Order Book" (score 25, x074d5c), then x8f729f (score 25) —
+  recomputed by title-matching the score-sorted triage file against the
+  live tail; the score-26 tier fully consumed.
+
+What the window taught (ranking evidence, nothing laundered): five
+deep-reads since edition 4 moved ZERO kill lines and queued exactly
+ONE sharpening (#37 estimator-configuration freeze, ## 81); 4 of 5
+reads queued nothing; the queue's new mechanisms concentrate in the
+estimator-identity and estimator-free-null families (#36 ## 77, #37 ##
+81); the declining-yield expectation named at editions 3-4 held, and
+the tier boundary has passed into the score-25 tail.
+
+Named gaps (the pass's product, each at zero status until its channel
+fires it): (1) the append-only log's write-side ~64K truncation class
+(## 75, ## 78) still has NO standing CI byte-size-monotonicity check
+and no large-read/large-write verification helper — named,
+candidate-improvement status only; (2) the weekly directorate has
+still not sat: thirty-seven candidates plus probe E1 pending, and the
+G2 briefs (docs/DIRECTORATE_BRIEFS.md) cover only items 1-33, so a
+brief refresh for 34-37 is the ranked non-deep-read work item of this
+edition; (3) front 3 remains blocked on codespace/data presence.
+
+The pass measures nothing, arms nothing, launders nothing into any
+spec. DECISIONS_PENDING.md is untouched BY THE PASS. GOALS.md front 2,
+front 4 and the edition references are refreshed (operative
+bookkeeping); the cadence is RESET by this edition (next due at five
+deep-reads since edition 5, #65 onward; #65 this session counts).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live.
