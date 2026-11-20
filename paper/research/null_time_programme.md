@@ -7738,3 +7738,117 @@ deep-reads since edition 5, #65 onward; #65 this session counts).
 
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live.
+
+
+## 84. Null-time session 76 (2026-11-20), second act: library deep-read session 65 — the Çetin–Waelbroeck Glosten-equilibrium paper read; the impact functional form shown to be a derived consequence of two analyst premises (signal-tail class, competitor count) rather than a free parameter; ZERO sharpenings queued; the spread shown to be an adverse-selection object before it is a liquidity object
+
+- **Library deep-read session 65** (front 2, the score-25 tier; the ##
+  82 pointer "Informed trading, limit order book and implementation
+  shortfall: equilibrium..." was the queue's next UNREAD and is
+  consumed here):
+  paper/research/library/2026-11-20_glosten_informed_trading_is_deep_read.md
+  on Umut Çetin (LSE) and Henri Waelbroeck (Baruch College, CUNY /
+  AlgoCortex LLC), "Informed Trading, Limit Order Book and
+  Implementation Shortfall: Equilibrium and Asymptotics"
+  (arXiv:2003.04425v1 [q-fin.TR], 9 Mar 2020). A static Glosten
+  equilibrium: competitive liquidity suppliers post the book, a
+  competitive dealer with normal inventory Z trades the aggregate of N
+  insiders who observe the liquidation value V exactly; equilibrium iff
+  the integral equation (3.11) has a solution, existence proven for
+  bounded V (Thm 3.2, PDF pp. 10-15); Gaussian scaling makes the
+  bid-ask spread independent of the noise variance σ while the book
+  flattens as σ grows (Cor. 3.2-3.3, PDF pp. 11-13) and the spread
+  widens with informational asymmetry; with a monopolist the last slice
+  prices at v (Prop. 2.1(2), PDF p. 9) while N > 1 competitors overshoot
+  and drive aggregate profit to 0 (Prop. 3.2, PDF pp. 12-13); the exact
+  large-trade asymptotics are the headline — M − F regularly varying of
+  index tied to Ψ+x(M) and N, power law iff fat-tailed signals, log laws
+  otherwise (Thms 4.1-4.3, PDF pp. 16-21; Tables 1-2, PDF p. 26), the
+  equilibrium volume tail a power law with exponent ζ+ (Rem. 5, PDF p.
+  20), and for unbounded signals equilibrium conjectured to require
+  N ≥ Ψ+x(∞) — no equilibrium for a monopolist under Student-t(3),
+  parabolic impact at N = 2, linear at N = 3, concave at N ≥ 4 (PDF pp.
+  25, 28, 32-33); implementation shortfall strictly below the marginal
+  cost F on the buy side (Prop. 2.2, PDF p. 9), converging to it as N
+  grows (Cor. 4.3, PDF p. 21); a same-price desk variant behaves
+  similarly with no existence proof (PDF p. 35).
+- Grade: NO kill line changes. NO new candidate sharpening — default
+  grade; every lesson is a page-cited instance of a discipline the
+  queue already carries.
+  1. [reinforcing, no new item] Impact and volume-tail functional forms
+     are DERIVED inside one self-consistent world from the declared
+     signal-tail class plus the competitor count N (PDF pp. 1, 5, 20,
+     26, 38); the common practitioner forms agree at small sizes and
+     diverge exactly where large-trade data is sparse (PDF p. 4), so
+     any fitted form near the large-trade boundary is an extrapolation —
+     supporting the library-is-ammunition rule from the assumption
+     side: no functional form may be assumed either without a
+     pre-declared tail class. No queue change.
+  2. [reinforcing, no new item] The authors' own three practical
+     difficulties — spread-impact collinearity for small orders, weak
+     signal-to-noise for small executions, endogenous order-size bias
+     for large trades (PDF p. 22) — the identification discipline
+     stated by the source literature itself; reinforces the queued
+     base-rate confrontation family. No queue change.
+  3. [interpretation caution] The impact exponent is manufactured by
+     N alone in their Table 1/Student-t(3) worked case (parabolic
+     N = 2, linear N = 3, concave N ≥ 4, PDF pp. 26, 28, 32-33): every
+     magnitude-response reading of imbalance or flow carries an
+     unstated competition premise; no universal concavity or sign of
+     curvature may be read from this shelf or assumed in a spec.
+     No queue change.
+  4. [interpretation caution] The equilibrium spread is invariant to
+     noise-trading volume σ and moves only with informational
+     asymmetry (Cor. 3.2-3.3, PDF pp. 12-13, 38; the book flattens as
+     σ grows, PDF pp. 4, 12): a spread magnitude is never a clean
+     liquidity proxy independent of the adverse-selection level, so
+     any spread-based normalizer in a future L2 window travels with
+     the informational regime. No queue change.
+  5. [cost-survival ammunition, relevant only if a future K7-style
+     cost-survival layer exists] IS sits below the marginal cost F on
+     the buy side (Prop. 2.2, PDF p. 9) and converges to it as N grows
+     (Cor. 4.3, PDF p. 21); the largest trades dominate aggregate
+     shortfall precisely where empirical identification is weakest
+     (PDF p. 4) — any future cost layer must carry the collinear-spread,
+     weak-SNR and endogenous-size caveats (PDF p. 22) as explicit
+     assumptions and may not transplant the paper's √log(1 + ax^δ)
+     fits (PDF pp. 27, 30) cross-venue. No queue change.
+  6. [source-quality note] arXiv v1 preprint; existence proven only
+     for bounded signals, unbounded cases numerical with stated
+     conjectures (PDF pp. 5, 25); the same-price variant has no
+     existence proof and a possibly non-monotone F (PDF p. 35); second
+     author industry-affiliated (PDF p. 56); no real order book is
+     calibrated anywhere in the paper. Check the published version
+     before formal citation.
+- Counterfactual (the immune-system section, never omitted): had the
+  power-law-vs-log dichotomy been read as an empirical claim about
+  crypto limit order books, a "universal impact law" would have
+  entered the record while the paper itself proves the exponent is
+  manufactured by two analyst-chosen premises (signal-tail class, N) —
+  the exact academic-degree-of-freedom failure the pre-declaration
+  family exists to kill at the gate. Had the equilibrium volume-tail
+  power law been cited as measured market structure, a theorem deduced
+  from unverified assumptions (competitive book, one period, risk
+  neutrality; the Back-Baruch caveat acknowledged, PDF p. 3) would have
+  been laundered into the C8 record. And had the spread's
+  σ-invariance been read backwards as "spread is pure adverse
+  selection, safe to normalize on", a single-period bounded-signal
+  result would have been transplanted onto a venue and horizon it never
+  modeled — the magnitudes-never-transfer violation.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked, complete and read in full (58 pp.).
+- Ratification queue after this session: THIRTY-SEVEN candidate
+  sharpenings plus probe E1, zero armed (unchanged by this session). T1
+  remains armed awaiting the owner's word in its booked state (survived
+  all five kill lines with sign inverted; T2 tested-fail); the blocked
+  list stays blocked. Deep-read queue pointer: next UNREAD "Stochastic
+  Price Dynamics Implied By the Limit Order Book" (score 25, x074d5c);
+  re-read the live tail before consuming.
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule:
+  nothing was sharpened here). docs/GOALS.md front-2/front-4 status
+  lines and the edition references are refreshed this session by the ##
+  83 pass (operative bookkeeping, recorded there).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run this session
+exits zero on the assembled tree.
