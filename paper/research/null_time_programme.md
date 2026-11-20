@@ -7559,3 +7559,109 @@ zero on the assembled tree.
 Nothing measured, no kill line moved, nothing armed, nothing trades live.
 Guard clean: python3 src/integrity_guard.py run this session exits zero on
 the assembled tree.
+
+
+## 82. Null-time session 75 (2026-11-20), library deep-read session 64 — the Anantha–Jain–Goyal–Misra event-time anchor-selection paper read; the headline agreement scores shown to sit BELOW the constant near-leg baseline in the authors' own decomposition; the SPA/walk-forward kernel-selection layer and the intraday excitation drift recorded as reinforcing evidence for already-queued rules; ZERO sharpenings queued
+
+- Director step (goal-autonomy protocol, ACTIVE, ratified 2026-11-19): the
+  live main tail (through ## 81) and docs/DECISIONS_PENDING.md were read
+  first; the standing work choice is the default — the next UNREAD
+  deep-read, per this ritual, needs no substitute justification. EDITION 4
+  of the goal state was written by the ## 76 synthesis pass; deep-read
+  sessions 61 (## 79), 62 (## 80) and 63 (## 81) have landed since — three,
+  fewer than the five the cadence rule requires — so the synthesis pass is
+  NOT due this session. Nothing in this session touches a carve-out.
+- **Library deep-read session 64** (front 2, the score-26 tier; the ## 81
+  pointer "Event-Time Anchor Selection for Multi-Contract Quoting" (score
+  26, xd17ea7) was the queue's next UNREAD and is consumed here):
+  paper/research/library/2026-11-20_event_time_anchor_nittur_anantha_deep_read.md
+  on Aditya Nittur Anantha (IISc / SigmaQuant), Shashi Jain (IISc), Shivam
+  Goyal and Dhruv Misra (AlgoQuant), "Event-Time Anchor Selection for
+  Multi-Contract Quoting" (arXiv:2507.05749v2 [q-fin.TR], 3 Dec 2025). A
+  methods/executions paper: in two-leg NIFTY futures calendar-spread
+  quoting, which contract to anoint as the reference (anchoring) leg,
+  decided per 10 ms window from either multivariate Hawkes order-flow
+  arrival-ratio forecasts (T/C/PDM × bid/ask, MLE kernels on a trailing
+  1000 ms, SPA-selected EM kernel, Ogata-thinned 10 ms forward simulation,
+  PDF pp. 11-12, 18-19) or a Composite Liquidity Factor (log cross-level
+  price gap over cumulative depth per side, EMA-smoothed, PDF pp. 14-15,
+  18), scored by agreement with a hindsight per-window oracle (PDF pp.
+  7-8, 10, 18). On 2022-02-07 NSE tick data: Hawkes aggregate agreement
+  0.6856, CLF4 0.6358 (Table 8, PDF p. 19); benchmark regimes 94.1%
+  high-persistence (PDF p. 17); Hawkes wins the high-persistence bin
+  (0.70 vs 0.64), CLF the low bins (Fig. 7, PDF pp. 20-21); the Hawkes
+  rule agrees at ~88% on current-month-oracle windows but only ~18% on
+  next-month-oracle windows (Fig. 6b, PDF p. 20).
+- Grade: NO kill line changes. NO new candidate sharpening — every lesson
+  here is a page-cited instance of a rule the queue already carries.
+  1. [reinforcing, no new item] The oracle picks the near leg in ~72% of
+     windows (PDF pp. 17-18) while the headline rules score 0.6856 and
+     0.6358 (PDF p. 19): both aggregate BELOW the constant-majority-class
+     decision — negative skill by the authors' own decomposition — the
+     textbook case for the already-queued base-rate confrontation (## 65).
+     A classification score is not skill until confronted with the
+     constant baseline on the same windows. No queue change.
+  2. [reinforcing, no new item] Kernel selection by Hansen's SPA test over
+     declared candidates with the data-snooping caveat stated by the
+     authors themselves ("higher p-values do not establish optimality",
+     PDF p. 19), walk-forward estimation, decisions from information
+     strictly before each interval, White's reality check cited as the
+     second leg (PDF pp. 11-12, 18-19, 22): page-cited backing for the
+     named-estimator-identity family and the just-queued (#36,
+     estimator-configuration freeze) discipline; selection by declared
+     rule, not by retuning. No queue change.
+  3. [reinforcing, no new item] Single-day excitation drift in the
+     authors' own appendix: PDM self-excitation in the morning block,
+     trades/cancellations by midday, cancellations dominating with PDM
+     faded by the afternoon block (Figs. 8, PDF pp. 25-26, time-of-day
+     dependence acknowledged on PDF p. 19) — general-form backing for the
+     queued self-excitation regime-window pre-declaration; the regime must
+     be declared before the data is touched, not inferred from which
+     block flattered the kernel. No queue change.
+  4. [interpretation caution] Venue/horizon specificity: 10 ms decisions,
+     1000 ms estimation, top-5 depth, quantities at minimum tradable size,
+     a single day of a single venue; the CLF majority-vote tie-break
+     (toward next-month, PDF p. 18) contradicts the elsewhere-stated
+     toward-c determinism — a grading detail of this paper only. Nothing
+     licenses any magnitude, window or feature for the programme's own L2
+     windows. No queue change.
+  5. [cost-survival ammunition, relevant only if a future K7-style layer
+     exists] The paper's fee/rebate invariance remark holds only for a
+     single venue with identical multipliers, by the authors' own
+     statement (PDF p. 8); any future cost-survival layer must carry that
+     as an explicit assumption and may not import the invariance
+     cross-venue. No queue change.
+  6. [source-quality note] arXiv v2 preprint, zero recorded citations,
+     industry-affiliated authors, methods imported from the first
+     author's own prior work ([37], PDF p. 12), one-day empirical layer
+     self-described as illustrative/diagnostic (PDF pp. 1, 13, 22).
+     Methodologically cleaner than the tier average (real SPA/walk-forward
+     controls), empirically thinner; cite with the arXiv-version caution.
+- Counterfactual (the immune-system section, never omitted): had the
+  headline agreement numbers been read as forecast skill, a 69%
+  "capability" would have entered the record while the authors' own
+  persistence table shows an inert constant decision agreeing in ~72% of
+  the same windows — negative skill laundered as evidence, the exact
+  failure the queued base-rate confrontation exists to kill before any
+  spec is touched. Had the SPA-selected EM kernel been treated as
+  objectively correct rather than selected-under-controls on the same
+  sample, estimator laundering would have returned through the
+  model-selection door. And had the 10 ms quoting mechanics been read as
+  operationalizable, an execution-strategy artifact would have entered a
+  research record whose standing rule is that the library is ammunition,
+  not evidence, and nothing in it trades live.
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked, complete and read in full (29 pp.).
+- Ratification queue after this session: THIRTY-SEVEN candidate sharpenings
+  plus probe E1, zero armed (unchanged by this session). T1 remains armed
+  awaiting the owner's word in its booked state (survived all five kill
+  lines with sign inverted; T2 tested-fail); the blocked list stays
+  blocked. Deep-read queue pointer: next UNREAD "Informed trading, limit
+  order book and implementation shortfall: equilibrium..." (score 26,
+  xe96c60); re-read the live tail before consuming.
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule: nothing
+  was sharpened here).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades live.
+Guard clean: python3 src/integrity_guard.py run this session exits zero on
+the assembled tree.
