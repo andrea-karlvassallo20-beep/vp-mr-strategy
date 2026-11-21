@@ -1,8 +1,9 @@
-# Pending owner decisions — the thirty-fifth dashboard
+# Pending owner decisions — the thirty-sixth dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-21, the
-adaptive-retraining disclosure queued as the fortieth candidate
-sharpening (null-time session 86, log ## 96); audited against
+noise-model pre-declaration for de-noised inputs queued as the
+forty-first candidate sharpening (null-time session 87, log ## 100);
+audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
 Every item below is BLOCKED ON YOUR WORD — nothing runs, arms, or merges
@@ -35,7 +36,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: forty
+  library deep-reads and the ratified exploratory channel: forty-one
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -55,8 +56,43 @@ each case. Items are ordered by how much they gate.
   null-time session 77, plus the deterministic-calendar null queued
   2026-11-21 by deep-read session 73 / null-time session 84, plus the
   adaptive-retraining disclosure queued 2026-11-21 by deep-read session
-  75 / null-time session 86; probe E1 stands separately and is not
-  counted among the forty); most recently joined 2026-11-21, the
+  75 / null-time session 86, plus the noise-model pre-declaration for
+  de-noised inputs queued 2026-11-21 by deep-read session 76 /
+  null-time session 87; probe E1 stands separately and is not
+  counted among the forty-one); most recently joined 2026-11-21, the
+  noise-model pre-declaration for de-noised inputs (BEFORE the L0 gate,
+  any C1-L2/C8-adjacent computation, comparator, null or baseline that
+  feeds a de-noised, reconstructed or "efficient"-price input — replacing
+  the raw price by a plug-in de-noised price, or any feature built on
+  one — must pre-declare the microstructure-noise functional form φ AND
+  the exact limit-order-book variable set Q entering it, with the
+  noise-model choice counted in the multiplicity ledger and every
+  deviation a dated amendment before the data is touched; a number that
+  survives only under a post-hoc swap of the noise model may not enter
+  any spec as support — the Clinet–Potiron parametric-noise paper proves
+  the degrees of freedom are real and consequential: the whole fast-rate
+  plug-in theory holds only in the null-residual-noise regime, i.e. that
+  φ(Q,θ0) explains the noise COMPLETELY (eqs. 2, 11, PDF pp. 1-5), and
+  the paper's own recount moves the residual-noise share from 20-30% of
+  MMN variance under Roll's form (four stocks, one day) through 10-30%
+  absence-rejection rates under Glosten-Harris (one full NYSE year)
+  down to ~1% and ~0% under the direction-by-quoted-spread form (31 CAC
+  40 names one month; 50 S&P 500 names 2009-2017, PDF p. 3), so a
+  mis-specified φ leaves unmodeled residual noise the theory excludes by
+  assumption rather than eliminates, and a comparator could make an
+  inconvenient structure dissolve into "noise" or emerge from it by
+  silently re-choosing the de-noising form; harder-to-pass because a
+  de-noised-input number that beats its raw-price counterpart only
+  under a noise form chosen after seeing the data now fails at the gate
+  instead of surviving as preprocessing; tightens the
+  estimator-configuration freeze by extending the pre-commitment from
+  WHICH estimator in WHICH exact configuration to WHICH noise model
+  under WHICH book variables, joining the spread-convention declaration
+  rule on the same axis, a preprocessing choice being a distinct
+  configuration counted in the ledger; full draft with the
+  killed-if-wrong counterfactual in
+  paper/research/library/2026-11-21_parametric_mmn_plugin_deep_read.md),
+  and earlier the same day, the
   adaptive-retraining disclosure
   (BEFORE the L0 gate, any C1-L2/C8-adjacent comparator, null, or
   baseline that adapts — retrains, re-tunes, re-estimates or re-selects —

@@ -9554,3 +9554,141 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 files; marker and encoding checks); the library-provenance audit runs
 in CI over the full tree — the summaries are untouched this act —
 and was verified green on both jobs before merge.
+
+## 100. Null-time session 87 (2026-11-21), first act: library deep-read session 76 — the Clinet–Potiron parametric-microstructure-noise plug-in paper read, third of the score-24 tier; the plug-in machinery's entire fast-rate guarantee shown to stand on the null-residual-noise regime, the noise model φ and its limit-order-book variable set Q shown to be analyst degrees of freedom that move the measured residual-noise share from ~0% to 20-30% on the same kind of tape; ONE candidate sharpening queued (the noise-model pre-declaration for de-noised inputs, extending the estimator-configuration freeze to the preprocessing stage, PENDING OWNER RATIFICATION); no kill line moved
+
+Session-state note, per the goal-autonomy conductor protocol (edition
+7, ## 95): the declared work choice is the standing deep-read, the
+protocol's default, which owes no justification; the synthesis
+cadence is NOT due — after this session's read the edition-7 counter
+stands at TWO of five (deep-reads 75-76 counted from the edition-7
+reset at ## 95; the edition-8 pass falls due at five). The ## 96
+through ## 99 pointer named this paper as next UNREAD and this
+session re-verified the tier order against the live file state
+(score-24 tier: x673148 read ## 94, xe0397d read ## 96, xdab650 read
+here, next UNREAD x3e5ba8). No inaccessible or blocked status this
+session; the extract was present, page-marked, complete and read in
+full (42 pp., body, proofs and references included).
+
+- **Library deep-read session 76** (front 2, third of the score-24
+  tier; note:
+  paper/research/library/2026-11-21_parametric_mmn_plugin_deep_read.md):
+  Simon Clinet, Yoann Potiron (Faculty of Economics, Keio
+  University), "Estimation for high-frequency data under parametric
+  market microstructure noise" (arXiv:1712.01479v2
+  [math.ST], stamp 17 Sep 2020; 42 pp.), score 24, index entry
+  xdab650. The paper: the observed price Z = X + MMN is recast as the
+  "pure" parametric-noise model Z = X + φ(Q_t, θ0) with NO residual
+  noise (eqs. 2, 11, PDF pp. 1-5), φ a known function of observable
+  limit-order-book state with the leading forms Roll I_tθ0 (eq. 3,
+  PDF p. 2), Glosten-Harris with volume (eq. 4, PDF p. 2) and
+  direction-times-quoted-spread I_tS_tθ0 (eq. 5, PDF p. 2); any θ̂
+  with fast rate N(θ̂−θ0) = OP(1) (eqs. 6/18, PDF pp. 2, 7-8; the MSE
+  estimator is a linear regression on Q-increments when φ is linear,
+  eq. 22, PDF p. 8) pre-estimates the efficient price X̂ = Z −
+  φ(Q, θ̂) (eqs. 19-20, PDF p. 7), and the paper proves across five
+  examples — threshold realized volatility under endogenous sampling
+  and infinite-activity jumps (Thm 2, PDF p. 10), threshold bipower
+  variation (Thm 7, PDF p. 12), Hayashi-Yoshida asynchronous
+  covariance under the HBT endogeneity model (Thm 9, PDF p. 13),
+  functionals of volatility (Thm 11, PDF p. 14) and volatility of
+  volatility (Thm 14, PDF pp. 15-16) — that the plug-in estimators
+  carry exactly the non-noisy central-limit theory, same rates and
+  AVAR, unbiased studentized laws (Corollaries 4, 8, 10, 12, 15, PDF
+  pp. 11-16). The supporting evidence trail for the regime itself is
+  borrowed and equities-only: residual noise 20-30%
+  of MMN variance under Roll (four stocks, one day), 10-30%
+  absence-test rejection rates under Glosten-Harris (full NYSE year),
+  ~1% (31 CAC 40 names, one month) and ~0% (50 S&P 500 names,
+  2009-2017) only under the direction-by-quoted-spread form (PDF
+  pp. 2-3), the authors calling the assumption "quite a strong
+  assumption (at first glance)" (PDF p. 3). Findings, graded:
+  1. [candidate sharpening, PENDING OWNER RATIFICATION] The
+     noise-model pre-declaration for de-noised inputs: before the L0
+     gate, any C1-L2/C8-adjacent computation, comparator, null or
+     baseline that feeds a de-noised, reconstructed or
+     "efficient"-price input must pre-declare the noise functional
+     form φ AND the exact limit-order-book variable set Q entering
+     it, the noise-model choice counted in the multiplicity ledger
+     with every deviation a dated amendment before the data is
+     touched; a number that survives only under a post-hoc swap of
+     the noise model may not enter any spec as support. Mechanism,
+     page-cited in the note: the fast-rate guarantee holds only in
+     the null-residual-noise regime (eqs. 2, 11, PDF pp. 1-5), and
+     the paper's own recount moves the residual-noise share from
+     ~0% to 20-30% of MMN variance with nothing changed but the
+     choice of φ (PDF p. 3), i.e. the de-noising form is a silent
+     dial that can scrub inconvenient structure into the "noise"
+     term or leave it in the "efficient" price — a freedom the
+     estimator-configuration freeze (#37) does not reach because it
+     names the estimator's fitting configuration, not the
+     preprocessing stage that defines its input. Harder-to-pass
+     because a de-noised-input number that beats its raw-price
+     counterpart only under a noise form chosen after seeing the
+     data now fails at the gate instead of surviving as
+     preprocessing; tightens the estimator-configuration freeze by
+     extending the pre-commitment from WHICH estimator in WHICH exact
+     configuration to WHICH noise model under WHICH book variables,
+     joining the spread-convention declaration rule (#34) on the
+     same axis, a preprocessing choice being a distinct
+     configuration counted in the ledger. QUEUED, not armed; the
+     owner's word is the only trigger.
+  2. [reinforcing, no new item] The guarantee is configuration-
+     conditional example by example — declared sampling regime
+     (regular vs HBT hitting-boundary, eq. 34, PDF p. 13),
+     truncation and tuning sequences (w, ω̄, k, block size, PDF
+     pp. 10-17), the θ̂ fast rate (eq. 18, PDF p. 8) and the Taylor
+     repair for the non-adapted ψi(θ̂) perturbation (PDF p. 7) —
+     the estimator-configuration freeze and price-process-family
+     invariance discipline re-exhibited on the statistical-theory
+     side; no new axis.
+  3. [reinforcing, no new item] The commonly-positive one-lag
+     mid-return autocorrelation flagged via the Andersen et al 2017
+     two-regime extension (PDF p. 5) — the sign-persistence
+     admission null's family; no new item.
+  4. [interpretation caution] The rate advantage over the i.i.d.-
+     noise family is "a different game" that consumes supplementary
+     limit-order-book data (PDF pp. 3-4): a de-noised number and a
+     raw number are not like-for-like on information content, and an
+     exhibit quoting a de-noised number must name its noise model,
+     Q-set and θ̂-estimator before the two may be read against each
+     other; reading discipline only, no queue change.
+  5. [cost-survival ammunition] No transaction costs, PnL or
+     execution anywhere; a future K7-style cost layer estimating
+     friction from de-noised prices must carry the noise-model
+     pre-declaration as an explicit assumption, because a
+     mis-specified φ leaves residual noise contaminating exactly the
+     realized-variance-type quantities cost proxies are built from
+     (PDF pp. 2-3); declaration requirements only, nothing armed.
+  6. [source-quality note] arXiv v2 (Dec 2017 id, Sep 2020 stamp),
+     referees thanked (PDF p. 17), zero recorded citations, no
+     published version recorded; the evidence recaps are equities-
+     only and none touches crypto perp L2 tape, so nothing here
+     establishes the regime transfers to the programme's data; check
+     for the journal version before any formal citation; regardless,
+     no claim here can serve as support for any programme claim.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (42 pp., body, proofs and
+  references complete).
+- Ratification queue after this session: FORTY-ONE candidate
+  sharpenings plus probe E1, zero armed (ONE queued this session: the
+  noise-model pre-declaration for de-noised inputs, the forty-first
+  candidate). T1 remains armed awaiting the owner's word in its
+  booked state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked. Deep-read queue
+  pointer: next UNREAD "Optimal Execution in a Multiplayer Model of
+  Transient Price Impact" (score 24, x3e5ba8), fourth of the
+  score-24 tier — re-read the live tail and recompute the tier
+  against the notes before consuming; the EDITION-7 cadence counter
+  now stands at TWO of five (deep-reads 75-76 counted from the
+  edition-7 reset at ## 95).
+- docs/DECISIONS_PENDING.md IS touched by this session (rule: one
+  candidate sharpening queued — the noise-model pre-declaration for
+  de-noised inputs; queue forty-one, zero armed).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled tree (the
+changed files; marker and encoding checks); the library-provenance
+audit runs in CI over the full tree — the summaries are untouched
+this session — and was verified green on both jobs before merge.
