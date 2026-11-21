@@ -8114,3 +8114,168 @@ the assembled tree.
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py run this session exits
 zero on the assembled tree.
+
+## 87. Null-time session 79 (2026-11-21), library deep-read session 68 — the Hu–Zhang CSI 300 OFI-response paper read; the model's drift level shown to be a correlation-scaled analyst construct under an assumed process family (with a W⊥L independence imposed after the text conceded possible correlation), the pooled forgetting constant θ=0.5 shown to contradict the paper's own monthly memory table (month-by-month θ at 0.77-0.90), and the (window, horizon) grid shown to manufacture factor rankings; no kill line moved, nothing sharpened
+
+Session-state note, per the goal-autonomy conductor protocol (edition
+5, ## 83, ACTIVE): the declared work choice is the standing deep-read,
+the protocol's default, which owes no justification; the synthesis
+cadence is NOT due — three deep-reads (## 84, ## 85, ## 86) have
+landed since the edition-5 reset at ## 83, out of five. The live tail
+was re-read before consuming: the ## 86 pointer named this paper as
+next UNREAD, and the score-sorted triage file recomputed against the 67
+notes and the log tail this session confirms it — the score-26 tier is
+fully consumed, and the only earlier apparent gaps found by naive
+title matching (score 29/48/48/42/41 entries) resolve to READ via
+their note headers (hyphenation variants, xf77014 and the
+2026-11-16 header style). No inaccessible or blocked status this
+session; the extract was present, page-marked, complete and read in
+full (~37 pp.).
+
+- **Library deep-read session 68** (front 2, the score-25 tier; note:
+  paper/research/library/2026-11-21_ofi_ou_response_csi300_deep_read.md):
+  Chen Hu and Kouxiao Zhang (Guolian Futures, Shanghai), "Stochastic
+  Price Dynamics in Response to Order Flow Imbalance: Evidence from
+  CSI 300 Index Futures" (arXiv:2505.17388v1 [q-fin.MF], 23 May 2025).
+  A practitioner modeling paper: OFI (reproduced from Cont-Kukanov-
+  Stoikov, eqs. 1-2, PDF pp. 4-5) on one year of CSI 300 futures
+  500ms-snapshot ticks (~6M ticks, PDF pp. 4, 6); OFI's contemporaneous
+  in-window correlation with mid-price change runs 0.20 at 0.5s to 0.54
+  at 1h and holds ≈0.5 past 5s (Table 2.1, PDF p. 6); e_n is
+  symmetric, kurtosis ≈34 (Table 2.2, PDF p. 9) with roughly geometric
+  autocorrelation decay, so the OFI shock is represented as an O-U state
+  (ρ_k = e^{−θkΔt}, eqs. 8-9, PDF pp. 9-10; decay inherited under window
+  aggregation, eq. 10, PDF p. 10), with expected cumulative impact
+  E[S_n] (eq. 11, PDF p. 11) scaled into drift through the observed
+  correlation, µ_total = OFI·ρ_k·(1−e^{−θt})/(1−e^{−θ}) (eq. 12,
+  PDF p. 11) and the pooled decay rate θ = 0.5 (PDF p. 11). The price
+  is GBM with Lévy-driven O-U drift (eq. 14, PDF p. 13), tied to the
+  shock by µ_0 = OFI_0·ρ_k (PDF p. 13; the text concedes W_t, L_t "may
+  exhibit correlation" there, while eq. 22's variance derivation
+  assumes their independence, PDF pp. 15, 33); closed forms follow for
+  the log-return mean (eq. 20), variance (eq. 22), the quasi-Sharpe
+  "response ratio" (eq. 24, PDF p. 16), the optimal holding time
+  t* = −ln(σ²/2µ_0)/θ (eq. 25, PDF p. 18; Appendix A.4, PDF p. 35) and
+  the t→0 asymptotic (Appendix A.3, PDF p. 34). Empirics: LASSO
+  regressions of window-aggregated OFI (windows 1-240 ticks) on forward
+  mid-price changes (horizons 1-3600 ticks, 0.5s-30m), 4:1 train/test,
+  5-fold CV (PDF p. 20), annual gross PnL rising from ≈63k points at
+  0.5s to ≈525k at 30 minutes, coefficients 0.027→0.067 (Figs. 3.1-3.4,
+  PDF pp. 21-23; Table B.1, PDF pp. 36-37; one point = CNY 300,
+  PDF p. 20), out-of-sample tracking in-sample at the sample ratio
+  (PDF p. 24); two-factor cells: TI adds below 1s, AvgEn dominates
+  past 2m (PDF pp. 25-26); monthly memory: lag-1 autocorrelation
+  0.097-0.230 (Table 5.1, PDF p. 27), cumulative ≈0.5 strong months vs
+  ≈0.2 weak ones (PDF p. 27); closing metric-quality screen: stable
+  correlation, slowly decaying memory, cross-regime quantitative-only
+  variation with no sign reversal (PDF p. 29).
+- Grade: NO kill line changes. NO new candidate sharpening — default
+  grade; every mechanism found is a page-cited instance of a
+  discipline the queue already carries.
+  1. [interpretation caution] The model's load-bearing level is an
+     analyst construct: µ_0 = OFI_0·ρ_k scales the observed imbalance by
+     its fitted contemporaneous correlation (PDF pp. 13-14), and the
+     derived tradability objects (QS(t), eq. 24; the peak t*, eq. 25;
+     the maximum mean return, Appendix A.4) exist only under the
+     assumed family (GBM with Lévy-O-U drift, eq. 14, PDF p. 13) and an
+     independence (PDF pp. 15, 33) the text itself withdraws a page
+     before imposing it ("may exhibit correlation", PDF p. 13). Any
+     C1-L2/C8-adjacent construct mapping a book-shock level to expected
+     drift through a fitted correlation inherits two analyst
+     properties (family, correlation window) and may not be interpreted
+     without pre-declaring both — the price-process-family invariance
+     rule's exact axis (#38). No queue change.
+  2. [reinforcing, no new item] Calibration contradiction inside one
+     paper: θ = 0.5 frozen from the pooled year (PDF p. 11) while the
+     paper's own monthly table puts lag-1 autocorrelation at 0.097-0.230
+     (Table 5.1, PDF p. 27), i.e. θ = 1−ρ_1 at 0.77-0.90 month by
+     month, and cumulative memory collapsing from ≈0.5 to ≈0.2 across
+     months with the paper's own conclusion that pooled windows
+     mislead and monthly recomputation is required (PDF pp. 28-29). A
+     pooled constant its own data shows is regime-dependent is the
+     laundering the regime-window pre-declaration and the dispersion
+     register exist to kill, demonstrated in one PDF. No queue change.
+  3. [reinforcing, no new item] The (window, horizon) grid
+     manufactures the ranking: TI below 1s, AvgEn past 2m (PDF
+     pp. 25-26), no horizon-free efficacy anywhere, and the paper's
+     own appendix shows the aggregate at the 30-minute horizon halving
+     between adjacent historical windows (≈525.5k vs 235.7k/226.0k/
+     225.1k points, Table B.1, PDF pp. 36-37) while window-insensitivity
+     is claimed only below 10 minutes (PDF pp. 21-22). Cell-local
+     conclusions are the post-hoc re-configuration mode the
+     estimator-configuration freeze (#37) and the primary-metric
+     pre-commitment (#35) fail by rule. No queue change.
+  4. [reinforcing, no new item] The proposed metric-quality screen
+     (cross-regime quantitative-only variation, no sign reversal,
+     PDF p. 29) is a sign-stability criterion, and the paper shows it
+     failing on its own unstable factor (mid-price-change
+     autocorrelation negative short-term everywhere but positive in
+     the high-volatility month Oct 2024, PDF p. 28) — sign stability
+     shown where the claim lives, not pooled, the sign-register /
+     sign-kill-line family with the sign-persistence admission null's
+     (#33) subsample logic. No queue change.
+  5. [interpretation caution] The empirical "validation" is a
+     qualitative shape match of gross profit aggregates to the
+     predicted mean-return curve under author-chosen quasi-logarithmic
+     coordinates (Figs. 3.1-3.2, PDF pp. 21-22), while the theory
+     curve peaks and declines (eq. 25) and the empirical curve rises
+     monotonically to 30 minutes without a peak (Table B.1), and the
+     variance side is explicitly deferred ("variance validation will
+     be addressed in subsequent research", PDF p. 19). Shape match
+     under chosen coordinates is not a falsification instrument; a
+     future model validation must pre-declare its test statistic
+     before the data. No queue change.
+  6. [cost-survival ammunition, relevant only if a future K7-style
+     cost-survival layer exists] All profit tables are cost-free gross
+     aggregates of a decision stream re-evaluated at the 500ms
+     snapshot rate for a full instrument-year (PDF pp. 4, 20-25), no
+     fees, no slippage, no queue position, resting periods excluded
+     from metric construction (PDF p. 6); may never be cited as
+     cost-model support at any layer. No queue change.
+  7. [source-quality note] arXiv v1 (23 May 2025), both authors
+     industry-affiliated (Guolian Futures, Shanghai), no journal
+     version found, zero recorded citations; single instrument, single
+     year (months 2312-2411, PDF p. 27), proprietary data, 500ms
+     snapshot granularity (not per-event, PDF pp. 4-5), no depth
+     (their own limitation, PDF p. 29), no significance testing or
+     confidence intervals on any figure (Table B.1, PDF pp. 36-37),
+     4:1 split inside the same year (PDF pp. 20, 24), internal
+     sloppiness ("U-O process", "Uhlenback", PDF pp. 9, 31). Check for
+     a published version before formal citation.
+- Counterfactual (the immune-system section, never omitted): had a
+  C1-L2/C8-adjacent arm scaled expected impact by a fitted correlation
+  and read a response-ratio peak as an optimal-holding-time find, the
+  family dependence plus the withdrawn-then-imposed W⊥L independence
+  (PDF pp. 13-15, 33) would have laundered modeling choices into a
+  market fact — the exact construct the price-process-family
+  invariance rule (#38) fails at the gate. Had θ = 0.5 been accepted
+  as an instrument invariant because it was frozen pre-data, the
+  paper's own Table 5.1 (PDF p. 27) is the refutation inside the same
+  PDF — regime averages are not parameters, which is why frozen
+  constants carry stability reporting and never re-tuning. Had the
+  (window, horizon) grid been searched for the winning cell (525k vs
+  226k points at 30 minutes between adjacent windows, Table B.1), the
+  post-hoc re-configuration the estimator-configuration freeze (#37)
+  fails by rule would have been run with this paper's blessing. Had
+  the gross tick-frequency PnL been quoted as an edge, the K7-style
+  cost layer annihilates it unreported — zero cost assumptions in the
+  entire paper. And had any empirical figure here entered the record
+  as support for a program claim, the library-is-ammunition rule would
+  have been broken: an industry preprint's internal validation is not
+  evidence.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked, complete and read in full (~37 pp.).
+- Ratification queue after this session: THIRTY-EIGHT candidate
+  sharpenings plus probe E1, zero armed (unchanged; nothing sharpened
+  this session). T1 remains armed awaiting the owner's word in its
+  booked state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked. Deep-read queue
+  pointer: next UNREAD "Estimation of bid-ask spreads in the presence
+  of serial dependence" (score 25, x6b73c4, Brouty–Garcin–Roccaro);
+  re-read the live tail before consuming.
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule:
+  nothing was sharpened here).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run this session exits
+zero on the assembled tree.
