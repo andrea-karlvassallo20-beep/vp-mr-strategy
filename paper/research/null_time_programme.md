@@ -8577,3 +8577,106 @@ sections present).
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py run this session exits
 zero on the assembled tree.
+
+
+## 91. Null-time session 82 (2026-11-21), library deep-read session 71 — the Li–Polukarov–Ventre statistical-physics spoofing-detection paper read; the active/passive window geometry shown to be a pure analyst parameter (absolute 100 USD on BTC vs absolute 0.5 on LUNA, no automated determination, no justification) on which every headline statistic and every detection target depends; the "momentum mirrors the midprice" result shown to be close to mechanically built in by the signed size-times-distance velocity construction; the "outperforms Z-score" comparison shown to confound detector with representation (constructed time series vs raw order sizes, 36,000 intervals vs 768,270 records), with no labelled ground truth, no ROC, no false-positive rate anywhere; no kill line moved, nothing sharpened
+
+Session-state note, per the goal-autonomy conductor protocol (edition 6,
+## 89): the declared work choice is the standing deep-read, the default
+under the protocol needing no justification; the ## 90 pointer named this
+paper as next UNREAD and this session re-verified the tier order against the
+live file state (score-25 tier: x074d5c read ## 85, x8f729f read ## 87,
+x6b73c4 read ## 88, x475f30 read ## 90, x6aed5b read here; xd0900e and
+x217e71 remain). Cadence counter after this session: TWO of five toward the
+edition-7 synthesis pass (deep-read 71 counted from the edition-6 reset at
+## 89; the pass itself is due at five). No inaccessible or blocked
+status this session; the extract was present, page-marked, complete and
+read in full (~21 pp.; the extract ends inside the reference list at
+PDF p. 21, all body sections present).
+
+- **Library deep-read session 71** (front 2, the score-25 tier; note:
+  paper/research/library/2026-11-21_physics_momentum_spoofing_deep_read.md):
+  Haochen Li, Maria Polukarov, Carmine Ventre, "Detecting Financial
+  Market Manipulation with Statistical Physics Tools"
+  (arXiv:2308.08683v1 [q-fin.TR], 2023; zero recorded citations in the
+  acquisition index, no published version recorded there). An engineering
+  paper: Level-3 Coinbase order events (open/cancel/match) re-mapped onto
+  a particle-momentum metaphor, with per-order velocity built from the
+  quoted-price distance to the moving bound of an analyst-chosen
+  "active area" [bM-alpha, aM+alpha] over a delta_t = 0.1 s bucket
+  (eqs. 1-4, PDF pp. 4-5), book momentum summed in that window
+  (eq. 5, PDF p. 6), a passive-area variant with doubled window
+  (eq. 6, PDF pp. 8-9), and candidate spoofing located as the largest
+  standardized deviations of the passive-area series. Findings, graded:
+  1. [reinforcing, no new item] The active-area depth alpha is a pure
+     analyst parameter, "left to be determined by the observer" with
+     "no known automated algorithm" for it (PDF p. 11), set as absolute
+     100 USD on BTC/USD and absolute 0.5 on LUNA/USD (PDF pp. 7-8);
+     every statistic, deviation list and detection target is a function
+     of this undeclared geometry, and even the planted synthetic orders
+     land inside or outside the scanned window by this choice
+     (PDF p. 13); with the frozen anchor bM(T-delta_t) it is a second
+     concrete instance of the queued flow-clock scale-constant and the
+     scale/window declaration family (spread-convention declaration,
+     VPIN clock pre-commitment); no new item.
+  2. [interpretation caution] The "closely mirrors the midprice"
+     observation (PDF p. 7, Fig. 3a) is close to mechanically built in
+     by the construction (signed distance to area bounds, eqs. 1-5):
+     a book statistic whose definition embeds signed correlation with
+     the price path is not predictive evidence, and no cross-validated
+     forecast is run anywhere in the paper; any future C8 market-book
+     factor or C1-L2 compression statistic must state its mechanical
+     correlation with the target before any attribution to
+     microstructure signal.
+  3. [interpretation caution] The superiority-over-Z-score claim
+     (PDF pp. 14-19) compares a constructed cumulative time series
+     (36,000 intervals) against Z-scores of raw per-order sizes
+     (768,270 records) — different inputs, units and populations;
+     no labelled ground truth exists on the real data ("neither
+     spoofing nor layering events are labeled or identified", PDF
+     p. 12), validation is synthetic orders the authors designed
+     themselves (Tables 1a/1b, PDF p. 13), the real-data detections
+     are the ten largest deviations eyeballed and reverse-traced
+     (Tables 2a-2c, PDF pp. 14-15, one attribution resting on a
+     124-record identical-size cluster, PDF p. 15), and no
+     false-positive rate is quantified for either method; a
+     manipulation-adjacent layer, if one ever exists, must carry its
+     own labelled ground truth and a same-representation baseline.
+  4. [source-quality note] arXiv v1, zero recorded citations in the
+     index, no published version recorded; the index spells the second
+     author "Polukarova" against "Polukarov" on the PDF title page
+     (PDF p. 1); the v1 carries timestamp-format and date
+     irregularities (e.g. "18:36.13.59", the BTC window given as both
+     20/04 and 19/04 on PDF pp. 7 and 17, figure 12 captioned 2023 on
+     PDF p. 18) — check before any formal citation; regardless, no
+     empirical claim here can serve as support for any programme claim.
+  5. [cost-survival ammunition] The paper's own market-design
+     observation — spoofing profitable mainly in thin books, spoof
+     layers placed near but outside the active window to avoid
+     execution (PDF pp. 11-12) — recorded only as the assumption class
+     a future K7-style cost-survival or manipulation-hygiene layer
+     would have to carry (window geometry and its regime dependence);
+     never operationalized, nothing armed.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (~21 pp., body complete).
+- Ratification queue after this session: THIRTY-EIGHT candidate
+  sharpenings plus probe E1, zero armed (unchanged; nothing sharpened
+  this session). T1 remains armed awaiting the owner's word in its
+  booked state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked. Deep-read queue
+  pointer: next UNREAD "Multivariate General Compound Point Processes
+  in Limit Order Books" (score 25, xd0900e), then "Optimal execution
+  with deterministically time varying liquidity: well posedness and
+  price manipulation" (score 25, x217e71) to close the score-25 tier —
+  re-read the live tail and recompute the tier against the notes
+  before consuming; the EDITION-6 cadence counter now stands at TWO
+  of five (deep-read 71 counted from the edition-6 reset at ## 89).
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule:
+  nothing was sharpened here).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled tree (the
+changed files; marker and encoding checks); the library-provenance
+audit runs in CI over the full tree — the summaries are untouched
+this session — and was verified green on both jobs before merge.
