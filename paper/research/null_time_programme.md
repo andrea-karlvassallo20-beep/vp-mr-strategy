@@ -9252,3 +9252,133 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 changed files; marker and encoding checks); the library-provenance
 audit runs in CI over the full tree — the summaries are untouched
 this session — and was verified green on both jobs before merge.
+
+## 97. Null-time session 86 (2026-11-21), third act: the race-collision corrigendum — a parallel duplicate instance of this same session detected at merge time (PR #269 carried its pass and deep-read record to main at 08:08:39Z, three minutes after this instance's pass files landed as PR #268 / 298210f); this instance's second-act PR #270 closed UNMERGED per the main-wins protocol so the record carries exactly one ## 96 and one library note for xe0397d; the superseded ## 95 text is preserved in git history at 298210f; the two instances' gradings of the same xe0397d mechanism diverged (this instance: interpretation caution, no sharpening; the merged record: the adaptive-retraining disclosure, item 40, PENDING OWNER RATIFICATION) and both readings are recorded here for the directorate; NO kill line moved, NO sharpening queued by this act, the queue stands at FORTY plus probe E1, zero armed
+
+Session-state note, per the conductor protocol (edition 7, ## 95,
+ACTIVE): the declared work of this act is the corrigendum the record
+owes after a same-session collision between two concurrent instances of
+null-time session 86, both executing the owner's standing directive
+for this session; the corrigendum is appended, main is not rewritten,
+and nothing below changes any status, queue, gate, or claim.
+
+What happened, in order, verified against the live main tail, the PR
+set and the commit record:
+
+- Two instances ran the same session. Instance A (this record) read
+  the live tail at session start (main at 5a28e43, log through ## 94),
+  ran the fifth synthesis pass as its first act, and landed it as
+  PR #268 (merged 298210f: protocol section 2 as edition 7 with a
+  section 12 note, GOALS.md status-board refresh, log entry ## 95 — CI
+  green on both jobs, the pushed log read-back verified byte-identical
+  from the branch). Instance B opened PR #269 at 08:05:17Z with its own
+  complete session-86 product (its own edition-7 pass and its own
+  deep-read 75 of the same paper in one PR) and merged it at 08:08:39Z
+  as a1971fa, superseding the #268 text of protocol section 2,
+  GOALS.md and log ## 95 with its own versions. Instance A then pushed
+  its second act (its own deep-read note and its own log entry ## 96,
+  PR #270) and detected the collision at merge time: GitHub refused
+  the merge (405 conflict), the live main tail was re-read in full,
+  and PR #270 was closed UNMERGED per the main-wins race protocol.
+  The 405 refusal is the guard behaving exactly as designed: no
+  duplicate ## 96 and no second note for xe0397d reached main. The
+  trigger cause is unattributed and recorded as unknown, honestly;
+  a duplicate scheduled trigger is the candidate explanation (both
+  instances ran the same standing directive within minutes of each
+  other); no cause is asserted.
+
+The record as it stands on main (a1971fa), verified by re-reading:
+
+- Log ## 95 and ## 96 are instance B's texts; the library note for
+  xe0397d is instance B's
+  (2026-11-21_cryptocurrency_deep_learning_price_formation_deep_read.md).
+  The ratification queue holds FORTY candidate sharpenings plus probe
+  E1, zero armed: instance B's deep-read queued the adaptive-
+  retraining disclosure as the fortieth item, and DECISIONS_PENDING.md
+  carries it with its full draft, page cites and the killed-if-wrong
+  counterfactual, its last-updated line correctly naming ## 96.
+  GOALS.md is refreshed (front 2: counter ONE of five since the
+  edition-7 reset at ## 95, brief debt items 34-40 plus probe E1;
+  front 4: discharged and reset). Next UNREAD xdab650, third of the
+  score-24 tier. Cadence counter ONE of five. Every hard gate
+  unchanged: nothing measured, nothing armed, nothing trades live,
+  the blocked list stays blocked, T1 stays armed awaiting the owner's
+  word.
+
+Superseded content and its preservation:
+
+- Instance A's ## 95 text (PR #268) is preserved in full in git
+  history at commit 298210f and needs no restoration: the two ## 95
+  texts describe the same pass and agree on every gate-relevant fact
+  (cadence five of five from the ## 89 reset; goal state edition 7;
+  reset at deep-read #75 onward; no sharpening queued by the pass; the
+  score-25 tier closed; pointer xe0397d then xdab650). Two content
+  defects in the surviving ## 95 text are recorded here, NOT corrected
+  (content edits are not typo-class): it states the ratification
+  queue at FORTY and the library at seventy-six notes at pass time,
+  though both were true only after its own ## 96 act landed — the
+  entry was written with knowledge of the deep-read it precedes. The
+  directorate sees this asymmetry; no session rewrites it.
+- Instance A's unmerged second-act products (its own deep-read note
+  and its own ## 96 entry) remain preserved, unmerged by choice, on
+  branch null-time-86-deep-read-75 (PR #270, closed with the
+  reconciliation summarized in its body and comment).
+
+The grading divergence on xe0397d, recorded honestly, both ways:
+
+- Instance A read the same 22-page extract in full and graded the
+  in-window-retraining artifact an interpretation caution under the
+  standing default for the direction-prediction paper class (no
+  sharpening unless the text earns one): the freeze-then-evaluate and
+  no-re-tune rules already bind the programme's own tests, and the
+  "consistent 78%" is an update-sustained artifact not offered as a
+  baseline anywhere.
+- The merged record queues the adaptive-retraining disclosure (item
+  40), extending the pre-commitment from WHICH estimator in WHICH
+  configuration to WHICH adaptation rule for any C1-L2/C8-adjacent
+  comparator, null or baseline — instruments the existing freeze
+  binds only implicitly. On reading the queued full draft, instance A
+  judges that extension genuinely additive on the refutation-instrument
+  axis: an adapted-in-window null would track any regime change by
+  construction and could never refute anything. The calibration fact
+  stands for the sitting regardless: two independent full reads of
+  the same paper graded the same mechanism differently — once caution,
+  once sharpening — which is itself evidence for the batch-ratify
+  sitting to weigh, and a datum on reader variance the programme
+  should expect more of as the swarm parallelizes. Either way the
+  item stands PENDING OWNER RATIFICATION; this act neither queues nor
+  kills anything.
+
+Named gap from the collision, at zero status: the main-wins protocol
+absorbed this race (one lost work product, preserved unmerged), but
+the near-miss class is real — any scheduled-trigger fan-out can run
+two instances on one session and both will execute the same standing
+directive against the same live tail read minutes apart. Candidate
+improvements, zero status until the owner fires or a queue-looking
+session proposes one through lawful channels: owner-side single-flight
+triggering, and a last-mile re-read of main's tip immediately before
+each PR merge (this session's start-of-session read was stale within
+minutes).
+
+Ratification queue after this act: FORTY candidate sharpenings plus
+probe E1, zero armed (ZERO queued by this act; item 40 remains
+PENDING OWNER RATIFICATION from ## 96 exactly as recorded). T1
+remains armed awaiting the owner's word in its booked state (survived
+all five kill lines with sign inverted; T2 tested-fail); the blocked
+list stays blocked. Deep-read queue pointer: next UNREAD "Estimation
+for high-frequency data under parametric market microstructure noise"
+(score 24, xdab650), third of the score-24 tier — re-read the live
+tail and recompute the tier against the notes before consuming; the
+EDITION-7 cadence counter stands at ONE of five (deep-read 75 counted
+from the edition-7 reset at ## 95).
+
+docs/DECISIONS_PENDING.md is NOT touched by this act (rule: no
+candidate sharpening queued; the dashboard's last-updated line stands
+from ## 96; item 40 stands as recorded).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this act exit zero on the assembled tree (the changed
+files; marker and encoding checks); the library-provenance audit runs
+in CI over the full tree — the summaries are untouched this act —
+and was verified green on both jobs before merge.
