@@ -9824,3 +9824,146 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 changed files; marker and encoding checks); the library-provenance
 audit runs in CI over the full tree — the summaries are untouched
 this session — and must be verified green on both jobs before merge.
+
+## 102. Null-time session 89 (2026-11-21): library deep-read session 78 — the Bechler-Ludkovski meso-scale resiliency paper read, completing the score-24 tier; the S-shape shown to be an artifact of taker-only clocks (linearity restored only by adding contemporaneous touch limit flow at 50-70% market-order impact), top-level depth shown statistically insignificant against deeper book shape, and scarce-liquidity prediction shown high-precision/low-recall at a 4-5% base rate; NO candidate sharpening queued, all reading-discipline ground already owned by standing constraints and queued items; no kill line moved
+
+Session-state note, per the goal-autonomy conductor protocol (edition
+7, ## 95): the declared work choice is the standing deep-read, the
+protocol's default, which owes no justification; the synthesis
+cadence is NOT due — after this session's read the edition-7 counter
+stands at FOUR of five (deep-reads 75-78 counted from the edition-7
+reset at ## 95; the edition-8 pass falls due at five, i.e. the next
+deep-read session's first act). The ## 101 pointer named this paper as
+next UNREAD and this session re-verified the tier order against the
+live file state (score-24 tier: x673148 read ## 94, xe0397d read ##
+96, xdab650 read ## 100, x3e5ba8 read ## 101, x5f35fd read here — the
+tier is COMPLETE as of this read; the next-tier head xaf167e and the
+remaining score-23 tier were verified note-less this session before the
+pointer named them). No inaccessible or blocked status this session;
+the extract was present, page-marked, complete and read in full
+(27 pp., body, both appendices — including the Table 6/Table 7
+inventories — and references included).
+
+- **Library deep-read session 78** (front 2, fifth of the score-24
+  tier; note:
+  paper/research/library/2026-11-21_order_flow_lob_resiliency_meso_scale_deep_read.md):
+  Kyle Bechler and Michael Ludkovski (UCSB), "Order Flows and Limit
+  Order Book Resiliency on the Meso-Scale" (arXiv:1708.02715v1
+  [q-fin.TR], stamp 9 Aug 2017; 27 pp.), score 24, index entry
+  x5f35fd. The paper: an empirical meso-scale study of six liquid
+  large-tick Nasdaq tickers (MSFT/TEVA/BBBY, first 100 days of 2011;
+  INTC/ORCL/NTAP, last 100 days of 2013; Nasdaq ITCH TotalView, single
+  venue, 10:00-15:45, hidden executions removed, PDF pp. 8-9) that
+  introduces volume-based bucketing as the meso-scale clock — buckets
+  cut at fixed executed market volume V of 0.25/1/2% ADV, median
+  duration about 170 s, dozens of trades and hundreds of limit orders
+  per bucket, with the claimed stabilizing properties of removed
+  intraday seasonality, improved Gaussianity of the flow series and
+  volume-normalized limit-flow comparison (PDF pp. 6-9). Against that
+  clock: mid-price change ∆P against trade imbalance TI is a
+  persistent S-shaped nonlinearity, flat near TI = ±1, attributed to
+  intelligent order placement conditioning on the book (PDF pp.
+  10-13); adding the contemporaneous touch limit flow (VLB − VLA)
+  restores near-linearity and raises R2 from about 0.3-0.4 to about
+  0.7, defining NetLiq = TI + β·VL with β (limit-order price impact
+  relative to market orders) stable at roughly 0.4-0.68 across all
+  six assets and three bucket sizes (PDF pp. 11-14, Tables 3-4); the
+  one-sided limit-flow responses are hockey-stick in TI, with the
+  active side replenished less under one-sided pressure and, for some
+  tickers, the passive side hibernating too, and the paper states the
+  VM-VL causality direction cannot be determined (PDF pp. 14-15).
+  Variable importance across LM/LASSO/MARS/random forests: TI and the
+  one-sided touch limit flows dominate; top-level depth D1 is
+  statistically insignificant while deeper shape metrics (D2, the
+  hypothetical execution cost PI over 3-5 levels, the impact slope S
+  over about 4 levels) carry the modulation, full model R2 near 0.8
+  (PDF pp. 15-18, Table 6). Scarce liquidity SLj is a residual
+  indicator from the in-sample ∆P-vs-TI GAM fit at 1.5 StDev (about 6%
+  of buckets), driven by limit-flow asymmetry, reduced depth and high
+  cancellation proportions, with morning/slow-trading lifts; the
+  models are correct 70-80% of the time at high predicted probability
+  but identify fewer than half of actual occurrences at a 4-5% holdout
+  base rate (PDF pp. 18-19, Table 7). Time-series: long-memory
+  persistence in VLj over hours, no clustering in one-sided SL,
+  positive autocorrelation in the combined indicator and a whiplash
+  cross-correlation of opposite-signed abnormal moves (PDF pp.
+  19-20); VPIN (as mean |TI| over recent volume buckets, eq. 18) and
+  an event-based flow-price-correlation toxicity metric (eq. 19) both
+  showed weak predictive power in the authors' own regressions (PDF
+  p. 21, Remark 6). Findings, graded:
+  1. [reinforcing, no new item] Clock choice as a dial that reaches
+     the measured relations (bucket size V moves R2 and β, PDF pp.
+     12-14, Tables 3-4): the ground the queued flow-clock
+     scale-constant and volume-clock convention items already own;
+     no new axis, nothing queued, the default grade stands.
+  2. [interpretation caution] Taker-only clocks are structurally
+     incomplete here: linearity exists only after the passive flow
+     enters, at 50-70% of market-order impact (PDF pp. 11-14). The
+     programme's aggTrades windows are taker prints only (the standing
+     T1 constraint; passive withdrawal invisible; no taker proxy may
+     be substituted). Reading discipline: a taker-only ∆P-vs-flow fit
+     on crypto perp tape that finds nonlinearity or weak explanatory
+     power cannot be read as absence of a linear flow-price structure.
+     Sharpens T1's interpretation and C1-L2's motivation; no queue
+     change — the standing constraint already covers the mechanism.
+  3. [interpretation caution] Top-of-book singularity is not a depth
+     summary: D1 statistically insignificant against D2/PI/S (PDF
+     pp. 16-17, Table 6). Reading discipline for the C1-L2 feature
+     spec and the L0 audit — touch-only features cannot be presumed
+     to represent the depth state; level count must be named. No
+     queue change.
+  4. [interpretation caution] Residual-threshold abnormality is
+     in-sample by construction (SL from a GAM fitted to the same
+     sample, cut at 1.5 StDev, PDF p. 18) and precision without
+     recall flatters a low-base-rate predictor (70-80% precision in
+     the high bin, recall under half at a 4-5% base rate, PDF pp.
+     18-19, Table 7). Any future programme "abnormal move"
+     definition must pre-declare its conditioning fit window and
+     report recall at the named base rate. Feeds the standing
+     base-rate discipline and the missed-sharpening coverage of the
+     already-queued candidates; no queue change.
+  5. [reinforcing, no new item] The paper's own VPIN and toxicity
+     tests came back weak on data with full passive-flow visibility
+     (PDF p. 21, Remark 6): library ammunition aligned with the
+     recorded C5/VPIN skepticism; no record status, the laundering
+     ban binds.
+  6. [reinforcing, no new item] Long-memory persistence in limit flow
+     and clustering of the combined scarce-liquidity indicator (PDF
+     pp. 19-20) parallels the frozen regime-window and self-excitation
+     disciplines already queued/ratified; nothing new is licensed.
+  7. [source-quality note] arXiv v1; equities only, single venue,
+     large-tick liquid names; the authors flag small-tick and
+     illiquid assets as untested (PDF p. 22); R2 values in-sample
+     except the Table 7 holdout; PI a counterfactual construct
+     (Remark 1, PDF p. 5); VM-VL causality undetermined (PDF p. 14);
+     a published version exists in this lineage and must be checked
+     before any formal citation; nothing touches crypto perp L2
+     tape, no regime transfer is established. Regardless, no claim
+     here can serve as support for any programme claim.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (27 pp., body, appendices and
+  references complete).
+- Ratification queue after this session: FORTY-ONE candidate
+  sharpenings plus probe E1, zero armed (NONE queued this session).
+  T1 remains armed awaiting the owner's word in its booked state
+  (survived all five kill lines with sign inverted; T2 tested-fail);
+  the blocked list stays blocked. Deep-read queue pointer: next UNREAD
+  "Optimal inventory management and order book modeling" (Baradel,
+  Bouchard, Evangelista, Mounjid, arXiv:1802.08135v2, score 23,
+  xaf167e), first of the score-23 tier (xaf167e, xec4d8e, x6c29fa,
+  xfcaaa2), all four verified note-less this session — re-read the
+  live tail and recompute the tier against the notes before
+  consuming; the EDITION-7 cadence counter now stands at FOUR of five
+  (deep-reads 75-78 counted from the edition-7 reset at ## 95), so
+  the next deep-read session's first act is the edition-8 synthesis
+  pass per the protocol's section 4.
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule: no
+  candidate sharpening queued; the ratification line stands at
+  forty-one plus probe E1, zero armed).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled tree (the
+changed files; marker and encoding checks); the library-provenance
+audit runs in CI over the full tree — the summaries are untouched
+this session — and must be verified green on both jobs before merge.
