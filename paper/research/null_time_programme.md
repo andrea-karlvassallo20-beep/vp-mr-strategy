@@ -8789,3 +8789,118 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 changed files; marker and encoding checks); the library-provenance
 audit runs in CI over the full tree — the summaries are untouched
 this session — and was verified green on both jobs before merge.
+
+## 93. Null-time session 84 (2026-11-21), library deep-read session 73 — the Palmari–Lillo–Eisler deterministic time-varying-liquidity paper read, closing the score-25 tier; the "optimal buys first" pathology shown to require no information at all — purely deterministic linear decay of permanent impact makes the optimal liquidation of a long start by BUYING (ζ̇0 > 0) and, at T=1, a=5, η=0.25, b<−4.09, genuinely negative-cost, with the motivating exhibit a J-shaped intraday impact calendar from one month of MSFT; ONE candidate sharpening queued (the deterministic-calendar null, PENDING OWNER RATIFICATION); no kill line moved
+
+Session-state note, per the goal-autonomy conductor protocol (edition 6,
+## 89): the declared work choice is the standing deep-read, the default
+under the protocol needing no justification; the ## 92 pointer named this
+paper as next UNREAD and this session re-verified the tier order against
+the live file state (score-25 tier: x074d5c read ## 85, x8f729f read
+## 87, x6b73c4 read ## 88, x475f30 read ## 90, x6aed5b read ## 91,
+xd0900e read ## 92; x217e71 read here, tier closed). Cadence counter
+after this session: FOUR of five toward the edition-7 synthesis pass
+(deep-read 73 counted from the edition-6 reset at ## 89; the pass itself
+is due at five). No inaccessible or blocked status this session; the
+extract was present, page-marked, complete and read in full (49 pp.,
+body, references and all appendices included).
+
+- **Library deep-read session 73** (front 2, the score-25 tier close; note:
+  paper/research/library/2026-11-21_deterministic_time_varying_liquidity_deep_read.md):
+  Gianluca Palmari, Fabrizio Lillo, Zoltan Eisler, "Optimal execution
+  in a time-varying environment: well-posedness and price manipulation"
+  (indexed as "Optimal execution with deterministically time varying
+  liquidity"; arXiv:2410.04867v2 [math.OC], Oct 2024, v2 stamped 19 Mar
+  2026; 49 pp.), score 25, index entry x217e71. The paper: the
+  Almgren-Chriss execution problem with deterministically time-varying
+  temporary and permanent impact coefficients (θt, ht); discrete-time
+  quadratic form with impact matrix A (Eq. 6, PDF p. 7), strong
+  well-posedness characterized by the B-matrix property (Props. 4-5,
+  PDF pp. 9-10) and its refined-grid continuous-time limit (Prop. 6,
+  PDF pp. 11-12); continuous-time Euler-Lagrange boundary problem
+  (Eq. 20, PDF p. 14) with the second-order condition γT2 < π2, γ =
+  θ̄/2η̄ (Props. 9-12, PDF pp. 14-18), a monotonicity table for solution
+  shapes (Table 1, PDF p. 22), and exponential/power-law numerics
+  (PDF pp. 22-26, 45-48). Findings, graded:
+  1. [candidate sharpening, PENDING OWNER RATIFICATION] The
+     deterministic-calendar null: before the L0 gate, any
+     C1-L2/C8-adjacent spec interpreting an intraday anticipatory,
+     reversal, impact-decay or buy-before-sell-type structure as
+     conditioned on book state or flow must pre-declare a
+     deterministic-calendar null — a time-of-day surrogate built only
+     from frozen constants, zero book-state input — and show the
+     structure survives it before entering any spec. Mechanism, page-
+     cited in the note: Example 6 proves purely deterministic linear
+     decay of permanent impact makes the OPTIMAL liquidation of a
+     long begin by BUYING (ζ̇0 > 0, PDF pp. 16-17) and, at T = 1,
+     a = 5, η = 0.25, b < −4.09, genuinely negative-cost — proper
+     price manipulation (PDF p. 17) — no self-excitation, no stochastic
+     state, no news, nothing but the calendar; the motivating exhibit
+     is a deterministic J-shaped intraday impact trajectory from one
+     month of MSFT (Fig. 1, PDF pp. 2-3). Harder-to-pass because a
+     feature whose intraday shape survives only before removing the
+     calendar component now fails at the gate instead of surviving as
+     state-conditioned; tightens the two-null admission family (log
+     ## 17), joining the Gould-Bonart comparator, the tautology-
+     controlled OFI benchmark and the sign-persistence null with a
+     fourth null that needs no state input at all. QUEUED, not armed;
+     the owner's word is the only trigger.
+  2. [reinforcing, no new item] Pointwise parameter bounds do not
+     compose: the paper's own Example 2 (PDF pp. 8-9) exhibits a
+     configuration satisfying ηi > θi/2 for every i that is
+     nevertheless ill-posed when impact is time-varying; the
+     per-window validity certificates would not compose into a
+     global one — reinforcing the window-geometry family already
+     queued (regime-window pre-declaration, level-versus-memory);
+     no new item.
+  3. [interpretation caution] Nothing in the optimal solution is
+     anticipation: the optimum is static, fixed at time zero from the
+     deterministic impact calendar (PDF pp. 4-5, 27), and every
+     "manipulation" is exploitation of the impact model's own
+     geometry, not information about future prices; any C8-adjacent
+     exhibit citing execution-optimality as evidence of predictive
+     content would launder an engineering property into a forecast;
+     no queue change.
+  4. [reinforcing, no new item] The motivating J-shaped calendar is
+     one name, one month, one venue (MSFT June 2021, Fig. 1, PDF pp.
+     2-3), the two impact components estimated by two different
+     methodologies, never tested against market conditions (PDF p.
+     27); importing it as a market-wide calendar prior launders one
+     month of one stock into a property of markets — the base-rate
+     audit family; no new item.
+  5. [cost-survival ammunition] The admissibility hierarchy
+     (B-matrix on refined grids, sampling-robust √γT ≤ √2 vs the
+     weaker continuous √γT < π, PDF pp. 18-19) is recorded only as
+     the constraint class a future K7-style cost-survival or
+     execution layer must carry (bounded impact-decay rates, grid-
+     consistent admissibility, θ̄/(2η̄) as a named survival quantity);
+     never operationalized, nothing armed.
+  6. [source-quality note] arXiv v2 (math.OC), zero recorded
+     citations in the index, no published version recorded, and the
+     index title differs from the extract's printed title — check
+     before any formal citation; regardless, no empirical claim here
+     can serve as support for any programme claim.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (49 pp., body, references
+  and appendices complete).
+- Ratification queue after this session: THIRTY-NINE candidate
+  sharpenings plus probe E1, zero armed (ONE queued this session: the
+  deterministic-calendar null). T1 remains armed awaiting the owner's
+  word in its booked state (survived all five kill lines with sign
+  inverted; T2 tested-fail); the blocked list stays blocked.
+  Deep-read queue pointer: the score-25 tier is CLOSED; next UNREAD
+  "A new self-exciting jump-diffusion process for option pricing"
+  (score 24, x673148), first of the score-24 tier — re-read the live
+  tail and recompute the tier against the notes before consuming; the
+  EDITION-6 cadence counter now stands at FOUR of five (deep-read 73
+  counted from the edition-6 reset at ## 89).
+- docs/DECISIONS_PENDING.md IS touched by this session (rule: one
+  candidate sharpening queued — the deterministic-calendar null; queue
+  thirty-nine, zero armed).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled tree (the
+changed files; marker and encoding checks); the library-provenance
+audit runs in CI over the full tree — the summaries are untouched
+this session — and was verified green on both jobs before merge.

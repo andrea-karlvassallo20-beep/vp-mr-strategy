@@ -1,9 +1,9 @@
-# Pending owner decisions — the thirty-third dashboard
+# Pending owner decisions — the thirty-fourth dashboard
 
-**Maintained by the null-time sessions. Last updated: 2026-11-20, the
-price-process-family invariance rule queued as the thirty-eighth candidate
-sharpening (null-time session 77, log ## 85), after the corrupt-landing
-repair and re-audit (null-time session 72, log ## 78); audited against
+**Maintained by the null-time sessions. Last updated: 2026-11-21, the
+deterministic-calendar null queued as the thirty-ninth candidate
+sharpening (null-time session 84, log ## 93), closing the score-25
+deep-read tier; audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
 Every item below is BLOCKED ON YOUR WORD — nothing runs, arms, or merges
@@ -36,7 +36,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: thirty-eight
+  library deep-reads and the ratified exploratory channel: thirty-nine
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -53,8 +53,42 @@ each case. Items are ordered by how much they gate.
   estimator-configuration freeze queued 2026-11-20 by deep-read
   session 63 / null-time session 74, plus the price-process-family
   invariance rule queued 2026-11-20 by deep-read session 66 /
-  null-time session 77; probe E1 stands separately and is not counted
-  among the thirty-eight); most recently joined 2026-11-20, the
+  null-time session 77, plus the deterministic-calendar null queued
+  2026-11-21 by deep-read session 73 / null-time session 84; probe E1
+  stands separately and is not counted among the thirty-nine); most
+  recently joined 2026-11-21, the deterministic-calendar null (before
+  the L0 gate, any C1-L2/C8-adjacent spec interpreting an intraday
+  anticipatory, reversal, impact-decay or buy-before-sell-type structure
+  as conditioned on book state or flow must pre-declare a
+  deterministic-calendar null — a time-of-day surrogate built only
+  from frozen constants (calendar position, e.g. a J-shaped intraday
+  impact/liquidity profile as a pre-declared generic default),
+  carrying zero book-state input — and must show the structure
+  survives that null before it may enter any spec as support, with
+  the killed-if-wrong counterfactual recorded — the Palmari–Lillo–Eisler
+  deterministic-liquidity paper proves the mechanism is real and needs
+  literally no information: with permanent impact decaying linearly and
+  temporary impact constant, the OPTIMAL liquidation of a long position
+  begins by BUYING (ζ̇0 > 0, Example 6, PDF pp. 16-17), and for T = 1,
+  a = 5, η = 0.25, b < −4.09 the excess cash is genuinely negative-cost
+  — proper price manipulation (PDF p. 17) — with no self-excitation, no
+  stochastic state, no news, nothing but the calendar, and the paper's
+  own motivating exhibit is exactly such a deterministic J-shaped
+  intraday impact trajectory estimated on one month of MSFT (Fig. 1,
+  PDF pp. 2-3), so an apparent "anticipatory" intraday shape in L2 data
+  that is a pure time-of-day geometry artifact would otherwise pass a
+  state-conditioned test; harder-to-pass because a feature whose
+  intraday shape survives only before removing the calendar component
+  now fails at the gate instead of surviving as state-conditioned;
+  tightens the two-null admission family (log ## 17), joining the
+  Gould-Bonart Eq.-7 comparator, the tautology-controlled OFI benchmark
+  and the sign-persistence admission null with a fourth null that needs
+  no state input at all, the same tightening shape as the
+  self-excitation regime-window pre-declaration and the level-versus-
+  memory disambiguation; full draft with the killed-if-wrong
+  counterfactual in
+  paper/research/library/2026-11-21_deterministic_time_varying_liquidity_deep_read.md),
+  and earlier the same-tier 2026-11-20, the
   price-process-family invariance rule (any C1-L2/C8-adjacent
   book-defined statistic that prices time through an assumed price
   process — expected fill, first-passage or hitting-time discounting,
