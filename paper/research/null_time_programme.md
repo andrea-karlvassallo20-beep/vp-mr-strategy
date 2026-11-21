@@ -8680,3 +8680,112 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 changed files; marker and encoding checks); the library-provenance
 audit runs in CI over the full tree — the summaries are untouched
 this session — and was verified green on both jobs before merge.
+
+## 92. Null-time session 83 (2026-11-21), library deep-read session 72 — the Guo–Remillard–Swishchuk multivariate general compound point process paper read; the "as good as Hawkes" claim shown to be a variance-scaling parity on one 2012 LOBSTER day with the LLN/FCLT premises 2.0.1-2.0.2 assumed for an unspecified point process and never checked; the asymptotic n shown to conflate the Markov state count with the limit's scaling variable while the numerics fix it at 2 or 7; the "mid-price prediction" shown to be a rolling re-estimation of a diffusion coefficient (15.46% test error, near-double the 7.92% fit error, no directional content, motivated by the paper's own admission the FCLT I approximation "cannot help us with the forecasting task directly"); no kill line moved, nothing sharpened
+
+Session-state note, per the goal-autonomy conductor protocol (edition 6,
+## 89): the declared work choice is the standing deep-read, the default
+under the protocol needing no justification; the ## 91 pointer named this
+paper as next UNREAD and this session re-verified the tier order against the
+live file state (score-25 tier: x074d5c read ## 85, x8f729f read ## 87,
+x6b73c4 read ## 88, x475f30 read ## 90, x6aed5b read ## 91, xd0900e read
+here; x217e71 remains). Cadence counter after this session: THREE of five
+toward the edition-7 synthesis pass (deep-read 72 counted from the
+edition-6 reset at ## 89; the pass itself is due at five). No inaccessible
+or blocked status this session; the extract was present, page-marked,
+complete and read in full (16 pp., references included).
+
+- **Library deep-read session 72** (front 2, the score-25 tier; note:
+  paper/research/library/2026-11-21_multivariate_compound_point_lob_deep_read.md):
+  Qi Guo, Bruno Remillard, Anatoliy Swishchuk, "Multivariate General
+  Compound Point Processes in Limit Order Books" (arXiv:2008.00124v1
+  [q-fin.MF], 4 August 2020; 16 pp.), score 25, index entry xd0900e.
+  The paper: mid-price as a d-dimensional compound of ergodic
+  Markov-chain states driven by a general multivariate point process
+  (assumptions 2.0.1-2.0.2, PDF pp. 4-5), LLN (Thm 3.1), FCLT I with
+  random centralization (Thm 3.2, PDF pp. 6-8) and FCLT II with
+  deterministic centralization (Thm 4.1, PDF pp. 11-12), numerics on
+  one LOBSTER level-1 day (21 June 2012) for MSFT/INTC/AAPL/AMZN/GOOG,
+  two-state chains for INTC/MSFT and 2-vs-7-state for the rest, with
+  standard-deviation matching across window sizes as the fit target.
+  Findings, graded:
+  1. [reinforcing, no new item] The whole limit structure is
+     conditional on assumptions 2.0.1-2.0.2 (LLN and FCLT for the
+     underlying point process, PDF pp. 4-5), explicitly a
+     generalization "for all multivariate compound models whose point
+     processes N_t satisfy" them (Remark 3.6, PDF p. 11); the premises
+     are assumed, never identified or tested on the data — a fitted
+     diffusion coefficient is a fit to the assumption; second concrete
+     instance for the queue's price-process-family and
+     estimator-identity items; no new item.
+  2. [interpretation caution] "MGCPP is as good as MGCHP" is a
+     variance-scaling parity, not a validation: standard deviations
+     of the two FCLT sides matched across window sizes (eq. 25, PDF
+     p. 8), MSEs of order 10^-8 against standard deviations of order
+     10^-2 to 10^-3 (Table 4, PDF p. 9), coefficient errors 3.4-4.7%
+     for INTC/MSFT (Table 5) — no direction, levels or path order
+     anywhere; a model matching diffusion scaling is not evidence it
+     anticipates anything. Reading discipline for any C8
+     macro-synthesis exhibit.
+  3. [interpretation caution] The forecast claim is weak by the
+     paper's own numbers: the rolling 5-fold cross-validation targets
+     the diffusion coefficient, not the path, and yields a 15.46%
+     overall test error against a 7.92% fit error (Table 8, PDF p.
+     14), per-fold worst 42.15%; the authors still call it "a good
+     prediction in the LOB". FCLT II is itself motivated by the
+     admission that FCLT I "cannot help us with the forecasting task
+     directly because we couldn't have the order flow N_{nt} in
+     advance" (PDF p. 11) — the setup carries no anticipation
+     content usable ahead of the flow. No queue change.
+  4. [interpretation caution] The asymptotic n is over-loaded: the
+     theorems take n -> infinity over chains "with n states" (Thms
+     3.2/4.1) while the numerics fix n at 2 or 7 with the "best 4 to
+     7" range imported from a companion Hawkes paper on other data
+     (PDF pp. 9-10), and AMZN never reaches under 10% error at any
+     state count (28.29% at 7 states, Table 6, PDF p. 11) —
+     unexamined finite-n bias built into every fitted coefficient;
+     the already-carrying window/level-declaration family again; no
+     queue change.
+  5. [reinforcing, no new item] Single day (21 June 2012), five
+     large-cap NASDAQ names, one venue, level-1 data, no
+     cross-market or cross-period replication: regime breadth nil;
+     importing these numbers as base rates, diffusion scales or
+     cross-name correlation structure (Lambda, Sigma) would
+     launder one day's geometry into a property of markets;
+     reinforces the base-rate audit family; no queue change.
+  6. [source-quality note] arXiv v1, theorem-plus-numerics draft, no
+     recorded citations in the index, no published version recorded
+     for this exact title (the companion MGCHP result is in Wilmott
+     2020, ref. [14]) — check before any formal citation; regardless,
+     no empirical claim here can serve as support for any programme
+     claim.
+  7. [cost-survival ammunition] The multivariate dependence entering
+     only through Lambda and Sigma in the diffusion limit (Thm 3.2)
+     confines cross-name contamination to two matrices whose
+     estimators inherit every fault above; recorded only as the
+     assumption class a future K7-style cost-survival or cross-asset
+     layer would have to carry (day breadth, premise verification);
+     never operationalized, nothing armed.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (16 pp., body and references
+  complete).
+- Ratification queue after this session: THIRTY-EIGHT candidate
+  sharpenings plus probe E1, zero armed (unchanged; nothing sharpened
+  this session). T1 remains armed awaiting the owner's word in its
+  booked state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked. Deep-read queue
+  pointer: next UNREAD "Optimal execution with deterministically time
+  varying liquidity: well posedness and price manipulation" (score
+  25, x217e71) to close the score-25 tier — re-read the live tail and
+  recompute the tier against the notes before consuming; the
+  EDITION-6 cadence counter now stands at THREE of five (deep-read 72
+  counted from the edition-6 reset at ## 89).
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule:
+  nothing was sharpened here).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled tree (the
+changed files; marker and encoding checks); the library-provenance
+audit runs in CI over the full tree — the summaries are untouched
+this session — and was verified green on both jobs before merge.
