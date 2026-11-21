@@ -9967,3 +9967,201 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 changed files; marker and encoding checks); the library-provenance
 audit runs in CI over the full tree — the summaries are untouched
 this session — and must be verified green on both jobs before merge.
+
+## 103. Null-time session 90 (2026-11-21), first act: the sixth synthesis pass — the cadence recomputed from the edition-7 reset at ## 95 (deep-reads 75-78 landed at ## 96 and ## 100 through ## 102, the window's fifth deep-read #79 landing as this session's second act per the ## 102 closing pointer, which directed the pass run first), goal state rewritten as EDITION 8, the G2 brief-debt recomputed against the grown queue (briefs cover forty of forty-one); NO sharpening queued by the pass
+
+Session-state note, per the goal-autonomy conductor protocol (edition 7,
+## 95, ACTIVE): the live main tail (through ## 102) and
+docs/DECISIONS_PENDING.md were read first; the cadence check was
+recomputed from first principles against the edition-7 reset at ## 95 —
+deep-read 75 landed ## 96, 76 landed ## 100, 77 landed ## 101,
+78 landed ## 102: four landed, and the ## 102 closing pointer records
+explicitly that the next deep-read session's FIRST act is the edition-8
+synthesis pass, with the window's fifth deep-read #79 landing as the
+same session's second act — so per the conductor protocol section 3
+point 2, the ## 102 pointer's own instruction, and the ritual's
+director step, the pass runs FIRST and this session's deep-read follows
+as ## 104. The declared work choice is therefore the pass first, then
+the standing deep-read, matching the recorded instruction.
+
+Facts recomputed from the live record (main tail through ## 102 at pass
+time):
+
+- Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
+  2026-11-19; archived is NOT falsified; every kill line stays frozen;
+  unchanged. Phase 2 (Crypto L2): ACTIVE, the Board's only active
+  research front (C1-L2 → C8 → Convexity Sizing), blocked on the
+  owner's data acquisition; the L0 dry run is unblocked. Unchanged.
+- Library: eighty deep-read notes on main's tip through deep-read
+  session 78 (the 81st lands as this session's second act and counts);
+  the ratification queue holds FORTY-ONE candidate sharpenings plus
+  probe E1, zero armed; T1 armed awaiting the owner's word in its
+  booked state (sign inverted); T2 tested-fail; the blocked list stays
+  blocked.
+- Deep-read queue pointer: the score-24 tier is CLOSED (log ## 102);
+  next UNREAD "Optimal inventory management and order book modeling"
+  (Baradel, Bouchard, Evangelista, Mounjid, score 23, xaf167e), then
+  the remaining score-23 tier (FinRL-X xec4d8e, "Order book dynamics
+  in liquid markets" x6c29fa, "A Million Metaorder Analysis of Market
+  Impact on the Bitcoin" xfcaaa2) — recomputed by title-matching the
+  score-sorted triage file against the live log tail and the library
+  note listing this pass; xaf167e is consumed as this session's
+  second act (## 104) and #79 counts toward the edition-8 cadence.
+- Cadence: the edition-7 window closes with this session; the cadence
+  is RESET by this edition (next due at five or more deep-reads since
+  edition 8; #80 onward).
+
+What the window since edition 7 taught (ranking evidence, nothing
+laundered): the four landed deep-reads of the window (sessions 75-78)
+moved ZERO kill lines and queued exactly TWO sharpenings (#40, the
+adaptive-retraining disclosure, ## 96; #41, the noise-model
+pre-declaration for de-noised inputs, ## 100) — both disclosure or
+pre-commitment extensions of already-queued families, so the
+declining-yield expectation named at editions 3-7 continues to hold;
+the window absorbed a race-collision corrigendum (## 98: a THIRD
+concurrent instance of one session detected on read-back and closed
+UNMERGED per the main-wins protocol, no duplicate reaching main), which
+is ranking evidence that the byte-gate discipline works and that the
+truncation-class gap below stays live; the score-24 tier CLOSED inside
+the window with the tier boundary now inside the score-23 tier.
+
+Named gaps restated (this pass's product, zero status): the
+append-only log's write-side ~64K truncation class (## 75, ## 78,
+## 94, ## 98) still has NO standing CI check enforcing byte-size
+monotonicity of the large tracked files, and no session-side read-back
+verification helper for large reads AND writes through the tooling
+path; the weekly directorate has still not sat — FORTY-ONE candidates
+plus probe E1 pending, zero armed, the G2 briefs cover all forty queued
+items (through item 40), so a brief for item 41 (the noise-model
+pre-declaration, queued ## 100) is owed before the next sitting and
+remains the ranked non-deep-read choice; front 3 stays blocked on
+codespace/data presence. GOALS.md status lines refreshed as operative
+bookkeeping (the front 2 pointer, the front 4 cadence note, the G2
+count reconciliation to forty-one); rankings and gates live in the
+protocol, never there.
+
+NO sharpening queued by this act (the pass names gaps, it does not
+amend); DECISIONS_PENDING.md is NOT touched by the pass; T1 stays
+armed awaiting the owner's word; the queue FORTY-ONE plus probe E1,
+zero armed. Nothing measured, no kill line moved, nothing armed,
+nothing trades live.
+
+## 104. Null-time session 90 (2026-11-21), second act: library deep-read session 79 — the Baradel-Bouchard-Evangelista-Mounjid optimal-inventory order-book model read, opening the score-23 tier; the imbalance shown to be strategic OUTPUT inside exactly the model class that conditions flow on it (optimal agents plant non-executable limit flow to skew the imbalance against them), every positive result shown a closed-simulation product of the paper's own priors, and multi-agent round conclusions shown artifacts of the arbitrary intra-round execution priority; NO candidate sharpening queued, all reading-discipline ground already owned by standing constraints and queued items; no kill line moved
+
+Session-state note, per the goal-autonomy conductor protocol (edition
+8, ## 103, ACTIVE — installed by this session's first act): the
+declared work choice is the standing deep-read as the pass session's
+second act, matching the protocol's cadence rule and the ## 102
+pointer; the ## 103 pointer named this paper as next UNREAD and this
+session re-verified the tier order against the live file state
+(score-24 tier CLOSED at ## 102; score-23 tier: xaf167e read here,
+xec4d8e/x6c29fa/xfcaaa2 verified note-less before being named in the
+pointer). No inaccessible or blocked status this session; the extract
+was present, page-marked, complete and read in full (40 pp., body,
+all figure plates and references included).
+
+- **Library deep-read session 79** (front 2, first of the score-23
+  tier; note:
+  paper/research/library/2026-11-21_optimal_inventory_management_order_book_deep_read.md):
+  Nicolas Baradel, Bruno Bouchard, David Evangelista, Othmane Mounjid,
+  "Optimal inventory management and order book modeling"
+  (arXiv:1802.08135v2 [q-fin.TR], stamp 9 Nov 2018; 40 pp.), score 23,
+  index entry xaf167e. The paper: a structural control-theoretic
+  order-book model in which three rational agent classes — market
+  makers, a stock-futures pair-trading HFT, and volume/VWAP
+  schedule-driven institutional brokers — act on a Queue-Reactive-
+  style best-queue book (spread in {1,2} ticks, prices moving only on
+  queue depletion or spread insertion, eqs. 2.1-2.6, PDF pp. 3-5)
+  whose exogenous flow compensator conditions on the book's
+  imbalance per borrowed single-name equity statistics (aggressive
+  direction 0.5+0.35·Imb, size 0.7+0.3·Imb of the queue, PDF
+  pp. 13-14); MM and HFT value functions are characterized as
+  viscosity solutions of variational PDEs with convergent explicit
+  time discretizations and asymptotically optimal extracted controls
+  (PDF pp. 8-13, 18-22), the brokers are a volume-participation
+  chaser and a closed-form Almgren-Chriss VWAP schedule with
+  aggressive catch-up flow when behind (PDF pp. 24-29), and a
+  full-market illustration plays all agents under a fixed intra-round
+  execution priority (HFT first, PDF pp. 31-32), self-described as a
+  first illustration with the thorough study left for future research
+  (PDF pp. 3, 32). Findings, graded:
+  1. [interpretation caution] Imbalance is endogenous strategic
+     output, not exogenous state, inside exactly the model class
+     that conditions flow on it: the optimal market maker plants
+     limit orders NOT meant to execute, to skew the imbalance and
+     so shift others' aggressive flow against him, "at the limit of
+     a price manipulation strategy" when big enough (PDF p. 15; the
+     imbalance-dependent direction/size priors, PDF pp. 13-14).
+     Reading discipline for the C1-L2 feature spec: an
+     imbalance-based feature on live tape measures a field strategic
+     agents may be deliberately shaping because they believe others
+     condition on it; no imbalance feature may be read as a clean
+     exogenous state variable and imbalance-effect heterogeneity
+     across regimes is the default expectation. No queue change —
+     the estimator-configuration freeze and frozen-feature reading
+     rules already carry the discipline; the default grade stands.
+  2. [reinforcing, no new item] Every positive result is a product
+     of the model's own priors: one equity name's borrowed
+     statistics (PDF pp. 13-14), β and κ moment-matched inside the
+     model by iterative simulation (PDF p. 29 n. 13), and the VWAP
+     schedule "typically performs better than the market" (PDF
+     pp. 29-30) only inside the book its own assumptions generate.
+     Simulation output given the model's own inputs is not evidence
+     of anything in the world; the laundering ban binds and nothing
+     here may enter the record as support for any programme claim.
+  3. [interpretation caution] Touch-only truncation "for numerical
+     tractability" (best queues only, two spread values, PDF
+     pp. 2-3): re-exhibits on the control-theory side the
+     top-of-book-singularity caution of ## 102 — touch-only state
+     cannot stand for the depth state; level count must be named in
+     any C1-L2 feature on queued depth. No queue change.
+  4. [cost-survival ammunition] The broker mechanics declare what a
+     future K7-style cost-survival layer must carry:
+     schedule-driven aggressive flow fires exactly when realized
+     volume falls behind the target band — state-dependent on the
+     executor's calendar progress, not on information — and the
+     broker's standing limit inventory itself pushes the price
+     (PDF pp. 24-25, 28-29, 31-32). A cost layer reading aggressive
+     flow as uniformly informed overstates adversarial inference.
+     Declaration requirements only; nothing armed.
+  5. [interpretation caution] Round-based multi-agent conclusions
+     are artifacts of the chosen intra-round execution priority
+     (HFT first, then MM, then brokers at random — a convention the
+     authors themselves exploit, noting the HFT's first-move
+     advantage, PDF pp. 31-32): any future programme use of
+     simulator-generated microstructure studies (C8 placebos,
+     layer-0 sanity tapes) must pre-declare the intra-round priority
+     rule and report conclusions' stability to it. No queue change.
+  6. [source-quality note] arXiv v2; equities, single venue, priors
+     from one large-cap name; queue-regeneration laws exogenous and
+     untested; the thorough interaction study left for future
+     research (PDF pp. 3, 32); nothing touches crypto perp L2 tape,
+     no regime transfer is established, and sticky-flat perp spreads
+     violate the paper's two-tick closure prior outright; a published
+     version must be checked before formal citation. Regardless, no
+     claim here can serve as support for any programme claim.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (40 pp., body, figure plates
+  and references complete).
+- Ratification queue after this session: FORTY-ONE candidate
+  sharpenings plus probe E1, zero armed (NONE queued this session).
+  T1 remains armed awaiting the owner's word in its booked state
+  (survived all five kill lines with sign inverted; T2 tested-fail);
+  the blocked list stays blocked. Deep-read queue pointer: next UNREAD
+  "FinRL-X: An AI-Native Modular Infrastructure for Quantitative
+  Trading" (score 23, xec4d8e), second of the score-23 tier (then
+  x6c29fa "Order book dynamics in liquid markets", xfcaaa2 "A Million
+  Metaorder Analysis of Market Impact on the Bitcoin") — re-read the
+  live tail and recompute the tier against the notes before
+  consuming; the EDITION-8 cadence counter now stands at ONE of five
+  (deep-read 79 counted from the edition-8 reset at ## 103).
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule: no
+  candidate sharpening queued; the ratification line stands at
+  forty-one plus probe E1, zero armed).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled tree (the
+changed files; marker and encoding checks); the library-provenance
+audit runs in CI over the full tree — the summaries are untouched
+this session — and must be verified green on both jobs before merge.
