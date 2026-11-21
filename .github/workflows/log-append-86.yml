@@ -1,0 +1,95 @@
+name: Null-time session 86 log append
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: log-append-86-${{ github.head_ref }}
+  cancel-in-progress: false
+
+jobs:
+  land:
+    if: startsWith(github.head_ref, 'nulltime-86-')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Append session entries 95-96 with byte gates
+        run: |
+          set -euo pipefail
+          LOG=paper/research/null_time_programme.md
+          APPEND=.log-repair/append_2026-11-21.md
+          STATE=.log-repair/state.log
+          MARKER="APPLIED append_2026-11-21"
+
+          if [ -f "$STATE" ] && grep -qF "$MARKER" "$STATE"; then
+            echo "Append already applied (state marker present). No-op."
+            exit 0
+          fi
+          if [ ! -f "$APPEND" ]; then
+            echo "Append file $APPEND absent on this head. Nothing to apply. No-op."
+            exit 0
+          fi
+
+          EXPECTED_APPEND_SHA=5a9fe337e8a83821183ab625f25c46627b867b35161101509e01439eeba6b316
+          ACTUAL_APPEND_SHA=$(sha256sum "$APPEND" | cut -d' ' -f1)
+          if [ "$ACTUAL_APPEND_SHA" != "$EXPECTED_APPEND_SHA" ]; then
+            echo "FATAL: append file sha mismatch ($ACTUAL_APPEND_SHA)" >&2
+            exit 1
+          fi
+
+          OLD_SIZE=$(git cat-file -s "$(git rev-parse "HEAD:$LOG")")
+          echo "Current tree log size: $OLD_SIZE bytes"
+          if [ "$OLD_SIZE" -ne 595490 ]; then
+            echo "FATAL: unexpected pre-append log size $OLD_SIZE (expected 595490); aborting rather than appending to a moved state" >&2
+            exit 1
+          fi
+
+          cat "$APPEND" > /tmp/append_snapshot.md
+          cp "$LOG" /tmp/pre.log
+          cat /tmp/pre.log /tmp/append_snapshot.md > "$LOG"
+          NEW_SIZE=$(stat -c%s "$LOG")
+          EXPECTED_NEW=605101
+          if [ "$NEW_SIZE" -ne "$EXPECTED_NEW" ]; then
+            echo "FATAL: assembled log size $NEW_SIZE != expected $EXPECTED_NEW" >&2
+            exit 1
+          fi
+          echo "Assembled log: $NEW_SIZE bytes"
+
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          p = Path("paper/research/null_time_programme.md")
+          raw = p.read_bytes()
+          raw.decode("utf-8", errors="strict")
+          txt = raw.decode("utf-8")
+          bad = [l for l in txt.splitlines() if any(ord(ch) < 32 and ch != "\t" for ch in l)]
+          assert not bad, f"control-character lines found: {bad[:3]}"
+          for marker in ("<<<<<<<", "=======", ">>>>>>>"):
+              assert marker not in txt, f"conflict marker {marker} present"
+          hdrs = re.findall(r"^## (\d+)\. ", txt, flags=re.M)
+          nums = [int(h) for h in hdrs]
+          assert nums == sorted(nums), "entry headers out of numeric order"
+          assert len(nums) == len(set(nums)), "duplicate entry headers"
+          assert max(nums) == 96, f"expected the log to run through entry 96, last is {max(nums)}"
+          for want in (95, 96):
+              assert nums.count(want) == 1, f"entry {want}: expected exactly 1 header, found {nums.count(want)}"
+          print("programme log hygiene gates passed")
+          PY
+
+          python3 src/integrity_guard.py --sweep
+          python3 src/integrity_guard.py --encoding
+
+          echo "$MARKER" >> "$STATE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$LOG" "$STATE"
+          git commit -m "Null-time session 86 log append: entries 95 (edition-7 synthesis pass) and 96 (G2 directorate brief refresh) appended, byte gates and hygiene gates passed, guard clean. Nothing measured, no kill line moved, nothing armed, nothing trades live."
+          git push origin HEAD:${{ github.head_ref }}
