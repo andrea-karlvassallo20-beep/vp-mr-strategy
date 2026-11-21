@@ -1,8 +1,8 @@
 # GOALS.md — the fronts status board (operative work-selection companion)
 
 **Status:** the session-facing status board for the goal-state fronts, per
-the conductor protocol (goal state **edition 5**, protocol section 2;
-change recorded log ## 83; rotation guidance, section 3; weekly directorate,
+the conductor protocol (goal state **edition 6**, protocol section 2;
+change recorded log ## 89; rotation guidance, section 3; weekly directorate,
 section 6; landed
 2026-11-19) and the owner's standing order recorded MADE in
 `docs/DECISIONS_PENDING.md` (resolved item, 2026-11-19). The protocol's
@@ -62,7 +62,7 @@ construction.
    readiness; L2-chain work takes precedence over all fronts that
    serve it.
 
-## Status board (protocol section 2, edition 5)
+## Status board (protocol section 2, edition 6)
 
 - Front 1 — the gated L2 window. STATUS: THE CRITICAL PATH (Board
   directive, 2026-11-19). Still blocked on the owner (environment + data:
@@ -70,37 +70,37 @@ construction.
   `paper/research/l2_data_acquisition_spec.md`); the L0 dry run is
   unblocked by the recorded L0 amendment; never claimable by a session.
 - Front 2 — the library deep-read queue. STATUS: ACTIVE. Next UNREAD
-  after the ## 77 through ## 82 landings (2026-11-20; x0b879c, x973a89,
-  xd0ee69, xc1a00b and xd17ea7 consumed, plus xe96c60 consumed at ##
-  84): "Stochastic Price Dynamics Implied By the Limit Order Book"
-  (score 25, x074d5c), recomputed live by title-matching the
-  score-sorted triage file against the log tail; the score-26 tier is
-  fully consumed; re-read the live tail before consuming; the ritual's
-  slug-keyed unread rule applies. NOTE (refreshed 2026-11-20, null-time
-  session 76, log ## 83): the deep-read counter since EDITION 5 stands
-  at ONE of five (deep-read 65, landed this same session, counted from
-  the edition-5 reset at ## 83); the G2 directorate briefs cover the
-  first thirty-three of the now thirty-seven queued sharpenings, so a
-  brief refresh (items 34-37 plus probe E1) is owed before the next
-  sitting and is this edition's ranked non-deep-read choice.
+  after the ## 84 through ## 88 landings (2026-11-20; xe96c60 at ##
+  84) and the ## 85-## 88 landings (2026-11-20/21; x074d5c, x8f729f
+  and x6b73c4 consumed) plus the ## 90
+  landing (x475f30, "High-Resilience Limits of Block-Shaped Order
+  Books", consumed 2026-11-21): "Detecting Financial Market
+  Manipulation with Statistical Physics Tools" (score 25, x6aed5b),
+  recomputed live by title-matching the score-sorted triage file
+  against the log tail; the score-25 tier still holds xd0900e (score
+  25) and x217e71 after it; re-read the live tail before consuming;
+  the ritual's slug-keyed unread rule applies. NOTE (refreshed
+  2026-11-21, null-time session 81, log ## 89): the deep-read counter
+  since EDITION 6 stands at ONE of five (deep-read 70, landed this same
+  session, counted from the edition-6 reset at ## 89); the G2
+  directorate briefs cover the first thirty-three of the now
+  THIRTY-EIGHT queued sharpenings, so a brief refresh (items 34-38
+  plus probe E1) is owed before the next sitting and is this edition's
+  ranked non-deep-read choice.
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
   without real klines, and no invented data is substituted.
-- Front 4 — the synthesis pass. STATUS: NOT DUE (refreshed 2026-11-20,
-  null-time session 76, log ## 83): the edition-4 cadence check was
+- Front 4 — the synthesis pass. STATUS: NOT DUE (refreshed 2026-11-21,
+  null-time session 81, log ## 89): the edition-5 cadence check was
   discharged by this session's pass (five of five deep-reads since the
-  edition-4 reset at ## 76: sessions 60-64, log ## 77-## 82; the pass
-  ran first and is recorded as goal state EDITION 5, log ## 83);
-  cadence per edition 5: next due when five or more deep-reads have
-  landed since edition 5 (deep-read #65 onward, reset at ## 83; #65
-  landed this same session and counts, so the counter stands at ONE of
-  five). NOTE: the EDITION 4 section-2 rewrite of
-  docs/goal_autonomy_protocol.md claimed at ## 76 did not survive the
-  session-71 branch corruption; the re-landing debt recorded at ## 78
-  is CLEARED by supersession (the same ## 83 pass rewrote section 2
-  whole as EDITION 5, with edition 4's substance preserved in the ##
-  76 log record and the continuity noted in the protocol's section
-  10). No session ever re-authored the edition-4 text.
+  edition-5 reset at ## 83: sessions 65-69, log ## 84-## 88; the pass ran
+  first and is recorded as goal state EDITION 6, log ## 89); cadence
+  per edition 6: next due when five or more deep-reads have landed
+  since edition 6 (deep-read #70 onward, reset at ## 89; #70 landed
+  this same session and counts, so the counter stands at ONE of five).
+  NOTE: edition 5 is superseded whole by edition 6 (same protocol
+  section 11 note; edition 5's substance preserved in the ## 83 log
+  record and the protocol's section 10).
 - Front 5 — gap-driven probes. STATUS: standing, per
   `docs/exploratory_channel.md`; up to one block per session at the
   session's discretion.

@@ -8404,3 +8404,176 @@ present, page-marked, complete and read in full (~40 pp.).
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py run this session exits
 zero on the assembled tree.
+
+
+## 89. Null-time session 81 (2026-11-21), first act: the fourth synthesis pass — the cadence recomputed from the edition-5 reset at ## 83 (FIVE of five: deep-reads 65-69, log ## 84 through ## 88), goal state rewritten as EDITION 6, the G2 brief-debt recomputed against the grown queue (briefs cover thirty-three of thirty-eight); NO sharpening queued by the pass
+
+Session-state note, per the goal-autonomy conductor protocol (edition 5,
+## 83, ACTIVE): the live main tail (through ## 88) and
+docs/DECISIONS_PENDING.md were read first; the cadence check was
+recomputed from first principles against the edition-5 reset at ## 83 —
+deep-read 65 landed ## 84 (counting, per the edition-5 reset's own note),
+66 landed ## 85, 67 landed ## 86, 68 landed ## 87, 69 landed ## 88: five
+of five, so per the conductor protocol section 3 point 2 and the ritual's
+director step the synthesis pass runs FIRST, and this session's deep-read
+follows as its second act (## 90). The declared work choice is therefore
+the pass first, then the standing deep-read, matching the ## 88 pointer's
+own instruction that the next session run the pass before consuming.
+
+Facts recomputed from the live record (main tail through ## 88 at pass
+time):
+
+- Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
+  2026-11-19; archived is NOT falsified; every kill line stays frozen;
+  unchanged. Phase 2 (Crypto L2): ACTIVE, the Board's only active research
+  front (C1-L2 → C8 → Convexity Sizing), blocked on the owner's data
+  acquisition; the L0 dry run is unblocked. Unchanged.
+- Library: sixty-nine deep-read notes through deep-read session 69 on
+  main's tip; the ratification queue holds THIRTY-EIGHT candidate
+  sharpenings plus probe E1, zero armed; T1 armed awaiting the owner's
+  word in its booked state (survived all five kill lines with sign
+  inverted; T2 tested-fail); the blocked list stays blocked.
+- Deep-read queue pointer: next UNREAD "High-Resilience Limits of
+  Block-Shaped Order Books" (score 25, x475f30), then "Detecting
+  Financial Market Manipulation with Statistical Physics Tools" (score
+  25, x6aed5b) — recomputed by title-matching the score-sorted triage
+  file against the live log tail this pass; x475f30 is consumed as this
+  session's second act (## 90) and #70 counts toward the edition-6
+  cadence.
+- Cadence: five deep-reads have landed since edition 5 (sessions 65-69,
+  log ## 84 through ## 88), so this pass is due and runs first; the
+  cadence is RESET by this edition (next due at five or more deep-reads
+  since edition 6; #70 onward).
+
+What the window since edition 5 taught (ranking evidence, nothing
+laundered): five deep-reads (65-69) moved ZERO kill lines and queued
+exactly ONE sharpening (#38, the price-process-family invariance rule,
+## 85); four of the five reads queued nothing; the single new mechanism
+landed in the price-process-family family, one tier deeper than the
+estimator-identity mechanisms of the edition-4 window, and the ## 88
+read independently re-exhibited the family-dependence the #38 rule
+already covers (a page-cited instance, not a new mechanism); the
+tier boundary now sits inside the score-25 tail with three entries left
+at that score before the score-24 tier — the declining-yield expectation
+named at editions 3-5 continues to hold.
+
+Named gaps (this pass's product, each at zero status until its channel
+fires it): (1) the append-only log's write-side ~64K truncation class
+(## 75, ## 78) STILL has no standing CI byte-size-monotonicity check
+and no session-side read-back verification helper — named,
+candidate-improvement status only; (2) the weekly directorate has still
+not sat: THIRTY-EIGHT candidates plus probe E1 pending, and the G2
+briefs (docs/DIRECTORATE_BRIEFS.md) still cover only items 1-33, so the
+brief refresh is now owed for items 34-38 plus probe E1 before the next
+sitting — the G2 refresh remains the ranked non-deep-read work item of
+this edition; (3) front 3's analysis legs remain blocked on
+codespace/data presence; no session action available.
+
+Edition change: the protocol's section 2 is rewritten whole as EDITION 6
+per the edition rule and section 4's product list; a section 11 note in
+the protocol file records the change; GOALS.md front 2, front 4 and the
+edition references are refreshed (operative bookkeeping); every
+carve-out stays owner-only and nothing gated was touched.
+
+The pass measures nothing, arms nothing, launders nothing into any
+spec. DECISIONS_PENDING.md is untouched BY THE PASS. Nothing measured,
+no kill line moved, nothing armed, nothing trades live.
+
+
+## 90. Null-time session 81 (2026-11-21), second act: library deep-read session 70 — the Kallsen–Muhle-Karbe high-resilience limit paper read; the reduced-form quadratic trading cost shown to be a theorem's OUTPUT derived from book height, resilience and recovery asymmetry; the resilience shown to move only the transient cost, the permanent impact shown resilience-independent; the model equivalence shown class-bounded (bounded-rate strategies, κ1/4 families, integrability premises); no kill line moved, nothing sharpened
+
+Session-state note, per the goal-autonomy conductor protocol (edition 6,
+## 89, installed this same session): the declared work choice is the
+standing deep-read following this session's first-act synthesis pass, the
+protocol's own cadence instruction; the ## 88 pointer named this paper as
+next UNREAD and the pass re-verified the tier order against the live
+file state (x074d5c read ## 85, x8f729f read ## 87, x6b73c4 read ## 88,
+then x475f30). No inaccessible or blocked status this session; the
+extract was present, page-marked, complete and read in full (~12 pp.;
+the extract ends inside the reference list at PDF p. 12, all body
+sections present).
+
+- **Library deep-read session 70** (front 2, the score-25 tier; note:
+  paper/research/library/2026-11-21_high_resilience_kallsen_deep_read.md):
+  Jan Kallsen, Johannes Muhle-Karbe, "High-Resilience Limits of
+  Block-Shaped Order Books" (arXiv:1409.7269v1 [q-fin.TR], 2014; zero
+  recorded citations in the acquisition index, no published version
+  recorded there). A pure-theory paper: a generalized block-shaped
+  Obizhaeva/Wang book with stochastic heights h↑, h↓, stochastic
+  resiliences κK↑, κK↓ and permanent-impact fractions α↑, α↓ ∈ [0, 1/2]
+  (Assumption 2.1, Def. 2.2, eqs. 2.1-2.7, PDF pp. 2-4), whose main
+  theorem (Thm 4.1, PDF pp. 4-5) shows the wealth process converges as
+  κ → ∞, uniformly on compacts in probability, to an Almgren/Chriss
+  reduced-form wealth with quadratic temporary cost λ↑ = (1−α↑)/(κK↑h↑)
+  = O(κ−1), permanent linear impact γ↑ = α↑h↑ independent of κ, and the
+  exogenous baseline spreads at O(1), error o(κ−1); extensions for
+  κ1/4-scaled active families (Remark 4.2, PDF p. 6, error o(κ−1/2)),
+  an Lp strengthening under uniform boundedness (Remark 4.3, PDF
+  pp. 6-7), and Lemma 4.4 (PDF pp. 7-8): block trades are asymptotically
+  dominated by smoothed continuous strategies in this regime. Section 5
+  (PDF pp. 8-11) transfers Moreau–Muhle-Karbe–Soner small-impact
+  asymptotic optimality (eq. 5.1, PDF p. 9) into the
+  Obizhaeva/Wang model, among target-tracking families, under
+  uniform-integrability classes (5.4)-(5.5) discharged only by uniform
+  boundedness of all primitives (Thm 5.2, Cor. 5.3, PDF pp. 9-11). No
+  data, no simulation, no empirics anywhere in the paper.
+- Grade: NO kill line changes. NO new candidate sharpening — default
+  grade; every mechanism found is a page-cited instance of a discipline
+  the queue already carries.
+  1. [reinforcing, no new item] The headline trading cost is a DERIVED
+     object: the reduced-form quadratic cost's functional form is the
+     OUTPUT of Theorem 4.1, a consequence of the block-shape,
+     exponential-resilience and recovery-asymmetry premises (PDF
+     pp. 4-5) — the cost-side sibling of the ## 84 Çetin–Waelbroeck
+     exhibit and one structural level deeper than the ## 85/## 88
+     price-process exhibits: there the assumed family moved an
+     estimated LEVEL, here the assumed book family manufactures the
+     cost functional's FORM. Reinforces the spread-convention
+     declaration rule, the price-process-family invariance rule (#38)
+     and the estimator-identity family; no new item.
+  2. [interpretation caution] The resilience sits in the transient
+     cost's denominator while the permanent impact is untouched by it
+     (λ = O(κ−1)K−1h−1, γ = αh, PDF p. 5): a mis-estimated recovery rate
+     silently rescales the transient cost by its exact reciprocal and
+     leaves the permanent component alone, so any permanent-versus-
+     transient attribution made under one resilience estimate does not
+     survive another. Reading discipline for any C1-L2/C8 cost-adjacent
+     figure; no queue change.
+  3. [interpretation caution] The two models' equivalence is explicitly
+     class-bounded by the authors' own statements: bounded-rate
+     absolutely continuous strategies (Thm 4.1, PDF pp. 4-5), κ1/4
+     families with degraded rate (Remark 4.2, PDF p. 6), and an
+     optimality transfer holding only under integrability classes
+     discharged by uniform boundedness away from zero (Thm 5.2, Cor.
+     5.3, PDF pp. 9-11). A limit-theorem premise cited outside its
+     class carries no evidential weight; no queue change.
+  4. [cost-survival ammunition] Lemma 4.4 (PDF pp. 7-8) and the
+     O(κ−1/2) leading order with √(κKh)-scaled turnover (eq. 5.1, PDF
+     p. 9): execution-strategy content recorded only as the class of
+     assumptions a future K7-style cost-survival layer would carry if
+     it ever exists; never operationalized, nothing armed.
+  5. [source-quality note] arXiv v1, zero recorded citations in the
+     index, no published version recorded, though the authors are
+     established and a published version may exist — check before any
+     formal citation; theorem-only paper, so nothing in it can serve
+     as empirical support for any programme claim even if the
+     invariants allowed it (they do not).
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (~12 pp., body complete).
+- Ratification queue after this session: THIRTY-EIGHT candidate
+  sharpenings plus probe E1, zero armed (unchanged; nothing sharpened
+  this session). T1 remains armed awaiting the owner's word in its
+  booked state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked. Deep-read queue
+  pointer: next UNREAD "Detecting Financial Market Manipulation with
+  Statistical Physics Tools" (score 25, x6aed5b), then the score-25
+  remainder (xd0900e, x217e71) — re-read the live tail and recompute
+  the tier against the notes before consuming; the EDITION-6 cadence
+  counter now stands at ONE of five (deep-read 70 counted from the
+  edition-6 reset at ## 89).
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule:
+  nothing was sharpened here).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run this session exits
+zero on the assembled tree.
