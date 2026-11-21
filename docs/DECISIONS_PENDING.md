@@ -1,8 +1,8 @@
 # Pending owner decisions — the thirty-sixth dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-21, the
-residual-flow attribution null queued as the forty-third candidate
-sharpening (null-time session 93, log ## 108); audited against
+feature-normalization pre-declaration queued as the forty-fourth
+candidate sharpening (null-time session 94, log ## 110); audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
 Every item below is BLOCKED ON YOUR WORD — nothing runs, arms, or merges
@@ -35,7 +35,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: forty-three
+  library deep-reads and the ratified exploratory channel: forty-four
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -61,8 +61,44 @@ each case. Items are ordered by how much they gate.
   pre-declaration queued 2026-11-21 by deep-read session 81 /
   null-time session 92, plus the residual-flow attribution null
   queued 2026-11-21 by deep-read session 82 / null-time session
-  93; probe E1 stands separately and is not
-  counted among the forty-three); most recently joined 2026-11-21, the
+  93, plus the feature-normalization pre-declaration queued
+  2026-11-21 by deep-read session 83 / null-time session 94; probe E1
+  stands separately and is not
+  counted among the forty-four); most recently joined 2026-11-21, the
+  feature-normalization pre-declaration (BEFORE the L0 gate, any
+  C1-L2/C8-adjacent spec whose signal is defined through rolling or
+  windowed normalization statistics — a min-max rescaling, a z-score,
+  a rolling-mean subtraction, a rolling volatility scale — must
+  pre-declare, in the same frozen signal definition, the window
+  length, the estimation convention (strictly trailing, with the
+  evaluation point excluded) and the warm-up/incomplete-window
+  handling, with the normalization constants counted as frozen
+  signal configuration and every deviation a dated amendment before
+  any data is touched; a signal whose normalization statistics are
+  not pre-declared cannot enter a spec, and a number that survives
+  only under a post-hoc normalization window fails by rule — the
+  Zheng-He-Yang cross-exchange RL optimal-execution paper proves the
+  degrees of freedom are real and load-bearing: both of its headline
+  signals rest on rolling normalizations whose windows are never
+  stated (the min-max normalized trade-flow imbalance over "a certain
+  period of time", Eq. 2, PDF p. 8; the rolling-mean-subtracted
+  cross-exchange spread, Eq. 10, PDF p. 14), every predictive-power
+  figure in the paper is computed on these signals (Figs. 2-8,
+  PDF pp. 9-15), and a full-sample normalization window would make the
+  signal forward-looking and inflate precisely the cross-exchange
+  improvement the headline rests on, unauditable from the text;
+  harder-to-pass because a claim that beats its null only under its
+  own post-hoc normalization window, or whose window was picked after
+  seeing the result, now fails at the gate instead of surviving as
+  preprocessing; tightens the estimator-configuration freeze
+  (deep-read 63) and the noise-model pre-declaration (deep-read 76)
+  by extending the frozen-configuration class from estimators and
+  noise models to signal-side normalization statistics, joining the
+  spread-convention declaration rule (deep-read 56) on the feature
+  axis; full draft with the killed-if-wrong counterfactual in the
+  session note
+  (paper/research/library/2026-11-21_optimal_execution_reinforcement_learning_deep_read.md)),
+  and earlier the same day, the
   residual-flow attribution null (BEFORE the L0 gate, any
   C1-L2/C8-adjacent spec attributing a price, spread or
   depletion-side association to an identified flow episode — a
