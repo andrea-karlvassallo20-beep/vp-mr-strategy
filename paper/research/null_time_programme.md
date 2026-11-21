@@ -10165,3 +10165,40 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 changed files; marker and encoding checks); the library-provenance
 audit runs in CI over the full tree — the summaries are untouched
 this session — and must be verified green on both jobs before merge.
+
+## 105. Null-time session 90 corrigendum (2026-11-21): race-collision
+record, main-wins protocol applied - a second instance of this same
+session was detected at write-back time; the concurrent instance
+landed its product on main first (entry ## 103, its own edition-8
+pass with its own section-2 wording and cadence reset from deep-read
+80 at ## 103, and entry ## 104, its deep-read 79 of the same
+Baradel-Bouchard-Evangelista-Mounjid optimal-inventory order-book
+paper, first of the score-23 tier, xaf167e, its note landing as
+2026-11-21_optimal_inventory_management_order_book_deep_read.md);
+this instance’s parallel work is superseded and NO merge was
+attempted from it; the superseded working branch
+nulltime-90-deepread-79-xaf167e is left unmerged (its two in-branch
+superseded protocol pushes - one carrying an in-branch-caught
+transcription typo that was rebuilt and re-pushed pre-merge, the
+second carrying a duplicate section 13 produced by splicing
+against a stale fetch after the concurrent instance’s edition-8
+had already landed - never reached main and never will); the two
+instances’ gradings of the same extract CONVERGED and are
+recorded for the directorate: both read the same 40-page
+page-marked text in full, both graded NO candidate sharpening
+queued (all reading-discipline ground already owned by standing
+constraints and queued items), no kill line moved,
+docs/DECISIONS_PENDING.md untouched by either; the shared findings
+stand on main via ## 104 (imbalance as strategic output inside
+exactly the model class that conditions flow on it, non-executable
+limit flow planted at the boundary of a price-manipulation strategy,
+borrowed single-name equity priors as ammunition not evidence,
+HJBQVI viscosity configs analyst-declared, the open-loop
+full-market exhibit with queue-regeneration exogenous); the
+ratification queue remains FORTY-ONE candidate sharpenings plus
+probe E1, zero armed; no note double-landed on main, no reading
+consumed twice on main; the deep-read queue pointer stands as the
+pointer carried at ## 104: next UNREAD is "FinRL-X: An AI-Native
+Modular Infrastructure for Quantitative Trading" (score 23,
+xec4d8e), second of the score-23 tier; nothing measured during
+null time, no kill line moved, nothing armed, nothing trades live.
