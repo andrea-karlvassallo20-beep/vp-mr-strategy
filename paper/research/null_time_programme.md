@@ -10631,3 +10631,171 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 audit and the full-tree sweeps run in CI over the full tree — the
 summaries are untouched this session — and must be verified green on
 both jobs before merge.
+
+## 110. Null-time session 94 (2026-11-21): library deep-read session 83 — the Zheng-He-Yang cross-exchange reinforcement-learning optimal-execution read, first of the score-22 tier; the paper graded a self-benchmarked simulator execution artifact whose every magnitude is banned from the record under the laundering rule, whose unstated signal-normalization windows are banked as the evidence for ONE candidate sharpening (the feature-normalization pre-declaration), whose venue-leadership reading and summed-signal construction are recorded as interpretation cautions, and whose fee-domination and latency numbers are banked as cost-survival declarations only; NO kill line moved; the ratification queue moves to forty-four candidate sharpenings plus probe E1
+
+Session-state note, per the goal-autonomy conductor protocol (edition 8,
+## 103, ACTIVE): the declared work choice is the standing deep-read, the
+protocol's default, matching the ## 108 closing pointer; the pointer named
+"Optimal Execution Using Reinforcement Learning" as next UNREAD and this
+session re-verified that against the live file state (84 library notes,
+none for this slug; extract present, page-marked; the score-22 tier
+recomputed in triage order — five entries, x0fc07a first and note-less)
+before reading. This is deep-read 83, and at session start only FOUR
+deep-reads had landed since the edition-8 reset (## 103), so no synthesis
+pass was due to run first under cadence rule section 3 point 2; with this
+landing the EDITION-8 cadence window is CLOSED at FIVE of five and the NEXT
+deep-read session MUST open with the seventh synthesis pass (edition 9)
+before its read. No inaccessible or blocked status this session; the
+extract was present, page-marked, complete and read in full (27 pp., body,
+all figures, tables, equations and references included).
+
+- **Library deep-read session 83** (front 2, first of the score-22 tier;
+  note:
+  paper/research/library/2026-11-21_optimal_execution_reinforcement_learning_deep_read.md):
+  Cong Zheng, Jiafa He, Can Yang, "Optimal Execution Using Reinforcement
+  Learning" (arXiv:2306.17178v1 [q-fin.TR], stamp 19 Jun 2023; 27 pp.),
+  score 22, index entry x0fc07a. The paper: BTC_USDT perpetual
+  order-book, best-bid-ask and trade data from Binance, OKEx and Bybit
+  collected over WebSockets on one Hong Kong server, venues aligned by
+  the collector's local timestamps to avoid forward-looking bias and
+  resampled at a fixed 10ms interval (PDF pp. 5-7); three cross-exchange
+  signals, each a plain sum of per-exchange normalized quantities —
+  trade-flow imbalance normalized by an unstated min-max window "over a
+  certain period of time" (Eqs. 1-2, 4, PDF pp. 7-9), top-five-level
+  order-book imbalance (Eqs. 5-6, PDF pp. 10-11), and cross-exchange
+  spread with an unparameterized rolling-mean subtraction (Eqs. 9-10,
+  PDF pp. 13-14) — regressed on future returns at 100ms-10s horizons with
+  no null baseline, showing in-sample linear R2 that decays with
+  horizon and beats the single-exchange counterpart, maximum predictive
+  levels quoted at ~0.6 bps (imbalance, Bybit, 5s; OKEx weaker at ~0.4
+  bps, Figs. 2-3, 5-6, PDF pp. 9-13) and ~1.5 bps (spread, advantage
+  persisting at longer intervals, Figs. 7-8, PDF pp. 14-15), with one
+  illustrative episode in which price changes lead on Binance and OKEx
+  and lag on Bybit (Fig. 9, PDF p. 15); and a PPO agent selling V = 50
+  units within T = 50s at H = 10 decision points, market orders only,
+  trained in a self-built order-matching simulator with a 3 bps fee
+  (Eqs. 11-16, PDF pp. 16-19), beating TWAP's implementation shortfall by
+  0.38 bps with single-exchange signals and 0.68 bps with cross-exchange
+  signals on Bybit against a TWAP IS of -3.10 bps (Table 1, PDF p. 21),
+  by 0.27 bps on OKEx (TWAP IS -1.48 bps, unexplained against the stated
+  fee, Table 2, PDF p. 22), and still by 0.32/0.14 bps under a synthetic
+  linear price impact and zero-ending penalty (Table 3, PDF p. 23); the
+  5s prediction interval dominates 2s and 10s (Table 4, PDF p. 24) and
+  the cross-exchange agent pays a variance penalty attributed to
+  cross-venue network delay (PDF pp. 22-23). Findings, graded:
+  1. [reinforcing, no new item] Every headline magnitude is earned
+     inside the authors' own simulator against TWAP with in-sample-style
+     R2 and no null: the R2 ladder (Figs. 2, 5, 7, PDF pp. 9-14), the
+     bps gains (Tables 1-3, PDF pp. 21-23) and the action maps (Fig. 10,
+     PDF pp. 20-21) are simulator- and venue-indexed. The laundering ban
+     binds: nothing may enter the record as support for any programme
+     claim; the PPO/reward engineering (PDF pp. 17-19) is context, never
+     operationalized. No queue change.
+  2. [candidate sharpening, PENDING OWNER RATIFICATION] The
+     feature-normalization pre-declaration queued as the FORTY-FOURTH
+     candidate: BEFORE the L0 gate, any C1-L2/C8-adjacent spec whose
+     signal is defined through rolling or windowed normalization
+     statistics (a min-max rescaling, a z-score, a rolling-mean
+     subtraction, a rolling volatility scale) must pre-declare, in the
+     same frozen signal definition, the window length, the estimation
+     convention (strictly trailing, excluding the evaluation point) and
+     the warm-up/incomplete-window handling, with the normalization
+     constants counted as frozen signal configuration and every
+     deviation a dated amendment before any data is touched; a signal
+     whose normalization statistics are not pre-declared cannot enter a
+     spec, and a number that survives only under a post-hoc
+     normalization window fails by rule. Earned by the paper's own
+     mechanism: both of its cross-venue signals rest on rolling
+     normalizations whose windows are never stated (the min-max "over a
+     certain period of time", Eq. 2, PDF p. 8; the rolling-mean spread
+     normalization, Eq. 10, PDF p. 14), every predictive-power figure is
+     computed on them (Figs. 2-8, PDF pp. 9-15), and a full-sample
+     window would make the signal forward-looking and inflate precisely
+     the cross-exchange improvement the headline rests on — unauditable
+     from the text, which is itself the reason the rule must bind before
+     the data. Harder-to-pass because a claim that beats its null only
+     under a post-hoc normalization window now fails at the gate;
+     tightens the estimator-configuration freeze (deep-read 63) and the
+     noise-model pre-declaration (deep-read 76) by extending the
+     frozen-configuration class from estimators and noise models to
+     signal-side normalization statistics, joining the
+     spread-convention declaration rule (deep-read 56) on the feature
+     axis. Full draft with the killed-if-wrong counterfactual in the
+     session note
+     (paper/research/library/2026-11-21_optimal_execution_reinforcement_learning_deep_read.md).
+  3. [interpretation caution] Price changes lead on Binance/OKEx and
+     lag on Bybit in the paper's own episode (Fig. 9, PDF p. 15), and
+     Bybit is easier to predict than OKEx for reasons the authors offer
+     only speculatively ("may contribute", PDF p. 9): a compressive or
+     anticipatory association measured on ONE venue concerns that
+     venue's price formation, not the market — on a lagging venue it can
+     be imported co-movement with the leaders' flow — so no single-venue
+     result may be generalized cross-venue without the replication the
+     programme already requires. No queue change.
+  4. [interpretation caution] The cross-exchange signals are plain sums
+     across venues (Eqs. 4, 6, PDF pp. 9, 11) and the improvement metric
+     is an in-sample R2 with no null; summation is a modelling choice,
+     not a neutral default, and any future multi-venue aggregation rule
+     must itself be pre-declared in a frozen feature definition, while
+     literature R2 figures rank against nothing here until they survive
+     a sealed null. No queue change.
+  5. [reinforcing, no new item] The paper's one honest data-hygiene
+     core — venues aligned on a single collector's local timestamps
+     precisely to avoid forward-looking bias (PDF pp. 6-7) — is the same
+     failure class the L0 gate's timestamp audits exist to catch;
+     reinforces the standing gate design on arrival-time discipline. No
+     queue change.
+  6. [cost-survival ammunition] At seconds horizons the 3 bps fee
+     dominates the exercise (TWAP IS -3.10 bps against gains of
+     0.14-0.68 bps, Tables 1, 3, PDF pp. 21, 23) and cross-venue signals
+     pay a latency-attributed variance penalty (PDF pp. 22-23): if a
+     future K7-style cost-survival layer exists, it must carry fee
+     assumptions of at least a few bps and latency-derating for
+     cross-venue signals, never treating a simulated matching pass as
+     execution evidence. No queue change now; the assumption travels
+     only if that layer ever exists.
+  7. [reinforcing, no new item] Predictability decays steeply from
+     100ms to 10s (Figs. 2, 5, 7, PDF pp. 9-14) and the agent's gain
+     peaks at the 5s interval (Table 4, PDF p. 24): whatever this family
+     sees lives at sub-10s grain, sharpening C1-L2's motivation exactly
+     as the null-time programme framed it — ammunition, never evidence.
+     No queue change.
+  8. [source-quality note] arXiv v1 preprint ("arXiv Template A
+     PREPRINT" running header, stamp 19 Jun 2023); single asset, three
+     venues, collection dates never stated; the OKEx TWAP IS (-1.48 bps,
+     Table 2, PDF p. 22) inconsistent with the stated 3 bps fee and
+     unexplained; the simulator's fill logic undescribed; unstated
+     normalization windows (finding 2); the venue-predictability
+     explanation speculative; all magnitudes venue-, period- and
+     simulator-indexed, none-of-our-support; check the published
+     version before any formal citation. Read, graded, recorded.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (27 pp., body, figures, tables,
+  equations and references complete).
+- Ratification queue after this session: FORTY-FOUR candidate
+  sharpenings plus probe E1, zero armed (ONE queued this session: the
+  feature-normalization pre-declaration, above; PENDING OWNER
+  RATIFICATION). T1 remains armed awaiting the owner's word in its
+  booked state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked. Deep-read queue pointer:
+  next UNREAD "Liquidity-adjusted Return and Volatility, and
+  Autoregressive Models" (score 22, x0acf9d), second of the score-22 tier
+  (verified note-less this session) — re-read the live tail and recompute
+  the tier against the notes before consuming; the EDITION-8 cadence
+  window is now CLOSED at FIVE of five (deep-read 83 counted from the
+  edition-8 reset at ## 103): the next deep-read session MUST open with
+  the seventh synthesis pass (edition 9) per cadence rule section 3
+  point 2, before its read.
+- docs/DECISIONS_PENDING.md IS touched by this session (rule: one
+  candidate sharpening queued — the ratification line moves to
+  forty-four candidate sharpenings plus probe E1, zero armed, with the
+  new item named in the queue's parenthetical).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled changed files
+(marker and encoding checks; the changed files); the library-provenance
+audit and the full-tree sweeps run in CI over the full tree — the
+summaries are untouched this session — and must be verified green on
+both jobs before merge.
