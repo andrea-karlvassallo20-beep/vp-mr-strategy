@@ -10202,3 +10202,111 @@ pointer carried at ## 104: next UNREAD is "FinRL-X: An AI-Native
 Modular Infrastructure for Quantitative Trading" (score 23,
 xec4d8e), second of the score-23 tier; nothing measured during
 null time, no kill line moved, nothing armed, nothing trades live.
+
+## 106. Null-time session 91 (2026-11-21): library deep-read session 80 — the FinRL-X deployment-consistent infrastructure read, second of the score-23 tier; the paper graded a systems-engineering artifact self-benchmarked by its own maintainers, its two-gap deployment taxonomy and leveraged-instrument stress episode banked as cost-survival declarations only, and every performance table banned from the record under the laundering rule; NO candidate sharpening queued, all discipline ground already owned by standing constraints and queued items; no kill line moved
+
+Session-state note, per the goal-autonomy conductor protocol (edition 8,
+## 103, ACTIVE): the declared work choice is the standing deep-read, the
+protocol's default, matching the ## 104 pointer; the pointer named
+FinRL-X as next UNREAD and this session re-verified the tier order
+against the live file state (score-23 tier: xaf167e read at ## 104,
+xec4d8e read here, x6c29fa/xfcaaa2 verified note-less and extract-present
+before being named in the pointer below). This is deep-read 80, TWO of
+five since the edition-8 reset (## 103); no synthesis pass due. No
+inaccessible or blocked status this session; the extract was present,
+page-marked, complete and read in full (13 pp., body, all figures,
+tables and references included).
+
+Numbering note: this session observed the session-90 race-collision
+corrigendum (## 105, PR #278) in flight at write-back time, let it
+land before staging this entry, and numbers this entry ## 106
+accordingly so no duplicate header reaches main; the corrigendum
+merged clean with CI green on both jobs and its record is accepted
+as written (the superseded second instance of session 90 left
+unmerged, no note double-landed, gradings converged, the queue
+unchanged at forty-one plus probe E1, zero armed).
+
+- **Library deep-read session 80** (front 2, second of the score-23
+  tier; note:
+  paper/research/library/2026-11-21_finrl_x_modular_infrastructure_deep_read.md):
+  Hongyang Yang, Boyu Zhang, Yang She, Xinyu Liao (and Xiaoli Zhang per
+  the author block; AI4Finance Foundation), "FinRL-X: An AI-Native
+  Modular Infrastructure for Quantitative Trading" (arXiv:2603.21330v1
+  [q-fin.TR], stamp 22 Mar 2026; 13 pp.), score 23, index entry xec4d8e.
+  The paper: a layered, weight-centric trading architecture — data,
+  strategy, backtesting, broker-integrated execution — in which every
+  strategy component (selection, allocation, timing, risk overlay)
+  emits only a target weight vector as the sole interface contract,
+  consumed identically by backtester and broker (Algorithm 1, PDF
+  pp. 4-5); the paper formalizes two deployment gaps, backtest-to-paper
+  (instant bar-price fills, unrealistic costs, no market impact, no
+  order-book dynamics, survivorship bias, feed inconsistencies, PDF
+  p. 2) and paper-to-live (latency, partial fills, slippage, queue
+  position, API divergence, state recovery, settlement constraints,
+  PDF p. 2), evaluates its own use cases on US equities/ETFs Jan 2018 -
+  Oct 2025 at 10 bps per side with a 4.5-month Alpaca paper window, and
+  declines to treat the paper result (+19.76% total, Sharpe 1.96,
+  Table 4, PDF p. 10) as significant alpha (PDF pp. 9-10). Findings,
+  graded:
+  1. [source-quality note] A systems-engineering artifact
+     self-benchmarked by its own maintainers (Table 1 comparison,
+     Table 2-4 own use cases, PDF pp. 3, 7-10); no order-flow, L2 or
+     microstructure content beyond the gap taxonomy; equities/ETFs at
+     daily grain; against the ONE question the score-23 access value
+     proved low. Read, graded plainly, recorded; no silent skip, no
+     promotion; no queue change.
+  2. [cost-survival ammunition] The two-gap taxonomy plus the paper's
+     own stress episode (a single extreme move in one leveraged
+     instrument producing a ~12.2% peak-to-trough drawdown, PDF
+     pp. 10-11) declare the assumptions a future K7-style
+     cost-survival layer must carry: the backtest-side and live-side
+     distortion lists (PDF p. 2) and instrument-specific exposure
+     caps with volatility-aware scaling for leveraged products.
+     Declaration requirements only; nothing armed, nothing measured.
+  3. [reinforcing, no new item] The uniform timing-overlay lift (all
+     four allocators improve Sharpe and drawdown with timing, Table 2,
+     PDF p. 7) is generated inside the paper's own conceded
+     simplifications, and the paper itself cites backtest-overfitting
+     probability among the gap causes (ref [5], PDF p. 12); the
+     laundering ban binds twice over — none of Tables 2-4 may enter
+     the record as support for any programme claim.
+  4. [interpretation caution] Interface consistency is not execution
+     realism: the weight-centric claim "reduces behavioral divergence"
+     (PDF pp. 4-5) while keeping S_research ≠ S_paper ≠ S_live a
+     standing inequality narrowed only "architecturally" (PDF p. 5);
+     any future L0 dry-run or paper-trading write-up may record
+     pipeline consistency as an engineering property only, never as
+     a measurement-realism property; the primary-metric
+     pre-commitment family (#39) already carries the distinction. No
+     queue change.
+  5. [reinforcing, no new item] The paper's own hygiene claims —
+     strict no-lookahead decisions, rolling out-of-sample model
+     selection, explicit refusal to claim alpha on a short paper
+     horizon (PDF pp. 6, 9-10) — echo standing programme disciplines
+     and are independently unverifiable; nothing added beyond the
+     standing rules; the default grade stands.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (13 pp., body, figures, tables
+  and references complete).
+- Ratification queue after this session: FORTY-ONE candidate
+  sharpenings plus probe E1, zero armed (NONE queued this session).
+  T1 remains armed awaiting the owner's word in its booked state
+  (survived all five kill lines with sign inverted; T2 tested-fail);
+  the blocked list stays blocked. Deep-read queue pointer: next UNREAD
+  "Order book dynamics in liquid markets: limit theorems and diffusion
+  approximations" (score 23, x6c29fa), third of the score-23 tier (then
+  xfcaaa2 "A Million Metaorder Analysis of Market Impact on the
+  Bitcoin") — re-read the live tail and recompute the tier against the
+  notes before consuming; the EDITION-8 cadence counter now stands at
+  TWO of five (deep-read 80 counted from the edition-8 reset at ## 103).
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule: no
+  candidate sharpening queued; the ratification line stands at
+  forty-one plus probe E1, zero armed).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep, --library
+and --encoding run this session exit zero on the assembled tree (the
+changed files; marker, library-provenance and encoding checks); the
+library-provenance audit runs in CI over the full tree — the summaries
+are untouched this session — and must be verified green on both jobs
+before merge.
