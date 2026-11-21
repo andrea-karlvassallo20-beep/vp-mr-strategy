@@ -1,8 +1,8 @@
 # Pending owner decisions — the thirty-sixth dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-21, the
-noise-model pre-declaration for de-noised inputs queued as the
-forty-first candidate sharpening (null-time session 87, log ## 100);
+queue-jump-diffusion generative-null pre-declaration queued as the
+forty-second candidate sharpening (null-time session 92, log ## 107);
 audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
@@ -36,7 +36,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: forty-one
+  library deep-reads and the ratified exploratory channel: forty-two
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -58,8 +58,46 @@ each case. Items are ordered by how much they gate.
   adaptive-retraining disclosure queued 2026-11-21 by deep-read session
   75 / null-time session 86, plus the noise-model pre-declaration for
   de-noised inputs queued 2026-11-21 by deep-read session 76 /
-  null-time session 87; probe E1 stands separately and is not
-  counted among the forty-one); most recently joined 2026-11-21, the
+  null-time session 87, plus the queue-jump-diffusion generative-null
+  pre-declaration queued 2026-11-21 by deep-read session 81 /
+  null-time session 92; probe E1 stands separately and is not
+  counted among the forty-two); most recently joined 2026-11-21, the
+  queue-jump-diffusion generative-null pre-declaration (BEFORE the
+  L0 gate, any C1-L2/C8-adjacent spec that claims an anticipatory,
+  depletion-side or queue-evacuation structure must pre-declare, as
+  one of its admission nulls, a moment-matched queue-jump-diffusion
+  null — planar Brownian increments with drift (λaVa, λbVb) and a
+  covariance built from the pre-declared flow moments and
+  cross-correlation ρ, re-initialized at each queue boundary hit from
+  a declared post-move depth distribution F, the synthetic generator
+  licensed by Theorem 2 + Definition 1 of the Cont-de Larrard heavy-
+  traffic paper — with ALL null parameters (arrival rates, first and
+  second moments of order sizes, ρ, F, and the moment-existence
+  check Assumption 2 requires, since the diffusion limit fails
+  without finite second moments, PDF pp. 19-20, 23 of the extract)
+  frozen BEFORE the data, and the claimed structure shown to survive
+  that null in the subsample where its information lives — the paper
+  proves the null class is needed by measurement: in a liquid book
+  the queues are fluctuation-dominated at intraday scales (small
+  drift-to-fluctuation ratio across Dow-Jones names, Fig 11, PDF
+  p. 18; linear batch variance, Fig 13, PDF p. 20; at a 30 s grain
+  the mean net queue change is roughly an order of magnitude below
+  its standard deviation, Table 5, PDF p. 24), so an apparent
+  depletion-side "anticipation" drift could be pure diffusion
+  fluctuation with zero information and would survive any null whose
+  fluctuation scale is weaker than the measured regime; harder-to-pass
+  because a queue-mechanic claim that beats only a static-marginal or
+  weaker-variance null now fails by rule instead of surviving as a
+  find; tightens the two-null admission family (log ## 17) by joining
+  the Gould-Bonart Eq.-7 comparator, the tautology-controlled OFI
+  benchmark, the sign-persistence admission null and the
+  deterministic-calendar null with the null class specific to the
+  queue mechanic, and tightens the dynamics-identification rule for
+  generative nulls (null-time session 58) with a named flow-dynamics
+  null carrying that rule's freeze discipline; full draft with the
+  killed-if-wrong counterfactual in
+  paper/research/library/2026-11-21_order_book_dynamics_liquid_markets_deep_read.md),
+  and earlier the same day, the
   noise-model pre-declaration for de-noised inputs (BEFORE the L0 gate,
   any C1-L2/C8-adjacent computation, comparator, null or baseline that
   feeds a de-noised, reconstructed or "efficient"-price input — replacing
