@@ -10442,7 +10442,6 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 audit and the full-tree sweeps run in CI over the full tree — the
 summaries are untouched this session — and must be verified green on
 both jobs before merge.
-
 ## 108. Null-time session 93 (2026-11-21): library deep-read session 82 — the Donier-Bonart million-metaorder Bitcoin impact read, closing the score-23 tier; the paper graded a complete-trader-ID impact artifact whose universal square-root law on a no-arbitrage, no-market-making venue reinforces the laundering ban, whose speed-dependence reversal is recorded as an interpretation caution for duration-conditioned statistics, and whose total-flow/impermanent-decomposition mechanism is banked as the evidence for ONE candidate sharpening (the residual-flow attribution null); every MtGox magnitude banned from the record; NO kill line moved; the ratification queue moves to forty-three candidate sharpenings plus probe E1
 
 Session-state note, per the goal-autonomy conductor protocol (edition 8,
@@ -10570,6 +10569,65 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled changed files
 (marker and encoding checks; the changed files); the library-provenance
+audit and the full-tree sweeps run in CI over the full tree — the
+summaries are untouched this session — and must be verified green on
+both jobs before merge.
+
+## 109. Null-time session-93 race corrigendum (2026-11-21): a second session-93 instance executed deep-read 82 in parallel, staged the same Donier-Bonart read on its own note and PR #282, and discovered the supersession by the landed ## 108 only at merge time; the duplicate product is discarded UNMERGED with nothing landed through it, and the queue state stands exactly as landed at ## 108 — FORTY-THREE candidate sharpenings plus probe E1, zero armed; no kill line moved
+
+Session-state note, per the goal-autonomy conductor protocol (edition 8,
+## 103, ACTIVE): this entry records a landing-path collision, not new
+research. The standing directive scheduled the deep-read of "A million
+metaorder analysis of market impact on the Bitcoin" (xfcaaa2, score 23);
+two session-93 instances executed it in parallel against the same ## 107
+pointer. The first instance landed its full product (deep-read 82,
+log ## 108, main commit fd76ee0, note
+paper/research/library/2026-11-21_million_metaorder_market_impact_deep_read.md,
+ONE candidate sharpening queued: the residual-flow attribution null).
+The second instance read the same extract independently, staged its
+own note (2026-11-21_million_metaorder_bitcoin_deep_read.md) on branch
+deep-read/session-82-xfcaaa2, pushed it, opened PR #282, ran the guard
+clean, saw CI green on both jobs (engine, test), and only at merge time
+received the merge-conflict signal that main had advanced; it then
+verified main tip fd76ee0, closed PR #282 UNMERGED, and discarded its
+duplicate product under the main-wins protocol — nothing from it landed
+on main and its note remains off-record.
+
+Consistency check between the two independent reads of the same paper:
+both graded NO kill line moved; both recorded the square-root law as
+venue-indexed ammunition under the laundering ban, trajectory-flatness
+and sigma/sqrt(V) normalization dependence as interpretation cautions
+under already-queued estimator discipline, and the MtGox 2011-2013
+regime limits as a source-quality note. They differ on one point: the
+discarded instance queued nothing new, the landed instance queued the
+residual-flow attribution null as the FORTY-THIRD candidate. The landed
+record stands; the discarded instance's strengthening of the same
+discipline family is recorded here as corroboration from an
+independent read, nothing more.
+
+Landing-path-integrity items registered under the gap family named at
+edition 8 (## 103) and previously at the session-90 corrigendum
+(## 105): branch deep-read/session-82-xfcaaa2 (this race) and branch
+deep-read/session-79-xaf167e (the session-90 race) remain on the
+remote with nothing landed through either; both are owner-deletable,
+and no tool in the current landing path can delete a branch — the gap
+and its two instances now stand named in the record. Root cause
+recorded plainly: two scheduled instances consumed the same queue
+pointer within the same window without a pre-push main-tip re-check on
+the second instance's merge attempt; the discipline for successor
+sessions is unchanged from ## 105 — re-verify the main tip immediately
+before pushing AND immediately before merging, and treat any
+main-advance between those two checks as automatic supersession with
+the product discarded.
+
+docs/DECISIONS_PENDING.md IS NOT touched by this corrigendum (rule: no
+candidate sharpening queued; the ratification file stands as landed at
+## 108 — forty-three candidate sharpenings plus probe E1, zero armed).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled changed file
+(marker and encoding checks; the changed file); the library-provenance
 audit and the full-tree sweeps run in CI over the full tree — the
 summaries are untouched this session — and must be verified green on
 both jobs before merge.
