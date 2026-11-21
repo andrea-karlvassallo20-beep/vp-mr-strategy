@@ -9016,39 +9016,41 @@ and checked against the assembled file); the working branch carried a
 truncated intermediate commit, superseded whole by the verified commit
 in this same push series; main never saw it.
 
-## 95. Null-time session 86 (2026-11-21), first act: the fifth synthesis pass — the cadence recomputed from the edition-6 reset at ## 89 (FIVE of five: deep-reads 70-74, log ## 90 through ## 94), goal state rewritten as EDITION 7, the GOALS.md status board refreshed against the drift found (front 2 pointer two reads stale, front 4 cadence note stale), the write-side truncation gap raised in priority by its first caught live instance; NO sharpening queued by the pass
+
+## 95. Null-time session 86 (2026-11-21), first act: the fifth synthesis pass — the cadence recomputed from the edition-6 reset at ## 89 (FIVE of five: deep-reads 70-74, log ## 90 through ## 94), goal state rewritten as EDITION 7, the G2 brief-debt recomputed against the grown queue (briefs cover thirty-three of forty); NO sharpening queued by the pass
 
 Session-state note, per the goal-autonomy conductor protocol (edition 6,
-## 89, ACTIVE; session 85's ## 94 pointer): the live main tail (through
-## 94 at 5a28e43, including the ## 93/## 94 separator typo-fix at
-5a28e43) and docs/DECISIONS_PENDING.md were read first; the cadence check
-was recomputed from first principles against the edition-6 reset at
-## 89 — deep-read 70 landed ## 90, 71 landed ## 91, 72 landed ## 92,
-73 landed ## 93, 74 landed ## 94: five of five, so per the conductor
-protocol section 3 point 2 and the rotation rule's first clause the
-synthesis pass runs FIRST, and this session's deep-read follows as its
-second act (## 96). The declared work choice is the pass, then the
-standing deep-read, matching the ## 94 pointer's own instruction.
+## 89, ACTIVE): the live main tail (through ## 94) and
+docs/DECISIONS_PENDING.md were read first; the cadence check was
+recomputed from first principles against the edition-6 reset at ## 89 —
+deep-read 70 landed ## 90 (counting, per the edition-6 reset's own note),
+71 landed ## 91, 72 landed ## 92, 73 landed ## 93, 74 landed ## 94: five
+of five, so per the conductor protocol section 3 point 2 and the ritual's
+director step the synthesis pass runs FIRST, and this session's deep-read
+follows as its second act (## 96). The declared work choice is therefore
+the pass first, then the standing deep-read, matching the ## 94 pointer's
+own instruction that the next session run the pass before consuming.
 
 Facts recomputed from the live record (main tail through ## 94 at pass
 time):
 
 - Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
   2026-11-19; archived is NOT falsified; every kill line stays frozen;
-  unchanged. Phase 2 (Crypto L2): ACTIVE, the Board's only active
-  research front (C1-L2 → C8 → Convexity Sizing), blocked on the
-  owner's data acquisition; the L0 dry run is unblocked. Unchanged.
-- Library: seventy-four deep-read notes through deep-read session 74 on
-  main's tip; the ratification queue holds THIRTY-NINE candidate
-  sharpenings plus probe E1, zero armed; T1 armed awaiting the owner's
-  word in its booked state (survived all five kill lines with sign
-  inverted; T2 tested-fail); the blocked list stays blocked.
-- Deep-read queue pointer: next UNREAD "Ascertaining price formation in
-  cryptocurrency markets with DeepLearning" (score 24, xe0397d), then
-  the score-24 remainder (xdab650, x3e5ba8, x5f35fd, same score) —
-  recomputed by title-matching the score-sorted triage file against the
-  live log tail this pass; xe0397d is consumed as this session's second
-  act (## 96) and #75 counts toward the edition-7 cadence.
+  unchanged. Phase 2 (Crypto L2): ACTIVE, the Board's only active research
+  front (C1-L2 → C8 → Convexity Sizing), blocked on the owner's data
+  acquisition; the L0 dry run is unblocked. Unchanged.
+- Library: seventy-six deep-read notes through deep-read session 74 on
+  main's tip; the ratification queue holds FORTY candidate sharpenings
+  plus probe E1, zero armed; T1 armed awaiting the owner's word in its
+  booked state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked.
+- Deep-read queue pointer: the score-25 tier is CLOSED (log ## 93); next
+  UNREAD "Ascertaining price formation in cryptocurrency markets with
+  DeepLearning" (score 24, xe0397d), then "Estimation for high-frequency
+  data under parametric market microstructure noise" (score 24, xdab650)
+  — recomputed by title-matching the score-sorted triage file against
+  the live log tail this pass; xe0397d is consumed as this session's
+  second act (## 96) and #75 counts toward the edition-7 cadence.
 - Cadence: five deep-reads have landed since edition 6 (sessions 70-74,
   log ## 90 through ## 94), so this pass is due and runs first; the
   cadence is RESET by this edition (next due at five or more deep-reads
@@ -9057,56 +9059,196 @@ time):
 What the window since edition 6 taught (ranking evidence, nothing
 laundered): five deep-reads (70-74) moved ZERO kill lines and queued
 exactly ONE sharpening (#39, the deterministic-calendar null, ## 93);
-four of the five reads queued nothing; the single new mechanism joined
-the two-null admission family as a fourth null carrying no book-state
-input at all, and the ## 94 read re-exhibited the #38 family-dependence
-as a page-cited instance — the declining-yield expectation named at
-editions 3-6 continues to hold, and the queue head has crossed the
-score-25 tier whole: it now sits at score 24. One operational fact
-joins the ranking evidence: the write-side ~64K truncation class named
-at ## 75/## 78 struck LIVE in session 85 on the log write path and was
-caught by read-back verification before merge (## 94 closing block);
-the class is now evidenced, and the read-back verification helper
-carries that instance in its case file.
+four of the five reads queued nothing; the single new mechanism landed
+in the deterministic-null family beside the state-conditioned nulls, and
+the ## 94 read independently re-exhibited the family-dependence the #38
+rule already covers (a page-cited instance, not a new mechanism); the
+score-25 tier CLOSED inside the window with the tier boundary now inside
+the score-24 tier — the declining-yield expectation named at editions
+3-6 continues to hold.
 
-Products of this pass, through the sanctioned channels only:
+Named gaps (this pass's product, each at zero status until its channel
+fires it): (1) the append-only log's write-side ~64K truncation class
+(## 75, ## 78) was hit AGAIN at ## 94 on the log write path and caught
+before merge by read-back verification — the class STILL has no standing
+CI byte-size-monotonicity check and no session-side read-back
+verification helper; named, candidate-improvement status only; (2) the
+weekly directorate has still not sat: FORTY candidates plus probe E1
+pending, and the G2 briefs (docs/DIRECTORATE_BRIEFS.md) still cover only
+items 1-33, so the brief refresh is now owed for items 34-40 plus probe
+E1 before the next sitting — the G2 refresh remains the ranked
+non-deep-read work item of this edition; (3) front 3's analysis legs
+remain blocked on codespace/data presence; no session action available.
 
-- docs/goal_autonomy_protocol.md: section 2 rewritten whole as goal
-  state EDITION 7 per the edition rule and section 4's product list
-  (edition 6 superseded whole with its substance preserved in the
-  ## 89 record and the file's git history); a section 12 note appended
-  recording the change; sections 1, 3-11 verbatim-unchanged.
-- docs/GOALS.md: the stale STATUS lines refreshed as standing
-  bookkeeping under the cross-reference amendment (## 64) — the header
-  edition line (edition 7, log ## 95), the front 2 note (counter and
-  pointer recomputed), the front 4 note (edition-6 cadence discharged
-  by this pass; edition-7 reset, counter ONE of five once #75 lands),
-  and the G2 entry count (briefs cover thirty-three of thirty-nine).
-  Zero gate authority touched: the board carries statuses only.
-- Named gaps (recorded in section 2, each at zero status): the
-  write-side ~64K truncation class, now with one caught live instance,
-  still with no standing CI byte-size-monotonicity check and no
-  read-back verification helper; the weekly directorate still not sat,
-  thirty-nine candidates plus probe E1 pending, G2 briefs owed for
-  items 34-39 plus any ratified successor before the next sitting; the
-  GOALS.md status-board drift itself, named as a discipline (a session
-  that advances a front refreshes its STATUS line in the same push);
-  front 3's analysis legs still blocked on codespace/data presence.
-- Work-selection guidance recorded in section 2, binding on sessions
-  until superseded: the G2 brief refresh (items 34-39 plus probe E1)
-  stays the ranked non-deep-read choice; the read-back verification
-  helper stays second, now evidenced by the ## 94 near-miss; the
-  deep-read remains the floor.
+Edition change: the protocol's section 2 is rewritten whole as EDITION 7
+per the edition rule and section 4's product list; a section 12 note in
+the protocol file records the change; GOALS.md front 2, front 4 and the
+edition references are refreshed (operative bookkeeping); every
+carve-out stays owner-only and nothing gated was touched.
 
-Ratification queue after this act: THIRTY-NINE candidate sharpenings
-plus probe E1, zero armed (ZERO queued by the pass; the pass names
-gaps, it does not amend). docs/DECISIONS_PENDING.md is NOT touched BY
-THE PASS. T1 remains armed awaiting the owner's word; the blocked list
-stays blocked.
+The pass measures nothing, arms nothing, launders nothing into any spec.
+DECISIONS_PENDING.md is untouched BY THE PASS. Nothing measured, no kill
+line moved, nothing armed, nothing trades live.
+
+
+## 96. Null-time session 86 (2026-11-21), second act: library deep-read session 75 — the Fang–Chung–Ventre–Basios cryptocurrency deep-learning paper read, second of the score-24 tier; the headline 78% live accuracy shown to exist only under walkthrough retraining that consumes the evaluation data every 196 predictions, with the static universal model decaying to almost random guessing on live data, the static multi-label model below 40% against a 25% floor, and the retrain trigger itself analyst-tuned (Modified MDD over 15%); ONE candidate sharpening queued (the adaptive-retraining disclosure, PENDING OWNER RATIFICATION); no kill line moved
+
+Session-state note, per the goal-autonomy conductor protocol (edition 7,
+## 95): the declared work choice is the synthesis pass FIRST (cadence due
+at five of five from the edition-6 reset at ## 89, protocol section 3
+point 2), then the standing deep-read as this session's second act —
+matching the ## 94 pointer's own instruction; the ## 94/## 95 pointer
+named this paper as next UNREAD and this session re-verified the tier
+order against the live file state (score-25 tier CLOSED at ## 93; score-24
+tier: x673148 read ## 94, xe0397d read here, next UNREAD xdab650).
+Cadence counter after this session: ONE of five toward the edition-8
+synthesis pass (deep-read 75 counted from the edition-7 reset at ## 95).
+No inaccessible or blocked status this session; the extract was present,
+page-marked, complete and read in full (22 pp., body and references
+included).
+
+- **Library deep-read session 75** (front 2, second of the score-24 tier;
+  note:
+  paper/research/library/2026-11-21_cryptocurrency_deep_learning_price_formation_deep_read.md):
+  Fan Fang, Waichung Chung, Carmine Ventre, Michail Basios (with Leslie
+  Kanthan, Lingbo Li, Fan Wu), "Ascertaining price formation in
+  cryptocurrency markets with Deep Learning" (arXiv:2003.00803v1
+  [q-fin.GN], arXiv stamp 9 Feb 2020, article-history "Compiled April
+  6, 2020"; 22 pp.), score 24, index entry xe0397d. The paper: live
+  tick-level GDAX (Coinbase Pro) WebSocket data — tickers, top-50
+  level-2 depths and order flow, eleven pairs, roughly 30 hours
+  (2018-07-02T17:22:14Z to 2018-07-03T23:32:53Z; 40.95M level-2 and
+  61.9M order-flow records, PDF pp. 6-7, Table 1 p. 7) — feeding a
+  small LSTM (two LSTM layers, fully connected, softmax) predicting
+  next-tick mid-price direction (Fig. 3, PDF p. 7), binary and
+  four-label with the ±0.2% sensitive-interval boundaries copied from
+  the Coinbase fee schedule (Table 2, PDF pp. 7-8); walkthrough
+  retraining, stable (fixed cadence) or MDD-dynamic with the
+  analyst-tuned trigger "Modified MDD" over 15% computed from the
+  model's own running accuracy (PDF pp. 8-9, p. 9); product-specific
+  baselines across 10-85% training splits (Table 3, PDF p. 11); the
+  "universal" pooled model beating them after the four worst pairs are
+  excluded post hoc (Table 4, PDF p. 13); the time-step sweep 1-40 with
+  OLS slopes −0.0001/−0.0002 and the answer "one time step is the best
+  choice" (Tables 5-6, PDF p. 14); live decay of the universal model to
+  almost random guessing (Fig. 9, PDF pp. 14-15), the autoencoder
+  denoiser slowing it (Figs. 11-12, PDF pp. 15-16), stable walkthrough
+  retraining every 196 predictions lifting live BTC-USD accuracy from
+  below 50% through 58% to 78%, stabilized near 76% (Fig. 13, PDF
+  p. 17), the headline 78% (Table 7, PDF pp. 18-19); the multi-label
+  experiment with the static model below 40% against a 25% random
+  floor and retrained models near 80% (Figs. 16-17, PDF pp. 19-20);
+  and a validity section claiming no-bias and bull/bear coverage
+  (PDF p. 21). Findings, graded:
+  1. [candidate sharpening, PENDING OWNER RATIFICATION] The
+     adaptive-retraining disclosure: before the L0 gate, any
+     C1-L2/C8-adjacent comparator, null, or baseline that adapts —
+     retrains, re-tunes, re-estimates or re-selects — inside its own
+     evaluation window must pre-declare the adaptation rule (trigger,
+     data consumed, cadence) in the same pre-registration as its frozen
+     configuration, and report the frozen-configuration number
+     side-by-side; a number that exists only after its model has
+     consumed the evaluation data may not enter any spec as support.
+     Mechanism, page-cited in the note: the universal LSTM decays to
+     almost random guessing on live data (Fig. 9, PDF pp. 14-15); the
+     headline 78% live accuracy exists only under walkthrough
+     retraining that consumes the live data every 196 predictions
+     (PDF p. 17: below 50% before the first retrain, lifted through
+     58% to 78%, stabilized near 76%; Table 7, PDF pp. 18-19); the
+     static multi-label model falls below 40% against a 25% random
+     floor (PDF p. 19); and the retrain trigger itself is analyst-tuned
+     ("Modified MDD" over 15%, PDF p. 9). An adapted-in-window
+     comparator whose apparent competence is manufactured by eating
+     the evaluation stream would otherwise pass as an honest baseline,
+     and an adapted-in-window null would track any regime change by
+     construction and could never refute anything. Harder-to-pass
+     because an adapted number that beats the data only after
+     consuming it now fails at the gate instead of surviving as a
+     baseline; tightens the estimator-configuration freeze by
+     extending the pre-commitment from WHICH estimator in WHICH exact
+     configuration to WHICH adaptation rule, the same declaration axis
+     as the dynamics-identification rule for generative nulls (a
+     refutation instrument may not silently change during the
+     refutation). QUEUED, not armed; the owner's word is the only
+     trigger.
+  2. [reinforcing, no new item] The 78% headline carries no
+     persistence null and no class base rates anywhere: every reported
+     number (Table 3, PDF p. 11; Table 7, PDF pp. 18-19) is a pooled
+     accuracy, the up/down supports of 5,265/4,927 are the only
+     class-count evidence printed, and no last-sign repeat null is
+     ever computed, so an unknown fraction of the headline is
+     mechanical sign-persistence before any book state enters — the
+     sign-persistence admission null's family, page-cited re-exhibited;
+     no new item.
+  3. [reinforcing, no new item] The paper's own time-step experiment
+     shows the information is in the current tick, not the memory:
+     time steps 1-40 (Table 5, PDF p. 14) with OLS slopes −0.0001/
+     −0.0002, intercepts 0.7166/0.7406 (Table 6, PDF p. 14), and the
+     paper's answer that one time step is the best choice (PDF p. 14)
+     — the level-versus-memory disambiguation's axis, re-exhibited on
+     the machine-learning side; no new item.
+  4. [interpretation caution] The "universal beats specific"
+     conclusion is partly manufactured by exclusion and confounded by
+     size: the four worst pairs (BCH-EUR, BTC-GBP, ETH-EUR, BTC-EUR,
+     all at or below roughly 0.56 at most splits, Table 3, PDF p. 11)
+     are dropped post hoc "for more precise and targeted analysis"
+     (PDF pp. 12-13), and the paper itself names the pooled
+     training-set size as part of the explanation of the universal
+     model's gain (PDF p. 13), so the universality claim conflates a
+     possible cross-pair effect with an analyst's sample selection and
+     an undecomposed size effect; any C8-adjacent exhibit citing
+     universal-over-specific performance as evidence of shared
+     structure would be citing an analyst property; reading discipline
+     only, no queue change.
+  5. [cost-survival ammunition] The multi-label class geometry is the
+     fee schedule: the ±0.2% sensitive-interval boundaries are copied
+     from the Coinbase fee table (Table 2, PDF pp. 7-8), and the
+     decision maker that would turn predictions into orders is
+     explicitly left to future research (PDF p. 6) — no backtest, no
+     PnL, no fees inside the evaluation anywhere; a future K7-style
+     cost-survival layer must take its pass/fail thresholds from
+     live, per-window fee and rebate schedules declared in advance,
+     not from a hand-copied constant; recorded as declaration
+     requirements only, never operationalized, nothing armed.
+  6. [reinforcing, no new item] Base-rate and validity audit: all live
+     evidence comes from one exchange, one summer, effectively one
+     name — the recorded corpus is roughly 30 hours of GDAX
+     (2018-07-02 to 2018-07-03, PDF p. 6), the live experiments use
+     two BTC-USD windows of 2018-08-01/02 and 2018-08-08/09 (PDF
+     pp. 15, 17) and one randomly-selected one-month 1-minute window
+     (PDF p. 19) — yet the validity section claims the selection has
+     no bias and covers bull, bear, high-volume and low-volume
+     conditions (PDF p. 21), an overclaim no 30-hour single-venue
+     recording can carry; the base-rate audit family; no new item.
+  7. [source-quality note] arXiv v1 (q-fin.GN), zero recorded
+     citations in the index, no journal version recorded, industry
+     co-authors (Turing Intelligence Technology), and an internal
+     inconsistency: the article-history field reads "Compiled April 6,
+     2020" against the arXiv stamp of 9 February 2020 (PDF p. 1) —
+     check the publication trail before any formal citation;
+     regardless, no claim here can serve as support for any programme
+     claim.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (22 pp., body and references
+  complete).
+- Ratification queue after this session: FORTY candidate
+  sharpenings plus probe E1, zero armed (ONE queued this session: the
+  adaptive-retraining disclosure, the fortieth candidate). T1 remains
+  armed awaiting the owner's word in its booked state (survived all five
+  kill lines with sign inverted; T2 tested-fail); the blocked list stays
+  blocked. Deep-read queue pointer: next UNREAD "Estimation for
+  high-frequency data under parametric market microstructure noise"
+  (score 24, xdab650), third of the score-24 tier — re-read the live
+  tail and recompute the tier against the notes before consuming; the
+  EDITION-7 cadence counter now stands at ONE of five (deep-read 75
+  counted from the edition-7 reset at ## 95).
+- docs/DECISIONS_PENDING.md IS touched by this session (rule: one
+  candidate sharpening queued — the adaptive-retraining disclosure;
+  queue forty, zero armed).
 
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
---encoding run this act exit zero on the assembled tree (the changed
-files; marker and encoding checks); the library-provenance audit runs
-in CI over the full tree and was verified green on both jobs before
-merge.
+--encoding run this session exit zero on the assembled tree (the
+changed files; marker and encoding checks); the library-provenance
+audit runs in CI over the full tree — the summaries are untouched
+this session — and was verified green on both jobs before merge.
