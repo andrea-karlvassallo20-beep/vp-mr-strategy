@@ -8904,6 +8904,7 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 changed files; marker and encoding checks); the library-provenance
 audit runs in CI over the full tree — the summaries are untouched
 this session — and was verified green on both jobs before merge.
+
 ## 94. Null-time session 85 (2026-11-21), library deep-read session 74 — the Souto Arias–Cirillo–Oosterlee Heston-Queue-Hawkes option-pricing paper read, first of the score-24 tier; the Q-Hawkes versus Hawkes first-moment equivalence recorded as a page-cited instance of the price-process-family invariance rule (log ## 85) — an intensity fit calibrated on first moments cannot identify the memory mechanism, only higher-order moments can, so the fitted "degree of self-excitation" would carry the mechanism assumption and not the data; the smile-flexibility result (wider than Bates, driven mainly by mean jump size, martingale-absorbed by construction) recorded as pricing-measure geometry, never predictive content; NO kill line moved, NO sharpening queued
 
 Session-state note, per the goal-autonomy conductor protocol (edition 6,
