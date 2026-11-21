@@ -1,9 +1,8 @@
 # Pending owner decisions — the thirty-sixth dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-21, the
-queue-jump-diffusion generative-null pre-declaration queued as the
-forty-second candidate sharpening (null-time session 92, log ## 107);
-audited against
+residual-flow attribution null queued as the forty-third candidate
+sharpening (null-time session 93, log ## 108); audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
 Every item below is BLOCKED ON YOUR WORD — nothing runs, arms, or merges
@@ -36,7 +35,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: forty-two
+  library deep-reads and the ratified exploratory channel: forty-three
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -60,8 +59,45 @@ each case. Items are ordered by how much they gate.
   de-noised inputs queued 2026-11-21 by deep-read session 76 /
   null-time session 87, plus the queue-jump-diffusion generative-null
   pre-declaration queued 2026-11-21 by deep-read session 81 /
-  null-time session 92; probe E1 stands separately and is not
-  counted among the forty-two); most recently joined 2026-11-21, the
+  null-time session 92, plus the residual-flow attribution null
+  queued 2026-11-21 by deep-read session 82 / null-time session
+  93; probe E1 stands separately and is not
+  counted among the forty-three); most recently joined 2026-11-21, the
+  residual-flow attribution null (BEFORE the L0 gate, any
+  C1-L2/C8-adjacent spec attributing a price, spread or
+  depletion-side association to an identified flow episode — a
+  compression cluster, an OFI burst, a metaorder-like run — must
+  pre-declare an attribution null in which the aggregate signed
+  order-flow imbalance over the same window is conditioned out: the
+  claimed episode-level association must survive in the subsample
+  where the residual (episode-minus-aggregate) flow is statistically
+  neutral, per the isolated-metaorder construction of the
+  Donier-Bonart million-metaorder paper (the episode accounting for
+  more than 75% of net market imbalance over [t0, t0+10T], selection
+  ≈3%, PDF p. 15), with the conditioning window, the neutrality
+  threshold and the imbalance measure frozen BEFORE the data — the
+  paper measures why the null class is needed: during metaorder
+  execution impact is almost perfectly the square root of the TOTAL
+  market imbalance rather than the individual metaorder's volume
+  (Fig 11, PDF pp. 13-14), the market does not detect individual
+  metaorders and their "impacts are in fact dependent and do not add
+  up linearly" (PDF p. 16), and the permanent impact of correlated
+  "informed" metaorders is fully explained by their correlation with
+  the residual order flow while isolated metaorders show a mechanical
+  permanent impact consistent with decay to zero (Fig 12, PDF p. 15)
+  — so an episode-attributed "anticipation" association could be pure
+  common correlation with the aggregate flow and would survive any
+  null that does not condition it out; harder-to-pass because a
+  flow-attribution claim that beats only an unconditional or
+  episode-internal null now fails by rule instead of surviving as a
+  find; tightens the dynamics-identification rule for generative
+  nulls (null-time session 58) with the attribution-conditioning null
+  class, and complements the queue-jump-diffusion generative null
+  (deep-read 81) which controls the flow dynamics but not the
+  attribution to a specific episode; full draft with the
+  killed-if-wrong counterfactual in the session note
+  (paper/research/library/2026-11-21_million_metaorder_market_impact_deep_read.md)),
+  and earlier the same day, the
   queue-jump-diffusion generative-null pre-declaration (BEFORE the
   L0 gate, any C1-L2/C8-adjacent spec that claims an anticipatory,
   depletion-side or queue-evacuation structure must pre-declare, as

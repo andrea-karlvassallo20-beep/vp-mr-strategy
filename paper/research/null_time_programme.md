@@ -10442,3 +10442,134 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 audit and the full-tree sweeps run in CI over the full tree — the
 summaries are untouched this session — and must be verified green on
 both jobs before merge.
+
+## 108. Null-time session 93 (2026-11-21): library deep-read session 82 — the Donier-Bonart million-metaorder Bitcoin impact read, closing the score-23 tier; the paper graded a complete-trader-ID impact artifact whose universal square-root law on a no-arbitrage, no-market-making venue reinforces the laundering ban, whose speed-dependence reversal is recorded as an interpretation caution for duration-conditioned statistics, and whose total-flow/impermanent-decomposition mechanism is banked as the evidence for ONE candidate sharpening (the residual-flow attribution null); every MtGox magnitude banned from the record; NO kill line moved; the ratification queue moves to forty-three candidate sharpenings plus probe E1
+
+Session-state note, per the goal-autonomy conductor protocol (edition 8,
+## 103, ACTIVE): the declared work choice is the standing deep-read, the
+protocol's default, matching the ## 107 pointer; the pointer named "A
+Million Metaorder Analysis of Market Impact on the Bitcoin" as next
+UNREAD and this session re-verified that against the live file state
+(83 library notes, none for this slug; extract present, page-marked)
+before reading. This is deep-read 82, FOUR of five since the edition-8
+reset (## 103); no synthesis pass due. No inaccessible or blocked status
+this session; the extract was present, page-marked, complete and read in
+full (18 pp., body, all figures, tables, footnotes and references
+included).
+
+- **Library deep-read session 82** (front 2, last of the score-23
+  tier; note:
+  paper/research/library/2026-11-21_million_metaorder_market_impact_deep_read.md):
+  Jonathan Donier, Julius Bonart, "A million metaorder analysis of
+  market impact on the Bitcoin" (arXiv:1412.4503v3 [q-fin.TR], stamp
+  21 Sep 2015; 18 pp.), score 23, index entry xfcaaa2. The paper: all
+  13M MtGox BTC/USD trades Aug 2011-Nov 2013 with unique anonymized
+  trader IDs (PDF p. 4), segmented into >1M metaorders by ~1-hour
+  inactivity periods and direction reversals (PDF pp. 5-7), linear
+  average execution and no metaorder synchronization verified (Figs.
+  3-4, PDF pp. 6-8), the square-root impact law confirmed over four
+  decades, trajectory-wise, at the smallest scales, on a venue where
+  statistical arbitrage below the 60 bps fee scale is impossible and
+  no martingale or fair-pricing argument can be invoked (Figs. 5-6,
+  PDF pp. 1-2, 8-10, 16-17), a roughly time-independent Y-ratio with
+  Y0 = 0.9 and ΣY = 0.35 after σ_D/√V_D normalization (Figs. 7-8,
+  PDF pp. 10-11), impact during execution tracking the square root of
+  the TOTAL market imbalance rather than the individual metaorder
+  (Fig. 11, PDF pp. 13-14), measured impact at most one to two spreads
+  with friction costs dominating (Fig. 9, PDF p. 12), and an
+  informed/uninformed decomposition showing the permanent impact of
+  correlated metaorders is fully explained by their correlation with
+  the residual order flow, while isolated metaorders (>75% of net
+  imbalance over [t0, t0+10T], ~3% of the sample) show a mechanical
+  permanent impact consistent with decay to zero (Fig. 12, PDF p. 15).
+  Findings, graded:
+  1. [reinforcing, no new item] The square-root law holds with no
+     arbitrage, no market making and no martingale price (PDF pp.
+     1-2, 16-17): impact-shaped associations can never by themselves
+     evidence an anticipation mechanism; the law is a property of
+     supply-and-demand absorption, not information. Reinforces the
+     no-edge default and the laundering ban; no programme claim may
+     cite any magnitude in this paper as support. No queue change.
+  2. [interpretation caution] Measured impact INCREASES as execution
+     slows (δ′ ≈ 0.4 on µ_V) and only decreases in the isolated
+     subsample (PDF pp. 13-15): a "slower build-up, larger subsequent
+     move" pattern in any duration-participation-conditioned C1-L2/C8
+     statistic can be pure co-movement correlation with aggregate
+     flow, not a mechanism. No queue change.
+  3. [candidate sharpening, PENDING OWNER RATIFICATION] The
+     residual-flow attribution null queued as the FORTY-THIRD
+     candidate: BEFORE the L0 gate, any C1-L2/C8-adjacent spec
+     attributing a price, spread or depletion-side association to an
+     identified flow episode (compression cluster, OFI burst,
+     metaorder-like run) must pre-declare an attribution null in
+     which the aggregate signed order-flow imbalance over the same
+     window is conditioned out: the claimed episode-level association
+     must survive in the subsample where the residual
+     (episode-minus-aggregate) flow is statistically neutral, per
+     the paper's isolated-metaorder construction (episode >75% of
+     net market imbalance over [t0, t0+10T], ~3% selection, PDF
+     p. 15), with the conditioning window, neutrality threshold and
+     imbalance measure frozen BEFORE the data. Earned by measured
+     mechanism: during execution impact is almost perfectly the
+     square root of the TOTAL market imbalance, not the metaorder's
+     volume (Fig. 11, PDF pp. 13-14); the market does not detect
+     individual metaorders and their impacts "are in fact dependent
+     and do not add up linearly" (PDF p. 16); the permanent impact of
+     correlated ("informed") metaorders is fully explained by residual
+     flow correlation while isolated ones decay to zero mechanically
+     (Fig. 12, PDF p. 15) — so an episode-attributed anticipation
+     association could be pure common correlation and survive any
+     null that does not condition it out. Harder-to-pass because a
+     flow-attribution claim beating only an unconditional or
+     episode-internal null now fails by rule; tightens the
+     dynamics-identification rule for generative nulls (null-time
+     session 58) with the attribution-conditioning null class, and
+     complements the queue-jump-diffusion generative null (deep-read
+     81), which controls dynamics but not attribution. Full draft
+     with the killed-if-wrong counterfactual in the session note
+     (paper/research/library/2026-11-21_million_metaorder_market_impact_deep_read.md).
+  4. [cost-survival ammunition] Impact does not exceed one to two
+     spreads and friction dominates impact costs (Fig. 9, PDF p. 12):
+     only relevant if a future K7-style cost-survival layer exists;
+     that layer must carry fee-and-spread assumptions at least as
+     large as the impact it nets out. No queue change.
+  5. [reinforcing, no new item] Metaorder size/duration/participation
+     distributions are not power laws yet the square-root law holds
+     (Fig. 3, PDF pp. 6-7): assumption-indexed premises
+     (heavy-tail, power-law) can be wrong without marking the
+     headline law; reinforces the freeze-measurements-not-premises
+     discipline. No queue change.
+  6. [source-quality note] Single dead venue, single asset, crisis
+     era, 0.6% fee regime, anonymous-source data with no accuracy
+     insurance (PDF p. 4n4), segmentation dependent on the ~1-hour
+     inactivity classifier, trader-ID completeness unavailable on any
+     modern venue (PDF pp. 3-7): all magnitudes (δ, Y0, ΣY, Figs.
+     5-12) venue- and era-indexed, none-of-our-support; laundering
+     ban binds; arXiv v3, check the published version before formal
+     citation. Read, graded, recorded.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (18 pp., body, figures, tables,
+  footnotes and references complete).
+- Ratification queue after this session: FORTY-THREE candidate
+  sharpenings plus probe E1, zero armed (ONE queued this session: the
+  residual-flow attribution null, above; PENDING OWNER RATIFICATION). T1
+  remains armed awaiting the owner's word in its booked state (survived
+  all five kill lines with sign inverted; T2 tested-fail); the blocked
+  list stays blocked. Deep-read queue pointer: next UNREAD "Optimal
+  Execution Using Reinforcement Learning" (score 22, x0fc07a), opening
+  the score-22 tier (verified note-less this session) — re-read the live
+  tail and recompute the tier against the notes before consuming; the
+  EDITION-8 cadence counter now stands at FOUR of five (deep-read 82
+  counted from the edition-8 reset at ## 103).
+- docs/DECISIONS_PENDING.md IS touched by this session (rule: one
+  candidate sharpening queued — the ratification line moves to
+  forty-three candidate sharpenings plus probe E1, zero armed, with
+  the new item named in the queue's parenthetical).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled changed files
+(marker and encoding checks; the changed files); the library-provenance
+audit and the full-tree sweeps run in CI over the full tree — the
+summaries are untouched this session — and must be verified green on
+both jobs before merge.
