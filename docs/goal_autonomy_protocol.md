@@ -110,7 +110,7 @@ product, each at zero status until its channel fires it):
   understate the queue by one; a matching operative-bookkeeping refresh
   is owed (count reconciliation to forty-one plus probe E1); GOALS.md
   carries zero authority and the refresh is bookkeeping, not a gate.
-- Front 3's analysis legs remain blocked on codespace/data presence.
+- Front 3's_analysis legs remain blocked on codespace/data presence.
   No session action available.
 
 The ranked open fronts (edition 8): order unchanged from editions 3
@@ -285,8 +285,8 @@ Sections 1, 3-8 above stand verbatim.
 
 The third synthesis pass ran as null-time session 76 (cadence rule point
 2, front 4 at five of five: deep-reads 60-64 since the edition-4 reset at
-## 76). Two acts are recorded here. (1) The edition-4 re-anding debt
-GOALS.md front 4, ## 78): the EDITION 4 section-2 rewrite claimed at
+## 76). Two acts are recorded here. (1) The edition-4 re-landing debt
+(GOALS.md front 4, ## 78): the EDITION 4 section-2 rewrite claimed at
 ## 76 never survived the session-71 branch corruption; it is not
 re-authored by this or any session — no session invents protocol text —
 so the debt is cleared by supersession: section 2 above is rewritten
@@ -333,14 +333,38 @@ rewritten whole as EDITION 7 per the edition rule and section 4's
 product list — facts block recomputed from the live record at ## 94
 (five deep-reads since edition 6, zero kill-line moves, ONE sharpening
 queued in the window, queue forty plus probe E1), edition 6 superseded
-whole with its substance preserved in log entry ## 89's record and
-this file's git history, the ranked fronts unchanged in order with
-statuses recomputed, the named gaps and work-selection guidance as
-recorded in section 2, cadence reset (#75 onward). No sharpening was
-queued by this pass (the pass names gaps, it does not amend); DECISIONS_PENDING.md is
+whole with its substance preserved in log entry ## 89's record and this
+file's git history, the ranked fronts unchanged in order with statuses
+recomputed, the named gaps and work-selection guidance as recorded in
+section 2, cadence reset (#75 onward). No sharpening was queued by this
+pass (the pass names gaps, it does not amend); DECISIONS_PENDING.md is
 untouched BY THE PASS; nothing measured, nothing armed, nothing trades
 live. Sections 1, 3-11 above stand verbatim. The pass session's own
 deep-read (#75) lands as this session's second act (## 96).
+
+
+## 13. Edition 8 note (2026-11-21, log entry ## 103)
+
+The sixth synthesis pass under the standing order ran as null-time
+session 90's first act (cadence rule section 3 point 2, per the ## 102
+closing pointer's own instruction that the next deep-read session open
+with the pass: deep-reads 75-78 since the edition-7 reset at ## 95 had
+landed at ## 96 and ## 100 through ## 102, and the window's fifth
+deep-read #79 lands as this session's second act (## 104)). This note
+records the section 2 change: the goal state was rewritten whole as
+EDITION 8 per the edition rule and section 4's product list — facts block
+recomputed from the live record at ## 102 (deep-reads 75-79 counted
+against the edition-7 window, zero kill-line moves, TWO sharpenings
+queued in the window, queue forty-one plus probe E1), edition 7
+superseded whole with its substance preserved in log entry ## 95's
+record and this file's git history, the ranked fronts unchanged in order
+with statuses recomputed, the named gaps and work-selection guidance as
+recorded in section 2, cadence reset (#80 onward). No sharpening was
+queued by this pass (the pass names gaps, it does not amend);
+DECISIONS_PENDING.md is untouched BY THE PASS; nothing measured, nothing
+armed, nothing trades live. Sections 1, 3-12 above stand verbatim. The
+pass session's own deep-read (#79) lands as this session's second act
+(## 104).
 
 ## 13. Edition 8 note (2026-11-21, log entry ## 103)
 
