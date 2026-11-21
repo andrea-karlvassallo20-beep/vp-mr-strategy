@@ -8904,3 +8904,113 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 changed files; marker and encoding checks); the library-provenance
 audit runs in CI over the full tree — the summaries are untouched
 this session — and was verified green on both jobs before merge.
+## 94. Null-time session 85 (2026-11-21), library deep-read session 74 — the Souto Arias–Cirillo–Oosterlee Heston-Queue-Hawkes option-pricing paper read, first of the score-24 tier; the Q-Hawkes versus Hawkes first-moment equivalence recorded as a page-cited instance of the price-process-family invariance rule (log ## 85) — an intensity fit calibrated on first moments cannot identify the memory mechanism, only higher-order moments can, so the fitted "degree of self-excitation" would carry the mechanism assumption and not the data; the smile-flexibility result (wider than Bates, driven mainly by mean jump size, martingale-absorbed by construction) recorded as pricing-measure geometry, never predictive content; NO kill line moved, NO sharpening queued
+
+Session-state note, per the goal-autonomy conductor protocol (edition 6,
+## 89): the declared work choice is the standing deep-read, the default
+under the protocol needing no justification; the ## 93 pointer named this
+paper as next UNREAD and this session re-verified the tier order against
+the live file state (score-24 tier: x673148 read here, first of the tier,
+next UNREAD xe0397d). Cadence counter after this session: FIVE of five
+toward the edition-7 synthesis pass (deep-read 74 counted from the
+edition-6 reset at ## 89) — the pass is DUE and runs FIRST as the next
+session's first act per protocol section 3 point 2. No inaccessible or
+blocked status this session; the extract was present, page-marked,
+complete and read in full (23 pp., body, references and Appendix A
+included).
+
+- **Library deep-read session 74** (front 2, first of the score-24 tier;
+  note:
+  paper/research/library/2026-11-21_heston_queue_hawkes_option_pricing_deep_read.md):
+  Luis A. Souto Arias, Pasquale Cirillo, Cornelis W. Oosterlee, "A new
+  self-exciting jump-diffusion process for option pricing"
+  (arXiv:2205.13321v2 [q-fin.PR], index year 2022, v2 stamped 10-13
+  February 2023; 23 pp.), score 24, index entry x673148. The paper: the
+  Heston-Queue-Hawkes (HQH) asset model, Heston diffusion plus the
+  Q-Hawkes jump process whose "ephemeral" memory deletes each
+  self-exciting jump's effect at once at a stochastic expiration time
+  (dλt = α(dNt − dNQt), Eqs. 1-9, PDF pp. 2-4); closed-form joint
+  characteristic function of the compensated jump term (Prop. 4,
+  PDF pp. 6-7) versus the HH model's numerically solved ODE system
+  (Prop. 7, PDF pp. 9-10); closed-form intensity PMF via negative
+  binomial convolution (Prop. 3, PDF pp. 5-6; Appendix A, PDF pp. 22-
+  23); a discrete-distribution extension of the COS method (DCOS,
+  Eqs. 40-48, PDF pp. 10-11, aliasing error one-sided, PMF always
+  overestimated, Eq. 48, PDF p. 11); dimension reduction of the
+  Bermudan recursion from three to one for HQH (Prop. 8, Eqs. 60-65,
+  PDF pp. 12-14); parametric pricing experiments only (Table 1,
+  PDF p. 15): HQH 12.36x faster than HH (Table 2, PDF p. 16), HH always
+  higher implied volatility (PDF pp. 16-17), the HQH-HH gap driven
+  mainly by mean jump size μY with clustering rate α second (PDF p. 15),
+  model differences growing in the degree of self-excitation α/β and
+  the initial excitation state αQ0/λ0 (PDF pp. 18-19). Findings,
+  graded:
+  1. [reinforcing, no new item] First-moment equivalence of the two
+     memory mechanisms (same expectations in intensity and counting,
+     divergence only at moments k ≥ 2, PDF p. 5; identical E[Mt],
+     Eq. 68, PDF p. 19): an intensity estimator calibrated on first
+     moments is unidentified between continuous-decay and all-at-once-
+     erasure memory, so the fitted "degree of self-excitation" carries
+     the mechanism assumption, not the data — a page-cited instance of
+     the price-process-family invariance rule (log ## 85) and the
+     level-versus-memory disambiguation; no new item.
+  2. [reinforcing, no new item] Smile flexibility is parameter
+     geometry, not information: self-excitation widens the smile family
+     relative to Bates (PDF p. 16) mostly through μY, with α second
+     (PDF p. 15), and both models collapse to Bates at α → 0 and
+     β → ∞ (PDF p. 18) — model-fit flexibility is never evidence of
+     structure; no new item.
+  3. [interpretation caution] Risk-neutral pricing absorbs
+     self-excitation into a compensated drift term (−μ̄Y λt− dt,
+     Eq. 1, PDF p. 2), so every implied-volatility exhibit is pricing-
+     measure geometry, never a measured market property (PDF pp. 15-17);
+     any C8-adjacent exhibit citing model-generated option prices as
+     support for predictive structure launders measure geometry into a
+     forecast; no queue change.
+  4. [reinforcing, no new item] Nothing is validated on data: all
+     experiments are parametric simulations under two hand-picked
+     scenarios (Table 1, PDF p. 15), no fit, no calibration, no
+     out-of-sample anything — ammunition, not evidence; no new item.
+  5. [cost-survival ammunition] The implementation assumptions a future
+     K7-style cost-survival layer must declare before trusting any
+     self-exciting-model cost number: DCOS PMF bias is one-sided
+     (always overestimated, Eq. 48, PDF p. 11); the HH route needs
+     2 × Nx × Nλ × NH² ODE solves per recursion step (PDF p. 15); and
+     the log-asset moments may be infinite depending on the parameter
+     set through the Heston component (footnote 2, PDF p. 2); never
+     operationalized, nothing armed.
+  6. [source-quality note] arXiv v2 preprint (q-fin.PR), zero recorded
+     citations, index year 2022 versus extract stamp February 2023, no
+     journal version recorded — check before any formal citation;
+     regardless, no claim here can serve as support for any programme
+     claim.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (23 pp., body, references and
+  Appendix A complete).
+- Ratification queue after this session: THIRTY-NINE candidate
+  sharpenings plus probe E1, zero armed (ZERO queued this session). T1
+  remains armed awaiting the owner's word in its booked state (survived
+  all five kill lines with sign inverted; T2 tested-fail); the blocked
+  list stays blocked. Deep-read queue pointer: next UNREAD
+  "Ascertaining price formation in cryptocurrency markets with
+  DeepLearning" (score 24, xe0397d), second of the score-24
+  tier — re-read the live tail and recompute the tier against the notes
+  before consuming; the EDITION-6 cadence counter now stands at FIVE of
+  five (deep-read 74 counted from the edition-6 reset at ## 89), so the
+  edition-7 synthesis pass is DUE and runs FIRST in the next session
+  per protocol section 3 point 2.
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule: no
+  candidate sharpening queued; queue thirty-nine, zero armed).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled tree (the
+changed files; marker and encoding checks); the library-provenance
+audit runs in CI over the full tree — the summaries are untouched
+this session — and was verified green on both jobs before merge.
+The known ~64K tooling-path truncation class (## 75, ## 78) was hit
+once this session on the log write path and caught before merge by
+read-back verification (the pushed bytes were re-read from the branch
+and checked against the assembled file); the working branch carried a
+truncated intermediate commit, superseded whole by the verified commit
+in this same push series; main never saw it.
