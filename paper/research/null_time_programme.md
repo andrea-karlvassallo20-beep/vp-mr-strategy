@@ -9692,3 +9692,135 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 changed files; marker and encoding checks); the library-provenance
 audit runs in CI over the full tree — the summaries are untouched
 this session — and was verified green on both jobs before merge.
+
+## 101. Null-time session 88 (2026-11-21): library deep-read session 77 — the Strehle multiplayer transient-impact paper read, fourth of the score-24 tier; the equilibrium shown to exist only on the positive-type-kernel plus strictly-positive-transaction-costs intersection with the closed form exponential-only, and the anti-overshooting headline shown to be an open-loop common-knowledge simulation, not a measurement; NO candidate sharpening queued, the noise-model pre-declaration's kernel axis found already-covered ground; no kill line moved
+
+Session-state note, per the goal-autonomy conductor protocol (edition
+7, ## 95): the declared work choice is the standing deep-read, the
+protocol's default, which owes no justification; the synthesis
+cadence is NOT due — after this session's read the edition-7 counter
+stands at THREE of five (deep-reads 75-77 counted from the edition-7
+reset at ## 95; the edition-8 pass falls due at five). The ## 100
+pointer named this paper as next UNREAD and this session re-verified
+the tier order against the live file state (score-24 tier: x673148
+read ## 94, xe0397d read ## 96, xdab650 read ## 100, x3e5ba8 read
+here; no note existed for x3e5ba8 and the next-tier candidate
+x5f35fd was verified note-less before being named in the pointer).
+No inaccessible or blocked status this session; the extract was
+present, page-marked, complete and read in full (17 pp., body,
+proofs and references included).
+
+- **Library deep-read session 77** (front 2, fourth of the score-24
+  tier; note:
+  paper/research/library/2026-11-21_multiplayer_transient_price_impact_deep_read.md):
+  Elias Strehle (University of Mannheim), "Optimal Execution in a
+  Multiplayer Model of Transient Price Impact" (arXiv:1609.00599v4
+  [q-fin.TR], stamp 10 Mar 2019; 17 pp.), score 24, index entry
+  x3e5ba8. The paper: n+1 strategic investors trade fixed net
+  amounts against a martingale unaffected price under linear
+  transient impact through a decay kernel G and quadratic
+  transaction costs paid by the trader alone (model, eqs. 1-2,
+  PDF pp. 2-4, with the explicit warning that quadratic costs are
+  frictions or a transaction tax, never temporary impact once more
+  than one investor trades, PDF p. 3); optimal strategies are
+  characterized by Fredholm integral equations of the second kind
+  and there is a unique deterministic Nash equilibrium, also unique
+  among stochastic strategies, exactly when G is of positive type and
+  γi > 0 for all i (Lemma 2, Theorem 5, PDF pp. 4-5, proof
+  PDF pp. 12-14, the γi > 0 status load-bearing because impulse
+  trades are optimal and no equilibrium exists at zero transaction
+  costs, PDF pp. 4-6); a closed form exists only for exponential
+  decay and the paper itself states the method does not generalize
+  off that kernel (Theorem 6, Remark 7, PDF pp. 6-8). In the economic
+  analysis one liquidating seller faces opportunistic front-running
+  investors: their early shorting raises the seller's costs
+  significantly, competition among them dissipates per-head profit,
+  and the seller can do little about it (PDF pp. 8-9). The headline:
+  price overshooting in the sense of Brunnermeier-Pedersen is the
+  exception, not the rule — the maximum price deviation typically
+  falls as the number of opportunistic investors rises, most
+  visibly for short-lived impact (large ρ), making overshooting look
+  like a permanent-impact artifact rather than an inherent
+  consequence of anticipation, with quadratic transaction costs the
+  second candidate explanation (PDF pp. 9-10, simulation only); a
+  heterogeneous-horizons sunshine-trading extension is sketched and
+  left unsolved (PDF pp. 10-12). Findings, graded:
+  1. [reinforcing, no new item] Kernel specification as a dial that
+     reaches qualitative conclusions: existence of any equilibrium
+     requires G of positive type (PDF p. 4), γi > 0 is the
+     difference between a well-posed problem and none at all
+     (PDF pp. 4-6), and qualitative outcomes — the three-times
+     sign-changing front-runner path at γ1 small, ρ large (PDF p. 9)
+     and the overshooting verdict itself (PDF pp. 9-10) — move with
+     the kernel. This re-exhibits on the execution-theory side what
+     the estimator-configuration freeze (#37) and the queued
+     kernel-form pre-declaration family already bind: any
+     impact-model-based null, comparator or reconstruction must have
+     its decay-kernel functional form and friction parameters
+     pre-declared and counted. No new axis; nothing queued — the
+     ground the paper's kernel sensitivity covers is already owned
+     by the queued items; the session found no mechanism here that
+     makes a future test harder to pass beyond them, so the default
+     grade stands.
+  2. [interpretation caution] The anti-overshooting headline is a
+     simulation inside an open-loop common-knowledge equilibrium,
+     not a measurement (all constraints and parameters known to all
+     investors, PDF pp. 3-4; open-loop only, closed-loop equilibria
+     may differ, Remark 1, PDF p. 4; risk-neutral so the martingale
+     drops out, PDF p. 3). Reading discipline for C8: this licenses
+     no inference, in either direction, about whether order
+     anticipation amplifies or damps extreme moves on crypto perp
+     L2 tape, and neither narrative ("predators cause panics",
+     "front-running stabilizes prices") may enter the record as
+     support for any programme claim. No queue change.
+  3. [cost-survival ammunition] Predictable flow is adversarial
+     revenue: opportunistic investors with high-resolution book
+     data detect an execution algorithm, reverse-engineer it and
+     convert its impact into a predictable profit source
+     (PDF pp. 1-2); the seller's costs rise sharply while his
+     optimal strategy barely changes (PDF p. 9). A future K7-style
+     cost-survival layer must carry the declared assumption that a
+     recognizable, scheduled trading pattern is itself exploitable
+     flow with exploit revenue scaling with the signal footprint.
+     Declaration requirements only; nothing armed.
+  4. [reinforcing, no new item] Deep-book thinness as background
+     ammunition: limit-order-book depth at any instant about 1% of
+     daily volume for large US stocks (PDF p. 1, borrowing Bouchaud
+     et al. 2009, p. 19); ammunition against infinite-liquidity
+     defaults; borrowed, equities-side, no programme status.
+  5. [reinforcing, no new item] The transaction-cost interpretation
+     warning as a pre-registration hygiene exhibit: what is charged
+     to everyone (impact via G) and what is charged to the trader
+     alone (γi) must stay distinct in any future multiplicity-ledger
+     entry that names a friction model (PDF p. 3). No queue change.
+  6. [source-quality note] arXiv v4, single author, zero recorded
+     citations; a journal version exists in this lineage and must be
+     checked before any formal citation; the heterogeneous-horizons
+     extension is sketched but not solved (PDF pp. 10-12); nothing
+     touches crypto perp L2 tape, so nothing here establishes any
+     regime transfer to the programme's data; regardless, no claim
+     here can serve as support for any programme claim.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (17 pp., body, proofs and
+  references complete).
+- Ratification queue after this session: FORTY-ONE candidate
+  sharpenings plus probe E1, zero armed (NONE queued this session).
+  T1 remains armed awaiting the owner's word in its booked state
+  (survived all five kill lines with sign inverted; T2 tested-fail);
+  the blocked list stays blocked. Deep-read queue pointer: next
+  UNREAD "Order Flows and Limit Order Book Resiliency on the
+  Meso-Scale" (Bechler, Ludkovski, arXiv:1708.02715v1, score 24,
+  x5f35fd), fifth of the score-24 tier — re-read the live tail and
+  recompute the tier against the notes before consuming; the
+  EDITION-7 cadence counter now stands at THREE of five (deep-reads
+  75-77 counted from the edition-7 reset at ## 95).
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule: no
+  candidate sharpening queued; the ratification line stands at
+  forty-one plus probe E1, zero armed).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled tree (the
+changed files; marker and encoding checks); the library-provenance
+audit runs in CI over the full tree — the summaries are untouched
+this session — and must be verified green on both jobs before merge.
