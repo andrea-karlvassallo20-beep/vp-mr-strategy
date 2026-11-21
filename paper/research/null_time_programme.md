@@ -9110,3 +9110,121 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 files; marker and encoding checks); the library-provenance audit runs
 in CI over the full tree and was verified green on both jobs before
 merge.
+
+## 96. Null-time session 86 (2026-11-21), second act: library deep-read session 75 — the Fang–Chung–Ventre–Basios–Kanthan–Li–Wu deep-learning cryptocurrency price-formation paper read, second of the score-24 tier; the live decay-to-random exhibit recorded as a reinforcing instance of the freeze-then-evaluate spine, the "consistent 78%" headline recorded under an interpretation caution as a retrain-inside-the-evaluation-window artifact, the universal-model gain recorded as data-quantity plus instrument-survivorship confound, the absent statistical baseline and unstated base rates recorded as reinforcing the benchmark/base-rate disciplines; NO kill line moved, NO sharpening queued
+
+Session-state note, per the goal-autonomy conductor protocol (edition 7,
+## 95, ACTIVE): the session's first act was the fifth synthesis pass
+(log ## 95, landed on main); the declared work choice is the standing
+deep-read as the second act, per the ## 95 pass's own record and the ## 94
+pointer; the tier order was recomputed by the pass against the live tail
+this same session (score-24 tier: xe0397d read here, second of the tier,
+next UNREAD xdab650, then x3e5ba8, x5f35fd). Cadence counter after this
+session: ONE of five toward the next synthesis pass (deep-read 75 counted
+from the edition-7 reset at ## 95). No inaccessible or blocked status this
+session; the extract was present, page-marked, complete and read in full
+(22 pp., body and references complete).
+
+- **Library deep-read session 75** (front 2, second of the score-24 tier;
+  note:
+  paper/research/library/2026-11-21_deep_learning_crypto_price_formation_deep_read.md):
+  Fan Fang, Waichung Chung, Carmine Ventre, Michail Basios, Leslie Kanthan,
+  Lingbo Li, Fan Wu, "Ascertaining price formation in cryptocurrency
+  markets with Deep Learning" (arXiv:2003.00803v1 [q-fin.GN], compiled
+  April 6, 2020; 22 pp.), score 24, index entry xe0397d. The paper: a
+  two-layer LSTM predicting next-tick mid-price direction on live GDAX
+  (Coinbase Pro) level-2 data (a single ~30-hour July 2018 capture,
+  40,951,846 level-2 records, 11 listed products, PDF pp. 5-7), a
+  four-class multi-label variant with the ±0.2% Coinbase fee as the
+  significant-change boundary (Table 2, PDF p. 8), a "universal" model
+  pooled across pairs (beats pair-specific by avg 3.65%, +4.25% selected,
+  Table 4, PDF p. 13), flat accuracy in input sequence length (OLS slope
+  ≈ −0.0001, Tables 5-6, PDF p. 14), live accuracy decay "to almost random
+  guessing" (Figure 9, PDF pp. 14-15) countered by autoencoder denoising
+  (PDF pp. 15, 18-19) and walkthrough retraining inside the live stream
+  (every 196 predictions, PDF p. 17; MDD-dynamic at a 15% drawdown of
+  accuracy, PDF p. 9), stabilizing BTC-USD at ~76-78% (Figures 11, 13;
+  Table 7, PDF p. 19); on 1-minute multi-label live data the static model
+  decays below 40% while stable walkthrough stabilizes around 80% across
+  twenty repeats (PDF pp. 19-20). Findings, graded:
+  1. [reinforcing, no new item] The headline accuracy carries no base
+     rate: no up/down class balance for any scoring window, no
+     majority-class baseline, no ROC/false-positive accounting, and the
+     abstract's promised "statistical and machine learning techniques"
+     (PDF p. 1) never materialize as a statistical baseline in any table
+     — the only class counts in the paper are Table 7's supports
+     (up 5,265, down 4,927, PDF p. 19); accuracy without its base rate
+     and a shallow baseline is the exact exhibit the two-null admission
+     family's benchmark/base-rate components refuse; no new item.
+  2. [reinforcing, no new item] The paper's own most honest exhibit is
+     the decay to almost random guessing on live data (PDF pp. 14-15,
+     Figure 9; static multi-label below 40%, PDF p. 19), with the
+     autoencoder unable to fix a drift in the prediction distribution
+     (PDF p. 16, Figure 12) — a live, page-cited instance of why C1-L2's
+     specification is frozen before the data and why a fitted state that
+     does not persist cannot be re-armed by post-hoc smoothing;
+     reinforces the freeze-then-evaluate spine; no new item.
+  3. [interpretation caution] The "consistent 78%" is an artifact of
+     retraining inside the evaluation window: walkthrough buffers are
+     built from the live stream being scored (PDF p. 17), MDD-dynamic
+     retrains on historical data up to the measurement point (PDF p. 9),
+     and the model starts below random guessing before the first retrain
+     (PDF p. 17) — no accuracy from any update-sustained segment is
+     evidence of a persistent edge; a programme test that re-tuned
+     inside its own window would pass exactly this check; reading
+     discipline only, no queue change.
+  4. [reinforcing, no new item] The universality claim carries its own
+     confound: part of the universal model's edge is pooled data
+     quantity ("10% of joined data is much larger than 10% of one
+     currency pair data", PDF p. 13), and the four weak pairs
+     (BCH-EUR, BTC-GBP, ETH-EUR, BTC-EUR) are excluded before the
+     universality comparison is re-run on the survivors (PDF p. 13) —
+     benchmark-vs-representation confound plus post-hoc instrument
+     selection, both already frozen in the standing confound rules; no
+     new item.
+  5. [reinforcing, no new item] One time step suffices (Table 5, PDF
+     p. 14): accuracy is flat in sequence length, so the recurrence
+     contributes nothing measurable and the "deep" label is not the
+     source of the accuracy — a live instance of the
+     representation-confound rule; no new item.
+  6. [cost-survival ammunition] Accuracy is not edge at this horizon:
+     next-tick mid-price direction; the ±0.2% fee boundary is applied
+     only to the multi-label variant (Table 2, PDF p. 8), execution
+     latency is named as able to make a next-tick prediction obsolete
+     (PDF p. 10), the decision maker, inventory and order placement are
+     left to future work (PDF p. 6), and no accuracy figure is converted
+     into a round-trip-cost-surviving expectancy; recorded as declared
+     assumptions for any future cost-survival layer; never
+     operationalized, nothing armed.
+  7. [source-quality note] arXiv v1 preprint (q-fin.GN), compiled April
+     6, 2020, zero recorded citations in the index, no journal version
+     recorded; seven printed authors (PDF p. 1) against four in the
+     index (Kanthan, Li, Wu omitted); the abstract says "8
+     cryptocurrency pairs" (PDF p. 1) while Table 1 lists 11 products
+     (PDF p. 7); the validity section asserts "no bias" and immunity to
+     bull/bear and policy effects (PDF p. 21) without exhibits, on one
+     ~30-hour capture plus scattered August 2018 live windows from a
+     single exchange — check before any formal citation; regardless, no
+     empirical claim here can serve as support for any programme claim.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (22 pp., body and references
+  complete).
+- Ratification queue after this session: THIRTY-NINE candidate
+  sharpenings plus probe E1, zero armed (ZERO queued this session). T1
+  remains armed awaiting the owner's word in its booked state (survived
+  all five kill lines with sign inverted; T2 tested-fail); the blocked
+  list stays blocked. Deep-read queue pointer: next UNREAD "Estimation
+  for high-frequency data under parametric market microstructure noise"
+  (score 24, xdab650), third of the score-24 tier — re-read the live
+  tail and recompute the tier against the notes before consuming; the
+  EDITION-7 cadence counter now stands at ONE of five (deep-read 75
+  counted from the edition-7 reset at ## 95).
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule: no
+  candidate sharpening queued; queue thirty-nine, zero armed).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled tree (the changed
+files; marker and encoding checks); the library-provenance audit runs
+in CI over the full tree — the summaries are untouched this session —
+and was verified green on both jobs before merge.
