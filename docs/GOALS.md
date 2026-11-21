@@ -83,10 +83,10 @@ construction.
   applies. NOTE (refreshed 2026-11-21, null-time session 86, log ## 96):
   the deep-read counter since EDITION 7 stands at ONE of five (deep-read
   75, landed this same session, counted from the edition-7 reset at ##
-  95); the G2 directorate briefs cover the first thirty-three of the now
-  FORTY queued sharpenings, so a brief refresh (items 34-40 plus probe
-  E1) is owed before the next sitting and is this edition's ranked
-  non-deep-read choice.
+  95); the G2 directorate briefs cover all forty queued sharpenings plus
+  probe E1 (refreshed this same date by this same session's fifth act,
+  log ## 99), so the queue sits ready for the directorate and the next
+  refresh is owed from item 41.
 
 
 - Front 3 — the misses curriculum. STATUS: built and validated;
@@ -136,7 +136,7 @@ its verdicts stay frozen, and nothing here re-opens the archive.
 
 G2. Ratification-readiness briefs. ENTRY: any session; strongest
 claim when front 2 is between reads. FEEDS: the weekly directorate —
-one-page accept/reject briefs for the queued THIRTY-THREE sharpenings
+one-page accept/reject briefs for the queued FORTY sharpenings
 plus probe E1, grouped by the precedent they tighten. BOUNDARY:
 briefs summarize already-recorded proposals with their sources; a
 brief invents nothing, queues nothing new, and arms nothing. STATUS:
@@ -145,7 +145,19 @@ docs/DIRECTORATE_BRIEFS.md holds the batch-ratify reading for all
 thirty-three queued sharpenings plus probe E1, grouped into nine
 families by the precedent each one tightens, with the count
 reconciliation and per-item sources recorded; the briefs summarize
-recorded proposals only, queued nothing, and armed nothing.
+recorded proposals only, queued nothing, and armed nothing. REFRESHED
+(2026-11-21, null-time session 86, fifth act, log ## 99):
+docs/DIRECTORATE_BRIEFS.md extended from the first thirty-three queued
+items to all FORTY plus probe E1 — items 34-39 briefed (A5
+level-versus-memory, B7 estimator-configuration freeze, B8
+price-process-family invariance, D3 sign-persistence admission null,
+D4 deterministic-calendar null, F7 spread convention) and item 40
+briefed as B9 (the adaptive-retraining disclosure, with the ## 97
+endorsement-with-dissent recorded inside the brief); the count
+reconciliation extended to forty, the family intros and sitting
+questions updated, the queue fully briefed, sitting-ready; the next
+refresh is owed from item 41. The briefs summarize recorded proposals
+only, queued nothing, and armed nothing.
 
 G3. C8 skeleton coherence. ENTRY: after a synthesis pass with
 C8-relevant output, or on finding a gap in the skeleton's

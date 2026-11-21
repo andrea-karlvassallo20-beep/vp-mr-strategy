@@ -3,6 +3,14 @@
 **Prepared 2026-11-20 by null-time session 66 (log entry ## 70), executing
 GOALS.md G2 under the protocol edition-3 work-selection guidance.**
 
+**Refreshed 2026-11-21 by null-time session 86 (log entry ## 99),
+executing GOALS.md G2 under the protocol edition-7 work-selection
+guidance: items 34-40 briefed (A5, B7, B8, B9, D3, D4, F7), the count
+reconciliation extended to forty, and the queue fully briefed and
+sitting-ready; the refresh re-lands and extends the same session's
+#271 product after the ## 98 race-collision corrigendum. Probe E1
+re-checked, unchanged.**
+
 Boundary (G2's, restated): these briefs summarize already-recorded
 proposals with their sources. A brief invents nothing, queues nothing
 new, and arms nothing. Every full draft lives in the log entry and the
@@ -11,14 +19,14 @@ one-paragraph mechanism, not a restatement. Nothing here carries
 authority over any gate, claim, or kill line.
 
 How to read this in a sitting (protocol section 6): the queue holds
-THIRTY-THREE candidate sharpenings plus probe E1, zero armed. The items
+FORTY candidate sharpenings plus probe E1, zero armed. The items
 are grouped into nine families by the precedent each one tightens. Each
 item names its position in the queue (the join order recorded in the
 log's queue lines), the log entry and note that hold the full draft,
 and the accept/reject question. A sitting may batch-ratify or kill per
 item or per family; ratifying a family ratifies every item in it.
 
-Count reconciliation (recorded so the thirty-three is checkable, not
+Count reconciliation (recorded so the forty is checkable, not
 asserted): the composition is enumerated from the log's queue-line
 arithmetic — sessions 3 (two), 4 (the K7 cluster counted as one), 4b
 (two: the W-ladder report, Amendment-1), 5 (one), 6 (two), 7 (one), 9
@@ -26,21 +34,25 @@ arithmetic — sessions 3 (two), 4 (the K7 cluster counted as one), 4b
 increment at log entries ## 14, ## 16, ## 17, ## 18, ## 19, ## 20,
 ## 23, ## 25, ## 26, ## 27, ## 30, ## 33, ## 34, ## 36, ## 39, ## 40,
 ## 41, ## 51, ## 57, ## 62, ## 65, ## 67 and ## 69 — closing exactly at
-thirty-three. Probe E1 stands separately and is not counted. One
+thirty-three; then one join per named increment at log entries ## 71,
+## 74, ## 77, ## 81, ## 85, ## 93 and ## 96 — closing exactly at
+forty. Probe E1 stands separately and is not counted. One
 instrument observation recorded by this session: the queue's
 composition was previously held nowhere on main as a single list, only
 as counts plus the most recent items' full text; this document is now
 that enumeration. (The protocol section 2 facts block says THIRTY-TWO
 because it was recomputed at ## 68, just before the edition-writing
 session's own read queued the thirty-third; the live log tail at ##
-69 and `docs/DECISIONS_PENDING.md` carry THIRTY-THREE.)
+69 and `docs/DECISIONS_PENDING.md` carry THIRTY-THREE — a state twice
+superseded: both carried THIRTY-NINE at ## 93, and both carry FORTY
+as at ## 96.)
 
 ---
 
 ## Family A — pre-registration hardening (hardening rule 1; the
 sign-kill-line template's family)
 
-These four generalize the same lesson: whatever is chosen after seeing
+These five generalize the same lesson: whatever is chosen after seeing
 the data can manufacture the find. Each one pre-declares, before the
 data, a piece of the test that would otherwise be a researcher degree
 of freedom.
@@ -86,15 +98,30 @@ of freedom.
   concrete instance of K4). The date must be verified against the
   venue feed at the L0 gate, not trusted from the paper.
 
+- **A5. The level-versus-memory disambiguation for self-excitation
+  claims** (35th, queued via deep-read 59, log ## 74, note
+  `paper/research/library/2026-11-20_buffer_hawkes_process_lob_deep_read.md`).
+  Before the L0 gate, any count-based self-excitation claim must carry
+  a pre-declared concurrent book-depth control arm separating the
+  level effect (book size mechanically scaling the rate) from the
+  memory effect, both directions reported before the data; the
+  Kaj-Caglar buffer-Hawkes paper proves a model whose
+  market-order intensity is a function of the instantaneous book size
+  alone, carrying no temporal kernel on the execution count, still
+  produces Hawkes-identical clustering with Borel-distributed cluster
+  progeny and inflated dispersion, while the (intensity, count)
+  marginal is provably non-Markovian with the book size the hidden
+  confounder — counts alone cannot distinguish level from memory.
+
 Sitting question for the family: does the standing pre-registration
 discipline (the sign-kill-line template plus hardening rule 1) extend
-to these four pre-declarations? Reject if any single mechanism reads
+to these five pre-declarations? Reject if any single mechanism reads
 as already covered by an accepted rule.
 
 ## Family B — estimator discipline on the branching-ratio read
 
 The trigger's number must be earned by the fit, not by the optimizer's
-convenience. These six tighten how a branching-ratio estimate may be
+convenience. These nine tighten how a branching-ratio estimate may be
 read.
 
 - **B1. The K7 estimation pre-declaration cluster** (3rd, session 4,
@@ -133,7 +160,65 @@ read.
   implied ACF shape must pass a validity check — a misfit shape can
   mask criticality and mis-anchor the trigger.
 
-Sitting question: are these six accepted as the standing read-out
+- **B7. The estimator-configuration freeze** (37th, queued via
+  deep-read 63, log ## 81, note
+  `paper/research/library/2026-11-20_neural_hawkes_fabre_muni_toke_deep_read.md`).
+  Any C1-L2/C8-adjacent kernel- or other estimator-dependent
+  computation pre-registers, before fitting, its FULL estimator
+  configuration (the second-order-statistics grid, the truncation
+  horizon, the sampling scheme, any loss or magnitude weightings, the
+  quadrature counts and the training configuration), chosen from a
+  declared generic default with every deviation a dated amendment
+  BEFORE the data is touched; the Fabre–Muni Toke neural Hawkes paper
+  proves the same characterization equation on the same
+  second-order statistics yields kernel shapes that swing with
+  exactly these choices — the Wiener-Hopf benchmark on a poorly
+  chosen grid "can still generate kernels with oscillatory behaviours
+  which could lead to false discoveries in practical cases" (PDF
+  p. 21) — and the paper's own remedy is a frozen generic
+  configuration with no fine tuning.
+- **B8. The price-process-family invariance rule** (38th, queued via
+  deep-read 66, log ## 85, note
+  `paper/research/library/2026-11-20_stochastic_price_dynamics_lob_deep_read.md`).
+  Any book-defined statistic that prices time through an assumed
+  price process pre-declares, BEFORE the data, the price-process
+  family entering its definition, from a declared generic default,
+  with the killed-if-wrong counterfactual recorded; the
+  Langnau–Punchev paper proves the same reconstructed book yields an
+  impatience rate that is an explicit function of the distance-to-
+  fill AND the estimated volatility under geometric Brownian motion
+  (day-level dispersion exploding to 43-88, an implied-volatility
+  smile rising with distance-to-fill) and a level-independent rate
+  with collapsed dispersion and no smile under Kou — the family
+  alone, an analyst property, sets whether the statistic means
+  anything.
+
+- **B9. The adaptive-retraining disclosure** (40th, joined via
+  deep-read 75, log ## 96, note
+  `paper/research/library/2026-11-21_cryptocurrency_deep_learning_price_formation_deep_read.md`).
+  Before the L0 gate, any C1-L2/C8-adjacent comparator, null or
+  baseline that adapts — retrains, re-tunes, re-estimates or
+  re-selects — inside its own evaluation window must pre-declare the
+  adaptation rule (trigger, data consumed, cadence) in the same
+  pre-registration as its frozen configuration and report the
+  frozen-configuration number side-by-side; a number that exists only
+  after its model has consumed the evaluation data may not enter any
+  spec as support. The Fang–Chung–Ventre–Basios cryptocurrency
+  deep-learning paper proves the mechanism is real: the universal
+  LSTM decays to almost random guessing on live data (Fig. 9, PDF
+  pp. 14-15), the headline 78% live accuracy exists only under
+  walkthrough retraining that consumes the live data every 196
+  predictions (PDF p. 17), the static multi-label model falls below
+  40% against a 25% floor (PDF p. 19), and the retrain trigger itself
+  is analyst-tuned ("Modified MDD" over 15%, PDF p. 9). Recorded for
+  the sitting (## 97): two independent full reads of the same paper
+  graded this mechanism differently — once an interpretation
+  caution, once the sharpening — and the corrigendum judges the
+  extension genuinely additive on the refutation-instrument axis (an
+  adapted-in-window null tracks any regime change by construction and
+  could never refute anything); PENDING OWNER RATIFICATION either way.
+
+Sitting question: are these nine accepted as the standing read-out
 discipline for the trigger, or does any member duplicate another?
 
 ## Family C — branching-ratio trigger robustness arms
@@ -200,9 +285,38 @@ read, regime disclosure — before it is ever read again?
   recovers 28-60% of the mean residual the intensity-only fixed-tick
   model missed on the multi-tick names.
 
+- **D3. The sign-persistence admission null** (36th, queued via
+  deep-read 60, log ## 77, note
+  `paper/research/library/2026-11-20_cox_ratio_order_flows_deep_read.md`).
+  Any short-horizon sign or aggressive-flow feature is admitted only
+  if it adds value beyond a PRE-REGISTERED sign-persistence null
+  (the last-sign repeat, zero parameters), with the survival shown
+  in the sign-CHANGE subsample: the Muni Toke–Yoshida paper proves
+  the zero-parameter repeat rule correctly signs more than 80% of
+  ~54 million trades across 36 Paris Stock Exchange stocks while the
+  state-only ratio model signs ~85% pooled but only ~40% of sign
+  changes, and the imbalance-only model is never selected among 390
+  monthly fits — pooled next-sign accuracy is dominated by
+  mechanical persistence before any book state enters.
+- **D4. The deterministic-calendar null** (39th, queued via
+  deep-read 73, log ## 93, note
+  `paper/research/library/2026-11-21_deterministic_time_varying_liquidity_deep_read.md`).
+  Before a structure may enter any spec as support, it must be shown
+  to survive a pre-declared deterministic-calendar null — a
+  time-of-day surrogate built only from frozen constants (calendar
+  position, e.g. a J-shaped intraday impact/liquidity profile as a
+  pre-declared generic default), carrying zero book-state input; the
+  Palmari–Lillo–Eisler paper proves the mechanism is real and needs
+  literally no information: with permanent impact decaying linearly
+  and temporary impact constant, the OPTIMAL liquidation of a long
+  position begins by BUYING (Example 6, PDF pp. 16-17), and for T=1,
+  a=5, η=0.25, b<−4.09 the excess cash is genuinely negative-cost
+  proper price manipulation (PDF p. 17) with no self-excitation, no
+  stochastic state, no news, nothing but the calendar.
+
 Sitting question: which nulls must a flow feature beat to count as
 more than a dressed-up state snapshot — the two line the papers carry,
-plus the tape-only comparator, or a subset?
+plus the tape-only comparator (D2), the zero-parameter sign-persistence repeat (D3), and the zero-state deterministic-calendar surrogate (D4), or a subset?
 
 ## Family E — queue-state conditioning and label discipline
 (passive-flow features in the C1-L2 L2 arm)
@@ -298,9 +412,30 @@ the generalization that covers E1-E3's specifics?
   venue (a single large shallow bid moved the model's prediction);
   reinforces F5's audit rather than standing alone.
 
+- **F7. The spread-convention declaration rule** (34th, queued via
+  deep-read 56, log ## 71, note
+  `paper/research/library/2026-11-20_time_varying_liquidity_execution_deep_read.md`).
+  Before the L0 gate, any book reconstruction, generative null or
+  flow-measurement input used in a C1-L2/C8-adjacent computation
+  pre-declares its spread convention; a zero-spread / single-price /
+  mid-only handling is a distinct configuration counted in the
+  multiplicity ledger, and any apparent anticipatory, reversal or
+  round-trip-type structure first observed under it must be shown to
+  survive a dynamic, trading-dependent, two-sided spread handling
+  before it may enter any spec as support; the
+  Fruth–Schöneborn–Urusov paper proves the zero-spread model class
+  mechanically admits profitable round trips whenever the deviation
+  direction is known (Remark 8.2, PDF p. 29) and admits pump-and-dump
+  with cost infimum −∞ at a single K'+2ρK<0 point (Prop 8.3, PDF
+  pp. 29-30), no self-excitation required — the "anticipatory"
+  structure being a property of the convention.
+
 Sitting question: accept F1-F3 as the standing measurement-discipline
 for flow features, and F4-F6 as the manipulation-audit pre-declarations
-the L2 window inherits from its venue evidence?
+the L2 window inherits from its venue evidence, and F7 as the
+fourth declaration axis — the spread convention — beside the memory
+scale (F1), the conservation identity (F2) and the accumulation grain
+(F3)?
 
 ## Family G — the C8 measurement pre-declarations (session 3's pair)
 
@@ -349,7 +484,7 @@ proposed scope, or kill the guard extension.
 
 ---
 
-## Probe E1 — standing separately, not counted in the thirty-three
+## Probe E1 — standing separately, not counted in the forty
 
 Probe E1 (volume conservation) was the exploratory channel's first
 probe, RATIFIED by the owner as a channel (log ## 25). Its rule-content
@@ -366,5 +501,10 @@ channel's own procedure, not a brief's.
 Prepared from the log's queue lines, the library notes and
 `docs/DECISIONS_PENDING.md` as at main (log tail ## 69, queue
 THIRTY-THREE plus probe E1, zero armed). Nothing in this document
-measured anything, moved any kill line, armed anything, or trades
-live.
+measured anything, moved any kill line, armed anything, or trades live.
+
+Refreshed 2026-11-21 by null-time session 86 (log entry ## 96):
+items 34-39 briefed (A5, B7, B8, D3, D4, F7), the count reconciliation
+extended, the live queue at THIRTY-NINE plus probe E1, zero armed, the
+log tail at ## 93. The briefs summarize recorded proposals only,
+queued nothing, and armed nothing.

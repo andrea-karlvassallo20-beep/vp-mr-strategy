@@ -9382,3 +9382,175 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 files; marker and encoding checks); the library-provenance audit runs
 in CI over the full tree — the summaries are untouched this act —
 and was verified green on both jobs before merge.
+
+## 98. Null-time session 86 (2026-11-21), fourth act: the second race-collision corrigendum — a THIRD concurrent instance of this same session detected on read-back (this instance's PR #271, opened 08:10:57Z carrying its own edition-7 pass and its own ## 95/## 96, was opened against a stale tip: instance A's pass had merged as #268 / 298210f at 08:03:49Z and instance B's complete product as #269 / a1971fa at 08:08:39Z, both before it opened, and instance A's own corrigendum #272 merged at 08:14:43Z still recording only two instances); no merge was ever attempted and the instance's byte-gated landing workflow never ran, so NO duplicate entry, note or doc rewrite reached main; PR #271 closed UNMERGED per the main-wins protocol, the superseded product preserved in git history at b0de7697; NO kill line moved, NO sharpening queued by this act, the queue stands at FORTY plus probe E1, zero armed
+
+Session-state note, per the conductor protocol (edition 7, ## 95,
+ACTIVE): the declared work of this act is the corrigendum the record
+owes after a SECOND collision of the ## 97 class inside the same
+session — a third concurrent instance of null-time session 86,
+detected this time not at merge time but before any merge attempt,
+because the last-mile tip re-read named at ## 97 as a candidate
+improvement was executed as session discipline before merging. The
+corrigendum is appended; main is not rewritten; nothing below changes
+any status, queue, gate or claim.
+
+What happened, in order, verified against the live main tail, the PR
+set and the commit record:
+
+- A third instance (instance C) ran the same standing directive. Its
+  start-of-session read saw main at 5a28e43 (log through ## 94), the
+  same tip instance A recorded at ## 97; it composed its own
+  edition-7 pass (## 95) and its own G2 briefs refresh (## 96) as its
+  declared first and second acts, landed them on branch
+  nulltime-86-edition7-g2refresh and opened PR #271 at 08:10:57Z —
+  with the log append staged on the branch behind a byte-gated
+  landing workflow (the session-71 pattern: assembles the log at PR
+  time, gates the bytes, removes the staging assets in the landing
+  commit).
+- The race was already decided: #268 had merged at 08:03:49Z
+  (superseded three minutes later by a1971fa per ## 97) and #269 at
+  08:08:39Z, so at #271's open the surviving ## 95 and ## 96 already
+  stood on main. Instance C did not know: nothing reported the
+  collision to it, its branch CI was green on its own head, and
+  #272's corrigendum (merged 08:14:43Z) recorded only instances A
+  and B — the record therefore owes this entry.
+- The guard that held: nothing duplicate reached main. The branch
+  rewrote the same files the merged record rewrote (protocol
+  section 2, GOALS.md, the log tail), GitHub never built the PR's
+  merge ref — mergeability stayed uncomputable for the PR's whole
+  life — and consequently no pull_request-triggered workflow ever ran
+  on the branch, including the instance's own landing workflow; the
+  merge itself was never attempted, because the continuation
+  read-back re-read main's tip first and found ## 95, ## 96 and ##
+  97 already landed under #268, #269 and #272. The observed state is
+  consistent with the merge-ref build failing on a branch that
+  rewrites files main has since rewritten; no other cause is
+  asserted. Detection distance: zero merges, zero byte-level
+  contact; the collision cost work product, not record integrity.
+- Instance C acts, reconciled: its first-act edition-7 pass and its
+  ## 95/## 96 entry texts, its GOALS.md refresh and its
+  directorate-briefs extension (items 34-39) are superseded and
+  preserved, unmerged by choice, at b0de7697 (branch
+  nulltime-86-edition7-g2refresh, PR #271 closed with this
+  reconciliation in its comment). Its landing workflow and staged
+  append stayed on the branch and never executed; main carries none
+  of it.
+- Agreement check between instance C's superseded product and the
+  surviving record, stated honestly: the superseded ## 95 agrees
+  with the surviving ## 95 on every gate-relevant fact — edition 7
+  from the same cadence count of five (deep-reads 70-74, ## 90
+  through ## 94), reset at deep-read #75 onward, ZERO sharpenings
+  queued by the pass, score-25 tier closed, pointer xe0397d then
+  xdab650 — and diverges only where its read was stale: it computed
+  the queue at THIRTY-NINE and the brief debt at items 34-39
+  (correct against the ## 94 tip it read; ## 96 queued the fortieth
+  item), and its cadence counter stood at ZERO of five where the
+  surviving record's stands at ONE of five because instance C ran no
+  deep-read. There is no grading divergence to record and no
+  duplicate library note to reconcile: the only xe0397d note and the
+  only item 40 on main are instance B's, exactly as ## 97 left them.
+- The race-gap named at ## 97 (owner-side single-flight triggering;
+  a last-mile tip re-read before each merge) received its second
+  datum within minutes of being named: the record now holds TWO
+  collisions of the same class in one session, three instances, one
+  directive, zero corrupting merges. The candidate improvements keep
+  their zero status; this act is itself the re-read discipline
+  executed once, not standing automation; nothing here proposes
+  through any channel but the lawful ones.
+
+Ratification queue after this act: FORTY candidate sharpenings plus
+probe E1, zero armed (ZERO queued by this act; item 40 remains
+PENDING OWNER RATIFICATION from ## 96 exactly as recorded). T1
+remains armed awaiting the owner's word in its booked state (survived
+all five kill lines with sign inverted; T2 tested-fail); the blocked
+list stays blocked. Deep-read queue pointer: next UNREAD "Estimation
+for high-frequency data under parametric market microstructure noise"
+(score 24, xdab650), third of the score-24 tier — re-read the live
+tail and recompute the tier against the notes before consuming; the
+EDITION-7 cadence counter stands at ONE of five (deep-read 75 counted
+from the edition-7 reset at ## 95).
+
+docs/DECISIONS_PENDING.md is NOT touched by this act (rule: no
+candidate sharpening queued; the dashboard's last-updated line stands
+from ## 96).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this act exit zero on the assembled tree (the changed
+files; marker and encoding checks); the library-provenance audit runs
+in CI over the full tree — the summaries are untouched this act —
+and was verified green on both jobs before merge.
+
+## 99. Null-time session 86 (2026-11-21), fifth act: the G2 directorate briefs refreshed to all FORTY plus probe E1 — items 34-39 briefed as instance C's surviving product (34 F7 spread-convention, 35 A5 level-versus-memory, 36 D3 sign-persistence admission null, 37 B7 estimator-configuration freeze, 38 B8 price-process-family invariance, 39 D4 deterministic-calendar) and item 40, the adaptive-retraining disclosure (## 96), briefed as B9 with ## 97's endorsement-with-dissent recorded inside the brief; the count reconciliation extended to forty, GOALS.md status lines refreshed as operative bookkeeping; NO sharpening queued by this act, DECISIONS_PENDING.md untouched, T1 stays armed awaiting the owner's word, the queue FORTY plus probe E1, zero armed
+
+Session-state note, per the conductor protocol (edition 7, ## 95,
+ACTIVE): the declared work of this act is the G2 briefs refresh, the
+edition's named ranked lawful non-deep-read work item (named at ##
+95; left owed for items 34-40 plus probe E1 by ## 96 and ## 97). The
+act lands instance C's surviving second-act product — its briefs for
+items 34-39, preserved at b0de7697 and re-landed here against the
+live tail after the ## 98 collision — and extends it to discharge
+the item-40 debt ## 96 created. G2's boundary governs: briefs
+summarize already-recorded proposals with their sources; a brief
+invents nothing, queues nothing new, and arms nothing.
+
+The refresh (docs/DIRECTORATE_BRIEFS.md):
+
+- Items 34-39 briefed, one brief each, every brief carrying the
+  queue position in join order, the log entry and library note that
+  hold the full draft, the one-paragraph mechanism and the
+  accept/reject question: 34, the spread-convention declaration rule
+  (F7, ## 71, the Fruth–Schöneborn–Urusov paper); 35, the
+  level-versus-memory disambiguation (A5, ## 74, Kaj–Caglar
+  buffer-Hawkes); 36, the sign-persistence admission null (D3, ##
+  77, Muni Toke–Yoshida); 37, the estimator-configuration freeze
+  (B7, ## 81, Fabre–Muni Toke); 38, the price-process-family
+  invariance rule (B8, ## 85, Langnau–Punchev); 39, the
+  deterministic-calendar null (D4, ## 93, Palmari–Lillo–Eisler).
+- Item 40 briefed as B9: the adaptive-retraining disclosure (##
+  96, the Fang–Chung–Ventre–Basios cryptocurrency deep-learning
+  note), with the ## 97 grading divergence — one full read graded
+  the mechanism an interpretation caution, a second full read
+  queued the sharpening, and the corrigendum judged the extension
+  genuinely additive on the refutation-instrument axis — recorded
+  inside the brief as a second datum the sitting must weigh beside
+  the standard accept/reject question. The brief summarizes the
+  recorded draft and cites it; its fate is the owner's.
+- The count reconciliation extended to forty: the composition
+  enumerates the queue's joins through ## 96 (## 96 closing exactly
+  at forty), the queue fully briefed and sitting-ready, the next
+  refresh owed from item 41. Family intros and sitting questions
+  updated (A: four to five; B: six to nine; the D and F sitting
+  questions extended); probe E1 re-checked, unchanged, standing
+  separately, not counted in the forty.
+
+docs/GOALS.md refreshed in the same series as operative
+bookkeeping: the front 2 NOTE line now records the briefs current
+to item 40 (with the edition-7 cadence counter standing at ONE of
+five as recorded at ## 96), and the G2 STATUS line records the
+refresh at log ## 99. No front, ranking or gate is changed; the
+ranking authority stays the protocol's section 2.
+
+Ratification queue after this act: FORTY candidate sharpenings plus
+probe E1, zero armed (ZERO queued by this act; item 40 stands
+PENDING OWNER RATIFICATION exactly as recorded at ## 96, now with
+its brief pointing at it). T1 remains armed awaiting the owner's
+word in its booked state (survived all five kill lines with sign
+inverted; T2 tested-fail); the blocked list stays blocked.
+Deep-read queue pointer: unchanged from ## 97/## 98 — next UNREAD
+"Estimation for high-frequency data under parametric market
+microstructure noise" (score 24, xdab650), third of the score-24
+tier; re-read the live tail before consuming; the EDITION-7 cadence
+counter stands at ONE of five.
+
+docs/DECISIONS_PENDING.md is NOT touched by this act (rule: no
+candidate sharpening queued; the dashboard's last-updated line
+stands from ## 96; item 40 stands as recorded).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this act exit zero on the assembled tree (the changed
+files; marker and encoding checks); the library-provenance audit runs
+in CI over the full tree — the summaries are untouched this act —
+and was verified green on both jobs before merge.
