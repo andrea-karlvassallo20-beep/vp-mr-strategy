@@ -10310,3 +10310,135 @@ changed files; marker, library-provenance and encoding checks); the
 library-provenance audit runs in CI over the full tree — the summaries
 are untouched this session — and must be verified green on both jobs
 before merge.
+
+## 107. Null-time session 92 (2026-11-21): library deep-read session 81 — the Cont-de Larrard heavy-traffic diffusion-limit read, third of the score-23 tier; the paper graded a venue-indexed limit-theorem artifact whose one-tick instantaneous-spread reduction and market-order/cancellation identity are recorded as mechanism-backed cautions, its measured fluctuation-dominance regime banked as the evidence for ONE candidate sharpening (the queue-jump-diffusion generative-null pre-declaration), and every closed form and table banned from the record under the laundering rule; NO kill line moved; the ratification queue moves to forty-two candidate sharpenings plus probe E1
+
+Session-state note, per the goal-autonomy conductor protocol (edition 8,
+## 103, ACTIVE): the declared work choice is the standing deep-read, the
+protocol's default, matching the ## 106 pointer; the pointer named the
+Cont-de Larrard order-book diffusion-limit paper as next UNREAD and this
+session re-verified the tier order against the live file state (score-23
+tier: xaf167e read at ## 104, xec4d8e read at ## 106, x6c29fa read
+here; xfcaaa2 verified note-less and extract-present before being named
+in the pointer below). This is deep-read 81, THREE of five since the
+edition-8 reset (## 103); no synthesis pass due. No inaccessible or
+blocked status this session; the extract was present, page-marked,
+complete and read in full (40 pp., body, all figures, tables, appendix
+proofs and references included).
+
+- **Library deep-read session 81** (front 2, third of the score-23
+  tier; note:
+  paper/research/library/2026-11-21_order_book_dynamics_liquid_markets_deep_read.md):
+  Rama Cont, Adrien de Larrard, "Order book dynamics in liquid markets:
+  limit theorems and diffusion approximations" (arXiv:1202.6412v1
+  [q-fin.TR], stamp 28 Feb 2012; 40 pp.), score 23, index entry x6c29fa.
+  The paper: the limit order book reduced to a piecewise-constant
+  (bid price, ask price, bid queue, ask queue) process under a
+  one-tick instantaneous-spread-closure assumption (spread one tick
+  >98% of observations on the sample day, wider spreads closing in
+  milliseconds, Table 3, Fig 4, PDF pp. 7-8), queue re-initializations
+  after each price change via a regulation map with declared depth
+  sequences (Def 1, Theorem 1, PDF pp. 8-11), a functional central
+  limit theorem under stationary durations, mixing order sizes with
+  finite second moment and a √n-scaled first moment (Assumptions 1-2,
+  PDF pp. 19-20; Pareto tails index > 2, Table 4, PDF p. 14), giving
+  queues that converge to a planar Brownian motion with drift and
+  flow-moment covariance re-initialized on boundary hits (Theorem 2,
+  eqs 13-14, PDF p. 21), a price process equal in the limit to the
+  difference of the boundary occupation times (Proposition 1, PDF
+  pp. 26-27), a conditional duration law with ρ-dependent tail index
+  (Proposition 2, PDF pp. 27-28) and a closed-form next-tick
+  probability pup(x, y) (Theorem 3, eqs 33-34, PDF pp. 29-30).
+  Findings, graded:
+  1. [reinforcing, no new item] The (s, qb, qa) reduction exists
+     only under the one-tick instantaneous-spread-closure assumption,
+     a 2008-liquid-equities property (PDF pp. 7-8); any L2
+     reconstruction borrowing the reduced form carries a spread
+     convention silently and falls under the already-queued
+     spread-convention declaration rule (deep-read 56, null-time 67);
+     this paper supplies the concrete mechanism for that rule. No
+     queue change.
+  2. [interpretation caution] Market orders and cancellations are
+     mathematically identical in this model class (both enter only
+     through the signed size V, PDF p. 7); every closed form is blind
+     to which one depleted a queue. No C1-L2/C8-adjacent net-flow
+     statistic may attribute depletion to a cancellation- or
+     taker-specific mechanism on this basis; the passive-cancellation
+     mechanism (blocked C5) is structurally invisible at this grain.
+     No queue change.
+  3. [source-quality note] The closed forms are regime- and
+     venue-indexed: balanced-flow statements (PDF pp. 27-29), ρ ≈ −0.7
+     "in practice" (PDF p. 28), a three-stock one-day crisis-era sample
+     (Citi/GE/GM, June 26, 2008) for every magnitude, Lévy limits when
+     order-size second moments fail (Remark 1, PDF p. 23) and the
+     paper's own note that heavy-traffic limits may fail to exist
+     (PDF p. 5). Nothing in Props 2-3 or Tables 3-5 may enter the
+     record as support; laundering ban binds; read, graded, recorded.
+  4. [candidate sharpening, PENDING OWNER RATIFICATION] The
+     queue-jump-diffusion generative-null pre-declaration queued as
+     the FORTY-SECOND candidate: before the L0 gate, any C1-L2/
+     C8-adjacent spec claiming an anticipatory, depletion-side or
+     queue-evacuation structure must pre-declare a moment-matched
+     queue-jump-diffusion null (planar Brownian increments with
+     drift (λaVa, λbVb) and covariance from the pre-declared flow
+     moments and ρ, re-initialized on boundary hits from a declared
+     post-move depth distribution F, per Theorem 2 + Definition 1, PDF
+     pp. 9-11, 21), with ALL null parameters — arrival rates, first
+     and second order-size moments, ρ, F and the moment-existence
+     check Assumption 2 requires (PDF pp. 19-20, 23) — frozen BEFORE
+     the data, and the structure shown to survive that null in the
+     subsample where its information lives. Earned by the paper's
+     measured mechanism: liquid-book queues are fluctuation-dominated
+     at intraday scales (drift-to-fluctuation ratio small across
+     Dow-Jones names, Fig 11, PDF p. 18; batch variance linear, Fig 13,
+     PDF p. 20; at 30 s the mean net queue change is roughly an order
+     of magnitude below its standard deviation, Table 5, PDF p. 24),
+     so a depletion-side "anticipation" drift could be pure diffusion
+     fluctuation with zero information and would survive any null
+     weaker than the measured regime. Harder-to-pass because a
+     queue-mechanic claim beating only a static-marginal or
+     weaker-variance null now fails by rule; tightens the two-null
+     admission family (log ## 17) by joining the Gould-Bonart Eq.-7
+     comparator, the tautology-controlled OFI benchmark, the
+     sign-persistence admission null and the deterministic-calendar
+     null with the null class specific to the queue mechanic, and
+     tightens the dynamics-identification rule for generative nulls
+     (null-time session 58) with a named flow-dynamics null carrying
+     that rule's freeze discipline. Full draft with the
+     killed-if-wrong counterfactual in the session note
+     (paper/research/library/2026-11-21_order_book_dynamics_liquid_markets_deep_read.md).
+  5. [reinforcing, no new item] The "averages out to a diffusion at
+     10-100 s" claim (PDF pp. 17-19) is ammunition, not evidence: it
+     motivates C1-L2's premise but supports nothing, and it is
+     assumption-indexed — a heavier-tailed venue exits the diffusion
+     regime (Remark 1, PDF p. 23), which is why the sharpening freezes
+     the moment check inside the null configuration. Nothing measured,
+     nothing armed.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (40 pp., body, figures, tables,
+  appendix proofs and references complete).
+- Ratification queue after this session: FORTY-TWO candidate
+  sharpenings plus probe E1, zero armed (ONE queued this session: the
+  queue-jump-diffusion generative-null pre-declaration, above; PENDING
+  OWNER RATIFICATION). T1 remains armed awaiting the owner's word in
+  its booked state (survived all five kill lines with sign inverted;
+  T2 tested-fail); the blocked list stays blocked. Deep-read queue
+  pointer: next UNREAD "A Million Metaorder Analysis of Market Impact
+  on the Bitcoin" (score 23, xfcaaa2), last of the score-23 tier (then
+  the score-22 tier opens with "Optimal Execution Using Reinforcement
+  Learning", x0fc07a) — re-read the live tail and recompute the tier
+  against the notes before consuming; the EDITION-8 cadence counter now
+  stands at THREE of five (deep-read 81 counted from the edition-8
+  reset at ## 103).
+- docs/DECISIONS_PENDING.md IS touched by this session (rule: one
+  candidate sharpening queued — the ratification line moves to
+  forty-two candidate sharpenings plus probe E1, zero armed, with the
+  new item named in the queue's parenthetical).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this session exit zero on the assembled changed files
+(marker and encoding checks; the changed files); the library-provenance
+audit and the full-tree sweeps run in CI over the full tree — the
+summaries are untouched this session — and must be verified green on
+both jobs before merge.
