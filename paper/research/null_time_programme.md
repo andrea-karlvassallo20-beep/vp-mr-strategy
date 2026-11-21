@@ -8279,3 +8279,128 @@ full (~37 pp.).
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py run this session exits
 zero on the assembled tree.
+
+## 88. Null-time session 80 (2026-11-21), library deep-read session 69 — the Brouty–Garcin–Roccaro spread-estimation-under-serial-dependence paper read; the price-process family shown to manufacture or erase the measured spread at the estimator's own silent bias (Roll's estimator carrying the identical bias), the estimator-and-scales choice shown to decide the answer on identical data, and the bootstrap relevance test's confidence intervals shown to reject the true value they were built around; no kill line moved, nothing sharpened
+
+Session-state note, per the goal-autonomy conductor protocol (edition
+5, ## 83, ACTIVE): the declared work choice is the standing deep-read,
+the protocol's default, which owes no justification; the synthesis
+cadence is NOT due this session — four deep-reads (## 84, ## 85, ## 86,
+## 87) had landed since the edition-5 reset at ## 83, out of five — and
+this session's read makes the count five of five, so the synthesis pass
+is due at the OPEN of the NEXT null-time session and that session must
+run it per the protocol's section 4 before any other front. The live
+tail was re-read before consuming: the ## 87 pointer named this paper as
+next UNREAD, and the score-25 tier order in the triage file recomputed
+against the 70 notes and the full log this session confirms it
+(x074d5c read at ## 85, x8f729f read at ## 87, then x6b73c4). Read-status
+reconciliation note for the record: this session's preparation flagged
+three score-25 slugs (x217e71 "Optimal execution with deterministically
+time varying liquidity: well posedness and price manipulation",
+x475f30 "High-Resilience Limits of Block-Shaped Order Books", x6aed5b
+"Detecting Financial Market Manipulation with Statistical Physics
+Tools") whose read status could not be replicated by slug-grep alone;
+re-checked against the full note set and the full log on the live
+tree, all three FOLLOW x6b73c4 in triage file order (x475f30 and
+x6aed5b immediately after it, x217e71 later in the tier), no note cites
+their slugs or titles, and no log entry reports reading them — they
+are UNREAD, the prior sessions' pointers skipped nothing, and the
+apparent discrepancy dissolves; recording it here anyway because a
+pointer discrepancy once suspected is recorded even when it dissolves.
+No inaccessible or blocked status this session; the extract was
+present, page-marked, complete and read in full (~40 pp.).
+
+- **Library deep-read session 69** (front 2, the score-25 tier; note:
+  paper/research/library/2026-11-21_spread_serial_dependence_brouty_deep_read.md):
+  Xavier Brouty, Matthieu Garcin, Hugo Roccaro (ESILV, Paris),
+  "Estimation of bid-ask spreads in the presence of serial dependence"
+  (arXiv:2407.17401v3 [q-fin.ST], 2024; extract dated 6 Jan 2025; zero
+  recorded citations, no published version found). A
+  microstructure-noise estimation paper: close prices p_t = m_t ± S/2
+  (eqs. 1-2, PDF pp. 3-4) hide a latent spread S, estimated by
+  variance-of-increments at scales (L, L′), V(Lτ) = Lτσ² + S²/2
+  (Thm 1, PDF pp. 5-6), then repaired under three dependence models:
+  fBm price with H ≠ 1/2 where V(Lτ) = (Lτ)^{2H}σ² + S²/2 (eq. 8,
+  PDF p. 8) and forcing H = 1/2 eats spread mass of order
+  4σ²τ^{2H}(1 − 2^{2H−1}) at (L,L′)=(1,2), with Roll's estimator shown
+  to carry EXACTLY the same bias, equal to −4 times the covariance of
+  successive increments (PDF pp. 8-9), the plug-in-Ĥ repair valid only
+  for H ≤ 3/4 (Thm 2, PDF p. 10; asymptotics PDF pp. 36-37);
+  autocorrelated trade signs via binarized OU signs where the standard
+  bias is −S²(2ρ − ρ²) ≤ 0, same for Roll (PDF pp. 12-13; eqs. 12-17);
+  and a four-parameter combined numerical least-squares fit (PDF p. 15).
+  Simulation (10,000 days of one-minute closes, PDF pp. 16-21): the
+  authors' bootstrap relevance test REJECTS Corwin–Schultz and AGK2 in
+  the BASELINE no-dependence model they were built for (Tables 1-2,
+  PDF pp. 17-18; e.g. CS bias −3.2×10−4 vs sd 6.0×10−5, p ≈ 1.1×10−7);
+  at H = 0.3 only Ŝ2,1, Ŝ4,1, AGK1 survive; in the autocorrelated-signs
+  model only Ŝ2,1, Ŝ3,1, Ŝ4,1 survive (PDF pp. 18-19); under infrequent
+  trading the high-low estimators degrade while close-price ones
+  (Roll, Ŝ1,1) hold down to π_liq = 0.1 (Fig. 5, PDF pp. 21-22). Real
+  data: CAC 40 one-minute bars, 19 Sep 2022-31 Mar 2023, truth the
+  daily average of 5-minute-sampled spreads (PDF pp. 22-23): the
+  UNCORRECTED Ŝ1,1 best on average (MAPE 6.06%, Ŝ2,1 and Roll tied at
+  7.01%, Ŝ3,1 14.88%, CS worst 20.21%, Table 5, PDF p. 22), the
+  ranking inverting toward small caps (Table 6, PDF p. 23), with the
+  authors' own close: "deciding to use Ŝ2,1 or Ŝ3,1 is a difficult task
+  without a deeper preliminary empirical study of the dataset"
+  (PDF p. 22).
+- Grade: NO kill line changes. NO new candidate sharpening — default
+  grade; every mechanism found is a page-cited instance of a
+  discipline the queue already carries.
+  1. [reinforcing, no new item] The price-process family alone
+     manufactures or erases the spread level (eq. 8 and the H = 1/2
+     bias, PDF pp. 8-9; CLT only H ≤ 3/4, PDF p. 10): one level deeper
+     than the ## 85 Langnau–Punche smile exhibit — there the level
+     STRUCTURE of a book statistic moved with the family, here the
+     headline spread LEVEL itself moves with the assumed H, silently in
+     the point estimate, and the field's default estimator (Roll)
+     carries the identical bias. Reinforces the price-process-family
+     invariance rule (#38) and the estimator-discipline family; no new
+     item.
+  2. [reinforcing, no new item] WHICH estimator, WHICH scales, WHICH
+     inputs decide the answer on identical data: benchmarks rejected in
+     their own baseline model (PDF pp. 17-18), survivor sets changing
+     wholesale with the dependence mode (PDF pp. 18-19), the empirical
+     rank flipping with the market-cap segment and input granularity
+     (PDF pp. 21-23, Table 5-6). Reinforces the estimator-configuration
+     freeze (#37), the named-estimator identity and the primary-metric
+     pre-commitment; no new item.
+  3. [reinforcing, no new item] The bootstrap relevance test is a
+     dispersion-register exhibit in the wild (Tables 1-4, PDF
+     pp. 17-19): narrow-enough variance plus persistent bias means the
+     estimator's own CI REJECTS the true value — significance coexisting
+     with full miscalibration. Reinforces the dispersion register: an
+     estimator must report its bias regime, never its variance alone; no
+     new item.
+  4. [interpretation caution] The measured "spread" is a
+     convention-of-instrument object: estimators targeting the same
+     latent S rank differently by input granularity, and the empirical
+     truth column is itself a sampling-convention proxy (PDF
+     pp. 21-23). Any C1-L2/C8 figure quoted as "the spread" or "the
+     cost" without its estimator identity, scales and sampling
+     convention is not yet a defined quantity; the spread-convention
+     declaration discipline governs. No queue change.
+  5. [source-quality note] arXiv v3, zero citations, no published
+     version; single market, single 6.5-month window, proxy truth,
+     plug-in estimation error only partially propagated, no
+     transaction costs in the empirical section; check for a journal
+     version before any formal citation.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked, complete and read in full (~40 pp.).
+- Ratification queue after this session: THIRTY-EIGHT candidate
+  sharpenings plus probe E1, zero armed (unchanged; nothing sharpened
+  this session). T1 remains armed awaiting the owner's word in its
+  booked state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked. Deep-read queue
+  pointer: next UNREAD "High-Resilience Limits of Block-Shaped Order
+  Books" (score 25, x475f30); re-read the live tail, recompute the
+  score-25 tier against the notes, and run the EDITION-5 SYNTHESIS PASS
+  FIRST (the cadence hits five of five with this session's read) before
+  consuming it.
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule:
+  nothing was sharpened here).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run this session exits
+zero on the assembled tree.
