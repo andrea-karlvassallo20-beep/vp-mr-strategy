@@ -48,20 +48,18 @@ time, and the pass's own session deep-read lands after it as ## 96):
 - Phase 2 (Crypto L2): ACTIVE, the Board's only active research front
   (C1-L2 → C8 → Convexity Sizing), blocked on the owner's data
   acquisition; the L0 dry run is unblocked. Unchanged.
-- Library: 74 deep-read notes through deep-read session 74 on main's tip
-  (the 75th lands this same session after this pass and counts); the
-  ratification queue holds THIRTY-NINE candidate sharpenings plus
-  probe E1, zero armed; T1 armed awaiting the owner's word in its booked
-  state (sign inverted); T2 tested-fail; the blocked list stays blocked.
-- Deep-read queue pointer: next UNREAD "Ascertaining price formation in
-  cryptocurrency markets with DeepLearning" (score 24, xe0397d), then the
-  score-24 remainder "Estimation for high-frequency data under parametric
-  market microstructure noise" (score 24, xdab650), "Optimal Execution in
-  a Multiplayer Model of Transient Price Impact" (score 24, x3e5ba8) and
-  "Order Flows and Limit Order Book Resiliency on the Meso-Scale"
-  (score 24, x5f35fd) — recomputed by title-matching the score-sorted
-  triage file against the live log tail this pass; xe0397d is consumed as
-  the pass session's second act (## 96).
+- Library: 76 deep-read notes through deep-read session 74 on main's tip
+  (the 77th lands this same session after this pass and counts); the
+  ratification queue holds FORTY candidate sharpenings plus probe E1,
+  zero armed; T1 armed awaiting the owner's word in its booked state
+  (sign inverted); T2 tested-fail; the blocked list stays blocked.
+- Deep-read queue pointer: the score-25 tier is CLOSED (log ## 93); next
+  UNREAD "Ascertaining price formation in cryptocurrency markets with
+  DeepLearning" (score 24, xe0397d), then "Estimation for high-frequency
+  data under parametric market microstructure noise" (score 24, xdab650)
+  — recomputed by title-matching the score-sorted triage file against
+  the live log tail this pass; xe0397d is consumed as the pass session's
+  second act (## 96).
 - Cadence: five deep-reads have landed since edition 6 (sessions 70-74,
   log ## 90 through ## 94), so this pass is due and ran first, per
   section 3 point 2; the cadence is RESET by this edition (next due at
@@ -72,41 +70,28 @@ this pass, stated as ranking evidence, nothing laundered: the five
 deep-reads of the edition-6 window (sessions 70-74) moved ZERO kill lines
 and queued exactly ONE sharpening (#39, the deterministic-calendar null,
 ## 93); four of the five reads queued nothing at all; the single new
-mechanism joined the two-null admission family as a fourth null needing
-no book-state input whatsoever — one tier deeper than the
-estimator-identity mechanisms of the edition-4 window, and the ## 94 read
-re-exhibited the family-dependence the #38 rule already covers as a
-page-cited instance rather than a new mechanism — the declining-yield
-expectation named at editions 3-6 continues to hold, and the tier
-boundary has now crossed the score-25 tier whole: the queue head sits at
-score 24. One operational ranking fact joins the record this window: the
-write-side ~64K truncation class named at ## 75/## 78 struck LIVE in
-session 85 on the log write path and was caught by read-back
-verification before merge (## 94 closing block) — the read-back
-verification helper is now evidenced, not theoretical.
+mechanism landed in the deterministic-null family beside the
+state-conditioned nulls, and the ## 94 read re-exhibited the same
+family-dependence as a page-cited instance of the #38 rule rather than
+a new mechanism — the declining-yield expectation named at editions 3-6
+continues to hold, and the score-25 tier CLOSED inside the window with
+the tier boundary now sitting inside the score-24 tier.
 
 Named gaps, against the registered specs and reading lists (this pass's
 product, each at zero status until its channel fires it):
 
 - The append-only log's write-side ~64K truncation class (## 75, ## 78)
-  still has NO standing CI check enforcing byte-size monotonicity of
-  the large tracked files, and no session-side read-back verification
-  helper for large reads AND writes through the tooling path; the class
-  has now produced one caught live instance (## 94). Named;
-  candidate-improvement status only, its priority raised by the near-miss.
-- The weekly directorate (section 6) has still not sat; thirty-nine
-  candidates plus probe E1 pending, zero armed; the G2 directorate
-  briefs (docs/DIRECTORATE_BRIEFS.md) cover the first thirty-three
-  queued items, so briefs for items 34-39 plus any ratified successor
-  are owed before the next sitting — the G2 refresh remains the
-  highest-leverage lawful non-deep-read work item.
-- The GOALS.md status board drifted: sessions 82-85 advanced front 2 and
-  the cadence in the log without refreshing the board's STATUS lines (the
-  front 2 pointer stood two reads stale, the front 4 cadence note stale
-  at the edition-6 ONE-of-five mark). This pass refreshes the board as
-  standing bookkeeping under the cross-reference amendment (## 64) and
-  names the discipline: a session that advances a front refreshes its
-  STATUS line in the same push. Zero gate authority, either way.
+  was hit AGAIN at ## 94 on the log write path and caught before merge
+  by read-back verification; it still has NO standing CI check enforcing
+  byte-size monotonicity of the large tracked files, and no session-side
+  read-back verification helper for large reads AND writes through the
+  tooling path. Named; candidate-improvement status only.
+- The weekly directorate (section 6) has still not sat; FORTY candidates
+  plus probe E1 pending, zero armed; the G2 directorate briefs
+  (docs/DIRECTORATE_BRIEFS.md) cover the first thirty-three queued
+  items, so briefs for items 34-40 plus any ratified successor are owed
+  before the next sitting — the G2 refresh remains the highest-leverage
+  lawful non-deep-read work item.
 - Front 3's analysis legs remain blocked on codespace/data presence.
   No session action available.
 
@@ -118,35 +103,29 @@ onward; #75 lands this same session and counts). Work-selection guidance
 contributed by this edition (binding on sessions until superseded by
 the next edition or the owner's word; non-binding on the owner): for the
 next non-deep-read-preferring session, the GOALS.md G2 brief refresh
-(items 34-39 plus probe E1) is the ranked choice, ahead of the read-back
-verification helper, which remains named infrastructure work, now with a
-live caught instance behind it, and stays claimable (rotation rule point
-4, infrastructure repair); the deep-read remains the floor and stays
-lawful between briefs. Attendance note, non-binding: the directorate has
-not sat in the seven days since the standing order was made; the queue
-grows one sharpening per edition window on current evidence, so the
-one-sitting batch remains the cheapest resolution channel available to
-the owner.
+(items 34-40 plus probe E1) is the ranked choice, ahead of the read-back
+verification helper, which remains named infrastructure work and stays
+claimable (rotation rule point 4, infrastructure repair); the
+deep-read remains the floor and stays lawful between briefs.
 
 Edition rule: this section (2) is rewritten ONLY by a synthesis pass, as a
 dated edition increment (edition n+1 replaces the previous section whole,
 with the log entry recording the change), OR by the owner's direct dated
-instruction. Nothing else edits it. Edition 1 (the five-item backlog of
-the landing session) is preserved in log entry ## 58; edition 2 (the
+instruction. Nothing else edits it. Edition 1 (the five-item backlog of the
+landing session) is preserved in log entry ## 58; edition 2 (the
 eight-front configuration installed under the owner's 2026-11-19
 configuration instruction) is preserved in log entry ## 60's record;
 edition 3 (the first synthesis-pass edition) is preserved in log entry
 ## 69's record; edition 4 (written at ## 76, never landed through the
-session-71 corruption, preserved in log entry ## 76's record) and
-edition 5 (the third synthesis-pass edition, preserved in log entry
-## 83's record and in this file's git history and section 10), and
-edition 6 (the fourth synthesis-pass edition, preserved in log entry
-## 89's record and in this file's section 11) are all superseded whole
-by this edition 7, the fifth synthesis-pass edition; the facts block was
-recomputed whole from the live record, and the front order is unchanged
-— the re-ranking authority the owner granted is exercised here only in
-the status notes and the work-selection guidance, with the reasoning
-recorded above and nothing gated touched.
+session-71 corruption, preserved in log entry ## 76's record), edition 5
+(the third synthesis-pass edition, preserved in log entry ## 83's record
+and in this file's git history and section 10) and edition 6 (the fourth
+synthesis-pass edition, preserved in log entry ## 89's record and section
+11) are all superseded whole by this edition 7, the fifth synthesis-pass
+edition; the facts block was recomputed whole from the live record, and
+the front order is unchanged — the re-ranking authority the owner granted
+is exercised here only in the status notes and the work-selection guidance,
+with the reasoning recorded above and nothing gated touched.
 
 ## 3. The director policy (how a session chooses)
 
@@ -323,6 +302,7 @@ amend); DECISIONS_PENDING.md is untouched BY THE PASS; nothing
 measured, nothing armed, nothing trades live. Sections 1, 3-10 above
 stand verbatim. The pass session's own deep-read (#70) lands as this
 session's second act (## 90).
+
 ## 12. Edition 7 note (2026-11-21, log entry ## 95)
 
 The fifth synthesis pass under the standing order ran as null-time
@@ -332,16 +312,12 @@ deep-reads 70-74 since the edition-6 reset at ## 89, log ## 90 through
 rewritten whole as EDITION 7 per the edition rule and section 4's
 product list — facts block recomputed from the live record at ## 94
 (five deep-reads since edition 6, zero kill-line moves, ONE sharpening
-queued in the window, queue thirty-nine plus probe E1), edition 6
-superseded whole with its substance preserved in log entry ## 89's
-record and this file's git history, the ranked fronts unchanged in
-order with statuses recomputed, the named gaps and work-selection
-guidance as recorded in section 2, cadence reset (#75 onward). No
-sharpening was queued by this pass (the pass names gaps, it does not
-amend); DECISIONS_PENDING.md is untouched BY THE PASS; the pass
-additionally refreshed the GOALS.md status board's stale STATUS lines
-(front 2 pointer, front 4 cadence note, G2 entry count, header edition)
-as standing bookkeeping under the cross-reference amendment (## 64),
-zero gate authority; nothing measured, nothing armed, nothing trades
+queued in the window, queue forty plus probe E1), edition 6 superseded
+whole with its substance preserved in log entry ## 89's record and this
+file's git history, the ranked fronts unchanged in order with statuses
+recomputed, the named gaps and work-selection guidance as recorded in
+section 2, cadence reset (#75 onward). No sharpening was queued by this
+pass (the pass names gaps, it does not amend); DECISIONS_PENDING.md is
+untouched BY THE PASS; nothing measured, nothing armed, nothing trades
 live. Sections 1, 3-11 above stand verbatim. The pass session's own
 deep-read (#75) lands as this session's second act (## 96).

@@ -1,9 +1,8 @@
-# Pending owner decisions — the thirty-fourth dashboard
+# Pending owner decisions — the thirty-fifth dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-21, the
-deterministic-calendar null queued as the thirty-ninth candidate
-sharpening (null-time session 84, log ## 93), closing the score-25
-deep-read tier; audited against
+adaptive-retraining disclosure queued as the fortieth candidate
+sharpening (null-time session 86, log ## 96); audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
 Every item below is BLOCKED ON YOUR WORD — nothing runs, arms, or merges
@@ -36,7 +35,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: thirty-nine
+  library deep-reads and the ratified exploratory channel: forty
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -54,9 +53,40 @@ each case. Items are ordered by how much they gate.
   session 63 / null-time session 74, plus the price-process-family
   invariance rule queued 2026-11-20 by deep-read session 66 /
   null-time session 77, plus the deterministic-calendar null queued
-  2026-11-21 by deep-read session 73 / null-time session 84; probe E1
-  stands separately and is not counted among the thirty-nine); most
-  recently joined 2026-11-21, the deterministic-calendar null (before
+  2026-11-21 by deep-read session 73 / null-time session 84, plus the
+  adaptive-retraining disclosure queued 2026-11-21 by deep-read session
+  75 / null-time session 86; probe E1 stands separately and is not
+  counted among the forty); most recently joined 2026-11-21, the
+  adaptive-retraining disclosure
+  (BEFORE the L0 gate, any C1-L2/C8-adjacent comparator, null, or
+  baseline that adapts — retrains, re-tunes, re-estimates or re-selects —
+  inside its own evaluation window must pre-declare the adaptation rule
+  (trigger, data consumed, cadence) in the same pre-registration as its
+  frozen configuration and report the frozen-configuration number
+  side-by-side; a number that exists only after its model has consumed
+  the evaluation data may not enter any spec as support — the
+  Fang–Chung–Ventre–Basios cryptocurrency deep-learning paper proves the
+  mechanism is real: the universal LSTM decays to almost random guessing
+  on live data (Fig. 9, PDF pp. 14-15), the headline 78% live accuracy
+  exists only under walkthrough retraining that consumes the live data
+  every 196 predictions (PDF p. 17: below 50% before the first retrain,
+  lifted through 58% to 78%, stabilized near 76%; Table 7, PDF pp.
+  18-19), the static multi-label model falls below 40% against a 25%
+  random floor (PDF p. 19), and the retrain trigger itself is
+  analyst-tuned ("Modified MDD" over 15%, PDF p. 9), so a comparator
+  whose apparent competence is manufactured by in-window adaptation
+  would otherwise pass as an honest baseline, and an adapted-in-window
+  null would track any regime change by construction and could never
+  refute anything; harder-to-pass because an adapted number that beats
+  the data only after consuming it now fails at the gate instead of
+  surviving as a baseline; tightens the estimator-configuration freeze
+  by extending the pre-commitment from WHICH estimator in WHICH
+  configuration to WHICH adaptation rule, the same declaration axis as
+  the dynamics-identification rule for generative nulls (a refutation
+  instrument may not silently change during the refutation); full draft
+  with the killed-if-wrong counterfactual in
+  paper/research/library/2026-11-21_cryptocurrency_deep_learning_price_formation_deep_read.md),
+  and earlier the same day, the deterministic-calendar null (before
   the L0 gate, any C1-L2/C8-adjacent spec interpreting an intraday
   anticipatory, reversal, impact-decay or buy-before-sell-type structure
   as conditioned on book state or flow must pre-declare a
