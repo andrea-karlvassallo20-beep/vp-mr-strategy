@@ -8577,3 +8577,103 @@ sections present).
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py run this session exits
 zero on the assembled tree.
+
+
+## 91. Null-time session 82 (2026-11-21): library deep-read session 71 — the Li-Polukarov-Ventre statistical-physics spoofing paper read; the "momentum" detector shown to be a function of an analyst-chosen, declared-unautomatable area-depth parameter; its validation shown to be self-inserted synthetic events; its Z-score comparison shown to be a comparator-choice artefact; no kill line moved, nothing sharpened
+
+Session-state note, per the goal-autonomy conductor protocol (edition 6, ## 89,
+ACTIVE): the live main tail (through ## 90) and docs/DECISIONS_PENDING.md were
+read first; the declared work choice is the standing deep-read ritual, the
+protocol's default (section 3 point 1); the ## 90 pointer named this paper as
+next UNREAD and the tier order was re-verified against the live file state
+(x475f30 read ## 90, then x6aed5b). The edition-6 cadence counter stands at TWO
+of five with this session's read (#70 at the ## 89 reset, #71 here). No
+inaccessible or blocked status this session; the extract was present,
+page-marked, complete and read in full (~20 pp., ending inside the reference
+list at PDF p. 20, all body sections present).
+
+- **Library deep-read session 71** (front 2, the score-25 tier; note:
+  paper/research/library/2026-11-21_statistical_physics_manipulation_deep_read.md):
+  Haochen Li, Maria Polukarov, Carmine Ventre, "Detecting Financial Market
+  Manipulation with Statistical Physics Tools" (arXiv:2308.08683v1 [q-fin.TR],
+  2023; zero recorded citations in the acquisition index; the index records
+  "Polukarova" where the extract header reads "Polukarov" — check before any
+  formal citation). A Level-3 (message-level) Coinbase study modelling orders
+  as physical particles with velocities measured against the boundary of an
+  analyst-chosen "active area" [bM − α, aM + α] (eqs. 1-4, PDF pp. 4-5),
+  order momentum m = size × velocity (PDF p. 5), an active-area cumulative net
+  momentum M (eq. 5, PDF p. 6) and a passive-area analogue M_passive (eq. 6,
+  PDF pp. 8-9) on BTC/USD and the LUNA/USD flash-crash hours (PDF pp. 5-7),
+  with spoofing/layering detected as the largest in-window standardised
+  deviations of M_passive (PDF pp. 13-15), validated by inserting the
+  authors' own synthetic spoofing orders into the real stream (Tables 1a/1b,
+  5; PDF pp. 11-13, 17-18) and compared against Z-scores computed on raw
+  order sizes (Tables 3-4, PDF pp. 15-18).
+- Grade: NO kill line changes. NO new candidate sharpening — default grade;
+  every mechanism found is a page-cited instance of a discipline the queue
+  already carries.
+  1. [reinforcing, no new item] The headline statistic is a function of an
+     analyst constant the authors themselves declare unautomatable: the
+     active-area depth α is "left to be determined by the observer" with "no
+     known automated algorithm" fixing it (PDF p. 10), hand-set to 100 for
+     BTC/USD and 0.5 for LUNA/USD (PDF pp. 6-8), and the detection instrument
+     M_passive substitutes 2α for α (PDF p. 8) — so which jumps are the
+     "spoofing" ones moves with a free per-market parameter chosen by hand.
+     The estimator-configuration freeze (#37) exhibited in a fourth costume:
+     the area-depth convention must be pre-frozen before the data or the
+     flagged events are properties of α, not of the market. No new item.
+  2. [reinforcing, no new item] The "outperforms Z-score" verdict (PDF
+     pp. 17-19) compares the momentum measure against Z-scores computed on
+     RAW ORDER SIZES (PDF pp. 15-17) — a comparator-choice artefact of the
+     primary-metric pre-commitment rule (#33): the metric choice alone
+     decides the ranking, no decision threshold, ROC or false-positive rate
+     is reported anywhere ("largest ten deviation values" lists, PDF
+     pp. 13-15, are the whole decision procedure). No new item.
+  3. [interpretation caution] The paper's performance evidence is
+     self-poisoned by construction: validation is detection of events the
+     same authors injected (Tables 1a/1b, 5; PDF pp. 11-13, 17-18), and the
+     original-data detections carry no ground-truth labels (the paper says
+     plainly that manipulation events are neither labelled nor identified,
+     PDF p. 11 — its own stated reason for synthetic data), the spoofing
+     attribution being made by inspection ("reasonable to infer", PDF p. 15).
+     Any "detection rate" from this class of literature is a label-provenance
+     claim first; synthetic-insertion validation licenses nothing about
+     real-data performance. The library-is-ammunition invariant already bars
+     all such figures; no queue change.
+  4. [interpretation caution] The in-window standardisation
+     (net momentum − mean)/std (PDF p. 13) is computed over the same
+     one-hour windows that contain the crash it flags — a windowing
+     convention whose choice partly manufactures the "anomaly" content, the
+     regime-window pre-declaration's (#32) reading-discipline cousin. No
+     queue change.
+  5. [cost-survival ammunition] The spoofing economics — spoof orders
+     placed just outside the active area to avoid execution, manipulation
+     concentrated in poor-liquidity markets (PDF pp. 9-11) — recorded only
+     as assumptions a future K7-style cost-survival layer or C8
+     manipulation-adjacent control arm would have to declare; never
+     operationalized, nothing armed.
+  6. [source-quality note] arXiv v1, zero recorded citations, no published
+     version recorded; internal date inconsistencies (BTC data described as
+     20/04/2022 at PDF p. 6, figures labelled 19/04/2022, and the synthetic
+     figure caption reading "19/04/2023", PDF p. 17); no formal statistical
+     test anywhere. A proof-of-concept preprint graded plainly below its
+     score-25 rank — the session-9 triage-audit flag working as designed.
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (~20 pp., body complete).
+- Ratification queue after this session: THIRTY-EIGHT candidate sharpenings
+  plus probe E1, zero armed (unchanged; nothing sharpened this session). T1
+  remains armed awaiting the owner's word in its booked state (survived all
+  five kill lines with sign inverted; T2 tested-fail); the blocked list stays
+  blocked. Deep-read queue pointer: next UNREAD "Multivariate General Compound
+  Point Processes in Limit Order Books" (score 25, xd0900e), then the score-25
+  remainder (x217e71, "Optimal execution with deterministically time varying
+  liquidity: well posedness and price manipulation") — re-read the live tail
+  and recompute the tier against the notes before consuming; the EDITION-6
+  cadence counter now stands at TWO of five (#70, #71 counted from the
+  edition-6 reset at ## 89).
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule: nothing was
+  sharpened here).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades live.
+Guard clean: python3 src/integrity_guard.py run this session exits zero on the
+assembled tree.
