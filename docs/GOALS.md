@@ -1,8 +1,8 @@
 # GOALS.md — the fronts status board (operative work-selection companion)
 
 **Status:** the session-facing status board for the goal-state fronts, per
-the conductor protocol (goal state **edition 6**, protocol section 2;
-change recorded log ## 89; rotation guidance, section 3; weekly directorate,
+the conductor protocol (goal state **edition 7**, protocol section 2;
+change recorded log ## 95; rotation guidance, section 3; weekly directorate,
 section 6; landed
 2026-11-19) and the owner's standing order recorded MADE in
 `docs/DECISIONS_PENDING.md` (resolved item, 2026-11-19). The protocol's
@@ -62,7 +62,7 @@ construction.
    readiness; L2-chain work takes precedence over all fronts that
    serve it.
 
-## Status board (protocol section 2, edition 6)
+## Status board (protocol section 2, edition 7)
 
 - Front 1 — the gated L2 window. STATUS: THE CRITICAL PATH (Board
   directive, 2026-11-19). Still blocked on the owner (environment + data:
@@ -80,27 +80,32 @@ construction.
   against the log tail; the score-25 tier still holds xd0900e (score
   25) and x217e71 after it; re-read the live tail before consuming;
   the ritual's slug-keyed unread rule applies. NOTE (refreshed
-  2026-11-21, null-time session 81, log ## 89): the deep-read counter
-  since EDITION 6 stands at ONE of five (deep-read 70, landed this same
-  session, counted from the edition-6 reset at ## 89); the G2
-  directorate briefs cover the first thirty-three of the now
-  THIRTY-EIGHT queued sharpenings, so a brief refresh (items 34-38
-  plus probe E1) is owed before the next sitting and is this edition's
-  ranked non-deep-read choice.
+  2026-11-21, null-time session 86, log ## 95): the score-25 tier is
+  CLOSED (consumed through ## 93); next UNREAD "Ascertaining price
+  formation in cryptocurrency markets with DeepLearning" (score 24,
+  xe0397d), consumed as this same session's second act (## 96), then
+  the score-24 remainder (xdab650, x3e5ba8, x5f35fd); re-read the live
+  tail before consuming. The deep-read counter since EDITION 7 stands
+  at ONE of five once #75 lands (counted from the edition-7 reset at
+  ## 95); the G2 directorate briefs cover the first thirty-three of
+  the now THIRTY-NINE queued sharpenings, so a brief refresh (items
+  34-39 plus probe E1) is owed before the next sitting and is this
+  edition's ranked non-deep-read choice.
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
   without real klines, and no invented data is substituted.
-- Front 4 — the synthesis pass. STATUS: NOT DUE (refreshed 2026-11-21,
-  null-time session 81, log ## 89): the edition-5 cadence check was
+- Front 4 — the synthesis pass. STATUS: DISCHARGED, RESET (refreshed 2026-11-21,
+  null-time session 86, log ## 95): the edition-6 cadence check was
   discharged by this session's pass (five of five deep-reads since the
-  edition-5 reset at ## 83: sessions 65-69, log ## 84-## 88; the pass ran
-  first and is recorded as goal state EDITION 6, log ## 89); cadence
-  per edition 6: next due when five or more deep-reads have landed
-  since edition 6 (deep-read #70 onward, reset at ## 89; #70 landed
-  this same session and counts, so the counter stands at ONE of five).
-  NOTE: edition 5 is superseded whole by edition 6 (same protocol
-  section 11 note; edition 5's substance preserved in the ## 83 log
-  record and the protocol's section 10).
+  edition-6 reset at ## 89: sessions 70-74, log ## 90-## 94; the pass
+  ran first and is recorded as goal state EDITION 7, log ## 95);
+  cadence per edition 7: next due when five or more deep-reads have
+  landed since edition 7 (deep-read #75 onward, reset at ## 95; #75
+  lands this same session and counts, so the counter stands at ONE of
+  five).
+  NOTE: edition 6 is superseded whole by edition 7 (same protocol
+  section 12 note; edition 6's substance preserved in the ## 89 log
+  record and the protocol's section 11).
 - Front 5 — gap-driven probes. STATUS: standing, per
   `docs/exploratory_channel.md`; up to one block per session at the
   session's discretion.
@@ -132,16 +137,18 @@ its verdicts stay frozen, and nothing here re-opens the archive.
 
 G2. Ratification-readiness briefs. ENTRY: any session; strongest
 claim when front 2 is between reads. FEEDS: the weekly directorate —
-one-page accept/reject briefs for the queued THIRTY-THREE sharpenings
+one-page accept/reject briefs for the queued THIRTY-NINE sharpenings
 plus probe E1, grouped by the precedent they tighten. BOUNDARY:
 briefs summarize already-recorded proposals with their sources; a
 brief invents nothing, queues nothing new, and arms nothing. STATUS:
-PREPARED (2026-11-20, null-time session 66, log ## 70):
-docs/DIRECTORATE_BRIEFS.md holds the batch-ratify reading for all
-thirty-three queued sharpenings plus probe E1, grouped into nine
-families by the precedent each one tightens, with the count
-reconciliation and per-item sources recorded; the briefs summarize
-recorded proposals only, queued nothing, and armed nothing.
+PARTIALLY PREPARED (refreshed 2026-11-21, null-time session 86, log
+## 95): docs/DIRECTORATE_BRIEFS.md holds the batch-ratify reading for
+the first thirty-three of the now THIRTY-NINE queued sharpenings plus
+probe E1, grouped into nine families by the precedent each one
+tightens, with the count reconciliation and per-item sources
+recorded; briefs for items 34-39 plus probe E1 are owed before the
+next sitting; the briefs summarize recorded proposals only, queued
+nothing, and armed nothing.
 
 G3. C8 skeleton coherence. ENTRY: after a synthesis pass with
 C8-relevant output, or on finding a gap in the skeleton's

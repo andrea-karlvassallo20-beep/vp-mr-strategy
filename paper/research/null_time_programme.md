@@ -9015,3 +9015,98 @@ read-back verification (the pushed bytes were re-read from the branch
 and checked against the assembled file); the working branch carried a
 truncated intermediate commit, superseded whole by the verified commit
 in this same push series; main never saw it.
+
+## 95. Null-time session 86 (2026-11-21), first act: the fifth synthesis pass — the cadence recomputed from the edition-6 reset at ## 89 (FIVE of five: deep-reads 70-74, log ## 90 through ## 94), goal state rewritten as EDITION 7, the GOALS.md status board refreshed against the drift found (front 2 pointer two reads stale, front 4 cadence note stale), the write-side truncation gap raised in priority by its first caught live instance; NO sharpening queued by the pass
+
+Session-state note, per the goal-autonomy conductor protocol (edition 6,
+## 89, ACTIVE; session 85's ## 94 pointer): the live main tail (through
+## 94 at 5a28e43, including the ## 93/## 94 separator typo-fix at
+5a28e43) and docs/DECISIONS_PENDING.md were read first; the cadence check
+was recomputed from first principles against the edition-6 reset at
+## 89 — deep-read 70 landed ## 90, 71 landed ## 91, 72 landed ## 92,
+73 landed ## 93, 74 landed ## 94: five of five, so per the conductor
+protocol section 3 point 2 and the rotation rule's first clause the
+synthesis pass runs FIRST, and this session's deep-read follows as its
+second act (## 96). The declared work choice is the pass, then the
+standing deep-read, matching the ## 94 pointer's own instruction.
+
+Facts recomputed from the live record (main tail through ## 94 at pass
+time):
+
+- Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
+  2026-11-19; archived is NOT falsified; every kill line stays frozen;
+  unchanged. Phase 2 (Crypto L2): ACTIVE, the Board's only active
+  research front (C1-L2 → C8 → Convexity Sizing), blocked on the
+  owner's data acquisition; the L0 dry run is unblocked. Unchanged.
+- Library: seventy-four deep-read notes through deep-read session 74 on
+  main's tip; the ratification queue holds THIRTY-NINE candidate
+  sharpenings plus probe E1, zero armed; T1 armed awaiting the owner's
+  word in its booked state (survived all five kill lines with sign
+  inverted; T2 tested-fail); the blocked list stays blocked.
+- Deep-read queue pointer: next UNREAD "Ascertaining price formation in
+  cryptocurrency markets with DeepLearning" (score 24, xe0397d), then
+  the score-24 remainder (xdab650, x3e5ba8, x5f35fd, same score) —
+  recomputed by title-matching the score-sorted triage file against the
+  live log tail this pass; xe0397d is consumed as this session's second
+  act (## 96) and #75 counts toward the edition-7 cadence.
+- Cadence: five deep-reads have landed since edition 6 (sessions 70-74,
+  log ## 90 through ## 94), so this pass is due and runs first; the
+  cadence is RESET by this edition (next due at five or more deep-reads
+  since edition 7; #75 onward).
+
+What the window since edition 6 taught (ranking evidence, nothing
+laundered): five deep-reads (70-74) moved ZERO kill lines and queued
+exactly ONE sharpening (#39, the deterministic-calendar null, ## 93);
+four of the five reads queued nothing; the single new mechanism joined
+the two-null admission family as a fourth null carrying no book-state
+input at all, and the ## 94 read re-exhibited the #38 family-dependence
+as a page-cited instance — the declining-yield expectation named at
+editions 3-6 continues to hold, and the queue head has crossed the
+score-25 tier whole: it now sits at score 24. One operational fact
+joins the ranking evidence: the write-side ~64K truncation class named
+at ## 75/## 78 struck LIVE in session 85 on the log write path and was
+caught by read-back verification before merge (## 94 closing block);
+the class is now evidenced, and the read-back verification helper
+carries that instance in its case file.
+
+Products of this pass, through the sanctioned channels only:
+
+- docs/goal_autonomy_protocol.md: section 2 rewritten whole as goal
+  state EDITION 7 per the edition rule and section 4's product list
+  (edition 6 superseded whole with its substance preserved in the
+  ## 89 record and the file's git history); a section 12 note appended
+  recording the change; sections 1, 3-11 verbatim-unchanged.
+- docs/GOALS.md: the stale STATUS lines refreshed as standing
+  bookkeeping under the cross-reference amendment (## 64) — the header
+  edition line (edition 7, log ## 95), the front 2 note (counter and
+  pointer recomputed), the front 4 note (edition-6 cadence discharged
+  by this pass; edition-7 reset, counter ONE of five once #75 lands),
+  and the G2 entry count (briefs cover thirty-three of thirty-nine).
+  Zero gate authority touched: the board carries statuses only.
+- Named gaps (recorded in section 2, each at zero status): the
+  write-side ~64K truncation class, now with one caught live instance,
+  still with no standing CI byte-size-monotonicity check and no
+  read-back verification helper; the weekly directorate still not sat,
+  thirty-nine candidates plus probe E1 pending, G2 briefs owed for
+  items 34-39 plus any ratified successor before the next sitting; the
+  GOALS.md status-board drift itself, named as a discipline (a session
+  that advances a front refreshes its STATUS line in the same push);
+  front 3's analysis legs still blocked on codespace/data presence.
+- Work-selection guidance recorded in section 2, binding on sessions
+  until superseded: the G2 brief refresh (items 34-39 plus probe E1)
+  stays the ranked non-deep-read choice; the read-back verification
+  helper stays second, now evidenced by the ## 94 near-miss; the
+  deep-read remains the floor.
+
+Ratification queue after this act: THIRTY-NINE candidate sharpenings
+plus probe E1, zero armed (ZERO queued by the pass; the pass names
+gaps, it does not amend). docs/DECISIONS_PENDING.md is NOT touched BY
+THE PASS. T1 remains armed awaiting the owner's word; the blocked list
+stays blocked.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py --sweep and
+--encoding run this act exit zero on the assembled tree (the changed
+files; marker and encoding checks); the library-provenance audit runs
+in CI over the full tree and was verified green on both jobs before
+merge.
