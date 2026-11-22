@@ -1,4 +1,3 @@
-Additional content from `tools.github_app.get_file_contents` (call 1):
 # The null-time programme — what gets done while the L2 environment is being built
 
 Written 2026-11-16, after the math layer verification (math_verification_2026-11-16.md),
@@ -11348,3 +11347,148 @@ changed files (the session note and this log append), exiting zero; the
 library-provenance audit and the full-tree sweeps run in CI over the full
 tree — the summaries are untouched this session — and must be verified
 green on both jobs before merge.
+
+
+## 115. Null-time session 97 (2026-11-22), fifth act: library deep-read session 87 — the Alfonsi-Infante Acevedo time-varying-LOB read, fifth and last of the score-22 tier; the paper graded an ammunition-grade viability-theory work proving in print that a canonical impact family is internally arbitrageable in computable parameter regions (PMS iff 2ρ+η<0 or 2ρ−η<0 by reversion convention, TTPM tripling traded volume even where PMS is excluded), from which ONE harder-to-pass sharpening is queued, an impact-viability pre-declaration for generative nulls, joining the dynamics-identification family; NO kill line moved; the ratification queue stands at forty-seven candidate sharpenings plus probe E1
+
+Session-state note first (goal-autonomy protocol, ACTIVE; goal state edition
+9, ## 111): the work choice for this session is the standing deep-read ritual
+its own default (protocol section 3 point 1; ratified-cadence check run: the
+edition-9 counter stands at THREE of five after deep-read 86, so the synthesis
+pass is NOT due; the declared non-deep-read alternatives stand ranked but the
+readable UNREAD head exists and the directive in force names the deep-read as
+the session's work). Verified against live state before reading: the main
+tail read through ## 114 (deep-read 86, the Rola Boltzmann-price read),
+docs/DECISIONS_PENDING.md read (ratification line: forty-six candidates plus
+probe E1, zero armed), the triage file
+score-sorted and recomputed against the live library note listing (the
+score-22 tier: x0acf9d consumed ## 112, x1a712b consumed ## 113, x85b5e3
+consumed ## 114; next UNREAD x750e2f "Optimal execution and price
+manipulations in time-varying limit order books" verified note-less, the
+last of the tier; the extract present, page-marked; the open-PR set read at
+session start: empty, no race). This is
+deep-read 87, the FOURTH read counted against the edition-9 cadence (counter
+FOUR of five; no synthesis pass due). No inaccessible or blocked status
+this session; the extract was present, page-marked, complete and read in
+full (25 PDF pages, abstract through references included).
+
+- **Library deep-read session 87** (front 2, fifth and last of the score-22
+  tier; note:
+  paper/research/library/2026-11-22_optimal_execution_time_varying_lob_deep_read.md):
+  Aurélien Alfonsi and José Infante Acevedo, "Optimal execution and price
+  manipulations in time-varying limit order books" (arXiv:1204.2736v1
+  [q-fin.TR], Université Paris-Est, CERMICS), score 22, index entry x750e2f.
+  The paper: the Alfonsi-Fruth-Schied general-shape LOB impact model extended
+  to a time-varying depth λ(t) with time-varying deterministic resilience ρ_t
+  under two reversion conventions (volume-impact reversion "model V", price
+  impact reversion "model P", Def. 1.1, PDF p. 3; E_t = λ(t)F(D_t), Eq. 5), a
+  martingale unaffected price with market orders only and an infinite-depth
+  book (PDF p. 3, Eq. 4), explicit optimal discrete and continuous execution
+  strategies for block-shaped books (Thms. 2.1-2.2 and their limits, PDF
+  pp. 7-10) and verification-argument optimality for general shapes under
+  opposite monotonicity assumptions on f (Assumptions 2.1/2.2, Thms. 2.3-2.6,
+  PDF pp. 10-14), exact necessary-and-sufficient viability conditions: no PMS
+  iff 2ρ_t+η_t ≥ 0 in model V (Cor. 2.1 with the negative-cost round-trip
+  construction Eq. 20, PDF p. 7), iff 2ρ_t−η_t ≥ 0 in model P (Cor. 2.3, PDF
+  p. 10), power-law refinements (Cors. 2.5, 2.7, PDF pp. 12, 15), TTPM
+  exclusions with sign-derivative conditions (Eqs. 22, 30, PDF pp. 8, 10), a
+  market-maker reading where adding limit orders never creates a PMS in model
+  V while cancelling can (PDF pp. 7, 10, 19-20), and a TTPM illustration
+  where the optimal strategy triples the traded volume under λ(t) =
+  4 + cos(2πt) (Fig. 1, PDF pp. 8-9). No empirics anywhere; all figures are
+  model illustrations. Findings, graded:
+  1. [reinforcing, no new item] Every result is model-relative viability
+     theory under deterministic resilience and depth: an exogenous martingale
+     price, deterministic smooth λ and ρ, no data, no costs, no estimation,
+     a constructed sinusoidal depth calendar (PDF pp. 3, 8-9). "No
+     manipulation" theorems are internal-consistency statements about an
+     impact model's parameter region, not market claims; magnitudes banned
+     under the laundering rule; the deterministic-calendar shape is exactly
+     the artifact family the queued deterministic-calendar null (deep-read
+     73) blocks on our side. No queue change.
+  2. [candidate sharpening, PENDING OWNER RATIFICATION] The paper proves in
+     print that a canonical published impact family is internally
+     arbitrageable in computable parameter regions (PMS iff 2ρ+η<0,
+     Cor. 2.1/Eq. 20, PDF p. 7; iff 2ρ−η<0, Cor. 2.3, PDF p. 10) and that a
+     PMS-free book can still admit TTPM tripling traded volume (Fig. 1, PDF
+     pp. 8-9), so a simulator layer built on this family emits
+     arbitrage-shaped or sign-alternating volume artifacts with no marginal
+     signature — and no queued rule catches it (the dynamics-identification
+     rule checks marginal/flow statistics; the queue-jump-diffusion
+     pre-declaration (deep-read 81) declares flow dynamics, not impact-layer
+     viability). Queued, the impact-viability pre-declaration for generative
+     nulls, tightening the dynamics-identification rule: any generative null,
+     placebo, comparator or simulator whose flow dynamics include a
+     transient-impact/reversion (resilience) layer must, at pre-declaration
+     and before it may serve as a refutation instrument, state the
+     no-PMS/no-TTPM condition of its own impact parameterization (from this
+     paper's condition family or its own derivation) and record that the
+     armed configuration satisfies it; a null whose impact layer can price a
+     negative-cost round trip, or whose optimal behaviour embeds TTPM, is
+     inadmissible as a null. Harder-to-pass only; harder-to-pass because a
+     null must now clear a viability gate before it refutes anything, where
+     today a marginal-matching null with an arbitrageable impact layer
+     could pass silently. No kill line touched.
+  3. [interpretation caution] The market-maker reading (adding orders never
+     creates a PMS in model V, cancelling can; cancelling best offers or
+     piling orders at existing prices can in model P, PDF pp. 7, 10, 19-20)
+     is a deterministic-resilience model statement, not evidence about
+     passive-cancel behaviour in crypto L2, the compression mechanism or
+     any spoofing front; it must not be cited as support for any read of
+     the programme's passive-withdrawal anatomy. Ammunition at most. No
+     queue change.
+  4. [interpretation caution] The viability boundary is pointwise in t over
+     ρ_t and η_t (Eqs. 19, 22, 29, 30, PDF pp. 7, 8, 10), so internal
+     arbitrageability flips with the resilience/depth regime; any future
+     viability-style feature must carry pre-declared regime windows with no
+     silent blend — the queued self-excitation regime-window pre-declaration
+     and control-arm discipline already forbid the silent version. No queue
+     change.
+  5. [reinforcing, no new item] The two reversion conventions are different
+     financial stories that coincide mathematically for constant λ (PDF p. 8)
+     and reparametrize under power-law shapes (ρ̃ = ρ(1+γ)−η, PDF p. 15) yet
+     diverge under time-varying depth with opposite monotonicity assumptions
+     on f (Assumptions 2.1/2.2, PDF pp. 10, 13): the same book data admits
+     two "what decays" stories whose distinction is a convention
+     declaration, not a measurement — the level-versus-memory (deep-read 59)
+     and spread-convention declaration (deep-read 56) family; any future
+     reversion-decay estimate must declare which object decays. No queue
+     change.
+  6. [source-quality note] arXiv v1 April 2012 with an internal header date
+     of August 14, 2018; no journal counterpart recorded at cataloguing,
+     zero citations, continuous-time block-case optimality credited to the
+     contemporaneous Fruth-Schöneborn-Urusov working paper (PDF pp. 2, 7-8,
+     10), infinite-depth book, market orders only, no empirics. Read,
+     graded, recorded at its grade.
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (25 PDF pages, abstract, body, references
+  complete).
+- Ratification queue after this session: FORTY-SEVEN candidate sharpenings
+  plus probe E1, zero armed (ONE queued this session: the impact-viability
+  pre-declaration for generative nulls, deep-read 87). T1 remains armed
+  awaiting the owner's word in its booked state (survived all five kill
+  lines with sign inverted; T2 tested-fail); the blocked list stays
+  blocked. Deep-read queue pointer: the score-22 tier is now CLOSED (## 112
+  through ## 115); next UNREAD "Conservation Laws in a Limit Order Book"
+  (score 21, x532697), head of the score-21 tier (verified note-less this
+  session against the library note listing; the x1b6841 and x9921ac
+  score-21 entries and their extracts confirmed present) — re-read the live
+  tail and recompute the tier against the notes before consuming; the
+  edition-9 cadence counter stands at FOUR of five (#87, this entry,
+  counted from the edition-9 reset at ## 111): the next pass is due at
+  five or more deep-reads since edition 9 (#88 onward).
+- docs/DECISIONS_PENDING.md IS touched by this session (rule: one candidate
+  sharpening queued; the ratification line moves from forty-six to
+  forty-seven, the new item named in the queue enumeration). The
+  ratification line stands at forty-seven candidates plus probe E1, zero
+  armed, most recently joined the impact-viability pre-declaration for
+  generative nulls (deep-read 87).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean on the assembled changed files: the session ran the
+guard's exact marker-sweep and encoding-sanity semantics over the three
+changed files (the session note, this log append and the DECISIONS_PENDING
+queue update), exiting zero; the library-provenance audit and the
+full-tree sweeps run in CI over the full tree — the summaries are
+untouched this session — and must be verified green on both jobs before
+merge.
