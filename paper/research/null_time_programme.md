@@ -12350,3 +12350,125 @@ and encoding sanity all exiting zero on the assembled tree, and exiting
 zero again on the same tree plus this session's changed files before
 commit; the CI jobs run over the pushed tree and must be verified green
 on both jobs before merge.
+
+## 122. Null-time session 103 (2026-11-22): library deep-read session 93 — the
+Gao-Zhou-Zhu transform-analysis dark-pool read, third of the score-20 tier;
+the paper graded pure transform-theory for a marked linear Hawkes process
+with a general (non-Markovian) exciting function and time-dependent baseline
+(joint Laplace transform via the immigration-birth representation and a
+Hammerstein-Volterra integral equation, moments, Faà di Bruno mass
+functions, synthetic dark-pool fill metrics), zero empirical content, whose
+every mechanism reinforces already-queued rules and moves NOTHING: verdict
+NO kill line changed, NO new candidate sharpening (the queue keeps its
+declining-yield shape: this read's mechanisms — a declared existence domain
+as a function of frozen configuration; a numerical mesh between the
+definition and every number; moment-blindness to the mark mechanism — are
+each already covered by queued items #46 and #49 and the freshly queued #50,
+and a duplicate of a pending candidate is not a candidate, it is a vote).
+
+Session-state note (director step): the live main tail (through ## 121) and
+docs/DECISIONS_PENDING.md were read at session start (ratification line:
+fifty candidates plus probe E1, zero armed); the open-PR set was read (empty,
+no race); the cadence check recomputed — the edition-10 counter stood at FOUR
+of five after deep-read 92, so no synthesis pass was due and the default
+work choice was the standing deep-read ritual (needs no justification under
+the protocol); this read (#93) moves the counter to FIVE of five, so the NEXT
+session opens with the synthesis pass (edition 11) before or instead of its
+read. The entry x47bbb5 was verified note-less against the live library note
+listing (the two score-20 entries ranked above it, xaace1f and x2b0051, both
+carry notes dated 2026-11-22 on main's tip), its extract present and
+page-marked (87,613 bytes, 42 PDF pages, complete through Appendix E). Note
+landed at paper/research/library/2026-11-22_transform_analysis_hawkes_dark_
+pool_deep_read.md:
+
+1. [reinforcing, no new item] Theorem 1 states the joint Laplace transform
+   WITH its domain (R(θ1), R(θ2) ≥ 0; h locally bounded, ‖h‖L1 < ∞, PDF
+   pp. 2, 6) and quantitative uniqueness (Gronwall, constant 3‖h‖∞E[𝓁1],
+   PDF pp. 10-11), the |F| ≤ 1 bound carrying existence all the way to the
+   R(θ) = 0 boundary where the Laplace transform doubles as a
+   characteristic function — the paper CONFORMS to the transform-domain
+   admissibility pre-declaration (#50, queued ## 121), evidence the rule
+   describes real practice rather than a hypothetical discipline; nothing
+   extends the rule. No queue change.
+2. [reinforcing, no new item] Every statistic is a numerical collocation
+   solve of the Volterra equation (150-subinterval mesh, ~25 s per solve,
+   Table 1, PDF pp. 19-20) followed by a numerical Bromwich inversion
+   (EULER) — a discretization choice sits between the written definition
+   and every reported number, exactly the frozen-configuration class the
+   estimator-implementation concordance rule (#46, deep-read 85) and clause
+   (iii) of #50 already make mandatory. No queue change.
+3. [interpretation caution] Remark 6 / Proposition 5: first moments of NT
+   and LT depend on the mark law only through E[𝓁1] (PDF pp. 12-13); the
+   conditional at-least-one-fill probability is independent of the mark
+   distribution and the exactly-one-fill probability depends on it only
+   through its Laplace transform (PDF pp. 17-18); the paper's own
+   constant-vs-exponential-vs-hyper-exponential experiment shows distinct
+   mark mechanisms observationally equivalent at the moment level (PDF
+   pp. 20-22) — a future C8-adjacent Hawkes-moment feature may never be
+   interpreted as evidence about a trade-size mechanism beyond the mean;
+   reading discipline feeding the model-inversion identifiability family
+   (#49, deep-read 91). No queue change.
+4. [interpretation caution] The baseline-intensity experiment (Figure 8,
+   PDF pp. 25-27): a pool with the LOW baseline level first can out-fill a
+   constant-baseline pool on a later interval because the Hawkes intensity
+   carries the entire event history across the regime change — same frozen
+   parameters, different history, is a different law; an interpretation
+   caution for cross-window pooling in any C8 arm with a common frozen
+   configuration across an intraday regime boundary. No queue change.
+5. [cost-survival ammunition] The application half (PDF pp. 14-30) is
+   execution-strategy engineering for a venue class outside the C1-L2/C8
+   scope; recorded only as standing context; the "liquidity begets
+   liquidity" motivation (PDF p. 3) is industry folklore, never evidence;
+   a future cost-survival layer must carry the assumptions this model
+   assumes away (no adverse selection at the pegged midpoint, no
+   information leakage, empty-or-Weibull pools, matching-rule
+   invariance). No queue change.
+6. [source-quality note] arXiv v1 preprint (4 Oct 2017); a peer-reviewed
+   version exists — verify before any formal citation; all numerics
+   synthetic (MATLAB, invented parameters); internal defects not touching
+   the transform argument: a "¿From" typesetting artifact (PDF pp. 17, 40)
+   and variable-of-integration slips as printed inside Proposition
+   5(iii)-(iv) (claim and proof unaffected, PDF pp. 12-13). No queue
+   change.
+
+Counterfactual (what this paper would have killed if we had done it
+wrong): a statistic that exists only as a numerical Volterra solve returns a
+finite number for EVERY mesh — collocation does not error on
+under-resolution — so absent the frozen numerical convention, a post-hoc
+mesh re-choice after seeing results would be a researcher degree of freedom
+invisible both to the concordance audit and to the configuration freeze
+(both meshes legal), carried silently into a kill-line verdict; and absent
+the recorded moment-blindness, a surviving moment feature could be
+narrated as evidence for a mark-size mechanism the moment provably cannot
+see — mechanism attribution laundered without a single empirical number.
+Both dead on arrival under #46/#50 (convention frozen before data) and
+#49 (identification claim bounded by what the functional can identify).
+
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (42 PDF pages, abstract, body, references,
+  appendices A-E complete).
+- Ratification queue after this session: FIFTY candidate sharpenings plus
+  probe E1, zero armed (NONE queued this session; the queue is unchanged by
+  this read; T1 remains armed awaiting the owner's word in its booked state
+  (survived all five kill lines with sign inverted); T2 tested-fail); the
+  blocked list stays blocked. Deep-read queue pointer: next UNREAD "The
+  order book as a queueing system: average depth and influence of the size
+  of limit orders" (the score-20 entry xe1c4ca, score 20, unread, verified
+  note-less this session against the live listing), next in the score-20
+  tier — re-read the live tail and recompute
+  the tier against the notes before consuming. The edition-10 cadence
+  counter stands at FIVE of five by this landing (#93): the NEXT session
+  opens with the synthesis pass (edition 11, its own log entry) before or
+  instead of its read.
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule: no
+  candidate sharpening queued; the ratification-queue line and count stand
+  as they were).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades live.
+Guard clean before commit: the session assembled the full tracked tree of
+main's tip locally (the public main archive, restored whole) and ran
+src/integrity_guard.py over it — marker sweep, library-provenance audit
+and encoding sanity all exiting zero on the assembled tree, and exiting
+zero again on the same tree plus this session's changed files before
+commit; the CI jobs run over the pushed tree and must be verified green
+on both jobs before merge.
