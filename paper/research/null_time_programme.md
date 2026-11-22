@@ -12040,3 +12040,145 @@ and encoding sanity all exiting zero on the assembled tree, and exiting
 zero again on the same tree plus this session's changed files before
 commit; the CI jobs run over the pushed tree and must be verified green
 on both jobs before merge.
+
+## 120. Null-time session 101 (2026-11-22): library deep-read session 91 — the Guo-Swishchuk-Rémillard multivariate Hawkes LOB option-pricing read, first of the score-20 tier; the paper graded pure theory assembly with invented parameters and zero empirical calibration, whose α/β near-criticality price explosion reinforces the estimator-configuration freeze and regime-window families and whose count-conditioned-limit unpredictability statement reinforces the availability discipline (deep-read 84, #48), and which earned ONE candidate sharpening: the model-inversion identifiability pre-declaration (#49) — its headline "implied order flow" product proves in print that a parametric model can be inverted onto a scalar observed quantity through analyst-supplied unidentified parameters, with a self-fed circular simulation (PDF pp. 14-15); NO kill line moved; the ratification queue moves to forty-nine candidate sharpenings plus probe E1
+
+Session-state note first (goal-autonomy protocol, ACTIVE; goal state edition
+10, ## 117): the live main tail (through ## 119) and docs/DECISIONS_PENDING.md
+were read (ratification line: forty-eight candidates plus probe E1 at session
+start, zero armed); the cadence check was recomputed from first principles —
+the edition-10 counter stood at TWO of five after deep-read 90 (## 119), so no
+synthesis pass is due and the default work choice for this session is the
+standing deep-read ritual itself, which needs no justification under the
+protocol; the cadence counter moves to THREE of five by this landing (#91).
+Verified against live state before reading: the triage file score-sorted and
+recomputed against the live library note listing (the score-21 tier CLOSED
+through ## 116-## 119; the score-20 tier opens at its score-sorted head
+xaace1f, verified note-less this session with its extract present and
+page-marked; after it the score-20 tier continues at x2b0051 "Pricing VIX
+options under the Heston-Hawkes stochastic volatility model", verified
+note-less this session with extract present — NOT the already-read Micro
+structural Foundation for the Rough Hawkes-Heston paper (deep-read,
+2026-11-19), a different paper; the open-PR set read at session start:
+empty, no race). This is deep-read 91, the THIRD read counted against the
+edition-10 cadence. No inaccessible or blocked status this session; the
+extract was present, page-marked, complete and read in full (28 PDF pages,
+abstract, body, all sections 1-10, references complete).
+
+The paper: "Multivariate Hawkes-based Models in LOB: European, Spread and
+Basket Option Pricing" (Qi Guo, Anatoliy Swishchuk, Bruno Rémillard; 2022,
+arXiv:2209.07621v1). Mid-price as multivariate general compound Hawkes
+process (Hawkes counts times Markov-chain jump sizes, eqs. 1-3, PDF pp.
+2-3), exponentiated into the EMGCHP to keep prices positive (Definition 3.1,
+PDF p. 3), LLN/FCLT diffusion limits into geometric Brownian motion (Theorems
+3.2-3.7, PDF pp. 4-8), then Black-Scholes European pricing with the Hawkes
+composite volatility (eqs. 29-33, PDF pp. 8-10), greeks including the flow
+sensitivities (eqs. 34-39, PDF pp. 12-13), Margrabe spread options on two
+Hawkes assets and one 2D EMGCHP with model-endogenous correlation (Sections
+5-6, PDF pp. 15-21), three-stock basket options via Gentle's approximation
+(Section 7, PDF pp. 21-24), minimal hedge (Section 8, PDF pp. 24-26), and
+the closing "implied order flow" inversion σ̂²implied = σ*²E(N_t) +
+a*²Var(N_t) through analyst-supplied α/β (eqs. 44-47, PDF pp. 14-15).
+
+Findings, graded (all page-cited in the session note
+paper/research/library/2026-11-22_multivariate_hawkes_lob_option_pricing_deep_read.md):
+
+  1. [reinforcing, no new item] The option price is nearly flat in α/β at
+     small values and explodes as α/β → 1 (Figure 2, PDF pp. 10-11): any
+     Hawkes-adjacent statistic is acutely sensitive to the memory ratio near
+     criticality, so the branching/memory configuration and the distance
+     from spectral radius 1 are research degrees of freedom that could
+     manufacture a "regime" or "stress" result by post-hoc re-tuning —
+     reinforces the estimator-configuration freeze (deep-read 63) and the
+     self-excitation regime-window pre-declaration (deep-read 53); distance
+     from criticality is frozen configuration, not a free dial. No queue
+     change.
+  2. [reinforcing, no new item] The paper states in print that the
+     count-conditioned limit "cannot provide us a model for prediction
+     tasks since we cannot observe the order flow N_t in advance" (PDF p. 6)
+     and prices only under deterministic centralization: a flow-conditioned
+     theoretical quantity must condition only on flow verifiably observable
+     at the evaluation instant — the same availability discipline demanded
+     by the same-period-aggregate feature availability rule (deep-read 84)
+     and #48 (deep-read 89), now stated by a Hawkes pricing paper against
+     its own theorem. No queue change.
+  3. [candidate sharpening, PENDING OWNER RATIFICATION] The implied
+     order-flow construction is an under-identified, circular inversion
+     (eqs. 44-47, PDF pp. 14-15): one observed scalar (option-implied
+     volatility) is split between two unknowns E(N_t) and Var(N_t) through
+     an analyst-supplied α/β from unspecified "historical estimation" (PDF
+     p. 14) — the same σ̂²implied maps to a continuum of (E, Var) pairs as
+     α/β varies, so the "forecast information" is created by the split, not
+     measured — and the numerical demonstration is explicitly circular,
+     feeding the model's own computed option values back as the observed
+     input (PDF p. 14, Figures 4-5, PDF p. 15). Queued proposed sharpening
+     #49, the model-inversion identifiability pre-declaration: BEFORE the
+     L0 gate, any C1-L2/C8-adjacent computation, comparator, null or
+     feature that inverts a parametric model onto an observed quantity —
+     implied volatility onto order-flow moments, a measured compression
+     score onto a latent priming intensity, an observed spread onto a
+     book-state parameter — must pre-declare, as frozen configuration
+     counted in the multiplicity ledger: (i) which model parameters are
+     FROZEN and from where (dated estimation source or declared generic
+     default), every deviation a dated amendment before the data is
+     touched; (ii) an identifiability statement proving the observed
+     quantity admits a unique parameter split over the unknowns given the
+     frozen set, or the inversion declared under-identified with its null
+     surfaces reported across a pre-declared frozen-set grid; and (iii) an
+     input-provenance trace proving the "observed" input is not itself
+     generated by the model family being inverted — self-fed inversions
+     are inadmissible at the gate; harder-to-pass because a recovered
+     latent quantity that can be re-split arbitrarily after seeing the
+     data, or whose input is circularly model-generated, now fails by rule
+     instead of surviving as an inverse-problem find; tightens the
+     estimator-configuration freeze (deep-read 63) by extending
+     pre-commitment from WHICH estimator in WHICH configuration to the
+     identifiability of the inversion's parameter split, and the
+     dynamics-identification rule for generative nulls (null-time session
+     58) on the input-provenance axis, joining the noise-model
+     pre-declaration (deep-read 76) in extending frozen configuration into
+     the model-input chain; full draft with the killed-if-wrong
+     counterfactual in the session note.
+  4. [interpretation caution] The EMGCHP-to-GBM chain is a large-n
+     trading-frequency asymptotic (PDF pp. 8-9) resting on a mid-price
+     model the authors themselves had to exponentiate to avoid non-positive
+     prices (Definition 3.1, PDF p. 3): any future L2-derived
+     diffusion-limit input to a null or comparator is an asymptotic
+     approximation, not book law, and its magnitudes are banned from the
+     record as support under the laundering rule. No queue change.
+  5. [source-quality note] arXiv v1 preprint, companion to a PhD thesis
+     (Guo 2022, PDF pp. 2, 28); no empirical calibration anywhere — every
+     parameter invented (PDF pp. 10, 18, 21, 23); internal defects: the
+     text labels the diffusion approximation (eq. 20) as the "solution of
+     equation (30)" (eq. 31, PDF p. 9), and claims "Since Φ and φ are
+     always non-negative, delta and theta are always positive" (PDF p. 12),
+     contradicting its own negative-signed theta formula and classical
+     theory; check the published version before formal citation. No queue
+     change.
+
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (28 PDF pages, abstract, body, references
+  complete).
+- Ratification queue after this session: FORTY-NINE candidate sharpenings
+  plus probe E1, zero armed (ONE queued this session, the model-inversion
+  identifiability pre-declaration, #49; T1 remains armed awaiting the
+  owner's word in its booked state (survived all five kill lines with sign
+  inverted); T2 tested-fail); the blocked list stays blocked. Deep-read
+  queue pointer: next UNREAD "Pricing VIX options under the Heston-Hawkes
+  stochastic volatility model" (score 20, x2b0051), next in the score-20
+  tier (verified note-less this session, extract present) — re-read the
+  live tail and recompute the tier against the notes before consuming.
+  The edition-10 cadence counter stands at THREE of five by this landing
+  (#91).
+- docs/DECISIONS_PENDING.md is updated by this session (rule: one candidate
+  sharpening queued; queue line moves to forty-nine candidates plus probe
+  E1, zero armed).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades live.
+Guard clean before commit: the session assembled the full tracked tree of
+main's tip locally (the public main archive, restored whole) and ran
+src/integrity_guard.py over it — marker sweep, library-provenance audit
+and encoding sanity all exiting zero on the assembled tree, and exiting
+zero again on the same tree plus this session's changed files before
+commit; the CI jobs run over the pushed tree and must be verified green
+on both jobs before merge.
