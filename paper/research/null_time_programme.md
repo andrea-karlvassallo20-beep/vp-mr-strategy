@@ -13134,3 +13134,148 @@ session's changed files) with marker sweep, library-provenance audit
 and encoding sanity all exiting zero before commit; the CI jobs run
 over the pushed tree and must be verified green on both jobs before
 merge.
+
+## 129. Null-time session 108 (2026-11-22): library deep-read session 98 — the Yang "Analysis of Contagion in China's Stock Market" read, eighth of the score-20 tier; the 2023/2025 single-author thesis-graded multivariate Hawkes study of Chinese index and sector daily extremes, whose unchecked above-unity self-excitation diagonals, never-evaluated spectral-radius condition, six-deep configuration-freedom stack (percentile thresholds, grid-searched ω, 150-day windows, representative-period selection, inhibitory link, MC-noisy SGD compensator), visually-only goodness-of-fit, drifting baseline intensities, and "spatiotemporal" title over a non-spatial multivariate type-indexed fit reinforce already-queued families and move NOTHING; NO kill line moved; NO new candidate sharpening
+
+The paper: Junwei Yang, "Analysis of Contagion in China's Stock Market: A
+Hawkes Process Perspective" (arXiv:2512.08000v1 [q-fin.ST], title page dated
+"This version: May 18, 2023", arXiv stamp 8 Dec 2025; slug x999a87, per
+docs/library/expanded_index.json). Experiment 1 turns daily returns of the
+Shanghai Composite, Shenzhen Component and ChiNext indices (Feb 2013 - Mar
+2023, n = 2,452 each) into two event types at the 10th/90th SSE-history
+percentiles and fits bivariate exponential-kernel Hawkes by MLE (tick), decay
+grid-searched to ω = 0.1, reading the up-weighted impact-matrix rows as trend
+continuation and oversold rebound (PDF pp. 13-16, Tables 1-2). Experiment 2
+slices three CSI sector indices into fifteen 150-day windows, builds six
+event types, and fits a six-dimensional inhibitory nonlinear Hawkes
+(unconstrained µ, α under g(x) = max(x, 0.01), eq. 13, PDF p. 18) by
+Monte-Carlo-integrated stochastic-gradient backprop (Mei-Eisner, Algorithm 1,
+PDF pp. 11-12), comparing an active period 3 and a dormant period 5 and
+reading the block contrast as trend continuation versus sector rotation
+(PDF pp. 16-19, Tables 3-4). Appendices derive the likelihood and run the
+random-time-change residual check visually only (PDF pp. 24-27), against a
+homogeneous-Poisson baseline whose moment estimates drift (λ̂train =
+[0.100, 0.101] versus λ̂test = [0.067, 0.082], called "a scheme change in
+market structure", PDF p. 25). Read in full (27 page-marked PDF pages,
+appendices and references complete) against the one question. Note landed
+at paper/research/library/2026-11-22_china_contagion_hawkes_deep_read.md.
+
+Director step (goal-autonomy protocol, ACTIVE): protocol read, consistent
+with the live tail (edition 11); the session's work choice is the DEFAULT
+deep-read (next UNREAD triage entry, re-ranked against the notes: the
+score-20 tier holds fourteen entries per the live edge_triage_scores.json
+recounted this session (the ## 128 entry printed "fifteen"; the live file
+holds fourteen), seven consumed — xaace1f at ## 120, x2b0051 at ## 121,
+x47bbb5 at ## 122, xe1c4ca at ## 125, xf8b5bc at ## 126, x97b372 at ##
+127 and x55e853 at ## 128 — so this read takes x999a87 eighth, no note on
+main per the live listing), so no justification is owed. Synthesis cadence
+NOW DUE AT THE NEXT SESSION: this landing is the FIFTH of five deep-reads
+since the edition-11 reset at ## 124 (#94 at ## 125, #95 at ## 126, #96 at
+## 127, #97 at ## 128, #98 here); the next session must open with the
+edition-12 synthesis pass per the protocol's section 4 before any further
+deep-read.
+
+Verdict: NO kill line changes. NO new candidate sharpening. Findings (all
+graded against the queue as it stands at fifty-one candidates plus probe
+E1):
+
+1. [reinforcing, no new item] Spectral-radius discipline, printed as a live
+   omission case: the paper states ρ(A) < 1 only in theory (PDF p. 9) and
+   never evaluates it on any fitted matrix. Arithmetic on the printed
+   Experiment-1 impact matrices (descriptive only, no data touched): ρ ≈
+   0.654 for SSE (A = [[0.382, 0.387], [0.218, 0.343]], PDF p. 14, eq. 12),
+   ρ ≈ 0.562 for Shenzhen with one small negative eigenvalue (det < 0;
+   Table 2, PDF p. 16) and ρ ≈ 0.560 for ChiNext — all subcritical, so
+   nothing near-critical is laundered; the omission is the reinforcement.
+   No queue change.
+2. [reinforcing, no new item] Experiment 2 prints per-type self-excitation
+   diagonals above unity in the active period (1.161, 1.143, 1.313, 0.671,
+   0.831, 1.092, Table 4a, PDF p. 19) with no full-matrix stationarity
+   check and no branching read; Gershgorin arithmetic on the printed table
+   (row 0: centre 0.696, radius 1.451, discs reaching ≈ 2.15; row 3 centre
+   1.228) leaves ρ unverifiable from the print while the paper reads the
+   diagonals straight as trend continuation (PDF pp. 18-19) — exactly the
+   apparent-criticality case the queued branching-matrix pre-declaration
+   family (## 118 lineage; reaffirmed ## 126-## 128, findings 1) exists to
+   prevent. No queue change.
+3. [interpretation caution] The configuration-freedom stack runs six deep
+   before any claim: percentile thresholds indexed to the SSE history
+   (PDF p. 14), one grid-searched ω = 0.1 shared across types (PDF
+   pp. 14-16), fifteen equal 150-day windows with representative periods
+   chosen by narrative (PDF pp. 17-18), the unconstrained inhibitory form
+   under g(x) = max(x, 0.01) (eq. 13, PDF p. 18), and the MC-integrated
+   SGD gradient whose compensator term is a sampled average, not an exact
+   integral (Algorithm 1, PDF pp. 11-12). The MC noise in the compensator
+   is a freedom the certified estimator modes do not carry; under the
+   estimator-configuration and estimator-mode freezes it is standing
+   context only. No queue change.
+4. [interpretation caution] The paper's own baseline shows non-constant
+   background intensity across the sample (λ̂test strictly below λ̂train,
+   read by the authors as a market-structure scheme change, PDF p. 25), and
+   every goodness-of-fit exhibit is visual Q-Q/scatter with no printed test
+   statistic anywhere (PDF pp. 25-27, Figs. 5-7). The endo-exo reading
+   discipline (un-modelled exogenous forcing inflates self-excitation;
+   log ## 128 finding 2) and the printed-statistic-or-it-did-not-happen
+   convention both apply unchanged. No queue change.
+5. [source-quality note] Student-thesis grade relative to its score-20
+   rank, read per the session-9 triage-audit rule rather than silently
+   skipped: single author acknowledging a dissertation committee and
+   supervisor (PDF p. 1); title page dated May 18, 2023 against an arXiv
+   2512.08000v1 stamp of 8 Dec 2025 (PDF p. 1); the abstract promises
+   "spatiotemporal Hawkes processes" (PDF p. 1) while the paper fits
+   ordinary multivariate type-indexed Hawkes processes with no spatial
+   structure at all; a 36-plus-2-parameter six-type model fitted per
+   150-trading-day window (PDF pp. 17-19); daily grain only, three Chinese
+   indices and three Chinese sector indices, no L2 content, no published
+   version to check. No queue change.
+
+Counterfactual (what this paper would have killed if we had done it wrong):
+without the load-bearing spectral-radius discipline, the above-unity
+diagonals of Table 4a would print as measured trend persistence — a per-type
+reproduction count laundered into a market property, on 150-day windows with
+no stationarity check at all. Without the estimator-configuration freeze,
+this paper is the compounding case: thresholds, grid-searched decay, window
+segmentation, representative-period selection, link-function, and MC-noisy
+SGD compensator — six researcher degrees of freedom stacked on 150
+observations per fit; the "sector rotation confirmed" headline (PDF pp.
+18-19) is what six knobs produce, and the pre-declaration exists so the
+programme can never occupy that position. Without the
+library-is-ammunition caveat, the oversold-rebound and
+chasing-gains-cutting-losses readings (PDF pp. 14-15) would have entered
+the C8 macro-synthesis as established Chinese-market properties on the
+strength of a within-family student-thesis fit with no printed residual
+statistic.
+
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (27 PDF pages, abstract, body, both
+  appendices, figures and references complete; the one earlier mis-guess of
+  the extract filename was corrected against the live listing and nothing
+  was skipped).
+- Ratification queue after this session: FIFTY-ONE candidate sharpenings
+  plus probe E1, zero armed (NONE queued by this read;
+  docs/DECISIONS_PENDING.md is NOT touched by this session; T1 remains
+  armed awaiting the owner's word in its booked state; T2 tested-fail); the
+  blocked list stays blocked. Deep-read queue pointer: next UNREAD
+  "A market impact game under transient price impact" (xc495e3, score 20,
+  ninth of the score-20 tier, verified note-less this session against the
+  live listing) — re-read the live tail and recompute the tier against the
+  notes before consuming. The edition-11 cadence counter now stands at
+  FIVE of five by this landing (#98), counted from the edition-11 reset at
+  ## 124; the edition-12 synthesis pass is DUE and must open the next
+  session before any further deep-read, per the protocol's section 4.
+- Byte-landed log note (session-specific): this session assembled the
+  log locally from the live main copy plus this entry and will
+  byte-verify the pushed branch copy against the assembled local copy
+  (md5 match) before opening the PR, per the PR #289 convention and the
+  ## 123 root-cause record. The write path this session is the
+  connector push (branch off live main head, full-file contents
+  byte-checked), used because the local execution environment exposes
+  no git CLI or credentials this cycle.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the
+assembled full tree (main's tracked tree restored whole plus this
+session's changed files) with marker sweep, library-provenance audit
+and encoding sanity all exiting zero before commit; the CI jobs run
+over the pushed tree and must be verified green on both jobs before
+merge.
