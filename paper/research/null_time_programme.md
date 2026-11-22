@@ -12737,3 +12737,135 @@ session's changed files) with marker sweep, library-provenance audit
 and encoding sanity all exiting zero before commit; the CI jobs run
 over the pushed tree and must be verified green on both jobs before
 merge.
+
+## 126. Null-time session 105 (2026-11-22): library deep-read session 95 — the Laub-Taimre-Pollett "Hawkes Processes" survey read, fifth of the score-20 tier; the 2015 pedagogical survey graded zero-empirical-content codification whose branching-ratio arithmetic (n = ∫µ = α/β, stationarity strict, explosion at n ≥ 1, endogeneity read as probability n), printed Lorenzen timestamp-randomisation critique, exponential-kernel recursion bargain, MLE failure-mode catalogue, and residual (random time change) test loop all reinforce already-queued families and move NOTHING; NO kill line moved; NO new candidate sharpening
+
+The paper: Patrick J. Laub, Thomas Taimre, Philip K. Pollett, "Hawkes
+Processes" (arXiv:1507.02822v1 [math.PR], last edited 13 July 2015; slug
+xf8b5bc, per docs/library/expanded_index.json). A survey of the linear
+Hawkes process: counting/point processes, conditional intensity and
+compensator (PDF pp. 2-4); the linear definition with exponential and
+power-law kernels (PDF pp. 5-6); the immigration-birth branching
+representation, branching ratio n = ∫µ = α/β, asymptotic normality under
+0 < n < 1, a.s. explosion for n ≥ 1, and a uniformly random arrival
+endogenous with probability exactly n (PDF pp. 6-8); the exponential-kernel
+covariance density and shifted-scaled-Cauchy power spectral density for
+α < β (Theorem 2, PDF pp. 9-11, Appendix A pp. 26-27); nonlinear and
+mutually-exciting generalisations (PDF pp. 11-12); the financial section —
+the Aït-Sahalia-Cacho-Diaz-Laeven Hawkes diffusion (5m + 3m² parameters,
+fitted only for pairs, no AIC/BIC comparisons, the von Neumann elephant
+verdict, PDF pp. 12-13) and the Filimonov-Sornette mid-price-change
+stylisation with the Lorenzen critique of Unif(0,1) timestamp jitter
+(second-resolution data, impossible simultaneity, smoothing that fit
+better than millisecond truth, biased α and β, PDF p. 13); MLE with the
+O(k) recursive log-likelihood (Markov joint (N, λ*), PDF pp. 15-17),
+small-sample bias, local optima, kernel sensitivity, the GMM
+alternative's "rather arbitrary" smoothing (PDF p. 17), and the printed
+minefield quote (PDF pp. 14-15); goodness of fit via the random time
+change theorem to a unit-rate Poisson process, tested as iid Exp(1)
+interarrivals (PDF pp. 18-20); three exact simulation algorithms
+(PDF pp. 20-24). Read in full (28 page-marked PDF pages) against the one
+question. Note landed at
+paper/research/library/2026-11-22_hawkes_processes_survey_deep_read.md.
+
+Verdict: NO kill line changes. NO new candidate sharpening. Findings
+(all graded against the restored record and the queue as it stands at
+fifty-one candidates plus probe E1):
+
+1. [reinforcing, no new item] Branching-ratio arithmetic in definition
+   form: n = α/β for the exponential kernel, stationarity strict
+   (0 < n < 1), explosion a.s. for n ≥ 1, endogeneity of a uniform
+   random arrival with probability exactly n (PDF pp. 7-8). An
+   estimated n is an endogeneity fraction ONLY inside a stationary fit;
+   an n crossing 1 is the model's own stationary moment ceasing to
+   exist, not a regime discovery to report. Votes for the existing
+   branching-ratio / self-excitation stability family. No queue change.
+2. [reinforcing, no new item] The Lorenzen critique printed in the
+   survey's own section: second-resolution timestamps with simultaneous
+   arrivals jittered by Unif(0,1) fractions, smoothing that fit the
+   model better than true millisecond data, biased α and β (PDF p. 13).
+   A textbook instance of the already-queued timestamp/convention
+   discipline and estimator-configuration freeze (deep-read 63); nothing
+   here tightens either. No queue change.
+3. [interpretation caution] The Markov/recursion bargain: the O(k)
+   recursive likelihood and cheap derivatives exist because the
+   exponential kernel makes (N, λ*) Markov (PDF pp. 16-17); any other
+   kernel family forfeits the recursion (PDF pp. 21-22). A future
+   Hawkes arm faces a declared configuration trade — kernel family,
+   optimiser, and effective-configuration statement move together. Feeds
+   the estimator-mode freeze already queued. No queue change.
+4. [interpretation caution] MLE's printed failure modes: significant
+   small-sample bias, many local optima, high sensitivity to excitation
+   function (PDF p. 17); GMM moments smoothed by a "rather arbitrary"
+   user-selected procedure (PDF p. 17); the minefield quote
+   (PDF pp. 14-15). Substantively covered by the estimator-mode register
+   and noise-model pre-declaration already queued: optimiser, kernel
+   family, and smoothing must be pre-declared because each choice moves
+   (α, β, n). No queue change.
+5. [reinforcing, no new item] The residual loop is the compensator-null
+   discipline in closed form: transform arrivals by the FITTED
+   compensator and demand a unit-rate Poisson process (Theorems 4-5,
+   PDF p. 18; eq. 18, p. 16), tested as iid Exp(1) interarrivals
+   (QQ/KS/AD/Lewis/Brownian tests, PDF pp. 18-20). A future placebo or
+   generative-null arm earns nothing from "looks clustered"; the pass
+   condition is available and explored-data-free. No queue change.
+6. [cost-survival ammunition] Overfitting arithmetic any K7-style
+   cost-survival layer must quote before adopting a Hawkes contagion
+   component: 5m + 3m² parameters (plus 3m for stochastic volatility),
+   fitted only for market pairs even after simplifications, no AIC/BIC
+   comparisons against the nested Merton model; a
+   never-operationalised execution-strategy application (PDF pp. 12-13).
+   No queue change.
+7. [source-quality note] arXiv v1 pedagogical survey, zero empirical
+   content (every figure simulated; the estimation section bypasses
+   real-data challenges by declared choice, PDF pp. 14-15); value here
+   is codification of exact formulas, not new results; minor
+   typographical slips ("natually", "moest") confirm early-draft status;
+   check for a journal version before formal citation (PDF p. 1).
+   No queue change.
+
+Counterfactual (what this paper would have killed if we had done it
+wrong): without the timestamp discipline, a future L2 event arm could
+have inherited the Filimonov-Sornette path wholesale — second-resolution
+data, jittered simultaneity, and a branching-ratio "trend" that is
+partly the smoothing artifact the survey prints (PDF p. 13). Without the
+stationarity condition, an estimated n crossing 1 could have been read
+as an exciting regime discovery rather than the detonation of the
+model's own moment conditions (PDF pp. 7-8). Without the residual
+discipline, a placebo arm could declare success because simulated
+output "looks" clustered, when the compensator-transform test is
+decisive either way (PDF p. 18). Without the cost-survival ceiling, a
+5m + 3m²-parameter Hawkes diffusion with no AIC/BIC comparisons could
+have been adopted as a market model before the L2 data had even passed
+the L0 gate (PDF pp. 12-13).
+
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (28 PDF pages, abstract, body,
+  appendices and references complete).
+- Ratification queue after this session: FIFTY-ONE candidate sharpenings
+  plus probe E1, zero armed (NONE queued by this read;
+  docs/DECISIONS_PENDING.md is NOT touched by this session; T1 remains
+  armed awaiting the owner's word in its booked state; T2 tested-fail);
+  the blocked list stays blocked. Deep-read queue pointer: next UNREAD
+  "Theory of earthquakes interevent times applied to financial markets"
+  (x97b372, score 20, sixth of the score-20 tier, verified note-less this
+  session against the live listing) — re-read the live tail and recompute
+  the tier against the notes before consuming. The edition-11 cadence
+  counter stands at TWO of five by this landing (#95), counted from the
+  edition-11 reset at ## 124.
+- Byte-landed log note (session-specific): this session assembled the
+  log locally from the live main copy plus this entry and will
+  byte-verify the pushed branch copy against the assembled local copy
+  (md5 match) before opening the PR, per the PR #289 convention and the
+  ## 123 root-cause record. The write path this session is the
+  connector push (branch off live main head, full-file contents
+  byte-checked), used because the local execution environment exposes
+  no git CLI or credentials this cycle.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the
+assembled full tree (main's tracked tree restored whole plus this
+session's changed files) with marker sweep, library-provenance audit
+and encoding sanity all exiting zero before commit; the CI jobs run
+over the pushed tree and must be verified green on both jobs before
+merge.
