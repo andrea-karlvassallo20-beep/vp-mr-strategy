@@ -1,3 +1,4 @@
+Additional content from `tools.github_app.get_file_contents` (call 1):
 # The null-time programme — what gets done while the L2 environment is being built
 
 Written 2026-11-16, after the math layer verification (math_verification_2026-11-16.md),
@@ -11234,3 +11235,116 @@ changed files, exiting zero; the library-provenance audit and the
 full-tree sweeps run in CI over the full tree — the summaries are
 untouched this session — and must be verified green on both jobs
 before merge.
+
+
+## 114. Null-time session 96 (2026-11-22), fourth act: library deep-read session 86 — the Rola Boltzmann-price read, fourth of the score-22 tier; the paper graded an ammunition-grade fair-price construction whose every magnitudinal claim is banned from the record under the laundering rule (marginal-moment fits with hand-tuned free parameters, no market null, no costs, within-family price self-comparisons), whose beta-and-eta tuning demonstration reinforces the standing dynamics-identification rule, estimator-configuration freeze and primary-metric pre-commitment without licensing any new amendment, whose Level-I-only informational boundary and beta~1/spread heuristic are recorded as interpretation cautions; NO kill line moved; the ratification queue stands at forty-six candidate sharpenings plus probe E1
+
+Session-state note first (goal-autonomy protocol, ACTIVE; goal state edition
+9, ## 111): the work choice for this session is the standing deep-read ritual
+its own default (protocol section 3 point 1; ratified-cadence check run: the
+edition-9 counter stands at TWO of five after deep-read 85, so the synthesis
+pass is NOT due; the declared non-deep-read alternatives stand ranked but the
+readable UNREAD head exists and the directive in force names the deep-read as
+the session's work). Verified against live state before reading: the main
+tail read through ## 113 (deep-read 85, the Bugaenko market-impact
+conditional read), docs/DECISIONS_PENDING.md read (ratification line:
+forty-six candidates plus probe E1, zero armed), the triage file
+score-sorted and recomputed against the live library note listing (the
+score-22 tier: x0acf9d consumed ## 112, x1a712b consumed ## 113, next UNREAD
+x85b5e3 "Boltzmann Price" verified note-less, then x750e2f; the extract
+present, page-marked; the open-PR set read at session start: empty, no
+race; the protocol file read whole and internally consistent). This is
+deep-read 86, the THIRD read counted against the edition-9 cadence (counter
+THREE of five; no synthesis pass due). No inaccessible or blocked status
+this session; the extract was present, page-marked, complete and read in
+full (28 PDF pages, abstract through appendices and references included).
+
+- **Library deep-read session 86** (front 2, fourth of the score-22 tier;
+  note:
+  paper/research/library/2026-11-22_boltzmann_price_deep_read.md):
+  Przemysław Rola, "Boltzmann Price: Toward Understanding the Fair Price in
+  High-Frequency Markets" (arXiv:2507.09734v1 [q-fin.TR], 13 Jul 2025,
+  Cracow University of Economics), score 22, index entry x85b5e3. The paper:
+  a Boltzmann/softmax fair-price family over the two top-of-book quotes with
+  weights from a Boltzmann distribution on TOB volume imbalance (Definition
+  3.2, PDF p. 5; Lemma 4.1, Eqs. 17-20, PDF pp. 5-6: P^boltzmann(0) =
+  P^mid, P^boltzmann(2) ≈ P^w), a micro-price correspondence under a modified
+  large-tick example (PDF pp. 24-25; Eq. 72), a heuristic imbalance-driven
+  SDE dP_t = σ(tanh(βθ_t)dt + dW_t cosh(βθ_t)) (Eqs. 25-45, PDF pp. 7-9),
+  kurtosis-generating simulations with Beta/Gamma-drawn imbalance and spread
+  (Tables 1-3, PDF pp. 10-12), a bounded impact-response model at most half
+  the spread (Eqs. 55-64, PDF pp. 18-19), and one month of 1-minute
+  Refinitiv quotes for GE and LCID where hand-chosen β (up to 17) and
+  scaling η match the historical mean, standard deviation and kurtosis of
+  price changes (Eqs. 52-53; Tables 5-8; Figs. 8-10, PDF pp. 14-17); β is a
+  free parameter the framework does not determine (PDF p. 5), with a
+  heuristic β ~ 1/spread relation (Eqs. 73-76, PDF pp. 25-26). Findings,
+  graded:
+  1. [reinforcing, no new item] The paper prints the constructive
+     counterexample the queue already guards against: β and η are two free
+     knobs tuned by hand until the constructed series reproduces the
+     historical moment triple (PDF p. 16, parameter estimation explicitly
+     deferred, PDF p. 14 note 22), so the historical "fits" are
+     marginal-moment matches with zero predictive content; reinforces the
+     dynamics-identification rule for generative nulls (marginal match
+     inadmissible as refutation), the estimator-configuration freeze
+     (deep-read 63) and the primary-metric pre-commitment (deep-read 55);
+     every magnitude banned under the laundering rule. No queue change.
+  2. [reinforcing, no new item] The paper's whole comparison set (mid,
+     weighted-mid, quasi-equilibrium, micro-price, Boltzmann at various β)
+     is one deterministic family over the same two quotes and two queue
+     sizes (PDF pp. 5-6, 24-25), so its "more informative, less noisy"
+     claim (PDF p. 15) is a within-family convention self-comparison, the
+     paired-family shape the laundering rule already forbids and the same
+     point as the spread-convention declaration rule (deep-read 56). No
+     queue change.
+  3. [interpretation caution] Level-I-only informational universe
+     (Assumption 3.1, PDF p. 4; scope note, PDF p. 20 note 28; 1-minute
+     last-quote aggregation, PDF p. 14): any TOB-imbalance feature is blind
+     to depth-beyond-best depletion, hidden liquidity and intra-bin event
+     order, exactly where the L2 phase's mechanisms live. No queue change.
+  4. [interpretation caution] β ~ 1/spread means a single frozen
+     imbalance-rescaling constant across regimes or assets embeds an
+     untested cross-sectional assumption the paper itself declines to
+     defend (PDF pp. 25-26; estimation deferred, PDF p. 14); the
+     regime-window pre-declaration and control-arm discipline already
+     forbid the silent version of that choice. No queue change.
+  5. [reinforcing, no new item] The same queue-clearance event yields
+     S/2·tanh(β/2) < S/2 for the Boltzmann price but a full S/2 for the
+     weighted-mid (Eqs. 60, 64, PDF pp. 18-19): impact magnitude is
+     convention-limited before it is informational; more evidence for the
+     attribution-null family (deep-read 82) and against within-family
+     impact reads. No queue change.
+  6. [source-quality note] arXiv v1 (July 2025), zero citations at
+     cataloguing, single author, no journal counterpart, heuristic SDE
+     derivation with the formal study deferred (PDF pp. 9, 20), parameter
+     estimation deferred, two stocks/one month/1-minute bars empirics.
+     Read, graded, recorded at its grade.
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (28 PDF pages, abstract, body, references and
+  appendices complete).
+- Ratification queue after this session: FORTY-SIX candidate sharpenings
+  plus probe E1, zero armed (ZERO queued this session; the queue is
+  unchanged by this read). T1 remains armed awaiting the owner's word in
+  its booked state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked. Deep-read
+  queue pointer: next UNREAD "Optimal execution and price manipulations in
+  time-varying limit order books" (score 22, x750e2f), last of the score-22
+  tier (verified note-less this session) — re-read the live tail and
+  recompute the tier against the notes before consuming; the
+  edition-9 cadence counter stands at THREE of five (#86, this entry,
+  counted from the edition-9 reset at ## 111): the next pass is due at
+  five or more deep-reads since edition 9 (#89 onward at the current
+  rate).
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule: no
+  candidate sharpening queued; the ratification line stands at forty-six
+  candidates plus probe E1, zero armed, most recently joined the
+  estimator-implementation concordance rule, deep-read 85).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean on the assembled changed files: the session ran the
+guard's exact marker-sweep and encoding-sanity semantics over the two
+changed files (the session note and this log append), exiting zero; the
+library-provenance audit and the full-tree sweeps run in CI over the full
+tree — the summaries are untouched this session — and must be verified
+green on both jobs before merge.
