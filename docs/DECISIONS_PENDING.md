@@ -1,8 +1,9 @@
-# Pending owner decisions — the thirty-seventh dashboard
+# Pending owner decisions — the thirty-eighth dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-22, the
-impact-viability pre-declaration for generative nulls queued as the
-forty-seventh candidate sharpening (null-time session 97, log ## 115;
+cross-stream synchronization and single-source-count pre-declaration
+queued as the forty-eighth candidate sharpening (null-time session 99,
+log ## 118;
 audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
@@ -36,7 +37,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: forty-seven
+  library deep-reads and the ratified exploratory channel: forty-eight
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -69,9 +70,59 @@ each case. Items are ordered by how much they gate.
   estimator-implementation concordance rule queued 2026-11-22 by
   deep-read session 85 / null-time session 95, plus the impact-viability
   pre-declaration for generative nulls queued 2026-11-22 by
-  deep-read session 87 / null-time session 97; probe E1
+  deep-read session 87 / null-time session 97, plus the cross-stream
+  synchronization and single-source-count pre-declaration queued
+  2026-11-22 by deep-read session 89 / null-time session 99; probe E1
   stands separately and is not
-  counted among the forty-seven); most recently joined 2026-11-22, the
+  counted among the forty-eight); most recently joined 2026-11-22, the
+  cross-stream synchronization and single-source-count pre-declaration
+  (BEFORE the L0 gate, any C1-L2/C8-adjacent computation, comparator,
+  null, baseline or feature that joins two or more asynchronously
+  updated data streams — two legs of one book viewed separately, two
+  markets, a book feed plus an event or macro timeline, the living
+  board plus its klines — must pre-declare, as frozen configuration
+  counted in the multiplicity ledger: (i) the merge timeline (a
+  declared clock or the union of the streams' update timestamps),
+  (ii) the imputation convention (strictly last-known-value carried
+  forward, evaluation points using only states verifiably
+  resting/available at that instant, never look-ahead), (iii) a
+  desync-coeval tolerance with which near-simultaneous staggered
+  updates are treated as simultaneous, recorded together with the
+  claimed structure's insensitivity to that tolerance (or reported
+  across a pre-declared tolerance grid), and (iv) a source-overlap map
+  proving no single underlying state is counted through two views
+  (mirrored books, complementary tokens, one pool under two labels;
+  double-counting inadmissible) — the Cheng-Yang-Zou Polymarket NBA
+  arbitrage paper proves in print that the failure class is real in a
+  live market: complementary tokens serialize 2 to 50 ms apart in the
+  CLOB API, so naively projecting the last-known state forward
+  momentarily crosses the new price of one outcome against the stale
+  price of its complement, registering sub-second phantom arbitrage
+  that the paper's pipeline kills only by a dynamic 500 ms time-based
+  clustering rule treating same-batch updates as simultaneous (appendix
+  A.2, PDF p. 10), the mirrored book means one shared liquidity pool
+  is queried through two reflected order books, so every severe
+  mispricing where AskA+AskB < 1.00 automatically manifests as a
+  crossed book where BidA+BidB > 1.00 and naively summing the Long and
+  Short signals would "falsely double the executable profitability"
+  (PDF pp. 3-4, dedup enforced), and the combinatorial leg is itself
+  evaluated on a Unified State Machine merging the two markets'
+  asynchronous update timestamps under a strict forward-fill
+  imputation chosen so that only states verifiably resting at the
+  evaluation instant are used (appendix B, PDF p. 12); harder-to-pass
+  because a join-established association that survives only under its
+  own post-hoc tolerance, imputation or dedup rule, or that counts one
+  state twice, now fails at the gate instead of surviving as a find;
+  tightens the same-period-aggregate feature availability rule
+  (deep-read 84) by extending the availability discipline from
+  aggregate-derived features to any cross-stream imputed state at the
+  evaluation instant, and the estimator-implementation concordance
+  rule (deep-read 85) by extending the frozen-configuration class from
+  one estimator's implementation-vs-definition to the join rule of
+  multiple streams; full draft with the killed-if-wrong
+  counterfactual in the session note
+  (paper/research/library/2026-11-22_polymarket_nba_arbitrage_deep_read.md)),
+  and earlier the same day, the
   impact-viability pre-declaration for generative nulls (BEFORE a
   generative null, placebo, comparator or simulator whose flow dynamics
   include a transient-impact/reversion (resilience) layer may serve as a

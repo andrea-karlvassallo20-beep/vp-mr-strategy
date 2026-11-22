@@ -32,15 +32,15 @@ Any product of autonomy that falls in these classes routes to
 `docs/DECISIONS_PENDING.md` (if a sharpening) or to the log (everything
 else) and is inert until the owner acts.
 
-## 2. The goal state (edition 9, 2026-11-22, rewritten by the seventh synthesis pass under the standing order; change recorded in log entry ## 111)
+## 2. The goal state (edition 10, 2026-11-22, rewritten by the eighth synthesis pass under the standing order; change recorded in log entry ## 117)
 
 Terminal goal: the SMH as defined in `KNOWLEDGE_SMH.md` (charter v3). This
 protocol never restates, reinterprets, or rewrites the charter; it points at
 it.
 
 Where the theory stands (facts recomputed from the live record on 2026-11-22
-by the ## 111 synthesis pass; the main tail was read through ## 110 at pass
-time, and the pass's own session deep-read lands after it as ## 112):
+by the ## 117 synthesis pass; the main tail was read through ## 116 at pass
+time, and the pass's own session deep-read lands after it as ## 118):
 
 - Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
   2026-11-19; archived is NOT falsified; every kill line stays frozen;
@@ -48,49 +48,46 @@ time, and the pass's own session deep-read lands after it as ## 112):
 - Phase 2 (Crypto L2): ACTIVE, the Board's only active research front
   (C1-L2 → C8 → Convexity Sizing), blocked on the owner's data
   acquisition; the L0 dry run is unblocked. Unchanged.
-- Library: eighty-five deep-read notes on main's tip through deep-read
-  session 83 (the 86th lands this same session's second act and
-  counts); the ratification queue holds FORTY-FOUR candidate
+- Library: eighty-eight deep-read notes on main's tip through deep-read
+  session 88 (the 89th lands this same session's second act and
+  counts); the ratification queue holds FORTY-SEVEN candidate
   sharpenings plus probe E1 at pass time (the second act of this same
   session may queue the next and none of it is armed); T1 armed awaiting
   the owner's word in its booked state (sign inverted); T2 tested-fail;
   the blocked list stays blocked.
-- Deep-read queue pointer: the score-23 tier is CLOSED (log ## 108); the
-  score-22 tier is OPEN (log ## 110); next UNREAD "Liquidity-adjusted
-  Return and Volatility, and Autoregressive Models" (Deng-Zhou, score 22,
-  x0acf9d), then the remaining score-22 tier ("Empirical Study of Market
-  Impact Conditional on Order-Flow Imbalance" x1a712b, "Boltzmann Price"
-  x85b5e3, "Optimal execution and price manipulations in time-varying
-  limit order books" x750e2f) — recomputed by title-matching the
-  score-sorted triage file against the live log tail and the library note
-  listing this pass; x0acf9d is consumed as the pass session's second act
-  (## 112) and #84 counts toward the edition-9 cadence.
-- Cadence: the edition-8 window is CLOSED at five of five (deep-reads
-  79-83 landed at ## 104 and ## 106 through ## 110, counted from the
-  edition-8 reset at ## 103), and this pass runs FIRST this session per
-  the ## 110 closing pointer; the cadence is RESET by this edition
-  (next due at five or more deep-reads since edition 9; the window's
-  first deep-read #84 lands as this session's second act immediately
-  after this pass and counts, so the counter stands at ONE of five).
+- Deep-read queue pointer: the score-22 tier is CLOSED (log ## 110-## 115);
+  the score-21 tier is OPEN (x532697, "Conservation Laws in a Limit Order
+  Book", read ## 116); next UNREAD "Arbitrage Analysis in Polymarket NBA
+  Markets" (Cheng-Yang-Zou, score 21, x1b6841), then the remaining
+  score-21 tier ("Collective synchronization and high frequency systemic
+  instabilities in financial markets" x9921ac) — recomputed by
+  title-matching the score-sorted triage file against the live log tail
+  and the library note listing this pass; x1b6841 is consumed as this
+  session's second act (## 118) and #89 counts toward the edition-10
+  cadence.
+- Cadence: the edition-9 window is CLOSED at five of five (deep-reads
+  84-88 landed at ## 112 through ## 116, counted from the edition-9
+  reset at ## 111), and this pass runs FIRST this session per the ## 116
+  closing pointer; the cadence is RESET by this edition (next due at
+  five or more deep-reads since edition 10; the window's first deep-read
+  #89 lands as this session's second act immediately after this pass and
+  counts, so the counter stands at ONE of five).
 
-What the window since edition 8 (log entries ## 104 through ## 110) taught
+What the window since edition 9 (log entries ## 112 through ## 116) taught
 this pass, stated as ranking evidence, nothing laundered: the five landed
-deep-reads of the window (sessions 79-83) moved ZERO kill lines and queued
-exactly THREE sharpenings (#42, the queue-jump-diffusion generative-null
-pre-declaration, ## 107; #43, the residual-flow attribution null, ## 108;
-#44, the feature-normalization pre-declaration, ## 110) — all three
-pre-commitment or generative-null extensions of already-queued families,
-so the declining-yield expectation named at editions 3-8 holds even as
-the per-window count ticked up from two to three: the tier boundary has
-moved into score-22/23 content whose papers are themselves null-design and
-discipline papers, so the queue is still being fed from the same vein, not
-from a new mechanism class; the window also absorbed TWO race-collision
-corrigenda (## 105, the session-90 landing-path collision; ## 109, a
-second session-93 instance closed UNMERGED per the main-wins protocol,
-no duplicate reaching main), which is ranking evidence that the byte-gate
-discipline works but that the collision rate is rising (three
-concurrent-instance events now logged: ## 98, ## 105, ## 109), keeping
-the truncation-and-collision infrastructure gap live.
+deep-reads of the window (sessions 84-88) moved ZERO kill lines and queued
+exactly THREE sharpenings (#45, the same-period-aggregate feature
+availability rule, ## 112; #46, the estimator-implementation concordance
+rule, ## 113; #47, the impact-viability pre-declaration for generative
+nulls, ## 115) — all three frozen-configuration/pre-declaration extensions
+of already-queued families, so the declining-yield expectation named at
+editions 3-9 holds: the queue keeps being fed from the same
+declare-before-the-data vein, not from any new mechanism class; the window
+was clean of race collisions (the last logged concurrent-instance events
+remain ## 98, ## 105 and ## 109), so the byte-gate discipline held through
+five same-day landings, but the truncation-and-collision infrastructure gap
+stays live on the strength of those three logged events plus the write-side
+truncation class (## 75, ## 78, ## 94, ## 98).
 
 Named gaps, against the registered specs and reading lists (this pass's
 product, each at zero status until its channel fires it):
@@ -99,57 +96,62 @@ product, each at zero status until its channel fires it):
   ## 94, ## 98) still has NO standing CI check enforcing byte-size
   monotonicity of the large tracked files, and no session-side
   read-back verification helper for large reads AND writes through the
-  tooling path; the rising race-collision count (## 98, ## 105, ## 109)
-  makes this the ranked infrastructure item. Named;
-  candidate-improvement status only.
-- The weekly directorate (section 6) has still not sat; FORTY-FOUR
-  candidates plus probe E1 pending at pass time, zero armed; the G2
-  directorate briefs (docs/DIRECTORATE_BRIEFS.md) cover all FORTY
-  queued items (through item 40), so briefs for items 41-44 (the
-  noise-model pre-declaration, queued ## 100; the queue-jump-diffusion
-  generative-null, queued ## 107; the residual-flow attribution null,
-  queued ## 108; the feature-normalization pre-declaration, queued
-  ## 110) plus any ratified successor are owed before the next sitting
-  — the G2 item-41 brief remains the highest-leverage lawful
-  non-deep-read work item.
+  tooling path; the collision history (## 98, ## 105, ## 109) keeps
+  this the ranked infrastructure item. Named; candidate-improvement
+  status only.
+- The weekly directorate (section 6) has still not sat; FORTY-SEVEN
+  candidates plus probe E1 pending at pass time (forty-eight after this
+  session's second act), zero armed; the G2 directorate briefs
+  (docs/DIRECTORATE_BRIEFS.md) cover the first FORTY queued items
+  (through item 40), so briefs for items 41-47 (the noise-model
+  pre-declaration, queued ## 100; the queue-jump-diffusion generative
+  null, queued ## 107; the residual-flow attribution null, queued
+  ## 108; the feature-normalization pre-declaration, queued ## 110; the
+  same-period-aggregate feature availability rule, queued ## 112; the
+  estimator-implementation concordance rule, queued ## 113; the
+  impact-viability pre-declaration for generative nulls, queued ## 115)
+  plus any ratified successor are owed before the next sitting — the G2
+  item-41 brief remains the highest-leverage lawful non-deep-read work
+  item.
 - Front 3's analysis legs remain blocked on codespace/data presence.
   No session action available.
 
-The ranked open fronts (edition 9): order unchanged from editions 3
-through 8, statuses recomputed; entry criteria, feeds and gates unchanged
+The ranked open fronts (edition 10): order unchanged from editions 3
+through 9, statuses recomputed; entry criteria, feeds and gates unchanged
 and binding; front 4's cadence is RESET by this edition — next due when
-five or more deep-reads have landed since edition 9 (deep-read #85
-onward by counter arithmetic; #84 lands as this session's second act and
+five or more deep-reads have landed since edition 10 (deep-read #90
+onward by counter arithmetic; #89 lands as this session's second act and
 counts as the window's first). Work-selection guidance contributed by
 this edition (binding on sessions until superseded by the next edition
 or the owner's word; non-binding on the owner): for the next
 non-deep-read-preferring session, the G2 brief for item 41 remains the
-ranked choice, ahead of the read-back verification helper, which
-remains named infrastructure work and stays claimable (rotation rule
-point 4, infrastructure repair); the deep-read remains the floor and
-stays lawful between briefs.
+ranked choice, ahead of the read-back verification helper, which remains
+named infrastructure work and stays claimable (rotation rule point 4,
+infrastructure repair); the deep-read remains the floor and stays lawful
+between briefs.
 
 Edition rule: this section (2) is rewritten ONLY by a synthesis pass, as a
 dated edition increment (edition n+1 replaces the previous section whole,
 with the log entry recording the change), OR by the owner's direct dated
 instruction. Nothing else edits it. Edition 1 (the five-item backlog of the
-landing session) is preserved in log entry ## 58; edition 2 (the
-eight-front configuration installed under the owner's 2026-11-19
-configuration instruction) is preserved in log entry ## 60's record;
-edition 3 (the first synthesis-pass edition) is preserved in log entry
-## 69's record; edition 4 (written at ## 76, never landed through the
-session-71 corruption, preserved in log entry ## 76's record), edition 5
-(the third synthesis-pass edition, preserved in log entry ## 83's record
-and in this file's git history and section 10), edition 6 (the fourth
-synthesis-pass edition, preserved in log entry ## 89's record and section
-11), edition 7 (the fifth synthesis-pass edition, preserved in log entry
-## 95's record and section 12) and edition 8 (the sixth synthesis-pass
-edition, preserved in log entry ## 103's record and section 13) are all
-superseded whole by this edition 9, the seventh synthesis-pass edition;
-the facts block was recomputed whole from the live record, and the front
-order is unchanged — the re-ranking authority the owner granted is
-exercised here only in the status notes and the work-selection guidance,
-with the reasoning recorded above and nothing gated touched.
+landing session) is preserved in log entry ## 58; edition 2 (the eight-front
+configuration installed under the owner's 2026-11-19 configuration
+instruction) is preserved in log entry ## 60's record; edition 3 (the first
+synthesis-pass edition) is preserved in log entry ## 69's record; edition 4
+(written at ## 76, never landed through the session-71 corruption, preserved
+in log entry ## 76's record), edition 5 (the third synthesis-pass edition,
+preserved in log entry ## 83's record and in this file's git history and
+section 10), edition 6 (the fourth synthesis-pass edition, preserved in log
+entry ## 89's record and section 11), edition 7 (the fifth synthesis-pass
+edition, preserved in log entry ## 95's record and section 12), edition 8
+(the sixth synthesis-pass edition, preserved in log entry ## 103's record
+and section 13) and edition 9 (the seventh synthesis-pass edition,
+preserved in log entry ## 111's record and section 14) are all superseded
+whole by this edition 10, the eighth synthesis-pass edition; the facts
+block was recomputed whole from the live record, and the front order is
+unchanged — the re-ranking authority the owner granted is exercised here
+only in the status notes and the work-selection guidance, with the
+reasoning recorded above and nothing gated touched.
 
 ## 3. The director policy (how a session chooses)
 
@@ -394,3 +396,29 @@ DECISIONS_PENDING.md is untouched BY THE PASS; nothing measured, nothing
 armed, nothing trades live. Sections 1, 3-13 above stand verbatim. The
 pass session's own deep-read (#84) lands as this session's second act
 (## 112).
+## 15. Edition 10 note (2026-11-22, log entry ## 117)
+
+The eighth synthesis pass under the standing order ran as null-time
+session 99's first act (cadence rule section 3 point 2, per the ## 116
+closing pointer's own instruction that the next deep-read session open with
+the pass: deep-reads 84-88 since the edition-9 reset at ## 111 landed at
+## 112 through ## 116, closing the edition-9 window at five of five, and
+the next window's first deep-read #89 lands as this session's second act
+(## 118)). This note records the section 2 change: the goal state was
+rewritten whole as EDITION 10 per the edition rule and section 4's
+product list — facts block recomputed from the live record at ## 116
+(deep-reads 84-88 counted against the edition-9 window, zero kill-line
+moves, THREE sharpenings queued in the window, queue forty-seven plus
+probe E1 at pass time), edition 9 superseded whole with its substance
+preserved in log entry ## 111's record and section 14 above and this
+file's git history, the ranked fronts unchanged in order with statuses
+recomputed, the named gaps and work-selection guidance as recorded in
+section 2, cadence reset (the counter standing at one of five with #89
+landing as this session's second act). No sharpening was queued by this
+pass (the pass names gaps, it does not amend); DECISIONS_PENDING.md is
+untouched BY THE PASS (this session's second act queued the
+forty-eighth candidate, recorded at ## 118; the file is updated by that
+act only); nothing measured, nothing armed, nothing trades live.
+Sections 1, 3-14 above stand verbatim. The pass session's own deep-read
+(#89, the Cheng-Yang-Zou Polymarket NBA arbitrage read) lands as this
+session's second act (## 118).
