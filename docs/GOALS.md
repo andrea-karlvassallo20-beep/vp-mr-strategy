@@ -1,8 +1,8 @@
 # GOALS.md — the fronts status board (operative work-selection companion)
 
 **Status:** the session-facing status board for the goal-state fronts, per
-the conductor protocol (goal state **edition 9**, protocol section 2;
-change recorded log ## 111; rotation guidance, section 3; weekly
+the conductor protocol (goal state **edition 10**, protocol section 2;
+change recorded log ## 117; rotation guidance, section 3; weekly
 directorate, section 6; landed
 2026-11-19) and the owner's standing order recorded MADE in
 `docs/DECISIONS_PENDING.md` (resolved item, 2026-11-19). The protocol's
@@ -62,7 +62,7 @@ construction.
    readiness; L2-chain work takes precedence over all fronts that
    serve it.
 
-## Status board (protocol section 2, edition 9)
+## Status board (protocol section 2, edition 10)
 
 - Front 1 — the gated L2 window. STATUS: THE CRITICAL PATH (Board
   directive, 2026-11-19). Still blocked on the owner (environment + data:
@@ -74,43 +74,51 @@ construction.
   read ## 104, FinRL-X xec4d8e read ## 106, "Order book dynamics in
   liquid markets" x6c29fa read ## 107, the Donier-Bonart million-
   metaorder read xfcaaa2 landing ## 108 to close the tier); the
-  score-22 tier is OPEN (x0fc07a, "Optimal Execution Using
-  Reinforcement Learning", landed ## 110 to open it), and this session
-  consumes x0acf9d ("Liquidity-adjusted Return and Volatility, and
-  Autoregressive Models", Deng-Zhou, second of the score-22 tier) as
-  its second act after the edition-9 pass. Next UNREAD after this
-  session: "Empirical Study of Market Impact Conditional on
-  Order-Flow Imbalance" (score 22, x1a712b), then "Boltzmann Price"
-  (x85b5e3) and "Optimal execution and price manipulations in
-  time-varying limit order books" (x750e2f), recomputed live by
-  title-matching the score-sorted triage file against the log tail;
-  re-read the live tail before consuming; the ritual's slug-keyed
-  unread rule applies. NOTE (refreshed 2026-11-22,
-  null-time session 95, log ## 111): the deep-read counter since
-  EDITION 9 stands at ONE of five (deep-read 84, landing as this
-  session's second act, counted from the edition-9 reset at ## 111);
-  the G2 directorate briefs cover all forty queued sharpenings through
-  item 40 plus probe E1 (refreshed 2026-11-21, log ## 99), so the
-  queue sits ready for the directorate and the next refresh is owed
-  from item 41 through item 44 and any successor.
-
+  score-22 tier is CLOSED (x0fc07a, "Optimal Execution Using
+  Reinforcement Learning", landed ## 110 to open it, and the tier's
+  five reads closed it at ## 115 — log ## 110 through ## 115,
+  recomputed live by title-matching the score-sorted triage file
+  against the log tail); the score-21 tier is OPEN ("Conservation Laws
+  in a Limit Order Book" x532697, read ## 116), and this session
+  consumes x1b6841 ("Arbitrage Analysis in Polymarket NBA Markets",
+  Cheng-Yang-Zou, second of the score-21 tier) as its second act
+  after the edition-10 pass. Next UNREAD after this session:
+  "Collective synchronization and high frequency systemic
+  instabilities in financial markets" (x9921ac, the last of the
+  score-21 tier), then the score-20 tier head (xaace1f); re-read the
+  live tail before consuming; the ritual's slug-keyed unread rule
+  applies. NOTE (refreshed 2026-11-22,
+  null-time session 99, log ## 117): the deep-read counter since
+  EDITION 10 stands at ONE of five (deep-read 89, landing as this
+  session's second act, counted from the edition-10 reset at ## 117);
+  the G2 directorate briefs cover the first forty queued items plus
+  probe E1 (refreshed 2026-11-21, log ## 99), so briefs are owed
+  from item 41 through item 48 and any successor (item 41 the
+  noise-model pre-declaration, item 42 the queue-jump-diffusion
+  generative null, item 43 the residual-flow attribution null, item
+  44 the feature-normalization pre-declaration, item 45 the
+  same-period-aggregate feature availability rule, item 46 the
+  estimator-implementation concordance rule, item 47 the
+  impact-viability pre-declaration for generative nulls, item 48 the
+  cross-stream synchronization and single-source-count pre-declaration
+  queued this session's second act, log ## 118).
 
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
   without real klines, and no invented data is substituted.
 - Front 4 — the synthesis pass. STATUS: NOT DUE (refreshed 2026-11-22,
-  null-time session 95, log ## 111): the edition-8 cadence window was
-  found CLOSED at five of five (deep-reads 79-83 landed ## 104 and
-  ## 106 through ## 110, counted from the edition-8 reset at ## 103;
-  the ## 110 closing pointer directed the pass run first), so this
-  session's first act discharged the seventh synthesis pass, recorded
-  as goal state EDITION 9, log ## 111; cadence per edition 9: next due
-  when five or more deep-reads have landed since edition 9 (deep-read
-  #84 lands as this session's second act and counts, so the counter
-  stands at ONE of five). NOTE: edition 8 is superseded whole by
-  edition 9 (same protocol section 14 note; edition 8's substance
-  preserved in the ## 103 log record and the protocol's section 13).
-
+  null-time session 99, log ## 117): the edition-9 cadence window was
+  found CLOSED at five of five (deep-reads 84-88 landed ## 112
+  through ## 116, counted from the edition-9 reset at ## 111; the
+  ## 116 closing pointer directed the pass run first), so this
+  session's first act discharged the eighth synthesis pass, recorded
+  as goal state EDITION 10, log ## 117; cadence per edition 10: next
+  due when five or more deep-reads have landed since edition 10
+  (deep-read #89 lands as this session's second act and counts, so
+  the counter stands at ONE of five). NOTE: edition 9 is superseded
+  whole by edition 10 (same protocol section 15 note; edition 9's
+  substance preserved in the ## 111 log record and the protocol's
+  section 14).
 
 - Front 5 — gap-driven probes. STATUS: standing, per
   `docs/exploratory_channel.md`; up to one block per session at the
@@ -165,9 +173,13 @@ reconciliation extended to forty, the family intros and sitting
 questions updated, the queue fully briefed, sitting-ready; the next
 refresh is owed from item 41 (the noise-model pre-declaration, queued
 ## 100; the queue now stands at forty-four at the edition-9 pass time,
-log ## 111 — items 42 queued ## 107, 43 queued ## 108, 44 queued
-## 110, all unbriefed as of this refresh; and null-time session 95's
-second act may raise the count again, recorded in log ## 112). The
+log ## 111; recomputed 2026-11-22, null-time session 99, log
+## 118: the queue now stands at forty-eight after this session's
+second act — items 41 queued ## 100, 42 queued ## 107, 43 queued
+## 108, 44 queued ## 110, 45 queued ## 112, 46 queued ## 113, 47
+queued ## 115 and 48 (the cross-stream synchronization and
+single-source-count pre-declaration) queued ## 118, all unbriefed as
+of this refresh). The
 briefs summarize recorded proposals only, queued nothing, and armed
 nothing.
 

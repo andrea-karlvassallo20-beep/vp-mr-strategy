@@ -11632,3 +11632,291 @@ marker-sweep, library-provenance and encoding-sanity checks over the full
 assembled local tree including the two changed files (the session note and
 this log append), exiting zero; the full-tree sweeps run again in CI over
 the pushed tree and must be verified green on both jobs before merge.
+
+## 117. Null-time session 99 (2026-11-22), first act: the eighth synthesis pass — the cadence recomputed from the edition-9 reset at ## 111 (deep-reads 84-88 landed at ## 112 through ## 116, the window CLOSED at five of five per the ## 116 closing pointer, which directed the pass run first), goal state rewritten as EDITION 10, the G2 brief-debt recomputed against the grown queue (briefs cover forty of forty-seven at pass time; items 41-47 owed); NO sharpening queued by the pass
+
+Session-state note, per the goal-autonomy conductor protocol (edition 9,
+## 111, ACTIVE at session start): the live main tail (through ## 116) and
+docs/DECISIONS_PENDING.md were read first; the open-PR set was read (empty,
+no race); the cadence check was recomputed from first principles against
+the edition-9 reset at ## 111 — deep-read 84 landed ## 112, 85 landed
+## 113, 86 landed ## 114, 87 landed ## 115, 88 landed ## 116: five of five,
+the window CLOSED, and the ## 116 closing pointer records explicitly that
+the next deep-read session MUST open with the eighth synthesis pass before
+its read — so per the conductor protocol section 3 point 2, the ## 116
+pointer's own instruction, and the ritual's director step, the pass runs
+FIRST and this session's deep-read follows as ## 118. The declared work
+choice is therefore the pass first, then the standing deep-read, matching
+the recorded instruction.
+
+Facts recomputed from the live record (main tail through ## 116 at pass
+time):
+
+- Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
+  2026-11-19; archived is NOT falsified; every kill line stays frozen;
+  unchanged. Phase 2 (Crypto L2): ACTIVE, the Board's only active
+  research front (C1-L2 → C8 → Convexity Sizing), blocked on the
+  owner's data acquisition; the L0 dry run is unblocked. Unchanged.
+- Library: eighty-eight deep-read notes on main's tip through deep-read
+  session 88 (the 89th lands as this session's second act and counts);
+  the ratification queue holds FORTY-SEVEN candidate sharpenings plus
+  probe E1 at pass time (this session's second act may queue the next;
+  see ## 118), zero armed; T1 armed awaiting the owner's word in its
+  booked state (sign inverted); T2 tested-fail; the blocked list stays
+  blocked.
+- Deep-read queue pointer: the score-22 tier is CLOSED (## 110-## 115:
+  x0fc07a ## 110, x0acf9d ## 112, x1a712b ## 113, x85b5e3 ## 114,
+  x750e2f ## 115); the score-21 tier is OPEN (x532697, "Conservation
+  Laws in a Limit Order Book", read ## 116); next UNREAD "Arbitrage
+  Analysis in Polymarket NBA Markets" (Cheng-Yang-Zou, score 21,
+  x1b6841), then "Collective synchronization and high frequency
+  systemic instabilities in financial markets" (Calcagnile-Bormetti-
+  Treccani-Marmi, score 21, x9921ac), last of the tier — recomputed by
+  title-matching the score-sorted triage file against the live log tail
+  and the library note listing this pass; x1b6841 is consumed as this
+  session's second act (## 118) and #89 counts toward the edition-10
+  cadence.
+- Cadence: the edition-9 window is CLOSED at five of five; the cadence
+  is RESET by this edition (next due at five or more deep-reads since
+  edition 10; #89 lands as this session's second act immediately after
+  this pass and counts, so the counter stands at ONE of five).
+
+What the window since edition 9 (log entries ## 112 through ## 116)
+taught this pass, stated as ranking evidence, nothing laundered: the five
+landed deep-reads of the window (sessions 84-88) moved ZERO kill lines and
+queued exactly THREE sharpenings (#45, the same-period-aggregate feature
+availability rule, ## 112; #46, the estimator-implementation concordance
+rule, ## 113; #47, the impact-viability pre-declaration for generative
+nulls, ## 115) — all three frozen-configuration/pre-declaration
+extensions of already-queued families, so the declining-yield expectation
+named at editions 3-9 holds: the queue keeps being fed from the same
+declare-before-the-data vein, not from any new mechanism class. The
+window was clean of race collisions (the last logged concurrent-instance
+events remain ## 98, ## 105 and ## 109), so the byte-gate discipline held
+through five same-day landings; the truncation-and-collision
+infrastructure gap nevertheless stays live on the strength of those three
+logged events plus the write-side truncation class (## 75, ## 78, ## 94,
+## 98). The window's honest scoring: five reads landing the same day
+against a head now descending through score-21 territory is exactly the
+declining-yield regime the editions have been recording; the queue's
+growth (three, all same-family) is not evidence of rising discovery, and
+no empirical claim from any paper in the window entered the record as
+support for any programme claim.
+
+Named gaps restated (this pass's product, zero status): the append-only
+log's write-side ~64K truncation class (## 75, ## 78, ## 94, ## 98) still
+has NO standing CI check enforcing byte-size monotonicity of the large
+tracked files, and no session-side read-back verification helper for
+large reads AND writes through the tooling path — the rising collision
+history makes this the ranked infrastructure item; the weekly directorate
+has still not sat — FORTY-SEVEN candidates plus probe E1 pending at pass
+time (forty-eight after this session's second act, see ## 118), zero
+armed, the G2 briefs cover the first forty queued items (through item
+40), so briefs for items 41-47 (the noise-model pre-declaration ## 100;
+the queue-jump-diffusion generative-null pre-declaration ## 107; the
+residual-flow attribution null ## 108; the feature-normalization
+pre-declaration ## 110; the same-period-aggregate feature availability
+rule ## 112; the estimator-implementation concordance rule ## 113; the
+impact-viability pre-declaration ## 115) plus any successor are owed
+before the next sitting, and the G2 item-41 brief remains the
+highest-leverage lawful non-deep-read work item; front 3 stays blocked on
+codespace/data presence. GOALS.md status lines refreshed as operative
+bookkeeping (the front 2 pointer and tier history, the front 4 cadence
+note, the G2 count reconciliation to the post-session queue of
+forty-eight); rankings and gates live in the protocol, never there.
+
+NO sharpening queued by this act (the pass names gaps, it does not
+amend); DECISIONS_PENDING.md is NOT touched BY THE PASS (this session's
+second act queues the forty-eighth candidate and updates that file under
+its own rule, see ## 118); the protocol file itself changes by this act
+only as the edition rule allows (section 2 rewritten whole as EDITION 10
+with this entry as the change record, an edition-10 note appended;
+nothing else in the protocol moves); T1 stays armed awaiting the owner's
+word; the queue FORTY-SEVEN plus probe E1 at pass time, zero armed.
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live.
+
+## 118. Null-time session 99 (2026-11-22), second act: library deep-read session 89 — the Cheng-Yang-Zou Polymarket NBA arbitrage read, second of the score-21 tier; the paper graded an honest limits-to-arbitrage empiricism whose magnitudes are all banned from the record under the laundering rule (venue-, sample- and polling-grain-specific, zero-fee venue), whose desync phantom-arbitrage and mirrored-book double-counting mechanics are banked as the evidence for ONE candidate sharpening (the cross-stream synchronization and single-source-count pre-declaration, #48), whose executable-depth bottleneck is recorded as cost-survival ammunition, and whose polling-bound frequencies and terminal-state censoring reinforce the standing base-rate and censoring disciplines; NO kill line moved; the ratification queue moves to forty-eight candidate sharpenings plus probe E1
+
+Session-state note first (goal-autonomy protocol, ACTIVE; goal state edition
+10, ## 117, installed as this session's first act): the live main tail (read
+through ## 116 before the session's edits; the pass lands as this session's
+first act ## 117 in the same push) and docs/DECISIONS_PENDING.md were read
+(ratification line: forty-seven candidates plus probe E1 at session start,
+zero armed); the cadence check was recomputed from first principles — the
+edition-9 counter stood at FIVE of five after deep-read 88 (## 116), so per
+the ## 116 closing pointer, the conductor protocol section 3 point 2 and the
+ritual's director step the eighth synthesis pass ran FIRST (logged as
+## 117, goal state rewritten as EDITION 10, queue recomputed at the pass),
+and the deep-read follows as this session's second act. Verified against
+live state before reading: the triage file score-sorted and recomputed
+against the live library note listing (the score-22 tier CLOSED ## 110-##
+115; the score-21 tier OPEN with x532697 read ## 116; the head x1b6841
+verified note-less, extract present and page-marked; then x9921ac verified
+note-less with extract present; the open-PR set read at session start:
+empty, no race; the protocol file read whole and internally consistent).
+This is deep-read 89, the FIRST read counted against the edition-10
+cadence (counter ONE of five; the window is OPEN from this landing). No
+inaccessible or blocked status this session; the extract was present,
+page-marked, complete and read in full (12 PDF pages, abstract, body,
+references and appendices A-B complete; the figures themselves are images
+in the source PDF, their captions and the tables' values present in the
+extract).
+
+- **Library deep-read session 89** (front 2, second of the score-21 tier;
+  note:
+  paper/research/library/2026-11-22_polymarket_nba_arbitrage_deep_read.md):
+  Guang Cheng, Jiaxin Yang and Haoxuan Zou (UCLA), "Arbitrage Analysis in
+  Polymarket NBA Markets" (arXiv:2605.00864v1 [q-fin.TR], index year 2026,
+  v1 dated May 5, 2026), score 21, index entry x1b6841. The paper: an
+  empirical limits-to-arbitrage study of Polymarket's NBA markets from
+  75,088,497 polled top-of-book snapshots across 173 games, Feb 4 to
+  Mar 4 2026, 3,042 markets, Level 1 only, deduplicated against the
+  mirrored order book (PDF pp. 1, 3-4, appendix A); single-market
+  arbitrage (AskA+AskB < 1.00 or BidA+BidB > 1.00 on fully collateralized
+  complementary tokens, PDF p. 4) yielding 37 theoretical episodes of
+  which 30 (81.1%) are post-game stale-quote artifacts with the median
+  spread exploded to 7,532.65 bps, leaving 7 valid in-game episodes,
+  median duration 3.6 s, capped profit $210.19 at $100 per episode,
+  $4,418.44 uncapped (PDF pp. 4-6); combinatorial arbitrage on
+  moneyline-spread subset pairs (Ask(ML_A) + Ask(Sp_B) < 1.00 with the
+  "Middle" $2.00 jackpot, PDF pp. 6-7), evaluated on 8.59 million states
+  unified by a state machine with strict forward-fill imputation
+  (appendix B, PDF p. 12), yielding 523 candidates, 233 post-game
+  exclusions and 290 active episodes concentrated in the final minutes
+  of live play (in-game time-in-arb 0.1762%, PDF p. 7), median duration
+  16 s, median yield 101.01 bps, capped $559.59 vs uncapped $2,032.75,
+  76.9% of episodes unable to deploy $100 (average 14.79 shares), the
+  jackpot realized zero times (PDF pp. 7-9); the desync phantom class:
+  staggered 2 to 50 ms serialization of complementary tokens plus naive
+  forward projection momentarily crosses the new price against the stale
+  complement, registering sub-second phantom arbitrage, killed inside the
+  pipeline only by a dynamic 500 ms coeval-clustering rule (appendix A.2,
+  PDF p. 10); the mirrored book makes every crossed signal appear
+  simultaneously Long and Short, so naive summing would falsely double
+  executable profitability until strict dedup (PDF pp. 3-4); the polling
+  cadence makes all frequencies conservative lower bounds and all
+  durations upper bounds (PDF pp. 3-4, 9-10). Findings, graded:
+  1. [candidate sharpening, PENDING OWNER RATIFICATION] The cross-stream
+     synchronization and single-source-count pre-declaration: BEFORE the
+     L0 gate, any C1-L2/C8-adjacent computation, comparator, null,
+     baseline or feature joining two or more asynchronously updated
+     data streams (two legs of one book viewed separately, two markets,
+     a book feed plus an event or macro timeline, the living board plus
+     its klines) must pre-declare as frozen configuration (i) the merge
+     timeline (a declared clock or the union of update timestamps),
+     (ii) the imputation convention (strictly last-known-value carried
+     forward, evaluation points using only states verifiably resting at
+     that instant, never look-ahead), (iii) a desync-coeval tolerance
+     with which staggered near-simultaneous updates are treated as
+     simultaneous, recorded with the claimed structure's insensitivity
+     to that tolerance (or across a pre-declared tolerance grid), and
+     (iv) a source-overlap map proving no single underlying state is
+     counted through two views (mirrored books, complementary tokens,
+     one pool under two labels; double-counting inadmissible) — the
+     paper proves the failure class in print on all four axes (the
+     2-50 ms desync crossing, appendix A.2, PDF p. 10; the mirrored
+     Long/Short double-count, PDF pp. 3-4; the forward-fill join of two
+     asynchronous books, appendix B, PDF p. 12), and none of the queued
+     items binds the stream-join rule itself (the same-period-aggregate
+     availability rule binds aggregate-derived features, the concordance
+     rule binds text-vs-code in a single estimator, the normalization
+     pre-declaration binds rolling statistics, the estimator-configuration
+     freeze binds kernel auxiliaries); harder-to-pass because a
+     join-established association that survives only under its own
+     post-hoc tolerance, imputation or dedup rule, or that counts one
+     state twice, now fails at the gate instead of surviving as a find;
+     tightens deep-read 84's availability rule and deep-read 85's
+     concordance rule by extending frozen configuration to the join of
+     streams; queued at #48, PENDING OWNER RATIFICATION; full draft
+     with the killed-if-wrong counterfactual in the session note.
+  2. [reinforcing, no new item] Seven single-market episodes in
+     seventy-five million snapshots is the no-edge default stated as a
+     base rate: on a venue whose core invariant hands every participant
+     a free arbitrage detector, 81.1% of raw signals are terminal-state
+     artifacts and the residual is 7 episodes, median 3.6 s, $210.19
+     capped profit in a month across 3,042 markets (PDF pp. 4-6);
+     different venue, engine and grain, so no kill line moves and no
+     magnitude may enter the record (the laundering rule); recorded as
+     reinforcement of the burden of proof only. No queue change.
+  3. [reinforcing, no new item] The jackpot's realized base rate is
+     zero: the combinatorial structure's doubling upside materialized
+     in zero of 290 episodes, the authors concluding participants
+     cannot assign meaningful probability weight to the incremental
+     upside (PDF p. 8) — the misses-curriculum discipline applied by
+     the source itself; an attractive conditional payoff whose realized
+     frequency is zero over hundreds of opportunities is a story, not
+     an expectancy. No queue change.
+  4. [cost-survival ammunition] Executability is the binding
+     constraint: top-of-book-only as the most conservative executable
+     measure (PDF pp. 3, 10), a $10 minimum bottleneck-leg size (PDF
+     pp. 4, 11), a One-Shot paradigm crediting one execution per
+     episode because consecutive snapshots would assume regenerating
+     liquidity (appendix A.5, PDF p. 11), and 76.9% of combinatorial
+     episodes unable to absorb $100 (average 14.79 shares) with the
+     capped/uncapped gap $559.59 vs $2,032.75 quantifying
+     theoretical-dislocation-versus-extractable-value (PDF pp. 8-9);
+     a future K7-style cost-survival layer must carry these
+     assumptions: the executable-depth ceiling, not the theoretical
+     size, is what prices value. No queue change.
+  5. [interpretation caution] Every frequency and duration is a
+     sampling artifact of the 3.6 to 5.5 s polling cadence: episodes
+     inside one gap evade detection (frequencies are lower bounds),
+     forward-difference durations are structural upper-bound estimates,
+     and phase trust ceilings (300 s in-game, 1800 s pre/post) cap
+     credited durations against outages (PDF pp. 3-4, 9-11); any
+     future persistence, duration or episode-count statistic on the
+     L2 data must pre-declare its cadence and outage caps and be
+     reported as a bounded measurement with both bias directions
+     named. No queue change.
+  6. [interpretation caution] Terminal-state liquidity must be censored
+     by pre-declared rule: the post-game window between physical
+     conclusion and oracle resolution sees makers withdraw, the median
+     spread explode to 7,532.65 bps, and stale crossings dominate the
+     raw signal set (30 of 37 and 233 of 523) until excluded by
+     explicit phase rule (PDF pp. 4-5, 7, 10-11) — reinforcing the
+     regime-window pre-declaration (deep-read 53) and the macro
+     censoring discipline: censoring rules are frozen before the data
+     and applied by phase, never by post-hoc inspection. No queue
+     change.
+  7. [source-quality note] Preprint v1 (three UCLA authors, zero
+     citations at cataloguing, no peer-reviewed venue), one month of
+     data on a single venue class, explicitly zero fees (PDF p. 10),
+     polled Level-1 snapshots rather than full-depth L2, precise-looking
+     aggregates resting on an unspecified outlier game (PDF p. 5), with
+     both bounds stated honestly in the paper's own limitations
+     (PDF p. 9); read, graded, recorded at its grade, consistent with
+     score-21 tier placement.
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (12 PDF pages, abstract, body, references
+  and appendices A-B complete).
+- Ratification queue after this session: FORTY-EIGHT candidate sharpenings
+  plus probe E1, zero armed (ONE queued this session: #48, the cross-stream
+  synchronization and single-source-count pre-declaration, joining the
+  frozen-configuration and availability families of deep-reads 84 and 85;
+  T1 remains armed awaiting the owner's word in its booked state (survived
+  all five kill lines with sign inverted); T2 tested-fail); the blocked
+  list stays blocked. Deep-read queue pointer: next UNREAD "Collective
+  synchronization and high frequency systemic instabilities in financial
+  markets" (score 21, x9921ac), last of the score-21 tier (verified
+  note-less this session, extract present) — re-read the live tail and
+  recompute the tier against the notes before consuming; after it the
+  score-20 tier opens at its score-sorted head ("Multivariate Hawkes-based
+  Models in LOB: European, Spread and Basket Option Pricing", score 20,
+  xaace1f). The edition-10 cadence counter stands at ONE of five by this
+  landing (#89, the first counted from the edition-10 reset at ## 117).
+- docs/DECISIONS_PENDING.md IS touched by this session (rule: one
+  candidate sharpening queued; the ratification line moves to forty-eight
+  candidates plus probe E1, zero armed, most recently joined the
+  cross-stream synchronization and single-source-count pre-declaration,
+  deep-read 89).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades live.
+Guard clean before commit: the session assembled the full tracked tree of
+main's tip locally (the public main archive, text files restored whole,
+including the data CSV trees in the marker sweep's scope) and ran
+src/integrity_guard.py over it — marker sweep, library-provenance audit
+and encoding sanity all exiting zero on the assembled tree, and exiting
+zero again on the same tree plus this session's changed files before
+commit; the CI jobs run over the pushed tree and must be verified green
+on both jobs before merge.
