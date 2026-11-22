@@ -1,8 +1,8 @@
 # Pending owner decisions — the thirty-seventh dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-22, the
-same-period-aggregate feature availability rule queued as the
-forty-fifth candidate sharpening (null-time session 95, log ## 112;
+estimator-implementation concordance rule queued as the
+forty-sixth candidate sharpening (null-time session 95, log ## 113;
 audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
@@ -36,7 +36,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: forty-five
+  library deep-reads and the ratified exploratory channel: forty-six
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -65,10 +65,48 @@ each case. Items are ordered by how much they gate.
   93, plus the feature-normalization pre-declaration queued
   2026-11-21 by deep-read session 83 / null-time session 94, plus the
   same-period-aggregate feature availability rule queued 2026-11-22 by
-  deep-read session 84 / null-time session 95; probe E1
+  deep-read session 84 / null-time session 95, plus the
+  estimator-implementation concordance rule queued 2026-11-22 by
+  deep-read session 85 / null-time session 95; probe E1
   stands separately and is not
-  counted among the forty-five); most recently joined 2026-11-22, the
-  same-period-aggregate feature availability rule (BEFORE the L0 gate,
+  counted among the forty-six); most recently joined 2026-11-22, the
+  estimator-implementation concordance rule (BEFORE the L0 gate, every
+  registered descriptive statistic, admission null, comparator or
+  refutation instrument whose estimator is defined in writing must
+  carry a recorded one-time concordance audit before any data is
+  touched: the executable implementation checked against the written
+  definition for silent numeric transformations the text does not
+  declare — clips, max/min floors, winsorization, sign re-labelling,
+  dropped-observation or subsampling rules, same-timestamp aggregation
+  conventions — with the audit counted as frozen configuration and
+  every divergence closed by a dated amendment before any run; a
+  number produced by an implementation that does not match its written
+  definition is inadmissible at the gate, however good it looks — the
+  Bugaenko market-impact conditional-on-OFI dissertation proves in
+  print that the divergence class is real and sign-flipping: Eq. 20
+  (PDF p. 69) defines the lag-1 response function as the signed mean
+  of eps_t times (m_{t+1} − m_t) while Algorithm 1 (PDF p. 71)
+  computes R = max(0, (m_{t+1} − m_t)·sign), clipping every negative
+  signed response to zero, an undeclared transformation the paper's
+  text never mentions, and the headline "R(1) is strongly positive for
+  all stocks" (PDF p. 73) is partially manufactured by it, since a
+  clipped mean converges to the expected positive part of the signed
+  response, not the signed mean, and is positive for any non-degenerate
+  response distribution including a symmetric one; harder-to-pass
+  because an estimator whose code path embeds an undeclared clip or
+  transformation now fails the concordance audit before any data is
+  touched, where the estimator-configuration freeze (deep-read 63)
+  and the feature-normalization pre-declaration (deep-read 83) freeze
+  only declared configurations and a text-vs-code divergence could
+  today survive silently into a run; tightens the estimator-
+  configuration freeze by extending the frozen-configuration class
+  from the estimator's declared configuration to concordance of its
+  implementation with the written definition; full draft with the
+  killed-if-wrong counterfactual in the session note
+  (paper/research/library/2026-11-22_market_impact_ofi_conditional_deep_read.md)),
+  and earlier
+  the same day, the same-period-aggregate feature availability rule
+  (BEFORE the L0 gate,
   any C1-L2/C8-adjacent spec using a signal or feature computed from
   aggregates over its own aggregation period — a period mean or total
   (dollar volume, volume, trade count), a period return, a period
