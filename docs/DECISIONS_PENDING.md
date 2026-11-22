@@ -1,8 +1,9 @@
-# Pending owner decisions — the thirty-sixth dashboard
+# Pending owner decisions — the thirty-seventh dashboard
 
-**Maintained by the null-time sessions. Last updated: 2026-11-21, the
-feature-normalization pre-declaration queued as the forty-fourth
-candidate sharpening (null-time session 94, log ## 110); audited against
+**Maintained by the null-time sessions. Last updated: 2026-11-22, the
+same-period-aggregate feature availability rule queued as the
+forty-fifth candidate sharpening (null-time session 95, log ## 112;
+audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
 Every item below is BLOCKED ON YOUR WORD — nothing runs, arms, or merges
@@ -35,7 +36,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: forty-four
+  library deep-reads and the ratified exploratory channel: forty-five
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -62,9 +63,50 @@ each case. Items are ordered by how much they gate.
   null-time session 92, plus the residual-flow attribution null
   queued 2026-11-21 by deep-read session 82 / null-time session
   93, plus the feature-normalization pre-declaration queued
-  2026-11-21 by deep-read session 83 / null-time session 94; probe E1
+  2026-11-21 by deep-read session 83 / null-time session 94, plus the
+  same-period-aggregate feature availability rule queued 2026-11-22 by
+  deep-read session 84 / null-time session 95; probe E1
   stands separately and is not
-  counted among the forty-four); most recently joined 2026-11-21, the
+  counted among the forty-five); most recently joined 2026-11-22, the
+  same-period-aggregate feature availability rule (BEFORE the L0 gate,
+  any C1-L2/C8-adjacent spec using a signal or feature computed from
+  aggregates over its own aggregation period — a period mean or total
+  (dollar volume, volume, trade count), a period return, a period
+  volatility, or any ratio, rescaling or weighting built from them (an
+  Amihud-style illiquidity weighting, a within-day normalized or
+  "liquidity-adjusted" return, a period-aggregate liquidity factor) —
+  must pre-declare that the feature's availability timestamp is the
+  CLOSE of its aggregation period, and may evaluate only at points at
+  or after that close; a feature evaluated at any finer grain inside
+  its own aggregation window is forward-looking and fails by rule,
+  however it is labeled, with the availability declaration counted as
+  frozen signal configuration and every deviation a dated amendment
+  before any data is touched — the Deng-Zhou liquidity-adjusted
+  ARMA-GARCH paper proves the degrees of freedom are real and
+  load-bearing: every liquidity-adjusted quantity in the paper is a
+  function of same-period aggregates (the minute-level factor uses the
+  whole day's mean dollar volume and a day-level normalization
+  constant inside every minute's rescaling, Eq. 1, PDF p. 11; Eqs.
+  2-3, PDF p. 12; the liquidity beta pair is a ratio of same-period
+  aggregates, |r_t/r_t^l| and sigma_t/sigma_t^l, PDF pp. 12-13), and
+  the paper's own use is lawful precisely because its forecasts are
+  strictly one-period-ahead after the day closes (footnote 12, PDF
+  p. 26), which proves availability discipline is what keeps this
+  feature family honest — while the queued feature-normalization
+  pre-declaration (deep-read 83) does not catch an aggregate-weighted
+  liquidity factor used intraday, since that rule binds only signals
+  defined through rolling or windowed normalization statistics;
+  harder-to-pass because a spec whose feature aggregates its own
+  evaluation period, evaluated before that period closes, now fails
+  at the gate instead of surviving as a clever liquidity adjustment;
+  tightens the feature-normalization pre-declaration (deep-read 83)
+  by extending the availability discipline from the
+  normalization-statistic class to ANY same-period aggregate-derived
+  feature, joining the estimator-configuration freeze (deep-read 63)
+  on the frozen-configuration axis; full draft with the
+  killed-if-wrong counterfactual in the session note
+  (paper/research/library/2026-11-22_liquidity_adjusted_returns_arma_garch_deep_read.md)),
+  and earlier 2026-11-21, the
   feature-normalization pre-declaration (BEFORE the L0 gate, any
   C1-L2/C8-adjacent spec whose signal is defined through rolling or
   windowed normalization statistics — a min-max rescaling, a z-score,
