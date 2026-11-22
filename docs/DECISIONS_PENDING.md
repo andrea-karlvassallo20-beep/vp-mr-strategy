@@ -1,9 +1,9 @@
 # Pending owner decisions — the thirty-ninth dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-22, the
-model-inversion identifiability pre-declaration
-queued as the forty-ninth candidate sharpening (null-time session 101,
-log ## 120;
+transform-domain admissibility pre-declaration
+queued as the fiftieth candidate sharpening (null-time session 102,
+log ## 121;
 audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
@@ -37,7 +37,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: forty-nine
+  library deep-reads and the ratified exploratory channel: fifty
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -74,9 +74,70 @@ each case. Items are ordered by how much they gate.
   synchronization and single-source-count pre-declaration queued
   2026-11-22 by deep-read session 89 / null-time session 99, plus the
   model-inversion identifiability pre-declaration queued 2026-11-22 by
-  deep-read session 91 / null-time session 101; probe E1
+  deep-read session 91 / null-time session 101, plus the
+  transform-domain admissibility pre-declaration queued 2026-11-22 by
+  deep-read session 92 / null-time session 102; probe E1
   stands separately and is not
-  counted among the forty-nine); most recently joined 2026-11-22, the
+  counted among the fifty); most recently joined 2026-11-22, the
+  transform-domain admissibility pre-declaration (BEFORE the L0 gate,
+  any C1-L2/C8-adjacent computation, comparator, null or feature whose
+  value is computed through a transform of the data or of a fitted model
+  — a characteristic-function / Fourier-inversion estimator, an
+  affine-transform price or intensity formula, a spectral or
+  Laplace/Fourier representation, a moment-generating-function
+  identity — must pre-declare, as frozen configuration counted in the
+  multiplicity ledger: (i) the domain of existence of the transform as
+  an explicit function of the frozen parameters (the region in the
+  evaluation-variable space where the defining expectation or integral
+  is finite and the associated ODE/integral solutions exist), or a
+  dated derivation of that domain; (ii) a recorded check, before any
+  data is touched, that every evaluation point at which the statistic
+  will be computed lies inside the pre-declared domain for ALL frozen
+  configurations it may take, with boundary-approach behavior declared
+  beside the value (a statistic computed within a declared tolerance of
+  the domain boundary must say so); and (iii) the numerical-tolerance
+  convention for transform-inversion truncation and contour choice, as
+  frozen configuration — an evaluation outside the proven domain, or a
+  domain that shrinks away from the evaluation point under one legal
+  configuration of the frozen set, makes the statistic UNDEFINED by
+  rule, not merely inaccurate, and an implementation that silently
+  returns a finite number (by truncation, damping, or contour shift the
+  text never authorized) fails the concordance audit — the Zamora Font
+  VIX-options Heston-Hawkes paper proves in print that the failure
+  class is real twice over: its own semi-analytical VIX call formula
+  exists only on the explicit contour of its eq. (7.2), with the bound
+  φ_R < min{2κ(a)/(σ²A(a))(2e^{κ(a)T}−1), L_J/A(a), (β−α)/(B(a)αβ)},
+  where L_J := (1/η)M_J^{-1}((β/α)exp(α/β − 1)) inverts the jump-size
+  mgf at a point set by the self-excitation memory ratio α/β, and the
+  associated generalized Riccati ODEs are proved (Lemma 5.3 and its
+  appendix comparison argument, PDF pp. 7-8, 18-20) to have solutions
+  on [0,T] only inside 0 < Re(φ) < min{2κ(a)/σ²(2e^{κ(a)T}−1), L_J},
+  Re(ψ) < (β−α)/(αβ), non-explosion resting on
+  sup_t E[e^{η Re(G)J_1}] < (β/α)exp(α/β − 1) — the domain boundary is a
+  function of the frozen estimator configuration itself, so a
+  post-hoc re-configuration moves the boundary under the evaluation
+  point without touching a line of code — and the paper's Remark 3.1
+  states in print that the closest published predecessor, the SVCIJ-H
+  model of Ye-Wu-Chen, propagated the same formal transform formula
+  with NO domain study at all ("we miss this study in [36, Proposition
+  2]", PDF p. 5), so the unchecked-domain failure is the published
+  baseline of exactly the transform family a future L2 comparator
+  would borrow from; harder-to-pass because a transform-based number
+  computed at an evaluation point where the underlying transform
+  provably does not exist — today survivable as a silent numerical
+  artifact of a Fourier or spectral routine, indistinguishable in the
+  output from a legitimate value — now fails at the gate, and a claimed
+  structure resting on such a number is dead by rule; tightens the
+  estimator-implementation concordance rule (deep-read 85), which
+  checks code against a written definition but never requires the
+  definition's own existence domain proven or the evaluation point
+  checked against it, and joins the estimator-configuration freeze
+  (deep-read 63) and the price-process-family invariance rule
+  (deep-read 66) in extending frozen configuration to the existence
+  conditions of the analytic object itself; full draft with the
+  killed-if-wrong counterfactual in the session note
+  (paper/research/library/2026-11-22_vix_options_heston_hawkes_deep_read.md)),
+  and earlier the same day, the
   model-inversion identifiability pre-declaration (BEFORE the L0 gate,
   any C1-L2/C8-adjacent computation, comparator, null or feature that
   inverts a parametric model onto an observed quantity — implied

@@ -12182,3 +12182,171 @@ and encoding sanity all exiting zero on the assembled tree, and exiting
 zero again on the same tree plus this session's changed files before
 commit; the CI jobs run over the pushed tree and must be verified green
 on both jobs before merge.
+
+## 121. Null-time session 102 (2026-11-22): library deep-read session 92 — the Zamora
+Font VIX-options Heston-Hawkes read, second of the score-20 tier; the paper graded
+pure existence-theory pricing (a semi-analytical VIX call formula under Heston
+variance plus an independent compound Hawkes jump component, with a continuum of
+equivalent martingale measures Q(a), generalized Riccati ODEs, and VIX² proved to
+be a positive linear combination of the variance and the Hawkes intensity), zero
+empirical content, whose measure-continuum pricing reinforces the
+estimator-configuration freeze and whose intensity-plus-variance scalar cleanly
+instantiates the under-identified split already covered by the model-inversion
+identifiability pre-declaration (#49, deep-read 91), and which earned ONE candidate
+sharpening: the transform-domain admissibility pre-declaration (#50) — the paper
+proves its formula's transform exists only on an explicit contour whose boundary is
+a function of the frozen α/β memory ratio and the jump-moment mgf (L_J := (1/η)
+M_J^{-1}((β/α)exp(α/β − 1)), Re(ψ) < (β−α)/(αβ), Lemma 5.3 and eq. 7.2, PDF pp. 7-8,
+14-15, 18-20), and faults its closest prior model in print for publishing the same
+formal transform with no domain study at all (Remark 3.1 on the SVCIJ-H of
+Ye-Wu-Chen, PDF p. 5); NO kill line moved; the ratification queue moves to fifty
+candidate sharpenings plus probe E1
+
+Session conduct before the reading (the state re-read, not remembered): the
+live main tail (through ## 120) and docs/DECISIONS_PENDING.md were read
+(ratification line: forty-nine candidates plus probe E1 at session start,
+zero armed); the goal-autonomy protocol's cadence was recomputed from first
+principles — the edition-10 counter stood at THREE of five after deep-read 91
+(## 120), so no synthesis pass is due, the work choice is the standing
+deep-read default, and this read moves the counter to FOUR of five; verified
+against live state: entry x2b0051 score-sorted next-UNREAD, note-less against
+the live library listing (NOT the already-read Rough Hawkes-Heston
+microfoundation paper or the already-read Heston-queue-Hawkes option-pricing
+paper, both different works), extract present, page-marked (28 PDF pages,
+abstract through references complete, read in full); the open-PR set read
+at session start: empty, no race. No inaccessible or blocked status this
+session.
+
+The paper, one paragraph: dv_t = −κ(v_t − v̄)dt + σ√v_t dW_t + η dL_t with L an
+independent compound Hawkes process, general positive jump law (Assumption 1,
+mgf maximal domain, PDF p. 3); arbitrage-freeness taken seriously instead of
+assumed — Theorem 4.3 gives a continuum of equivalent (local) martingale
+measures Q(a), |a| < √(2c_l), c_l explicit in (κ, σ, η, T, jump mgf, α/β)
+(Proposition 4.2, PDF pp. 5-6), restricted to a true-martingale subset
+E_m(Q_1, 2+ε_1) under Assumption 2's parameter restrictions carrying the
+needed inverse-moment and martingale integrability (PDF pp. 6-7); the joint
+conditional characteristic function of (v_T, λ_T) is exponential-affine
+e^{F+Gv_t+Hλ_t} with (F, G, H) solving generalized Riccati ODEs that are
+PROVED to have solutions on [0,T] only inside the explicit complex domain
+0 < Re(φ) < min{2κ(a)/σ²(2e^{κ(a)T}−1), L_J}, Re(ψ) < (β−α)/(αβ), the
+non-explosion resting on sup_t E[e^{η Re(G)J_1}] < (β/α)exp(α/β−1) (Lemma 5.3,
+Proposition 5.4 and the appendix comparison argument, PDF pp. 7-11, 15-20);
+VIX²_t then proved a positive linear combination A(a)v_t + B(a)λ_t + C(a)
+by the Markov property of the exponential Hawkes and a forward-variance /
+variance-swap computation (Propositions 6.2-6.9, Appendix A.2, PDF pp. 11-13,
+20-26); the call price assembled by the Lewis/erfc identity on a contour
+restricted by eq. (7.2), 0 < φ_R < min{2κ(a)/(σ²A(a))(2e^{κ(a)T}−1),
+L_J/A(a), (β−α)/(B(a)αβ)} (Theorem 7.1, PDF pp. 14-15). No numerics, no
+calibration, no data anywhere.
+
+Findings, graded (all page-cited in the session note
+paper/research/library/2026-11-22_vix_options_heston_hawkes_deep_read.md):
+
+  1. [candidate sharpening, PENDING OWNER RATIFICATION] The transform-domain
+     admissibility pre-declaration (#50): BEFORE the L0 gate, any
+     C1-L2/C8-adjacent computation, comparator, null or feature whose value
+     is computed through a transform of the data or of a fitted model — a
+     characteristic-function / Fourier-inversion estimator, an
+     affine-transform price or intensity formula, a spectral or
+     Laplace/Fourier representation, a moment-generating-function identity —
+     must pre-declare, as frozen configuration counted in the multiplicity
+     ledger: (i) the domain of existence of the transform as an explicit
+     function of the frozen parameters (the region where the defining
+     expectation or integral is finite and the associated ODE/integral
+     solutions exist), or a dated derivation of that domain; (ii) a recorded
+     check, before any data is touched, that every evaluation point lies
+     inside the pre-declared domain for ALL frozen configurations it may
+     take (boundary-approach behavior declared beside the value); and (iii)
+     the numerical-tolerance convention for transform truncation/contour
+     choice, frozen — an evaluation outside the proven domain makes the
+     statistic UNDEFINED by rule, and an implementation that silently
+     returns a finite number (by truncation, damping or contour shift the
+     text never authorized) fails the concordance audit; harder-to-pass
+     because a transform-based number computed where the underlying
+     transform provably does not exist — today survivable as a silent
+     numerical artifact of a Fourier or spectral routine — now fails at the
+     gate, and a claimed structure resting on such a number is dead by
+     rule; tightens the estimator-implementation concordance rule
+     (deep-read 85), which checks code against a written definition but
+     never requires the definition's own existence domain proven or the
+     evaluation point checked against it, and joins the
+     estimator-configuration freeze (deep-read 63) and the price-process-
+     family invariance rule (deep-read 66) in extending frozen
+     configuration to the existence conditions of the analytic object
+     itself; the paper proves the failure class is real twice over: its own
+     formula exists only on the contour (7.2) whose boundary L_J depends on
+     the α/β memory ratio and the jump mgf (PDF pp. 7-8, 14-15, 18-20), and
+     its Remark 3.1 states the closest published predecessor (the SVCIJ-H of
+     Ye-Wu-Chen [36]) propagated the same formal transform with NO domain
+     study ("we miss this study in [36, Proposition 2]", PDF p. 5) — so the
+     unchecked-domain failure is not hypothetical, it is the published
+     baseline of exactly the family a future L2 comparator would borrow
+     from; full draft with the killed-if-wrong counterfactual in the
+     session note.
+  2. [reinforcing, no new item] The equivalent-martingale-measure family is
+     a continuum indexed by a free parameter a (Theorem 4.3: κ(a) = κ + aσ,
+     v̄(a), prices all Q(a)-dependent, PDF pp. 5-6), and the paper itself
+     cites [33, 34] that "exposures computed under the risk neutral measure
+     are essentially arbitrary" (PDF p. 2): every model-implied theoretical
+     quantity is a function of an analyst-chosen measure within a family —
+     reinforces the estimator-configuration freeze (deep-read 63: the
+     measure-indexing parameter is exactly a frozen configuration, never
+     re-picked after the result) and the model-inversion identifiability
+     pre-declaration (#49: recovering a latent quantity from an observed
+     price under an un-fixed member of a continuum is under-identified by
+     construction). No queue change.
+  3. [reinforcing, no new item] VIX²_t is proved to be A(a)v_t + B(a)λ_t +
+     C(a) with B(a) > 0 (Proposition 6.9, PDF p. 13): the model's headline
+     observable-equivalent is a one-scalar sum of an observable variance and
+     an unobservable self-excitation state — precisely the split that #49
+     declares under-identified when performed post hoc; the paper itself
+     never inverts (it prices forward from a known state), so the caution
+     lands on any future use of a Hawkes-implied intensity against a
+     compressed-book observable, which travels the already-queued rule. No
+     queue change.
+  4. [interpretation caution] The α/β near-criticality sensitivity recurs on
+     the existence side: the admissible Re(ψ) bound (β−α)/(αβ) and L_J both
+     tighten toward zero as α/β → 1, the same self-exciting configuration
+     that inflates magnitudes (deep-read 91, ## 120) also shrinking the
+     region where any transform of the process exists at all — where a
+     future L2-derived Hawkes-adjacent statistic is computed near its own
+     spectral boundary, both its magnitude interpretation AND its
+     well-definedness require the frozen distance from criticality of the
+     self-excitation regime-window pre-declaration (deep-read 53), one
+     mechanism viewed from magnitude and from existence; all magnitudes
+     from this paper are banned from the record under the laundering rule
+     (there is no empirical content to launder). No queue change.
+  5. [source-quality note] arXiv v1 preprint, companion to the
+     change-of-measure paper [7] (to appear in Adv. Appl. Probab.) and [6];
+     no empirical calibration anywhere, parameters symbolic; internal
+     defects that do not touch the domain argument: the Lewis/erfc identity
+     stated in two disagreeing forms between (1.1) and (3.2) (PDF pp. 2, 4),
+     a garbled comparison line in the Lemma A.6 proof as printed (PDF
+     p. 26, the claim itself true), a "Hakwes" typo (PDF p. 3); check the
+     published version before formal citation. No queue change.
+
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (28 PDF pages, abstract, body, references
+  complete).
+- Ratification queue after this session: FIFTY candidate sharpenings plus
+  probe E1, zero armed (ONE queued this session, the transform-domain
+  admissibility pre-declaration, #50; T1 remains armed awaiting the owner's
+  word in its booked state (survived all five kill lines with sign
+  inverted); T2 tested-fail); the blocked list stays blocked. Deep-read
+  queue pointer: next UNREAD "Transform Analysis for Hawkes Processes with
+  Applications in Dark Pool Trading" (score 20, x47bbb5), next in the
+  score-20 tier — re-read the live tail and recompute the tier against the
+  notes before consuming. The edition-10 cadence counter stands at FOUR of
+  five by this landing (#92).
+- docs/DECISIONS_PENDING.md is updated by this session (rule: one candidate
+  sharpening queued; queue line moves to fifty candidates plus probe E1,
+  zero armed).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades live.
+Guard clean before commit: the session assembled the full tracked tree of
+main's tip locally (the public main archive, restored whole) and ran
+src/integrity_guard.py over it — marker sweep, library-provenance audit
+and encoding sanity all exiting zero on the assembled tree, and exiting
+zero again on the same tree plus this session's changed files before
+commit; the CI jobs run over the pushed tree and must be verified green
+on both jobs before merge.
