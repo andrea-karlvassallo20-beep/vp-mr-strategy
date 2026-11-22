@@ -12990,3 +12990,147 @@ session's changed files) with marker sweep, library-provenance audit
 and encoding sanity all exiting zero before commit; the CI jobs run
 over the pushed tree and must be verified green on both jobs before
 merge.
+
+## 128. Null-time session 107 (2026-11-22): library deep-read session 97 — the Tomlinson-Greenwood-Mucha-Kruczyński two-tailed POT Hawkes asymmetry read, seventh of the score-20 tier; the 2021 S&P 500 daily-returns model family finding extreme losses exciting about twice as many daughters as gains (γ↔←/γ↔→ = 2.2 ± 0.5) with loss-excitation decaying about five times faster (β←/β→ = 4.6 ± 1.2), a fitted type-conditional reproduction above unity (γ↔← = 1.2) held subcritical only by the spectral-radius check (ρ ≈ 0.82-0.87, arithmetic on the printed tables, no data touched), the authors' own residual evidence that branching elements fitted across regime onsets are inflated upper bounds, and a GARCH-residual sensitivity appendix flagging exactly the frozen-configuration freedoms — all reinforcing; NO kill line moved; NO new candidate sharpening
+
+The paper: Matthew F. Tomlinson, David Greenwood, Marcin Mucha-Kruczyński,
+"Asymmetric excitation of left- and right-tail extreme events probed using a
+Hawkes model: application to financial returns" (arXiv:2011.12291v2
+[q-fin.ST], 10 Aug 2021, referee-acknowledged, formatted for Physical Review
+E; slug x55e853, per docs/library/expanded_index.json). A two-tailed
+peaks-over-threshold marked Hawkes family — bivariate coupled, bivariate
+decoupled, asymmetric common-intensity, and symmetric common-intensity forms
+(PDF pp. 2-4, eqs. 1-13) — is fitted by maximum likelihood (L-BFGS-B, MCMC-
+verified per Appendix B, PDF pp. 13-14) to exceedances of fixed 2.5%/97.5%
+training quantiles of S&P 500 daily log-returns (1959-10-02 to 2020-11-20,
+training to 2008-09-01; PDF pp. 4-5) and compared by AIC, BIC, likelihood
+ratio and Ogata residual analysis (PDF pp. 5-9, Tables III-V). The
+common-intensity form with asymmetric tails wins both training and forecast,
+the two tails share one arrival intensity (PDF pp. 6-7), the headline
+asymmetries are γ↔←/γ↔→ = 2.2 ± 0.5 and β←/β→ = 4.6 ± 1.2 (PDF p. 7), read
+as negativity bias (PDF p. 10), and Appendix A shows the γ-asymmetry is
+reproducible by GJR-GARCH leverage alone while the β-asymmetry is not
+(PDF pp. 10-13, Tables VI-VIII), with POT Hawkes on GARCH residuals
+"highly sensitive" to the volatility-model assumptions (PDF pp. 11-12). Read
+in full (15 page-marked PDF pages, appendices and references complete)
+against the one question. Note landed at
+paper/research/library/2026-11-22_asymmetric_tail_excitation_hawkes_deep_read.md.
+
+Director step (goal-autonomy protocol, ACTIVE): protocol read, consistent
+with the live tail (edition 11); the session's work choice is the DEFAULT deep-read
+(next UNREAD triage entry, re-ranked against the notes: the score-20 tier
+holds fifteen entries, six consumed — xaace1f at ## 120, x2b0051 at
+## 121, x47bbb5 at ## 122, xe1c4ca at ## 125, xf8b5bc at ## 126 and
+x97b372 at ## 127 — so this read takes x55e853 seventh, no note on main
+per the live listing), so no justification is owed. Synthesis cadence
+NOT due: this landing is the FOURTH of five deep-reads since the
+edition-11 reset at ## 124 (#94 at ## 125, #95 at ## 126, #96 at
+## 127, #97 here).
+
+Verdict: NO kill line changes. NO new candidate sharpening. Findings
+(all graded against the restored record and the queue as it stands at
+fifty-one candidates plus probe E1):
+
+1. [reinforcing, no new item] Multitype branching-ratio discipline, printed
+   as a live case: subcriticality is correctly stated as ρ(Γ) < 1 (PDF p. 3),
+   but the fitted tables give a type-conditional reproduction ABOVE unity —
+   γ↔← = 1.2 ± 0.1 under θci (Table II, PDF p. 6), equivalently the θbi
+   left-mother column sum 0.58 + 0.60 = 1.18 (Table I, PDF p. 6) — with the
+   cascade still finite only because the balanced type mix holds the total
+   reproduction at (1.2 + 0.54)/2 ≈ 0.87 and the θbi spectral radius at
+   ≈ 0.82 (arithmetic on the printed table values this session performed
+   descriptively; no data touched, nothing measured). A future multitype
+   self-excitation score checks spectral radius on the fitted matrix and
+   never reads a per-type reproduction above one as regime criticality —
+   the discipline standing from the survey read (log ## 126, finding 1)
+   and the earthquake-interevent read (log ## 127, finding 1), now in its
+   multitype form. No queue change.
+2. [interpretation caution] The paper's own residual evidence that
+   endogeneity estimates across regime onsets are inflated upper bounds:
+   localized lag-1 ACF peaks at the tail ends of the 1973-4, 1987 and
+   GFC clusters print systemic over-forecasting, and the authors' stated
+   cause is un-modelled non-constant exogenous intensity forcing all
+   excess intensity into self-excitation — "self-excitement may more so
+   be the mechanism by which the excited state persists" (PDF pp. 9-10).
+   Feeds the endo-exo / apparent-criticality reading discipline and the
+   estimator-mode freeze; the instigation-versus-persistence split is
+   unresolved by the paper's own fit. No queue change.
+3. [interpretation caution] Configuration freedom does measurable work in
+   the headline: constant quantile thresholds produce a 168:124 left/right
+   forecast split under distribution drift (PDF p. 8), while the
+   GARCH-residual alternative is "highly sensitive" to the volatility-model
+   assumptions and produces decay constants of order 10³ days the authors
+   themselves call "not naturally described by a Hawkes-type self-exciting
+   process" (PDF pp. 10-12, footnote 2, PDF p. 12). The threshold-grid
+   pre-declaration and grain-attribution requirements are already frozen
+   as configuration (deep-read 63; reaffirmed deep-read 96, log ## 127
+   finding 2). No queue change.
+4. [interpretation caution] Daily closing-price, single-index grain; no L2
+   information; the negativity-bias reading is the authors' speculation,
+   not a measured causal claim (PDF p. 10); the model's own left-tail
+   residual excesses fail the KS test in the GFC and Covid clusters
+   (Fig. 5, PDF p. 9) — printed failure exactly where the macro synthesis
+   would depend on it. The daily grain is already bracketed by the queued
+   C1-L2 base-rate confrontation; the empirical asymmetry claims are
+   standing context only, never support for any program claim — the
+   library-is-ammunition caveat binds. No queue change.
+5. [source-quality note] arXiv v2, 15 pages, Physical-Review-E-formatted
+   with anonymous-referee acknowledgment (PDF p. 10) — the published version
+   should be checked before formal citation; the extract garbles the
+   Table I/II γ and β submatrix subscripts (cross-read against eqs. 3-11
+   and the ratio statements on PDF p. 7) and the KS p-values of Figs. 1, 5
+   and 9; one author has an industry affiliation (CheckRisk LLP, PDF p. 1);
+   single asset, no cross-market replication. No queue change.
+
+Counterfactual (what this paper would have killed if we had done it wrong):
+without the spectral-radius discipline, γ↔← = 1.2 would have been read as
+printed loss-driven supercriticality — a type-conditional reproduction
+count laundered into a regime discovery, when the stationary process survives
+only via the sub-unity right-tail mix (ρ ≈ 0.82-0.87). Without the endo-exo
+reading discipline, the over-forecasting ACF peaks the authors honestly print
+(PDF pp. 9-10) would have been tuned away as model refinement instead of
+standing as evidence that branching elements are inflated where exogenous
+intensity is un-modelled. Without the frozen-configuration discipline, the
+constant-versus-normalized threshold choice — which flips the asymmetry
+story's composition between the raw fit and every GARCH-residual fit (PDF
+pp. 8, 12, Tables VII-VIII) — is exactly the researcher degree of freedom
+the estimator-configuration freeze removes. Without the
+library-is-ammunition caveat, "negativity bias in markets" would have entered
+the record as an established market property on the strength of a
+within-family fit whose left tail fails its own residual test in the two
+crisis regimes that matter most.
+
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (15 PDF pages, abstract, body, both
+  appendices, figures and references complete; the extraction's table-
+  subscript garbles are recorded in finding 5 and every number used was
+  cross-checked against the equations and the paper's own ratio
+  statements on PDF p. 7).
+- Ratification queue after this session: FIFTY-ONE candidate sharpenings
+  plus probe E1, zero armed (NONE queued by this read;
+  docs/DECISIONS_PENDING.md is NOT touched by this session; T1 remains
+  armed awaiting the owner's word in its booked state; T2 tested-fail); the
+  blocked list stays blocked. Deep-read queue pointer: next UNREAD
+  "Analysis of Contagion in China's Stock Market: A Hawkes Process
+  Perspective" (x999a87, score 20, eighth of the score-20 tier, verified
+  note-less this session against the live listing) — re-read the live tail
+  and recompute the tier against the notes before consuming. The
+  edition-11 cadence counter stands at FOUR of five by this landing (#97),
+  counted from the edition-11 reset at ## 124; the synthesis pass is due
+  at the next session after the fifth deep-read lands.
+- Byte-landed log note (session-specific): this session assembled the
+  log locally from the live main copy plus this entry and will
+  byte-verify the pushed branch copy against the assembled local copy
+  (md5 match) before opening the PR, per the PR #289 convention and the
+  ## 123 root-cause record. The write path this session is the
+  connector push (branch off live main head, full-file contents
+  byte-checked), used because the local execution environment exposes
+  no git CLI or credentials this cycle.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the
+assembled full tree (main's tracked tree restored whole plus this
+session's changed files) with marker sweep, library-provenance audit
+and encoding sanity all exiting zero before commit; the CI jobs run
+over the pushed tree and must be verified green on both jobs before
+merge.
