@@ -11492,3 +11492,143 @@ queue update), exiting zero; the library-provenance audit and the
 full-tree sweeps run in CI over the full tree — the summaries are
 untouched this session — and must be verified green on both jobs before
 merge.
+
+## 116. Null-time session 98 (2026-11-22): library deep-read session 88 — the Rosenzweig conservation-laws read, head of the score-21 tier; the paper graded an ammunition-grade deterministic continuum LOB model whose headline t^{1/3} book-recovery law is printed from pure determinism (a nonlinear transport equation with a rescaled clock, zero noise, zero empirics), so every scaling exponent and magnitude is banned from the record under the laundering rule, reinforcing the deterministic-calendar null, the flow-clock scale-constant, the estimator-configuration freeze, the convention-declaration discipline and the generative-null pre-declaration family without licensing any new amendment; NO kill line moved; the ratification queue stands at forty-seven candidate sharpenings plus probe E1
+
+Session-state note first (goal-autonomy protocol, ACTIVE; goal state edition
+9, ## 111): the work choice for this session is the standing deep-read ritual,
+its own default (protocol section 3 point 1; ratified-cadence check run at
+session start: the edition-9 counter stood at FOUR of five after deep-read 87,
+log ## 115, so the synthesis pass was NOT due to run first under section 3
+point 2; with this landing the EDITION-9 cadence window is CLOSED at FIVE of
+five and the NEXT deep-read session MUST open with the eighth synthesis pass
+(edition 10) before its read). Verified against live state before reading:
+the main tail read through ## 115 (deep-read 87, the Alfonsi-Infante Acevedo
+time-varying-LOB read), docs/DECISIONS_PENDING.md read (ratification line:
+forty-seven candidates plus probe E1, zero armed), the triage file
+score-sorted and recomputed against the live library note listing (the
+score-22 tier CLOSED: x0acf9d ## 112, x1a712b ## 113, x85b5e3 ## 114,
+x750e2f ## 115; the score-21 tier recomputed in triage order: x532697 head,
+verified note-less, extract present and page-marked, then x1b6841 and x9921ac,
+both verified note-less with extracts present; the open-PR set read at
+session start: empty, no race; the protocol file read whole and internally
+consistent). This is deep-read 88, the FIFTH read counted against the
+edition-9 cadence (counter FIVE of five; window CLOSED by this landing). No
+inaccessible or blocked status this session; the extract was present,
+page-marked, complete and read in full (11 PDF pages, abstract, body,
+references and all six figure captions included; the figures themselves are
+images in the source PDF, their captions present in the extract).
+
+- **Library deep-read session 88** (front 2, head of the score-21 tier; note:
+  paper/research/library/2026-11-22_conservation_laws_limit_order_book_deep_read.md):
+  Jan Rosenzweig (Pine Tree Funds; visiting senior research fellow, King's
+  College London), "Conservation Laws in a Limit Order Book"
+  (arXiv:1910.09202v2 [q-fin.TR], index year 2019, v2 stamp 8 Dec 2020),
+  score 21, index entry x532697. The paper: a conservation law for limit
+  order book quantity h(S,t) with an inter-level flux Q and a source/sink
+  term P (order creation/cancellation away from the touch), aggressive
+  liquidity taking entering only as a boundary condition (Eqs. 1-4, PDF
+  pp. 1-2); a fluid-dynamics apparatus of a velocity profile for flowing
+  orders (Eq. 5, PDF p. 2), a constitutive pressure proportional to level
+  occupancy, market makers preferring empty levels (Eq. 6, PDF p. 2), and
+  queue-front-immobile, queue-rear-mobile mobility (Eq. 7, PDF p. 3);
+  assembling into a second-order nonlinear isotropic transport equation in a
+  rescaled time t -> t/(theta*(beta+1)), identical to the gravity-driven
+  thin-film equation (Eqs. 8-9, PDF p. 3); steady square-root profiles
+  vanishing after finitely many levels (Eq. 11, PDF pp. 3-4); the main
+  result, a self-similar book recovery with H(t) ~ t^(-1/3), L(t) ~ t^(1/3),
+  S0(t) ~ t^(1/3) (Eq. 13, PDF p. 4) under a similarity function with
+  dimensionless touch speed gamma (Eqs. 14-16, PDF p. 4), a 1/s deep-book
+  far field formally implying infinite volume (Eq. 18, PDF p. 4) and no
+  positive similarity solution for a retreating touch (PDF p. 4);
+  touch/far-field asymptotics (Eqs. 17-20, PDF pp. 4-5) with the profile
+  shape attributed to boundary conditions, not mechanism (PDF p. 5); and
+  simulations of a post-execution ask book advancing as a t^(1/3) pressure
+  wave until a firm stop simulating the bid book, then pressure buildup and
+  impractically slow convergence to the steady profile (PDF pp. 5-6; Figs.
+  5-6, PDF pp. 10-11). No data, no stochastic term, no estimation, no costs
+  anywhere; the author's own boundary: ensemble sense only, "foolish" to
+  predict from a real book snapshot (PDF p. 6). Findings, graded:
+  1. [reinforcing, no new item] The t^{1/3} recovery law is printed from
+     pure determinism — a closed-form structural consequence of a nonlinear
+     transport equation with zero noise, zero self-excitation and zero
+     information (Eqs. 9, 13, PDF pp. 3-4; Figs. 5-6, PDF pp. 10-11), so a
+     power-law recovery exponent is not evidence of a stochastic or
+     anticipatory mechanism: exactly the artifact class the queued
+     deterministic-calendar null (deep-read 73) blocks; every exponent and
+     magnitude banned under the laundering rule; the paper licenses
+     ammunition only (a transport-family simulator with analytically known
+     self-similar attractors as a cheap deterministic comparator). No queue
+     change.
+  2. [reinforcing, no new item] The clock collapse is printed in the
+     derivation: the constitutive constants group into a single rescaling t
+     -> t/(theta*(beta+1)) before any solution (Eq. 9, PDF p. 3) and the
+     transport equation's form is independent of the algebraic velocity
+     profile, which only sets the relaxation time scale (PDF p. 6), so any
+     fit of this family carries a fully free clock constant and no
+     mechanism-identification content — bound by the queued flow-clock
+     scale-constant, the estimator-configuration freeze (deep-read 63) and
+     the primary-metric pre-commitment (deep-read 55). No queue change.
+  3. [interpretation caution] Micro-assumptions are conventions, not
+     measurements (uniform within-level pressure proportional to occupancy,
+     Eq. 6, PDF p. 2; queue-front immobile, queue-rear mobile, Eq. 7,
+     PDF p. 3): any future pressure, urgency or queue-mobility feature must
+     declare which unobservable it operationalizes, per the convention-
+     declaration family (level-versus-memory, deep-read 59;
+     spread-convention, deep-read 56); and the framework solves only the
+     advancing touch (no positive solution for gamma < 0, PDF p. 4) with
+     anisotropy only in boundary conditions, admitted questionable
+     (PDF p. 3), so nothing here may be cited for touch-retreat,
+     withdrawal or compression-front anatomy. No queue change.
+  4. [interpretation caution] The similarity far field decays like 1/s,
+     formally implying infinite book volume cut off only by quantity
+     discreteness (Eq. 18, PDF p. 4): a generative null or comparator on
+     this family carries a free volume-support truncation materially
+     changing deep-book marginals, a parameterization the generative-null
+     pre-declaration family already requires to be declared (queue-jump-
+     diffusion, deep-read 81; impact-viability, deep-read 87); no extension
+     needed. No queue change.
+  5. [reinforcing, no new item] The paper arrives pre-disclaimed against the
+     laundering move: model "not intended to simulate a real world order
+     book", valid "in a statistical ensemble sense", and "it would be
+     foolish to take a snapshot of any real world order book, feed it to our
+     model as the initial condition, and expect a realistic prediction"
+     (PDF p. 6) — the honesty the programme demands of its own
+     constructions; recorded as ammunition on the paper's own terms. No
+     queue change.
+  6. [source-quality note] Single practitioner author (fund manager, Pine
+     Tree Funds; visiting senior research fellow, King's College London,
+     PDF p. 1), arXiv v2 stamped 8 Dec 2020 over a 2019 v1, zero citations
+     at cataloguing, no peer-reviewed venue recorded, no empirics anywhere,
+     multiple uncorrected typographic slips ("cocnept" PDF p. 2,
+     "assosi-acated" PDF p. 5, "releave"/"soluction" PDF p. 6). Read,
+     graded, recorded at its grade, consistent with score-21 tier
+     placement.
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (11 PDF pages, abstract, body, references and
+  all figure captions complete).
+- Ratification queue after this session: FORTY-SEVEN candidate sharpenings
+  plus probe E1, zero armed (ZERO queued this session; the queue is
+  unchanged by this read). T1 remains armed awaiting the owner's word in its
+  booked state (survived all five kill lines with sign inverted; T2
+  tested-fail); the blocked list stays blocked. Deep-read queue pointer:
+  next UNREAD "Arbitrage Analysis in Polymarket NBA Markets" (score 21,
+  x1b6841), second of the score-21 tier, then "Collective synchronization
+  and high frequency systemic instabilities in financial markets" (score
+  21, x9921ac), last of the tier (both verified note-less this session,
+  extracts present) — re-read the live tail and recompute the tier against
+  the notes before consuming; the edition-9 cadence window is CLOSED at
+  FIVE of five by this landing (#88, this entry, the fifth counted from the
+  edition-9 reset at ## 111): the NEXT deep-read session MUST open with the
+  eighth synthesis pass (edition 10) before its read.
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule: no
+  candidate sharpening queued; the ratification line stands at forty-seven
+  candidates plus probe E1, zero armed, most recently joined the
+  impact-viability pre-declaration for generative nulls, deep-read 87).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades live.
+Guard clean on the assembled changed files: the session ran the guard's
+marker-sweep, library-provenance and encoding-sanity checks over the full
+assembled local tree including the two changed files (the session note and
+this log append), exiting zero; the full-tree sweeps run again in CI over
+the pushed tree and must be verified green on both jobs before merge.
