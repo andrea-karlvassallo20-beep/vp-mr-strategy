@@ -11073,3 +11073,164 @@ encoding checks over the full checked-out tree); the library-provenance
 audit and the full-tree sweeps run in CI over the full tree — the
 summaries are untouched this session — and must be verified green on
 both jobs before merge.
+
+
+## 113. Null-time session 95 (2026-11-22), third act: library deep-read session 85 — the Bugaenko market-impact conditional-on-order-flow-imbalance read, third of the score-22 tier; the paper graded a student-dissertation ammunition source whose every magnitude is banned from the record under the laundering rule (paired-family self-comparison, no market null, zero costs, one stock for the ML exercise), whose silent max(0, ·) clip inside Algorithm 1 against Eq. 20's signed-mean definition is banked as the evidence for ONE candidate sharpening (the estimator-implementation concordance rule), whose tick-regime split, 2015-half regime drift, event-count aggregation clock and hidden-order visibility boundary are recorded as reinforcing items and interpretation cautions; NO kill line moved; the ratification queue moves to forty-six candidate sharpenings plus probe E1
+
+Session-state note, per the goal-autonomy conductor protocol (edition 9,
+## 111, ACTIVE at session start): the declared work choice is the
+standing deep-read, the protocol's default, matching the ## 112 closing
+pointer; the pointer named “Empirical Study of Market Impact Conditional
+on Order-Flow Imbalance” as next UNREAD and this session re-verified that
+against the live file state before reading (the score-22 tier recomputed
+in triage order — five entries: x0fc07a consumed as ## 110, x0acf9d as
+## 112, x1a712b note-less and next, then x85b5e3 and x750e2f; the
+extract present, page-marked; the open-PR set read at session start:
+empty, no race; the protocol file read whole and internally consistent).
+This is deep-read 85, the SECOND read counted against the edition-9
+cadence (counter TWO of five; no synthesis pass due). No inaccessible or
+blocked status this session; the extract was present, page-marked,
+complete and read in full (132 PDF pages, front matter, body, tables,
+algorithm listings, appendices and references included).
+
+- **Library deep-read session 85** (front 2, third of the score-22 tier;
+  note:
+  paper/research/library/2026-11-22_market_impact_ofi_conditional_deep_read.md):
+  Anastasia Bugaenko, “Empirical Study of Market Impact Conditional on
+  Order-Flow Imbalance” (MSc Quantitative Finance dissertation, Adam
+  Smith Business School, University of Glasgow, Aug 2019;
+  arXiv:2004.08290v2, 2020), score 22, index entry x1a712b [triage-audit
+  flag: student dissertation, graded plainly as such; the score ranked
+  access value, not authority]. The paper: LOBSTER NASDAQ reconstruction
+  for four stocks (large-tick SIRI, EBAY; small-tick TSLA, PCLN),
+  Jan-Jun 2015 extended to the year for the functional-form fits
+  (10:30-15:00, event types 4/5, same-timestamp children regrouped into
+  parent MOs; PDF pp. 44-49, 113-116); lag-1 response R(1) (Eq. 20,
+  PDF p. 69; Algorithm 1, PDF p. 71) “strongly positive for all
+  stocks” (PDF p. 73; Tables 6-7, PDF pp. 73, 76; benchmarked to
+  Bouchaud et al. 2018 with under-estimation attributed to the
+  MO-reconstruction convention, PDF pp. 76-77, 124); response vs
+  normalized volume flat and faint (Fig. 5, PDF pp. 81-82); aggregate
+  impact vs order-flow imbalance over T = 5, 10, 20, 50 consecutive
+  MOs linear at small imbalance and concave beyond, attributed to
+  selective liquidity taking (Eqs. 21-22, PDF pp. 83-84; Figs. 6-8,
+  PDF pp. 85-88; PDF pp. 106-107); linear vs decision-tree regression
+  10-fold CV on 47,473 TSLA observations (tree mean MSE 4.11 vs linear
+  4.42 dollar cents, the tree losing folds; Table 11, PDF p. 126;
+  PDF p. 92); Kyle's lambda 0.011 for TSLA (PDF pp. 92-95). Findings,
+  graded:
+  1. [candidate sharpening, PENDING OWNER RATIFICATION] The
+     estimator-implementation concordance rule queued as the
+     FORTY-SIXTH candidate: BEFORE the L0 gate, every registered
+     descriptive statistic, admission null, comparator or refutation
+     instrument whose estimator is defined in writing must carry a
+     recorded one-time concordance audit before any data is touched —
+     the executable implementation checked against the written
+     definition for silent numeric transformations the text does not
+     declare (clips, max/min floors, winsorization, sign re-labelling,
+     dropped-observation or subsampling rules, same-timestamp
+     aggregation conventions), the audit counted as frozen
+     configuration and every divergence closed by a dated amendment
+     before any run; a number produced by an implementation that does
+     not match its written definition is inadmissible at the gate,
+     however good it looks. Earned by the paper's own printed
+     mechanism: Eq. 20 (PDF p. 69) defines R(1) as the signed mean
+     while Algorithm 1 (PDF p. 71) computes R = max(0,
+     (m_{t+1} − m_t)·sign), an undeclared clip of every negative
+     signed response to zero — a clipped mean converges to the
+     expected positive part of the signed response, positive for any
+     non-degenerate response distribution including a symmetric one,
+     so the paper's own headline positivity claim (PDF p. 73) is
+     partially manufactured by the transformation. Harder to pass
+     because an estimator whose code path embeds an undeclared clip or
+     transformation now fails the concordance audit before data is
+     touched, where the estimator-configuration freeze (deep-read 63)
+     and the feature-normalization pre-declaration (deep-read 83)
+     freeze only declared configurations and a text-vs-code
+     divergence could today survive silently into a run; tightens the
+     estimator-configuration freeze by extending the
+     frozen-configuration class from the estimator's declared
+     configuration to implementation-vs-definition concordance. Full
+     draft with the killed-if-wrong counterfactual in the session
+     note.
+  2. [reinforcing, no new item] The laundering ban binds on the ML
+     comparison: the tree-beats-linear claim is a paired-family
+     self-comparison on one stock with no market null, no costs and
+     no economic baseline (Table 11, PDF p. 126), and the paper
+     itself concedes the tree “does not always produce more accurate
+     predictions” (PDF p. 92); the Kyle-lambda 0.011 read rests on the
+     same subsampled-after-outlier-removal construction (PDF pp.
+     92-95). Ammunition, never evidence. No queue change.
+  3. [reinforcing, no new item] Regime non-stationarity of the
+     unconditional response: the same estimator over adjacent 2015
+     halves moves materially (TSLA R(1) 2.05 to 2.57 cents, spread
+     10.82 to 15.05; PCLN R(1) 10.09 to 14.35, spread 75.53 to
+     113.17; Tables 6-7, PDF pp. 73, 76), attributed to the 2015-16
+     sell-off (PDF p. 75). Reinforces the queued self-excitation
+     regime-window pre-declaration and the standing horizon
+     discipline. No queue change.
+  4. [interpretation caution] Selective liquidity taking is a
+     conditioning bias the paper itself names: concavity and the
+     flat response-vs-volume relation are attributed to large orders
+     arriving only when revealed liquidity is large (PDF pp. 82-83,
+     106-107); any size-conditioned impact read is partly
+     constructed by the conditioning, not a causal size law. No
+     queue change.
+  5. [reinforcing, no new item] Tick-regime split: large-tick SIRI
+     and EBAY pin the spread at one tick and decouple R(1) from the
+     spread while small-tick TSLA and PCLN carry R(1) roughly
+     proportional to spread (PDF pp. 73-74); pooled claims mixing
+     tick regimes inherit a structural confounder, which the
+     cross-market replication and control-arm discipline already
+     forbids. No queue change.
+  6. [interpretation caution] The aggregation clock is event-count,
+     not wall-clock (Eqs. 21-22, PDF pp. 83-84; imbalance amplitude
+     scaling with T, PDF pp. 85-86): any aggregate-flow feature must
+     declare its clock, owned by the queued VPIN clock
+     pre-commitment (C8 A4) and flow-clock family; the
+     MO-reconstruction-convention dependence of the response
+     magnitude (PDF pp. 76-77, 116, 124) is further evidence for the
+     queued spread-convention declaration rule. No queue change.
+  7. [reinforcing, no new item] Hidden-order liquidity dilutes the
+     visible-MO impact at the best quote (PDF pp. 45-46, 123):
+     standing visibility caveat for any future L2 impact
+     measurement, same family as the aggTrades taker-only
+     constraint. No queue change.
+  8. [source-quality note] MSc dissertation (PDF p. 1), not
+     peer-reviewed; arXiv v2 (2020) terminal, no journal counterpart;
+     zero citations at cataloguing; source code withheld (PDF p. 4);
+     headline numbers anchored to Bouchaud et al. (2018) rather than
+     independently replicated (PDF pp. 76-77, 124); single-stock ML
+     exercise; MO-only focus under two declared simplifying
+     assumptions (PDF p. 67). Read, graded, recorded.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (132 PDF pages, front matter,
+  body, tables, algorithm listings, appendices and references
+  complete).
+- Ratification queue after this session: FORTY-SIX candidate
+  sharpenings plus probe E1, zero armed (ONE queued this session,
+  third act: the estimator-implementation concordance rule, above;
+  PENDING OWNER RATIFICATION). T1 remains armed awaiting the owner's
+  word in its booked state (survived all five kill lines with sign
+  inverted; T2 tested-fail); the blocked list stays blocked. Deep-read
+  queue pointer: next UNREAD “Boltzmann Price: Toward Understanding the
+  Fair Price in High-Frequency Markets” (score 22, x85b5e3), fourth of
+  the score-22 tier (verified note-less this session) — re-read the
+  live tail and recompute the tier against the notes before consuming;
+  the edition-9 cadence counter stands at TWO of five (#85, this
+  entry, counted from the edition-9 reset at ## 111): the next pass
+  is due after five or more deep-reads since edition 9 (#88 onward at
+  the current rate).
+- docs/DECISIONS_PENDING.md IS touched by this session (rule: one
+  candidate sharpening queued — the ratification line moves to
+  forty-six candidate sharpenings plus probe E1, zero armed, with the
+  new item named in the queue's parenthetical as most-recently-joined,
+  the same-period-aggregate rule demoted to “earlier the same day”).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean on the assembled changed files: the session ran the
+guard's exact marker-sweep and encoding-sanity semantics over the three
+changed files, exiting zero; the library-provenance audit and the
+full-tree sweeps run in CI over the full tree — the summaries are
+untouched this session — and must be verified green on both jobs
+before merge.
