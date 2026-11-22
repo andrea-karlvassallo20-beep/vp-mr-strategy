@@ -1,4 +1,4 @@
-# The null-time programme â what gets done while the L2 environment is being built
+# The null-time programme — what gets done while the L2 environment is being built
 
 Written 2026-11-16, after the math layer verification (math_verification_2026-11-16.md),
 the C8 macro-synthesis draft, and the library expansion to 110 OA papers. The owner is
@@ -8,8 +8,8 @@ item names what it feeds, whether it is blocked on L2, and how it would be judge
 
 ## 1. The endpoint, restated
 
-The programme's endpoint has not moved: **C1-L2** â does Layer-2 microstructure carry a
-compression signal that daily bars could not see â tested behind the L0 gate, kill lines
+The programme's endpoint has not moved: **C1-L2** — does Layer-2 microstructure carry a
+compression signal that daily bars could not see — tested behind the L0 gate, kill lines
 armed, nothing re-tuned after the fact. Everything in null time either (a) makes the
 C1-L2 test sharper when the data arrives, (b) accumulates evidence that does not need
 L2 (the sealed-prediction record), or (c) keeps the public instrument honest. Nothing in
@@ -20,21 +20,21 @@ expand scope into new claims without pre-declared kill lines.
 
 The heat map's time half is now wired into the nightly `board_refresh.py` cycle
 (`surprise_ledger.py` runs after the board rebuild). Every night the top-k primed
-candidates per class on the LIVING board (mega_dormancy_table) are sealed â hash-chained,
-append-only, feature vector frozen, no outcome fields â and every past-horizon entry is
+candidates per class on the LIVING board (mega_dormancy_table) are sealed — hash-chained,
+append-only, feature vector frozen, no outcome fields — and every past-horizon entry is
 resolved against the same cached klines. This is the cheapest evidence in the whole
 programme: it costs nothing, needs no L2, and by the time the L2 environment is ready
 there will be weeks of sealed-prediction-vs-reality pairs. The study (Spearman rho
 between sealed score and realized 10-bar jump, per class) is descriptive, but it is the
 only running falsification of the priming score's RANKING that exists. If after ~100
 resolutions the rho is indistinguishable from zero, the priming score's ranking carries
-no cross-sectional information at daily grain â that would be a named, dated death,
+no cross-sectional information at daily grain — that would be a named, dated death,
 recorded in the ledger, and it would sharpen C1-L2's motivation (the signal, if any,
 lives where daily scores cannot see it).
 
 Honesty note sealed into the adapter: mega-board fields absent from the ledger schema
 (evr_m, vol_ratio) are sealed as null, never invented; a primed candidate whose klines
-cannot be found is not sealed at all â a score that cannot be resolved against data is
+cannot be found is not sealed at all — a score that cannot be resolved against data is
 not a prediction.
 
 ## 3. The queue (prioritized, each item tagged)
@@ -43,7 +43,7 @@ not a prediction.
 The owner's memo says run; the second window (2024-08-01 to 2025-02-28, 333,527,416
 BTCUSDT aggTrades, 212/212 days, zero missing) was prepared precisely so T1 runs on a
 regime the harness never saw during construction. The standing constraint is recorded:
-aggTrades is taker prints only â the passive-withdrawal mechanism from the Tesla-day
+aggTrades is taker prints only — the passive-withdrawal mechanism from the Tesla-day
 anatomy is invisible, and no taker proxy may be substituted. T1's question
 (duration-dependence of the compression clock) is taker-visible. This is the single
 highest-value unblocked item; it needs only the owner's word, which the memo already
@@ -51,27 +51,27 @@ leaned toward.
 
 ### [null-time, ready now] The misses curriculum, quantified
 The Tesla day proved a move can arrive unprimed. That is one anecdote; null time can make
-it a base rate. On the cached full-universe klines: enumerate every â¥4-sigma day on the
-board, look up the priming state the night before each, and build the honest 2x2 â
+it a base rate. On the cached full-universe klines: enumerate every ≥4-sigma day on the
+board, look up the priming state the night before each, and build the honest 2x2 —
 primed-vs-unprimed against moved-vs-silent. This measures the priming score's coverage
 miss rate (moves that arrive without priming) and its false-alarm rate (priming that
 resolves into nothing), descriptively, at daily grain. It feeds directly into what C1-L2
 must beat: if daily-grain priming has near-zero coverage, the L2 phase is not refining a
 working signal, it is looking for one that daily data provably cannot rank. Pre-declare
 the descriptive protocol first; no directional claim, no kill line needed because
-nothing is claimed â but the table itself becomes the reference the C1-L2 spec must
+nothing is claimed — but the table itself becomes the reference the C1-L2 spec must
 confront.
 
 ### [null-time, ready now] Library deep-read programme
 110 legal-OA papers are downloaded and text-extracted. The null-time ritual: one paper
-per session, read against ONE question â "what here would kill C1-L2 faster, or change
-its kill lines?" â and the answer written into a dated note (paper/research/library/).
+per session, read against ONE question — "what here would kill C1-L2 faster, or change
+its kill lines?" — and the answer written into a dated note (paper/research/library/).
 Priority order: (1) CKS 2014 and the deep-OFI line (the math layer was just verified
-against them; the verification found a Î²-factor bug once â re-read for its siblings),
-(2) Hawkes branching and excitation stability (the same Î² lesson), (3) VPIN and
+against them; the verification found a β-factor bug once — re-read for its siblings),
+(2) Hawkes branching and excitation stability (the same β lesson), (3) VPIN and
 order-flow toxicity (C5's neighborhood), (4) anything on passive-cancel/frozen-book
 regimes (the 91.6-96.8% passive-cancel fraction on the replay days makes this the most
-live mechanism the L2 data will see). A library is ammunition, not evidence â the
+live mechanism the L2 data will see). A library is ammunition, not evidence — the
 standing caveat binds; the read notes cite, they never launder.
 
 ### [null-time, ready now] Website honesty pass
@@ -79,7 +79,7 @@ The site is now 12 pages plus the heat map. The standing risk is drift: pages wr
 different dates quietly disagree. A null-time pass: read every page against the claims
 ledger and fix any sentence that states a claim whose status has moved (C7-30m's death
 should be stated as a death everywhere it is mentioned; the compression family now has
-three independent kills). The claims ledger is updated with every PR by rule â the prose
+three independent kills). The claims ledger is updated with every PR by rule — the prose
 pages have no such rule, so they rot. This pass is the rot-remover.
 
 ### [needs L2, blocked] Everything behind the gate
@@ -87,17 +87,17 @@ C1-L2 itself, C5 (passive cancellation), C6, the macro-synthesis (C8 draft). The
 solely Tardis full-depth data passing the L0 gate's 100-timestamp audit on every day.
 Null time can do exactly one thing for these: keep the verification kit ready so the
 data is audited the day it arrives (src/intake_audit.py asserts timestamp units on
-arrival; src/verify_l2_gate.py is the gate). Nothing else should be pre-built â the
+arrival; src/verify_l2_gate.py is the gate). Nothing else should be pre-built — the
 programme's discipline is that the test specification is frozen before the data, and it
 already is.
 
 ### [owner-curated, standing] The macro timeline
 data/macro_timeline.csv is curated by the owner; it is the regime context for every
 censoring decision. Null time can extend it backward (the farther back the event
-history, the more censoring windows later hazard work can use) â but every row is
+history, the more censoring windows later hazard work can use) — but every row is
 hand-checked or it is worthless. Boring, valuable, endless.
 
-## 4. Methodology review â what I would change about SMH itself, and what I would not
+## 4. Methodology review — what I would change about SMH itself, and what I would not
 
 Would not change: falsification-first, kill lines before tests, dead mechanisms named,
 the sealed panel, the refusal of WHICH WAY at daily grain. This spine is the asset; the
@@ -113,7 +113,7 @@ Would change, in null time, without touching any claim:
    ask: does this produce something sealable? If not, it is a tour, not an instrument.
 
 2. **The base-rate discipline.** The programme is very good at finding candidates and
-   very good at killing claims; it has been weak on stating base rates â of ~1,300
+   very good at killing claims; it has been weak on stating base rates — of ~1,300
    series, how many are primed tonight (113), how many move, how many moves arrive
    unprimed. The misses curriculum (above) fixes this. A score without its base rate
    is a story; with it, it is a measurement.
@@ -125,17 +125,17 @@ Would change, in null time, without touching any claim:
    the same lesson: instruments that are not in the nightly cycle rot silently.)
 
 4. **Reading with a question, not for coverage.** 110 papers is ammunition; the
-   programme's edge has never been reading volume, it is reading adversarially â every
+   programme's edge has never been reading volume, it is reading adversarially — every
    paper interrogated for what would kill the next test faster. The read notes should
    be graded by whether they changed a kill line.
 
 ## 5. What was done in this session (so the queue starts from truth)
 
-- `surprise_ledger.py`: `seal_from_mega()` â the living board is sealed into the
+- `surprise_ledger.py`: `seal_from_mega()` — the living board is sealed into the
   hash-chained ledger (mega schema mapped honestly; absent fields sealed null;
   unresolvable candidates excluded). First mega-board snapshot sealed tonight:
   11 candidates.
-- `board_refresh.py`: surprise_ledger.py added to the nightly cycle â seal, resolve,
+- `board_refresh.py`: surprise_ledger.py added to the nightly cycle — seal, resolve,
   study, every night, from now on.
 - Tests: 2 new (mega-schema mapping + resolution on mega-sealed entries;
   unresolvable-candidate exclusion), 11 green in the suite.
@@ -282,7 +282,7 @@ L2, no new claims, no kill lines moved:
 - Tests: 128 green after the pass (no page is regenerated by the suite;
   the edits are durable).
 
-## 8b. Null-time session 4 (convergent second read, 2026-11-16): the branching ratio's scale problem â an independent deep-read of the same paper
+## 8b. Null-time session 4 (convergent second read, 2026-11-16): the branching ratio's scale problem — an independent deep-read of the same paper
 
 Executed under the owner's autonomous null-time directive (frozen
 protocols honored: no L2 run, no new data, no new claims, no kill
@@ -294,20 +294,20 @@ lines moved, no amendment armed without the owner's word).
   on Hardiman & Bouchaud, "Branching ratio approximation for the
   self-exciting Hawkes process" (arXiv:1403.5227v3, extracted
   text, page-cited). Read against ONE question: what kills
-  C1-L2/C8 faster. Findings, graded: NO kill line changed â but
+  C1-L2/C8 faster. Findings, graded: NO kill line changed — but
   K7 (the Hawkes boundary-constraint line) is materially sharpened,
   PENDING OWNER RATIFICATION: the 0.8 threshold is an
-  estimator-at-scale-W statement, not a true-n statement â the
+  estimator-at-scale-W statement, not a true-n statement — the
   protocol must pre-declare the estimation window W (ideally a
   W-ladder: 10s/30s/5min reported together), the timestamp-precision
   handling, and that 0.8 binds at the frozen W. The mean-variance
-  cross-estimator Ã± = 1 â â(Î¼_W/ÏÂ²_W) (model-independent, one line
+  cross-estimator ñ = 1 − √(μ_W/σ²_W) (model-independent, one line
   of numpy) is the free robustness check: if MLE and mean-variance
   disagree on which bars cross 0.8, the trigger governs nothing.
   Amendment 1's Filimonov-Sornette calibration is honestly
   qualified: this paper reproduces the 0.7-0.8 numbers at fixed W
   AND argues the trend is a fixed-W artifact (scale-invariant
-  reflexivity, n â 1 as W â â with 1 â Ã± â W^â0.37) â both
+  reflexivity, n → 1 as W → ∞ with 1 − ñ ∝ W^−0.37) — both
   readings put the market near criticality, but they disagree on
   what crossing 0.8 means. The C8 file carries the controversy.
   Gate item recorded: timestamp bundling corrupts the MLE global
@@ -334,7 +334,7 @@ above, folded into the ratification queue with the rest:
 
 - **W-ladder reporting**: rather than one frozen W, pre-declare a
   small ladder (e.g. 10s / 30s / 5min) and report n-hat at all
-  three together â the paper's own Fig. 5 (1 - n-hat ~ W^-0.37)
+  three together — the paper's own Fig. 5 (1 - n-hat ~ W^-0.37)
   says the W-curve IS the reflexivity measurement; a single W
   reports one point of it. The 0.8 threshold then binds at the
   frozen primary W, with the ladder as the reported context.
@@ -354,9 +354,9 @@ armed. The owner's word is the only trigger.
 
 
 - 2026-11-16 (library ritual, paper 2): Hardiman-Bouchaud branching-ratio
-  deep-read (docs/library/hardiman_bouchaud_branching_review.md) â the
-  model-independent mean-variance estimator (n â 1 â Î¼_W/ÏÂ²_W), its one-sided
-  LOW bias, median-only aggregation (the estimator's mean is ââ), and the
+  deep-read (docs/library/hardiman_bouchaud_branching_review.md) — the
+  model-independent mean-variance estimator (n ≈ 1 − μ_W/σ²_W), its one-sided
+  LOW bias, median-only aggregation (the estimator's mean is −∞), and the
   kernel-misspecification artifact (power-law data fits as critical under an
   exponential kernel). C8's T-H trigger gained three pre-conditions BEFORE
   any L2 data: bootstrap-band firing (not point estimates), the
@@ -368,7 +368,7 @@ armed. The owner's word is the only trigger.
 
 - 2026-11-16 (queue start): surprise ledger wired to the living board, nightly.
 - 2026-11-16 (owner authorized T1 + misses + CKS): T1 executed on the second
-  window (survives all five kill lines, sign inverted â
+  window (survives all five kill lines, sign inverted —
   t1_second_window_report.md); the misses curriculum quantified (873 series,
   1,765,316 series-days: coverage 0.039, lift 2.07); CKS deep-read done
   (five siblings named, docs/library/cks_ofi_review.md).
@@ -386,13 +386,13 @@ armed. The owner's word is the only trigger.
   next: the passive-cancel/frozen-book regime read (the mechanism the
   replay days make most alive), then the remaining prose pages.
 - 2026-11-16 (this session): C1-L2 spec sharpened BEFORE any Tardis data
-  arrived â kill line 6 (sign guard, motivated by T1's inversion: the battery
+  arrived — kill line 6 (sign guard, motivated by T1's inversion: the battery
   had no line to catch an informative-but-inverted covariate) and kill line 7
   (CKS literal tautology control + the AD-denominator unit test), with the
   amendment discipline recorded (harder to pass is the only legal direction).
   Prose-rot pass started: the claims ledger's T1 row and the README's two
   pending-T1 sentences now state the executed verdict and the sign finding.
-  Next in the queue: the library ritual's second paper (Hawkes branching â
+  Next in the queue: the library ritual's second paper (Hawkes branching —
   the beta lesson's other half), then the remaining prose pages against the
   ledger.
 
@@ -474,7 +474,7 @@ new claims, no kill lines armed without the owner's word):
   Detection with a Markov-modulated Hawkes process"
   (arXiv:2502.04027, 2025; crypto trade data). Grade: NO kill line
   changed; the proxy-refusal/gate layer gains a candidate
-  wash-trading audit, PENDING OWNER RATIFICATION â the paper's
+  wash-trading audit, PENDING OWNER RATIFICATION — the paper's
   signature is trade bursts WITHOUT price changes (wash trading)
   on a top crypto exchange; if such bursts contaminate the perps
   feed, the branching-ratio trigger measures the manipulator's
@@ -498,7 +498,7 @@ Ratification queue after this session: six candidate sharpenings
 (sessions 3, 4/4b, and this one), zero armed. T1 remains armed
 awaiting the owner's word; the blocked list stays blocked.
 
-## 10. Null-time session 6 (2026-11-16): deep-read session 4 â the flash crash inside the test year
+## 10. Null-time session 6 (2026-11-16): deep-read session 4 — the flash crash inside the test year
 
 - **Library deep-read session 4** (rank 2 of the 500 triage):
   `paper/research/library/2026-11-16_crypto_micro_shap_deep_read.md`
@@ -534,7 +534,7 @@ Ratification queue after this session: eight candidate
 sharpenings (sessions 3, 4/4b, 5, 6), zero armed. T1 remains armed
 awaiting the owner's word; the blocked list stays blocked.
 
-## 11. Null-time session 7 (2026-11-16): deep-read session 5 â the boundary-solution rule, documented in the wild
+## 11. Null-time session 7 (2026-11-16): deep-read session 5 — the boundary-solution rule, documented in the wild
 
 - **Library deep-read session 5** (rank 3 of the 500 triage):
   `paper/research/library/2026-11-16_price_discovery_herding_deep_read.md`
@@ -543,7 +543,7 @@ awaiting the owner's word; the blocked list stays blocked.
   during Retail Herding" (arXiv:2601.11602v2, 2026; Korean
   equities, deconvolution + Hawkes). Grade: NO kill line changed.
   One candidate sharpening, PENDING OWNER RATIFICATION: the
-  boundary-solution rule â the paper's own branching-ratio point
+  boundary-solution rule — the paper's own branching-ratio point
   estimate is 0.998 with a bootstrap CI of [0.050, 0.660], and its
   own appendix names the cause: the optimizer "hitting the wall"
   of the stability constraint, the point estimate "likely a
@@ -575,7 +575,7 @@ bitcoin wash trading" - the companion evidence for session 5's
 gate audit (to be acquired; Management Science, may be
 paywalled - if so, synthesized with the label, per policy).
 
-## 12. Null-time session 8 (2026-11-16): deep-read session 6 â the wash-trading audit gets its ground-truthed toolkit
+## 12. Null-time session 8 (2026-11-16): deep-read session 6 — the wash-trading audit gets its ground-truthed toolkit
 
 - **Acquisition**: Aloosh & Li, "Direct Evidence of Bitcoin Wash
   Trading" (Management Science) found legally OA via the DCU
@@ -634,7 +634,7 @@ Imbalance".
   be tested against has been sharpened BEFORE the data exists. Queue next:
   the remaining prose pages against the ledger.
 
-## 13. Null-time session 9 (2026-11-16): deep-read session 7 â the branching matrix, per branch, never by its radius
+## 13. Null-time session 9 (2026-11-16): deep-read session 7 — the branching matrix, per branch, never by its radius
 
 - **Library deep-read session 7** (next by triage rank, per
   session 8's pointer):
@@ -644,7 +644,7 @@ Imbalance".
   stock data" (arXiv:1908.05089v1, symmetric tick Hawkes on 10
   NYSE S&P 500 names, 2007-2011). Grade: NO kill line changed. One
   candidate sharpening, PENDING OWNER RATIFICATION: the per-branch
-  rule â the branching matrix Q = [[q_s, q_c], [q_c, q_s]] is read
+  rule — the branching matrix Q = [[q_s, q_c], [q_c, q_s]] is read
   PER BRANCH (self q_s vs cross q_c) with bootstrap CIs, and ONLY
   q_s can carry the cascade interpretation; q_c is the mechanical
   mean-reversion branch. The trigger's justification: their own
@@ -652,7 +652,7 @@ Imbalance".
   2011: alpha_c 1.3576 vs alpha_s 0.4661 on 0103; the monthly GE
   average has alpha_c > alpha_s), so a pooled branching ratio or
   spectral-radius reading would scream "near-critical cascade" on
-  quiet days that were merely fast mean reversion â a false
+  quiet days that were merely fast mean reversion — a false
   trigger in the FEATURE, uncatchable by label placebos. This
   extends (does not replace) the queued CI rule (session 5) and
   boundary-solution rule (session 7): all three live in the
@@ -660,12 +660,12 @@ Imbalance".
   Reinforcing evidence recorded: (a) the moving parameter at
   daily grain is the BASELINE RATE mu, not the excitation
   structure (mu tracks the volatility state with GARCH-like
-  persistence; alpha_c "rather stable" through 2008) â the
+  persistence; alpha_c "rather stable" through 2008) — the
   drift-reporting item (sessions 4/4b) gains its field
   citation; (b) the SIGN of the tick-grain realized-variance bias
   is itself an excitation fingerprint (their signature plot rises
   toward small tau under mutual dominance, falls under self
-  dominance) â any fixed-bias-sign variance check imports their
+  dominance) — any fixed-bias-sign variance check imports their
   Fig. 5 as a counterexample; (c) the Hawkes volatility runs
   15-25% ABOVE TSRV with the gap unexplained, so Hawkes-derived
   volatilities carry a caveat, not a correction.
@@ -675,9 +675,9 @@ Ratification queue after this session: TEN candidate sharpenings
 awaiting the owner's word; the blocked list stays blocked. Deep-read
 queue: sessions 3-8 of the triage ranks done; next by rank: Bechler
 & Ludkovski, "Optimal Execution with Dynamic Order Flow Imbalance"
-(the flow-clock session â already acquired, text in the library).
+(the flow-clock session — already acquired, text in the library).
 
-## 14. Null-time session 10 (2026-11-16): deep-read session 8 â the flow clock gains its sourced scale constant; W1's deferred horizon gains its citation
+## 14. Null-time session 10 (2026-11-16): deep-read session 8 — the flow clock gains its sourced scale constant; W1's deferred horizon gains its citation
 
 - **Library deep-read session 8** (next by triage rank, per the
   pointer above):
@@ -688,7 +688,7 @@ queue: sessions 3-8 of the triage ranks done; next by rank: Bechler
   NASDAQ ITCH flow calibration). Grade: NO kill line changed; C8's
   A4 conditional pre-commitments stay frozen as written. One
   candidate sharpening, PENDING OWNER RATIFICATION: the flow-clock
-  scale-constant rule â the memory scale of any future flow-state
+  scale-constant rule — the memory scale of any future flow-state
   estimator is declared BEFORE data as a fraction of daily volume
   (their EWMA flow imbalance: beta = a/V_daily with the cited
   intra-day mesoscopic range a in [10, 100], PDF p. 23), never
@@ -696,11 +696,11 @@ queue: sessions 3-8 of the triage ranks done; next by rank: Bechler
   recorded: (a) W1's deferred horizon H is the literature's
   ENDOGENOUS CONTROL, worked: their realized horizon moves up to
   ~50% around the static optimum with the state, and adaptive-
-  horizon gains dominate model-form gains (Table 1) â freezing a
+  horizon gains dominate model-form gains (Table 1) — freezing a
   single constant would have pre-registered a guess of a variable
   the field endogenizes, so the deferral already in the W1 spec is
   the only discipline consistent with the citation; (b) market
-  orders are <5% of total order flow (Remark 5) â a flow state from
+  orders are <5% of total order flow (Remark 5) — a flow state from
   prints alone reads the taker tip, not the flow, matching the C5
   queue-reactive sharpening from the library ritual's paper 4; (c)
   the model's own drift term (the trader's program enters the flow
@@ -719,7 +719,7 @@ below the symmetric-Hawkes/OFI pair, already in the library text
 shelf).
 
 
-## 15. Null-time session 11 (2026-11-16): deep-read session 9 â the triage scorer audited by its own queue; a weak witness recorded honestly
+## 15. Null-time session 11 (2026-11-16): deep-read session 9 — the triage scorer audited by its own queue; a weak witness recorded honestly
 
 - **Library deep-read session 9** (next by triage rank, per session
   10's pointer):
@@ -727,14 +727,14 @@ shelf).
   on Batra, "Modeling High-Frequency Data with Bivariate Hawkes
   Processes: Power-Law vs. Exponential Kernels"
   (arXiv:2503.14814v1, Warwick Finance Societies, 2025). Grade: NO
-  kill line changed; NO new candidate sharpening â the honest
+  kill line changed; NO new candidate sharpening — the honest
   finding is about the QUEUE, not the paper: this was triage rank
   5 of 500 (score 41) and it is an 11-page student-society term
   report (one manually-processed 2-second LOBSTER window of
   AMD/TSLA, "over 200 events", visual comparison of intensity
   plots, no likelihoods, no parameter tables, no out-of-sample,
   no backtest). The triage rubric cannot see quality this deep,
-  so: (a) **TRIAGE AUDIT FLAG, recorded for the owner** â future
+  so: (a) **TRIAGE AUDIT FLAG, recorded for the owner** — future
   triage ranks are candidates, not promises, and the deep-read
   queue falls back to the peer-reviewed entries after this one;
   (b) reinforcing only, no new item: the paper's headline (the
@@ -749,16 +749,16 @@ shelf).
   gains its negative example.
 
 Ratification queue after this session: ELEVEN candidate sharpenings,
-zero armed (unchanged â no sharpening was warranted by this source).
+zero armed (unchanged — no sharpening was warranted by this source).
 T1 remains armed awaiting the owner's word; the blocked list stays
 blocked. Deep-read queue: next by triage rank is "Optimum
 Liquidation Problem Associated with the Poisson Cluster Process"
-(score 39, peer-reviewed line, already on the library text shelf) â
+(score 39, peer-reviewed line, already on the library text shelf) —
 with the triage-audit caveat now on record: the scorer's rank is a
 candidate reading, and the owner's library policy (peer-reviewed
 first) governs when they diverge.
 
-## 16. Null-time session 12 (2026-11-16): deep-read session 10 â the sign-register rule; T1's honest inversion made prospective
+## 16. Null-time session 12 (2026-11-16): deep-read session 10 — the sign-register rule; T1's honest inversion made prospective
 
 - **Library deep-read session 10** (next by triage rank, per session
   11's pointer, under the triage-audit caveat):
@@ -768,7 +768,7 @@ first) governs when they diverge.
   MDP/PDMP liquidation, Hawkes order arrivals, simulation study).
   Grade: NO kill line changed. One candidate sharpening, PENDING
   OWNER RATIFICATION: **the sign-register rule for excitation
-  features** â the paper's core simulation result is that DAMPING
+  features** — the paper's core simulation result is that DAMPING
   (sigma < 0: your selling suppresses subsequent arrivals) and
   EXCITATION (sigma > 0) are materially different regimes of the
   same mechanism, with different optimal behavior and revenue
@@ -778,23 +778,23 @@ first) governs when they diverge.
   reading is recorded in its own register cell as damping, never
   flipped, floored at zero, or discarded as a failed positive. The
   program's precedent is T1 (the registered mechanism measured with
-  its SIGN INVERTED â every compression HR below 1.0 â and the honest
+  its SIGN INVERTED — every compression HR below 1.0 — and the honest
   response was to book the inversion, not clip it); this rule makes
   that discipline prospective and binding on the FEATURES, in the
   only legal direction. Reinforcing evidence recorded: (a) their
   negative-self-excitation case is explicitly strategic
   submit/cancel behavior, "known as a 'market manipulation'" (PDF
-  pp. 29-30) â the same mechanism family as the queued spoofing
+  pp. 29-30) — the same mechanism family as the queued spoofing
   cautions and the C5 passive-withdrawal claim, so a damping reading
   on a gated window must be audited (ordinary queuing suppression or
   an actor?) before it enters any feature; (b) their
   wait-versus-inventory-penalty balance, set by pre-declared
   microstructure parameters, is the shape of a K7-style
-  cost-survival amendment â ammunition if the owner ever ratifies
+  cost-survival amendment — ammunition if the owner ever ratifies
   cost modeling, and NOT a strategy candidate (the program never
   trades live). Caution on the source: simulation-only, no
   empirical calibration, arXiv preprint with a 2018 journal-
-  submission stamp and no published version found â cite the
+  submission stamp and no published version found — cite the
   structure, never the magnitudes.
 
 Ratification queue after this session: TWELVE candidate sharpenings
@@ -807,12 +807,12 @@ session-9 triage-audit flag on record, rank is a candidate reading,
 and the owner's library policy governs when they diverge.
 
 
-## 17. Null-time session 13 (2026-11-18): deep-read session 11 â the queue-imbalance two-null admission rule, re-earned from the shelf; the reset-loss corrigendum and the numbering reconciliation
+## 17. Null-time session 13 (2026-11-18): deep-read session 11 — the queue-imbalance two-null admission rule, re-earned from the shelf; the reset-loss corrigendum and the numbering reconciliation
 
 - **Corrigendum and record recovery first** (append-only; no earlier entry is edited).
   The state audit this session: main stands at eef409ee with deep-reads 1-10 adopted
   (PR #160 merged 2026-11-18T10:26Z; CI verified green this session: both "test" and
-  "engine" check runs success â the CI verification deferred at the last adoption is
+  "engine" check runs success — the CI verification deferred at the last adoption is
   closed). Separately, a parallel conversation lineage reported deep-reads of this same
   queue-imbalance paper, of a CKS-OFI full re-read, of the VPIN/BVC construction, of
   MLOFI, and a blocked Chakrabarty trade-classification attempt, numbering them as
@@ -835,12 +835,12 @@ and the owner's library policy governs when they diverge.
   Order Book" (arXiv:1512.03492v1, 11 Dec 2015; LOBSTER Nasdaq 2014, 10 liquid stocks,
   logistic and local logistic regression of next-mid-move direction on the normalized
   best-quote imbalance I). Grade: NO kill line changed. ONE candidate sharpening,
-  PENDING OWNER RATIFICATION: **the two-null admission rule** â the paper's null is a
+  PENDING OWNER RATIFICATION: **the two-null admission rule** — the paper's null is a
   constant 1/2 probability (Eq. 18, PDF p. 14) and every headline improvement is
   measured against it alone, while the paper's own two-line state variable (Eq. 7,
   PDF p. 7; a pure depth snapshot, no events, no signing) achieves out-of-sample AUC
   0.75-0.81 large-tick and 0.58-0.64 small-tick one mid-change ahead (Table 4, PDF
-  p. 20) with in-sample â out-of-sample (no overfit, PDF pp. 19-21). Pre-declaration
+  p. 20) with in-sample ≈ out-of-sample (no overfit, PDF pp. 19-21). Pre-declaration
   text: any C1-L2/C8 short-horizon flow feature is admitted only if it adds value
   beyond BOTH the tautology-controlled top-of-book OFI benchmark AND a pre-registered
   Eq.-7 queue-imbalance comparator; a flow feature that loses to a two-line state
@@ -861,7 +861,7 @@ and the owner's library policy governs when they diverge.
 Ratification queue after this session: THIRTEEN candidate sharpenings (the twelve
 standing plus the two-null admission rule joined 2026-11-18), zero armed. T1 remains
 armed awaiting the owner's word; the blocked list stays blocked. Deep-read queue: the
-next UNREAD triage entry is unchanged â "Price-Aware Automated Market Makers: Models
+next UNREAD triage entry is unchanged — "Price-Aware Automated Market Makers: Models
 Beyond Brownian Prices and Static Liquidity" (score 39, already on the library text
 shelf); with the session-9 triage-audit flag on record, rank is a candidate reading,
 and the owner's library policy governs when they diverge.
@@ -906,7 +906,7 @@ and the owner's library policy governs when they diverge.
   owner's library policy governs when they diverge. (This session was a pre-assigned
   parallel slot 19 of 24, so it does not consume the queue's top pointer.)
   Nothing measured, no kill line moved, nothing armed, nothing trades live.
-## 19. Null-time session 15 (2026-11-18): deep-read session 13 â the distance-grid sign-invariance rule; spoofers found to avoid the very queue the two-null comparator watches
+## 19. Null-time session 15 (2026-11-18): deep-read session 13 — the distance-grid sign-invariance rule; spoofers found to avoid the very queue the two-null comparator watches
 
 - **Library deep-read session 13** (pre-assigned parallel-fire slot, verified
   UNREAD before reading: no note for slug x2aee07 existed in `paper/research/library/`
@@ -923,12 +923,12 @@ and the owner's library policy governs when they diverge.
   Triage-rank: score 34, read as a pre-assigned parallel slot (the queue's next UNREAD
   pointer is not consumed).
 - Grade: NO kill line changed. ONE candidate sharpening queued, PENDING OWNER
-  RATIFICATION: **the distance-grid sign-invariance rule** â any C1-L2/C8 feature built
+  RATIFICATION: **the distance-grid sign-invariance rule** — any C1-L2/C8 feature built
   from limit-order flow aggregated over book depth must pre-declare its distance
   weighting (or hard depth cutoff) and show its registered sign stable across a
   pre-registered distance grid before admission (mechanism: impact is monotone in
-  posting distance and remains significant several bps from touch, Figs. 6â7,
-  PDF pp. 10â11; flagged-manipulative depth averages ~6.9 bps from touch vs ~1.0 bp
+  posting distance and remains significant several bps from touch, Figs. 6–7,
+  PDF pp. 10–11; flagged-manipulative depth averages ~6.9 bps from touch vs ~1.0 bp
   for normal flow, Table 1, PDF p. 19; the paper's own verdict that distance-blind
   models are "not suitable to describe the data", PDF p. 10). Tightens the
   sign-register and flow-clock scale-constant rules: a depth-aggregated flow feature
@@ -937,13 +937,13 @@ and the owner's library policy governs when they diverge.
   Harder to pass; reading-side only; the owner's word alone ratifies.
 - Reinforcing (no new item): the paper's detection output shows spoofers almost never
   post at the best queue (0% of large suspicious orders at top-of-book vs 4.20% of
-  large normal, Table 1, PDF p. 19), giving mechanistic support that the GouldâBonart
+  large normal, Table 1, PDF p. 19), giving mechanistic support that the Gould–Bonart
   Eq. 7 top-of-book comparator of the two-null admission rule (null-time session 13)
   is comparatively robust to spoofing: the manipulable pressure is the pressure spoofers
   do not put there. Interpretation caution (extends the sign-register rule to this
   feature family): the paper's market order flow counts sell marketable orders hitting
   the bid, so its "market imbalance predicts a lower expected move" partial dependence
-  (Figs. 4â5, PDF pp. 8â10) is a sign-convention statement about aggressive selling,
+  (Figs. 4–5, PDF pp. 8–10) is a sign-convention statement about aggressive selling,
   not "buy flow predicts down"; any C1-L2 port must fix the initiator-side sign map
   in the pre-registration before estimation. Cost-survival ammunition (relevant only
   if a K7-style layer ever exists): flagged-spoofable depth is followed by
@@ -953,8 +953,8 @@ and the owner's library policy governs when they diverge.
   Source quality: N = 10 sampled points per (Q, distance) response cell (PDF p. 10);
   trained on one week of Dec 2022, applied to Dec 2024 with no drift test (PDF pp. 7,
   15); the 31% headline is an expected-gain-conditioned label, not observed
-  manipulation (PDF pp. 14â15); no trader IDs, no ground truth (PDF p. 14);
-  Assumption 1 (no partial fills) acknowledged false (PDF pp. 11â12); arXiv v1,
+  manipulation (PDF pp. 14–15); no trader IDs, no ground truth (PDF p. 14);
+  Assumption 1 (no partial fills) acknowledged false (PDF pp. 11–12); arXiv v1,
   check published version before formal citation.
 - Inaccessible/blocked status: none this session. The extract was present, page-marked
   and complete (22 pp.).
@@ -962,18 +962,18 @@ and the owner's library policy governs when they diverge.
 Ratification queue after this session: FIFTEEN candidate sharpenings (the fourteen
 standing plus the distance-grid sign-invariance rule joined 2026-11-18), zero armed.
 T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read
-queue: the next UNREAD triage entry is unchanged â "Price-Aware Automated Market
+queue: the next UNREAD triage entry is unchanged — "Price-Aware Automated Market
 Makers: Models Beyond Brownian Prices and Static Liquidity" (score 39, already on the
 library text shelf); with the session-9 triage-audit flag on record, rank is a candidate
 reading, and the owner's library policy governs when they diverge. (This session was a
 pre-assigned parallel slot, so it does not consume the queue's top pointer.) Nothing
 measured, no kill line moved, nothing armed, nothing trades live.
-## 20. Null-time session 16 (2026-11-18): library deep-read session 14 â the size-state persistence comparator proposed as the third admission null; the fixed-tick structural-bias caution; SwishchukâHuffman graded theory-heavy, evidence-light
+## 20. Null-time session 16 (2026-11-18): library deep-read session 14 — the size-state persistence comparator proposed as the third admission null; the fixed-tick structural-bias caution; Swishchuk–Huffman graded theory-heavy, evidence-light
 
-- **Library deep-read session 14** (a PRE-ASSIGNED parallel slot, declared as such â slot 6
+- **Library deep-read session 14** (a PRE-ASSIGNED parallel slot, declared as such — slot 6
   of 24, triage score 36, slug xfeb371, so it does not consume the queue's top pointer;
   verified at session start that no deep-read note for the slug existed and no open or
-  unmerged closed PR covered it â the CARMA-Hawkes (session 15 deep-read 12) and
+  unmerged closed PR covered it — the CARMA-Hawkes (session 15 deep-read 12) and
   spoofability (session 15's deep-read 13) slots had not yet landed when this read began;
   this entry's number was taken fresh from the log tail at append time):
   `paper/research/library/2026-11-18_general_compound_hawkes_lob_deep_read.md`
@@ -981,94 +981,94 @@ measured, no kill line moved, nothing armed, nothing trades live.
   (arXiv:1812.02298v1, 6 Nov 2018; compound Hawkes mid-price models with n-state Markov
   chains on mid-move sizes; LLN + diffusion limits proven; LOBSTER level-1 single-day 2012
   fits for AAPL/AMZN/GOOG/MSFT/INTC). Grade: NO kill line changed. ONE candidate
-  sharpening, PENDING OWNER RATIFICATION: **the size-state persistence comparator** â the
+  sharpening, PENDING OWNER RATIFICATION: **the size-state persistence comparator** — the
   paper's diffusion limit factorizes mid-price volatility into an arrival term
-  Î»/(1âÎ¼Ì) and a size-state term Ï* (Eq. 34, PDF p. 9; Eq. 36, PDF p. 10), and its own
-  quantile Markov chain on mid-move sizes (Sec. 5.3, PDF pp. 16â17; transitions by
-  frequency counting, PDF p. 14) recovers 28â60% of the mean residual the intensity-only
+  λ/(1−μ̂) and a size-state term σ* (Eq. 34, PDF p. 9; Eq. 36, PDF p. 10), and its own
+  quantile Markov chain on mid-move sizes (Sec. 5.3, PDF pp. 16–17; transitions by
+  frequency counting, PDF p. 14) recovers 28–60% of the mean residual the intensity-only
   fixed-tick model missed on the multi-tick names (Table 8, PDF p. 18) with nothing but
   the tape. Pre-declaration text: any short-horizon C1-L2/C8 flow feature earns an
   incremental-claim comparison only if it adds value beyond (a) the top-of-book OFI
   benchmark, (b) the Eq.-7 queue-imbalance comparator, AND (c) a pre-registered own-price
   size-state persistence comparator built as the paper's quantile chain on the venue's
   realized mid-move size distribution. Harder to pass than the standing two-null rule
-  because the third null never touches the book or event stream â immune to both
+  because the third null never touches the book or event stream — immune to both
   event-flow and depth laundering. Interpretation cautions with page cites: fixed-tick
-  constructions are structurally biased on multi-tick venues â 61%/53%/71% of mid changes
-  exceed half a tick on AAPL/AMZN/GOOG (PDF p. 15; Fig. 4, PDF p. 24) â and the C1-L2
+  constructions are structurally biased on multi-tick venues — 61%/53%/71% of mid changes
+  exceed half a tick on AAPL/AMZN/GOOG (PDF p. 15; Fig. 4, PDF p. 24) — and the C1-L2
   venue is maximal-small-tick, so any one-tick convention must be declared against the
   venue's actual move-size distribution; even the size-chain leaves AMZN with 20.8%
   coefficient error (Table 9, PDF p. 18), so a residual is not evidence of a flow
-  channel. Reinforcing: implied Î±/Î² = 0.41â0.53 across all five names (Table 2, PDF
+  channel. Reinforcing: implied α/β = 0.41–0.53 across all five names (Table 2, PDF
   p. 14), per-branch estimation is the only legal shape; direction persistence flips sign
   across names (Table 4, PDF p. 15), reinforcing the sign-register rule. Source quality:
   single trading day, five equities, level-1 data, arXiv v1 with placeholder venue
-  pagination, N(t) counts mid-price changes not order arrivals â cite the structure,
+  pagination, N(t) counts mid-price changes not order arrivals — cite the structure,
   never the magnitudes.
 
   Ratification queue after this session: SIXTEEN candidate sharpenings (the fifteen
   standing plus the size-state persistence comparator joined 2026-11-18), zero armed.
   T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read
-  queue: the standing next UNREAD pointer set at null-time session 13 stands â
+  queue: the standing next UNREAD pointer set at null-time session 13 stands —
   "Price-Aware Automated Market Makers: Models Beyond Brownian Prices and Static
   Liquidity" (score 39, already on the library text shelf); with the session-9
   triage-audit flag on record, rank is a candidate reading, and the owner's library
   policy governs when they diverge. (This session was a pre-assigned parallel slot 6 of
   24, so it does not consume the queue's top pointer.) Nothing measured, no kill line
   moved, nothing armed, nothing trades live.
-## 21. Null-time session 17 (2026-11-18): deep-read session 15 â the Proof-Of-Human paper read as caution, both laundering directions named
+## 21. Null-time session 17 (2026-11-18): deep-read session 15 — the Proof-Of-Human paper read as caution, both laundering directions named
 
 - **Library deep-read session 15** (a PARALLEL-FIRE SLOT ASSIGNMENT, slot 12 of 24,
-  declared as such â this paper was pre-assigned to avoid duplicate work across the
+  declared as such — this paper was pre-assigned to avoid duplicate work across the
   24 simultaneous slots, so it was read out of the standing queue's top-pointer order;
   the standing next-UNREAD pointer is unchanged, see the close; numbering note: this
   entry was drafted by the slot's own session against a stale tail (self-numbered session
   16 / deep-read 14) and was renumbered machine-side to the next free numbers (session
   17 / deep-read 15) after concurrent slots landed sessions 14-16; no existing text edited):
   `paper/research/library/2026-11-18_rise_of_the_machines_deep_read.md`
-  on Petukhina, Reule & HÃ¤rdle, "Rise of the Machines? Intraday High-Frequency
+  on Petukhina, Reule & Härdle, "Rise of the Machines? Intraday High-Frequency
   Trading Patterns of Cryptocurrencies" (arXiv:2009.04200v1, 2020; post-peer-review,
   pre-copyedit version of a European Journal of Finance article; 5-minute CRIX/dyos
-  European-market data, 11 coins, JulâAug 2018). Grade: NO kill line changed; NO new
+  European-market data, 11 coins, Jul–Aug 2018). Grade: NO kill line changed; NO new
   candidate sharpening. Findings, page-cited: (1) GAM diurnal/weekly seasonality with
   highly significant smooth terms explaining only ~1% (PDF p. 15), the human-shaped
-  intraday curve (nighttime trough, 17:00â20:00 CET peak, PDF p. 16) and weekend
-  decline in returns/volume/volatility (Figs. 8â10, PDF pp. 16â18) â venue
+  intraday curve (nighttime trough, 17:00–20:00 CET peak, PDF p. 16) and weekend
+  decline in returns/volume/volatility (Figs. 8–10, PDF pp. 16–18) — venue
   corroboration for the already-recorded hour-of-day stratification and seasonality
   items, nothing added; (2) interpretation caution: the "24/7 algorithmic trading
-  impact is rather negligible" headline (PDF pp. 19â20) is a SHAPE inference from
-  ~1%-RÂ² smooths, in one two-month vacation window, at 5-minute grain, with no direct
-  algorithm-share measurement â agent-mix statements may never be imported from
-  seasonality shape alone, and the 2018-spot reading does not date 2024â25 perps in
+  impact is rather negligible" headline (PDF pp. 19–20) is a SHAPE inference from
+  ~1%-R² smooths, in one two-month vacation window, at 5-minute grain, with no direct
+  algorithm-share measurement — agent-mix statements may never be imported from
+  seasonality shape alone, and the 2018-spot reading does not date 2024–25 perps in
   either direction (regime-dating the session-6 fragility premise honestly);
   (3) the on-chain/off-chain passage (PDF p. 19) reinforces the proxy-refusal layer:
   on-chain variables are not admissible substitutes for L2 book state; (4) Table 1
   (PDF p. 12): near-zero mostly-negative first-order return autocorrelation with
-  strongly positive absolute/squared-return autocorrelation at 5-minute grain â
+  strongly positive absolute/squared-return autocorrelation at 5-minute grain —
   consistent with the compression premise's volatility-clustering motivation as
   CONTEXT ONLY (different grain, era, venue; never claim support). The counterfactual
   named both laundering directions this paper invites: its human-driven headline
   could have been read as undermining the L2 motivation, and its speculative
   false-positive-cascade passage (PDF p. 19) could have been read as criticality
-  evidence for the trigger line â the no-empirical-claim-from-papers rule prevented
+  evidence for the trigger line — the no-empirical-claim-from-papers rule prevented
   both.
 
 Ratification queue after this session: SIXTEEN candidate sharpenings (unchanged by
-this session â no sharpening was warranted by this source; the sixteen include
+this session — no sharpening was warranted by this source; the sixteen include
 concurrent slot 6's size-state persistence comparator), zero armed. T1 remains armed awaiting
 the owner's word; the blocked list stays blocked. Deep-read queue: the next UNREAD
-triage entry is unchanged â "Price-Aware Automated Market Makers: Models Beyond
+triage entry is unchanged — "Price-Aware Automated Market Makers: Models Beyond
 Brownian Prices and Static Liquidity" (score 39, already on the library text shelf);
 with the session-9 triage-audit flag on record, rank is a candidate reading, and the
 owner's library policy governs when they diverge. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
 
-## 22. Null-time session 18 (2026-11-18): deep-read session 16 â the price-aware AMM quoting paper graded pure theory, zero data; both laundering directions named
+## 22. Null-time session 18 (2026-11-18): deep-read session 16 — the price-aware AMM quoting paper graded pure theory, zero data; both laundering directions named
 
 - **Library deep-read session 16** (the standing queue's top UNREAD pointer, consumed by
-  this session â declared as such, not a parallel slot):
+  this session — declared as such, not a parallel slot):
   `paper/research/library/2026-11-18_price_aware_amm_deep_read.md`
-  on Bergault, Bertucci, Bouba, GuÃ©ant & Guilbert, "Price-Aware Automated Market Makers:
+  on Bergault, Bertucci, Bouba, Guéant & Guilbert, "Price-Aware Automated Market Makers:
   Models Beyond Brownian Prices and Static Liquidity" (arXiv:2405.03496v3, 2024; pure
   HJB/quadratic-Hamiltonian quoting theory for a price-aware AMM under Heston-Bates,
   Stein-Stein-with-jumps, linear Markovian Hawkes and Z-Hawkes price models, plus
@@ -1078,16 +1078,16 @@ moved, nothing armed, nothing trades live.
   engineering with no empirical content, and per the standing rule it is recorded as
   context only, never program input. Numbered findings, page-cited in the note: (1)
   [reinforcing] the branching ratio n used matter-of-fact as "the percentage of price
-  moves that are purely endogenous" (PDF p. 11) â corroborates that the endogeneity-share
+  moves that are purely endogenous" (PDF p. 11) — corroborates that the endogeneity-share
   reading is the field default, which is exactly why the queued estimator-discipline items
   (estimator-at-scale-W with the mean-variance cross-check, bootstrap-CI and
   boundary-solution rules, the W-ladder) govern; (2) [reinforcing] the control literature's
-  own honest label for the exponential kernel â "Power law kernels may be more realistic
+  own honest label for the exponential kernel — "Power law kernels may be more realistic
   than exponential ones, but they do not lead to Markovian setups" (footnote 8, PDF p. 11)
-  â first-principles support for the queued ACF-shape kernel-validity gate and the
+  — first-principles support for the queued ACF-shape kernel-validity gate and the
   kernel-form-declared-with-the-spec discipline; (3) [reinforcing] the Z-Hawkes section
   (PDF pp. 13-15) names the sign-feedback alternative family (Zumbach effect, xi_t driven
-  by sign(eta)) that linear exponential-kernel Hawkes cannot represent â concretizes the
+  by sign(eta)) that linear exponential-kernel Hawkes cannot represent — concretizes the
   already-queued kernel-family control; (4) [interpretation caution] the
   curse-of-dimensionality verdict on Hawkes liquidity models (PDF pp. 16-18) is a
   control-theoretic solvability statement, NOT a statistical-validity claim, and licenses
@@ -1095,7 +1095,7 @@ moved, nothing armed, nothing trades live.
   alternative (p = 2-3 states, PDF p. 17) is a control-side discretization, not
   regime evidence; (5) [interpretation caution] a price-aware AMM manufactures part of its
   own flow endogeneity (markup-dependent arrival intensities, PDF p. 4; markups reacting
-  to state, PDF pp. 13-19) â binds only if venue scope ever widens to AMM/on-chain pools,
+  to state, PDF pp. 13-19) — binds only if venue scope ever widens to AMM/on-chain pools,
   since the gated Tardis LOB data contains no AMM quoting loop; (6) [source-quality note]
   arXiv v3, zero data, two Swaap Labs co-authors and funding in partnership with Swaap
   Labs (PDF pp. 1, 20), two equation typos observed (Eq. 15, PDF p. 10, nu-for-sigma in
@@ -1109,7 +1109,7 @@ moved, nothing armed, nothing trades live.
 - Inaccessible/blocked status: none this session; the extract was present, page-marked and
   complete (21 pp.).
 
-  Ratification queue after this session: SIXTEEN candidate sharpenings (unchanged â no
+  Ratification queue after this session: SIXTEEN candidate sharpenings (unchanged — no
   sharpening was warranted by this source), zero armed. T1 remains armed awaiting the
   owner's word; the blocked list stays blocked. Deep-read queue: the next UNREAD triage
   entry is now Horst & Xu, "Functional Limit Theorems for Hawkes Processes"
@@ -1143,7 +1143,7 @@ moved, nothing armed, nothing trades live.
   time because the integrity guard ran on the full pre-push tree (which was correct),
   while the bytes actually delivered to the push were truncated upstream of the push.
   The session's post-merge verification checked the notes directory instead of this log
-  file, so the defect survived into the merge â a verification failure, owned here.
+  file, so the defect survived into the merge — a verification failure, owned here.
   Machine-side rule adopted from this point on: every log or ledger push is verified at
   the raw SHA of the pushed branch BEFORE the PR is merged, byte-compared against the
   composed intended file (length and sha256 plus tail line); a push that fails the
@@ -1154,7 +1154,7 @@ moved, nothing armed, nothing trades live.
   awaiting the owner's word; the blocked list stays blocked. Nothing measured, no kill
   line moved, nothing armed, nothing trades live.
 
-## 23. Null-time session 19 (2026-11-18): deep-read session 17 â the near-critical regime-disclosure rule for the branching-ratio trigger; the log-restoration corrigendum landed first
+## 23. Null-time session 19 (2026-11-18): deep-read session 17 — the near-critical regime-disclosure rule for the branching-ratio trigger; the log-restoration corrigendum landed first
 
 - **Restoration first (machine-side, this session)**: the ## 22b corrigendum above was
   composed and landed by this session as PR #169 (squash-merged as df5c852c, CI both
@@ -1174,7 +1174,7 @@ moved, nothing armed, nothing trades live.
   Read: main results Sections 1-2 (PDF pp. 1-21) in full detail; proofs Sections 3-6
   (PDF pp. 21-61) skimmed, Remarks 2.15/2.17 noted; the paper contains no empirical
   content. Grade: NO kill line changed. ONE candidate sharpening queued, PENDING OWNER
-  RATIFICATION: **the near-critical regime-disclosure rule** â the long-run behavior is
+  RATIFICATION: **the near-critical regime-disclosure rule** — the long-run behavior is
   fully determined by the offspring mean m AND the child-event dispersion
   sigma = integral s*phi(s) ds (Abstract, PDF p. 1); every exponential kernel (and
   mixture) has finite sigma, so exponential-family criticality is ALWAYS weak
@@ -1216,7 +1216,7 @@ shelf); with the session-9 triage-audit flag on record, rank is a candidate read
 and the owner's library policy governs when they diverge. Nothing measured, no kill
 line moved, nothing armed, nothing trades live.
 
-## 24. Null-time session 20 (2026-11-18): deep-read session 18 â the Markovian order-book ergodicity paper graded pure theory, default grade held
+## 24. Null-time session 20 (2026-11-18): deep-read session 18 — the Markovian order-book ergodicity paper graded pure theory, default grade held
 
 - **Library deep-read session 18** (the standing queue's next UNREAD pointer, score 37,
   xfccac8, consumed here; the paper was also the pre-assigned burst slot 04 paper, that
@@ -1230,17 +1230,17 @@ line moved, nothing armed, nothing trades live.
   NO kill line changed. NO new candidate sharpening. Findings, page-cited:
   (1) [reinforcing] the macroscopic limit of the entire class is Brownian motion via
   strong mixing of stationary price increments (Theorems 4.1/4.2, Equation 7, PDF
-  p. 13) â inside the class there is no long-memory macro price, and any claim that
+  p. 13) — inside the class there is no long-memory macro price, and any claim that
   a microscopic LOB feature survives to macro scale is a finite-window pre-limit
   claim, exactly what C1-L2's short-horizon benchmarking already tests; nothing here
   licenses relaxing the OFI-benchmark family. (2) [reinforcing] ergodicity is earned,
   not assumed: it is bought with a uniform negative-drift condition on every queue
   above a threshold (Assumption 3.3, Example 2's simple form f - g < -r, PDF
   pp. 10-11), and the stylized LOB shape is an invariant-distribution phenomenon
-  (PDF p. 3) â depth-shape readings are licensed only under a drift condition of this
+  (PDF p. 3) — depth-shape readings are licensed only under a drift condition of this
   kind. (3) [reinforcing] the paper's own boundary: a non-Markovian (self-exciting)
   market-order component would force a complete revision of the approach except for
-  very specific cases, exponential Hawkes named (Conclusion, PDF p. 18) â the same
+  very specific cases, exponential Hawkes named (Conclusion, PDF p. 18) — the same
   boundary met in deep-read 17, two independent frameworks placing the exponential
   kernel exactly at the edge of tractability, which supports the declared kernel
   family staying declared and reinforces the queued near-critical
@@ -1252,11 +1252,11 @@ line moved, nothing armed, nothing trades live.
   internal date discrepancy: title page "September 17, 2018" vs arXiv v1 stamp
   "19 May 2015" (PDF p. 1), acquisition index records v1/2015; flagged, not resolved;
   published version to be checked before formal citation. Laundering directions
-  named: (1) INTO â quoting the diffusive limit as proof that microstructure always
+  named: (1) INTO — quoting the diffusive limit as proof that microstructure always
   washes out, so short-horizon flow edges "cannot exist", is an asymptotic statement
   about a model class under fitted drift conditions, not about finite-window
   real-tape predictability; barred as a kill argument against C1-L2's own tests.
-  (2) OUT â reading the ergodicity theorems as "the LOB state is stationary in data,
+  (2) OUT — reading the ergodicity theorems as "the LOB state is stationary in data,
   so depth-regime features are always admissible": ergodicity is conditional on
   Assumption 3.3's drift, which the tape never checks for free; without it, an
   "equilibrium depth regime" reading is unlicensed. Standing caveat: theory-only,
@@ -1315,7 +1315,7 @@ Nothing measured, no kill line moved, nothing armed, nothing trades live.
   representation (deep-read 18), own derivation of the event-to-flux map.
   The honest import from the finite-volume method is bookkeeping, not
   metaphor: on a fixed absolute price grid the tape IS q-dot and the balance
-  law IS the exact discrete integral form â cell storage change equals
+  law IS the exact discrete integral form — cell storage change equals
   summed signed event fluxes plus DECLARED boundary terms (beyond the
   K-level window) plus DECLARED source terms (hidden liquidity,
   administrative changes, per-venue map registered before any run). NO
@@ -1323,7 +1323,7 @@ Nothing measured, no kill line moved, nothing armed, nothing trades live.
   session; the standing next-UNREAD pointer is unchanged.
 - **Grade: NO kill line changed. ONE candidate sharpening queued, PENDING
   OWNER RATIFICATION: the volume-conservation reconstruction-admissibility
-  rule** â any depth reconstruction used in a C1-L2 (or C8 L2-arm)
+  rule** — any depth reconstruction used in a C1-L2 (or C8 L2-arm)
   measurement must pass the flux-differencing identity per level per window,
   within a tolerance and source-term budget BOTH pre-registered before the
   first L2 run and calibrated on a calibration window DISJOINT from every
@@ -1334,10 +1334,10 @@ Nothing measured, no kill line moved, nothing armed, nothing trades live.
   assignment) are excluded before any statistic is computed. It defines no
   signal, changes no kill line, and is validation machinery only
   ([exploratory] provenance, channel E1).
-- **Both laundering directions named**: (1) INTO â the physics-flavored
+- **Both laundering directions named**: (1) INTO — the physics-flavored
   vocabulary of conservation laws may never be cited as support for any
   flow feature; the rule is bookkeeping, and bookkeeping earns nothing
-  predictive; (2) OUT â a passing identity may never be read as evidence of
+  predictive; (2) OUT — a passing identity may never be read as evidence of
   data quality beyond the window checked or as validation of the C1-L2
   signal itself; it licenses admissibility of a window, nothing more.
 
@@ -1352,20 +1352,20 @@ record, rank is a candidate reading, and the owner's library policy governs
 when they diverge. Nothing measured (no data touched; L2 still awaited), no
 kill line moved, nothing armed, nothing trades live.
 
-## 26. Null-time session 22 (2026-11-18): deep-read session 19 â the sparse order book simulator read; the deterministic-clock null arm queued for the branching-ratio trigger
+## 26. Null-time session 22 (2026-11-18): deep-read session 19 — the sparse order book simulator read; the deterministic-clock null arm queued for the branching-ratio trigger
 
 - **Library deep-read session 19** (the standing queue's next UNREAD
   pointer, score 37, x3ff3a4, consumed here; per corrigendum ## 24b this
   slug IS the burst slot 04 assignment, so slot 04 is consumed consistently
   by this same read):
   `paper/research/library/2026-11-18_sparse_orderbook_electricity_deep_read.md`
-  on Bergault & CognÃ©ville, "Simulating and analyzing a sparse order book:
+  on Bergault & Cognéville, "Simulating and analyzing a sparse order book:
   an application to intraday electricity markets" (arXiv:2410.06839v1,
   q-fin.TR, 2024; EPEX Spot German/French intraday electricity, 2021, hour
   products; a simulation paper about a market the programme does not trade).
   Read against the ONE question. **Grade: NO kill line changed. ONE
   candidate sharpening, PENDING OWNER RATIFICATION: the deterministic-clock
-  null arm for the branching-ratio trigger** â the paper's simulated books
+  null arm for the branching-ratio trigger** — the paper's simulated books
   display strong event clustering with ZERO self-excitation, all of it
   generated by deterministic calendar-time intensities
   (lambda_M(t,S) = lam_bar_M e^{-kM(T-t)} e^{-bM S} and its siblings, PDF
@@ -1380,7 +1380,7 @@ kill line moved, nothing armed, nothing trades live.
   on calibration windows DISJOINT from evaluation; the clock-explained
   fraction is reported and clock-explained windows contribute no firing
   (neither positive nor negative). Harder to pass: the standing gates do
-  not separate clock from excitation â the shuffled-arrival placebo
+  not separate clock from excitation — the shuffled-arrival placebo
   destroys both together, the ACF-shape gate is consistent with an
   inhomogeneous Poisson (independent disjoint-interval counts keep the ACF
   flat or decaying), and a mean-variance-style branching estimate is
@@ -1390,28 +1390,28 @@ kill line moved, nothing armed, nothing trades live.
   die here. It generalizes the recorded hour-of-day stratification caution
   (deep-read 3) from an estimation-window caution into an explicit null
   arm, and tightens only the branching-ratio trigger family; no C1-L2
-  text moves. Findings, page-cited: reinforcing, no new item â beyond-K
+  text moves. Findings, page-cited: reinforcing, no new item — beyond-K
   boundary limits are SYNTHESIZED draws, harmless only around inner limits
   and only for K large enough (PDF pp. 9-10), independent support for the
   E1 declared-boundary-term discipline and the distance-grid
-  sign-invariance rule; interpretation caution â the model has NO partial
+  sign-invariance rule; interpretation caution — the model has NO partial
   cancellations (a partial cancel is approximated as full cancel plus a
   smaller reinsertion at the same limit, PDF p. 9), so depth persistence
   features must never conflate volume reduction at an occupied level with
   level disappearance (the size-state persistence comparator's territory);
-  reinforcing â signature-plot model checking (realized volatility depends
+  reinforcing — signature-plot model checking (realized volatility depends
   on the sampling step until it stabilizes, PDF pp. 19-20) and the printed
   simulator failure (underdispersed outputs, PDF p. 19) support the
   pre-registered sampling-scale discipline and the negative-result
-  culture; source-quality note â arXiv v1 only, one author EDF R&D staff,
+  culture; source-quality note — arXiv v1 only, one author EDF R&D staff,
   electricity-only scope, symmetric bid/ask by calibration choice (PDF
   p. 15), least-squares on suggested functional forms (PDF pp. 15-16),
   published version to be checked before formal citation. Laundering
-  directions named: INTO â the paper's "Poisson reproduces the spread
+  directions named: INTO — the paper's "Poisson reproduces the spread
   distributions" may never be cited to weaken excitation requirements or
   to build flat, clock-free nulls, and its "Hawkes would fix the tails"
   sentence is a discussion-section proposal, not evidence that real
-  markets are self-exciting; OUT â the deterministic-intensity
+  markets are self-exciting; OUT — the deterministic-intensity
   construction is a model of one electricity market, not a measurement of
   our tape, and may never be cited as proof that clustering in our
   windows is clock-driven; only the registered null arm may say that,
@@ -1427,7 +1427,7 @@ Making: Volterra-Riccati Approximation" (score 37, xa868e3, the burst slot
 candidate reading, and the owner's library policy governs when they diverge.
 Nothing measured, no kill line moved, nothing armed, nothing trades live.
 
-## 27. Null-time session 23 (2026-11-18): deep-read session 20 â the Hawkes-driven OTC market making paper; the latent-common-cause robustness arm queued for the branching-ratio trigger
+## 27. Null-time session 23 (2026-11-18): deep-read session 20 — the Hawkes-driven OTC market making paper; the latent-common-cause robustness arm queued for the branching-ratio trigger
 
 - **Library deep-read session 20** (the standing queue's next UNREAD
   pointer, score 37, xa868e3, consumed here; also the burst slot 05
@@ -1440,7 +1440,7 @@ Nothing measured, no kill line moved, nothing armed, nothing trades live.
   does not trade). Read against the ONE question. **Grade: NO kill line
   changed. ONE candidate sharpening, PENDING OWNER RATIFICATION: the
   latent-common-cause (Markov-modulated-baseline) robustness arm for the
-  branching-ratio trigger** â the paper states the confound precisely:
+  branching-ratio trigger** — the paper states the confound precisely:
   correlated requests "may be reactions to a common unobserved cause ...
   If such exogenous variation is omitted from the baseline intensity, a
   fitted Hawkes model may absorb part of it into the excitation kernel
@@ -1449,15 +1449,15 @@ Nothing measured, no kill line moved, nothing armed, nothing trades live.
   with latent-factor or Cox specifications" (PDF pp. 21-22); its own
   Table 1 shows fitted branching 0.86-0.90 in major FX pairs on three
   years and over 5*10^5 filtered events AFTER deterministic seasonality
-  is designed out (PDF pp. 3-5) â exactly the magnitude a naive reading
+  is designed out (PDF pp. 3-5) — exactly the magnitude a naive reading
   would celebrate as near-critical reflexivity, from an author who
   explicitly refuses that reading. This confound is NOT the
   deterministic-clock one queued at deep-read 19 (an observed calendar
   profile is not a stochastic latent driver) and none of the standing
   gates addresses it. Pre-declaration text: every window whose fitted
   branching fires the trigger bar must be re-estimated under a
-  registered latent-baseline enrichment â the two-state Markov-modulated
-  background already built into C8's MMHP structure â with the baseline
+  registered latent-baseline enrichment — the two-state Markov-modulated
+  background already built into C8's MMHP structure — with the baseline
   form pre-registered before the first L2 run; if the excitation mass
   attributed to endogenous branching drops below the bar once the latent
   state is modelled, the window contributes no firing (neither positive
@@ -1466,30 +1466,30 @@ Nothing measured, no kill line moved, nothing armed, nothing trades live.
   every standing gate can still die here, because apparent
   self-excitation absorbed from an omitted common driver is not
   reflexivity. Tightens only the branching-ratio trigger family; no
-  C1-L2 text moves. Findings, page-cited: reinforcing, no new item â
+  C1-L2 text moves. Findings, page-cited: reinforcing, no new item —
   independent practitioner corroboration of the deep-read-19 clock null
   (kernel estimated only in seasonality-adjusted activity time because
   calendar time "would ... confound deterministic seasonality with
   residual serial dependence", PDF pp. 3-4; all rates in one declared
   clock, variance rates included, PDF pp. 4-5), reinforcing the flow-clock
-  scale-constant rule; reinforcing â high branching fits are commonplace
+  scale-constant rule; reinforcing — high branching fits are commonplace
   and specification-sensitive (fitted 0.86-0.90 in data, PDF p. 4; 0.92 as
   a synthetic stress regime, PDF p. 14), supporting the near-critical
   regime-disclosure rule's disclosed-regime requirement over
-  number-alone narration; interpretation caution â fitted excitation is
+  number-alone narration; interpretation caution — fitted excitation is
   event-set-relative (aggressive pre-fit filters and the
   request-vs-conversion event convention, PDF pp. 3-6), so the trigger's
   event-stream definition and filters must be pre-registered before the
   first L2 run and later changes are new tests, not re-estimates;
-  source-quality note â single-author HSBC practitioner paper, arXiv v2,
+  source-quality note — single-author HSBC practitioner paper, arXiv v2,
   proprietary data, no well-posedness theorem (numerical validation only,
   PDF pp. 14-15), market-making results are execution-strategy
   engineering outside programme scope, published version to be checked
-  before formal citation. Laundering directions named: INTO â Table 1's
+  before formal citation. Laundering directions named: INTO — Table 1's
   0.86-0.90 may never be imported as calibration for the C8 trigger bar
   or as evidence that real markets sit near criticality, and the paper's
   regret tables and quote-skew formulas are a dealer's control problem,
-  never programme input; OUT â the confound disclaimer may never be read
+  never programme input; OUT — the confound disclaimer may never be read
   backwards as "fitted branching is meaningless": the paper's own
   validation hierarchy shows the fitted memory to be the economically
   relevant state, and the confound limits what a fired bar may CLAIM, not
@@ -1505,9 +1505,9 @@ Book Dynamics and Order Size Modelling Using Compound Hawkes Processes"
 is a candidate reading, and the owner's library policy governs when they
 diverge. Nothing measured, no kill line moved, nothing armed, nothing
 trades live.
-## 28. Null-time session 24 (2026-11-18): deep-read session 21 â the compound Hawkes order-book size-modelling paper graded default, no sharpening; PR #173's dashboard audit landed by supersession
+## 28. Null-time session 24 (2026-11-18): deep-read session 21 — the compound Hawkes order-book size-modelling paper graded default, no sharpening; PR #173's dashboard audit landed by supersession
 
-- **Protocol/maintenance event** â PR #173 ("dashboard audited and
+- **Protocol/maintenance event** — PR #173 ("dashboard audited and
   refreshed", branch vibe/dashboard-refresh-984be8) resolved this
   session. Its audit was verified row by row against
   docs/ledger.html and the record, not taken on faith: the L0
@@ -1520,12 +1520,12 @@ trades live.
   docs/DECISIONS_PENDING.md across sessions 21-23), GitHub's
   update-branch refused with a merge conflict, this connector has no
   force-rebase or branch-replace capability, and adding commits
-  cannot clear a three-way conflict â so supersession per the
+  cannot clear a three-way conflict — so supersession per the
   standing PR pattern was applied. The audit's content landed via PR
   #177 as a single clean diff on current main (squash 623eeefd),
   with ONE correction: the audit's stale approximate queue line
   ("~17+ across 18 deep-reads") restored to the exact count, twenty
-  candidates through 20 deep-reads plus probe E1, zero armed â the
+  candidates through 20 deep-reads plus probe E1, zero armed — the
   queue line is the owner's ratification interface and may never be
   approximate. Integrity guard clean on the substituted tree; PR
   #177's CI green (test, engine); post-merge blob verified
@@ -1549,27 +1549,27 @@ trades live.
   sharpening.** Default grade. The paper's mechanisms are worked
   exhibits of rules already standing in the queue, and the burden of
   proof for a sharpening was not met. Findings, page-cited:
-  reinforcing, no new item â the d-dimensional worked example of the
+  reinforcing, no new item — the d-dimensional worked example of the
   boundary-solution pathology, queued at deep-read session 5: their
   fitted kernels "occasionally violate" the stationarity constraint
   and are silently rescaled by "multiplying all the kernels by a
   regularizing term to cap the eigenvalue at 1" (PDF p. 6), landing
   the fit exactly on the constraint boundary; under the queued rule
   such a reading is MISSING, not high, not near-critical.
-  Reinforcing, no new item â the exogenous share of fitted excitation
+  Reinforcing, no new item — the exogenous share of fitted excitation
   is an estimator-pipeline PRODUCT (cut-off grid, sign-uniformity
   constraint, a 0.01-norm threshold zeroing 79 of 144 kernels, PDF
   p. 7, inhibitory flooring, and the post-hoc rebuild of exogenous
   intensity because the raw estimate is "massively overestimated",
   PDF p. 6), a second named exhibit for the near-critical
   regime-disclosure rule: only the disclosed estimate chain is a
-  regime. Reinforcing, no new item â a seasonality-naive null is a
+  regime. Reinforcing, no new item — a seasonality-naive null is a
   broken null: their Poisson baseline, carrying no U-shape, produces
   a flat signature plot and wholesale shape failures (PDF pp. 8-9),
   so the queued deterministic-clock null arm and the hour-of-day
   stratification rule are corroborated, not amended; any null must
   carry the declared deterministic seasonality or fires for the
-  wrong reason. Reinforcing, no new item â time-only excitation is
+  wrong reason. Reinforcing, no new item — time-only excitation is
   formally silent about size/marks: their size-independence
   postulate rests on weak evidence they concede ("albeit with weak
   evidence", Hoeffding 0.00068, one stock, PDF p. 11), their own
@@ -1577,16 +1577,16 @@ trades live.
   trade COUNT rather than volume, "counter-intuitive to the real
   world phenomenon of adverse selection" and named "a potential
   missing piece" (PDF p. 10), and constant-order-size simulation
-  overestimates volatility by ~100x (PDF pp. 8-9) â a worked exhibit
+  overestimates volatility by ~100x (PDF pp. 8-9) — a worked exhibit
   for the queued size-state persistence comparator: a memory
   measured on event counts alone may not be narrated as volume-flow
-  or impact fact. Interpretation caution â in-spread limit-order
+  or impact fact. Interpretation caution — in-spread limit-order
   intensity scales empirically as (s-1)^beta, beta around 0.75 for
   their stock (R-squared 0.85, PDF p. 11, Appendix B), so any future
   near-touch reconstruction feature must declare its spread-state
   normalization before the first L2 run or drift with the spread
   distribution, not information flow; reading discipline only, no
-  queue change. Source-quality note â practitioner preprint, arXiv
+  queue change. Source-quality note — practitioner preprint, arXiv
   v5, primary calibration one medium-tick stock (AAPL 2019,
   NASDAQ), the authors themselves report their own model unsuitable
   or misfitted for small-tick names (severely underestimated
@@ -1596,17 +1596,17 @@ trades live.
   simulator's fitted matrices or a homogeneous null ever stood in
   for a registered test, these artifacts (100x volatility
   overestimate, silently rescaled kernels, seasonality-free null
-  failures) would have fired or killed on machinery, not markets â
+  failures) would have fired or killed on machinery, not markets —
   the library-is-ammunition rule and nothing-measured are what
   prevented it. Standing caveat recorded: six top-of-book queues
   only, order sizes assumed stationary and condition-independent
   ("quite strong", PDF p. 4), the impact study is simulator output,
   and its TWAP/child-order machinery is execution-strategy
   engineering outside programme scope, never programme input.
-  Laundering directions named: INTO â the paper's calibrated kernel
+  Laundering directions named: INTO — the paper's calibrated kernel
   norms, beta exponents, U-shape bins, and impact concavity
   constants may never be imported as calibration or priors for the
-  C8 trigger bar or any reconstruction tolerance; OUT â the
+  C8 trigger bar or any reconstruction tolerance; OUT — the
   artifact confessions may not be read backwards as "Hawkes
   memory is fake": the failures are about marks and applicability
   (size-silence, small-tick names), not about the existence of
@@ -1624,7 +1624,7 @@ triage-audit flag on record, rank is a candidate reading, and the
 owner's library policy governs when they diverge. Nothing measured,
 no kill line moved, nothing armed, nothing trades live.
 
-## 29. Null-time session 25 (2026-11-18): the three deferred engineering events booked â the compound Hawkes engine (PR #179), its site dashboard (PR #180), the nav link (PR #181)
+## 29. Null-time session 25 (2026-11-18): the three deferred engineering events booked — the compound Hawkes engine (PR #179), its site dashboard (PR #180), the nav link (PR #181)
 
 Each of the three commits disclosed "log entry deferred to the next
 null-time session per append-only protocol"; this is that session. All
@@ -1634,7 +1634,7 @@ arXiv:2312.08927v5, graded default NO sharpening there). They are
 demonstration infrastructure. Nothing in them measures anything, and
 the synthetic data is the only data any of them ever touched.
 
-- **Protocol/maintenance event â PR #179, the compound Hawkes
+- **Protocol/maintenance event — PR #179, the compound Hawkes
   order-flow engine.** From-scratch build, all synthetic, no programme
   dataset touched at any step: `src/ofhawkes.py`, a 12-dimensional
   compound Hawkes point process driving a six-queue top-of-book
@@ -1657,8 +1657,8 @@ the synthetic data is the only data any of them ever touched.
   itself exhibits with its silently rescaled kernels) is implemented
   as `stabilize_norm_matrix`: an unstable kernel-norm matrix is
   either refused or rescaled to a declared target with a
-  StabilityDisclosure record â raw eigenvalue, scaled eigenvalue,
-  applied factor, action â never quietly repaired. 20/20 tests in
+  StabilityDisclosure record — raw eigenvalue, scaled eigenvalue,
+  applied factor, action — never quietly repaired. 20/20 tests in
   `tests/test_ofhawkes.py` (kernel-norm analytic vs numeric,
   scripted-event book invariants, exact-consumption walk, in-spread
   guard, seed reproducibility, Hawkes-vs-Poisson clustering, grid
@@ -1667,7 +1667,7 @@ the synthetic data is the only data any of them ever touched.
   13.1 percent with the control exactly 0.0, eigenvalue chain
   0.6349 (raw, above the stationary bound 0.5261) rescaled with
   disclosed factor 0.4143 to 0.2630, excitation halved once more for
-  headroom, landing at a simulated eigenvalue 0.1315 â every step in
+  headroom, landing at a simulated eigenvalue 0.1315 — every step in
   the emitted metadata. `docs/compound_hawkes_engine.md` states it on
   its face: demonstration infrastructure, not evidence; the engine
   simulates, it does not estimate, test, or claim. The demo dataset is
@@ -1675,7 +1675,7 @@ the synthetic data is the only data any of them ever touched.
   verified present and byte-complete on main afterwards, and again in
   this session's fresh re-fetch of the tree.
 
-- **Protocol/maintenance event â PR #180, the site dashboard page.**
+- **Protocol/maintenance event — PR #180, the site dashboard page.**
   `docs/compound_hawkes.html` (~421 KB), a self-contained dark-theme
   dashboard of the synthetic demo run: embedded dataset (the same
   gitignored JSON the demo emits, in a JSON.parse-chunked embed),
@@ -1690,13 +1690,13 @@ the synthetic data is the only data any of them ever touched.
   PR body disclosed the event rather than letting a corrupted page
   ship silently.
 
-- **Protocol/maintenance event â PR #181, the nav link.**
+- **Protocol/maintenance event — PR #181, the nav link.**
   `src/site_nav.py` gained the entry ("compound_hawkes.html", "The
   synthetic order flow") in The Board group; all 15 nav-bearing docs
   pages were regenerated from the canonical renderer (heatmap.html via
   fetch-plus-nav-splice, its long single lines being unreadable
   through the file transport); `tests/test_site_nav.py` expected nav
-  count 15 â 16. Four commits instead of one, forced by the sandbox
+  count 15 → 16. Four commits instead of one, forced by the sandbox
   16 MiB push ceiling, all verified; every blob byte-identical
   pre- and post-merge; CI green (test, engine); squash-merged
   b8913eea; the 15 live pages re-verified in this session's fresh
@@ -1712,7 +1712,7 @@ Intraday Dynamics and Macroeconomic News Effects" (score 34, x5459dc).
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live.
 
-## 30. Null-time session 26 (2026-11-18): deep-read session 22 â the Takahashi returns-OFI intraday paper read; the release-calendar lead component queued for the deterministic-clock null arm
+## 30. Null-time session 26 (2026-11-18): deep-read session 22 — the Takahashi returns-OFI intraday paper read; the release-calendar lead component queued for the deterministic-clock null arm
 
 - **Library deep-read session 22** (the standing queue's next UNREAD
   pointer, score 34, x5459dc, consumed here):
@@ -1731,7 +1731,7 @@ live.
   The queued arm (deep-read 19, log ## 26) enumerates the
   deterministic intensity as hour-of-day and session segments; the
   paper supplies the missing third component with regression
-  evidence: the parameter shifts begin BEFORE the release stamp â
+  evidence: the parameter shifts begin BEFORE the release stamp —
   price impact rises on ANN_t-1 (0.129***, PDF p. 11, Table 2), flow
   innovation volatility declines on and before the release
   (-0.039**/-0.057***), so a null whose release handling begins at
@@ -1744,31 +1744,31 @@ live.
   release-explained windows contribute no firing and are reported
   separately. Harder to pass: release windows are precisely where
   return innovations spike, price impact jumps and flow
-  responsiveness collapses â the extreme-impact, extreme-intensity
+  responsiveness collapses — the extreme-impact, extreme-intensity
   configuration a branching estimator reads as its most excited
   windows; a bar that survives the hour-of-day null can still be the
   release calendar wearing excitation's costume. It tightens only
   the queued deterministic-clock null arm (and through it the T-H
   and T-O families); no C1-L2 text moves.
 
-  Findings, page-cited: reinforcing, no new item â OFI is
+  Findings, page-cited: reinforcing, no new item — OFI is
   constructible from BBO events alone, with the order-type
   decomposition explicitly reserved for order-typed data (PDF p. 3,
   footnote 6): a worked exhibit for probe E1's reconstruction-
   admissibility rule, BBO-derived OFI admissible as a feature but
   any decomposition-flavoured reading on it inadmissible.
-  Reinforcing, no new item â aggregation manufactures simultaneity,
+  Reinforcing, no new item — aggregation manufactures simultaneity,
   the coefficient a function of the clock (b_f 0.301 at one second
   toward 0.55 at one minute, b_r the reverse, PDF p. 12;
   Deuskar-Johnson's stale-limit and price-contingent mechanism): a
   worked exhibit for the record's clock discipline, no fitted
   contemporaneous coefficient from one sampling clock pooled with or
-  narrated alongside another. Reinforcing, no new item â fitted
+  narrated alongside another. Reinforcing, no new item — fitted
   structural point estimates are unstable across windows and mostly
   not significant (b_r significant in only 64 percent of 15-minute
   intervals, Table 3, PDF p. 12): an independent equity-futures
   exhibit for the uncertainty-band-not-point-estimate rule already
-  queued from Hardiman-Bouchaud. Interpretation caution â the
+  queued from Hardiman-Bouchaud. Interpretation caution — the
   announcement dummies are significant but add little adjusted
   R-squared beyond market activity variables (PDF p. 9): the release
   calendar acts mostly through observable activity, and the null arm
@@ -1779,8 +1779,8 @@ live.
   BTCUSDT tape mechanism-level only, never numerical. Source-quality
   note: solo-author dissertation chapter, arXiv v4, published version
   to be checked before formal citation. Laundering directions
-  named: INTO â the fitted coefficients never imported as
-  calibration, priors, or tolerances; OUT â the one-second
+  named: INTO — the fitted coefficients never imported as
+  calibration, priors, or tolerances; OUT — the one-second
   dissipation and simultaneity findings never read backwards as "L2
   flow has no content at the programme's horizons": dissipation is a
   second-scale statement, the programme's compression question is
@@ -1797,7 +1797,7 @@ from a Measurement Study of CME Market Data" (score 34, xc5ba34).
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live.
 
-## 31. Null-time session 27 (2026-11-18): deep-read session 23 â the CME feed measurement study read; graded default, no sharpening
+## 31. Null-time session 27 (2026-11-18): deep-read session 23 — the CME feed measurement study read; graded default, no sharpening
 
 - **Library deep-read session 23** (the standing queue's next UNREAD
   pointer, score 34, xc5ba34, consumed here):
@@ -1811,7 +1811,7 @@ live.
   ES/NQ/ZN. Read against the ONE question. **Grade: NO kill line changed. NO
   new candidate sharpening.** Default grade; the queue is unchanged at
   twenty-one through deep-read 22 plus probe E1. Findings, page-cited:
-  reinforcing, no new item â the paper's own fitted branching ratio is
+  reinforcing, no new item — the paper's own fitted branching ratio is
   declared not load-bearing (constant-background exponential-kernel fits
   overstate n when the background varies within the window, per the
   Filimonov-Sornette result it cites; "none of the paper's conclusions
@@ -1819,14 +1819,14 @@ live.
   diagnostics instead: a worked exhibit for the queued estimator-mode
   register and near-critical regime-disclosure rule, which the T-H
   benchmark's Hardiman-Bouchaud pre-conditions already encode.
-  Reinforcing, no new item â the branching ratio is a function of event
+  Reinforcing, no new item — the branching ratio is a function of event
   definition and clock: packets and transaction starts give the same n
   (0.798 vs 0.795, PDF p. 38) only because 98.3 percent of transactions
   are one packet (PDF p. 36), while the same engine events read on the
   engine clock against the publisher clock are different gap objects
   entirely (17.1 percent within one publisher period versus 1.04 percent,
   tightest percentile 0.18 microseconds, PDF p. 57): a worked exhibit for
-  the record's clock discipline. Reinforcing, no new item â a hard
+  the record's clock discipline. Reinforcing, no new item — a hard
   deterministic infrastructure clock (the publisher's 7.5 microsecond
   period; bursts surface as evenly spaced trains, tail onset independent
   of rate and branching quintiles at short service times, PDF pp. 51-52,
@@ -1836,7 +1836,7 @@ live.
   paper's speed-limit conjecture carries its own qualification verbatim -
   "delaying feedback does not reduce the branching ratio" (PDF p. 65) -
   so it may never be cited as a mechanism that tames criticality.
-  Interpretation caution â after a trade, microsecond follow-ups are five
+  Interpretation caution — after a trade, microsecond follow-ups are five
   times as often another trade and half again as often a delete (PDF
   pp. 63-64), the signature of a race, whose losers never appear on the
   public feed: fine-scale post-trade clusters may never be narrated as
@@ -1851,8 +1851,8 @@ live.
   blocked by standing discipline. Standing caveat recorded: nothing here
   measures anything at the programme's horizons or on its feature
   definitions; transfer to BTCUSDT multi-hour windows is mechanism-level
-  only. Laundering directions named: INTO â no coefficient, period, decay
-  time, or quantile enters any spec or calibration; OUT â no race-reading
+  only. Laundering directions named: INTO — no coefficient, period, decay
+  time, or quantile enters any spec or calibration; OUT — no race-reading
   of post-trade clusters as informed flow, no feed-granularity
   near-criticality read forward into the programme's aggregation, no
   publisher-pacing-tames-cascades citation.
@@ -1864,7 +1864,7 @@ pointer: the next UNREAD triage entry is "Dynamic optimal execution in a
 mixed-market-impact Hawkes price model" (score 34, x7c5b08). Nothing
 measured, no kill line moved, nothing armed, nothing trades live.
 
-## 32. Null-time session 28 (2026-11-18): deep-read session 24 â the mixed-market-impact Hawkes execution paper read; graded default, no sharpening
+## 32. Null-time session 28 (2026-11-18): deep-read session 24 — the mixed-market-impact Hawkes execution paper read; graded default, no sharpening
 
 - **Library deep-read session 24** (the standing queue's next UNREAD
   pointer, score 34, x7c5b08, consumed here):
@@ -1877,15 +1877,15 @@ measured, no kill line moved, nothing armed, nothing trades live.
   exactly. Read against the ONE question. **Grade: NO kill line changed.
   NO new candidate sharpening.** Default grade; the queue stands at
   twenty-one through deep-read 22 plus probe E1. Findings, page-cited:
-  reinforcing, no new item â the model's no-arbitrage equilibrium pins
+  reinforcing, no new item — the model's no-arbitrage equilibrium pins
   the flow's endogeneity ratio to the price model's transient-impact
   share (iota_s/beta = 1-nu when cross-excitation is zero, and
   2*iota_c < nu*rho for stationarity, PDF p. 14): a worked exhibit that
   a branching or endogeneity reading is model-relative, a function of
   the declared kernel family and impact decomposition, with no
-  universal near-critical level implied by stability or efficiency â
+  universal near-critical level implied by stability or efficiency —
   reinforcing the estimator-mode register and the uncertainty-band rule
-  already standing. Reinforcing, no new item â no PMS iff the price is
+  already standing. Reinforcing, no new item — no PMS iff the price is
   a martingale with the strategic trader absent (Theorem 2.1, PDF p. 5)
   and no weak PMS iff the same parameter identities hold (Proposition
   5.1, Corollary 5.1, PDF pp. 13-15), and the authors themselves call
@@ -1894,19 +1894,19 @@ measured, no kill line moved, nothing armed, nothing trades live.
   fitting a PMS-free market has no guarantee of yielding a PMS-free
   model (PDF p. 14): knife-edge equilibria are model objects, never
   market facts, and "stable versus manipulable" statements are
-  model-coupled â the mechanism-level-transfer-only rule reinforced.
-  Reinforcing, no new item â under purely Poisson flow a robust
+  model-coupled — the mechanism-level-transfer-only rule reinforced.
+  Reinforcing, no new item — under purely Poisson flow a robust
   round-trip manipulation is implementable without knowing any model
   parameter (Proposition 5.2, PDF pp. 15-16): what a misspecified null
-  returns is structure, not neutrality â the same class of lesson as the
+  returns is structure, not neutrality — the same class of lesson as the
   U-shape seasonality and publisher-clock exhibits; the null arm's
-  enumeration is untouched. Cost-survival ammunition â if a K7-style
+  enumeration is untouched. Cost-survival ammunition — if a K7-style
   execution-assumption layer is ever built, it must not inherit the
   block-book/linear-impact/exponential-decay/exponential-kernel family
   the authors themselves flag against the empirical facts (PDF
   pp. 2, 7, 9); the layer must declare its impact form and decay family
   and carry this falsification record; nothing is operationalized now.
-  Source-quality note â two authors, Natixis-linked funding, arXiv v2
+  Source-quality note — two authors, Natixis-linked funding, arXiv v2
   (June 2015 stamp) with a later internal date line, zero indexed
   citations, no published version on the shelf; no data confrontation
   anywhere, estimation "left for future research" (PDF p. 7), the
@@ -1916,7 +1916,7 @@ measured, no kill line moved, nothing armed, nothing trades live.
   section on record names the laundering route: measuring Hawkes decay
   against price decay and declaring the market in or out of the MIHM
   equilibrium, or reading a measured branching value as "the"
-  endogenous share because one model class pins it â every
+  endogenous share because one model class pins it — every
   load-bearing assumption flagged by the authors themselves, blocked in
   advance by the standing discipline. Standing caveat recorded:
   single-asset closed-form theory, no calibration, mechanism-level
@@ -1934,7 +1934,7 @@ pointer: the next UNREAD triage entry is "The Price Impact of Generalized
 Order Flow Imbalance" (score 33, xdb066c). Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
 
-## 33. Null-time session 29 (2026-11-18): deep-read session 25 â the generalized-OFI paper read; the event-grain OFI accumulation rule queued for the E1 admissibility family
+## 33. Null-time session 29 (2026-11-18): deep-read session 25 — the generalized-OFI paper read; the event-grain OFI accumulation rule queued for the E1 admissibility family
 
 - **Library deep-read session 25** (the standing queue's next UNREAD
   pointer, score 33, xdb066c, consumed here):
@@ -1971,7 +1971,7 @@ moved, nothing armed, nothing trades live.
   C8's L2 arm); T-O's taker-print trigger, no C1-L2 spec text, and no
   kill line are touched; nothing is armed.
 
-  Findings, page-cited: interpretation caution â the reported R-squared
+  Findings, page-cited: interpretation caution — the reported R-squared
   magnitudes are never importable: the generalized construction weights
   depth changes by the number of ticks the best quote moved, a quantity
   mechanically tied to the regressed mid-price change, so part of the
@@ -1979,12 +1979,12 @@ moved, nothing armed, nothing trades live.
   paper presents no control for it; the train/test protocol is not
   recoverable from the extract and the stock set is a disclosed
   convenience sample ("to facilitate presentation", PDF pp. 1, 5-6).
-  Reinforcing, no new item â the construction exists only because
+  Reinforcing, no new item — the construction exists only because
   depth changes at swept levels are informative, citing the multi-level
   OFI line (Xu, Gould and Howison 2018, PDF pp. 1-2): a library-level
   corroboration that BBO-only features coarsen the depth information
   available in full L2, the standing motivation language of C1-L2; no
-  number, weight, or level count transfers. Source-quality note â arXiv
+  number, weight, or level count transfers. Source-quality note — arXiv
   v1 only, zero indexed citations, no published version on the shelf,
   four authors, 10 of the CSI 500 constituents selected for
   presentation, no costs, no strategy layer; the text extract is heavily
@@ -2001,10 +2001,10 @@ moved, nothing armed, nothing trades live.
   Chinese CSI 500, 3-second snapshots, 30-second to 5-minute horizons,
   no crypto, no costs; transferable content is the mechanism (window
   grain versus event grain), never any magnitude. Laundering directions
-  named: INTO â no coefficient, weight, R-squared, tick-count
+  named: INTO — no coefficient, weight, R-squared, tick-count
   convention, or construction detail enters any spec, default, or
   calibration, and the generalized construction is not adopted anywhere
-  without its own pre-registration; OUT â the R-squared claims are never
+  without its own pre-registration; OUT — the R-squared claims are never
   cited as evidence that OFI-family features explain price changes in
   any market other than the paper's own sample, and the headline is
   never repeated as C1-L2 motivation.
@@ -2017,15 +2017,15 @@ queue pointer: the next UNREAD triage entry is "Passive Market Impact:
 A Point Process Approach" (score 33, x43a538). Nothing measured, no
 kill line moved, nothing armed, nothing trades live.
 
-## 34. Null-time session 30 (2026-11-18): deep-read session 26 â the passive market impact paper read; the queue-state conditioning rule queued for the sign-kill-line template
+## 34. Null-time session 30 (2026-11-18): deep-read session 26 — the passive market impact paper read; the queue-state conditioning rule queued for the sign-kill-line template
 
 - **Library deep-read session 26** (the standing queue's next UNREAD
   pointer, score 33, x43a538, consumed here):
   `paper/research/library/2026-11-18_passive_market_impact_point_process_deep_read.md`
   on Ouazzani Chahdi, Rosenbaum and Szymanski, "Passive Market
   Impact: A Point Process Approach" (arXiv:2412.07461v2,
-  v2 stamped 4 Jul 2026, CentraleSupÃ©lec / Ãcole Polytechnique /
-  UniversitÃ© du Luxembourg): a Queue-Reactive limit order book whose
+  v2 stamped 4 Jul 2026, CentraleSupélec / École Polytechnique /
+  Université du Luxembourg): a Queue-Reactive limit order book whose
   per-trade information content kappa(q) depends on the volume
   available at the touched side (the "price resistance coefficient",
   decreasing in available volume), market orders Hawkes-driven,
@@ -2038,15 +2038,15 @@ kill line moved, nothing armed, nothing trades live.
   C1-L2 L2 arm, extending the pending sign-kill-line template rule.
   Mechanism, page-cited: a classical constant-kappa propagator gives
   the opposite sign for the impact of a passive metaorder (PDF p. 3)
-  â a passive buy would push the price down â and the sign is
+  — a passive buy would push the price down — and the sign is
   repaired only by letting the information content depend on the
   book state, with near-stationary unit passive impact proportional
-  to c_kappa / (c_lambda Â· mu/(1 - ||phi||_L1)) (PDF p. 4, eq. (4)).
+  to c_kappa / (c_lambda · mu/(1 - ||phi||_L1)) (PDF p. 4, eq. (4)).
   Pre-declaration: any passive-execution or passive-cancel feature
   pre-registered in the C1-L2 L2 arm (or any future pre-registration
   under the sign template) must declare its queue-state conditioning
-  functional â the pre-event volume at the touched level, or the
-  declared alternative â and state-blind passive aggregates are
+  functional — the pre-event volume at the touched level, or the
+  declared alternative — and state-blind passive aggregates are
   inadmissible. Harder to pass: a state-blind passive count could
   correlate with price either way and pass a naive association
   check while the mechanism makes its sign unpredictable, exactly
@@ -2056,13 +2056,13 @@ kill line moved, nothing armed, nothing trades live.
   texts and every standing kill line are untouched; nothing is
   armed.
 
-  Findings, page-cited: reinforcing, no new item â the propagator
+  Findings, page-cited: reinforcing, no new item — the propagator
   sign paradox is a worked exhibit for the standing sign-guard
   discipline (the T1 lesson): a mechanically plausible model yields
   a clean, confident, wrong-signed answer for passive flow, and the
   error is a specification error invisible to any within-model
   check (PDF p. 3); no number or formula transfers. Reinforcing, no
-  new item â taker prints cannot recover passive impact: the
+  new item — taker prints cannot recover passive impact: the
   constant-kappa trade model "only accounts for active trading
   using market orders" (PDF pp. 19-20) and the state-dependent price
   requires the queue volumes at the touched side at each trade
@@ -2070,9 +2070,9 @@ kill line moved, nothing armed, nothing trades live.
   standing "aggTrades is taker prints only, no taker proxy"
   constraint and of C1-L2's premise that full-depth L2 carries what
   taker prints cannot see; theory corroboration, never evidence.
-  Interpretation caution â the shape results (passive impact
+  Interpretation caution — the shape results (passive impact
   vanishes when kappa is constant; V-shaped liquidity gives
-  sqrt(cÂ·gamma) growth; a simulated power-law fit at exponent 0.54,
+  sqrt(c·gamma) growth; a simulated power-law fit at exponent 0.54,
   PDF pp. 14-15, Figure 1) sit on the square-root law line of the
   record, but the no-relaxation result (impact stops at the
   metaorder's end because queues revert to the stationary state
@@ -2082,7 +2082,7 @@ kill line moved, nothing armed, nothing trades live.
   declared approximation that market-order volumes are negligible
   against limit and cancel volumes (PDF p. 18); read as shape
   intuition, never read backwards as an expected BTCUSDT property.
-  Source-quality note â three authors; pure theory paper: the
+  Source-quality note — three authors; pure theory paper: the
   calibration sections propose estimators (constant kappa from
   realised variance with the Hawkes-derived xi(0), PDF pp. 19-20;
   state dependence from a kappa-squared linear-in-q regression,
@@ -2097,12 +2097,12 @@ kill line moved, nothing armed, nothing trades live.
   match passive metaorder impact empirically, the queued rule would
   lose its mechanism and should die back. Standing caveat: no
   market, no sample, no period, no costs; transferable content is
-  mechanism only. Laundering directions named: INTO â the sign-flip
+  mechanism only. Laundering directions named: INTO — the sign-flip
   mechanism and the queue-state dependence enter only as
   feature-design discipline (the rule above), and no constant,
   exponent, scaling-limit object, kappa functional, or
   stationary-state formula enters any spec, default, or
-  calibration; OUT â the no-relaxation result, the 0.54 exponent,
+  calibration; OUT — the no-relaxation result, the 0.54 exponent,
   and the section-4 calibration methodology are never cited as
   evidence about any real market, never as expected impact shapes
   for BTCUSDT, and never imported as a validated estimation
@@ -2117,7 +2117,7 @@ is "Optimal Execution with Passive Market Impact" (score 33,
 x28ad86). Nothing measured, no kill line moved, nothing armed,
 nothing trades live.
 
-## 35. Null-time session 31 (2026-11-18): deep-read session 27 â the passive optimal-execution paper read; default grade, nothing queued
+## 35. Null-time session 31 (2026-11-18): deep-read session 27 — the passive optimal-execution paper read; default grade, nothing queued
 
 - **Library deep-read session 27** (the standing queue's next UNREAD
   pointer, score 33, x28ad86, consumed here):
@@ -2127,21 +2127,21 @@ nothing trades live.
   (arXiv:2607.28323v1, 30 Jul 2026): a mesoscopic optimal-execution
   model where a liquidating trader posts unit sell limit orders at a
   controlled distance from the midprice, fills arrive with an
-  Avellaneda-Stoikov intensity lambdaÂ·e^(âkÂ·delta), and each passive
-  fill carries permanent impact at rate etaÂ·e^(âmÂ·delta), derived by
+  Avellaneda-Stoikov intensity lambda·e^(−k·delta), and each passive
+  fill carries permanent impact at rate eta·e^(−m·delta), derived by
   combining the fill intensity with the Cont-Kukanov-Stoikov /
   Xu-Gould-Howison linear response of mid-price changes to
   (multi-level) order flow imbalance; explicit optimal quote for
-  m = k, Lambert-W semi-explicit solution for m â  k, plus transient
+  m = k, Lambert-W semi-explicit solution for m ≠ k, plus transient
   impact and TWAP-target extensions; calibration on LOBSTER NASDAQ
   2016 (six stocks) and LSEG FX 2026 (five pairs), headline finding
   the impact decay l is much smaller than the fill decay k, so
-  m â k in equities, with a visible gap in FX. Read against the ONE
+  m ≈ k in equities, with a visible gap in FX. Read against the ONE
   question. **Grade: NO kill line changed. NO new candidate
   sharpening queued. This is the default grade: nothing here earns a
   rule.**
 
-  Findings, page-cited: reinforcing, no new item â an independent,
+  Findings, page-cited: reinforcing, no new item — an independent,
   page-cited second mechanism for the queue-state conditioning rule
   queued through deep-read session 26 (still PENDING OWNER
   RATIFICATION, unchanged): for the large-tick NASDAQ stocks the
@@ -2150,7 +2150,7 @@ nothing trades live.
   interpretation, that "MLOFI price impact may depend more directly
   on the volume queued ahead of an order than on its distance from
   the midprice" (PDF p. 15); corroboration only, the rule's text,
-  scope and status untouched. Interpretation caution â the paper
+  scope and status untouched. Interpretation caution — the paper
   sidesteps, and does not test, the passive-impact sign paradox from
   deep-read session 26: the adverse direction of the passive term
   (PDF p. 6, eq. (3.4)) is inherited from the OFI regression identity
@@ -2159,7 +2159,7 @@ nothing trades live.
   aggregate responses, with a stronger test needing trader-tagged or
   order-level data (PDF p. 24); this paper is never cited as evidence
   about passive-impact sign, nor as counter-evidence to the paradox.
-  Reinforcing, no new item â depth carries information without fills:
+  Reinforcing, no new item — depth carries information without fills:
   fill probabilities decay exponentially with distance (k 0.48-3.72
   across the six stocks) while the MLOFI impact coefficients persist
   across book levels, because "limit orders deeper in the book still
@@ -2168,14 +2168,14 @@ nothing trades live.
   standing premise that full-depth L2 carries what taker prints
   cannot see, consistent with the standing "aggTrades is taker
   prints only" constraint; no number, level count, or decay rate
-  transfers. Interpretation caution â empirical provenance is thin in
+  transfers. Interpretation caution — empirical provenance is thin in
   both samples: the equity evidence reuses the ridge coefficients
   published in Table 8 of Xu, Gould and Howison (PDF p. 13) rather
   than re-estimating impact, six NASDAQ names, 2016; the FX evidence
   is conflated L2 snapshots of at least 5 ms with fills proxied
   synthetically by next-bucket aggressor trades reaching a
   hypothetical passive quote (PDF p. 15); no magnitude from either
-  sample transfers, ever. Source-quality note â four authors, one
+  sample transfers, ever. Source-quality note — four authors, one
   HSBC practitioner and three Imperial College mathematicians; arXiv
   v1 stamped 30 Jul 2026, roughly four months old at reading; zero
   indexed citations; published version to be checked before formal
@@ -2185,21 +2185,21 @@ nothing trades live.
   lightly degraded in the HJB and proof regions, load-bearing pages
   4-17 clean. The killed-if-wrong section on record: if the
   large-tick negative-l fit is later shown to be an estimation
-  artifact â the authors themselves warn it may partly reflect model
-  misspecification rather than genuine amplification (PDF p. 15) â
+  artifact — the authors themselves warn it may partly reflect model
+  misspecification rather than genuine amplification (PDF p. 15) —
   the corroboration weakens to nothing and the queued rule stands
   alone on deep-read session 26's mechanism, which is where it
   already stands. Standing caveat recorded: NASDAQ 2016 via LOBSTER
   and borrowed 2018 ridge coefficients; LSEG FX 2026 conflated L2
   with synthetic fill proxies; no crypto, no BTCUSDT, no
   futures; measuring-window conventions unlike the programme's.
-  Laundering directions named: INTO â no decay rate (k, l, m), impact
+  Laundering directions named: INTO — no decay rate (k, l, m), impact
   coefficient (eta, xi, beta), fill intensity (lambda), or
   quote-distance form enters any spec, default, or calibration, and
   the passive-impact direction in the L2 arm stays governed by the
   pending rules and the pre-registered sign guard, never by this
   paper's assumed sign; the model is not adopted anywhere without its
-  own pre-registration; OUT â the m â k equity headline, the
+  own pre-registration; OUT — the m ≈ k equity headline, the
   fill-versus-impact decay gap, and the FX estimates are never cited
   as evidence about any real market the programme measures, and the
   deep-level MLOFI persistence is never cited as expected BTCUSDT
@@ -2213,7 +2213,7 @@ blocked. Deep-read queue pointer: the next UNREAD triage entry is
 order book modelling" (score 32, x947263). Nothing measured, no
 kill line moved, nothing armed, nothing trades live.
 
-## 36. Null-time session 32 (2026-11-18): deep-read session 28 â the state-dependent Hawkes paper read; the book-state mix disclosure rule queued for the C8 A3 family
+## 36. Null-time session 32 (2026-11-18): deep-read session 28 — the state-dependent Hawkes paper read; the book-state mix disclosure rule queued for the C8 A3 family
 
 - **Library deep-read session 28** (the standing queue's next UNREAD
   pointer, score 32, x947263, consumed here):
@@ -2246,7 +2246,7 @@ kill line moved, nothing armed, nothing trades live.
   book-state-blind n_c conflates the bar's state composition with the
   strength of the excitation mechanism: a bar can clear n_c > 0.8
   because it spent time in disequilibrium states, and the micro
-  indicator would then partly encode the bar's book-state mix â
+  indicator would then partly encode the bar's book-state mix —
   dangerously close to conditioning on what the macro cell already
   selects; every per-bar n_c reading in the A3 family must be
   accompanied, recorded on TRAIN, by the bar's occupancy distribution
@@ -2265,7 +2265,7 @@ kill line moved, nothing armed, nothing trades live.
   armed; no kill line touched, no threshold moved, T-H and T-O
   untouched; nothing is armed.
 
-  Findings, page-cited: reinforcing, no new item â timestamp
+  Findings, page-cited: reinforcing, no new item — timestamp
   discipline corroborated at the source: LOBSTER nanosecond
   timestamps give more than 99 percent unique level-I timestamps,
   accurate event ordering at the shortest timescales is essential
@@ -2273,19 +2273,19 @@ kill line moved, nothing armed, nothing trades live.
   tied-timestamp artifact (a market order matched with n limit
   orders recorded as n tied prints, aggregated into one event)
   (PDF p. 13): mechanism-level corroboration of the L0 gate's
-  timestamp audit, of A3's pre-declared Âµs exchange timestamps, and
+  timestamp audit, of A3's pre-declared µs exchange timestamps, and
   a named sibling of the record's multi-print event-grain
-  discipline; no parameter transfers. Reinforcing, no new item â
+  discipline; no parameter transfers. Reinforcing, no new item —
   regime instability of excitation estimates: day-to-day base rates
   mirror day-to-day order counts, suggesting mainly exogenous
   day-to-day variation (PDF p. 15), and the kernel norms break
   structurally at the 5 February 2018 return of volatility, with
   distinct pre- and post-break levels (PDF pp. 16-17, Figure 7,
   PDF p. 19): corroborates the standing MIHM caution against
-  endpoint-level readings of a single branching estimate â measured
+  endpoint-level readings of a single branching estimate — measured
   excitation moves across regimes and across states within a day;
   never carried across regimes, never read as an equilibrium
-  classification. Interpretation caution â a per-state spectral
+  classification. Interpretation caution — a per-state spectral
   radius above 1 is not market instability: the process is
   stationary as a state-dependent whole (PDF p. 6), rho above 1 in a
   disequilibrium state is a within-model excursion, and reading it
@@ -2295,7 +2295,7 @@ kill line moved, nothing armed, nothing trades live.
   the authors' constructions on one large-tick stock and none
   transfers; the programme's L2 arm would have to declare its own
   state variable if the queued rule is ratified. Source-quality
-  note â two authors (Imperial College; Pakkanen also
+  note — two authors (Imperial College; Pakkanen also
   Aarhus/CREATES); arXiv v3, first posted 2018, stamped 17 September
   2021; companion mpoints library published; headline results INTC
   only, with AMD, MU, SNAP and TWTR relegated to results available
@@ -2312,11 +2312,11 @@ kill line moved, nothing armed, nothing trades live.
   LOBSTER, June 2017 to May 2018, 12:00-14:30 windows chosen for
   flat intensity, exponential kernels with the authors' own
   power-law caveat, no crypto, no BTCUSDT. Laundering directions
-  named: INTO â no spectral radius, kernel norm, state definition,
+  named: INTO — no spectral radius, kernel norm, state definition,
   bin edge, timescale range, or transition matrix from this paper
   enters any spec, default, or calibration, and the state-dependent
   Hawkes model is not adopted anywhere without its own
-  pre-registration; OUT â the per-state critical reflexivity
+  pre-registration; OUT — the per-state critical reflexivity
   readings are never cited as evidence that any market the
   programme measures is near-critical or unstable, and the
   0.1-100 millisecond timescales are never cited as expected
@@ -2331,7 +2331,7 @@ is "Forecasting High Frequency Order Flow Imbalance" (score 32,
 x78a2e8). Nothing measured, no kill line moved, nothing armed,
 nothing trades live.
 
-## 37. Null-time session 33 (2026-11-18): deep-read session 29 â the OFI Hawkes forecasting paper read; default grade, nothing queued
+## 37. Null-time session 33 (2026-11-18): deep-read session 29 — the OFI Hawkes forecasting paper read; default grade, nothing queued
 
 - **Library deep-read session 29** (the standing queue's next UNREAD
   pointer, score 32, x78a2e8, consumed here):
@@ -2364,21 +2364,21 @@ nothing trades live.
   kill line changed. NO new candidate sharpening queued. This is the
   default grade: nothing here earns a rule.**
 
-  Findings, page-cited: interpretation caution â the OFI name
+  Findings, page-cited: interpretation caution — the OFI name
   collision: this paper's OFI is trade-count asymmetry (eq. (3),
   PDF p. 5), not the Cont-Kukanov-Stoikov depth-change OFI of the
   record's line (the paper cites CKS 2014 for a related but distinct
   quantity, PDF p. 3); no result from this paper transfers onto the
   record's CKS-family OFI measurements, and the distinction stays
   live because the next queue entry (x98e019) sits in the same
-  count-family. Reinforcing, no new item â aggressor side
+  count-family. Reinforcing, no new item — aggressor side
   exchange-native never inferred: the stated reason for avoiding
   Lee-Ready and bulk classification is that inference-based rules
   misclassify in volatile, fast-moving markets (PDF p. 4),
   corroborating the standing "aggTrades is taker prints only, no
   taker proxy" constraint at the mechanism level; the NSE order-ID
   mechanism itself is a venue property and transfers nowhere.
-  Reinforcing, no new item â aggregation discards event clustering
+  Reinforcing, no new item — aggregation discards event clustering
   (PDF p. 3), but this paper does not prove the recovery: its own
   SPA table cannot reject the VAR at 95 percent (p 0.101, Table 4,
   PDF p. 16), the authors concede the conditional-law and VAR models
@@ -2386,7 +2386,7 @@ nothing trades live.
   same-day bias favoring sum-of-exponentials (PDF p. 17), so the
   event-grain OFI accumulation rule queued through deep-read session
   25 gains no corroboration here and the record says so. Source-
-  quality note â two authors, one practitioner-affiliated
+  quality note — two authors, one practitioner-affiliated
   (SigmaQuant, Indian Institute of Science); arXiv v1 only,
   August 2024, no journal record checked; zero indexed citations;
   single-session single-instrument NSE dataset (PDF p. 5);
@@ -2407,11 +2407,11 @@ nothing trades live.
   one-minute windows, 315 loss observations; deterministic
   classification via NSE order numbers, a venue property; realized
   minute OFI stationary and strongly non-normal (PDF p. 20); no
-  crypto, no BTCUSDT. Laundering directions named: INTO â no kernel
+  crypto, no BTCUSDT. Laundering directions named: INTO — no kernel
   form, no parameterization, no window or simulation parameter, no
   loss construction, and no p-value from this paper enters any spec,
   default, or calibration, and the Hawkes-forecasting construction
-  is not adopted anywhere without its own pre-registration; OUT â
+  is not adopted anywhere without its own pre-registration; OUT —
   the sum-of-exponentials headline and the SPA p-values are never
   cited as evidence that event-time modeling beats calendar
   aggregation beyond this paper's own single-day NSE sample, never
@@ -2427,7 +2427,7 @@ blocked. Deep-read queue pointer: the next UNREAD triage entry is
 Flow Imbalance" (score 32, x98e019). Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
 
-## 38. Null-time session 34 (2026-11-18): deep-read session 30 â the hybrid VAR-FNN OFI paper read; default grade, nothing queued; the results recorded as a leakage specimen
+## 38. Null-time session 34 (2026-11-18): deep-read session 30 — the hybrid VAR-FNN OFI paper read; default grade, nothing queued; the results recorded as a leakage specimen
 
 - **Library deep-read session 30** (the standing queue's next UNREAD
   pointer, score 32, x98e019, consumed here):
@@ -2453,7 +2453,7 @@ moved, nothing armed, nothing trades live.
   leakage, recorded so the paper can never be laundered into the
   record.
 
-  Findings, page-cited: interpretation caution â the results are
+  Findings, page-cited: interpretation caution — the results are
   inadmissible as evidence, three page-cited signs jointly
   decisive: (a) identity-level predictions: the sample rows of
   Table 5 track the actual OFI to within 0.001 to 0.023 on all six
@@ -2474,7 +2474,7 @@ moved, nothing armed, nothing trades live.
   time than training, the three validation datasets being separate
   slices, not declared holdouts (PDF p. 9); every headline number
   is therefore never cited by the record, for any purpose, ever.
-  Reinforcing, no new item â ammunition for the leakage-hunting
+  Reinforcing, no new item — ammunition for the leakage-hunting
   culture: the paper is a worked specimen of precisely what the
   record's discipline exists to catch, unlabelled train-test mixing,
   predictions indistinguishable from labels, a missing persistence
@@ -2485,7 +2485,7 @@ moved, nothing armed, nothing trades live.
   counterexample why the deliberately-flawed examples of the
   leakage-resistant backtester and the K1 costume guard exist, and
   no rule is extended because the programme's discipline already
-  covers this failure class. Reinforcing, no new item â the OFI
+  covers this failure class. Reinforcing, no new item — the OFI
   name collision repeats and closes the count-family bracket opened
   at deep-read session 29: same trade-count asymmetry (eq. (1),
   PDF pp. 2-3, predecessor [13] cited, PDF pp. 3-4), not the
@@ -2494,7 +2494,7 @@ moved, nothing armed, nothing trades live.
   measurements; the VAR-only R2 of -0.002 squares with session
   29's finding that nothing strong was demonstrated at this grain
   but rides on the same undocumented evaluation, corroboration of
-  nothing. Source-quality note â two authors, IIT Madras
+  nothing. Source-quality note — two authors, IIT Madras
   mathematics department; arXiv v1 only, 13 November 2024, no
   journal record checked; zero indexed citations; internal naming
   inconsistency: datasets declared BTCUSD and ETCUSDT (PDF p. 9,
@@ -2520,11 +2520,11 @@ moved, nothing armed, nothing trades live.
   cryptocurrency, single regime, about 3,000-point slices, data
   stream never specified, threshold undeclared, no costs, no
   execution, no P&L, no L2 depth of any kind. Laundering directions
-  named: INTO â no architecture, hyperparameter, lag order,
+  named: INTO — no architecture, hyperparameter, lag order,
   threshold, metric, R2, or accuracy figure from this paper enters
   any spec, default, or calibration, and the hybrid VAR-FNN
   construction is not adopted anywhere without its own
-  pre-registration under the programme's holdout rules; OUT â the
+  pre-registration under the programme's holdout rules; OUT — the
   R2 values and intensity accuracies are never cited as evidence
   that OFI of any definition is predictable at high frequency,
   never as evidence that hybrid models beat standalone models,
@@ -2539,7 +2539,7 @@ blocked. Deep-read queue pointer: the next UNREAD triage entry is
 Selection on Hyperliquid" (score 32, xa74970). Nothing measured, no
 kill line moved, nothing armed, nothing trades live.
 
-## 39. Null-time session 35 (2026-11-18): deep-read session 31 â the Hyperliquid sunshine-trading paper read; the queue-state anticipation disclosure component queued for the C1-L2 L2 arm
+## 39. Null-time session 35 (2026-11-18): deep-read session 31 — the Hyperliquid sunshine-trading paper read; the queue-state anticipation disclosure component queued for the C1-L2 L2 arm
 
 - **Library deep-read session 31** (the standing queue's next UNREAD
   pointer, score 32, xa74970, consumed here):
@@ -2579,7 +2579,7 @@ kill line moved, nothing armed, nothing trades live.
   session 27), covering passive-flow features in the C1-L2 L2 arm.
   Mechanism, page-cited: the displayed book state is not exogenous
   scaffold, it is an elastic response to flow information,
-  including anticipated flow â the oriented imbalance within five
+  including anticipated flow — the oriented imbalance within five
   spreads jumps at program start and persists to completion, depth
   rises about 4,182 USD, the 10,000 USD sweep cost falls, while
   the touch widens as suppliers rest size behind it at prices
@@ -2614,7 +2614,7 @@ kill line moved, nothing armed, nothing trades live.
   queued conditioning rule; no spec text, kill line, threshold,
   T-H or T-O moves; nothing is armed.
 
-  Findings, page-cited: reinforcing, no new item â pre-trend and
+  Findings, page-cited: reinforcing, no new item — pre-trend and
   placebo discipline at the source: the book-response claims ride
   an event-time placebo design with event and relative-minute
   fixed effects and an active-window treatment indicator, probed
@@ -2627,7 +2627,7 @@ kill line moved, nothing armed, nothing trades live.
   mechanism-level corroboration of the A3-family placebo
   discipline queued through deep-read session 28, without the
   lead test the spread result would have been misattributed.
-  Reinforcing, no new item â metaorder reconstruction with
+  Reinforcing, no new item — metaorder reconstruction with
   declared thresholds and quantified removal: 30-minute
   inter-arrival splitting, at least 10 children explicitly to
   reduce false positives from coincidental clustering, native
@@ -2635,7 +2635,7 @@ kill line moved, nothing armed, nothing trades live.
   28,904 orders quantified immaterial (0.7 percent count, 1.5
   percent notional) (PDF pp. 5-6), a named sibling of the record's
   event-grain discipline; no threshold transfers. Interpretation
-  caution â taker-print reconstruction misclassifies aggressive
+  caution — taker-print reconstruction misclassifies aggressive
   liquidity providers as metaorder executioners, and the
   programme's aggTrades-is-taker-prints-only constraint makes
   this failure mode live on its own tape: 46.2 percent of
@@ -2648,7 +2648,7 @@ kill line moved, nothing armed, nothing trades live.
   crossing the spread repeatedly in one direction are
   statistically indistinguishable from execution programs using
   taker data alone, a bound on what taker-only aggregation can
-  classify, never a solved problem. Interpretation caution â the
+  classify, never a solved problem. Interpretation caution — the
   comparison is an observational equilibrium comparison between
   execution regimes, not a randomized treatment of visibility,
   and the authors say so: a taker-identity prior predicts the
@@ -2664,7 +2664,7 @@ kill line moved, nothing armed, nothing trades live.
   starts (PR-AUC 0.0053 against climatology 0.0033, versus 0.094
   to 0.142 for statistical metaorders), so the paper does not
   show the book forecasting program arrivals (PDF p. 26).
-  Cost-survival ammunition â no impact exponent is a stable venue
+  Cost-survival ammunition — no impact exponent is a stable venue
   constant: TWAP temporary impact is a power law with exponent
   0.303, statistical metaorders a saturating arctangent in
   log-log space, three curve crossings between regimes (PDF
@@ -2675,7 +2675,7 @@ kill line moved, nothing armed, nothing trades live.
   for TWAPs (Table 1, PDF p. 16); any cost model assuming one
   universal impact law or one exponent per venue inherits
   regime-dependence it cannot see from prints alone. Source-
-  quality note â two authors, Scuola Normale Superiore Pisa,
+  quality note — two authors, Scuola Normale Superiore Pisa,
   Fabrizio Lillo a leading microstructure researcher; arXiv v1
   14 June 2026, no journal record checked; 641 million fills,
   USD 1.93 trillion notional, 201 markets, with companion
@@ -2709,13 +2709,13 @@ kill line moved, nothing armed, nothing trades live.
   centralized exchange, no Binance, no BTCUSDT, no spot equities,
   no anonymous flow; book snapshots one-minute, 20 levels, 15
   December 2025 onward; all magnitudes venue- and period-specific.
-  Laundering directions named: INTO â no coefficient, elasticity,
+  Laundering directions named: INTO — no coefficient, elasticity,
   exponent, basis-point figure, threshold, dominance share, or
   normalization choice (order-anchored 24-hour windows, Parkinson
   volatility, the five-spread depth band) from this paper enters
   any spec, default, or calibration, and the sunshine-trading
   framework is not adopted anywhere without its own
-  pre-registration; OUT â the 9-basis-point announcer discount,
+  pre-registration; OUT — the 9-basis-point announcer discount,
   the 5-basis-point permanent gap, the 0.84-0.92-basis-point
   mirror cost, the book-response magnitudes, and the impact
   exponents are never cited as expected behavior of any market
@@ -2734,7 +2734,7 @@ triage entry is "Order Book Queue Hawkes-Markovian Modeling"
 (score 31, xce0ba3). Nothing measured, no kill line moved, nothing
 armed, nothing trades live.
 
-## 40. Null-time session 36 (2026-11-18): deep-read session 32 â the Hawkes-Markovian queue paper read; the queue-label convention declaration queued for the queue-state conditioning rule
+## 40. Null-time session 36 (2026-11-18): deep-read session 32 — the Hawkes-Markovian queue paper read; the queue-label convention declaration queued for the queue-state conditioning rule
 
 - **Library deep-read session 32** (the standing queue's next UNREAD
   pointer, score 31, xce0ba3, consumed here):
@@ -2744,9 +2744,9 @@ armed, nothing trades live.
   University Bloomington) and Shihao Yang (Georgia Institute of
   Technology), "Order Book Queue Hawkes-Markovian Modeling"
   (arXiv:2107.09629v3, v3 stamped 5 January 2022): a Queue-Reactive
-  event taxonomy â trades, insertions and cancellations at each of
+  event taxonomy — trades, insertions and cancellations at each of
   K level-3 queues per side plus six reference-price-change events,
-  24 event types in all (PDF pp. 7-10) â modeled as a multivariate
+  24 event types in all (PDF pp. 7-10) — modeled as a multivariate
   Hawkes whose baseline intensities are made Markovian through the
   current liquidity state (queue size, or the spread for the two
   spread-crossing events, ten buckets) and a 126-category intraday
@@ -2797,8 +2797,8 @@ armed, nothing trades live.
   any even-tick spread puts the quoted mid on the valid price
   grid. Consequence for the queued rule, harder to pass: a
   queue-state-conditioned passive feature can satisfy the
-  conditioning declaration â "the pre-event volume at the touched
-  level, or the declared alternative" â while its conditioning
+  conditioning declaration — "the pre-event volume at the touched
+  level, or the declared alternative" — while its conditioning
   state still depends on an undeclared labeling convention, an
   undisclosed degree of freedom that survives every admissibility
   gate and invites post-hoc selection among equally "declared"
@@ -2820,7 +2820,7 @@ armed, nothing trades live.
   texts, every kill line, T-H and T-O remain untouched; no
   threshold moves; nothing is armed.
 
-  Findings, page-cited: reinforcing, no new item â queue-state
+  Findings, page-cited: reinforcing, no new item — queue-state
   conditioning is not redundant with flow excitation, and the
   state effects are event-type-specific: the liquidity state and
   time factor improve the Hawkes-only fit on all 20 days (Model 6
@@ -2831,14 +2831,14 @@ armed, nothing trades live.
   insertion intensities falling (PDF pp. 27-28), a second corpus
   for the conditioning rule's premise that state-blind passive
   aggregates are inadmissible; no parameter transfers.
-  Reinforcing, no new item â the accumulation dichotomy is a named
+  Reinforcing, no new item — the accumulation dichotomy is a named
   sibling of the event-grain rule (deep-read session 25): regular
   events additive with sizes summed into the binned counts, the
   six reference-price-changing events pure points because they
   shift the queue distribution (PDF p. 16), with the order-size
   sensitivity run and disclosed afterward, qualitative
   conclusions surviving (PDF pp. 48-49, 55; Table S1, PDF p. 69);
-  no threshold transfers. Interpretation caution â exponential
+  no threshold transfers. Interpretation caution — exponential
   kernel assumptions are visibly wrong for a class of events:
   non-exponential shapes recur for higher-level trade events in
   wide-spread states and the authors state it may be problematic
@@ -2847,7 +2847,7 @@ armed, nothing trades live.
   excitation-decay or Hawkes-family reading in a C1-L2 or C8 arm
   carries its kernel-form declaration as convention, and the
   fitted shapes are never cited as expected behavior of any
-  market the programme measures. Interpretation caution â every
+  market the programme measures. Interpretation caution — every
   "explanatory power" claim is in-sample AIC selection on one
   stock in one month: the decisive differences are minuscule
   per-sample numbers (median -0.58, -0.23, -0.08, Table 1, PDF
@@ -2856,11 +2856,11 @@ armed, nothing trades live.
   future research (PDF p. 34); a fitted AIC improvement is
   bookkeeping, not an edge, and the paper is never citable as
   evidence that any programme feature carries information.
-  Reinforcing, no new item â intraday time clustering elevating
+  Reinforcing, no new item — intraday time clustering elevating
   the first and last 30 minutes with a sharp 15:55-16:00 increase
   (PDF pp. 11-12, 28-29) corroborates the C1-L2 spec's declared
   hour-of-day strata; the paper's 126-category bucketing never
-  transfers. Source-quality note â three authors with Philip
+  transfers. Source-quality note — three authors with Philip
   Protter a leading stochastic-process authority; squarely in the
   Queue-Reactive lineage, the sibling of the state-dependent
   Hawkes LOB paper deep-read at session 28; arXiv v3 from January
@@ -2883,13 +2883,13 @@ armed, nothing trades live.
   equities microstructure; no crypto, no BTCUSDT, no futures, no
   anonymous flow; all fitted shapes, bucket boundaries, time
   categories, bin size, support and LASSO parameter are dataset-
-  and venue-specific. Laundering directions named: INTO â the
+  and venue-specific. Laundering directions named: INTO — the
   queue-label convention mechanism, the event-type-specific state
   contrasts, the accumulation dichotomy and the time-clustering
   corroboration enter only as feature-design discipline, and no
   kernel shape, bucket boundary, bin size, support length,
   regularization parameter, intensity level, AIC figure or
-  end-of-day spike enters any spec, default or calibration; OUT â
+  end-of-day spike enters any spec, default or calibration; OUT —
   the fitted kernel shapes, the liquidity-state curves, the
   time-factor profile and the AIC rankings are never cited as
   expected behavior of any market the programme measures, never
@@ -2905,15 +2905,15 @@ triage entry is "TradeFM: A Generative Foundation Model for
 Trade-flow and Market Microstructure" (score 31, xe7dc7f). Nothing
 measured, no kill line moved, nothing armed, nothing trades live.
 
-## 41. Null-time session 37 (2026-11-19): deep-read session 33 â the TradeFM foundation-model paper read; the discretization declaration queued for the pre-registration declaration family
+## 41. Null-time session 37 (2026-11-19): deep-read session 33 — the TradeFM foundation-model paper read; the discretization declaration queued for the pre-registration declaration family
 
-- **Library deep-read session 33** (the standing queue's next UNREAD pointer, score 31, xe7dc7f, consumed here): "paper/research/library/2026-11-19_tradefm_generative_foundation_model_deep_read.md" on Maxime Kawawa-Beaudan and Srijan Sood (equal contribution), with Kassiani Papasotiriou, Daniel Borrajo and Manuela Veloso, all J.P. Morgan AI Research, New York, "TradeFM: A Generative Foundation Model for Trade-flow and Market Microstructure" (arXiv:2602.23784v1 [cs.LG], v1 stamped 27 February 2026): a 524M-parameter decoder-only Transformer trained on 10.7B tokens of discretized trade events from >9K US equities, February 2024 to September 2025, temporal hold-out January 2025 onward, no asset-specific calibration (PDF pp. 1, 4, 18-19); scale-invariant features (log volume, depth and price level normalized by an EW-VWAP mid-price estimate, PDF pp. 4-5, 15-16); hybrid tokenization with quantile bins for price features, log-equal-width bins for volume and interarrival time, outlier truncation at the 1st/99th percentiles into reserved bins, bin edges calibrated on the first 30 days, NaNs imputed with a random valid bin index (PDF pp. 5-7, 20, Algorithm 1); evaluated in a closed loop with a deterministic price-time-priority simulator validated by replay (fill-volume and lot-count CDF correlations 0.91 and 0.98, PDF pp. 7-8, 21-24); rollouts reproduce heavy tails, volatility clustering, near-zero return autocorrelation and aggregational Gaussianity with 2-3x lower K-S/Wasserstein than a Compound Hawkes baseline (PDF pp. 8-10, Table 2); order-level fidelity best on most quantities with the bid-ask spread the one exception where the Hawkes baseline wins (PDF p. 10, Table 3); zero-shot China and Japan transfer in perplexity-overlap terms (PDF pp. 10-11; Table 6, PDF p. 24); no return-predictive claim anywhere. Read against the ONE question. **Grade: NO kill line changed. ONE new candidate sharpening queued, PENDING OWNER RATIFICATION:** the discretized-conditioning declaration component for the pre-registration declaration-discipline family â the sibling of the queue-label convention declaration (deep-read session 32), the anticipation disclosure (deep-read 31) and the queue-state conditioning rule (deep-read 26), all still PENDING OWNER RATIFICATION â generalizing that family's mechanism from queue-label conventions to every discretized conditioning state. Mechanism, page-cited: the tokenizer is a worked specimen of the degrees of freedom a discretization step introduces before any test sees the data â per-feature binning schemes, outlier truncation at the 1st/99th percentiles, bin edges calibrated on exactly the first 30 days and never refitted (PDF pp. 5-6), and NaN imputation with a random valid bin index (PDF p. 20, Algorithm 1, line 24); two implementations of the same declared functional with different undisclosed bin edges, calibration windows, outlier rules or imputation rules read different conditioning states from the same raw stream, and unseeded random imputation is nondeterministic, so the same declared pipeline cannot reproduce its own reading. One pre-declaration. Discretized-conditioning declaration: when any pre-registered conditioning state, stratum or feature is itself a discretization of a continuous raw field, the pre-registration must declare, recorded on TRAIN before the L2 data arrives, the binning scheme and bin count, the calibration window and population, the outlier truncation rule, and the missing-value imputation rule; unseeded nondeterministic imputation is inadmissible outright, and readings with undeclared discretizations are inadmissible; functionals that never discretize satisfy trivially and the component stays dormant if no admissible spec functional discretizes. Scope: declaration blocks only, a disclosure requirement; the C1-L2 and C8 spec texts, every kill line, T-H and T-O remain untouched; no threshold moves; nothing is armed.
+- **Library deep-read session 33** (the standing queue's next UNREAD pointer, score 31, xe7dc7f, consumed here): "paper/research/library/2026-11-19_tradefm_generative_foundation_model_deep_read.md" on Maxime Kawawa-Beaudan and Srijan Sood (equal contribution), with Kassiani Papasotiriou, Daniel Borrajo and Manuela Veloso, all J.P. Morgan AI Research, New York, "TradeFM: A Generative Foundation Model for Trade-flow and Market Microstructure" (arXiv:2602.23784v1 [cs.LG], v1 stamped 27 February 2026): a 524M-parameter decoder-only Transformer trained on 10.7B tokens of discretized trade events from >9K US equities, February 2024 to September 2025, temporal hold-out January 2025 onward, no asset-specific calibration (PDF pp. 1, 4, 18-19); scale-invariant features (log volume, depth and price level normalized by an EW-VWAP mid-price estimate, PDF pp. 4-5, 15-16); hybrid tokenization with quantile bins for price features, log-equal-width bins for volume and interarrival time, outlier truncation at the 1st/99th percentiles into reserved bins, bin edges calibrated on the first 30 days, NaNs imputed with a random valid bin index (PDF pp. 5-7, 20, Algorithm 1); evaluated in a closed loop with a deterministic price-time-priority simulator validated by replay (fill-volume and lot-count CDF correlations 0.91 and 0.98, PDF pp. 7-8, 21-24); rollouts reproduce heavy tails, volatility clustering, near-zero return autocorrelation and aggregational Gaussianity with 2-3x lower K-S/Wasserstein than a Compound Hawkes baseline (PDF pp. 8-10, Table 2); order-level fidelity best on most quantities with the bid-ask spread the one exception where the Hawkes baseline wins (PDF p. 10, Table 3); zero-shot China and Japan transfer in perplexity-overlap terms (PDF pp. 10-11; Table 6, PDF p. 24); no return-predictive claim anywhere. Read against the ONE question. **Grade: NO kill line changed. ONE new candidate sharpening queued, PENDING OWNER RATIFICATION:** the discretized-conditioning declaration component for the pre-registration declaration-discipline family — the sibling of the queue-label convention declaration (deep-read session 32), the anticipation disclosure (deep-read 31) and the queue-state conditioning rule (deep-read 26), all still PENDING OWNER RATIFICATION — generalizing that family's mechanism from queue-label conventions to every discretized conditioning state. Mechanism, page-cited: the tokenizer is a worked specimen of the degrees of freedom a discretization step introduces before any test sees the data — per-feature binning schemes, outlier truncation at the 1st/99th percentiles, bin edges calibrated on exactly the first 30 days and never refitted (PDF pp. 5-6), and NaN imputation with a random valid bin index (PDF p. 20, Algorithm 1, line 24); two implementations of the same declared functional with different undisclosed bin edges, calibration windows, outlier rules or imputation rules read different conditioning states from the same raw stream, and unseeded random imputation is nondeterministic, so the same declared pipeline cannot reproduce its own reading. One pre-declaration. Discretized-conditioning declaration: when any pre-registered conditioning state, stratum or feature is itself a discretization of a continuous raw field, the pre-registration must declare, recorded on TRAIN before the L2 data arrives, the binning scheme and bin count, the calibration window and population, the outlier truncation rule, and the missing-value imputation rule; unseeded nondeterministic imputation is inadmissible outright, and readings with undeclared discretizations are inadmissible; functionals that never discretize satisfy trivially and the component stays dormant if no admissible spec functional discretizes. Scope: declaration blocks only, a disclosure requirement; the C1-L2 and C8 spec texts, every kill line, T-H and T-O remain untouched; no threshold moves; nothing is armed.
 
-  Findings, page-cited: reinforcing, no new item â the paper makes no predictive claim and its own success criterion is a null in disguise: fidelity evaluation only (PDF pp. 8-10, Tables 2-3), rollouts reproducing near-zero return autocorrelation (PDF pp. 1-2, 8-9, Figure 4), so generative plausibility and predictivity are disjoint and no fidelity metric is ever citable as support for any programme feature, with the generative-null family the same placebo territory C8 A3's shuffled-arrival amendment already occupies; nothing new queued. Interpretation caution â the zero-shot geographic result (US-trained perplexity overlapping China and Japan, PDF pp. 10-11, Figure 5; Table 6, PDF p. 24) is a token-perplexity claim, never out-of-sample economic predictive value, and is never citable in any SMH universality or cross-market argument. Cost-survival ammunition â the counterfactual 10x-flow injection stress tests and replay-validated simulator (PDF pp. 21-24, 26, 29, Figures 11, 17) matter only if a K7-style cost-survival layer ever exists, and that layer must carry the paper's own admitted generator-simulator entanglement (PDF p. 10) plus spread honesty: the spread is the one quantity where the explicit-interarrival baseline beats the learned generator (PDF p. 10, Table 3). Reinforcing, no new item â rollout scale is 1,024 events, about 2-5 minutes for high-liquidity assets (PDF p. 8), so nothing in the paper speaks to daily-grain boards or multi-week forward windows. Source-quality note â industrial-lab capability report, J.P. Morgan AI Research, arXiv v1 stamped 27 February 2026, no journal record checked at reading, proprietary data so no external replication, internal baselines, limitations honestly stated in-text (PDF p. 10); graded as a well-executed generative-simulation report with no market-truth claim metabolized. Killed-if-wrong: if the programme had read "a deep model learns order flow across 9K stocks and whole geographies" as support for universality or for extractable predictive structure, it would have laundered a simulation-quality metric into a market-truth claim; the guard is the standing library-is-ammunition rule plus the sealed-prediction ledger, and the only addition this read earns is the narrowly mechanistic discretization disclosure component above. Standing caveat: proprietary US equities data, penny-tick USD microstructure, no crypto, no BTCUSDT; all bin edges, perplexity figures, distances, scaling exponents and architecture choices are dataset- and venue-specific; the RL execution and multi-agent sections are execution-strategy content and are never operationalized. Laundering directions named: INTO â the discretization mechanism, the fidelity-versus-predictivity distinction and the perplexity-is-not-evidence caution enter only as preregistration discipline; OUT â TradeFM's fidelity tables, geographic-transfer perplexity and stylized-fact figures are never cited as expected behavior of any market the programme measures and never as evidence that any programme feature carries information.
+  Findings, page-cited: reinforcing, no new item — the paper makes no predictive claim and its own success criterion is a null in disguise: fidelity evaluation only (PDF pp. 8-10, Tables 2-3), rollouts reproducing near-zero return autocorrelation (PDF pp. 1-2, 8-9, Figure 4), so generative plausibility and predictivity are disjoint and no fidelity metric is ever citable as support for any programme feature, with the generative-null family the same placebo territory C8 A3's shuffled-arrival amendment already occupies; nothing new queued. Interpretation caution — the zero-shot geographic result (US-trained perplexity overlapping China and Japan, PDF pp. 10-11, Figure 5; Table 6, PDF p. 24) is a token-perplexity claim, never out-of-sample economic predictive value, and is never citable in any SMH universality or cross-market argument. Cost-survival ammunition — the counterfactual 10x-flow injection stress tests and replay-validated simulator (PDF pp. 21-24, 26, 29, Figures 11, 17) matter only if a K7-style cost-survival layer ever exists, and that layer must carry the paper's own admitted generator-simulator entanglement (PDF p. 10) plus spread honesty: the spread is the one quantity where the explicit-interarrival baseline beats the learned generator (PDF p. 10, Table 3). Reinforcing, no new item — rollout scale is 1,024 events, about 2-5 minutes for high-liquidity assets (PDF p. 8), so nothing in the paper speaks to daily-grain boards or multi-week forward windows. Source-quality note — industrial-lab capability report, J.P. Morgan AI Research, arXiv v1 stamped 27 February 2026, no journal record checked at reading, proprietary data so no external replication, internal baselines, limitations honestly stated in-text (PDF p. 10); graded as a well-executed generative-simulation report with no market-truth claim metabolized. Killed-if-wrong: if the programme had read "a deep model learns order flow across 9K stocks and whole geographies" as support for universality or for extractable predictive structure, it would have laundered a simulation-quality metric into a market-truth claim; the guard is the standing library-is-ammunition rule plus the sealed-prediction ledger, and the only addition this read earns is the narrowly mechanistic discretization disclosure component above. Standing caveat: proprietary US equities data, penny-tick USD microstructure, no crypto, no BTCUSDT; all bin edges, perplexity figures, distances, scaling exponents and architecture choices are dataset- and venue-specific; the RL execution and multi-agent sections are execution-strategy content and are never operationalized. Laundering directions named: INTO — the discretization mechanism, the fidelity-versus-predictivity distinction and the perplexity-is-not-evidence caution enter only as preregistration discipline; OUT — TradeFM's fidelity tables, geographic-transfer perplexity and stylized-fact figures are never cited as expected behavior of any market the programme measures and never as evidence that any programme feature carries information.
 
 Ratification queue after this session: TWENTY-SEVEN candidate sharpenings (the twenty-six standing plus the discretized-conditioning declaration rule joined here through deep-read session 33), zero armed. T1 remains armed awaiting the owner's word; the blocked list stays blocked. Deep-read queue pointer: the next UNREAD triage entry is "Diffusive Limit of Hawkes Driven Order Book Dynamics With Liquidity Migration" (score 31, x5db64b). Nothing measured, no kill line moved, nothing armed, nothing trades live.
 
-## 42. Null-time session 38 (2026-11-19): deep-read session 34 â the Hawkes liquidity-migration diffusive-limit paper graded pure theory, default, nothing queued; the session's concurrency state declared
+## 42. Null-time session 38 (2026-11-19): deep-read session 34 — the Hawkes liquidity-migration diffusive-limit paper graded pure theory, default, nothing queued; the session's concurrency state declared
 
 - **Session-state note (declared before the read)**: this session was
   started against a stale log tail; the tail and
@@ -3009,7 +3009,7 @@ blocked. Deep-read queue pointer: the next UNREAD triage entry is
 (score 30, xd08813). Nothing measured, no kill line moved, nothing
 armed, nothing trades live.
 
-## 43. Null-time session 39 (2026-11-19): deep-read session 35 â the compound and regime-switching Hawkes paper read (pointer-chain error corrected, session renumbered after two parallel slots landed); default grade, nothing queued
+## 43. Null-time session 39 (2026-11-19): deep-read session 35 — the compound and regime-switching Hawkes paper read (pointer-chain error corrected, session renumbered after two parallel slots landed); default grade, nothing queued
 
 - **Library deep-read session 35** (null-time session 39; drafted
   as session 33 and renumbered twice at append time because two
@@ -3044,13 +3044,13 @@ armed, nothing trades live.
   from rank 30 onward.
 - **Grade**: NO kill line changes. NO new candidate sharpening.
   The verdict is recorded per finding, page-cited, in the note:
-  reinforcing, no new item â the kernel enters every limit only
+  reinforcing, no new item — the kernel enters every limit only
   through its integral mu-hat (Eq. (17), PDF p. 8; exponential
   special case alpha/beta, PDF pp. 9-10, 12-13), so fitted kernel
   shapes carry no information that survives averaging, the
   aggregation face of the session-32 caution, and no kernel shape
   from any single paper is ever citable as expected coarse-scale
-  behavior; reinforcing, no new item â the regime-switching limit
+  behavior; reinforcing, no new item — the regime-switching limit
   differs from the plain limit by the single stationary-weighting
   substitution lambda-hat = sum of p-star_i lambda_i (Eq. (32), PDF
   pp. 11-12), regime transition dynamics vanish at scaling, so any
@@ -3060,17 +3060,17 @@ armed, nothing trades live.
   change in the general <mu(t), Y_t> sense (Eq. (13), PDF p. 6),
   read discipline for the already-queued conditioning rules, nothing
   else, and the paper's three-state imbalance motivation (PDF
-  p. 11) transfers nothing; interpretation caution â the
+  p. 11) transfers nothing; interpretation caution — the
   volatility-without-price claim (PDF pp. 13-14) holds only inside
   the fixed-tick plus-or-minus-delta world and is never cited as
   an expected property of the programme's venue or as an estimator
-  candidate; interpretation caution â the numerical section is
+  candidate; interpretation caution — the numerical section is
   five days of CISCO with no out-of-sample component and the
   headline error 0.08 is a descriptive mean of squared
   standard-deviation gaps (PDF pp. 16-17), the 1000-simulation
   quantile plots are fitted-model drawings, not forecasts (PDF
   pp. 19-21), and the RSCHP check bounds only lambda-hat (error at
-  most 0.0055, PDF p. 21); source-quality note â arXiv v1 working
+  most 0.0055, PDF p. 21); source-quality note — arXiv v1 working
   manuscript with literal "[?]" and typography defects, proofs
   delegated to Swishchuk-Vadori 2015, direct precursor of the
   session-14 paper, no journal record checked at reading, published
@@ -3091,7 +3091,7 @@ armed, nothing trades live.
   Nothing measured, no kill line moved, nothing armed, nothing
   trades live.
 
-## 44. Null-time session 40 (2026-11-19): deep-read session 36 â the rough HawkesâHeston microfoundation paper graded pure-theory exhibit, default, nothing queued; PR #204 superseded by rebase, concurrency state declared
+## 44. Null-time session 40 (2026-11-19): deep-read session 36 — the rough Hawkes–Heston microfoundation paper graded pure-theory exhibit, default, nothing queued; PR #204 superseded by rebase, concurrency state declared
 
 - **Session-state note (declared before the read)**: this session began on a
   stale pointer chain. It first drafted, and discarded, a deep-read of the
@@ -3116,10 +3116,10 @@ armed, nothing trades live.
   UNREAD pointer, score 30, xd08813, consumed here):
   `paper/research/library/2026-11-19_rough_hawkes_heston_microfoundation_deep_read.md`
   on Yingli Wang, Yinhao Wu and Lingjiong Zhu, "Microstructural Foundation for
-  the Rough HawkesâHeston Model" (arXiv:2608.07709v1, 7 Aug 2026). A pure-theory
+  the Rough Hawkes–Heston Model" (arXiv:2608.07709v1, 7 Aug 2026). A pure-theory
   construction: a Poisson-embedded marked Hawkes order-flow model converging,
   along the full sequence, to the unique complete canonical weak solution of
-  the rough HawkesâHeston common-jump stochastic-volatility model of Bondi,
+  the rough Hawkes–Heston common-jump stochastic-volatility model of Bondi,
   Pulido and Scotti (2024), with an explicit microscopic-to-macroscopic
   coefficient map. Extract complete and page-marked (67 pp.); read in full; no
   inaccessibility, no shelf gap. Read against the ONE question. **Grade: NO
@@ -3127,7 +3127,7 @@ armed, nothing trades live.
   is a worked exhibit of rules already standing and the burden of proof for a
   sharpening was not met. Findings, page-cited:
 
-  Reinforcing, no new item â the rough fractional memory exists only because
+  Reinforcing, no new item — the rough fractional memory exists only because
   the branching ratio approaches one at rate 1-aT ~ mu0 T^{-alpha} against a
   pinned heavy-tailed kernel (Assumption 3.3, PDF p. 11; Proposition 4.1, PDF
   pp. 13-14), and subcriticality of the marked branching is exactly what
@@ -3135,25 +3135,25 @@ armed, nothing trades live.
   p. 8), a fourth worked exhibit for the queued near-critical
   regime-disclosure rule: a Hawkes fit near the boundary manufactures
   long-memory structure by scaling assumption, and that structure is not a
-  measured property of the data. Reinforcing, no new item â the leverage
+  measured property of the data. Reinforcing, no new item — the leverage
   correlation rho = -(beta-1)sqrt(q)/((1+q)(1+beta^2 q)) is a deterministic
   function of two free asymmetry parameters, attains all of (-1, 0) by
   construction, and the paper itself declares the microscopic parameters
   non-identifiable (PDF pp. 19, 24-25), the aggregation face of the standing
   single-fitted-kernel and estimator-mode cautions: a fitted negative leverage
   on any venue is never evidence the asymmetry mechanism produced it.
-  Interpretation caution â the common-shock clustering is
+  Interpretation caution — the common-shock clustering is
   variance-proportional thinning, not independent self-excitation of the jump
   measure: every compensator is proportional to the same scalar intensity
   (Eqs. 12-13, PDF pp. 9-10), so on the programme's venue any claimed
   self-excitation of extreme events must be tested against the cheaper
   intensity-proportional-thinning alternative; the C8 shuffled-arrival placebo
   family already occupies this ground, nothing new queued. Interpretation
-  caution â nothing transfers: single instrument, fixed tick sizes, pricing
+  caution — nothing transfers: single instrument, fixed tick sizes, pricing
   measure taken as given, rescaled horizon [0,1] (PDF pp. 8-11); the numerical
   sections are convergence verification and Bondi-calibration reproduction,
   not empirical or out-of-sample evidence (PDF pp. 39-41). Source-quality note
-  â rigorous v1 theory preprint, proofs complete in text (Appendix A, PDF
+  — rigorous v1 theory preprint, proofs complete in text (Appendix A, PDF
   pp. 42-64), journal-complete references; citable as a construction, later
   version to be checked before formal citation.
 
@@ -3164,8 +3164,8 @@ armed, nothing trades live.
   near-critical or that leverage arises from asymmetric tick sizes, a pure
   construction would have been laundered into a market-truth claim.
   Library-is-ammunition and nothing-measured prevented both. Laundering
-  directions named: INTO â nothing, no coefficient enters any spec, default,
-  calibration, tolerance, or generative null; OUT â never read backwards as
+  directions named: INTO — nothing, no coefficient enters any spec, default,
+  calibration, tolerance, or generative null; OUT — never read backwards as
   "markets are nearly unstable" (assumed), "leverage comes from asymmetric
   arrival rates and tick sizes" (a non-identifiable attainability
   construction), or "the numerical figures show market behavior" (simulation
@@ -3180,11 +3180,11 @@ towards a prediction of flash crashes" (score 30, xf29859), taking score
 order among the remaining unclaimed entries. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
 
-## 45. Null-time session 41 (2026-11-19): deep-read session 37 â the Filimonov-Sornette branching-ratio reflexivity paper read after three selection collisions; default grade, nothing queued; renumbered once at append time
+## 45. Null-time session 41 (2026-11-19): deep-read session 37 — the Filimonov-Sornette branching-ratio reflexivity paper read after three selection collisions; default grade, nothing queued; renumbered once at append time
 
 - **Renumber declaration (honest-error protocol, offset honored):** this session was
   drafted as log entry ## 44 / null-time session 40 / deep-read session 36, but the
-  parallel rough HawkesâHeston slot merged its supersession PR first (now log entry
+  parallel rough Hawkes–Heston slot merged its supersession PR first (now log entry
   ## 44, null-time session 40, deep-read session 36), so this session renumbered to
   ## 45 / null-time session 41 / deep-read session 37 at append time. No numbering of
   any other session was overwritten.
@@ -3196,13 +3196,13 @@ moved, nothing armed, nothing trades live.
   landed as deep-read session 33. This slot then read Mahseredjian, "Diffusive
   Limit of Hawkes Driven Order Book Dynamics With Liquidity Migration" (score 31,
   x5db64b), verified uncovered at read time, and pushed a complete note plus one
-  candidate sharpening as PR #199 â but a parallel slot landed THE SAME PAPER as
+  candidate sharpening as PR #199 — but a parallel slot landed THE SAME PAPER as
   deep-read session 34 (log entry ## 42, default grade, nothing queued) with a
   landing entry that pre-declares late duplicate landings superseded, so PR #199
   was closed unmerged (supersession comment recorded on the PR; nothing from that
   branch landed). This session then read the next UNREAD entry, Wang, Wu and Zhu,
-  "Microstructural Foundation for the Rough HawkesâHeston Model" (score 30,
-  xd08813, rank 32), verified uncovered at read time â but before this session
+  "Microstructural Foundation for the Rough Hawkes–Heston Model" (score 30,
+  xd08813, rank 32), verified uncovered at read time — but before this session
   pushed anything, another slot was verified holding an OPEN PR covering the same
   slug, which has since landed as log entry ## 44, deep-read session 36,
   superseding this slot's read copy by the same declared rule; per the
@@ -3210,10 +3210,10 @@ moved, nothing armed, nothing trades live.
   UNREAD entry at re-read time: Filimonov and Sornette, "Quantifying reflexivity
   in financial markets: towards a prediction of flash crashes" (score 30,
   xf29859, rank 33 of the triage queue, the entry the landed ## 44 also names as
-  its next pointer), verified uncovered before the read â no note among the 37
+  its next pointer), verified uncovered before the read — no note among the 37
   notes on main in paper/research/library/, no open PR covers the slug.
   Note: `paper/research/library/2026-11-19_reflexivity_flash_crashes_branching_deep_read.md`.
-- **Grade:** NO kill line changed. NO candidate sharpening queued â default grade.
+- **Grade:** NO kill line changed. NO candidate sharpening queued — default grade.
   The paper is empirical, but everything that matters in it is a worked exhibit for
   rules already standing (the near-critical regime-disclosure rule, the
   boundary-solution rule, the estimator-mode and W-ladder registers, the per-branch
@@ -3224,28 +3224,28 @@ moved, nothing armed, nothing trades live.
 - **Findings, page-cited, all reinforcing existing rules:** (1) the branching
   ratio is a kernel- and window-bound estimator output: exponential kernel,
   constant background, MLE in 10/20/30-minute windows, with KS goodness-of-fit
-  rejections rising steeply in the window ladder â 0.12% at 10 minutes, 1.64% at
+  rejections rising steeply in the window ladder — 0.12% at 10 minutes, 1.64% at
   20, 12.64% at 30, and more than 50% at one hour (PDF pp. 10-11), the
   rejections attributed to intraday non-stationarity breaking the constant-
   parameter assumption; and the authors' own concession that short-window
   truncation biases n downward and misattributes endogenous events to the
-  background Âµ (PDF p. 14, citing the truncation effect) â the n â 0.3 (1998) to
+  background µ (PDF p. 14, citing the truncation effect) — the n ≈ 0.3 (1998) to
   0.7-0.8 (post-2007) regime history is a function of the estimator mode and the
   kernel family (the Hardiman-Bouchaud power-law-kernel critique of this very
   estimator is already on the programme's shelf), so no fitted n from any single
   mode may serve as calibration, tolerance, or expected value on the programme's
   venue, and any near-critical reading must disclose kernel family and window
-  ladder before interpretation. (2) the paper's own placebo â Poissonize intra-day
+  ladder before interpretation. (2) the paper's own placebo — Poissonize intra-day
   event times while preserving the price trajectory, daily volume and daily event
   counts, then re-run the identical estimator and watch n collapse (PDF pp. 13-14,
-  Fig. 4D inset) â is an external worked precedent for the exact shape of the C8
+  Fig. 4D inset) — is an external worked precedent for the exact shape of the C8
   A3 shuffled-arrival amendment: destroy temporal-excitation structure, keep
   everything else, the reading must die; cited as design precedent only, never as
   evidence about any market the programme measures. (3) the "precursor" claim is
   two anecdotes, not a forecast: the April 27 vs May 6, 2010 contrast (matched
   4.7x vs 5.3x volume multiples; n flat vs n spiking to 0.95 at 14:45 EST, PDF
   pp. 15-16, Fig. 5) has no base rate, no coverage analysis, no false-alarm
-  accounting and no out-of-sample test â the title's "towards a prediction" is
+  accounting and no out-of-sample test — the title's "towards a prediction" is
   honest, and under the programme's standard a precursor claim is admissible only
   from the sealed-prediction record; this paper may never be cited as evidence
   that a branching rise precedes anything on the programme's venue. (4) timestamp
@@ -3253,7 +3253,7 @@ moved, nothing armed, nothing trades live.
   second, up to 194 simultaneous mid-price changes per second on the flash-crash
   day, "solved" by randomly redistributing simultaneous events within each second
   under an assumed within-second independence (PDF pp. 9-10), validated only by
-  simulation of the fitted model itself â a placebo that tests the estimator under
+  simulation of the fitted model itself — a placebo that tests the estimator under
   its own null, not the market's within-second structure; the programme's L0
   100-timestamp audit is the stricter standing discipline and this paper's
   assumption may never be cited as precedent for relaxing it. (5) venue and
@@ -3262,7 +3262,7 @@ moved, nothing armed, nothing trades live.
   early-algorithmic era; the mid-price-change event definition differs from any
   programme event definition a spec may declare (the label-conditioning family
   governs the declaration), and the C5 frozen-book regime is invisible to this
-  model by construction â a queue-frozen book stops generating mid-price changes
+  model by construction — a queue-frozen book stops generating mid-price changes
   and mechanically distorts any event-count estimator, and the authors never
   address it.
 - **Killed-if-wrong stands in the note:** read as "more than 70% of price moves are
@@ -3271,11 +3271,11 @@ moved, nothing armed, nothing trades live.
   approaching criticality, so trade the approach," a descriptive regime history
   would have become a predictive claim the paper never tested; read as "branching
   readings can anticipate crashes," a two-event contrast with no base rate would
-  have bypassed the sealed-prediction record â the only instrument through which
+  have bypassed the sealed-prediction record — the only instrument through which
   a precursor claim is admissible. The standing rules prevented all three.
-- **Source-quality note:** two authors (ETH ZÃ¼rich), arXiv v2 stamped April 2012
+- **Source-quality note:** two authors (ETH Zürich), arXiv v2 stamped April 2012
   (dated November 27, 2011), the published Quantitative Finance record NOT checked
-  at reading â verify before formal citation; 2.43 billion CME records, 298.6
+  at reading — verify before formal citation; 2.43 billion CME records, 298.6
   million transactions, 24.4 million mid-price change events inside Regular
   Trading Hours, second-rounded timestamps (PDF p. 4); estimation-error discipline
   honest and in-text (bootstrap standard deviations for n declining from
@@ -3297,7 +3297,7 @@ session-9 triage-audit flag on record, rank is a candidate reading, and the
 owner's library policy governs when they diverge. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
 
-## 46. Null-time session 42 (2026-11-19): deep-read session 38 â the mean-field nearly-unstable Hawkes paper graded pure theory, default, nothing queued; xf29859 honored as claimed in flight, two superseded open PRs closed, race lost to #207 and renumbered, concurrency state declared
+## 46. Null-time session 42 (2026-11-19): deep-read session 38 — the mean-field nearly-unstable Hawkes paper graded pure theory, default, nothing queued; xf29859 honored as claimed in flight, two superseded open PRs closed, race lost to #207 and renumbered, concurrency state declared
 
 - **Session-state note (declared before the read)**: this session
   began from log entry ## 44's closing pointer, which names xf29859
@@ -3358,7 +3358,7 @@ moved, nothing armed, nothing trades live.
 - **Library deep-read session 38** (the next UNREAD entry unclaimed
   by in-flight work, score 30, x65dac0, consumed here):
   `paper/research/library/2026-11-19_mean_field_nearly_unstable_hawkes_deep_read.md`
-  on GrÃ©goire Szymanski (DMATH, UniversitÃ© du Luxembourg) and Wei
+  on Grégoire Szymanski (DMATH, Université du Luxembourg) and Wei
   Xu (Beijing Institute of Technology), "Mean-Field Limits for
   Nearly Unstable Hawkes Processes" (arXiv:2501.11648v1
   [math.PR], v1 stamped 20 January 2025): scaling limits for
@@ -3369,7 +3369,7 @@ moved, nothing armed, nothing trades live.
   Bernstein exponent, the attainable limit class universal
   (Lemma 2.4, PDF p. 8); plus mean-field propagation of chaos for
   n exchangeable particles sharing one intensity, with three
-  aggregate regimes by Î¶ = nÂ·Î²nÂ²: synchronization, conditional
+  aggregate regimes by ζ = n·βn²: synchronization, conditional
   independence, extinction (Theorems 3.1-3.2, PDF pp. 11-13).
   Pure theory; extract complete, page-marked, 31 pp., read in
   full; no inaccessibility, no shelf gap. Read against the ONE
@@ -3378,11 +3378,11 @@ moved, nothing armed, nothing trades live.
   exhibit of rules already standing and the burden of proof for a
   sharpening was not met. Findings, page-cited:
 
-  Reinforcing, no new item â the limit map is universal and
+  Reinforcing, no new item — the limit map is universal and
   non-injective, the fifth worked exhibit for the near-critical
   regime-disclosure rule (deep-read 17, boundary-solution rule
   deep-read 5): the kernel survives the limit only through the
-  single Bernstein exponent Î¦ (Eq. (2.4), PDF p. 7) and every
+  single Bernstein exponent Φ (Eq. (2.4), PDF p. 7) and every
   Bernstein function is attainable by some kernel sequence
   (Lemma 2.4(2), PDF p. 8), so no macroscopic shape, rough,
   CIR-type or otherwise, identifies the microscopic kernel; the
@@ -3390,16 +3390,16 @@ moved, nothing armed, nothing trades live.
   class from near-critical sequences by design (PDF pp. 2-4,
   7-9), a fitted near-critical reading is a specification
   statement, never a discovery, the queued disclosure rule
-  governs. Reinforcing, no new item â deterministic when stable,
+  governs. Reinforcing, no new item — deterministic when stable,
   stochastic only near the boundary: the stable-case macroscopic
   limit is the deterministic Volterra intensity of Bacry et al.,
   and macroscopic stochasticity enters exactly through the
   asymptotically violated stability condition (PDF p. 2; Remark
   3.4, PDF p. 13), so observed stochastic macro structure in a
   fitted excitation class is a symptom of assumed near-criticality,
-  not an independent finding. Interpretation caution â the three
+  not an independent finding. Interpretation caution — the three
   mean-field regimes are a joint function of particle count and
-  distance to criticality, Î¶ = nÂ·Î²nÂ² deciding synchronization
+  distance to criticality, ζ = n·βn² deciding synchronization
   versus conditional independence versus extinction (Theorems
   3.1-3.2, PDF pp. 11-12; Remark 3.3, PDF pp. 12-13): two
   implementations with the same fitted kernel but different
@@ -3412,7 +3412,7 @@ moved, nothing armed, nothing trades live.
   observed features rather than a fitted excitation system, so
   nothing in C8 moves and no declaration is queued, the
   near-critical disclosure rule already governs were such a fit
-  ever pre-registered. Source-quality note â pure math.PR
+  ever pre-registered. Source-quality note — pure math.PR
   preprint, no data, no calibration, no out-of-sample content,
   finance motivation only; Szymanski is the co-author of the
   two-square-root-laws market-impact paper in the record's
@@ -3435,13 +3435,13 @@ moved, nothing armed, nothing trades live.
   prevented all three. Standing caveat: no market, no sample, no
   period, no costs; all-to-all unit coupling, a neuroscience-style
   idealization, the extinction regime a rescaling artifact.
-  Laundering directions named: INTO â nothing, no Bernstein
-  triplet, kernel sequence, regime constant Î¶, tightness argument
+  Laundering directions named: INTO — nothing, no Bernstein
+  triplet, kernel sequence, regime constant ζ, tightness argument
   or regularity exponent enters any spec, default, calibration,
   tolerance or generative null, and the model may not serve as a
   null or simulator for any C1-L2 or C8 arm without an
   owner-ratified pre-declared derivation of its assumptions on
-  the programme's venue and fields; OUT â never read backwards as
+  the programme's venue and fields; OUT — never read backwards as
   "markets are nearly unstable" (assumed), "cross-sectional flow
   synchronizes" (a regime of an all-to-all toy model), or "macro
   shape identifies the kernel" (non-injective by Lemma 2.4).
@@ -3463,7 +3463,7 @@ must re-read the live main tail and the branch/PR set before
 consuming either. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
 
-## 47. Null-time session 43 (2026-11-19): deep-read session 39 â the nonlinear-Hawkes steady-state classification paper read; stale pointer resolved under the honest-skip protocol; default grade, nothing queued
+## 47. Null-time session 43 (2026-11-19): deep-read session 39 — the nonlinear-Hawkes steady-state classification paper read; stale pointer resolved under the honest-skip protocol; default grade, nothing queued
 
 - **Session-state note (declared before the read)**: this session
   began from log entry ## 46's closing pointer, which names
@@ -3499,16 +3499,16 @@ moved, nothing armed, nothing trades live.
   [cond-mat.stat-mech], v2 dated 9 May 2022):
   field-master-equation classification of marked nonlinear Hawkes
   processes by their steady-state intensity distributions, three
-  regimes â any-exponent power laws for one-sided marks with a
-  ramp map at criticality (a = 2Î½1â¨Ïâ©/Î±2, general kernels, Eq.
-  (193)/(227), PDF pp. 31-36), universal Zipf's law Pss(Î») â Î»â2
+  regimes — any-exponent power laws for one-sided marks with a
+  ramp map at criticality (a = 2ν1⟨τ⟩/α2, general kernels, Eq.
+  (193)/(227), PDF pp. 31-36), universal Zipf's law Pss(λ) ∝ λ−2
   for zero-mean two-sided marks with fast-accelerating maps (Eqs.
   (100), (254), PDF pp. 20-41), thinned tails for negative-mean
-  marks (Eq. (166)/(171), PDF pp. 28-31) â plus the ZHawkes
-  quadratic exponent recovered exactly (a = 1/2 + 1/(2kDÏ), Eqs.
+  marks (Eq. (166)/(171), PDF pp. 28-31) — plus the ZHawkes
+  quadratic exponent recovered exactly (a = 1/2 + 1/(2kDτ), Eqs.
   (94)/(108), PDF pp. 20-22), always-non-stationary super-ramp
   one-sided maps (Eq. (69), PDF p. 16), no-critical-point
-  symmetric-mark ramp (Eq. (88), PDF p. 19), Î»max-capped Zipf
+  symmetric-mark ramp (Eq. (88), PDF p. 19), λmax-capped Zipf
   simulations (Eqs. (70), (252), PDF pp. 16, 40, 60-61), and two
   general-kernel Table I cells left open by the authors (PDF
   p. 46). Pure theory; extract complete, page-marked, 63 pp.,
@@ -3519,7 +3519,7 @@ moved, nothing armed, nothing trades live.
   standing and the burden of proof for a sharpening was not met.
   Findings, page-cited:
 
-  Reinforcing, no new item â power-law intensity tails are a
+  Reinforcing, no new item — power-law intensity tails are a
   model-class output: Table I (PDF p. 63) manufactures the same
   qualitative object with any exponent (ramp, one-sided marks),
   universal Zipf (any FAI map, balanced marks) or thinned tails
@@ -3530,21 +3530,21 @@ moved, nothing armed, nothing trades live.
   (deep-read 17, boundary rule deep-read 5, universality
   deep-read 38); an observed heavy-tailed intensity distribution
   identifies nothing, the standing rules govern, nothing added.
-  Interpretation caution â stationarity and criticality are
+  Interpretation caution — stationarity and criticality are
   artifacts of the assumed mark geometry: super-ramp one-sided
   maps are always non-stationary with simulation results
-  sensitive to the artificial Î»max cap (PDF pp. 16, 40, 60-61),
+  sensitive to the artificial λmax cap (PDF pp. 16, 40, 60-61),
   while the symmetric-mark ramp has no critical point and is
-  stationary for all Î· (Eq. (88), PDF p. 19); binds as read
+  stationary for all η (Eq. (88), PDF p. 19); binds as read
   discipline on any future excitation fit, absence of criticality
   in a fitted inhibitory-symmetric class is a specification
   statement and simulated exponents carry their cutoff, nothing
   in C1-L2 or C8 currently specifies such a fit so nothing moves.
-  Reinforcing, no new item â the ZHawkes exponent solution (Eqs.
+  Reinforcing, no new item — the ZHawkes exponent solution (Eqs.
   (94)/(108)) and its Kesten rederivation (Eq. (256), PDF p. 41)
   corroborate sideways the Blanc-Donier-Bouchaud line already in
   the record (reference [28], PDF p. 62), ammunition not
-  evidence, licenses nothing new. Source-quality note â
+  evidence, licenses nothing new. Source-quality note —
   cond-mat preprint, no data, no calibration, no out-of-sample
   content, finance confined to literature review and a deferred
   implications section; finite-moment and
@@ -3559,23 +3559,23 @@ moved, nothing armed, nothing trades live.
   the authors themselves disclaim; had the no-critical-point
   property been ignored, absence of criticality in a future
   fitted inhibitory class could have been booked as venue
-  discovery rather than assumed symmetry; had the Î»max dependence
+  discovery rather than assumed symmetry; had the λmax dependence
   been ignored, a simulated tail exponent would have entered a
   future argument as cutoff-free. Library-is-ammunition and
   nothing-measured prevented all three. Standing caveat: no
   market, no sample, no costs; exact solutions mostly exponential
-  memory; simulators rest on the Î»max cap and adaptive
+  memory; simulators rest on the λmax cap and adaptive
   discretization; mark conditions fence off heavy-tailed marks.
-  Laundering directions named: INTO â nothing, no
+  Laundering directions named: INTO — nothing, no
   tension-intensity map, mark geometry or exponent formula enters
   any spec, default, calibration, tolerance or generative null,
   and the NLHawkes family may not serve as a null or simulator
   for any C1-L2 or C8 arm without an owner-ratified pre-declared
   derivation of its assumptions on the programme's venue and
-  fields; OUT â never read backwards as "markets are
+  fields; OUT — never read backwards as "markets are
   nonlinear-balanced Hawkes", "Zipf tails prove inhibitory
   feedback", or "no criticality found", and no simulation
-  exponent from this family is quoted without naming its Î»max.
+  exponent from this family is quoted without naming its λmax.
 
 Ratification queue after this session: TWENTY-SEVEN candidate
 sharpenings, unchanged (deep-read session 39 earned none;
@@ -3592,7 +3592,7 @@ the live main tail and the branch/PR set before consuming either.
 Nothing measured, no kill line moved, nothing armed, nothing
 trades live.
 
-## 48. Null-time session 44 (2026-11-19): deep-read session 40 â the ACD-to-Hawkes effective-endogeneity mapping paper graded simulation-only worked exhibit, default, nothing queued; stale x36082b pointer defect declared, x20bdef honored as claimed in flight and landed mid-read as ## 47, race lost and renumbered with supersession recorded in line
+## 48. Null-time session 44 (2026-11-19): deep-read session 40 — the ACD-to-Hawkes effective-endogeneity mapping paper graded simulation-only worked exhibit, default, nothing queued; stale x36082b pointer defect declared, x20bdef honored as claimed in flight and landed mid-read as ## 47, race lost and renumbered with supersession recorded in line
 
 - **Session-state note (declared before the read)**: this session began
   from the landed closing pointer chain. Entry ## 46's closing pointer
@@ -3600,7 +3600,7 @@ trades live.
   approximation for the self-exciting Hawkes process" (score 30,
   x36082b) as the next UNREAD, subject to the parallel fan-out's
   collision checks. The re-read of live main found a pointer defect:
-  x36082b is NOT unread â it is deep-read session 2's paper (Hardiman
+  x36082b is NOT unread — it is deep-read session 2's paper (Hardiman
   and Bouchaud, note
   paper/research/library/2026-11-16_hawkes_branching_deep_read.md, read
   from the same extract docs/library/text/x36082b_branching_ratio_approx
@@ -3635,8 +3635,8 @@ trades live.
   here in line; no numbering of any other session was overwritten.
   The landed ## 47's session-state note independently declared the
   same stale x36082b pointer defect (corroboration, no conflict),
-  and its closing pointer already names xa4ac36 â the paper
-  consumed here â as the next unclaimed UNREAD, so the consumed
+  and its closing pointer already names xa4ac36 — the paper
+  consumed here — as the next unclaimed UNREAD, so the consumed
   slot is consistent with the landed chain and no duplicate
   consumption occurred. One further discrepancy is declared
   against the landed ## 47: its closing block reads "T1 remains
@@ -3644,7 +3644,7 @@ trades live.
   docs/DECISIONS_PENDING.md (T1 was executed under the owner's
   authorization on the second aggTrades window and survived all
   five kill lines with its sign inverted, booked in the ledger; T2
-  tested-fail at its kill line) â wrong text left unedited per the
+  tested-fail at its kill line) — wrong text left unedited per the
   honest-error protocol, defect declared here for the honesty pass.
   No duplicate note for xa4ac36 was pushed by any other session.
 
@@ -3655,10 +3655,10 @@ trades live.
   "Effective measure of endogeneity for the Autoregressive Conditional
   Duration point processes via mapping to the self-excited Hawkes
   process" (arXiv:1306.2245v2 [q-fin.ST], v2 stamped 19 Jun 2014, ETH
-  ZÃ¼rich). A simulation-only methods paper: the composite ACD parameter
-  Î¶ = Î£Î±j + Î£Î²k is proposed as an effective degree of endogeneity and
-  mapped onto the Hawkes branching ratio Î· by numerically calibrating
-  Hawkes MLE fits to synthetic ACD(1,1) realizations (40 Î¶-grid points,
+  Zürich). A simulation-only methods paper: the composite ACD parameter
+  ζ = Σαj + Σβk is proposed as an effective degree of endogeneity and
+  mapped onto the Hawkes branching ratio η by numerically calibrating
+  Hawkes MLE fits to synthetic ACD(1,1) realizations (40 ζ-grid points,
   100 realizations of 3500 events each, KS goodness-of-fit on the
   residual process). Extract complete and page-marked (37 pp.); read in
   full; no inaccessibility, no shelf gap. Read against the ONE question.
@@ -3670,34 +3670,34 @@ trades live.
   family) and the burden of proof for a sharpening was not met.
   Findings, page-cited:
 
-  Reinforcing, no new item â Î¶ is a model-family statistic, not an
-  identity with the branching ratio: the mapping Î·(Î¶) is monotone but
+  Reinforcing, no new item — ζ is a model-family statistic, not an
+  identity with the branching ratio: the mapping η(ζ) is monotone but
   not one-to-one in the decomposition, the paper's own cases
-  (Î± = 0.38, Î² = 0.13) and (Î± = 0.13, Î² = 0.38) share Î¶ = 0.51 yet give
-  Î·Ì = 0.52 versus Î·Ì = 0.22 (PDF p. 14), and the Î± = 0 branch yields
-  Î·Ì = 0 for every Î¶ because the conditional-duration recursion is then
+  (α = 0.38, β = 0.13) and (α = 0.13, β = 0.38) share ζ = 0.51 yet give
+  η̂ = 0.52 versus η̂ = 0.22 (PDF p. 14), and the α = 0 branch yields
+  η̂ = 0 for every ζ because the conditional-duration recursion is then
   purely deterministic and realized durations are carried by the iid
   noise (PDF pp. 14-15), a second-model-family worked exhibit for the
-  estimator-mode register: no ACD-fitted Î¶ from the econometrics record
+  estimator-mode register: no ACD-fitted ζ from the econometrics record
   may enter any spec, default, tolerance or expected value.
-  Interpretation caution â the mapping is goodness-of-fit-conditioned
+  Interpretation caution — the mapping is goodness-of-fit-conditioned
   and the KS rejection band sits exactly on the region the conclusion
-  relies on: for most combinations 0.6 â² Î±+Î² â² 0.95 the calibrating
+  relies on: for most combinations 0.6 ≲ α+β ≲ 0.95 the calibrating
   Hawkes model is rejected at the 5% level (PDF p. 15; Fig. 5, PDF
-  p. 35), yet the conclusion reads empirical Î¶ values up to 0.95 as
+  p. 35), yet the conclusion reads empirical ζ values up to 0.95 as
   strong support for dominant endogeneity (PDF p. 18); any future
   imported endogeneity reading of duration-model lineage is admissible
   only with the calibrating model's fit test disclosed and passing in
-  the claimed region, and where the fit is rejected both Î¶ and the
-  mapped Î·Ì are model-relative artifacts, not measurements; read
-  discipline only, no queue change. Reinforcing, no new item â the
-  paper's own Appendix B gives the Hawkes MLE of Î· a positive bias
+  the claimed region, and where the fit is rejected both ζ and the
+  mapped η̂ are model-relative artifacts, not measurements; read
+  discipline only, no queue change. Reinforcing, no new item — the
+  paper's own Appendix B gives the Hawkes MLE of η a positive bias
   near 0 and a large sample-length-dependent negative bias for
-  Î· > 0.9, 90% quantile error at most 0.1 for Î· â¤ 0.9 on 3000-event
+  η > 0.9, 90% quantile error at most 0.1 for η ≤ 0.9 on 3000-event
   realizations (PDF pp. 21-22, Fig. 7, PDF p. 37), a worked exhibit
-  for the near-critical disclosure rule: an Î·Ì close to 1 on a limited
+  for the near-critical disclosure rule: an η̂ close to 1 on a limited
   sample is a downward-biased, length-dependent statistic, not a
-  measured criticality. Reinforcing, no new item â Appendix A states
+  measured criticality. Reinforcing, no new item — Appendix A states
   the authors' own placebo discipline: apply any new event-defining
   method first to well-known featureless processes such as the
   uncorrelated random walk to check for spurious endogeneity, and warns
@@ -3705,13 +3705,13 @@ trades live.
   conditional-statistics definitions can create spurious phenomena
   even in featureless processes (PDF pp. 20-21), an external worked
   precedent for the featureless-process placebo and label-conditioning
-  families, cited as design precedent only. Reinforcing, no new item â
+  families, cited as design precedent only. Reinforcing, no new item —
   the kernel-robustness result (exponential vs power law agreement,
   Table 1, PDF pp. 16-17) is a short-memory statement: the fitted power
-  law collapses to an exponential-like shape (ÏÌ â 105, Ä â 816, PDF
+  law collapses to an exponential-like shape (φ̂ ≈ 105, ĉ ≈ 816, PDF
   p. 17) on short-memory ACD(1,1) data (PDF p. 16), a worked exhibit
   for the kernel-family register, no kernel shape from any single fit
-  is ever citable. Source-quality note â simulation-only, no market
+  is ever citable. Source-quality note — simulation-only, no market
   data anywhere; same ETH line as the landed ## 45 reflexivity paper;
   arXiv v2 with an odd "(Dated: October 31, 2018)" header line (PDF
   p. 1), journal record NOT checked at reading, published version to be
@@ -3721,19 +3721,19 @@ trades live.
   as "duration-based econometrics proves markets are up to 95%
   endogenous", a simulation-only, fit-test-conditioned, model-family
   mapping would have been laundered into a market-truth claim whose own
-  Fig. 5 rejection band covers exactly the Î¶ range the headline relies
-  on; had Î¶ been treated as interchangeable with Î·, the Î± = 0
-  counterexample (Î¶ anything, Î·Ì = 0) would have smuggled a meaningless
+  Fig. 5 rejection band covers exactly the ζ range the headline relies
+  on; had ζ been treated as interchangeable with η, the α = 0
+  counterexample (ζ anything, η̂ = 0) would have smuggled a meaningless
   endogeneity number into a spec under a familiar name; had the
-  finite-sample bias been ignored, an Î·Ì near 1 would have been booked
+  finite-sample bias been ignored, an η̂ near 1 would have been booked
   as measured criticality rather than a downward-biased,
   length-dependent statistic. Library-is-ammunition and nothing-measured
-  prevented all three. Laundering directions named: INTO â nothing, no
-  Î¶, no Î·(Î¶) curve, no Î±/Î² decomposition, no kernel, no bias numbers
+  prevented all three. Laundering directions named: INTO — nothing, no
+  ζ, no η(ζ) curve, no α/β decomposition, no kernel, no bias numbers
   enter any spec, default, calibration, tolerance or generative null.
-  OUT â never read backwards as "duration-based econometrics proves
+  OUT — never read backwards as "duration-based econometrics proves
   dominant endogeneity" (model-relative and fit-test-conditioned),
-  "Î¶ is the branching ratio" (non-injective and void at Î± = 0), or
+  "ζ is the branching ratio" (non-injective and void at α = 0), or
   "kernel choice does not matter" (a short-memory artifact).
 
 Ratification queue after this session: TWENTY-SEVEN candidate
@@ -3757,7 +3757,7 @@ must re-read the live main tail and the branch/PR set before
 consuming anything. Nothing measured, no kill line moved, nothing
 armed, nothing trades live.
 
-## 49. Null-time session 45 (2026-11-19): deep-read session 41 â the Hawkes jump-diffusion stochastic-control paper read; no skips, default grade, nothing queued
+## 49. Null-time session 45 (2026-11-19): deep-read session 41 — the Hawkes jump-diffusion stochastic-control paper read; no skips, default grade, nothing queued
 
 - **Session-state note (declared before the read)**: this session
   began from log entry ## 48's closing pointer, which names
@@ -3810,7 +3810,7 @@ armed, nothing trades live.
   nothing the programme does not already govern, and the burden of
   proof for a sharpening was not met. Findings, page-cited:
 
-  Reinforcing, no new item â subcriticality is load-bearing
+  Reinforcing, no new item — subcriticality is load-bearing
   everywhere: the branching-ratio condition (Def. 3.1, PDF
   pp. 5-6), the standing a_bar_1 < b (Eq. (4.7), PDF p. 6) and its
   scaled uniform version eta_0*a_bar_1 < b (Eq. (5.46), PDF p. 20)
@@ -3822,7 +3822,7 @@ armed, nothing trades live.
   deep-read 38, ## 46 fifth, ## 47 sixth, ## 48 seventh): any
   future "excitation is a small correction" import must disclose
   the subcriticality its bound consumes; nothing added.
-  Interpretation caution â the asymptotic Hawkes-to-Poisson decay
+  Interpretation caution — the asymptotic Hawkes-to-Poisson decay
   holds only under the baseline-integrability hypothesis
   integral E[mu(P_t)]dt < infinity (Eq. (5.34), PDF p. 15): the
   decay works because the Poisson baseline itself is transient,
@@ -3830,10 +3830,10 @@ armed, nothing trades live.
   headline "self-excitation vanishes asymptotically" (PDF pp. 8,
   19) is inadmissible without the hypothesis; sits beside the ##
   48 fit-test-conditioned caution, model-relative conditions
-  carry, no queue change. Interpretation caution â the O(eta)
+  carry, no queue change. Interpretation caution — the O(eta)
   value-function convergence is jointly scaled (a_eta = eta*a AND
-  y_eta <= c_y*eta, Eq. (5.45), PDF p. 20), rests on assumed â not
-  derived â uniform-over-controls moment bounds (Eqs. (5.47)-(5.48),
+  y_eta <= c_y*eta, Eq. (5.45), PDF p. 20), rests on assumed — not
+  derived — uniform-over-controls moment bounds (Eqs. (5.47)-(5.48),
   PDF p. 20) plus Poisson-feedback admissibility and the
   integrability/transversality conditions (5.80)-(5.82), and its
   metric is expected discounted utility: expectation-level
@@ -3842,14 +3842,14 @@ armed, nothing trades live.
   "Hawkes = Poisson" in any generative-null or placebo argument,
   or it would weaken the very test it was cited to support;
   assumption-honesty discipline, nothing moves. Reinforcing, no
-  new item â the entire comparison runs through one explicitly
+  new item — the entire comparison runs through one explicitly
   solved Poisson problem (closed-form v, jump-increment growth,
   Lemma 5.9, Eqs. (5.73)-(5.76), PDF pp. 23-24): no general
   Hawkes-control-equals-Poisson-control theorem exists, only a
   verification template for one CRRA-type companion model; seventh
   worked exhibit for the specification-classification family
   (## 47 sixth): mathematics carried by one model's closed form
-  licenses nothing outside it. Source-quality note â math.OC
+  licenses nothing outside it. Source-quality note — math.OC
   preprint, two ETH Zurich mathematicians, zero finance, zero
   market, zero data, zero calibration, zero empirical content
   (climate-growth economy, the finance connection is the word
@@ -3878,13 +3878,13 @@ armed, nothing trades live.
   finite-second-moment marks, linear-growth baseline, strictly
   positive survival (positive capital preserved at jumps),
   local-in-time square-integrability (Remark 5.2, PDF p. 14).
-  Laundering directions named: INTO â nothing, no eta-scaling, no
+  Laundering directions named: INTO — nothing, no eta-scaling, no
   decay theorem, no O(eta) bound, no generator-comparison template
   enters any spec, default, calibration, tolerance or generative
   null, and the convergence may not serve as a license for any
   Poisson-versus-Hawkes substitution in any C1-L2 or C8 arm
   without an owner-ratified pre-declared derivation of its
-  assumptions on the programme's venue and fields; OUT â never
+  assumptions on the programme's venue and fields; OUT — never
   read backwards as "Hawkes = Poisson" (expectation-level, jointly
   scaled, assumption-conditioned), "self-excitation washes out
   asymptotically" (requires (5.34); stationary case out of scope),
@@ -3905,7 +3905,7 @@ reflexivity in financial markets: a Hawkes process analysis"
 tail and the branch/PR set before consuming anything. Nothing
 measured, no kill line moved, nothing armed, nothing trades live.
 
-## 50. Null-time session 46 (2026-11-19): deep-read session 42 â the Hardiman-Bercot-Bouchaud critical-reflexivity power-law rebuttal read; FS-HBB disagreement logged in both directions; default grade, nothing queued
+## 50. Null-time session 46 (2026-11-19): deep-read session 42 — the Hardiman-Bercot-Bouchaud critical-reflexivity power-law rebuttal read; FS-HBB disagreement logged in both directions; default grade, nothing queued
 
 - **Session-state note (declared before the read)**: this session
   began from log entry ## 49's closing pointer, which names xdc14f4
@@ -3916,8 +3916,8 @@ measured, no kill line moved, nothing armed, nothing trades live.
   note for the slug on main. Two branch names matched a reflexivity
   pattern (null-read/2026-11-19-reflexivity-slot9 and its -v2); both
   were inspected via the authenticated contents API and are stale
-  remnants of the landed ## 45 â their logs end at entry ## 45
-  (224,447 chars, pre-## 48 state) with no claim on xdc14f4 â so
+  remnants of the landed ## 45 — their logs end at entry ## 45
+  (224,447 chars, pre-## 48 state) with no claim on xdc14f4 — so
   the pointer checked out and the entry was consumed with no skips.
   DECISIONS_PENDING re-read confirms: T1 executed under the owner's
   authorization, survived all five kill lines with its sign
@@ -3976,18 +3976,18 @@ measured, no kill line moved, nothing armed, nothing trades live.
   burden of proof for a sharpening was not met. Findings,
   page-cited:
 
-  Reinforcing, no new item â the synthetic rebuttal experiment
+  Reinforcing, no new item — the synthetic rebuttal experiment
   (Fig. 2, PDF p. 5) is the strongest single worked exhibit in the
   record for the estimator-mode register: a published trend (the
   ## 45 rising subcritical n) is reproduced exactly from data
   generated with the opposite truth, the artifact traced to three
-  spec choices â short-memory kernel family, windows shorter than
+  spec choices — short-memory kernel family, windows shorter than
   the kernel's reach, timestamp randomisation; also a design
   precedent for estimator-refutation placebos (generate from a
   known truth, run the challenger's pipeline, the artifact must
   reproduce) beside the ## 45 Poissonisation precedent and the C8
   A3 shuffled-arrival shape, cited as design precedent only;
-  nothing added, the register stands. Interpretation caution â
+  nothing added, the register stands. Interpretation caution —
   the headline n of roughly 1 is boundary-sitting and its
   conditions travel with it: two-month windows shorter than the
   kernel's reach, residual mu positive while the stationary
@@ -3998,7 +3998,7 @@ measured, no kill line moved, nothing armed, nothing trades live.
   downward bias of the branching MLE near 1); any "market is
   critical" import must disclose window, kernel family, timestamp
   treatment and the mu artifact, rules already standing, no queue
-  change. Interpretation caution â the criticality argument runs
+  change. Interpretation caution — the criticality argument runs
   one way: long-range dependence of the event rate forces n = 1
   (the auto-covariance relation, Eqs. (5)-(7), PDF p. 2), but an
   estimated n near 1 does not by itself prove long memory; the
@@ -4006,7 +4006,7 @@ measured, no kill line moved, nothing armed, nothing trades live.
   two-regime structure (Figs. 3, 5, PDF pp. 5-7), exponent
   relations binding only inside 0 < epsilon < 1/2 (Eqs. (8)-(11),
   (18)); no citation may reverse the direction of the inference.
-  Reinforcing, no new item â timestamp handling is the same
+  Reinforcing, no new item — timestamp handling is the same
   one-way disclosure exhibit as ## 45's (within-millisecond
   randomisation, PDF pp. 4, 6), with the 1998 sub-second
   oscillations in the non-parametric kernel declared a
@@ -4014,7 +4014,7 @@ measured, no kill line moved, nothing armed, nothing trades live.
   artifacts survive into published estimates and must be audited
   at intake; the L0 100-timestamp audit stays the stricter
   discipline, this paper's assumption may never be cited as
-  precedent for relaxing it. Reinforcing, no new item â the
+  precedent for relaxing it. Reinforcing, no new item — the
   two-regime kernel (epsilon of roughly 0.15 below about 1000 s,
   of roughly 0.45 above, crossover scale definition-dependent,
   PDF pp. 6-7) is a kernel-family register exhibit in both
@@ -4024,7 +4024,7 @@ measured, no kill line moved, nothing armed, nothing trades live.
   miss a two-regime power law; kernel shape as fitted is a
   property of the data's memory class, window, event definition
   and binning, no kernel shape from any single fit is ever
-  citable; the register stands. Source-quality note â three
+  citable; the register stands. Source-quality note — three
   authors from a fund, single venue, single instrument, the same
   C5 blind spot recorded for ## 45 (a queue-frozen book stops
   generating mid-price changes, the frozen-book regime invisible
@@ -4057,15 +4057,15 @@ measured, no kill line moved, nothing armed, nothing trades live.
   U-shape detrending; mu positive in every fit while the
   stationary critical reading needs mu = 0; the mechanism for
   precise criticality missing by the authors' own statement.
-  Laundering directions named: INTO â nothing, no branching value,
+  Laundering directions named: INTO — nothing, no branching value,
   kernel exponent, cutoff, Hurst exponent, DFA procedure,
   power-law family or criticality reading enters any spec,
   default, calibration, tolerance or generative null, and the
   critical-versus-subcritical disagreement in the literature may
-  not be settled on the programme's side by preference â both
+  not be settled on the programme's side by preference — both
   lines are model-relative, venue-specific artifacts until
   measured on the programme's own venue and fields under
-  owner-ratified pre-declared rules; OUT â never read backwards as
+  owner-ratified pre-declared rules; OUT — never read backwards as
   "markets are provably critical" (boundary-sitting estimate,
   window-truncation artifact in mu, no mechanism), "reflexivity is
   constant, only its timescale shrinks" (single-venue,
@@ -4091,7 +4091,7 @@ session must re-read the live main tail and the branch/PR set
 before consuming anything. Nothing measured, no kill line moved,
 nothing armed, nothing trades live.
 
-## 51. Null-time session 47 (2026-11-19): deep-read session 43 â the Filimonov-Sornette apparent-criticality calibration reply read; ONE candidate sharpening queued (the optimizer-path disclosure rule), nothing armed
+## 51. Null-time session 47 (2026-11-19): deep-read session 43 — the Filimonov-Sornette apparent-criticality calibration reply read; ONE candidate sharpening queued (the optimizer-path disclosure rule), nothing armed
 
 - **Session-state note (declared before the read)**: this session
   began from log entry ## 50's closing pointer, which names xd18d70
@@ -4141,7 +4141,7 @@ nothing armed, nothing trades live.
   question. **Grade: NO kill line changed; ONE new candidate
   sharpening queued, PENDING OWNER RATIFICATION: the optimizer-path
   (multi-start) disclosure rule for the estimator-discipline
-  family** â the sibling of deep-read 2's estimator-identity,
+  family** — the sibling of deep-read 2's estimator-identity,
   fixed-W and timestamp-bundling pre-declarations, governing the
   numerical search itself: the cost surface has "one pronounced
   minimum" only under correct specification (PDF p. 17), which the
@@ -4166,7 +4166,7 @@ nothing armed, nothing trades live.
   spec functional fits a parametric likelihood. Findings,
   page-cited, in the note:
 
-  Reinforcing, no new item â regime-shift spurious criticality:
+  Reinforcing, no new item — regime-shift spurious criticality:
   concatenated independent Poisson days with real daily
   intensities (true n = 0 by construction) calibrate to n hovering
   around 1 across 1998-2012 with residuals unable to reject the
@@ -4178,14 +4178,14 @@ nothing armed, nothing trades live.
   estimator-mode register's non-stationarity half and design
   ammunition for the queued deterministic-clock null arm and the
   C8 A3 shuffled-arrival placebo, whose exhibits are ammunition,
-  never substitutes. Reinforcing, no new item â outlier
+  never substitutes. Reinforcing, no new item — outlier
   endogenization completes the kernel-family tradeoff in both
   directions with ## 50: the exponential kernel resists outliers
   but misses long memory, the power law reads long memory but
   manufactures endogeneity from outliers (Fig. 1, Table 1, PDF
   pp. 9-10); no kernel family wins both tests and any future fit
   discloses outlier exposure beside its kernel family. Reinforcing,
-  no new item â the bundling mechanism (exchange second-scale
+  no new item — the bundling mechanism (exchange second-scale
   FAST/FIX stamps under provider millisecond arrival stamps,
   randomization at intervals smaller than the bundling scale
   manufacturing clustering, a Poisson asymptote of n about 0.856,
@@ -4195,7 +4195,7 @@ nothing armed, nothing trades live.
   bundling scale the paper's own Fig. 10 sample contradicts
   (300-1700 ms); the L0 100-timestamp audit stays the stricter
   discipline and this paper may never be cited to relax it.
-  Interpretation caution â the estimation errors are signed and do
+  Interpretation caution — the estimation errors are signed and do
   not self-cancel: finite-window MLE bias and edge effects are
   DOWNWARD (PDF pp. 5-6, 15-16, the ## 48 Appendix-B sibling),
   outliers, regularization mismatch, bundling, regime shifts and
@@ -4205,7 +4205,7 @@ nothing armed, nothing trades live.
   scale and reach, kernel family and regularization form, outlier
   exposure, bundling scale, regime protocol, optimizer path) is
   mandatory framing for any n a spec table ever shows.
-  Interpretation caution â selection-of-windows is itself a
+  Interpretation caution — selection-of-windows is itself a
   reading mode: HBB's RTH-only concatenation discards 30-67 per
   cent of daily mid-price changes and attributes exogenous spikes
   (the September 18, 2007 FOMC surprise) to self-excitation by
@@ -4213,7 +4213,7 @@ nothing armed, nothing trades live.
   authors' own alternative excludes announcement days entirely
   (PDF p. 30), removing the windows where a null's failure mode is
   loudest; no windowing or day-selection protocol is neutral between
-  null and trigger. Interpretation caution â the closing sweep
+  null and trigger. Interpretation caution — the closing sweep
   against long-memory estimation (PDF p. 34) applies with full
   force to ## 50's two-regime DFA structure: a Hurst exponent of
   roughly 0.95 above 1000 s is what day-level intensity drift of
@@ -4221,7 +4221,7 @@ nothing armed, nothing trades live.
   kernel regime; both papers' exponents and criticality readings
   are regime-inhomogeneity-confounded at this venue and grain, and
   none is citable without a stationarity protocol the venue can
-  support. Source-quality note â an adversarial reply by the
+  support. Source-quality note — an adversarial reply by the
   challenged party, upholding its own ## 45 numbers; the
   acknowledgements credit Hardiman and Bouchaud for discussions
   and Wheatley for the outlier section (PDF p. 35), a further HBB
@@ -4255,11 +4255,11 @@ nothing armed, nothing trades live.
   burn-in, the authors' own short-window announcement-day-excluding
   procedure a reading mode subject to its own selection caveat, the
   HBB-response-to-this-reply and journal versions unchecked on the
-  shelf. Laundering directions named: INTO â nothing enters any
+  shelf. Laundering directions named: INTO — nothing enters any
   spec, default, calibration, tolerance or generative null; the
   disagreement stays open in both directions; the single licensed
   pending item is the optimizer-path (multi-start) disclosure rule,
-  queued PENDING OWNER RATIFICATION and inert until ratified; OUT â
+  queued PENDING OWNER RATIFICATION and inert until ratified; OUT —
   never read backwards as "Filimonov-Sornette won the debate"
   (reply-count is not truth), "exponential kernels are vindicated"
   (their own exhibits show them failing under outliers and
@@ -4287,7 +4287,7 @@ must re-read the live main tail and the branch/PR set before
 consuming anything. Nothing measured, no kill line moved, nothing
 armed, nothing trades live.
 
-## 52. Null-time session 48 (2026-11-19): deep-read session 44 â the Dixon LOB-RNN sequence-classification paper read; NO kill line changes, NO sharpening, nothing armed
+## 52. Null-time session 48 (2026-11-19): deep-read session 44 — the Dixon LOB-RNN sequence-classification paper read; NO kill line changes, NO sharpening, nothing armed
 
 Paper: Matthew F. Dixon, "Sequence Classification of the Limit Order Book
 using Recurrent Neural Networks", arXiv:1707.05642v1 [q-fin.TR] (14 Jul 2017),
@@ -4324,28 +4324,28 @@ Grade: NO kill line changes. NO new candidate sharpening. Findings, graded
 and page-cited, in the note
 (2026-11-19_lob_rnn_sequence_classification_deep_read.md):
 
-Reinforcing, no new item â price flips at book-update grain are extreme-rate
+Reinforcing, no new item — price flips at book-update grain are extreme-rate
 events (about 99.9% zero response, PDF p. 9) with minority-class precision
 only about 0.09 at the paper's best (Table 2, PDF p. 11): another worked
 exhibit for the base-rate discipline; no rule moves. Reinforcing, no new item
-â the paper's own exhibit that liquidity imbalance helps direction but not
+— the paper's own exhibit that liquidity imbalance helps direction but not
 timing, while the order-flow ratio helps next-event but not next-time
 prediction (PDF pp. 12-13), mirrors the programme's direction-versus-clock
-separation at event grain; no new claim licensed. Interpretation caution â
+separation at event grain; no new claim licensed. Interpretation caution —
 balanced training with UNBALANCED natural-rate evaluation plus a noise control
 is the only honest pattern (PDF pp. 9, 11-14); any future L2 ML component must
 report the same triple, and headline metrics computed on balanced evaluation
-data are inadmissible. Interpretation caution â the signal is next-event-scale,
+data are inadmissible. Interpretation caution — the signal is next-event-scale,
 decaying toward 1 s, and month-stable only in the degrade-not-die sense
 (Figs. 8-9, PDF pp. 16-17); a sub-second classified effect may never be
 smuggled into a coarser-grain compression-clock claim. Interpretation caution
-â the "robust relationship" sentence is one empirical regularity of one
+— the "robust relationship" sentence is one empirical regularity of one
 instrument over 31 days, not a mechanism; ammunition, never evidence.
-Cost-survival ammunition â the economic case is adverse-selection avoidance
+Cost-survival ammunition — the economic case is adverse-selection avoidance
 with spread capture, queue-position loss, false-positive quote churn and
 100-microsecond compute latency named as unmodelized (PDF pp. 3, 7, 14, 16,
 18): any future cost-survival layer for L2-grain classification claims must
-carry exactly these axes; nothing is armed here. Source-quality note â single
+carry exactly these axes; nothing is armed here. Source-quality note — single
 instrument, single month, restricted 12:00-22:00 UTC session window out of a
 23-hour futures session (the same non-neutral-windowing caveat already queued
 against HBB-style RTH truncation; the 24/7 crypto venue has no comparable
@@ -4496,7 +4496,7 @@ branch/PR set before consuming anything. Nothing measured, no kill line
 moved, nothing armed, nothing trades live.
 
 
-## 54. Null-time session 50 (2026-11-19): deep-read session 46 â the Variance-Hawkes energy-markets paper read; the slot-24 supersession declared, the next UNREAD pointer consumed; NO kill line changes, NO sharpening, nothing armed
+## 54. Null-time session 50 (2026-11-19): deep-read session 46 — the Variance-Hawkes energy-markets paper read; the slot-24 supersession declared, the next UNREAD pointer consumed; NO kill line changes, NO sharpening, nothing armed
 
 - **Session-state note (declared before the read)**: this session is
   parallel-fire slot 24 of 24, assigned the Hawkes liquidity-migration
@@ -4530,9 +4530,9 @@ moved, nothing armed, nothing trades live.
   trial and error" because no calibration technique "has yet been
   vetted" (the authors' own words, PDF pp. 7-9; fitted branching
   alpha/beta = 700/800 = 0.875), supports the arrival story with two
-  exhibits â per-minute trade-volume quantiles against simulated
+  exhibits — per-minute trade-volume quantiles against simulated
   exponential quantiles (Figs. 6-7, PDF p. 10) and intraday volume
-  clustering (Figs. 8-9, PDF p. 11) â derives the generator of
+  clustering (Figs. 8-9, PDF p. 11) — derives the generator of
   (lambda_t, N_t, B(N_t)) termwise (Eqs. 11-22, PDF pp. 12-14),
   obtains Var(B(N_t)) = E(N_t) (PDF p. 13) and the Ito formula
   dB^2 = 2B dB + dN (Thm 1, PDF p. 14), and states the distribution
@@ -4540,31 +4540,31 @@ moved, nothing armed, nothing trades live.
   by Monte-Carlo overlay (PDF p. 15). Read against the ONE question.
   **Grade: NO kill line changed. NO candidate sharpening.** Findings,
   page-cited, in the note.
-- Findings: reinforcing, no new item â the paper's OWN algebra is the
+- Findings: reinforcing, no new item — the paper's OWN algebra is the
   cleanest statement of the vol-tautology family: under event-clock
   subordination, price variance IS the event count (Var(B(N)) = E(N),
   PDF p. 13, and the dN_t quadratic-variation term, Thm 1, PDF p. 14),
   so a flow-clock feature and a volatility target can be one variable
   in two costumes, exactly what C1-L2 kill lines 2/5 and C8's K8
-  guard. Interpretation caution â overdispersion does not identify
+  guard. Interpretation caution — overdispersion does not identify
   Hawkes: the paper's whole empirical case is QQ-type deviation from
   exponential quantiles plus diurnal volume clustering (Figs. 6-9,
   PDF pp. 10-11), which mixed-Poisson, renewal and
   diurnally-inhomogeneous arrivals all reproduce; no program document
   may ever cite such exhibits as evidence of self-excitation or
   endogeneity, and this paper is never citable as support for any
-  branching claim on the programme's venue. Interpretation caution â
+  branching claim on the programme's venue. Interpretation caution —
   the hand-fitted regime sits near the boundary (alpha/beta = 0.875,
   trial-and-error, no test statistic, no held-out data; the authors'
   own disclosure, PDF pp. 7-8): near-critical branching reproduces
   clustering shapes trivially, reinforcing K7 and the queued
   boundary/estimator rules; no parameter or figure transfers.
-  Reinforcing â the model is machinery with no directional content (a
+  Reinforcing — the model is machinery with no directional content (a
   volatility-shape model, no mean reversion, "not intended to model
   prices outright", PDF p. 8) and the arrival-to-spikes inference
   chain is speculative (PDF p. 5, from one European electricity
   Q-Q study): licenses nothing about WHEN or WHICH WAY.
-  Source-quality note â arXiv v1, zero citations, the headline
+  Source-quality note — arXiv v1, zero citations, the headline
   distribution is a CONJECTURE verified only by simulation, the
   appendix moments are symbolic-algebra dumps with extract typos
   (E_t/F_t identical to C_t/D_t, PDF p. 24), daily Marketwatch closes
@@ -4588,7 +4588,7 @@ moved, nothing armed, nothing trades live.
 
 No inaccessible or blocked sources this session; the extract was
 complete and page-marked. Ratification queue after this session:
-TWENTY-EIGHT candidate sharpenings (unchanged â twenty-seven standing
+TWENTY-EIGHT candidate sharpenings (unchanged — twenty-seven standing
 plus the optimizer-path (multi-start) disclosure rule joined through
 deep-read session 43, plus probe E1 per docs/DECISIONS_PENDING.md;
 this session queued NOTHING), zero armed; docs/DECISIONS_PENDING.md
@@ -4741,7 +4741,7 @@ docs/library/text/; a successor session must re-read the live main tail
 and the branch/PR set before consuming anything. Nothing measured, no
 kill line moved, nothing armed, nothing trades live.
 
-## 56. Null-time session 52 (2026-11-19): deep-read session 48 â the Baldacci-Bergault SPDE order-book incentives paper read; graded venue-side mechanism design, default, nothing queued
+## 56. Null-time session 52 (2026-11-19): deep-read session 48 — the Baldacci-Bergault SPDE order-book incentives paper read; graded venue-side mechanism design, default, nothing queued
 
 Session-state note (declared before the read): this session began as
 the landed ## 55's named next-UNREAD pointer (xc937ca, score 29). Its
@@ -4753,7 +4753,7 @@ page-marked extract present on the shelf; the pointer was consumed
 clean.
 
 Paper: Bastien Baldacci (Quantitative Advisory Solutions) and Philippe
-Bergault (CMAP, Ãcole Polytechnique), "Optimal incentives in a limit
+Bergault (CMAP, École Polytechnique), "Optimal incentives in a limit
 order book: a SPDE control approach", arXiv:2112.00375v2 [math.OC]
 (14 October 2022; v1 December 2021), legally acquired OA copy
 (docs/library/text/xc937ca_optimal_incentives_in_a_limit_order_book_a_
@@ -4763,7 +4763,7 @@ pointer (score 29, xc937ca), re-verified unread against all 48 library
 notes on main. Read against ONE question: what here would kill C1-L2 or
 C8 faster, or change their kill lines?
 
-The paper in one paragraph: the authors adopt the Cont-MÃ¼ller SPDE
+The paper in one paragraph: the authors adopt the Cont-Müller SPDE
 limit order book model (rescaled bid/ask volume density in signed
 distance from the mid-price, with diffusion, convection, proportional
 cancellation, a multiplicative HFT-submission/cancellation noise term,
@@ -4824,7 +4824,7 @@ setting is the cancellation rate (PDF p. 15 -- a copyediting slip),
 flagged so no citation borrows the wrong label; read, graded plainly,
 not promoted.
 
-Killed-if-wrong stands in the note: had the Cont-MÃ¼ller SPDE plant
+Killed-if-wrong stands in the note: had the Cont-Müller SPDE plant
 been read as a description of the venue C1-L2 measures, a
 fictitious-book simulation with an order-of-magnitude-sensitive
 "optimum" would have been laundered into a structural prior on the very
@@ -4840,7 +4840,7 @@ discipline prevented all of it. Laundering directions named: INTO --
 the fee-engineered-depth reading caveat and the calibration-hostage
 sensitivity exhibit, as standing-rule reinforcement only; OUT -- no
 eta, beta, alpha, sigma, or incentive value, no closed-form Eq. 16, no
-Table 1-4 figure, no Cont-MÃ¼ller parameterization, and no
+Table 1-4 figure, no Cont-Müller parameterization, and no
 "exchanges can shape the book" sentence is ever cited as expected
 behavior of any venue the programme measures, or as evidence that any
 programme feature carries information.
@@ -4860,7 +4860,7 @@ exists in docs/library/text/; a successor session must re-read the
 live main tail and the branch/PR set before consuming anything. Nothing
 measured, no kill line moved, nothing armed, nothing trades live.
 
-## 57. Null-time session 53 (2026-11-19): deep-read session 49 â the Huang-Lehalle-Rosenbaum queue-reactive model read; ONE candidate sharpening queued (the dynamics-identification rule for generative nulls), nothing armed
+## 57. Null-time session 53 (2026-11-19): deep-read session 49 — the Huang-Lehalle-Rosenbaum queue-reactive model read; ONE candidate sharpening queued (the dynamics-identification rule for generative nulls), nothing armed
 
 Session-state note (declared before the read): this session began as
 the landed ## 56's named next-UNREAD pointer (x8afb03, score 29). Its
@@ -4936,7 +4936,7 @@ docs/DECISIONS_PENDING.md updated with the new count and the new
 component's parenthetical, the only edit this session.
 
 Findings, page-cited, one line each: [reinforcing, no new item] the
-maximal mechanical volatility bound â endogenous queue dynamics alone
+maximal mechanical volatility bound — endogenous queue dynamics alone
 generate 5 bps against 14 bps empirical 10-minute volatility with
 mean-reversion ratio 0.08 against 0.39 (PDF p. 18), the OPPOSITE
 signed direction from the Hawkes-line artifacts that inflate
@@ -4950,7 +4950,7 @@ three flow intensities measured, shaped, and economically mechanized
 outer limits, increasing-concave cancellation against the classical
 linear assumption, market-order intensity exponentially decreasing in
 available volume, second- and first-limit intensities conditional on
-first-limit emptiness and opposite-queue size, PDF pp. 8-9, 11-14) â
+first-limit emptiness and opposite-queue size, PDF pp. 8-9, 11-14) —
 economic-mechanism exhibits behind C1-L2's state-conditioned premise
 family; the paper predicts FLOW intensities, never price direction.
 [interpretation caution] parameters estimated ONLY during
@@ -4984,7 +4984,7 @@ stance must be an explicit pre-declared input and may never be cited
 from this class. [source-quality note] two Euronext large-tick stocks,
 one brokerage 5-limit feed, 27 months, auction hours trimmed, claimed
 applicable where average spread is under roughly 2.5 ticks (PDF
-pp. 2, 6); the model is formally memoryless â historical order flow
+pp. 2, 6); the model is formally memoryless — historical order flow
 NOT considered (PDF p. 22), so state-versus-memory comparisons across
 this class and the flow-memory line are confounded across different
 conditioning sets; arXiv v2 read as-is, published version NOT checked
@@ -5012,7 +5012,7 @@ cost layer as market facts, author-declared upward-bias assumptions
 and a Markovian model property would have become backtest parameters.
 Library-is-ammunition, the INTO/OUT laundering rules, and the
 placebo-precedent family prevented all five. Laundering directions
-named: INTO â nothing; no intensity function or its shape, no rho
+named: INTO — nothing; no intensity function or its shape, no rho
 ratio, no theta or theta_reinit value, no mechanical volatility
 ceiling, no execution probability, no impact profile, no AES
 normalization, no symmetric-intensity convention, and no
@@ -5020,7 +5020,7 @@ invariant-distribution exhibit from this paper enters any spec,
 default, calibration, tolerance, cost assumption, or generative
 null; the one thing this paper licenses into the pending state is the
 dynamics-identification rule, queued as PENDING OWNER RATIFICATION
-and inert until ratified. OUT â never read backwards as "order flow is
+and inert until ratified. OUT — never read backwards as "order flow is
 state-driven, memory is irrelevant" (the conditioning set excludes
 flow history by construction), "only a third of volatility is
 mechanical," "the book's shape validates queue models," or "impact
@@ -5063,7 +5063,7 @@ nothing trades live.
   invention of the next unit of null-time work, made against a written
   goal state, reasons logged); the carve-outs, unchanged and owner-only
   (arming, amendment signatures, data/budget/holdout spend, kill lines,
-  sharpening approvals â PENDING OWNER RATIFICATION stands); the goal
+  sharpening approvals — PENDING OWNER RATIFICATION stands); the goal
   state, edition 1 (dated, recomputed from the live record this session;
   editable only by a synthesis pass); the director policy (the default
   ritual preserved; the synthesis cadence fires when five or more
@@ -5072,7 +5072,7 @@ nothing trades live.
   fail-safe falls back to the fixed ritual if the protocol file is
   unreachable or inconsistent); and the synthesis pass (gap-naming
   against the registered specs and the reading lists; products ONLY
-  through the sanctioned channels â catalogued-paper triage candidates,
+  through the sanctioned channels — catalogued-paper triage candidates,
   sharpening candidates to the pending queue, probe proposals, the next
   goal-state edition; measures nothing, arms nothing, launders nothing
   INTO any spec). Autonomy is granted over the task list, not over
@@ -5084,7 +5084,7 @@ nothing trades live.
   status, watchlist window, ledger paths, next-UNREAD pointer).
 - Not changed: nothing measured, no kill line moved, nothing armed,
   nothing trades live. The ratification queue after this session:
-  TWENTY-NINE candidate sharpenings plus probe E1 (unchanged â this session
+  TWENTY-NINE candidate sharpenings plus probe E1 (unchanged ― this session
   queued NOTHING); docs/DECISIONS_PENDING.md NOT touched this session,
   per the rule. The deep-read queue pointer is unchanged: the next UNREAD
   entry is "From Glosten-Milgrom to the whole limit order book and applications to financial regulation" (score 29, x0d8b2a); a successor session must
@@ -5092,7 +5092,7 @@ nothing trades live.
   docs/goal_autonomy_protocol.md, and record its work choice and reason
   in its session-state note.
 
-## 59. Null-time session 55 (2026-11-19): corrigendum â the conductor protocol file landed corrupted and was repaired; the goal state untouched; the deep-read pointer unchanged; NO kill line changes, nothing queued, nothing armed
+## 59. Null-time session 55 (2026-11-19): corrigendum — the conductor protocol file landed corrupted and was repaired; the goal state untouched; the deep-read pointer unchanged; NO kill line changes, nothing queued, nothing armed
 
 Session-state note (the work choice and its reason, per
 docs/goal_autonomy_protocol.md section 3): this session consulted the
@@ -5107,7 +5107,7 @@ protocol is the governing document every future session must consult;
 its own fail-safe would silently collapse every successor back to the
 fixed ritual, revoking the owner's new direction by defect rather than
 by decision. Recorded reason for this work choice: repair precedes all
-other selection â a corrupt governing document outranks every backlog
+other selection — a corrupt governing document outranks every backlog
 item, including the deep-read queue, until it reads true. The repair
 is sanctioned by the honest-error protocol (corrigendum precedent:
 sessions 18 and 20) and follows the goal-autonomy carve-outs: nothing
@@ -5122,7 +5122,7 @@ before its read", and runs to end of file; valid-UTF-8 but nonsense
 codepoints (mojibake), with stray diff-like fragment markers embedded
 ("+2. Cadence rule" ghosting visible in the byte stream); the file
 ends mid-garbage with no section 4 present at all. Log entry ## 58
-landed CLEAN â the corruption is confined to the protocol file pushed
+landed CLEAN — the corruption is confined to the protocol file pushed
 in the same PR (#224, branch commit 17c4035, merge 169bb94). The
 landing session's guard statement stands uncontradicted: the integrity
 guard sweeps conflict markers and library provenance labels and does
@@ -5135,13 +5135,13 @@ garbage in docs/*.md and paper/research/*.md.
 The repair (in place, declared): docs/goal_autonomy_protocol.md
 rewritten as v2 (7,088 chars / 7,108 bytes). Sections 1 and 2 and
 section 3's items 1 and 2 are preserved VERBATIM through the corrupt
-cut phrase "(as its own session, or before its read" â byte-identical
+cut phrase "(as its own session, or before its read" — byte-identical
 to the landed text up to the last clean character. The terminal period
 of item 2, items 3 (overrides: a recorded reason tied to the written
 backlog) and 4 (fail-safe: fallback to the fixed ritual if the
 protocol file is unreachable or inconsistent), section 4 (the
 synthesis pass: gap-naming against the registered specs and reading
-lists; products only through the sanctioned channels â catalogued-paper
+lists; products only through the sanctioned channels — catalogued-paper
 triage candidates, sharpening candidates to the pending queue, probe
 proposals, the next goal-state edition; measures nothing, arms
 nothing, launders nothing INTO any spec), and a dated corrigendum note
@@ -5170,7 +5170,7 @@ docs/goal_autonomy_protocol.md (v2, corrigendum-noted), and record its
 work choice and reason in its session-state note. Nothing measured, no
 kill line moved, nothing armed, nothing trades live.
 
-## 60. Null-time session 56 (2026-11-19): the same corruption independently found mid-repair, the parallel corrigendum superseded my duplicate repair (PR #226 closed); the owner's four-point configuration THEN completed on the repaired protocol â goal state edition 2, rotation guidance, the weekly directorate, the standing order recorded as MADE; NO kill line changes, nothing queued, nothing armed
+## 60. Null-time session 56 (2026-11-19): the same corruption independently found mid-repair, the parallel corrigendum superseded my duplicate repair (PR #226 closed); the owner's four-point configuration THEN completed on the repaired protocol — goal state edition 2, rotation guidance, the weekly directorate, the standing order recorded as MADE; NO kill line changes, nothing queued, nothing armed
 
 - Session-state note (declared before anything else): work selected under
   docs/goal_autonomy_protocol.md section 3, reason recorded. This session
@@ -5207,10 +5207,10 @@ kill line moved, nothing armed, nothing trades live.
   protocol (docs/goal_autonomy_protocol.md, amendment note section 7,
   all edits traceable to the 2026-11-19 chat directive): (1) goal state
   EDITION 2 (section 2 replaced whole; the facts block
-  verbatim-unchanged): the ranked open fronts now numbered 1-8 â the
+  verbatim-unchanged): the ranked open fronts now numbered 1-8 — the
   gated L2 window, the deep-read queue, the misses curriculum (the
   honest 2x2), the synthesis pass, exploratory-channel probes, the
-  website honesty pass, the macro-timeline backfill, instrument upkeep â
+  website honesty pass, the macro-timeline backfill, instrument upkeep —
   each carrying ENTRY CRITERIA, what it FEEDS, and its own decision
   GATE, per the owner's explicit configuration; the edition rule amended
   to admit the owner's direct dated instruction (edition 2's authority
@@ -5233,10 +5233,10 @@ kill line moved, nothing armed, nothing trades live.
   approvals, anything that trades). The queue count and every BLOCKED
   item in the dashboard are byte-identical otherwise.
 - Verified BEFORE the push: the integrity guard run on the assembled
-  tree â "Integrity guard: clean â no conflict markers, all library
+  tree — "Integrity guard: clean — no conflict markers, all library
   provenance labels honest.", exit 0; the amended protocol checked
   byte-level (non-ASCII characters are only the record's em/en dashes
-  and the â¥ sign; all seven sections present; sections 1, 4, 5 untouched
+  and the ≥ sign; all seven sections present; sections 1, 4, 5 untouched
   from the landed v2); the goal-state facts block cross-checked against
   the live main tail this session (TWENTY-NINE sharpenings plus probe E1
   in ## 58's tail and ## 59's closing block; T1 armed awaiting the
@@ -5246,7 +5246,7 @@ kill line moved, nothing armed, nothing trades live.
   from the landed merge before writing).
 - Not changed: nothing measured, no kill line moved, nothing armed,
   nothing trades live. The ratification queue after this session:
-  TWENTY-NINE candidate sharpenings plus probe E1 (unchanged â this
+  TWENTY-NINE candidate sharpenings plus probe E1 (unchanged — this
   session queued NOTHING); zero armed; T1's booked state untouched; the
   blocked list stays blocked. No deep-read consumed; the deep-read queue
   pointer is unchanged: the next UNREAD entry remains "From
@@ -5258,7 +5258,7 @@ kill line moved, nothing armed, nothing trades live.
   corrigendum-noted), and record its work choice and reason in its
   session-state note.
 
-## 61. Null-time session 57 (2026-11-19): deep-read session 50 â the Glosten-Milgrom whole-book equilibrium read; NO kill line changes, nothing queued, nothing armed
+## 61. Null-time session 57 (2026-11-19): deep-read session 50 — the Glosten-Milgrom whole-book equilibrium read; NO kill line changes, nothing queued, nothing armed
 
 Session-state note (work choice and reason per
 docs/goal_autonomy_protocol.md section 3, v2): the DEFAULT ritual
@@ -5281,7 +5281,7 @@ this session's first staging (PR #229, numbered ## 60 from a
 main-at-## 59 tail) was polling CI, a parallel session landed log
 ## 60 on main (that session's duplicate corrigendum repair PRs
 #226/#227 are closed unmerged, supersession recorded; the landed
-remainder carries the owner's four-point configuration â goal state
+remainder carries the owner's four-point configuration — goal state
 edition 2, rotation guidance, the weekly directorate, and the
 standing order recorded as MADE in docs/DECISIONS_PENDING.md; the
 queue count TWENTY-NINE, the deep-read pointer, and the T1/T2
@@ -5322,13 +5322,13 @@ zero armed; docs/DECISIONS_PENDING.md NOT touched this session, per
 the rule.
 
 Findings, graded (page cites in the note): TWO [reinforcing, no
-new item] â (1) a static, zero-memory equilibrium reproduces the
+new item] — (1) a static, zero-memory equilibrium reproduces the
 volume-imbalance/next-move relation for large-tick stocks, the
 imbalance being a strictly increasing bijection of the latent
 position of the efficient price inside the tick (PDF p. 23, Fig. 4,
 PDF pp. 23-25): the strongest known high-frequency "book predicts
 price" stylized fact is generated by a discreteness artifact of a
-static state, not by flow memory â a second worked exhibit for the
+static state, not by flow memory — a second worked exhibit for the
 dynamics-identification rule queued at ## 57 plus its placebo
 precedents; (2) average-shape match is non-identifying by
 construction, Proposition 2.2 (PDF p. 11) makes essentially any LOB
@@ -5336,7 +5336,7 @@ shape attainable by a free noise-size density fitted to it, while
 the Gaussian alternative fails beyond the best pile (Figs. 2-3,
 PDF pp. 17-21) and the piecewise fit fails on all small-tick stocks
 (spread > 4 ticks, Table 3, PDF p. 20). TWO [interpretation caution]
-â (3) equilibrium determinism: the whole book (spread, depth
+— (3) equilibrium determinism: the whole book (spread, depth
 profile, imbalance, queue values) is a deterministic function of a
 few structural objects (r, the law of B, the law of Q_u, the tick,
 and the latent state d; Theorem 2.1 PDF pp. 10-11, Theorem 3.1
@@ -5344,16 +5344,16 @@ PDF p. 14), so L2 book-shape features are not independent
 measurements and co-movement among them is not evidence of a
 separate mechanism; (4) the model's macroscopic volatility
 lambda_i E[B^2] (PDF p. 5) is invalid under its own Levy-stable
-calibration (a in (1,2), PDF pp. 17, 20) â no volatility
+calibration (a in (1,2), PDF pp. 17, 20) — no volatility
 decomposition citing this model may enter C8's
 mechanical-versus-exogenous work, the ## 51/## 57 signed-bias
-conjunction family. ONE [cost-survival ammunition] â queue
+conjunction family. ONE [cost-survival ammunition] — queue
 position is a spread-sized priced quantity: zero-profit only at
 the rear, maximal at the top (Assumption 4, PDF p. 14; Theorem
 5.1, Corollary 5.1, PDF p. 26); any K7-style cost layer must carry
 queue position as an explicit pre-declared input, uniform or random
 fill-position assumptions misprice passive fills by a spread-sized
-quantity. ONE [source-quality note] â arXiv v2 read as-is,
+quantity. ONE [source-quality note] — arXiv v2 read as-is,
 published version NOT checked; estimated jump intensity is
 horizon-dependent (the 5s application required re-estimation
 because one-minute lambda_i "failed to capture many short-term
@@ -5377,10 +5377,10 @@ institutional assumptions do not cover; had the volatility formula
 or a cross-horizon lambda_i transfer been imported, an
 infinite-variance jump law or an author-caught undercount bias
 would have entered C8 or a C1-L2 clock silently. All five prevented;
-laundry directions named in the note: INTO â nothing, no spread law,
+laundry directions named in the note: INTO — nothing, no spread law,
 no intensity, no jump-law parameter, no volatility decomposition, no
 queue-value formula from this paper enters any spec, default,
-calibration, tolerance, cost assumption, or generative null; OUT â
+calibration, tolerance, cost assumption, or generative null; OUT —
 never read backwards as "imbalance is meaningless" (the model
 REPRODUCES the relation; it explains it statically on this venue
 class, it does not refute anything), "spreads are mechanical," or
@@ -5405,19 +5405,19 @@ the rotation guidance applies to selection), and record its work
 choice and reason in its session-state note. Nothing measured, no
 kill line moved, nothing armed, nothing trades live.
 
-## 62. Null-time session 58 (2026-11-19): the disposition leg of the session-55 repair race, landed on the THIRD rebase â this session's duplicate protocol repair DISCARDED (PRs #227 and #230 closed unmerged, supersessions recorded); ONE candidate sharpening queued (the corrupt-landing sweep, the thirtieth); the placeholder-commits defect disclosed; the slot-race pattern named with this session's two 405s; NO kill line changes, nothing measured, nothing armed
+## 62. Null-time session 58 (2026-11-19): the disposition leg of the session-55 repair race, landed on the THIRD rebase — this session's duplicate protocol repair DISCARDED (PRs #227 and #230 closed unmerged, supersessions recorded); ONE candidate sharpening queued (the corrupt-landing sweep, the thirtieth); the placeholder-commits defect disclosed; the slot-race pattern named with this session's two 405s; NO kill line changes, nothing measured, nothing armed
 
 Session-state note (work choice and its number, recorded under the
 goal-autonomy conductor protocol v2, edition 2): this session began as
 null-time session 55 against a main ending at ## 58, consulted the then-
 landed conductor protocol, found the ratifying document itself corrupted,
-and selected instrument-defect repair as its work choice â a corrupt
+and selected instrument-defect repair as its work choice — a corrupt
 governing document outranks every backlog item until it reads true. That
 front was raced. This session repaired the file on a working branch and
-drafted its entry as ## 59; at merge time main had moved â a parallel slot
+drafted its entry as ## 59; at merge time main had moved — a parallel slot
 had landed its own corrigendum. While recording the supersession this
 session renumbered its disposition to ## 61 and opened PR #230; main moved
-AGAIN mid-CI â a third parallel slot landed deep-read 50 as ## 61 â and the
+AGAIN mid-CI — a third parallel slot landed deep-read 50 as ## 61 — and the
 merge refused a second time. This entry, ## 62 (session 58), is the
 disposition remainder of the original work choice on its third rebase:
 the repair itself is discarded (first-landed governs, per the protocol all
@@ -5428,23 +5428,23 @@ then entry ## 61 (PR #230, refused, closed), now this entry.
 
 The race, named plainly, all five legs: PR #225 (vibe/null-time-55-
 conductor-corrigendum, merged 19:35:37Z) landed the protocol repair as v2
-with log entry ## 59 â that repair stands. PR #226 (vibe/goal-autonomy-
+with log entry ## 59 — that repair stands. PR #226 (vibe/goal-autonomy-
 repair) was closed unmerged and its session re-landed on the repaired
 protocol as PR #228, log entry ## 60 (the owner's four-point
 configuration; goal state edition 2; rotation guidance; the weekly
-directorate; the standing order recorded as MADE). PR #227 â this
-session's first landing attempt â was opened against an already-stale main
+directorate; the standing order recorded as MADE). PR #227 — this
+session's first landing attempt — was opened against an already-stale main
 state, refused at merge with conflicts, and closed unmerged with the
 supersession recorded on the PR, precedent #165. PR #229 (deep-read 50,
 Glosten-Milgrom) was superseded pre-landing BY ITS OWN SESSION, renumbered
-against the advanced main, and re-landed as PR #231, log entry ## 61 â
-consuming the x0d8b2a deep-read pointer in the process. PR #230 â this
-session's disposition, drafted as ## 61 against a tail that moved mid-CI â
+against the advanced main, and re-landed as PR #231, log entry ## 61 —
+consuming the x0d8b2a deep-read pointer in the process. PR #230 — this
+session's disposition, drafted as ## 61 against a tail that moved mid-CI —
 was refused at merge with conflicts a second time and is closed unmerged
 with the second supersession recorded. Nothing of this entry touches the
 deep-read front or its pointer.
 
-Why the landed v2 wins on the merits â verified by direct byte comparison
+Why the landed v2 wins on the merits — verified by direct byte comparison
 this session, output on record: the two repairs are byte-identical for
 the intact prefix's full 4,399 chars; from there the landed v2 preserves
 the original cadence-rule sentence COMPLETE (through "(as its own
@@ -5455,41 +5455,41 @@ were reconstructed from the same single admissible source (log entry
 session's repair is discarded whole; nothing of this session's protocol
 file reaches main. This session's independent byte evidence (repo-wide
 printable-ratio scan finding exactly one corrupted tracked file) now
-AGREES with the diagnoses in ## 59 and ## 60 â three independent byte-
+AGREES with the diagnoses in ## 59 and ## 60 — three independent byte-
 level readings converge on the defect's shape: valid UTF-8, mid-section-3
 cut, garbage to EOF, section 4 absent. This session adds the one datum
 neither landed leg stated: the file DECODES VALIDLY AS UTF-8, so a
-decodability check alone would not have caught it â the corrupted bytes
+decodability check alone would not have caught it — the corrupted bytes
 are well-formed codepoints with garbage semantics. That distinction
 shapes the queued sweep below and its thresholds.
 
 Slot-race pattern, named (observation only; any governance change is
 owner-only): on this single evening the shared append-only log produced
-refused merges for FOUR separate attempts â this session's two 405s (PR
+refused merges for FOUR separate attempts — this session's two 405s (PR
 #227, PR #230), the ## 60 session's 405 (its own record), and the
-deep-read slot's pre-landing supersession of PR #229 â every one resolved
+deep-read slot's pre-landing supersession of PR #229 — every one resolved
 honestly by first-landed-governs, at the cost of discarded and reworked
 sessions. Parallel null-time sessions landing into one append-only log
 need a slot-claim or numbering-pass convention; recorded here as a named
-observation and NOT implemented â the session protocol is a ratified
+observation and NOT implemented — the session protocol is a ratified
 document and its amendment is an owner carve-out.
 
 Composition defect disclosed (nothing hidden, nothing reached main): this
 session's first push to its working branch (commit 7d40756 on branch
 null-time-55-corrigendum-protocol-repair) carried literal placeholder
 text where the log entry belonged and a placeholder commit message
-("__MSG__") â unsubstituted template strings in the session's own
+("__MSG__") — unsubstituted template strings in the session's own
 tooling. Caught at byte-verification before any PR was opened; corrected
 by follow-up commit 2526f4a on the same branch; both the defect and the
 correction were disclosed in the branch's own log text, in PR #227's
-body, and again here â that branch history is now abandoned rather than
+body, and again here — that branch history is now abandoned rather than
 merged. This is a THIRD distinct tooling failure mode recorded this
 evening (## 60 recorded the 64K read-truncation mode; the placeholder
 mode is this session's), none covered by the standing guard, all caught
 by post-push byte-verification rather than by any instrument.
 
 One candidate sharpening queued, PENDING OWNER RATIFICATION: the
-corrupt-landing sweep â a third integrity-guard check, failing any
+corrupt-landing sweep — a third integrity-guard check, failing any
 tracked text file whose content shows a printable-ratio collapse or
 C0-C1 control bytes beyond tab/newline/CR in any contiguous region, with
 the legally acquired PDF extracts under docs/library/text/ explicitly
@@ -5526,10 +5526,10 @@ session must re-read the live main tail AND the open branch/PR set,
 consult docs/goal_autonomy_protocol.md (v2, edition 2, corrigendum-
 noted), and record its work choice and reason in its session-state note.
 
-## 63. Null-time session 59 (2026-11-19): deep-read session 51 â the Wang-Xu-Zhu Hawkes microfoundation for multitype inverse-Gaussian subordinators read; the Glosten-Milgrom slot left to the live claim (landed mid-flight as ## 61); NO kill line changes, NO sharpening, nothing armed
+## 63. Null-time session 59 (2026-11-19): deep-read session 51 — the Wang-Xu-Zhu Hawkes microfoundation for multitype inverse-Gaussian subordinators read; the Glosten-Milgrom slot left to the live claim (landed mid-flight as ## 61); NO kill line changes, NO sharpening, nothing armed
 
 - Session-state note (declared before anything else): work selected
-  under docs/goal_autonomy_protocol.md (edition 2) â the standing owner
+  under docs/goal_autonomy_protocol.md (edition 2) — the standing owner
   directive in chat this same day orders the deep-read default
   explicitly, and the director policy's rotation item makes the
   default the floor, so the choice needs no further justification; the
@@ -5539,12 +5539,12 @@ noted), and record its work choice and reason in its session-state note.
   installed at ## 60).
 - Numbering race declared up front, then settled by the main-wins
   protocol: TWO live branches claimed log entry ## 61 / null-time
-  session 57 at this session's read time â PR #230 (disposition leg
+  session 57 at this session's read time — PR #230 (disposition leg
   of the session-55 repair race) and PR #231 (deep-read 50, the
   Glosten-Milgrom whole-book paper). This session drafted as log
   entry ## 62 / null-time session 58 / deep-read session 51 with the
   race declared (branch deep-read-51-hawkes-ig-subordinator-xf77014,
-  PR #234, CI green on both jobs â test and engine). MID-FLIGHT,
+  PR #234, CI green on both jobs — test and engine). MID-FLIGHT,
   main advanced (sha 51eb9453) with the Glosten-Milgrom deep-read
   landed as entry ## 61 (deep-read 50, 51st library note), resolving
   the race for ## 61 in that claimant's favor. The merge of PR #234
@@ -5553,9 +5553,9 @@ noted), and record its work choice and reason in its session-state note.
   entry as ## 62 on its third rebase, queuing the corrupt-landing
   sweep as the THIRTIETH candidate sharpening), so per the
   first-landed-governs protocol this session renumbers to entry
-  ## 63 / null-time session 59 / deep-read session 51 â the
+  ## 63 / null-time session 59 / deep-read session 51 — the
   deep-read number is unaffected, no deep-read was consumed by
-  landed ## 62 â and re-lands on a fresh branch; PR #234 is closed
+  landed ## 62 — and re-lands on a fresh branch; PR #234 is closed
   as superseded with the supersession recorded. Two numbered
   attempts, one 405, disclosed: drafted ## 62 / null-time 58
   (PR #234, refused at merge), now this entry. This session's 405
@@ -5580,14 +5580,14 @@ noted), and record its work choice and reason in its session-state note.
   expanded_index.json via the slug (arXiv:2610.10525v1, Wang, Xu,
   Zhu, 2026).
 - The paper: a nearly critical multivariate linear Hawkes system
-  (kernel-mass defect B_T â nonsingular M-matrix B, immigration
-  balanced TÂ·r_TÂ·Âµ_T â Î·) has rescaled counts and integrated
+  (kernel-mass defect B_T → nonsingular M-matrix B, immigration
+  balanced T·r_T·µ_T → η) has rescaled counts and integrated
   intensities converge jointly in product-M1 to a pure-jump
   multitype inverse-Gaussian subordinator with exponent fixed by
-  B^T z + zâ2/2 = u (Theorem 2.2, PDF pp. 6-7; cluster proof Lemmas
+  B^T z + z∘2/2 = u (Theorem 2.2, PDF pp. 6-7; cluster proof Lemmas
   4.1-4.3, PDF pp. 23-25); the mechanism is rare finite-variance
   near-critical families of order r_T^-2 whose internal timing
-  collapses to a single jump exactly when TÂ·r_T â â (Lemma 5.1, an
+  collapses to a single jump exactly when T·r_T → ∞ (Lemma 5.1, an
   iff, PDF p. 27); diagonal B gives independent IG clocks, the
   square-root specialization reproduces the Abi Jaber-Attal-Rosenbaum
   hyper-rough boundary law (PDF pp. 7-9), Section 3 weakens the prior
@@ -5599,7 +5599,7 @@ noted), and record its work choice and reason in its session-state note.
 - Grade, default: NO kill line changes. NO new candidate sharpening.
   Five findings, one tag each, full statement in the note (paper/
   research/library/2026-11-19_hawkes_ig_subordinator_deep_read.md):
-  (1) [reinforcing, no new item] the phase-diagram lesson â the
+  (1) [reinforcing, no new item] the phase-diagram lesson — the
   branching-ratio exponent alone does not determine the macro path
   type; criticality speed, immigration balance, and the kernel's
   temporal tail decide between IG-collapse, CIR, and rough regimes
@@ -5607,25 +5607,25 @@ noted), and record its work choice and reason in its session-state note.
   near-criticality register cautions exactly as they stand; (2)
   [interpretation caution] calendar collapse is observation-grain
   relative (the iff of Lemma 5.1, PDF p. 27; M1-not-J1, PDF pp. 4, 8,
-  25) â coarse-grain "jump moments" are grain-relative descriptions of
+  25) — coarse-grain "jump moments" are grain-relative descriptions of
   cascades the fine grain resolves, a reading mode for future C1-L2
   compression interpretations, no queue change; (3) [interpretation
   caution] a triangular-array theorem is not a finite-sample market
   fact, and Corollary 2.7's NIG is a clock law the authors themselves
-  fence â a return model "would additionally need signs, imbalance,
+  fence — a return model "would additionally need signs, imbalance,
   leverage, and a rule for composition at clock jumps" (PDF pp. 9, 33);
   never read backwards as "returns are NIG"; (4) [reinforcing, no new
-  item] the x^-3/2 LÃ©vy singularity is the mechanism output of ANY
+  item] the x^-3/2 Lévy singularity is the mechanism output of ANY
   finite-variance near-critical branching with an r_T^-2 cutoff
   (PDF pp. 28, 32), so heavy cascade tails license no criticality
-  claim â the apparent-criticality caution stands reinforced;
+  claim — the apparent-criticality caution stands reinforced;
   (5) [source-quality note] arXiv:2610.10525v1, pure math.PR, no data
   anywhere, one closing finance paragraph; v1, published version NOT
   checked, flagged for verification.
-- Laundering directions, as in the note: INTO â nothing; no exponent
+- Laundering directions, as in the note: INTO — nothing; no exponent
   parameter, no density, no clock law, no collapse condition, no
   topology convention enters any spec, default, calibration, or
-  generative null. OUT â never read backwards as "returns are NIG,"
+  generative null. OUT — never read backwards as "returns are NIG,"
   "near-critical flow implies jump-like macro clocks in finite data,"
   "branching ratio near one identifies the regime," "critical families
   are macroscopic" (a single family vanishes, PDF p. 28), or "heavy
@@ -5635,7 +5635,7 @@ noted), and record its work choice and reason in its session-state note.
   through the authenticated GitHub API. The integrity guard could not
   be run over a full assembled tree locally (no tarball possible); the
   guard's exact marker-sweep logic was executed over this session's
-  changed files (zero offenders â clean), the library-provenance audit
+  changed files (zero offenders — clean), the library-provenance audit
   is untouched (no docs/library/summaries/ file changed), and the real
   guard runs in branch CI over the full tree: both ci.yml checks green
   on the branch before merge, recorded below in this entry's landing
@@ -5652,7 +5652,7 @@ noted), and record its work choice and reason in its session-state note.
   session: THIRTY candidate sharpenings plus probe E1 (twenty-nine
   standing at this session's read, plus the corrupt-landing sweep
   queued as the thirtieth by landed ## 62, read back from the
-  advanced main tail; unchanged â this session queued NOTHING);
+  advanced main tail; unchanged — this session queued NOTHING);
   zero armed; docs/DECISIONS_PENDING.md
   NOT touched. T1 remains armed awaiting the owner's word in its booked
   state (survived all five kill lines with sign inverted; T2
@@ -5673,7 +5673,7 @@ noted), and record its work choice and reason in its session-state note.
 ## 64. Null-time session 60 (2026-11-19): GOALS.md installed as the goal-state status board with three zero-authority work-fronts; the encoding-sanity gap in the integrity guard closed with tests; NO kill line changes, nothing queued by this session, nothing armed
 
 Session-state note (the work choice and its reason, per the
-conductor protocol section 3, landed edition â the rotation
+conductor protocol section 3, landed edition — the rotation
 guidance's first exercise): owner directive, in chat, 2026-11-19,
 refining the goal-autonomy grant into its concrete configuration.
 Race chain, declared honestly and completely, all five collisions:
@@ -5701,7 +5701,7 @@ advanced a fifth time: the parallel deep-read 51 landed as ## 63 (PR
 inverse-Gaussian subordinators), taking the ## 63 number, session 59,
 and the xf77014 pointer, and this session's sandbox working tree was
 wiped by an environment reset in the same window (recovered from the
-pushed branch, nothing lost â all pushes predate the reset and match
+pushed branch, nothing lost — all pushes predate the reset and match
 byte-verified content). Per main-wins, every landed leg stands; this
 entry is the FOURTH renumber: ## 64 / null-time session 60, queue
 count and cross-references adopted from the live tail, deep-read
@@ -5714,14 +5714,14 @@ channel (## 25), the conductor installation (## 58), the corrigendum
 landing (## 61), the disposition landing (## 62), the second
 deep-read landing (## 63).
 
-Installed, one landing, four changes. (1) docs/GOALS.md, edition 1 â
+Installed, one landing, four changes. (1) docs/GOALS.md, edition 1 —
 the status board. The conductor protocol's section 2 (goal state
-edition 2) is the ranking authority: numbered fronts 1â8, each with
+edition 2) is the ranking authority: numbered fronts 1–8, each with
 entry criteria, what it feeds, and its own gate. GOALS.md does not
 re-rank or reinterpret any front; it carries a STATUS line per front
 (the operative bookkeeping the rotation guidance needs: what is
 blocked, what is ready, when the synthesis pass is due), the rotation
-rule in operational form (a due synthesis â front 4 â first; then the
+rule in operational form (a due synthesis — front 4 — first; then the
 lowest-numbered ready front least recently advanced; deep-read is one
 front among the others, not the automatic default; fail-safe to the
 fixed ritual), and three G-fronts, added this session with ZERO claim
@@ -5731,20 +5731,20 @@ already-running instrument), G2 ratification-readiness briefs
 (one-page accept/reject briefs for the queued THIRTY sharpenings plus
 probe E1 for the weekly directorate; a brief invents nothing, queues
 nothing, arms nothing), G3 C8 skeleton coherence (preparation records
-only; A1âA5 stay PROPOSED and owner-gated). The front-2 status line
+only; A1–A5 stay PROPOSED and owner-gated). The front-2 status line
 is written against the post-## 63 pointer state.
 (2) The protocol gained a section 8 cross-reference amendment
-recording the GOALS.md install and the guard closure; sections 1â7
+recording the GOALS.md install and the guard closure; sections 1–7
 stand verbatim on main, byte-verified against the live file before
 each push. (3) src/integrity_guard.py: the encoding-sanity check named
-in ## 59 and held at candidate status by ## 60 is implemented â
+in ## 59 and held at candidate status by ## 60 is implemented —
 guard check 3 rejects U+FFFD replacement characters, non-UTF-8 byte
 sequences, and non-printable control characters in docs/*.md and
 paper/research/*.md (the ## 59 scope), with strict UTF-8 decode.
 Honest scope, stated plainly: this closes the replacement-character
 and control-byte half of the named gap; it does NOT implement the
 corrupt-landing sweep the disposition leg queued as the thirtieth
-candidate (printable-ratio collapse detection) â that sharpening
+candidate (printable-ratio collapse detection) — that sharpening
 stands PENDING OWNER RATIFICATION and is not built here, because a
 queued tightening waits for the owner's word and its exact thresholds
 are fixed in ratification; check 3 additionally does not certify
@@ -5763,7 +5763,7 @@ single gate. The ratification queue stands untouched by this session.
 
 Branch-processing note, by the honest-error protocol: this session's
 working branch (conductor/fronts-manifest-2026-11-19) carries a
-truncated intermediate push from its first staging â the initial
+truncated intermediate push from its first staging — the initial
 GOALS.md commit's payload was cut mid-file (an earlier draft's front
 F5), caught by the post-push verification, confined to the branch,
 never on main, and corrected in the next branch commit; the
@@ -5773,7 +5773,7 @@ race-check assertion and an invalid create_branch argument) aborted
 before any mutation. Three further fail-stops, none reaching the
 repo: (a) a hand-carried base64 payload failed its in-run decode
 verification twice (decoded length 6970 against an expected 7579;
-the assertion held both times, nothing was pushed â the fix was to
+the assertion held both times, nothing was pushed — the fix was to
 stop hand-carrying payloads entirely and read the staged files from
 the working tree inside the run, keeping the verify-then-push order);
 (b) a wrong endswith assertion on GOALS.md checked a footer that was
@@ -5787,7 +5787,7 @@ state; all pushed content predates the reset and was verified before
 it. The pushed files are the disk-verified bytes.
 
 Verified BEFORE every push: the integrity guard (now three checks)
-run on the assembled tree â clean, exit 0 (conflict-marker sweep,
+run on the assembled tree — clean, exit 0 (conflict-marker sweep,
 library provenance audit, encoding sanity); all fourteen test
 functions in tests/test_integrity_guard.py executed and passed
 (pytest is not installable in this sandbox; the functions were driven
@@ -5801,7 +5801,7 @@ from main before this session's artifacts were re-based on them.
 
 Not changed: nothing measured, no kill line moved, nothing armed,
 nothing trades live. The ratification queue after this session:
-THIRTY candidate sharpenings plus probe E1 â advanced by the
+THIRTY candidate sharpenings plus probe E1 — advanced by the
 parallel ## 62 disposition (the corrupt-landing sweep, the
 thirtieth), NOT by this session, which queues NOTHING;
 docs/DECISIONS_PENDING.md untouched by this session per the rule.
@@ -5823,7 +5823,7 @@ under the standing order, and record the choice and the reason in
 its session-state note. Nothing measured, no kill line moved,
 nothing armed, nothing trades live.
 
-## 65. Null-time session 61 (2026-11-19): the misses curriculum's missing leg â the C1-L2 spec's base-rate confrontation written; the spec's silence on the daily table verified and named; ONE candidate sharpening queued (the C1-L2 base-rate confrontation, the thirty-first); three instrument observations recorded for the directorate; NO kill line changes, nothing measured, nothing armed
+## 65. Null-time session 61 (2026-11-19): the misses curriculum's missing leg — the C1-L2 spec's base-rate confrontation written; the spec's silence on the daily table verified and named; ONE candidate sharpening queued (the C1-L2 base-rate confrontation, the thirty-first); three instrument observations recorded for the directorate; NO kill line changes, nothing measured, nothing armed
 
 Session-state note (work choice and its reason, recorded under the
 goal-autonomy conductor protocol v2, edition 2, section 3): front 3, the
@@ -5842,9 +5842,9 @@ the tree, not assumed: the descriptive protocol IS written, dated, and
 frozen (2026-11-16, src/misses_curriculum.py and src/misses_2x2.py
 docstrings, parity-pinned); the analysis legs are NOT executable in this
 environment (the cached klines live codespace-side; data/raw here holds
-only the L2 sample placeholders â verified directly), and the queue item's
-own endpoint â "the table itself becomes the reference the C1-L2 spec
-must confront" â had never been executed: direct search of
+only the L2 sample placeholders — verified directly), and the queue item's
+own endpoint — "the table itself becomes the reference the C1-L2 spec
+must confront" — had never been executed: direct search of
 paper/research/c1_l2_test_spec.md found ZERO matches for "misses," "base
 rate," "base-rate," "coverage," or "lift" (the C8 spec likewise). So the
 lawfully executable front-3 work this session was its completion leg: the
@@ -5854,7 +5854,7 @@ Mid-flight renumbering, disclosed (the main-wins protocol; this
 session's first renumber, the programme's third of the evening): this
 entry was drafted as ## 63 / null-time
 session 59 against the 56add4c tail, staged, and byte-verified; the
-push-time race check then found main advanced to c538c9b â a parallel
+push-time race check then found main advanced to c538c9b — a parallel
 session had landed deep-read 51 AS ## 63 (null-time session 59: the
 Wang-Xu-Zhu Hawkes-IG microfoundation paper, xf77014), consuming the
 deep-read pointer this session's first draft named and taking the drafted
@@ -5868,10 +5868,10 @@ landing (a second landed deep-read since edition 2 leaves the cadence
 unfired; the rotation reason was made against the tail at session start
 and the front-3 work reported here is the work that was done). A second
 mid-flight renumber, disclosed (the main-wins protocol; this session's
-second, the programme's fourth of the evening): PR #232 â first titled
+second, the programme's fourth of the evening): PR #232 — first titled
 to the already-landed ## 62 slot, then retitled mid-flight to claim
 "Null-time session 60 (log ## 64): GOALS.md status board installed,
-encoding-sanity guard closure with tests" â claimed the SAME ## 64 /
+encoding-sanity guard closure with tests" — claimed the SAME ## 64 /
 session-60 slot this entry had been renumbered into. The twin-claim
 state was disclosed by comment on this session's open PR (race
 addendum, no numbering priority claimed beyond facts); both heads then
@@ -5890,17 +5890,17 @@ closed with the supersession recorded, and this entry re-lands from
 branch vibe/null-time-61-front3-confrontation, rebuilt byte-verified on
 the post-#232 main. The work, and what it is not: a dated note
 (paper/research/misses_curriculum_c1l2_confrontation_2026-11-19.md) now
-(1) quotes the frozen 2026-11-16 base-rate table of record â 873 series,
+(1) quotes the frozen 2026-11-16 base-rate table of record — 873 series,
 1,765,316 series-days, cells A=570 / B=33,595 / C=13,971 / D=1,717,180,
 coverage 0.039, P(move|primed) 0.01668, P(move|not primed) 0.00807, lift
-2.07, base priming rate 0.0194 â QUOTED, not recomputed: no protocol was
+2.07, base priming rate 0.0194 — QUOTED, not recomputed: no protocol was
 re-run, no number was computed this session, NOTHING was measured; (2)
 states the laundering channel the confrontation closes: the daily grain
-is not silent â daily priming already lifts big moves 2.07x at 3.9%
+is not silent — daily priming already lifts big moves 2.07x at 3.9%
 coverage, so a future L2 positive reported without the daily table
 beside it could sell as book-resolution discovery what the daily table
 already delivers for free; (3) drafts the proposed confrontation
-paragraph for c1_l2_test_spec.md in full â daily reference quoted whole
+paragraph for c1_l2_test_spec.md in full — daily reference quoted whole
 in the spec before the gate, novelty-versus-daily-grain pre-declared
 before the data, horizon bridge between the spec's wall-clock barriers
 (H=24h primary, H=72h secondary) and the daily 10-bar horizon frozen
@@ -5908,7 +5908,7 @@ before the data or non-comparability declared with reasons, and the
 daily lift 2.07 printed beside every reported L2 effect size; and (4)
 records the killed-if-wrong counterfactual: without it the programme's
 most expensive future test could return a daily-grain re-discovery
-dressed as an L2 discovery â the ## 45 synthetic-rebuttal and ## 61
+dressed as an L2 discovery — the ## 45 synthetic-rebuttal and ## 61
 equilibrium-determinism laundering shapes, pre-empted at the spec
 instead of caught post-hoc. The draft is NOT installed: the C1-L2 spec
 file is untouched this session, as is every other spec, frozen constant,
@@ -5921,7 +5921,7 @@ amendment, stated against the pre-registration discipline family (the
 sign-kill-line template rule's family): it forces the spec to state,
 while it is still a DRAFT blocked on data that does not yet exist, what
 its positive must add beyond what the daily grain already knows, and it
-takes that statement out of the future report author's hands â novelty
+takes that statement out of the future report author's hands — novelty
 claimed after a result is laundering; novelty pre-declared before the
 gate is a kill line the result must survive. docs/DECISIONS_PENDING.md
 is updated this session ONLY because a sharpening was queued, per the
@@ -5932,9 +5932,9 @@ corrupt-landing sweep plus this queue item).
 
 Three instrument observations recorded by reference (front 8; upkeep is
 automated and never re-done by hand; this session acts on NONE of them,
-and none blocks the writing leg): (a) src/misses_2x2.py â built,
+and none blocks the writing leg): (a) src/misses_2x2.py — built,
 protocol-frozen, parity-pinned, and wired into the nightly
-board_refresh cycle at founding â has NO outputs anywhere on main: no
+board_refresh cycle at founding — has NO outputs anywhere on main: no
 misses_2x2.csv, no per-series file, no dated report; its recorded first
 real run "in the codespace where the klines live" has either never
 happened or has never been committed; (b) board_history.csv holds
@@ -5942,8 +5942,8 @@ exactly one snapshot row (2026-11-16), three nights stale; (c)
 logs/board_surprise_ledger.jsonl likewise holds only the founding
 nights. Together: there is no in-repo evidence the nightly cycle has
 run since founding. If the codespace cycle runs uncommitted, the
-sealed-prediction record â the programme's cheapest falsification
-instrument â is accumulating off-repo or not at all. Named for the
+sealed-prediction record — the programme's cheapest falsification
+instrument — is accumulating off-repo or not at all. Named for the
 owner's codespace check at the next directorate sitting; the
 confrontation paragraph deliberately cites only the frozen board-level
 table, whose outputs ARE on record.
@@ -5965,7 +5965,7 @@ rotation guidance applies to selection), and record its work choice and
 reason in its session-state note. Nothing measured, no kill line moved,
 nothing armed, nothing trades live.
 
-## 66. Null-time session 62 (2026-11-19): deep-read session 52 â Hawkes volatility on filtered tick structures (Lee) read; the aggregation-grid lesson absorbed as reinforcement, not sharpening; NO kill line changes, NO new sharpening, nothing armed
+## 66. Null-time session 62 (2026-11-19): deep-read session 52 — Hawkes volatility on filtered tick structures (Lee) read; the aggregation-grid lesson absorbed as reinforcement, not sharpening; NO kill line changes, NO new sharpening, nothing armed
 
 Session-state note (work choice and its reason, recorded under the
 goal-autonomy conductor protocol v2, edition 2, section 3, item 3, the
@@ -5973,7 +5973,7 @@ rotation guidance, via the GOALS.md operational rule): front 2, the
 library deep-read queue, selected as the lowest-numbered READY front.
 The choice chain, verified against the live tail at session start (main
 at 4420f36, tail ## 65, GOALS.md edition 1 read in full): the
-synthesis pass (front 4, the first-outranked item) is NOT due â two
+synthesis pass (front 4, the first-outranked item) is NOT due — two
 deep-read sessions had landed since goal-state edition 2 at choice
 time (#50 at ## 61, #51 at ## 63) against the rule's five, and this
 session's read makes three, still short of the cadence; front 1 is
@@ -5986,7 +5986,7 @@ file (500 entries) and the library notes (52 dated notes) were read
 directly; the next UNREAD in score order per the landed ## 63/## 65
 records is the target consumed below; the xf77014 line remains consumed
 by ## 63 (its note cites the paper by content though its slug path
-differs from the kb-search convention â recorded here as an observed
+differs from the kb-search convention — recorded here as an observed
 bookkeeping fact, no action taken, nothing renumbered).
 
 The paper: Kyungsub Lee, "Application of Hawkes volatility in the
@@ -6001,7 +6001,7 @@ page-cited in the note files
 the session's main harvest: raw tick data (up to 60 events/second,
 AMZN 2018) does not fit a single-kernel exponential Hawkes, and the
 author's remedy is a 0.1-second filter "validated" by stability with "no
-clear standard" for the interval (PDF pp. 4, 16-17) â the aggregation
+clear standard" for the interval (PDF pp. 4, 16-17) — the aggregation
 grid as an unstated researcher degree of freedom, demonstrated live. The
 C1-L2 spec already closes this channel before the data: labels on
 wall-clock economic barriers with the TRADE-through touch rule,
@@ -6020,7 +6020,7 @@ results. Reading rule only.
 3. [reinforcing, no new item] At daily grain, daily Hawkes volatility,
 5-minute realized volatility, and absolute daily changes track the same
 dynamics and are treated as interchangeable (PDF pp. 19-21, Figures
-8-10) â a direct instance of the premise the THIRTY-FIRST queued
+8-10) — a direct instance of the premise the THIRTY-FIRST queued
 sharpening (the C1-L2 base-rate confrontation, ## 65) forces into the
 spec: fine-grain measurements summarized at daily grain add nothing
 over the daily measure, so the L2 positive must be pre-declared as
@@ -6069,26 +6069,26 @@ and the branch/PR set, consult the conductor protocol (sections 2, 3,
 the standing order, and record the choice and the reason in its
 session-state note. Nothing measured, no kill line moved, nothing armed,
 nothing trades live.
-## 67. Null-time session 63 (2026-11-19): deep-read session 53 â the Ackermann-Kruse-Urusov negative-resilience paper read; the regime-window as a researcher degree of freedom named and closed by a proposed spec amendment; ONE candidate sharpening queued (the self-excitation regime-window pre-declaration, the thirty-second); NO kill line changes, nothing measured, nothing armed
+## 67. Null-time session 63 (2026-11-19): deep-read session 53 — the Ackermann-Kruse-Urusov negative-resilience paper read; the regime-window as a researcher degree of freedom named and closed by a proposed spec amendment; ONE candidate sharpening queued (the self-excitation regime-window pre-declaration, the thirty-second); NO kill line changes, nothing measured, nothing armed
 
 Session-state note (work choice and its reason, recorded under the
 goal-autonomy conductor protocol v2, edition 2, section 3, and the
 GOALS.md rotation rule): front 2, the library deep-read queue, chosen
 by the owner's dated standing directive for this cycle ("run the next
-null-time deep-read sessionâ¦ follow the research-intake skill ritual
+null-time deep-read session… follow the research-intake skill ritual
 exactly"), which is the direct-instruction path the conductor protocol
 and the standing order both recognize and which satisfies GOALS.md rule
 3's no-consecutive-repeats condition (the repetition reason: the
 owner's dated instruction names the deep-read). Independent of that
 instruction, the chain checked against the live tail (main at the
 ## 66 landing) and docs/GOALS.md edition 1: the synthesis pass (front
-4) is NOT due â this session's read brings the deep-read counter since
+4) is NOT due — this session's read brings the deep-read counter since
 goal-state edition 2 to four (50, 51, 52, 53) against the rule's five;
 front 1 is blocked on the owner, front 3 is blocked on codespace/data
 presence; front 2 held the only readable UNREAD head. The head was
 recomputed live, not from memory: the triage file and the library
 notes (53 dated notes) were read directly, and the ## 66 landing's own
-next-pointer named the same target â x77c554 â giving a two-source
+next-pointer named the same target — x77c554 — giving a two-source
 confirmation; no open PR existed at session start.
 
 The paper: Julia Ackermann, Thomas Kruse, Mikhail Urusov, "Self-exciting
@@ -6114,7 +6114,7 @@ PENDING OWNER RATIFICATION. The grade and its reason, page-cited:
    produces NO qualitative effect while -0.09 does (Examples 4.2-4.4,
    PDF pp. 19-22, Figures 1-2), and Proposition 3.4 makes the window's
    PERSISTENCE IN EVERY NEIGHBOURHOOD OF THE TERMINAL HORIZON a
-   sufficient condition (PDF pp. 15-17, Discussion 3.5) â so both the
+   sufficient condition (PDF pp. 15-17, Discussion 3.5) — so both the
    regime boundaries and their distance to the barrier horizon are
    researcher degrees of freedom fully capable of manufacturing a
    "self-exciting regime" find post hoc (place the mined window at the
@@ -6136,13 +6136,13 @@ PENDING OWNER RATIFICATION. The grade and its reason, page-cited:
 3. [interpretation caution] The beta-exceedance set is strictly inside
    the negative-resilience set (PDF p. 20): absence of the overshoot
    signature in future L2 features licenses NO conclusion that the
-   regime was reverting â genuinely negative-resilience time can pass
+   regime was reverting — genuinely negative-resilience time can pass
    silently (Example 4.2). Under-reporting is the safe error
    direction; the burden of proof already sits there.
 
 4. [reinforcing, no new item] The authors state resilience is
    difficult to estimate from real data and that no empirical study
-   establishes whether it can be negative at all (PDF p. 3) â a second
+   establishes whether it can be negative at all (PDF p. 3) — a second
    source reinforcing the estimator-discipline family, and a doubled
    reminder of the library invariant: this paper is ammunition for
    window-identification discipline, never evidence that negative
@@ -6154,12 +6154,12 @@ PENDING OWNER RATIFICATION. The grade and its reason, page-cited:
 5. [source-quality note] Zero citations in our index; a focused
    mathematical paper in the Ackermann-Kruse-Urusov execution line;
    the acknowledgement (PDF p. 24) suggests a refereed version may
-   exist â check the published form before formal citation outside
+   exist — check the published form before formal citation outside
    the note.
 
 What this paper would have killed if we had done it wrong: the
 window-mining death (a "regime" found after choosing its boundaries and
-horizon distance with the data in hand â the exact shape Examples
+horizon distance with the data in hand — the exact shape Examples
 4.2-4.4 legitimate inside the model) and the sign-symmetry death
 (letting a future resilience-signed estimate drift across zero
 unchecked, which Proposition 3.3 shows changes the qualitative behavior
@@ -6168,7 +6168,7 @@ sign guard, and the queued window pre-declaration respectively.
 
 docs/DECISIONS_PENDING.md is updated this session per the rule (a
 sharpening was queued): the ratification queue now holds THIRTY-TWO
-candidate sharpenings plus probe E1, zero armed â the twenty-nine
+candidate sharpenings plus probe E1, zero armed — the twenty-nine
 through deep-read session 51, the corrupt-landing sweep (session 58),
 the C1-L2 base-rate confrontation (session 61), and this session's
 self-excitation regime-window pre-declaration. The GOALS.md front-2
@@ -6190,20 +6190,20 @@ with sign inverted; T2 tested-fail); the blocked list stays blocked.
 Ratification queue after this session: THIRTY-TWO candidate
 sharpenings plus probe E1, zero armed.
 
-## 68. Null-time session 64 (2026-11-19): deep-read session 54 â the Bahamou-Doumergue-Donnat credit-indices Hawkes paper read; the model-relative-baseline interpretation caution recorded; NO candidate sharpening, NO kill line changes, nothing measured, nothing armed
+## 68. Null-time session 64 (2026-11-19): deep-read session 54 — the Bahamou-Doumergue-Donnat credit-indices Hawkes paper read; the model-relative-baseline interpretation caution recorded; NO candidate sharpening, NO kill line changes, nothing measured, nothing armed
 
 Session-state note (work choice and its reason, recorded under the
 goal-autonomy conductor protocol v2, edition 2, section 3, and the
 GOALS.md rotation rule): front 2, the library deep-read queue, chosen
 by the owner's dated standing directive for this cycle ("run the next
-null-time deep-read sessionâ¦ follow the research-intake skill ritual
+null-time deep-read session… follow the research-intake skill ritual
 exactly"), the direct-instruction path the conductor protocol and the
 standing order both recognize and which satisfies GOALS.md rule 3's
 no-consecutive-repeats condition (the repetition reason: the owner's
 dated instruction names the deep-read). Independent of that
 instruction, the chain checked against the live tail (main at the
 ## 67 landing) and docs/GOALS.md edition 1: the synthesis pass (front
-4) was NOT due at session start â four deep-reads (50-53) had landed
+4) was NOT due at session start — four deep-reads (50-53) had landed
 against the cadence's five; front 1 is blocked on the owner, front 3
 is blocked on codespace/data presence; front 2 held the only readable
 UNREAD head. THIS read brings the deep-read counter since goal-state
@@ -6212,7 +6212,7 @@ run first in the next session that selects its own work. The head was
 recomputed live, not from memory: the triage file and the library
 shelf (54 dated notes before this session) were read directly, the
 score-28 ordering recomputed from the raw triage JSON, and the ## 67
-landing's own next-pointer named the same target â xdb216a â giving a
+landing's own next-pointer named the same target — xdb216a — giving a
 two-source confirmation; no open PR or working branch existed at
 session start.
 
@@ -6227,7 +6227,7 @@ and its reason, page-cited:
 1. [reinforcing, no new item] The exponential-Hawkes decays beta sit on
    a flat, valley-ridden non-convex likelihood surface (Fig. 7, PDF
    p. 17), and every fast fitting approach avoids that surface by
-   FIXING the decays a priori â a model-mismatch risk the authors
+   FIXING the decays a priori — a model-mismatch risk the authors
    themselves flag (PDF p. 6). Decay handling is a researcher degree of
    freedom in both directions (free: multi-mode, init-dependent;
    fixed: mismatch). Reinforces the already-queued estimator-mode
@@ -6254,8 +6254,8 @@ and its reason, page-cited:
    added.
 
 4. [cost-survival ammunition] Self-excitation is not homogeneous across
-   volume bins â large trades purely self-exciting and triggering
-   small ones (PDF p. 10) â so a future K7-style cost layer must not
+   volume bins — large trades purely self-exciting and triggering
+   small ones (PDF p. 10) — so a future K7-style cost layer must not
    extrapolate a single market-wide branching ratio across execution
    sizes. Relevance only if that layer exists.
 
@@ -6297,18 +6297,18 @@ with sign inverted; T2 tested-fail); the blocked list stays blocked.
 Ratification queue after this session: THIRTY-TWO candidate
 sharpenings plus probe E1, zero armed.
 
-## 69. Null-time session 65 (2026-11-19): deep-read session 55 â the Lee flexible-residual self-exciting duration paper read; ONE candidate sharpening queued (the primary-metric pre-commitment), NO kill line changes, nothing measured, nothing armed
+## 69. Null-time session 65 (2026-11-19): deep-read session 55 — the Lee flexible-residual self-exciting duration paper read; ONE candidate sharpening queued (the primary-metric pre-commitment), NO kill line changes, nothing measured, nothing armed
 
 Session-state note (work choice and its reason, recorded under the
 goal-autonomy conductor protocol v2, edition 2, section 3, and the
 GOALS.md rotation rule): front 2, the library deep-read queue, chosen by
 the owner's dated standing directive for this cycle ("run the next
-null-time deep-read session â¦ follow the research-intake skill ritual
+null-time deep-read session … follow the research-intake skill ritual
 exactly"), the direct-instruction path the conductor protocol and the
 standing order both recognize. The chain was checked honestly against the
 live tail (main at the ## 68 landing) and docs/GOALS.md: front 4 (the
-synthesis pass) was ALREADY DUE at session start â five deep-reads (50-54)
-had landed against the cadence's five â and GOALS.md rotation rule 1 says
+synthesis pass) was ALREADY DUE at session start — five deep-reads (50-54)
+had landed against the cadence's five — and GOALS.md rotation rule 1 says
 front 4 when due runs first. The read below therefore ran on the owner's
 explicit instruction, which is recorded here as the reason it preceded the
 due synthesis pass, and the obligation stands UNDISCHARGED: the deep-read
@@ -6320,7 +6320,7 @@ blocked on codespace/data presence. The head was recomputed live, not from
 memory: docs/library/edge_triage_scores.json was read directly, the
 score-28 ordering recomputed, the library shelf (55 dated notes before
 this session) listed, and the ## 68 landing's next-pointer named the same
-target â x72c407 â giving a two-source confirmation; no open PR or
+target — x72c407 — giving a two-source confirmation; no open PR or
 working branch existed at session start.
 
 The paper: Kyungsub Lee, "Forecasting duration in high-frequency
@@ -6333,7 +6333,7 @@ PENDING OWNER RATIFICATION. The grade and its reason, page-cited:
 
 1. [candidate sharpening, PENDING OWNER RATIFICATION] The primary-metric
    pre-commitment: the evaluation-metric choice alone reverses the
-   forecast verdict at 1% significance â under squared-relative-error
+   forecast verdict at 1% significance — under squared-relative-error
    loss every competitor is significantly worse than the SE-Burr model,
    and under log-ratio loss every competitor is significantly better
    (Table 4, PDF pp. 18-19; Table 3, PDF p. 17). Proposed amendment,
@@ -6341,7 +6341,7 @@ PENDING OWNER RATIFICATION. The grade and its reason, page-cited:
    C1-L2/C8-adjacent test spec must pre-declare its single primary
    evaluation metric or loss, frozen before the data; secondary metrics
    may be reported but can neither rescue a primary failure nor overturn
-   a primary pass. Harder to pass by construction â it forecloses
+   a primary pass. Harder to pass by construction — it forecloses
    post-hoc metric shopping, a researcher degree of freedom this paper
    shows is alone sufficient to flip a conclusion at the 1% level.
    PENDING OWNER RATIFICATION; nothing armed.
@@ -6382,7 +6382,7 @@ PENDING OWNER RATIFICATION. The grade and its reason, page-cited:
    version before formal citation outside the note.
 
 What this paper would have killed if we had done it wrong: the
-metric-shopping death (verdict read off whichever loss flattered a prior â
+metric-shopping death (verdict read off whichever loss flattered a prior —
 Table 4 shows two standard metrics rejecting in opposite directions on the
 same data at 1%) and the residual-laundering death (reading the inflated
 exponential-residual alpha/beta of Table 2, PDF p. 15, as genuine
@@ -6392,7 +6392,7 @@ discipline; neither moves any kill line.
 
 docs/DECISIONS_PENDING.md is updated this session per the rule (a
 sharpening was queued): the ratification queue now holds THIRTY-THREE
-candidate sharpenings plus probe E1, zero armed â the twenty-nine through
+candidate sharpenings plus probe E1, zero armed — the twenty-nine through
 deep-read session 51, the corrupt-landing sweep (session 58), the C1-L2
 base-rate confrontation (session 61), the self-excitation regime-window
 pre-declaration (session 63), and this session's primary-metric
@@ -6415,7 +6415,7 @@ tested-fail); the blocked list stays blocked. Ratification queue after
 this session: THIRTY-THREE candidate sharpenings plus probe E1, zero
 armed.
 
-## 70. Null-time session 66 (2026-11-20): GOALS.md G2 executed â the ratification-readiness briefs written for all thirty-three queued sharpenings plus probe E1; the stale front-4 and front-2 status lines corrected against goal state edition 3
+## 70. Null-time session 66 (2026-11-20): GOALS.md G2 executed — the ratification-readiness briefs written for all thirty-three queued sharpenings plus probe E1; the stale front-4 and front-2 status lines corrected against goal state edition 3
 
 Session-state note (declared before the work): this session chose per
 the GOALS.md rotation rule and the protocol edition-3 work-selection
@@ -6429,7 +6429,7 @@ synthesis obligation to five or more deep-reads since edition 3
 (the deep-read queue) remains the lawful floor, but the edition-3
 guidance is binding and names G2: "the next work-selecting session
 that does not run a deep-read should take GOALS.md G2
-(ratification-readiness briefs) â the queue meets G2's entry
+(ratification-readiness briefs) — the queue meets G2's entry
 criterion at its strongest, the directorate convention needs the
 briefs for a ten-minute sitting to be possible at all, and no other
 lawful session work moves the queue." G2 claimed (entry criterion:
@@ -6439,14 +6439,14 @@ tail "## 69", zero "## 70" on main, ## 61-## 69 each exactly once
 and in order, zero mojibake across the key files); the work was built
 against that verified tail.
 
-Work â three products, all inside the standing order's carve-outs
+Work — three products, all inside the standing order's carve-outs
 (notes, bookkeeping, descriptive-only; nothing armed, nothing
 measured, nothing trades live):
 
 - docs/DIRECTORATE_BRIEFS.md (NEW): the G2 deliverable, the
   directorate's batch-ratify reading material. One brief per queued
-  candidate â all THIRTY-THREE sharpenings plus probe E1 briefed
-  separately â grouped into nine families by the precedent each one
+  candidate — all THIRTY-THREE sharpenings plus probe E1 briefed
+  separately — grouped into nine families by the precedent each one
   tightens: (A) pre-registration hardening (base-rate confrontation,
   regime-window pre-declaration, primary-metric pre-commitment, the
   flash-crash named event window); (B) estimator discipline on the
@@ -6474,7 +6474,7 @@ measured, nothing trades live):
   count reconciliation is recorded inside the doc, enumerated from
   the log's queue-line arithmetic (sessions 3 two, session 4's K7
   cluster counted as one, session 4b two, session 5 one, session 6
-  two, session 7 one, session 9 one â the founding ten through ##
+  two, session 7 one, session 9 one — the founding ten through ##
   13; then one join at each of the named increments through ## 69)
   and closing exactly at thirty-three, with probe E1 standing
   separately. Instrument observation recorded: the queue's
@@ -6487,7 +6487,7 @@ measured, nothing trades live):
   THIRTY-THREE governs, and the briefs use it.
 - docs/GOALS.md surgical edits, three, all status bookkeeping with
   zero ranking action: (1) the front-4 STATUS line refreshed from the
-  stale "OVERDUE ... MUST run the synthesis pass" to NOT DUE â the pass
+  stale "OVERDUE ... MUST run the synthesis pass" to NOT DUE — the pass
   ran as null-time session 65 and is recorded as edition 3 (protocol
   section 9), the obligation discharged, the cadence reset to five
   deep-reads since edition 3, counter ONE of five; (2) the front-2
@@ -6503,11 +6503,11 @@ measured, nothing trades live):
   probe E1) already matches.
 
 Ratification queue after this session: THIRTY-THREE candidate
-sharpenings plus probe E1, zero armed â UNCHANGED from the ## 69
+sharpenings plus probe E1, zero armed — UNCHANGED from the ## 69
 landing; this session queued nothing. T1 remains armed awaiting the
 owner's word in its booked state (survived all five kill lines with
 sign inverted; T2 tested-fail); the blocked list stays blocked.
-Deep-read queue pointer: unchanged â next UNREAD "Optimal trade
+Deep-read queue pointer: unchanged — next UNREAD "Optimal trade
 execution and price manipulation in order books with time-dependent
 liquidity" (score 28, x95643a), behind it "Hawkes model for price and
 trades high-frequency dynamics" (score 27, x2df250); re-read the live
@@ -6516,11 +6516,11 @@ tail before consuming.
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live.
 
-## 71. Null-time session 67 (2026-11-20): deep-read session 56 â the Fruth-SchÃ¶neborn-Urusov time-varying-liquidity execution paper read; the zero-spread convention shown to mechanically manufacture round-trip profitability; ONE candidate sharpening queued (the spread-convention declaration rule, the thirty-fourth); NO kill line changes, nothing measured, nothing armed
+## 71. Null-time session 67 (2026-11-20): deep-read session 56 — the Fruth-Schöneborn-Urusov time-varying-liquidity execution paper read; the zero-spread convention shown to mechanically manufacture round-trip profitability; ONE candidate sharpening queued (the spread-convention declaration rule, the thirty-fourth); NO kill line changes, nothing measured, nothing armed
 
 Session-state note (work choice and its reason, recorded under the goal-autonomy
 conductor protocol v2, edition 3, section 3, and the GOALS.md rotation rule):
-the deep-read (front 2) is the lawful choice â front 4 is NOT DUE (the
+the deep-read (front 2) is the lawful choice — front 4 is NOT DUE (the
 edition-3 cadence resets at five deep-reads since edition 3; after today's
 read the counter stands at TWO of five), front 1 and front 3 remain blocked
 on the owner (the codespace and the paid Tardis key), G2 was executed at
@@ -6532,11 +6532,11 @@ existed before this session's), and the page-marked extract for x95643a
 confirmed present on the shelf. Numbering: deep-read 56 = null-time 67 =
 log ## 71, the offsets honored, no renumber.
 
-Paper: Antje Fruth (TU Berlin), Torsten SchÃ¶neborn (Deutsche Bank AG,
+Paper: Antje Fruth (TU Berlin), Torsten Schöneborn (Deutsche Bank AG,
 London) and Mikhail Urusov (Ulm University), "Optimal trade execution and
 price manipulation in order books with time-varying liquidity",
 arXiv:1109.2631v1 [q-fin.TR] (submitted September 2011; the acquired
-extract's title page carries an "October 8, 2018" date line â version
+extract's title page carries an "October 8, 2018" date line — version
 anomaly recorded in the note's source-quality tag). Read against ONE
 question: what here would kill C1-L2 or C8 faster, or change their kill
 lines? An Obizhaeva-Wang-type block-shaped limit order book with
@@ -6546,7 +6546,7 @@ time-dependent barrier (Thm 6.1 discrete, Thm 7.7 continuous; Props
 5.8-5.9: the barrier can be infinite), the dynamic-spread model is proved
 free of classical and transaction-triggered manipulation (Prop 3.4), and
 the zero-spread variant admits classical manipulation exactly when
-K' + 2ÏK < 0 somewhere (Prop 8.3), transaction-triggered manipulation
+K' + 2ρK < 0 somewhere (Prop 8.3), transaction-triggered manipulation
 under Thm 8.4 / Cor 8.5, and a profitable round trip by construction
 whenever the initial deviation is known nonzero (Remark 8.2).
 
@@ -6557,11 +6557,11 @@ Findings (full grading in the note):
 
 1. ONE candidate sharpening queued, PENDING OWNER RATIFICATION: the
    spread-convention declaration rule. Mechanism: the paper proves that
-   the zero-spread model class â exactly what a single-price or mid-only
-   book reconstruction instantiates â mechanically admits profitable
+   the zero-spread model class — exactly what a single-price or mid-only
+   book reconstruction instantiates — mechanically admits profitable
    round trips whenever the deviation direction is known (Remark 8.2,
-   PDF p. 29) and admits pump-and-dump with cost infimum ââ at a single
-   K'+2ÏK<0 point (Prop 8.3, PDF pp. 29-30) â no self-excitation, no
+   PDF p. 29) and admits pump-and-dump with cost infimum −∞ at a single
+   K'+2ρK<0 point (Prop 8.3, PDF pp. 29-30) — no self-excitation, no
    signal, the "anticipatory" structure is a property of the convention.
    Proposed rule: any book reconstruction, generative null, or
    flow-measurement input used in a C1-L2/C8-adjacent computation must
@@ -6574,13 +6574,13 @@ Findings (full grading in the note):
    OFI) with a fourth declaration axis; harder to pass; owner ratifies.
 2. [reinforcing, no new item] Deterministic liquidity seasonality alone
    reshapes optimal schedules and can shut trading off entirely
-   (infinite barriers, Props 5.8-5.9, PDF pp. 17-18) â second-market
+   (infinite barriers, Props 5.8-5.9, PDF pp. 17-18) — second-market
    support for the already-queued deterministic-clock null arm and the
    release-calendar lead component; no queue change.
 3. [interpretation caution] Prop 3.3 (PDF pp. 7-8): the martingale and
    permanent-impact components are strategy-invariant in this model
    class, so reconstruct-null validation must match deviation/resilience
-   paths, not prices alone â the same shape as the queued
+   paths, not prices alone — the same shape as the queued
    dynamics-identification rule; no queue change.
 4. [cost-survival ammunition] Closed-form costs and strategies under
    time-varying liquidity (Thm 8.4 / eq. (37), PDF p. 30; Prop 9.1, PDF
@@ -6590,12 +6590,12 @@ Findings (full grading in the note):
    2011/2018 date-line anomaly flagged; check the published version
    before formal citation.
 
-Inaccessible/blocked status: none â the extract was present and fully
+Inaccessible/blocked status: none — the extract was present and fully
 readable; x95643a consumed clean.
 
 docs/DECISIONS_PENDING.md is updated this session per the rule (a
 sharpening was queued): the ratification queue now holds THIRTY-FOUR
-candidate sharpenings plus probe E1, zero armed â the twenty-nine
+candidate sharpenings plus probe E1, zero armed — the twenty-nine
 through deep-read session 51 plus the five named increments since.
 docs/GOALS.md front-2 status line and the front-4 counter line are
 refreshed (the operative bookkeeping edits): x95643a consumed; the next
@@ -6617,12 +6617,12 @@ session's changed files locally; the repo-wide guard runs in CI on the
 PR): clean.
 
 
-## 72. Null-time session 68 (2026-11-20): deep-read session 57 â the Bacry-Muzy 4-kernel price/trades Hawkes model read; the founding paper of the kernel literature shown to add ZERO sharpenings, every mechanism already held by standing and queued discipline; NO kill line changes, nothing measured, nothing armed
+## 72. Null-time session 68 (2026-11-20): deep-read session 57 — the Bacry-Muzy 4-kernel price/trades Hawkes model read; the founding paper of the kernel literature shown to add ZERO sharpenings, every mechanism already held by standing and queued discipline; NO kill line changes, nothing measured, nothing armed
 
 Session-state note (work choice and its reason, recorded under the
 goal-autonomy conductor protocol v2, edition 3, section 3, and the
 GOALS.md rotation rule): the deep-read (front 2) is the lawful
-choice â front 4 is NOT DUE (the edition-3 cadence resets at five
+choice — front 4 is NOT DUE (the edition-3 cadence resets at five
 deep-reads since edition 3; after today's read the counter stands at
 THREE of five), front 1 and front 3 remain blocked on the owner (the
 codespace and the paid Tardis key), G2 was executed at ## 70 and is
@@ -6638,11 +6638,11 @@ the page-marked extract for x2df250 confirmed present on the shelf.
 Numbering: deep-read 57 = null-time 68 = log ## 72, the offsets
 honored, no renumber.
 
-Paper: Emmanuel Bacry (CMAP, Ãcole Polytechnique) and Jean-FranÃ§ois
-Muzy (SPE, UniversitÃ© de Corse), "Hawkes model for price and trades
+Paper: Emmanuel Bacry (CMAP, École Polytechnique) and Jean-François
+Muzy (SPE, Université de Corse), "Hawkes model for price and trades
 high-frequency dynamics", arXiv:1301.1135v1 [q-fin.TR] (arXiv stamp
 7 Jan 2013; the acquired extract's title page carries a "November 27,
-2024" date line â version anomaly recorded in the note's source-quality
+2024" date line — version anomaly recorded in the note's source-quality
 tag). Read against ONE question: what here would kill C1-L2 or C8
 faster, or change their kill lines? The founding 4-dimensional Hawkes
 model coupling anonymous market orders (ask/bid) with mid-price jumps
@@ -6651,10 +6651,10 @@ condition coupling the four kernel norms (Prop 1 and eq. 14, PDF
 pp. 8-9), closed-form price and trade auto-covariances (Props 3-4, PDF
 pp. 13-14), an analytic market-impact profile recoverable from
 anonymous data (Prop 5 / Cor 1, PDF pp. 17-18, applied in Sec 7.4, PDF
-pp. 31-32, concave t^{1âÎ½} then t^{âÎ½} relaxation with Î½ â 0.2, not a
+pp. 31-32, concave t^{1−ν} then t^{−ν} relaxation with ν ≈ 0.2, not a
 strict square root), a non-parametric Fredholm kernel estimator (Sec 6,
 PDF pp. 21-23), and the two empirical anchors: near-saturated trade
-kernel norm ÎÏÌT0 â 0.9 with power-law shape and mean-reverting price
+kernel norm Δφ̂T0 ≃ 0.9 with power-law shape and mean-reverting price
 kernel (Sec 7.1, PDF pp. 23-25), and the demonstration that this
 strictly short-range near-unstable process manufactures trade-sign
 autocorrelation resembling long-range dependence over roughly three
@@ -6667,17 +6667,17 @@ Findings (full grading in the note):
 
 1. [reinforcing, no new item] The apparent-long-memory artifact: a
    strictly stable power-law Hawkes process with near-saturated trade
-   kernel produces autocorrelation decaying as Ï^{2Î½â1} (â Ï^{â0.6})
+   kernel produces autocorrelation decaying as τ^{2ν−1} (≈ τ^{−0.6})
    over ~3 decades while remaining integrable (eqs. 62-66, PDF pp.
-   28-29) â so persistent flow-sign autocorrelation across every lag
+   28-29) — so persistent flow-sign autocorrelation across every lag
    scale the L2 data resolves is exactly what the null produces
    without genuine long memory. Second-source reinforcement of the
    already-queued near-instability / apparent-criticality
    estimator-discipline items; any C1-L2/C8-adjacent persistence claim
    must first fail this null. No queue change.
 2. [reinforcing, no new item] The U-shaped intraday modulation lives
-   entirely in the exogenous rate Âµt while the kernel shapes stay
-   stable across 2-hour slices (Sec 7.2, Fig 11, PDF pp. 25-26) â
+   entirely in the exogenous rate µt while the kernel shapes stay
+   stable across 2-hour slices (Sec 7.2, Fig 11, PDF pp. 25-26) —
    day-varying activity mass is calendar, not endogenous
    self-excitation. Reinforces the already-queued deterministic-clock
    null arm; no queue change.
@@ -6687,15 +6687,15 @@ Findings (full grading in the note):
    "predictiveness" read off a response-shaped flow feature is a
    herding-plus-impact mixture, not bare anticipation; and
    trade-to-price causality inside the millisecond resolution is an
-   assignment convention (impulsive ÏI,s, Sec 2.1.3, PDF pp. 6-7;
-   confirmed on data, Sec 7.1, PDF p. 25) â exactly the convention
+   assignment convention (impulsive φI,s, Sec 2.1.3, PDF pp. 6-7;
+   confirmed on data, Sec 7.1, PDF p. 25) — exactly the convention
    class the queued spread-convention declaration rule (the
    thirty-fourth, session 56) makes declarable. Reading discipline
    only; no queue change.
 4. [cost-survival ammunition] Closed-form meta-order impact from
    anonymous data (eq. 42 / eqs. 52-53, PDF pp. 17-19; Sec 7.4, PDF
    pp. 31-32) and the permanent-impact formula with its three
-   reduction routes (eq. 56, PDF pp. 19-20) â declared assumptions a
+   reduction routes (eq. 56, PDF pp. 19-20) — declared assumptions a
    future K7-style cost layer must carry; ammunition only.
 5. [source-quality note] ArXiv v1 with a "November 27, 2024" title-page
    date-line anomaly in the acquired extract; volumes deliberately
@@ -6704,7 +6704,7 @@ Findings (full grading in the note):
    stationarity slices, and the estimator's statistical study deferred
    (PDF p. 23). Check the published version before formal citation.
 
-Inaccessible/blocked status: none â the extract was present and fully
+Inaccessible/blocked status: none — the extract was present and fully
 readable; x2df250 consumed clean.
 
 docs/DECISIONS_PENDING.md is untouched this session per the rule
@@ -6717,7 +6717,7 @@ Microstructure of Rough Volatility" (score 27, x8fc12b); deep-read
 counter since edition 3: THREE of five.
 
 Ratification queue after this session: THIRTY-FOUR candidate
-sharpenings plus probe E1, zero armed â UNCHANGED from ## 71; this
+sharpenings plus probe E1, zero armed — UNCHANGED from ## 71; this
 session queued nothing. T1 remains armed awaiting the owner's word in
 its booked state (survived all five kill lines with sign inverted; T2
 tested-fail); the blocked list stays blocked. Deep-read queue pointer:
@@ -6731,12 +6731,12 @@ live. Guard checks (marker sweep and encoding sanity, executed on this
 session's changed files locally; the repo-wide guard runs in CI on the
 PR): clean.
 
-## 73. Null-time session 69 (2026-11-20): deep-read session 58 â the Horst-Xu-Zhang heavy-tailed nearly-unstable Hawkes scaling-limit paper read; the rough fractional limit shown to be the exact null product of the already-armed near-critical regime and the integrated-statistic trap pre-empted by the queued primary-metric pre-commitment; ZERO sharpenings queued, NO kill line changes, nothing measured, nothing armed
+## 73. Null-time session 69 (2026-11-20): deep-read session 58 — the Horst-Xu-Zhang heavy-tailed nearly-unstable Hawkes scaling-limit paper read; the rough fractional limit shown to be the exact null product of the already-armed near-critical regime and the integrated-statistic trap pre-empted by the queued primary-metric pre-commitment; ZERO sharpenings queued, NO kill line changes, nothing measured, nothing armed
 
 Session-state note (work choice and its reason, recorded under the
 goal-autonomy conductor protocol v2, edition 3, section 3, and the
 GOALS.md rotation rule): the deep-read (front 2) is the lawful
-choice â front 4 is NOT DUE (after this read the counter stands at FOUR
+choice — front 4 is NOT DUE (after this read the counter stands at FOUR
 of five since edition 3), front 1 and front 3 remain blocked on the owner
 (the codespace and the paid Tardis key), and no other numbered front is
 ready. The rotation rule's point 3 (consecutive deep-reads need a
@@ -6750,18 +6750,18 @@ session's), and the page-marked extract for x8fc12b confirmed present on
 the shelf and read in full (38 pages). Numbering: deep-read 58 =
 null-time 69 = log ## 73, the offsets honored, no renumber.
 
-Paper: Ulrich Horst (Humboldt-UniversitÃ¤t zu Berlin), Wei Xu (Beijing
-Institute of Technology) and Rouyi Zhang (Humboldt-UniversitÃ¤t zu Berlin),
+Paper: Ulrich Horst (Humboldt-Universität zu Berlin), Wei Xu (Beijing
+Institute of Technology) and Rouyi Zhang (Humboldt-Universität zu Berlin),
 "Convergence of Heavy-Tailed Hawkes Processes and the Microstructure of
 Rough Volatility", arXiv:2312.08784v3 [q-fin.MF] (stamp 25 Mar 2026; title
 page dated March 26, 2026; index year 2023, the v1 origin). Read against
 ONE question: what here would kill C1-L2 or C8 faster, or change their
 kill lines? A pure-theory scaling-limit paper: the weak convergence of
 the INTENSITY (not just the integrated version) of a nearly-unstable
-Hawkes process with power-law kernel Î± â (1/2, 1) under the joint
-trajectory n^Î±(1 â Î¶n) â b (Assumption 2.4, PDF pp. 9-10) to the rough
+Hawkes process with power-law kernel α ∈ (1/2, 1) under the joint
+trajectory n^α(1 − ζn) → b (Assumption 2.4, PDF pp. 9-10) to the rough
 Heston Volterra equation (Theorems 2.6-2.7, PDF pp. 10-11), via a new
-C-tightness criterion for cÃ dlÃ g processes built on Kolmogorov-Chentsov
+C-tightness criterion for càdlàg processes built on Kolmogorov-Chentsov
 (Lemma 3.5, PDF pp. 14-16), with the closing counterexample that
 integrated-process convergence cannot identify the rate process
 (Section 3.7, PDF pp. 33-34). No estimation, no data application.
@@ -6773,15 +6773,15 @@ Findings (full grading in the note):
 
 1. [reinforcing, no new item] The criticality-scaling law: the rough
    limit exists only inside the exact joint approach trajectory
-   n^Î±(1 â Î¶n) â b with matched rate/initial-condition scalings
-   (Assumption 2.4, eq. 2.10, PDF pp. 9-10) â branch-ratio proximity to
+   n^α(1 − ζn) → b with matched rate/initial-condition scalings
+   (Assumption 2.4, eq. 2.10, PDF pp. 9-10) — branch-ratio proximity to
    one is a rate-at-a-scale statement, not a level, reinforcing the
    queued near-instability / apparent-criticality calibration items and
    the branch-norm reporting duties. No queue change.
 2. [reinforcing, no new item] The integrated-statistic trap: Section 3.7
    proves integrated-process convergence can coexist with a rate process
    that diverges at the window origin and cannot be differentiated back
-   (PDF pp. 4-5, 33-34) â cumulative/time-averaged readouts of a rate
+   (PDF pp. 4-5, 33-34) — cumulative/time-averaged readouts of a rate
    feature are not evidence about the feature, reinforcing the
    primary-metric pre-commitment queued at deep-read 55 (log ## 69). No
    queue change.
@@ -6792,17 +6792,17 @@ Findings (full grading in the note):
    data is a marking convention, not a microstructure law; a C8-adjacent
    signed reading must pre-declare its marking convention.
 4. [interpretation caution] The initial condition is an assumed
-   heavy-tail decay Vn,0Â·Î¦(t) (Assumption 2.4(2), Remark 2.5, PDF
+   heavy-tail decay Vn,0·Φ(t) (Assumption 2.4(2), Remark 2.5, PDF
    pp. 9-10): inference near the start of a finite L2 window sits on the
-   declared window-edge/burn-in convention â the window-edge caution
+   declared window-edge/burn-in convention — the window-edge caution
    class the programme already carries.
 5. [source-quality note] ArXiv v3 with a stamp/title-page date-line
    mismatch (25 vs 26 Mar 2026, PDF p. 1) and two Xu bibliography
    entries with identical page ranges ([59], [60], PDF pp. 37-38), at
-   least one a citation slip; unpublished preprint â check the published
+   least one a citation slip; unpublished preprint — check the published
    version before formal citation.
 
-Inaccessible/blocked status: none â the extract was present and fully
+Inaccessible/blocked status: none — the extract was present and fully
 readable; x8fc12b consumed clean.
 
 docs/DECISIONS_PENDING.md is untouched this session per the rule
@@ -6816,7 +6816,7 @@ books with ratios of Cox-type intensities" (score 26, x0b879c);
 deep-read counter since edition 3: FOUR of five.
 
 Ratification queue after this session: THIRTY-FOUR candidate
-sharpenings plus probe E1, zero armed â UNCHANGED from ## 72; this
+sharpenings plus probe E1, zero armed — UNCHANGED from ## 72; this
 session queued nothing. T1 remains armed awaiting the owner's word in
 its booked state (survived all five kill lines with sign inverted; T2
 tested-fail); the blocked list stays blocked. Deep-read queue pointer:
@@ -6829,11 +6829,11 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard checks (marker sweep and encoding sanity, executed on this
 session's changed files locally; the repo-wide guard runs in CI on the
 PR): clean.
-## 74. Null-time session 70 (2026-11-20): deep-read session 59 â the Kaj-Caglar buffer-Hawkes paper; the level-versus-memory disambiguation queued (RECONSTRUCTED ENTRY)
+## 74. Null-time session 70 (2026-11-20): deep-read session 59 — the Kaj-Caglar buffer-Hawkes paper; the level-versus-memory disambiguation queued (RECONSTRUCTED ENTRY)
 
 NB (reconstruction stamp, added at repair, log ## 75): the original
 text of entry ## 74 was destroyed in the write-truncation incident
-repaired at log ## 75 â the session's artifacts (the note, the
+repaired at log ## 75 — the session's artifacts (the note, the
 DECISIONS_PENDING update, the GOALS bookkeeping) landed intact on main
 inside squash-commit 0b3a4040 (PR #250), but the appended log text
 itself was cut off with the tail loss and is here reconstructed from
@@ -6844,19 +6844,19 @@ below as reconstruction annotation. No renumber: this is entry ## 74.
 
 Reconstructed substance (squash-commit 0b3a4040 message, PR #250):
 library deep-read session 59 = null-time session 70 = log ## 74, the
-offsets honored, no renumber â Ingemar Kaj and Mine Caglar, "A buffer
+offsets honored, no renumber — Ingemar Kaj and Mine Caglar, "A buffer
 Hawkes process for limit order books", arXiv:1710.03506v1 [math.PR], 23
 pp., the next UNREAD triage entry (score 27, x6ed313), read against ONE
 question: what here would kill C1-L2 or C8 faster, or change their kill
 lines? Verdict: NO kill line changed; ONE new candidate sharpening
-queued, PENDING OWNER RATIFICATION â the level-versus-memory
+queued, PENDING OWNER RATIFICATION — the level-versus-memory
 disambiguation: the paper proves a model whose market-order intensity
 is a function of the instantaneous book size alone (eq. 3, PDF p. 5;
 generator, PDF p. 8), carrying no temporal kernel on the execution
 count, still produces Hawkes-identical clustering with Borel-distributed
 progeny (PDF pp. 11-13) and inflated dispersion (PDF p. 10), while the
 (intensity, count) marginal is provably non-Markovian with the book
-size the hidden confounder (PDF p. 8) â so count statistics alone
+size the hidden confounder (PDF p. 8) — so count statistics alone
 cannot distinguish temporal self-excitation from a liquidity-level
 effect. Proposed rule: before the L0 gate, any C1-L2/C8-adjacent spec
 interpreting count-based evidence as TEMPORAL self-excitation must
@@ -6883,10 +6883,10 @@ the next session's start: the deep-read counter since edition 3 stands
 at FIVE of five. Guard clean. Nothing measured, no kill line moved,
 nothing armed, nothing trades live.
 
-## 75. Null-time session 71 (2026-11-20), first act: the append-only log repaired after a write-side truncation incident â entries ## 21 through ## 73 restored verbatim from parent commit 8fad9367, entry ## 74 reconstructed; the recovery workflow installed
+## 75. Null-time session 71 (2026-11-20), first act: the append-only log repaired after a write-side truncation incident — entries ## 21 through ## 73 restored verbatim from parent commit 8fad9367, entry ## 74 reconstructed; the recovery workflow installed
 
 Corrigendum and repair record (append-only; the restoration writes no
-entry's text â it re-lands, byte-exact, text that a mechanical failure
+entry's text — it re-lands, byte-exact, text that a mechanical failure
 removed from main's tip; nothing is renumbered and nothing is edited
 inside any surviving entry).
 
@@ -6904,7 +6904,7 @@ Entries ## 21 through ## 73 were removed from main's tip, and the
 ## 74 entry session 70 intended to append never landed in the file at
 all (its substance survives only in the 0b3a4040 commit message). This
 is the realized form of the read-side 64K file-truncation failure mode
-named at log ## 60 â there operationalized as a read worry; the
+named at log ## 60 — there operationalized as a read worry; the
 incident shows the same bound applies on the WRITE side of this
 sandboxed tooling path, and that a session pushing a large existing
 file back can silently destroy its tail. The prior corrigendum
@@ -6925,7 +6925,7 @@ recovery workflow (`.github/workflows/log-recovery.yml`, installed this
 session) that re-derives the restored log from parent blob 8fad9367
 plus this session's append file, refuses any result that does not
 strictly grow the file, and refuses to run outside branches named for
-this repair â installed so that the failure class has a mechanical
+this repair — installed so that the failure class has a mechanical
 remedy, not a memory. The append file (this text and the entries
 below) lives at `.log-repair/append_2026-11-20.md` and remains in the
 tree as the dated record of exactly what was appended at the seam.
@@ -6938,7 +6938,7 @@ the blocked list stays blocked; the ratification queue is untouched by
 this repair (THIRTY-FIVE candidate sharpenings plus probe E1, zero
 armed, unchanged from ## 74).
 
-## 76. Null-time session 71 (2026-11-20), second act: the edition-3 synthesis cadence discharged â goal state rewritten as EDITION 4 by the second synthesis pass; the write-truncation named as the record's standing infrastructure risk; NO sharpening queued by the pass
+## 76. Null-time session 71 (2026-11-20), second act: the edition-3 synthesis cadence discharged — goal state rewritten as EDITION 4 by the second synthesis pass; the write-truncation named as the record's standing infrastructure risk; NO sharpening queued by the pass
 
 The cadence check (front 4), due at this session's start per GOALS.md
 and the ## 74 pointer: the deep-read counter since edition 3 stood at
@@ -6958,7 +6958,7 @@ parent 8fad9367 plus the landed session-70 artifacts on main):
   2026-11-19; archived is NOT falsified; every kill line stays frozen;
   re-opening takes the owner's dated word. Unchanged by this edition.
 - Phase 2 (Crypto L2): ACTIVE, the Board's only active research front
-  (C1-L2 â C8 â Convexity Sizing), blocked on the owner's data
+  (C1-L2 → C8 → Convexity Sizing), blocked on the owner's data
   acquisition; the L0 dry run is unblocked; unchanged.
 - Library: 59 deep-read notes through deep-read session 59 on main's
   tip (60 with this session's, which lands after this pass); the
@@ -6969,14 +6969,14 @@ parent 8fad9367 plus the landed session-70 artifacts on main):
   the blocked list stays blocked.
 - Deep-read queue pointer: next UNREAD "Analyzing order flows in limit
   order books with ratios of Cox-type intensities" (score 27 in the raw
-  triage file; the ## 74 pointer had recorded 26 â raw file governs),
+  triage file; the ## 74 pointer had recorded 26 — raw file governs),
   then "Non-Parametric Estimation of Multi-dimensional Marked Hawkes
-  Processes" (score 26, x973a89) â recomputed by title-matching the
+  Processes" (score 26, x973a89) — recomputed by title-matching the
   score-sorted triage file against the restored log tail this pass.
 - Record integrity: the append-only log suffered and was repaired from
   a write-side ~64K truncation (## 75); the guard-side encoding and
   marker checks could not have caught it (the truncated prefix is valid
-  UTF-8 with no markers â a SIZE failure, not an encoding failure), and
+  UTF-8 with no markers — a SIZE failure, not an encoding failure), and
   no check in the repo currently enforces log byte-size monotonicity.
 
 What the record since edition 3 (log entries ## 70 through ## 74 plus
@@ -6988,10 +6988,10 @@ rule, ## 71; the level-versus-memory disambiguation, ## 74), both in
 the pre-registration family; the marginal-yield expectation named at
 edition 3 (the score-27 tier showing declining amendment yield,
 reinforcement concentrating in the estimator and pre-registration
-families) held through the window â 3 of 5 reads queued nothing at
+families) held through the window — 3 of 5 reads queued nothing at
 all. The G2 directorate briefs prepared at session 66 cover the first
 thirty-three queued items; the three newest (corrupt-landing sweep,
-spread-convention, level-versus-memory â plus any ratified successor)
+spread-convention, level-versus-memory — plus any ratified successor)
 await a brief refresh before the next sitting.
 
 Named gaps, against the registered specs and reading lists (this
@@ -7012,7 +7012,7 @@ pass's product, each at zero status until its channel fires it):
 
 The ranked open fronts (edition 4): order unchanged from edition 3,
 statuses recomputed; enter criteria, feeds and gates unchanged and
-binding; front 4's cadence is RESET by this edition â next due when
+binding; front 4's cadence is RESET by this edition — next due when
 five or more deep-reads have landed since edition 4 (deep-read #60
 onward; #60 lands this same session and counts). Work-selection
 guidance contributed by this edition (binding on sessions until
@@ -7030,7 +7030,7 @@ queues nothing; the deep-read below updates it for its own candidate).
 Guard clean. Nothing measured, no kill line moved, nothing armed,
 nothing trades live.
 
-## 77. Null-time session 71 (2026-11-20), third act: deep-read session 60 â the Muni Toke-Yoshida Cox-ratio paper read; the sign-persistence admission null queued as the thirty-sixth candidate; the common-baseline identification caution recorded
+## 77. Null-time session 71 (2026-11-20), third act: deep-read session 60 — the Muni Toke-Yoshida Cox-ratio paper read; the sign-persistence admission null queued as the thirty-sixth candidate; the common-baseline identification caution recorded
 
 Session-state note (work choice and its reason, recorded under the
 goal-autonomy conductor v2, edition 4, section 3): this session ran, in
@@ -7052,13 +7052,13 @@ on the shelf (38 pp., 82,464 bytes) and read in full. Numbering:
 deep-read 60 = null-time 71 = log ## 77, the offsets honored, no
 renumber.
 
-Paper: Ioane Muni Toke (CentraleSupÃ©lec, UniversitÃ© Paris-Saclay) and
+Paper: Ioane Muni Toke (CentraleSupélec, Université Paris-Saclay) and
 Nakahiro Yoshida (University of Tokyo), "Analyzing order flows in limit
 order books with ratios of Cox-type intensities" (arXiv:1805.06682v3
 [q-fin.ST], 22 Aug 2019 stamp; metadata from
 docs/library/expanded_index.json via the slug). Ratios of Cox-type
-intensities sharing an unspecified common baseline Î»0, estimated by a
-quasi-likelihood from which Î»0 cancels exactly; consistency and
+intensities sharing an unspecified common baseline λ0, estimated by a
+quasi-likelihood from which λ0 cancels exactly; consistency and
 asymptotic normality (Thms. 3.1-3.2, PDF pp. 6, 10); QCAIC/QBIC and
 penalized QMLE selection machinery (Prop. 4.1, PDF pp. 10-11); 36 Paris
 Stock Exchange stocks 2015, >1 billion reconstructed events (PDF p. 12);
@@ -7067,19 +7067,19 @@ pp. 13-23); and an out-of-sample sign-prediction comparison against
 Hawkes models (PDF pp. 24-27).
 
 Grade: NO kill line changed. ONE candidate sharpening queued, PENDING
-OWNER RATIFICATION â the sign-persistence admission null (the
+OWNER RATIFICATION — the sign-persistence admission null (the
 thirty-sixth): the zero-parameter "next sign repeats the last sign"
 rule correctly signs MORE THAN 80% of ~54 million trades across all 36
 stocks (PDF pp. 25-26), and the imbalance-only model is NEVER selected
 by consistent criteria among 390 monthly fits (Table 2, PDF pp. 16-17)
-â so pooled next-sign accuracy is dominated by mechanical persistence
+— so pooled next-sign accuracy is dominated by mechanical persistence
 before any book state enters. Pre-declaration text: any C1-L2/C8
 short-horizon sign or aggressive-flow feature is admitted only if it
 adds value beyond a PRE-REGISTERED sign-persistence null (the last-sign
 repeat, zero parameters), with the survival shown in the sign-CHANGE
-subsample â the paper proves that is where the separation lives (the
+subsample — the paper proves that is where the separation lives (the
 state-only ratio model signs ~85% pooled but only ~40% of sign changes,
-PDF pp. 26-27) â so a pooled win admits nothing. Harder to pass
+PDF pp. 26-27) — so a pooled win admits nothing. Harder to pass
 because the feature must beat a free null in the exact subsample where
 its claimed information lives; tightens the two-null admission rule
 (deep-read session 11, log ## 17) by joining the Gould-Bonart Eq.-7
@@ -7093,22 +7093,22 @@ Findings (full grading and page citations in
 1. [reinforcing, no new item] Parsimony over cross-excitation for
    prediction: the no-cross Hawkes beats the full cross-excited model,
    75-80% vs 73-78% (PDF p. 26), and QAIC overfits while QCAIC/QBIC
-   select smaller structures (PDF pp. 16-18) â same-day-class evidence
+   select smaller structures (PDF pp. 16-18) — same-day-class evidence
    for the per-branch rule (deep-read session 7) and the
    pre-registration family; model form stays declared with the spec.
 2. [reinforcing, no new item] Only level-1 imbalance is significant;
-   levels 2-10 corrective terms are not (Fig. 5, PDF pp. 18-19) â
+   levels 2-10 corrective terms are not (Fig. 5, PDF pp. 18-19) —
    reinforces the distance-grid sign-invariance rule (session 13) and
    the top-of-book comparator's standing.
 3. [reinforcing, no new item] Limit-vs-cancel probability crossing at
    the equilibrium queue size recovers the humped book (PDF pp. 20-23)
-   â the queue-reactive state-conditioning discipline (library ritual
+   — the queue-reactive state-conditioning discipline (library ritual
    paper 4, C5's family) gains another page-cited demonstration that
    unconditioned rates read the queue-size distribution, not the
    mechanism; queue sizes in median-trade-size units (PDF p. 22)
    reinforce the unit pre-declaration sharpening.
 4. [interpretation caution] The common-baseline identification axiom:
-   ratios cancel Î»0, so any flow-type-specific activity sensitivity
+   ratios cancel λ0, so any flow-type-specific activity sensitivity
    CONFOUNDS the covariate reading; relative-intensity readings must
    pre-declare the common-baseline assumption and carry the confound
    statement beside every estimate (Eq. 1 and rationale, PDF pp. 3-4;
@@ -7122,21 +7122,21 @@ Findings (full grading and page citations in
    covariate.
 6. [interpretation caution] Bundling immunity does not transfer: the
    ratio likelihood counts events and tolerates tied timestamps (PDF
-   p. 13), but that immunity is a property of THIS likelihood â the
+   p. 13), but that immunity is a property of THIS likelihood — the
    timestamp-bundling trap for the Hawkes MLE (deep-read session 2 and
    the queued clock pre-declaration) stands unchanged for the trigger
    layer.
 7. [cost-survival ammunition] The prediction exercise ignores latency,
    delays and reaction times by the authors' own statement (PDF p. 24);
    day-ahead recalibration adds operational cost (PDF p. 25); ~85%
-   sign accuracy carries no execution meaning without a latency model â
+   sign accuracy carries no execution meaning without a latency model —
    relevant only if a K7-style cost layer ever exists.
 8. [source-quality note] arXiv v3, published-version line to check
    before formal citation; reconstructed (not raw-feed) order flows via
    the Muni Toke (2016) aggregation (PDF p. 12); one venue class
    (Paris, 36 large caps, 2015), no crypto perps; the 390/8052 fits are
    in-sample descriptions with quantile-selected display panels (PDF
-   pp. 14-16, 20-21) â identification structure transfers, magnitudes
+   pp. 14-16, 20-21) — identification structure transfers, magnitudes
    never.
 
 Inaccessible/blocked status: none this session. The extract was
@@ -7144,7 +7144,7 @@ present, page-marked, complete and read in full (38 pp.).
 
 docs/DECISIONS_PENDING.md is UPDATED this session (rule: a candidate
 sharpening was queued): the ratification queue stands at THIRTY-SIX
-candidate sharpenings plus probe E1, zero armed â the thirty-sixth,
+candidate sharpenings plus probe E1, zero armed — the thirty-sixth,
 the sign-persistence admission null, joined 2026-11-20 by deep-read
 session 60 / null-time session 71. docs/GOALS.md front-2 status line
 and the front-4 counter are refreshed (operative bookkeeping): x0b879c
@@ -7167,7 +7167,7 @@ live. Guard checks (marker sweep and encoding sanity, executed on this
 session's changed files locally and on the assembled repaired tree; the
 guard's full run lands in the session's verification pass): clean.
 
-## 78. Null-time session 72 (2026-11-20), first act: the corrupt-landing corrigendum â four curated files on the session-71 branch repaired; the EDITION 4 protocol rewrite recorded as not survived; guard extended nowhere, the record made truthful before the next append
+## 78. Null-time session 72 (2026-11-20), first act: the corrupt-landing corrigendum — four curated files on the session-71 branch repaired; the EDITION 4 protocol rewrite recorded as not survived; guard extended nowhere, the record made truthful before the next append
 
 Session-state note (work choice and its reason, recorded under the
 goal-autonomy conductor, edition 4 per log ## 76; the protocol file's
@@ -7181,7 +7181,7 @@ is NOT due under edition 4 (counter TWO of five after ## 79).
 
 Corrigendum, honestly recorded: the session-71 branch
 (log-repair-71-deepread-60, open PR #251) landed FOUR curated files
-corrupted to a single 0x07 control byte each â docs/GOALS.md,
+corrupted to a single 0x07 control byte each — docs/GOALS.md,
 docs/DECISIONS_PENDING.md, docs/goal_autonomy_protocol.md, and the
 session's own deep-read note
 paper/research/library/2026-11-20_cox_ratio_order_flows_deep_read.md
@@ -7196,7 +7196,7 @@ what was repaired, with sources:
 
 - docs/DECISIONS_PENDING.md: restored from main (the thirty-five-candidate
   text) and updated with the ONE item session 71 actually queued per
-  ## 77 â the sign-persistence admission null, the thirty-sixth â with
+  ## 77 — the sign-persistence admission null, the thirty-sixth — with
   its mechanism and page cites taken verbatim from the ## 77 record.
 - docs/GOALS.md: restored from main; front-2 and front-4 status lines
   refreshed (x0b879c consumed at deep-read 60, x973a89 consumed this
@@ -7217,12 +7217,12 @@ what was repaired, with sources:
   RECONSTRUCTION NOTE header as the only newly-authored portion.
 
 Guard: encoding sanity re-run on the repaired files and the assembled
-tree â clean (the four 0x07-byte files are exactly the failure class
+tree — clean (the four 0x07-byte files are exactly the failure class
 check 3 of the guard arms against; they failed it, and the failure is
 now swept). Nothing measured, no kill line moved, nothing armed,
 nothing trades live.
 
-## 79. Null-time session 72 (2026-11-20), second act: library deep-read session 61 â the neural marked-Hawkes kernels read; the estimator family shown to pre-decide the excitation sign; ZERO sharpenings queued; the event-collapse preprocessing recorded as the clock rule's page-cited counterexample
+## 79. Null-time session 72 (2026-11-20), second act: library deep-read session 61 — the neural marked-Hawkes kernels read; the estimator family shown to pre-decide the excitation sign; ZERO sharpenings queued; the event-collapse preprocessing recorded as the clock rule's page-cited counterexample
 
 - **Library deep-read session 61** (front 2, the score-26 tier; the ## 77
   pointer was the queue's next UNREAD and is consumed here):
@@ -7230,9 +7230,9 @@ nothing trades live.
   on Joseph & Jain (IISc Bangalore), "Non-Parametric Estimation of
   Multi-dimensional Marked Hawkes Processes" (arXiv:2402.04740v1
   [stat.ML], 7 Feb 2024, "Preprint. Under review"). Shallow neural
-  estimators of marked Hawkes kernels Ï(t, m) as a joint function of
+  estimators of marked Hawkes kernels ϕ(t, m) as a joint function of
   time and marks: SNH with marks (kernel output wrapped in an
-  exponential â strictly positive, so strictly excitatory, Eq. 11, PDF
+  exponential — strictly positive, so strictly excitatory, Eq. 11, PDF
   pp. 8-9) and NNNH with marks (signed kernel, intensity clipped at
   zero by an outer ReLU, Eqs. 12-13, PDF pp. 9, 23-24); MLE with an
   analytically integrated compensator (Appendix A, PDF pp. 22-24);
@@ -7246,7 +7246,7 @@ nothing trades live.
 - Grade: NO kill line changed. NO new candidate sharpening. The default
   grade is earned: one 30-minute spot window, visual-only validation,
   no branching ratio, no dispersion statistic, no criticality reading
-  anywhere â the paper cannot inform the C8 trigger threshold in either
+  anywhere — the paper cannot inform the C8 trigger threshold in either
   direction, and every mechanism it touches is already held by standing
   or queued rules:
   1. [interpretation caution] The estimator family pre-decides the
@@ -7264,7 +7264,7 @@ nothing trades live.
   2. [reinforcing, no new item] The event-unit is a pre-processing
      decision with kernel consequences: multi-counterparty fills are
      collapsed into ONE event with summed volumes before estimation
-     (PDF p. 17) â the opposite of the raw taker-print stream â and
+     (PDF p. 17) — the opposite of the raw taker-print stream — and
      coin-denominated marks are incommensurable across dimensions
      (ETH volume ~10x BTC, Table 1, PDF p. 17). Reinforces the queued
      clock and event-grain pre-declarations and the unit-declaration
@@ -7275,7 +7275,7 @@ nothing trades live.
      and a 10-iteration validation stop are unregistered analyst
      degrees of freedom (PDF pp. 12-13), and the cross-excitation
      headline ("ETH trades influence BTC, not the other way", PDF
-     pp. 17-18) rests on them â same-day-class evidence for why the
+     pp. 17-18) rests on them — same-day-class evidence for why the
      trigger layer declares kernel family and estimator identity with
      the spec (deep-read session 2).
   4. [interpretation caution] No numeric error table exists anywhere in
@@ -7293,7 +7293,7 @@ nothing trades live.
   structurally manufacture positive self-excitation readings (the
   kernel output is an exponential, PDF pp. 8-9) and the NNNH branch
   would write sign-clipping into the compensator itself (Eq. 12,
-  PDF p. 9) â an inhibitory regime would have been forced into a
+  PDF p. 9) — an inhibitory regime would have been forced into a
   cascade-shaped reading, the exact laundering the pre-declared kernel
   family, the named estimator identity, the sign-register and the
   boundary-solution rules exist to prevent.
@@ -7316,15 +7316,15 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean on the assembled tree: python3 src/integrity_guard.py
 run this session exits zero after the repairs.
 
-## 80. Null-time session 73 (2026-11-20), library deep-read session 62 â the Mehrdad-Zhu generation-varying Hawkes paper read; the generational partition shown to be an unidentifiable analyst degree of freedom and every stability result shown subcritical-only; ZERO sharpenings queued; the director step discharged against EDITION 4 (cadence not due: two deep-reads since the edition)
+## 80. Null-time session 73 (2026-11-20), library deep-read session 62 — the Mehrdad-Zhu generation-varying Hawkes paper read; the generational partition shown to be an unidentifiable analyst degree of freedom and every stability result shown subcritical-only; ZERO sharpenings queued; the director step discharged against EDITION 4 (cadence not due: two deep-reads since the edition)
 
 - Director step (goal-autonomy protocol, ACTIVE, ratified 2026-11-19): the
   live main tail (through ## 79) and docs/DECISIONS_PENDING.md were read
-  first; the standing work choice is the default â the next UNREAD
+  first; the standing work choice is the default — the next UNREAD
   deep-read, per this ritual, needs no substitute justification. EDITION 4
   of the goal state was written by the ## 76 synthesis pass; deep-read
-  sessions 60 (## 77) and 61 (## 79) have landed since â two, fewer than
-  the five the cadence rule requires â so the synthesis pass is NOT due
+  sessions 60 (## 77) and 61 (## 79) have landed since — two, fewer than
+  the five the cadence rule requires — so the synthesis pass is NOT due
   this session. Nothing in this session touches a carve-out.
 - **Library deep-read session 62** (front 2, the score-26 tier; the ## 79
   pointer "On the Hawkes Process with Different Exciting Functions" was
@@ -7333,23 +7333,23 @@ run this session exits zero after the repairs.
   on Behzad Mehrdad (Courant) and Lingjiong Zhu (FSU), "On the Hawkes
   Process with Different Exciting Functions" (arXiv:1403.0994v3
   [math.PR], 3 Sep 2017, v3 of a 2014 preprint). Pure probability theory
-  for the Fierro-Leiva-MÃ¸ller generalized linear Hawkes model where each
-  birth GENERATION n carries its own exciting function Î³n: weak and
+  for the Fierro-Leiva-Møller generalized linear Hawkes model where each
+  birth GENERATION n carries its own exciting function γn: weak and
   strong asymptotic stationarity under a shifted-process coupling
-  (Theorem 1, PDF pp. 4-6; constant Î³0 assumed, Remark 2 flags the
-  weakening as open, PDF p. 6); the multivariate connection â partitioning
+  (Theorem 1, PDF pp. 4-6; constant γ0 assumed, Remark 2 flags the
+  weakening as open, PDF p. 6); the multivariate connection — partitioning
   generations into sets Ai yields mutually exciting aggregates more
   general than the classical multivariate Hawkes process (Eqs. 3.10,
   PDF pp. 6-8; the odd/even split already gives a bivariate pair); an LDP
-  for Nt/t with a recursive scaled CGF Î(Î¸) (Theorems 3 and 6,
-  PDF pp. 9-11); an MDP with Gaussian rate J(x) = xÂ²/(2ÏÂ²) (Theorem 8,
+  for Nt/t with a recursive scaled CGF Γ(θ) (Theorems 3 and 6,
+  PDF pp. 9-11); an MDP with Gaussian rate J(x) = x²/(2σ²) (Theorem 8,
   PDF pp. 12-21); a marked-event-sum LDP (Theorem 7, PDF pp. 11-12); a
   heuristic signature-plot / Epps computation (Proposition 16 and the
-  O(Ï) orders, PDF pp. 21-23); asymptotic ruin probabilities (Theorems
+  O(τ) orders, PDF pp. 21-23); asymptotic ruin probabilities (Theorems
   17-19, PDF pp. 25-27). No estimator, no data, no numerics, no number
   anywhere in the paper.
 - Grade: NO kill line changed. NO new candidate sharpening. The default
-  grade is earned twice over â a theorem paper with zero empirical
+  grade is earned twice over — a theorem paper with zero empirical
   content cannot inform the C8 trigger threshold in either direction,
   and every discipline-relevant mechanism it touches is already held by
   standing or queued rules:
@@ -7357,30 +7357,30 @@ run this session exits zero after the repairs.
      observationally collapsible: generation membership of a realized
      event is never identifiable from event times alone, and the
      paper's own multivariate connection is a partition-of-generations
-     ARBITRATION (Eqs. 3.10, PDF p. 8) â different partitions give
+     ARBITRATION (Eqs. 3.10, PDF p. 8) — different partitions give
      different implied branching allocations from the SAME data. A
      generation-partitioned trigger fit is therefore a fully-registered
      analyst degree of freedom; the pre-declared kernel family, named
      estimator identity, per-branch and sign-register rules extend to
      the latent-branch ASSIGNMENT itself. No queue change.
-  2. [reinforcing, no new item] Every theorem in the paper â
-     stationarity, LLN, CLT, LDP, MDP â lives strictly below
-     criticality: Assumption 1(ii) requires Ï = sup_n âÎ³nâ_L1 < 1
-     (PDF p. 3), and none of the limits exist at Ï â¥ 1. A criticality
+  2. [reinforcing, no new item] Every theorem in the paper —
+     stationarity, LLN, CLT, LDP, MDP — lives strictly below
+     criticality: Assumption 1(ii) requires ρ = sup_n ‖γn‖_L1 < 1
+     (PDF p. 3), and none of the limits exist at ρ ≥ 1. A criticality
      reading estimated by a subcritical-only theory inherits a
-     built-in survival-condition bias â page-cited general-form backing
+     built-in survival-condition bias — page-cited general-form backing
      for the queued self-excitation regime-window pre-declaration and
      the standing boundary-solution caution; no new item.
   3. [interpretation caution] The stationary version needs CONSTANT
-     immigration Î³0 (Theorem 1, Remark 2, PDF p. 6), and every deviation
+     immigration γ0 (Theorem 1, Remark 2, PDF p. 6), and every deviation
      result is asymptotic in t with no finite-horizon constants (PDF
      pp. 9-21). No magnitude from this paper may enter any spec; no
      tail bound from it may be applied to a finite window or a
      time-varying-baseline market stretch. Reinforces the queued clock
      and regime-window pre-declarations; no queue change.
   4. [cost-survival ammunition] The ruin application (Theorems 17-19,
-     PDF pp. 25-27) converts the arrival LDP into u â â ruin asymptotics
-     under subcritical Ï, i.i.d. claims independent of arrivals, the
+     PDF pp. 25-27) converts the arrival LDP into u → ∞ ruin asymptotics
+     under subcritical ρ, i.i.d. claims independent of arrivals, the
      net-profit condition p > mE[C1] (Eq. 5.24, PDF p. 25), and light or
      subexponential tails. Relevant only if a future K7-style
      cost-survival layer exists (none does today); nothing absorbed now.
@@ -7393,16 +7393,16 @@ run this session exits zero after the repairs.
 - Counterfactual (the immune-system section, never omitted): had the
   programme adopted a generation-varying Hawkes trigger because the
   theory blesses per-cohort kernels, the latent generational partition
-  would have been arbitrated post hoc â the same realized stream
+  would have been arbitrated post hoc — the same realized stream
   decomposes into (h, g, h, g, ...) or arbitrary Ai-splits with different
-  implied branching allocations (PDF pp. 6-8) â manufacturing whatever
+  implied branching allocations (PDF pp. 6-8) — manufacturing whatever
   cross-excitation or damping structure the analyst's prior wanted, the
   exact laundering the pre-declared kernel family, estimator identity,
   per-branch and sign-register rules exist to prevent. Equally, had the
-  paper been read as licensing a criticality-tolerant trigger, the Ï < 1
+  paper been read as licensing a criticality-tolerant trigger, the ρ < 1
   condition holding up every theorem (PDF p. 3) would have been silently
   imported as a finding about markets rather than a condition of the
-  model â the boundary-solution laundering the regime-window
+  model — the boundary-solution laundering the regime-window
   pre-declaration exists to prevent.
 - Inaccessible/blocked status: none this session. The extract was
   present, page-marked, complete and read in full (28 pp.).
@@ -7422,46 +7422,46 @@ live. Guard clean: python3 src/integrity_guard.py run this session exits
 zero on the assembled tree.
 
 
-## 81. Null-time session 74 (2026-11-20), library deep-read session 63 â the FabreâMuni Toke neural Hawkes paper read; the estimator-configuration freeze queued as the thirty-seventh candidate (the auxiliary grid/weighting choices shown to manufacture or erase the exact kernel features a trigger or placebo would adjudicate); the near-critical, seasonality-sensitive fit recorded as reinforcing evidence for the standing regime-window cautions
+## 81. Null-time session 74 (2026-11-20), library deep-read session 63 — the Fabre–Muni Toke neural Hawkes paper read; the estimator-configuration freeze queued as the thirty-seventh candidate (the auxiliary grid/weighting choices shown to manufacture or erase the exact kernel features a trigger or placebo would adjudicate); the near-critical, seasonality-sensitive fit recorded as reinforcing evidence for the standing regime-window cautions
 
 - Director step (goal-autonomy protocol, ACTIVE, ratified 2026-11-19): the
   live main tail (through ## 80) and docs/DECISIONS_PENDING.md were read
-  first; the standing work choice is the default â the next UNREAD
+  first; the standing work choice is the default — the next UNREAD
   deep-read, per this ritual, needs no substitute justification. EDITION 4
   of the goal state was written by the ## 76 synthesis pass; deep-read
-  sessions 61 (## 79) and 62 (## 80) have landed since â two, fewer than
-  the five the cadence rule requires â so the synthesis pass is NOT due
+  sessions 61 (## 79) and 62 (## 80) have landed since — two, fewer than
+  the five the cadence rule requires — so the synthesis pass is NOT due
   this session. Nothing in this session touches a carve-out.
 - **Library deep-read session 63** (front 2, the score-26 tier; the ## 80
   pointer "Neural Hawkes: Non-Parametric Estimation in High Dimension and
   Causality Analysis in Cryptocurrency Markets" was the queue's next UNREAD
   and is consumed here):
   paper/research/library/2026-11-20_neural_hawkes_fabre_muni_toke_deep_read.md
-  on TimothÃ©e Fabre (CentraleSupÃ©lec / SUN ZU Lab) and Ioane Muni Toke
-  (CentraleSupÃ©lec), "Neural Hawkes: Non-Parametric Estimation in High
+  on Timothée Fabre (CentraleSupélec / SUN ZU Lab) and Ioane Muni Toke
+  (CentraleSupélec), "Neural Hawkes: Non-Parametric Estimation in High
   Dimension and Causality Analysis in Cryptocurrency Markets"
   (arXiv:2401.09361v3 [q-fin.TR], 4 Nov 2024). A methods paper: the
-  BacryâMuzy second-order characterization equation (Theorem 1, Eqs. 8-10,
+  Bacry–Muzy second-order characterization equation (Theorem 1, Eqs. 8-10,
   PDF pp. 4-5) is solved for marked multivariate Hawkes kernels by training
   D DGM physics-informed networks on the equation residual (Eqs. 19-24,
   PDF pp. 6-7) with a generic frozen hyperparameter configuration (Table 1,
   PDF p. 10), causality-respecting temporal loss weights (PDF pp. 6-7) and a
-  magnitude-balancing weighting Î¶ for kernels of different orders (Eqs. 29-
+  magnitude-balancing weighting ζ for kernels of different orders (Eqs. 29-
   30, PDF p. 9). Validated on six simulated kernel families including
   inhibitory, delayed, 15-dimensional Gaussian and non-multiplicative
   kernels (PDF pp. 10-17) with N^-0.5 convergence (PDF p. 18) and
   hyperparameter robustness (PDF pp. 18-19); against Wiener-Hopf it is far
   more stable to the statistics-grid choice, and WH oscillations worsen
-  with finer grids â the authors' own words: poorly chosen grids "can still
+  with finer grids — the authors' own words: poorly chosen grids "can still
   generate kernels with oscillatory behaviours which could lead to false
   discoveries in practical cases" (PDF p. 21, Figures 11-14, PDF pp. 19-
   21). Applications on one month of Coinbase trades (Dec 2023, 15 pairs,
   Table 8, PDF p. 22): a concave volume mark kernel plateauing above
   ~50,000 USD with volume-dependent latency peaks (PDF p. 23); a 15-pair
   fit with branching ratio R = 0.80, a near-critical t^-1 diagonal power
-  law above 3 ms and an inhibitory valley between 500 Âµs and 3 ms
+  law above 3 ms and an inhibitory valley between 500 µs and 3 ms
   (PDF p. 24); leader/receiver ratios (Eqs. 50-52, PDF pp. 24-25) with BTC
-  and ETH leading, XRP both leading and receiving, XRPâXLM strongest, and
+  and ETH leading, XRP both leading and receiving, XRP→XLM strongest, and
   volume NOT ranking leadership (PDF pp. 25-26); robust by the authors' own
   restricted-window and daily-fit seasonality checks (PDF p. 26, Figures
   21-24, PDF pp. 33, 36-37).
@@ -7472,27 +7472,27 @@ zero on the assembled tree.
      authors themselves declare that uncorrected intraday seasonality
      "could ... inflate the branching ratios" (PDF p. 26), presenting R =
      0.80 only alongside a restricted-window refit (R = 0.78) and daily
-     medians â page-cited general-form backing for the queued
+     medians — page-cited general-form backing for the queued
      self-excitation regime-window pre-declaration and the standing
      boundary-solution caution. A criticality-flavored reading on a
      non-stationary stretch inherits an upward-biased branching ratio
      before any market structure enters. No queue change.
-  2. [candidate sharpening, PENDING OWNER RATIFICATION â the
+  2. [candidate sharpening, PENDING OWNER RATIFICATION — the
      estimator-configuration freeze] Any C1-L2/C8-adjacent kernel
      estimation must pre-register, BEFORE fitting, its FULL estimator
      configuration: the second-order-statistics grid (h, nlin, nlog or
      equivalent), the truncation horizon, the sampling scheme, any loss or
-     magnitude weightings (Î¶, Eqs. 29-30, PDF p. 9; temporal weights,
+     magnitude weightings (ζ, Eqs. 29-30, PDF p. 9; temporal weights,
      Eqs. 21-24, PDF pp. 6-7), quadrature counts and the training
      configuration, chosen from a declared generic default, with every
      deviation a dated amendment BEFORE the data is touched; a
      kernel-dependent claim surviving only under post-hoc re-configuration
      may not enter any spec as support. Mechanism, page-cited: the same
      characterization equation on the same statistics yields kernel shapes
-     that swing with these auxiliaries â WH oscillations and false
+     that swing with these auxiliaries — WH oscillations and false
      multimodality under poor grid choice "could lead to false
      discoveries" (PDF p. 21); the neural method exists because quadrature
-     inversion is unstable there (PDF pp. 2-5, 18-21); Î¶ exists because
+     inversion is unstable there (PDF pp. 2-5, 18-21); ζ exists because
      raw magnitudes shadow each other and are analyst-rebalanced
      (PDF p. 9); the paper's own remedy is a FROZEN generic configuration
      with "no fine tuning" (Table 1, PDF p. 10; PDF p. 24). Tightens the
@@ -7503,17 +7503,17 @@ zero on the assembled tree.
      rule instead of surviving as tuning. Full draft with the
      killed-if-wrong counterfactual in the session note.
   3. [interpretation caution] All extracted structure sits downstream of
-     declared preprocessing conventions â same-timestamp trades aggregated
+     declared preprocessing conventions — same-timestamp trades aggregated
      into single events (PDF pp. 21-22), microsecond matching-engine
      timestamps of ONE centralized exchange, a 15-bin log volume grid
-     (Table 9, PDF p. 23), a 500 Âµs statistics grid (PDF p. 23) â so the
+     (Table 9, PDF p. 23), a 500 µs statistics grid (PDF p. 23) — so the
      latency peaks, the inhibitory valley and the 50,000 USD mark-kernel
      plateau are functions of those conventions on that venue and month.
      No shape or magnitude enters any spec; any comparison against the
      programme's own Tardis feed must first reconcile aggregation and
      timing conventions. No queue change.
   4. [interpretation caution] The leader/receiver layer (BTC/ETH lead,
-     XRPâXLM, volume does not rank leadership, PDF pp. 24-26) is a summary
+     XRP→XLM, volume does not rank leadership, PDF pp. 24-26) is a summary
      of estimated kernel magnitudes under one method's weighting choices;
      the authors themselves report the smallest branching ratios moving
      15-20% under their own robustness refits (PDF p. 26). None of it may
@@ -7521,7 +7521,7 @@ zero on the assembled tree.
      reading discipline only. No queue change.
   5. [source-quality note] arXiv-only preprint (v3, q-fin.TR), no published
      version identified, zero recorded citations, first author affiliated
-     with the data provider (SUN ZU Lab, PDF p. 1 â disclosed, and the
+     with the data provider (SUN ZU Lab, PDF p. 1 — disclosed, and the
      empirical layer is single-source by construction), BUT the numerical
      validation is real and substantial (six simulated kernel families with
      ground truth, PDF pp. 10-17): the honest best access-value read of the
@@ -7531,16 +7531,16 @@ zero on the assembled tree.
   programme adopted any moment-based kernel estimator (WH or this neural
   successor) for a C8-adjacent trigger or placebo without freezing its
   configuration, the exact features the shuffled-arrival placebo would
-  adjudicate â latency peaks, multimodality, the inhibitory valley, relative
-  cross-excitation magnitudes â could have been manufactured or erased post
+  adjudicate — latency peaks, multimodality, the inhibitory valley, relative
+  cross-excitation magnitudes — could have been manufactured or erased post
   hoc by quadrature counts, grid rules and loss weightings (PDF pp. 9, 18-
   21), so the placebo would have passed or failed against an estimator
   artifact rather than the market: the named-estimator-identity discipline
   laundered through its auxiliary-configuration gap, which is what the
   queued freeze rule closes. Equally, had the causality layer been read as
-  evidence, a volume-participation surrogate for leadership and an XRPâXLM
+  evidence, a volume-participation surrogate for leadership and an XRP→XLM
   "fact" would have entered the cross-market front with zero of the
-  programme's own measurements behind them â someone else's single-venue
+  programme's own measurements behind them — someone else's single-venue
   December imported as a finding about markets, the exact ammo-as-evidence
   collapse the standing rule forbids.
 - Inaccessible/blocked status: none this session. The extract was present,
@@ -7554,22 +7554,22 @@ zero on the assembled tree.
   Multi-Contract Quoting" (score 26, xd17ea7); re-read the live tail before
   consuming.
 - docs/DECISIONS_PENDING.md updated this session (rule: ONE sharpening was
-  queued here â the ratification-queue line and the new item's entry).
+  queued here — the ratification-queue line and the new item's entry).
 
 Nothing measured, no kill line moved, nothing armed, nothing trades live.
 Guard clean: python3 src/integrity_guard.py run this session exits zero on
 the assembled tree.
 
 
-## 82. Null-time session 75 (2026-11-20), library deep-read session 64 â the AnanthaâJainâGoyalâMisra event-time anchor-selection paper read; the headline agreement scores shown to sit BELOW the constant near-leg baseline in the authors' own decomposition; the SPA/walk-forward kernel-selection layer and the intraday excitation drift recorded as reinforcing evidence for already-queued rules; ZERO sharpenings queued
+## 82. Null-time session 75 (2026-11-20), library deep-read session 64 — the Anantha–Jain–Goyal–Misra event-time anchor-selection paper read; the headline agreement scores shown to sit BELOW the constant near-leg baseline in the authors' own decomposition; the SPA/walk-forward kernel-selection layer and the intraday excitation drift recorded as reinforcing evidence for already-queued rules; ZERO sharpenings queued
 
 - Director step (goal-autonomy protocol, ACTIVE, ratified 2026-11-19): the
   live main tail (through ## 81) and docs/DECISIONS_PENDING.md were read
-  first; the standing work choice is the default â the next UNREAD
+  first; the standing work choice is the default — the next UNREAD
   deep-read, per this ritual, needs no substitute justification. EDITION 4
   of the goal state was written by the ## 76 synthesis pass; deep-read
-  sessions 61 (## 79), 62 (## 80) and 63 (## 81) have landed since â three,
-  fewer than the five the cadence rule requires â so the synthesis pass is
+  sessions 61 (## 79), 62 (## 80) and 63 (## 81) have landed since — three,
+  fewer than the five the cadence rule requires — so the synthesis pass is
   NOT due this session. Nothing in this session touches a carve-out.
 - **Library deep-read session 64** (front 2, the score-26 tier; the ## 81
   pointer "Event-Time Anchor Selection for Multi-Contract Quoting" (score
@@ -7581,7 +7581,7 @@ the assembled tree.
   methods/executions paper: in two-leg NIFTY futures calendar-spread
   quoting, which contract to anoint as the reference (anchoring) leg,
   decided per 10 ms window from either multivariate Hawkes order-flow
-  arrival-ratio forecasts (T/C/PDM Ã bid/ask, MLE kernels on a trailing
+  arrival-ratio forecasts (T/C/PDM × bid/ask, MLE kernels on a trailing
   1000 ms, SPA-selected EM kernel, Ogata-thinned 10 ms forward simulation,
   PDF pp. 11-12, 18-19) or a Composite Liquidity Factor (log cross-level
   price gap over cumulative depth per side, EMA-smoothed, PDF pp. 14-15,
@@ -7592,12 +7592,12 @@ the assembled tree.
   (0.70 vs 0.64), CLF the low bins (Fig. 7, PDF pp. 20-21); the Hawkes
   rule agrees at ~88% on current-month-oracle windows but only ~18% on
   next-month-oracle windows (Fig. 6b, PDF p. 20).
-- Grade: NO kill line changes. NO new candidate sharpening â every lesson
+- Grade: NO kill line changes. NO new candidate sharpening — every lesson
   here is a page-cited instance of a rule the queue already carries.
   1. [reinforcing, no new item] The oracle picks the near leg in ~72% of
      windows (PDF pp. 17-18) while the headline rules score 0.6856 and
      0.6358 (PDF p. 19): both aggregate BELOW the constant-majority-class
-     decision â negative skill by the authors' own decomposition â the
+     decision — negative skill by the authors' own decomposition — the
      textbook case for the already-queued base-rate confrontation (## 65).
      A classification score is not skill until confronted with the
      constant baseline on the same windows. No queue change.
@@ -7614,7 +7614,7 @@ the assembled tree.
      authors' own appendix: PDM self-excitation in the morning block,
      trades/cancellations by midday, cancellations dominating with PDM
      faded by the afternoon block (Figs. 8, PDF pp. 25-26, time-of-day
-     dependence acknowledged on PDF p. 19) â general-form backing for the
+     dependence acknowledged on PDF p. 19) — general-form backing for the
      queued self-excitation regime-window pre-declaration; the regime must
      be declared before the data is touched, not inferred from which
      block flattered the kernel. No queue change.
@@ -7622,7 +7622,7 @@ the assembled tree.
      1000 ms estimation, top-5 depth, quantities at minimum tradable size,
      a single day of a single venue; the CLF majority-vote tie-break
      (toward next-month, PDF p. 18) contradicts the elsewhere-stated
-     toward-c determinism â a grading detail of this paper only. Nothing
+     toward-c determinism — a grading detail of this paper only. Nothing
      licenses any magnitude, window or feature for the programme's own L2
      windows. No queue change.
   5. [cost-survival ammunition, relevant only if a future K7-style layer
@@ -7641,7 +7641,7 @@ the assembled tree.
   headline agreement numbers been read as forecast skill, a 69%
   "capability" would have entered the record while the authors' own
   persistence table shows an inert constant decision agreeing in ~72% of
-  the same windows â negative skill laundered as evidence, the exact
+  the same windows — negative skill laundered as evidence, the exact
   failure the queued base-rate confrontation exists to kill before any
   spec is touched. Had the SPA-selected EM kernel been treated as
   objectively correct rather than selected-under-controls on the same
@@ -7667,14 +7667,14 @@ Guard clean: python3 src/integrity_guard.py run this session exits zero on
 the assembled tree.
 
 
-## 83. Null-time session 76 (2026-11-20), first act: the third synthesis pass â the cadence recomputed honestly from the edition-4 reset (FIVE of five, mis-tallied as three at ## 82 and as two on the stale GOALS line); the edition-4 re-landing debt cleared by supersession; goal state rewritten as EDITION 5; NO sharpening queued by the pass
+## 83. Null-time session 76 (2026-11-20), first act: the third synthesis pass — the cadence recomputed honestly from the edition-4 reset (FIVE of five, mis-tallied as three at ## 82 and as two on the stale GOALS line); the edition-4 re-landing debt cleared by supersession; goal state rewritten as EDITION 5; NO sharpening queued by the pass
 
 Session-state note (work choice and its reason, recorded under the
 goal-autonomy conductor, the protocol file read live on main and found
 at EDITION 3 text with the ## 78 debt standing): the live main tail
 (through ## 82) and docs/DECISIONS_PENDING.md were read first; the
 cadence check was recomputed from first principles against the edition-4
-reset at ## 76 â deep-reads 60 (## 77), 61 (## 79), 62 (## 80), 63
+reset at ## 76 — deep-reads 60 (## 77), 61 (## 79), 62 (## 80), 63
 (## 81) and 64 (## 82) have landed since, five of five, so per the
 conductor protocol section 3 point 2 and the ritual's director step the
 synthesis pass runs FIRST. The counter discrepancies in the ## 80-## 82
@@ -7700,15 +7700,15 @@ time):
 - Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
   2026-11-19; archived is NOT falsified; every kill line frozen;
   unchanged.
-- Phase 2 (Crypto L2): ACTIVE, the Board's only active front (C1-L2 â
-  C8 â Convexity Sizing), blocked on the owner's data acquisition; the
+- Phase 2 (Crypto L2): ACTIVE, the Board's only active front (C1-L2 →
+  C8 → Convexity Sizing), blocked on the owner's data acquisition; the
   L0 dry run unblocked; unchanged.
 - Library: 64 deep-read notes through session 64 on main's tip; the
   ratification queue holds THIRTY-SEVEN candidates plus probe E1, zero
   armed; T1 armed awaiting the owner's word (sign inverted); T2
   tested-fail; the blocked list stays blocked.
 - Queue pointer: next UNREAD "Stochastic Price Dynamics Implied By the
-  Limit Order Book" (score 25, x074d5c), then x8f729f (score 25) â
+  Limit Order Book" (score 25, x074d5c), then x8f729f (score 25) —
   recomputed by title-matching the score-sorted triage file against the
   live tail; the score-26 tier fully consumed.
 
@@ -7723,7 +7723,7 @@ the tier boundary has passed into the score-25 tail.
 Named gaps (the pass's product, each at zero status until its channel
 fires it): (1) the append-only log's write-side ~64K truncation class
 (## 75, ## 78) still has NO standing CI byte-size-monotonicity check
-and no large-read/large-write verification helper â named,
+and no large-read/large-write verification helper — named,
 candidate-improvement status only; (2) the weekly directorate has
 still not sat: thirty-seven candidates plus probe E1 pending, and the
 G2 briefs (docs/DIRECTORATE_BRIEFS.md) cover only items 1-33, so a
@@ -7740,14 +7740,14 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live.
 
 
-## 84. Null-time session 76 (2026-11-20), second act: library deep-read session 65 â the ÃetinâWaelbroeck Glosten-equilibrium paper read; the impact functional form shown to be a derived consequence of two analyst premises (signal-tail class, competitor count) rather than a free parameter; ZERO sharpenings queued; the spread shown to be an adverse-selection object before it is a liquidity object
+## 84. Null-time session 76 (2026-11-20), second act: library deep-read session 65 — the Çetin–Waelbroeck Glosten-equilibrium paper read; the impact functional form shown to be a derived consequence of two analyst premises (signal-tail class, competitor count) rather than a free parameter; ZERO sharpenings queued; the spread shown to be an adverse-selection object before it is a liquidity object
 
 - **Library deep-read session 65** (front 2, the score-25 tier; the ##
   82 pointer "Informed trading, limit order book and implementation
   shortfall: equilibrium..." was the queue's next UNREAD and is
   consumed here):
   paper/research/library/2026-11-20_glosten_informed_trading_is_deep_read.md
-  on Umut Ãetin (LSE) and Henri Waelbroeck (Baruch College, CUNY /
+  on Umut Çetin (LSE) and Henri Waelbroeck (Baruch College, CUNY /
   AlgoCortex LLC), "Informed Trading, Limit Order Book and
   Implementation Shortfall: Equilibrium and Asymptotics"
   (arXiv:2003.04425v1 [q-fin.TR], 9 Mar 2020). A static Glosten
@@ -7756,23 +7756,23 @@ live.
   insiders who observe the liquidation value V exactly; equilibrium iff
   the integral equation (3.11) has a solution, existence proven for
   bounded V (Thm 3.2, PDF pp. 10-15); Gaussian scaling makes the
-  bid-ask spread independent of the noise variance Ï while the book
-  flattens as Ï grows (Cor. 3.2-3.3, PDF pp. 11-13) and the spread
+  bid-ask spread independent of the noise variance σ while the book
+  flattens as σ grows (Cor. 3.2-3.3, PDF pp. 11-13) and the spread
   widens with informational asymmetry; with a monopolist the last slice
   prices at v (Prop. 2.1(2), PDF p. 9) while N > 1 competitors overshoot
   and drive aggregate profit to 0 (Prop. 3.2, PDF pp. 12-13); the exact
-  large-trade asymptotics are the headline â M â F regularly varying of
-  index tied to Î¨+x(M) and N, power law iff fat-tailed signals, log laws
+  large-trade asymptotics are the headline — M − F regularly varying of
+  index tied to Ψ+x(M) and N, power law iff fat-tailed signals, log laws
   otherwise (Thms 4.1-4.3, PDF pp. 16-21; Tables 1-2, PDF p. 26), the
-  equilibrium volume tail a power law with exponent Î¶+ (Rem. 5, PDF p.
+  equilibrium volume tail a power law with exponent ζ+ (Rem. 5, PDF p.
   20), and for unbounded signals equilibrium conjectured to require
-  N â¥ Î¨+x(â) â no equilibrium for a monopolist under Student-t(3),
-  parabolic impact at N = 2, linear at N = 3, concave at N â¥ 4 (PDF pp.
+  N ≥ Ψ+x(∞) — no equilibrium for a monopolist under Student-t(3),
+  parabolic impact at N = 2, linear at N = 3, concave at N ≥ 4 (PDF pp.
   25, 28, 32-33); implementation shortfall strictly below the marginal
   cost F on the buy side (Prop. 2.2, PDF p. 9), converging to it as N
   grows (Cor. 4.3, PDF p. 21); a same-price desk variant behaves
   similarly with no existence proof (PDF p. 35).
-- Grade: NO kill line changes. NO new candidate sharpening â default
+- Grade: NO kill line changes. NO new candidate sharpening — default
   grade; every lesson is a page-cited instance of a discipline the
   queue already carries.
   1. [reinforcing, no new item] Impact and volume-tail functional forms
@@ -7780,27 +7780,27 @@ live.
      signal-tail class plus the competitor count N (PDF pp. 1, 5, 20,
      26, 38); the common practitioner forms agree at small sizes and
      diverge exactly where large-trade data is sparse (PDF p. 4), so
-     any fitted form near the large-trade boundary is an extrapolation â
+     any fitted form near the large-trade boundary is an extrapolation —
      supporting the library-is-ammunition rule from the assumption
      side: no functional form may be assumed either without a
      pre-declared tail class. No queue change.
   2. [reinforcing, no new item] The authors' own three practical
-     difficulties â spread-impact collinearity for small orders, weak
+     difficulties — spread-impact collinearity for small orders, weak
      signal-to-noise for small executions, endogenous order-size bias
-     for large trades (PDF p. 22) â the identification discipline
+     for large trades (PDF p. 22) — the identification discipline
      stated by the source literature itself; reinforces the queued
      base-rate confrontation family. No queue change.
   3. [interpretation caution] The impact exponent is manufactured by
      N alone in their Table 1/Student-t(3) worked case (parabolic
-     N = 2, linear N = 3, concave N â¥ 4, PDF pp. 26, 28, 32-33): every
+     N = 2, linear N = 3, concave N ≥ 4, PDF pp. 26, 28, 32-33): every
      magnitude-response reading of imbalance or flow carries an
      unstated competition premise; no universal concavity or sign of
      curvature may be read from this shelf or assumed in a spec.
      No queue change.
   4. [interpretation caution] The equilibrium spread is invariant to
-     noise-trading volume Ï and moves only with informational
+     noise-trading volume σ and moves only with informational
      asymmetry (Cor. 3.2-3.3, PDF pp. 12-13, 38; the book flattens as
-     Ï grows, PDF pp. 4, 12): a spread magnitude is never a clean
+     σ grows, PDF pp. 4, 12): a spread magnitude is never a clean
      liquidity proxy independent of the adverse-selection level, so
      any spread-based normalizer in a future L2 window travels with
      the informational regime. No queue change.
@@ -7809,9 +7809,9 @@ live.
      the buy side (Prop. 2.2, PDF p. 9) and converges to it as N grows
      (Cor. 4.3, PDF p. 21); the largest trades dominate aggregate
      shortfall precisely where empirical identification is weakest
-     (PDF p. 4) â any future cost layer must carry the collinear-spread,
+     (PDF p. 4) — any future cost layer must carry the collinear-spread,
      weak-SNR and endogenous-size caveats (PDF p. 22) as explicit
-     assumptions and may not transplant the paper's âlog(1 + ax^Î´)
+     assumptions and may not transplant the paper's √log(1 + ax^δ)
      fits (PDF pp. 27, 30) cross-venue. No queue change.
   6. [source-quality note] arXiv v1 preprint; existence proven only
      for bounded signals, unbounded cases numerical with stated
@@ -7824,17 +7824,17 @@ live.
   power-law-vs-log dichotomy been read as an empirical claim about
   crypto limit order books, a "universal impact law" would have
   entered the record while the paper itself proves the exponent is
-  manufactured by two analyst-chosen premises (signal-tail class, N) â
+  manufactured by two analyst-chosen premises (signal-tail class, N) —
   the exact academic-degree-of-freedom failure the pre-declaration
   family exists to kill at the gate. Had the equilibrium volume-tail
   power law been cited as measured market structure, a theorem deduced
   from unverified assumptions (competitive book, one period, risk
   neutrality; the Back-Baruch caveat acknowledged, PDF p. 3) would have
   been laundered into the C8 record. And had the spread's
-  Ï-invariance been read backwards as "spread is pure adverse
+  σ-invariance been read backwards as "spread is pure adverse
   selection, safe to normalize on", a single-period bounded-signal
   result would have been transplanted onto a venue and horizon it never
-  modeled â the magnitudes-never-transfer violation.
+  modeled — the magnitudes-never-transfer violation.
 - Inaccessible/blocked status: none this session. The extract was
   present, page-marked, complete and read in full (58 pp.).
 - Ratification queue after this session: THIRTY-SEVEN candidate
@@ -7854,15 +7854,15 @@ live. Guard clean: python3 src/integrity_guard.py run this session
 exits zero on the assembled tree.
 
 
-## 85. Null-time session 77 (2026-11-20), library deep-read session 66 â the LangnauâPunchev LOB-implied price-dynamics paper read; the price-process family alone shown to manufacture or erase the headline book statistic's level structure (the same book that demands a smile under GBM shows none under a jump-diffusion); ONE sharpening queued (the thirty-eighth, the price-process-family invariance rule)
+## 85. Null-time session 77 (2026-11-20), library deep-read session 66 — the Langnau–Punchev LOB-implied price-dynamics paper read; the price-process family alone shown to manufacture or erase the headline book statistic's level structure (the same book that demands a smile under GBM shows none under a jump-diffusion); ONE sharpening queued (the thirty-eighth, the price-process-family invariance rule)
 
 - Director step (goal-autonomy protocol, ACTIVE, ratified 2026-11-19): the
   live main tail (through ## 84) and docs/DECISIONS_PENDING.md were read
-  first; the standing work choice is the default â the next UNREAD
+  first; the standing work choice is the default — the next UNREAD
   deep-read, per this ritual, needs no substitute justification. EDITION 5
   of the goal state was written by the ## 83 synthesis pass; deep-read
-  session 65 (## 84) has landed since â one, fewer than the five the
-  cadence rule requires â so the synthesis pass is NOT due this session.
+  session 65 (## 84) has landed since — one, fewer than the five the
+  cadence rule requires — so the synthesis pass is NOT due this session.
   Nothing in this session touches a carve-out.
 - **Library deep-read session 66** (front 2, the score-25 tier; the ## 84
   pointer "Stochastic Price Dynamics Implied By the Limit Order Book"
@@ -7874,7 +7874,7 @@ exits zero on the assembled tree.
   Rosu's equilibrium impatience rate r is fitted to a reconstructed
   DAX-futures book (June-August 2010, depth six levels, 30-second grid,
   30-observation rolling estimates) through a distance-to-fill utility
-  UD(r) = |D| E[exp(-r Ï)] built on first-passage Laplace transforms (eq.
+  UD(r) = |D| E[exp(-r τ)] built on first-passage Laplace transforms (eq.
   2, PDF p. 3; Algorithm 1, PDF pp. 6-7); under GBM r is NOT
   level-independent (power law in the risk-adjusted distance, PDF
   pp. 7-9) and holding r and U constant forces an implied-volatility
@@ -7885,20 +7885,20 @@ exits zero on the assembled tree.
   regression finds no significant relation between r and future
   mid-price returns in either setting (PDF pp. 9, 20).
 - Grade: NO kill line changed; ONE new candidate sharpening queued,
-  PENDING OWNER RATIFICATION â the price-process-family invariance rule
+  PENDING OWNER RATIFICATION — the price-process-family invariance rule
   (the thirty-eighth): the same market, the same book, the same
-  equilibrium assumption, and one analyst choice â the price-process
-  family â converts the headline book statistic from meaningless to
+  equilibrium assumption, and one analyst choice — the price-process
+  family — converts the headline book statistic from meaningless to
   meaningful. Under GBM the day-level dispersion of the fitted
-  impatience rate explodes (Ïr up to 43.3, 50.7, 83.9, 88.3 across
+  impatience rate explodes (σr up to 43.3, 50.7, 83.9, 88.3 across
   days, PDF pp. 30-31) and r is an explicit function of the
   distance-to-fill AND the estimated volatility (PDF pp. 7-9); under
-  DEJD on the same data Ïr collapses by an order of magnitude and r is
+  DEJD on the same data σr collapses by an order of magnitude and r is
   a function of neither (PDF pp. 21-22, 30-31). Pre-declaration text:
   any C1-L2/C8-adjacent book-defined statistic that prices time through
-  an assumed price process â expected fill, first-passage or
+  an assumed price process — expected fill, first-passage or
   hitting-time discounting, impatience or utility weighting of book
-  levels â must pre-declare, BEFORE the data, the price-process family
+  levels — must pre-declare, BEFORE the data, the price-process family
   entering its definition from a declared generic default, with the
   killed-if-wrong counterfactual recorded: a statistic whose
   level-dependence, stability or sign exists under one family and
@@ -7916,12 +7916,12 @@ exits zero on the assembled tree.
      added (PDF pp. 10-12 vs 19-22): the tempting anticipatory reading
      (far-out orders "betting on a sharp price change", the authors' own
      intuition, PDF p. 11) is a property of the assumed dynamics, not an
-     observation about traders â reinforcing magnitudes-never-transfer
+     observation about traders — reinforcing magnitudes-never-transfer
      and the pre-declaration family. No queue change.
   3. [reinforcing, no new item] The paper's own regression shows the
      impatience rate carries no significant relationship to future
      mid-price returns in either setting, false outbreaks documented
-     (PDF pp. 9, 20) â a headline book statistic honestly reported as
+     (PDF pp. 9, 20) — a headline book statistic honestly reported as
      failing its own directional null; reinforcing the two-null
      admission rule. No queue change.
   4. [interpretation caution] The DEJD calibration is under-identified:
@@ -7950,7 +7950,7 @@ exits zero on the assembled tree.
   anticipates sharp moves, a C1-L2 motivation would have carried "far
   orders imply coming jumps" into the spec while the paper itself
   proves the smile is exactly what a wrong price family manufactures
-  and the jump-augmented family erases â the academic-degree-of-freedom
+  and the jump-augmented family erases — the academic-degree-of-freedom
   failure the pre-declaration family exists to kill, demonstrated on a
   single analyst axis. Had the flat DEJD r been read as directional
   information, the authors' own null regression (PDF pp. 9, 20) would
@@ -7979,15 +7979,15 @@ Guard clean: python3 src/integrity_guard.py run this session exits zero on
 the assembled tree.
 
 
-## 86. Null-time session 78 (2026-11-20), library deep-read session 67 â the Clinet-Potiron doubly stochastic Hawkes-inference paper read; the naive block-MLE's bias shown to sit at the magnitude of its own standard deviation and the Gaussian limit shown to exclude diffusive parameter variation; the recorded queue pointer corrected against the file state (the score-26 entry xbe4d91 was in fact UNREAD; the ## 82 "tier fully consumed" claim was off by this one entry); no kill line moved, nothing sharpened
+## 86. Null-time session 78 (2026-11-20), library deep-read session 67 — the Clinet-Potiron doubly stochastic Hawkes-inference paper read; the naive block-MLE's bias shown to sit at the magnitude of its own standard deviation and the Gaussian limit shown to exclude diffusive parameter variation; the recorded queue pointer corrected against the file state (the score-26 entry xbe4d91 was in fact UNREAD; the ## 82 "tier fully consumed" claim was off by this one entry); no kill line moved, nothing sharpened
 
 - Director step (goal-autonomy protocol, ACTIVE, ratified 2026-11-19): the
   live main tail (through ## 85) and docs/DECISIONS_PENDING.md were read
-  first; the standing work choice is the default â the next UNREAD
+  first; the standing work choice is the default — the next UNREAD
   deep-read, per this ritual, needs no substitute justification. EDITION 5
   of the goal state was written by the ## 83 synthesis pass; deep-read
-  sessions 65 (## 84) and 66 (## 85) have landed since â two before this
-  one, three including it, fewer than the five the cadence rule requires â
+  sessions 65 (## 84) and 66 (## 85) have landed since — two before this
+  one, three including it, fewer than the five the cadence rule requires —
   so the synthesis pass is NOT due this session. Nothing in this session
   touches a carve-out.
 - Queue-pointer reconciliation, recorded honestly (honest-error protocol:
@@ -7999,7 +7999,7 @@ the assembled tree.
   deep-read notes on the file state this session shows the score-26 entry
   "Statistical inference for the doubly stochastic self-exciting
   process" (score 26, xbe4d91, Clinet-Potiron) carries no note and no
-  log mention â the tier-close claim was off by this one entry. The
+  log mention — the tier-close claim was off by this one entry. The
   ritual's rule is the score order: 26 ranks above 25, so xbe4d91 is
   consumed this session and x8f729f remains the next UNREAD after it.
 - **Library deep-read session 67** (front 2, the score-26 tier's missed
@@ -8010,19 +8010,19 @@ the assembled tree.
   self-exciting process" (arXiv:1607.05831v3 [q-fin.ST], v3 June 2017,
   "This version: September 19, 2018"). A statistics paper: the exponential
   kernel Hawkes process extended to a doubly stochastic version whose
-  three parameters (baseline Î½, excitation a, decay b) are stochastic
+  three parameters (baseline ν, excitation a, decay b) are stochastic
   time-varying processes (intensity eq. 4.2, existence Theorem 5.1,
-  PDF pp. 6-7); the target is the integrated parameter Î = T^-1 â«Î¸*âdt
+  PDF pp. 6-7); the target is the integrated parameter Θ = T^-1 ∫θ*ₜdt
   (eq. 1.1, PDF p. 2); the naive estimator is the average of blockwise
   local MLEs (eq. 1.2, PDF p. 2); the local CLT forces small blocks
-  (h_n = o(ân), eq. 1.3, PDF p. 2) and absence of asymptotic bias forces
-  large blocks (ân = o(h_n), eq. 1.4, PDF pp. 2-3) with no h_n
+  (h_n = o(√n), eq. 1.3, PDF p. 2) and absence of asymptotic bias forces
+  large blocks (√n = o(h_n), eq. 1.4, PDF pp. 2-3) with no h_n
   satisfying both (PDF p. 3), so a first-order bias-corrected local MLE
   is built (eqs. 1.5, 5.18, 10.14, PDF pp. 3, 10, 21-22) and given a
-  global CLT valid only under parameter smoothness Î³ â (3/4, 1] â
-  ItÃ´-process parameter paths explicitly excluded (condition [BC],
-  PDF p. 10), higher-order correction reaching only Î³ > 1/2 and nothing
-  working at Î³ â¤ 1/2 without parameter-distribution assumptions
+  global CLT valid only under parameter smoothness γ ∈ (3/4, 1] —
+  Itô-process parameter paths explicitly excluded (condition [BC],
+  PDF p. 10), higher-order correction reaching only γ > 1/2 and nothing
+  working at γ ≤ 1/2 without parameter-distribution assumptions
   (PDF p. 11). Simulations: the naive estimator's bias is of the same
   magnitude as its standard deviation across four models (Table 1,
   PDF pp. 14-15), the correction removes it (Table 2, PDF p. 17), and
@@ -8031,11 +8031,11 @@ the assembled tree.
   approach even where exactly well specified (Table 3 + text,
   PDF pp. 14, 18). Empirics on 251 days of 2015 AAPL trade times
   (NASDAQ, ~15,000 trades/day, PDF pp. 15-17): fitted excitation
-  parameters wander intraday far beyond seasonality, b*â with no
-  pattern (PDF p. 17), daily integrated estimates â (0.56, 11, 40),
+  parameters wander intraday far beyond seasonality, b*ₜ with no
+  pattern (PDF p. 17), daily integrated estimates ≈ (0.56, 11, 40),
   dispersion (0.24, 2, 8), robust across five block sizes, uncorrected
   MLE/CH very different from corrected (Table 4 + text, PDF pp. 17-21).
-- Grade: NO kill line changes. NO new candidate sharpening â default
+- Grade: NO kill line changes. NO new candidate sharpening — default
   grade; every mechanism found is a page-cited instance of a discipline
   the queue already carries.
   1. [reinforcing, no new item] The naive block-MLE of Hawkes
@@ -8043,7 +8043,7 @@ the assembled tree.
      standard deviation (Table 1, PDF pp. 14-15), and constant-parameter
      and seasonal competitors are badly biased under time variation
      (Table 3, PDF p. 18): an uncorrected blockwise Hawkes fit's
-     dispersion is substantially bias, not information â reinforcing
+     dispersion is substantially bias, not information — reinforcing
      the named-estimator-identity rule and the estimator-configuration
      freeze (#37), now with the bias-correction status of the
      configuration explicitly part of the estimator identity. No queue
@@ -8054,40 +8054,40 @@ the assembled tree.
      load-bearing configuration that must be frozen before the data,
      and reported robustness across block sizes (their Table 4,
      PDF p. 21) is never a post-hoc license to pick the best partition
-     â reinforcing the freeze and the stability-is-robustness-reporting
+     — reinforcing the freeze and the stability-is-robustness-reporting
      rule. No queue change.
   3. [interpretation caution] The Gaussian limit is not available by
-     right: the CLT excludes diffusive (ItÃ´-process) parameter
-     variation, admissibility ends at Î³ > 1/2 even with higher-order
+     right: the CLT excludes diffusive (Itô-process) parameter
+     variation, admissibility ends at γ > 1/2 even with higher-order
      correction, and consistency without CLT is all that survives below
      that (PDF pp. 10-12). Any future C1-L2/C8-adjacent Hawkes-parameter
      error band must pre-declare the assumed smoothness class of the
      time variation before the data. No queue change.
   4. [interpretation caution] Even inside the admissible class the
-     asymptotic variance is the path-integral T^-2 â«Î(Î¸*â)^-1 ds
+     asymptotic variance is the path-integral T^-2 ∫Γ(θ*ₛ)^-1 ds
      (Theorem 5.4, PDF p. 11), estimated from inverted local Hessians
      (PDF p. 12), and the paper's own studentization leaves tail mass
      underestimated on a*, b* (PDF p. 14): fitted-parameter error bands
      are estimated path-dependent objects, never evidence. No queue
      change.
   5. [interpretation caution] Empirically, fitted excitation parameters
-     wander intraday far beyond any seasonal template (b*â with no
+     wander intraday far beyond any seasonal template (b*ₜ with no
      pattern, PDF p. 17): constant-parameter or seasonal-only Hawkes
      fits on intraday data are misspecified by construction, and fitted
      (a, b) wander is exactly what naive regime readings would launder
      as signal. Single name, single year, trade prints only; no
      magnitude transfers, only the mechanism. No queue change.
   6. [source-quality note] arXiv v3, referee-acknowledged (PDF p. 45)
-     so a journal version likely exists â check before formal citation;
+     so a journal version likely exists — check before formal citation;
      zero citations recorded; single instrument (AAPL 2015), trade
      timestamps only despite the generic "market event" model language
      (PDF p. 3); the bias function corrected by 100,000-path Monte Carlo
-     on a (Î¸, Î) grid (PDF p. 13), inheriting the parametric model's
+     on a (θ, Δ) grid (PDF p. 13), inheriting the parametric model's
      assumptions.
 - Counterfactual (the immune-system section, never omitted): had a future
   C8-adjacent arm fitted blockwise Hawkes parameters naively and read
   excitation-level dispersion as regime structure, this paper is the
-  refutation â the bias sits at the estimator's own standard deviation
+  refutation — the bias sits at the estimator's own standard deviation
   (Table 1, PDF pp. 14-15), so part of the "regime" is manufactured by
   the estimator, the laundering the estimator-identity rule exists to
   kill, demonstrated on one estimator axis. Had Gaussian confidence
@@ -8115,16 +8115,16 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py run this session exits
 zero on the assembled tree.
 
-## 87. Null-time session 79 (2026-11-21), library deep-read session 68 â the HuâZhang CSI 300 OFI-response paper read; the model's drift level shown to be a correlation-scaled analyst construct under an assumed process family (with a Wâ¥L independence imposed after the text conceded possible correlation), the pooled forgetting constant Î¸=0.5 shown to contradict the paper's own monthly memory table (month-by-month Î¸ at 0.77-0.90), and the (window, horizon) grid shown to manufacture factor rankings; no kill line moved, nothing sharpened
+## 87. Null-time session 79 (2026-11-21), library deep-read session 68 — the Hu–Zhang CSI 300 OFI-response paper read; the model's drift level shown to be a correlation-scaled analyst construct under an assumed process family (with a W⊥L independence imposed after the text conceded possible correlation), the pooled forgetting constant θ=0.5 shown to contradict the paper's own monthly memory table (month-by-month θ at 0.77-0.90), and the (window, horizon) grid shown to manufacture factor rankings; no kill line moved, nothing sharpened
 
 Session-state note, per the goal-autonomy conductor protocol (edition
 5, ## 83, ACTIVE): the declared work choice is the standing deep-read,
 the protocol's default, which owes no justification; the synthesis
-cadence is NOT due â three deep-reads (## 84, ## 85, ## 86) have
+cadence is NOT due — three deep-reads (## 84, ## 85, ## 86) have
 landed since the edition-5 reset at ## 83, out of five. The live tail
 was re-read before consuming: the ## 86 pointer named this paper as
 next UNREAD, and the score-sorted triage file recomputed against the 67
-notes and the log tail this session confirms it â the score-26 tier is
+notes and the log tail this session confirms it — the score-26 tier is
 fully consumed, and the only earlier apparent gaps found by naive
 title matching (score 29/48/48/42/41 entries) resolve to READ via
 their note headers (hyphenation variants, xf77014 and the
@@ -8141,55 +8141,55 @@ full (~37 pp.).
   Stoikov, eqs. 1-2, PDF pp. 4-5) on one year of CSI 300 futures
   500ms-snapshot ticks (~6M ticks, PDF pp. 4, 6); OFI's contemporaneous
   in-window correlation with mid-price change runs 0.20 at 0.5s to 0.54
-  at 1h and holds â0.5 past 5s (Table 2.1, PDF p. 6); e_n is
-  symmetric, kurtosis â34 (Table 2.2, PDF p. 9) with roughly geometric
+  at 1h and holds ≈0.5 past 5s (Table 2.1, PDF p. 6); e_n is
+  symmetric, kurtosis ≈34 (Table 2.2, PDF p. 9) with roughly geometric
   autocorrelation decay, so the OFI shock is represented as an O-U state
-  (Ï_k = e^{âÎ¸kÎt}, eqs. 8-9, PDF pp. 9-10; decay inherited under window
+  (ρ_k = e^{−θkΔt}, eqs. 8-9, PDF pp. 9-10; decay inherited under window
   aggregation, eq. 10, PDF p. 10), with expected cumulative impact
   E[S_n] (eq. 11, PDF p. 11) scaled into drift through the observed
-  correlation, Âµ_total = OFIÂ·Ï_kÂ·(1âe^{âÎ¸t})/(1âe^{âÎ¸}) (eq. 12,
-  PDF p. 11) and the pooled decay rate Î¸ = 0.5 (PDF p. 11). The price
-  is GBM with LÃ©vy-driven O-U drift (eq. 14, PDF p. 13), tied to the
-  shock by Âµ_0 = OFI_0Â·Ï_k (PDF p. 13; the text concedes W_t, L_t "may
+  correlation, µ_total = OFI·ρ_k·(1−e^{−θt})/(1−e^{−θ}) (eq. 12,
+  PDF p. 11) and the pooled decay rate θ = 0.5 (PDF p. 11). The price
+  is GBM with Lévy-driven O-U drift (eq. 14, PDF p. 13), tied to the
+  shock by µ_0 = OFI_0·ρ_k (PDF p. 13; the text concedes W_t, L_t "may
   exhibit correlation" there, while eq. 22's variance derivation
   assumes their independence, PDF pp. 15, 33); closed forms follow for
   the log-return mean (eq. 20), variance (eq. 22), the quasi-Sharpe
   "response ratio" (eq. 24, PDF p. 16), the optimal holding time
-  t* = âln(ÏÂ²/2Âµ_0)/Î¸ (eq. 25, PDF p. 18; Appendix A.4, PDF p. 35) and
-  the tâ0 asymptotic (Appendix A.3, PDF p. 34). Empirics: LASSO
+  t* = −ln(σ²/2µ_0)/θ (eq. 25, PDF p. 18; Appendix A.4, PDF p. 35) and
+  the t→0 asymptotic (Appendix A.3, PDF p. 34). Empirics: LASSO
   regressions of window-aggregated OFI (windows 1-240 ticks) on forward
   mid-price changes (horizons 1-3600 ticks, 0.5s-30m), 4:1 train/test,
-  5-fold CV (PDF p. 20), annual gross PnL rising from â63k points at
-  0.5s to â525k at 30 minutes, coefficients 0.027â0.067 (Figs. 3.1-3.4,
+  5-fold CV (PDF p. 20), annual gross PnL rising from ≈63k points at
+  0.5s to ≈525k at 30 minutes, coefficients 0.027→0.067 (Figs. 3.1-3.4,
   PDF pp. 21-23; Table B.1, PDF pp. 36-37; one point = CNY 300,
   PDF p. 20), out-of-sample tracking in-sample at the sample ratio
   (PDF p. 24); two-factor cells: TI adds below 1s, AvgEn dominates
   past 2m (PDF pp. 25-26); monthly memory: lag-1 autocorrelation
-  0.097-0.230 (Table 5.1, PDF p. 27), cumulative â0.5 strong months vs
-  â0.2 weak ones (PDF p. 27); closing metric-quality screen: stable
+  0.097-0.230 (Table 5.1, PDF p. 27), cumulative ≈0.5 strong months vs
+  ≈0.2 weak ones (PDF p. 27); closing metric-quality screen: stable
   correlation, slowly decaying memory, cross-regime quantitative-only
   variation with no sign reversal (PDF p. 29).
-- Grade: NO kill line changes. NO new candidate sharpening â default
+- Grade: NO kill line changes. NO new candidate sharpening — default
   grade; every mechanism found is a page-cited instance of a
   discipline the queue already carries.
   1. [interpretation caution] The model's load-bearing level is an
-     analyst construct: Âµ_0 = OFI_0Â·Ï_k scales the observed imbalance by
+     analyst construct: µ_0 = OFI_0·ρ_k scales the observed imbalance by
      its fitted contemporaneous correlation (PDF pp. 13-14), and the
      derived tradability objects (QS(t), eq. 24; the peak t*, eq. 25;
      the maximum mean return, Appendix A.4) exist only under the
-     assumed family (GBM with LÃ©vy-O-U drift, eq. 14, PDF p. 13) and an
+     assumed family (GBM with Lévy-O-U drift, eq. 14, PDF p. 13) and an
      independence (PDF pp. 15, 33) the text itself withdraws a page
      before imposing it ("may exhibit correlation", PDF p. 13). Any
      C1-L2/C8-adjacent construct mapping a book-shock level to expected
      drift through a fitted correlation inherits two analyst
      properties (family, correlation window) and may not be interpreted
-     without pre-declaring both â the price-process-family invariance
+     without pre-declaring both — the price-process-family invariance
      rule's exact axis (#38). No queue change.
   2. [reinforcing, no new item] Calibration contradiction inside one
-     paper: Î¸ = 0.5 frozen from the pooled year (PDF p. 11) while the
+     paper: θ = 0.5 frozen from the pooled year (PDF p. 11) while the
      paper's own monthly table puts lag-1 autocorrelation at 0.097-0.230
-     (Table 5.1, PDF p. 27), i.e. Î¸ = 1âÏ_1 at 0.77-0.90 month by
-     month, and cumulative memory collapsing from â0.5 to â0.2 across
+     (Table 5.1, PDF p. 27), i.e. θ = 1−ρ_1 at 0.77-0.90 month by
+     month, and cumulative memory collapsing from ≈0.5 to ≈0.2 across
      months with the paper's own conclusion that pooled windows
      mislead and monthly recomputation is required (PDF pp. 28-29). A
      pooled constant its own data shows is regime-dependent is the
@@ -8199,7 +8199,7 @@ full (~37 pp.).
      manufactures the ranking: TI below 1s, AvgEn past 2m (PDF
      pp. 25-26), no horizon-free efficacy anywhere, and the paper's
      own appendix shows the aggregate at the 30-minute horizon halving
-     between adjacent historical windows (â525.5k vs 235.7k/226.0k/
+     between adjacent historical windows (≈525.5k vs 235.7k/226.0k/
      225.1k points, Table B.1, PDF pp. 36-37) while window-insensitivity
      is claimed only below 10 minutes (PDF pp. 21-22). Cell-local
      conclusions are the post-hoc re-configuration mode the
@@ -8210,7 +8210,7 @@ full (~37 pp.).
      PDF p. 29) is a sign-stability criterion, and the paper shows it
      failing on its own unstable factor (mid-price-change
      autocorrelation negative short-term everywhere but positive in
-     the high-volatility month Oct 2024, PDF p. 28) â sign stability
+     the high-volatility month Oct 2024, PDF p. 28) — sign stability
      shown where the claim lives, not pooled, the sign-register /
      sign-kill-line family with the sign-persistence admission null's
      (#33) subsample logic. No queue change.
@@ -8245,20 +8245,20 @@ full (~37 pp.).
 - Counterfactual (the immune-system section, never omitted): had a
   C1-L2/C8-adjacent arm scaled expected impact by a fitted correlation
   and read a response-ratio peak as an optimal-holding-time find, the
-  family dependence plus the withdrawn-then-imposed Wâ¥L independence
+  family dependence plus the withdrawn-then-imposed W⊥L independence
   (PDF pp. 13-15, 33) would have laundered modeling choices into a
-  market fact â the exact construct the price-process-family
-  invariance rule (#38) fails at the gate. Had Î¸ = 0.5 been accepted
+  market fact — the exact construct the price-process-family
+  invariance rule (#38) fails at the gate. Had θ = 0.5 been accepted
   as an instrument invariant because it was frozen pre-data, the
   paper's own Table 5.1 (PDF p. 27) is the refutation inside the same
-  PDF â regime averages are not parameters, which is why frozen
+  PDF — regime averages are not parameters, which is why frozen
   constants carry stability reporting and never re-tuning. Had the
   (window, horizon) grid been searched for the winning cell (525k vs
   226k points at 30 minutes between adjacent windows, Table B.1), the
   post-hoc re-configuration the estimator-configuration freeze (#37)
   fails by rule would have been run with this paper's blessing. Had
   the gross tick-frequency PnL been quoted as an edge, the K7-style
-  cost layer annihilates it unreported â zero cost assumptions in the
+  cost layer annihilates it unreported — zero cost assumptions in the
   entire paper. And had any empirical figure here entered the record
   as support for a program claim, the library-is-ammunition rule would
   have been broken: an industry preprint's internal validation is not
@@ -8271,7 +8271,7 @@ full (~37 pp.).
   booked state (survived all five kill lines with sign inverted; T2
   tested-fail); the blocked list stays blocked. Deep-read queue
   pointer: next UNREAD "Estimation of bid-ask spreads in the presence
-  of serial dependence" (score 25, x6b73c4, BroutyâGarcinâRoccaro);
+  of serial dependence" (score 25, x6b73c4, Brouty–Garcin–Roccaro);
   re-read the live tail before consuming.
 - docs/DECISIONS_PENDING.md is NOT touched by this session (rule:
   nothing was sharpened here).
@@ -8280,13 +8280,13 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py run this session exits
 zero on the assembled tree.
 
-## 88. Null-time session 80 (2026-11-21), library deep-read session 69 â the BroutyâGarcinâRoccaro spread-estimation-under-serial-dependence paper read; the price-process family shown to manufacture or erase the measured spread at the estimator's own silent bias (Roll's estimator carrying the identical bias), the estimator-and-scales choice shown to decide the answer on identical data, and the bootstrap relevance test's confidence intervals shown to reject the true value they were built around; no kill line moved, nothing sharpened
+## 88. Null-time session 80 (2026-11-21), library deep-read session 69 — the Brouty–Garcin–Roccaro spread-estimation-under-serial-dependence paper read; the price-process family shown to manufacture or erase the measured spread at the estimator's own silent bias (Roll's estimator carrying the identical bias), the estimator-and-scales choice shown to decide the answer on identical data, and the bootstrap relevance test's confidence intervals shown to reject the true value they were built around; no kill line moved, nothing sharpened
 
 Session-state note, per the goal-autonomy conductor protocol (edition
 5, ## 83, ACTIVE): the declared work choice is the standing deep-read,
 the protocol's default, which owes no justification; the synthesis
-cadence is NOT due this session â four deep-reads (## 84, ## 85, ## 86,
-## 87) had landed since the edition-5 reset at ## 83, out of five â and
+cadence is NOT due this session — four deep-reads (## 84, ## 85, ## 86,
+## 87) had landed since the edition-5 reset at ## 83, out of five — and
 this session's read makes the count five of five, so the synthesis pass
 is due at the OPEN of the NEXT null-time session and that session must
 run it per the protocol's section 4 before any other front. The live
@@ -8303,7 +8303,7 @@ Tools") whose read status could not be replicated by slug-grep alone;
 re-checked against the full note set and the full log on the live
 tree, all three FOLLOW x6b73c4 in triage file order (x475f30 and
 x6aed5b immediately after it, x217e71 later in the tier), no note cites
-their slugs or titles, and no log entry reports reading them â they
+their slugs or titles, and no log entry reports reading them — they
 are UNREAD, the prior sessions' pointers skipped nothing, and the
 apparent discrepancy dissolves; recording it here anyway because a
 pointer discrepancy once suspected is recorded even when it dissolves.
@@ -8316,42 +8316,42 @@ present, page-marked, complete and read in full (~40 pp.).
   "Estimation of bid-ask spreads in the presence of serial dependence"
   (arXiv:2407.17401v3 [q-fin.ST], 2024; extract dated 6 Jan 2025; zero
   recorded citations, no published version found). A
-  microstructure-noise estimation paper: close prices p_t = m_t Â± S/2
+  microstructure-noise estimation paper: close prices p_t = m_t ± S/2
   (eqs. 1-2, PDF pp. 3-4) hide a latent spread S, estimated by
-  variance-of-increments at scales (L, Lâ²), V(LÏ) = LÏÏÂ² + SÂ²/2
+  variance-of-increments at scales (L, L′), V(Lτ) = Lτσ² + S²/2
   (Thm 1, PDF pp. 5-6), then repaired under three dependence models:
-  fBm price with H â  1/2 where V(LÏ) = (LÏ)^{2H}ÏÂ² + SÂ²/2 (eq. 8,
+  fBm price with H ≠ 1/2 where V(Lτ) = (Lτ)^{2H}σ² + S²/2 (eq. 8,
   PDF p. 8) and forcing H = 1/2 eats spread mass of order
-  4ÏÂ²Ï^{2H}(1 â 2^{2Hâ1}) at (L,Lâ²)=(1,2), with Roll's estimator shown
-  to carry EXACTLY the same bias, equal to â4 times the covariance of
-  successive increments (PDF pp. 8-9), the plug-in-Ä¤ repair valid only
-  for H â¤ 3/4 (Thm 2, PDF p. 10; asymptotics PDF pp. 36-37);
+  4σ²τ^{2H}(1 − 2^{2H−1}) at (L,L′)=(1,2), with Roll's estimator shown
+  to carry EXACTLY the same bias, equal to −4 times the covariance of
+  successive increments (PDF pp. 8-9), the plug-in-Ĥ repair valid only
+  for H ≤ 3/4 (Thm 2, PDF p. 10; asymptotics PDF pp. 36-37);
   autocorrelated trade signs via binarized OU signs where the standard
-  bias is âSÂ²(2Ï â ÏÂ²) â¤ 0, same for Roll (PDF pp. 12-13; eqs. 12-17);
+  bias is −S²(2ρ − ρ²) ≤ 0, same for Roll (PDF pp. 12-13; eqs. 12-17);
   and a four-parameter combined numerical least-squares fit (PDF p. 15).
   Simulation (10,000 days of one-minute closes, PDF pp. 16-21): the
-  authors' bootstrap relevance test REJECTS CorwinâSchultz and AGK2 in
+  authors' bootstrap relevance test REJECTS Corwin–Schultz and AGK2 in
   the BASELINE no-dependence model they were built for (Tables 1-2,
-  PDF pp. 17-18; e.g. CS bias â3.2Ã10â4 vs sd 6.0Ã10â5, p â 1.1Ã10â7);
-  at H = 0.3 only Å2,1, Å4,1, AGK1 survive; in the autocorrelated-signs
-  model only Å2,1, Å3,1, Å4,1 survive (PDF pp. 18-19); under infrequent
+  PDF pp. 17-18; e.g. CS bias −3.2×10−4 vs sd 6.0×10−5, p ≈ 1.1×10−7);
+  at H = 0.3 only Ŝ2,1, Ŝ4,1, AGK1 survive; in the autocorrelated-signs
+  model only Ŝ2,1, Ŝ3,1, Ŝ4,1 survive (PDF pp. 18-19); under infrequent
   trading the high-low estimators degrade while close-price ones
-  (Roll, Å1,1) hold down to Ï_liq = 0.1 (Fig. 5, PDF pp. 21-22). Real
+  (Roll, Ŝ1,1) hold down to π_liq = 0.1 (Fig. 5, PDF pp. 21-22). Real
   data: CAC 40 one-minute bars, 19 Sep 2022-31 Mar 2023, truth the
   daily average of 5-minute-sampled spreads (PDF pp. 22-23): the
-  UNCORRECTED Å1,1 best on average (MAPE 6.06%, Å2,1 and Roll tied at
-  7.01%, Å3,1 14.88%, CS worst 20.21%, Table 5, PDF p. 22), the
+  UNCORRECTED Ŝ1,1 best on average (MAPE 6.06%, Ŝ2,1 and Roll tied at
+  7.01%, Ŝ3,1 14.88%, CS worst 20.21%, Table 5, PDF p. 22), the
   ranking inverting toward small caps (Table 6, PDF p. 23), with the
-  authors' own close: "deciding to use Å2,1 or Å3,1 is a difficult task
+  authors' own close: "deciding to use Ŝ2,1 or Ŝ3,1 is a difficult task
   without a deeper preliminary empirical study of the dataset"
   (PDF p. 22).
-- Grade: NO kill line changes. NO new candidate sharpening â default
+- Grade: NO kill line changes. NO new candidate sharpening — default
   grade; every mechanism found is a page-cited instance of a
   discipline the queue already carries.
   1. [reinforcing, no new item] The price-process family alone
      manufactures or erases the spread level (eq. 8 and the H = 1/2
-     bias, PDF pp. 8-9; CLT only H â¤ 3/4, PDF p. 10): one level deeper
-     than the ## 85 LangnauâPunche smile exhibit â there the level
+     bias, PDF pp. 8-9; CLT only H ≤ 3/4, PDF p. 10): one level deeper
+     than the ## 85 Langnau–Punche smile exhibit — there the level
      STRUCTURE of a book statistic moved with the family, here the
      headline spread LEVEL itself moves with the assumed H, silently in
      the point estimate, and the field's default estimator (Roll)
@@ -8369,7 +8369,7 @@ present, page-marked, complete and read in full (~40 pp.).
   3. [reinforcing, no new item] The bootstrap relevance test is a
      dispersion-register exhibit in the wild (Tables 1-4, PDF
      pp. 17-19): narrow-enough variance plus persistent bias means the
-     estimator's own CI REJECTS the true value â significance coexisting
+     estimator's own CI REJECTS the true value — significance coexisting
      with full miscalibration. Reinforces the dispersion register: an
      estimator must report its bias regime, never its variance alone; no
      new item.
@@ -8406,12 +8406,12 @@ live. Guard clean: python3 src/integrity_guard.py run this session exits
 zero on the assembled tree.
 
 
-## 89. Null-time session 81 (2026-11-21), first act: the fourth synthesis pass â the cadence recomputed from the edition-5 reset at ## 83 (FIVE of five: deep-reads 65-69, log ## 84 through ## 88), goal state rewritten as EDITION 6, the G2 brief-debt recomputed against the grown queue (briefs cover thirty-three of thirty-eight); NO sharpening queued by the pass
+## 89. Null-time session 81 (2026-11-21), first act: the fourth synthesis pass — the cadence recomputed from the edition-5 reset at ## 83 (FIVE of five: deep-reads 65-69, log ## 84 through ## 88), goal state rewritten as EDITION 6, the G2 brief-debt recomputed against the grown queue (briefs cover thirty-three of thirty-eight); NO sharpening queued by the pass
 
 Session-state note, per the goal-autonomy conductor protocol (edition 5,
 ## 83, ACTIVE): the live main tail (through ## 88) and
 docs/DECISIONS_PENDING.md were read first; the cadence check was
-recomputed from first principles against the edition-5 reset at ## 83 â
+recomputed from first principles against the edition-5 reset at ## 83 —
 deep-read 65 landed ## 84 (counting, per the edition-5 reset's own note),
 66 landed ## 85, 67 landed ## 86, 68 landed ## 87, 69 landed ## 88: five
 of five, so per the conductor protocol section 3 point 2 and the ritual's
@@ -8426,7 +8426,7 @@ time):
 - Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
   2026-11-19; archived is NOT falsified; every kill line stays frozen;
   unchanged. Phase 2 (Crypto L2): ACTIVE, the Board's only active research
-  front (C1-L2 â C8 â Convexity Sizing), blocked on the owner's data
+  front (C1-L2 → C8 → Convexity Sizing), blocked on the owner's data
   acquisition; the L0 dry run is unblocked. Unchanged.
 - Library: sixty-nine deep-read notes through deep-read session 69 on
   main's tip; the ratification queue holds THIRTY-EIGHT candidate
@@ -8436,7 +8436,7 @@ time):
 - Deep-read queue pointer: next UNREAD "High-Resilience Limits of
   Block-Shaped Order Books" (score 25, x475f30), then "Detecting
   Financial Market Manipulation with Statistical Physics Tools" (score
-  25, x6aed5b) â recomputed by title-matching the score-sorted triage
+  25, x6aed5b) — recomputed by title-matching the score-sorted triage
   file against the live log tail this pass; x475f30 is consumed as this
   session's second act (## 90) and #70 counts toward the edition-6
   cadence.
@@ -8454,18 +8454,18 @@ estimator-identity mechanisms of the edition-4 window, and the ## 88
 read independently re-exhibited the family-dependence the #38 rule
 already covers (a page-cited instance, not a new mechanism); the
 tier boundary now sits inside the score-25 tail with three entries left
-at that score before the score-24 tier â the declining-yield expectation
+at that score before the score-24 tier — the declining-yield expectation
 named at editions 3-5 continues to hold.
 
 Named gaps (this pass's product, each at zero status until its channel
 fires it): (1) the append-only log's write-side ~64K truncation class
 (## 75, ## 78) STILL has no standing CI byte-size-monotonicity check
-and no session-side read-back verification helper â named,
+and no session-side read-back verification helper — named,
 candidate-improvement status only; (2) the weekly directorate has still
 not sat: THIRTY-EIGHT candidates plus probe E1 pending, and the G2
 briefs (docs/DIRECTORATE_BRIEFS.md) still cover only items 1-33, so the
 brief refresh is now owed for items 34-38 plus probe E1 before the next
-sitting â the G2 refresh remains the ranked non-deep-read work item of
+sitting — the G2 refresh remains the ranked non-deep-read work item of
 this edition; (3) front 3's analysis legs remain blocked on
 codespace/data presence; no session action available.
 
@@ -8480,7 +8480,7 @@ spec. DECISIONS_PENDING.md is untouched BY THE PASS. Nothing measured,
 no kill line moved, nothing armed, nothing trades live.
 
 
-## 90. Null-time session 81 (2026-11-21), second act: library deep-read session 70 â the KallsenâMuhle-Karbe high-resilience limit paper read; the reduced-form quadratic trading cost shown to be a theorem's OUTPUT derived from book height, resilience and recovery asymmetry; the resilience shown to move only the transient cost, the permanent impact shown resilience-independent; the model equivalence shown class-bounded (bounded-rate strategies, Îº1/4 families, integrability premises); no kill line moved, nothing sharpened
+## 90. Null-time session 81 (2026-11-21), second act: library deep-read session 70 — the Kallsen–Muhle-Karbe high-resilience limit paper read; the reduced-form quadratic trading cost shown to be a theorem's OUTPUT derived from book height, resilience and recovery asymmetry; the resilience shown to move only the transient cost, the permanent impact shown resilience-independent; the model equivalence shown class-bounded (bounded-rate strategies, κ1/4 families, integrability premises); no kill line moved, nothing sharpened
 
 Session-state note, per the goal-autonomy conductor protocol (edition 6,
 ## 89, installed this same session): the declared work choice is the
@@ -8499,32 +8499,32 @@ sections present).
   Block-Shaped Order Books" (arXiv:1409.7269v1 [q-fin.TR], 2014; zero
   recorded citations in the acquisition index, no published version
   recorded there). A pure-theory paper: a generalized block-shaped
-  Obizhaeva/Wang book with stochastic heights hâ, hâ, stochastic
-  resiliences ÎºKâ, ÎºKâ and permanent-impact fractions Î±â, Î±â â [0, 1/2]
+  Obizhaeva/Wang book with stochastic heights h↑, h↓, stochastic
+  resiliences κK↑, κK↓ and permanent-impact fractions α↑, α↓ ∈ [0, 1/2]
   (Assumption 2.1, Def. 2.2, eqs. 2.1-2.7, PDF pp. 2-4), whose main
   theorem (Thm 4.1, PDF pp. 4-5) shows the wealth process converges as
-  Îº â â, uniformly on compacts in probability, to an Almgren/Chriss
-  reduced-form wealth with quadratic temporary cost Î»â = (1âÎ±â)/(ÎºKâhâ)
-  = O(Îºâ1), permanent linear impact Î³â = Î±âhâ independent of Îº, and the
-  exogenous baseline spreads at O(1), error o(Îºâ1); extensions for
-  Îº1/4-scaled active families (Remark 4.2, PDF p. 6, error o(Îºâ1/2)),
+  κ → ∞, uniformly on compacts in probability, to an Almgren/Chriss
+  reduced-form wealth with quadratic temporary cost λ↑ = (1−α↑)/(κK↑h↑)
+  = O(κ−1), permanent linear impact γ↑ = α↑h↑ independent of κ, and the
+  exogenous baseline spreads at O(1), error o(κ−1); extensions for
+  κ1/4-scaled active families (Remark 4.2, PDF p. 6, error o(κ−1/2)),
   an Lp strengthening under uniform boundedness (Remark 4.3, PDF
   pp. 6-7), and Lemma 4.4 (PDF pp. 7-8): block trades are asymptotically
   dominated by smoothed continuous strategies in this regime. Section 5
-  (PDF pp. 8-11) transfers MoreauâMuhle-KarbeâSoner small-impact
+  (PDF pp. 8-11) transfers Moreau–Muhle-Karbe–Soner small-impact
   asymptotic optimality (eq. 5.1, PDF p. 9) into the
   Obizhaeva/Wang model, among target-tracking families, under
   uniform-integrability classes (5.4)-(5.5) discharged only by uniform
   boundedness of all primitives (Thm 5.2, Cor. 5.3, PDF pp. 9-11). No
   data, no simulation, no empirics anywhere in the paper.
-- Grade: NO kill line changes. NO new candidate sharpening â default
+- Grade: NO kill line changes. NO new candidate sharpening — default
   grade; every mechanism found is a page-cited instance of a discipline
   the queue already carries.
   1. [reinforcing, no new item] The headline trading cost is a DERIVED
      object: the reduced-form quadratic cost's functional form is the
      OUTPUT of Theorem 4.1, a consequence of the block-shape,
      exponential-resilience and recovery-asymmetry premises (PDF
-     pp. 4-5) â the cost-side sibling of the ## 84 ÃetinâWaelbroeck
+     pp. 4-5) — the cost-side sibling of the ## 84 Çetin–Waelbroeck
      exhibit and one structural level deeper than the ## 85/## 88
      price-process exhibits: there the assumed family moved an
      estimated LEVEL, here the assumed book family manufactures the
@@ -8533,7 +8533,7 @@ sections present).
      and the estimator-identity family; no new item.
   2. [interpretation caution] The resilience sits in the transient
      cost's denominator while the permanent impact is untouched by it
-     (Î» = O(Îºâ1)Kâ1hâ1, Î³ = Î±h, PDF p. 5): a mis-estimated recovery rate
+     (λ = O(κ−1)K−1h−1, γ = αh, PDF p. 5): a mis-estimated recovery rate
      silently rescales the transient cost by its exact reciprocal and
      leaves the permanent component alone, so any permanent-versus-
      transient attribution made under one resilience estimate does not
@@ -8541,20 +8541,20 @@ sections present).
      figure; no queue change.
   3. [interpretation caution] The two models' equivalence is explicitly
      class-bounded by the authors' own statements: bounded-rate
-     absolutely continuous strategies (Thm 4.1, PDF pp. 4-5), Îº1/4
+     absolutely continuous strategies (Thm 4.1, PDF pp. 4-5), κ1/4
      families with degraded rate (Remark 4.2, PDF p. 6), and an
      optimality transfer holding only under integrability classes
      discharged by uniform boundedness away from zero (Thm 5.2, Cor.
      5.3, PDF pp. 9-11). A limit-theorem premise cited outside its
      class carries no evidential weight; no queue change.
   4. [cost-survival ammunition] Lemma 4.4 (PDF pp. 7-8) and the
-     O(Îºâ1/2) leading order with â(ÎºKh)-scaled turnover (eq. 5.1, PDF
+     O(κ−1/2) leading order with √(κKh)-scaled turnover (eq. 5.1, PDF
      p. 9): execution-strategy content recorded only as the class of
      assumptions a future K7-style cost-survival layer would carry if
      it ever exists; never operationalized, nothing armed.
   5. [source-quality note] arXiv v1, zero recorded citations in the
      index, no published version recorded, though the authors are
-     established and a published version may exist â check before any
+     established and a published version may exist — check before any
      formal citation; theorem-only paper, so nothing in it can serve
      as empirical support for any programme claim even if the
      invariants allowed it (they do not).
@@ -8567,7 +8567,7 @@ sections present).
   tested-fail); the blocked list stays blocked. Deep-read queue
   pointer: next UNREAD "Detecting Financial Market Manipulation with
   Statistical Physics Tools" (score 25, x6aed5b), then the score-25
-  remainder (xd0900e, x217e71) â re-read the live tail and recompute
+  remainder (xd0900e, x217e71) — re-read the live tail and recompute
   the tier against the notes before consuming; the EDITION-6 cadence
   counter now stands at ONE of five (deep-read 70 counted from the
   edition-6 reset at ## 89).
@@ -8579,7 +8579,7 @@ live. Guard clean: python3 src/integrity_guard.py run this session exits
 zero on the assembled tree.
 
 
-## 91. Null-time session 82 (2026-11-21), library deep-read session 71 â the LiâPolukarovâVentre statistical-physics spoofing-detection paper read; the active/passive window geometry shown to be a pure analyst parameter (absolute 100 USD on BTC vs absolute 0.5 on LUNA, no automated determination, no justification) on which every headline statistic and every detection target depends; the "momentum mirrors the midprice" result shown to be close to mechanically built in by the signed size-times-distance velocity construction; the "outperforms Z-score" comparison shown to confound detector with representation (constructed time series vs raw order sizes, 36,000 intervals vs 768,270 records), with no labelled ground truth, no ROC, no false-positive rate anywhere; no kill line moved, nothing sharpened
+## 91. Null-time session 82 (2026-11-21), library deep-read session 71 — the Li–Polukarov–Ventre statistical-physics spoofing-detection paper read; the active/passive window geometry shown to be a pure analyst parameter (absolute 100 USD on BTC vs absolute 0.5 on LUNA, no automated determination, no justification) on which every headline statistic and every detection target depends; the "momentum mirrors the midprice" result shown to be close to mechanically built in by the signed size-times-distance velocity construction; the "outperforms Z-score" comparison shown to confound detector with representation (constructed time series vs raw order sizes, 36,000 intervals vs 768,270 records), with no labelled ground truth, no ROC, no false-positive rate anywhere; no kill line moved, nothing sharpened
 
 Session-state note, per the goal-autonomy conductor protocol (edition 6,
 ## 89): the declared work choice is the standing deep-read, the default
@@ -8631,7 +8631,7 @@ PDF p. 21, all body sections present).
   3. [interpretation caution] The superiority-over-Z-score claim
      (PDF pp. 14-19) compares a constructed cumulative time series
      (36,000 intervals) against Z-scores of raw per-order sizes
-     (768,270 records) â different inputs, units and populations;
+     (768,270 records) — different inputs, units and populations;
      no labelled ground truth exists on the real data ("neither
      spoofing nor layering events are labeled or identified", PDF
      p. 12), validation is synthetic orders the authors designed
@@ -8648,12 +8648,12 @@ PDF p. 21, all body sections present).
      (PDF p. 1); the v1 carries timestamp-format and date
      irregularities (e.g. "18:36.13.59", the BTC window given as both
      20/04 and 19/04 on PDF pp. 7 and 17, figure 12 captioned 2023 on
-     PDF p. 18) â check before any formal citation; regardless, no
+     PDF p. 18) — check before any formal citation; regardless, no
      empirical claim here can serve as support for any programme claim.
   5. [cost-survival ammunition] The paper's own market-design
-     observation â spoofing profitable mainly in thin books, spoof
+     observation — spoofing profitable mainly in thin books, spoof
      layers placed near but outside the active window to avoid
-     execution (PDF pp. 11-12) â recorded only as the assumption class
+     execution (PDF pp. 11-12) — recorded only as the assumption class
      a future K7-style cost-survival or manipulation-hygiene layer
      would have to carry (window geometry and its regime dependence);
      never operationalized, nothing armed.
@@ -8667,7 +8667,7 @@ PDF p. 21, all body sections present).
   pointer: next UNREAD "Multivariate General Compound Point Processes
   in Limit Order Books" (score 25, xd0900e), then "Optimal execution
   with deterministically time varying liquidity: well posedness and
-  price manipulation" (score 25, x217e71) to close the score-25 tier â
+  price manipulation" (score 25, x217e71) to close the score-25 tier —
   re-read the live tail and recompute the tier against the notes
   before consuming; the EDITION-6 cadence counter now stands at TWO
   of five (deep-read 71 counted from the edition-6 reset at ## 89).
@@ -8678,10 +8678,10 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled tree (the
 changed files; marker and encoding checks); the library-provenance
-audit runs in CI over the full tree â the summaries are untouched
-this session â and was verified green on both jobs before merge.
+audit runs in CI over the full tree — the summaries are untouched
+this session — and was verified green on both jobs before merge.
 
-## 92. Null-time session 83 (2026-11-21), library deep-read session 72 â the GuoâRemillardâSwishchuk multivariate general compound point process paper read; the "as good as Hawkes" claim shown to be a variance-scaling parity on one 2012 LOBSTER day with the LLN/FCLT premises 2.0.1-2.0.2 assumed for an unspecified point process and never checked; the asymptotic n shown to conflate the Markov state count with the limit's scaling variable while the numerics fix it at 2 or 7; the "mid-price prediction" shown to be a rolling re-estimation of a diffusion coefficient (15.46% test error, near-double the 7.92% fit error, no directional content, motivated by the paper's own admission the FCLT I approximation "cannot help us with the forecasting task directly"); no kill line moved, nothing sharpened
+## 92. Null-time session 83 (2026-11-21), library deep-read session 72 — the Guo–Remillard–Swishchuk multivariate general compound point process paper read; the "as good as Hawkes" claim shown to be a variance-scaling parity on one 2012 LOBSTER day with the LLN/FCLT premises 2.0.1-2.0.2 assumed for an unspecified point process and never checked; the asymptotic n shown to conflate the Markov state count with the limit's scaling variable while the numerics fix it at 2 or 7; the "mid-price prediction" shown to be a rolling re-estimation of a diffusion coefficient (15.46% test error, near-double the 7.92% fit error, no directional content, motivated by the paper's own admission the FCLT I approximation "cannot help us with the forecasting task directly"); no kill line moved, nothing sharpened
 
 Session-state note, per the goal-autonomy conductor protocol (edition 6,
 ## 89): the declared work choice is the standing deep-read, the default
@@ -8714,7 +8714,7 @@ complete and read in full (16 pp., references included).
      underlying point process, PDF pp. 4-5), explicitly a
      generalization "for all multivariate compound models whose point
      processes N_t satisfy" them (Remark 3.6, PDF p. 11); the premises
-     are assumed, never identified or tested on the data â a fitted
+     are assumed, never identified or tested on the data — a fitted
      diffusion coefficient is a fit to the assumption; second concrete
      instance for the queue's price-process-family and
      estimator-identity items; no new item.
@@ -8723,7 +8723,7 @@ complete and read in full (16 pp., references included).
      of the two FCLT sides matched across window sizes (eq. 25, PDF
      p. 8), MSEs of order 10^-8 against standard deviations of order
      10^-2 to 10^-3 (Table 4, PDF p. 9), coefficient errors 3.4-4.7%
-     for INTC/MSFT (Table 5) â no direction, levels or path order
+     for INTC/MSFT (Table 5) — no direction, levels or path order
      anywhere; a model matching diffusion scaling is not evidence it
      anticipates anything. Reading discipline for any C8
      macro-synthesis exhibit.
@@ -8735,14 +8735,14 @@ complete and read in full (16 pp., references included).
      prediction in the LOB". FCLT II is itself motivated by the
      admission that FCLT I "cannot help us with the forecasting task
      directly because we couldn't have the order flow N_{nt} in
-     advance" (PDF p. 11) â the setup carries no anticipation
+     advance" (PDF p. 11) — the setup carries no anticipation
      content usable ahead of the flow. No queue change.
   4. [interpretation caution] The asymptotic n is over-loaded: the
      theorems take n -> infinity over chains "with n states" (Thms
      3.2/4.1) while the numerics fix n at 2 or 7 with the "best 4 to
      7" range imported from a companion Hawkes paper on other data
      (PDF pp. 9-10), and AMZN never reaches under 10% error at any
-     state count (28.29% at 7 states, Table 6, PDF p. 11) â
+     state count (28.29% at 7 states, Table 6, PDF p. 11) —
      unexamined finite-n bias built into every fitted coefficient;
      the already-carrying window/level-declaration family again; no
      queue change.
@@ -8756,7 +8756,7 @@ complete and read in full (16 pp., references included).
   6. [source-quality note] arXiv v1, theorem-plus-numerics draft, no
      recorded citations in the index, no published version recorded
      for this exact title (the companion MGCHP result is in Wilmott
-     2020, ref. [14]) â check before any formal citation; regardless,
+     2020, ref. [14]) — check before any formal citation; regardless,
      no empirical claim here can serve as support for any programme
      claim.
   7. [cost-survival ammunition] The multivariate dependence entering
@@ -8776,7 +8776,7 @@ complete and read in full (16 pp., references included).
   tested-fail); the blocked list stays blocked. Deep-read queue
   pointer: next UNREAD "Optimal execution with deterministically time
   varying liquidity: well posedness and price manipulation" (score
-  25, x217e71) to close the score-25 tier â re-read the live tail and
+  25, x217e71) to close the score-25 tier — re-read the live tail and
   recompute the tier against the notes before consuming; the
   EDITION-6 cadence counter now stands at THREE of five (deep-read 72
   counted from the edition-6 reset at ## 89).
@@ -8787,10 +8787,10 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled tree (the
 changed files; marker and encoding checks); the library-provenance
-audit runs in CI over the full tree â the summaries are untouched
-this session â and was verified green on both jobs before merge.
+audit runs in CI over the full tree — the summaries are untouched
+this session — and was verified green on both jobs before merge.
 
-## 93. Null-time session 84 (2026-11-21), library deep-read session 73 â the PalmariâLilloâEisler deterministic time-varying-liquidity paper read, closing the score-25 tier; the "optimal buys first" pathology shown to require no information at all â purely deterministic linear decay of permanent impact makes the optimal liquidation of a long start by BUYING (Î¶Ì0 > 0) and, at T=1, a=5, Î·=0.25, b<â4.09, genuinely negative-cost, with the motivating exhibit a J-shaped intraday impact calendar from one month of MSFT; ONE candidate sharpening queued (the deterministic-calendar null, PENDING OWNER RATIFICATION); no kill line moved
+## 93. Null-time session 84 (2026-11-21), library deep-read session 73 — the Palmari–Lillo–Eisler deterministic time-varying-liquidity paper read, closing the score-25 tier; the "optimal buys first" pathology shown to require no information at all — purely deterministic linear decay of permanent impact makes the optimal liquidation of a long start by BUYING (ζ̇0 > 0) and, at T=1, a=5, η=0.25, b<−4.09, genuinely negative-cost, with the motivating exhibit a J-shaped intraday impact calendar from one month of MSFT; ONE candidate sharpening queued (the deterministic-calendar null, PENDING OWNER RATIFICATION); no kill line moved
 
 Session-state note, per the goal-autonomy conductor protocol (edition 6,
 ## 89): the declared work choice is the standing deep-read, the default
@@ -8813,13 +8813,13 @@ body, references and all appendices included).
   liquidity"; arXiv:2410.04867v2 [math.OC], Oct 2024, v2 stamped 19 Mar
   2026; 49 pp.), score 25, index entry x217e71. The paper: the
   Almgren-Chriss execution problem with deterministically time-varying
-  temporary and permanent impact coefficients (Î¸t, ht); discrete-time
+  temporary and permanent impact coefficients (θt, ht); discrete-time
   quadratic form with impact matrix A (Eq. 6, PDF p. 7), strong
   well-posedness characterized by the B-matrix property (Props. 4-5,
   PDF pp. 9-10) and its refined-grid continuous-time limit (Prop. 6,
   PDF pp. 11-12); continuous-time Euler-Lagrange boundary problem
-  (Eq. 20, PDF p. 14) with the second-order condition Î³T2 < Ï2, Î³ =
-  Î¸Ì/2Î·Ì (Props. 9-12, PDF pp. 14-18), a monotonicity table for solution
+  (Eq. 20, PDF p. 14) with the second-order condition γT2 < π2, γ =
+  θ̄/2η̄ (Props. 9-12, PDF pp. 14-18), a monotonicity table for solution
   shapes (Table 1, PDF p. 22), and exponential/power-law numerics
   (PDF pp. 22-26, 45-48). Findings, graded:
   1. [candidate sharpening, PENDING OWNER RATIFICATION] The
@@ -8827,14 +8827,14 @@ body, references and all appendices included).
      C1-L2/C8-adjacent spec interpreting an intraday anticipatory,
      reversal, impact-decay or buy-before-sell-type structure as
      conditioned on book state or flow must pre-declare a
-     deterministic-calendar null â a time-of-day surrogate built only
-     from frozen constants, zero book-state input â and show the
+     deterministic-calendar null — a time-of-day surrogate built only
+     from frozen constants, zero book-state input — and show the
      structure survives it before entering any spec. Mechanism, page-
      cited in the note: Example 6 proves purely deterministic linear
      decay of permanent impact makes the OPTIMAL liquidation of a
-     long begin by BUYING (Î¶Ì0 > 0, PDF pp. 16-17) and, at T = 1,
-     a = 5, Î· = 0.25, b < â4.09, genuinely negative-cost â proper
-     price manipulation (PDF p. 17) â no self-excitation, no stochastic
+     long begin by BUYING (ζ̇0 > 0, PDF pp. 16-17) and, at T = 1,
+     a = 5, η = 0.25, b < −4.09, genuinely negative-cost — proper
+     price manipulation (PDF p. 17) — no self-excitation, no stochastic
      state, no news, nothing but the calendar; the motivating exhibit
      is a deterministic J-shaped intraday impact trajectory from one
      month of MSFT (Fig. 1, PDF pp. 2-3). Harder-to-pass because a
@@ -8847,10 +8847,10 @@ body, references and all appendices included).
      the owner's word is the only trigger.
   2. [reinforcing, no new item] Pointwise parameter bounds do not
      compose: the paper's own Example 2 (PDF pp. 8-9) exhibits a
-     configuration satisfying Î·i > Î¸i/2 for every i that is
+     configuration satisfying ηi > θi/2 for every i that is
      nevertheless ill-posed when impact is time-varying; the
      per-window validity certificates would not compose into a
-     global one â reinforcing the window-geometry family already
+     global one — reinforcing the window-geometry family already
      queued (regime-window pre-declaration, level-versus-memory);
      no new item.
   3. [interpretation caution] Nothing in the optimal solution is
@@ -8866,18 +8866,18 @@ body, references and all appendices included).
      2-3), the two impact components estimated by two different
      methodologies, never tested against market conditions (PDF p.
      27); importing it as a market-wide calendar prior launders one
-     month of one stock into a property of markets â the base-rate
+     month of one stock into a property of markets — the base-rate
      audit family; no new item.
   5. [cost-survival ammunition] The admissibility hierarchy
-     (B-matrix on refined grids, sampling-robust âÎ³T â¤ â2 vs the
-     weaker continuous âÎ³T < Ï, PDF pp. 18-19) is recorded only as
+     (B-matrix on refined grids, sampling-robust √γT ≤ √2 vs the
+     weaker continuous √γT < π, PDF pp. 18-19) is recorded only as
      the constraint class a future K7-style cost-survival or
      execution layer must carry (bounded impact-decay rates, grid-
-     consistent admissibility, Î¸Ì/(2Î·Ì) as a named survival quantity);
+     consistent admissibility, θ̄/(2η̄) as a named survival quantity);
      never operationalized, nothing armed.
   6. [source-quality note] arXiv v2 (math.OC), zero recorded
      citations in the index, no published version recorded, and the
-     index title differs from the extract's printed title â check
+     index title differs from the extract's printed title — check
      before any formal citation; regardless, no empirical claim here
      can serve as support for any programme claim.
 - Inaccessible/blocked status: none this session. The extract was
@@ -8890,22 +8890,22 @@ body, references and all appendices included).
   inverted; T2 tested-fail); the blocked list stays blocked.
   Deep-read queue pointer: the score-25 tier is CLOSED; next UNREAD
   "A new self-exciting jump-diffusion process for option pricing"
-  (score 24, x673148), first of the score-24 tier â re-read the live
+  (score 24, x673148), first of the score-24 tier — re-read the live
   tail and recompute the tier against the notes before consuming; the
   EDITION-6 cadence counter now stands at FOUR of five (deep-read 73
   counted from the edition-6 reset at ## 89).
 - docs/DECISIONS_PENDING.md IS touched by this session (rule: one
-  candidate sharpening queued â the deterministic-calendar null; queue
+  candidate sharpening queued — the deterministic-calendar null; queue
   thirty-nine, zero armed).
 
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled tree (the
 changed files; marker and encoding checks); the library-provenance
-audit runs in CI over the full tree â the summaries are untouched
-this session â and was verified green on both jobs before merge.
+audit runs in CI over the full tree — the summaries are untouched
+this session — and was verified green on both jobs before merge.
 
-## 94. Null-time session 85 (2026-11-21), library deep-read session 74 â the Souto AriasâCirilloâOosterlee Heston-Queue-Hawkes option-pricing paper read, first of the score-24 tier; the Q-Hawkes versus Hawkes first-moment equivalence recorded as a page-cited instance of the price-process-family invariance rule (log ## 85) â an intensity fit calibrated on first moments cannot identify the memory mechanism, only higher-order moments can, so the fitted "degree of self-excitation" would carry the mechanism assumption and not the data; the smile-flexibility result (wider than Bates, driven mainly by mean jump size, martingale-absorbed by construction) recorded as pricing-measure geometry, never predictive content; NO kill line moved, NO sharpening queued
+## 94. Null-time session 85 (2026-11-21), library deep-read session 74 — the Souto Arias–Cirillo–Oosterlee Heston-Queue-Hawkes option-pricing paper read, first of the score-24 tier; the Q-Hawkes versus Hawkes first-moment equivalence recorded as a page-cited instance of the price-process-family invariance rule (log ## 85) — an intensity fit calibrated on first moments cannot identify the memory mechanism, only higher-order moments can, so the fitted "degree of self-excitation" would carry the mechanism assumption and not the data; the smile-flexibility result (wider than Bates, driven mainly by mean jump size, martingale-absorbed by construction) recorded as pricing-measure geometry, never predictive content; NO kill line moved, NO sharpening queued
 
 Session-state note, per the goal-autonomy conductor protocol (edition 6,
 ## 89): the declared work choice is the standing deep-read, the default
@@ -8914,7 +8914,7 @@ paper as next UNREAD and this session re-verified the tier order against
 the live file state (score-24 tier: x673148 read here, first of the tier,
 next UNREAD xe0397d). Cadence counter after this session: FIVE of five
 toward the edition-7 synthesis pass (deep-read 74 counted from the
-edition-6 reset at ## 89) â the pass is DUE and runs FIRST as the next
+edition-6 reset at ## 89) — the pass is DUE and runs FIRST as the next
 session's first act per protocol section 3 point 2. No inaccessible or
 blocked status this session; the extract was present, page-marked,
 complete and read in full (23 pp., body, references and Appendix A
@@ -8930,7 +8930,7 @@ included).
   Heston-Queue-Hawkes (HQH) asset model, Heston diffusion plus the
   Q-Hawkes jump process whose "ephemeral" memory deletes each
   self-exciting jump's effect at once at a stochastic expiration time
-  (dÎ»t = Î±(dNt â dNQt), Eqs. 1-9, PDF pp. 2-4); closed-form joint
+  (dλt = α(dNt − dNQt), Eqs. 1-9, PDF pp. 2-4); closed-form joint
   characteristic function of the compensated jump term (Prop. 4,
   PDF pp. 6-7) versus the HH model's numerically solved ODE system
   (Prop. 7, PDF pp. 9-10); closed-form intensity PMF via negative
@@ -8942,27 +8942,27 @@ included).
   PDF pp. 12-14); parametric pricing experiments only (Table 1,
   PDF p. 15): HQH 12.36x faster than HH (Table 2, PDF p. 16), HH always
   higher implied volatility (PDF pp. 16-17), the HQH-HH gap driven
-  mainly by mean jump size Î¼Y with clustering rate Î± second (PDF p. 15),
-  model differences growing in the degree of self-excitation Î±/Î² and
-  the initial excitation state Î±Q0/Î»0 (PDF pp. 18-19). Findings,
+  mainly by mean jump size μY with clustering rate α second (PDF p. 15),
+  model differences growing in the degree of self-excitation α/β and
+  the initial excitation state αQ0/λ0 (PDF pp. 18-19). Findings,
   graded:
   1. [reinforcing, no new item] First-moment equivalence of the two
      memory mechanisms (same expectations in intensity and counting,
-     divergence only at moments k â¥ 2, PDF p. 5; identical E[Mt],
+     divergence only at moments k ≥ 2, PDF p. 5; identical E[Mt],
      Eq. 68, PDF p. 19): an intensity estimator calibrated on first
      moments is unidentified between continuous-decay and all-at-once-
      erasure memory, so the fitted "degree of self-excitation" carries
-     the mechanism assumption, not the data â a page-cited instance of
+     the mechanism assumption, not the data — a page-cited instance of
      the price-process-family invariance rule (log ## 85) and the
      level-versus-memory disambiguation; no new item.
   2. [reinforcing, no new item] Smile flexibility is parameter
      geometry, not information: self-excitation widens the smile family
-     relative to Bates (PDF p. 16) mostly through Î¼Y, with Î± second
-     (PDF p. 15), and both models collapse to Bates at Î± â 0 and
-     Î² â â (PDF p. 18) â model-fit flexibility is never evidence of
+     relative to Bates (PDF p. 16) mostly through μY, with α second
+     (PDF p. 15), and both models collapse to Bates at α → 0 and
+     β → ∞ (PDF p. 18) — model-fit flexibility is never evidence of
      structure; no new item.
   3. [interpretation caution] Risk-neutral pricing absorbs
-     self-excitation into a compensated drift term (âÎ¼ÌY Î»tâ dt,
+     self-excitation into a compensated drift term (−μ̄Y λt− dt,
      Eq. 1, PDF p. 2), so every implied-volatility exhibit is pricing-
      measure geometry, never a measured market property (PDF pp. 15-17);
      any C8-adjacent exhibit citing model-generated option prices as
@@ -8971,18 +8971,18 @@ included).
   4. [reinforcing, no new item] Nothing is validated on data: all
      experiments are parametric simulations under two hand-picked
      scenarios (Table 1, PDF p. 15), no fit, no calibration, no
-     out-of-sample anything â ammunition, not evidence; no new item.
+     out-of-sample anything — ammunition, not evidence; no new item.
   5. [cost-survival ammunition] The implementation assumptions a future
      K7-style cost-survival layer must declare before trusting any
      self-exciting-model cost number: DCOS PMF bias is one-sided
      (always overestimated, Eq. 48, PDF p. 11); the HH route needs
-     2 Ã Nx Ã NÎ» Ã NHÂ² ODE solves per recursion step (PDF p. 15); and
+     2 × Nx × Nλ × NH² ODE solves per recursion step (PDF p. 15); and
      the log-asset moments may be infinite depending on the parameter
      set through the Heston component (footnote 2, PDF p. 2); never
      operationalized, nothing armed.
   6. [source-quality note] arXiv v2 preprint (q-fin.PR), zero recorded
      citations, index year 2022 versus extract stamp February 2023, no
-     journal version recorded â check before any formal citation;
+     journal version recorded — check before any formal citation;
      regardless, no claim here can serve as support for any programme
      claim.
 - Inaccessible/blocked status: none this session. The extract was
@@ -8995,7 +8995,7 @@ included).
   list stays blocked. Deep-read queue pointer: next UNREAD
   "Ascertaining price formation in cryptocurrency markets with
   DeepLearning" (score 24, xe0397d), second of the score-24
-  tier â re-read the live tail and recompute the tier against the notes
+  tier — re-read the live tail and recompute the tier against the notes
   before consuming; the EDITION-6 cadence counter now stands at FIVE of
   five (deep-read 74 counted from the edition-6 reset at ## 89), so the
   edition-7 synthesis pass is DUE and runs FIRST in the next session
@@ -9007,8 +9007,8 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled tree (the
 changed files; marker and encoding checks); the library-provenance
-audit runs in CI over the full tree â the summaries are untouched
-this session â and was verified green on both jobs before merge.
+audit runs in CI over the full tree — the summaries are untouched
+this session — and was verified green on both jobs before merge.
 The known ~64K tooling-path truncation class (## 75, ## 78) was hit
 once this session on the log write path and caught before merge by
 read-back verification (the pushed bytes were re-read from the branch
@@ -9017,12 +9017,12 @@ truncated intermediate commit, superseded whole by the verified commit
 in this same push series; main never saw it.
 
 
-## 95. Null-time session 86 (2026-11-21), first act: the fifth synthesis pass â the cadence recomputed from the edition-6 reset at ## 89 (FIVE of five: deep-reads 70-74, log ## 90 through ## 94), goal state rewritten as EDITION 7, the G2 brief-debt recomputed against the grown queue (briefs cover thirty-three of forty); NO sharpening queued by the pass
+## 95. Null-time session 86 (2026-11-21), first act: the fifth synthesis pass — the cadence recomputed from the edition-6 reset at ## 89 (FIVE of five: deep-reads 70-74, log ## 90 through ## 94), goal state rewritten as EDITION 7, the G2 brief-debt recomputed against the grown queue (briefs cover thirty-three of forty); NO sharpening queued by the pass
 
 Session-state note, per the goal-autonomy conductor protocol (edition 6,
 ## 89, ACTIVE): the live main tail (through ## 94) and
 docs/DECISIONS_PENDING.md were read first; the cadence check was
-recomputed from first principles against the edition-6 reset at ## 89 â
+recomputed from first principles against the edition-6 reset at ## 89 —
 deep-read 70 landed ## 90 (counting, per the edition-6 reset's own note),
 71 landed ## 91, 72 landed ## 92, 73 landed ## 93, 74 landed ## 94: five
 of five, so per the conductor protocol section 3 point 2 and the ritual's
@@ -9037,7 +9037,7 @@ time):
 - Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
   2026-11-19; archived is NOT falsified; every kill line stays frozen;
   unchanged. Phase 2 (Crypto L2): ACTIVE, the Board's only active research
-  front (C1-L2 â C8 â Convexity Sizing), blocked on the owner's data
+  front (C1-L2 → C8 → Convexity Sizing), blocked on the owner's data
   acquisition; the L0 dry run is unblocked. Unchanged.
 - Library: seventy-six deep-read notes through deep-read session 74 on
   main's tip; the ratification queue holds FORTY candidate sharpenings
@@ -9048,7 +9048,7 @@ time):
   UNREAD "Ascertaining price formation in cryptocurrency markets with
   DeepLearning" (score 24, xe0397d), then "Estimation for high-frequency
   data under parametric market microstructure noise" (score 24, xdab650)
-  â recomputed by title-matching the score-sorted triage file against
+  — recomputed by title-matching the score-sorted triage file against
   the live log tail this pass; xe0397d is consumed as this session's
   second act (## 96) and #75 counts toward the edition-7 cadence.
 - Cadence: five deep-reads have landed since edition 6 (sessions 70-74,
@@ -9064,19 +9064,19 @@ in the deterministic-null family beside the state-conditioned nulls, and
 the ## 94 read independently re-exhibited the family-dependence the #38
 rule already covers (a page-cited instance, not a new mechanism); the
 score-25 tier CLOSED inside the window with the tier boundary now inside
-the score-24 tier â the declining-yield expectation named at editions
+the score-24 tier — the declining-yield expectation named at editions
 3-6 continues to hold.
 
 Named gaps (this pass's product, each at zero status until its channel
 fires it): (1) the append-only log's write-side ~64K truncation class
 (## 75, ## 78) was hit AGAIN at ## 94 on the log write path and caught
-before merge by read-back verification â the class STILL has no standing
+before merge by read-back verification — the class STILL has no standing
 CI byte-size-monotonicity check and no session-side read-back
 verification helper; named, candidate-improvement status only; (2) the
 weekly directorate has still not sat: FORTY candidates plus probe E1
 pending, and the G2 briefs (docs/DIRECTORATE_BRIEFS.md) still cover only
 items 1-33, so the brief refresh is now owed for items 34-40 plus probe
-E1 before the next sitting â the G2 refresh remains the ranked
+E1 before the next sitting — the G2 refresh remains the ranked
 non-deep-read work item of this edition; (3) front 3's analysis legs
 remain blocked on codespace/data presence; no session action available.
 
@@ -9091,12 +9091,12 @@ DECISIONS_PENDING.md is untouched BY THE PASS. Nothing measured, no kill
 line moved, nothing armed, nothing trades live.
 
 
-## 96. Null-time session 86 (2026-11-21), second act: library deep-read session 75 â the FangâChungâVentreâBasios cryptocurrency deep-learning paper read, second of the score-24 tier; the headline 78% live accuracy shown to exist only under walkthrough retraining that consumes the evaluation data every 196 predictions, with the static universal model decaying to almost random guessing on live data, the static multi-label model below 40% against a 25% floor, and the retrain trigger itself analyst-tuned (Modified MDD over 15%); ONE candidate sharpening queued (the adaptive-retraining disclosure, PENDING OWNER RATIFICATION); no kill line moved
+## 96. Null-time session 86 (2026-11-21), second act: library deep-read session 75 — the Fang–Chung–Ventre–Basios cryptocurrency deep-learning paper read, second of the score-24 tier; the headline 78% live accuracy shown to exist only under walkthrough retraining that consumes the evaluation data every 196 predictions, with the static universal model decaying to almost random guessing on live data, the static multi-label model below 40% against a 25% floor, and the retrain trigger itself analyst-tuned (Modified MDD over 15%); ONE candidate sharpening queued (the adaptive-retraining disclosure, PENDING OWNER RATIFICATION); no kill line moved
 
 Session-state note, per the goal-autonomy conductor protocol (edition 7,
 ## 95): the declared work choice is the synthesis pass FIRST (cadence due
 at five of five from the edition-6 reset at ## 89, protocol section 3
-point 2), then the standing deep-read as this session's second act â
+point 2), then the standing deep-read as this session's second act —
 matching the ## 94 pointer's own instruction; the ## 94/## 95 pointer
 named this paper as next UNREAD and this session re-verified the tier
 order against the live file state (score-25 tier CLOSED at ## 93; score-24
@@ -9115,13 +9115,13 @@ included).
   cryptocurrency markets with Deep Learning" (arXiv:2003.00803v1
   [q-fin.GN], arXiv stamp 9 Feb 2020, article-history "Compiled April
   6, 2020"; 22 pp.), score 24, index entry xe0397d. The paper: live
-  tick-level GDAX (Coinbase Pro) WebSocket data â tickers, top-50
+  tick-level GDAX (Coinbase Pro) WebSocket data — tickers, top-50
   level-2 depths and order flow, eleven pairs, roughly 30 hours
   (2018-07-02T17:22:14Z to 2018-07-03T23:32:53Z; 40.95M level-2 and
-  61.9M order-flow records, PDF pp. 6-7, Table 1 p. 7) â feeding a
+  61.9M order-flow records, PDF pp. 6-7, Table 1 p. 7) — feeding a
   small LSTM (two LSTM layers, fully connected, softmax) predicting
   next-tick mid-price direction (Fig. 3, PDF p. 7), binary and
-  four-label with the Â±0.2% sensitive-interval boundaries copied from
+  four-label with the ±0.2% sensitive-interval boundaries copied from
   the Coinbase fee schedule (Table 2, PDF pp. 7-8); walkthrough
   retraining, stable (fixed cadence) or MDD-dynamic with the
   analyst-tuned trigger "Modified MDD" over 15% computed from the
@@ -9129,7 +9129,7 @@ included).
   baselines across 10-85% training splits (Table 3, PDF p. 11); the
   "universal" pooled model beating them after the four worst pairs are
   excluded post hoc (Table 4, PDF p. 13); the time-step sweep 1-40 with
-  OLS slopes â0.0001/â0.0002 and the answer "one time step is the best
+  OLS slopes −0.0001/−0.0002 and the answer "one time step is the best
   choice" (Tables 5-6, PDF p. 14); live decay of the universal model to
   almost random guessing (Fig. 9, PDF pp. 14-15), the autoencoder
   denoiser slowing it (Figs. 11-12, PDF pp. 15-16), stable walkthrough
@@ -9142,8 +9142,8 @@ included).
   (PDF p. 21). Findings, graded:
   1. [candidate sharpening, PENDING OWNER RATIFICATION] The
      adaptive-retraining disclosure: before the L0 gate, any
-     C1-L2/C8-adjacent comparator, null, or baseline that adapts â
-     retrains, re-tunes, re-estimates or re-selects â inside its own
+     C1-L2/C8-adjacent comparator, null, or baseline that adapts —
+     retrains, re-tunes, re-estimates or re-selects — inside its own
      evaluation window must pre-declare the adaptation rule (trigger,
      data consumed, cadence) in the same pre-registration as its frozen
      configuration, and report the frozen-configuration number
@@ -9177,15 +9177,15 @@ included).
      accuracy, the up/down supports of 5,265/4,927 are the only
      class-count evidence printed, and no last-sign repeat null is
      ever computed, so an unknown fraction of the headline is
-     mechanical sign-persistence before any book state enters â the
+     mechanical sign-persistence before any book state enters — the
      sign-persistence admission null's family, page-cited re-exhibited;
      no new item.
   3. [reinforcing, no new item] The paper's own time-step experiment
      shows the information is in the current tick, not the memory:
-     time steps 1-40 (Table 5, PDF p. 14) with OLS slopes â0.0001/
-     â0.0002, intercepts 0.7166/0.7406 (Table 6, PDF p. 14), and the
+     time steps 1-40 (Table 5, PDF p. 14) with OLS slopes −0.0001/
+     −0.0002, intercepts 0.7166/0.7406 (Table 6, PDF p. 14), and the
      paper's answer that one time step is the best choice (PDF p. 14)
-     â the level-versus-memory disambiguation's axis, re-exhibited on
+     — the level-versus-memory disambiguation's axis, re-exhibited on
      the machine-learning side; no new item.
   4. [interpretation caution] The "universal beats specific"
      conclusion is partly manufactured by exclusion and confounded by
@@ -9201,10 +9201,10 @@ included).
      structure would be citing an analyst property; reading discipline
      only, no queue change.
   5. [cost-survival ammunition] The multi-label class geometry is the
-     fee schedule: the Â±0.2% sensitive-interval boundaries are copied
+     fee schedule: the ±0.2% sensitive-interval boundaries are copied
      from the Coinbase fee table (Table 2, PDF pp. 7-8), and the
      decision maker that would turn predictions into orders is
-     explicitly left to future research (PDF p. 6) â no backtest, no
+     explicitly left to future research (PDF p. 6) — no backtest, no
      PnL, no fees inside the evaluation anywhere; a future K7-style
      cost-survival layer must take its pass/fail thresholds from
      live, per-window fee and rebate schedules declared in advance,
@@ -9212,11 +9212,11 @@ included).
      requirements only, never operationalized, nothing armed.
   6. [reinforcing, no new item] Base-rate and validity audit: all live
      evidence comes from one exchange, one summer, effectively one
-     name â the recorded corpus is roughly 30 hours of GDAX
+     name — the recorded corpus is roughly 30 hours of GDAX
      (2018-07-02 to 2018-07-03, PDF p. 6), the live experiments use
      two BTC-USD windows of 2018-08-01/02 and 2018-08-08/09 (PDF
      pp. 15, 17) and one randomly-selected one-month 1-minute window
-     (PDF p. 19) â yet the validity section claims the selection has
+     (PDF p. 19) — yet the validity section claims the selection has
      no bias and covers bull, bear, high-volume and low-volume
      conditions (PDF p. 21), an overclaim no 30-hour single-venue
      recording can carry; the base-rate audit family; no new item.
@@ -9224,7 +9224,7 @@ included).
      citations in the index, no journal version recorded, industry
      co-authors (Turing Intelligence Technology), and an internal
      inconsistency: the article-history field reads "Compiled April 6,
-     2020" against the arXiv stamp of 9 February 2020 (PDF p. 1) â
+     2020" against the arXiv stamp of 9 February 2020 (PDF p. 1) —
      check the publication trail before any formal citation;
      regardless, no claim here can serve as support for any programme
      claim.
@@ -9238,22 +9238,22 @@ included).
   kill lines with sign inverted; T2 tested-fail); the blocked list stays
   blocked. Deep-read queue pointer: next UNREAD "Estimation for
   high-frequency data under parametric market microstructure noise"
-  (score 24, xdab650), third of the score-24 tier â re-read the live
+  (score 24, xdab650), third of the score-24 tier — re-read the live
   tail and recompute the tier against the notes before consuming; the
   EDITION-7 cadence counter now stands at ONE of five (deep-read 75
   counted from the edition-7 reset at ## 95).
 - docs/DECISIONS_PENDING.md IS touched by this session (rule: one
-  candidate sharpening queued â the adaptive-retraining disclosure;
+  candidate sharpening queued — the adaptive-retraining disclosure;
   queue forty, zero armed).
 
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled tree (the
 changed files; marker and encoding checks); the library-provenance
-audit runs in CI over the full tree â the summaries are untouched
-this session â and was verified green on both jobs before merge.
+audit runs in CI over the full tree — the summaries are untouched
+this session — and was verified green on both jobs before merge.
 
-## 97. Null-time session 86 (2026-11-21), third act: the race-collision corrigendum â a parallel duplicate instance of this same session detected at merge time (PR #269 carried its pass and deep-read record to main at 08:08:39Z, three minutes after this instance's pass files landed as PR #268 / 298210f); this instance's second-act PR #270 closed UNMERGED per the main-wins protocol so the record carries exactly one ## 96 and one library note for xe0397d; the superseded ## 95 text is preserved in git history at 298210f; the two instances' gradings of the same xe0397d mechanism diverged (this instance: interpretation caution, no sharpening; the merged record: the adaptive-retraining disclosure, item 40, PENDING OWNER RATIFICATION) and both readings are recorded here for the directorate; NO kill line moved, NO sharpening queued by this act, the queue stands at FORTY plus probe E1, zero armed
+## 97. Null-time session 86 (2026-11-21), third act: the race-collision corrigendum — a parallel duplicate instance of this same session detected at merge time (PR #269 carried its pass and deep-read record to main at 08:08:39Z, three minutes after this instance's pass files landed as PR #268 / 298210f); this instance's second-act PR #270 closed UNMERGED per the main-wins protocol so the record carries exactly one ## 96 and one library note for xe0397d; the superseded ## 95 text is preserved in git history at 298210f; the two instances' gradings of the same xe0397d mechanism diverged (this instance: interpretation caution, no sharpening; the merged record: the adaptive-retraining disclosure, item 40, PENDING OWNER RATIFICATION) and both readings are recorded here for the directorate; NO kill line moved, NO sharpening queued by this act, the queue stands at FORTY plus probe E1, zero armed
 
 Session-state note, per the conductor protocol (edition 7, ## 95,
 ACTIVE): the declared work of this act is the corrigendum the record
@@ -9269,7 +9269,7 @@ set and the commit record:
   the live tail at session start (main at 5a28e43, log through ## 94),
   ran the fifth synthesis pass as its first act, and landed it as
   PR #268 (merged 298210f: protocol section 2 as edition 7 with a
-  section 12 note, GOALS.md status-board refresh, log entry ## 95 â CI
+  section 12 note, GOALS.md status-board refresh, log entry ## 95 — CI
   green on both jobs, the pushed log read-back verified byte-identical
   from the branch). Instance B opened PR #269 at 08:05:17Z with its own
   complete session-86 product (its own edition-7 pass and its own
@@ -9316,7 +9316,7 @@ Superseded content and its preservation:
   defects in the surviving ## 95 text are recorded here, NOT corrected
   (content edits are not typo-class): it states the ratification
   queue at FORTY and the library at seventy-six notes at pass time,
-  though both were true only after its own ## 96 act landed â the
+  though both were true only after its own ## 96 act landed — the
   entry was written with knowledge of the deep-read it precedes. The
   directorate sees this asymmetry; no session rewrites it.
 - Instance A's unmerged second-act products (its own deep-read note
@@ -9336,14 +9336,14 @@ The grading divergence on xe0397d, recorded honestly, both ways:
 - The merged record queues the adaptive-retraining disclosure (item
   40), extending the pre-commitment from WHICH estimator in WHICH
   configuration to WHICH adaptation rule for any C1-L2/C8-adjacent
-  comparator, null or baseline â instruments the existing freeze
+  comparator, null or baseline — instruments the existing freeze
   binds only implicitly. On reading the queued full draft, instance A
   judges that extension genuinely additive on the refutation-instrument
   axis: an adapted-in-window null would track any regime change by
   construction and could never refute anything. The calibration fact
   stands for the sitting regardless: two independent full reads of
-  the same paper graded the same mechanism differently â once caution,
-  once sharpening â which is itself evidence for the batch-ratify
+  the same paper graded the same mechanism differently — once caution,
+  once sharpening — which is itself evidence for the batch-ratify
   sitting to weigh, and a datum on reader variance the programme
   should expect more of as the swarm parallelizes. Either way the
   item stands PENDING OWNER RATIFICATION; this act neither queues nor
@@ -9351,7 +9351,7 @@ The grading divergence on xe0397d, recorded honestly, both ways:
 
 Named gap from the collision, at zero status: the main-wins protocol
 absorbed this race (one lost work product, preserved unmerged), but
-the near-miss class is real â any scheduled-trigger fan-out can run
+the near-miss class is real — any scheduled-trigger fan-out can run
 two instances on one session and both will execute the same standing
 directive against the same live tail read minutes apart. Candidate
 improvements, zero status until the owner fires or a queue-looking
@@ -9367,7 +9367,7 @@ remains armed awaiting the owner's word in its booked state (survived
 all five kill lines with sign inverted; T2 tested-fail); the blocked
 list stays blocked. Deep-read queue pointer: next UNREAD "Estimation
 for high-frequency data under parametric market microstructure noise"
-(score 24, xdab650), third of the score-24 tier â re-read the live
+(score 24, xdab650), third of the score-24 tier — re-read the live
 tail and recompute the tier against the notes before consuming; the
 EDITION-7 cadence counter stands at ONE of five (deep-read 75 counted
 from the edition-7 reset at ## 95).
@@ -9380,15 +9380,15 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this act exit zero on the assembled tree (the changed
 files; marker and encoding checks); the library-provenance audit runs
-in CI over the full tree â the summaries are untouched this act â
+in CI over the full tree — the summaries are untouched this act —
 and was verified green on both jobs before merge.
 
-## 98. Null-time session 86 (2026-11-21), fourth act: the second race-collision corrigendum â a THIRD concurrent instance of this same session detected on read-back (this instance's PR #271, opened 08:10:57Z carrying its own edition-7 pass and its own ## 95/## 96, was opened against a stale tip: instance A's pass had merged as #268 / 298210f at 08:03:49Z and instance B's complete product as #269 / a1971fa at 08:08:39Z, both before it opened, and instance A's own corrigendum #272 merged at 08:14:43Z still recording only two instances); no merge was ever attempted and the instance's byte-gated landing workflow never ran, so NO duplicate entry, note or doc rewrite reached main; PR #271 closed UNMERGED per the main-wins protocol, the superseded product preserved in git history at b0de7697; NO kill line moved, NO sharpening queued by this act, the queue stands at FORTY plus probe E1, zero armed
+## 98. Null-time session 86 (2026-11-21), fourth act: the second race-collision corrigendum — a THIRD concurrent instance of this same session detected on read-back (this instance's PR #271, opened 08:10:57Z carrying its own edition-7 pass and its own ## 95/## 96, was opened against a stale tip: instance A's pass had merged as #268 / 298210f at 08:03:49Z and instance B's complete product as #269 / a1971fa at 08:08:39Z, both before it opened, and instance A's own corrigendum #272 merged at 08:14:43Z still recording only two instances); no merge was ever attempted and the instance's byte-gated landing workflow never ran, so NO duplicate entry, note or doc rewrite reached main; PR #271 closed UNMERGED per the main-wins protocol, the superseded product preserved in git history at b0de7697; NO kill line moved, NO sharpening queued by this act, the queue stands at FORTY plus probe E1, zero armed
 
 Session-state note, per the conductor protocol (edition 7, ## 95,
 ACTIVE): the declared work of this act is the corrigendum the record
 owes after a SECOND collision of the ## 97 class inside the same
-session â a third concurrent instance of null-time session 86,
+session — a third concurrent instance of null-time session 86,
 detected this time not at merge time but before any merge attempt,
 because the last-mile tip re-read named at ## 97 as a candidate
 improvement was executed as session discipline before merging. The
@@ -9403,7 +9403,7 @@ set and the commit record:
   same tip instance A recorded at ## 97; it composed its own
   edition-7 pass (## 95) and its own G2 briefs refresh (## 96) as its
   declared first and second acts, landed them on branch
-  nulltime-86-edition7-g2refresh and opened PR #271 at 08:10:57Z â
+  nulltime-86-edition7-g2refresh and opened PR #271 at 08:10:57Z —
   with the log append staged on the branch behind a byte-gated
   landing workflow (the session-71 pattern: assembles the log at PR
   time, gates the bytes, removes the staging assets in the landing
@@ -9414,12 +9414,12 @@ set and the commit record:
   stood on main. Instance C did not know: nothing reported the
   collision to it, its branch CI was green on its own head, and
   #272's corrigendum (merged 08:14:43Z) recorded only instances A
-  and B â the record therefore owes this entry.
+  and B — the record therefore owes this entry.
 - The guard that held: nothing duplicate reached main. The branch
   rewrote the same files the merged record rewrote (protocol
   section 2, GOALS.md, the log tail), GitHub never built the PR's
-  merge ref â mergeability stayed uncomputable for the PR's whole
-  life â and consequently no pull_request-triggered workflow ever ran
+  merge ref — mergeability stayed uncomputable for the PR's whole
+  life — and consequently no pull_request-triggered workflow ever ran
   on the branch, including the instance's own landing workflow; the
   merge itself was never attempted, because the continuation
   read-back re-read main's tip first and found ## 95, ## 96 and ##
@@ -9438,11 +9438,11 @@ set and the commit record:
   of it.
 - Agreement check between instance C's superseded product and the
   surviving record, stated honestly: the superseded ## 95 agrees
-  with the surviving ## 95 on every gate-relevant fact â edition 7
+  with the surviving ## 95 on every gate-relevant fact — edition 7
   from the same cadence count of five (deep-reads 70-74, ## 90
   through ## 94), reset at deep-read #75 onward, ZERO sharpenings
   queued by the pass, score-25 tier closed, pointer xe0397d then
-  xdab650 â and diverges only where its read was stale: it computed
+  xdab650 — and diverges only where its read was stale: it computed
   the queue at THIRTY-NINE and the brief debt at items 34-39
   (correct against the ## 94 tip it read; ## 96 queued the fortieth
   item), and its cadence counter stood at ZERO of five where the
@@ -9466,7 +9466,7 @@ remains armed awaiting the owner's word in its booked state (survived
 all five kill lines with sign inverted; T2 tested-fail); the blocked
 list stays blocked. Deep-read queue pointer: next UNREAD "Estimation
 for high-frequency data under parametric market microstructure noise"
-(score 24, xdab650), third of the score-24 tier â re-read the live
+(score 24, xdab650), third of the score-24 tier — re-read the live
 tail and recompute the tier against the notes before consuming; the
 EDITION-7 cadence counter stands at ONE of five (deep-read 75 counted
 from the edition-7 reset at ## 95).
@@ -9479,18 +9479,18 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this act exit zero on the assembled tree (the changed
 files; marker and encoding checks); the library-provenance audit runs
-in CI over the full tree â the summaries are untouched this act â
+in CI over the full tree — the summaries are untouched this act —
 and was verified green on both jobs before merge.
 
-## 99. Null-time session 86 (2026-11-21), fifth act: the G2 directorate briefs refreshed to all FORTY plus probe E1 â items 34-39 briefed as instance C's surviving product (34 F7 spread-convention, 35 A5 level-versus-memory, 36 D3 sign-persistence admission null, 37 B7 estimator-configuration freeze, 38 B8 price-process-family invariance, 39 D4 deterministic-calendar) and item 40, the adaptive-retraining disclosure (## 96), briefed as B9 with ## 97's endorsement-with-dissent recorded inside the brief; the count reconciliation extended to forty, GOALS.md status lines refreshed as operative bookkeeping; NO sharpening queued by this act, DECISIONS_PENDING.md untouched, T1 stays armed awaiting the owner's word, the queue FORTY plus probe E1, zero armed
+## 99. Null-time session 86 (2026-11-21), fifth act: the G2 directorate briefs refreshed to all FORTY plus probe E1 — items 34-39 briefed as instance C's surviving product (34 F7 spread-convention, 35 A5 level-versus-memory, 36 D3 sign-persistence admission null, 37 B7 estimator-configuration freeze, 38 B8 price-process-family invariance, 39 D4 deterministic-calendar) and item 40, the adaptive-retraining disclosure (## 96), briefed as B9 with ## 97's endorsement-with-dissent recorded inside the brief; the count reconciliation extended to forty, GOALS.md status lines refreshed as operative bookkeeping; NO sharpening queued by this act, DECISIONS_PENDING.md untouched, T1 stays armed awaiting the owner's word, the queue FORTY plus probe E1, zero armed
 
 Session-state note, per the conductor protocol (edition 7, ## 95,
 ACTIVE): the declared work of this act is the G2 briefs refresh, the
 edition's named ranked lawful non-deep-read work item (named at ##
 95; left owed for items 34-40 plus probe E1 by ## 96 and ## 97). The
-act lands instance C's surviving second-act product â its briefs for
+act lands instance C's surviving second-act product — its briefs for
 items 34-39, preserved at b0de7697 and re-landed here against the
-live tail after the ## 98 collision â and extends it to discharge
+live tail after the ## 98 collision — and extends it to discharge
 the item-40 debt ## 96 created. G2's boundary governs: briefs
 summarize already-recorded proposals with their sources; a brief
 invents nothing, queues nothing new, and arms nothing.
@@ -9501,19 +9501,19 @@ The refresh (docs/DIRECTORATE_BRIEFS.md):
   queue position in join order, the log entry and library note that
   hold the full draft, the one-paragraph mechanism and the
   accept/reject question: 34, the spread-convention declaration rule
-  (F7, ## 71, the FruthâSchÃ¶nebornâUrusov paper); 35, the
-  level-versus-memory disambiguation (A5, ## 74, KajâCaglar
+  (F7, ## 71, the Fruth–Schöneborn–Urusov paper); 35, the
+  level-versus-memory disambiguation (A5, ## 74, Kaj–Caglar
   buffer-Hawkes); 36, the sign-persistence admission null (D3, ##
-  77, Muni TokeâYoshida); 37, the estimator-configuration freeze
-  (B7, ## 81, FabreâMuni Toke); 38, the price-process-family
-  invariance rule (B8, ## 85, LangnauâPunchev); 39, the
-  deterministic-calendar null (D4, ## 93, PalmariâLilloâEisler).
+  77, Muni Toke–Yoshida); 37, the estimator-configuration freeze
+  (B7, ## 81, Fabre–Muni Toke); 38, the price-process-family
+  invariance rule (B8, ## 85, Langnau–Punchev); 39, the
+  deterministic-calendar null (D4, ## 93, Palmari–Lillo–Eisler).
 - Item 40 briefed as B9: the adaptive-retraining disclosure (##
-  96, the FangâChungâVentreâBasios cryptocurrency deep-learning
-  note), with the ## 97 grading divergence â one full read graded
+  96, the Fang–Chung–Ventre–Basios cryptocurrency deep-learning
+  note), with the ## 97 grading divergence — one full read graded
   the mechanism an interpretation caution, a second full read
   queued the sharpening, and the corrigendum judged the extension
-  genuinely additive on the refutation-instrument axis â recorded
+  genuinely additive on the refutation-instrument axis — recorded
   inside the brief as a second datum the sitting must weigh beside
   the standard accept/reject question. The brief summarizes the
   recorded draft and cites it; its fate is the owner's.
@@ -9538,7 +9538,7 @@ PENDING OWNER RATIFICATION exactly as recorded at ## 96, now with
 its brief pointing at it). T1 remains armed awaiting the owner's
 word in its booked state (survived all five kill lines with sign
 inverted; T2 tested-fail); the blocked list stays blocked.
-Deep-read queue pointer: unchanged from ## 97/## 98 â next UNREAD
+Deep-read queue pointer: unchanged from ## 97/## 98 — next UNREAD
 "Estimation for high-frequency data under parametric market
 microstructure noise" (score 24, xdab650), third of the score-24
 tier; re-read the live tail before consuming; the EDITION-7 cadence
@@ -9552,15 +9552,15 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this act exit zero on the assembled tree (the changed
 files; marker and encoding checks); the library-provenance audit runs
-in CI over the full tree â the summaries are untouched this act â
+in CI over the full tree — the summaries are untouched this act —
 and was verified green on both jobs before merge.
 
-## 100. Null-time session 87 (2026-11-21), first act: library deep-read session 76 â the ClinetâPotiron parametric-microstructure-noise plug-in paper read, third of the score-24 tier; the plug-in machinery's entire fast-rate guarantee shown to stand on the null-residual-noise regime, the noise model Ï and its limit-order-book variable set Q shown to be analyst degrees of freedom that move the measured residual-noise share from ~0% to 20-30% on the same kind of tape; ONE candidate sharpening queued (the noise-model pre-declaration for de-noised inputs, extending the estimator-configuration freeze to the preprocessing stage, PENDING OWNER RATIFICATION); no kill line moved
+## 100. Null-time session 87 (2026-11-21), first act: library deep-read session 76 — the Clinet–Potiron parametric-microstructure-noise plug-in paper read, third of the score-24 tier; the plug-in machinery's entire fast-rate guarantee shown to stand on the null-residual-noise regime, the noise model φ and its limit-order-book variable set Q shown to be analyst degrees of freedom that move the measured residual-noise share from ~0% to 20-30% on the same kind of tape; ONE candidate sharpening queued (the noise-model pre-declaration for de-noised inputs, extending the estimator-configuration freeze to the preprocessing stage, PENDING OWNER RATIFICATION); no kill line moved
 
 Session-state note, per the goal-autonomy conductor protocol (edition
 7, ## 95): the declared work choice is the standing deep-read, the
 protocol's default, which owes no justification; the synthesis
-cadence is NOT due â after this session's read the edition-7 counter
+cadence is NOT due — after this session's read the edition-7 counter
 stands at TWO of five (deep-reads 75-76 counted from the edition-7
 reset at ## 95; the edition-8 pass falls due at five). The ## 96
 through ## 99 pointer named this paper as next UNREAD and this
@@ -9578,21 +9578,21 @@ full (42 pp., body, proofs and references included).
   market microstructure noise" (arXiv:1712.01479v2
   [math.ST], stamp 17 Sep 2020; 42 pp.), score 24, index entry
   xdab650. The paper: the observed price Z = X + MMN is recast as the
-  "pure" parametric-noise model Z = X + Ï(Q_t, Î¸0) with NO residual
-  noise (eqs. 2, 11, PDF pp. 1-5), Ï a known function of observable
-  limit-order-book state with the leading forms Roll I_tÎ¸0 (eq. 3,
+  "pure" parametric-noise model Z = X + φ(Q_t, θ0) with NO residual
+  noise (eqs. 2, 11, PDF pp. 1-5), φ a known function of observable
+  limit-order-book state with the leading forms Roll I_tθ0 (eq. 3,
   PDF p. 2), Glosten-Harris with volume (eq. 4, PDF p. 2) and
-  direction-times-quoted-spread I_tS_tÎ¸0 (eq. 5, PDF p. 2); any Î¸Ì
-  with fast rate N(Î¸ÌâÎ¸0) = OP(1) (eqs. 6/18, PDF pp. 2, 7-8; the MSE
-  estimator is a linear regression on Q-increments when Ï is linear,
-  eq. 22, PDF p. 8) pre-estimates the efficient price XÌ = Z â
-  Ï(Q, Î¸Ì) (eqs. 19-20, PDF p. 7), and the paper proves across five
-  examples â threshold realized volatility under endogenous sampling
+  direction-times-quoted-spread I_tS_tθ0 (eq. 5, PDF p. 2); any θ̂
+  with fast rate N(θ̂−θ0) = OP(1) (eqs. 6/18, PDF pp. 2, 7-8; the MSE
+  estimator is a linear regression on Q-increments when φ is linear,
+  eq. 22, PDF p. 8) pre-estimates the efficient price X̂ = Z −
+  φ(Q, θ̂) (eqs. 19-20, PDF p. 7), and the paper proves across five
+  examples — threshold realized volatility under endogenous sampling
   and infinite-activity jumps (Thm 2, PDF p. 10), threshold bipower
   variation (Thm 7, PDF p. 12), Hayashi-Yoshida asynchronous
   covariance under the HBT endogeneity model (Thm 9, PDF p. 13),
   functionals of volatility (Thm 11, PDF p. 14) and volatility of
-  volatility (Thm 14, PDF pp. 15-16) â that the plug-in estimators
+  volatility (Thm 14, PDF pp. 15-16) — that the plug-in estimators
   carry exactly the non-noisy central-limit theory, same rates and
   AVAR, unbiased studentized laws (Corollaries 4, 8, 10, 12, 15, PDF
   pp. 11-16). The supporting evidence trail for the regime itself is
@@ -9608,7 +9608,7 @@ full (42 pp., body, proofs and references included).
      gate, any C1-L2/C8-adjacent computation, comparator, null or
      baseline that feeds a de-noised, reconstructed or
      "efficient"-price input must pre-declare the noise functional
-     form Ï AND the exact limit-order-book variable set Q entering
+     form φ AND the exact limit-order-book variable set Q entering
      it, the noise-model choice counted in the multiplicity ledger
      with every deviation a dated amendment before the data is
      touched; a number that survives only under a post-hoc swap of
@@ -9617,9 +9617,9 @@ full (42 pp., body, proofs and references included).
      the null-residual-noise regime (eqs. 2, 11, PDF pp. 1-5), and
      the paper's own recount moves the residual-noise share from
      ~0% to 20-30% of MMN variance with nothing changed but the
-     choice of Ï (PDF p. 3), i.e. the de-noising form is a silent
+     choice of φ (PDF p. 3), i.e. the de-noising form is a silent
      dial that can scrub inconvenient structure into the "noise"
-     term or leave it in the "efficient" price â a freedom the
+     term or leave it in the "efficient" price — a freedom the
      estimator-configuration freeze (#37) does not reach because it
      names the estimator's fitting configuration, not the
      preprocessing stage that defines its input. Harder-to-pass
@@ -9634,30 +9634,30 @@ full (42 pp., body, proofs and references included).
      configuration counted in the ledger. QUEUED, not armed; the
      owner's word is the only trigger.
   2. [reinforcing, no new item] The guarantee is configuration-
-     conditional example by example â declared sampling regime
+     conditional example by example — declared sampling regime
      (regular vs HBT hitting-boundary, eq. 34, PDF p. 13),
-     truncation and tuning sequences (w, ÏÌ, k, block size, PDF
-     pp. 10-17), the Î¸Ì fast rate (eq. 18, PDF p. 8) and the Taylor
-     repair for the non-adapted Ïi(Î¸Ì) perturbation (PDF p. 7) â
+     truncation and tuning sequences (w, ω̄, k, block size, PDF
+     pp. 10-17), the θ̂ fast rate (eq. 18, PDF p. 8) and the Taylor
+     repair for the non-adapted ψi(θ̂) perturbation (PDF p. 7) —
      the estimator-configuration freeze and price-process-family
      invariance discipline re-exhibited on the statistical-theory
      side; no new axis.
   3. [reinforcing, no new item] The commonly-positive one-lag
      mid-return autocorrelation flagged via the Andersen et al 2017
-     two-regime extension (PDF p. 5) â the sign-persistence
+     two-regime extension (PDF p. 5) — the sign-persistence
      admission null's family; no new item.
   4. [interpretation caution] The rate advantage over the i.i.d.-
      noise family is "a different game" that consumes supplementary
      limit-order-book data (PDF pp. 3-4): a de-noised number and a
      raw number are not like-for-like on information content, and an
      exhibit quoting a de-noised number must name its noise model,
-     Q-set and Î¸Ì-estimator before the two may be read against each
+     Q-set and θ̂-estimator before the two may be read against each
      other; reading discipline only, no queue change.
   5. [cost-survival ammunition] No transaction costs, PnL or
      execution anywhere; a future K7-style cost layer estimating
      friction from de-noised prices must carry the noise-model
      pre-declaration as an explicit assumption, because a
-     mis-specified Ï leaves residual noise contaminating exactly the
+     mis-specified φ leaves residual noise contaminating exactly the
      realized-variance-type quantities cost proxies are built from
      (PDF pp. 2-3); declaration requirements only, nothing armed.
   6. [source-quality note] arXiv v2 (Dec 2017 id, Sep 2020 stamp),
@@ -9678,27 +9678,27 @@ full (42 pp., body, proofs and references included).
   tested-fail); the blocked list stays blocked. Deep-read queue
   pointer: next UNREAD "Optimal Execution in a Multiplayer Model of
   Transient Price Impact" (score 24, x3e5ba8), fourth of the
-  score-24 tier â re-read the live tail and recompute the tier
+  score-24 tier — re-read the live tail and recompute the tier
   against the notes before consuming; the EDITION-7 cadence counter
   now stands at TWO of five (deep-reads 75-76 counted from the
   edition-7 reset at ## 95).
 - docs/DECISIONS_PENDING.md IS touched by this session (rule: one
-  candidate sharpening queued â the noise-model pre-declaration for
+  candidate sharpening queued — the noise-model pre-declaration for
   de-noised inputs; queue forty-one, zero armed).
 
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled tree (the
 changed files; marker and encoding checks); the library-provenance
-audit runs in CI over the full tree â the summaries are untouched
-this session â and was verified green on both jobs before merge.
+audit runs in CI over the full tree — the summaries are untouched
+this session — and was verified green on both jobs before merge.
 
-## 101. Null-time session 88 (2026-11-21): library deep-read session 77 â the Strehle multiplayer transient-impact paper read, fourth of the score-24 tier; the equilibrium shown to exist only on the positive-type-kernel plus strictly-positive-transaction-costs intersection with the closed form exponential-only, and the anti-overshooting headline shown to be an open-loop common-knowledge simulation, not a measurement; NO candidate sharpening queued, the noise-model pre-declaration's kernel axis found already-covered ground; no kill line moved
+## 101. Null-time session 88 (2026-11-21): library deep-read session 77 — the Strehle multiplayer transient-impact paper read, fourth of the score-24 tier; the equilibrium shown to exist only on the positive-type-kernel plus strictly-positive-transaction-costs intersection with the closed form exponential-only, and the anti-overshooting headline shown to be an open-loop common-knowledge simulation, not a measurement; NO candidate sharpening queued, the noise-model pre-declaration's kernel axis found already-covered ground; no kill line moved
 
 Session-state note, per the goal-autonomy conductor protocol (edition
 7, ## 95): the declared work choice is the standing deep-read, the
 protocol's default, which owes no justification; the synthesis
-cadence is NOT due â after this session's read the edition-7 counter
+cadence is NOT due — after this session's read the edition-7 counter
 stands at THREE of five (deep-reads 75-77 counted from the edition-7
 reset at ## 95; the edition-8 pass falls due at five). The ## 100
 pointer named this paper as next UNREAD and this session re-verified
@@ -9726,8 +9726,8 @@ proofs and references included).
   characterized by Fredholm integral equations of the second kind
   and there is a unique deterministic Nash equilibrium, also unique
   among stochastic strategies, exactly when G is of positive type and
-  Î³i > 0 for all i (Lemma 2, Theorem 5, PDF pp. 4-5, proof
-  PDF pp. 12-14, the Î³i > 0 status load-bearing because impulse
+  γi > 0 for all i (Lemma 2, Theorem 5, PDF pp. 4-5, proof
+  PDF pp. 12-14, the γi > 0 status load-bearing because impulse
   trades are optimal and no equilibrium exists at zero transaction
   costs, PDF pp. 4-6); a closed form exists only for exponential
   decay and the paper itself states the method does not generalize
@@ -9737,9 +9737,9 @@ proofs and references included).
   significantly, competition among them dissipates per-head profit,
   and the seller can do little about it (PDF pp. 8-9). The headline:
   price overshooting in the sense of Brunnermeier-Pedersen is the
-  exception, not the rule â the maximum price deviation typically
+  exception, not the rule — the maximum price deviation typically
   falls as the number of opportunistic investors rises, most
-  visibly for short-lived impact (large Ï), making overshooting look
+  visibly for short-lived impact (large ρ), making overshooting look
   like a permanent-impact artifact rather than an inherent
   consequence of anticipation, with quadratic transaction costs the
   second candidate explanation (PDF pp. 9-10, simulation only); a
@@ -9747,17 +9747,17 @@ proofs and references included).
   left unsolved (PDF pp. 10-12). Findings, graded:
   1. [reinforcing, no new item] Kernel specification as a dial that
      reaches qualitative conclusions: existence of any equilibrium
-     requires G of positive type (PDF p. 4), Î³i > 0 is the
+     requires G of positive type (PDF p. 4), γi > 0 is the
      difference between a well-posed problem and none at all
-     (PDF pp. 4-6), and qualitative outcomes â the three-times
-     sign-changing front-runner path at Î³1 small, Ï large (PDF p. 9)
-     and the overshooting verdict itself (PDF pp. 9-10) â move with
+     (PDF pp. 4-6), and qualitative outcomes — the three-times
+     sign-changing front-runner path at γ1 small, ρ large (PDF p. 9)
+     and the overshooting verdict itself (PDF pp. 9-10) — move with
      the kernel. This re-exhibits on the execution-theory side what
      the estimator-configuration freeze (#37) and the queued
      kernel-form pre-declaration family already bind: any
      impact-model-based null, comparator or reconstruction must have
      its decay-kernel functional form and friction parameters
-     pre-declared and counted. No new axis; nothing queued â the
+     pre-declared and counted. No new axis; nothing queued — the
      ground the paper's kernel sensitivity covers is already owned
      by the queued items; the session found no mechanism here that
      makes a future test harder to pass beyond them, so the default
@@ -9791,7 +9791,7 @@ proofs and references included).
   5. [reinforcing, no new item] The transaction-cost interpretation
      warning as a pre-registration hygiene exhibit: what is charged
      to everyone (impact via G) and what is charged to the trader
-     alone (Î³i) must stay distinct in any future multiplicity-ledger
+     alone (γi) must stay distinct in any future multiplicity-ledger
      entry that names a friction model (PDF p. 3). No queue change.
   6. [source-quality note] arXiv v4, single author, zero recorded
      citations; a journal version exists in this lineage and must be
@@ -9810,7 +9810,7 @@ proofs and references included).
   the blocked list stays blocked. Deep-read queue pointer: next
   UNREAD "Order Flows and Limit Order Book Resiliency on the
   Meso-Scale" (Bechler, Ludkovski, arXiv:1708.02715v1, score 24,
-  x5f35fd), fifth of the score-24 tier â re-read the live tail and
+  x5f35fd), fifth of the score-24 tier — re-read the live tail and
   recompute the tier against the notes before consuming; the
   EDITION-7 cadence counter now stands at THREE of five (deep-reads
   75-77 counted from the edition-7 reset at ## 95).
@@ -9822,27 +9822,27 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled tree (the
 changed files; marker and encoding checks); the library-provenance
-audit runs in CI over the full tree â the summaries are untouched
-this session â and must be verified green on both jobs before merge.
+audit runs in CI over the full tree — the summaries are untouched
+this session — and must be verified green on both jobs before merge.
 
-## 102. Null-time session 89 (2026-11-21): library deep-read session 78 â the Bechler-Ludkovski meso-scale resiliency paper read, completing the score-24 tier; the S-shape shown to be an artifact of taker-only clocks (linearity restored only by adding contemporaneous touch limit flow at 50-70% market-order impact), top-level depth shown statistically insignificant against deeper book shape, and scarce-liquidity prediction shown high-precision/low-recall at a 4-5% base rate; NO candidate sharpening queued, all reading-discipline ground already owned by standing constraints and queued items; no kill line moved
+## 102. Null-time session 89 (2026-11-21): library deep-read session 78 — the Bechler-Ludkovski meso-scale resiliency paper read, completing the score-24 tier; the S-shape shown to be an artifact of taker-only clocks (linearity restored only by adding contemporaneous touch limit flow at 50-70% market-order impact), top-level depth shown statistically insignificant against deeper book shape, and scarce-liquidity prediction shown high-precision/low-recall at a 4-5% base rate; NO candidate sharpening queued, all reading-discipline ground already owned by standing constraints and queued items; no kill line moved
 
 Session-state note, per the goal-autonomy conductor protocol (edition
 7, ## 95): the declared work choice is the standing deep-read, the
 protocol's default, which owes no justification; the synthesis
-cadence is NOT due â after this session's read the edition-7 counter
+cadence is NOT due — after this session's read the edition-7 counter
 stands at FOUR of five (deep-reads 75-78 counted from the edition-7
 reset at ## 95; the edition-8 pass falls due at five, i.e. the next
 deep-read session's first act). The ## 101 pointer named this paper as
 next UNREAD and this session re-verified the tier order against the
 live file state (score-24 tier: x673148 read ## 94, xe0397d read ##
-96, xdab650 read ## 100, x3e5ba8 read ## 101, x5f35fd read here â the
+96, xdab650 read ## 100, x3e5ba8 read ## 101, x5f35fd read here — the
 tier is COMPLETE as of this read; the next-tier head xaf167e and the
 remaining score-23 tier were verified note-less this session before the
 pointer named them). No inaccessible or blocked status this session;
 the extract was present, page-marked, complete and read in full
-(27 pp., body, both appendices â including the Table 6/Table 7
-inventories â and references included).
+(27 pp., body, both appendices — including the Table 6/Table 7
+inventories — and references included).
 
 - **Library deep-read session 78** (front 2, fifth of the score-24
   tier; note:
@@ -9854,18 +9854,18 @@ inventories â and references included).
   large-tick Nasdaq tickers (MSFT/TEVA/BBBY, first 100 days of 2011;
   INTC/ORCL/NTAP, last 100 days of 2013; Nasdaq ITCH TotalView, single
   venue, 10:00-15:45, hidden executions removed, PDF pp. 8-9) that
-  introduces volume-based bucketing as the meso-scale clock â buckets
+  introduces volume-based bucketing as the meso-scale clock — buckets
   cut at fixed executed market volume V of 0.25/1/2% ADV, median
   duration about 170 s, dozens of trades and hundreds of limit orders
   per bucket, with the claimed stabilizing properties of removed
   intraday seasonality, improved Gaussianity of the flow series and
   volume-normalized limit-flow comparison (PDF pp. 6-9). Against that
-  clock: mid-price change âP against trade imbalance TI is a
-  persistent S-shaped nonlinearity, flat near TI = Â±1, attributed to
+  clock: mid-price change ∆P against trade imbalance TI is a
+  persistent S-shaped nonlinearity, flat near TI = ±1, attributed to
   intelligent order placement conditioning on the book (PDF pp.
-  10-13); adding the contemporaneous touch limit flow (VLB â VLA)
+  10-13); adding the contemporaneous touch limit flow (VLB − VLA)
   restores near-linearity and raises R2 from about 0.3-0.4 to about
-  0.7, defining NetLiq = TI + Î²Â·VL with Î² (limit-order price impact
+  0.7, defining NetLiq = TI + β·VL with β (limit-order price impact
   relative to market orders) stable at roughly 0.4-0.68 across all
   six assets and three bucket sizes (PDF pp. 11-14, Tables 3-4); the
   one-sided limit-flow responses are hockey-stick in TI, with the
@@ -9878,7 +9878,7 @@ inventories â and references included).
   hypothetical execution cost PI over 3-5 levels, the impact slope S
   over about 4 levels) carry the modulation, full model R2 near 0.8
   (PDF pp. 15-18, Table 6). Scarce liquidity SLj is a residual
-  indicator from the in-sample âP-vs-TI GAM fit at 1.5 StDev (about 6%
+  indicator from the in-sample ∆P-vs-TI GAM fit at 1.5 StDev (about 6%
   of buckets), driven by limit-flow asymmetry, reduced depth and high
   cancellation proportions, with morning/slow-trading lifts; the
   models are correct 70-80% of the time at high predicted probability
@@ -9892,7 +9892,7 @@ inventories â and references included).
   showed weak predictive power in the authors' own regressions (PDF
   p. 21, Remark 6). Findings, graded:
   1. [reinforcing, no new item] Clock choice as a dial that reaches
-     the measured relations (bucket size V moves R2 and Î², PDF pp.
+     the measured relations (bucket size V moves R2 and β, PDF pp.
      12-14, Tables 3-4): the ground the queued flow-clock
      scale-constant and volume-clock convention items already own;
      no new axis, nothing queued, the default grade stands.
@@ -9901,15 +9901,15 @@ inventories â and references included).
      enters, at 50-70% of market-order impact (PDF pp. 11-14). The
      programme's aggTrades windows are taker prints only (the standing
      T1 constraint; passive withdrawal invisible; no taker proxy may
-     be substituted). Reading discipline: a taker-only âP-vs-flow fit
+     be substituted). Reading discipline: a taker-only ∆P-vs-flow fit
      on crypto perp tape that finds nonlinearity or weak explanatory
      power cannot be read as absence of a linear flow-price structure.
      Sharpens T1's interpretation and C1-L2's motivation; no queue
-     change â the standing constraint already covers the mechanism.
+     change — the standing constraint already covers the mechanism.
   3. [interpretation caution] Top-of-book singularity is not a depth
      summary: D1 statistically insignificant against D2/PI/S (PDF
      pp. 16-17, Table 6). Reading discipline for the C1-L2 feature
-     spec and the L0 audit â touch-only features cannot be presumed
+     spec and the L0 audit — touch-only features cannot be presumed
      to represent the depth state; level count must be named. No
      queue change.
   4. [interpretation caution] Residual-threshold abnormality is
@@ -9951,7 +9951,7 @@ inventories â and references included).
   "Optimal inventory management and order book modeling" (Baradel,
   Bouchard, Evangelista, Mounjid, arXiv:1802.08135v2, score 23,
   xaf167e), first of the score-23 tier (xaf167e, xec4d8e, x6c29fa,
-  xfcaaa2), all four verified note-less this session â re-read the
+  xfcaaa2), all four verified note-less this session — re-read the
   live tail and recompute the tier against the notes before
   consuming; the EDITION-7 cadence counter now stands at FOUR of five
   (deep-reads 75-78 counted from the edition-7 reset at ## 95), so
@@ -9965,20 +9965,20 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled tree (the
 changed files; marker and encoding checks); the library-provenance
-audit runs in CI over the full tree â the summaries are untouched
-this session â and must be verified green on both jobs before merge.
+audit runs in CI over the full tree — the summaries are untouched
+this session — and must be verified green on both jobs before merge.
 
-## 103. Null-time session 90 (2026-11-21), first act: the sixth synthesis pass â the cadence recomputed from the edition-7 reset at ## 95 (deep-reads 75-78 landed at ## 96 and ## 100 through ## 102, the window's fifth deep-read #79 landing as this session's second act per the ## 102 closing pointer, which directed the pass run first), goal state rewritten as EDITION 8, the G2 brief-debt recomputed against the grown queue (briefs cover forty of forty-one); NO sharpening queued by the pass
+## 103. Null-time session 90 (2026-11-21), first act: the sixth synthesis pass — the cadence recomputed from the edition-7 reset at ## 95 (deep-reads 75-78 landed at ## 96 and ## 100 through ## 102, the window's fifth deep-read #79 landing as this session's second act per the ## 102 closing pointer, which directed the pass run first), goal state rewritten as EDITION 8, the G2 brief-debt recomputed against the grown queue (briefs cover forty of forty-one); NO sharpening queued by the pass
 
 Session-state note, per the goal-autonomy conductor protocol (edition 7,
 ## 95, ACTIVE): the live main tail (through ## 102) and
 docs/DECISIONS_PENDING.md were read first; the cadence check was
-recomputed from first principles against the edition-7 reset at ## 95 â
+recomputed from first principles against the edition-7 reset at ## 95 —
 deep-read 75 landed ## 96, 76 landed ## 100, 77 landed ## 101,
 78 landed ## 102: four landed, and the ## 102 closing pointer records
 explicitly that the next deep-read session's FIRST act is the edition-8
 synthesis pass, with the window's fifth deep-read #79 landing as the
-same session's second act â so per the conductor protocol section 3
+same session's second act — so per the conductor protocol section 3
 point 2, the ## 102 pointer's own instruction, and the ritual's
 director step, the pass runs FIRST and this session's deep-read follows
 as ## 104. The declared work choice is therefore the pass first, then
@@ -9990,7 +9990,7 @@ time):
 - Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
   2026-11-19; archived is NOT falsified; every kill line stays frozen;
   unchanged. Phase 2 (Crypto L2): ACTIVE, the Board's only active
-  research front (C1-L2 â C8 â Convexity Sizing), blocked on the
+  research front (C1-L2 → C8 → Convexity Sizing), blocked on the
   owner's data acquisition; the L0 dry run is unblocked. Unchanged.
 - Library: eighty deep-read notes on main's tip through deep-read
   session 78 (the 81st lands as this session's second act and counts);
@@ -10003,7 +10003,7 @@ time):
   (Baradel, Bouchard, Evangelista, Mounjid, score 23, xaf167e), then
   the remaining score-23 tier (FinRL-X xec4d8e, "Order book dynamics
   in liquid markets" x6c29fa, "A Million Metaorder Analysis of Market
-  Impact on the Bitcoin" xfcaaa2) â recomputed by title-matching the
+  Impact on the Bitcoin" xfcaaa2) — recomputed by title-matching the
   score-sorted triage file against the live log tail and the library
   note listing this pass; xaf167e is consumed as this session's
   second act (## 104) and #79 counts toward the edition-8 cadence.
@@ -10015,7 +10015,7 @@ What the window since edition 7 taught (ranking evidence, nothing
 laundered): the four landed deep-reads of the window (sessions 75-78)
 moved ZERO kill lines and queued exactly TWO sharpenings (#40, the
 adaptive-retraining disclosure, ## 96; #41, the noise-model
-pre-declaration for de-noised inputs, ## 100) â both disclosure or
+pre-declaration for de-noised inputs, ## 100) — both disclosure or
 pre-commitment extensions of already-queued families, so the
 declining-yield expectation named at editions 3-7 continues to hold;
 the window absorbed a race-collision corrigendum (## 98: a THIRD
@@ -10030,7 +10030,7 @@ append-only log's write-side ~64K truncation class (## 75, ## 78,
 ## 94, ## 98) still has NO standing CI check enforcing byte-size
 monotonicity of the large tracked files, and no session-side read-back
 verification helper for large reads AND writes through the tooling
-path; the weekly directorate has still not sat â FORTY-ONE candidates
+path; the weekly directorate has still not sat — FORTY-ONE candidates
 plus probe E1 pending, zero armed, the G2 briefs cover all forty queued
 items (through item 40), so a brief for item 41 (the noise-model
 pre-declaration, queued ## 100) is owed before the next sitting and
@@ -10046,10 +10046,10 @@ armed awaiting the owner's word; the queue FORTY-ONE plus probe E1,
 zero armed. Nothing measured, no kill line moved, nothing armed,
 nothing trades live.
 
-## 104. Null-time session 90 (2026-11-21), second act: library deep-read session 79 â the Baradel-Bouchard-Evangelista-Mounjid optimal-inventory order-book model read, opening the score-23 tier; the imbalance shown to be strategic OUTPUT inside exactly the model class that conditions flow on it (optimal agents plant non-executable limit flow to skew the imbalance against them), every positive result shown a closed-simulation product of the paper's own priors, and multi-agent round conclusions shown artifacts of the arbitrary intra-round execution priority; NO candidate sharpening queued, all reading-discipline ground already owned by standing constraints and queued items; no kill line moved
+## 104. Null-time session 90 (2026-11-21), second act: library deep-read session 79 — the Baradel-Bouchard-Evangelista-Mounjid optimal-inventory order-book model read, opening the score-23 tier; the imbalance shown to be strategic OUTPUT inside exactly the model class that conditions flow on it (optimal agents plant non-executable limit flow to skew the imbalance against them), every positive result shown a closed-simulation product of the paper's own priors, and multi-agent round conclusions shown artifacts of the arbitrary intra-round execution priority; NO candidate sharpening queued, all reading-discipline ground already owned by standing constraints and queued items; no kill line moved
 
 Session-state note, per the goal-autonomy conductor protocol (edition
-8, ## 103, ACTIVE â installed by this session's first act): the
+8, ## 103, ACTIVE — installed by this session's first act): the
 declared work choice is the standing deep-read as the pass session's
 second act, matching the protocol's cadence rule and the ## 102
 pointer; the ## 103 pointer named this paper as next UNREAD and this
@@ -10067,14 +10067,14 @@ all figure plates and references included).
   "Optimal inventory management and order book modeling"
   (arXiv:1802.08135v2 [q-fin.TR], stamp 9 Nov 2018; 40 pp.), score 23,
   index entry xaf167e. The paper: a structural control-theoretic
-  order-book model in which three rational agent classes â market
+  order-book model in which three rational agent classes — market
   makers, a stock-futures pair-trading HFT, and volume/VWAP
-  schedule-driven institutional brokers â act on a Queue-Reactive-
+  schedule-driven institutional brokers — act on a Queue-Reactive-
   style best-queue book (spread in {1,2} ticks, prices moving only on
   queue depletion or spread insertion, eqs. 2.1-2.6, PDF pp. 3-5)
   whose exogenous flow compensator conditions on the book's
   imbalance per borrowed single-name equity statistics (aggressive
-  direction 0.5+0.35Â·Imb, size 0.7+0.3Â·Imb of the queue, PDF
+  direction 0.5+0.35·Imb, size 0.7+0.3·Imb of the queue, PDF
   pp. 13-14); MM and HFT value functions are characterized as
   viscosity solutions of variational PDEs with convergent explicit
   time discretizations and asymptotically optimal extracted controls
@@ -10097,12 +10097,12 @@ all figure plates and references included).
      agents may be deliberately shaping because they believe others
      condition on it; no imbalance feature may be read as a clean
      exogenous state variable and imbalance-effect heterogeneity
-     across regimes is the default expectation. No queue change â
+     across regimes is the default expectation. No queue change —
      the estimator-configuration freeze and frozen-feature reading
      rules already carry the discipline; the default grade stands.
   2. [reinforcing, no new item] Every positive result is a product
      of the model's own priors: one equity name's borrowed
-     statistics (PDF pp. 13-14), Î² and Îº moment-matched inside the
+     statistics (PDF pp. 13-14), β and κ moment-matched inside the
      model by iterative simulation (PDF p. 29 n. 13), and the VWAP
      schedule "typically performs better than the market" (PDF
      pp. 29-30) only inside the book its own assumptions generate.
@@ -10112,21 +10112,21 @@ all figure plates and references included).
   3. [interpretation caution] Touch-only truncation "for numerical
      tractability" (best queues only, two spread values, PDF
      pp. 2-3): re-exhibits on the control-theory side the
-     top-of-book-singularity caution of ## 102 â touch-only state
+     top-of-book-singularity caution of ## 102 — touch-only state
      cannot stand for the depth state; level count must be named in
      any C1-L2 feature on queued depth. No queue change.
   4. [cost-survival ammunition] The broker mechanics declare what a
      future K7-style cost-survival layer must carry:
      schedule-driven aggressive flow fires exactly when realized
-     volume falls behind the target band â state-dependent on the
-     executor's calendar progress, not on information â and the
+     volume falls behind the target band — state-dependent on the
+     executor's calendar progress, not on information — and the
      broker's standing limit inventory itself pushes the price
      (PDF pp. 24-25, 28-29, 31-32). A cost layer reading aggressive
      flow as uniformly informed overstates adversarial inference.
      Declaration requirements only; nothing armed.
   5. [interpretation caution] Round-based multi-agent conclusions
      are artifacts of the chosen intra-round execution priority
-     (HFT first, then MM, then brokers at random â a convention the
+     (HFT first, then MM, then brokers at random — a convention the
      authors themselves exploit, noting the HFT's first-move
      advantage, PDF pp. 31-32): any future programme use of
      simulator-generated microstructure studies (C8 placebos,
@@ -10151,7 +10151,7 @@ all figure plates and references included).
   "FinRL-X: An AI-Native Modular Infrastructure for Quantitative
   Trading" (score 23, xec4d8e), second of the score-23 tier (then
   x6c29fa "Order book dynamics in liquid markets", xfcaaa2 "A Million
-  Metaorder Analysis of Market Impact on the Bitcoin") â re-read the
+  Metaorder Analysis of Market Impact on the Bitcoin") — re-read the
   live tail and recompute the tier against the notes before
   consuming; the EDITION-8 cadence counter now stands at ONE of five
   (deep-read 79 counted from the edition-8 reset at ## 103).
@@ -10163,8 +10163,8 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled tree (the
 changed files; marker and encoding checks); the library-provenance
-audit runs in CI over the full tree â the summaries are untouched
-this session â and must be verified green on both jobs before merge.
+audit runs in CI over the full tree — the summaries are untouched
+this session — and must be verified green on both jobs before merge.
 
 ## 105. Null-time session 90 corrigendum (2026-11-21): race-collision
 record, main-wins protocol applied - a second instance of this same
@@ -10175,15 +10175,15 @@ pass with its own section-2 wording and cadence reset from deep-read
 Baradel-Bouchard-Evangelista-Mounjid optimal-inventory order-book
 paper, first of the score-23 tier, xaf167e, its note landing as
 2026-11-21_optimal_inventory_management_order_book_deep_read.md);
-this instanceâs parallel work is superseded and NO merge was
+this instance’s parallel work is superseded and NO merge was
 attempted from it; the superseded working branch
 nulltime-90-deepread-79-xaf167e is left unmerged (its two in-branch
 superseded protocol pushes - one carrying an in-branch-caught
 transcription typo that was rebuilt and re-pushed pre-merge, the
 second carrying a duplicate section 13 produced by splicing
-against a stale fetch after the concurrent instanceâs edition-8
+against a stale fetch after the concurrent instance’s edition-8
 had already landed - never reached main and never will); the two
-instancesâ gradings of the same extract CONVERGED and are
+instances’ gradings of the same extract CONVERGED and are
 recorded for the directorate: both read the same 40-page
 page-marked text in full, both graded NO candidate sharpening
 queued (all reading-discipline ground already owned by standing
@@ -10203,7 +10203,7 @@ Modular Infrastructure for Quantitative Trading" (score 23,
 xec4d8e), second of the score-23 tier; nothing measured during
 null time, no kill line moved, nothing armed, nothing trades live.
 
-## 106. Null-time session 91 (2026-11-21): library deep-read session 80 â the FinRL-X deployment-consistent infrastructure read, second of the score-23 tier; the paper graded a systems-engineering artifact self-benchmarked by its own maintainers, its two-gap deployment taxonomy and leveraged-instrument stress episode banked as cost-survival declarations only, and every performance table banned from the record under the laundering rule; NO candidate sharpening queued, all discipline ground already owned by standing constraints and queued items; no kill line moved
+## 106. Null-time session 91 (2026-11-21): library deep-read session 80 — the FinRL-X deployment-consistent infrastructure read, second of the score-23 tier; the paper graded a systems-engineering artifact self-benchmarked by its own maintainers, its two-gap deployment taxonomy and leveraged-instrument stress episode banked as cost-survival declarations only, and every performance table banned from the record under the laundering rule; NO candidate sharpening queued, all discipline ground already owned by standing constraints and queued items; no kill line moved
 
 Session-state note, per the goal-autonomy conductor protocol (edition 8,
 ## 103, ACTIVE): the declared work choice is the standing deep-read, the
@@ -10233,8 +10233,8 @@ unchanged at forty-one plus probe E1, zero armed).
   the author block; AI4Finance Foundation), "FinRL-X: An AI-Native
   Modular Infrastructure for Quantitative Trading" (arXiv:2603.21330v1
   [q-fin.TR], stamp 22 Mar 2026; 13 pp.), score 23, index entry xec4d8e.
-  The paper: a layered, weight-centric trading architecture â data,
-  strategy, backtesting, broker-integrated execution â in which every
+  The paper: a layered, weight-centric trading architecture — data,
+  strategy, backtesting, broker-integrated execution — in which every
   strategy component (selection, allocation, timing, risk overlay)
   emits only a target weight vector as the sole interface contract,
   consumed identically by backtester and broker (Algorithm 1, PDF
@@ -10268,21 +10268,21 @@ unchanged at forty-one plus probe E1, zero armed).
      PDF p. 7) is generated inside the paper's own conceded
      simplifications, and the paper itself cites backtest-overfitting
      probability among the gap causes (ref [5], PDF p. 12); the
-     laundering ban binds twice over â none of Tables 2-4 may enter
+     laundering ban binds twice over — none of Tables 2-4 may enter
      the record as support for any programme claim.
   4. [interpretation caution] Interface consistency is not execution
      realism: the weight-centric claim "reduces behavioral divergence"
-     (PDF pp. 4-5) while keeping S_research â  S_paper â  S_live a
+     (PDF pp. 4-5) while keeping S_research ≠ S_paper ≠ S_live a
      standing inequality narrowed only "architecturally" (PDF p. 5);
      any future L0 dry-run or paper-trading write-up may record
      pipeline consistency as an engineering property only, never as
      a measurement-realism property; the primary-metric
      pre-commitment family (#39) already carries the distinction. No
      queue change.
-  5. [reinforcing, no new item] The paper's own hygiene claims â
+  5. [reinforcing, no new item] The paper's own hygiene claims —
      strict no-lookahead decisions, rolling out-of-sample model
      selection, explicit refusal to claim alpha on a short paper
-     horizon (PDF pp. 6, 9-10) â echo standing programme disciplines
+     horizon (PDF pp. 6, 9-10) — echo standing programme disciplines
      and are independently unverifiable; nothing added beyond the
      standing rules; the default grade stands.
 - Inaccessible/blocked status: none this session. The extract was
@@ -10296,7 +10296,7 @@ unchanged at forty-one plus probe E1, zero armed).
   "Order book dynamics in liquid markets: limit theorems and diffusion
   approximations" (score 23, x6c29fa), third of the score-23 tier (then
   xfcaaa2 "A Million Metaorder Analysis of Market Impact on the
-  Bitcoin") â re-read the live tail and recompute the tier against the
+  Bitcoin") — re-read the live tail and recompute the tier against the
   notes before consuming; the EDITION-8 cadence counter now stands at
   TWO of five (deep-read 80 counted from the edition-8 reset at ## 103).
 - docs/DECISIONS_PENDING.md is NOT touched by this session (rule: no
@@ -10307,11 +10307,11 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep, --library
 and --encoding run this session exit zero on the assembled tree (the
 changed files; marker, library-provenance and encoding checks); the
-library-provenance audit runs in CI over the full tree â the summaries
-are untouched this session â and must be verified green on both jobs
+library-provenance audit runs in CI over the full tree — the summaries
+are untouched this session — and must be verified green on both jobs
 before merge.
 
-## 107. Null-time session 92 (2026-11-21): library deep-read session 81 â the Cont-de Larrard heavy-traffic diffusion-limit read, third of the score-23 tier; the paper graded a venue-indexed limit-theorem artifact whose one-tick instantaneous-spread reduction and market-order/cancellation identity are recorded as mechanism-backed cautions, its measured fluctuation-dominance regime banked as the evidence for ONE candidate sharpening (the queue-jump-diffusion generative-null pre-declaration), and every closed form and table banned from the record under the laundering rule; NO kill line moved; the ratification queue moves to forty-two candidate sharpenings plus probe E1
+## 107. Null-time session 92 (2026-11-21): library deep-read session 81 — the Cont-de Larrard heavy-traffic diffusion-limit read, third of the score-23 tier; the paper graded a venue-indexed limit-theorem artifact whose one-tick instantaneous-spread reduction and market-order/cancellation identity are recorded as mechanism-backed cautions, its measured fluctuation-dominance regime banked as the evidence for ONE candidate sharpening (the queue-jump-diffusion generative-null pre-declaration), and every closed form and table banned from the record under the laundering rule; NO kill line moved; the ratification queue moves to forty-two candidate sharpenings plus probe E1
 
 Session-state note, per the goal-autonomy conductor protocol (edition 8,
 ## 103, ACTIVE): the declared work choice is the standing deep-read, the
@@ -10340,13 +10340,13 @@ proofs and references included).
   after each price change via a regulation map with declared depth
   sequences (Def 1, Theorem 1, PDF pp. 8-11), a functional central
   limit theorem under stationary durations, mixing order sizes with
-  finite second moment and a ân-scaled first moment (Assumptions 1-2,
+  finite second moment and a √n-scaled first moment (Assumptions 1-2,
   PDF pp. 19-20; Pareto tails index > 2, Table 4, PDF p. 14), giving
   queues that converge to a planar Brownian motion with drift and
   flow-moment covariance re-initialized on boundary hits (Theorem 2,
   eqs 13-14, PDF p. 21), a price process equal in the limit to the
   difference of the boundary occupation times (Proposition 1, PDF
-  pp. 26-27), a conditional duration law with Ï-dependent tail index
+  pp. 26-27), a conditional duration law with ρ-dependent tail index
   (Proposition 2, PDF pp. 27-28) and a closed-form next-tick
   probability pup(x, y) (Theorem 3, eqs 33-34, PDF pp. 29-30).
   Findings, graded:
@@ -10367,9 +10367,9 @@ proofs and references included).
      mechanism (blocked C5) is structurally invisible at this grain.
      No queue change.
   3. [source-quality note] The closed forms are regime- and
-     venue-indexed: balanced-flow statements (PDF pp. 27-29), Ï â â0.7
+     venue-indexed: balanced-flow statements (PDF pp. 27-29), ρ ≈ −0.7
      "in practice" (PDF p. 28), a three-stock one-day crisis-era sample
-     (Citi/GE/GM, June 26, 2008) for every magnitude, LÃ©vy limits when
+     (Citi/GE/GM, June 26, 2008) for every magnitude, Lévy limits when
      order-size second moments fail (Remark 1, PDF p. 23) and the
      paper's own note that heavy-traffic limits may fail to exist
      (PDF p. 5). Nothing in Props 2-3 or Tables 3-5 may enter the
@@ -10380,12 +10380,12 @@ proofs and references included).
      C8-adjacent spec claiming an anticipatory, depletion-side or
      queue-evacuation structure must pre-declare a moment-matched
      queue-jump-diffusion null (planar Brownian increments with
-     drift (Î»aVa, Î»bVb) and covariance from the pre-declared flow
-     moments and Ï, re-initialized on boundary hits from a declared
+     drift (λaVa, λbVb) and covariance from the pre-declared flow
+     moments and ρ, re-initialized on boundary hits from a declared
      post-move depth distribution F, per Theorem 2 + Definition 1, PDF
-     pp. 9-11, 21), with ALL null parameters â arrival rates, first
-     and second order-size moments, Ï, F and the moment-existence
-     check Assumption 2 requires (PDF pp. 19-20, 23) â frozen BEFORE
+     pp. 9-11, 21), with ALL null parameters — arrival rates, first
+     and second order-size moments, ρ, F and the moment-existence
+     check Assumption 2 requires (PDF pp. 19-20, 23) — frozen BEFORE
      the data, and the structure shown to survive that null in the
      subsample where its information lives. Earned by the paper's
      measured mechanism: liquid-book queues are fluctuation-dominated
@@ -10410,7 +10410,7 @@ proofs and references included).
   5. [reinforcing, no new item] The "averages out to a diffusion at
      10-100 s" claim (PDF pp. 17-19) is ammunition, not evidence: it
      motivates C1-L2's premise but supports nothing, and it is
-     assumption-indexed â a heavier-tailed venue exits the diffusion
+     assumption-indexed — a heavier-tailed venue exits the diffusion
      regime (Remark 1, PDF p. 23), which is why the sharpening freezes
      the moment check inside the null configuration. Nothing measured,
      nothing armed.
@@ -10426,12 +10426,12 @@ proofs and references included).
   pointer: next UNREAD "A Million Metaorder Analysis of Market Impact
   on the Bitcoin" (score 23, xfcaaa2), last of the score-23 tier (then
   the score-22 tier opens with "Optimal Execution Using Reinforcement
-  Learning", x0fc07a) â re-read the live tail and recompute the tier
+  Learning", x0fc07a) — re-read the live tail and recompute the tier
   against the notes before consuming; the EDITION-8 cadence counter now
   stands at THREE of five (deep-read 81 counted from the edition-8
   reset at ## 103).
 - docs/DECISIONS_PENDING.md IS touched by this session (rule: one
-  candidate sharpening queued â the ratification line moves to
+  candidate sharpening queued — the ratification line moves to
   forty-two candidate sharpenings plus probe E1, zero armed, with the
   new item named in the queue's parenthetical).
 
@@ -10439,10 +10439,10 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled changed files
 (marker and encoding checks; the changed files); the library-provenance
-audit and the full-tree sweeps run in CI over the full tree â the
-summaries are untouched this session â and must be verified green on
+audit and the full-tree sweeps run in CI over the full tree — the
+summaries are untouched this session — and must be verified green on
 both jobs before merge.
-## 108. Null-time session 93 (2026-11-21): library deep-read session 82 â the Donier-Bonart million-metaorder Bitcoin impact read, closing the score-23 tier; the paper graded a complete-trader-ID impact artifact whose universal square-root law on a no-arbitrage, no-market-making venue reinforces the laundering ban, whose speed-dependence reversal is recorded as an interpretation caution for duration-conditioned statistics, and whose total-flow/impermanent-decomposition mechanism is banked as the evidence for ONE candidate sharpening (the residual-flow attribution null); every MtGox magnitude banned from the record; NO kill line moved; the ratification queue moves to forty-three candidate sharpenings plus probe E1
+## 108. Null-time session 93 (2026-11-21): library deep-read session 82 — the Donier-Bonart million-metaorder Bitcoin impact read, closing the score-23 tier; the paper graded a complete-trader-ID impact artifact whose universal square-root law on a no-arbitrage, no-market-making venue reinforces the laundering ban, whose speed-dependence reversal is recorded as an interpretation caution for duration-conditioned statistics, and whose total-flow/impermanent-decomposition mechanism is banked as the evidence for ONE candidate sharpening (the residual-flow attribution null); every MtGox magnitude banned from the record; NO kill line moved; the ratification queue moves to forty-three candidate sharpenings plus probe E1
 
 Session-state note, per the goal-autonomy conductor protocol (edition 8,
 ## 103, ACTIVE): the declared work choice is the standing deep-read, the
@@ -10471,7 +10471,7 @@ included).
   statistical arbitrage below the 60 bps fee scale is impossible and
   no martingale or fair-pricing argument can be invoked (Figs. 5-6,
   PDF pp. 1-2, 8-10, 16-17), a roughly time-independent Y-ratio with
-  Y0 = 0.9 and Î£Y = 0.35 after Ï_D/âV_D normalization (Figs. 7-8,
+  Y0 = 0.9 and ΣY = 0.35 after σ_D/√V_D normalization (Figs. 7-8,
   PDF pp. 10-11), impact during execution tracking the square root of
   the TOTAL market imbalance rather than the individual metaorder
   (Fig. 11, PDF pp. 13-14), measured impact at most one to two spreads
@@ -10490,7 +10490,7 @@ included).
      no-edge default and the laundering ban; no programme claim may
      cite any magnitude in this paper as support. No queue change.
   2. [interpretation caution] Measured impact INCREASES as execution
-     slows (Î´â² â 0.4 on Âµ_V) and only decreases in the isolated
+     slows (δ′ ≈ 0.4 on µ_V) and only decreases in the isolated
      subsample (PDF pp. 13-15): a "slower build-up, larger subsequent
      move" pattern in any duration-participation-conditioned C1-L2/C8
      statistic can be pure co-movement correlation with aggregate
@@ -10516,7 +10516,7 @@ included).
      and do not add up linearly" (PDF p. 16); the permanent impact of
      correlated ("informed") metaorders is fully explained by residual
      flow correlation while isolated ones decay to zero mechanically
-     (Fig. 12, PDF p. 15) â so an episode-attributed anticipation
+     (Fig. 12, PDF p. 15) — so an episode-attributed anticipation
      association could be pure common correlation and survive any
      null that does not condition it out. Harder-to-pass because a
      flow-attribution claim beating only an unconditional or
@@ -10542,7 +10542,7 @@ included).
      era, 0.6% fee regime, anonymous-source data with no accuracy
      insurance (PDF p. 4n4), segmentation dependent on the ~1-hour
      inactivity classifier, trader-ID completeness unavailable on any
-     modern venue (PDF pp. 3-7): all magnitudes (Î´, Y0, Î£Y, Figs.
+     modern venue (PDF pp. 3-7): all magnitudes (δ, Y0, ΣY, Figs.
      5-12) venue- and era-indexed, none-of-our-support; laundering
      ban binds; arXiv v3, check the published version before formal
      citation. Read, graded, recorded.
@@ -10556,12 +10556,12 @@ included).
   all five kill lines with sign inverted; T2 tested-fail); the blocked
   list stays blocked. Deep-read queue pointer: next UNREAD "Optimal
   Execution Using Reinforcement Learning" (score 22, x0fc07a), opening
-  the score-22 tier (verified note-less this session) â re-read the live
+  the score-22 tier (verified note-less this session) — re-read the live
   tail and recompute the tier against the notes before consuming; the
   EDITION-8 cadence counter now stands at FOUR of five (deep-read 82
   counted from the edition-8 reset at ## 103).
 - docs/DECISIONS_PENDING.md IS touched by this session (rule: one
-  candidate sharpening queued â the ratification line moves to
+  candidate sharpening queued — the ratification line moves to
   forty-three candidate sharpenings plus probe E1, zero armed, with
   the new item named in the queue's parenthetical).
 
@@ -10569,11 +10569,11 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled changed files
 (marker and encoding checks; the changed files); the library-provenance
-audit and the full-tree sweeps run in CI over the full tree â the
-summaries are untouched this session â and must be verified green on
+audit and the full-tree sweeps run in CI over the full tree — the
+summaries are untouched this session — and must be verified green on
 both jobs before merge.
 
-## 109. Null-time session-93 race corrigendum (2026-11-21): a second session-93 instance executed deep-read 82 in parallel, staged the same Donier-Bonart read on its own note and PR #282, and discovered the supersession by the landed ## 108 only at merge time; the duplicate product is discarded UNMERGED with nothing landed through it, and the queue state stands exactly as landed at ## 108 â FORTY-THREE candidate sharpenings plus probe E1, zero armed; no kill line moved
+## 109. Null-time session-93 race corrigendum (2026-11-21): a second session-93 instance executed deep-read 82 in parallel, staged the same Donier-Bonart read on its own note and PR #282, and discovered the supersession by the landed ## 108 only at merge time; the duplicate product is discarded UNMERGED with nothing landed through it, and the queue state stands exactly as landed at ## 108 — FORTY-THREE candidate sharpenings plus probe E1, zero armed; no kill line moved
 
 Session-state note, per the goal-autonomy conductor protocol (edition 8,
 ## 103, ACTIVE): this entry records a landing-path collision, not new
@@ -10590,7 +10590,7 @@ deep-read/session-82-xfcaaa2, pushed it, opened PR #282, ran the guard
 clean, saw CI green on both jobs (engine, test), and only at merge time
 received the merge-conflict signal that main had advanced; it then
 verified main tip fd76ee0, closed PR #282 UNMERGED, and discarded its
-duplicate product under the main-wins protocol â nothing from it landed
+duplicate product under the main-wins protocol — nothing from it landed
 on main and its note remains off-record.
 
 Consistency check between the two independent reads of the same paper:
@@ -10610,29 +10610,29 @@ edition 8 (## 103) and previously at the session-90 corrigendum
 (## 105): branch deep-read/session-82-xfcaaa2 (this race) and branch
 deep-read/session-79-xaf167e (the session-90 race) remain on the
 remote with nothing landed through either; both are owner-deletable,
-and no tool in the current landing path can delete a branch â the gap
+and no tool in the current landing path can delete a branch — the gap
 and its two instances now stand named in the record. Root cause
 recorded plainly: two scheduled instances consumed the same queue
 pointer within the same window without a pre-push main-tip re-check on
 the second instance's merge attempt; the discipline for successor
-sessions is unchanged from ## 105 â re-verify the main tip immediately
+sessions is unchanged from ## 105 — re-verify the main tip immediately
 before pushing AND immediately before merging, and treat any
 main-advance between those two checks as automatic supersession with
 the product discarded.
 
 docs/DECISIONS_PENDING.md IS NOT touched by this corrigendum (rule: no
 candidate sharpening queued; the ratification file stands as landed at
-## 108 â forty-three candidate sharpenings plus probe E1, zero armed).
+## 108 — forty-three candidate sharpenings plus probe E1, zero armed).
 
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled changed file
 (marker and encoding checks; the changed file); the library-provenance
-audit and the full-tree sweeps run in CI over the full tree â the
-summaries are untouched this session â and must be verified green on
+audit and the full-tree sweeps run in CI over the full tree — the
+summaries are untouched this session — and must be verified green on
 both jobs before merge.
 
-## 110. Null-time session 94 (2026-11-21): library deep-read session 83 â the Zheng-He-Yang cross-exchange reinforcement-learning optimal-execution read, first of the score-22 tier; the paper graded a self-benchmarked simulator execution artifact whose every magnitude is banned from the record under the laundering rule, whose unstated signal-normalization windows are banked as the evidence for ONE candidate sharpening (the feature-normalization pre-declaration), whose venue-leadership reading and summed-signal construction are recorded as interpretation cautions, and whose fee-domination and latency numbers are banked as cost-survival declarations only; NO kill line moved; the ratification queue moves to forty-four candidate sharpenings plus probe E1
+## 110. Null-time session 94 (2026-11-21): library deep-read session 83 — the Zheng-He-Yang cross-exchange reinforcement-learning optimal-execution read, first of the score-22 tier; the paper graded a self-benchmarked simulator execution artifact whose every magnitude is banned from the record under the laundering rule, whose unstated signal-normalization windows are banked as the evidence for ONE candidate sharpening (the feature-normalization pre-declaration), whose venue-leadership reading and summed-signal construction are recorded as interpretation cautions, and whose fee-domination and latency numbers are banked as cost-survival declarations only; NO kill line moved; the ratification queue moves to forty-four candidate sharpenings plus probe E1
 
 Session-state note, per the goal-autonomy conductor protocol (edition 8,
 ## 103, ACTIVE): the declared work choice is the standing deep-read, the
@@ -10640,7 +10640,7 @@ protocol's default, matching the ## 108 closing pointer; the pointer named
 "Optimal Execution Using Reinforcement Learning" as next UNREAD and this
 session re-verified that against the live file state (84 library notes,
 none for this slug; extract present, page-marked; the score-22 tier
-recomputed in triage order â five entries, x0fc07a first and note-less)
+recomputed in triage order — five entries, x0fc07a first and note-less)
 before reading. This is deep-read 83, and at session start only FOUR
 deep-reads had landed since the edition-8 reset (## 103), so no synthesis
 pass was due to run first under cadence rule section 3 point 2; with this
@@ -10660,12 +10660,12 @@ all figures, tables, equations and references included).
   collected over WebSockets on one Hong Kong server, venues aligned by
   the collector's local timestamps to avoid forward-looking bias and
   resampled at a fixed 10ms interval (PDF pp. 5-7); three cross-exchange
-  signals, each a plain sum of per-exchange normalized quantities â
+  signals, each a plain sum of per-exchange normalized quantities —
   trade-flow imbalance normalized by an unstated min-max window "over a
   certain period of time" (Eqs. 1-2, 4, PDF pp. 7-9), top-five-level
   order-book imbalance (Eqs. 5-6, PDF pp. 10-11), and cross-exchange
   spread with an unparameterized rolling-mean subtraction (Eqs. 9-10,
-  PDF pp. 13-14) â regressed on future returns at 100ms-10s horizons with
+  PDF pp. 13-14) — regressed on future returns at 100ms-10s horizons with
   no null baseline, showing in-sample linear R2 that decays with
   horizon and beats the single-exchange counterpart, maximum predictive
   levels quoted at ~0.6 bps (imbalance, Bybit, 5s; OKEx weaker at ~0.4
@@ -10712,7 +10712,7 @@ all figures, tables, equations and references included).
      normalization, Eq. 10, PDF p. 14), every predictive-power figure is
      computed on them (Figs. 2-8, PDF pp. 9-15), and a full-sample
      window would make the signal forward-looking and inflate precisely
-     the cross-exchange improvement the headline rests on â unauditable
+     the cross-exchange improvement the headline rests on — unauditable
      from the text, which is itself the reason the rule must bind before
      the data. Harder-to-pass because a claim that beats its null only
      under a post-hoc normalization window now fails at the gate;
@@ -10729,8 +10729,8 @@ all figures, tables, equations and references included).
      Bybit is easier to predict than OKEx for reasons the authors offer
      only speculatively ("may contribute", PDF p. 9): a compressive or
      anticipatory association measured on ONE venue concerns that
-     venue's price formation, not the market â on a lagging venue it can
-     be imported co-movement with the leaders' flow â so no single-venue
+     venue's price formation, not the market — on a lagging venue it can
+     be imported co-movement with the leaders' flow — so no single-venue
      result may be generalized cross-venue without the replication the
      programme already requires. No queue change.
   4. [interpretation caution] The cross-exchange signals are plain sums
@@ -10741,8 +10741,8 @@ all figures, tables, equations and references included).
      literature R2 figures rank against nothing here until they survive
      a sealed null. No queue change.
   5. [reinforcing, no new item] The paper's one honest data-hygiene
-     core â venues aligned on a single collector's local timestamps
-     precisely to avoid forward-looking bias (PDF pp. 6-7) â is the same
+     core — venues aligned on a single collector's local timestamps
+     precisely to avoid forward-looking bias (PDF pp. 6-7) — is the same
      failure class the L0 gate's timestamp audits exist to catch;
      reinforces the standing gate design on arrival-time discipline. No
      queue change.
@@ -10759,7 +10759,7 @@ all figures, tables, equations and references included).
      100ms to 10s (Figs. 2, 5, 7, PDF pp. 9-14) and the agent's gain
      peaks at the 5s interval (Table 4, PDF p. 24): whatever this family
      sees lives at sub-10s grain, sharpening C1-L2's motivation exactly
-     as the null-time programme framed it â ammunition, never evidence.
+     as the null-time programme framed it — ammunition, never evidence.
      No queue change.
   8. [source-quality note] arXiv v1 preprint ("arXiv Template A
      PREPRINT" running header, stamp 19 Jun 2023); single asset, three
@@ -10781,14 +10781,14 @@ all figures, tables, equations and references included).
   tested-fail); the blocked list stays blocked. Deep-read queue pointer:
   next UNREAD "Liquidity-adjusted Return and Volatility, and
   Autoregressive Models" (score 22, x0acf9d), second of the score-22 tier
-  (verified note-less this session) â re-read the live tail and recompute
+  (verified note-less this session) — re-read the live tail and recompute
   the tier against the notes before consuming; the EDITION-8 cadence
   window is now CLOSED at FIVE of five (deep-read 83 counted from the
   edition-8 reset at ## 103): the next deep-read session MUST open with
   the seventh synthesis pass (edition 9) per cadence rule section 3
   point 2, before its read.
 - docs/DECISIONS_PENDING.md IS touched by this session (rule: one
-  candidate sharpening queued â the ratification line moves to
+  candidate sharpening queued — the ratification line moves to
   forty-four candidate sharpenings plus probe E1, zero armed, with the
   new item named in the queue's parenthetical).
 
@@ -10796,20 +10796,20 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py --sweep and
 --encoding run this session exit zero on the assembled changed files
 (marker and encoding checks; the changed files); the library-provenance
-audit and the full-tree sweeps run in CI over the full tree â the
-summaries are untouched this session â and must be verified green on
+audit and the full-tree sweeps run in CI over the full tree — the
+summaries are untouched this session — and must be verified green on
 both jobs before merge.
 
-## 111. Null-time session 95 (2026-11-22), first act: the seventh synthesis pass â the cadence recomputed from the edition-8 reset at ## 103 (deep-reads 79-83 landed at ## 104 and ## 106 through ## 110, the window CLOSED at five of five per the ## 110 closing pointer, which directed the pass run first), goal state rewritten as EDITION 9, the G2 brief-debt recomputed against the grown queue (briefs cover forty of forty-four); NO sharpening queued by the pass
+## 111. Null-time session 95 (2026-11-22), first act: the seventh synthesis pass — the cadence recomputed from the edition-8 reset at ## 103 (deep-reads 79-83 landed at ## 104 and ## 106 through ## 110, the window CLOSED at five of five per the ## 110 closing pointer, which directed the pass run first), goal state rewritten as EDITION 9, the G2 brief-debt recomputed against the grown queue (briefs cover forty of forty-four); NO sharpening queued by the pass
 
 Session-state note, per the goal-autonomy conductor protocol (edition 8,
 ## 103, ACTIVE at session start): the live main tail (through ## 110) and
 docs/DECISIONS_PENDING.md were read first; the cadence check was
-recomputed from first principles against the edition-8 reset at ## 103 â
+recomputed from first principles against the edition-8 reset at ## 103 —
 deep-read 79 landed ## 104, 80 landed ## 106, 81 landed ## 107,
 82 landed ## 108, 83 landed ## 110: five of five, the window CLOSED, and
 the ## 110 closing pointer records explicitly that the next deep-read
-session MUST open with the seventh synthesis pass before its read â so
+session MUST open with the seventh synthesis pass before its read — so
 per the conductor protocol section 3 point 2, the ## 110 pointer's own
 instruction, and the ritual's director step, the pass runs FIRST and this
 session's deep-read follows as ## 112. The declared work choice is
@@ -10822,7 +10822,7 @@ time):
 - Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
   2026-11-19; archived is NOT falsified; every kill line stays frozen;
   unchanged. Phase 2 (Crypto L2): ACTIVE, the Board's only active
-  research front (C1-L2 â C8 â Convexity Sizing), blocked on the
+  research front (C1-L2 → C8 → Convexity Sizing), blocked on the
   owner's data acquisition; the L0 dry run is unblocked. Unchanged.
 - Library: eighty-five deep-read notes on main's tip through deep-read
   session 83 (the 86th lands as this session's second act and counts);
@@ -10839,7 +10839,7 @@ time):
   remaining score-22 tier ("Empirical Study of Market Impact
   Conditional on Order-Flow Imbalance" x1a712b, "Boltzmann Price"
   x85b5e3, "Optimal execution and price manipulations in time-varying
-  limit order books" x750e2f) â recomputed by title-matching the
+  limit order books" x750e2f) — recomputed by title-matching the
   score-sorted triage file against the live log tail and the library
   note listing this pass; x0acf9d is consumed as this session's second
   act (## 112) and #84 counts toward the edition-9 cadence.
@@ -10853,7 +10853,7 @@ laundered): the five landed deep-reads of the window (sessions 79-83)
 moved ZERO kill lines and queued exactly THREE sharpenings (#42, the
 queue-jump-diffusion generative-null pre-declaration, ## 107; #43, the
 residual-flow attribution null, ## 108; #44, the feature-normalization
-pre-declaration, ## 110) â all three pre-commitment or generative-null
+pre-declaration, ## 110) — all three pre-commitment or generative-null
 extensions of already-queued families, so the declining-yield
 expectation named at editions 3-8 holds even as the per-window count
 ticked up from two to three: the tier boundary has moved into score-22
@@ -10871,9 +10871,9 @@ Named gaps restated (this pass's product, zero status): the append-only
 log's write-side ~64K truncation class (## 75, ## 78, ## 94, ## 98)
 still has NO standing CI check enforcing byte-size monotonicity of the
 large tracked files, and no session-side read-back verification helper
-for large reads AND writes through the tooling path â the rising
+for large reads AND writes through the tooling path — the rising
 collision count makes this the ranked infrastructure item; the weekly
-directorate has still not sat â FORTY-FOUR candidates plus probe E1
+directorate has still not sat — FORTY-FOUR candidates plus probe E1
 pending at pass time, zero armed, the G2 briefs cover all forty queued
 items (through item 40), so briefs for items 41-44 (the noise-model
 pre-declaration, queued ## 100; the queue-jump-diffusion generative-null,
@@ -10900,7 +10900,7 @@ armed awaiting the owner's word; the queue FORTY-FOUR plus probe E1 at
 pass time, zero armed. Nothing measured, no kill line moved, nothing
 armed, nothing trades live.
 
-## 112. Null-time session 95 (2026-11-22), second act: library deep-read session 84 â the Deng-Zhou liquidity-adjusted ARMA-GARCH read, second of the score-22 tier; the paper graded a same-period-aggregate liquidity-factor artifact whose every fit and Sharpe magnitude is banned from the record under the laundering rule (paired-family self-comparisons, no market null, zero fees, silent beta-caps), whose within-day normalization inside its minute-level liquidity factor is banked as the evidence for ONE candidate sharpening (the same-period-aggregate feature availability rule), whose liquidity-regime indexing and clip-indexed descriptive statistics are recorded as interpretation cautions, and whose abolition-by-assertion of its own stochastic jump term reinforces the standing generative-null discipline; NO kill line moved; the ratification queue moves to forty-five candidate sharpenings plus probe E1
+## 112. Null-time session 95 (2026-11-22), second act: library deep-read session 84 — the Deng-Zhou liquidity-adjusted ARMA-GARCH read, second of the score-22 tier; the paper graded a same-period-aggregate liquidity-factor artifact whose every fit and Sharpe magnitude is banned from the record under the laundering rule (paired-family self-comparisons, no market null, zero fees, silent beta-caps), whose within-day normalization inside its minute-level liquidity factor is banked as the evidence for ONE candidate sharpening (the same-period-aggregate feature availability rule), whose liquidity-regime indexing and clip-indexed descriptive statistics are recorded as interpretation cautions, and whose abolition-by-assertion of its own stochastic jump term reinforces the standing generative-null discipline; NO kill line moved; the ratification queue moves to forty-five candidate sharpenings plus probe E1
 
 Session-state note, per the goal-autonomy conductor protocol (edition 9,
 ## 111, ACTIVE, installed as this session's first act above): the declared
@@ -10909,7 +10909,7 @@ the ## 110 closing pointer; the pointer named "Liquidity-adjusted Return
 and Volatility, and Autoregressive Models" as next UNREAD and this
 session re-verified that against the live file state before reading
 (slug-keyed note-less check: no library note mentions x0acf9d or the
-paper; the score-22 tier recomputed in triage order â five entries,
+paper; the score-22 tier recomputed in triage order — five entries,
 x0fc07a consumed as ## 110, x0acf9d note-less and next, then x1a712b,
 x85b5e3 and x750e2f; the extract present, page-marked). This is deep-read
 84, the FIRST read counted against the edition-9 cadence (reset at ## 111,
@@ -10926,9 +10926,9 @@ Unicode-mangling artifacts noted in the source-quality finding).
   G11, G12), score 22, index entry x0acf9d. The paper: minute-level
   returns (15 US stocks via Polygon.io, Jul 2014-Feb 2025; 10 Binance
   cryptos, Oct 2020-Feb 2025) rescaled by an Amihud-style same-day
-  illiquidity factor â each minute's factor using the whole day's mean
+  illiquidity factor — each minute's factor using the whole day's mean
   dollar volume and a day-level normalization constant constrained to
-  sum to T over all minutes (Eq. 1, PDF p. 11; Eqs. 2-3, PDF p. 12) â
+  sum to T over all minutes (Eq. 1, PDF p. 11; Eqs. 2-3, PDF p. 12) —
   aggregated into daily liquidity-adjusted returns (Eqs. 4a-4b, 5,
   PDF p. 12) and summarized by a "liquidity beta pair" of same-period
   aggregate ratios, liquidity jump |r_t/r_t^l| (footnote 4; Eq. 6) and
@@ -10964,7 +10964,7 @@ Unicode-mangling artifacts noted in the source-quality finding).
      spec using a signal or feature computed from aggregates over its
      own aggregation period (a period mean or total, a period return,
      a period volatility, or any ratio, rescaling or weighting built
-     from them â an Amihud-style illiquidity weighting, a within-day
+     from them — an Amihud-style illiquidity weighting, a within-day
      normalized or "liquidity-adjusted" return, a period-aggregate
      liquidity factor) must pre-declare that the feature's
      availability timestamp is the CLOSE of its aggregation period and
@@ -10981,7 +10981,7 @@ Unicode-mangling artifacts noted in the source-quality finding).
      and the paper's own use is lawful precisely because its
      forecasts are strictly one-period-ahead after the day closes
      (footnote 12, PDF p. 26), proving availability discipline is what
-     keeps the family honest â while the queued feature-normalization
+     keeps the family honest — while the queued feature-normalization
      pre-declaration (## 110) does not catch an aggregate-weighted
      liquidity factor used intraday, since that rule binds only
      normalization statistics. Harder-to-pass because a spec whose
@@ -10995,10 +10995,10 @@ Unicode-mangling artifacts noted in the source-quality finding).
      killed-if-wrong counterfactual in the session note
      (paper/research/library/2026-11-22_liquidity_adjusted_returns_arma_garch_deep_read.md).
   3. [interpretation caution] The paper's own cross-asset contrast is
-     liquidity-regime-indexed â adjustment degrades fit for all 15
+     liquidity-regime-indexed — adjustment degrades fit for all 15
      liquid stocks at 1% (Table 5, PDF p. 39), improves it for 7 of 10
      illiquid cryptos and degrades it for stock-like BTC (Table 6,
-     PDF p. 42; Table 7, PDF p. 45) â so any C1-L2/C8 cross-sectional
+     PDF p. 42; Table 7, PDF p. 45) — so any C1-L2/C8 cross-sectional
      or cross-asset read must treat microstructure associations as
      possibly liquidity-regime-conditioned: a pooled-market claim that
      silently mixes regimes inherits the confounder; generalize across
@@ -11011,15 +11011,15 @@ Unicode-mangling artifacts noted in the source-quality finding).
      pp. 46-49), so the reported moments are clip-indexed. Reading
      discipline: winsorization or clipping constants for any future
      registered descriptive statistic of a liquidity-type quantity must
-     be pre-declared as frozen configuration â the existing
+     be pre-declared as frozen configuration — the existing
      frozen-configuration discipline owns this. No queue change.
   5. [reinforcing, no new item] The derivation abolishes its own
-     stochastic jump term by assertion â the innovation of Eq. 10
+     stochastic jump term by assertion — the innovation of Eq. 10
      (PDF p. 19) becomes "no longer stochastic" once written as a
      deterministic function of the beta pair (Eqs. 11-12, PDF
      p. 19), gamma/lambda never estimated, the conditional variance
      then mere rescaling of the regular variance (Eqs. 13-15, PDF
-     pp. 19-20) â exactly the move the programme's generative-null and
+     pp. 19-20) — exactly the move the programme's generative-null and
      admission-null discipline refuses: a refutation instrument may
      not be converted mid-derivation into deterministic relabelling.
      No queue change.
@@ -11029,7 +11029,7 @@ Unicode-mangling artifacts noted in the source-quality finding).
      (persistence falls, shock sensitivity rises under adjustment,
      Table 6, Panels B-C, PDF pp. 43-44): observation only, sharpening
      the reading discipline already owned by the queued
-     level-versus-memory disambiguation (deep-read 59) â count-based
+     level-versus-memory disambiguation (deep-read 59) — count-based
      persistence evidence in illiquid regimes must survive a
      level/liquidity control arm before being read as memory.
      Ammunition, never evidence. No queue change.
@@ -11055,14 +11055,14 @@ Unicode-mangling artifacts noted in the source-quality finding).
   inverted; T2 tested-fail); the blocked list stays blocked. Deep-read
   queue pointer: next UNREAD "Empirical Study of Market Impact
   Conditional on Order-Flow Imbalance" (score 22, x1a712b), third of the
-  score-22 tier (verified note-less this session) â re-read the live
+  score-22 tier (verified note-less this session) — re-read the live
   tail and recompute the tier against the notes before consuming; the
   edition-9 cadence counter stands at ONE of five (#84, this entry,
   counted from the edition-9 reset at ## 111): the next pass is due
   after five or more deep-reads since edition 9 (#88 onward at the
   current rate).
 - docs/DECISIONS_PENDING.md IS touched by this session (rule: one
-  candidate sharpening queued â the ratification line moves to
+  candidate sharpening queued — the ratification line moves to
   forty-five candidate sharpenings plus probe E1, zero armed, with the
   new item named in the queue's parenthetical).
 
@@ -11070,20 +11070,20 @@ Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean: python3 src/integrity_guard.py run this session
 exits zero on the assembled changed files (marker, provenance and
 encoding checks over the full checked-out tree); the library-provenance
-audit and the full-tree sweeps run in CI over the full tree â the
-summaries are untouched this session â and must be verified green on
+audit and the full-tree sweeps run in CI over the full tree — the
+summaries are untouched this session — and must be verified green on
 both jobs before merge.
 
 
-## 113. Null-time session 95 (2026-11-22), third act: library deep-read session 85 â the Bugaenko market-impact conditional-on-order-flow-imbalance read, third of the score-22 tier; the paper graded a student-dissertation ammunition source whose every magnitude is banned from the record under the laundering rule (paired-family self-comparison, no market null, zero costs, one stock for the ML exercise), whose silent max(0, Â·) clip inside Algorithm 1 against Eq. 20's signed-mean definition is banked as the evidence for ONE candidate sharpening (the estimator-implementation concordance rule), whose tick-regime split, 2015-half regime drift, event-count aggregation clock and hidden-order visibility boundary are recorded as reinforcing items and interpretation cautions; NO kill line moved; the ratification queue moves to forty-six candidate sharpenings plus probe E1
+## 113. Null-time session 95 (2026-11-22), third act: library deep-read session 85 — the Bugaenko market-impact conditional-on-order-flow-imbalance read, third of the score-22 tier; the paper graded a student-dissertation ammunition source whose every magnitude is banned from the record under the laundering rule (paired-family self-comparison, no market null, zero costs, one stock for the ML exercise), whose silent max(0, ·) clip inside Algorithm 1 against Eq. 20's signed-mean definition is banked as the evidence for ONE candidate sharpening (the estimator-implementation concordance rule), whose tick-regime split, 2015-half regime drift, event-count aggregation clock and hidden-order visibility boundary are recorded as reinforcing items and interpretation cautions; NO kill line moved; the ratification queue moves to forty-six candidate sharpenings plus probe E1
 
 Session-state note, per the goal-autonomy conductor protocol (edition 9,
 ## 111, ACTIVE at session start): the declared work choice is the
 standing deep-read, the protocol's default, matching the ## 112 closing
-pointer; the pointer named âEmpirical Study of Market Impact Conditional
-on Order-Flow Imbalanceâ as next UNREAD and this session re-verified that
+pointer; the pointer named “Empirical Study of Market Impact Conditional
+on Order-Flow Imbalance” as next UNREAD and this session re-verified that
 against the live file state before reading (the score-22 tier recomputed
-in triage order â five entries: x0fc07a consumed as ## 110, x0acf9d as
+in triage order — five entries: x0fc07a consumed as ## 110, x0acf9d as
 ## 112, x1a712b note-less and next, then x85b5e3 and x750e2f; the
 extract present, page-marked; the open-PR set read at session start:
 empty, no race; the protocol file read whole and internally consistent).
@@ -11096,8 +11096,8 @@ algorithm listings, appendices and references included).
 - **Library deep-read session 85** (front 2, third of the score-22 tier;
   note:
   paper/research/library/2026-11-22_market_impact_ofi_conditional_deep_read.md):
-  Anastasia Bugaenko, âEmpirical Study of Market Impact Conditional on
-  Order-Flow Imbalanceâ (MSc Quantitative Finance dissertation, Adam
+  Anastasia Bugaenko, “Empirical Study of Market Impact Conditional on
+  Order-Flow Imbalance” (MSc Quantitative Finance dissertation, Adam
   Smith Business School, University of Glasgow, Aug 2019;
   arXiv:2004.08290v2, 2020), score 22, index entry x1a712b [triage-audit
   flag: student dissertation, graded plainly as such; the score ranked
@@ -11106,8 +11106,8 @@ algorithm listings, appendices and references included).
   Jan-Jun 2015 extended to the year for the functional-form fits
   (10:30-15:00, event types 4/5, same-timestamp children regrouped into
   parent MOs; PDF pp. 44-49, 113-116); lag-1 response R(1) (Eq. 20,
-  PDF p. 69; Algorithm 1, PDF p. 71) âstrongly positive for all
-  stocksâ (PDF p. 73; Tables 6-7, PDF pp. 73, 76; benchmarked to
+  PDF p. 69; Algorithm 1, PDF p. 71) “strongly positive for all
+  stocks” (PDF p. 73; Tables 6-7, PDF pp. 73, 76; benchmarked to
   Bouchaud et al. 2018 with under-estimation attributed to the
   MO-reconstruction convention, PDF pp. 76-77, 124); response vs
   normalized volume flat and faint (Fig. 5, PDF pp. 81-82); aggregate
@@ -11124,7 +11124,7 @@ algorithm listings, appendices and references included).
      FORTY-SIXTH candidate: BEFORE the L0 gate, every registered
      descriptive statistic, admission null, comparator or refutation
      instrument whose estimator is defined in writing must carry a
-     recorded one-time concordance audit before any data is touched â
+     recorded one-time concordance audit before any data is touched —
      the executable implementation checked against the written
      definition for silent numeric transformations the text does not
      declare (clips, max/min floors, winsorization, sign re-labelling,
@@ -11136,8 +11136,8 @@ algorithm listings, appendices and references included).
      however good it looks. Earned by the paper's own printed
      mechanism: Eq. 20 (PDF p. 69) defines R(1) as the signed mean
      while Algorithm 1 (PDF p. 71) computes R = max(0,
-     (m_{t+1} â m_t)Â·sign), an undeclared clip of every negative
-     signed response to zero â a clipped mean converges to the
+     (m_{t+1} − m_t)·sign), an undeclared clip of every negative
+     signed response to zero — a clipped mean converges to the
      expected positive part of the signed response, positive for any
      non-degenerate response distribution including a symmetric one,
      so the paper's own headline positivity claim (PDF p. 73) is
@@ -11157,8 +11157,8 @@ algorithm listings, appendices and references included).
      comparison: the tree-beats-linear claim is a paired-family
      self-comparison on one stock with no market null, no costs and
      no economic baseline (Table 11, PDF p. 126), and the paper
-     itself concedes the tree âdoes not always produce more accurate
-     predictionsâ (PDF p. 92); the Kyle-lambda 0.011 read rests on the
+     itself concedes the tree “does not always produce more accurate
+     predictions” (PDF p. 92); the Kyle-lambda 0.011 read rests on the
      same subsampled-after-outlier-removal construction (PDF pp.
      92-95). Ammunition, never evidence. No queue change.
   3. [reinforcing, no new item] Regime non-stationarity of the
@@ -11213,30 +11213,30 @@ algorithm listings, appendices and references included).
   PENDING OWNER RATIFICATION). T1 remains armed awaiting the owner's
   word in its booked state (survived all five kill lines with sign
   inverted; T2 tested-fail); the blocked list stays blocked. Deep-read
-  queue pointer: next UNREAD âBoltzmann Price: Toward Understanding the
-  Fair Price in High-Frequency Marketsâ (score 22, x85b5e3), fourth of
-  the score-22 tier (verified note-less this session) â re-read the
+  queue pointer: next UNREAD “Boltzmann Price: Toward Understanding the
+  Fair Price in High-Frequency Markets” (score 22, x85b5e3), fourth of
+  the score-22 tier (verified note-less this session) — re-read the
   live tail and recompute the tier against the notes before consuming;
   the edition-9 cadence counter stands at TWO of five (#85, this
   entry, counted from the edition-9 reset at ## 111): the next pass
   is due after five or more deep-reads since edition 9 (#88 onward at
   the current rate).
 - docs/DECISIONS_PENDING.md IS touched by this session (rule: one
-  candidate sharpening queued â the ratification line moves to
+  candidate sharpening queued — the ratification line moves to
   forty-six candidate sharpenings plus probe E1, zero armed, with the
   new item named in the queue's parenthetical as most-recently-joined,
-  the same-period-aggregate rule demoted to âearlier the same dayâ).
+  the same-period-aggregate rule demoted to “earlier the same day”).
 
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live. Guard clean on the assembled changed files: the session ran the
 guard's exact marker-sweep and encoding-sanity semantics over the three
 changed files, exiting zero; the library-provenance audit and the
-full-tree sweeps run in CI over the full tree â the summaries are
-untouched this session â and must be verified green on both jobs
+full-tree sweeps run in CI over the full tree — the summaries are
+untouched this session — and must be verified green on both jobs
 before merge.
 
 
-## 114. Null-time session 96 (2026-11-22), fourth act: library deep-read session 86 â the Rola Boltzmann-price read, fourth of the score-22 tier; the paper graded an ammunition-grade fair-price construction whose every magnitudinal claim is banned from the record under the laundering rule (marginal-moment fits with hand-tuned free parameters, no market null, no costs, within-family price self-comparisons), whose beta-and-eta tuning demonstration reinforces the standing dynamics-identification rule, estimator-configuration freeze and primary-metric pre-commitment without licensing any new amendment, whose Level-I-only informational boundary and beta~1/spread heuristic are recorded as interpretation cautions; NO kill line moved; the ratification queue stands at forty-six candidate sharpenings plus probe E1
+## 114. Null-time session 96 (2026-11-22), fourth act: library deep-read session 86 — the Rola Boltzmann-price read, fourth of the score-22 tier; the paper graded an ammunition-grade fair-price construction whose every magnitudinal claim is banned from the record under the laundering rule (marginal-moment fits with hand-tuned free parameters, no market null, no costs, within-family price self-comparisons), whose beta-and-eta tuning demonstration reinforces the standing dynamics-identification rule, estimator-configuration freeze and primary-metric pre-commitment without licensing any new amendment, whose Level-I-only informational boundary and beta~1/spread heuristic are recorded as interpretation cautions; NO kill line moved; the ratification queue stands at forty-six candidate sharpenings plus probe E1
 
 Session-state note first (goal-autonomy protocol, ACTIVE; goal state edition
 9, ## 111): the work choice for this session is the standing deep-read ritual
@@ -11261,26 +11261,26 @@ full (28 PDF pages, abstract through appendices and references included).
 - **Library deep-read session 86** (front 2, fourth of the score-22 tier;
   note:
   paper/research/library/2026-11-22_boltzmann_price_deep_read.md):
-  PrzemysÅaw Rola, "Boltzmann Price: Toward Understanding the Fair Price in
+  Przemysław Rola, "Boltzmann Price: Toward Understanding the Fair Price in
   High-Frequency Markets" (arXiv:2507.09734v1 [q-fin.TR], 13 Jul 2025,
   Cracow University of Economics), score 22, index entry x85b5e3. The paper:
   a Boltzmann/softmax fair-price family over the two top-of-book quotes with
   weights from a Boltzmann distribution on TOB volume imbalance (Definition
   3.2, PDF p. 5; Lemma 4.1, Eqs. 17-20, PDF pp. 5-6: P^boltzmann(0) =
-  P^mid, P^boltzmann(2) â P^w), a micro-price correspondence under a modified
+  P^mid, P^boltzmann(2) ≈ P^w), a micro-price correspondence under a modified
   large-tick example (PDF pp. 24-25; Eq. 72), a heuristic imbalance-driven
-  SDE dP_t = Ï(tanh(Î²Î¸_t)dt + dW_t cosh(Î²Î¸_t)) (Eqs. 25-45, PDF pp. 7-9),
+  SDE dP_t = σ(tanh(βθ_t)dt + dW_t cosh(βθ_t)) (Eqs. 25-45, PDF pp. 7-9),
   kurtosis-generating simulations with Beta/Gamma-drawn imbalance and spread
   (Tables 1-3, PDF pp. 10-12), a bounded impact-response model at most half
   the spread (Eqs. 55-64, PDF pp. 18-19), and one month of 1-minute
-  Refinitiv quotes for GE and LCID where hand-chosen Î² (up to 17) and
-  scaling Î· match the historical mean, standard deviation and kurtosis of
-  price changes (Eqs. 52-53; Tables 5-8; Figs. 8-10, PDF pp. 14-17); Î² is a
+  Refinitiv quotes for GE and LCID where hand-chosen β (up to 17) and
+  scaling η match the historical mean, standard deviation and kurtosis of
+  price changes (Eqs. 52-53; Tables 5-8; Figs. 8-10, PDF pp. 14-17); β is a
   free parameter the framework does not determine (PDF p. 5), with a
-  heuristic Î² ~ 1/spread relation (Eqs. 73-76, PDF pp. 25-26). Findings,
+  heuristic β ~ 1/spread relation (Eqs. 73-76, PDF pp. 25-26). Findings,
   graded:
   1. [reinforcing, no new item] The paper prints the constructive
-     counterexample the queue already guards against: Î² and Î· are two free
+     counterexample the queue already guards against: β and η are two free
      knobs tuned by hand until the constructed series reproduces the
      historical moment triple (PDF p. 16, parameter estimation explicitly
      deferred, PDF p. 14 note 22), so the historical "fits" are
@@ -11290,7 +11290,7 @@ full (28 PDF pages, abstract through appendices and references included).
      (deep-read 63) and the primary-metric pre-commitment (deep-read 55);
      every magnitude banned under the laundering rule. No queue change.
   2. [reinforcing, no new item] The paper's whole comparison set (mid,
-     weighted-mid, quasi-equilibrium, micro-price, Boltzmann at various Î²)
+     weighted-mid, quasi-equilibrium, micro-price, Boltzmann at various β)
      is one deterministic family over the same two quotes and two queue
      sizes (PDF pp. 5-6, 24-25), so its "more informative, less noisy"
      claim (PDF p. 15) is a within-family convention self-comparison, the
@@ -11302,14 +11302,14 @@ full (28 PDF pages, abstract through appendices and references included).
      last-quote aggregation, PDF p. 14): any TOB-imbalance feature is blind
      to depth-beyond-best depletion, hidden liquidity and intra-bin event
      order, exactly where the L2 phase's mechanisms live. No queue change.
-  4. [interpretation caution] Î² ~ 1/spread means a single frozen
+  4. [interpretation caution] β ~ 1/spread means a single frozen
      imbalance-rescaling constant across regimes or assets embeds an
      untested cross-sectional assumption the paper itself declines to
      defend (PDF pp. 25-26; estimation deferred, PDF p. 14); the
      regime-window pre-declaration and control-arm discipline already
      forbid the silent version of that choice. No queue change.
   5. [reinforcing, no new item] The same queue-clearance event yields
-     S/2Â·tanh(Î²/2) < S/2 for the Boltzmann price but a full S/2 for the
+     S/2·tanh(β/2) < S/2 for the Boltzmann price but a full S/2 for the
      weighted-mid (Eqs. 60, 64, PDF pp. 18-19): impact magnitude is
      convention-limited before it is informational; more evidence for the
      attribution-null family (deep-read 82) and against within-family
@@ -11329,7 +11329,7 @@ full (28 PDF pages, abstract through appendices and references included).
   tested-fail); the blocked list stays blocked. Deep-read
   queue pointer: next UNREAD "Optimal execution and price manipulations in
   time-varying limit order books" (score 22, x750e2f), last of the score-22
-  tier (verified note-less this session) â re-read the live tail and
+  tier (verified note-less this session) — re-read the live tail and
   recompute the tier against the notes before consuming; the
   edition-9 cadence counter stands at THREE of five (#86, this entry,
   counted from the edition-9 reset at ## 111): the next pass is due at
@@ -11345,11 +11345,11 @@ live. Guard clean on the assembled changed files: the session ran the
 guard's exact marker-sweep and encoding-sanity semantics over the two
 changed files (the session note and this log append), exiting zero; the
 library-provenance audit and the full-tree sweeps run in CI over the full
-tree â the summaries are untouched this session â and must be verified
+tree — the summaries are untouched this session — and must be verified
 green on both jobs before merge.
 
 
-## 115. Null-time session 97 (2026-11-22), fifth act: library deep-read session 87 â the Alfonsi-Infante Acevedo time-varying-LOB read, fifth and last of the score-22 tier; the paper graded an ammunition-grade viability-theory work proving in print that a canonical impact family is internally arbitrageable in computable parameter regions (PMS iff 2Ï+Î·<0 or 2ÏâÎ·<0 by reversion convention, TTPM tripling traded volume even where PMS is excluded), from which ONE harder-to-pass sharpening is queued, an impact-viability pre-declaration for generative nulls, joining the dynamics-identification family; NO kill line moved; the ratification queue stands at forty-seven candidate sharpenings plus probe E1
+## 115. Null-time session 97 (2026-11-22), fifth act: library deep-read session 87 — the Alfonsi-Infante Acevedo time-varying-LOB read, fifth and last of the score-22 tier; the paper graded an ammunition-grade viability-theory work proving in print that a canonical impact family is internally arbitrageable in computable parameter regions (PMS iff 2ρ+η<0 or 2ρ−η<0 by reversion convention, TTPM tripling traded volume even where PMS is excluded), from which ONE harder-to-pass sharpening is queued, an impact-viability pre-declaration for generative nulls, joining the dynamics-identification family; NO kill line moved; the ratification queue stands at forty-seven candidate sharpenings plus probe E1
 
 Session-state note first (goal-autonomy protocol, ACTIVE; goal state edition
 9, ## 111): the work choice for this session is the standing deep-read ritual
@@ -11375,31 +11375,31 @@ full (25 PDF pages, abstract through references included).
 - **Library deep-read session 87** (front 2, fifth and last of the score-22
   tier; note:
   paper/research/library/2026-11-22_optimal_execution_time_varying_lob_deep_read.md):
-  AurÃ©lien Alfonsi and JosÃ© Infante Acevedo, "Optimal execution and price
+  Aurélien Alfonsi and José Infante Acevedo, "Optimal execution and price
   manipulations in time-varying limit order books" (arXiv:1204.2736v1
-  [q-fin.TR], UniversitÃ© Paris-Est, CERMICS), score 22, index entry x750e2f.
+  [q-fin.TR], Université Paris-Est, CERMICS), score 22, index entry x750e2f.
   The paper: the Alfonsi-Fruth-Schied general-shape LOB impact model extended
-  to a time-varying depth Î»(t) with time-varying deterministic resilience Ï_t
+  to a time-varying depth λ(t) with time-varying deterministic resilience ρ_t
   under two reversion conventions (volume-impact reversion "model V", price
-  impact reversion "model P", Def. 1.1, PDF p. 3; E_t = Î»(t)F(D_t), Eq. 5), a
+  impact reversion "model P", Def. 1.1, PDF p. 3; E_t = λ(t)F(D_t), Eq. 5), a
   martingale unaffected price with market orders only and an infinite-depth
   book (PDF p. 3, Eq. 4), explicit optimal discrete and continuous execution
   strategies for block-shaped books (Thms. 2.1-2.2 and their limits, PDF
   pp. 7-10) and verification-argument optimality for general shapes under
   opposite monotonicity assumptions on f (Assumptions 2.1/2.2, Thms. 2.3-2.6,
   PDF pp. 10-14), exact necessary-and-sufficient viability conditions: no PMS
-  iff 2Ï_t+Î·_t â¥ 0 in model V (Cor. 2.1 with the negative-cost round-trip
-  construction Eq. 20, PDF p. 7), iff 2Ï_tâÎ·_t â¥ 0 in model P (Cor. 2.3, PDF
+  iff 2ρ_t+η_t ≥ 0 in model V (Cor. 2.1 with the negative-cost round-trip
+  construction Eq. 20, PDF p. 7), iff 2ρ_t−η_t ≥ 0 in model P (Cor. 2.3, PDF
   p. 10), power-law refinements (Cors. 2.5, 2.7, PDF pp. 12, 15), TTPM
   exclusions with sign-derivative conditions (Eqs. 22, 30, PDF pp. 8, 10), a
   market-maker reading where adding limit orders never creates a PMS in model
   V while cancelling can (PDF pp. 7, 10, 19-20), and a TTPM illustration
-  where the optimal strategy triples the traded volume under Î»(t) =
-  4 + cos(2Ït) (Fig. 1, PDF pp. 8-9). No empirics anywhere; all figures are
+  where the optimal strategy triples the traded volume under λ(t) =
+  4 + cos(2πt) (Fig. 1, PDF pp. 8-9). No empirics anywhere; all figures are
   model illustrations. Findings, graded:
   1. [reinforcing, no new item] Every result is model-relative viability
      theory under deterministic resilience and depth: an exogenous martingale
-     price, deterministic smooth Î» and Ï, no data, no costs, no estimation,
+     price, deterministic smooth λ and ρ, no data, no costs, no estimation,
      a constructed sinusoidal depth calendar (PDF pp. 3, 8-9). "No
      manipulation" theorems are internal-consistency statements about an
      impact model's parameter region, not market claims; magnitudes banned
@@ -11408,12 +11408,12 @@ full (25 PDF pages, abstract through references included).
      73) blocks on our side. No queue change.
   2. [candidate sharpening, PENDING OWNER RATIFICATION] The paper proves in
      print that a canonical published impact family is internally
-     arbitrageable in computable parameter regions (PMS iff 2Ï+Î·<0,
-     Cor. 2.1/Eq. 20, PDF p. 7; iff 2ÏâÎ·<0, Cor. 2.3, PDF p. 10) and that a
+     arbitrageable in computable parameter regions (PMS iff 2ρ+η<0,
+     Cor. 2.1/Eq. 20, PDF p. 7; iff 2ρ−η<0, Cor. 2.3, PDF p. 10) and that a
      PMS-free book can still admit TTPM tripling traded volume (Fig. 1, PDF
      pp. 8-9), so a simulator layer built on this family emits
      arbitrage-shaped or sign-alternating volume artifacts with no marginal
-     signature â and no queued rule catches it (the dynamics-identification
+     signature — and no queued rule catches it (the dynamics-identification
      rule checks marginal/flow statistics; the queue-jump-diffusion
      pre-declaration (deep-read 81) declares flow dynamics, not impact-layer
      viability). Queued, the impact-viability pre-declaration for generative
@@ -11438,26 +11438,26 @@ full (25 PDF pages, abstract through references included).
      the programme's passive-withdrawal anatomy. Ammunition at most. No
      queue change.
   4. [interpretation caution] The viability boundary is pointwise in t over
-     Ï_t and Î·_t (Eqs. 19, 22, 29, 30, PDF pp. 7, 8, 10), so internal
+     ρ_t and η_t (Eqs. 19, 22, 29, 30, PDF pp. 7, 8, 10), so internal
      arbitrageability flips with the resilience/depth regime; any future
      viability-style feature must carry pre-declared regime windows with no
-     silent blend â the queued self-excitation regime-window pre-declaration
+     silent blend — the queued self-excitation regime-window pre-declaration
      and control-arm discipline already forbid the silent version. No queue
      change.
   5. [reinforcing, no new item] The two reversion conventions are different
-     financial stories that coincide mathematically for constant Î» (PDF p. 8)
-     and reparametrize under power-law shapes (ÏÌ = Ï(1+Î³)âÎ·, PDF p. 15) yet
+     financial stories that coincide mathematically for constant λ (PDF p. 8)
+     and reparametrize under power-law shapes (ρ̃ = ρ(1+γ)−η, PDF p. 15) yet
      diverge under time-varying depth with opposite monotonicity assumptions
      on f (Assumptions 2.1/2.2, PDF pp. 10, 13): the same book data admits
      two "what decays" stories whose distinction is a convention
-     declaration, not a measurement â the level-versus-memory (deep-read 59)
+     declaration, not a measurement — the level-versus-memory (deep-read 59)
      and spread-convention declaration (deep-read 56) family; any future
      reversion-decay estimate must declare which object decays. No queue
      change.
   6. [source-quality note] arXiv v1 April 2012 with an internal header date
      of August 14, 2018; no journal counterpart recorded at cataloguing,
      zero citations, continuous-time block-case optimality credited to the
-     contemporaneous Fruth-SchÃ¶neborn-Urusov working paper (PDF pp. 2, 7-8,
+     contemporaneous Fruth-Schöneborn-Urusov working paper (PDF pp. 2, 7-8,
      10), infinite-depth book, market orders only, no empirics. Read,
      graded, recorded at its grade.
 - Inaccessible/blocked status: none this session. The extract was present,
@@ -11472,7 +11472,7 @@ full (25 PDF pages, abstract through references included).
   through ## 115); next UNREAD "Conservation Laws in a Limit Order Book"
   (score 21, x532697), head of the score-21 tier (verified note-less this
   session against the library note listing; the x1b6841 and x9921ac
-  score-21 entries and their extracts confirmed present) â re-read the live
+  score-21 entries and their extracts confirmed present) — re-read the live
   tail and recompute the tier against the notes before consuming; the
   edition-9 cadence counter stands at FOUR of five (#87, this entry,
   counted from the edition-9 reset at ## 111): the next pass is due at
@@ -11489,11 +11489,11 @@ live. Guard clean on the assembled changed files: the session ran the
 guard's exact marker-sweep and encoding-sanity semantics over the three
 changed files (the session note, this log append and the DECISIONS_PENDING
 queue update), exiting zero; the library-provenance audit and the
-full-tree sweeps run in CI over the full tree â the summaries are
-untouched this session â and must be verified green on both jobs before
+full-tree sweeps run in CI over the full tree — the summaries are
+untouched this session — and must be verified green on both jobs before
 merge.
 
-## 116. Null-time session 98 (2026-11-22): library deep-read session 88 â the Rosenzweig conservation-laws read, head of the score-21 tier; the paper graded an ammunition-grade deterministic continuum LOB model whose headline t^{1/3} book-recovery law is printed from pure determinism (a nonlinear transport equation with a rescaled clock, zero noise, zero empirics), so every scaling exponent and magnitude is banned from the record under the laundering rule, reinforcing the deterministic-calendar null, the flow-clock scale-constant, the estimator-configuration freeze, the convention-declaration discipline and the generative-null pre-declaration family without licensing any new amendment; NO kill line moved; the ratification queue stands at forty-seven candidate sharpenings plus probe E1
+## 116. Null-time session 98 (2026-11-22): library deep-read session 88 — the Rosenzweig conservation-laws read, head of the score-21 tier; the paper graded an ammunition-grade deterministic continuum LOB model whose headline t^{1/3} book-recovery law is printed from pure determinism (a nonlinear transport equation with a rescaled clock, zero noise, zero empirics), so every scaling exponent and magnitude is banned from the record under the laundering rule, reinforcing the deterministic-calendar null, the flow-clock scale-constant, the estimator-configuration freeze, the convention-declaration discipline and the generative-null pre-declaration family without licensing any new amendment; NO kill line moved; the ratification queue stands at forty-seven candidate sharpenings plus probe E1
 
 Session-state note first (goal-autonomy protocol, ACTIVE; goal state edition
 9, ## 111): the work choice for this session is the standing deep-read ritual,
@@ -11550,7 +11550,7 @@ images in the source PDF, their captions present in the extract).
   anywhere; the author's own boundary: ensemble sense only, "foolish" to
   predict from a real book snapshot (PDF p. 6). Findings, graded:
   1. [reinforcing, no new item] The t^{1/3} recovery law is printed from
-     pure determinism â a closed-form structural consequence of a nonlinear
+     pure determinism — a closed-form structural consequence of a nonlinear
      transport equation with zero noise, zero self-excitation and zero
      information (Eqs. 9, 13, PDF pp. 3-4; Figs. 5-6, PDF pp. 10-11), so a
      power-law recovery exponent is not evidence of a stochastic or
@@ -11566,7 +11566,7 @@ images in the source PDF, their captions present in the extract).
      transport equation's form is independent of the algebraic velocity
      profile, which only sets the relaxation time scale (PDF p. 6), so any
      fit of this family carries a fully free clock constant and no
-     mechanism-identification content â bound by the queued flow-clock
+     mechanism-identification content — bound by the queued flow-clock
      scale-constant, the estimator-configuration freeze (deep-read 63) and
      the primary-metric pre-commitment (deep-read 55). No queue change.
   3. [interpretation caution] Micro-assumptions are conventions, not
@@ -11593,7 +11593,7 @@ images in the source PDF, their captions present in the extract).
      book", valid "in a statistical ensemble sense", and "it would be
      foolish to take a snapshot of any real world order book, feed it to our
      model as the initial condition, and expect a realistic prediction"
-     (PDF p. 6) â the honesty the programme demands of its own
+     (PDF p. 6) — the honesty the programme demands of its own
      constructions; recorded as ammunition on the paper's own terms. No
      queue change.
   6. [source-quality note] Single practitioner author (fund manager, Pine
@@ -11616,7 +11616,7 @@ images in the source PDF, their captions present in the extract).
   x1b6841), second of the score-21 tier, then "Collective synchronization
   and high frequency systemic instabilities in financial markets" (score
   21, x9921ac), last of the tier (both verified note-less this session,
-  extracts present) â re-read the live tail and recompute the tier against
+  extracts present) — re-read the live tail and recompute the tier against
   the notes before consuming; the edition-9 cadence window is CLOSED at
   FIVE of five by this landing (#88, this entry, the fifth counted from the
   edition-9 reset at ## 111): the NEXT deep-read session MUST open with the
@@ -11633,17 +11633,17 @@ assembled local tree including the two changed files (the session note and
 this log append), exiting zero; the full-tree sweeps run again in CI over
 the pushed tree and must be verified green on both jobs before merge.
 
-## 117. Null-time session 99 (2026-11-22), first act: the eighth synthesis pass â the cadence recomputed from the edition-9 reset at ## 111 (deep-reads 84-88 landed at ## 112 through ## 116, the window CLOSED at five of five per the ## 116 closing pointer, which directed the pass run first), goal state rewritten as EDITION 10, the G2 brief-debt recomputed against the grown queue (briefs cover forty of forty-seven at pass time; items 41-47 owed); NO sharpening queued by the pass
+## 117. Null-time session 99 (2026-11-22), first act: the eighth synthesis pass — the cadence recomputed from the edition-9 reset at ## 111 (deep-reads 84-88 landed at ## 112 through ## 116, the window CLOSED at five of five per the ## 116 closing pointer, which directed the pass run first), goal state rewritten as EDITION 10, the G2 brief-debt recomputed against the grown queue (briefs cover forty of forty-seven at pass time; items 41-47 owed); NO sharpening queued by the pass
 
 Session-state note, per the goal-autonomy conductor protocol (edition 9,
 ## 111, ACTIVE at session start): the live main tail (through ## 116) and
 docs/DECISIONS_PENDING.md were read first; the open-PR set was read (empty,
 no race); the cadence check was recomputed from first principles against
-the edition-9 reset at ## 111 â deep-read 84 landed ## 112, 85 landed
+the edition-9 reset at ## 111 — deep-read 84 landed ## 112, 85 landed
 ## 113, 86 landed ## 114, 87 landed ## 115, 88 landed ## 116: five of five,
 the window CLOSED, and the ## 116 closing pointer records explicitly that
 the next deep-read session MUST open with the eighth synthesis pass before
-its read â so per the conductor protocol section 3 point 2, the ## 116
+its read — so per the conductor protocol section 3 point 2, the ## 116
 pointer's own instruction, and the ritual's director step, the pass runs
 FIRST and this session's deep-read follows as ## 118. The declared work
 choice is therefore the pass first, then the standing deep-read, matching
@@ -11655,7 +11655,7 @@ time):
 - Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
   2026-11-19; archived is NOT falsified; every kill line stays frozen;
   unchanged. Phase 2 (Crypto L2): ACTIVE, the Board's only active
-  research front (C1-L2 â C8 â Convexity Sizing), blocked on the
+  research front (C1-L2 → C8 → Convexity Sizing), blocked on the
   owner's data acquisition; the L0 dry run is unblocked. Unchanged.
 - Library: eighty-eight deep-read notes on main's tip through deep-read
   session 88 (the 89th lands as this session's second act and counts);
@@ -11671,7 +11671,7 @@ time):
   Analysis in Polymarket NBA Markets" (Cheng-Yang-Zou, score 21,
   x1b6841), then "Collective synchronization and high frequency
   systemic instabilities in financial markets" (Calcagnile-Bormetti-
-  Treccani-Marmi, score 21, x9921ac), last of the tier â recomputed by
+  Treccani-Marmi, score 21, x9921ac), last of the tier — recomputed by
   title-matching the score-sorted triage file against the live log tail
   and the library note listing this pass; x1b6841 is consumed as this
   session's second act (## 118) and #89 counts toward the edition-10
@@ -11687,7 +11687,7 @@ landed deep-reads of the window (sessions 84-88) moved ZERO kill lines and
 queued exactly THREE sharpenings (#45, the same-period-aggregate feature
 availability rule, ## 112; #46, the estimator-implementation concordance
 rule, ## 113; #47, the impact-viability pre-declaration for generative
-nulls, ## 115) â all three frozen-configuration/pre-declaration
+nulls, ## 115) — all three frozen-configuration/pre-declaration
 extensions of already-queued families, so the declining-yield expectation
 named at editions 3-9 holds: the queue keeps being fed from the same
 declare-before-the-data vein, not from any new mechanism class. The
@@ -11707,9 +11707,9 @@ Named gaps restated (this pass's product, zero status): the append-only
 log's write-side ~64K truncation class (## 75, ## 78, ## 94, ## 98) still
 has NO standing CI check enforcing byte-size monotonicity of the large
 tracked files, and no session-side read-back verification helper for
-large reads AND writes through the tooling path â the rising collision
+large reads AND writes through the tooling path — the rising collision
 history makes this the ranked infrastructure item; the weekly directorate
-has still not sat â FORTY-SEVEN candidates plus probe E1 pending at pass
+has still not sat — FORTY-SEVEN candidates plus probe E1 pending at pass
 time (forty-eight after this session's second act, see ## 118), zero
 armed, the G2 briefs cover the first forty queued items (through item
 40), so briefs for items 41-47 (the noise-model pre-declaration ## 100;
@@ -11736,14 +11736,14 @@ word; the queue FORTY-SEVEN plus probe E1 at pass time, zero armed.
 Nothing measured, no kill line moved, nothing armed, nothing trades
 live.
 
-## 118. Null-time session 99 (2026-11-22), second act: library deep-read session 89 â the Cheng-Yang-Zou Polymarket NBA arbitrage read, second of the score-21 tier; the paper graded an honest limits-to-arbitrage empiricism whose magnitudes are all banned from the record under the laundering rule (venue-, sample- and polling-grain-specific, zero-fee venue), whose desync phantom-arbitrage and mirrored-book double-counting mechanics are banked as the evidence for ONE candidate sharpening (the cross-stream synchronization and single-source-count pre-declaration, #48), whose executable-depth bottleneck is recorded as cost-survival ammunition, and whose polling-bound frequencies and terminal-state censoring reinforce the standing base-rate and censoring disciplines; NO kill line moved; the ratification queue moves to forty-eight candidate sharpenings plus probe E1
+## 118. Null-time session 99 (2026-11-22), second act: library deep-read session 89 — the Cheng-Yang-Zou Polymarket NBA arbitrage read, second of the score-21 tier; the paper graded an honest limits-to-arbitrage empiricism whose magnitudes are all banned from the record under the laundering rule (venue-, sample- and polling-grain-specific, zero-fee venue), whose desync phantom-arbitrage and mirrored-book double-counting mechanics are banked as the evidence for ONE candidate sharpening (the cross-stream synchronization and single-source-count pre-declaration, #48), whose executable-depth bottleneck is recorded as cost-survival ammunition, and whose polling-bound frequencies and terminal-state censoring reinforce the standing base-rate and censoring disciplines; NO kill line moved; the ratification queue moves to forty-eight candidate sharpenings plus probe E1
 
 Session-state note first (goal-autonomy protocol, ACTIVE; goal state edition
 10, ## 117, installed as this session's first act): the live main tail (read
 through ## 116 before the session's edits; the pass lands as this session's
 first act ## 117 in the same push) and docs/DECISIONS_PENDING.md were read
 (ratification line: forty-seven candidates plus probe E1 at session start,
-zero armed); the cadence check was recomputed from first principles â the
+zero armed); the cadence check was recomputed from first principles — the
 edition-9 counter stood at FIVE of five after deep-read 88 (## 116), so per
 the ## 116 closing pointer, the conductor protocol section 3 point 2 and the
 ritual's director step the eighth synthesis pass ran FIRST (logged as
@@ -11813,7 +11813,7 @@ extract).
      to that tolerance (or across a pre-declared tolerance grid), and
      (iv) a source-overlap map proving no single underlying state is
      counted through two views (mirrored books, complementary tokens,
-     one pool under two labels; double-counting inadmissible) â the
+     one pool under two labels; double-counting inadmissible) — the
      paper proves the failure class in print on all four axes (the
      2-50 ms desync crossing, appendix A.2, PDF p. 10; the mirrored
      Long/Short double-count, PDF pp. 3-4; the forward-fill join of two
@@ -11843,7 +11843,7 @@ extract).
      zero: the combinatorial structure's doubling upside materialized
      in zero of 290 episodes, the authors concluding participants
      cannot assign meaningful probability weight to the incremental
-     upside (PDF p. 8) â the misses-curriculum discipline applied by
+     upside (PDF p. 8) — the misses-curriculum discipline applied by
      the source itself; an attractive conditional payoff whose realized
      frequency is zero over hundreds of opportunities is a story, not
      an expectancy. No queue change.
@@ -11874,7 +11874,7 @@ extract).
      conclusion and oracle resolution sees makers withdraw, the median
      spread explode to 7,532.65 bps, and stale crossings dominate the
      raw signal set (30 of 37 and 233 of 523) until excluded by
-     explicit phase rule (PDF pp. 4-5, 7, 10-11) â reinforcing the
+     explicit phase rule (PDF pp. 4-5, 7, 10-11) — reinforcing the
      regime-window pre-declaration (deep-read 53) and the macro
      censoring discipline: censoring rules are frozen before the data
      and applied by phase, never by post-hoc inspection. No queue
@@ -11899,7 +11899,7 @@ extract).
   list stays blocked. Deep-read queue pointer: next UNREAD "Collective
   synchronization and high frequency systemic instabilities in financial
   markets" (score 21, x9921ac), last of the score-21 tier (verified
-  note-less this session, extract present) â re-read the live tail and
+  note-less this session, extract present) — re-read the live tail and
   recompute the tier against the notes before consuming; after it the
   score-20 tier opens at its score-sorted head ("Multivariate Hawkes-based
   Models in LOB: European, Spread and Basket Option Pricing", score 20,
@@ -11915,25 +11915,25 @@ Nothing measured, no kill line moved, nothing armed, nothing trades live.
 Guard clean before commit: the session assembled the full tracked tree of
 main's tip locally (the public main archive, text files restored whole,
 including the data CSV trees in the marker sweep's scope) and ran
-src/integrity_guard.py over it â marker sweep, library-provenance audit
+src/integrity_guard.py over it — marker sweep, library-provenance audit
 and encoding sanity all exiting zero on the assembled tree, and exiting
 zero again on the same tree plus this session's changed files before
 commit; the CI jobs run over the pushed tree and must be verified green
 on both jobs before merge.
 
-## 119. Null-time session 100 (2026-11-22): library deep-read session 90 â the Calcagnile-Bormetti-Treccani-Marmi-Lillo collective-synchronization cojump read, last of the score-21 tier; the paper graded an honest endogeneity-of-synchronization empiricism (total one-minute extreme moves decreasing secularly while high-multiplicity cojumps grow up to tenfold, a power-law multiplicity tail truncated at the finite universe, and under 40% of the largest synchronized moves attributable to scheduled macro news, with news-triggered systemic moves completing within ~5 minutes), whose magnitudes are all banned from the record under the laundering rule, whose news-minority fraction reinforces the C8 shuffled-arrival placebo and deterministic-calendar families, whose ~5-minute propagation window reinforces the newly queued cross-stream desync-tolerance disclosure (#48), and whose identity-dropping multiplicity-vector Hawkes is banked as an interpretation caution on aggregate attribution; NO kill line moved; NO sharpening queued; the ratification queue stands at forty-eight candidate sharpenings plus probe E1
+## 119. Null-time session 100 (2026-11-22): library deep-read session 90 — the Calcagnile-Bormetti-Treccani-Marmi-Lillo collective-synchronization cojump read, last of the score-21 tier; the paper graded an honest endogeneity-of-synchronization empiricism (total one-minute extreme moves decreasing secularly while high-multiplicity cojumps grow up to tenfold, a power-law multiplicity tail truncated at the finite universe, and under 40% of the largest synchronized moves attributable to scheduled macro news, with news-triggered systemic moves completing within ~5 minutes), whose magnitudes are all banned from the record under the laundering rule, whose news-minority fraction reinforces the C8 shuffled-arrival placebo and deterministic-calendar families, whose ~5-minute propagation window reinforces the newly queued cross-stream desync-tolerance disclosure (#48), and whose identity-dropping multiplicity-vector Hawkes is banked as an interpretation caution on aggregate attribution; NO kill line moved; NO sharpening queued; the ratification queue stands at forty-eight candidate sharpenings plus probe E1
 
 Session-state note first (goal-autonomy protocol, ACTIVE; goal state edition
 10, ## 117): the live main tail (through ## 118) and docs/DECISIONS_PENDING.md
 were read (ratification line: forty-eight candidates plus probe E1 at session
-start, zero armed); the cadence check was recomputed from first principles â
+start, zero armed); the cadence check was recomputed from first principles —
 the edition-10 counter stood at ONE of five after deep-read 89 (## 118), so no
 synthesis pass is due and the default work choice for this session is the
 standing deep-read ritual itself, which needs no justification under the
 protocol; the cadence counter moves to TWO of five by this landing (#90).
 Verified against live state before reading: the triage file score-sorted and
 recomputed against the live library note listing (the score-22 tier and
-above CLOSED through ## 118; the score-21 tier exhausted by this read â
+above CLOSED through ## 118; the score-21 tier exhausted by this read —
 x532697 landed ## 116, x1b6841 landed ## 118; the head x9921ac verified
 note-less with its extract present and page-marked; after it the score-20
 tier opens at its score-sorted head xaace1f, verified note-less this session
@@ -11947,11 +11947,11 @@ The paper: "Collective synchronization and high frequency systemic
 instabilities in financial markets" (Lucio Maria Calcagnile, Giacomo
 Bormetti, Michele Treccani, Stefano Marmi, Fabrizio Lillo; arXiv:1505.
 00704v1, May 5, 2015). One-minute extreme returns (bipower-EMA volatility
-threshold Î¸ = 4, sensitivity 6, 8, 10; PDF p. 5) in 140 liquid Russell 3000
+threshold θ = 4, sensitivity 6, 8, 10; PDF p. 5) in 140 liquid Russell 3000
 stocks per year, 2001-2013, after dividing out the mean intraday pattern
 (PDF pp. 15-16); cojumps of multiplicity M synchronized across assets; a
 three-parameter multivariate Hawkes model of the multiplicity vector
-(Î· = 0.15, Î² = 0.6 â memory â 1.67 minutes â Î³ = 2.65; PDF pp. 10-12, 19,
+(η = 0.15, β = 0.6 — memory ≈ 1.67 minutes — γ = 2.65; PDF pp. 10-12, 19,
 21-22).
 
 Findings, graded (all page-cited in the session note
@@ -11962,20 +11962,20 @@ paper/research/library/2026-11-22_collective_synchronization_cojumps_deep_read.m
      years and even at the largest M (PDF pp. 2-3, 9-10, 14): the systemic
      structure is majority-endogenous, so no C1-L2/C8 systemic association
      conditioned on a news/event timeline may interpret its conditioning as
-     causal without a null against endogenous clustering â reinforces the
+     causal without a null against endogenous clustering — reinforces the
      C8 shuffled-arrival placebo (A3, PROPOSED, owner-gated) and the
      deterministic-calendar null (deep-read 73) by the same mechanism the
      paper measures in print. No queue change.
   2. [reinforcing, no new item] News-triggered systemic cojumps complete
      within ~5 minutes; the attribution fraction is nearly identical across
-     Ï = 1 to 15 minute lookback windows (PDF pp. 9-10): the tolerance-grid
+     τ = 1 to 15 minute lookback windows (PDF pp. 9-10): the tolerance-grid
      insensitivity pattern is exactly what the cross-stream synchronization
      and single-source-count pre-declaration (#48, queued deep-read 89)
      demands a book-plus-macro-timeline join demonstrate, and a join whose
      macro alignment survives only under a silently chosen window is a
      tuning artifact. No queue change.
   3. [reinforcing, no new item] The headline claim survives its own
-     pre-emptive grid checks â thresholds Î¸ â {4, 6, 8, 10}, one-to-five
+     pre-emptive grid checks — thresholds θ ∈ {4, 6, 8, 10}, one-to-five
      minute detection windows, 140- vs 700-asset universes (PDF pp. 5,
      7-8, 16-17): windows, thresholds and universe sizes are declared
      configuration, reinforcing the regime-window pre-declaration
@@ -11984,14 +11984,14 @@ paper/research/library/2026-11-22_collective_synchronization_cojumps_deep_read.m
   4. [interpretation caution] The multiplicity-vector Hawkes drops the
      identity of the cojumping stocks (PDF p. 11); the 85%-endogenous
      share and the multiplicity-graded excitation (PDF pp. 12-13) license
-     nothing at the episode level â an aggregate burst or synchronization
+     nothing at the episode level — an aggregate burst or synchronization
      statistic is equally consistent with common correlation, book-size
      scaling and the level-versus-memory confound, and must pass the
      level-versus-memory disambiguation (deep-read 59, queued) and the
      residual-flow attribution null (deep-read 82, queued) before any
      episode-level reading. No queue change.
-  5. [interpretation caution] The multiplicity power-law tail (â M^-1.5)
-     is explicitly truncated at the finite support M â¤ N and extends when
+  5. [interpretation caution] The multiplicity power-law tail (≈ M^-1.5)
+     is explicitly truncated at the finite support M ≤ N and extends when
      N = 700 (PDF pp. 7-8): cross-sectional count statistics inherit a
      universe-size censor, so the universe definition is frozen
      configuration under the standing censoring discipline, and a tail
@@ -12006,8 +12006,8 @@ paper/research/library/2026-11-22_collective_synchronization_cojumps_deep_read.m
   7. [source-quality note] arXiv v1 preprint, Kibot one-minute bars, one
      venue class, 2001-2013; heuristic weighted-moment calibration with an
      analyst-chosen 0.5 loss weighting (PDF pp. 20-21); the 85%-endogenous
-     figure is partly imposed by the parametrization (Âµ = Î·E[Î»t], spectral
-     radius 1 - Î· by construction, empirical frequencies substituted for
+     figure is partly imposed by the parametrization (µ = ηE[λt], spectral
+     radius 1 - η by construction, empirical frequencies substituted for
      expected intensities: PDF pp. 11, 19, 21-22), the stationary
      multiplicity distribution matched by construction (PDF p. 19), with
      the honest calibration-on-J=10 versus test-on-J=30/60 split as the
@@ -12018,14 +12018,14 @@ paper/research/library/2026-11-22_collective_synchronization_cojumps_deep_read.m
 - Inaccessible/blocked status: none this session. The extract was present,
   page-marked and read in full (28 PDF pages, abstract, body, references,
   support-information appendices and Table 1 complete).
-- Ratification queue after this session: UNCHANGED â FORTY-EIGHT candidate
+- Ratification queue after this session: UNCHANGED — FORTY-EIGHT candidate
   sharpenings plus probe E1, zero armed (nothing queued this session;
   T1 remains armed awaiting the owner's word in its booked state
   (survived all five kill lines with sign inverted); T2 tested-fail); the
   blocked list stays blocked. Deep-read queue pointer: next UNREAD
   "Multivariate Hawkes-based Models in LOB: European, Spread and Basket
   Option Pricing" (score 20, xaace1f), the score-20 tier's score-sorted
-  head (verified note-less this session, extract present) â re-read the
+  head (verified note-less this session, extract present) — re-read the
   live tail and recompute the tier against the notes before consuming.
   The edition-10 cadence counter stands at TWO of five by this landing
   (#90).
@@ -12035,18 +12035,18 @@ paper/research/library/2026-11-22_collective_synchronization_cojumps_deep_read.m
 Nothing measured, no kill line moved, nothing armed, nothing trades live.
 Guard clean before commit: the session assembled the full tracked tree of
 main's tip locally (the public main archive, restored whole) and ran
-src/integrity_guard.py over it â marker sweep, library-provenance audit
+src/integrity_guard.py over it — marker sweep, library-provenance audit
 and encoding sanity all exiting zero on the assembled tree, and exiting
 zero again on the same tree plus this session's changed files before
 commit; the CI jobs run over the pushed tree and must be verified green
 on both jobs before merge.
 
-## 120. Null-time session 101 (2026-11-22): library deep-read session 91 â the Guo-Swishchuk-RÃ©millard multivariate Hawkes LOB option-pricing read, first of the score-20 tier; the paper graded pure theory assembly with invented parameters and zero empirical calibration, whose Î±/Î² near-criticality price explosion reinforces the estimator-configuration freeze and regime-window families and whose count-conditioned-limit unpredictability statement reinforces the availability discipline (deep-read 84, #48), and which earned ONE candidate sharpening: the model-inversion identifiability pre-declaration (#49) â its headline "implied order flow" product proves in print that a parametric model can be inverted onto a scalar observed quantity through analyst-supplied unidentified parameters, with a self-fed circular simulation (PDF pp. 14-15); NO kill line moved; the ratification queue moves to forty-nine candidate sharpenings plus probe E1
+## 120. Null-time session 101 (2026-11-22): library deep-read session 91 — the Guo-Swishchuk-Rémillard multivariate Hawkes LOB option-pricing read, first of the score-20 tier; the paper graded pure theory assembly with invented parameters and zero empirical calibration, whose α/β near-criticality price explosion reinforces the estimator-configuration freeze and regime-window families and whose count-conditioned-limit unpredictability statement reinforces the availability discipline (deep-read 84, #48), and which earned ONE candidate sharpening: the model-inversion identifiability pre-declaration (#49) — its headline "implied order flow" product proves in print that a parametric model can be inverted onto a scalar observed quantity through analyst-supplied unidentified parameters, with a self-fed circular simulation (PDF pp. 14-15); NO kill line moved; the ratification queue moves to forty-nine candidate sharpenings plus probe E1
 
 Session-state note first (goal-autonomy protocol, ACTIVE; goal state edition
 10, ## 117): the live main tail (through ## 119) and docs/DECISIONS_PENDING.md
 were read (ratification line: forty-eight candidates plus probe E1 at session
-start, zero armed); the cadence check was recomputed from first principles â
+start, zero armed); the cadence check was recomputed from first principles —
 the edition-10 counter stood at TWO of five after deep-read 90 (## 119), so no
 synthesis pass is due and the default work choice for this session is the
 standing deep-read ritual itself, which needs no justification under the
@@ -12057,7 +12057,7 @@ through ## 116-## 119; the score-20 tier opens at its score-sorted head
 xaace1f, verified note-less this session with its extract present and
 page-marked; after it the score-20 tier continues at x2b0051 "Pricing VIX
 options under the Heston-Hawkes stochastic volatility model", verified
-note-less this session with extract present â NOT the already-read Micro
+note-less this session with extract present — NOT the already-read Micro
 structural Foundation for the Rough Hawkes-Heston paper (deep-read,
 2026-11-19), a different paper; the open-PR set read at session start:
 empty, no race). This is deep-read 91, the THIRD read counted against the
@@ -12066,7 +12066,7 @@ extract was present, page-marked, complete and read in full (28 PDF pages,
 abstract, body, all sections 1-10, references complete).
 
 The paper: "Multivariate Hawkes-based Models in LOB: European, Spread and
-Basket Option Pricing" (Qi Guo, Anatoliy Swishchuk, Bruno RÃ©millard; 2022,
+Basket Option Pricing" (Qi Guo, Anatoliy Swishchuk, Bruno Rémillard; 2022,
 arXiv:2209.07621v1). Mid-price as multivariate general compound Hawkes
 process (Hawkes counts times Markov-chain jump sizes, eqs. 1-3, PDF pp.
 2-3), exponentiated into the EMGCHP to keep prices positive (Definition 3.1,
@@ -12077,18 +12077,18 @@ sensitivities (eqs. 34-39, PDF pp. 12-13), Margrabe spread options on two
 Hawkes assets and one 2D EMGCHP with model-endogenous correlation (Sections
 5-6, PDF pp. 15-21), three-stock basket options via Gentle's approximation
 (Section 7, PDF pp. 21-24), minimal hedge (Section 8, PDF pp. 24-26), and
-the closing "implied order flow" inversion ÏÌÂ²implied = Ï*Â²E(N_t) +
-a*Â²Var(N_t) through analyst-supplied Î±/Î² (eqs. 44-47, PDF pp. 14-15).
+the closing "implied order flow" inversion σ̂²implied = σ*²E(N_t) +
+a*²Var(N_t) through analyst-supplied α/β (eqs. 44-47, PDF pp. 14-15).
 
 Findings, graded (all page-cited in the session note
 paper/research/library/2026-11-22_multivariate_hawkes_lob_option_pricing_deep_read.md):
 
-  1. [reinforcing, no new item] The option price is nearly flat in Î±/Î² at
-     small values and explodes as Î±/Î² â 1 (Figure 2, PDF pp. 10-11): any
+  1. [reinforcing, no new item] The option price is nearly flat in α/β at
+     small values and explodes as α/β → 1 (Figure 2, PDF pp. 10-11): any
      Hawkes-adjacent statistic is acutely sensitive to the memory ratio near
      criticality, so the branching/memory configuration and the distance
      from spectral radius 1 are research degrees of freedom that could
-     manufacture a "regime" or "stress" result by post-hoc re-tuning â
+     manufacture a "regime" or "stress" result by post-hoc re-tuning —
      reinforces the estimator-configuration freeze (deep-read 63) and the
      self-excitation regime-window pre-declaration (deep-read 53); distance
      from criticality is frozen configuration, not a free dial. No queue
@@ -12098,7 +12098,7 @@ paper/research/library/2026-11-22_multivariate_hawkes_lob_option_pricing_deep_re
      tasks since we cannot observe the order flow N_t in advance" (PDF p. 6)
      and prices only under deterministic centralization: a flow-conditioned
      theoretical quantity must condition only on flow verifiably observable
-     at the evaluation instant â the same availability discipline demanded
+     at the evaluation instant — the same availability discipline demanded
      by the same-period-aggregate feature availability rule (deep-read 84)
      and #48 (deep-read 89), now stated by a Hawkes pricing paper against
      its own theorem. No queue change.
@@ -12106,18 +12106,18 @@ paper/research/library/2026-11-22_multivariate_hawkes_lob_option_pricing_deep_re
      order-flow construction is an under-identified, circular inversion
      (eqs. 44-47, PDF pp. 14-15): one observed scalar (option-implied
      volatility) is split between two unknowns E(N_t) and Var(N_t) through
-     an analyst-supplied Î±/Î² from unspecified "historical estimation" (PDF
-     p. 14) â the same ÏÌÂ²implied maps to a continuum of (E, Var) pairs as
-     Î±/Î² varies, so the "forecast information" is created by the split, not
-     measured â and the numerical demonstration is explicitly circular,
+     an analyst-supplied α/β from unspecified "historical estimation" (PDF
+     p. 14) — the same σ̂²implied maps to a continuum of (E, Var) pairs as
+     α/β varies, so the "forecast information" is created by the split, not
+     measured — and the numerical demonstration is explicitly circular,
      feeding the model's own computed option values back as the observed
      input (PDF p. 14, Figures 4-5, PDF p. 15). Queued proposed sharpening
      #49, the model-inversion identifiability pre-declaration: BEFORE the
      L0 gate, any C1-L2/C8-adjacent computation, comparator, null or
-     feature that inverts a parametric model onto an observed quantity â
+     feature that inverts a parametric model onto an observed quantity —
      implied volatility onto order-flow moments, a measured compression
      score onto a latent priming intensity, an observed spread onto a
-     book-state parameter â must pre-declare, as frozen configuration
+     book-state parameter — must pre-declare, as frozen configuration
      counted in the multiplicity ledger: (i) which model parameters are
      FROZEN and from where (dated estimation source or declared generic
      default), every deviation a dated amendment before the data is
@@ -12126,7 +12126,7 @@ paper/research/library/2026-11-22_multivariate_hawkes_lob_option_pricing_deep_re
      frozen set, or the inversion declared under-identified with its null
      surfaces reported across a pre-declared frozen-set grid; and (iii) an
      input-provenance trace proving the "observed" input is not itself
-     generated by the model family being inverted â self-fed inversions
+     generated by the model family being inverted — self-fed inversions
      are inadmissible at the gate; harder-to-pass because a recovered
      latent quantity that can be re-split arbitrarily after seeing the
      data, or whose input is circularly model-generated, now fails by rule
@@ -12147,10 +12147,10 @@ paper/research/library/2026-11-22_multivariate_hawkes_lob_option_pricing_deep_re
      approximation, not book law, and its magnitudes are banned from the
      record as support under the laundering rule. No queue change.
   5. [source-quality note] arXiv v1 preprint, companion to a PhD thesis
-     (Guo 2022, PDF pp. 2, 28); no empirical calibration anywhere â every
+     (Guo 2022, PDF pp. 2, 28); no empirical calibration anywhere — every
      parameter invented (PDF pp. 10, 18, 21, 23); internal defects: the
      text labels the diffusion approximation (eq. 20) as the "solution of
-     equation (30)" (eq. 31, PDF p. 9), and claims "Since Î¦ and Ï are
+     equation (30)" (eq. 31, PDF p. 9), and claims "Since Φ and φ are
      always non-negative, delta and theta are always positive" (PDF p. 12),
      contradicting its own negative-signed theta formula and classical
      theory; check the published version before formal citation. No queue
@@ -12166,7 +12166,7 @@ paper/research/library/2026-11-22_multivariate_hawkes_lob_option_pricing_deep_re
   inverted); T2 tested-fail); the blocked list stays blocked. Deep-read
   queue pointer: next UNREAD "Pricing VIX options under the Heston-Hawkes
   stochastic volatility model" (score 20, x2b0051), next in the score-20
-  tier (verified note-less this session, extract present) â re-read the
+  tier (verified note-less this session, extract present) — re-read the
   live tail and recompute the tier against the notes before consuming.
   The edition-10 cadence counter stands at THREE of five by this landing
   (#91).
@@ -12177,26 +12177,26 @@ paper/research/library/2026-11-22_multivariate_hawkes_lob_option_pricing_deep_re
 Nothing measured, no kill line moved, nothing armed, nothing trades live.
 Guard clean before commit: the session assembled the full tracked tree of
 main's tip locally (the public main archive, restored whole) and ran
-src/integrity_guard.py over it â marker sweep, library-provenance audit
+src/integrity_guard.py over it — marker sweep, library-provenance audit
 and encoding sanity all exiting zero on the assembled tree, and exiting
 zero again on the same tree plus this session's changed files before
 commit; the CI jobs run over the pushed tree and must be verified green
 on both jobs before merge.
 
-## 121. Null-time session 102 (2026-11-22): library deep-read session 92 â the Zamora
+## 121. Null-time session 102 (2026-11-22): library deep-read session 92 — the Zamora
 Font VIX-options Heston-Hawkes read, second of the score-20 tier; the paper graded
 pure existence-theory pricing (a semi-analytical VIX call formula under Heston
 variance plus an independent compound Hawkes jump component, with a continuum of
-equivalent martingale measures Q(a), generalized Riccati ODEs, and VIXÂ² proved to
+equivalent martingale measures Q(a), generalized Riccati ODEs, and VIX² proved to
 be a positive linear combination of the variance and the Hawkes intensity), zero
 empirical content, whose measure-continuum pricing reinforces the
 estimator-configuration freeze and whose intensity-plus-variance scalar cleanly
 instantiates the under-identified split already covered by the model-inversion
 identifiability pre-declaration (#49, deep-read 91), and which earned ONE candidate
-sharpening: the transform-domain admissibility pre-declaration (#50) â the paper
+sharpening: the transform-domain admissibility pre-declaration (#50) — the paper
 proves its formula's transform exists only on an explicit contour whose boundary is
-a function of the frozen Î±/Î² memory ratio and the jump-moment mgf (L_J := (1/Î·)
-M_J^{-1}((Î²/Î±)exp(Î±/Î² â 1)), Re(Ï) < (Î²âÎ±)/(Î±Î²), Lemma 5.3 and eq. 7.2, PDF pp. 7-8,
+a function of the frozen α/β memory ratio and the jump-moment mgf (L_J := (1/η)
+M_J^{-1}((β/α)exp(α/β − 1)), Re(ψ) < (β−α)/(αβ), Lemma 5.3 and eq. 7.2, PDF pp. 7-8,
 14-15, 18-20), and faults its closest prior model in print for publishing the same
 formal transform with no domain study at all (Remark 3.1 on the SVCIJ-H of
 Ye-Wu-Chen, PDF p. 5); NO kill line moved; the ratification queue moves to fifty
@@ -12206,7 +12206,7 @@ Session conduct before the reading (the state re-read, not remembered): the
 live main tail (through ## 120) and docs/DECISIONS_PENDING.md were read
 (ratification line: forty-nine candidates plus probe E1 at session start,
 zero armed); the goal-autonomy protocol's cadence was recomputed from first
-principles â the edition-10 counter stood at THREE of five after deep-read 91
+principles — the edition-10 counter stood at THREE of five after deep-read 91
 (## 120), so no synthesis pass is due, the work choice is the standing
 deep-read default, and this read moves the counter to FOUR of five; verified
 against live state: entry x2b0051 score-sorted next-UNREAD, note-less against
@@ -12217,26 +12217,26 @@ abstract through references complete, read in full); the open-PR set read
 at session start: empty, no race. No inaccessible or blocked status this
 session.
 
-The paper, one paragraph: dv_t = âÎº(v_t â vÌ)dt + Ïâv_t dW_t + Î· dL_t with L an
+The paper, one paragraph: dv_t = −κ(v_t − v̄)dt + σ√v_t dW_t + η dL_t with L an
 independent compound Hawkes process, general positive jump law (Assumption 1,
 mgf maximal domain, PDF p. 3); arbitrage-freeness taken seriously instead of
-assumed â Theorem 4.3 gives a continuum of equivalent (local) martingale
-measures Q(a), |a| < â(2c_l), c_l explicit in (Îº, Ï, Î·, T, jump mgf, Î±/Î²)
+assumed — Theorem 4.3 gives a continuum of equivalent (local) martingale
+measures Q(a), |a| < √(2c_l), c_l explicit in (κ, σ, η, T, jump mgf, α/β)
 (Proposition 4.2, PDF pp. 5-6), restricted to a true-martingale subset
-E_m(Q_1, 2+Îµ_1) under Assumption 2's parameter restrictions carrying the
+E_m(Q_1, 2+ε_1) under Assumption 2's parameter restrictions carrying the
 needed inverse-moment and martingale integrability (PDF pp. 6-7); the joint
-conditional characteristic function of (v_T, Î»_T) is exponential-affine
-e^{F+Gv_t+HÎ»_t} with (F, G, H) solving generalized Riccati ODEs that are
+conditional characteristic function of (v_T, λ_T) is exponential-affine
+e^{F+Gv_t+Hλ_t} with (F, G, H) solving generalized Riccati ODEs that are
 PROVED to have solutions on [0,T] only inside the explicit complex domain
-0 < Re(Ï) < min{2Îº(a)/ÏÂ²(2e^{Îº(a)T}â1), L_J}, Re(Ï) < (Î²âÎ±)/(Î±Î²), the
-non-explosion resting on sup_t E[e^{Î· Re(G)J_1}] < (Î²/Î±)exp(Î±/Î²â1) (Lemma 5.3,
+0 < Re(φ) < min{2κ(a)/σ²(2e^{κ(a)T}−1), L_J}, Re(ψ) < (β−α)/(αβ), the
+non-explosion resting on sup_t E[e^{η Re(G)J_1}] < (β/α)exp(α/β−1) (Lemma 5.3,
 Proposition 5.4 and the appendix comparison argument, PDF pp. 7-11, 15-20);
-VIXÂ²_t then proved a positive linear combination A(a)v_t + B(a)Î»_t + C(a)
+VIX²_t then proved a positive linear combination A(a)v_t + B(a)λ_t + C(a)
 by the Markov property of the exponential Hawkes and a forward-variance /
 variance-swap computation (Propositions 6.2-6.9, Appendix A.2, PDF pp. 11-13,
 20-26); the call price assembled by the Lewis/erfc identity on a contour
-restricted by eq. (7.2), 0 < Ï_R < min{2Îº(a)/(ÏÂ²A(a))(2e^{Îº(a)T}â1),
-L_J/A(a), (Î²âÎ±)/(B(a)Î±Î²)} (Theorem 7.1, PDF pp. 14-15). No numerics, no
+restricted by eq. (7.2), 0 < φ_R < min{2κ(a)/(σ²A(a))(2e^{κ(a)T}−1),
+L_J/A(a), (β−α)/(B(a)αβ)} (Theorem 7.1, PDF pp. 14-15). No numerics, no
 calibration, no data anywhere.
 
 Findings, graded (all page-cited in the session note
@@ -12245,10 +12245,10 @@ paper/research/library/2026-11-22_vix_options_heston_hawkes_deep_read.md):
   1. [candidate sharpening, PENDING OWNER RATIFICATION] The transform-domain
      admissibility pre-declaration (#50): BEFORE the L0 gate, any
      C1-L2/C8-adjacent computation, comparator, null or feature whose value
-     is computed through a transform of the data or of a fitted model â a
+     is computed through a transform of the data or of a fitted model — a
      characteristic-function / Fourier-inversion estimator, an
      affine-transform price or intensity formula, a spectral or
-     Laplace/Fourier representation, a moment-generating-function identity â
+     Laplace/Fourier representation, a moment-generating-function identity —
      must pre-declare, as frozen configuration counted in the multiplicity
      ledger: (i) the domain of existence of the transform as an explicit
      function of the frozen parameters (the region where the defining
@@ -12258,13 +12258,13 @@ paper/research/library/2026-11-22_vix_options_heston_hawkes_deep_read.md):
      inside the pre-declared domain for ALL frozen configurations it may
      take (boundary-approach behavior declared beside the value); and (iii)
      the numerical-tolerance convention for transform truncation/contour
-     choice, frozen â an evaluation outside the proven domain makes the
+     choice, frozen — an evaluation outside the proven domain makes the
      statistic UNDEFINED by rule, and an implementation that silently
      returns a finite number (by truncation, damping or contour shift the
      text never authorized) fails the concordance audit; harder-to-pass
      because a transform-based number computed where the underlying
-     transform provably does not exist â today survivable as a silent
-     numerical artifact of a Fourier or spectral routine â now fails at the
+     transform provably does not exist — today survivable as a silent
+     numerical artifact of a Fourier or spectral routine — now fails at the
      gate, and a claimed structure resting on such a number is dead by
      rule; tightens the estimator-implementation concordance rule
      (deep-read 85), which checks code against a written definition but
@@ -12275,40 +12275,40 @@ paper/research/library/2026-11-22_vix_options_heston_hawkes_deep_read.md):
      configuration to the existence conditions of the analytic object
      itself; the paper proves the failure class is real twice over: its own
      formula exists only on the contour (7.2) whose boundary L_J depends on
-     the Î±/Î² memory ratio and the jump mgf (PDF pp. 7-8, 14-15, 18-20), and
+     the α/β memory ratio and the jump mgf (PDF pp. 7-8, 14-15, 18-20), and
      its Remark 3.1 states the closest published predecessor (the SVCIJ-H of
      Ye-Wu-Chen [36]) propagated the same formal transform with NO domain
-     study ("we miss this study in [36, Proposition 2]", PDF p. 5) â so the
+     study ("we miss this study in [36, Proposition 2]", PDF p. 5) — so the
      unchecked-domain failure is not hypothetical, it is the published
      baseline of exactly the family a future L2 comparator would borrow
      from; full draft with the killed-if-wrong counterfactual in the
      session note.
   2. [reinforcing, no new item] The equivalent-martingale-measure family is
-     a continuum indexed by a free parameter a (Theorem 4.3: Îº(a) = Îº + aÏ,
-     vÌ(a), prices all Q(a)-dependent, PDF pp. 5-6), and the paper itself
+     a continuum indexed by a free parameter a (Theorem 4.3: κ(a) = κ + aσ,
+     v̄(a), prices all Q(a)-dependent, PDF pp. 5-6), and the paper itself
      cites [33, 34] that "exposures computed under the risk neutral measure
      are essentially arbitrary" (PDF p. 2): every model-implied theoretical
-     quantity is a function of an analyst-chosen measure within a family â
+     quantity is a function of an analyst-chosen measure within a family —
      reinforces the estimator-configuration freeze (deep-read 63: the
      measure-indexing parameter is exactly a frozen configuration, never
      re-picked after the result) and the model-inversion identifiability
      pre-declaration (#49: recovering a latent quantity from an observed
      price under an un-fixed member of a continuum is under-identified by
      construction). No queue change.
-  3. [reinforcing, no new item] VIXÂ²_t is proved to be A(a)v_t + B(a)Î»_t +
+  3. [reinforcing, no new item] VIX²_t is proved to be A(a)v_t + B(a)λ_t +
      C(a) with B(a) > 0 (Proposition 6.9, PDF p. 13): the model's headline
      observable-equivalent is a one-scalar sum of an observable variance and
-     an unobservable self-excitation state â precisely the split that #49
+     an unobservable self-excitation state — precisely the split that #49
      declares under-identified when performed post hoc; the paper itself
      never inverts (it prices forward from a known state), so the caution
      lands on any future use of a Hawkes-implied intensity against a
      compressed-book observable, which travels the already-queued rule. No
      queue change.
-  4. [interpretation caution] The Î±/Î² near-criticality sensitivity recurs on
-     the existence side: the admissible Re(Ï) bound (Î²âÎ±)/(Î±Î²) and L_J both
-     tighten toward zero as Î±/Î² â 1, the same self-exciting configuration
+  4. [interpretation caution] The α/β near-criticality sensitivity recurs on
+     the existence side: the admissible Re(ψ) bound (β−α)/(αβ) and L_J both
+     tighten toward zero as α/β → 1, the same self-exciting configuration
      that inflates magnitudes (deep-read 91, ## 120) also shrinking the
-     region where any transform of the process exists at all â where a
+     region where any transform of the process exists at all — where a
      future L2-derived Hawkes-adjacent statistic is computed near its own
      spectral boundary, both its magnitude interpretation AND its
      well-definedness require the frozen distance from criticality of the
@@ -12335,7 +12335,7 @@ paper/research/library/2026-11-22_vix_options_heston_hawkes_deep_read.md):
   inverted); T2 tested-fail); the blocked list stays blocked. Deep-read
   queue pointer: next UNREAD "Transform Analysis for Hawkes Processes with
   Applications in Dark Pool Trading" (score 20, x47bbb5), next in the
-  score-20 tier â re-read the live tail and recompute the tier against the
+  score-20 tier — re-read the live tail and recompute the tier against the
   notes before consuming. The edition-10 cadence counter stands at FOUR of
   five by this landing (#92).
 - docs/DECISIONS_PENDING.md is updated by this session (rule: one candidate
@@ -12345,18 +12345,18 @@ paper/research/library/2026-11-22_vix_options_heston_hawkes_deep_read.md):
 Nothing measured, no kill line moved, nothing armed, nothing trades live.
 Guard clean before commit: the session assembled the full tracked tree of
 main's tip locally (the public main archive, restored whole) and ran
-src/integrity_guard.py over it â marker sweep, library-provenance audit
+src/integrity_guard.py over it — marker sweep, library-provenance audit
 and encoding sanity all exiting zero on the assembled tree, and exiting
 zero again on the same tree plus this session's changed files before
 commit; the CI jobs run over the pushed tree and must be verified green
 on both jobs before merge.
 
-## 122. Null-time session 103 (2026-11-22): library deep-read session 93 â the Gao-Zhou-Zhu transform-analysis dark-pool read, third of the score-20 tier; the paper graded pure transform-theory for a marked linear Hawkes process with a general (non-Markovian) exciting function and time-dependent baseline (joint Laplace transform via the immigration-birth representation and a Hammerstein-Volterra integral equation, moments, FaÃ  di Bruno mass functions, synthetic dark-pool fill metrics), zero empirical content; NO kill line changed; ONE candidate sharpening queued, the moment-equivalence disclosure (#51), PENDING OWNER RATIFICATION; the ratification queue moves to fifty-one candidates plus probe E1
+## 122. Null-time session 103 (2026-11-22): library deep-read session 93 — the Gao-Zhou-Zhu transform-analysis dark-pool read, third of the score-20 tier; the paper graded pure transform-theory for a marked linear Hawkes process with a general (non-Markovian) exciting function and time-dependent baseline (joint Laplace transform via the immigration-birth representation and a Hammerstein-Volterra integral equation, moments, Faà di Bruno mass functions, synthetic dark-pool fill metrics), zero empirical content; NO kill line changed; ONE candidate sharpening queued, the moment-equivalence disclosure (#51), PENDING OWNER RATIFICATION; the ratification queue moves to fifty-one candidates plus probe E1
 
 Provenance note (added by the ## 123 restoration): the landed session-103
-instance's own ## 122 append never survived its landing push â the log repair
+instance's own ## 122 append never survived its landing push — the log repair
 recorded at ## 123 found the live file truncated with no session-103 entry
-in it â so this entry is RECONSTRUCTED 2026-11-22 by null-time session 104
+in it — so this entry is RECONSTRUCTED 2026-11-22 by null-time session 104
 from the landed instance's own surviving products only (the session note on
 main, paper/research/library/2026-11-22_transform_analysis_hawkes_dark_
 pool_deep_read.md; PR #294's body; the squash-commit message d2a0d182),
@@ -12366,7 +12366,7 @@ queue number below is the landed record exactly; nothing new is authored.
 Session-state note (director step, per docs/goal_autonomy_protocol.md,
 edition 10): the edition-10 cadence counter stood at FOUR of five after
 deep-read 92, so no synthesis pass was due at session start; this read
-(#93) moves the counter to FIVE of five, closing the edition-10 window â
+(#93) moves the counter to FIVE of five, closing the edition-10 window —
 the NEXT session opens with the synthesis pass (edition 11, its own log
 entry) before its read. The entry x47bbb5 was verified note-less against
 the live library listing (the two score-20 entries ranked above it,
@@ -12374,7 +12374,7 @@ xaace1f and x2b0051, both carry notes dated 2026-11-22 on main's tip);
 its extract was present and page-marked (42 PDF pages); read in full.
 
 Verdict: NO kill line changed; ONE new candidate sharpening queued,
-PENDING OWNER RATIFICATION â the moment-equivalence disclosure (#51): the
+PENDING OWNER RATIFICATION — the moment-equivalence disclosure (#51): the
 paper proves in print that E[N_T] and E[L_T] depend on the mark law ONLY
 through E[l_1] (and E[L_T^2] only through the first two moments,
 Proposition 5 with Remark 6, PDF pp. 12-13) while the same-mean mark laws
@@ -12399,7 +12399,7 @@ admissibility pre-declaration (#50).
 
 Reinforcing (no new item): the numerics fix the branching structure at
 0.9 (C = 0.9 power-law kernels, PDF p. 23) with fill metrics drifting
-materially by kernel tail exponent (Figures 5-7, PDF pp. 24-26) â the
+materially by kernel tail exponent (Figures 5-7, PDF pp. 24-26) — the
 same near-critical configuration whose frozen distance from criticality
 the self-excitation regime-window pre-declaration (deep-read 53) already
 demands; all numeric magnitudes banned from the record under the
@@ -12412,9 +12412,9 @@ deep-read 59; the model-inversion identifiability pre-declaration,
 #49). The dark-pool fill-rate arithmetic is execution-strategy
 engineering, recorded as cost-survival ammunition only and never
 operationalized. Source-quality note: arXiv v1 preprint (4 Oct 2017); a
-published version exists â check it before formal citation; all numerics
+published version exists — check it before formal citation; all numerics
 synthetic; internal defects not touching the transform argument
-(repeated "Â¿From" typesetting artifacts, PDF pp. 17, 22, 37, 40; the
+(repeated "¿From" typesetting artifacts, PDF pp. 17, 22, 37, 40; the
 non-empty-pool section leaving the conditional Y > 0 branch informal,
 PDF pp. 26-28).
 
@@ -12429,7 +12429,7 @@ PDF pp. 26-28).
   the thirty-ninth dashboard. Deep-read queue pointer: next UNREAD "The
   order book as a queueing system: average depth and influence of the
   size of limit orders" (the score-20 entry xe1c4ca, verified note-less,
-  next in the score-20 tier) â re-read the live tail and recompute the
+  next in the score-20 tier) — re-read the live tail and recompute the
   tier against the notes before consuming. The edition-10 cadence
   counter closes at FIVE of five by this landing (#93): the NEXT session
   opens with the ninth synthesis pass (edition 11, its own log entry)
@@ -12439,7 +12439,7 @@ Nothing measured, no kill line moved, nothing armed, nothing trades live.
 Guard clean before commit per the landed record; the CI jobs run over the
 pushed tree and must be verified green on both jobs before merge.
 
-## 123. Null-time session 104 (2026-11-22), first act: the session-103 race-and-truncation corrigendum â the programme log restored byte-verified from the intact git-history core (entries through ## 121 restored to the landed ## 121 content, ## 122 reconstructed from the landed session-103 products per the ## 74 precedent), the write-side truncation class taking its fifth logged instance with the live log itself as the casualty, and the parallel-instance collision recorded under the main-wins protocol; NO kill line moved
+## 123. Null-time session 104 (2026-11-22), first act: the session-103 race-and-truncation corrigendum — the programme log restored byte-verified from the intact git-history core (entries through ## 121 restored to the landed ## 121 content, ## 122 reconstructed from the landed session-103 products per the ## 74 precedent), the write-side truncation class taking its fifth logged instance with the live log itself as the casualty, and the parallel-instance collision recorded under the main-wins protocol; NO kill line moved
 
 Session-state note, per the goal-autonomy conductor protocol (edition 10,
 ## 117, ACTIVE): this entry records a landing-path repair, not new
@@ -12448,12 +12448,12 @@ session; at session start the live main tail and docs/DECISIONS_PENDING.md
 were read as mandated, and the log file's own state forced this first
 act: the live main tree (tip d2a0d182, the PR #294 squash of session 103)
 carried paper/research/null_time_programme.md as a 63,998-byte file ending
-mid-sentence inside entry ## 20 â the whole of the remainder of ## 20's
+mid-sentence inside entry ## 20 — the whole of the remainder of ## 20's
 text, entries ## 21 through ## 121, and any session-103 entry were absent
 from the live file. docs/DECISIONS_PENDING.md on main was intact and
 consistent with a landed session 103 (fifty-one candidates plus probe
 E1, the moment-equivalence disclosure queued), and the session-103 note
-on main was intact â the corrupted artifact was the log alone.
+on main was intact — the corrupted artifact was the log alone.
 
 Byte-level verification (everything in this paragraph is cmp-verified
 observable repo state): the damaged blob is byte-identical to the first
@@ -12468,7 +12468,7 @@ live log itself. This session's own read of the log through the same
 repair was attempted, confirming the class as a tooling-channel
 failure mode, not a session-specific error; and the integrity guard
 passed the corrupted tree because it sweeps conflict markers, library
-provenance and encoding, not byte-size monotonicity of the log â so CI
+provenance and encoding, not byte-size monotonicity of the log — so CI
 stayed green through the corruption. The discipline of byte-verifying
 large pushes against the assembled local copy after pushing (the PR
 #289 convention) is restated; the standing CI gap (a byte-monotonicity
@@ -12520,12 +12520,12 @@ duplicate; owner-deletable) are both named in the record; no session
 tool deletes remote branches. Root cause recorded plainly: the landing
 instance assembled its log push from a content channel that delivered
 only the first ~64K bytes of the 822,696-byte file, and its push
-enshrined the truncated read as the file's whole content â the same
+enshrined the truncated read as the file's whole content — the same
 class the record has logged four times before (## 75, ## 78, ## 94,
-## 98) â with the guard's byte-monotonicity gap letting CI pass it.
+## 98) — with the guard's byte-monotonicity gap letting CI pass it.
 
 docs/DECISIONS_PENDING.md is NOT touched by this corrigendum (rule: no
-candidate sharpening queued; the ratification file stands as landed â
+candidate sharpening queued; the ratification file stands as landed —
 fifty-one candidate sharpenings plus probe E1, zero armed).
 
 Nothing measured, no kill line moved, nothing armed, nothing trades
@@ -12535,7 +12535,7 @@ restored whole plus this session's changed files) before commit; the
 full-tree checks run in CI over the pushed tree and must be verified
 green on both jobs before merge.
 
-## 124. Null-time session 104 (2026-11-22), second act: the ninth synthesis pass â the cadence recomputed from the edition-10 reset at ## 117 (deep-reads 89-93 landed at ## 118 through ## 122, the window CLOSED at five of five per the ## 122 closing pointer, which directed the pass run before the read, and run against the restored record after the session's first-act repair), goal state rewritten as EDITION 11, the G2 brief-debt recomputed against the grown queue (briefs cover forty of fifty-one; items 41-51 owed), the truncation-and-collision history absorbed into the named-gap block; NO sharpening queued by the pass
+## 124. Null-time session 104 (2026-11-22), second act: the ninth synthesis pass — the cadence recomputed from the edition-10 reset at ## 117 (deep-reads 89-93 landed at ## 118 through ## 122, the window CLOSED at five of five per the ## 122 closing pointer, which directed the pass run before the read, and run against the restored record after the session's first-act repair), goal state rewritten as EDITION 11, the G2 brief-debt recomputed against the grown queue (briefs cover forty of fifty-one; items 41-51 owed), the truncation-and-collision history absorbed into the named-gap block; NO sharpening queued by the pass
 
 The pass re-read the live record through the restored tail (## 1 through
 ## 122) and recomputes the edition-10 window: deep-reads 89-93 landed at
@@ -12545,7 +12545,7 @@ pre-declaration extensions of already-queued families (#48, the
 cross-stream synchronization and single-source-count pre-declaration,
 ## 118; #49, the model-inversion identifiability pre-declaration,
 ## 120; #50, the transform-domain admissibility pre-declaration, ## 121;
-#51, the moment-equivalence disclosure, ## 122) â the declining-yield
+#51, the moment-equivalence disclosure, ## 122) — the declining-yield
 expectation named at editions 3-10 holds: the queue keeps being fed from
 the same declare-before-the-data vein, not from any new mechanism class.
 The window was NOT infrastructure-clean: the session-103 double-instance
@@ -12553,13 +12553,13 @@ collision and the write-side truncation of the programme log itself
 (repaired byte-verified by the session's first act, ## 123) give the
 collision history its fourth logged event (## 98, ## 105, ## 109, ## 123)
 and the write-side ~64K truncation class its fifth instance (## 75, ## 78,
-## 94, ## 98, ## 123) â this time the casualty was the live log on main,
+## 94, ## 98, ## 123) — this time the casualty was the live log on main,
 and the integrity guard's byte-monotonicity gap let CI pass it; the gap
 stays the ranked infrastructure item, candidate-improvement status only.
 
 Products of this pass, traveling only through the sanctioned channels:
 (1) goal state rewritten whole as EDITION 11 (protocol section 2,
-edition rule; the section 16 note records the change) â facts block
+edition rule; the section 16 note records the change) — facts block
 recomputed from the live record at ## 122 (queue fifty-one plus probe
 E1 at pass time, zero armed; ninety-five library note files through
 deep-read 93, the 96th landing as this session's third act and counting),
@@ -12569,7 +12569,7 @@ file against the restored tail and the library listing (the score-21
 tier CLOSED at ## 116, ## 118 and ## 119; the score-20 tier OPEN with
 three of its fifteen entries consumed at ## 120 through ## 122; next
 UNREAD xe1c4ca, "The order book as a queueing system: average depth and
-influence of the size of limit orders" â consumed as this session's
+influence of the size of limit orders" — consumed as this session's
 third act), cadence: RESET by this edition, the counter
 standing at ONE of five with #94 landing as this session's third act and
 counting; (2) docs/GOALS.md status board refreshed to edition 11
@@ -12595,7 +12595,7 @@ trades live. Guard clean on the assembled tree plus this session's
 changed files before commit; the CI jobs run over the pushed tree and
 must be verified green on both jobs before merge.
 
-## 125. Null-time session 104 (2026-11-22), third act: library deep-read session 94 â the Muni Toke order-book-as-a-queueing-system read, fourth of the score-20 tier; the paper graded a zero-intelligence Markovian queueing construction of book depth whose conservation-of-flows identity, printed sign-reversal under covariate-set choice, and spread-path-conditional distance-indexed depth statistics reinforce already-queued families and move NOTHING; NO kill line moved; NO new candidate sharpening
+## 125. Null-time session 104 (2026-11-22), third act: library deep-read session 94 — the Muni Toke order-book-as-a-queueing-system read, fourth of the score-20 tier; the paper graded a zero-intelligence Markovian queueing construction of book depth whose conservation-of-flows identity, printed sign-reversal under covariate-set choice, and spread-path-conditional distance-indexed depth statistics reinforce already-queued families and move NOTHING; NO kill line moved; NO new candidate sharpening
 
 The paper: Ioane Muni Toke, "The order book as a queueing system: average
 depth and influence of the size of limit orders" (arXiv:1311.5661v1,
@@ -12624,7 +12624,7 @@ fifty-one candidates plus probe E1):
 1. [reinforcing, no new item] The conservation-of-flows identity:
    the average book shape is the arrival intensity times the
    cancellation probability (Proposition 2, eq. 14, PDF p. 8; eqs.
-   15-18, PDF pp. 8-9), an exact within-model consequence â a book
+   15-18, PDF pp. 8-9), an exact within-model consequence — a book
    null in this class reproduces mean depth BY CONSTRUCTION from its
    declared flow parameters, so a shape-agreement audit against such a
    null certifies arithmetic, not mechanism; and the stationary depth
@@ -12641,7 +12641,7 @@ fifty-one candidates plus probe E1):
    interaction term (+0.0088, t = 11.1, p < 2.2e-16) and significantly
    NEGATIVE with it (-4.8e-4, t = -5.3, p = 1.4e-7) on the same data and
    sample (Table 2, top panel, PDF p. 23; specification eq. 32,
-   PDF p. 21; the B10 panel repeats the pattern, +0.0097, t = 5.6 â
+   PDF p. 21; the B10 panel repeats the pattern, +0.0097, t = 5.6 →
    -6.2e-4, t = -3.1, PDF p. 23). The covariate set IS configuration:
    the SIGN of a significant coefficient is a function of the
    specification. The paper handles its own reversal honestly (naming
@@ -12675,7 +12675,7 @@ fifty-one candidates plus probe E1):
    association at one grain is not evidence at another). No queue
    change.
 5. [cost-survival ammunition] All depth/activity magnitudes (the
-   positive activity-depth relation decaying with distance â
+   positive activity-depth relation decaying with distance —
    significant at B5 and B10, not significant at B10-B5, Table 2 lower
    panel, PDF p. 23; R2 0.08-0.15, PDF p. 23) are venue-, sample- and
    grain-specific and banned from the record under the laundering rule;
@@ -12686,27 +12686,27 @@ fifty-one candidates plus probe E1):
    intensity, PDF pp. 4-5, 13). A never-operationalized
    execution-strategy application. No queue change.
 6. [source-quality note] arXiv v1 (22 Nov 2013); a published version
-   exists â check it before formal citation. Data: 14 Paris stocks
+   exists — check it before formal citation. Data: 14 Paris stocks
    (13 CAC-40 members plus Ubisoft), Jan 4 - Feb 22 2010, with 3.5
    missing or incomplete trading days acknowledged (footnote 2,
    PDF p. 19); first ten limits only (PDF pp. 19-20); the ask/bid
    side convention for the regression depths is left unstated beyond
    the "first 10 ticks from the best opposite side" definition
-   (PDF pp. 20-21) â an unstated convention in exactly the class the
+   (PDF pp. 20-21) — an unstated convention in exactly the class the
    convention-declaration rule names. No queue change.
 
 Counterfactual (what this paper would have killed if we had done it
 wrong): without the estimator-configuration freeze, a future C1-L2
 panel decomposition could report whichever covariate-set sign fits the
-narrative â the paper's own table shows a significant positive and a
+narrative — the paper's own table shows a significant positive and a
 significant negative estimate of the same coefficient available on the
 same data (Table 2, PDF p. 23). Without the censoring discipline, a
 distance-from-touch depth statistic would silently shift composition
-exactly when the spread tightens (PDF pp. 20-21) â the regime where
+exactly when the spread tightens (PDF pp. 20-21) — the regime where
 compression claims would live. Without the generative-null and placebo
 disciplines, a zero-intelligence null "reproducing" the average book
 could be cited as validation (PDF p. 8) when the reproduction is the
-null's own conservation identity â an arithmetically guaranteed match
+null's own conservation identity — an arithmetically guaranteed match
 dressed as a test.
 
 - Inaccessible/blocked status: none this session. The extract was
@@ -12720,7 +12720,7 @@ dressed as a test.
   T2 tested-fail); the blocked list stays blocked. Deep-read queue
   pointer: next UNREAD "Hawkes Processes" (xf8b5bc, score 20, verified
   note-less this session against the live listing), next in the
-  score-20 tier â re-read the live tail and recompute the tier against
+  score-20 tier — re-read the live tail and recompute the tier against
   the notes before consuming. The edition-11 cadence counter stands at
   ONE of five by this landing (#94), counted from the edition-11 reset
   at ## 124.
@@ -12738,7 +12738,7 @@ and encoding sanity all exiting zero before commit; the CI jobs run
 over the pushed tree and must be verified green on both jobs before
 merge.
 
-## 126. Null-time session 105 (2026-11-22): library deep-read session 95 â the Laub-Taimre-Pollett "Hawkes Processes" survey read, fifth of the score-20 tier; the 2015 pedagogical survey graded zero-empirical-content codification whose branching-ratio arithmetic (n = â«Âµ = Î±/Î², stationarity strict, explosion at n â¥ 1, endogeneity read as probability n), printed Lorenzen timestamp-randomisation critique, exponential-kernel recursion bargain, MLE failure-mode catalogue, and residual (random time change) test loop all reinforce already-queued families and move NOTHING; NO kill line moved; NO new candidate sharpening
+## 126. Null-time session 105 (2026-11-22): library deep-read session 95 — the Laub-Taimre-Pollett "Hawkes Processes" survey read, fifth of the score-20 tier; the 2015 pedagogical survey graded zero-empirical-content codification whose branching-ratio arithmetic (n = ∫µ = α/β, stationarity strict, explosion at n ≥ 1, endogeneity read as probability n), printed Lorenzen timestamp-randomisation critique, exponential-kernel recursion bargain, MLE failure-mode catalogue, and residual (random time change) test loop all reinforce already-queued families and move NOTHING; NO kill line moved; NO new candidate sharpening
 
 The paper: Patrick J. Laub, Thomas Taimre, Philip K. Pollett, "Hawkes
 Processes" (arXiv:1507.02822v1 [math.PR], last edited 13 July 2015; slug
@@ -12746,19 +12746,19 @@ xf8b5bc, per docs/library/expanded_index.json). A survey of the linear
 Hawkes process: counting/point processes, conditional intensity and
 compensator (PDF pp. 2-4); the linear definition with exponential and
 power-law kernels (PDF pp. 5-6); the immigration-birth branching
-representation, branching ratio n = â«Âµ = Î±/Î², asymptotic normality under
-0 < n < 1, a.s. explosion for n â¥ 1, and a uniformly random arrival
+representation, branching ratio n = ∫µ = α/β, asymptotic normality under
+0 < n < 1, a.s. explosion for n ≥ 1, and a uniformly random arrival
 endogenous with probability exactly n (PDF pp. 6-8); the exponential-kernel
 covariance density and shifted-scaled-Cauchy power spectral density for
-Î± < Î² (Theorem 2, PDF pp. 9-11, Appendix A pp. 26-27); nonlinear and
-mutually-exciting generalisations (PDF pp. 11-12); the financial section â
-the AÃ¯t-Sahalia-Cacho-Diaz-Laeven Hawkes diffusion (5m + 3mÂ² parameters,
+α < β (Theorem 2, PDF pp. 9-11, Appendix A pp. 26-27); nonlinear and
+mutually-exciting generalisations (PDF pp. 11-12); the financial section —
+the Aït-Sahalia-Cacho-Diaz-Laeven Hawkes diffusion (5m + 3m² parameters,
 fitted only for pairs, no AIC/BIC comparisons, the von Neumann elephant
 verdict, PDF pp. 12-13) and the Filimonov-Sornette mid-price-change
 stylisation with the Lorenzen critique of Unif(0,1) timestamp jitter
 (second-resolution data, impossible simultaneity, smoothing that fit
-better than millisecond truth, biased Î± and Î², PDF p. 13); MLE with the
-O(k) recursive log-likelihood (Markov joint (N, Î»*), PDF pp. 15-17),
+better than millisecond truth, biased α and β, PDF p. 13); MLE with the
+O(k) recursive log-likelihood (Markov joint (N, λ*), PDF pp. 15-17),
 small-sample bias, local optima, kernel sensitivity, the GMM
 alternative's "rather arbitrary" smoothing (PDF p. 17), and the printed
 minefield quote (PDF pp. 14-15); goodness of fit via the random time
@@ -12773,8 +12773,8 @@ Verdict: NO kill line changes. NO new candidate sharpening. Findings
 fifty-one candidates plus probe E1):
 
 1. [reinforcing, no new item] Branching-ratio arithmetic in definition
-   form: n = Î±/Î² for the exponential kernel, stationarity strict
-   (0 < n < 1), explosion a.s. for n â¥ 1, endogeneity of a uniform
+   form: n = α/β for the exponential kernel, stationarity strict
+   (0 < n < 1), explosion a.s. for n ≥ 1, endogeneity of a uniform
    random arrival with probability exactly n (PDF pp. 7-8). An
    estimated n is an endogeneity fraction ONLY inside a stationary fit;
    an n crossing 1 is the model's own stationary moment ceasing to
@@ -12783,15 +12783,15 @@ fifty-one candidates plus probe E1):
 2. [reinforcing, no new item] The Lorenzen critique printed in the
    survey's own section: second-resolution timestamps with simultaneous
    arrivals jittered by Unif(0,1) fractions, smoothing that fit the
-   model better than true millisecond data, biased Î± and Î² (PDF p. 13).
+   model better than true millisecond data, biased α and β (PDF p. 13).
    A textbook instance of the already-queued timestamp/convention
    discipline and estimator-configuration freeze (deep-read 63); nothing
    here tightens either. No queue change.
 3. [interpretation caution] The Markov/recursion bargain: the O(k)
    recursive likelihood and cheap derivatives exist because the
-   exponential kernel makes (N, Î»*) Markov (PDF pp. 16-17); any other
+   exponential kernel makes (N, λ*) Markov (PDF pp. 16-17); any other
    kernel family forfeits the recursion (PDF pp. 21-22). A future
-   Hawkes arm faces a declared configuration trade â kernel family,
+   Hawkes arm faces a declared configuration trade — kernel family,
    optimiser, and effective-configuration statement move together. Feeds
    the estimator-mode freeze already queued. No queue change.
 4. [interpretation caution] MLE's printed failure modes: significant
@@ -12801,7 +12801,7 @@ fifty-one candidates plus probe E1):
    (PDF pp. 14-15). Substantively covered by the estimator-mode register
    and noise-model pre-declaration already queued: optimiser, kernel
    family, and smoothing must be pre-declared because each choice moves
-   (Î±, Î², n). No queue change.
+   (α, β, n). No queue change.
 5. [reinforcing, no new item] The residual loop is the compensator-null
    discipline in closed form: transform arrivals by the FITTED
    compensator and demand a unit-rate Poisson process (Theorems 4-5,
@@ -12811,7 +12811,7 @@ fifty-one candidates plus probe E1):
    condition is available and explored-data-free. No queue change.
 6. [cost-survival ammunition] Overfitting arithmetic any K7-style
    cost-survival layer must quote before adopting a Hawkes contagion
-   component: 5m + 3mÂ² parameters (plus 3m for stochastic volatility),
+   component: 5m + 3m² parameters (plus 3m for stochastic volatility),
    fitted only for market pairs even after simplifications, no AIC/BIC
    comparisons against the nested Merton model; a
    never-operationalised execution-strategy application (PDF pp. 12-13).
@@ -12826,7 +12826,7 @@ fifty-one candidates plus probe E1):
 
 Counterfactual (what this paper would have killed if we had done it
 wrong): without the timestamp discipline, a future L2 event arm could
-have inherited the Filimonov-Sornette path wholesale â second-resolution
+have inherited the Filimonov-Sornette path wholesale — second-resolution
 data, jittered simultaneity, and a branching-ratio "trend" that is
 partly the smoothing artifact the survey prints (PDF p. 13). Without the
 stationarity condition, an estimated n crossing 1 could have been read
@@ -12835,7 +12835,7 @@ model's own moment conditions (PDF pp. 7-8). Without the residual
 discipline, a placebo arm could declare success because simulated
 output "looks" clustered, when the compensator-transform test is
 decisive either way (PDF p. 18). Without the cost-survival ceiling, a
-5m + 3mÂ²-parameter Hawkes diffusion with no AIC/BIC comparisons could
+5m + 3m²-parameter Hawkes diffusion with no AIC/BIC comparisons could
 have been adopted as a market model before the L2 data had even passed
 the L0 gate (PDF pp. 12-13).
 
@@ -12849,7 +12849,7 @@ the L0 gate (PDF pp. 12-13).
   the blocked list stays blocked. Deep-read queue pointer: next UNREAD
   "Theory of earthquakes interevent times applied to financial markets"
   (x97b372, score 20, sixth of the score-20 tier, verified note-less this
-  session against the live listing) â re-read the live tail and recompute
+  session against the live listing) — re-read the live tail and recompute
   the tier against the notes before consuming. The edition-11 cadence
   counter stands at TWO of five by this landing (#95), counted from the
   edition-11 reset at ## 124.
