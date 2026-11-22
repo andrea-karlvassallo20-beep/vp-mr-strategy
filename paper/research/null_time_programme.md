@@ -12183,7 +12183,6 @@ zero again on the same tree plus this session's changed files before
 commit; the CI jobs run over the pushed tree and must be verified green
 on both jobs before merge.
 
-
 ## 121. Null-time session 102 (2026-11-22): library deep-read session 92 — the Zamora
 Font VIX-options Heston-Hawkes read, second of the score-20 tier; the paper graded
 pure existence-theory pricing (a semi-analytical VIX call formula under Heston
