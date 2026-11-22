@@ -12869,3 +12869,124 @@ session's changed files) with marker sweep, library-provenance audit
 and encoding sanity all exiting zero before commit; the CI jobs run
 over the pushed tree and must be verified green on both jobs before
 merge.
+
+## 127. Null-time session 106 (2026-11-22): library deep-read session 96 — the Jagielski-Kutner-Sornette earthquake-interevent-times read, sixth of the score-20 tier; the 2016 research letter graded a pooled-parameter Hawkes interevent-PDF transplant from seismology to daily loss exceedances whose boundary-pinned branching ratio (n = 1.00 exactly at every mean interevent time ≥ 5 days, the bound "imposed to ensure stationarity"), definitional rate-identity violation repaired by a post-hoc three-parameter scaling law, and cross-sectionally averaged per-asset calibrations reinforce already-queued families and move NOTHING; NO kill line moved; NO new candidate sharpening
+
+The paper: Maciej Jagielski, Ryszard Kutner, Didier Sornette, "Theory of
+earthquakes interevent times applied to financial markets" (arXiv:1610.08921v2
+[q-fin.ST], 28 Oct 2016, submitted to Physica A; slug x97b372, per
+docs/library/expanded_index.json). Daily loss exceedances (thresholds set to
+hit mean interevent times of 2, 5, 10, 30, 70 days) across 15 records — four
+US equities, five indices, two crudes, five FX pairs (PDF p. 4) — are fitted
+with the Saichev-Sornette closed-form interevent-time PDF of a self-excited
+Hawkes process with an Omori-Utsu power-law kernel Φ(t) = θ t0^θ/(t0+t)^{1+θ}
+(PDF pp. 2-4, eqs. 1-6), parameters calibrated per asset by maximum likelihood
+and then averaged across the 15 assets (PDF pp. 4-5), the branching ratio
+saturating at its imposed stationarity upper bound n = 1.00 for every ⟨τ⟩ ≥ 5
+days (Table 1, PDF p. 4), the average rate λ violating its definitional
+identity λ = 1/⟨τ⟩ and repaired by the post-hoc scaling law λ(⟨τ⟩) =
+0.17 + 0.90 exp(−⟨τ⟩/10) which "imitates a spurious power law" in range (eq. 7,
+Fig. 2, PDF pp. 5-6), and a closing concession that the mono-fractal Hawkes
+family under-describes multifractal volatility clustering, so even the
+markets-are-critical reading "may be an artefact of its mono-fractal nature"
+(PDF p. 6). Read in full (9 page-marked PDF pages, references through [55])
+against the one question. Note landed at
+paper/research/library/2026-11-22_earthquake_interevent_times_hawkes_deep_read.md.
+
+Director step (goal-autonomy protocol, ACTIVE): protocol read, consistent
+with the live tail; the session's work choice is the DEFAULT deep-read (next
+UNREAD triage entry, re-ranked against the notes: the score-20 tier holds
+fourteen entries, five consumed by ## 120-## 122 and ## 125-## 126, x97b372
+next, no note on main per the live listing), so no justification is owed.
+Synthesis cadence NOT due: this landing is the THIRD of five deep-reads since
+the edition-11 reset at ## 124 (after #94 at ## 125 and #95 at ## 126).
+
+Verdict: NO kill line changes. NO new candidate sharpening. Findings
+(all graded against the restored record and the queue as it stands at
+fifty-one candidates plus probe E1):
+
+1. [reinforcing, no new item] Boundary-pinned branching ratio: Table 1's
+   n = 0.78 at ⟨τ⟩ = 2 days and exactly n = 1.00 at every larger mean
+   interevent time, with the bound explicitly "imposed to ensure
+   stationarity" (PDF p. 4), is the branching-ratio stationarity discipline
+   (n = ∫µ, strict 0 < n < 1, explosion a.s. for n ≥ 1; the survey read, log
+   ## 126, finding 1) printed as a live borderline case: the unconstrained
+   likelihood wanted the non-stationary side, and the paper's own hedge
+   (citing the Hardiman-Bercot-Bouchaud vs Filimonov-Sornette controversy,
+   PDF p. 4) concedes the point. A pinned-at-bound fit reads as "at the edge
+   of the existence domain", never as a critical-regime discovery. No queue
+   change.
+2. [interpretation caution] The rate-identity violation and its post-hoc
+   repair: λ ≠ 1/⟨τ⟩ as the Hawkes construction requires, repaired by a
+   three-parameter functional form selected after the failure was seen (eq. 7,
+   PDF pp. 5-6). A future exceedance-family or interevent-family statistic
+   must pre-declare its threshold grid and treat rate-vs-mean identities as
+   diagnostics, not fit targets — both already carried by the
+   estimator-configuration freeze (deep-read 63) as frozen configuration. The
+   paper's honest headline is that the mono-fractal Hawkes family
+   under-describes the clustering it is fitted to: a good interevent-PDF fit
+   certifies nothing about the mechanism (PDF pp. 5-6). No queue change.
+3. [interpretation caution] Pooled-parameter averaging across 15 assets
+   after per-asset MLE (PDF pp. 4-5), with no printed fit statistic anywhere,
+   turns a cross-sectional configuration choice into a "universality" curve:
+   the Table 1 error-bar range (PDF p. 4) is parameter dispersion, not
+   goodness of fit. Feeds the estimator-mode freeze and the pooled-vs-
+   conditional reading discipline (the Cox-ratio read's pooled-accuracy
+   lesson, log ## 70). No queue change.
+4. [interpretation caution] Daily-grain, closing-price, loss-exceedance-only
+   events (PDF p. 4): nothing here bears L2 information, and the paper's
+   universality claims may never enter the record as support for any program
+   claim — the library-is-ammunition caveat binds; the daily grain is already
+   bracketed by the queued C1-L2 base-rate confrontation. No queue change.
+5. [source-quality note] arXiv v2, 9 pages, research-letter grade: visual
+   double-log fit judgement, no model comparison against the Denys et al.
+   superstatistics baseline beyond curves, and a universality conclusion
+   resting on finding 3's pooled averages. Check the published Physica A
+   version before formal citation. No queue change.
+
+Counterfactual (what this paper would have killed if we had done it wrong):
+without the stationarity discipline, Table 1's n = 1.00 would have been read
+as printed market criticality — a substantive regime discovery laundering a
+parameter pinned to an imposed stationarity bound, when the honest statement
+is that the stationary model is at the edge of its existence domain and the
+unconstrained fit would cross it (PDF pp. 3-4). Without the frozen-
+configuration discipline, eq. 7 is exactly the forbidden move: a
+re-functionalization chosen after the definitional identity failed on the
+data, presented as a novel characterization (PDF pp. 5-6). Without the
+library-is-ammunition caveat, the "universal scaling law of interevent
+times" headline would have entered as evidence that long-memory
+self-excitation is a market property, when the paper's own print is a
+phenomenological curve match with no fit statistic and a stated
+mono-fractality failure (PDF pp. 5-6).
+
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (9 PDF pages, abstract, body, figures and
+  references complete).
+- Ratification queue after this session: FIFTY-ONE candidate sharpenings
+  plus probe E1, zero armed (NONE queued by this read;
+  docs/DECISIONS_PENDING.md is NOT touched by this session; T1 remains
+  armed awaiting the owner's word in its booked state; T2 tested-fail); the
+  blocked list stays blocked. Deep-read queue pointer: next UNREAD
+  "Asymmetric excitation of left- and right-tail extreme events probed using
+  a Hawkes model: application to financial returns" (x55e853, score 20,
+  seventh of the score-20 tier,
+  verified note-less this session against the live listing) — re-read the
+  live tail and recompute the tier against the notes before consuming. The
+  edition-11 cadence counter stands at THREE of five by this landing (#96),
+  counted from the edition-11 reset at ## 124.
+- Byte-landed log note (session-specific): this session assembled the
+  log locally from the live main copy plus this entry and will
+  byte-verify the pushed branch copy against the assembled local copy
+  (md5 match) before opening the PR, per the PR #289 convention and the
+  ## 123 root-cause record. The write path this session is the
+  connector push (branch off live main head, full-file contents
+  byte-checked), used because the local execution environment exposes
+  no git CLI or credentials this cycle.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the
+assembled full tree (main's tracked tree restored whole plus this
+session's changed files) with marker sweep, library-provenance audit
+and encoding sanity all exiting zero before commit; the CI jobs run
+over the pushed tree and must be verified green on both jobs before
+merge.
