@@ -10799,3 +10799,277 @@ live. Guard clean: python3 src/integrity_guard.py --sweep and
 audit and the full-tree sweeps run in CI over the full tree — the
 summaries are untouched this session — and must be verified green on
 both jobs before merge.
+
+## 111. Null-time session 95 (2026-11-22), first act: the seventh synthesis pass — the cadence recomputed from the edition-8 reset at ## 103 (deep-reads 79-83 landed at ## 104 and ## 106 through ## 110, the window CLOSED at five of five per the ## 110 closing pointer, which directed the pass run first), goal state rewritten as EDITION 9, the G2 brief-debt recomputed against the grown queue (briefs cover forty of forty-four); NO sharpening queued by the pass
+
+Session-state note, per the goal-autonomy conductor protocol (edition 8,
+## 103, ACTIVE at session start): the live main tail (through ## 110) and
+docs/DECISIONS_PENDING.md were read first; the cadence check was
+recomputed from first principles against the edition-8 reset at ## 103 —
+deep-read 79 landed ## 104, 80 landed ## 106, 81 landed ## 107,
+82 landed ## 108, 83 landed ## 110: five of five, the window CLOSED, and
+the ## 110 closing pointer records explicitly that the next deep-read
+session MUST open with the seventh synthesis pass before its read — so
+per the conductor protocol section 3 point 2, the ## 110 pointer's own
+instruction, and the ritual's director step, the pass runs FIRST and this
+session's deep-read follows as ## 112. The declared work choice is
+therefore the pass first, then the standing deep-read, matching the
+recorded instruction.
+
+Facts recomputed from the live record (main tail through ## 110 at pass
+time):
+
+- Phase 1 (Daily/AVFI): CLOSED and ARCHIVED by the Board's dated word
+  2026-11-19; archived is NOT falsified; every kill line stays frozen;
+  unchanged. Phase 2 (Crypto L2): ACTIVE, the Board's only active
+  research front (C1-L2 → C8 → Convexity Sizing), blocked on the
+  owner's data acquisition; the L0 dry run is unblocked. Unchanged.
+- Library: eighty-five deep-read notes on main's tip through deep-read
+  session 83 (the 86th lands as this session's second act and counts);
+  the ratification queue holds FORTY-FOUR candidate sharpenings plus
+  probe E1 at pass time (this session's second act may queue the next;
+  see ## 112), zero armed; T1 armed awaiting the owner's word in its
+  booked state (sign inverted); T2 tested-fail; the blocked list stays
+  blocked.
+- Deep-read queue pointer: the score-24 tier is CLOSED (## 100-## 102);
+  the score-23 tier is CLOSED (xaf167e ## 104, xec4d8e ## 106, x6c29fa
+  ## 107, xfcaaa2 ## 108); the score-22 tier is OPEN (x0fc07a ## 110);
+  next UNREAD "Liquidity-adjusted Return and Volatility, and
+  Autoregressive Models" (Deng-Zhou, score 22, x0acf9d), then the
+  remaining score-22 tier ("Empirical Study of Market Impact
+  Conditional on Order-Flow Imbalance" x1a712b, "Boltzmann Price"
+  x85b5e3, "Optimal execution and price manipulations in time-varying
+  limit order books" x750e2f) — recomputed by title-matching the
+  score-sorted triage file against the live log tail and the library
+  note listing this pass; x0acf9d is consumed as this session's second
+  act (## 112) and #84 counts toward the edition-9 cadence.
+- Cadence: the edition-8 window is CLOSED at five of five; the cadence
+  is RESET by this edition (next due at five or more deep-reads since
+  edition 9; #84 lands as this session's second act immediately after
+  this pass and counts, so the counter stands at ONE of five).
+
+What the window since edition 8 taught (ranking evidence, nothing
+laundered): the five landed deep-reads of the window (sessions 79-83)
+moved ZERO kill lines and queued exactly THREE sharpenings (#42, the
+queue-jump-diffusion generative-null pre-declaration, ## 107; #43, the
+residual-flow attribution null, ## 108; #44, the feature-normalization
+pre-declaration, ## 110) — all three pre-commitment or generative-null
+extensions of already-queued families, so the declining-yield
+expectation named at editions 3-8 holds even as the per-window count
+ticked up from two to three: the tier boundary has moved into score-22
+and score-23 content whose papers are themselves null-design and
+discipline papers, so the queue is still being fed from the same vein,
+not from a new mechanism class; the window also absorbed TWO new
+race-collision corrigenda (## 105, the session-90 landing-path
+collision; ## 109, a second session-93 instance closed UNMERGED per the
+main-wins protocol, no duplicate reaching main), which is ranking
+evidence that the byte-gate discipline works but that the collision rate
+is rising (three concurrent-instance events now logged: ## 98, ## 105,
+## 109).
+
+Named gaps restated (this pass's product, zero status): the append-only
+log's write-side ~64K truncation class (## 75, ## 78, ## 94, ## 98)
+still has NO standing CI check enforcing byte-size monotonicity of the
+large tracked files, and no session-side read-back verification helper
+for large reads AND writes through the tooling path — the rising
+collision count makes this the ranked infrastructure item; the weekly
+directorate has still not sat — FORTY-FOUR candidates plus probe E1
+pending at pass time, zero armed, the G2 briefs cover all forty queued
+items (through item 40), so briefs for items 41-44 (the noise-model
+pre-declaration, queued ## 100; the queue-jump-diffusion generative-null,
+queued ## 107; the residual-flow attribution null, queued ## 108; the
+feature-normalization pre-declaration, queued ## 110) plus any ratified
+successor are owed before the next sitting, and the G2 item-41 brief
+remains the ranked non-deep-read choice; front 3 stays blocked on
+codespace/data presence. GOALS.md status lines refreshed as operative
+bookkeeping (the front 2 pointer and tier history, the front 4 cadence
+note, the G2 count reconciliation to forty-four); rankings and gates
+live in the protocol, never there.
+
+The pass reiterates the honest scoring of its own window: sessions
+79-83 landed at a cadence of five reads in three days against a
+library whose remaining triage head is thinning in score, which is
+exactly the declining-yield regime the editions have been recording;
+the queue's growth (three sharpenings, all same-family) is not evidence
+of rising discovery, and no empirical claim from any paper in the
+window entered the record as support for any programme claim.
+
+NO sharpening queued by this act (the pass names gaps, it does not
+amend); DECISIONS_PENDING.md is NOT touched by the pass; T1 stays
+armed awaiting the owner's word; the queue FORTY-FOUR plus probe E1 at
+pass time, zero armed. Nothing measured, no kill line moved, nothing
+armed, nothing trades live.
+
+## 112. Null-time session 95 (2026-11-22), second act: library deep-read session 84 — the Deng-Zhou liquidity-adjusted ARMA-GARCH read, second of the score-22 tier; the paper graded a same-period-aggregate liquidity-factor artifact whose every fit and Sharpe magnitude is banned from the record under the laundering rule (paired-family self-comparisons, no market null, zero fees, silent beta-caps), whose within-day normalization inside its minute-level liquidity factor is banked as the evidence for ONE candidate sharpening (the same-period-aggregate feature availability rule), whose liquidity-regime indexing and clip-indexed descriptive statistics are recorded as interpretation cautions, and whose abolition-by-assertion of its own stochastic jump term reinforces the standing generative-null discipline; NO kill line moved; the ratification queue moves to forty-five candidate sharpenings plus probe E1
+
+Session-state note, per the goal-autonomy conductor protocol (edition 9,
+## 111, ACTIVE, installed as this session's first act above): the declared
+work choice is the standing deep-read, the protocol's default, matching
+the ## 110 closing pointer; the pointer named "Liquidity-adjusted Return
+and Volatility, and Autoregressive Models" as next UNREAD and this
+session re-verified that against the live file state before reading
+(slug-keyed note-less check: no library note mentions x0acf9d or the
+paper; the score-22 tier recomputed in triage order — five entries,
+x0fc07a consumed as ## 110, x0acf9d note-less and next, then x1a712b,
+x85b5e3 and x750e2f; the extract present, page-marked). This is deep-read
+84, the FIRST read counted against the edition-9 cadence (reset at ## 111,
+counter ONE of five). No inaccessible or blocked status this session; the
+extract was present, page-marked, complete and read in full (49 pp., body,
+tables, equations and references included; the extracted equations carry
+Unicode-mangling artifacts noted in the source-quality finding).
+
+- **Library deep-read session 84** (front 2, second of the score-22 tier;
+  note:
+  paper/research/library/2026-11-22_liquidity_adjusted_returns_arma_garch_deep_read.md):
+  Qi Deng, Zhong-guo Zhou, "Liquidity-adjusted Return and Volatility, and
+  Autoregressive Models" (arXiv:2503.08693v1, 2025; JEL C32, C51, C53,
+  G11, G12), score 22, index entry x0acf9d. The paper: minute-level
+  returns (15 US stocks via Polygon.io, Jul 2014-Feb 2025; 10 Binance
+  cryptos, Oct 2020-Feb 2025) rescaled by an Amihud-style same-day
+  illiquidity factor — each minute's factor using the whole day's mean
+  dollar volume and a day-level normalization constant constrained to
+  sum to T over all minutes (Eq. 1, PDF p. 11; Eqs. 2-3, PDF p. 12) —
+  aggregated into daily liquidity-adjusted returns (Eqs. 4a-4b, 5,
+  PDF p. 12) and summarized by a "liquidity beta pair" of same-period
+  aggregate ratios, liquidity jump |r_t/r_t^l| (footnote 4; Eq. 6) and
+  liquidity diffusion sigma_t/sigma_t^l (Eq. 7, PDF p. 13), both silently
+  capped at 10 before every statistic (footnote 6, PDF p. 13); the
+  ARMA-GARCH jump innovation is rewritten as a deterministic function of
+  the beta pair and expected return (Eqs. 9-12, PDF pp. 18-19), declared
+  "no longer stochastic" with its gamma/lambda never estimated, and a
+  liquidity-adjusted ARMA(p,q<=4)-GARCH(1,1) is fit on 242/365-day rolling
+  windows to both returns (Eqs. 13-16, PDF pp. 19-21): pairwise
+  t-tests on log-likelihoods show the regular model fitting better for
+  all 15 stocks at 1% (Table 5, PDF p. 39) and the adjusted model
+  fitting better for 7 of 10 cryptos (BTC declines; AVAX, LTC n.s.;
+  Table 6, PDF p. 42), with the shock coefficient rising for 9 of 10
+  cryptos (Table 6, Panel B, PDF p. 43) and persistence falling for the 7
+  significant ones (Table 6, Panel C, PDF p. 44); "validation" by
+  two-asset mean-variance portfolios on one-day-ahead forecasts with a
+  0% risk-free rate and no costs (Eqs. 17-19, PDF pp. 27-29) shows the
+  adjusted-input portfolios' Sharpe higher for 9 of 10 cryptos and mixed
+  for stocks (Table 7, PDF p. 45). Findings, graded:
+  1. [reinforcing, no new item] Every headline magnitude is a
+     paired-family self-comparison with no market null: the fit tests
+     compare the authors' own two nested model families (Tables 5-6,
+     PDF pp. 39-44) and the Sharpe "validation" compares the authors'
+     own two portfolio inputs on two-asset toy portfolios with zero
+     fees (Eq. 19, PDF p. 29; Table 7, PDF p. 45). The laundering ban
+     binds: nothing may enter the record as support for any programme
+     claim; the portfolio-optimization layer is context, never
+     operationalized. No queue change.
+  2. [candidate sharpening, PENDING OWNER RATIFICATION] The
+     same-period-aggregate feature availability rule queued as the
+     FORTY-FIFTH candidate: BEFORE the L0 gate, any C1-L2/C8-adjacent
+     spec using a signal or feature computed from aggregates over its
+     own aggregation period (a period mean or total, a period return,
+     a period volatility, or any ratio, rescaling or weighting built
+     from them — an Amihud-style illiquidity weighting, a within-day
+     normalized or "liquidity-adjusted" return, a period-aggregate
+     liquidity factor) must pre-declare that the feature's
+     availability timestamp is the CLOSE of its aggregation period and
+     may evaluate only at or after that close; a feature evaluated at
+     finer grain inside its own aggregation window is forward-looking
+     and fails by rule, however labeled, with the availability
+     declaration counted as frozen signal configuration and every
+     deviation a dated amendment before any data is touched. Earned by
+     the paper's own mechanism: every liquidity-adjusted quantity in it
+     is a function of same-period aggregates (the minute factor uses
+     the day's mean volume and normalization constant inside every
+     minute's rescaling, Eq. 1, PDF p. 11; Eqs. 2-3, PDF p. 12; the
+     beta pair is a ratio of same-period aggregates, PDF pp. 12-13),
+     and the paper's own use is lawful precisely because its
+     forecasts are strictly one-period-ahead after the day closes
+     (footnote 12, PDF p. 26), proving availability discipline is what
+     keeps the family honest — while the queued feature-normalization
+     pre-declaration (## 110) does not catch an aggregate-weighted
+     liquidity factor used intraday, since that rule binds only
+     normalization statistics. Harder-to-pass because a spec whose
+     feature aggregates its own evaluation period, evaluated before
+     that period closes, now fails at the gate instead of surviving as
+     a clever liquidity adjustment; tightens the feature-normalization
+     pre-declaration (deep-read 83) by extending availability from the
+     normalization-statistic class to ANY same-period aggregate-derived
+     feature, joining the estimator-configuration freeze (deep-read
+     63) on the frozen-configuration axis. Full draft with the
+     killed-if-wrong counterfactual in the session note
+     (paper/research/library/2026-11-22_liquidity_adjusted_returns_arma_garch_deep_read.md).
+  3. [interpretation caution] The paper's own cross-asset contrast is
+     liquidity-regime-indexed — adjustment degrades fit for all 15
+     liquid stocks at 1% (Table 5, PDF p. 39), improves it for 7 of 10
+     illiquid cryptos and degrades it for stock-like BTC (Table 6,
+     PDF p. 42; Table 7, PDF p. 45) — so any C1-L2/C8 cross-sectional
+     or cross-asset read must treat microstructure associations as
+     possibly liquidity-regime-conditioned: a pooled-market claim that
+     silently mixes regimes inherits the confounder; generalize across
+     regimes only with the replication the programme already requires.
+     No queue change.
+  4. [interpretation caution] Both liquidity betas are silently capped
+     at 10 before every statistic (footnote 6, PDF p. 13) and the cap
+     binds visibly (max exactly 10 across Tables 1, 3, PDF pp. 35, 37;
+     histograms described by their cap bar, Figs. 1-4, PDF
+     pp. 46-49), so the reported moments are clip-indexed. Reading
+     discipline: winsorization or clipping constants for any future
+     registered descriptive statistic of a liquidity-type quantity must
+     be pre-declared as frozen configuration — the existing
+     frozen-configuration discipline owns this. No queue change.
+  5. [reinforcing, no new item] The derivation abolishes its own
+     stochastic jump term by assertion — the innovation of Eq. 10
+     (PDF p. 19) becomes "no longer stochastic" once written as a
+     deterministic function of the beta pair (Eqs. 11-12, PDF
+     p. 19), gamma/lambda never estimated, the conditional variance
+     then mere rescaling of the regular variance (Eqs. 13-15, PDF
+     pp. 19-20) — exactly the move the programme's generative-null and
+     admission-null discipline refuses: a refutation instrument may
+     not be converted mid-derivation into deterministic relabelling.
+     No queue change.
+  6. [reinforcing, no new item] The crypto results are consistent with
+     unadjusted persistence in illiquid regimes partly reflecting
+     liquidity-shock clustering rather than temporal memory
+     (persistence falls, shock sensitivity rises under adjustment,
+     Table 6, Panels B-C, PDF pp. 43-44): observation only, sharpening
+     the reading discipline already owned by the queued
+     level-versus-memory disambiguation (deep-read 59) — count-based
+     persistence evidence in illiquid regimes must survive a
+     level/liquidity control arm before being read as memory.
+     Ammunition, never evidence. No queue change.
+  7. [source-quality note] arXiv v1 preprint (2025), zero citations at
+     cataloguing, provincial funding (PDF p. 1); equations partially
+     Unicode-mangled in the source; supporting tests withheld "upon
+     request" (footnotes 9-11, PDF pp. 16-17, 22; ADF rendered
+     "Adam-Fuller", PDF p. 17); two paragraphs duplicated verbatim
+     (PDF pp. 23-24); the conclusions claim no stock LAMV improvement
+     (PDF pp. 30-31) against Panel A's 9-up/5-down/1-flat mixed result
+     (PDF p. 29; Table 7, PDF p. 45); crypto Sharpe ratios mostly
+     negative annualized over 2021-2025 (Table 7, Panel B, PDF p. 45).
+     Check the published version before any formal citation. Read,
+     graded, recorded.
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (49 pp., body, tables, equations
+  and references complete).
+- Ratification queue after this session: FORTY-FIVE candidate
+  sharpenings plus probe E1, zero armed (ONE queued this session, second
+  act: the same-period-aggregate feature availability rule, above;
+  PENDING OWNER RATIFICATION). T1 remains armed awaiting the owner's
+  word in its booked state (survived all five kill lines with sign
+  inverted; T2 tested-fail); the blocked list stays blocked. Deep-read
+  queue pointer: next UNREAD "Empirical Study of Market Impact
+  Conditional on Order-Flow Imbalance" (score 22, x1a712b), third of the
+  score-22 tier (verified note-less this session) — re-read the live
+  tail and recompute the tier against the notes before consuming; the
+  edition-9 cadence counter stands at ONE of five (#84, this entry,
+  counted from the edition-9 reset at ## 111): the next pass is due
+  after five or more deep-reads since edition 9 (#88 onward at the
+  current rate).
+- docs/DECISIONS_PENDING.md IS touched by this session (rule: one
+  candidate sharpening queued — the ratification line moves to
+  forty-five candidate sharpenings plus probe E1, zero armed, with the
+  new item named in the queue's parenthetical).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run this session
+exits zero on the assembled changed files (marker, provenance and
+encoding checks over the full checked-out tree); the library-provenance
+audit and the full-tree sweeps run in CI over the full tree — the
+summaries are untouched this session — and must be verified green on
+both jobs before merge.
