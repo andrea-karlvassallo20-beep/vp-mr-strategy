@@ -11920,3 +11920,123 @@ and encoding sanity all exiting zero on the assembled tree, and exiting
 zero again on the same tree plus this session's changed files before
 commit; the CI jobs run over the pushed tree and must be verified green
 on both jobs before merge.
+
+## 119. Null-time session 100 (2026-11-22): library deep-read session 90 — the Calcagnile-Bormetti-Treccani-Marmi-Lillo collective-synchronization cojump read, last of the score-21 tier; the paper graded an honest endogeneity-of-synchronization empiricism (total one-minute extreme moves decreasing secularly while high-multiplicity cojumps grow up to tenfold, a power-law multiplicity tail truncated at the finite universe, and under 40% of the largest synchronized moves attributable to scheduled macro news, with news-triggered systemic moves completing within ~5 minutes), whose magnitudes are all banned from the record under the laundering rule, whose news-minority fraction reinforces the C8 shuffled-arrival placebo and deterministic-calendar families, whose ~5-minute propagation window reinforces the newly queued cross-stream desync-tolerance disclosure (#48), and whose identity-dropping multiplicity-vector Hawkes is banked as an interpretation caution on aggregate attribution; NO kill line moved; NO sharpening queued; the ratification queue stands at forty-eight candidate sharpenings plus probe E1
+
+Session-state note first (goal-autonomy protocol, ACTIVE; goal state edition
+10, ## 117): the live main tail (through ## 118) and docs/DECISIONS_PENDING.md
+were read (ratification line: forty-eight candidates plus probe E1 at session
+start, zero armed); the cadence check was recomputed from first principles —
+the edition-10 counter stood at ONE of five after deep-read 89 (## 118), so no
+synthesis pass is due and the default work choice for this session is the
+standing deep-read ritual itself, which needs no justification under the
+protocol; the cadence counter moves to TWO of five by this landing (#90).
+Verified against live state before reading: the triage file score-sorted and
+recomputed against the live library note listing (the score-22 tier and
+above CLOSED through ## 118; the score-21 tier exhausted by this read —
+x532697 landed ## 116, x1b6841 landed ## 118; the head x9921ac verified
+note-less with its extract present and page-marked; after it the score-20
+tier opens at its score-sorted head xaace1f, verified note-less this session
+with extract present; the open-PR set read at session start: empty, no
+race). This is deep-read 90, the SECOND read counted against the edition-10
+cadence. No inaccessible or blocked status this session; the extract was
+present, page-marked, complete and read in full (28 PDF pages, abstract,
+body, references, support-information appendices A-C and Table 1 complete).
+
+The paper: "Collective synchronization and high frequency systemic
+instabilities in financial markets" (Lucio Maria Calcagnile, Giacomo
+Bormetti, Michele Treccani, Stefano Marmi, Fabrizio Lillo; arXiv:1505.
+00704v1, May 5, 2015). One-minute extreme returns (bipower-EMA volatility
+threshold θ = 4, sensitivity 6, 8, 10; PDF p. 5) in 140 liquid Russell 3000
+stocks per year, 2001-2013, after dividing out the mean intraday pattern
+(PDF pp. 15-16); cojumps of multiplicity M synchronized across assets; a
+three-parameter multivariate Hawkes model of the multiplicity vector
+(η = 0.15, β = 0.6 — memory ≈ 1.67 minutes — γ = 2.65; PDF pp. 10-12, 19,
+21-22).
+
+Findings, graded (all page-cited in the session note
+paper/research/library/2026-11-22_collective_synchronization_cojumps_deep_read.md):
+
+  1. [reinforcing, no new item] Under 40% of high-multiplicity cojumps are
+     preceded by a scheduled macro announcement, consistently across all
+     years and even at the largest M (PDF pp. 2-3, 9-10, 14): the systemic
+     structure is majority-endogenous, so no C1-L2/C8 systemic association
+     conditioned on a news/event timeline may interpret its conditioning as
+     causal without a null against endogenous clustering — reinforces the
+     C8 shuffled-arrival placebo (A3, PROPOSED, owner-gated) and the
+     deterministic-calendar null (deep-read 73) by the same mechanism the
+     paper measures in print. No queue change.
+  2. [reinforcing, no new item] News-triggered systemic cojumps complete
+     within ~5 minutes; the attribution fraction is nearly identical across
+     τ = 1 to 15 minute lookback windows (PDF pp. 9-10): the tolerance-grid
+     insensitivity pattern is exactly what the cross-stream synchronization
+     and single-source-count pre-declaration (#48, queued deep-read 89)
+     demands a book-plus-macro-timeline join demonstrate, and a join whose
+     macro alignment survives only under a silently chosen window is a
+     tuning artifact. No queue change.
+  3. [reinforcing, no new item] The headline claim survives its own
+     pre-emptive grid checks — thresholds θ ∈ {4, 6, 8, 10}, one-to-five
+     minute detection windows, 140- vs 700-asset universes (PDF pp. 5,
+     7-8, 16-17): windows, thresholds and universe sizes are declared
+     configuration, reinforcing the regime-window pre-declaration
+     (deep-read 53), the primary-metric pre-commitment (deep-read 55) and
+     the estimator-configuration freeze (deep-read 63). No queue change.
+  4. [interpretation caution] The multiplicity-vector Hawkes drops the
+     identity of the cojumping stocks (PDF p. 11); the 85%-endogenous
+     share and the multiplicity-graded excitation (PDF pp. 12-13) license
+     nothing at the episode level — an aggregate burst or synchronization
+     statistic is equally consistent with common correlation, book-size
+     scaling and the level-versus-memory confound, and must pass the
+     level-versus-memory disambiguation (deep-read 59, queued) and the
+     residual-flow attribution null (deep-read 82, queued) before any
+     episode-level reading. No queue change.
+  5. [interpretation caution] The multiplicity power-law tail (≈ M^-1.5)
+     is explicitly truncated at the finite support M ≤ N and extends when
+     N = 700 (PDF pp. 7-8): cross-sectional count statistics inherit a
+     universe-size censor, so the universe definition is frozen
+     configuration under the standing censoring discipline, and a tail
+     statement without it is ambiguous. No queue change.
+  6. [reinforcing, no new item] Extremity is defined only after removing
+     the mean intraday pattern (PDF pp. 15-16): a future intraday
+     extremity or compression-clock feature thresholding raw magnitudes
+     would re-import the time-of-day geometry the deterministic-calendar
+     null (deep-read 73) exists to kill, and the normalization itself is
+     feature-normalization pre-declaration territory (deep-read 83,
+     queued). No queue change.
+  7. [source-quality note] arXiv v1 preprint, Kibot one-minute bars, one
+     venue class, 2001-2013; heuristic weighted-moment calibration with an
+     analyst-chosen 0.5 loss weighting (PDF pp. 20-21); the 85%-endogenous
+     figure is partly imposed by the parametrization (µ = ηE[λt], spectral
+     radius 1 - η by construction, empirical frequencies substituted for
+     expected intensities: PDF pp. 11, 19, 21-22), the stationary
+     multiplicity distribution matched by construction (PDF p. 19), with
+     the honest calibration-on-J=10 versus test-on-J=30/60 split as the
+     genre's redeeming feature (PDF pp. 12, 20-21); all magnitudes banned
+     from the record as support under the laundering rule; check the
+     published version before formal citation.
+
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (28 PDF pages, abstract, body, references,
+  support-information appendices and Table 1 complete).
+- Ratification queue after this session: UNCHANGED — FORTY-EIGHT candidate
+  sharpenings plus probe E1, zero armed (nothing queued this session;
+  T1 remains armed awaiting the owner's word in its booked state
+  (survived all five kill lines with sign inverted); T2 tested-fail); the
+  blocked list stays blocked. Deep-read queue pointer: next UNREAD
+  "Multivariate Hawkes-based Models in LOB: European, Spread and Basket
+  Option Pricing" (score 20, xaace1f), the score-20 tier's score-sorted
+  head (verified note-less this session, extract present) — re-read the
+  live tail and recompute the tier against the notes before consuming.
+  The edition-10 cadence counter stands at TWO of five by this landing
+  (#90).
+- docs/DECISIONS_PENDING.md is NOT touched by this session (rule: no
+  candidate sharpening queued).
+
+Nothing measured, no kill line moved, nothing armed, nothing trades live.
+Guard clean before commit: the session assembled the full tracked tree of
+main's tip locally (the public main archive, restored whole) and ran
+src/integrity_guard.py over it — marker sweep, library-provenance audit
+and encoding sanity all exiting zero on the assembled tree, and exiting
+zero again on the same tree plus this session's changed files before
+commit; the CI jobs run over the pushed tree and must be verified green
+on both jobs before merge.
