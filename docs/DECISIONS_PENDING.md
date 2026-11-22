@@ -1,9 +1,9 @@
 # Pending owner decisions — the thirty-ninth dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-22, the
-transform-domain admissibility pre-declaration
-queued as the fiftieth candidate sharpening (null-time session 102,
-log ## 121;
+moment-equivalence disclosure
+queued as the fifty-first candidate sharpening (null-time session 103,
+log ## 122;
 audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
@@ -37,7 +37,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: fifty
+  library deep-reads and the ratified exploratory channel: fifty-one
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -76,9 +76,51 @@ each case. Items are ordered by how much they gate.
   model-inversion identifiability pre-declaration queued 2026-11-22 by
   deep-read session 91 / null-time session 101, plus the
   transform-domain admissibility pre-declaration queued 2026-11-22 by
-  deep-read session 92 / null-time session 102; probe E1
+  deep-read session 92 / null-time session 102, plus the
+  moment-equivalence disclosure queued 2026-11-22 by deep-read
+  session 93 / null-time session 103; probe E1
   stands separately and is not
-  counted among the fifty); most recently joined 2026-11-22, the
+  counted among the fifty-one); most recently joined 2026-11-22, the
+  moment-equivalence disclosure (BEFORE the L0 gate, any
+  C1-L2/C8-adjacent comparator, null or statistic whose value derives
+  from a marked point-process or marked-intensity construction — level
+  sizes, event marks, imbalances feeding an intensity — must
+  pre-declare, as frozen configuration counted in the multiplicity
+  ledger, the moment-sensitivity class of every output it reports:
+  (i) which outputs are moment-bounded (provably functions of finitely
+  many moments of the mark/size law, hence inheritable from a
+  moment-matched calibration); (ii) which outputs are law-sensitive
+  (functions of the full mark law), with the declared law or law-family
+  frozen and its source dated; and (iii) the standing consequence that a
+  concordance or validation audit matching only finitely many moments
+  certifies the moment-bounded outputs and certifies NOTHING about the
+  law-sensitive ones — harder-to-pass because a moment-matched
+  implementation that today passes the estimator-implementation
+  concordance audit (deep-read 85) while its law-sensitive outputs ride
+  on an unverified distributional assumption chosen after the fact now
+  fails at the gate, and a claimed structure resting on those outputs
+  is dead by rule; tightens the estimator-implementation concordance
+  rule (deep-read 85), which checks code against a written definition
+  but never asks which outputs of that definition survive a
+  moment-match, and joins the estimator-configuration freeze
+  (deep-read 63) and the transform-domain admissibility pre-declaration
+  (#50) in extending frozen configuration to the analytic sensitivity
+  class of the estimator's outputs; the Gao-Zhou-Zhu transform-analysis
+  dark-pool Hawkes paper proves in print that the failure class is real
+  without any empirical content: E[N_T] and E[L_T] depend on the mark
+  law ONLY through E[l_1] (and E[L_T^2] only through the first two
+  moments, Proposition 5 with Remark 6, PDF pp. 12-13), while the
+  same-mean mark laws (constant, exponential, hyper-exponential) are
+  shown to produce systematically different fill-rate and
+  conditional-fill outputs (Figures 2-4, PDF pp. 20-23), with a proved
+  ordering E[sigma^(3)_x] > E[sigma^(2)_x] = x+1 >
+  E[sigma^(1)_x] = ceil(x) in the compound-Poisson case and the
+  explicit statement that the Hawkes time-to-complete-fill depends on
+  the distribution of the mark, not just its coefficient of variation
+  (PDF pp. 20-21, 41-42); full draft with the killed-if-wrong
+  counterfactual in the session note
+  (paper/research/library/2026-11-22_transform_analysis_hawkes_dark_pool_deep_read.md)),
+  and earlier the same day, the
   transform-domain admissibility pre-declaration (BEFORE the L0 gate,
   any C1-L2/C8-adjacent computation, comparator, null or feature whose
   value is computed through a transform of the data or of a fitted model
