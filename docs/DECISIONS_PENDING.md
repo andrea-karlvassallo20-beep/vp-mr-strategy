@@ -1,8 +1,8 @@
 # Pending owner decisions — the thirty-seventh dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-22, the
-estimator-implementation concordance rule queued as the
-forty-sixth candidate sharpening (null-time session 95, log ## 113;
+impact-viability pre-declaration for generative nulls queued as the
+forty-seventh candidate sharpening (null-time session 97, log ## 115;
 audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
@@ -36,7 +36,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: forty-six
+  library deep-reads and the ratified exploratory channel: forty-seven
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -67,9 +67,42 @@ each case. Items are ordered by how much they gate.
   same-period-aggregate feature availability rule queued 2026-11-22 by
   deep-read session 84 / null-time session 95, plus the
   estimator-implementation concordance rule queued 2026-11-22 by
-  deep-read session 85 / null-time session 95; probe E1
+  deep-read session 85 / null-time session 95, plus the impact-viability
+  pre-declaration for generative nulls queued 2026-11-22 by
+  deep-read session 87 / null-time session 97; probe E1
   stands separately and is not
-  counted among the forty-six); most recently joined 2026-11-22, the
+  counted among the forty-seven); most recently joined 2026-11-22, the
+  impact-viability pre-declaration for generative nulls (BEFORE a
+  generative null, placebo, comparator or simulator whose flow dynamics
+  include a transient-impact/reversion (resilience) layer may serve as a
+  refutation instrument, its pre-declaration must state the no-PMS and
+  no-TTPM condition of its own impact parameterization — from the
+  Alfonsi-Infante Acevedo condition family (PMS excluded iff
+  2ρ_t+η_t ≥ 0 under volume-impact reversion and iff 2ρ_t−η_t ≥ 0 under
+  price-impact reversion, with TTPM requiring the additional sign-derivative
+  conditions) or from its own dated derivation — and record that the armed
+  configuration satisfies it; a null whose impact layer can price a
+  negative-expected-cost round trip, or whose optimal behaviour embeds
+  transaction-triggered manipulation, is inadmissible as a null, because
+  it refutes against a benchmark that embeds arbitrage — the paper proves
+  in print that the failure class is real in a canonical published family:
+  explicit negative-cost round trips exist exactly when the pointwise
+  condition fails (Cor. 2.1 with the construction at Eq. 20, PDF p. 7;
+  Cor. 2.3 and PDF p. 10), and even a PMS-free book admits TTPM whose
+  optimal strategy roughly triples the traded volume (buy 50 via
+  first buying ~95 and selling ~45, Fig. 1, PDF pp. 8-9), artifacts with
+  no marginal signature that the dynamics-identification rule alone does
+  not catch; harder-to-pass because a null with an impact/reversion layer
+  must now clear a recorded viability gate before it may refute anything,
+  where today such a null could pass a marginal/flow-statistics check
+  silently while embedding arbitrage-shaped or sign-alternating volume
+  artifacts; tightens the dynamics-identification rule for generative
+  nulls (null-time session 58) on the impact-layer axis and joins the
+  queue-jump-diffusion generative-null pre-declaration (deep-read 81) in
+  the generative-null pre-declaration family; full draft with the
+  killed-if-wrong counterfactual in the session note
+  (paper/research/library/2026-11-22_optimal_execution_time_varying_lob_deep_read.md)),
+  and earlier the same day, the
   estimator-implementation concordance rule (BEFORE the L0 gate, every
   registered descriptive statistic, admission null, comparator or
   refutation instrument whose estimator is defined in writing must
