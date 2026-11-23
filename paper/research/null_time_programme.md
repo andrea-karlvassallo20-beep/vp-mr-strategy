@@ -13772,3 +13772,183 @@ full tree (main's tracked tree restored whole plus this session's changed
 files) with marker sweep, library-provenance audit and encoding sanity
 all exiting zero before commit; the CI jobs run over the pushed tree and
 must be verified green on both jobs before merge.
+
+## 134. Null-time session 112 (2026-11-23): library deep-read session 102 — the Ackermann-Kruse-Urusov càdlàg-semimartingale execution read, twelfth of the score-20 tier; the 2020/2021 pure-theory paper that extends the block-LOB execution family to stochastic depth and stochastic resilience, characterizes minimal costs through a quadratic BSDE over càdlàg semimartingale strategies, and proves twice in print that the conventional finite-variation bookkeeping conventions become catastrophically ill-posed (unbounded negative costs, constant positive parameters) the moment the admissible strategy class widens — ONE new candidate sharpening queued (the strategy-class/convention well-posedness pre-declaration), PENDING OWNER RATIFICATION; NO kill line moved
+
+The paper sets optimal execution over a stochastic block order book:
+price impact gamma > 0 follows d(gamma) = gamma(mu d[M] + sigma dM) (eq. 1,
+PDF p. 2), resilience rho is progressively measurable, an execution
+strategy is ANY cadlag semimartingale with X_{t-} = x and X_T = 0 (both
+directions, infinite variation, jumps = block trades), the price deviation
+solves dD = -rho D d[M] + gamma dX + d[gamma,X] (eq. 2 — the covariation
+term is the paper's own adjustment, PDF p. 2), and expected costs are
+J = E[int D- dX + int (gamma/2) d[X]] (eq. 3, PDF p. 3 — the quadratic-
+variation term is the second adjustment; both derived as discrete-time
+limits, Appendix A, PDF pp. 42-44, with the discrete recursion motivating
+the BSDE, Appendix B, PDF pp. 44-47). Under 2rho + mu - sigma^2 > 0 and a
+[0,1/2]-valued BSDE solution, the value function is
+V_t(x,d) = (Y_t/gamma_t)(d - gamma_t x)^2 - d^2/(2 gamma_t)
+(Theorem 3.4(i), PDF p. 10), an optimal strategy exists IFF the process
+beta-tilde from (14) admits a cadlag semimartingale version
+(Theorem 3.4(ii)-(iii), PDF pp. 10-11), and it is then explicit (eq. 18).
+The two counterexamples carry the bite: with CONSTANT positive gamma and
+rho in (0, 1/T) — parameters that pass every pointwise sign condition in
+the impact-viability family — the conventional cost functional ~J (6)/(20)
+has ess inf = -inf over semimartingale strategies (scaled Brownian
+strategies nu*W with nu -> inf, Section 4.1, PDF pp. 13-14), and even with
+the right J the conventional dynamics (24) without d[gamma,X] again give
+J -> -inf once gamma is itself stochastic (scaled-GBM strategies,
+Section 5.1, PDF pp. 15-17); with both corrections the problems are
+well-posed and the optima explicit (Sections 4.2, 5.2, PDF pp. 14-15,
+18-19). Section 6: optimal strategies can have infinite variation even
+when ALL exogenous processes are smooth (Example 6.1, PDF pp. 20-21); a
+jump only in the drift mu of gamma forces a block trade inside (0,T)
+(Example 6.2, PDF pp. 21-22, Figure 2, PDF p. 23); NEGATIVE resilience —
+the paper's own reading: self-exciting behaviour where the large
+investor's trading stimulates other market participants to trade the
+same direction (PDF p. 22) — makes oversell-then-flip-to-buying optimal
+by design (Example 6.3, PDF pp. 23-24, Figure 3, PDF p. 24); and an
+optimum can fail to exist while the value function stays finite
+(Example 6.4, PDF p. 25, infinite-variation mu). Section 7, Section 8
+and Appendix C prove BSDE existence and the comparison 0 <= Y <= 1/2
+(Propositions 7.1, 7.3, C.1, PDF pp. 26-29, 49-50). Read in full (53
+page-marked PDF pages, abstract, body, counterexamples, examples, proofs,
+both appendices, references complete; nothing skipped) against the one
+question. Note landed at
+paper/research/library/2026-11-23_cadlag_semimartingale_optimal_execution_deep_read.md.
+
+Director step (goal-autonomy protocol, ACTIVE): protocol read, consistent
+with the live tail (edition 12, written at ## 130); the session's work
+choice is the DEFAULT deep-read following the pointer set at ## 133: the
+score-20 tier holds fourteen entries per the live edge_triage_scores.json,
+eleven consumed through x7e576d at ## 133, so this read takes x150a2c
+twelfth, verified note-less against the live tree. Synthesis cadence: this
+landing makes FOUR of five counted from the edition-12 reset at ## 130
+(## 131, ## 132, ## 133, this session); no synthesis pass is due.
+
+Verdict: NO kill line changed; ONE new candidate sharpening queued, PENDING
+OWNER RATIFICATION. Findings (all graded against the queue as it stands at
+fifty-one candidates plus probe E1 at session start):
+
+1. [candidate sharpening, PENDING OWNER RATIFICATION] The
+   strategy-class/convention well-posedness pre-declaration: BEFORE the L0
+   gate, any C1-L2/C8-adjacent comparator, null, cost model, simulator or
+   refutation instrument that defines a cost, objective or "optimality"
+   statement must pre-declare, as frozen configuration counted in the
+   multiplicity ledger, (i) the admissible process/strategy class over
+   which the written definition is posed, and (ii) a recorded
+   well-posedness statement for the pairing of that class with the chosen
+   bookkeeping convention (boundedness-below over the declared class, or
+   the dated limiting derivation that produced the convention), with every
+   deviation a dated amendment before the data is touched; an objective
+   computed under a convention whose well-posedness over the declared
+   class was never established fails at the gate, and any comparison
+   resting on it is dead by rule. The paper proves the failure class is
+   real twice with no empirical content: constant positive (gamma, rho)
+   passing every pointwise sign condition still give ess inf ~J = -inf
+   over semimartingale strategies (Section 4.1, PDF pp. 13-14), and the
+   corrected J with the conventional dynamics again diverges once gamma
+   is stochastic (Section 5.1, PDF pp. 15-17) — while the corrected
+   pairings ((3) with (2)) are well-posed, each correction forced by the
+   discrete-time limit (Appendix A, PDF pp. 42-44). Harder-to-pass because
+   a comparator whose cost bookkeeping is inherited from a narrower class
+   than the one it simulates or optimizes over — today survivable as a
+   silent convention producing finite numbers while its own objective's
+   infimum diverges — now fails at the gate BEFORE any data is touched,
+   where no queued rule asks the question: the estimator-implementation
+   concordance rule (deep-read 85) audits code against the written
+   definition and passes a wrong-pairing definition; the impact-viability
+   pre-declaration (deep-read 87) checks pointwise sign conditions and
+   passes both counterexamples; the transform-domain rule (#50) covers
+   transform existence domains, not bookkeeping conventions. Tightens the
+   concordance rule (deep-read 85) by extending the audit from
+   implementation-vs-definition to definition-vs-admissible-class, and
+   joins the impact-viability pre-declaration (deep-read 87) and the
+   dynamics-identification rule (null-time session 58) in the
+   generative-null pre-declaration family. Killed-if-wrong counterfactual
+   in the session note.
+2. [reinforcing, no new item] The paper's corrections are forced, not
+   chosen: both adjustment terms ((gamma/2)d[X] and d[gamma,X]) are
+   derived as discrete-time limits (Appendix A, PDF pp. 42-44), the paper
+   states in print that the conventional forms "can result in an
+   ill-posed optimization problem" (PDF p. 4), and the conventional forms
+   recover exactly in the finite-variation special case (PDF p. 4). The
+   estimator-implementation concordance rule (deep-read 85) already
+   carries the implementation-vs-definition half; finding 1 extends it to
+   the class pairing. No further queue change.
+3. [interpretation caution] Existence is not implied by finiteness: a
+   finite value function can coexist with NO optimal strategy (Example
+   6.4, PDF p. 25), with existence routed through the
+   semimartingale-version property of beta-tilde (Theorem 3.4(ii), PDF
+   pp. 10-11); any future comparator or baseline referencing "optimal"
+   model behavior must carry an existence statement or it references a
+   vacuous object. Recorded as context. No queue change.
+4. [interpretation caution] Negative resilience self-excitation
+   re-encodes sign-alternation as optimal design: the paper's explicit
+   reading of rho < 0 is self-exciting behaviour where the large investor
+   stimulates same-direction trading (PDF p. 22), inside which
+   oversell-then-buy-back is optimal with beta > 1 forcing 1-beta negative
+   (Example 6.3, PDF pp. 23-24) — a measured sign-alternating flow pattern
+   is not itself diagnostic of any mechanism when the assumed
+   impact/resilience law can make it optimal, the same
+   conditional-on-the-law shape as the price-process-family invariance
+   rule (deep-read 66). No queue change.
+5. [source-quality note] arXiv v2 [math.PR] revised 2021-07-26, 53 PDF
+   pages, zero citations in the index, pure theory with no data (Figures
+   1-3 are simulations of the paper's own theorems, PDF pp. 19, 23, 24),
+   referee acknowledgement (PDF p. 50), companion discrete-time study
+   self-cited as arXiv:2006.05843 (PDF p. 50); a refereed published
+   version likely exists, check it before formal citation. No queue
+   change.
+
+Counterfactual (what this paper would have killed if we had done it
+wrong): without finding 1's pre-declaration, a future C8 comparator or
+generative null borrowing a cost convention from the finite-variation
+execution literature — the family the queue already cites for the
+impact-viability conditions — and then simulating or optimizing over a
+wider process class would produce finite single numbers while its own
+objective's infimum is -inf over exactly that class, with constant
+positive parameters that pass every pointwise condition, the divergence
+living only in the infimum so no computed value shows it; a claimed
+refutation or cost comparison resting on such a number would be
+manufactured by the convention with no visible fingerprint. And without
+the queued disambiguation family, a sign-alternating optimal-looking
+flow pattern in a model with a negative-resilience component would read
+as detected manipulation-type behaviour when Example 6.3 proves it is
+simply optimal inside the assumed law.
+
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (53 PDF pages, header, body, both
+  counterexamples, all examples, proofs, both appendices, the comparison
+  appendix and references complete; nothing skipped).
+- Ratification queue after this session: FIFTY-TWO candidate sharpenings
+  plus probe E1, zero armed (ONE queued by this read — the
+  strategy-class/convention well-posedness pre-declaration;
+  docs/DECISIONS_PENDING.md IS updated by this session accordingly; T1
+  remains armed awaiting the owner's word in its booked state; T2
+  tested-fail); the blocked list stays blocked. Deep-read queue pointer:
+  next UNREAD "Measuring tail risk at high-frequency: an L1-regularized
+  extreme value regression approach with unit-root predictors"
+  (xf959b8, score 20, thirteenth of the score-20
+  tier, verified note-less this session against the live listing) —
+  re-read the live tail and recompute the tier against the notes before
+  consuming. The edition-12 cadence counter stands at FOUR of five by
+  this landing (#102), counted from the edition-12 reset at ## 130 (the
+  next synthesis pass due at five or more deep-reads since edition 12).
+- Byte-landed log note (session-specific): this session assembled the log
+  locally from the public main archive (fetched as the repository tarball,
+  restored whole; the local copy byte-verified against the fetched
+  branch copy by md5 before appending) and will byte-verify the pushed
+  branch copy against the assembled local copy (md5 match) before opening
+  the PR, per the PR #289 convention and the ## 123 root-cause record.
+  The write path this session is the connector push (branch off live main
+  head, full-file contents byte-checked), used because the upgraded local
+  execution environment exposes no git CLI or GitHub credentials this
+  cycle.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the assembled
+full tree (main's tracked tree restored whole plus this session's changed
+files) with marker sweep, library-provenance audit and encoding sanity
+all exiting zero before commit; the CI jobs run over the pushed tree and
+must be verified green on both jobs before merge.
