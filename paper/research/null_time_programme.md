@@ -13279,3 +13279,223 @@ session's changed files) with marker sweep, library-provenance audit
 and encoding sanity all exiting zero before commit; the CI jobs run
 over the pushed tree and must be verified green on both jobs before
 merge.
+## 130. Null-time session 109 (2026-11-23), first act: the tenth synthesis pass — the cadence recomputed from the edition-11 reset at ## 124 (deep-reads 94-98 landed at ## 125 through ## 129, the window CLOSED at five of five per the ## 129 closing pointer, which directed the pass run before the read, against the clean tail), goal state rewritten as EDITION 12, the G2 brief-debt recomputed against the standing queue (briefs cover forty of fifty-one; items 41-51 owed), the FIRST zero-yield window recorded (zero kill-line moves, zero sharpenings in the window); NO sharpening queued by the pass
+
+The pass re-read the live record through the clean tail (## 1 through
+## 129) and recomputes the edition-11 window: deep-reads 94-98 landed at
+## 125, ## 126, ## 127, ## 128 and ## 129; ZERO kill lines moved in the
+window; ZERO sharpenings queued in it — the first fully zero-yield window
+since the pass sequence began at edition 3, confirming the
+declining-yield expectation named at editions 3-11 at its floor: the
+score-20 tier is returning reinforcing reads and interpretation cautions
+only, and the queue's declare-before-the-data vein is fully extended
+pending owner ratification, not a source of new mechanism classes. The
+window WAS infrastructure-clean: no new truncation, corruption or
+collision instance anywhere in ## 125 through ## 129; the write-side
+~64K truncation class (five instances: ## 75, ## 78, ## 94, ## 98,
+## 123) and the collision history (four events: ## 98, ## 105, ## 109,
+## 123) stand unchanged; the byte-monotonicity/verification infrastructure
+gap stays the ranked infrastructure item, candidate-improvement status
+only.
+
+Products of this pass, traveling only through the sanctioned channels:
+(1) goal state rewritten whole as EDITION 12 (protocol section 2,
+edition rule; the section 17 note records the change) — facts block
+recomputed from the live record at ## 129 (queue fifty-one plus probe
+E1 at pass time, zero armed; one hundred library note files through
+deep-read 98, the 101st landing as this session's second act and
+counting), ranked fronts unchanged in order with statuses recomputed, the
+deep-read pointer recomputed by title-matching the score-sorted triage
+file against the live tail and the library listing (the score-21
+tier CLOSED at ## 116, ## 118 and ## 119; the score-20 tier OPEN with
+EIGHT of its FOURTEEN entries consumed at ## 120 through ## 122 and
+## 125 through ## 129; next UNREAD xc495e3, "A market impact game
+under transient price impact" — consumed as this session's second
+act), cadence: RESET by this edition, the counter
+standing at ONE of five with #99 landing as this session's second act and
+counting; (2) docs/GOALS.md status board refreshed to edition 12
+(operative bookkeeping only; the protocol's section 2 stays the ranking
+authority). The pass measures nothing, arms nothing, launders nothing
+INTO any spec, and queues NO sharpening; the G2 brief debt is named not
+paid (briefs owed for items 41-51 before the next directorate sitting:
+#41 the noise-model pre-declaration, ## 100; #42 the queue-jump-diffusion
+generative null, ## 107; #43 the residual-flow attribution null, ## 108;
+#44 the feature-normalization pre-declaration, ## 110; #45 the
+same-period-aggregate feature availability rule, ## 112; #46 the
+estimator-implementation concordance rule, ## 113; #47 the
+impact-viability pre-declaration for generative nulls, ## 115; #48 the
+cross-stream synchronization and single-source-count pre-declaration,
+## 118; #49 the model-inversion identifiability pre-declaration, ## 120;
+#50 the transform-domain admissibility pre-declaration, ## 121; #51 the
+moment-equivalence disclosure, ## 122).
+
+docs/DECISIONS_PENDING.md is untouched BY THE PASS (this session's second
+act grades the next read; the file moves only if a sharpening is
+queued). Nothing measured, no kill line moved, nothing armed, nothing
+trades live. Guard clean on the assembled tree plus this session's
+changed files before commit; the CI jobs run over the pushed tree and
+must be verified green on both jobs before merge.
+
+## 131. Null-time session 109 (2026-11-23), second act: library deep-read session 99 — the Schied-Zhang market-impact-game read, ninth of the score-20 tier; the 2013/2017 two-agent Nash-equilibrium theory of the hot-potato game under transient (propagator) impact, whose endogenous-volume-without-information mechanism, game-form-dependent sign-structure inversion (single-agent buy-only vs two-agent oscillating on the same convex kernel), grain-inverting cost-frequency behavior with odd/even-N grid-parity artifacts, and zero-spread/quadratic-slippage/coin-toss-latency assumptions reinforce already-queued families and move NOTHING; NO kill line moved; NO new candidate sharpening
+
+The paper: Alexander Schied and Tao Zhang, "A market impact game under
+transient price impact" (arXiv:1305.4013v7 [q-fin.TR], stamp 8 May
+2017; slug xc495e3, per docs/library/expanded_index.json). Two competing
+agents liquidate inventories in a propagator impact model: martingale
+unaffected price (PDF p. 3), discrete grid, strictly positive-definite
+decay kernel G (eqs. 1-2, PDF pp. 3-4), average-price execution with symmetric
+latency by coin toss and quadratic transaction costs (Definitions
+2.1-2.2, eq. 3, PDF pp. 3-4). Theorem 2.5 proves existence and uniqueness
+of the Nash equilibrium in adapted strategies with an explicit
+deterministic formula: strategies spanned by two kernel-only vectors v
+and w (eqs. 7-8, PDF pp. 5-6). For vanishing transaction costs and fine
+grids the equilibria oscillate — the "hot-potato game" — read as
+protection against predatory trading (Remark 2.10, PDF p. 8). Theorem
+2.7, the main result, identifies the critical threshold theta* = G(0)/4
+above which all oscillations disappear (equilibria become buy-only or
+sell-only), proven for log-convex kernels and equidistant grids through
+triangular-Toeplitz inversion, the Kaluza sign criterion and M-matrix
+theory (PDF pp. 7-8, 19-24); below theta*, Proposition 2.8 proves the
+last three trades of w alternate signs (PDF p. 8) and Proposition 2.9
+proves full-vector sign alternation for exponential kernels (PDF
+pp. 18-19). Numerical simulations on invented parameters (Figures 1-6,
+PDF pp. 9-13) show expected costs increasing in trading frequency for
+small theta but decreasing at theta*, an odd/even-N grid-parity sawtooth
+at theta = 0 that disappears already at theta = 0.01 (Figure 4, PDF
+pp. 10-11), and expected costs lower WITH transaction costs than
+without, minimum near theta of 0.06 (Figure 5, PDF pp. 11-12),
+interpreted through the asymmetry that predatory strategies are round
+trips penalized more than one-directional liquidations (PDF p. 11); a
+price-of-anarchy comparison against unaware single-trader strategies is
+defined (PDF pp. 11-13). Zero empirical content anywhere; the
+Flash-Crash hot-potato vignette from the CFTC-SEC report (27,000
+contracts, 49 percent of volume, roughly 200 net, in 14 seconds, PDF
+pp. 1-2) is motivating narrative only. Read in full (26 page-marked
+PDF pages, abstract, body, both proof sections, all six figures and
+references complete) against the one question. Note landed at
+paper/research/library/2026-11-23_market_impact_game_transient_price_impact_deep_read.md.
+
+Director step (goal-autonomy protocol, ACTIVE): protocol read, consistent
+with the live tail (edition 12, written this session's first act, ## 130);
+the session's work choice is the DEFAULT deep-read (next UNREAD triage
+entry, re-ranked against the notes: the score-20 tier holds fourteen
+entries per the live edge_triage_scores.json, eight consumed — xaace1f
+at ## 120, x2b0051 at ## 121, x47bbb5 at ## 122, xe1c4ca at ## 125,
+xf8b5bc at ## 126, x97b372 at ## 127, x55e853 at ## 128 and x999a87
+at ## 129 — so this read takes xc495e3 ninth, no note on main per the
+live listing), run after the edition-12 synthesis pass discharged first
+per the ## 129 closing pointer's instruction.
+
+Verdict: NO kill line changes. NO new candidate sharpening. Findings (all
+graded against the queue as it stands at fifty-one candidates plus probe
+E1):
+
+1. [reinforcing, no new item] Endogenous volume without information,
+   proven in print: the two-agent Nash equilibrium on a propagator impact
+   model generates strong two-sided recirculation (single components of
+   the equilibrium vectors exceeding 60 percent of the initial position,
+   Figure 1, PDF p. 9) with near-zero net liquidation, purely from
+   strategic interaction — protecting against predatory trading
+   (Theorem 2.5 and Remark 2.10, PDF pp. 5-8). High L2 activity, volume
+   and turnover is not per se evidence of information-bearing flow: the
+   C8 shuffled-arrival placebo and the generative-null pre-declaration
+   families (## 118 lineage; #42, #47) already carry the case, and this
+   read changes nothing. No queue change.
+2. [interpretation caution] The sign structure of simulated endogenous
+   flow is decided by the strategic-structure assumption, not by the
+   kernel: for the same convex nonincreasing decay kernel, the
+   single-agent optimum is buy-only or sell-only (Alfonsi-Fruth-Schied
+   Theorem 1, quoted as Remark 2.11, PDF p. 10) while the two-agent
+   equilibrium on the identical kernel oscillates (Theorem 2.7,
+   Propositions 2.8-2.9, PDF pp. 7-8, 17-18). No data can identify game
+   form within the propagator family, and it flips the predicted sign
+   structure; under the estimator-configuration freeze and the
+   dynamics-identification and generative-null pre-declarations the
+   game form of any future generative null is one more knob frozen
+   before the data. Recorded as standing context. No queue change.
+3. [interpretation caution] Grain conclusions invert with a cost
+   constant: expected costs increase in trading frequency for small
+   theta, decrease at theta = theta* = G(0)/4, and exhibit a pure
+   odd/even-N grid-parity sawtooth at theta = 0, gone already at
+   theta = 0.01 (Figure 4 and discussion, PDF pp. 10-11).
+   Grid parity and the direction of grain-dependence are simulation
+   artifacts conditional on an unmeasured cost parameter in this model
+   family; never market structure. Reinforces the grain-association
+   caution and the flow-clock scale-constant frozenness. No queue
+   change.
+4. [cost-survival ammunition] The "transaction costs can reduce
+   everyone's expected costs" result (minimum near theta of 0.06,
+   Figure 5, PDF pp. 11-12; the calming-effect discussion, PDF p. 24)
+   matters only if a future K7-style cost-survival layer exists; that
+   layer must carry the declared assumptions: zero bid-ask spread
+   averaged over order types with rebates and dark pools argued away
+   (Remark 2.3, PDF p. 5), quadratic temporary impact as slippage
+   (eq. 3, PDF p. 4), symmetric latency by coin toss (Definition 2.2,
+   PDF p. 4), martingale unaffected price (PDF p. 3). A "taxes calm
+   fire sales" reading is model-internal on invented parameters;
+   banned from the record as support for any programme claim. No queue
+   change.
+5. [source-quality note] Established-authors theory preprint: arXiv v7
+   stamped 8 May 2017 on a 2013 id; the v-vector oscillation assertions
+   are simulation-only (PDF p. 8); oscillation and no-oscillation
+   proofs limited to log-convex kernels and equidistant grids, the
+   general equivalence conjectured and the authors stating their
+   proofs "cannot be extended beyond our stated conditions" (Remark
+   2.12, PDF p. 10); several numerical observations proven only in
+   the companion follow-up paper (ref. [23], PDF pp. 11, 26); zero
+   empirical content, no L2 data anywhere; check for a published
+   version before formal citation. No queue change.
+
+Counterfactual (what this paper would have killed if we had done it
+wrong): without the library-is-ammunition caveat, the "transaction costs
+can calm fire sales and reduce everyone's costs" result (PDF pp. 10-12,
+24) would have entered the C8 macro-synthesis as a licensed market
+property — a policy-flavored structural claim from a two-agent
+model-internal statement on an idealized block book with declared zero
+spread and invented parameters. Without the estimator-configuration
+freeze, the game-form knob would launder sign structure post hoc: the
+same convex kernel predicts buy-only behaviour for one agent (Remark
+2.11) and oscillating hot-potato behaviour for two (Theorem 2.7), so any
+observed L2 oscillation could be "explained" by assuming two agents and
+any absence by assuming one, the assumption chosen after the fact — the
+pre-declaration discipline exists so the programme can never occupy that
+position. Without the grain-association caution, the odd/even-N
+sawtooth of Figure 4 would be reproducible "alternating structure" at
+fine sampling, a pure simulation artifact elevated to a market property.
+Without the laundering discipline, the CFTC-SEC hot-potato magnitudes
+(49 percent of volume on roughly 200 net contracts in 14 seconds, PDF
+pp. 1-2) would sit in a claim as programme evidence, when they are a
+single-day, single-venue regulatory quote usable only as motivation,
+never as support.
+
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (26 PDF pages, abstract, body, both proof
+  sections, all six figures, references complete; nothing skipped).
+- Ratification queue after this session: FIFTY-ONE candidate sharpenings
+  plus probe E1, zero armed (NONE queued by this read;
+  docs/DECISIONS_PENDING.md is NOT touched by this session; T1 remains
+  armed awaiting the owner's word in its booked state; T2 tested-fail); the
+  blocked list stays blocked. Deep-read queue pointer: next UNREAD
+  "Multivariate self-exciting jump processes with applications to
+  financial data" (x7a86fb, score 20, tenth of the score-20 tier,
+  verified note-less this session against the live listing) — re-read the
+  live tail and recompute the tier against the notes before consuming.
+  The edition-12 cadence counter stands at ONE of five by this landing
+  (#99), counted from the edition-12 reset at ## 130 (the next synthesis
+  pass due at five or more deep-reads since edition 12).
+- Byte-landed log note (session-specific): this session assembled the
+  log locally from the live main copy plus these two entries and will
+  byte-verify the pushed branch copy against the assembled local copy
+  (md5 match) before opening the PR, per the PR #289 convention and the
+  ## 123 root-cause record. The write path this session is the
+  connector push (branch off live main head, full-file contents
+  byte-checked), used because the local execution environment exposes
+  no git CLI or credentials this cycle.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the
+assembled full tree (main's tracked tree restored whole plus this
+session's changed files) with marker sweep, library-provenance audit
+and encoding sanity all exiting zero before commit; the CI jobs run
+over the pushed tree and must be verified green on both jobs before
+merge.

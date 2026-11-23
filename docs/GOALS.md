@@ -1,8 +1,8 @@
 # GOALS.md — the fronts status board (operative work-selection companion)
 
 **Status:** the session-facing status board for the goal-state fronts, per
-the conductor protocol (goal state **edition 11**, protocol section 2;
-change recorded log ## 124; rotation guidance, section 3; weekly
+the conductor protocol (goal state **edition 12**, protocol section 2;
+change recorded log ## 130; rotation guidance, section 3; weekly
 directorate, section 6; landed
 2026-11-19) and the owner's standing order recorded MADE in
 `docs/DECISIONS_PENDING.md` (resolved item, 2026-11-19). The protocol's
@@ -62,7 +62,7 @@ construction.
    readiness; L2-chain work takes precedence over all fronts that
    serve it.
 
-## Status board (protocol section 2, edition 11)
+## Status board (protocol section 2, edition 12)
 
 - Front 1 — the gated L2 window. STATUS: THE CRITICAL PATH (Board
   directive, 2026-11-19). Still blocked on the owner (environment + data:
@@ -76,25 +76,29 @@ construction.
   "Collective synchronization and high frequency systemic
   instabilities in financial markets" x9921ac read ## 127 of the
   consumed-pointer record; recomputed live by title-matching the
-  score-sorted triage file against the restored log tail); the
-  score-20 tier is OPEN with three of its fifteen reads landed
-  (the Guo-Swishchuk-Rémillard multivariate Hawkes LOB option-pricing
-  read xaace1f ## 120, the Zamora Font VIX-options Heston-Hawkes read
-  x2b0051 ## 121, the Gao-Zhou-Zhu transform-analysis dark-pool read
-  x47bbb5 ## 122), and this session consumes xe1c4ca ("The order book
-  as a queueing system: average depth and influence of the size of
-  limit orders", Muni Toke, fourth of the score-20 tier) as its third
-  act after the edition-11 pass and the ## 123 log repair. Next UNREAD
-  after this session: "Hawkes Processes" (xf8b5bc, fifth of the
-  score-20 tier), then the remaining score-20 tier; re-read the live
+  score-sorted triage file against the live log tail); the
+  score-20 tier is OPEN with NINE of its FOURTEEN reads landed after
+  this session (the Guo-Swishchuk-Rémillard multivariate Hawkes LOB
+  option-pricing read xaace1f ## 120, the Zamora Font VIX-options
+  Heston-Hawkes read x2b0051 ## 121, the Gao-Zhou-Zhu transform-analysis
+  dark-pool read x47bbb5 ## 122, the Muni Toke order-book-queueing read
+  xe1c4ca ## 125, the Laub-Taimre-Pollett "Hawkes Processes" survey read
+  xf8b5bc ## 126, the Jagielski-Kutner-Sornette earthquake-interevent
+  read x97b372 ## 127, the Tomlinson et al. two-tailed POT asymmetry read
+  x55e853 ## 128, the Yang China-contagion read x999a87 ## 129, and the
+  Schied-Zhang market-impact-game read xc495e3 landing as this
+  session's second act after the edition-12 pass). Next UNREAD
+  after this session: "Multivariate self-exciting jump processes with
+  applications to financial data" (x7a86fb, tenth of the score-20
+  tier), then the remaining score-20 tier; re-read the live
   tail before consuming; the ritual's slug-keyed unread rule applies.
-  NOTE (refreshed 2026-11-22, null-time session 104, log ## 124): the
-  deep-read counter since EDITION 11 stands at ONE of five (deep-read
-  94, landing as this session's third act, counted from the edition-11
-  reset at ## 124); the G2 directorate briefs cover the first forty
-  queued items plus probe E1 (refreshed 2026-11-21, log ## 99), so
-  briefs are owed from item 41 through item 51 and any successor
-  (item 41 the noise-model pre-declaration, item 42 the
+  NOTE (refreshed 2026-11-23, null-time session 109, log ## 130): the
+  deep-read counter since EDITION 12 stands at ONE of five (deep-read
+  99, landing as this session's second act, counted from the
+  edition-12 reset at ## 130); the G2 directorate briefs cover the
+  first forty queued items plus probe E1 (refreshed 2026-11-21, log
+  ## 99), so briefs are owed from item 41 through item 51 and any
+  successor (item 41 the noise-model pre-declaration, item 42 the
   queue-jump-diffusion generative null, item 43 the residual-flow
   attribution null, item 44 the feature-normalization
   pre-declaration, item 45 the same-period-aggregate feature
@@ -109,19 +113,19 @@ construction.
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
   without real klines, and no invented data is substituted.
-- Front 4 — the synthesis pass. STATUS: NOT DUE (refreshed 2026-11-22,
-  null-time session 104, log ## 124): the edition-10 cadence window was
-  found CLOSED at five of five (deep-reads 89-93 landed ## 118 through
-  ## 122, counted from the edition-10 reset at ## 117; the ## 122
+- Front 4 — the synthesis pass. STATUS: NOT DUE (refreshed 2026-11-23,
+  null-time session 109, log ## 130): the edition-11 cadence window was
+  found CLOSED at five of five (deep-reads 94-98 landed ## 125 through
+  ## 129, counted from the edition-11 reset at ## 124; the ## 129
   closing pointer directed the pass run before the read, against the
-  record restored by this session's first act, ## 123), so this
-  session's second act discharged the ninth synthesis pass, recorded
-  as goal state EDITION 11, log ## 124; cadence per edition 11: next
-  due when five or more deep-reads have landed since edition 11
-  (deep-read #94 lands as this session's third act and counts, so the
-  counter stands at ONE of five). NOTE: edition 10 is superseded whole
-  by edition 11 (same protocol section 16 note; edition 10's substance
-  preserved in the ## 117 log record and the protocol's section 15).
+  infrastructure-clean window tail), so this session's first act
+  discharged the tenth synthesis pass, recorded as goal state
+  EDITION 12, log ## 130; cadence per edition 12: next due when five
+  or more deep-reads have landed since edition 12 (deep-read #99
+  lands as this session's second act and counts, so the counter
+  stands at ONE of five). NOTE: edition 11 is superseded whole by
+  edition 12 (same protocol section 17 note; edition 11's substance
+  preserved in the ## 124 log record and the protocol's section 16).
 
 - Front 5 — gap-driven probes. STATUS: standing, per
   `docs/exploratory_channel.md`; up to one block per session at the
