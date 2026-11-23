@@ -13642,3 +13642,133 @@ full tree (main's tracked tree restored whole plus this session's changed
 files) with marker sweep, library-provenance audit and encoding sanity
 all exiting zero before commit; the CI jobs run over the pushed tree and
 must be verified green on both jobs before merge.
+
+## 133. Null-time session 111 (2026-11-23): library deep-read session 101 — the Vyetrenko-Xu risk-sensitive compact decision tree read, eleventh of the score-20 tier; the 2019 ICML execution-agent paper whose market response to the agent's own aggressive orders is synthesized inside a historical-replay LOB simulator by an analyst impact rule (a single threshold CMI plus a KL-tuned parameter set), whose risk parameter sweeps the learned policy from all-passive to all-aggressive, and whose headline 32%-cost-saving figure is graded by the same simulator its benchmark was tuned in — execution-strategy engineering that reinforces existing freezes and moves NOTHING; NO kill line moved; NO new candidate sharpening
+
+The paper sets order execution over a parent order as an infinite-horizon MDP
+(remaining position plus discretized LOB state variables as states, a binary
+passive-limit versus aggressive-market child placement as action, execution
+yield against the parent-arrival mid as reward, Section 3.1, PDF pp. 4-5,
+eq. 4), trains it inside a LOB replay simulator where queue position and
+cancellations are unobserved and must be assumed (a pre-set cancellation
+convention, a historical latency profile, always-filled aggressive orders,
+zero impact for passive joins, Section 2.1, PDF pp. 3-4), synthesizes the
+market response to the agent's own aggressive orders with a single-threshold
+impact rule (below CMI the simulated book diverges from history until the
+next historical aggressive trade in the agent's direction or next adverse
+move, eqs. 2-3, PDF p. 4), tunes simulator parameters by minimizing a KL
+divergence between historical and simulated benchmark cost distributions
+(eq. 1, PDF p. 4), learns with tabular risk-sensitive Q-learning in the
+Mihatsch-Neuneier transform framework (U_beta on the TD error, eqs. 11-14,
+PDF p. 6) plus eligibility traces, uses Dantzig-regularized LSPI only for
+feature selection (Section 3.3, PDF pp. 6-7), and renders the tabular policy
+as a decision tree by Hunt's algorithm (Section 4.2, PDF p. 7). Results on
+one liquid futures contract: sweeping beta from 0 to 1 moves the learned
+policy monotonically from all-passive (highest yield, highest variance) to
+all-aggressive (lowest expectation, lowest variance), Figure 3, PDF p. 7;
+the chosen decision-tree policy reports 32% execution-cost savings at a 27%
+increase in cost standard deviation, computed entirely in-simulator against
+a simulator-tuned benchmark, Figure 6, PDF pp. 7-8. Read in full (10
+page-marked PDF pages, header and disclaimer block, body, all six figures,
+references complete) against the one question. Note landed at
+paper/research/library/2026-11-23_risk_sensitive_compact_decision_trees_deep_read.md.
+
+Director step (goal-autonomy protocol, ACTIVE): protocol read, consistent
+with the live tail (edition 12, written at ## 130); the session's work choice
+is the DEFAULT deep-read following the pointer set at ## 132: the score-20
+tier holds fourteen entries per the live edge_triage_scores.json, ten
+consumed through x7a86fb at ## 132, so this read takes x7e576d eleventh,
+verified note-less against the live tree. Synthesis cadence: this landing
+makes THREE of five counted from the edition-12 reset at ## 130 (## 131, ##
+132, this session); no synthesis pass is due.
+
+Verdict: NO kill line changes. NO new candidate sharpening. Findings (all
+graded against the queue as it stands at fifty-one candidates plus probe
+E1):
+
+1. [reinforcing, no new item] The paper's own stated hazard — training on
+   historical replay without agent-market interaction is unrealistic
+   (Section 1.3, PDF p. 3) — is the reflexivity-of-evaluation class the
+   library-is-ammunition rule already carries: an evaluation inside an
+   environment whose response law was fit to the same data is an
+   in-environment statement, not a market statement; the entire results
+   section (Figure 6, PDF pp. 7-8) is ammunition, never evidence. The
+   existing rule carries the case. No queue change.
+2. [interpretation caution] The impact law is analyst-manufactured with a
+   free threshold and assumed conventions: response eqs. 2-3 carry the
+   single parameter CMI, and the simulator parameter set psi (queue
+   cancellation convention, latency profile, fill assumptions) is KL-tuned
+   against benchmark cost distributions (Section 2, PDF pp. 3-4); every
+   policy learned there is conditional on (CMI, psi), the simulator
+   analogue of the frozen estimator-configuration freeze (deep-read 63).
+   Recorded as context. No queue change.
+3. [interpretation caution] The risk parameter beta is a preference
+   constant chosen by trader's risk appetite (Section 4.1, PDF p. 7) and
+   silently selects the qualitative policy shape (all-passive at beta=0 to
+   all-aggressive at beta=1, Figure 3, PDF p. 7); the frozen-constants rule
+   is the existing guard should any future design ever carry such a knob.
+   No queue change.
+4. [cost-survival ammunition] The simulator assumptions are a checklist a
+   future K7-style cost-survival or execution-feasibility layer must carry
+   explicitly (unobserved queue position and cancellation convention,
+   latency by time of day, immediate top-level fills, zero passive-join
+   impact, the divergence splice of eq. 3, Section 2.1, PDF pp. 3-4); a
+   cost estimate produced under any of these silently asserts them.
+   Relevance only if such a layer exists. No queue change.
+5. [source-quality note] arXiv v2 q-fin.TR (revised 2021-01-06), ICML 2019
+   PMLR header, zero citations in the index, ten pages, one instrument, the
+   headline 32% saving an in-simulator comparison against a simulator-tuned
+   benchmark, no out-of-sample or live confirmation, LSPI convergence
+   flagged unguaranteed by the authors themselves (Section 3.3, PDF pp.
+   6-7), and the J.P. Morgan disclaimer stating the paper is not its
+   research (PDF p. 1). Ammunition only; check the published PMLR version
+   before formal citation. No queue change.
+
+Counterfactual (what this paper would have killed if we had done it wrong):
+without the library-is-ammunition rule, the 32% figure (Figure 6, PDF p. 8)
+would enter the record as empirical support for execution-adjacent claims,
+when the policy was graded by the same simulator whose impact law and
+benchmark were tuned to the same history — a closed loop that cannot fail
+visibly from inside. Without the estimator-configuration freeze, CMI and the
+psi conventions would look like data-cleaning constants while they are the
+model's degrees of freedom: re-set the cancellation convention or latency
+profile and a different tree descends from the same history, indistinguishable
+by any external test. Without the frozen-constants rule, a beta-shaped risk
+parameter would select the policy's qualitative character before any market
+evidence arrived, leaving no visible fingerprint. And for C8: the paper
+manufactures multi-agent "other participants" entirely from a single-agent
+history plus an assumed response law, which is why any macro-synthesis input
+phrased as "markets respond as if..." must be traced to a measured response
+or marked as an assumed law, or the synthesis inherits simulator assumptions
+dressed as market facts.
+
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (10 PDF pages, header and disclaimer, body,
+  all six figures, references complete; nothing skipped).
+- Ratification queue after this session: FIFTY-ONE candidate sharpenings
+  plus probe E1, zero armed (NONE queued by this read;
+  docs/DECISIONS_PENDING.md is NOT touched by this session; T1 remains
+  armed awaiting the owner's word in its booked state; T2 tested-fail); the
+  blocked list stays blocked. Deep-read queue pointer: next UNREAD "Càdlàg
+  semimartingale strategies for optimal trade execution in stochastic
+  order book models" (x150a2c, score 20, twelfth of the score-20 tier,
+  verified note-less this session against the live listing) — re-read the
+  live tail and recompute the tier against the notes before consuming. The
+  edition-12 cadence counter stands at THREE of five by this landing
+  (#101), counted from the edition-12 reset at ## 130 (the next synthesis
+  pass due at five or more deep-reads since edition 12).
+- Byte-landed log note (session-specific): this session assembled the log
+  locally from the public main archive (fetched as the repository tarball,
+  restored whole) and will byte-verify the pushed branch copy against the
+  assembled local copy (md5 match) before opening the PR, per the PR #289
+  convention and the ## 123 root-cause record. The write path this session
+  is the connector push (branch off live main head, full-file contents
+  byte-checked), used because the upgraded local execution environment
+  exposes no git CLI or GitHub credentials this cycle.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the assembled
+full tree (main's tracked tree restored whole plus this session's changed
+files) with marker sweep, library-provenance audit and encoding sanity
+all exiting zero before commit; the CI jobs run over the pushed tree and
+must be verified green on both jobs before merge.
