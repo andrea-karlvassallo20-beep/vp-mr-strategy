@@ -92,20 +92,23 @@ construction.
   applications to financial data" (x7a86fb, tenth of the score-20
   tier), then the remaining score-20 tier; re-read the live
   tail before consuming; the ritual's slug-keyed unread rule applies.
-  NOTE (refreshed 2026-11-23, null-time session 115, log ## 137): the
-  eleventh synthesis pass landed as this session's first act, the
-  edition-12 cadence window found CLOSED at five of five (deep-reads
-  99-103 landed ## 131 through ## 136, ## 135 the G2 briefs refresh
-  interleaved and non-counting; the ## 136 closing pointer directed
-  the pass run first) and the goal state rewritten as EDITION 13
-  (protocol section 2; change recorded log ## 137); the counter is
-  RESET to ZERO of five, next pass due when five or more deep-reads
-  have landed since edition 13; the G2 directorate briefs cover
-  FIFTY-TWO of the FIFTY-THREE queued items plus probe E1 (through
-  B16), and the item-53 brief (the conditional-tail
-  covariate-integration pre-declaration, queued ## 136) is executed
-  as this session's second act (## 138), its own note appended to the
-  G2 STATUS below at that time.
+  NOTE (refreshed 2026-11-24, null-time session 116, log ## 139): the
+  deep-read counter since EDITION 13 stands at ONE of five (deep-read
+  #104 landed ## 139, counted from the edition-13 reset at ## 137; the
+  next synthesis pass falls due when five or more deep-reads have
+  landed since edition 13). The score-20 tier is now CLOSED (all
+  fourteen of its reads landed; the fourteenth and last is the
+  Taranto-Bormetti-Lillo adaptive liquidity-taking read x1e5f02, ##
+  139). Next UNREAD recomputes to the head of the score-19 tier
+  (five entries): "How does latent liquidity get revealed in the
+  limit order book?" (x03aa07, first of the score-19 tier, verified
+  note-less; distinct from the session-3 Hiremath latent-regimes
+  note); re-read the live tail before consuming; the ritual's
+  slug-keyed unread rule applies. The G2 directorate briefs cover
+  FIFTY-THREE of the FIFTY-FOUR queued items plus probe E1 (through
+  B17), and the item-54 brief (the generative-null agent
+  information-set pre-declaration, queued ## 139) is owed before the
+  next sitting of the directorate.
 
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run

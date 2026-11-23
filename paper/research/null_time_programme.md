@@ -14453,3 +14453,189 @@ live. Guard clean: python3 src/integrity_guard.py run over the assembled
 full tree (main's tracked tree restored whole plus this session's changed
 files) with marker sweep, library-provenance audit and encoding sanity
 all exiting zero before commit.
+
+## 139. Null-time session 116 (2026-11-24): library deep-read session 104 — the Taranto-Bormetti-Lillo adaptive liquidity-taking read, fourteenth AND LAST of the score-20 tier, which the landing CLOSES; the 2014 asymmetric-liquidity dissection whose mechanical-impact decomposition (penetration probability times half-gap, validated) pins efficiency restoration on taker volume adaptation with quote revision REINFORCING the move, whose trade-time-vs-physical-time inversion separates the 2004-LSE and 2009-NASDAQ efficiency-recovery scales, and whose model proves the diffusivity of simulated prices to be a function of the agents' predictor — public DAR(p) bounds it to lags below the predictor window, private metaorder-aware gives it at all scales — ONE new candidate sharpening queued (the generative-null agent information-set pre-declaration), PENDING OWNER RATIFICATION; NO kill line moved
+
+Session-state note (director step, per docs/goal_autonomy_protocol.md,
+edition 13, ACTIVE, consistent with the live tail at ## 138): the
+declared work choice is the DEFAULT deep-read following the pointer set
+at ## 137 — the edition-13 counter stands at ZERO of five, this read is
+#104 and counts as the window's first, and rotation is fresh (## 137 and
+## 138 were the synthesis pass and the G2 item-53 brief, both
+non-reads); no ranked non-deep-read alternative stands ahead of it
+(the edition-13 guidance ranks the read-back verification helper for a
+non-deep-read-preferring session only after the briefs closed at
+## 138, and the deep-read remains the floor). Race checks at the
+choice: live main fetched and verified (head ca44a55, tail "## 138",
+zero "## 139" on main). Channel note: the verification loop's CI step,
+recorded as owner-side work at ## 136 through ## 138, is now PARTIALLY
+executable from this channel via the unauthenticated GitHub API — the
+CI run at the ## 138 landing commit reads "completed, success" (both
+jobs; the deploy workflow failed at the deploy step, the same
+transient class that failed twice before and self-recovered on
+subsequent runs; the next docs-triggered deploy, including this
+session's, is the recovery channel) — recorded here as the CI
+verification of the ## 136 and ## 137-138 landings finally in hand.
+
+The paper sets asymmetric liquidity, after Lillo-Farmer, as the
+reconciliation of persistent order flow with efficient prices, and
+dissects it on four mega-liquid stocks (AZN, VOD full LOB LSE 2004;
+AAPL, MSFT NASDAQ Jul-Aug 2009; small- and large-tick pairs, Table 1,
+PDF p. 7): a DAR(500) sign predictor (Table 2 and Appendix A, PDF
+pp. 8, 37-39), returns split into mechanical and quote-revision
+components (PDF p. 13), the mechanical impact approximated as
+penetration probability times half the opposite gap (eq. 3, validated
+against all four stocks, PDF pp. 14, 17-18, Figure 8). Printed
+mechanism: rising correctness of the sign prediction drops the
+penetration probability — takers adapt market order volume to the
+outstanding opposite liquidity — with best-side volumes eroding then
+refilling near the predictor extremes (Figures 4, 6, 7; PDF pp. 10-17),
+and the quote revision acting in the SAME direction as the mechanical
+impact at moderate correctness, vanishing at extreme correctness (PDF
+pp. 17-19): providers reinforce rather than restore efficiency, and the
+paper's own reading assigns the restoration to the taker. Transaction-
+level inefficiency regions print for the NASDAQ stocks (eq. 4; MSFT
+"clearly inconsistent with market efficiency", PDF p. 19), recovering
+after s trades: AAPL 5 lags / 5.5 s, MSFT 11 / 18.7 s, AZN 1 / 23.1 s,
+VOD 5 / 114.5 s — the 2009 NASDAQ market needs more trade lags but less
+physical time than 2004 LSE, "high frequency trading decreases the
+physical time needed to restore efficiency in the market, but it might
+increase the trade time" (PDF p. 22). The modeling half: the Toth et
+al. (2011) construction recovers diffusivity only below the
+limit-order lifetime and under unrealistically low cancellation rates,
+where its conditional volume profile takes the wrong sign versus data
+(PDF pp. 23-26, Figure 11); the adaptive fix makes the beta exponent of
+the volume fraction f a function of correctness, penetration
+probability α(1−ε·ε̂), and the reduced return model r = A(ε−ε̂)+η exactly
+efficient and diffusive at all lags (eqs. 5-6, PDF pp. 26-29),
+equivalent to the propagator model under the AR predictor (PDF
+pp. 28-29). The load-bearing print: under the PUBLIC DAR(p) predictor
+diffusivity holds only for lags below p (shown at p = 500 and p =
+10000, Figure 13, PDF p. 34); under the PRIVATE metaorder-aware
+predictor (the LMF continuation probability, eq. 9, PDF pp. 30-33)
+diffusivity holds at all scales, by construction, insensitive to
+parameters (Figure 12, PDF p. 33). Read in full (40 page-marked PDF
+pages, header, body, all fourteen figures, the DAR(p) appendix,
+references complete; nothing skipped; Figure 3's raw axis text
+partially garbled in the extract, its content stated in the
+accompanying text, PDF pp. 8-9) against the one question. Note landed
+at
+paper/research/library/2026-11-24_adaptive_liquidity_taking_deep_read.md.
+
+Verdict: NO kill line changed; ONE new candidate sharpening queued,
+PENDING OWNER RATIFICATION. Findings (graded against the queue as it
+stood at fifty-three candidates plus probe E1 at session start):
+
+1. [candidate sharpening, PENDING OWNER RATIFICATION] The generative-
+   null agent information-set pre-declaration: BEFORE the L0 gate,
+   any C1-L2/C8-adjacent generative null, placebo, comparator or
+   simulator whose simulated participants act on a decision rule fed
+   by any input must pre-declare, as frozen configuration counted in
+   the multiplicity ledger, for each simulated agent class: (i) the
+   information set its rule consumes, every input marked PUBLIC
+   (derivable from the public observables the null simulates) or
+   PRIVATE (not so derivable: agent-internal state, metaorder
+   continuation knowledge, the knowing-taker assumption), and (ii)
+   which macro-level outputs of the simulation are claimed invariant
+   to that marking and which are information-set-dependent, with every
+   deviation a dated amendment before any data is touched. Harder-to-
+   pass because a null whose agents silently consume private
+   information today passes as an ordinary null while its produced
+   macro properties are artifacts of the choice: the paper proves the
+   failure class on its own model with nothing changed but the takers'
+   predictor — public DAR(p) bounds simulated diffusivity to lags
+   below the predictor window (Figure 13, PDF p. 34), private
+   metaorder-aware restores it at all scales "by construction"
+   (Figure 12 with text, PDF p. 33), the authors themselves marking the
+   private predictor as "not typically of public domain" (PDF p. 32).
+   No queued rule asks the question: the impact-viability
+   pre-declaration (deep-read 87) audits impact-parameterization sign
+   conditions, not agent knowledge; the dynamics-identification rule
+   (null-time session 58) demands dynamics identified, not inputs
+   declared; the queue-jump-diffusion pre-declaration (## 107)
+   freezes null parameters, not agent inputs. Tightens the
+   impact-viability pre-declaration (deep-read 87) and joins the B17
+   conditional-tail item (deep-read 103) in closing a researcher
+   degree of freedom that alone can manufacture a macro-level
+   conclusion. Killed-if-wrong counterfactual in the session note.
+2. [reinforcing, no new item] The impact decomposition — mechanical
+   impact as penetration probability times half-gap (eq. 3, validated)
+   with the quote-revision channel measured separately — is ammunition
+   for the C8 mechanism shortlist, never program evidence, and the
+   trade-time-vs-physical-time inversion of efficiency recovery
+   (PDF p. 22) reinforces the queued flow-clock scale-constant
+   discipline: cross-era comparisons must state their clock. No queue
+   change.
+3. [interpretation caution] The measurements assign efficiency
+   restoration to the taker adaptation, with quote revision
+   REINFORCING the price move at moderate correctness (PDF pp. 17-19);
+   any C1-L2/C8 narrative assigning the restoration role to market
+   makers must trace to a measured component, not an assumed law. No
+   queue change.
+4. [interpretation caution] The model's private predictor lets the
+   simulated taker consume structurally defined non-public knowledge
+   (her continuation law, PDF pp. 30-33): read jointly with finding 1 —
+   private information in a simulator is not illegitimate, it is a
+   load-bearing configuration that cannot be silent. No queue change.
+5. [source-quality note] arXiv v2 [q-fin.ST] 11 Apr 2014, "Submitted
+   to: JSTAT", 40 pages, zero citations in the index, four
+   mega-liquid stocks across two venues and eras, the NASDAQ
+   inefficiency regions self-flagged as regime-dependent and partly
+   scarcely populated (PDF p. 15), and a DAR(p) estimation that
+   smooths negative fitted coefficients with a ten-point moving average
+   before zeroing them (Appendix A, PDF p. 39) — any reuse must carry
+   that preprocessing; check the published JSTAT version before formal
+   citation. No queue change.
+
+Counterfactual (what this paper would have killed if we had done it
+wrong): without finding 1, a future C8 generative null could claim "no
+null reproduces the measured compression signal" while its simulated
+takers silently ran on a private-information rule, or claim "a null
+reproduces everything" while its agents ran on a truncated public
+predictor — either conclusion manufactured by an undeclared agent
+information set, the refutation carrying the artifact with no visible
+fingerprint in the outputs. Without the mechanism-channel caution, the
+paper's taker-side efficiency narrative would enter the record as a
+market fact about who restores efficiency, when it is a four-stock
+conditional association whose provider-side extension the authors
+themselves leave as future work (PDF p. 37).
+
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (40 PDF pages, header, body,
+  all fourteen figures, the DAR(p) appendix, references complete;
+  nothing skipped).
+- Ratification queue after this session: FIFTY-FOUR candidate
+  sharpenings plus probe E1, zero armed (ONE queued by this read — the
+  generative-null agent information-set pre-declaration;
+  docs/DECISIONS_PENDING.md IS updated by this session accordingly; T1
+  remains armed awaiting the owner's word in its booked state; T2
+  tested-fail); the blocked list stays blocked. Deep-read queue
+  pointer: the score-20 tier is now CLOSED (all fourteen entries
+  consumed, the last being this read); the pointer recomputes against
+  the full score-sorted file to the score-19 tier (five entries), next
+  UNREAD "How does latent liquidity get revealed in the limit order
+  book?" (x03aa07, score 19, first of the score-19 tier, verified
+  note-less this session against the live listing; distinct from the
+  session-3 Hiremath latent-regimes note) — re-read the live tail and
+  recompute the tier against the notes before consuming. The
+  edition-13 cadence counter stands at ONE of five by this landing
+  (#104), counted from the edition-13 reset at ## 137. Directorate
+  briefs: cover all items through 53 (## 138); the item-54 brief is
+  owed before the next sitting, and is the ranked non-deep-read choice
+  for a preferring session together with the read-back verification
+  helper.
+- Byte-landed log note (session-specific): this session continues the
+  ## 136 local-assembly convention (log assembled locally from the
+  public main archive, restored whole; the landing is one connector
+  push, files byte-verified against the assembled local copies before
+  pushing), per the ## 123 root-cause record. CI verification now
+  partially executable from this channel via the unauthenticated
+  GitHub API (recorded above); the deploy workflow's deploy-pages step
+  is the remaining owner-side item. The landing commit must be
+  confirmed on GitHub.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the assembled
+full tree (main's tracked tree restored whole plus this session's changed
+files) with marker sweep, library-provenance audit and encoding sanity
+all exiting zero before commit.

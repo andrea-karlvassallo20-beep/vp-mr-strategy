@@ -1,9 +1,9 @@
 # Pending owner decisions — the fortieth dashboard
 
-**Maintained by the null-time sessions. Last updated: 2026-11-23, the
-conditional-tail covariate-integration pre-declaration
-queued as the fifty-third candidate sharpening (null-time session 114,
-log ## 136;
+**Maintained by the null-time sessions. Last updated: 2026-11-24, the
+generative-null agent information-set pre-declaration
+queued as the fifty-fourth candidate sharpening (null-time session 116,
+log ## 139;
 audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
@@ -37,7 +37,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: fifty-three
+  library deep-reads and the ratified exploratory channel: fifty-four
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -82,10 +82,56 @@ each case. Items are ordered by how much they gate.
   strategy-class/convention well-posedness pre-declaration queued
   2026-11-23 by deep-read session 102 / null-time session 112, plus the
   conditional-tail covariate-integration pre-declaration queued
-  2026-11-23 by deep-read session 103 / null-time session 114; probe E1
+  2026-11-23 by deep-read session 103 / null-time session 114, plus the
+  generative-null agent information-set pre-declaration queued
+  2026-11-24 by deep-read session 104 / null-time session 116; probe E1
   stands separately and is not
-  counted among the fifty-three); most recently joined 2026-11-23, the
-conditional-tail covariate-integration pre-declaration (BEFORE the L0
+  counted among the fifty-four); most recently joined 2026-11-24, the
+generative-null agent information-set pre-declaration (BEFORE the L0
+gate, any C1-L2/C8-adjacent generative null, placebo, comparator or
+simulator whose simulated participants — takers, makers, adversarial
+responders — act on a decision rule fed by any input must pre-declare,
+as frozen configuration counted in the multiplicity ledger, for each
+simulated agent class: (i) the information set its decision rule
+consumes, with every input marked PUBLIC (derivable from the public
+observables the null itself simulates) or PRIVATE (not so derivable:
+agent-internal state, metaorder continuation knowledge, any
+knowing-agent assumption), and (ii) which macro-level outputs of the
+simulation are claimed invariant to that marking and which are
+information-set-dependent, with every deviation a dated amendment
+before any data is touched — harder-to-pass because a generative null
+whose agents silently consume private information today passes as an
+ordinary null while its produced macro properties are artifacts of that
+choice, and the Taranto-Bormetti-Lillo adaptive liquidity-taking paper
+proves the failure class in print on its own model with nothing changed
+but the takers' predictor: the public DAR(p) predictor bounds the
+simulated price's diffusivity to scales below the predictor window
+(σ(ℓ) constant for ℓ < p, shown at p = 500 and p = 10000, Figure 13,
+PDF p. 34) while the private metaorder-aware predictor (the LMF
+continuation probability, eq. 9, PDF pp. 30-33) gives diffusivity and
+informational efficiency at all scales "by construction", insensitive
+to the participation and δ parameters (Figure 12 with the text at PDF
+p. 33) — the same simulator, same rates, same grid, different agent
+information set, qualitatively different macro property, the authors
+themselves marking the private input as "not typically of public
+domain" (PDF p. 32) — and no queued rule asks the question: the
+impact-viability pre-declaration for generative nulls (deep-read 87)
+audits the impact parameterization's pointwise sign conditions and
+says nothing about what its agents know, the dynamics-identification
+rule for generative nulls (null-time session 58) demands the dynamics
+identified, not the agents' inputs declared, and the
+queue-jump-diffusion generative-null pre-declaration (queued ## 107)
+freezes null parameters, not agent inputs; tightens the
+impact-viability pre-declaration (deep-read 87) by extending the
+generative-null pre-declaration family from impact parameterization
+viability to agent information sets, and joins the conditional-tail
+covariate-integration pre-declaration (deep-read 103) in closing a
+researcher degree of freedom that alone can manufacture a macro-level
+conclusion; full draft with the killed-if-wrong counterfactual in the
+session note
+(paper/research/library/2026-11-24_adaptive_liquidity_taking_deep_read.md)),
+and earlier, 2026-11-23, the conditional-tail covariate-integration
+pre-declaration (BEFORE the L0
 gate, any C1-L2/C8-adjacent conditional extreme-value model — a GPD/POT
 tail regression, a time-varying tail-shape or tail-scale spec, any
 covariate-conditioned exceedance or severity model — must pre-declare,
