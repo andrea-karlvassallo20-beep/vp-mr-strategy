@@ -13952,3 +13952,131 @@ full tree (main's tracked tree restored whole plus this session's changed
 files) with marker sweep, library-provenance audit and encoding sanity
 all exiting zero before commit; the CI jobs run over the pushed tree and
 must be verified green on both jobs before merge.
+
+## 135. Null-time session 113 (2026-11-23): GOALS.md G2 executed — the queue fully briefed: the G2 item-41 brief extended in the same product to items 41 through 52, the count reconciliation extended to fifty-two, all FIFTY-TWO queued sharpenings plus probe E1 now carry sitting-ready briefs
+
+Session-state note (director step, per docs/goal_autonomy_protocol.md,
+edition 12, ACTIVE, consistent with the live tail at ## 134): the
+declared work choice is the edition-12 guidance's ranked non-deep-read
+item — "the G2 brief for item 41 remains the ranked choice" — chosen
+over the lawful deep-read floor for rotation freshness (the last four
+landed sessions, ## 131 through ## 134, were all deep-reads; rotation
+rule point 3 discourages another consecutive read when a ranked
+alternative stands). The same G2 product lawfully extends through the
+last unbriefed item: briefs summarize already-recorded proposals with
+their sources, and items 42-52 are as recorded as item 41; writing the
+item-41 brief alone would leave the doc internally inconsistent (a
+sitting could not batch-ratify families holding unbriefed members).
+The synthesis cadence is NOT due: the edition-12 counter stands at
+FOUR of five (deep-reads 99-102 landed ## 131-## 134); no pass runs
+this session, and the next work-selecting session that lands a fifth
+deep-read opens with the pass before its read. Race checks at the
+choice: live main fetched and verified (log 929,723 chars, tail
+"## 134", zero "## 135" on main), zero open PRs at the check.
+
+Work, all inside the standing order's carve-outs (notes and
+bookkeeping; nothing armed, nothing measured, nothing trades live):
+
+- docs/DIRECTORATE_BRIEFS.md (G2 refresh, the queue's batch-ratify
+  reading material): items 41-52 briefed, each with its join order,
+  its queuing log entry, the library note holding the full draft, the
+  one-paragraph mechanism, and the sitting's accept/reject question —
+  B10 the noise-model pre-declaration for de-noised inputs (41st,
+  ## 100, Clinet–Potiron parametric-noise plug-in read: the de-noising
+  functional form moves the residual-noise share from ~0% to 20-30% of
+  variance with nothing changed but the form); B11 the
+  feature-normalization pre-declaration (44th, ## 110, the
+  Zheng–He–Yang cross-exchange read: rolling normalizations whose
+  windows are never stated, unauditable from the text); B12 the
+  estimator-implementation concordance rule (46th, ## 113, the
+  Bugaenko read: Eq. 20 defines a signed mean while Algorithm 1 clips
+  every negative response to zero); B13 the model-inversion
+  identifiability pre-declaration (49th, ## 120, the Guo–Swishchuk–
+  Rémillard read: one observed scalar split between two unknowns
+  through an analyst-supplied constant — information created by the
+  split); B14 the transform-domain admissibility pre-declaration
+  (50th, ## 121, the Zamora Font VIX-options read: evaluations outside
+  the transform's proven domain are undefined by rule, silent finite
+  numbers fail the concordance audit); B15 the moment-equivalence
+  disclosure (51st, ## 122, the Gao–Zhou–Zhu dark-pool read: mean fill
+  outputs are moment-bounded while same-mean mark laws produce
+  systematically different fill-rate outputs — a moment-matched audit
+  certifies only the moment-bounded half); B16 the
+  strategy-class/convention well-posedness pre-declaration (52nd,
+  ## 134, the Ackermann–Kruse–Urusov read: conventional bookkeeping
+  goes ill-posed (infimum −∞) the moment the declared strategy class
+  widens, the divergence living only in the infimum so no computed
+  value shows it); D5 the queue-jump-diffusion generative-null
+  pre-declaration (42nd, ## 107, the Cont–de Larrard read: liquid-book
+  queues are fluctuation-dominated, a depletion-side drift could be
+  pure diffusion); F8 the same-period-aggregate feature availability
+  rule (45th, ## 112, the Deng–Zhou read: a feature built from
+  period aggregates is available only at the period's close); F9 the
+  cross-stream synchronization and single-source-count pre-declaration
+  (48th, ## 118, the Cheng–Yang–Zou Polymarket read: merge timeline,
+  imputation, desync tolerance and a source-overlap map against the
+  mirrored Long/Short double-count, proven in print on all four axes);
+  H2 the residual-flow attribution null (43rd, ## 108, the
+  Donier–Bonart million-metaorder read: impact is the square root of
+  the TOTAL market imbalance, the market does not detect individual
+  metaorders — episode attribution must survive the
+  aggregate-conditioned subsample); H3 the impact-viability
+  pre-declaration for generative nulls (47th, ## 115, the
+  Alfonsi–Infante Acevedo read: a canonical published impact family
+  is internally arbitrageable in computable parameter regions, and no
+  other queued rule catches the impact layer). Family placements
+  follow each item's own recorded "tightens" pointer: B10-B16 join the
+  estimator-discipline family (its intro and sitting question updated
+  from nine to sixteen members); D5 joins the admission-null family
+  (its sitting question updated); F8-F9 join the
+  measurement/manipulation family (its sitting question updated);
+  H2-H3 join the dynamics-identification family (its question updated
+  to the three-part binding ask). The count reconciliation is extended
+  and closes exactly at fifty-two (the 41-52 join list: ## 100, ##
+  107, ## 108, ## 110, ## 112, ## 113, ## 115, ## 118, ## 120, ##
+  121, ## 122, ## 134), with the protocol-vs-tail supersession note
+  extended (the edition-12 facts block said FIFTY-ONE at ## 129; the
+  tail and DECISIONS_PENDING say FIFTY-TWO). Probe E1 re-checked,
+  unchanged, standing separately. NOTHING invented, NOTHING queued,
+  NOTHING armed; every brief cites its log entry and note.
+- docs/GOALS.md surgical edits, two, status bookkeeping with zero
+  ranking action: (1) the front-2 NOTE refreshed — the edition-12
+  counter stated at ONE of five by the ## 130 refresh was stale
+  against the ## 131-## 134 landings and now reads FOUR of five (the
+  next read landing makes FIVE and the successor session opens with
+  the pass), and the "briefs owed from item 41" sentence is discharged
+  (all fifty-two briefed, item 52 as B16, next refresh owed from item
+  53, none queued yet); (2) the G2 STATUS refresh note appended with
+  the twelve item-to-family placements, and the FEEDS line's queue
+  count corrected from FIFTY-ONE to FIFTY-TWO. Nothing gated was
+  touched; the protocol's section 2 remains the ranking authority.
+
+Ratification queue after this session: FIFTY-TWO candidate sharpenings
+plus probe E1, zero armed — UNCHANGED from the ## 134 landing; briefs
+queue nothing. docs/DECISIONS_PENDING.md is NOT touched this session.
+T1 remains armed awaiting the owner's word in its booked state
+(survived all five kill lines with sign inverted; T2 tested-fail); the
+blocked list stays blocked. Deep-read queue pointer: unchanged — next
+UNREAD "Measuring tail risk at high-frequency: an L1-regularized
+extreme value regression approach with unit-root predictors" (xf959b8,
+score 20, thirteenth of the score-20 tier, verified note-less by the
+## 134 session), then the last of the score-20 tier; re-read the live
+tail before consuming. NOTE for the successor: this landing keeps the
+edition-12 counter at FOUR of five; if the successor runs a deep-read,
+that landing makes FIVE and the NEXT session after it opens with the
+synthesis pass (edition 13) before its read.
+
+Byte-landed log note (session-specific): this session assembled the log
+locally from the public main archive (fetched as the repository tarball,
+restored whole; the local copy byte-verified against the fetched
+branch copy by md5 before appending) and will byte-verify the pushed
+branch copy against the assembled local copy (md5 match) before
+opening the PR, per the PR #289 convention and the ## 123 root-cause
+record.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the assembled
+full tree (main's tracked tree restored whole plus this session's changed
+files) with marker sweep, library-provenance audit and encoding sanity
+all exiting zero before commit; the CI jobs run over the pushed tree and
+must be verified green on both jobs before merge.

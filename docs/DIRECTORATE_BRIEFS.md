@@ -11,6 +11,14 @@ sitting-ready; the refresh re-lands and extends the same session's
 #271 product after the ## 98 race-collision corrigendum. Probe E1
 re-checked, unchanged.**
 
+**Refreshed 2026-11-23 by null-time session 113 (log entry ## 135),
+executing GOALS.md G2 under the protocol edition-12 work-selection
+guidance — the ranked non-deep-read choice was the item-41 brief, and
+the same G2 product extends it through the last unbriefed item: items
+41-52 briefed (B10-B16, D5, F8-F9, H2-H3), the count reconciliation
+extended to fifty-two, the queue fully briefed and sitting-ready.
+Probe E1 re-checked, unchanged.**
+
 Boundary (G2's, restated): these briefs summarize already-recorded
 proposals with their sources. A brief invents nothing, queues nothing
 new, and arms nothing. Every full draft lives in the log entry and the
@@ -19,14 +27,14 @@ one-paragraph mechanism, not a restatement. Nothing here carries
 authority over any gate, claim, or kill line.
 
 How to read this in a sitting (protocol section 6): the queue holds
-FORTY candidate sharpenings plus probe E1, zero armed. The items
+FIFTY-TWO candidate sharpenings plus probe E1, zero armed. The items
 are grouped into nine families by the precedent each one tightens. Each
 item names its position in the queue (the join order recorded in the
 log's queue lines), the log entry and note that hold the full draft,
 and the accept/reject question. A sitting may batch-ratify or kill per
 item or per family; ratifying a family ratifies every item in it.
 
-Count reconciliation (recorded so the forty is checkable, not
+Count reconciliation (recorded so the fifty-two is checkable, not
 asserted): the composition is enumerated from the log's queue-line
 arithmetic — sessions 3 (two), 4 (the K7 cluster counted as one), 4b
 (two: the W-ladder report, Amendment-1), 5 (one), 6 (two), 7 (one), 9
@@ -36,16 +44,21 @@ increment at log entries ## 14, ## 16, ## 17, ## 18, ## 19, ## 20,
 ## 41, ## 51, ## 57, ## 62, ## 65, ## 67 and ## 69 — closing exactly at
 thirty-three; then one join per named increment at log entries ## 71,
 ## 74, ## 77, ## 81, ## 85, ## 93 and ## 96 — closing exactly at
-forty. Probe E1 stands separately and is not counted. One
+forty; then one join per named increment at log entries ## 100, ## 107,
+## 108, ## 110, ## 112, ## 113, ## 115, ## 118, ## 120, ## 121, ## 122
+and ## 134 — closing exactly at fifty-two. Probe E1 stands separately and
+is not counted. One
 instrument observation recorded by this session: the queue's
 composition was previously held nowhere on main as a single list, only
 as counts plus the most recent items' full text; this document is now
 that enumeration. (The protocol section 2 facts block says THIRTY-TWO
 because it was recomputed at ## 68, just before the edition-writing
 session's own read queued the thirty-third; the live log tail at ##
-69 and `docs/DECISIONS_PENDING.md` carry THIRTY-THREE — a state twice
-superseded: both carried THIRTY-NINE at ## 93, and both carry FORTY
-as at ## 96.)
+69 and `docs/DECISIONS_PENDING.md` carry THIRTY-THREE — a state
+superseded with every refresh: both carried THIRTY-NINE at ## 93,
+FORTY at ## 96, and FIFTY-ONE at the edition-12 recomputation at ##
+129, while the live log tail at ## 134 and `docs/DECISIONS_PENDING.md`
+carry FIFTY-TWO, the number these briefs use.)
 
 ---
 
@@ -121,8 +134,11 @@ as already covered by an accepted rule.
 ## Family B — estimator discipline on the branching-ratio read
 
 The trigger's number must be earned by the fit, not by the optimizer's
-convenience. These nine tighten how a branching-ratio estimate may be
-read.
+convenience. The founding items tighten how a branching-ratio estimate
+may be read; the later ones extend the same discipline to every
+estimator, preprocessing stage, inversion and transform a C1-L2/C8-adjacent
+computation will touch. These sixteen are the read-out and
+earned-number discipline of the programme.
 
 - **B1. The K7 estimation pre-declaration cluster** (3rd, session 4,
   counted as one sharpening, log ## 8, note
@@ -218,8 +234,109 @@ read.
   adapted-in-window null tracks any regime change by construction and
   could never refute anything); PENDING OWNER RATIFICATION either way.
 
-Sitting question: are these nine accepted as the standing read-out
-discipline for the trigger, or does any member duplicate another?
+- **B10. The noise-model pre-declaration for de-noised inputs** (41st,
+  queued via deep-read 76, log ## 100, note
+  `paper/research/library/2026-11-21_parametric_mmn_plugin_deep_read.md`).
+  Before the L0 gate, any computation, comparator, null or baseline
+  that feeds a de-noised, reconstructed or "efficient"-price input
+  must pre-declare the noise functional form AND the exact
+  limit-order-book variable set entering it, counted in the
+  multiplicity ledger; a number that survives only under a post-hoc
+  swap of the noise model may not enter any spec as support. The
+  Clinet–Potiron parametric-noise paper's own recount moves the
+  residual-noise share from ~0% to 20-30% of noise variance with
+  nothing changed but the choice of the functional form — the
+  de-noising form is a silent dial that can scrub inconvenient
+  structure into the "noise" term. Extends the estimator-configuration
+  freeze (B7) from the estimator's fitting configuration to the
+  preprocessing stage that defines its input.
+- **B11. The feature-normalization pre-declaration** (44th, queued via
+  deep-read 83, log ## 110, note
+  `paper/research/library/2026-11-21_optimal_execution_reinforcement_learning_deep_read.md`).
+  Any signal defined through a rolling or windowed normalization (a
+  min-max rescaling, a z-score, a rolling-mean subtraction, a rolling
+  volatility scale) must pre-declare, in the same frozen signal
+  definition, the window length, the estimation convention (strictly
+  trailing, excluding the evaluation point) and the warm-up handling;
+  a number that survives only under a post-hoc normalization window
+  fails by rule. The Zheng–He–Yang cross-exchange paper's signals rest
+  on rolling normalizations whose windows are never stated — unauditable
+  from the text, which is itself the reason the rule must bind before
+  the data.
+- **B12. The estimator-implementation concordance rule** (46th, queued
+  via deep-read 85, log ## 113, note
+  `paper/research/library/2026-11-22_market_impact_ofi_conditional_deep_read.md`).
+  Every registered descriptive statistic, admission null, comparator
+  or refutation instrument whose estimator is defined in writing must
+  carry a one-time concordance audit of the executable implementation
+  against the written definition — for silent numeric transformations
+  the text does not declare (clips, floors, winsorization, dropped
+  observations, same-timestamp aggregation); a number produced by an
+  implementation that does not match its written definition is
+  inadmissible at the gate. The Bugaenko paper's own Eq. 20 defines a
+  signed mean while its Algorithm 1 clips every negative signed
+  response to zero — the headline positivity partially manufactured by
+  the transformation.
+- **B13. The model-inversion identifiability pre-declaration** (49th,
+  queued via deep-read 91, log ## 120, note
+  `paper/research/library/2026-11-22_multivariate_hawkes_lob_option_pricing_deep_read.md`).
+  Any computation that inverts a parametric model onto an observed
+  quantity (implied volatility onto order-flow moments, a measured
+  score onto a latent intensity) must pre-declare which parameters are
+  FROZEN and from where, an identifiability statement proving the
+  observed quantity admits a unique parameter split, and an
+  input-provenance trace proving the "observed" input is not itself
+  generated by the model family being inverted. The Guo–Swishchuk–
+  Rémillard option-pricing paper's implied order-flow construction
+  splits one observed scalar between two unknowns through an
+  analyst-supplied constant — the "forecast information" created by
+  the split, not measured.
+- **B14. The transform-domain admissibility pre-declaration** (50th,
+  queued via deep-read 92, log ## 121, note
+  `paper/research/library/2026-11-22_vix_options_heston_hawkes_deep_read.md`).
+  Any statistic computed through a transform of the data or of a
+  fitted model (a characteristic-function or Fourier-inversion
+  estimator, an affine pricing formula, a spectral representation)
+  must pre-declare the domain of existence of the transform as a
+  function of the frozen parameters, a recorded check that every
+  evaluation point lies inside it, and the numerical-tolerance
+  convention for truncation; an evaluation outside the proven domain
+  is UNDEFINED by rule, and an implementation that silently returns a
+  finite number fails the concordance audit (B12).
+- **B15. The moment-equivalence disclosure** (51st, queued via
+  deep-read 93, log ## 122, note
+  `paper/research/library/2026-11-22_transform_analysis_hawkes_dark_pool_deep_read.md`).
+  Any comparator, null or statistic built from a marked point-process
+  or marked-intensity construction must pre-declare which of its
+  outputs are moment-bounded (functions of finitely many moments of
+  the mark law, hence inheritable from a moment-matched calibration)
+  and which are law-sensitive; a concordance or validation audit that
+  matches only finitely many moments may certify only the
+  moment-bounded outputs. The Gao–Zhou–Zhu dark-pool transform theory
+  proves in print that the mean fill outputs depend on the mark law
+  only through its first moment while same-mean mark laws produce
+  systematically different fill-rate outputs.
+- **B16. The strategy-class/convention well-posedness pre-declaration**
+  (52nd, queued via deep-read 102, log ## 134, note
+  `paper/research/library/2026-11-23_cadlag_semimartingale_optimal_execution_deep_read.md`).
+  Any comparator, null, cost model, simulator or refutation instrument
+  that defines a cost, objective or "optimality" statement must
+  pre-declare the admissible process/strategy class over which the
+  definition is posed and a recorded well-posedness statement for the
+  pairing of that class with the chosen bookkeeping convention
+  (boundedness-below over the declared class, or the dated limiting
+  derivation that produced the convention). The Ackermann–Kruse–Urusov
+  execution paper proves twice in print that conventional finite-
+  variation bookkeeping becomes catastrophically ill-posed
+  (infimum −∞, constant positive parameters) the moment the strategy
+  class widens — the divergence living only in the infimum so no
+  computed value shows it. Extends the concordance rule (B12) from the
+  implementation-vs-definition half to the class pairing.
+
+Sitting question: are these sixteen accepted as the standing read-out
+and earned-number discipline for the trigger and every estimator,
+preprocessing stage and inversion the specs touch, or does any member
+duplicate another?
 
 ## Family C — branching-ratio trigger robustness arms
 
@@ -313,10 +430,28 @@ read, regime disclosure — before it is ever read again?
   a=5, η=0.25, b<−4.09 the excess cash is genuinely negative-cost
   proper price manipulation (PDF p. 17) with no self-excitation, no
   stochastic state, no news, nothing but the calendar.
+- **D5. The queue-jump-diffusion generative-null pre-declaration**
+  (42nd, queued via deep-read 81, log ## 107, note
+  `paper/research/library/2026-11-21_order_book_dynamics_liquid_markets_deep_read.md`).
+  Any spec claiming an anticipatory, depletion-side or
+  queue-evacuation structure must pre-declare a moment-matched
+  queue-jump-diffusion null (planar Brownian increments with drift
+  from the pre-declared flow moments and correlation,
+  re-initialized on boundary hits from a declared post-move depth
+  distribution), with ALL null parameters — arrival rates, size
+  moments, the correlation, the depth distribution — frozen BEFORE
+  the data, and show the structure survives that null in the
+  subsample where its information lives. The Cont–de Larrard
+  diffusion-limit paper measures liquid-book queues as
+  fluctuation-dominated at intraday scales (at 30 s the mean net
+  queue change is roughly an order of magnitude below its standard
+  deviation), so a depletion-side "anticipation" drift could be pure
+  diffusion fluctuation with zero information and would survive any
+  null weaker than the measured regime.
 
 Sitting question: which nulls must a flow feature beat to count as
 more than a dressed-up state snapshot — the two line the papers carry,
-plus the tape-only comparator (D2), the zero-parameter sign-persistence repeat (D3), and the zero-state deterministic-calendar surrogate (D4), or a subset?
+plus the tape-only comparator (D2), the zero-parameter sign-persistence repeat (D3), the zero-state deterministic-calendar surrogate (D4), and the queue-jump-diffusion null class (D5), or a subset?
 
 ## Family E — queue-state conditioning and label discipline
 (passive-flow features in the C1-L2 L2 arm)
@@ -429,13 +564,45 @@ the generalization that covers E1-E3's specifics?
   with cost infimum −∞ at a single K'+2ρK<0 point (Prop 8.3, PDF
   pp. 29-30), no self-excitation required — the "anticipatory"
   structure being a property of the convention.
+- **F8. The same-period-aggregate feature availability rule** (45th,
+  queued via deep-read 84, log ## 112, note
+  `paper/research/library/2026-11-22_liquidity_adjusted_returns_arma_garch_deep_read.md`).
+  Any signal or feature computed from aggregates over its own
+  aggregation period (a period mean or total, a period return or
+  volatility, or any ratio or weighting built from them — an
+  Amihud-style illiquidity weighting, a within-day normalized return)
+  must pre-declare that the feature's availability timestamp is the
+  CLOSE of its aggregation period, and may evaluate only at or after
+  that close; a feature evaluated at finer grain inside its own
+  aggregation window is forward-looking and fails by rule, however
+  labeled. The Deng–Zhou liquidity-adjusted return and volatility
+  paper is lawful precisely because its forecasts are strictly
+  one-period-ahead after the day closes — while the
+  feature-normalization pre-declaration (B11) does not catch an
+  aggregate-weighted liquidity factor used intraday.
+- **F9. The cross-stream synchronization and single-source-count
+  pre-declaration** (48th, queued via deep-read 89, log ## 118, note
+  `paper/research/library/2026-11-22_polymarket_nba_arbitrage_deep_read.md`).
+  Any computation, comparator, null, baseline or feature joining two
+  or more asynchronously updated data streams (two legs of one book
+  viewed separately, two markets, a book feed plus an event timeline)
+  must pre-declare as frozen configuration the merge timeline, the
+  imputation convention (strictly last-known-value carried forward,
+  never look-ahead), a desync tolerance for staggered near-simultaneous
+  updates with the claimed structure's insensitivity to it, and a
+  source-overlap map proving no single underlying state is counted
+  through two views (mirrored books, complementary tokens). The
+  Cheng–Yang–Zou Polymarket NBA arbitrage paper proves the failure
+  class in print on all four axes, from 2-50 ms desync crossings to a
+  mirrored Long/Short double-count.
 
 Sitting question: accept F1-F3 as the standing measurement-discipline
 for flow features, and F4-F6 as the manipulation-audit pre-declarations
 the L2 window inherits from its venue evidence, and F7 as the
 fourth declaration axis — the spread convention — beside the memory
 scale (F1), the conservation identity (F2) and the accumulation grain
-(F3)?
+(F3), and F8-F9 as the availability and stream-join rules that keep
+features lawfully timestamped and singly counted?
 
 ## Family G — the C8 measurement pre-declarations (session 3's pair)
 
@@ -463,9 +630,43 @@ here does not arm C8).
   alone is inadmissible for any null, placebo or simulator used as a
   refutation instrument — pre-declared flow-dynamics statistics must
   match, not just the marginals.
+- **H2. The residual-flow attribution null** (43rd, queued via
+  deep-read 82, log ## 108, note
+  `paper/research/library/2026-11-21_million_metaorder_market_impact_deep_read.md`).
+  Any spec attributing a price, spread or depletion-side association
+  to an identified flow episode (a compression cluster, an OFI burst,
+  a metaorder-like run) must pre-declare an attribution null in which
+  the aggregate signed order-flow imbalance over the same window is
+  conditioned out: the claimed episode-level association must survive
+  in the subsample where the residual (episode-minus-aggregate) flow
+  is statistically neutral, with the conditioning window, neutrality
+  threshold and imbalance measure frozen BEFORE the data. The
+  Donier–Bonart million-metaorder Bitcoin paper measures execution
+  impact as almost perfectly the square root of the TOTAL market
+  imbalance, not the metaorder's volume, and the market does not
+  detect individual metaorders — an episode-attributed association
+  could be pure common correlation and survives any null that does
+  not condition it out.
+- **H3. The impact-viability pre-declaration for generative nulls**
+  (47th, queued via deep-read 87, log ## 115, note
+  `paper/research/library/2026-11-22_optimal_execution_time_varying_lob_deep_read.md`).
+  Any generative null, placebo, comparator or simulator whose flow
+  dynamics include a transient-impact/reversion (resilience) layer
+  must, before it may serve as a refutation instrument, state the
+  no-price-manipulation / no-transaction-triggered-manipulation
+  condition of its own impact parameterization and record that the
+  armed configuration satisfies it; a null whose impact layer can
+  price a negative-cost round trip, or whose optimal behaviour embeds
+  manipulability, is inadmissible as a null. The Alfonsi–Infante
+  Acevedo time-varying-LOB paper proves in print that a canonical
+  published impact family is internally arbitrageable in computable
+  parameter regions — a simulator built on it emits arbitrage-shaped
+  volume artifacts with no marginal signature, and no other queued
+  rule catches that layer.
 
-Sitting question: accept H1 as binding on every generative instrument
-(the C8 A3 placebo, any simulator used in a rebuttal)?
+Sitting question: accept H1-H3 as binding on every generative
+instrument (the C8 A3 placebo, any simulator used in a rebuttal):
+dynamics matched, attribution conditioned, impact layer viable?
 
 ## Family I — instrument hardening
 
@@ -484,7 +685,7 @@ proposed scope, or kill the guard extension.
 
 ---
 
-## Probe E1 — standing separately, not counted in the forty
+## Probe E1 — standing separately, not counted in the fifty-two
 
 Probe E1 (volume conservation) was the exploratory channel's first
 probe, RATIFIED by the owner as a channel (log ## 25). Its rule-content
@@ -508,3 +709,19 @@ items 34-39 briefed (A5, B7, B8, D3, D4, F7), the count reconciliation
 extended, the live queue at THIRTY-NINE plus probe E1, zero armed, the
 log tail at ## 93. The briefs summarize recorded proposals only,
 queued nothing, and armed nothing.
+
+Refreshed 2026-11-23 by null-time session 113 (log entry ## 135):
+items 41-52 briefed (B10 the noise-model pre-declaration, B11 the
+feature-normalization pre-declaration, B12 the estimator-implementation
+concordance rule, B13 the model-inversion identifiability
+pre-declaration, B14 the transform-domain admissibility
+pre-declaration, B15 the moment-equivalence disclosure, B16 the
+strategy-class/convention well-posedness pre-declaration, D5 the
+queue-jump-diffusion generative-null pre-declaration, F8 the
+same-period-aggregate feature availability rule, F9 the cross-stream
+synchronization and single-source-count pre-declaration, H2 the
+residual-flow attribution null, H3 the impact-viability
+pre-declaration for generative nulls), the count reconciliation
+extended to fifty-two, the live queue at FIFTY-TWO plus probe E1,
+zero armed, the log tail at ## 134. The briefs summarize recorded
+proposals only, queued nothing, and armed nothing.
