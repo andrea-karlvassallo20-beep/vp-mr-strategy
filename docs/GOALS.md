@@ -92,14 +92,16 @@ construction.
   applications to financial data" (x7a86fb, tenth of the score-20
   tier), then the remaining score-20 tier; re-read the live
   tail before consuming; the ritual's slug-keyed unread rule applies.
-  NOTE (refreshed 2026-11-23, null-time session 113, log ## 135): the
-  deep-read counter since EDITION 12 stands at FOUR of five (deep-reads
-  99-102, landed ## 131 through ## 134, counted from the edition-12
-  reset at ## 130; the next landing of a read makes FIVE, and the next
-  work-selecting session opens with the synthesis pass before its
-  read); the G2 directorate briefs cover ALL FIFTY-TWO queued items
+  NOTE (refreshed 2026-11-23, null-time session 114, log ## 136): the
+  deep-read counter since EDITION 12 stands at FIVE of five (deep-reads
+  99-103, landed ## 131 through ## 136, counted from the edition-12
+  reset at ## 130); the NEXT work-selecting session opens with the
+  synthesis pass (edition 13) BEFORE its read; the G2 directorate
+  briefs cover ALL FIFTY-TWO queued items
   plus probe E1 (refreshed 2026-11-23, log ## 135), the next refresh
-  owed from item 53 (none queued yet; item 52, the
+  owed from item 53 (item 53, the conditional-tail
+  covariate-integration pre-declaration, queued ## 136, NOT yet
+  briefed; item 52, the
   strategy-class/convention well-posedness pre-declaration, queued
   ## 134, is briefed as B16).
 
@@ -151,7 +153,7 @@ its verdicts stay frozen, and nothing here re-opens the archive.
 
 G2. Ratification-readiness briefs. ENTRY: any session; strongest
 claim when front 2 is between reads. FEEDS: the weekly directorate —
-one-page accept/reject briefs for the queued FIFTY-TWO sharpenings
+one-page accept/reject briefs for the queued FIFTY-THREE sharpenings
 plus probe E1, grouped by the precedent they tighten. BOUNDARY:
 briefs summarize already-recorded proposals with their sources; a
 brief invents nothing, queues nothing new, and arms nothing. STATUS:

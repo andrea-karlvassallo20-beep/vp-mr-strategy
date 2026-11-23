@@ -14080,3 +14080,182 @@ full tree (main's tracked tree restored whole plus this session's changed
 files) with marker sweep, library-provenance audit and encoding sanity
 all exiting zero before commit; the CI jobs run over the pushed tree and
 must be verified green on both jobs before merge.
+
+## 136. Null-time session 114 (2026-11-23): library deep-read session 103 — the Hambuckers-Sun-Trapin L1-regularized extreme-value regression read, thirteenth of the score-20 tier; the 2023 dynamic-GPD conditional-tail paper whose shape and scale ride lagged liquidity/volatility covariates, whose unregularized MLE provably cannot control t-test size under local unit-root predictors (printed false-positive selection near 1.0 for inactive unit-root covariates, standard errors non-computable on its own nine-stock data) and whose out-of-sample K-S test rejects its own model on three of nine mega-liquid stocks — ONE new candidate sharpening queued (the conditional-tail covariate-integration pre-declaration), PENDING OWNER RATIFICATION; NO kill line moved
+
+The paper sets dynamic peaks-over-threshold at the 5-minute grid: negative
+returns against a rolling 90%-quantile threshold u_t over twelve window
+lengths from one week to twelve weeks (PDF p. 13), exceedances fitted to a
+GPD with time-varying shape k_t bounded 0 < k_t < 0.5 by logit link "to
+ensure a finite conditional variance" (eq. 3, PDF p. 3) and log scale with
+an autoregressive term plus lagged covariates (eq. 4, PDF pp. 3-4). The
+mechanism core: with local unit-root predictors the MLE remains consistent
+but its limit is NON-NORMAL (Theorem 2, PDF p. 6), and three printed
+reasons make t-test covariate selection inadmissible (uncontrollable
+type-I, severe size distortion selecting unit-root predictors, low power
+for shape coefficients, PDF pp. 6-7); the remedy is a two-step adaptive
+L1-regularized MLE with the oracle property for both stationary and local
+unit-root predictors (Theorem 4, PDF p. 9), tuned by AIC/HQ/BIC (PDF p. 7).
+Simulations: t-tests select truly INACTIVE unit-root covariates at rates
+"much higher than α = 0.05 ... regardless of the DGP" (PDF p. 11), printed
+at essentially 1.0 in Table 2's false-positive columns while ALMLE+BIC
+achieves near-perfect correct selection (Table 2, PDF p. 14). Empirics:
+nine liquid US stocks, all transactions January 2006 to December 2014, 42
+liquidity/volatility predictors; headline: tail SEVERITY strongly
+associated with LOW price impact in periods of high volatility of
+liquidity and volatility of volatility (conclusion verbatim, PDF p. 21),
+Amihud-type impact coefficients −0.91 to −1.79 on most of the nine stocks
+(Table 5, PDF p. 17), sign-stable for the shape equation. The MLE
+comparison: 39-42 of 42 shape predictors and 43 of 43 scale predictors
+"selected", Fisher information not positive definite so standard errors
+not computable, "variable interpretation very difficult if not
+impossible" (Tables 7-8, PDF pp. 19-20; PDF p. 16). Out-of-sample VaR:
+coverage near nominal by construction (threshold is the rolling 90%
+quantile) while the K-S test rejects the regression model on three of nine
+stocks at 1% (GE 2.68e-12, XOM 6.32e-8, HD 0.0023, BA 0.0431 at the 5%
+edge; Table 9, PDF p. 21). Read in full (~24 page-marked PDF pages,
+header, body, theory, simulations, all printed tables, appendix tables,
+references complete; nothing skipped) against the one question. Note
+landed at
+paper/research/library/2026-11-23_l1_regularizer_extreme_value_regression_deep_read.md.
+
+Director step (goal-autonomy protocol, ACTIVE): protocol read, consistent
+with the live tail (edition 12, written at ## 130); the session's work
+choice is the DEFAULT deep-read following the pointer set at ## 135 (the
+## 135 session ran the G2 briefs refresh, a non-deep-read, so the counter
+carried forward): the score-20 tier holds fourteen entries per the live
+edge_triage_scores.json, twelve consumed through x150a2c at ## 134, so
+this read takes xf959b8 thirteenth, verified note-less against the live
+tree. Synthesis cadence: this landing makes FIVE of five counted from the
+edition-12 reset at ## 130 (## 131, ## 132, ## 133, ## 134, this
+session); the NEXT work-selecting session opens with the synthesis pass
+(edition 13) BEFORE its read. Race checks at the choice: live main
+fetched and verified (the ## 135 tail confirmed as the live tail, zero
+"## 136" on main before this append).
+
+Verdict: NO kill line changed; ONE new candidate sharpening queued,
+PENDING OWNER RATIFICATION. Findings (graded against the queue as it
+stood at fifty-two candidates plus probe E1 at session start):
+
+1. [candidate sharpening, PENDING OWNER RATIFICATION] The conditional-tail
+   covariate-integration pre-declaration: BEFORE the L0 gate, any
+   C1-L2/C8-adjacent conditional extreme-value model (GPD/POT tail
+   regression, time-varying tail-shape or tail-scale spec, any
+   covariate-conditioned exceedance or severity model) must pre-declare,
+   as frozen configuration counted in the multiplicity ledger: (i) the
+   integration order of every candidate covariate (I(0), I(1),
+   local-to-unit-root), declared before estimation, with local unit-root
+   covariates flagged and their coefficients read under the local √T
+   standardization (PDF pp. 4-5) rather than as ordinary fixed-parameter
+   estimates; (ii) the covariate-selection procedure as frozen
+   configuration, with t-test selection from an unregularized
+   conditional-tail likelihood INADMISSIBLE by rule; and (iii) any
+   regularized selection's tuning criterion (AIC/HQ/BIC/other) frozen
+   with the penalty set, never silently re-tuned per instrument.
+   Harder-to-pass because a conditional-tail covariate claim riding on
+   unregularized t-statistics — today survivable as an ordinary
+   regression finding — now fails at the gate BEFORE any data is touched,
+   and the paper proves the failure class real three times over: the
+   non-normal MLE limit under local unit-root predictors so t-statistics
+   have no controlled meaning (Theorem 2, PDF p. 6; three inadmissibility
+   reasons, PDF pp. 6-7), false-positive selection of truly inactive
+   unit-root covariates at rates up to essentially 1.0 rather than the
+   nominal 0.05 (PDF p. 11; Table 2, PDF p. 14), and on the paper's own
+   data the unregularized MLE selecting 39-43 of 43 predictors with a
+   Fisher information matrix not positive definite, standard errors not
+   computable, interpretation "very difficult if not impossible" (Tables
+   7-8, PDF pp. 19-20; PDF p. 16). No queued rule asks the question:
+   the estimator-implementation concordance rule (deep-read 85) audits
+   implementation against definition, not the selection procedure's size;
+   the estimator-configuration freeze (deep-read 63) freezes the
+   estimator's configuration, not selection-method admissibility; the
+   pre-registration family (primary-metric pre-commitment, deep-read 55;
+   base-rate confrontation; regime-window pre-declaration) freezes
+   metrics and windows, not covariate order classes. Tightens the
+   concordance rule (deep-read 85) and joins the estimator-configuration
+   freeze (deep-read 63) and primary-metric pre-commitment (deep-read 55)
+   in closing a researcher degree of freedom that alone can manufacture
+   a finding. Killed-if-wrong counterfactual in the session note.
+2. [interpretation caution] The shape bound 0 < k_t < 0.5 is imposed
+   a priori "to ensure a finite conditional variance" (PDF p. 3): the
+   family cannot express heavier-than-finite-variance tails, and any
+   conditional-tail estimate through it is conditional on that support
+   bound; coefficients on local unit-root predictors are local-to-zero
+   order (PDF pp. 4-5), a categorically different object from stationary
+   significance. Context only. No queue change.
+3. [interpretation caution, cost-survival ammunition] Even with oracle
+   selection, 42 covariates and nine mega-liquid stocks, the
+   out-of-sample K-S rejects the conditional GPD on three of nine at 1%
+   (GE 2.68e-12, XOM 6.32e-8, HD 0.0023, BA 0.0431 at the 5% edge; Table
+   9, PDF p. 21) while coverage sits near nominal by construction
+   (rolling 90% quantile threshold, PDF p. 13): the printed honest
+   ceiling of the conditional-tail genre at exactly the grain C8 would
+   work; no "passes everywhere" expectation may be assumed into any
+   future C8 kill line. The severity-vs-low-impact headline (Table 5,
+   PDF p. 17; conclusion, PDF p. 21) is descriptive ammunition for the
+   C8 covariate shortlist (impact, vol-of-liquidity, vol-of-vol) and
+   NEVER program evidence: conditional association, one asset class,
+   in-sample, bounded shape, rejected on a third of its own universe.
+   No queue change.
+4. [reinforcing, no new item] The MLE comparison carries the
+   estimation-discipline case whole (39-43 of 43 "selected", signs
+   flipping stock to stock, standard errors non-computable, Tables 7-8,
+   PDF pp. 19-20; PDF p. 16), and the all-positive autoregressive
+   log-scale term (Table 8, PDF p. 20) is the level-persistence habit
+   the level-versus-memory disambiguation rule (deep-read 59) already
+   guards. No queue change.
+5. [source-quality note] arXiv v1 [econ.EM], 3 Jan 2023, zero citations
+   in the index; Table 2 (PDF p. 14) reports DGP 5/DGP 6 rows while the
+   simulation section defines exactly four DGPs ("four data generating
+   processes", PDF p. 9; DGP 1-4, PDF p. 10) with no DGP 5/6 definition
+   anywhere in the text — an internal inconsistency; check the published
+   version before formal citation. No queue change.
+
+Counterfactual (what this paper would have killed if we had done it
+wrong): without finding 1, a future C8 covariate screen is exactly the
+paper's MLE comparison — 42 candidate covariates, nearly all
+"selected", signs unstable instrument to instrument, no computable
+standard errors, and a printed false-positive rate for persistent
+covariates at essentially 1.0 — a liquidity-covariate "discovery"
+manufactured by the selection procedure with no visible fingerprint in
+the outputs; the matched-control and estimator-discipline design avoids
+precisely this. Without the library-is-ammunition rule, the nine-stock
+severity headline would enter the programme record as a market fact
+about low impact and unstable liquidity fattening tails, when it is a
+conditional association through a bounded-shape model that its own
+out-of-sample test rejects on three of its own nine instruments.
+
+- Inaccessible/blocked status: none this session. The extract was
+  present, page-marked and read in full (~24 PDF pages, header, body,
+  theory, simulations, all printed tables, appendix tables, references
+  complete; nothing skipped).
+- Ratification queue after this session: FIFTY-THREE candidate
+  sharpenings plus probe E1, zero armed (ONE queued by this read — the
+  conditional-tail covariate-integration pre-declaration;
+  docs/DECISIONS_PENDING.md IS updated by this session accordingly; T1
+  remains armed awaiting the owner's word in its booked state; T2
+  tested-fail); the blocked list stays blocked. Deep-read queue
+  pointer: next UNREAD "The adaptive nature of liquidity taking in
+  limit order books" (x1e5f02, Taranto-Bormetti-Lillo 2014,
+  arXiv:1403.0842v2, score 20, FOURTEENTH AND LAST of the score-20
+  tier, verified note-less this session against the live listing) —
+  once it lands the tier is consumed and the pointer recomputes against
+  the full score-sorted file; re-read the live tail and recompute the
+  tier against the notes before consuming. The edition-12 cadence
+  counter stands at FIVE of five by this landing (#103), counted from
+  the edition-12 reset at ## 130: the NEXT session opens with the
+  synthesis pass (edition 13) BEFORE its read.
+- Byte-landed log note (session-specific): this session assembled the
+  log locally from the public main archive (fetched as the repository
+  tarball, restored whole) and appends this entry to that
+  byte-verified copy, pushing the four changed files (note, log,
+  GOALS.md, DECISIONS_PENDING.md) in ONE commit to main via the
+  connector push, per the ## 123 root-cause record. No git or gh CLI
+  exists in this environment, so the CI green-check cannot be verified
+  from this channel; the landing commit must be confirmed on GitHub.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the assembled
+full tree (main's tracked tree restored whole plus this session's changed
+files) with marker sweep, library-provenance audit and encoding sanity
+all exiting zero before commit.

@@ -1,9 +1,9 @@
 # Pending owner decisions — the fortieth dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-23, the
-strategy-class/convention well-posedness pre-declaration
-queued as the fifty-second candidate sharpening (null-time session 112,
-log ## 134;
+conditional-tail covariate-integration pre-declaration
+queued as the fifty-third candidate sharpening (null-time session 114,
+log ## 136;
 audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
@@ -37,7 +37,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: fifty-two
+  library deep-reads and the ratified exploratory channel: fifty-three
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -80,9 +80,63 @@ each case. Items are ordered by how much they gate.
   moment-equivalence disclosure queued 2026-11-22 by deep-read
   session 93 / null-time session 103, plus the
   strategy-class/convention well-posedness pre-declaration queued
-  2026-11-23 by deep-read session 102 / null-time session 112; probe E1
+  2026-11-23 by deep-read session 102 / null-time session 112, plus the
+  conditional-tail covariate-integration pre-declaration queued
+  2026-11-23 by deep-read session 103 / null-time session 114; probe E1
   stands separately and is not
-  counted among the fifty-two); most recently joined 2026-11-23, the
+  counted among the fifty-three); most recently joined 2026-11-23, the
+conditional-tail covariate-integration pre-declaration (BEFORE the L0
+gate, any C1-L2/C8-adjacent conditional extreme-value model — a GPD/POT
+tail regression, a time-varying tail-shape or tail-scale spec, any
+covariate-conditioned exceedance or severity model — must pre-declare,
+as frozen configuration counted in the multiplicity ledger: (i) the
+integration order of every candidate covariate (I(0), I(1),
+local-to-unit-root), declared and recorded before estimation, with
+local unit-root covariates flagged and their coefficients read under
+the local (√T standardization) limit rather than as ordinary
+fixed-parameter estimates; (ii) the covariate-selection procedure as
+frozen configuration, with t-test selection from an unregularized
+conditional-tail likelihood INADMISSIBLE by rule; and (iii) for any
+regularized selection actually used, the tuning criterion
+(AIC/HQ/BIC/other) frozen with the penalty set, selection assistance
+never silently re-tuned per instrument — a covariate-significance claim
+in a conditional tail model that arrived through any other route fails
+at the gate; harder-to-pass because exactly this class of claim today
+survives as an ordinary regression finding with no visible fingerprint:
+the Hambuckers-Sun-Trapin conditional-GPD paper proves in print that
+the unregularized MLE's limit is non-normal under local unit-root
+predictors (Theorem 2, PDF p. 6), gives three printed reasons t-test
+selection is inadmissible here (uncontrollable type-I error, severe
+size distortion selecting unit-root predictors, low power for the shape
+coefficients, PDF pp. 6-7), shows its simulations selecting truly
+inactive unit-root covariates at rates of essentially 1.0 rather than
+the nominal 0.05 regardless of DGP and sample size (PDF p. 11 and
+Table 2, PDF p. 14, false-positive columns), and reports that on its
+own nine-stock data the unregularized MLE selects 39-42 of 42 shape
+predictors and 43 of 43 scale predictors while its Fisher information
+matrix is not positive definite, so standard errors cannot be computed
+at all and "variable interpretation [is] very difficult if not
+impossible" (Tables 7-8, PDF pp. 19-20, and PDF p. 16) — an
+unregularized t-statistic on a tail covariate is dead by rule at the
+gate where today it passes as ordinary evidence, and no queued rule
+asks the question: the estimator-implementation concordance rule
+(deep-read 85) audits implementation against the written definition
+and says nothing about the selection procedure's own size behavior,
+the estimator-configuration freeze (deep-read 63) freezes the
+estimator's configuration but not the admissibility of selection
+methods, and the pre-registration family (primary-metric
+pre-commitment, deep-read 55; base-rate confrontation; regime-window
+pre-declaration) freezes metrics and windows, not covariate order
+classes; tightens the estimator-implementation concordance rule
+(deep-read 85) by extending the audit from implementation-vs-written-
+definition to the selection procedure vs its own size behavior under
+the declared covariate classes, and joins the estimator-configuration
+freeze (deep-read 63) and the primary-metric pre-commitment (deep-read
+55) in extending frozen pre-declaration to the covariate side of any
+conditional tail model; full draft with the killed-if-wrong
+counterfactual in the session note
+(paper/research/library/2026-11-23_l1_regularizer_extreme_value_regression_deep_read.md)),
+and earlier the same day, the
 strategy-class/convention well-posedness pre-declaration (BEFORE the
 L0 gate, any C1-L2/C8-adjacent comparator, null, cost model, simulator
 or refutation instrument that defines a cost, objective or
