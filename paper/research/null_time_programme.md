@@ -13499,3 +13499,146 @@ session's changed files) with marker sweep, library-provenance audit
 and encoding sanity all exiting zero before commit; the CI jobs run
 over the pushed tree and must be verified green on both jobs before
 merge.
+
+## 132. Null-time session 110 (2026-11-23): library deep-read session 100 — the Eyjolfsson-Tjøstheim multivariate self-exciting jump-process read, tenth of the score-20 tier; the 2021 SDE-intensity self/cross-excitation class whose marks (not just counts) drive the intensity and whose mark law may depend on the pre-jump intensity level, whose moment-only stability conditions, analyst-threshold event definition, magnitude-fed excitation model form, in-sample daily-index fit and S&P-leads-Nikkei likelihood comparison reinforce already-queued families and move NOTHING; NO kill line moved; NO new candidate sharpening
+
+The paper defines a d-dimensional self/cross-exciting point process whose
+intensity vector solves dλ(t) = µ(t,λ(t))dt + BdU(t), with U_k(t) summing
+the non-negative marks of past events so a large jump excites more than a
+small one, and the jump-size law ν_k(λ,·) allowed to depend on the
+pre-jump intensity value λ(t−) (eqs. 1, 3-4, Definition 1, PDF pp. 3-4);
+geometric ergodicity is proved via the extended generator and a
+Foster-Lyapunov drift through piecewise-deterministic-process theory and
+Meyn-Tweedie (Theorem 1, PDF pp. 4-7), the linear model's stability
+reducing to the symmetric part of M(λ) = A + BJ(λ) with J carrying only
+the first mark moment plus boundedness of the first two mark moments
+(Assumption 2, Propositions 3-4, PDF pp. 8-11) and closed moment and
+autocovariance forms under intensity-free mark laws (Propositions 5-7,
+PDF pp. 11-13). The application extracts jumps as daily S&P 500 and
+Nikkei 225 log-returns above a fixed 0.025 threshold (PDF p. 14), fits
+eight bivariate variants by MLE split over all/positive/negative jumps
+(Table 1, PDF pp. 14-16), and finds the nonlinear extension — with
+mean-reversion speed depending on the intensity norm, a built-in regime
+change (PDF p. 15) — best by a handful of in-sample log-likelihood points
+(LL −1662 vs −1667 all jumps, PDF p. 16), with stronger cross-excitation
+from the S&P into the Nikkei than vice versa (b21 > b12), strongest for
+negative jumps, and jump sizes growing with intensity but flattening at
+the highest S&P intensities (Figures 4-5, PDF pp. 18-19). Read in full
+(22 page-marked PDF pages, abstract, body, all seven propositions, both
+lemmas, both theorems, all five figures, Table 1 and the references
+complete) against the one question. Note landed at
+paper/research/library/2026-11-23_multivariate_self_exciting_jump_processes_deep_read.md.
+
+Director step (goal-autonomy protocol, ACTIVE): protocol read, consistent
+with the live tail (edition 12, written at ## 130); the session's work
+choice is the DEFAULT deep-read (next UNREAD triage entry, re-ranked
+against the notes: the score-20 tier holds fourteen entries per the live
+edge_triage_scores.json, nine consumed — through xc495e3 at ## 131 — so
+this read takes x7a86fb tenth, verified note-less against the live
+listing). Synthesis cadence: ONE of five already counted by #99 at
+## 131; this landing makes TWO of five, so no synthesis pass is due.
+
+Verdict: NO kill line changes. NO new candidate sharpening. Findings (all
+graded against the queue as it stands at fifty-one candidates plus probe
+E1):
+
+1. [reinforcing, no new item] Stability verdicts in the marked
+   self-exciting family are provably moment-bounded outputs: every linear
+   stability condition passes through M(λ) = A + BJ(λ) carrying only the
+   first mark moment, plus bounded first-two-moment regularity (Lemma 1,
+   Assumption 2, Propositions 3-4, PDF pp. 8-10) — the same
+   moment-bounded/law-sensitive split the queued moment-equivalence
+   disclosure (#51, deep-read 93) freezes at the gate; a moment-matched
+   null in this family certifies as stable while its mark law is
+   arbitrary. The queued item already carries the case. No queue change.
+2. [interpretation caution] The point process is manufactured by an
+   analyst threshold: a jump is |daily log-return| above a fixed 0.025,
+   unvaried across two series with different volatility (PDF p. 14), and
+   every excitation, cross-excitation and lead-lag statement downstream
+   is conditional on that event definition; the analogue in C1-L2/C8 work
+   is any episode definition embedding a free constant, which the
+   estimator-configuration freeze (deep-read 63) already binds as frozen
+   configuration. Recorded as context. No queue change.
+3. [interpretation caution] Excitation here carries event MAGNITUDE, not
+   counts (U_k(t) sums the marks, eq. 3, PDF p. 4), so a marked model is
+   a different process object from a count-only Hawkes on the same
+   event set, and the mark-feeding convention plus the sign-splitting of
+   the fits (all/pos/neg separately, Table 1, PDF p. 16) are model-form
+   knobs that change what any future branching-ratio-shaped estimate
+   means; covered by the frozen estimator identity of the
+   estimator-configuration freeze and the level-versus-memory
+   disambiguation (deep-read 59). No queue change.
+4. [reinforcing, no new item] The mark law's dependence on the pre-jump
+   intensity (Definition 1, PDF p. 4; fitted growth of jump sizes and
+   variability with intensity, Figures 4-5, PDF pp. 18-19) is the
+   regime-dependence class the self-excitation regime-window
+   pre-declaration (deep-read 53) and the moment-equivalence disclosure
+   (#51) already force into the open; printed reinforcement of the
+   law-sensitive output class. No queue change.
+5. [source-quality note] arXiv v1 theory preprint (math.PR, zero
+   citations recorded in the index) with an in-sample fitting
+   demonstration, not an empirical study: two daily index series, eight
+   nested forms compared by in-sample log-likelihood (gains of a handful
+   of points, Table 1, PDF pp. 15-16), no out-of-sample validation, no
+   standard errors, no residual diagnostics, one hand-set threshold, no
+   limit-order-book content; the headline conclusions (nonlinear best,
+   S&P leading, crisis clustering with faster mean reversion) are
+   daily-grain in-sample likelihood comparisons and enter the record only
+   as ammunition; check for a published version before formal citation
+   (the companion energy paper ref. [12] is journal-published, PDF p. 21;
+   this paper shows no journal stamp). No queue change.
+
+Counterfactual (what this paper would have killed if we had done it
+wrong): without the estimator-configuration freeze, the 0.025 threshold
+would be a tunable event definition — the same series re-threshed yields
+a different point process and possibly a different cross-excitation sign,
+unseen because the threshold looks like a data-cleaning constant.
+Without the moment-equivalence disclosure, a moment-matched generative
+null in this family would be certified stable by exactly this paper's
+moment-only theory while its intensity-dependent mark law silently
+diverged in precisely the law-sensitive outputs no moment audit touches.
+Without the regime-window pre-declaration and level-versus-memory
+disambiguation, the nonlinear model's built-in regime change
+(mean-reversion speed depending on the intensity norm, PDF p. 15, fitted
+strongest for negative Nikkei jumps, PDF p. 18) shows a "crisis regime"
+can be a model-form property assumed by the analyst inside a
+self-exciting model, not a measured market state — an L2 spec could
+"find" regimes its own kernel convention had put there. Without the
+laundering discipline, the S&P-leads-Nikkei contagion direction (b21 >
+b12, PDF pp. 17-18) would enter C8's macro-synthesis as a licensed
+cross-market asymmetry, when it is an in-sample likelihood comparison on
+two daily index series under one self-selected threshold.
+
+- Inaccessible/blocked status: none this session. The extract was present,
+  page-marked and read in full (22 PDF pages, abstract, body, both
+  theorems, both lemmas, all seven propositions, all five figures, Table
+  1, references complete; nothing skipped).
+- Ratification queue after this session: FIFTY-ONE candidate sharpenings
+  plus probe E1, zero armed (NONE queued by this read;
+  docs/DECISIONS_PENDING.md is NOT touched by this session; T1 remains
+  armed awaiting the owner's word in its booked state; T2 tested-fail); the
+  blocked list stays blocked. Deep-read queue pointer: next UNREAD
+  "Risk-Sensitive Compact Decision Trees for Autonomous Execution in
+  Presence of Simulated Market Response" (x7e576d, score 20, eleventh of
+  the score-20 tier, verified note-less this session against the live
+  listing) — re-read the live tail and recompute the tier against the
+  notes before consuming. The edition-12 cadence counter stands at TWO of
+  five by this landing (#100), counted from the edition-12 reset at ## 130
+  (the next synthesis pass due at five or more deep-reads since
+  edition 12).
+- Byte-landed log note (session-specific): this session assembled the log
+  locally from the live main copy (fetched over the connector, md5-matched
+  against the restored main tarball copy byte-for-byte before appending)
+  and will byte-verify the pushed branch copy against the assembled local
+  copy (md5 match) before opening the PR, per the PR #289 convention and
+  the ## 123 root-cause record. The write path this session is the
+  connector push (branch off live main head, full-file contents
+  byte-checked), used because the local execution environment exposes
+  no git CLI or credentials this cycle.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the assembled
+full tree (main's tracked tree restored whole plus this session's changed
+files) with marker sweep, library-provenance audit and encoding sanity
+all exiting zero before commit; the CI jobs run over the pushed tree and
+must be verified green on both jobs before merge.
