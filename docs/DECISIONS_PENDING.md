@@ -1,9 +1,9 @@
-# Pending owner decisions — the thirty-ninth dashboard
+# Pending owner decisions — the fortieth dashboard
 
-**Maintained by the null-time sessions. Last updated: 2026-11-22, the
-moment-equivalence disclosure
-queued as the fifty-first candidate sharpening (null-time session 103,
-log ## 122;
+**Maintained by the null-time sessions. Last updated: 2026-11-23, the
+strategy-class/convention well-posedness pre-declaration
+queued as the fifty-second candidate sharpening (null-time session 112,
+log ## 134;
 audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
@@ -37,7 +37,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: fifty-one
+  library deep-reads and the ratified exploratory channel: fifty-two
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -78,10 +78,62 @@ each case. Items are ordered by how much they gate.
   transform-domain admissibility pre-declaration queued 2026-11-22 by
   deep-read session 92 / null-time session 102, plus the
   moment-equivalence disclosure queued 2026-11-22 by deep-read
-  session 93 / null-time session 103; probe E1
+  session 93 / null-time session 103, plus the
+  strategy-class/convention well-posedness pre-declaration queued
+  2026-11-23 by deep-read session 102 / null-time session 112; probe E1
   stands separately and is not
-  counted among the fifty-one); most recently joined 2026-11-22, the
-  moment-equivalence disclosure (BEFORE the L0 gate, any
+  counted among the fifty-two); most recently joined 2026-11-23, the
+strategy-class/convention well-posedness pre-declaration (BEFORE the
+L0 gate, any C1-L2/C8-adjacent comparator, null, cost model, simulator
+or refutation instrument that defines a cost, objective or
+"optimality" statement must pre-declare, as frozen configuration
+counted in the multiplicity ledger: (i) the admissible
+process/strategy class over which the written definition is posed
+(finite-variation only, càdlàg semimartingales, general adapted), and
+(ii) a recorded well-posedness statement for the pairing of that class
+with the chosen bookkeeping convention — a boundedness-below argument
+for the objective over the declared class, or the dated limiting
+derivation (e.g. a discrete-time limit) that produced the convention —
+with every deviation a dated amendment before the data is touched; an
+objective computed under a convention whose well-posedness over the
+declared class was never established — with a divergent infimum known
+to exist in that class — fails at the gate, and any comparison resting
+on it is dead by rule; harder-to-pass because a comparator whose cost
+bookkeeping is inherited from a narrower class than the one it will
+actually simulate or optimize over — today survivable as a silent
+convention producing perfectly finite numbers while the infimum of its
+own objective diverges — now fails at the gate BEFORE any data is
+touched, where no queued rule asks the question: the
+estimator-implementation concordance rule (deep-read 85) audits code
+against the written definition and passes a wrong-pairing definition
+cleanly, the impact-viability pre-declaration for generative nulls
+(deep-read 87) checks pointwise sign conditions of the impact
+parameterization and passes both counterexamples, and the
+transform-domain admissibility rule (#50) covers existence domains of
+transforms, not bookkeeping conventions; the Ackermann-Kruse-Urusov
+càdlàg-semimartingale execution paper proves in print that the failure
+class is real twice with no empirical content: with constant positive
+impact gamma and constant positive resilience rho in (0, 1/T) —
+parameters that pass every pointwise sign condition in the
+impact-viability family — the conventional finite-variation cost
+functional ~J (eq. 20) has ess inf ~J = −∞ the moment the strategy
+class widens to càdlàg semimartingales, scaled Brownian strategies
+X = nu·W driving ~J → −∞ (Section 4.1, PDF pp. 13-14), and even with
+the corrected cost functional the conventional deviation dynamics
+without the d[gamma,X] covariation term again yield J → −∞ over
+scaled-GBM strategies once gamma is itself stochastic (Section 5.1,
+PDF pp. 15-17), while both corrected pairings are well-posed, each
+correction forced by the discrete-time limit (Appendix A, PDF pp.
+42-44); tightens the estimator-implementation concordance rule
+(deep-read 85) by extending the audit from implementation-vs-written-
+definition to written-definition-vs-admissible-class well-posedness,
+and joins the impact-viability pre-declaration (deep-read 87) and the
+dynamics-identification rule for generative nulls (null-time session
+58) in the generative-null pre-declaration family; full draft with
+the killed-if-wrong counterfactual in the session note
+(paper/research/library/2026-11-23_cadlag_semimartingale_optimal_execution_deep_read.md)),
+and earlier, 2026-11-22, the
+   moment-equivalence disclosure (BEFORE the L0 gate, any
   C1-L2/C8-adjacent comparator, null or statistic whose value derives
   from a marked point-process or marked-intensity construction — level
   sizes, event marks, imbalances feeding an intensity — must
