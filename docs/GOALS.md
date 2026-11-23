@@ -1,8 +1,8 @@
 # GOALS.md — the fronts status board (operative work-selection companion)
 
 **Status:** the session-facing status board for the goal-state fronts, per
-the conductor protocol (goal state **edition 12**, protocol section 2;
-change recorded log ## 130; rotation guidance, section 3; weekly
+the conductor protocol (goal state **edition 13**, protocol section 2;
+change recorded log ## 137; rotation guidance, section 3; weekly
 directorate, section 6; landed
 2026-11-19) and the owner's standing order recorded MADE in
 `docs/DECISIONS_PENDING.md` (resolved item, 2026-11-19). The protocol's
@@ -62,7 +62,7 @@ construction.
    readiness; L2-chain work takes precedence over all fronts that
    serve it.
 
-## Status board (protocol section 2, edition 12)
+## Status board (protocol section 2, edition 13)
 
 - Front 1 — the gated L2 window. STATUS: THE CRITICAL PATH (Board
   directive, 2026-11-19). Still blocked on the owner (environment + data:
@@ -92,18 +92,20 @@ construction.
   applications to financial data" (x7a86fb, tenth of the score-20
   tier), then the remaining score-20 tier; re-read the live
   tail before consuming; the ritual's slug-keyed unread rule applies.
-  NOTE (refreshed 2026-11-23, null-time session 114, log ## 136): the
-  deep-read counter since EDITION 12 stands at FIVE of five (deep-reads
-  99-103, landed ## 131 through ## 136, counted from the edition-12
-  reset at ## 130); the NEXT work-selecting session opens with the
-  synthesis pass (edition 13) BEFORE its read; the G2 directorate
-  briefs cover ALL FIFTY-TWO queued items
-  plus probe E1 (refreshed 2026-11-23, log ## 135), the next refresh
-  owed from item 53 (item 53, the conditional-tail
-  covariate-integration pre-declaration, queued ## 136, NOT yet
-  briefed; item 52, the
-  strategy-class/convention well-posedness pre-declaration, queued
-  ## 134, is briefed as B16).
+  NOTE (refreshed 2026-11-23, null-time session 115, log ## 137): the
+  eleventh synthesis pass landed as this session's first act, the
+  edition-12 cadence window found CLOSED at five of five (deep-reads
+  99-103 landed ## 131 through ## 136, ## 135 the G2 briefs refresh
+  interleaved and non-counting; the ## 136 closing pointer directed
+  the pass run first) and the goal state rewritten as EDITION 13
+  (protocol section 2; change recorded log ## 137); the counter is
+  RESET to ZERO of five, next pass due when five or more deep-reads
+  have landed since edition 13; the G2 directorate briefs cover
+  FIFTY-TWO of the FIFTY-THREE queued items plus probe E1 (through
+  B16), and the item-53 brief (the conditional-tail
+  covariate-integration pre-declaration, queued ## 136) is executed
+  as this session's second act (## 138), its own note appended to the
+  G2 STATUS below at that time.
 
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
@@ -194,6 +196,18 @@ FIFTY-TWO plus probe E1 fully briefed and sitting-ready; the next
 refresh is owed from item 53 (none queued yet). The
 briefs summarize recorded proposals only, queued nothing, and armed
 nothing.
+
+STATUS refresh (2026-11-23, null-time session 115, log ## 138, the
+edition-13 pass's ranked second act): item 53 — the conditional-tail
+covariate-integration pre-declaration (53rd, queued ## 136 by
+deep-read 103) — is briefed as B17, placed in the estimator-discipline
+B-family (it tightens the estimator-implementation concordance rule,
+B12, by extending the audit to the selection procedure's own size
+behavior under declared covariate classes); the count reconciliation
+extended to fifty-three, all FIFTY-THREE queued sharpenings plus
+probe E1 fully briefed and sitting-ready again; the next refresh is
+owed from item 54 (none queued yet). The briefs summarize recorded
+proposals only, queued nothing, and armed nothing.
 
 G3. C8 skeleton coherence. ENTRY: after a synthesis pass with
 C8-relevant output, or on finding a gap in the skeleton's

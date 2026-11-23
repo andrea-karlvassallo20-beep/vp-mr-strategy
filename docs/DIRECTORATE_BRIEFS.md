@@ -19,6 +19,16 @@ the same G2 product extends it through the last unbriefed item: items
 extended to fifty-two, the queue fully briefed and sitting-ready.
 Probe E1 re-checked, unchanged.**
 
+**Refreshed 2026-11-23 by null-time session 115 (log entry ## 138),
+executing GOALS.md G2 under the protocol edition-13 work-selection
+guidance (the pass's own ranked choice for the session's second act,
+per the edition 13 section 2 work-selection guidance): item 53
+briefed (B17 the conditional-tail covariate-integration
+pre-declaration, queued ## 136 by null-time session 114's deep-read
+103), the count reconciliation extended to fifty-three, the queue
+fully briefed and sitting-ready again. Probe E1 re-checked,
+unchanged.**
+
 Boundary (G2's, restated): these briefs summarize already-recorded
 proposals with their sources. A brief invents nothing, queues nothing
 new, and arms nothing. Every full draft lives in the log entry and the
@@ -27,14 +37,14 @@ one-paragraph mechanism, not a restatement. Nothing here carries
 authority over any gate, claim, or kill line.
 
 How to read this in a sitting (protocol section 6): the queue holds
-FIFTY-TWO candidate sharpenings plus probe E1, zero armed. The items
+FIFTY-THREE candidate sharpenings plus probe E1, zero armed. The items
 are grouped into nine families by the precedent each one tightens. Each
 item names its position in the queue (the join order recorded in the
 log's queue lines), the log entry and note that hold the full draft,
 and the accept/reject question. A sitting may batch-ratify or kill per
 item or per family; ratifying a family ratifies every item in it.
 
-Count reconciliation (recorded so the fifty-two is checkable, not
+Count reconciliation (recorded so the fifty-three is checkable, not
 asserted): the composition is enumerated from the log's queue-line
 arithmetic — sessions 3 (two), 4 (the K7 cluster counted as one), 4b
 (two: the W-ladder report, Amendment-1), 5 (one), 6 (two), 7 (one), 9
@@ -46,7 +56,8 @@ thirty-three; then one join per named increment at log entries ## 71,
 ## 74, ## 77, ## 81, ## 85, ## 93 and ## 96 — closing exactly at
 forty; then one join per named increment at log entries ## 100, ## 107,
 ## 108, ## 110, ## 112, ## 113, ## 115, ## 118, ## 120, ## 121, ## 122
-and ## 134 — closing exactly at fifty-two. Probe E1 stands separately and
+and ## 134 — closing exactly at fifty-two; then one join at log entry
+## 136 — closing exactly at fifty-three. Probe E1 stands separately and
 is not counted. One
 instrument observation recorded by this session: the queue's
 composition was previously held nowhere on main as a single list, only
@@ -57,8 +68,9 @@ session's own read queued the thirty-third; the live log tail at ##
 69 and `docs/DECISIONS_PENDING.md` carry THIRTY-THREE — a state
 superseded with every refresh: both carried THIRTY-NINE at ## 93,
 FORTY at ## 96, and FIFTY-ONE at the edition-12 recomputation at ##
-129, while the live log tail at ## 134 and `docs/DECISIONS_PENDING.md`
-carry FIFTY-TWO, the number these briefs use.)
+129, FIFTY-TWO through the log tail at ## 135, while the live log tail
+at ## 137, `docs/DECISIONS_PENDING.md` and the protocol's edition-13
+facts block all carry FIFTY-THREE — the number these briefs use.)
 
 ---
 
@@ -137,7 +149,7 @@ The trigger's number must be earned by the fit, not by the optimizer's
 convenience. The founding items tighten how a branching-ratio estimate
 may be read; the later ones extend the same discipline to every
 estimator, preprocessing stage, inversion and transform a C1-L2/C8-adjacent
-computation will touch. These sixteen are the read-out and
+computation will touch. These seventeen are the read-out and
 earned-number discipline of the programme.
 
 - **B1. The K7 estimation pre-declaration cluster** (3rd, session 4,
@@ -333,7 +345,29 @@ earned-number discipline of the programme.
   computed value shows it. Extends the concordance rule (B12) from the
   implementation-vs-definition half to the class pairing.
 
-Sitting question: are these sixteen accepted as the standing read-out
+- **B17. The conditional-tail covariate-integration pre-declaration**
+  (53rd, queued via deep-read 103, log ## 136, note
+  `paper/research/library/2026-11-23_l1_regularizer_extreme_value_regression_deep_read.md`).
+  Any conditional extreme-value model — a GPD/POT tail regression, a
+  time-varying tail-shape or tail-scale spec, any covariate-conditioned
+  exceedance or severity model — must pre-declare every candidate
+  covariate's integration order (I(0), I(1), local-to-unit-root)
+  before estimation, read local unit-root coefficients under the √T
+  local limit rather than as ordinary fixed-parameter estimates, and
+  use a frozen covariate-selection procedure in which t-test selection
+  from an unregularized conditional-tail likelihood is inadmissible by
+  rule (regularization tuning frozen, never re-tuned per instrument).
+  The Hambuckers–Sun–Trapin conditional-GPD paper proves in print that
+  the unregularized MLE's limit is non-normal under local unit-root
+  predictors, that its simulations select truly inactive unit-root
+  covariates at rates of essentially 1.0 rather than the nominal 0.05,
+  and that on its own nine-stock data the MLE selected 39-43 of 43
+  covariates with a Fisher matrix so ill-conditioned that standard
+  errors were not computable at all. Extends the concordance rule
+  (B12) from the implementation-vs-definition half to the selection
+  procedure's own size behavior under the declared covariate classes.
+
+Sitting question: are these seventeen accepted as the standing read-out
 and earned-number discipline for the trigger and every estimator,
 preprocessing stage and inversion the specs touch, or does any member
 duplicate another?
@@ -685,7 +719,7 @@ proposed scope, or kill the guard extension.
 
 ---
 
-## Probe E1 — standing separately, not counted in the fifty-two
+## Probe E1 — standing separately, not counted in the fifty-three
 
 Probe E1 (volume conservation) was the exploratory channel's first
 probe, RATIFIED by the owner as a channel (log ## 25). Its rule-content
@@ -725,3 +759,10 @@ pre-declaration for generative nulls), the count reconciliation
 extended to fifty-two, the live queue at FIFTY-TWO plus probe E1,
 zero armed, the log tail at ## 134. The briefs summarize recorded
 proposals only, queued nothing, and armed nothing.
+
+Refreshed 2026-11-23 by null-time session 115 (log entry ## 138):
+item 53 briefed (B17 the conditional-tail covariate-integration
+pre-declaration, queued ## 136 by deep-read 103), the count
+reconciliation extended to fifty-three, the live queue at FIFTY-THREE
+plus probe E1, zero armed, the log tail at ## 137. The briefs
+summarize recorded proposals only, queued nothing, and armed nothing.

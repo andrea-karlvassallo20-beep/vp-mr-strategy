@@ -14259,3 +14259,197 @@ live. Guard clean: python3 src/integrity_guard.py run over the assembled
 full tree (main's tracked tree restored whole plus this session's changed
 files) with marker sweep, library-provenance audit and encoding sanity
 all exiting zero before commit.
+
+## 137. Null-time session 115 (2026-11-23), first act: the eleventh synthesis pass — the cadence recomputed from the edition-12 reset at ## 130 (deep-reads 99-103 landed at ## 131 through ## 136, ## 135 the G2 briefs refresh interleaved and non-counting, the window CLOSED at five of five per the ## 136 closing pointer, which directed the pass run before the read, against the clean tail), goal state rewritten as EDITION 13, the G2 brief-debt recomputed against the standing queue (briefs cover fifty-two of fifty-three; the item-53 brief executed as this session's second act, ## 138), the edition-12 zero-floor expectation corrected by the record (TWO sharpenings in the window: #52 at ## 134, #53 at ## 136; declining-yield holds ABOVE floor, not at it); NO sharpening queued by the pass
+
+Session-state note (director step, per docs/goal_autonomy_protocol.md,
+edition 13, ACTIVE, written by this pass and consistent with the live
+tail at ## 136): the declared work choice is the CADENCE RULE's own
+instruction — the ## 136 closing pointer directed the next session to
+open with the synthesis pass before its read, and the counter stood at
+FIVE of five, so the pass runs FIRST as this session's first act. The
+pass's work-selection guidance (edition 13, section 2) then ranks the
+session's second act: the G2 item-53 brief over the lawful deep-read
+floor, for rotation freshness (the ## 136 landing was a deep-read;
+rotation rule point 3 discourages consecutive reads when a ranked
+alternative stands — the same reasoning session 113 recorded at
+## 135), and because a directorate sitting cannot batch-ratify
+families holding unbriefed members (item 53 is unbriefed at pass time).
+Race checks at the choice: live main fetched and verified (head at this
+session's start = the ## 136 landing commit 55531e3, tail "## 136",
+zero "## 137" on main).
+
+The pass re-read the live record through the clean tail (## 1 through
+## 136) and recomputes the edition-12 window: deep-reads 99-103 landed
+at ## 131, ## 132, ## 133, ## 134 and ## 136 (## 135 the G2 briefs
+refresh, bookkeeping, non-counting); ZERO kill lines moved in the
+window; TWO sharpenings queued in it — #52 the strategy-class/convention
+well-posedness pre-declaration (deep-read 102, ## 134) and #53 the
+conditional-tail covariate-integration pre-declaration (deep-read 103,
+## 136) — correcting the edition-12 floor reading in its strict form:
+the score-20 tier did NOT return reinforcing reads only, and the
+queue's declare-before-the-data vein was NOT fully extended; both new
+items extend that same vein, but each names a mechanism class no queued
+rule asked (an objective convention whose infimum diverges over the
+wider admissible strategy class; covariate integration orders whose
+local unit-root asymptotics make t-test selection structurally
+inadmissible). The declining-yield expectation named at editions 3-12
+holds in yield but NOT at a zero floor; the tier's one remaining entry
+(x1e5f02) is the standing read. The window WAS infrastructure-clean:
+no new truncation, corruption or collision instance anywhere in
+## 131 through ## 136, all landings byte-verified against their
+assembled local copies per the PR #289 convention; the write-side
+~64K truncation class (five instances: ## 75, ## 78, ## 94, ## 98,
+## 123) and the collision history (four events: ## 98, ## 105, ## 109,
+## 123) stand unchanged; the byte-monotonicity/verification
+infrastructure gap stays the ranked infrastructure item,
+candidate-improvement status only, now extended with one recorded
+channel limitation: the verification loop's CI step (gh run list) is
+unexecutable from the current session channel (no gh CLI; the landing
+lands through the connector push and the commit check is owner-side
+work, recorded at ## 136).
+
+Products of this pass, traveling only through the sanctioned channels:
+(1) goal state rewritten whole as EDITION 13 (protocol section 2,
+edition rule; the section 18 note records the change) — facts block
+recomputed from the live record at ## 136 (queue FIFTY-THREE plus
+probe E1 at pass time, zero armed, unchanged by the pass; one hundred
+and five library note files through deep-read 103), ranked fronts
+unchanged in order with statuses recomputed, the deep-read pointer
+recomputed by title-matching the score-sorted triage file against the
+live tail and the library listing (the score-21 tier CLOSED at ## 116,
+## 118 and ## 119; the score-20 tier OPEN with THIRTEEN of its
+FOURTEEN entries consumed — xaace1f ## 120, x2b0051 ## 121, x47bbb5
+## 122, xe1c4ca ## 125, xf8b5bc ## 126, x97b372 ## 127, x55e853
+## 128, x999a87 ## 129, xc495e3 ## 131, x7a86fb ## 132, x7e576d
+## 133, x150a2c ## 134, xf959b8 ## 136; next UNREAD x1e5f02, "The
+adaptive nature of liquidity taking in limit order books,"
+Taranto-Bormetti-Lillo 2014, the tier's LAST entry — once it lands the
+tier is CLOSED and the pointer recomputes to the score-19 tier, five
+entries, head x03aa07 "How does latent liquidity get revealed in the
+limit order book?"), cadence: RESET by this edition, the counter
+standing at ZERO of five, the successor session's read #104 counting
+as the window's first; (2) docs/GOALS.md status board refreshed to
+edition 13 (operative bookkeeping only; the protocol's section 2 stays
+the ranking authority); (3) work-selection guidance for the second act
+(the G2 item-53 brief, executed as ## 138) and for the successor (the
+read-back verification helper remains the ranked non-deep-read choice
+after the briefs close to fifty-three; the deep-read remains the
+floor). The pass measures nothing, arms nothing, launders nothing
+INTO any spec, and queues NO sharpening; the G2 item-53 brief debt is
+named and paid by the second act (## 138) under this edition's
+guidance.
+
+- Inaccessible/blocked status: none this act (the live protocol, log,
+  GOALS.md, DECISIONS_PENDING.md and the triage file all read clean and
+  whole; the briefs doc read clean).
+- Ratification queue after this act: FIFTY-THREE candidate sharpenings
+  plus probe E1, zero armed — UNCHANGED by the pass (the pass queues
+  nothing; docs/DECISIONS_PENDING.md is untouched by this session
+  entirely, the second act being a G2 brief which grades nothing);
+  T1 remains armed awaiting the owner's word in its booked state; T2
+  tested-fail; the blocked list stays blocked. Deep-read queue
+  pointer: unchanged — next UNREAD "The adaptive nature of liquidity
+  taking in limit order books" (x1e5f02, Taranto-Bormetti-Lillo 2014,
+  score 20, FOURTEENTH AND LAST of the score-20 tier, verified
+  note-less at ## 136), then the score-19 tier recomputes (five
+  entries, head x03aa07) — re-read the live tail before consuming.
+  The edition-13 cadence counter stands at ZERO of five (next pass due
+  when five or more deep-reads have landed since edition 13).
+- Byte-landed log note (session-specific): this session continues the
+  ## 136 local-assembly convention (log assembled locally from the
+  public main archive, restored whole; the landing is one connector
+  push per act, files byte-verified against the assembled local copies
+  before pushing), per the ## 123 root-cause record. No git or gh CLI
+  exists in this environment: the CI green-check stays unverifiable
+  from this channel and is recorded as owner-side work; the landing
+  commits must be confirmed on GitHub.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the assembled
+full tree (main's tracked tree restored whole plus this session's changed
+files) with marker sweep, library-provenance audit and encoding sanity
+all exiting zero before commit.
+
+## 138. Null-time session 115 (2026-11-23), second act: GOALS.md G2 executed under the edition-13 guidance — the item-53 brief landed: the conditional-tail covariate-integration pre-declaration briefed as B17 (53rd, queued ## 136 by null-time session 114's deep-read 103), the count reconciliation extended to fifty-three, all FIFTY-THREE queued sharpenings plus probe E1 now carry sitting-ready briefs
+
+Session-state note (director step, per docs/goal_autonomy_protocol.md,
+edition 13, ACTIVE, written by this session's first act): the declared
+work choice is the edition-13 pass's OWN ranked guidance for the
+second act — the G2 item-53 brief — chosen over the lawful deep-read
+floor for rotation freshness (the ## 136 landing was a deep-read;
+rotation rule point 3 discourages another consecutive read when a
+ranked alternative stands — the same reasoning session 113 recorded
+at ## 135), and for sitting-readiness (a directorate sitting cannot
+batch-ratify families holding unbriefed members; item 53 stood
+unbriefed). The work is pure bookkeeping inside the standing order's
+carve-outs: the brief summarizes an already-recorded proposal with
+its sources; it invents nothing, queues nothing, and arms nothing.
+
+Work:
+
+- docs/DIRECTORATE_BRIEFS.md (G2 refresh, the queue's batch-ratify
+  reading material): item 53 briefed as B17 — the conditional-tail
+  covariate-integration pre-declaration (53rd in join order, queued
+  ## 136 via deep-read 103 / null-time session 114; full draft in log
+  ## 136 and the library note
+  paper/research/library/2026-11-23_l1_regularizer_extreme_value_regression_deep_read.md;
+  one-paragraph mechanism: any conditional extreme-value model must
+  pre-declare every candidate covariate's integration order and use
+  a frozen covariate-selection procedure in which t-test selection
+  from an unregularized conditional-tail likelihood is inadmissible,
+  because the Hambuckers-Sun-Trapin paper prints the unregularized
+  MLE's non-normal limit under local unit-root predictors, selection
+  of truly inactive unit-root covariates at rates of essentially 1.0,
+  and its own MLE selecting 39-43 of 43 covariates with standard
+  errors non-computable; the sitting's accept/reject question: is B17
+  accepted into the estimator-discipline B-family as the standing
+  covariate-side discipline for any future conditional tail model, or
+  does it duplicate an existing member) — placed in the B-family
+  (estimator discipline), extending it to seventeen items, the family
+  intro and sitting question updated; the count reconciliation
+  extended to fifty-three (one join at log entry ## 136, closing
+  exactly); the header refresh paragraph and the tail refresh
+  paragraph record this session; the "How to read" queue count updated
+  to fifty-three; the probe-E1 section head updated to "not counted in
+  the fifty-three", probe E1 re-checked, unchanged, standing
+  separately.
+- docs/GOALS.md surgical edits, two, status bookkeeping with zero
+  ranking action: (1) the front-2 NOTE refreshed at the pass (## 137)
+  already states the item-53-brief-as-second-act choice; (2) the G2
+  STATUS refresh note appended with the B17 placement, the
+  fifty-three count reconciliation, and the next refresh owed from
+  item 54 (none queued yet).
+
+Ratification queue after this act: FIFTY-THREE candidate sharpenings
+plus probe E1, zero armed — UNCHANGED by this session (the pass queues
+nothing; the brief queues nothing). docs/DECISIONS_PENDING.md is NOT
+touched this session. T1 remains armed awaiting the owner's word in
+its booked state (survived all five kill lines with sign inverted; T2
+tested-fail); the blocked list stays blocked. Deep-read queue
+pointer: unchanged — next UNREAD "The adaptive nature of liquidity
+taking in limit order books" (x1e5f02, Taranto-Bormetti-Lillo 2014,
+arXiv:1403.0842v2, score 20, FOURTEENTH AND LAST of the score-20 tier,
+verified note-less at ## 136), then the score-19 tier recomputes
+(five entries, head x03aa07 "How does latent liquidity get revealed in
+the limit order book?") — re-read the live tail before consuming. The
+edition-13 cadence counter stands at ZERO of five: the successor
+session's read #104, whenever it lands, counts as the window's first.
+With the briefs closed to all fifty-three, the edition-13 guidance's
+next ranked non-deep-read choice for a preferring session is the
+read-back verification helper; the deep-read remains the floor.
+
+Byte-landed log note (session-specific): this session continues the
+## 136 local-assembly convention (log assembled locally from the
+public main archive, restored whole; the landing is a single
+connector push covering both acts, files byte-verified against the
+assembled local copies before pushing), per the ## 123 root-cause
+record. No git or gh CLI exists in this environment: the CI
+green-check stays unverifiable from this channel and is recorded as
+owner-side work; the landing commit must be confirmed on GitHub.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the assembled
+full tree (main's tracked tree restored whole plus this session's changed
+files) with marker sweep, library-provenance audit and encoding sanity
+all exiting zero before commit.
