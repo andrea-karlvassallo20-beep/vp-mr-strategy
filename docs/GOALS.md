@@ -92,23 +92,16 @@ construction.
   applications to financial data" (x7a86fb, tenth of the score-20
   tier), then the remaining score-20 tier; re-read the live
   tail before consuming; the ritual's slug-keyed unread rule applies.
-  NOTE (refreshed 2026-11-23, null-time session 109, log ## 130): the
-  deep-read counter since EDITION 12 stands at ONE of five (deep-read
-  99, landing as this session's second act, counted from the
-  edition-12 reset at ## 130); the G2 directorate briefs cover the
-  first forty queued items plus probe E1 (refreshed 2026-11-21, log
-  ## 99), so briefs are owed from item 41 through item 51 and any
-  successor (item 41 the noise-model pre-declaration, item 42 the
-  queue-jump-diffusion generative null, item 43 the residual-flow
-  attribution null, item 44 the feature-normalization
-  pre-declaration, item 45 the same-period-aggregate feature
-  availability rule, item 46 the estimator-implementation concordance
-  rule, item 47 the impact-viability pre-declaration for generative
-  nulls, item 48 the cross-stream synchronization and
-  single-source-count pre-declaration, item 49 the model-inversion
-  identifiability pre-declaration, item 50 the transform-domain
-  admissibility pre-declaration, item 51 the moment-equivalence
-  disclosure).
+  NOTE (refreshed 2026-11-23, null-time session 113, log ## 135): the
+  deep-read counter since EDITION 12 stands at FOUR of five (deep-reads
+  99-102, landed ## 131 through ## 134, counted from the edition-12
+  reset at ## 130; the next landing of a read makes FIVE, and the next
+  work-selecting session opens with the synthesis pass before its
+  read); the G2 directorate briefs cover ALL FIFTY-TWO queued items
+  plus probe E1 (refreshed 2026-11-23, log ## 135), the next refresh
+  owed from item 53 (none queued yet; item 52, the
+  strategy-class/convention well-posedness pre-declaration, queued
+  ## 134, is briefed as B16).
 
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
@@ -158,7 +151,7 @@ its verdicts stay frozen, and nothing here re-opens the archive.
 
 G2. Ratification-readiness briefs. ENTRY: any session; strongest
 claim when front 2 is between reads. FEEDS: the weekly directorate —
-one-page accept/reject briefs for the queued FIFTY-ONE sharpenings
+one-page accept/reject briefs for the queued FIFTY-TWO sharpenings
 plus probe E1, grouped by the precedent they tighten. BOUNDARY:
 briefs summarize already-recorded proposals with their sources; a
 brief invents nothing, queues nothing new, and arms nothing. STATUS:
@@ -177,14 +170,26 @@ D4 deterministic-calendar null, F7 spread convention) and item 40
 briefed as B9 (the adaptive-retraining disclosure, with the ## 97
 endorsement-with-dissent recorded inside the brief); the count
 reconciliation extended to forty, the family intros and sitting
-questions updated, the queue fully briefed, sitting-ready; the next
-refresh is owed from item 41 (the noise-model pre-declaration, queued
-## 100; recomputed 2026-11-22, null-time session 104, log ## 124:
-the queue stands at fifty-one — items 41-51 all unbriefed as of this
-refresh: 41 queued ## 100, 42 queued ## 107, 43 queued ## 108, 44
-queued ## 110, 45 queued ## 112, 46 queued ## 113, 47 queued ## 115,
-48 queued ## 118, 49 queued ## 120, 50 queued ## 121 and 51 (the
-moment-equivalence disclosure) queued ## 122). The
+questions updated, the queue fully briefed, sitting-ready. REFRESHED
+AGAIN (2026-11-23, null-time session 113, log ## 135): the queue's
+items 41-52 all briefed — B10 the noise-model pre-declaration (41,
+queued ## 100), B11 the feature-normalization pre-declaration (44,
+queued ## 110), B12 the estimator-implementation concordance rule
+(46, queued ## 113), B13 the model-inversion identifiability
+pre-declaration (49, queued ## 120), B14 the transform-domain
+admissibility pre-declaration (50, queued ## 121), B15 the
+moment-equivalence disclosure (51, queued ## 122), B16 the
+strategy-class/convention well-posedness pre-declaration (52, queued
+## 134), D5 the queue-jump-diffusion generative-null pre-declaration
+(42, queued ## 107), F8 the same-period-aggregate feature
+availability rule (45, queued ## 112), F9 the cross-stream
+synchronization and single-source-count pre-declaration (48, queued
+## 118), H2 the residual-flow attribution null (43, queued ## 108)
+and H3 the impact-viability pre-declaration for generative nulls
+(47, queued ## 115) — the count reconciliation extended to fifty-two,
+the family intros and sitting questions updated, the queue at
+FIFTY-TWO plus probe E1 fully briefed and sitting-ready; the next
+refresh is owed from item 53 (none queued yet). The
 briefs summarize recorded proposals only, queued nothing, and armed
 nothing.
 
