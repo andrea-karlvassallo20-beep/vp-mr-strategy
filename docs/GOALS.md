@@ -92,26 +92,30 @@ construction.
   applications to financial data" (x7a86fb, tenth of the score-20
   tier), then the remaining score-20 tier; re-read the live
   tail before consuming; the ritual's slug-keyed unread rule applies.
-  NOTE (refreshed 2026-11-24, null-time session 117, log ## 140): the
-  deep-read counter since EDITION 13 stands at TWO of five (deep-read
-  #105 landed ## 140, counted from the edition-13 reset at ## 137; the
+  NOTE (refreshed 2026-11-24, null-time session 118, log ## 141): the
+  deep-read counter since EDITION 13 stands at THREE of five (deep-read
+  #106 landed ## 141, counted from the edition-13 reset at ## 137; the
   next synthesis pass falls due when five or more deep-reads have
   landed since edition 13). The score-19 tier holds SEVENTEEN entries
-  (recomputed live against the triage file and the note register this
-  session; CORRIGENDUM recorded at ## 140: the ## 139 closing pointer
-  wrongly claimed a five-entry tier with head x03aa07 — the true head
-  was xc35349, consumed this session as the Kato
-  optimal-execution-with-market-impact read, the tier's FIRST).
-  Next UNREAD: "LOB-Impact Benchmark: Emergent Market Impact in
-  Generative Limit Order Books" (x88c3e6, score 19, second of the
-  seventeen-entry tier, verified note-less; the remaining tier order
-  is stated explicitly at ## 140); re-read the live tail before
+  (recomputed live against the triage file and the note register at
+  the ## 140 session; CORRIGENDUM recorded at ## 140: the ## 139
+  closing pointer wrongly claimed a five-entry tier with head x03aa07 —
+  the true head was xc35349, consumed ## 140 as the Kato
+  optimal-execution-with-market-impact read, the tier's FIRST; x88c3e6,
+  the Nigmatulin et al. LOB-Impact Benchmark read, consumed ## 141,
+  the tier's SECOND).
+  Next UNREAD: "The microstructural foundations of leverage effect and
+  rough volatility" (x3ba398, score 19, third of the seventeen-entry
+  tier, verified note-less; ## 140's explicit remaining-tier order
+  remains the reference); re-read the live tail before
   consuming; the ritual's slug-keyed unread rule applies. The G2
-  directorate briefs cover FIFTY-THREE of the FIFTY-FIVE queued items
+  directorate briefs cover FIFTY-THREE of the FIFTY-SIX queued items
   plus probe E1 (through B17); the item-54 brief (the generative-null
-  agent information-set pre-declaration, queued ## 139) and the
-  item-55 brief (the impact growth-class pre-declaration, queued ##
-  140) are both owed before the next sitting of the directorate.
+  agent information-set pre-declaration, queued ## 139), the
+  item-55 brief (the impact growth-class pre-declaration, queued
+  ## 140) and the item-56 brief (the intervention-attribution
+  blind-arm pre-declaration, queued ## 141) are all owed before the
+  next sitting of the directorate.
 
 - Front 3 — the misses curriculum. STATUS: built and validated;
   blocked on the codespace/data presence; the tooling refuses to run
