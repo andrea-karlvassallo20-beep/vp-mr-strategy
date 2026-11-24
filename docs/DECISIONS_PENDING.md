@@ -1,9 +1,9 @@
 # Pending owner decisions — the fortieth dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-24, the
-generative-null agent information-set pre-declaration
-queued as the fifty-fourth candidate sharpening (null-time session 116,
-log ## 139;
+impact growth-class pre-declaration
+queued as the fifty-fifth candidate sharpening (null-time session 117,
+log ## 140;
 audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
@@ -37,7 +37,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: fifty-four
+  library deep-reads and the ratified exploratory channel: fifty-five
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -84,10 +84,61 @@ each case. Items are ordered by how much they gate.
   conditional-tail covariate-integration pre-declaration queued
   2026-11-23 by deep-read session 103 / null-time session 114, plus the
   generative-null agent information-set pre-declaration queued
-  2026-11-24 by deep-read session 104 / null-time session 116; probe E1
+  2026-11-24 by deep-read session 104 / null-time session 116, plus the
+  impact growth-class pre-declaration queued 2026-11-24 by deep-read
+  session 105 / null-time session 117; probe E1
   stands separately and is not
-  counted among the fifty-four); most recently joined 2026-11-24, the
-generative-null agent information-set pre-declaration (BEFORE the L0
+  counted among the fifty-five); most recently joined 2026-11-24, the
+impact growth-class pre-declaration (BEFORE the L0 gate, any
+C1-L2/C8-adjacent impact function — a generative null's, placebo's,
+comparator's, cost model's or simulator's impact parameterization,
+permanent or transient — must pre-declare, as frozen configuration
+counted in the multiplicity ledger: (i) the impact function's
+large-size growth class (at-most-linear, h(infinity) < infinity;
+strictly superlinear, h(infinity) = infinity; quadratic-or-faster,
+lim inf h(zeta)/zeta > 0), and (ii) for any discrete-grain
+construction, the rescaling that defines its continuous-time limit
+(the condition-[A] class: the per-step impact g_n C¹-matched to its
+own h at the grain) — with every conclusion that depends on
+instantaneous/block-liquidation feasibility or on vanishing-window
+cost bounds licensed only under the declared class, and every
+deviation a dated amendment before any data is touched — harder-to-
+pass because the choice is load-bearing and today silent: Kato proves
+in print, on one and the same admissible strategy class, that two
+impact functions identical in every parameter but the growth class
+disagree on whether the price can be pushed through an instantaneous
+block sale at strictly positive finite cost — at-most-linear admits it
+(the value jump J_u selling psi shares instantly at e^{-h(infinity)·psi},
+Theorem 1(ii), PDF p. 6, realised by the zeta^delta strategies (3.1)),
+superlinear forbids it (Lemma 9's proceeds bound phi(r) -> 0 in
+vanishing time, PDF pp. 20-22) — so a crash-speed, liquidation-
+feasibility or vanishing-time-cost conclusion from an impact-bearing
+null is today a function of an undeclared researcher degree of
+freedom with no visible fingerprint in the outputs, and even which
+solution statements are well-posed depends on the class (Theorem 4's
+uniqueness binds exactly at lim inf h(zeta)/zeta > 0, i.e.,
+g(zeta) >= C·zeta² at large zeta, PDF p. 8); no queued rule asks the
+question: the impact-viability pre-declaration for generative nulls
+(deep-read 87) audits the pointwise no-PMS/no-TTPM sign conditions of
+the transient layer, not the large-size class, the
+strategy-class/convention well-posedness pre-declaration (deep-read
+102) declares the admissible process class — but the flip proven here
+is NOT a strategy-class effect, it holds over the same unbounded
+admissible class — the queue-jump-diffusion generative-null
+pre-declaration (queued ## 107) freezes null parameters, not
+functional form, and the generative-null agent information-set
+pre-declaration (queued ## 139) marks agent inputs, not the impact
+functional's tail; tightens the impact-viability pre-declaration
+(deep-read 87) by extending the generative-null pre-declaration
+family from sign-condition viability to the impact function's growth
+class, and joins the strategy-class/convention well-posedness
+pre-declaration (deep-read 102) in forcing the mathematical objects a
+cost or optimality statement is posed over to be declared before the
+statement may license anything; full draft with the killed-if-wrong
+counterfactual in the session note
+(paper/research/library/2026-11-24_kato_optimal_execution_market_impact_deep_read.md)).
+And earlier, 2026-11-24, the generative-null agent information-set
+pre-declaration (BEFORE the L0
 gate, any C1-L2/C8-adjacent generative null, placebo, comparator or
 simulator whose simulated participants — takers, makers, adversarial
 responders — act on a decision rule fed by any input must pre-declare,

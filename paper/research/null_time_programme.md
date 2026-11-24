@@ -14639,3 +14639,141 @@ live. Guard clean: python3 src/integrity_guard.py run over the assembled
 full tree (main's tracked tree restored whole plus this session's changed
 files) with marker sweep, library-provenance audit and encoding sanity
 all exiting zero before commit.
+## 140. Null-time session 117 (2026-11-24): library deep-read session 105 — the Kato optimal-execution-with-market-impact read, FIRST of the score-19 tier, consuming the TRUE tier head and correcting the ## 139 closing pointer's two errors (the tier was claimed to hold five entries with head x03aa07; the triage file holds SEVENTEEN entries at score 19 and the head is xc35349, both verified against the note register this session); the stochastic-control dissection proving the value function's behaviour at the time origin to be a function of the impact function's growth class alone — at-most-linear impact admits instantaneous block liquidation at strictly positive finite cost, superlinear impact forbids it — ONE new candidate sharpening queued (the impact growth-class pre-declaration), PENDING OWNER RATIFICATION; NO kill line moved
+
+Session-state note (director step, per docs/goal_autonomy_protocol.md,
+edition 13, ACTIVE, consistent with the live tail at ## 139): the
+declared work choice is the DEFAULT deep-read — the edition-13 counter
+stands at ONE of five (## 139, deep-read #104), this read is #105 and
+counts as the second, and no ranked non-deep-read alternative stands
+ahead of it (the item-54 directorate brief is owed before the NEXT
+sitting, not this one; the sitting is owed its brief, the session is
+owed its read). CORRIGENDUM, worked as this session's first act per the
+honest-error protocol (## 139's text above stays unedited): the ##
+139 closing pointer named "How does latent liquidity get revealed in
+the limit order book?" (x03aa07) as first of a claimed FIVE-entry
+score-19 tier. Recomputed live against the triage file and the note
+register: the score-19 tier holds SEVENTEEN entries (xc35349, x88c3e6,
+x3ba398, x70d4f8, x03aa07, xa911d0, x021d63, xf1e828, x201cd0,
+x06003f, x62c427, x776d3c, x5eed77, x2e38f9, x4207fb, xf8425e,
+x374d57), NONE with a deep-read note (all seventeen unread), and the
+ritual's selection order — score descending, triage-file order
+breaking ties, the same order the score-20 tier was consumed in —
+makes xc35349 the true head. x03aa07 remains unread, fifth in the
+tier order; the GOALS.md front-2 NOTE, a living refreshed block, is
+corrected by this session's refresh. Race checks at the choice: live
+main fetched and verified byte-true against the local tree (head
+98f8de27, the ## 139 landing; tail "## 139"; zero "## 140" on main).
+Channel note: CI on the ## 139 landing (98f8de27) verified "completed,
+success" and the Deploy Salient site workflow "completed, success" on
+the same head — both verified from the live API at the last session's
+close; the unauthenticated GitHub API hit its 60-request rate limit at
+this session's start, so this session's race checks and landing
+verification run through the authenticated github_app channel, and
+the post-push CI check is recorded honestly as partially executed if
+the limit does not reset in time.
+
+The paper: Kato, "An Optimal Execution Problem with Market Impact"
+(arXiv:0907.3282v8, 36 pp., page-marked, read in full including both
+examples, the sell-off section, the discrete-derivation appendix and
+all of appendix B's proofs), the preprint of the Finance and
+Stochastics publication (DOI 10.1007/s00780-014-0232-0, stated on the
+extract, PDF p. 34). A single trader liquidates Phi shares under a
+convex PERMANENT impact g(zeta) on a generic diffusion log-price, the
+model derived as the discrete-to-continuous limit under condition [A]
+(the per-step impact g_n C¹-matched to h(n·psi), Sec. 7, PDF pp.
+14-16); the value function is continuous in every argument except the
+time origin, where right-continuity is DECIDED BY THE GROWTH CLASS OF
+g: h(infinity) = infinity (superlinear) makes no-trading optimal in
+infinitesimal time and bounds liquidation proceeds in a vanishing
+window to zero (Theorem 1(i), PDF p. 6; Lemma 9's explicit phi(r) -> 0,
+PDF pp. 20-22), while h(infinity) < infinity (at-most-linear) makes the
+value JUMP at t = 0 to J_u, the utility of selling any amount
+instantly at the strictly positive discounted price e^{-h(infinity)
+psi} (Theorem 1(ii) with the zeta^delta strategies (3.1), PDF p. 6);
+uniqueness of the viscosity solution binds exactly in the
+quadratic-or-faster class, lim inf h(zeta)/zeta > 0 (Theorems 2-4, PDF
+pp. 6-8). The sell-off condition changes nothing in continuous time
+(PDF p. 9). Examples: linear impact gives the exact block-sale value
+w + (1-e^{-alpha·phi})/alpha · s attained arbitrarily fast, timing
+flipping wholly with the drift sign (Sec. 5.1 with Remark 5, PDF
+p. 11); quadratic impact makes the optimal schedule's FORM depend on
+holdings against two thresholds — small holders finish, large holders
+cannot finish at all within the horizon, the middle regime solved
+only numerically (Theorem 2 of Sec. 5.2, Figures 1-4, PDF
+pp. 11-13) — and the author's own conclusion concedes the model's
+scope: real traders liquidate gradually despite concave empirical
+impact, the missing piece being risk aversion or the transient
+component, "we surmise another reason: the existence of a temporary
+(or transient) impact" (Remark 2, PDF p. 5; Sec. 6, PDF p. 14).
+
+Findings, graded (all page-cited in the session note,
+paper/research/library/2026-11-24_kato_optimal_execution_market_impact_deep_read.md):
+
+- ONE new candidate sharpening queued as the fifty-fifth, PENDING
+  OWNER RATIFICATION: the impact growth-class pre-declaration —
+  BEFORE the L0 gate, any C1-L2/C8-adjacent impact function (a
+  generative null's, placebo's, comparator's, cost model's or
+  simulator's, permanent or transient) must pre-declare as frozen
+  configuration counted in the multiplicity ledger (i) its large-size
+  growth class (at-most-linear / strictly superlinear /
+  quadratic-or-faster) and (ii) for discrete-grain constructions, the
+  rescaling defining its continuous-time limit (the condition-[A]
+  class), with any instantaneous/block-liquidation-feasibility or
+  vanishing-window-cost conclusion licensed only under the declared
+  class. Mechanism: Kato proves the macro admissibility flip on one
+  and the same admissible strategy class with nothing changed but the
+  impact function's tail — the same auditor's test the ## 139 agent
+  information-set item ran on the predictors, now run on the impact
+  functional; the symbol statements binding which solution claims are
+  well-posed (Theorem 4's quadratic class, PDF p. 8) also live on the
+  undeclared datum. No queued rule asks it (impact-viability audits
+  sign conditions, strategy-class well-posedness declares the process
+  class but the flip is not a strategy-class effect, queue-jump
+  freezes parameters, agent information-set marks inputs); tightens
+  the impact-viability pre-declaration and joins the generative-null
+  pre-declaration family.
+- [reinforcing, no new item] Permanent-only impact is a declared
+  exclusion with a printed converse: the author himself concedes the
+  permanent-only model cannot reproduce observed gradual liquidation
+  and surmises transient impact (PDF pp. 5, 14) — reinforces the
+  transient-layer family's premise that the impact decomposition is
+  a declared datum, not a default.
+- [interpretation caution] Linear permanent impact carries no
+  scheduling signal for a risk-neutral trader — the whole value is
+  attained by instantaneous liquidation, timing flips wholly with
+  the drift sign, mu-tilde = 0 makes every schedule identical
+  (PDF p. 11): an impact-timing covariate grounded in a linear
+  permanent spec is a drift reading in disguise.
+- [cost-survival ammunition] The holdings-dependent regime structure
+  (small holders finish, large holders cannot; thresholds Phi-hat 1,
+  Phi-hat 2; middle regime numeric only, PDF pp. 11-13) blocks any
+  "one cost curve" shortcut in a future K7-style cost layer.
+- [source-quality note] The preprint states its own published version
+  (Finance and Stochastics, DOI 10.1007/s00780-014-0232-0, PDF
+  p. 34): the standing arXiv caution upgrades to "published version
+  identified; cite it". Pure theory, no data, all examples
+  Black-Scholes drift with risk-neutral utility.
+
+Ratification queue after this session: FIFTY-FIVE candidate
+sharpenings (fifty-four through ## 139 plus the impact growth-class
+pre-declaration queued this session), plus probe E1, zero armed. T1
+remains armed awaiting the owner's word; the blocked list stays
+blocked. Deep-read queue: the score-19 tier holds seventeen entries,
+one consumed (xc35349, this session); next UNREAD: "LOB-Impact
+Benchmark: Emergent Market Impact in Generative Limit Order Books"
+(x88c3e6, score 19, second of the tier, verified note-less this
+session), then x3ba398 "The microstructural foundations of leverage
+effect and rough volatility", then x70d4f8 "Price impact without
+order book: A study of the OTC credit index market", then x03aa07
+"How does latent liquidity get revealed in the limit order book?" —
+re-read the live tail before consuming; the ritual's slug-keyed
+unread rule applies, and the pointer-computation error that produced
+the ## 139 five-entry claim is the recorded reason this entry states
+the whole remaining tier order explicitly.
+
+Nothing measured, no kill line moved, nothing armed, nothing trades
+live. Guard clean: python3 src/integrity_guard.py run over the
+assembled full tree (main's tracked tree restored whole plus this
+session's changed files) with marker sweep, library-provenance audit
+and encoding sanity all exiting zero before commit.
