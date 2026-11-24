@@ -1,9 +1,9 @@
 # Pending owner decisions — the fortieth dashboard
 
 **Maintained by the null-time sessions. Last updated: 2026-11-24, the
-impact growth-class pre-declaration
-queued as the fifty-fifth candidate sharpening (null-time session 117,
-log ## 140;
+intervention-attribution blind-arm pre-declaration
+queued as the fifty-sixth candidate sharpening (null-time session 118,
+log ## 141;
 audited against
 the claims ledger and the record — stale items resolved by your
 decisions are removed, not left to rot).**
@@ -37,7 +37,7 @@ each case. Items are ordered by how much they gate.
   generalize to every future pre-registration.
   `paper/research/phase2_l2/t2_addendum_post_t1_2026-11-16.md`.
 - **The ratification queue** — spec-sharpening candidates from the
-  library deep-reads and the ratified exploratory channel: fifty-five
+  library deep-reads and the ratified exploratory channel: fifty-six
   candidates (the twenty-nine sharpenings through deep-read session 51,
   plus the corrupt-landing sweep queued 2026-11-19 by null-time session
   58, plus the C1-L2 base-rate confrontation queued 2026-11-19 by
@@ -86,11 +86,60 @@ each case. Items are ordered by how much they gate.
   generative-null agent information-set pre-declaration queued
   2026-11-24 by deep-read session 104 / null-time session 116, plus the
   impact growth-class pre-declaration queued 2026-11-24 by deep-read
-  session 105 / null-time session 117; probe E1
+  session 105 / null-time session 117, plus the
+  intervention-attribution blind-arm pre-declaration queued
+  2026-11-24 by deep-read session 106 / null-time session 118; probe E1
   stands separately and is not
-  counted among the fifty-five); most recently joined 2026-11-24, the
-impact growth-class pre-declaration (BEFORE the L0 gate, any
-C1-L2/C8-adjacent impact function — a generative null's, placebo's,
+  counted among the fifty-six); most recently joined 2026-11-24, the
+intervention-attribution blind-arm pre-declaration (BEFORE
+the L0 gate, any C1-L2/C8-adjacent generative-null, placebo,
+comparator or simulator experiment whose readout includes the
+system's own response to an injected or experiment-side intervention
+(injected messages, orders or events; a forced or conditioned
+perturbation) must pre-declare, as frozen configuration counted in
+the multiplicity ledger, a blind attribution arm: runs identical to
+the visible runs in conditioning windows and seeds, in which the
+intervention executes in the simulator's plumbing (book
+reconstruction, matching, level consumption) but does not enter the
+model's inputs, with the response attributed through the
+visible-over-blind ratio under a margin fixed before the data — and
+every response conclusion (shape, magnitude, relaxation,
+reproduction or refutation of any mechanism claim) licensed only
+from runs that clear the declared blind floor, response conclusions
+from visible-only runs unlicensed at the gate — harder-to-pass
+because the attribution is today silent and printed to be
+unrecoverable from the measured quantities themselves: the
+Nigmatulin et al. LOB-Impact Benchmark's replay kernels, with no
+model inside, identify an impact law at delta = 0.73-0.81 on AMD,
+INSIDE the neural generators' range on the same stock, with
+amplitudes at roughly the price a real book charges (Y = 0.96-1.46,
+PDF pp. 2, 7-8), so neither existence nor exponent nor magnitude
+separates plumbing from model, and only the paired blind arm does
+(the benchmark's C3 at-least-3x criterion, PDF p. 4; measured
+visible-over-blind 5.0-38 across the 25 neural model-stock cells,
+PDF pp. 7-8); no queued rule asks the question (the
+dynamics-identification rule for generative nulls, null-time session
+58, demands pre-declared flow-dynamics statistics, not
+intervention-response attribution; the residual-flow attribution
+null, deep-read 82, conditions aggregate flow out of real-data
+episode attribution, not plumbing out of a simulator experiment; the
+queue-jump-diffusion pre-declaration, deep-read 81, freezes null
+parameters, not experiment arm structure; the generative-null agent
+information-set pre-declaration, deep-read 104, marks the agents'
+declared inputs, not the model's view of the experimenter's own
+injection; the impact growth-class pre-declaration, deep-read 105,
+declares the impact functional's tail, not the measurement's
+attribution); tightens the dynamics-identification rule for
+generative nulls on the intervention-response axis and joins the
+residual-flow attribution null in extending the attribution family
+from observational episode attribution to experimental response
+attribution, complementing the generative-null agent information-set
+pre-declaration whose declaration the blind arm operationalises
+from the experimenter's side; full draft with the killed-if-wrong
+counterfactual in the session note
+(paper/research/library/2026-11-24_lob_impact_benchmark_deep_read.md)).
+And earlier, 2026-11-24, the impact growth-class pre-declaration
+(BEFORE the L0 gate, any C1-L2/C8-adjacent impact function — a generative null's, placebo's,
 comparator's, cost model's or simulator's impact parameterization,
 permanent or transient — must pre-declare, as frozen configuration
 counted in the multiplicity ledger: (i) the impact function's
